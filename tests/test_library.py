@@ -49,7 +49,7 @@ With coverage.
 
 import pytest
 
-from ansys.pyoptics.speos import speos
+from ansys.pyoptics import speos
 
 # this is a fixture that simplifies reuse of common components
 @pytest.fixture
