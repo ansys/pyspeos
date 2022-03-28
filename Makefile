@@ -1,6 +1,6 @@
 # Simple makefile to simplify repetitive build env management tasks under posix
 
-CODESPELL_DIRS ?= ./pyaedt
+CODESPELL_DIRS ?= ./ansys
 CODESPELL_SKIP ?= "*.pyc,*.xml,*.txt,*.gif,*.png,*.jpg,*.js,*.html,*.doctree,*.ttf,*.woff,*.woff2,*.eot,*.mp4,*.inv,*.pickle,*.ipynb,flycheck*,./.git/*,./.hypothesis/*,*.yml,./docs/build/*,./docs/images/*,./dist/*,*~,.hypothesis*,./docs/source/examples/*,*cover,*.dat,*.mac,\#*,PKG-INFO,*.mypy_cache/*,*.xml,*.aedt,*.svg"
 CODESPELL_IGNORE ?= "ignore_words.txt"
 

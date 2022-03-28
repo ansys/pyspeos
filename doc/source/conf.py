@@ -3,10 +3,10 @@ from datetime import datetime
 
 from pyansys_sphinx_theme import pyansys_logo_black
 
-from ansys.product.library import __version__
+from ansys.pyoptics.speos import __version__
 
 # Project information
-project = 'ansys-product-library'
+project = 'ansys-pyoptics'
 copyright = f"(c) {datetime.now().year} ANSYS, Inc. All rights reserved"
 author = "Ansys Inc."
 release = version = __version__
