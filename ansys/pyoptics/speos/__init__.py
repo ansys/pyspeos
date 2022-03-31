@@ -24,4 +24,5 @@ Then add the import within this module to enable:
 from ansys.pyoptics.speos._version import __version__
 from ansys.pyoptics.speos.module import add
 from ansys.pyoptics.speos.other_module import Complex, ExampleClass
+from ansys.pyoptics.speos.lpf import lpfreader
 
