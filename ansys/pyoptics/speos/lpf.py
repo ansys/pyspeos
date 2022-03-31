@@ -13,4 +13,3 @@ class lpfreader:
         return self.stub.InitLpfFileName(
             lpf__file__reader__v1__pb2.InitLpfFileNameRequest_Mono(lpf_file_path=path)
             )
-            
