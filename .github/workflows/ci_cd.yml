@@ -68,11 +68,11 @@ jobs:
       - name: Unit testing
         run: |
           pip install -r requirements_test.txt
+          docker-compose up -d
           cd tests  # so we're testing the install, not local
-          #docker pull ghcr.io/pyansys/pyoptics/speos-rpc:latest
-          docker run -d -p 50051:50051 --name speosrpc ghcr.io/pyansys/pyoptics/speos-rpc:latest 
           pytest -vx
-          #docker rm -f speosrpc 
+          docker kill pyoptics_speos-rpc 
+          docker rm pyoptics_speos-rpc 
           
 
       - name: Upload wheel
