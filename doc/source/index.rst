@@ -9,6 +9,7 @@
    :hidden:
    :maxdepth: 3
 
+   grpc_stub
    class_documentation
 
 
