@@ -14,18 +14,19 @@ With coverage.
 import os
 from conftest import test_path, config
 
-import grpc
 from google.protobuf.empty_pb2 import Empty
 
 import ansys.api.speos.results.v1.lpf_file_reader_pb2_grpc as lpf_file_reader__v1__pb2_grpc
 import ansys.api.speos.results.v1.lpf_file_reader_pb2 as lpf_file_reader__v1__pb2
 from ansys.data.speos.utils.v1.Point3_pb2 import Point3f
 
+from ansys.pyoptics import speos
 
 def test_lpf_file_reader_mono_v1():
     # Lpf file reader creation
-    channel = grpc.insecure_channel('localhost:' + str(config.get("SpeosServerMonoPort")))
-    stub = lpf_file_reader__v1__pb2_grpc.LpfFileReader_MonoStub(channel)
+    stub = speos.get_stub_insecure_channel(
+        port=config.get("SpeosServerMonoPort"),
+        stub_type=lpf_file_reader__v1__pb2_grpc.LpfFileReader_MonoStub)
 
     # Init with file path
     path = os.path.join(test_path, "basic_1.lpf")
@@ -76,8 +77,9 @@ def test_lpf_file_reader_mono_v1():
 
 def test_lpf_file_reader_multi_v1():
     # Lpf file reader multi creation
-    channel = grpc.insecure_channel('localhost:' + str(config.get("SpeosServerMultiPort")))
-    stub = lpf_file_reader__v1__pb2_grpc.LpfFileReader_MultiStub(channel)
+    stub = speos.get_stub_insecure_channel(
+        port=config.get("SpeosServerMultiPort"),
+        stub_type=lpf_file_reader__v1__pb2_grpc.LpfFileReader_MultiStub)
 
     # Create a reader and retrieve its associated guid
     guid = stub.Create(Empty())
