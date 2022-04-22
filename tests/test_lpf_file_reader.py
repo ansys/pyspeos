@@ -12,7 +12,7 @@ With coverage.
 """
 
 import os
-from tests.conftest import test_path, config
+from conftest import test_path, config
 
 import grpc
 from google.protobuf.empty_pb2 import Empty
