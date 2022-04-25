@@ -1,39 +1,27 @@
-PyAnsys Library Template
+PyOptics Library
 ########################
-
-This repository is a template repository where you can `Create a
-repository from a template`_ and create a new PyAnsys project that
-follows the guidelines specified in the `PyAnsys Developer's Guide`_.
-
-The following sections should be filled and documented for your project.
-
-.. _Create a repository from a template: https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template
-.. _PyAnsys Developer's Guide: https://github.com/pyansys/about
-
 
 Project Overview
 ----------------
-Provide a description of your PyAnsys Python library.
+``PyOptics`` is a library that gathers functionalities and tools for ``Speos``, ``Zemax`` and ``Lumerical``.
 
+On ``Speos`` side, this is a way to use ``exposed gRPC APIs`` and add some functionalities or post processing in python.
 
 Installation
 ------------
-Include installation directions.  Note that this README will be
-included in your PyPI package, so be sure to include ``pip``
-directions along with developer installation directions.  For example.
 
-Install <PyAnsys Library> with:
+Install ``PyOptics Library`` with:
 
 .. code::
 
-   pip install ansys-<product/service>-<library>
+   pip install ansys-pyoptics
 
 Alternatively, clone and install in development mode with:
 
 .. code::
 
-   git clone https://github.com/pyansys/
-   cd <PyAnsys-Library>
+   git clone https://github.com/pyansys/pyoptics.git
+   cd pyoptics
    pip install -e .
 
 
@@ -56,11 +44,39 @@ It's best to provide a sample code or even a figure demonstrating the usage of y
 
 Testing
 -------
-You can feel free to include this at the README level or in CONTRIBUTING.md
+``Input data`` for the tests are stored in ``tests/assets`` folder
+
+Configuration file
+~~~~~~~~~~~~~~~~~~
+The configuration file ``local_config.json`` located in tests folder contains several parameters that can be changed according to your needs, for example:
+* SpeosServerOnDocker - boolean - Speos Servers launched in a docker container
+* SpeosServerMonoPort - integer - to modify the port where you send requests to Speos Mono Server
+
+Start gRPC Servers
+~~~~~~~~~~~~~~~~~~
+Create and launch the ``docker container`` (containing Speos gRPC Servers) with:
+
+.. code::
+
+   cd pyoptics
+   docker-compose up -d
+
+In case you are launching the Servers by yourself, modify in the local_config.json:
+* SpeosServerOnDocker to false
+* the different port parameters to your current configuration
+
+Launch unit tests
+~~~~~~~~~~~~~~~~~
+
+.. code::
+
+   cd pyoptics
+   pip install -r requirements_test.txt
+   pytest -vx
 
 
 License
 -------
-Be sure to point out your license (and any acknowledgments).  State
-that the full license can be found in the root directory of the
-repository.
+``PyOptics`` is licensed under the MIT license.
+
+The full license can be found in the root directory of the repository.

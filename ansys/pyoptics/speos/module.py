@@ -5,7 +5,7 @@ can span multiple lines and include examples.
 
 Examples
 --------
->>> from ansys.product import library
+>>> from ansys.pyoptics import speos
 >>> library.add(1, 2)
 3
 

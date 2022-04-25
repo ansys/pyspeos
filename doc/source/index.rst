@@ -9,13 +9,14 @@
    :hidden:
    :maxdepth: 3
 
+   grpc_stub
    class_documentation
 
 
 Code Examples
 ~~~~~~~~~~~~~
 Here's a quick preview for how Python code looks using the
-``pyansys-product-library``.  For more examples, click the links at the
+``ansys-pyoptics``.  For more examples, click the links at the
 top of the page to see function, method, and class documentation.
 
 
