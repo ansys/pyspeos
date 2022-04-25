@@ -28,4 +28,4 @@ else:
 if config.get('SpeosServerOnDocker'):
     test_path = '/app/assets/'
 else:
-    test_path = local_path
+    test_path = os.path.join(local_path, 'assets/')
