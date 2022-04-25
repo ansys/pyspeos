@@ -3,14 +3,14 @@ PyOptics Library
 
 Project Overview
 ----------------
-`PyOptics` is a library that gathers functionalities and tools for `Speos`, `Zemax` and `Lumerical`.
+``PyOptics`` is a library that gathers functionalities and tools for ``Speos``, ``Zemax`` and ``Lumerical``.
 
-On `Speos` side, this is a way to use `exposed gRPC APIs` and add some functionalities or post processing in python.
+On ``Speos`` side, this is a way to use ``exposed gRPC APIs`` and add some functionalities or post processing in python.
 
 Installation
 ------------
 
-Install `PyOptics Library` with:
+Install ``PyOptics Library`` with:
 
 .. code::
 
@@ -44,17 +44,17 @@ It's best to provide a sample code or even a figure demonstrating the usage of y
 
 Testing
 -------
-`Input data` for the tests are stored in `tests/assets` folder
+``Input data`` for the tests are stored in ``tests/assets`` folder
 
 Configuration file
-~~~~~~~~~~~~~~~~~
-The configuration file `local_config.json` located in tests folder contains several parameters that can be changed according to your needs, for example:
+~~~~~~~~~~~~~~~~~~
+The configuration file ``local_config.json`` located in tests folder contains several parameters that can be changed according to your needs, for example:
 * SpeosServerOnDocker - boolean - Speos Servers launched in a docker container
 * SpeosServerMonoPort - integer - to modify the port where you send requests to Speos Mono Server
 
 Start gRPC Servers
 ~~~~~~~~~~~~~~~~~~
-Create and launch the `docker container` (containing Speos gRPC Servers) with:
+Create and launch the ``docker container`` (containing Speos gRPC Servers) with:
 
 .. code::
 
@@ -66,7 +66,7 @@ In case you are launching the Servers by yourself, modify in the local_config.js
 * the different port parameters to your current configuration
 
 Launch unit tests
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 .. code::
 
@@ -77,6 +77,6 @@ Launch unit tests
 
 License
 -------
-`PyOptics` is licensed under the MIT license.
+``PyOptics`` is licensed under the MIT license.
 
 The full license can be found in the root directory of the repository.
