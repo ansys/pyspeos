@@ -206,13 +206,16 @@ class Complex:
         return Complex(self._real - other.real, self._imag - other.imag)
 
     def __mul__(self, other):
-        return Complex((self._real * other.real) - (self._imag * other.imag),
-            (self._imag * other.real) + (self._real * other.imag))
+        return Complex(
+            (self._real * other.real) - (self._imag * other.imag), (self._imag * other.real) + (self._real * other.imag)
+        )
 
     def __truediv__(self, other):
-        r = (other.real**2 + other.imag**2)
-        return Complex((self._real*other.real - self._imag*other.imag)/r,
-            (self._imag*other.real + self._real*other.imag)/r)
+        r = other.real**2 + other.imag**2
+        return Complex(
+            (self._real * other.real - self._imag * other.imag) / r,
+            (self._imag * other.real + self._real * other.imag) / r,
+        )
 
     @property
     def abs(self):
@@ -224,10 +227,10 @@ class Complex:
         >>> my_num = library.Complex(real=1, imag=1.0)
         >>> my_num.abs
         """
-        return (self._real**2 + self._imag**2)**0.5
+        return (self._real**2 + self._imag**2) ** 0.5
 
     def __repr__(self):
         """Be sure your class has a representational string"""
         if self._imag < 0:
-            return f'({self._real} - {abs(self._imag)}j)'
-        return f'({self._real} + {self._imag}j)'
+            return f"({self._real} - {abs(self._imag)}j)"
+        return f"({self._real} + {self._imag}j)"

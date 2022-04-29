@@ -10,8 +10,8 @@ Examples
         port=50051,
         stub_type=lpf_file_reader__v1__pb2_grpc.LpfFileReader_MonoStub)
 """
-
 import grpc
+
 
 def get_stub_insecure_channel(port, stub_type):
     """Get gRPC stub with insecure channel.
@@ -36,5 +36,5 @@ def get_stub_insecure_channel(port, stub_type):
             port=50051,
             stub_type=lpf_file_reader__v1__pb2_grpc.LpfFileReader_MonoStub)
     """
-    channel = grpc.insecure_channel('localhost:' + str(port))
+    channel = grpc.insecure_channel("localhost:" + str(port))
     return stub_type(channel)

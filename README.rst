@@ -22,6 +22,8 @@ Alternatively, clone and install in development mode with:
 
    git clone https://github.com/pyansys/pyoptics.git
    cd pyoptics
+   pip install -r requirements_style.txt
+   pre-commit install
    pip install -e .
 
 
