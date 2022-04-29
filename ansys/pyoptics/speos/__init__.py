@@ -20,7 +20,6 @@ Then add the import within this module to enable:
    referenced at the library level.
 
 """
-
 from ansys.pyoptics.speos._version import __version__
-from ansys.pyoptics.speos.other_module import Complex
 from ansys.pyoptics.speos.grpc_stub import get_stub_insecure_channel
+from ansys.pyoptics.speos.other_module import Complex

@@ -1,11 +1,12 @@
 files: |
     (?x)(
-        ^pyoptics/|
-        tests/
+        ^ansys/|
+        ^tests/
     )
 exclude: |
     (?x)(
-        ^pyoptics/tests/assets/
+        ^tests/assets/|
+        ^doc/source/
     )
 repos:
 - repo: https://github.com/psf/black
