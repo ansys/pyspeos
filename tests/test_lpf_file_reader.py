@@ -10,23 +10,23 @@ With coverage.
    $ pytest --cov ansys.pyoptics.speos
 
 """
-
 import os
-from conftest import test_path, config
 
+from conftest import config
+from conftest import test_path
 from google.protobuf.empty_pb2 import Empty
 
-import ansys.api.speos.lpf.v1.lpf_file_reader_pb2_grpc as lpf_file_reader__v1__pb2_grpc
 import ansys.api.speos.lpf.v1.lpf_file_reader_pb2 as lpf_file_reader__v1__pb2
+import ansys.api.speos.lpf.v1.lpf_file_reader_pb2_grpc as lpf_file_reader__v1__pb2_grpc
 from ansys.api.speos.lpf.v1.lpf_file_reader_pb2 import RayPath as RayPath__v1
-
 from ansys.pyoptics import speos
+
 
 def test_lpf_file_reader_mono_v1():
     # Lpf file reader creation
     stub = speos.get_stub_insecure_channel(
-        port=config.get("SpeosServerMonoPort"),
-        stub_type=lpf_file_reader__v1__pb2_grpc.LpfFileReader_MonoStub)
+        port=config.get("SpeosServerMonoPort"), stub_type=lpf_file_reader__v1__pb2_grpc.LpfFileReader_MonoStub
+    )
 
     # Init with file path
     path = os.path.join(test_path, "basic_1.lpf")
@@ -49,7 +49,8 @@ def test_lpf_file_reader_mono_v1():
     expectedNbOfImpactOnFaces0 = 4
     assert len(raypaths[0].impacts) == expectedNbOfImpactOnFaces0
     assert raypaths[0].impacts[1] == lpf_file_reader__v1__pb2.TripletFloat(
-        x=4.4084320068359375, y=14.999999046325684, z=2.4493408203125)
+        x=4.4084320068359375, y=14.999999046325684, z=2.4493408203125
+    )
     assert len(raypaths[0].wavelengths) == expectedNbOfImpactOnFaces0
     assert raypaths[0].wavelengths[1] == 678.1803588867188
     assert len(raypaths[0].body_context_ids) == expectedNbOfImpactOnFaces0
@@ -57,7 +58,8 @@ def test_lpf_file_reader_mono_v1():
     assert len(raypaths[0].unique_face_ids) == expectedNbOfImpactOnFaces0
     assert raypaths[0].unique_face_ids[1] == 1815582994
     assert raypaths[0].lastDirection == lpf_file_reader__v1__pb2.TripletFloat(
-        x=0.2041478008031845, y=-0.9723469614982605, z=0.11342425644397736)
+        x=0.2041478008031845, y=-0.9723469614982605, z=0.11342425644397736
+    )
     assert len(raypaths[0].interaction_statuses) == expectedNbOfImpactOnFaces0
     assert raypaths[0].interaction_statuses[0] == RayPath__v1.PhotonStatus.StatusJustEmitted
     assert raypaths[0].interaction_statuses[1] == RayPath__v1.PhotonStatus.StatusSpecularTransmitted
@@ -66,7 +68,8 @@ def test_lpf_file_reader_mono_v1():
     expectedNbOfImpactOnFaces9 = 6
     assert len(raypaths[9].impacts) == expectedNbOfImpactOnFaces9
     assert raypaths[9].impacts[1] == lpf_file_reader__v1__pb2.TripletFloat(
-        x=-1.8186546564102173, y=15.0, z=-6.767658233642578)
+        x=-1.8186546564102173, y=15.0, z=-6.767658233642578
+    )
     assert len(raypaths[9].wavelengths) == expectedNbOfImpactOnFaces9
     assert raypaths[9].wavelengths[1] == 743.3338623046875
     assert len(raypaths[9].body_context_ids) == expectedNbOfImpactOnFaces9
@@ -74,7 +77,8 @@ def test_lpf_file_reader_mono_v1():
     assert len(raypaths[9].unique_face_ids) == expectedNbOfImpactOnFaces9
     assert raypaths[9].unique_face_ids[1] == 1815582994
     assert raypaths[9].lastDirection == lpf_file_reader__v1__pb2.TripletFloat(
-        x=0.14110437035560608, y=0.8392737507820129, z=0.5250800848007202)
+        x=0.14110437035560608, y=0.8392737507820129, z=0.5250800848007202
+    )
     assert len(raypaths[9].interaction_statuses) == expectedNbOfImpactOnFaces9
     assert raypaths[9].interaction_statuses[0] == RayPath__v1.PhotonStatus.StatusJustEmitted
     assert raypaths[9].interaction_statuses[4] == RayPath__v1.PhotonStatus.StatusSpecularReflected
@@ -83,19 +87,19 @@ def test_lpf_file_reader_mono_v1():
     # Close
     stub.CloseLpfFileName(Empty())
 
+
 def test_lpf_file_reader_multi_v1():
     # Lpf file reader multi creation
     stub = speos.get_stub_insecure_channel(
-        port=config.get("SpeosServerMultiPort"),
-        stub_type=lpf_file_reader__v1__pb2_grpc.LpfFileReader_MultiStub)
+        port=config.get("SpeosServerMultiPort"), stub_type=lpf_file_reader__v1__pb2_grpc.LpfFileReader_MultiStub
+    )
 
     # Create a reader and retrieve its associated guid
     guid = stub.Create(Empty())
 
     # Init with file path
     path = os.path.join(test_path, "basic_1.lpf")
-    stub.InitLpfFileName(
-        lpf_file_reader__v1__pb2.InitLpfFileNameRequest_Multi(id=guid, lpf_file_path=path))
+    stub.InitLpfFileName(lpf_file_reader__v1__pb2.InitLpfFileNameRequest_Multi(id=guid, lpf_file_path=path))
 
     # Check Nb Traces
     nb_of_traces = stub.GetNbOfTraces(guid).nb_of_traces
@@ -109,8 +113,7 @@ def test_lpf_file_reader_multi_v1():
 
     # Init second reader
     path2 = os.path.join(test_path, "basic_2.lpf")
-    stub.InitLpfFileName(
-        lpf_file_reader__v1__pb2.InitLpfFileNameRequest_Multi(id=guid2, lpf_file_path=path2))
+    stub.InitLpfFileName(lpf_file_reader__v1__pb2.InitLpfFileNameRequest_Multi(id=guid2, lpf_file_path=path2))
 
     # Check Nb Traces and read second
     nb_of_traces2 = stub.GetNbOfTraces(guid2).nb_of_traces
@@ -124,7 +127,8 @@ def test_lpf_file_reader_multi_v1():
     expectedNbOfImpactOnFaces3 = 5
     assert len(raypaths2[3].impacts) == expectedNbOfImpactOnFaces3
     assert raypaths2[3].impacts[1] == lpf_file_reader__v1__pb2.TripletFloat(
-        x=5.026374340057373, y=15.000000953674316, z=0.7341787815093994)
+        x=5.026374340057373, y=15.000000953674316, z=0.7341787815093994
+    )
     assert len(raypaths2[3].wavelengths) == expectedNbOfImpactOnFaces3
     assert raypaths2[3].wavelengths[1] == 652.2732543945312
     assert len(raypaths2[3].body_context_ids) == expectedNbOfImpactOnFaces3
@@ -132,7 +136,8 @@ def test_lpf_file_reader_multi_v1():
     assert len(raypaths2[3].unique_face_ids) == expectedNbOfImpactOnFaces3
     assert raypaths2[3].unique_face_ids[1] == 1815582994
     assert raypaths2[3].lastDirection == lpf_file_reader__v1__pb2.TripletFloat(
-        x=0.09542781859636307, y=0.9953387975692749, z=0.013935667462646961)
+        x=0.09542781859636307, y=0.9953387975692749, z=0.013935667462646961
+    )
     assert len(raypaths2[3].interaction_statuses) == expectedNbOfImpactOnFaces3
     assert raypaths2[3].interaction_statuses[0] == RayPath__v1.PhotonStatus.StatusJustEmitted
     valSpecularTransmitted = RayPath__v1.PhotonStatus.StatusSpecularTransmitted
@@ -151,7 +156,8 @@ def test_lpf_file_reader_multi_v1():
     expectedNbOfImpactOnFaces0 = 4
     assert len(raypaths[0].impacts) == expectedNbOfImpactOnFaces0
     assert raypaths[0].impacts[1] == lpf_file_reader__v1__pb2.TripletFloat(
-        x=4.4084320068359375, y=14.999999046325684, z=2.4493408203125)
+        x=4.4084320068359375, y=14.999999046325684, z=2.4493408203125
+    )
     assert len(raypaths[0].wavelengths) == expectedNbOfImpactOnFaces0
     assert raypaths[0].wavelengths[1] == 678.1803588867188
     assert len(raypaths[0].body_context_ids) == expectedNbOfImpactOnFaces0
@@ -159,7 +165,8 @@ def test_lpf_file_reader_multi_v1():
     assert len(raypaths[0].unique_face_ids) == expectedNbOfImpactOnFaces0
     assert raypaths[0].unique_face_ids[1] == 1815582994
     assert raypaths[0].lastDirection == lpf_file_reader__v1__pb2.TripletFloat(
-        x=0.2041478008031845, y=-0.9723469614982605, z=0.11342425644397736)
+        x=0.2041478008031845, y=-0.9723469614982605, z=0.11342425644397736
+    )
     assert len(raypaths[0].interaction_statuses) == expectedNbOfImpactOnFaces0
     assert raypaths[0].interaction_statuses[0] == RayPath__v1.PhotonStatus.StatusJustEmitted
     assert raypaths[0].interaction_statuses[1] == RayPath__v1.PhotonStatus.StatusSpecularTransmitted
