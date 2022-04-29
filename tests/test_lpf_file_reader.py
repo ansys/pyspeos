@@ -18,6 +18,7 @@ from google.protobuf.empty_pb2 import Empty
 
 import ansys.api.speos.lpf.v1.lpf_file_reader_pb2_grpc as lpf_file_reader__v1__pb2_grpc
 import ansys.api.speos.lpf.v1.lpf_file_reader_pb2 as lpf_file_reader__v1__pb2
+from ansys.api.speos.lpf.v1.lpf_file_reader_pb2 import RayPath as RayPath__v1
 
 from ansys.pyoptics import speos
 
@@ -58,9 +59,9 @@ def test_lpf_file_reader_mono_v1():
     assert raypaths[0].lastDirection == lpf_file_reader__v1__pb2.TripletFloat(
         x=0.2041478008031845, y=-0.9723469614982605, z=0.11342425644397736)
     assert len(raypaths[0].interaction_statuses) == expectedNbOfImpactOnFaces0
-    assert raypaths[0].interaction_statuses[0] == lpf_file_reader__v1__pb2.RayPath.PhotonStatus.StatusJustEmitted
-    assert raypaths[0].interaction_statuses[1] == lpf_file_reader__v1__pb2.RayPath.PhotonStatus.StatusSpecularTransmitted
-    assert raypaths[0].interaction_statuses[3] == lpf_file_reader__v1__pb2.RayPath.PhotonStatus.StatusSpecularReflected
+    assert raypaths[0].interaction_statuses[0] == RayPath__v1.PhotonStatus.StatusJustEmitted
+    assert raypaths[0].interaction_statuses[1] == RayPath__v1.PhotonStatus.StatusSpecularTransmitted
+    assert raypaths[0].interaction_statuses[3] == RayPath__v1.PhotonStatus.StatusSpecularReflected
 
     expectedNbOfImpactOnFaces9 = 6
     assert len(raypaths[9].impacts) == expectedNbOfImpactOnFaces9
@@ -75,9 +76,9 @@ def test_lpf_file_reader_mono_v1():
     assert raypaths[9].lastDirection == lpf_file_reader__v1__pb2.TripletFloat(
         x=0.14110437035560608, y=0.8392737507820129, z=0.5250800848007202)
     assert len(raypaths[9].interaction_statuses) == expectedNbOfImpactOnFaces9
-    assert raypaths[9].interaction_statuses[0] == lpf_file_reader__v1__pb2.RayPath.PhotonStatus.StatusJustEmitted
-    assert raypaths[9].interaction_statuses[4] == lpf_file_reader__v1__pb2.RayPath.PhotonStatus.StatusSpecularReflected
-    assert raypaths[9].interaction_statuses[5] == lpf_file_reader__v1__pb2.RayPath.PhotonStatus.StatusSpecularTransmitted
+    assert raypaths[9].interaction_statuses[0] == RayPath__v1.PhotonStatus.StatusJustEmitted
+    assert raypaths[9].interaction_statuses[4] == RayPath__v1.PhotonStatus.StatusSpecularReflected
+    assert raypaths[9].interaction_statuses[5] == RayPath__v1.PhotonStatus.StatusSpecularTransmitted
 
     # Close
     stub.CloseLpfFileName(Empty())
@@ -133,8 +134,9 @@ def test_lpf_file_reader_multi_v1():
     assert raypaths2[3].lastDirection == lpf_file_reader__v1__pb2.TripletFloat(
         x=0.09542781859636307, y=0.9953387975692749, z=0.013935667462646961)
     assert len(raypaths2[3].interaction_statuses) == expectedNbOfImpactOnFaces3
-    assert raypaths2[3].interaction_statuses[0] == lpf_file_reader__v1__pb2.RayPath.PhotonStatus.StatusJustEmitted
-    assert raypaths2[3].interaction_statuses[1] == lpf_file_reader__v1__pb2.RayPath.PhotonStatus.StatusSpecularTransmitted
+    assert raypaths2[3].interaction_statuses[0] == RayPath__v1.PhotonStatus.StatusJustEmitted
+    valSpecularTransmitted = RayPath__v1.PhotonStatus.StatusSpecularTransmitted
+    assert raypaths2[3].interaction_statuses[1] == valSpecularTransmitted
 
     # Delete the second reader
     stub.Delete(guid2)
@@ -159,10 +161,10 @@ def test_lpf_file_reader_multi_v1():
     assert raypaths[0].lastDirection == lpf_file_reader__v1__pb2.TripletFloat(
         x=0.2041478008031845, y=-0.9723469614982605, z=0.11342425644397736)
     assert len(raypaths[0].interaction_statuses) == expectedNbOfImpactOnFaces0
-    assert raypaths[0].interaction_statuses[0] == lpf_file_reader__v1__pb2.RayPath.PhotonStatus.StatusJustEmitted
-    assert raypaths[0].interaction_statuses[1] == lpf_file_reader__v1__pb2.RayPath.PhotonStatus.StatusSpecularTransmitted
-    assert raypaths[0].interaction_statuses[2] == lpf_file_reader__v1__pb2.RayPath.PhotonStatus.StatusSpecularTransmitted
-    assert raypaths[0].interaction_statuses[3] == lpf_file_reader__v1__pb2.RayPath.PhotonStatus.StatusSpecularReflected
+    assert raypaths[0].interaction_statuses[0] == RayPath__v1.PhotonStatus.StatusJustEmitted
+    assert raypaths[0].interaction_statuses[1] == RayPath__v1.PhotonStatus.StatusSpecularTransmitted
+    assert raypaths[0].interaction_statuses[2] == RayPath__v1.PhotonStatus.StatusSpecularTransmitted
+    assert raypaths[0].interaction_statuses[3] == RayPath__v1.PhotonStatus.StatusSpecularReflected
 
     # Close and Delete the first
     stub.CloseLpfFileName(guid)
