@@ -14,8 +14,8 @@ import math
 import os
 
 from conftest import config
-from conftest import test_path
 from conftest import test_local_path
+from conftest import test_path
 from google.protobuf.empty_pb2 import Empty
 
 import ansys.api.speos.bsdf.v1.anisotropic_bsdf_pb2 as anisotropic_bsdf__v1__pb2
