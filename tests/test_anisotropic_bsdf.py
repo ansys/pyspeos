@@ -15,6 +15,7 @@ import os
 
 from conftest import config
 from conftest import test_path
+from conftest import test_local_path
 from google.protobuf.empty_pb2 import Empty
 
 import ansys.api.speos.bsdf.v1.anisotropic_bsdf_pb2 as anisotropic_bsdf__v1__pb2
@@ -26,7 +27,7 @@ def createAnisotropicBsdf():
     bsdf = anisotropic_bsdf__v1__pb2.AnisotropicBsdfData()
 
     # description
-    bsdf.description = ""
+    bsdf.description = "test protobuf"
 
     # anisotropy vector
     bsdf.anisotropy_vector.x = 1.0
@@ -278,11 +279,12 @@ def test_grpc_anisotropic_bsdf():
 
     print(f"Exporting to {file_name.file_name}")
     stub.ExportFile(file_name)
-    assert os.path.isfile(file_name.file_name)
+    local_file_name = os.path.join(test_local_path, "Lambert.serialized")
+    assert os.path.isfile(local_file_name)
 
     print(f"Reading {file_name.file_name} back")
     stub.ImportFile(file_name)
-    os.remove(file_name.file_name)
+    os.remove(local_file_name)
 
     print("Exporting anisotropic bsdf protocol buffer")
     bsdf2 = stub.Export(Empty())
@@ -293,11 +295,12 @@ def test_grpc_anisotropic_bsdf():
 
     print(f"Writing as {file_name.file_name}")
     stub.Save(file_name)
-    assert os.path.isfile(file_name.file_name)
+    local_file_name = os.path.join(test_local_path, "Lambert.anisotropicbsdf")
+    assert os.path.isfile(local_file_name)
 
     print(f"Reading {file_name.file_name} back")
     stub.Load(file_name)
-    os.remove(file_name.file_name)
+    os.remove(local_file_name)
 
     print("Exporting anisotropic bsdf protocol buffer")
     bsdf3 = stub.Export(Empty())
@@ -307,7 +310,6 @@ def test_grpc_anisotropic_bsdf():
 
     file_name.file_name = os.path.join(test_path, "Gaussian Fresnel 10 deg.anisotropicbsdf")
     print(f"loading {file_name.file_name}")
-    assert os.path.isfile(file_name.file_name)
     stub.Load(file_name)
     print("done")
 
@@ -319,8 +321,9 @@ def test_grpc_anisotropic_bsdf():
     cm.side = anisotropic_bsdf__v1__pb2.ConoscopicMap.TRANSMISSION
     cm.resolution = 512
     stub.ExportToConoscopicMap(cm)
-    assert os.path.isfile(cm.output_file_name)
-    os.remove(cm.output_file_name)
+    local_file_name = os.path.join(test_local_path, "test_conoscopic_anisotropic.xmp")
+    assert os.path.isfile(local_file_name)
+    os.remove(local_file_name)
     print("done")
 
     print("computing cones")
@@ -371,7 +374,8 @@ def test_grpc_anisotropic_bsdf():
 
     print(f"reading {file_name.file_name} back")
     stub.Load(file_name)
-    os.remove(file_name.file_name)
+    local_file_name = os.path.join(test_local_path, "Gaussian Fresnel 10 deg_autocut.anisotropicbsdf")
+    os.remove(local_file_name)
 
     print("getting cones again")
     rc2 = stub.GetRetroReflectionInterpolationEnhancementData(Empty())

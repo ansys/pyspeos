@@ -26,5 +26,6 @@ else:
 # set test_path var depending on if we are using the servers in a docker container or not
 if config.get("SpeosServerOnDocker"):
     test_path = "/app/assets/"
+    test_local_path = os.path.join(local_path, "assets/")
 else:
     test_path = os.path.join(local_path, "assets/")
