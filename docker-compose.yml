@@ -39,4 +39,4 @@ services:
       - type: bind
         source: ./tests/assets
         target: /app/assets
-        read_only: true
+        read_only: false

@@ -43,7 +43,7 @@ setup(
     maintainer='PyAnsys developers',
     maintainer_email='pyansys.support@ansys.com',
     install_requires=[
-        'ansys-optics-grpcapi==3',
+        'ansys-optics-speos-grpcapi==2',
         'grpcio-tools'
     ],
     python_requires='>=3.6',
