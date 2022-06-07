@@ -269,51 +269,47 @@ def test_grpc_anisotropic_bsdf():
     # anisotropic bsdf
     file_name = anisotropic_bsdf__v1__pb2.FileName()
 
-    print("Creating anisotropic bsdf protocol buffer")
+    # Creating anisotropic bsdf protocol buffer
     bsdf = createAnisotropicBsdf()
 
-    print("Sending protocol buffer to server")
+    # Sending protocol buffer to server
     stub.Import(bsdf)
-    print(test_path)
     file_name.file_name = os.path.join(test_path, "Lambert.serialized")
 
-    print(f"Exporting to {file_name.file_name}")
+    # Exporting to {file_name.file_name}
     stub.ExportFile(file_name)
     local_file_name = os.path.join(test_local_path, "Lambert.serialized")
     assert os.path.isfile(local_file_name)
 
-    print(f"Reading {file_name.file_name} back")
+    # Reading {file_name.file_name} back
     stub.ImportFile(file_name)
     os.remove(local_file_name)
 
-    print("Exporting anisotropic bsdf protocol buffer")
+    # Exporting anisotropic bsdf protocol buffer
     bsdf2 = stub.Export(Empty())
 
-    print("Check equal")
     assert compareAnisotropicBsdf(bsdf, bsdf2)
     file_name.file_name = os.path.join(test_path, "Lambert.anisotropicbsdf")
 
-    print(f"Writing as {file_name.file_name}")
+    # Writing as {file_name.file_name}
     stub.Save(file_name)
     local_file_name = os.path.join(test_local_path, "Lambert.anisotropicbsdf")
     assert os.path.isfile(local_file_name)
 
-    print(f"Reading {file_name.file_name} back")
+    # Reading {file_name.file_name} back
     stub.Load(file_name)
     os.remove(local_file_name)
 
-    print("Exporting anisotropic bsdf protocol buffer")
+    # Exporting anisotropic bsdf protocol buffer
     bsdf3 = stub.Export(Empty())
 
-    print("Check equal")
     assert compareAnisotropicBsdf(bsdf, bsdf3)
 
     file_name.file_name = os.path.join(test_path, "Gaussian Fresnel 10 deg.anisotropicbsdf")
-    print(f"loading {file_name.file_name}")
+    # loading {file_name.file_name}
     stub.Load(file_name)
-    print("done")
 
-    print("conoscopic map")
+    # conoscopic map
     cm = anisotropic_bsdf__v1__pb2.ConoscopicMap()
     cm.output_file_name = os.path.join(test_path, "test_conoscopic_anisotropic.xmp")
     cm.wavelength = 555.0
@@ -324,72 +320,70 @@ def test_grpc_anisotropic_bsdf():
     local_file_name = os.path.join(test_local_path, "test_conoscopic_anisotropic.xmp")
     assert os.path.isfile(local_file_name)
     os.remove(local_file_name)
-    print("done")
 
-    print("computing cones")
+    # computing cones
     indices = anisotropic_bsdf__v1__pb2.RefractiveIndices(refractive_index_1=1.0, refractive_index_2=1.5)
     stub.GenerateSpecularInterpolationEnhancementData(indices)
-    print("done")
 
-    print("getting cones")
+    # getting cones
     cones = stub.GetSpecularInterpolationEnhancementData(Empty())
     assert cones.refractive_index_1 == indices.refractive_index_1
     assert cones.refractive_index_2 == indices.refractive_index_2
 
-    print("changing some values")
+    # changing some values
     cones.reflection.anisotropic_samples[0].incidence_samples[0].cone_half_angle = 0.5
     cones.reflection.anisotropic_samples[0].incidence_samples[0].cone_height = 0.001
 
-    print("setting cones back")
+    # setting cones back
     stub.SetSpecularInterpolationEnhancementData(cones)
 
     file_name.file_name = os.path.join(test_path, "Gaussian Fresnel 10 deg_autocut.anisotropicbsdf")
-    print(f"writing result in {file_name.file_name}")
+    # writing result in {file_name.file_name}
     stub.Save(file_name)
 
-    print(f"reading {file_name.file_name} back")
+    # reading {file_name.file_name} back
     stub.Load(file_name)
 
-    print("getting cones again")
+    # getting cones again
     cones2 = stub.GetSpecularInterpolationEnhancementData(Empty())
 
-    print("comparing cones to previous ones")
+    # comparing cones to previous ones
     assert compareSpecularEnhancementData(cones, cones2)
 
-    print("generating retroreflection cones")  # even if there's no retroreflection on this surface
+    # generating retroreflection cones even if there's no retroreflection on this surface
     stub.GenerateRetroReflectionInterpolationEnhancementData(Empty())
 
-    print("gettings the retro cones")
+    # gettings the retro cones
     rc = stub.GetRetroReflectionInterpolationEnhancementData(Empty())
 
-    print("modifying some data")
+    # modifying some data
     rc.anisotropic_samples[0].incidence_samples[0].cone_half_angle = 0.7
     rc.anisotropic_samples[0].incidence_samples[0].cone_height = 0.0015
 
-    print("setting cones back")
+    # setting cones back
     stub.SetRetroReflectionInterpolationEnhancementData(rc)
 
-    print(f"writing result in {file_name.file_name}")
+    # writing result in {file_name.file_name}
     stub.Save(file_name)
 
-    print(f"reading {file_name.file_name} back")
+    # reading {file_name.file_name} back
     stub.Load(file_name)
     local_file_name = os.path.join(test_local_path, "Gaussian Fresnel 10 deg_autocut.anisotropicbsdf")
     os.remove(local_file_name)
 
-    print("getting cones again")
+    # getting cones again
     rc2 = stub.GetRetroReflectionInterpolationEnhancementData(Empty())
 
-    print("comparing cones to previous ones")
+    # comparing cones to previous ones
     assert compareEnhancementData(rc, rc2)
 
-    print("white specular enabling and disabling")
+    # white specular enabling and disabling
     l = anisotropic_bsdf__v1__pb2.Wavelength()
     l.wavelength = 632.0
     stub.EnableWhiteSpecular(l)
     stub.DisableWhiteSpecular(Empty())
 
-    print("spectrum imports")
+    # spectrum imports
     spi = anisotropic_bsdf__v1__pb2.SpectrumImport()
     spi.incidence_angle = 0.05
     spi.anisotropy_angle = 0.0
@@ -397,6 +391,5 @@ def test_grpc_anisotropic_bsdf():
     stub.ImportReflectionSpectrum(spi)
     stub.ImportTransmissionSpectrum(spi)
 
-    print("Constant absorption")
+    # Constant absorption
     stub.FreezeAbsorptionReflectionTransmissionCoefficients(Empty())
-    print("done")

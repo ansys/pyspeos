@@ -135,46 +135,44 @@ def test_grpc_spectral_bsdf():
 
     file_name = spectral_bsdf__v1__pb2.FileName()
 
-    print("Creating spectral bsdf protocol buffer")
+    # Creating spectral bsdf protocol buffer
     bsdf = createSpectralBsdf()
 
-    print("Sending protocol buffer to server")
+    # Sending protocol buffer to server
     stub.Import(bsdf)
     file_name.file_name = os.path.join(test_path, "Spectral.serialized")
 
-    print(f"Exporting to {file_name.file_name}")
+    # Exporting to {file_name.file_name}
     stub.ExportFile(file_name)
     local_file_name = os.path.join(test_local_path, "Spectral.serialized")
     assert os.path.isfile(local_file_name)
 
-    print(f"Reading {file_name.file_name} back")
+    # Reading {file_name.file_name} back
     stub.ImportFile(file_name)
 
     os.remove(local_file_name)
 
-    print("Exporting anisotropic bsdf protocol buffer")
+    # Exporting anisotropic bsdf protocol buffer
     bsdf2 = stub.Export(Empty())
 
-    print("Check equal")
     assert compareSpectralBsdf(bsdf, bsdf2)
     file_name.file_name = os.path.join(test_path, "Lambert.anisotropicbsdf")
 
-    print(f"Writing as {file_name.file_name}")
+    # Writing as {file_name.file_name}
     stub.Save(file_name)
     local_file_name = os.path.join(test_local_path, "Lambert.anisotropicbsdf")
     assert os.path.isfile(local_file_name)
 
-    print(f"Reading {file_name.file_name} back")
+    # Reading {file_name.file_name} back
     stub.Load(file_name)
     os.remove(local_file_name)
 
-    print("Exporting anisotropic bsdf protocol buffer")
+    # Exporting anisotropic bsdf protocol buffer
     bsdf3 = stub.Export(Empty())
 
-    print("Check equal")
     assert compareSpectralBsdf(bsdf, bsdf3)
 
-    print("conoscopic map")
+    # conoscopic map
     cm = spectral_bsdf__v1__pb2.ConoscopicMap()
     cm.output_file_name = os.path.join(test_path, "test_conoscopic_spectral.xmp")
     cm.wavelength = 555.0
@@ -184,37 +182,35 @@ def test_grpc_spectral_bsdf():
     local_file_name = os.path.join(test_local_path, "test_conoscopic_spectral.xmp")
     assert os.path.isfile(local_file_name)
     os.remove(local_file_name)
-    print("done")
 
-    print("computing cones")
+    # computing cones
     indices = spectral_bsdf__v1__pb2.RefractiveIndices(refractive_index_1=1.0, refractive_index_2=1.5)
     stub.GenerateSpecularInterpolationEnhancementData(indices)
-    print("done")
 
-    print("getting cones")
+    # getting cones
     cones = stub.GetSpecularInterpolationEnhancementData(Empty())
     assert cones.refractive_index_1 == indices.refractive_index_1
     assert cones.refractive_index_2 == indices.refractive_index_2
 
-    print("changing some values")
+    # changing some values
     cones.wavelength_incidence_samples[0].reflection.cone_half_angle = 0.5
     cones.wavelength_incidence_samples[0].reflection.cone_height = 0.001
 
-    print("setting cones back")
+    # setting cones back
     stub.SetSpecularInterpolationEnhancementData(cones)
 
     file_name.file_name = os.path.join(test_path, "tmp_autocut.anisotropicbsdf")
-    print(f"writing result in {file_name.file_name}")
+    # writing result in {file_name.file_name}
     stub.Save(file_name)
     local_file_name = os.path.join(test_local_path, "tmp_autocut.anisotropicbsdf")
     assert os.path.isfile(local_file_name)
 
-    print(f"reading {file_name.file_name} back")
+    # reading {file_name.file_name} back
     stub.Load(file_name)
     os.remove(local_file_name)
 
-    print("getting cones again")
+    # getting cones again
     cones2 = stub.GetSpecularInterpolationEnhancementData(Empty())
 
-    print("comparing cones to previous ones")
+    # comparing cones to previous ones
     assert compareSpecularEnhancementData(cones, cones2)
