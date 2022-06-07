@@ -51,21 +51,21 @@ Testing
 Configuration file
 ~~~~~~~~~~~~~~~~~~
 The configuration file ``local_config.json`` located in tests folder contains several parameters that can be changed according to your needs, for example:
- * SpeosServerOnDocker - boolean - Speos Servers launched in a docker container
- * SpeosServerMonoPort - integer - to modify the port where you send requests to Speos Mono Server
+ * SpeosServerOnDocker - boolean - Speos Server launched in a docker container
+ * SpeosServerPort - integer - to modify the port where you send requests to Speos Server
 
 Start gRPC Servers
 ~~~~~~~~~~~~~~~~~~
-Create and launch the ``docker container`` (containing Speos gRPC Servers) with:
+Create and launch the ``docker container`` (containing SpeosRPC_Server) with:
 
 .. code::
 
    cd pyoptics
    docker-compose up -d
 
-In case you are launching the Servers by yourself, modify in the local_config.json:
+In case you are launching the SpeosRPC_Server by yourself, modify in the local_config.json:
  * SpeosServerOnDocker to false
- * the different port parameters to your current configuration
+ * SpeosServerPort to your current configuration (ie the port where the SpeosRPC_Server is listening)
 
 Launch unit tests
 ~~~~~~~~~~~~~~~~~

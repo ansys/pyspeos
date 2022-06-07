@@ -1,40 +1,11 @@
 version: "3.4"
 services:
-  #pyoptics_speos-rpc_mono:
-  #  image: ghcr.io/pyansys/pyoptics/speos-rpc
-  #  container_name: pyoptics_speos-rpc_mono
-  #  ports:
-  #    - "50051:50051"
-  #  entrypoint: ./SpeosRPC_Mono_Server.x
-  #  volumes:
-  #    - type: bind
-  #      source: ./tests/assets
-  #      target: /app/assets
-  #      read_only: true
-  #pyoptics_speos-rpc_multi:
-  #  image: ghcr.io/pyansys/pyoptics/speos-rpc
-  #  container_name: pyoptics_speos-rpc_multi
-  #  ports:
-  #    - "50052:50052"
-  #  entrypoint: ./SpeosRPC_Multi_Server.x
-  #  volumes:
-  #    - type: bind
-  #      source: ./tests/assets
-  #      target: /app/assets
-  #      read_only: true
   pyoptics_speos-rpc:
     image: ghcr.io/pyansys/pyoptics/speos-rpc
     container_name: pyoptics_speos-rpc
     ports:
       - "50051:50051"
-      - "50052:50052"
-    entrypoint: 
-      - /bin/sh
-      - -c
-      - |
-        ./SpeosRPC_Mono_Server.x & 
-        ./SpeosRPC_Multi_Server.x & 
-        wait
+    entrypoint: ./SpeosRPC_Server.x
     volumes:
       - type: bind
         source: ./tests/assets

@@ -24,7 +24,7 @@ from ansys.pyoptics import speos
 def test_lpf_file_reader_mono_v1():
     # Lpf file reader creation
     stub = speos.get_stub_insecure_channel(
-        port=config.get("SpeosServerMonoPort"), stub_type=lpf_file_reader__v1__pb2_grpc.LpfFileReader_MonoStub
+        port=config.get("SpeosServerPort"), stub_type=lpf_file_reader__v1__pb2_grpc.LpfFileReader_MonoStub
     )
 
     # Init with file path
@@ -94,7 +94,7 @@ def test_lpf_file_reader_mono_v1():
 def test_lpf_file_reader_multi_v1():
     # Lpf file reader multi creation
     stub = speos.get_stub_insecure_channel(
-        port=config.get("SpeosServerMultiPort"), stub_type=lpf_file_reader__v1__pb2_grpc.LpfFileReader_MultiStub
+        port=config.get("SpeosServerPort"), stub_type=lpf_file_reader__v1__pb2_grpc.LpfFileReader_MultiStub
     )
 
     # Create a reader and retrieve its associated guid

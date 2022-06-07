@@ -24,7 +24,7 @@ from ansys.pyoptics import speos
 
 def test_grpc_spectral_bsdf():
     stub = speos.get_stub_insecure_channel(
-        port=config.get("SpeosServerMonoPort"), stub_type=bsdf_creation__v1__pb2_grpc.BsdfCreationServiceStub
+        port=config.get("SpeosServerPort"), stub_type=bsdf_creation__v1__pb2_grpc.BsdfCreationServiceStub
     )
 
     # BSDF180

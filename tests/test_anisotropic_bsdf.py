@@ -263,7 +263,7 @@ def compareSpecularEnhancementData(data1, data2):
 
 def test_grpc_anisotropic_bsdf():
     stub = speos.get_stub_insecure_channel(
-        port=config.get("SpeosServerMonoPort"), stub_type=anisotropic_bsdf__v1__pb2_grpc.AnisotropicBsdfServiceStub
+        port=config.get("SpeosServerPort"), stub_type=anisotropic_bsdf__v1__pb2_grpc.AnisotropicBsdfServiceStub
     )
 
     # anisotropic bsdf

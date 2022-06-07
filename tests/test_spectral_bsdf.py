@@ -130,7 +130,7 @@ def compareSpecularEnhancementData(c1, c2):
 
 def test_grpc_spectral_bsdf():
     stub = speos.get_stub_insecure_channel(
-        port=config.get("SpeosServerMonoPort"), stub_type=spectral_bsdf__v1__pb2_grpc.SpectralBsdfServiceStub
+        port=config.get("SpeosServerPort"), stub_type=spectral_bsdf__v1__pb2_grpc.SpectralBsdfServiceStub
     )
 
     file_name = spectral_bsdf__v1__pb2.FileName()
