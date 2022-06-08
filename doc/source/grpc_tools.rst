@@ -1,5 +1,5 @@
 ***************************
-gRPC stub module
+gRPC tools
 ***************************
 
 .. autosummary::
