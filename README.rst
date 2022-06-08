@@ -11,7 +11,7 @@ Installation
 ------------
 
 Basic installation
-~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 Install ``PyOptics Library`` with:
 
 .. code::
@@ -19,7 +19,7 @@ Install ``PyOptics Library`` with:
    pip install ansys-pyoptics
 
 Development mode
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
 Prerequisite:
 Have a GitHub account
 Create a Personnal Access Token under your account -> Settings -> Developer settings -> Personnal access tokens -> Generate new token.
