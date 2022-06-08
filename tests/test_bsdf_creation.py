@@ -13,8 +13,8 @@ With coverage.
 import math
 import os
 
+import helper
 from conftest import config
-from conftest import test_local_path
 from conftest import test_path
 
 import ansys.api.speos.bsdf.v1.bsdf_creation_pb2 as bsdf_creation__v1__pb2
@@ -33,9 +33,8 @@ def test_grpc_spectral_bsdf():
     bsdf180_request.input_opposite_bsdf_file_name = os.path.join(test_path, "Gaussian Fresnel 10 deg.anisotropicbsdf")
     bsdf180_request.output_file_name = os.path.join(test_path, "Test.bsdf180")
     stub.BuildBsdf180(bsdf180_request)
-    local_file_name = os.path.join(test_local_path, "Test.bsdf180")
-    assert os.path.isfile(local_file_name)
-    os.remove(local_file_name)
+    assert helper.does_file_exist(bsdf180_request.output_file_name)
+    helper.remove_file(bsdf180_request.output_file_name)
 
     # spectral BSDF
     spectral_request = bsdf_creation__v1__pb2.SpectralBsdfInputData()
@@ -47,9 +46,8 @@ def test_grpc_spectral_bsdf():
     tmp.file_name = os.path.join(test_path, "R_test.anisotropicbsdf")
     spectral_request.output_file_name = os.path.join(test_path, "Test.brdf")
     stub.BuildSpectralBsdf(spectral_request)
-    local_file_name = os.path.join(test_local_path, "Test.brdf")
-    assert os.path.isfile(local_file_name)
-    os.remove(local_file_name)
+    assert helper.does_file_exist(spectral_request.output_file_name)
+    helper.remove_file(spectral_request.output_file_name)
 
     # anisotropic BSDF
     anisotropic_request = bsdf_creation__v1__pb2.AnisotropicBsdfInputData()
@@ -62,6 +60,5 @@ def test_grpc_spectral_bsdf():
     anisotropic_request.fix_disparity = False
     anisotropic_request.output_file_name = os.path.join(test_path, "Assembled.anisotropicbsdf")
     stub.BuildAnisotropicBsdf(anisotropic_request)
-    local_file_name = os.path.join(test_local_path, "Assembled.anisotropicbsdf")
-    assert os.path.isfile(local_file_name)
-    os.remove(local_file_name)
+    assert helper.does_file_exist(anisotropic_request.output_file_name)
+    helper.remove_file(anisotropic_request.output_file_name)
