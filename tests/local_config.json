@@ -1,5 +1,4 @@
 {
   "SpeosServerOnDocker": true,
-  "SpeosServerMonoPort": 50051,
-  "SpeosServerMultiPort": 50052
+  "SpeosServerPort": 50051
 }

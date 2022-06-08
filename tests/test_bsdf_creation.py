@@ -24,13 +24,12 @@ from ansys.pyoptics import speos
 
 def test_grpc_spectral_bsdf():
     stub = speos.get_stub_insecure_channel(
-        port=config.get("SpeosServerMonoPort"), stub_type=bsdf_creation__v1__pb2_grpc.BsdfCreationServiceStub
+        port=config.get("SpeosServerPort"), stub_type=bsdf_creation__v1__pb2_grpc.BsdfCreationServiceStub
     )
 
     # BSDF180
     bsdf180_request = bsdf_creation__v1__pb2.Bsdf180InputData()
     bsdf180_request.input_front_bsdf_file_name = os.path.join(test_path, "Gaussian Fresnel 10 deg.anisotropicbsdf")
-    print(f"{bsdf180_request.input_front_bsdf_file_name}")
     bsdf180_request.input_opposite_bsdf_file_name = os.path.join(test_path, "Gaussian Fresnel 10 deg.anisotropicbsdf")
     bsdf180_request.output_file_name = os.path.join(test_path, "Test.bsdf180")
     stub.BuildBsdf180(bsdf180_request)
