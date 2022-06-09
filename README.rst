@@ -10,17 +10,25 @@ On ``Speos`` side, this is a way to use ``exposed gRPC APIs`` and add some funct
 Installation
 ------------
 
+Basic installation
+~~~~~~~~~~~~~~~~~~
 Install ``PyOptics Library`` with:
 
 .. code::
 
    pip install ansys-pyoptics
 
-Alternatively, clone and install in development mode with:
+Development mode
+~~~~~~~~~~~~~~~~
+Prerequisite:
+Have a GitHub account
+Create a Personnal Access Token under your account -> Settings -> Developer settings -> Personnal access tokens -> Generate new token.
+
+Clone and install in development mode with:
 
 .. code::
 
-   git clone https://github.com/pyansys/pyoptics.git
+   git clone https://github.com/pyansys/pyoptics.git    (provide then your GitHub username and your GitHub Personnal Access Token)
    cd pyoptics
    pip install -r requirements_style.txt
    pre-commit install
@@ -61,6 +69,7 @@ Create and launch the ``docker container`` (containing SpeosRPC_Server) with:
 .. code::
 
    cd pyoptics
+   docker login ghcr.io/pyansys/pyoptics    (provide then your GitHub username and your GitHub Personnal Access Token)
    docker-compose up -d
 
 In case you are launching the SpeosRPC_Server by yourself, modify in the local_config.json:

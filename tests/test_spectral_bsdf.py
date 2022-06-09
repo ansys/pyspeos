@@ -13,8 +13,8 @@ With coverage.
 import math
 import os
 
+import helper
 from conftest import config
-from conftest import test_local_path
 from conftest import test_path
 from google.protobuf.empty_pb2 import Empty
 
@@ -144,13 +144,12 @@ def test_grpc_spectral_bsdf():
 
     # Exporting to {file_name.file_name}
     stub.ExportFile(file_name)
-    local_file_name = os.path.join(test_local_path, "Spectral.serialized")
-    assert os.path.isfile(local_file_name)
+    assert helper.does_file_exist(file_name.file_name)
 
     # Reading {file_name.file_name} back
     stub.ImportFile(file_name)
 
-    os.remove(local_file_name)
+    helper.remove_file(file_name.file_name)
 
     # Exporting anisotropic bsdf protocol buffer
     bsdf2 = stub.Export(Empty())
@@ -160,12 +159,11 @@ def test_grpc_spectral_bsdf():
 
     # Writing as {file_name.file_name}
     stub.Save(file_name)
-    local_file_name = os.path.join(test_local_path, "Lambert.anisotropicbsdf")
-    assert os.path.isfile(local_file_name)
+    assert helper.does_file_exist(file_name.file_name)
 
     # Reading {file_name.file_name} back
     stub.Load(file_name)
-    os.remove(local_file_name)
+    helper.remove_file(file_name.file_name)
 
     # Exporting anisotropic bsdf protocol buffer
     bsdf3 = stub.Export(Empty())
@@ -179,9 +177,8 @@ def test_grpc_spectral_bsdf():
     cm.side = spectral_bsdf__v1__pb2.ConoscopicMap.TRANSMISSION
     cm.resolution = 512
     stub.ExportToConoscopicMap(cm)
-    local_file_name = os.path.join(test_local_path, "test_conoscopic_spectral.xmp")
-    assert os.path.isfile(local_file_name)
-    os.remove(local_file_name)
+    assert helper.does_file_exist(cm.output_file_name)
+    helper.remove_file(cm.output_file_name)
 
     # computing cones
     indices = spectral_bsdf__v1__pb2.RefractiveIndices(refractive_index_1=1.0, refractive_index_2=1.5)
@@ -202,12 +199,11 @@ def test_grpc_spectral_bsdf():
     file_name.file_name = os.path.join(test_path, "tmp_autocut.anisotropicbsdf")
     # writing result in {file_name.file_name}
     stub.Save(file_name)
-    local_file_name = os.path.join(test_local_path, "tmp_autocut.anisotropicbsdf")
-    assert os.path.isfile(local_file_name)
+    assert helper.does_file_exist(file_name.file_name)
 
     # reading {file_name.file_name} back
     stub.Load(file_name)
-    os.remove(local_file_name)
+    helper.remove_file(file_name.file_name)
 
     # getting cones again
     cones2 = stub.GetSpecularInterpolationEnhancementData(Empty())
