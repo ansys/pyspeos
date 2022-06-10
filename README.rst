@@ -20,15 +20,18 @@ Install ``PyOptics Library`` with:
 
 Development mode
 ~~~~~~~~~~~~~~~~
-Prerequisite:
+Prerequisite
+^^^^^^^^^^^^
 Have a GitHub account
-Create a Personnal Access Token under your account -> Settings -> Developer settings -> Personnal access tokens -> Generate new token.
 
-Clone and install in development mode with:
+Create a Personnal Access Token (PAT) under your account -> Settings -> Developer settings -> Personnal access tokens -> Generate new token.
+
+Clone and install
+^^^^^^^^^^^^^^^^^
 
 .. code::
 
-   git clone https://github.com/pyansys/pyoptics.git    (provide then your GitHub username and your GitHub Personnal Access Token)
+   git clone https://<PAT>@github.com/pyansys/pyoptics.git
    cd pyoptics
    pip install -r requirements_style.txt
    pre-commit install
@@ -59,6 +62,7 @@ Testing
 Configuration file
 ~~~~~~~~~~~~~~~~~~
 The configuration file ``local_config.json`` located in tests folder contains several parameters that can be changed according to your needs, for example:
+
  * SpeosServerOnDocker - boolean - Speos Server launched in a docker container
  * SpeosServerPort - integer - to modify the port where you send requests to Speos Server
 
@@ -73,6 +77,7 @@ Create and launch the ``docker container`` (containing SpeosRPC_Server) with:
    docker-compose up -d
 
 In case you are launching the SpeosRPC_Server by yourself, modify in the local_config.json:
+
  * SpeosServerOnDocker to false
  * SpeosServerPort to your current configuration (ie the port where the SpeosRPC_Server is listening)
 
