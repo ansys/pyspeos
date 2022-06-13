@@ -56,7 +56,7 @@ To build it manually, just run
 
 .. code::
 
-   pip install -r requirements_doc.txt
+   pip install -r requirements_docs.txt
    doc\make.bat singlehtml
    
 
