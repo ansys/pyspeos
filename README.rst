@@ -12,7 +12,7 @@ Installation
 Installation can be done using the published `package`_ or the repository `sources`_. 
 
 Package
-~~~~~~~~~~~~
+~~~~~~~
 .. warning:: Not currently available, work in progress... Please use `Sources`_ 
 
 This repository is deployed as the Python packages `ansys-pyoptics <...>`_.
@@ -23,7 +23,7 @@ As usual, installation is done by running
    pip install ansys-pyoptics
 
 Sources
-~~~~~~~~~~~~
+~~~~~~~
 **Prerequisite**: User needs to have a GitHub account and a valid Personnal Access Token 
 (see GitHub Settings/Developer settings/Personnal access tokens/Generate new token).
 
@@ -90,8 +90,8 @@ It can be started using `<docker-compose.yml>`_ (if needed, please provide GitHu
 On the other hand, SpeosRPC server can be started locally.
 The pipeline artifact can be found in La Farlède shared folders.
 
-.. tip:: 
-   
+.. code::
+
    \\win.ansys.com\eu\LaFarlede\Product Artifacts\SpeosRPC\refs\heads\main
 
 And test configuration file `<tests/local_config.json>`_ must be updated to use local server:
