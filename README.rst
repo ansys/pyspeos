@@ -1,30 +1,31 @@
 PyOptics Library
 ########################
 
+![main](https://github.com/pyansys/pyoptics/actions/workflows/ci_cd.yml/badge.svg)
+
 Project Overview
 ----------------
-``PyOptics`` is a library that gathers functionalities and tools for ``Speos``, ``Zemax`` and ``Lumerical``.
-
-On ``Speos`` side, this is a way to use ``exposed gRPC APIs`` and add some functionalities or post processing in python.
+``PyOptics`` is a Python library that gathers functionalities and tools based on remote API of Ansys software `Speos <https://www.ansys.com/fr-fr/products/optics-vr>`_, `Zemax <https://www.zemax.com/>`_ and `Lumerical <https://www.lumerical.com/>`_.
 
 Installation
 ------------
+Installation can be done using the published `package`_ or the repository `sources`_. 
 
-Basic installation
-~~~~~~~~~~~~~~~~~~
-Install ``PyOptics Library`` with:
+Package
+~~~~~~~~~~~~
+.. warning:: Not currently available, work in progress... Please use `Sources`_ 
 
-.. code::
+This repository is deployed as the Python packages `ansys-pyoptics <...>`_.
+As usual, installation is done by running 
+
+.. code:: 
 
    pip install ansys-pyoptics
 
-Development mode
-~~~~~~~~~~~~~~~~
-Prerequisite
-^^^^^^^^^^^^
-Have a GitHub account
-
-Create a Personnal Access Token (PAT) under your account -> Settings -> Developer settings -> Personnal access tokens -> Generate new token.
+Sources
+~~~~~~~~~~~~
+**Prerequisite**: User need to have a GitHub account and a valid Personnal Access Token 
+(see GitHub Settings/Developer settings/Personnal access tokens/Generate new token).
 
 Clone and install
 ^^^^^^^^^^^^^^^^^
@@ -38,61 +39,79 @@ Clone and install
    pip install -e .
 
 
-Documentation
--------------
-Include a link to the full sphinx documentation.  For example `PyAnsys <https://docs.pyansys.com/>`_
-
-
-Usage
------
-It's best to provide a sample code or even a figure demonstrating the usage of your library.  For example:
+Functionalities
+^^^^^^^^^^^^^^^
+All sources are located in `<./ansys>`_ folder. 
 
 .. code:: python
 
-   >>> from ansys.<product/service> import <library>
-   >>> my_object.<library>()
-   >>> my_object.foo()
-   'bar'
+   from ansys.pyoptics import speos
+   stub = speos.get_stub_insecure_channel()
+   stub...
 
-
-Testing
--------
-``Input data`` for the tests are stored in ``tests/assets`` folder
-
-Configuration file
-~~~~~~~~~~~~~~~~~~
-The configuration file ``local_config.json`` located in tests folder contains several parameters that can be changed according to your needs, for example:
-
- * SpeosServerOnDocker - boolean - Speos Server launched in a docker container
- * SpeosServerPort - integer - to modify the port where you send requests to Speos Server
-
-Start gRPC Servers
-~~~~~~~~~~~~~~~~~~
-Create and launch the ``docker container`` (containing SpeosRPC_Server) with:
+Documentation
+-------------
+Documentation is stored in `<./doc>`_ folder and generated using `Sphinx <https://www.sphinx-doc.org/en/master/>`_.
+To build it manually, just run
 
 .. code::
 
-   cd pyoptics
-   docker login ghcr.io/pyansys/pyoptics    (provide then your GitHub username and your GitHub Personnal Access Token)
+   pip install -r requirements_doc.txt
+   doc\make.bat singlehtml
+   
+
+.. note:: 
+   
+      Include a link to the full sphinx documentation.  For example `PyAnsys <https://docs.pyansys.com/>`_
+
+Testing
+-------
+Tests and assets are in `<./tests>`_ and `<./tests/assets>`_ folder. 
+Running PyOptics tests requires a running SpeosRPC server.
+A configuration file allows to choose between a local server and a Docker server (by default).
+
+Test configuration file
+~~~~~~~~~~~~~~~~~~~~~~~
+The configuration file `<tests/local_config.json>`_ located in tests folder contains several parameters that can be changed according to your needs, for example:
+ - **SpeosServerOnDocker** (boolean): Speos server launched in a docker container
+ - **SpeosServerPort** (integer): Port used by Speos server for HTTP transfert 
+
+Start server
+~~~~~~~~~~~~
+A Docker container of `SpeosRPC_Server <https://github.com/orgs/pyansys/packages/container/package/pyoptics%2Fspeos-rpc>`_ can be started using `<docker-compose.yml>`_ :
+
+.. code::
+
+   docker login ghcr.io/pyansys/pyoptics
    docker-compose up -d
 
-In case you are launching the SpeosRPC_Server by yourself, modify in the local_config.json:
+On the other and, SpeosRPC server can be started locally.
+The pipeline artifact can be found in La Farlède shared folders.
 
- * SpeosServerOnDocker to false
- * SpeosServerPort to your current configuration (ie the port where the SpeosRPC_Server is listening)
+.. tip:: 
+   
+   \\win.ansys.com\eu\LaFarlede\Product Artifacts\SpeosRPC\refs\heads\main
+
+And test configuration file `<tests/local_config.json>`_ must be updated to use local server:
+
+.. code-block:: json
+   
+   {
+      "SpeosServerOnDocker": false,
+      "SpeosContainerName" : "pyoptics_speos-rpc",
+      "SpeosServerPort": 50051
+   }
 
 Launch unit tests
 ~~~~~~~~~~~~~~~~~
 
 .. code::
 
-   cd pyoptics
    pip install -r requirements_test.txt
    pytest -vx
 
 
 License
 -------
-``PyOptics`` is licensed under the MIT license.
-
-The full license can be found in the root directory of the repository.
+`PyOptics <https://github.com/pyansys/pyoptics>`_ is licensed under the MIT license.
+The full license can be found in the root directory of the repository, see `<LICENSE>`_.
