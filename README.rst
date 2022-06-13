@@ -1,7 +1,7 @@
 PyOptics Library
 ########################
 
-![main](https://github.com/pyansys/pyoptics/actions/workflows/ci_cd.yml/badge.svg)
+.. image:: https://github.com/pyansys/pyoptics/actions/workflows/ci_cd.yml/badge.svg
 
 Project Overview
 ----------------
