@@ -44,5 +44,5 @@ test-output.xml
 /.ipynb_checkpoints
 
 # VSCode
-.vscode/*
+.vscode/
 
