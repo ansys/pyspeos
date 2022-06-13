@@ -24,7 +24,7 @@ As usual, installation is done by running
 
 Sources
 ~~~~~~~~~~~~
-**Prerequisite**: User need to have a GitHub account and a valid Personnal Access Token 
+**Prerequisite**: User needs to have a GitHub account and a valid Personnal Access Token 
 (see GitHub Settings/Developer settings/Personnal access tokens/Generate new token).
 
 Clone and install
@@ -73,19 +73,21 @@ A configuration file allows to choose between a local server and a Docker server
 Test configuration file
 ~~~~~~~~~~~~~~~~~~~~~~~
 The configuration file `<tests/local_config.json>`_ located in tests folder contains several parameters that can be changed according to your needs, for example:
+
  - **SpeosServerOnDocker** (boolean): Speos server launched in a docker container
  - **SpeosServerPort** (integer): Port used by Speos server for HTTP transfert 
 
 Start server
 ~~~~~~~~~~~~
-A Docker container of `SpeosRPC_Server <https://github.com/orgs/pyansys/packages/container/package/pyoptics%2Fspeos-rpc>`_ can be started using `<docker-compose.yml>`_ :
+First options is to use the Docker container of `SpeosRPC_Server <https://github.com/orgs/pyansys/packages/container/package/pyoptics%2Fspeos-rpc>`_.
+It can be started using `<docker-compose.yml>`_ (if needed, please provide GitHub username and PAT as password) :
 
 .. code::
 
    docker login ghcr.io/pyansys/pyoptics
    docker-compose up -d
 
-On the other and, SpeosRPC server can be started locally.
+On the other hand, SpeosRPC server can be started locally.
 The pipeline artifact can be found in La Farlède shared folders.
 
 .. tip:: 
