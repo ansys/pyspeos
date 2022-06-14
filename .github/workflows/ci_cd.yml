@@ -24,7 +24,7 @@ jobs:
 
       - name: Install style requirements
         run: |
-          pip install -r requirements_style.txt --disable-pip-version-check
+          pip install -r requirements/requirements_style.txt --disable-pip-version-check
 
       - name: Codespell
         run: |
@@ -67,7 +67,7 @@ jobs:
 
       - name: Unit testing
         run: |
-          pip install -r requirements_test.txt
+          pip install -r requirements/requirements_test.txt
           docker-compose up -d
           cd tests  # so we're testing the install, not local
           pytest -vx
@@ -98,7 +98,7 @@ jobs:
 
       - name: Build HTML
         run: |
-          pip install -r requirements_docs.txt
+          pip install -r requirements/requirements_docs.txt
           make -C doc html SPHINXOPTS="-W"
 
       - name: Build PDF Documentation
