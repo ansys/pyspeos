@@ -184,3 +184,37 @@ def test_lpf_file_reader_multi_v1():
     # Close and Delete the first
     stub.CloseLpfFileName(guid)
     stub.Delete(guid)
+
+
+def test_lpf_file_raypath_is_filled():
+    # Lpf file reader multi creation
+    stub = speos.get_stub_insecure_channel(
+        port=config.get("SpeosServerPort"), stub_type=lpf_file_reader__v1__pb2_grpc.LpfFileReader_MultiStub
+    )
+
+    # Create a reader and retrieve its associated guid
+    guid = stub.Create(Empty())
+
+    # Init with file path
+    path = os.path.join(test_path, "basic_1.lpf")
+    stub.InitLpfFileName(lpf_file_reader__v1__pb2.InitLpfFileNameRequest_Multi(id=guid, lpf_file_path=path))
+
+    # Check Nb Traces
+    nb_of_traces = stub.GetNbOfTraces(guid).nb_of_traces
+
+    # Get Nb XMPs for first reader
+    assert stub.GetNbOfXMPs(guid).nb_of_xmps == 3
+
+    # Read the first
+    raypaths = [None] * nb_of_traces
+    index = 0
+    for rp in stub.Read(lpf_file_reader__v1__pb2.ReadRequest_Multi(id=guid)):
+        raypaths[index] = rp
+        index += 1
+
+    for rp in raypaths:
+        assert rp is not None
+
+    # Close and Delete the first
+    stub.CloseLpfFileName(guid)
+    stub.Delete(guid)
