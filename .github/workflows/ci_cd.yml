@@ -70,7 +70,7 @@ jobs:
           pip install -r requirements_test.txt
           docker-compose up -d
           cd tests  # so we're testing the install, not local
-          pytest -vx
+          pytest -vxs
           docker kill pyoptics_speos-rpc 
           docker rm pyoptics_speos-rpc 
           
