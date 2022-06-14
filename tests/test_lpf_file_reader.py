@@ -211,4 +211,4 @@ def test_bench_lpf():
         raypaths.append(rp)
 
     toc = time.time()
-    # print(f"{nb_of_traces/(toc-tic)} Traces/s ({nb_of_traces} Traces in {toc-tic} seconds).")
+    print(f"{nb_of_traces/(toc-tic)} Traces/s ({nb_of_traces} Traces in {toc-tic} seconds).")
