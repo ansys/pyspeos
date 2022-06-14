@@ -22,17 +22,14 @@ jobs:
         with:
           python-version: 3.8
 
-      - name: Install style requirements
+      - name: Install pre-commit
         run: |
-          pip install -r requirements_style.txt --disable-pip-version-check
+          pip install pre-commit --disable-pip-version-check
 
-      - name: Codespell
+      - name: Run pre-commit
         run: |
-          make codespell
+          pre-commit run --all-files || ( git status --short ; git diff ; exit 1 )
 
-      - name: flake8
-        run: |
-          make flake8
 
   main:
     name: Build and Testing
