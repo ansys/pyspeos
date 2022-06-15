@@ -34,7 +34,7 @@ Clone and install
 
    git clone https://<PAT>@github.com/pyansys/pyoptics.git
    cd pyoptics
-   pip install -r requirements_style.txt
+   pip install -r requirements/requirements_style.txt
    pre-commit install
    pip install -e .
 
@@ -56,7 +56,7 @@ To build it manually, just run
 
 .. code::
 
-   pip install -r requirements_docs.txt
+   pip install -r requirements/requirements_docs.txt
    doc\make.bat singlehtml
    
 
@@ -109,7 +109,7 @@ Launch unit tests
 
 .. code::
 
-   pip install -r requirements_test.txt
+   pip install -r requirements/requirements_test.txt
    pytest -vx
 
 
