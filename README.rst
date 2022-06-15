@@ -31,7 +31,7 @@ Package
 .. warning:: Not currently available, work in progress... Please use `Sources`_. 
 
 This repository is deployed as the Python packages `ansys-pyoptics <...>`_.
-As usual, installation is done by running. 
+As usual, installation is done by running:
 
 .. code:: 
 
@@ -67,7 +67,7 @@ All sources are located in `<./ansys>`_ folder.
 Documentation
 -------------
 Documentation is stored in `<./doc>`_ folder and generated using `Sphinx <https://www.sphinx-doc.org/en/master/>`_.
-To build it manually, just run.
+To build it manually, just run:
 
 .. code::
 
