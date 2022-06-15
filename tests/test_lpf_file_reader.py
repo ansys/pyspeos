@@ -11,6 +11,7 @@ With coverage.
 
 """
 import os
+import time
 
 from conftest import config
 from conftest import test_path
@@ -184,3 +185,31 @@ def test_lpf_file_reader_multi_v1():
     # Close and Delete the first
     stub.CloseLpfFileName(guid)
     stub.Delete(guid)
+
+
+def test_lpf_file_reader_mono_v1_bench():
+    # Lpf file reader creation
+    stub = speos.get_stub_insecure_channel(
+        port=config.get("SpeosServerPort"), stub_type=lpf_file_reader__v1__pb2_grpc.LpfFileReader_MonoStub
+    )
+
+    # Init with file path
+    path = os.path.join(test_path, "test.lpf")
+    stub.InitLpfFileName(lpf_file_reader__v1__pb2.InitLpfFileNameRequest_Mono(lpf_file_path=path))
+
+    # Check Nb XMPs
+    assert stub.GetNbOfXMPs(Empty()).nb_of_xmps == 3
+
+    # Check Nb Traces
+    nb_of_traces = stub.GetNbOfTraces(Empty()).nb_of_traces
+    assert nb_of_traces == 198541
+
+    # Read
+    tic = time.time()
+    raypaths = []
+    for rp in stub.Read(lpf_file_reader__v1__pb2.ReadRequest_Mono()):
+        raypaths.append(rp)
+    toc = time.time()
+
+    print(f"-> {len(raypaths)/(toc-tic)} Traces/s")
+    assert len(raypaths) == nb_of_traces
