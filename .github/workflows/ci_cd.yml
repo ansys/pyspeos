@@ -102,7 +102,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt-get install -y texlive-latex-extra latexmk
-          make -C doc latexpdf
+          make -C doc pdf
 
       - name: Upload HTML Documentation
         uses: actions/upload-artifact@v2
