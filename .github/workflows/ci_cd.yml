@@ -49,14 +49,10 @@ jobs:
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
 
-
- 
-
-
   tests:
     name: Build and testing
     runs-on: ${{ matrix.os }}
-    needs: [style,doc]
+    needs: [style,docs]
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
