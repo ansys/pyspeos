@@ -10,7 +10,6 @@ directory as this module.
 import json
 import os
 
-
 local_path = os.path.dirname(os.path.realpath(__file__))
 
 
