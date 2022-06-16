@@ -31,7 +31,7 @@ with open(os.path.join(HERE, 'README.rst'), encoding='utf-8') as f:
 
 setup(
     name='ansys-pyoptics-speos',
-    packages=['ansys.pyoptics.speos'],
+    packages=['src.ansys.pyoptics.speos'],
     version=__version__,
     description='PyOptics library',
     long_description=long_description,
