@@ -39,21 +39,16 @@ jobs:
 
   tests:
     name: Build and testing
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     needs: [style,docs]
-    strategy:
-      matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
-        python-version: ['3.7', '3.8', '3.9', '3.10']
-      fail-fast: false
-
+  
     steps:
       - uses: actions/checkout@v3
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v3
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
 
       - name: Create wheel
         run: |
