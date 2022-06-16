@@ -19,7 +19,7 @@ import helper
 from conftest import config, test_path
 from google.protobuf.empty_pb2 import Empty
 
-from ansys.pyoptics import speos
+from src.ansys.pyoptics import speos
 
 
 def createAnisotropicBsdf():
