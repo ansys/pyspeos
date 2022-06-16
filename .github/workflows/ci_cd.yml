@@ -141,11 +141,6 @@ jobs:
 
       - name: Generate the PDF documentation
         run: |
-<<<<<<< HEAD
-=======
-          sudo apt update
-          sudo apt-get install -y texlive-latex-extra latexmk
->>>>>>> main
           make -C doc pdf
 
       - name: Upload HTML documentation
