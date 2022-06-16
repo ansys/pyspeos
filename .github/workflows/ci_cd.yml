@@ -37,18 +37,6 @@ jobs:
       - name: Test with tox
         run: tox -e style
 
-  build:
-    name: Build library
-    runs-on: ubuntu-latest
-    needs: [docs]
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v3
-        with:
-          python-version: ${{ env.MAIN_PYTHON_VERSION }}
-
   tests:
     name: Build and testing
     runs-on: ${{ matrix.os }}
