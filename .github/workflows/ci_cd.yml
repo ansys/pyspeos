@@ -61,7 +61,7 @@ jobs:
           python -m twine check dist/*
 
       - name: Install library
-        run: pip install dist/*
+        run: pip install .
 
       - name: Login to GitHub Packages
         uses: docker/login-action@v1
