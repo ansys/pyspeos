@@ -3,7 +3,7 @@ from datetime import datetime
 
 from ansys_sphinx_theme import pyansys_logo_black
 
-from src.ansys.pyoptics.speos import __version__
+from ansys.pyoptics.speos import __version__
 
 from sphinx.builders.latex import LaTeXBuilder
 

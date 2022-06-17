@@ -56,7 +56,8 @@ jobs:
 
       - name: Build wheel and sdist
         run: |
-          python -m build && python -m twine check dist/*
+          flit build
+          python -m twine check dist/*
 
       - name: Install library
         run: pip install dist/*
