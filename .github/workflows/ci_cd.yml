@@ -50,15 +50,13 @@ jobs:
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
 
-      - name: Create wheel
+      - name: Install dependencies
         run: |
-          pip install wheel
-          python setup.py bdist_wheel
+          python -m pip install -r requirements/requirements_build.txt
 
-      - name: Validate wheel
+      - name: Build wheel and sdist
         run: |
-          pip install twine
-          twine check dist/*
+          python -m build && python -m twine check dist/*
 
       - name: Install library
         run: pip install dist/*
