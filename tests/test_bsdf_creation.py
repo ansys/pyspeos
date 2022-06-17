@@ -16,9 +16,9 @@ import os
 import ansys.api.speos.bsdf.v1.bsdf_creation_pb2 as bsdf_creation__v1__pb2
 import ansys.api.speos.bsdf.v1.bsdf_creation_pb2_grpc as bsdf_creation__v1__pb2_grpc
 
+from ansys.pyoptics import speos
 from conftest import config, test_path
 import helper
-from src.ansys.pyoptics import speos
 
 
 def test_grpc_spectral_bsdf():
