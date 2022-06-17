@@ -15,10 +15,10 @@ import os
 
 import ansys.api.speos.bsdf.v1.spectral_bsdf_pb2 as spectral_bsdf__v1__pb2
 import ansys.api.speos.bsdf.v1.spectral_bsdf_pb2_grpc as spectral_bsdf__v1__pb2_grpc
-import helper
-from conftest import config, test_path
 from google.protobuf.empty_pb2 import Empty
 
+from conftest import config, test_path
+import helper
 from src.ansys.pyoptics import speos
 
 

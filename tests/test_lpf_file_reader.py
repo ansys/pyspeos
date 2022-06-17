@@ -14,9 +14,9 @@ import os
 
 import ansys.api.speos.lpf.v1.lpf_file_reader_pb2 as lpf_file_reader__v1__pb2
 import ansys.api.speos.lpf.v1.lpf_file_reader_pb2_grpc as lpf_file_reader__v1__pb2_grpc
-from conftest import config, test_path
 from google.protobuf.empty_pb2 import Empty
 
+from conftest import config, test_path
 from src.ansys.pyoptics import speos
 
 
