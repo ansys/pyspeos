@@ -13,14 +13,13 @@ With coverage.
 import math
 import os
 
-import helper
-from conftest import config
-from conftest import test_path
-from google.protobuf.empty_pb2 import Empty
-
 import ansys.api.speos.bsdf.v1.spectral_bsdf_pb2 as spectral_bsdf__v1__pb2
 import ansys.api.speos.bsdf.v1.spectral_bsdf_pb2_grpc as spectral_bsdf__v1__pb2_grpc
+from google.protobuf.empty_pb2 import Empty
+
 from ansys.pyoptics import speos
+from conftest import config, test_path
+import helper
 
 
 def createSpectralBsdf() -> spectral_bsdf__v1__pb2.SpectralBsdfData:

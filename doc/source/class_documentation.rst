@@ -4,7 +4,7 @@ Generate APIs Documentation
 
 Autosummary Directive
 ~~~~~~~~~~~~~~~~~~~~~
-We use a custom class template (included in ``_template`` to
+We use a custom class template (included in ``_template``) to
 automatically generate class and method documentation.
 
 .. autosummary::

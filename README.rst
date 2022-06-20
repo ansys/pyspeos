@@ -60,7 +60,7 @@ All sources are located in `<./ansys>`_ folder.
 
 .. code:: python
 
-   from ansys.pyoptics import speos
+   from src.ansys.pyoptics import speos
    stub = speos.get_stub_insecure_channel()
    stub...
 

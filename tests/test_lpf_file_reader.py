@@ -12,13 +12,12 @@ With coverage.
 """
 import os
 
-from conftest import config
-from conftest import test_path
-from google.protobuf.empty_pb2 import Empty
-
 import ansys.api.speos.lpf.v1.lpf_file_reader_pb2 as lpf_file_reader__v1__pb2
 import ansys.api.speos.lpf.v1.lpf_file_reader_pb2_grpc as lpf_file_reader__v1__pb2_grpc
+from google.protobuf.empty_pb2 import Empty
+
 from ansys.pyoptics import speos
+from conftest import config, test_path
 
 
 def test_lpf_file_reader_mono_v1():
