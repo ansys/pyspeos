@@ -89,7 +89,7 @@ Test configuration file
 ~~~~~~~~~~~~~~~~~~~~~~~
 The configuration file `<tests/local_config.json>`_ located in tests folder contains several parameters that can be changed according to your needs, for example:
 
- - **SpeosServerOnDocker** (Boolean): Speos server launched in a docker container.
+ - **SpeosServerOnDocker** (Boolean): Speos server launched in a Docker container.
  - **SpeosServerPort** (integer): Port used by Speos server for HTTP transfer. 
 
 Start server

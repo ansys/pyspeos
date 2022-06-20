@@ -20,7 +20,7 @@ Here's a quick preview for how Python code looks using the
 top of the page to see function, method, and class documentation.
 
 
-Rendered python code
+Rendered Python code
 --------------------
 
 .. code:: python
