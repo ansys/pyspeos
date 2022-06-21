@@ -56,7 +56,7 @@ Clone and install
 
 Functionalities
 ^^^^^^^^^^^^^^^
-All sources are located in `<.src/>`_ folder. 
+All sources are located in `<src/>`_ folder. 
 
 .. code:: python
 
@@ -90,7 +90,7 @@ Using tox (recommended):
 
 Testing
 -------
-Tests and assets are in `<./tests>`_ and `<./tests/assets>`_ folder. 
+Tests and assets are in `<tests>`_ and `<tests/assets>`_ folder. 
 Running PyOptics tests requires a running SpeosRPC server.
 A configuration file allows to choose between a local server and a Docker server (by default).
 
