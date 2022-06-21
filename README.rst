@@ -49,14 +49,14 @@ Clone and install
 
    git clone https://<PAT>@github.com/pyansys/pyoptics.git
    cd pyoptics
-   pip install -r requirements/requirements_style.txt
-   pre-commit install
+   pip install -U pip tox
+   tox -e style
    pip install -e .
 
 
 Functionalities
 ^^^^^^^^^^^^^^^
-All sources are located in `<./ansys>`_ folder. 
+All sources are located in `<.src/>`_ folder. 
 
 .. code:: python
 
@@ -66,18 +66,27 @@ All sources are located in `<./ansys>`_ folder.
 
 Documentation
 -------------
-Documentation is stored in `<./doc>`_ folder and generated using `Sphinx <https://www.sphinx-doc.org/en/master/>`_.
-To build it manually, just run:
+Documentation is stored in `<doc>`_ folder and generated using `Sphinx`_.
+To build it manually:
+
+Using Makefile:
 
 .. code::
 
    pip install -r requirements/requirements_docs.txt
    doc\make.bat singlehtml
+
+Using tox (recommended):
+
+.. code::
+
+   pip install -U pip tox
+   tox -e doc
    
 
 .. note:: 
    
-      Include a link to the full sphinx documentation. For example `PyAnsys <https://docs.pyansys.com/>`_
+      Include a link to the full sphinx documentation. For example `PyAnsys`_
 
 Testing
 -------
@@ -130,5 +139,10 @@ Launch unit tests
 
 License
 -------
-`PyOptics <https://github.com/pyansys/pyoptics>`_ is licensed under the MIT license.
+`PyOptics`_ is licensed under the MIT license.
 The full license can be found in the root directory of the repository, see `<LICENSE>`_.
+
+.. LINKS AND REFERENCES
+.. _PyOptics: https://github.com/pyansys/pyoptics
+.. _PyAnsys: https://docs.pyansys.com
+.. _Sphinx: https://www.sphinx-doc.org/en/master/
