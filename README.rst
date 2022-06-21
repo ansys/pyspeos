@@ -1,4 +1,4 @@
-PyOptics Library
+PyOptics library
 ================
 |pyansys| |GH-CI| |MIT| |black|
 
@@ -18,7 +18,7 @@ PyOptics Library
    :alt: Black
 
 
-Project Overview
+Project overview
 ----------------
 ``PyOptics`` is a Python library that gathers functionalities and tools based on remote API of Ansys software `Speos <https://www.ansys.com/fr-fr/products/optics-vr>`_, `Zemax <https://www.zemax.com/>`_ and `Lumerical <https://www.lumerical.com/>`_.
 
@@ -28,7 +28,7 @@ Installation can be done using the published `package`_ or the repository `sourc
 
 Package
 ~~~~~~~
-.. warning:: Not currently available, work in progress... Please use `Sources`_. 
+.. warning:: Not currently available, work in progress. Please use `Sources`_. 
 
 This repository is deployed as the Python packages `ansys-pyoptics <...>`_.
 As usual, installation is done by running:
@@ -39,8 +39,8 @@ As usual, installation is done by running:
 
 Sources
 ~~~~~~~
-**Prerequisite**: User needs to have a GitHub account and a valid Personnal Access Token 
-(see GitHub Settings/Developer settings/Personnal access tokens/Generate new token).
+**Prerequisite**: user needs to have a GitHub account and a valid Personal Access Token 
+(see GitHub Settings/Developer settings/Personal access tokens/Generate new token).
 
 Clone and install
 ^^^^^^^^^^^^^^^^^
@@ -77,7 +77,7 @@ To build it manually, just run:
 
 .. note:: 
    
-      Include a link to the full sphinx documentation.  For example `PyAnsys <https://docs.pyansys.com/>`_
+      Include a link to the full sphinx documentation. For example `PyAnsys <https://docs.pyansys.com/>`_
 
 Testing
 -------
@@ -89,7 +89,7 @@ Test configuration file
 ~~~~~~~~~~~~~~~~~~~~~~~
 The configuration file `<tests/local_config.json>`_ located in tests folder contains several parameters that can be changed according to your needs, for example:
 
- - **SpeosServerOnDocker** (boolean): Speos server launched in a docker container.
+ - **SpeosServerOnDocker** (Boolean): Speos server launched in a Docker container.
  - **SpeosServerPort** (integer): Port used by Speos server for HTTP transfer. 
 
 Start server
