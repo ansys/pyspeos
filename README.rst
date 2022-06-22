@@ -49,6 +49,7 @@ Clone and install
 
    git clone https://<PAT>@github.com/pyansys/pyoptics.git
    cd pyoptics
+   python -m pip install --upgrade pip
    pip install -U pip tox
    tox -e style
    pip install -e .
@@ -67,21 +68,12 @@ All sources are located in `<src/>`_ folder.
 Documentation
 -------------
 Documentation is stored in `<doc>`_ folder and generated using `Sphinx`_.
-To build it manually:
-
-Using Makefile:
-
-.. code::
-
-   pip install -r requirements/requirements_docs.txt
-   doc\make.bat singlehtml
-
-Using tox (recommended):
+To build it manually :
 
 .. code::
 
    pip install -U pip tox
-   tox -e doc
+   tox -e doc && your_browser_name .tox/doc_out/index.html
    
 
 .. note:: 
