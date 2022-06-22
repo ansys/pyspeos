@@ -183,7 +183,7 @@ def test_grpc_spectral_bsdf():
     indices = spectral_bsdf__v1__pb2.RefractiveIndices(refractive_index_1=1.0, refractive_index_2=1.5)
     stub.GenerateSpecularInterpolationEnhancementData(indices)
 
-    # getting cones
+    # getting cones - checking indices
     cones = stub.GetSpecularInterpolationEnhancementData(Empty())
     assert cones.refractive_index_1 == indices.refractive_index_1
     assert cones.refractive_index_2 == indices.refractive_index_2
