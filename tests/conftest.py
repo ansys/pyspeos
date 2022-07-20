@@ -10,6 +10,8 @@ directory as this module.
 import json
 import os
 
+from ansys.pyoptics.speos import file_transfer
+
 local_path = os.path.dirname(os.path.realpath(__file__))
 
 
@@ -22,8 +24,12 @@ else:
     raise ValueError("Missing local_config.json file")
 
 
-# set test_path var depending on if we are using the servers in a docker container or not
-if config.get("SpeosServerOnDocker"):
-    test_path = "/app/assets/"
-else:
-    test_path = os.path.join(local_path, "assets/")
+# Upload assets to the server
+number_of_files_to_upload = len(list(file_transfer.list_files(os.path.join(local_path, "assets/"))))
+file_upload_result = file_transfer.upload_files_to_server(
+    config.get("SpeosServerPort"), os.path.join(local_path, "assets/")
+)
+if len(file_upload_result) != number_of_files_to_upload:
+    raise ValueError("Issue during assets transfer to server")
+# Retrieve the path where assets are uploaded
+test_path = file_transfer.get_server_upload_directory(config.get("SpeosServerPort"))

@@ -16,13 +16,13 @@ import ansys.api.speos.lpf.v1.lpf_file_reader_pb2 as lpf_file_reader__v1__pb2
 import ansys.api.speos.lpf.v1.lpf_file_reader_pb2_grpc as lpf_file_reader__v1__pb2_grpc
 from google.protobuf.empty_pb2 import Empty
 
-from ansys.pyoptics import speos
+from ansys.pyoptics.speos import grpc_stub
 from conftest import config, test_path
 
 
 def test_lpf_file_reader_mono_v1_DirectSimu():
     # Lpf file reader creation
-    stub = speos.get_stub_insecure_channel(
+    stub = grpc_stub.get_stub_insecure_channel(
         port=config.get("SpeosServerPort"), stub_type=lpf_file_reader__v1__pb2_grpc.LpfFileReader_MonoStub
     )
 
@@ -72,7 +72,7 @@ def test_lpf_file_reader_mono_v1_DirectSimu():
 
 def test_lpf_file_reader_mono_v1_InverseSimu():
     # Lpf file reader creation
-    stub = speos.get_stub_insecure_channel(
+    stub = grpc_stub.get_stub_insecure_channel(
         port=config.get("SpeosServerPort"), stub_type=lpf_file_reader__v1__pb2_grpc.LpfFileReader_MonoStub
     )
 
@@ -108,7 +108,7 @@ def test_lpf_file_reader_mono_v1_InverseSimu():
 
 def test_lpf_file_reader_multi_v1():
     # Lpf file reader multi creation
-    stub = speos.get_stub_insecure_channel(
+    stub = grpc_stub.get_stub_insecure_channel(
         port=config.get("SpeosServerPort"), stub_type=lpf_file_reader__v1__pb2_grpc.LpfFileReader_MultiStub
     )
 

@@ -6,8 +6,8 @@ services:
     ports:
       - "50051:50051"
     entrypoint: ./SpeosRPC_Server.x
-    volumes:
-      - type: bind
-        source: ./tests/assets
-        target: /app/assets
-        read_only: false
+    #volumes:
+    #  - type: bind
+    #    source: ./tests/assets
+    #    target: /app/assets
+    #    read_only: false

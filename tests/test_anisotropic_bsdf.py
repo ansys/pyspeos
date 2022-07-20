@@ -17,7 +17,7 @@ import ansys.api.speos.bsdf.v1.anisotropic_bsdf_pb2 as anisotropic_bsdf__v1__pb2
 import ansys.api.speos.bsdf.v1.anisotropic_bsdf_pb2_grpc as anisotropic_bsdf__v1__pb2_grpc
 from google.protobuf.empty_pb2 import Empty
 
-from ansys.pyoptics import speos
+from ansys.pyoptics.speos import grpc_stub
 from conftest import config, test_path
 import helper
 
@@ -261,7 +261,7 @@ def compareSpecularEnhancementData(data1, data2):
 
 
 def test_grpc_anisotropic_bsdf():
-    stub = speos.get_stub_insecure_channel(
+    stub = grpc_stub.get_stub_insecure_channel(
         port=config.get("SpeosServerPort"), stub_type=anisotropic_bsdf__v1__pb2_grpc.AnisotropicBsdfServiceStub
     )
 

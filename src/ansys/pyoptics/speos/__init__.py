@@ -21,4 +21,5 @@ Then add the import within this module to enable:
 
 """
 from ansys.pyoptics.speos._version import __version__
-from ansys.pyoptics.speos.grpc_stub import get_stub_insecure_channel
+from ansys.pyoptics.speos import grpc_stub
+from ansys.pyoptics.speos import file_transfer

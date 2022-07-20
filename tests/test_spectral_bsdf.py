@@ -17,7 +17,7 @@ import ansys.api.speos.bsdf.v1.spectral_bsdf_pb2 as spectral_bsdf__v1__pb2
 import ansys.api.speos.bsdf.v1.spectral_bsdf_pb2_grpc as spectral_bsdf__v1__pb2_grpc
 from google.protobuf.empty_pb2 import Empty
 
-from ansys.pyoptics import speos
+from ansys.pyoptics.speos import grpc_stub
 from conftest import config, test_path
 import helper
 
@@ -128,7 +128,7 @@ def compareSpecularEnhancementData(c1, c2):
 
 
 def test_grpc_spectral_bsdf():
-    stub = speos.get_stub_insecure_channel(
+    stub = grpc_stub.get_stub_insecure_channel(
         port=config.get("SpeosServerPort"), stub_type=spectral_bsdf__v1__pb2_grpc.SpectralBsdfServiceStub
     )
 
