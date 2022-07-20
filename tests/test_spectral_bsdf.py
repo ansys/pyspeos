@@ -127,6 +127,16 @@ def compareSpecularEnhancementData(c1, c2):
     return True
 
 
+def test_load_brdf():
+    stub = speos.get_stub_insecure_channel(
+        port=config.get("SpeosServerPort"), stub_type=spectral_bsdf__v1__pb2_grpc.SpectralBsdfServiceStub
+    )
+
+    stub.Load(
+        spectral_bsdf__v1__pb2.FileName(file_name=os.path.join(test_path, "bsdf_surface_roughness_backward.brdf"))
+    )
+
+
 def test_grpc_spectral_bsdf():
     stub = speos.get_stub_insecure_channel(
         port=config.get("SpeosServerPort"), stub_type=spectral_bsdf__v1__pb2_grpc.SpectralBsdfServiceStub
