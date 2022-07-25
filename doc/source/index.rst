@@ -10,6 +10,7 @@
    :maxdepth: 3
 
    grpc_tools
+   api
    class_documentation
 
 
