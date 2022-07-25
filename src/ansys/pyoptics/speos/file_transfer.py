@@ -37,7 +37,8 @@ def list_files(folder_path, regex='*'):
             folder_path="path/to/folder/",
             regex="*.lpf")
     """
-    return pathlib.Path(folder_path).rglob(regex)
+    res = pathlib.Path(folder_path).rglob(regex)
+    return [f for f in res if f.is_file()]
 
 def file_to_chunks(file, chunk_size=4000000):
     """Cut a file into chunks of specified chunk_size.
