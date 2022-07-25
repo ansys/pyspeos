@@ -32,4 +32,4 @@ file_upload_result = file_transfer.upload_files_to_server(
 if len(file_upload_result) != number_of_files_to_upload:
     raise ValueError("Issue during assets transfer to server")
 # Retrieve the path where assets are uploaded
-test_path = file_transfer.get_server_upload_directory(config.get("SpeosServerPort"))
+test_path = file_transfer.get_server_tmp_directory(config.get("SpeosServerPort"))

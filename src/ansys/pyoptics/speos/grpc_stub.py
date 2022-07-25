@@ -4,9 +4,9 @@ This module allows to get gRPC stub
 
 Examples
 --------
->>> from ansys.pyoptics import speos
+>>> from ansys.pyoptics.speos import grpc_stub
 >>> import ansys.api.speos.results.v1.lpf_file_reader_pb2_grpc as lpf_file_reader__v1__pb2_grpc
->>> speos.get_stub_insecure_channel(
+>>> grpc_stub.get_stub_insecure_channel(
         port=50051,
         stub_type=lpf_file_reader__v1__pb2_grpc.LpfFileReader_MonoStub)
 """
@@ -30,9 +30,9 @@ def get_stub_insecure_channel(port, stub_type):
 
     Examples
     --------
-    >>> from ansys.pyoptics import speos
+    >>> from ansys.pyoptics.speos import grpc_stub
     >>> import ansys.api.speos.results.v1.lpf_file_reader_pb2_grpc as lpf_file_reader__v1__pb2_grpc
-    >>> speos.get_stub_insecure_channel(
+    >>> grpc_stub.get_stub_insecure_channel(
             port=50051,
             stub_type=lpf_file_reader__v1__pb2_grpc.LpfFileReader_MonoStub)
     """
