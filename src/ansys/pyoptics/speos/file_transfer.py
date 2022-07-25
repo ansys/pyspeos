@@ -17,7 +17,7 @@ from ansys.pyoptics.speos import grpc_stub
 
 
 def list_files(folder_path, regex='*'):
-    """list files matching the regex in the folder_path.
+    """List files matching the regex in the folder_path.
 
     Parameters
     ----------
