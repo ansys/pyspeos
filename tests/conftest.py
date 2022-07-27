@@ -13,7 +13,7 @@ import os
 from ansys.pyoptics.speos import file_transfer
 
 local_path = os.path.dirname(os.path.realpath(__file__))
-
+local_test_path = os.path.join(local_path, "assets")
 
 # Load the local config file
 local_config_file = os.path.join(local_path, "local_config.json")
@@ -23,13 +23,5 @@ if os.path.exists(local_config_file):
 else:
     raise ValueError("Missing local_config.json file")
 
-
-# Upload assets to the server
-number_of_files_to_upload = len(list(file_transfer.list_files(os.path.join(local_path, "assets/"))))
-file_upload_result = file_transfer.upload_files_to_server(
-    config.get("SpeosServerPort"), os.path.join(local_path, "assets/")
-)
-if len(file_upload_result) != number_of_files_to_upload:
-    raise ValueError("Issue during assets transfer to server")
-# Retrieve the path where assets are uploaded
+# Retrieve the path of tmp dir on the server
 test_path = file_transfer.get_server_tmp_directory(config.get("SpeosServerPort"))

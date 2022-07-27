@@ -60,12 +60,12 @@ def file_to_chunks(file, chunk_size=4000000):
         chunk = file_transfer__v1__pb2.Chunk(binary=buffer, size=len(buffer))
         yield chunk
 
-def upload_file_to_server(stub, file_path):
+def upload_file_to_server(server_port, file_path):
     """Upload a single file to a server.
 
     Parameters
     ----------
-    stub : gRPC stub
+    server_port : port of the server
 
     file_path : Path
         file's path to be uploaded
@@ -78,15 +78,13 @@ def upload_file_to_server(stub, file_path):
     Examples
     --------
     >>> from ansys.pyoptics.speos import file_transfer
-    >>> from ansys.pyoptics.speos import grpc_stub
-    >>> import ansys.api.speos.file.v1.file_transfer_pb2_grpc as file_transfer__v1__pb2_grpc
-    >>> file_transfer_stub = grpc_stub.get_stub_insecure_channel(
-        port=50051, stub_type=file_transfer__v1__pb2_grpc.FileTransferServiceStub
-    )
     >>> file_transfer.upload_file_to_server(
-            stub=file_transfer_stub,
+            server_port="50051",
             file_path="path/to/file")
     """
+    stub = grpc_stub.get_stub_insecure_channel(
+        port=server_port, stub_type=file_transfer__v1__pb2_grpc.FileTransferServiceStub
+    )
     with open(file_path, 'rb') as file:
         chunk_iterator = file_to_chunks(file)
 
@@ -127,13 +125,9 @@ def upload_files_to_server(server_port, repo_test_path, regex='*'):
     if not os.path.isdir(repo_test_path):
         raise ValueError('repo_test_path does not exist')
 
-    stub = grpc_stub.get_stub_insecure_channel(
-        port=server_port, stub_type=file_transfer__v1__pb2_grpc.FileTransferServiceStub
-    )
-
     file_upload_result = []
     for file_path in list_files(repo_test_path, regex):
-        file_upload_response = upload_file_to_server(stub, file_path)
+        file_upload_response = upload_file_to_server(server_port, file_path)
         file_upload_result.append(file_upload_response)
 
     return file_upload_result

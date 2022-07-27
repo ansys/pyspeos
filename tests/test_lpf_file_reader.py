@@ -16,11 +16,15 @@ import ansys.api.speos.lpf.v1.lpf_file_reader_pb2 as lpf_file_reader__v1__pb2
 import ansys.api.speos.lpf.v1.lpf_file_reader_pb2_grpc as lpf_file_reader__v1__pb2_grpc
 from google.protobuf.empty_pb2 import Empty
 
-from ansys.pyoptics.speos import grpc_stub
-from conftest import config, test_path
+from ansys.pyoptics.speos import file_transfer, grpc_stub
+from conftest import config, local_test_path, test_path
 
 
 def test_lpf_file_reader_mono_v1_DirectSimu():
+    # Upload to server the files needed for this test
+    file_transfer.upload_file_to_server(
+        server_port=config.get("SpeosServerPort"), file_path=os.path.join(local_test_path, "basic_DirectSimu.lpf")
+    )
     # Lpf file reader creation
     stub = grpc_stub.get_stub_insecure_channel(
         port=config.get("SpeosServerPort"), stub_type=lpf_file_reader__v1__pb2_grpc.LpfFileReader_MonoStub
@@ -71,6 +75,11 @@ def test_lpf_file_reader_mono_v1_DirectSimu():
 
 
 def test_lpf_file_reader_mono_v1_InverseSimu():
+    # Upload to server the files needed for this test
+    file_transfer.upload_file_to_server(
+        server_port=config.get("SpeosServerPort"), file_path=os.path.join(local_test_path, "basic_InverseSimu.lpf")
+    )
+
     # Lpf file reader creation
     stub = grpc_stub.get_stub_insecure_channel(
         port=config.get("SpeosServerPort"), stub_type=lpf_file_reader__v1__pb2_grpc.LpfFileReader_MonoStub
@@ -107,6 +116,14 @@ def test_lpf_file_reader_mono_v1_InverseSimu():
 
 
 def test_lpf_file_reader_multi_v1():
+    # Upload to server the files needed for this test
+    file_transfer.upload_file_to_server(
+        server_port=config.get("SpeosServerPort"), file_path=os.path.join(local_test_path, "basic_DirectSimu.lpf")
+    )
+    file_transfer.upload_file_to_server(
+        server_port=config.get("SpeosServerPort"), file_path=os.path.join(local_test_path, "basic_InverseSimu.lpf")
+    )
+
     # Lpf file reader multi creation
     stub = grpc_stub.get_stub_insecure_channel(
         port=config.get("SpeosServerPort"), stub_type=lpf_file_reader__v1__pb2_grpc.LpfFileReader_MultiStub
