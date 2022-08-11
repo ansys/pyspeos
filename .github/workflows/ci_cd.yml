@@ -92,7 +92,6 @@ jobs:
         run: |
           pip install -r requirements/requirements_test.txt
           docker-compose up -d
-          docker ps
           sleep 10
           docker ps
           docker logs pyoptics_speos-rpc
