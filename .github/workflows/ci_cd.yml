@@ -92,9 +92,24 @@ jobs:
         run: |
           pip install -r requirements/requirements_test.txt
           docker-compose up -d
+          sleep 10
           docker ps
           docker logs pyoptics_speos-rpc
           sleep 10
+          docker ps
+          docker logs pyoptics_speos-rpc
+          sleep 10
+          docker ps
+          docker logs pyoptics_speos-rpc
+          sleep 10
+          docker ps
+          docker logs pyoptics_speos-rpc
+          sleep 10
+          docker ps
+          docker logs pyoptics_speos-rpc
+          sleep 10
+          docker ps
+          docker logs pyoptics_speos-rpc
           cd tests  # so we're testing the install, not local
           pytest -vx
           docker kill pyoptics_speos-rpc 
