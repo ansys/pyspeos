@@ -101,6 +101,7 @@ Since the docker image contains no license server, you will need to enter your l
 With that, you can launch SpeosRPC server with:
 
 .. code::
+   
    LICENSE_SERVER=1055@XXX.XXX.XXX.XXX
    
    docker login ghcr.io/pyansys/pyoptics
