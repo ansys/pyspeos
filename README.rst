@@ -102,7 +102,7 @@ With that, you can launch SpeosRPC server with:
 
 .. code::
    
-   LICENSE_SERVER=1055@XXX.XXX.XXX.XXX
+   export LICENSE_SERVER=1055@XXX.XXX.XXX.XXX
    
    docker login ghcr.io/pyansys/pyoptics
    docker-compose up -d
