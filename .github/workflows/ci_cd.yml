@@ -92,21 +92,7 @@ jobs:
         run: |
           pip install -r requirements/requirements_test.txt
           docker-compose up -d
-          sleep 10
           docker ps
-          docker logs pyoptics_speos-rpc
-          sleep 10
-          docker ps
-          docker logs pyoptics_speos-rpc
-          sleep 10
-          docker ps
-          docker logs pyoptics_speos-rpc
-          sleep 10
-          docker ps
-          docker logs pyoptics_speos-rpc
-          sleep 10
-          docker ps
-          docker logs pyoptics_speos-rpc
           sleep 10
           docker ps
           docker logs pyoptics_speos-rpc
@@ -115,7 +101,7 @@ jobs:
           docker kill pyoptics_speos-rpc 
           docker rm pyoptics_speos-rpc
         env:
-          LICENSE_SERVER: ${{ secrets.LICENSE_SERVER }}
+          LICENSE_SERVER: 1055@${{ secrets.LICENSE_SERVER }}
 
       - name: Upload wheel
         uses: actions/upload-artifact@v2
