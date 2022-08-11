@@ -5,6 +5,9 @@ services:
     container_name: pyoptics_speos-rpc
     ports:
       - "50051:50051"
+    environment:
+      - SPEOS_LOG_LEVEL=2
+      - ANSYSLMD_LICENSE_FILE=$LICENSE_SERVER
     entrypoint: ./SpeosRPC_Server.x
     volumes:
       - type: bind

@@ -96,10 +96,13 @@ The configuration file `<tests/local_config.json>`_ located in tests folder cont
 Start server
 ~~~~~~~~~~~~
 First options is to use the Docker container of `SpeosRPC_Server <https://github.com/orgs/pyansys/packages/container/package/pyoptics%2Fspeos-rpc>`_.
-It can be started using `<docker-compose.yml>`_ (if needed, please provide GitHub username and PAT as password) :
+It can be started using `<docker-compose.yml>`_ (if needed, please provide GitHub username and PAT as password)
+Since the docker image contains no license server, you will need to enter your license server IP address in the `LICENSE_SERVER` environment variable.
+With that, you can launch SpeosRPC server with:
 
 .. code::
-
+   LICENSE_SERVER=1055@XXX.XXX.XXX.XXX
+   
    docker login ghcr.io/pyansys/pyoptics
    docker-compose up -d
 
