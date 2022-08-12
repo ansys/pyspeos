@@ -96,6 +96,8 @@ jobs:
           pytest -vx
           docker kill pyoptics_speos-rpc 
           docker rm pyoptics_speos-rpc
+        env:
+          LICENSE_SERVER: 1055@${{ secrets.LICENSE_SERVER }}
 
       - name: Upload wheel
         uses: actions/upload-artifact@v2

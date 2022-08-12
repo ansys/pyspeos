@@ -10,8 +10,20 @@ directory as this module.
 import json
 import os
 
-local_path = os.path.dirname(os.path.realpath(__file__))
+import grpc
 
+
+def grpc_server_on(config) -> bool:
+    TIMEOUT_SEC = 60
+    try:
+        with grpc.insecure_channel(f"localhost:" + str(config.get("SpeosServerPort"))) as channel:
+            grpc.channel_ready_future(channel).result(timeout=TIMEOUT_SEC)
+            return True
+    except:
+        return False
+
+
+local_path = os.path.dirname(os.path.realpath(__file__))
 
 # Load the local config file
 local_config_file = os.path.join(local_path, "local_config.json")
@@ -27,3 +39,7 @@ if config.get("SpeosServerOnDocker"):
     test_path = "/app/assets/"
 else:
     test_path = os.path.join(local_path, "assets/")
+
+# Wait for the grpc server - in case the timeout is reached raise an error
+if not grpc_server_on(config):
+    raise ValueError("Start SpeosRPC_Server - Timeout reached.")
