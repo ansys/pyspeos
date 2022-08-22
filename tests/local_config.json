@@ -1,5 +1,5 @@
 {
-  "SpeosServerOnDocker": false,
+  "SpeosServerOnDocker": true,
   "SpeosContainerName" : "pyoptics_speos-rpc",
   "SpeosServerPort": 50051
 }
