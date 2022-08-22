@@ -22,57 +22,53 @@ from helper import does_file_exist, remove_file
 
 def test_simulation():
     # Stub on simulation manager
-    SimulationManagerStub = speos.get_stub_insecure_channel(
+    simulation_manager_stub = speos.get_stub_insecure_channel(
         port=config.get("SpeosServerPort"), stub_type=simulation__v1__pb2_grpc.SpeosSimulationsManagerStub
     )
 
     # Stub on simulation
-    SimulationStub = speos.get_stub_insecure_channel(
+    simulation_stub = speos.get_stub_insecure_channel(
         port=config.get("SpeosServerPort"), stub_type=simulation__v1__pb2_grpc.SpeosSimulationStub
     )
 
     # Create a new simulation on the server
-    guidSimu = SimulationManagerStub.Create(simulation__v1__pb2.Create_Request())
+    guid_simu = simulation_manager_stub.Create(simulation__v1__pb2.Create_Request())
 
     # Get input file path and load it
-    SpeosSimulationName = "LG_50M_Colorimetric_short.sv5"
-    Folderpath = os.path.join(test_path, SpeosSimulationName)
-    SpeosSimulationFullPath = os.path.join(Folderpath, SpeosSimulationName)
-    print("path = " + str(Folderpath))
+    speos_simulation_name = "LG_50M_Colorimetric_short.sv5"
+    folder_path = os.path.join(test_path, speos_simulation_name)
+    speos_simulation_full_path = os.path.join(folder_path, speos_simulation_name)
 
-    Load_Request = simulation__v1__pb2.Load_Request()
-    Load_Request.guid = guidSimu.guid
-    Load_Request.input_file_path = SpeosSimulationFullPath
+    load_request = simulation__v1__pb2.Load_Request()
+    load_request.guid = guid_simu.guid
+    load_request.input_file_path = speos_simulation_full_path
 
-    SimulationStub.Load(Load_Request)
+    simulation_stub.Load(load_request)
 
     # GetName
-    GetName_Request = simulation__v1__pb2.GetName_Request()
-    GetName_Request.guid = guidSimu.guid
-    GetName_Response = SimulationStub.GetName(GetName_Request)
+    get_name_request = simulation__v1__pb2.GetName_Request()
+    get_name_request.guid = guid_simu.guid
+    get_name_response = simulation_stub.GetName(get_name_request)
 
-    print("Simulation name : " + GetName_Response.name)
-    assert GetName_Response.name == "ASSEMBLY1.DS (0)"
+    assert get_name_response.name == "ASSEMBLY1.DS (0)"
 
     # Get Results list
-    GetResults_Request = simulation__v1__pb2.GetResults_Request()
-    GetResults_Request.guid = guidSimu.guid
-    # GetResults_Response = simulation__v1__pb2.GetResults_Response()
+    get_results_request = simulation__v1__pb2.GetResults_Request()
+    get_results_request.guid = guid_simu.guid
 
-    GetResults_Response = SimulationStub.GetResults(GetResults_Request)
-    print("RESULTS = " + str(GetResults_Response))
+    get_results_response = simulation_stub.GetResults(get_results_request)
 
     # Run the simulation
-    Run_Request = simulation__v1__pb2.Run_Request()
-    Run_Request.guid = guidSimu.guid
-    SimulationStub.Run(Run_Request)
+    run_request = simulation__v1__pb2.Run_Request()
+    run_request.guid = guid_simu.guid
+    simulation_stub.Run(run_request)
 
     # Check results has been pushed
-    for result in GetResults_Response.results_paths:
+    for result in get_results_response.results_paths:
         assert does_file_exist(result)
         remove_file(result)
         assert not does_file_exist(result)
 
-    Delete_Request = simulation__v1__pb2.Delete_Request()
-    Delete_Request.guid = guidSimu.guid
-    SimulationManagerStub.Delete(Delete_Request)
+    delete_request = simulation__v1__pb2.Delete_Request()
+    delete_request.guid = guid_simu.guid
+    simulation_manager_stub.Delete(delete_request)
