@@ -29,7 +29,7 @@ def test_lpf_file_reader_mono_v1_DirectSimu():
         stub_type=lpf_file_reader__v2__pb2_grpc.LpfFileReader_MonoStub,
     )
 
-    # Init with file path
+    # Init with file local path
     path = os.path.join(test_path, "basic_DirectSimu.lpf")
     stub.InitLpfFileName(lpf_file_reader__v2__pb2.InitLpfFileName_Request_Mono(lpf_file_uri=path))
 
@@ -80,7 +80,7 @@ def test_lpf_file_reader_mono_v1_InverseSimu():
         stub_type=lpf_file_reader__v2__pb2_grpc.LpfFileReader_MonoStub,
     )
 
-    # Init with file path
+    # Init with file local path
     path = os.path.join(test_path, "basic_InverseSimu.lpf")
     stub.InitLpfFileName(lpf_file_reader__v2__pb2.InitLpfFileName_Request_Mono(lpf_file_uri=path))
 
@@ -121,7 +121,7 @@ def test_lpf_file_reader_multi_v1():
     create_lpf_reader_response = stub.Create(lpf_file_reader__v2__pb2.Create_Request_Multi())
     guid = create_lpf_reader_response.lpf_reader_guid
 
-    # Init with file path
+    # Init with file local path
     path = os.path.join(test_path, "basic_DirectSimu.lpf")
     stub.InitLpfFileName(
         lpf_file_reader__v2__pb2.InitLpfFileName_Request_Multi(lpf_reader_guid=guid, lpf_file_uri=path)

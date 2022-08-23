@@ -9,7 +9,6 @@
    :hidden:
    :maxdepth: 3
 
-   grpc_tools
    class_documentation
 
 
