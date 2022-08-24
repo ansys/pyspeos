@@ -35,11 +35,11 @@ else:
 
 
 # set test_path var depending on if we are using the servers in a docker container or not
+local_test_path = os.path.join(local_path, "assets/")
 if config.get("SpeosServerOnDocker"):
     test_path = "/app/assets/"
-    local_test_path = os.path.join(local_path, "assets/")
 else:
-    test_path = os.path.join(local_path, "assets/")
+    test_path = local_test_path
 
 # Wait for the grpc server - in case the timeout is reached raise an error
 if not grpc_server_on(config):
