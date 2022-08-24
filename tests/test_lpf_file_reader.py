@@ -19,7 +19,7 @@ import ansys.api.speos.file.v1.file_transfer_pb2_grpc as file_transfer__v1__pb2_
 import ansys.api.speos.lpf.v2.lpf_file_reader_pb2 as lpf_file_reader__v2__pb2
 import ansys.api.speos.lpf.v2.lpf_file_reader_pb2_grpc as lpf_file_reader__v2__pb2_grpc
 
-from conftest import config, test_path
+from conftest import config, local_test_path, test_path
 
 
 def test_lpf_file_reader_mono_v1_DirectSimu():
@@ -182,8 +182,8 @@ def test_lpf_file_reader_multi_v1():
 
 
 def test_lpf_file_reader_mono_v1_DirectSimu_with_upload():
-    # File upload to the server
-    path = os.path.join(test_path, "basic_DirectSimu.lpf")
+    # local file upload to the server
+    path = os.path.join(local_test_path, "basic_DirectSimu.lpf")
     file_transfer_stub = grpc_stub.get_stub_insecure_channel(
         target="localhost:" + str(config.get("SpeosServerPort")),
         stub_type=file_transfer__v1__pb2_grpc.FileTransferServiceStub,
@@ -238,4 +238,5 @@ def test_lpf_file_reader_mono_v1_DirectSimu_with_upload():
     # Close
     stub.CloseLpfFileName(lpf_file_reader__v2__pb2.CloseLpfFileName_Request_Mono())
 
+    # Delete the file previously uploaded to the server - it is no more needed
     file_transfer_stub.Delete(file_transfer__v1__pb2.Delete_Request(uri=upload_response.uri))
