@@ -12,23 +12,25 @@ With coverage.
 """
 import os
 
+from ansys.api.speos import grpc_stub
 import ansys.api.speos.simulation.v1.simulation_pb2 as simulation__v1__pb2
 import ansys.api.speos.simulation.v1.simulation_pb2_grpc as simulation__v1__pb2_grpc
 
-from ansys.pyoptics import speos
 from conftest import config, test_path
 from helper import does_file_exist, remove_file
 
 
 def test_simulation():
     # Stub on simulation manager
-    simulation_manager_stub = speos.get_stub_insecure_channel(
-        port=config.get("SpeosServerPort"), stub_type=simulation__v1__pb2_grpc.SpeosSimulationsManagerStub
+    simulation_manager_stub = grpc_stub.get_stub_insecure_channel(
+        target="localhost:" + str(config.get("SpeosServerPort")),
+        stub_type=simulation__v1__pb2_grpc.SpeosSimulationsManagerStub,
     )
 
     # Stub on simulation
-    simulation_stub = speos.get_stub_insecure_channel(
-        port=config.get("SpeosServerPort"), stub_type=simulation__v1__pb2_grpc.SpeosSimulationStub
+    simulation_stub = grpc_stub.get_stub_insecure_channel(
+        target="localhost:" + str(config.get("SpeosServerPort")),
+        stub_type=simulation__v1__pb2_grpc.SpeosSimulationStub,
     )
 
     # Create a new simulation on the server
