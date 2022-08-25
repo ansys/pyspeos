@@ -23,7 +23,7 @@ classifiers=[
     "Operating System :: OS Independent",
 ]
 dependencies=[
-    "ansys-optics-speos-grpcapi==5",
+    "ansys-optics-speos-grpcapi>=4,<5",
     "grpcio-tools",
 ]
 
