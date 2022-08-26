@@ -4,9 +4,6 @@ updates:
     directory: "/requirements" # Location of package manifests
     schedule:
       interval: "daily"
-    labels:
-      - "Maintenance"
-      - "Dependencies"
 
   - package-ecosystem: "github-actions"
     directory: "/"
