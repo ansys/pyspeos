@@ -88,11 +88,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set the value
-        id: step_one
-        run: |
-          echo "LICENSE_SERVER=1055@$secrets.LICENSE_SERVER" >> $GITHUB_ENV
-
       - name: Unit testing
         run: |
           pip install -r requirements/requirements_test.txt
@@ -101,6 +96,8 @@ jobs:
           pytest -vx
           docker kill pyoptics_speos-rpc 
           docker rm pyoptics_speos-rpc
+        env:
+          LICENSE_SERVER: ${{ format('1055@{0}', secrets.LICENSE_SERVER) }}
 
       - name: Upload wheel
         uses: actions/upload-artifact@v2
@@ -183,7 +180,7 @@ jobs:
         run: ls -R
 
       - name: Deploy
-        uses: JamesIves/github-pages-deploy-action@4.1.5
+        uses: JamesIves/github-pages-deploy-action@v4.4.0
         with:
           BRANCH: gh-pages
           FOLDER: ~/html
