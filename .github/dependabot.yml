@@ -5,9 +5,6 @@ updates:
     insecure-external-code-execution: allow
     schedule:
       interval: "daily"
-    labels:
-      - "Maintenance"
-      - "Dependencies"
 
   - package-ecosystem: "github-actions"
     directory: "/"
