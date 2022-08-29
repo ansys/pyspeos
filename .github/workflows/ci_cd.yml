@@ -91,7 +91,7 @@ jobs:
       - name: Set the value
         id: step_one
         run: |
-          echo "LICENSE_SERVER=1055@$secrets.LICENSE_SERVER" >> $GITHUB_ENV
+          echo "LICENSE_SERVER=1055@{{ $secrets.LICENSE_SERVER }}" >> $GITHUB_ENV
 
       - name: Unit testing
         run: |
