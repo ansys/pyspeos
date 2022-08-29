@@ -7,7 +7,7 @@ services:
       - "50051:50051"
     environment:
       - SPEOS_LOG_LEVEL=2
-      - ANSYSLMD_LICENSE_FILE=$LICENSE_SERVER
+      - ANSYSLMD_LICENSE_FILE=${{ env.LICENSE_SERVER }}
     entrypoint: ./SpeosRPC_Server.x
     volumes:
       - type: bind
