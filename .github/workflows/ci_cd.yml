@@ -82,7 +82,7 @@ jobs:
         run: pip install .
 
       - name: Login to GitHub Packages
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           registry: ghcr.io/pyansys/pyoptics
           username: ${{ github.actor }}
