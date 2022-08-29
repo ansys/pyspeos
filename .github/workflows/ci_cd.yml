@@ -100,7 +100,7 @@ jobs:
           LICENSE_SERVER: ${{ format('1055@{0}', secrets.LICENSE_SERVER) }}
 
       - name: Upload wheel
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ansys-pyoptics-wheel
           path: dist/
@@ -144,7 +144,7 @@ jobs:
           retention-days: 7
 
       - name: Upload PDF Documentation
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: Documentation-pdf
           path: doc/build/latex/*.pdf
