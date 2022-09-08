@@ -24,7 +24,7 @@ classifiers=[
 ]
 dependencies=[
     "ansys-optics-speos-grpcapi==5.0.0",
-    "grpcio-tools==1.47.0",
+    "grpcio-tools==1.48.1",
 ]
 
 [project.optional-dependencies]
