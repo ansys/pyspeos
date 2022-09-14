@@ -22,7 +22,7 @@ import ansys.api.speos.lpf.v2.lpf_file_reader_pb2_grpc as lpf_file_reader__v2__p
 from conftest import config, local_test_path, test_path
 
 
-def test_lpf_file_reader_mono_v1_DirectSimu():
+def test_lpf_file_reader_mono_v2_DirectSimu():
     # Lpf file reader creation
     stub = grpc_stub.get_stub_insecure_channel(
         target="localhost:" + str(config.get("SpeosServerPort")),
@@ -73,7 +73,7 @@ def test_lpf_file_reader_mono_v1_DirectSimu():
     stub.CloseLpfFileName(lpf_file_reader__v2__pb2.CloseLpfFileName_Request_Mono())
 
 
-def test_lpf_file_reader_mono_v1_InverseSimu():
+def test_lpf_file_reader_mono_v2_InverseSimu():
     # Lpf file reader creation
     stub = grpc_stub.get_stub_insecure_channel(
         target="localhost:" + str(config.get("SpeosServerPort")),
@@ -110,7 +110,7 @@ def test_lpf_file_reader_mono_v1_InverseSimu():
     stub.CloseLpfFileName(lpf_file_reader__v2__pb2.CloseLpfFileName_Request_Mono())
 
 
-def test_lpf_file_reader_multi_v1():
+def test_lpf_file_reader_multi_v2():
     # Lpf file reader multi creation
     stub = grpc_stub.get_stub_insecure_channel(
         target="localhost:" + str(config.get("SpeosServerPort")),
@@ -181,7 +181,7 @@ def test_lpf_file_reader_multi_v1():
     stub.Delete(lpf_file_reader__v2__pb2.Delete_Request_Multi(lpf_reader_guid=guid))
 
 
-def test_lpf_file_reader_mono_v1_DirectSimu_with_upload():
+def test_lpf_file_reader_mono_v2_DirectSimu_with_file_transfer():
     # local file upload to the server
     path = os.path.join(local_test_path, "basic_DirectSimu.lpf")
     file_transfer_stub = grpc_stub.get_stub_insecure_channel(
@@ -197,7 +197,7 @@ def test_lpf_file_reader_mono_v1_DirectSimu_with_upload():
     )
 
     # Init with uri from file transfer
-    stub.InitLpfFileName(lpf_file_reader__v2__pb2.InitLpfFileName_Request_Mono(lpf_file_uri=upload_response.uri))
+    stub.InitLpfFileName(lpf_file_reader__v2__pb2.InitLpfFileName_Request_Mono(lpf_file_uri=upload_response.info.uri))
 
     # GetInformation
     res_information = stub.GetInformation(lpf_file_reader__v2__pb2.GetInformation_Request_Mono())
@@ -239,4 +239,4 @@ def test_lpf_file_reader_mono_v1_DirectSimu_with_upload():
     stub.CloseLpfFileName(lpf_file_reader__v2__pb2.CloseLpfFileName_Request_Mono())
 
     # Delete the file previously uploaded to the server - it is no more needed
-    file_transfer_stub.Delete(file_transfer__v1__pb2.Delete_Request(uri=upload_response.uri))
+    file_transfer_stub.Delete(file_transfer__v1__pb2.Delete_Request(uri=upload_response.info.uri))
