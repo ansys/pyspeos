@@ -170,7 +170,7 @@ def test_simu_allocateSyst_load_save_with_file_transfer():
     assert [dep_info for dep_info in deps_response.dependency_infos if dep_info.file_name == red_spectrum]
 
     # And download locally the simu saved - using download_folder helper provided within ansys.api.speos.file.v1
-    download_loc = os.path.join(test_path, "download_simu")
+    download_loc = os.path.join(local_test_path, "download_simu")
     os.mkdir(download_loc)
     download_responses = file_transfer.download_folder(
         file_transfer_service_stub=file_transfer_stub, main_file_uri=reserve_res.uri, download_location=download_loc
