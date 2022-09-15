@@ -1,7 +1,7 @@
 version: "3.4"
 services:
   pyoptics_speos-rpc:
-    image: ghcr.io/pyansys/pyoptics/speos-rpc:2022.2.0.207
+    image: ghcr.io/pyansys/pyoptics/speos-rpc:2022.2.0.235
     container_name: pyoptics_speos-rpc
     ports:
       - "50051:50051"
