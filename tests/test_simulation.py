@@ -20,7 +20,7 @@ import ansys.api.speos.file.v1.file_transfer_pb2_grpc as file_transfer__v1__pb2_
 import ansys.api.speos.simulation.v1.simulation_pb2 as simulation__v1__pb2
 import ansys.api.speos.simulation.v1.simulation_pb2_grpc as simulation__v1__pb2_grpc
 
-from conftest import config, test_path
+from conftest import config, local_test_path, test_path
 from helper import does_file_exist, remove_file
 
 
@@ -99,7 +99,7 @@ def test_simu_allocateSyst_load_run_with_file_transfer():
     sv5_name = "LG_50M_Colorimetric_short.sv5"
     upload_responses = file_transfer.upload_folder(
         file_transfer_service_stub=file_transfer_stub,
-        folder_path=os.path.join(test_path, sv5_name),
+        folder_path=os.path.join(local_test_path, sv5_name),
         main_file_name=sv5_name,
     )
     sv5_res_uri = [upload_res.info.uri for upload_res in upload_responses if upload_res.info.file_name == sv5_name][0]
@@ -145,7 +145,7 @@ def test_simu_allocateSyst_load_save_with_file_transfer():
     # Use upload_folder helper provided within ansys.api.speos.file.v1
     upload_responses = file_transfer.upload_folder(
         file_transfer_service_stub=file_transfer_stub,
-        folder_path=os.path.join(test_path, sv5_name),
+        folder_path=os.path.join(local_test_path, sv5_name),
         main_file_name=sv5_name,
     )
     sv5_res_uri = [upload_res.info.uri for upload_res in upload_responses if upload_res.info.file_name == sv5_name][0]
