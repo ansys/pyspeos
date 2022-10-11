@@ -1,4 +1,4 @@
 Sphinx==5.2.3
-numpydoc==1.4.0  # need latest
+numpydoc==1.5.0  # need latest
 ansys-sphinx-theme==0.6.1
 sphinx-copybutton==0.5.0
