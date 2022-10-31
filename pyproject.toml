@@ -33,9 +33,9 @@ test = [
     "pytest-cov==4.0.0",
 ]
 doc = [
-    "Sphinx==5.2.3",
+    "Sphinx==5.3.0",
     "numpydoc==1.5.0",
-    "ansys-sphinx-theme==0.6.1",
+    "ansys-sphinx-theme==0.7.0",
     "sphinx-copybutton==0.5.0",
 ]
 
