@@ -1,4 +1,4 @@
-build==0.8.0
+build==0.9.0
 twine==4.0.1
 ansys-optics-speos-grpcapi==7.0.0
-grpcio-tools==1.49.1
+grpcio-tools==1.50.0
