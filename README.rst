@@ -129,7 +129,7 @@ Launch unit tests
 
 .. code::
 
-   pip install -r requirements/requirements_test.txt
+   pip install .[tests]
    pytest -vx
 
 
