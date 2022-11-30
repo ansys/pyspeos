@@ -43,10 +43,21 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+  doc-build:
+
+    name: Doc building
+    runs-on: ubuntu-latest
+    needs: doc-style
+    steps:
+      - name: "Run Ansys documentation building action"
+        uses: pyansys/actions/doc-build@v1
+        with:
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+
   tests:
     name: Build and testing
     runs-on: ubuntu-latest
-    needs: [style,docs]
+    needs: [style,doc-build]
   
     steps:
       - uses: actions/checkout@v3
@@ -92,17 +103,6 @@ jobs:
           name: ansys-pyoptics-wheel
           path: dist/
           retention-days: 7
-
-  doc-build:
-  
-    name: Doc building
-    runs-on: ubuntu-latest
-    needs: doc-style
-    steps:
-      - name: "Run Ansys documentation building action"
-        uses: pyansys/actions/doc-build@v1
-        with:
-          python-version: ${{ env.MAIN_PYTHON_VERSION }}
 
   release:
 
