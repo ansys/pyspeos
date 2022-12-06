@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: PyAnsys code style checks
-        uses: pyansys/actions/code-style@v1
+        uses: pyansys/actions/code-style@v2
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
 
@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: PyAnsys documentation style checks
-        uses: pyansys/actions/doc-style@v1
+        uses: pyansys/actions/doc-style@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -50,7 +50,7 @@ jobs:
     needs: docs-style
     steps:
       - name: "Run Ansys documentation building action"
-        uses: pyansys/actions/doc-build@v1
+        uses: pyansys/actions/doc-build@v2
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
 
@@ -126,6 +126,6 @@ jobs:
     #      twine-token: ${{ secrets.PYPI_TOKEN }}
 #
     - name: "Release to GitHub"
-      uses: pyansys/actions/release-github@v1
+      uses: pyansys/actions/release-github@v2
       with:
         library-name: ${{ env.PACKAGE_NAME }}
