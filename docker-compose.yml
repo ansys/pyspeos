@@ -14,3 +14,9 @@ services:
         source: ./tests/assets
         target: /app/assets
         read_only: false
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [ gpu ]
