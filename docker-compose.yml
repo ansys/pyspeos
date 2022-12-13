@@ -1,14 +1,14 @@
 version: "3.4"
 services:
-  pyoptics_speos-rpc:
+  optics_speos-rpc:
     image: ghcr.io/pyansys/pyoptics/speos-rpc:2023.2.0.305
-    container_name: pyoptics_speos-rpc
+    container_name: optics_speos-rpc
     ports:
       - "50051:50051"
     environment:
       - SPEOS_LOG_LEVEL=2
       - ANSYSLMD_LICENSE_FILE=$LICENSE_SERVER
-    entrypoint: ./SpeosRPC_Server.x
+    entrypoint: /app/SpeosRPC_Server.x
     volumes:
       - type: bind
         source: ./tests/assets
