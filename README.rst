@@ -120,7 +120,7 @@ And test configuration file `<tests/local_config.json>`_ must be updated to use 
    
    {
       "SpeosServerOnDocker": false,
-      "SpeosContainerName" : "pyoptics_speos-rpc",
+      "SpeosContainerName" : "optics_speos-rpc",
       "SpeosServerPort": 50051
    }
 
