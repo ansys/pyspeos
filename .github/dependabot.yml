@@ -5,6 +5,8 @@ updates:
     insecure-external-code-execution: allow
     schedule:
       interval: "daily"
+    ignore:
+      - dependency-name: "grpcio-tools"
 
   - package-ecosystem: "github-actions"
     directory: "/"
