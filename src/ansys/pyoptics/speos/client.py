@@ -96,14 +96,13 @@ class SpeosClient:
 
         self._closed = False
         self._remote_instance = remote_instance
-
-        self._target = f"{host}:{port}"
-        self._channel = grpc.insecure_channel(
-            self._target,
-            options=[
-                ("grpc.max_receive_message_length", MAX_MESSAGE_LENGTH),
-            ],
-        )
+        if channel:
+            # Used for PyPIM when directly providing a channel
+            self._channel = channel
+            self._target = str(channel)
+        else:
+            self._target = f"{host}:{port}"
+            self._channel = grpc.insecure_channel(self._target)
         # do not finish initialization until channel is healthy
         wait_until_healthy(self._channel, timeout)
 

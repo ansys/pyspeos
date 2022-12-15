@@ -1,14 +1,25 @@
+import json
+import os
+
 import grpc
 import pytest
 
 from ansys.pyoptics.speos.client import SpeosClient, wait_until_healthy
 
+local_path = os.path.dirname(os.path.realpath(__file__))
 
-@pytest.fixture()
+# Load the local config file
+local_config_file = os.path.join(local_path, "local_config.json")
+if os.path.exists(local_config_file):
+    with open(local_config_file) as f:
+        config = json.load(f)
+else:
+    raise ValueError("Missing local_config.json file")
+
+
+@pytest.fixture(scope="function")
 def client():
-    # this uses DEFAULT_HOST and DEFAULT_PORT which are set by environment
-    # variables in the workflow
-    return SpeosClient()
+    return SpeosClient(port=(config.get("SpeosServerPort")))
 
 
 def test_wait_until_healthy():
@@ -18,14 +29,13 @@ def test_wait_until_healthy():
         wait_until_healthy(channel, timeout=1.0)
 
 
-def test_client_init(client):
+def test_client_init(client: SpeosClient):
     assert client.healthy is True
     client_repr = repr(client)
     assert "Target" in client_repr
-    assert "Connection" in client_repr
 
 
-def test_client_close(client):
+def test_client_close(client: SpeosClient):
     client.close()
     assert client._closed
     assert "Closed" in str(client)
