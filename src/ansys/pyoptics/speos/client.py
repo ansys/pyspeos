@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Optional, Union
 import grpc
 from grpc._channel import _InactiveRpcError
 from grpc_health.v1 import health_pb2, health_pb2_grpc
+
 from ansys.pyoptics.speos import LOG as logger
 from ansys.pyoptics.speos.logger import PyOpticsCustomAdapter
 
@@ -20,6 +21,7 @@ if TYPE_CHECKING:  # pragma: no cover
 
 # Default 256 MB message length
 MAX_MESSAGE_LENGTH = int(os.environ.get("SPEOS_MAX_MESSAGE_LENGTH", 256 * 1024**2))
+
 
 def wait_until_healthy(channel: grpc.Channel, timeout: float):
     """
@@ -48,9 +50,9 @@ def wait_until_healthy(channel: grpc.Channel, timeout: float):
             continue
     else:
         target_str = channel._channel.target().decode()
-        raise TimeoutError(
-            f"Channel health check to target '{target_str}' timed out after {timeout} seconds."
-        )
+        raise TimeoutError(f"Channel health check to target '{target_str}' timed out after {timeout} seconds.")
+
+
 class SpeosClient:
     """
     Wraps a speos gRPC connection.
@@ -78,6 +80,7 @@ class SpeosClient:
     logging_file : Optional[str, Path]
         The file to output the log, if requested. By default, ``None``.
     """
+
     def __init__(
         self,
         host: Optional[str] = DEFAULT_HOST,
@@ -107,25 +110,22 @@ class SpeosClient:
         # do not finish initialization until channel is healthy
         wait_until_healthy(self._channel, timeout)
         # once connection with the client is established, create a logger
-        self._log = logger.add_instance_logger(
-            name=self._target, client_instance=self, level=logging_level
-        )
+        self._log = logger.add_instance_logger(name=self._target, client_instance=self, level=logging_level)
         if logging_file:
             if isinstance(logging_file, Path):
                 logging_file = str(logging_file)
             self._log.log_to_file(filename=logging_file, level=logging_level)
 
-
     @property
     def channel(self) -> grpc.Channel:
         """The gRPC channel of this client."""
         return self._channel
-    
+
     @property
     def log(self) -> PyOpticsCustomAdapter:
         """The specific instance logger."""
         return self._log
-    
+
     @property
     def healthy(self) -> bool:
         """Return if the client channel if healthy."""
@@ -138,7 +138,6 @@ class SpeosClient:
             return out.status is health_pb2.HealthCheckResponse.SERVING
         except _InactiveRpcError:  # pragma: no cover
             return False
-    
 
     def close(self):
         """Close the channel."""

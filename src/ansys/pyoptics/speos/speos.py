@@ -14,10 +14,11 @@ DEFAULT_PORT = "50051"
 if TYPE_CHECKING:  # pragma: no cover
     from ansys.platform.instancemanagement import Instance
 
+
 class Speos:
     """
     Provides interaction with the speos session.
-    
+
     Parameters
     ----------
     host : str, optional
@@ -44,6 +45,7 @@ class Speos:
     """
 
     """Constructor method for ``Modeler``."""
+
     def __init__(
         self,
         host: str = DEFAULT_HOST,

@@ -1,8 +1,7 @@
 import grpc
 import pytest
 
-from ansys.pyoptics.speos.client import wait_until_healthy, SpeosClient
-
+from ansys.pyoptics.speos.client import SpeosClient, wait_until_healthy
 
 
 def test_wait_until_healthy():
@@ -10,6 +9,7 @@ def test_wait_until_healthy():
     channel = grpc.insecure_channel("9.0.0.1:80")
     with pytest.raises(TimeoutError):
         wait_until_healthy(channel, timeout=1.0)
+
 
 @pytest.fixture()
 def client(speos):

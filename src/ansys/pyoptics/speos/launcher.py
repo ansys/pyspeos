@@ -1,7 +1,8 @@
+import os
+
 from ansys.pyoptics.speos import LOG as logger
 from ansys.pyoptics.speos.client import SpeosClient
 from ansys.pyoptics.speos.speos import Speos
-import os
 
 MAX_MESSAGE_LENGTH = int(os.environ.get("SPEOS_MAX_MESSAGE_LENGTH", 256 * 1024**2))
 
@@ -12,16 +13,16 @@ try:
 except ModuleNotFoundError:  # pragma: no cover
     _HAS_PIM = False
 
+
 def launch_speos():
     if pypim.is_configured():
-        logger.info(
-            "Starting Geometry service remotely. The startup configuration will be ignored."
-        )
+        logger.info("Starting Geometry service remotely. The startup configuration will be ignored.")
         return launch_remote_speos()
+
 
 def launch_remote_speos(
     version=None,
-) -> Speos :
+) -> Speos:
     """Start the Geometry Service remotely using the product instance management API.
     When calling this method, you need to ensure that you are in an
     environment where PyPIM is configured. This can be verified with
@@ -37,9 +38,7 @@ def launch_remote_speos(
         An instance of the Geometry Service.
     """
     if not _HAS_PIM:  # pragma: no cover
-        raise ModuleNotFoundError(
-            "The package 'ansys-platform-instancemanagement' is required to use this function."
-        )
+        raise ModuleNotFoundError("The package 'ansys-platform-instancemanagement' is required to use this function.")
 
     pim = pypim.connect()
     instance = pim.create_instance(product_name="speos", product_version=version)

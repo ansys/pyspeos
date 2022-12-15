@@ -75,9 +75,8 @@ import sys
 from typing import TYPE_CHECKING, Optional
 import weakref
 
-
 if TYPE_CHECKING:
-    from ansys.pyoptics.speos.client import SpeosClient # pragma: no cover
+    from ansys.pyoptics.speos.client import SpeosClient  # pragma: no cover
 
 ## Default configuration
 LOG_LEVEL = logging.DEBUG
@@ -125,9 +124,7 @@ class PyOpticsCustomAdapter(logging.LoggerAdapter):
     we are referring to once.
     """
 
-    level = (
-        None  # This is maintained for compatibility with ``supress_logging``, but it does nothing.
-    )
+    level = None  # This is maintained for compatibility with ``supress_logging``, but it does nothing.
     file_handler = None
     stdout_handler = None
 
@@ -160,9 +157,7 @@ class PyOpticsCustomAdapter(logging.LoggerAdapter):
             ``logging.DEBUG`` level is used.
         """
 
-        self.logger = addfile_handler(
-            self.logger, filename=filename, level=level, write_headers=True
-        )
+        self.logger = addfile_handler(self.logger, filename=filename, level=level, write_headers=True)
         self.file_handler = self.logger.file_handler
 
     def log_to_stdout(self, level=LOG_LEVEL):
@@ -389,10 +384,7 @@ class Logger:
                     # global.
                     if isinstance(level, int) and each_handler.level > level:
                         new_handler.setLevel(level)
-                    elif (
-                        isinstance(level, str)
-                        and each_handler.level > string_to_loglevel[level.upper()]
-                    ):
+                    elif isinstance(level, str) and each_handler.level > string_to_loglevel[level.upper()]:
                         new_handler.setLevel(level)
 
                 logger.addHandler(new_handler)
@@ -452,7 +444,6 @@ class Logger:
             logs. You can use this class to log events in the same
             way you would with the ``Logger`` class.
         """
-        from ansys.pyoptics.speos import SpeosClient
 
         count_ = 0
         new_name = name
@@ -460,9 +451,7 @@ class Logger:
             count_ += 1
             new_name = f"{name}_{count_}"
 
-        self._instances[new_name] = PyOpticsCustomAdapter(
-            self._make_child_logger(name, level), client_instance
-        )
+        self._instances[new_name] = PyOpticsCustomAdapter(self._make_child_logger(name, level), client_instance)
 
         return self._instances[new_name]
 
