@@ -28,12 +28,15 @@ classifiers=[
 dependencies=[
     "ansys-optics-speos-grpcapi==7.2.1",
     "grpcio-tools==1.48.2",
+    "grpcio-health-checking==1.48.2",
+    "beartype==0.11.0",
 ]
 
 [project.optional-dependencies]
 tests = [
     "pytest==7.2.0",
     "pytest-cov==4.0.0",
+    "ansys.platform.instancemanagement",
 ]
 doc = [
     "ansys-sphinx-theme==0.8.0",

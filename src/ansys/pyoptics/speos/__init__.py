@@ -20,4 +20,14 @@ Then add the import within this module to enable:
    referenced at the library level.
 
 """
+import logging
+
 from ansys.pyoptics.speos._version import __version__
+from ansys.pyoptics.speos.logger import Logger
+
+# Logger
+# ------------------------------------------------------------------------------
+
+
+LOG = Logger(level=logging.ERROR, to_file=False, to_stdout=True)
+LOG.debug("Loaded logging module as LOG")
