@@ -68,5 +68,5 @@ class Speos:
 
     @property
     def client(self) -> SpeosClient:
-        """The ``Modeler`` instance client."""
+        """The ``Speos` instance client."""
         return self._client
