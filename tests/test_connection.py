@@ -4,18 +4,18 @@ import pytest
 from ansys.pyoptics.speos.client import SpeosClient, wait_until_healthy
 
 
+@pytest.fixture()
+def client():
+    # this uses DEFAULT_HOST and DEFAULT_PORT which are set by environment
+    # variables in the workflow
+    return SpeosClient()
+
+
 def test_wait_until_healthy():
     # create a bogus channel
     channel = grpc.insecure_channel("9.0.0.1:80")
     with pytest.raises(TimeoutError):
         wait_until_healthy(channel, timeout=1.0)
-
-
-@pytest.fixture()
-def client(speos):
-    # this uses DEFAULT_HOST and DEFAULT_PORT which are set by environment
-    # variables in the workflow
-    return SpeosClient()
 
 
 def test_client_init(client):

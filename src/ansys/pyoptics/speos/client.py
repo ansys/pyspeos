@@ -56,6 +56,7 @@ def wait_until_healthy(channel: grpc.Channel, timeout: float):
 class SpeosClient:
     """
     Wraps a speos gRPC connection.
+
     Parameters
     ----------
     host : str, optional
@@ -95,20 +96,17 @@ class SpeosClient:
 
         self._closed = False
         self._remote_instance = remote_instance
-        if channel:
-            # Used for PyPIM when directly providing a channel
-            self._channel = channel
-            self._target = str(channel)
-        else:
-            self._target = f"{host}:{port}"
-            self._channel = grpc.insecure_channel(
-                self._target,
-                options=[
-                    ("grpc.max_receive_message_length", MAX_MESSAGE_LENGTH),
-                ],
-            )
+
+        self._target = f"{host}:{port}"
+        self._channel = grpc.insecure_channel(
+            self._target,
+            options=[
+                ("grpc.max_receive_message_length", MAX_MESSAGE_LENGTH),
+            ],
+        )
         # do not finish initialization until channel is healthy
         wait_until_healthy(self._channel, timeout)
+
         # once connection with the client is established, create a logger
         self._log = logger.add_instance_logger(name=self._target, client_instance=self, level=logging_level)
         if logging_file:

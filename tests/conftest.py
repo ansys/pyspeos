@@ -44,14 +44,3 @@ else:
 # Wait for the grpc server - in case the timeout is reached raise an error
 if not grpc_server_on(config):
     raise ValueError("Start SpeosRPC_Server - Timeout reached.")
-
-
-import pytest
-
-from ansys.pyoptics.speos.speos import Speos
-
-
-@pytest.fixture(scope="session")
-def speos():
-    speos = Speos(port=str(config.get("SpeosServerPort")))
-    yield speos
