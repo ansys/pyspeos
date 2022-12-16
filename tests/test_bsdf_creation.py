@@ -21,7 +21,7 @@ from conftest import config, test_path
 import helper
 
 
-def test_grpc_spectral_bsdf():
+def test_grpc_spectral_bsdf(speos):
     stub = grpc_stub.get_stub_insecure_channel(
         target="localhost:" + str(config.get("SpeosServerPort")),
         stub_type=bsdf_creation__v1__pb2_grpc.BsdfCreationServiceStub,
