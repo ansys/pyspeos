@@ -1,18 +1,7 @@
-import json
-import os
-
 import grpc
 import pytest
 
-local_path = os.path.dirname(os.path.realpath(__file__))
-
-# Load the local config file
-local_config_file = os.path.join(local_path, "local_config.json")
-if os.path.exists(local_config_file):
-    with open(local_config_file) as f:
-        config = json.load(f)
-else:
-    raise ValueError("Missing local_config.json file")
+from ansys.pyoptics.speos.client import wait_until_healthy
 
 
 def test_wait_until_healthy():

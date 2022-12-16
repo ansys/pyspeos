@@ -1,6 +1,5 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
 import logging
-import os
 from pathlib import Path
 import time
 from typing import TYPE_CHECKING, Optional, Union
@@ -18,9 +17,6 @@ DEFAULT_PORT = "50051"
 
 if TYPE_CHECKING:  # pragma: no cover
     from ansys.platform.instancemanagement import Instance
-
-# Default 256 MB message length
-MAX_MESSAGE_LENGTH = int(os.environ.get("SPEOS_MAX_MESSAGE_LENGTH", 256 * 1024**2))
 
 
 def wait_until_healthy(channel: grpc.Channel, timeout: float):
