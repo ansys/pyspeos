@@ -4,6 +4,7 @@ This module supplies a general framework for logging in pyoptics.  This module i
 built upon `logging <https://docs.python.org/3/library/logging.html>`_ library
 and it does not intend to replace it but rather provide a way to interact between
 ``logging`` and pyoptics.
+
 The loggers used in the module include the name of the instance, which
 is intended to be unique. This name is printed in all active
 outputs and is used to track the different pyoptics speos instances.
@@ -60,6 +61,7 @@ of the execution, you must edit the ``__init__`` file in the directory
 To log using this logger, call the desired method as a normal logger with:
 
 .. code:: python
+
     >>> import logging
     >>> from ansys.pyoptics.speos.logger import Logger
     >>> LOG = Logger(level=logging.DEBUG, to_file=False, to_stdout=True)
@@ -68,7 +70,6 @@ To log using this logger, call the desired method as a normal logger with:
 
 Instance Logger
 ~~~~~~~~~~~~~~~
-
 Every time an instance of :class:`speos <ansys.pyoptics.speos.speos.speos>`
 is created, a logger is created and stored in ``LOG._instances``. This field is a
 dictionary where the key is the name of the created logger.
@@ -88,10 +89,10 @@ You can use this logger like this:
 
 Other loggers
 ~~~~~~~~~~~~~
-
 You can create your own loggers using a Python ``logging`` library as
 you would do in any other script. There would be no conflicts between
 these loggers.
+
 """
 
 from copy import copy
@@ -142,7 +143,6 @@ string_to_loglevel = {
 
 
 class PyOpticsCustomAdapter(logging.LoggerAdapter):
-
     """Keeps the reference to the speos instance name dynamic.
 
     If we use the standard approach, which is supplying **extra** input
@@ -179,11 +179,9 @@ class PyOpticsCustomAdapter(logging.LoggerAdapter):
 
         Parameters
         ----------
-
         filename : str, optional
             Name of the file to write log messages to. The default is
             ``"pyoptics.log"``.
-
         level : str, optional
             Level of logging. The default is ``10``, in which case the
             ``logging.DEBUG`` level is used.
@@ -277,38 +275,35 @@ class InstanceFilter(logging.Filter):
 
 
 class Logger:
-
-    """Provides the logger used for each pyoptics session.
+    """Provides the logger used for each PyOptics session.
 
     This class allows you to add handlers to the logger to output messages
     to a file or to the standard output.
 
     Parameters
     ----------
-    level : int, optional
+    level : int, default: 10
         Logging level to filter the message severity allowed in the logger.
-        The default is ``10``, in which case the ``logging.DEBUG`` level
-        is used.
-    to_file : bool, optional
-        Whether to write log messages to a file. The default is ``False``.
-    to_stdout : bool, optional
-        Whether to write log messages to the standard output (stdout). The
-        default is ``True``.
-    filename : str, optional
-        Name of the file to write log log messages to. The default is
-        ``"pyoptics.log"``.
+        By default, the ``logging.DEBUG`` level is used.
+    to_file : bool, default: False
+        Whether to write log messages to a file.
+    to_stdout : bool, default: True
+        Whether to write log messages to the standard output (stdout).
+    filename : str, default: "pyoptics.log"
+        Name of the file to write log log messages to.
 
     Examples
     --------
-    Demonstrate logger usage from the ``speos`` instance, which is automatically
+    Demonstrate logger usage from the ``Speos`` instance, which is automatically
     created when a speos instance is created.
 
     >>> from ansys.pyoptics.speos import speos
-    >>> speos = speos(loglevel='DEBUG')
+    >>> speos = Speos(loglevel='DEBUG')
     >>> speos._log.info('This is a useful message')
     INFO -  -  <ipython-input-24-80df150fe31f> - <module> - This is LOG debug message.
 
     Import the global pyoptics logger and add a file output handler.
+
     >>> import os
     >>> from ansys.pyoptics.speos import LOG
     >>> file_path = os.path.join(os.getcwd(), 'pyoptics.log')

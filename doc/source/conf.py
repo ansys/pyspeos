@@ -49,12 +49,8 @@ intersphinx_mapping = {
     # "pyvista": ("https://docs.pyvista.org/", None),
 }
 
-# numpydoc configuration
 numpydoc_show_class_members = False
 numpydoc_xref_param_type = True
-
-# Consider enabling numpydoc validation. See:
-# https://numpydoc.readthedocs.io/en/latest/validation.html#
 numpydoc_validate = True
 numpydoc_validation_checks = {
     "GL06",  # Found unknown section
@@ -70,7 +66,6 @@ numpydoc_validation_checks = {
     "RT02",  # The first line of the Returns section should contain only the
     # type, unless multiple values are being returned"
 }
-
 
 # static path
 html_static_path = ["_static"]
