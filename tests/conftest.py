@@ -13,6 +13,8 @@ import logging
 import os
 from pathlib import Path
 
+import pytest
+
 from ansys.pyoptics.speos.speos import Speos
 
 
