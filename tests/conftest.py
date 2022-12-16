@@ -17,6 +17,8 @@ import pytest
 
 from ansys.pyoptics.speos.speos import Speos
 
+# import grpc
+
 
 @pytest.fixture(scope="session")
 def speos():
