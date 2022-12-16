@@ -9,12 +9,28 @@ The configuration can be changed by modifying a file called local_config.json in
 directory as this module.
 """
 import json
+import logging
 import os
+from pathlib import Path
 
-import grpc
+from ansys.pyoptics.speos.speos import Speos
 
 
-def grpc_server_on(config) -> bool:
+@pytest.fixture(scope="session")
+def speos():
+    # Log to file - accepts str or Path objects, Path is passed for testing/coverage purposes.
+    log_file_path = Path(__file__).absolute().parent / "logs" / "integration_tests_logs.txt"
+    try:
+        os.remove(log_file_path)
+    except OSError:
+        pass
+
+    speos = Speos(logging_level=logging.DEBUG, logging_file=log_file_path)
+
+    yield speos
+
+
+"""def grpc_server_on(config) -> bool:
     TIMEOUT_SEC = 60
     try:
         with grpc.insecure_channel(f"localhost:" + str(config.get("SpeosServerPort"))) as channel:
@@ -22,7 +38,7 @@ def grpc_server_on(config) -> bool:
             return True
     except:
         return False
-
+"""
 
 local_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -43,8 +59,8 @@ else:
     test_path = local_test_path
 
 # Wait for the grpc server - in case the timeout is reached raise an error
-if not grpc_server_on(config):
-    raise ValueError("Start SpeosRPC_Server - Timeout reached.")
+"""if not grpc_server_on(config):
+    raise ValueError("Start SpeosRPC_Server - Timeout reached.")"""
 
 import logging as deflogging  # Default logging
 

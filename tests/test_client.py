@@ -9,7 +9,7 @@ from conftest import config
 
 
 @pytest.fixture(scope="function")
-def client():
+def client(speos):
     # this uses DEFAULT_HOST and DEFAULT_PORT which are set by environment
     # variables in the workflow
     return SpeosClient(port=str(config.get("SpeosServerPort")))
