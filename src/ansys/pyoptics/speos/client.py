@@ -22,6 +22,7 @@ if TYPE_CHECKING:  # pragma: no cover
 def wait_until_healthy(channel: grpc.Channel, timeout: float):
     """
     Wait until a channel is healthy before returning.
+
     Parameters
     ----------
     channel : ~grpc.Channel
@@ -29,6 +30,7 @@ def wait_until_healthy(channel: grpc.Channel, timeout: float):
     timeout : float
         Timeout in seconds. One attempt will be made each 100 milliseconds
         until the timeout is exceeded.
+
     Raises
     ------
     TimeoutError
@@ -65,7 +67,7 @@ class SpeosClient:
         gRPC channel for server communication.
         By default, ``None``.
     remote_instance : ansys.platform.instancemanagement.Instance
-        The corresponding remote instance when the Geometry Service
+        The corresponding remote instance when the Speos Service
         is launched through PyPIM. This instance will be deleted when calling
         :func:`SpeosClient.close <ansys.pyoptics.speos.client.SpeosClient.close >`.
     timeout : Real, optional
@@ -133,11 +135,11 @@ class SpeosClient:
             return False
 
     def close(self):
-        """Close the channel."""
         """Close the channel.
+
         Notes
         -----
-        If an instance of the Geometry Service was started using
+        If an instance of the Speos Service was started using
         PyPIM, this instance will be deleted.
         """
         if self._remote_instance:

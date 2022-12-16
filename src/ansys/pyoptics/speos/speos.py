@@ -31,7 +31,7 @@ class Speos:
         gRPC channel for server communication.
         By default, ``None``.
     remote_instance : ansys.platform.instancemanagement.Instance
-        The corresponding remote instance when the Geometry Service
+        The corresponding remote instance when the Speos Service
         is launched through PyPIM. This instance will be deleted when calling
         :func:`SpeosClient.close <ansys.pyoptics.speos.client.SpeosClient.close >`.
     timeout : Real, optional
