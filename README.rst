@@ -57,13 +57,14 @@ Clone and install
 
 Functionalities
 ^^^^^^^^^^^^^^^
-All sources are located in `<src/>`_ folder. 
+All sources are located in `<src/>`_ folder.
 
 .. code:: python
 
-   from src.ansys.pyoptics import speos
-   stub = speos.get_stub_insecure_channel()
-   stub...
+    from src.ansys.pyoptics import speos
+
+    stub = speos.get_stub_insecure_channel()
+    print(stub)
 
 Documentation
 -------------
