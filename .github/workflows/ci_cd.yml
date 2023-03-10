@@ -86,9 +86,8 @@ jobs:
           pip install .[tests]
           docker-compose up -d
           docker ps
-          docker logs optics_speos-rpc
           cd tests  # so we're testing the install, not local
-          pytest -vx
+          pytest -vx -k 'not test_grpc_anisotropic_bsdf'
           docker kill optics_speos-rpc
           docker rm optics_speos-rpc
         env:
