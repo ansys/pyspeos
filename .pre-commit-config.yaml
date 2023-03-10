@@ -7,14 +7,14 @@ repos:
 
 
 - repo: https://github.com/psf/black
-  rev: 22.12.0
+  rev: 23.1.0
   hooks:
   - id: black
     args:
       - --line-length=120
 
 - repo: https://github.com/pycqa/isort
-  rev: 5.11.4
+  rev: 5.12.0
   hooks:
   - id: isort
 
@@ -26,7 +26,7 @@ repos:
       - --max-line-length=120
 
 - repo: https://github.com/codespell-project/codespell
-  rev: v2.2.2
+  rev: v2.2.4
   hooks:
   - id: codespell
     args: ["--ignore-words=ignore_words.txt"]
@@ -39,7 +39,7 @@ repos:
 
 # this validates our github workflow files
 - repo: https://github.com/python-jsonschema/check-jsonschema
-  rev: 0.19.2
+  rev: 0.22.0
   hooks:
     - id: check-github-workflows 
 
@@ -52,7 +52,7 @@ repos:
 #     additional_dependencies: [toml]
 
 - repo: https://github.com/asottile/blacken-docs
-  rev: v1.12.1
+  rev: 1.13.0
   hooks:
   -   id: blacken-docs
       additional_dependencies: [black==22.12.0]
