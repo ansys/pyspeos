@@ -26,6 +26,7 @@ classifiers=[
     "Operating System :: OS Independent",
 ]
 dependencies=[
+    "grpcio==1.51.3",
     "grpcio-tools==1.48.2",
     "ansys-api-speos==0.1.0",
 ]

@@ -87,7 +87,7 @@ jobs:
           docker-compose up -d
           docker ps
           cd tests  # so we're testing the install, not local
-          pytest -vxs -k 'test_bsdf_creation'
+          pytest -vxs
           docker kill optics_speos-rpc
           docker rm optics_speos-rpc
         env:

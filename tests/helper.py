@@ -10,11 +10,7 @@ For example a method to check file existence depending on if the file is in the 
 import os
 import subprocess
 
-print("helper")
 from conftest import config
-
-print(config)
-print("helper")
 
 
 def does_file_exist(path):
@@ -32,7 +28,6 @@ def does_file_exist(path):
     -----------
     bool
     """
-    print("helper.does_file_exist")
     if config.get("SpeosServerOnDocker"):
         return (
             subprocess.call("docker exec " + config.get("SpeosContainerName") + ' test -f "' + path + '"', shell=True)
@@ -49,7 +44,6 @@ def remove_file(path):
     ----------
     path (str) - path of the file.
     """
-    print("helper.remove_file")
     if config.get("SpeosServerOnDocker"):
         subprocess.call("docker exec " + config.get("SpeosContainerName") + ' rm -rf "' + path + '"', shell=True)
     else:
