@@ -25,7 +25,6 @@ classifiers=[
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-privatepypi = "https://pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/simple/"
 dependencies=[
     "grpcio-tools==1.48.2",
     "ansys-api-speos==0.1.0",
