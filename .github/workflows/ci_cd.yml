@@ -85,6 +85,8 @@ jobs:
         run: |
           pip install .[tests]
           docker-compose up -d
+          docker ps
+          docker logs optics_speos-rpc
           cd tests  # so we're testing the install, not local
           pytest -vx
           docker kill optics_speos-rpc
