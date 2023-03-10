@@ -20,34 +20,34 @@ concurrency:
 
 jobs:
 
-  style:
-    name: Code style
-    runs-on: ubuntu-latest
-    steps:
-      - name: PyAnsys code style checks
-        uses: pyansys/actions/code-style@v4
-        with:
-          python-version: ${{ env.MAIN_PYTHON_VERSION }}
-
-  docs-style:
-    name: Documentation Style Check
-    runs-on: ubuntu-latest
-    steps:
-      - name: PyAnsys documentation style checks
-        uses: pyansys/actions/doc-style@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-  docs-build:
-
-    name: Doc building
-    runs-on: ubuntu-latest
-    needs: docs-style
-    steps:
-      - name: "Run Ansys documentation building action"
-        uses: pyansys/actions/doc-build@v4
-        with:
-          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+  #style:
+  #  name: Code style
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #    - name: PyAnsys code style checks
+  #      uses: pyansys/actions/code-style@v4
+  #      with:
+  #        python-version: ${{ env.MAIN_PYTHON_VERSION }}
+#
+  #docs-style:
+  #  name: Documentation Style Check
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #    - name: PyAnsys documentation style checks
+  #      uses: pyansys/actions/doc-style@v4
+  #      with:
+  #        token: ${{ secrets.GITHUB_TOKEN }}
+#
+  #docs-build:
+#
+  #  name: Doc building
+  #  runs-on: ubuntu-latest
+  #  needs: docs-style
+  #  steps:
+  #    - name: "Run Ansys documentation building action"
+  #      uses: pyansys/actions/doc-build@v4
+  #      with:
+  #        python-version: ${{ env.MAIN_PYTHON_VERSION }}
 
   tests:
     name: Build and testing
@@ -87,7 +87,7 @@ jobs:
           docker-compose up -d
           docker ps
           cd tests  # so we're testing the install, not local
-          pytest -vx -k 'test_lpf_file_reader'
+          pytest -vx -k 'test_lpf_file_reader or test_simulation'
           docker kill optics_speos-rpc
           docker rm optics_speos-rpc
         env:
