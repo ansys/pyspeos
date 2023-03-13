@@ -57,13 +57,14 @@ Clone and install
 
 Functionalities
 ^^^^^^^^^^^^^^^
-All sources are located in `<src/>`_ folder. 
+All sources are located in `<src/>`_ folder.
 
 .. code:: python
 
-   from src.ansys.pyoptics import speos
-   stub = speos.get_stub_insecure_channel()
-   stub...
+    from src.ansys.pyoptics import speos
+
+    stub = speos.get_stub_insecure_channel()
+    print(stub)
 
 Documentation
 -------------
@@ -95,10 +96,10 @@ The configuration file `<tests/local_config.json>`_ located in tests folder cont
 
 Start server
 ~~~~~~~~~~~~
-First options is to use the Docker container of `SpeosRPC_Server <https://github.com/orgs/pyansys/packages/container/package/pyoptics%2Fspeos-rpc>`_.
-It can be started using `<docker-compose.yml>`_ (if needed, please provide GitHub username and PAT as password)
-Since the docker image contains no license server, you will need to enter your license server IP address in the `LICENSE_SERVER` environment variable.
-With that, you can launch SpeosRPC server with:
+First option is to use the Docker container of `SpeosRPC_Server <https://github.com/orgs/pyansys/packages/container/package/pyoptics%2Fspeos-rpc>`_.
+It can be started using `<docker-compose.yml>`_ (if needed, please provide GitHub username and PAT as password).
+Since the Docker image contains no license server, you will need to enter your license server IP address in the `LICENSE_SERVER` environment variable.
+Then, you can launch SpeosRPC server with:
 
 .. code::
    
