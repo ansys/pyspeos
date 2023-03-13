@@ -98,7 +98,6 @@ def approx_cmp(a, b):
 
 
 def compareAnisotropicBsdf(bsdf1, bsdf2):
-
     # description
     if bsdf1.description != bsdf2.description:
         return False
@@ -235,7 +234,6 @@ def compareAnisotropicBsdf(bsdf1, bsdf2):
 
 
 def compareEnhancementData(cones1, cones2):
-
     if len(cones1.anisotropic_samples) != len(cones2.anisotropic_samples):
         return False
 

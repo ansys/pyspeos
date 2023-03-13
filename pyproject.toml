@@ -28,6 +28,7 @@ classifiers=[
 dependencies=[
     "ansys-optics-speos-grpcapi==8.1.0",
     "grpcio-tools==1.48.2",
+    "ansys-api-speos==0.1.0",
 ]
 
 [project.optional-dependencies]
@@ -36,9 +37,9 @@ tests = [
     "pytest-cov==4.0.0",
 ]
 doc = [
-    "ansys-sphinx-theme==0.8.0",
+    "ansys-sphinx-theme==0.9.5",
     "numpydoc==1.5.0",
-    "Sphinx==6.1.2",
+    "Sphinx==5.3.0",
     "sphinx-copybutton==0.5.1",
 ]
 
