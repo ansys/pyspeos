@@ -25,20 +25,20 @@ from conftest import config, test_path
 def test_job():
     # Stubs creations for Simulations
     simu_manager_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:50051",
+        target="localhost:" + str(config.get("SpeosServerPort")),
         stub_type=simulation__v1__pb2_grpc.SpeosSimulationsManagerStub,
     )
     simu_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:50051",
+        target="localhost:" + str(config.get("SpeosServerPort")),
         stub_type=simulation__v1__pb2_grpc.SpeosSimulationStub,
     )
     # Stubs creations for Jobs
     job_manager_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:50051",
+        target="localhost:" + str(config.get("SpeosServerPort")),
         stub_type=job__v1__pb2_grpc.SpeosJobsManagerStub,
     )
     job_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:50051",
+        target="localhost:" + str(config.get("SpeosServerPort")),
         stub_type=job__v1__pb2_grpc.SpeosJobStub,
     )
 

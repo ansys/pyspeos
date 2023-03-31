@@ -65,15 +65,15 @@ def test_simulation():
 def test_simu_allocateSyst_load_run_with_file_transfer():
     # Stubs creations
     file_transfer_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:50051",
+        target="localhost:" + str(config.get("SpeosServerPort")),
         stub_type=file_transfer__v1__pb2_grpc.FileTransferServiceStub,
     )
     simu_manager_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:50051",
+        target="localhost:" + str(config.get("SpeosServerPort")),
         stub_type=simulation__v1__pb2_grpc.SpeosSimulationsManagerStub,
     )
     simu_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:50051",
+        target="localhost:" + str(config.get("SpeosServerPort")),
         stub_type=simulation__v1__pb2_grpc.SpeosSimulationStub,
     )
 
@@ -100,15 +100,15 @@ def test_simu_allocateSyst_load_run_with_file_transfer():
 def test_simu_allocateSyst_load_save_with_file_transfer():
     # Stubs creations
     file_transfer_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:50051",
+        target="localhost:" + str(config.get("SpeosServerPort")),
         stub_type=file_transfer__v1__pb2_grpc.FileTransferServiceStub,
     )
     simu_manager_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:50051",
+        target="localhost:" + str(config.get("SpeosServerPort")),
         stub_type=simulation__v1__pb2_grpc.SpeosSimulationsManagerStub,
     )
     simu_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:50051",
+        target="localhost:" + str(config.get("SpeosServerPort")),
         stub_type=simulation__v1__pb2_grpc.SpeosSimulationStub,
     )
     sv5_name = "LG_50M_Colorimetric_short.sv5"
