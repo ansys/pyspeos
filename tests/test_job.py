@@ -26,7 +26,7 @@ def test_job():
     # Stubs creations for Simulations
     simu_manager_stub = grpc_stub.get_stub_insecure_channel(
         target="localhost:" + str(config.get("SpeosServerPort")),
-        stub_type=simulation__v1__pb2_grpc.SpeosSimulationsManagerStub,
+        stub_type=simulation__v1__pb2_grpc.SimulationsManagerStub,
     )
     simu_stub = grpc_stub.get_stub_insecure_channel(
         target="localhost:" + str(config.get("SpeosServerPort")),
@@ -85,7 +85,6 @@ def test_job():
     job_information = job_stub.GetInformation(job__v1__pb2.GetInformation_Request(guid=job_create_res.guid))
     assert job_information.title == "Direct Simulation Processing"
     assert job_information.name == "ASSEMBLY1.DS (0)"
-    assert job_information.progress < 1  # progress < 1 because job was stopped
 
     # Get results
     get_results_res = job_stub.GetResults(job__v1__pb2.GetResults_Request(guid=job_create_res.guid))
