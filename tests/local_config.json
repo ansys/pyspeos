@@ -1,5 +1,5 @@
 {
   "SpeosServerOnDocker": true,
-  "SpeosContainerName" : "optics_speos-rpc",
-  "SpeosServerPort": 50051
+  "SpeosContainerName" : "optics_speos-rpc-ECS",
+  "SpeosServerPort": 50052
 }
