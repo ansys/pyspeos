@@ -51,10 +51,13 @@ def test_job():
         simulation__v1__pb2.Load_Request(guid=simu_create_res.guid, input_file_path=speos_simulation_full_path)
     )
 
-    # Allocate job from simu
-    job_create_res = job_manager_stub.Create(
-        job__v1__pb2.Create_Request(simu_guid=simu_create_res.guid, job_type=job__v1__pb2.Job_Type.CPU)
-    )
+    # Allocate job from simu guid, job type and simu properties
+    j = job__v1__pb2.Job()
+    j.simu_guid = simu_create_res.guid
+    j.job_type = job__v1__pb2.Job_Type.CPU
+    j.direct_mc_simulation_properties.stop_condition_rays_number = 500000
+    j.direct_mc_simulation_properties.automatic_save_frequency = 60
+    job_create_res = job_manager_stub.Create(job__v1__pb2.Create_Request(job=j))
 
     # Start the job
     job_stub.Start(job__v1__pb2.Start_Request(guid=job_create_res.guid))
