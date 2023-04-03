@@ -90,7 +90,7 @@ jobs:
           docker kill optics_speos-rpc
           docker rm optics_speos-rpc
         env:
-          LICENSE_SERVER: ${{ format('1055@{0}', secrets.LICENSE_SERVER) }}
+          LICENSE_SERVER: ${{ secrets.LICENSE_SERVER) }}
 
       - name: Upload wheel
         uses: actions/upload-artifact@v3
