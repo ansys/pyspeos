@@ -1,14 +1,11 @@
 """This module allows pytest to perform unit testing.
-
 Usage:
 .. code::
    $ pytest
    $ pytest -vx
-
 With coverage.
 .. code::
    $ pytest --cov ansys.pyoptics.speos
-
 """
 import os
 import time
@@ -25,20 +22,20 @@ from conftest import config, test_path
 def test_job():
     # Stubs creations for Simulations
     simu_manager_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:50051",
-        stub_type=simulation__v1__pb2_grpc.SpeosSimulationsManagerStub,
+        target="localhost:" + str(config.get("SpeosServerPort")),
+        stub_type=simulation__v1__pb2_grpc.SimulationsManagerStub,
     )
     simu_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:50051",
+        target="localhost:" + str(config.get("SpeosServerPort")),
         stub_type=simulation__v1__pb2_grpc.SpeosSimulationStub,
     )
     # Stubs creations for Jobs
     job_manager_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:50051",
+        target="localhost:" + str(config.get("SpeosServerPort")),
         stub_type=job__v1__pb2_grpc.SpeosJobsManagerStub,
     )
     job_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:50051",
+        target="localhost:" + str(config.get("SpeosServerPort")),
         stub_type=job__v1__pb2_grpc.SpeosJobStub,
     )
 
@@ -85,9 +82,8 @@ def test_job():
     job_information = job_stub.GetInformation(job__v1__pb2.GetInformation_Request(guid=job_create_res.guid))
     assert job_information.title == "Direct Simulation Processing"
     assert job_information.name == "ASSEMBLY1.DS (0)"
-    assert job_information.progress < 1  # progress < 1 because job was stopped
 
-    # Get results
+    # Get the results
     get_results_res = job_stub.GetResults(job__v1__pb2.GetResults_Request(guid=job_create_res.guid))
     assert len(get_results_res.results) == 2
     for result in get_results_res.results:

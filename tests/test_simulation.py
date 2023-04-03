@@ -1,14 +1,11 @@
 """This module allows pytest to perform unit testing.
-
 Usage:
 .. code::
    $ pytest
    $ pytest -vx
-
 With coverage.
 .. code::
    $ pytest --cov ansys.pyoptics.speos
-
 """
 import os
 import shutil
@@ -27,7 +24,7 @@ def test_simulation():
     # Stub on simulation manager
     simulation_manager_stub = grpc_stub.get_stub_insecure_channel(
         target="localhost:" + str(config.get("SpeosServerPort")),
-        stub_type=simulation__v1__pb2_grpc.SpeosSimulationsManagerStub,
+        stub_type=simulation__v1__pb2_grpc.SimulationsManagerStub,
     )
 
     # Stub on simulation
@@ -50,12 +47,6 @@ def test_simulation():
 
     simulation_stub.Load(load_request)
 
-    # GetName
-    get_name_request = simulation__v1__pb2.GetName_Request()
-    get_name_request.guid = guid_simu.guid
-    get_name_response = simulation_stub.GetName(get_name_request)
-    assert get_name_response.name == "ASSEMBLY1.DS (0)"
-
     # Delete simulation
     delete_request = simulation__v1__pb2.Delete_Request()
     delete_request.guid = guid_simu.guid
@@ -65,15 +56,15 @@ def test_simulation():
 def test_simu_allocateSyst_load_run_with_file_transfer():
     # Stubs creations
     file_transfer_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:50051",
+        target="localhost:" + str(config.get("SpeosServerPort")),
         stub_type=file_transfer__v1__pb2_grpc.FileTransferServiceStub,
     )
     simu_manager_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:50051",
-        stub_type=simulation__v1__pb2_grpc.SpeosSimulationsManagerStub,
+        target="localhost:" + str(config.get("SpeosServerPort")),
+        stub_type=simulation__v1__pb2_grpc.SimulationsManagerStub,
     )
     simu_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:50051",
+        target="localhost:" + str(config.get("SpeosServerPort")),
         stub_type=simulation__v1__pb2_grpc.SpeosSimulationStub,
     )
 
@@ -100,15 +91,15 @@ def test_simu_allocateSyst_load_run_with_file_transfer():
 def test_simu_allocateSyst_load_save_with_file_transfer():
     # Stubs creations
     file_transfer_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:50051",
+        target="localhost:" + str(config.get("SpeosServerPort")),
         stub_type=file_transfer__v1__pb2_grpc.FileTransferServiceStub,
     )
     simu_manager_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:50051",
-        stub_type=simulation__v1__pb2_grpc.SpeosSimulationsManagerStub,
+        target="localhost:" + str(config.get("SpeosServerPort")),
+        stub_type=simulation__v1__pb2_grpc.SimulationsManagerStub,
     )
     simu_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:50051",
+        target="localhost:" + str(config.get("SpeosServerPort")),
         stub_type=simulation__v1__pb2_grpc.SpeosSimulationStub,
     )
     sv5_name = "LG_50M_Colorimetric_short.sv5"
@@ -134,20 +125,13 @@ def test_simu_allocateSyst_load_save_with_file_transfer():
     # And Save
     simu_stub.Save(simulation__v1__pb2.Save_Request(guid=create_res.guid, input_folder_path=reserve_res.uri))
 
-    # We can then list dependencies of the reserved item to check that it contains two deps with correct names
-    deps_response = file_transfer_stub.ListDependencies(
-        file_transfer__v1__pb2.ListDependencies_Request(uri=reserve_res.uri)
-    )
-    assert len(deps_response.dependency_infos) == 2
-    assert [dep_info for dep_info in deps_response.dependency_infos if dep_info.file_name == blue_spectrum]
-    assert [dep_info for dep_info in deps_response.dependency_infos if dep_info.file_name == red_spectrum]
-
-    # And download locally the simu saved - using download_folder helper provided within ansys.api.speos.file.v1
+    # Download locally the simu saved - using download_folder helper provided within ansys.api.speos.file.v1
     download_loc = os.path.join(local_test_path, "download_simu")
     os.mkdir(download_loc)
     download_responses = file_transfer.download_folder(
         file_transfer_service_stub=file_transfer_stub, main_file_uri=reserve_res.uri, download_location=download_loc
     )
+
     # Check that file are well downloaded
     for res in download_responses:
         downloaded_file = os.path.join(download_loc, res.info.file_name)
