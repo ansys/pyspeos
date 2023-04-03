@@ -2,7 +2,7 @@
 import logging as deflogging  # Default logging
 import re
 
-from beartype.typing import Callable
+from typing import Callable
 import pytest
 
 from ansys.pyoptics.speos import LOG  # Global logger

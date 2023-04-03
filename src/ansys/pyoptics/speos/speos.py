@@ -2,7 +2,7 @@
 import logging
 from pathlib import Path
 
-from beartype.typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
 from grpc import Channel
 
 from ansys.pyoptics.speos.client import SpeosClient
