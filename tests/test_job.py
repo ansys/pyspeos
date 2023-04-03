@@ -87,7 +87,7 @@ def test_job():
     assert job_information.name == "ASSEMBLY1.DS (0)"
     assert job_information.progress < 1  # progress < 1 because job was stopped
 
-    # Get results
+    # Get the results
     get_results_res = job_stub.GetResults(job__v1__pb2.GetResults_Request(guid=job_create_res.guid))
     assert len(get_results_res.results) == 2
     for result in get_results_res.results:
