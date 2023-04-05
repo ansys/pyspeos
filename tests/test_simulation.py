@@ -25,6 +25,7 @@ import grpc
 import pytest
 
 from conftest import config, local_test_path, test_path
+import helper
 
 
 def test_simulation():
@@ -251,6 +252,10 @@ def test_simu_load_read_update():
     delete_res = job_manager_stub.Delete(job_pb2.Delete_Request(guid=job_create_res.guid))
 
     # Delete simu
+    helper.remove_file(os.path.join(sv5_path, "CameraSensitivityBlue_1044-9741-9c42-85c2.spectrum"))
+    helper.remove_file(os.path.join(sv5_path, "CameraSensitivityGreen_b5d3-6c51-134d-a5d6.spectrum"))
+    helper.remove_file(os.path.join(sv5_path, "CameraSensitivityRed_9433-b5a9-12ab-7c7f.spectrum"))
+    helper.remove_file(os.path.join(sv5_path, "CameraTransmittance_7345-0c60-5ae6-d225.spectrum"))
     delete_res = simu_manager_stub.Delete(simulation_pb2.Delete_Request(guid=simu_create_res.guid))
 
     # Delete all simu templates
