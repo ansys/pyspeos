@@ -60,7 +60,7 @@ def test_create_camera_sensor():
     distortion = os.path.join(camera_input_files_path, "CameraDistortion.OPTDistortion")
 
     camera_t = sensor_pb2.SensorTemplate()
-    camera_t.camera_sensor_template.sensor_name = "CameraSensorPhotometric"
+    camera_t.name = "CameraSensorPhotometric"
     camera_t.camera_sensor_template.sensor_mode_photometric.transmittance_file_uri = transmittance
     camera_t.camera_sensor_template.sensor_mode_photometric.gamma_correction = 2.2
     camera_t.camera_sensor_template.sensor_mode_photometric.color_mode_color.red_spectrum_file_uri = red_spectrum
@@ -83,7 +83,7 @@ def test_create_camera_sensor():
 
     # Create a camera sensor using template + properties
     camera_sensor = simulation_pb2.Sensor()
-    camera_sensor.name = camera_t.camera_sensor_template.sensor_name + "_1"
+    camera_sensor.name = camera_t.name + "_1"
     camera_sensor.guid = cam_sensor_create_res.guid
 
     camera_sensor.camera_sensor_properties.sensor_position.origin[:] = [25.0, 0.0, 0.0]
@@ -103,8 +103,12 @@ def test_create_camera_sensor():
         target="localhost:" + str(config.get("SpeosServerPort")),
         stub_type=job_pb2_grpc.SpeosJobsManagerStub,
     )
-    job_create_req = job_pb2.Create_Request(simu_guid=simu_create_res.guid, job_type=job_pb2.Job_Type.CPU)
-    job_create_res = job_manager_stub.Create(job_create_req)
+    j = job_pb2.Job()
+    j.simu_guid = simu_create_res.guid
+    j.job_type = job_pb2.Job_Type.CPU
+    j.inverse_mc_simulation_properties.optimized_propagation_none.stop_condition_passes_number = 5
+    j.inverse_mc_simulation_properties.automatic_save_frequency = 1800
+    job_create_res = job_manager_stub.Create(job_pb2.Create_Request(job=j))
 
     # Start the job
     job_stub = grpc_stub.get_stub_insecure_channel(
