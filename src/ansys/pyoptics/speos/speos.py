@@ -1,8 +1,8 @@
 """Provides the ``Modeler`` class."""
 import logging
 from pathlib import Path
-
 from typing import TYPE_CHECKING, Optional, Union
+
 from grpc import Channel
 
 from ansys.pyoptics.speos.client import SpeosClient

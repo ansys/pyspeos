@@ -2,33 +2,29 @@
 from datetime import datetime
 
 from ansys_sphinx_theme import pyansys_logo_black
+from sphinx.builders.latex import LaTeXBuilder
 
 from ansys.pyoptics.speos import __version__
-
-from sphinx.builders.latex import LaTeXBuilder
 
 LaTeXBuilder.supported_image_types = ["image/png", "image/pdf", "image/svg+xml"]
 
 # Project information
-project = 'ansys-pyoptics'
+project = "ansys-pyoptics"
 copyright = f"(c) {datetime.now().year} ANSYS, Inc. All rights reserved"
 author = "Ansys Inc."
 release = version = __version__
 
 # use the default pyansys logo
 html_logo = pyansys_logo_black
-html_theme = 'ansys_sphinx_theme'
+html_theme = "ansys_sphinx_theme"
 
 # specify the location of your github repo
-html_theme_options = {
-    "github_url": "https://github.com/ansys/ansys-sphinx-theme",
-    "show_prev_next": False
-}
+html_theme_options = {"github_url": "https://github.com/ansys/ansys-sphinx-theme", "show_prev_next": False}
 
 # Sphinx extensions
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.autosummary',
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
     "numpydoc",
     "sphinx.ext.intersphinx",
     "sphinx_copybutton",
@@ -39,9 +35,7 @@ intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", None),
     "grpc": ("https://grpc.github.io/grpc/python/", None),
     "pypim": ("https://pypim.docs.pyansys.com/", None),
-
     # kept here as an example
-
     # "scipy": ("https://docs.scipy.org/doc/scipy/reference", None),
     # "numpy": ("https://numpy.org/devdocs", None),
     # "matplotlib": ("https://matplotlib.org/stable", None),
@@ -74,7 +68,7 @@ html_static_path = ["_static"]
 templates_path = ["_templates"]
 
 # The suffix(es) of source filenames.
-source_suffix = '.rst'
+source_suffix = ".rst"
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = "index"

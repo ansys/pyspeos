@@ -1,8 +1,8 @@
 """"Testing of log module."""
 import logging as deflogging  # Default logging
 import re
-
 from typing import Callable
+
 import pytest
 
 from ansys.pyoptics.speos import LOG  # Global logger

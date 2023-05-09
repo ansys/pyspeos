@@ -33,16 +33,16 @@ You can change this and output lower-level messages with:
 
 .. code:: python
 
-   LOG.logger.setLevel('DEBUG')
-   LOG.file_handler.setLevel('DEBUG')  # If present.
-   LOG.stdout_handler.setLevel('DEBUG')  # If present.
+   LOG.logger.setLevel("DEBUG")
+   LOG.file_handler.setLevel("DEBUG")  # If present.
+   LOG.stdout_handler.setLevel("DEBUG")  # If present.
 
 Alternatively, you can ensure all the handlers are set to the input log
 level with:
 
 .. code:: python
 
-   LOG.setLevel('DEBUG')
+   LOG.setLevel("DEBUG")
 
 By default, this logger does not log to a file. If you want to do so,
 you can add a file handler with:
@@ -50,7 +50,8 @@ you can add a file handler with:
 .. code:: python
 
    import os
-   file_path = os.path.join(os.getcwd(), 'pyoptics.log')
+
+   file_path = os.path.join(os.getcwd(), "pyoptics.log")
    LOG.log_to_file(file_path)
 
 This sets the logger to be redirected also to this file. If you want
@@ -60,12 +61,12 @@ of the execution, you must edit the ``__init__`` file in the directory
 
 To log using this logger, call the desired method as a normal logger with:
 
-.. code:: python
+.. code:: pycon
 
     >>> import logging
     >>> from ansys.pyoptics.speos.logger import Logger
     >>> LOG = Logger(level=logging.DEBUG, to_file=False, to_stdout=True)
-    >>> LOG.debug('This is LOG debug message.')
+    >>> LOG.debug("This is LOG debug message.")
     DEBUG -  -  <ipython-input-24-80df150fe31f> - <module> - This is LOG debug message.
 
 Instance Logger
@@ -80,11 +81,11 @@ the :func:`log_to_file() <PyOpticsCustomAdapter.log_to_file>` method. If you wan
 to change the log level, you can use the :func:`logger.Logging.setLevel` method.
 You can use this logger like this:
 
-.. code:: python
+.. code:: pycon
 
     >>> from ansys.pyoptics.speos import SpeosClient
     >>> speos = SpeosClient()
-    >>> speos._log.info('This is a useful message')
+    >>> speos._log.info("This is a useful message")
     INFO - GRPC_127.0.0.1:50056 -  <...> - <module> - This is a useful message
 
 Other loggers
