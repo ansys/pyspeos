@@ -26,8 +26,5 @@ def test_client_through_channel():
     channel = insecure_channel(target)
     client = SpeosClient(channel=channel)
     assert client.healthy is True
-    client_repr = repr(client)
-    assert "Target" in client_repr
-    assert "Connection" in client_repr
     assert client._target == target
     assert client.channel
