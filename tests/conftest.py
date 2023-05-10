@@ -34,16 +34,6 @@ def speos():
     yield speos
 
 
-"""def grpc_server_on(config) -> bool:
-    TIMEOUT_SEC = 60
-    try:
-        with grpc.insecure_channel(f"localhost:" + str(config.get("SpeosServerPort"))) as channel:
-            grpc.channel_ready_future(channel).result(timeout=TIMEOUT_SEC)
-            return True
-    except:
-        return False
-"""
-
 local_path = os.path.dirname(os.path.realpath(__file__))
 
 # Load the local config file
@@ -63,8 +53,6 @@ else:
     test_path = local_test_path
 
 # Wait for the grpc server - in case the timeout is reached raise an error
-"""if not grpc_server_on(config):
-    raise ValueError("Start SpeosRPC_Server - Timeout reached.")"""
 
 import logging as deflogging  # Default logging
 

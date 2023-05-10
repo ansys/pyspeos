@@ -1,4 +1,4 @@
-"""Provides the ``Modeler`` class."""
+"""Provides the ``Speos`` class."""
 import logging
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional, Union
