@@ -87,7 +87,6 @@ class SpeosClient:
         logging_file: Optional[Union[Path, str]] = None,
     ):
         """Initialize the ``SpeosClient`` object."""
-
         self._closed = False
         self._remote_instance = remote_instance
         if channel:
