@@ -48,9 +48,8 @@ jobs:
         uses: pyansys/actions/doc-build@v4
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
-  
   tests:
-    name: unit testing
+    name: "Unit testing"
     runs-on: ubuntu-latest
     needs: [style]
   
@@ -98,7 +97,7 @@ jobs:
           library-name: ${{ env.PACKAGE_NAME }}
 
   doc-deploy-development:
-    name: Doc dev version deploy
+    name: "Doc dev version deploy"
     if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     needs: [build-library]
@@ -111,7 +110,7 @@ jobs:
 
   release:
 
-    name: "Release project to private PyPI, public PyPI and GitHub"
+    name: "Release"
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
     needs: [build-library]
     runs-on: ubuntu-latest
