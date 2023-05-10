@@ -29,5 +29,5 @@ def test_client_through_channel():
     client_repr = repr(client)
     assert "Target" in client_repr
     assert "Connection" in client_repr
-    assert client.target() == target
+    assert client._target == target
     assert client.channel

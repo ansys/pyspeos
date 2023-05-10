@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING, Optional, Union
 
 import grpc
 from grpc._channel import _InactiveRpcError
-from grpc_health.v1 import health_pb2, health_pb2_grpc
 
 max_receive_message_length = 1024 * 1024 * 1024
 
@@ -39,13 +38,10 @@ def wait_until_healthy(channel: grpc.Channel, timeout: float):
         Raised when the total elapsed time exceeds ``timeout``.
     """
     t_max = time.time() + timeout
-    health_stub = health_pb2_grpc.HealthStub(channel)
-    request = health_pb2.HealthCheckRequest(service="")
     while time.time() < t_max:
         try:
-            out = health_stub.Check(request, timeout=0.1)
-            if out.status is health_pb2.HealthCheckResponse.SERVING:
-                break
+            grpc.channel_ready_future(channel).result(timeout=timeout)
+            return True
         except _InactiveRpcError:
             continue
     else:
@@ -128,12 +124,10 @@ class SpeosClient:
         """Return if the client channel if healthy."""
         if self._closed:
             return False
-        health_stub = health_pb2_grpc.HealthStub(self._channel)
-        request = health_pb2.HealthCheckRequest(service="")
         try:
-            out = health_stub.Check(request, timeout=0.1)
-            return out.status is health_pb2.HealthCheckResponse.SERVING
-        except _InactiveRpcError:  # pragma: no cover
+            grpc.channel_ready_future(self.channel).result(timeout=60)
+            return True
+        except:
             return False
 
     def close(self):
