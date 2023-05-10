@@ -18,7 +18,6 @@ import pytest
 from ansys.optics.speos.speos import Speos
 
 
-
 @pytest.fixture(scope="session")
 def speos():
     # Log to file - accepts str or Path objects, Path is passed for testing/coverage purposes.
