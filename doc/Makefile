@@ -26,5 +26,5 @@ clean:
 #customized pdf build due to svg badges
 pdf:
 	@$(SPHINXBUILD) -M latex "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
-	cd build/latex && latexmk -r latexmkrc -pdf *.tex -interaction=nonstopmode || true
-	(test -f build/latex/*.pdf && echo pdf exists) || exit 1
+	cd _build/latex && latexmk -r latexmkrc -pdf *.tex -interaction=nonstopmode || true
+	(test -f _build/latex/*.pdf && echo pdf exists) || exit 1
