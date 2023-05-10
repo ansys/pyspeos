@@ -20,6 +20,7 @@ from ansys.api.speos.simulation.v1 import (
     simulation_template_pb2,
     simulation_template_pb2_grpc,
 )
+import grpc
 import pytest
 
 from ansys.pyoptics.speos.speos import Speos
@@ -29,7 +30,7 @@ import helper
 
 def test_simulation(speos: Speos):
     # Stub on simulation manager
-    simulation_manager_stub = simulation_pb2_grpc.SimulationsManagerStub(speos)
+    simulation_manager_stub = simulation_pb2_grpc.SimulationsManagerStub(speos.client.channel)
 
     # Stub on simulation
     simulation_stub = simulation_pb2_grpc.SpeosSimulationStub(speos.client.channel)
