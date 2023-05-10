@@ -7,8 +7,6 @@ from typing import TYPE_CHECKING, Optional, Union
 import grpc
 from grpc._channel import _InactiveRpcError
 
-max_receive_message_length = 1024 * 1024 * 1024
-
 from ansys.pyoptics.speos import LOG as logger
 from ansys.pyoptics.speos.logger import PyOpticsCustomAdapter
 
@@ -98,7 +96,7 @@ class SpeosClient:
             self._target = str(channel)
         else:
             self._target = f"{host}:{port}"
-            self._channel = grpc.insecure_channel(self._target, max_receive_message_length)
+            self._channel = grpc.insecure_channel(self._target)
         # do not finish initialization until channel is healthy
         wait_until_healthy(self._channel, timeout)
 
