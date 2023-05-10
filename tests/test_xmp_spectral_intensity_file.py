@@ -16,9 +16,9 @@ from ansys.api.speos.intensity_distributions.v1 import (
     xmp_pb2,
     xmp_pb2_grpc,
 )
-import grpc
 
-from conftest import config, test_path
+from ansys.pyoptics.speos.speos import Speos
+from conftest import test_path
 import helper
 
 
@@ -178,38 +178,37 @@ def compareXmpIntensityDistributions(xmp1, xmp2):
     return True
 
 
-def test_grpc_xmp_intensity():
-    with grpc.insecure_channel(f"localhost:" + str(config.get("SpeosServerPort"))) as channel:
-        stub = xmp_pb2_grpc.XmpIntensityServiceStub(channel)
-        load_request = xmp_pb2.Load_Request()
-        load_request.file_uri = os.path.join(test_path, "conoscopic_intensity_spectral.xmp")
-        load_response = xmp_pb2.Load_Response()
-        save_request = xmp_pb2.Save_Request()
-        save_request.file_uri = os.path.join(test_path, "conoscopic_intensity_spectral.xmp")
-        save_response = xmp_pb2.Save_Response()
+def test_grpc_xmp_intensity(speos: Speos):
+    stub = xmp_pb2_grpc.XmpIntensityServiceStub(speos.client.channel)
+    load_request = xmp_pb2.Load_Request()
+    load_request.file_uri = os.path.join(test_path, "conoscopic_intensity_spectral.xmp")
+    load_response = xmp_pb2.Load_Response()
+    save_request = xmp_pb2.Save_Request()
+    save_request.file_uri = os.path.join(test_path, "conoscopic_intensity_spectral.xmp")
+    save_response = xmp_pb2.Save_Response()
 
-        logging.debug(f"Creating xmp intensity protocol buffer")
-        xmp = createXmpIntensity()
-        request = xmp_pb2.XmpDistribution()
-        request.spectral_map.CopyFrom(xmp)
+    logging.debug(f"Creating xmp intensity protocol buffer")
+    xmp = createXmpIntensity()
+    request = xmp_pb2.XmpDistribution()
+    request.spectral_map.CopyFrom(xmp)
 
-        logging.debug(f"Sending protocol buffer to server")
-        import_response = xmp_pb2.Import_Response()
-        import_response = stub.Import(request)
+    logging.debug(f"Sending protocol buffer to server")
+    import_response = xmp_pb2.Import_Response()
+    import_response = stub.Import(request)
 
-        logging.debug(f"Saving {save_request.file_uri}")
-        save_response = stub.Save(save_request)
-        assert helper.does_file_exist(save_request.file_uri)
+    logging.debug(f"Saving {save_request.file_uri}")
+    save_response = stub.Save(save_request)
+    assert helper.does_file_exist(save_request.file_uri)
 
-        logging.debug(f"Reading {load_request.file_uri}")
-        load_response = stub.Load(load_request)
-        helper.remove_file(load_request.file_uri)
+    logging.debug(f"Reading {load_request.file_uri}")
+    load_response = stub.Load(load_request)
+    helper.remove_file(load_request.file_uri)
 
-        logging.debug(f"Export xmp intensity protocol buffer")
-        export_request = xmp_pb2.Export_Request()
-        distri = xmp_pb2.XmpDistribution()
-        distri = stub.Export(export_request)
-        xmp2 = distri.spectral_map
+    logging.debug(f"Export xmp intensity protocol buffer")
+    export_request = xmp_pb2.Export_Request()
+    distri = xmp_pb2.XmpDistribution()
+    distri = stub.Export(export_request)
+    xmp2 = distri.spectral_map
 
-        logging.debug(f"Comparing xmp intensity distributions")
-        assert compareXmpIntensityDistributions(xmp, xmp2)
+    logging.debug(f"Comparing xmp intensity distributions")
+    assert compareXmpIntensityDistributions(xmp, xmp2)

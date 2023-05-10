@@ -10,30 +10,24 @@ With coverage.
 import os
 import time
 
-from ansys.api.speos import grpc_stub
 from ansys.api.speos.job.v1 import job_pb2, job_pb2_grpc
 from ansys.api.speos.sensor.v1 import sensor_pb2, sensor_pb2_grpc
 from ansys.api.speos.simulation.v1 import sensor_properties_pb2, simulation_pb2, simulation_pb2_grpc
 
-from conftest import config, test_path
+from ansys.pyoptics.speos.speos import Speos
+from conftest import test_path
 
 tests_data_path = os.path.join(os.path.join("tests", "tests_data"))
 
 
-def test_create_camera_sensor():
+def test_create_camera_sensor(speos: Speos):
     # Create empty Simulation
-    simu_manager_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:" + str(config.get("SpeosServerPort")),
-        stub_type=simulation_pb2_grpc.SimulationsManagerStub,
-    )
+    simu_manager_stub = simulation_pb2_grpc.SimulationsManagerStub(speos.client.channel)
     simu_create_res = simu_manager_stub.Create(simulation_pb2.Create_Request())
 
     # Load speos file into allocated simulation
     sv5_path = os.path.join(test_path, "Inverse_simu.speos")
-    simu_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:" + str(config.get("SpeosServerPort")),
-        stub_type=simulation_pb2_grpc.SpeosSimulationStub,
-    )
+    simu_stub = simulation_pb2_grpc.SpeosSimulationStub(speos.client.channel)
     simu_load_req = simulation_pb2.Load_Request(guid=simu_create_res.guid, input_file_path=sv5_path)
     simu_load_res = simu_stub.Load(simu_load_req)
 
@@ -43,10 +37,7 @@ def test_create_camera_sensor():
     assert len(simu_read_res.simulation.sensors) == 1
 
     # Read first sensor template dm
-    sensor_templates_manager_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:" + str(config.get("SpeosServerPort")),
-        stub_type=sensor_pb2_grpc.SensorTemplatesManagerStub,
-    )
+    sensor_templates_manager_stub = sensor_pb2_grpc.SensorTemplatesManagerStub(speos.client.channel)
     sensor_read_req = sensor_pb2.Read_Request(guid=simu_read_res.simulation.sensors[0].guid)
     sensor_read_res = sensor_templates_manager_stub.Read(sensor_read_req)
     assert sensor_read_res.sensor_template.HasField("irradiance_sensor_template")
@@ -99,10 +90,7 @@ def test_create_camera_sensor():
     simu_update_res = simu_manager_stub.Update(simu_update_req)
 
     # Create Job from simu guid + choose type + simu properties
-    job_manager_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:" + str(config.get("SpeosServerPort")),
-        stub_type=job_pb2_grpc.SpeosJobsManagerStub,
-    )
+    job_manager_stub = job_pb2_grpc.SpeosJobsManagerStub(speos.client.channel)
     j = job_pb2.Job()
     j.simu_guid = simu_create_res.guid
     j.job_type = job_pb2.Job_Type.CPU
@@ -111,10 +99,7 @@ def test_create_camera_sensor():
     job_create_res = job_manager_stub.Create(job_pb2.Create_Request(job=j))
 
     # Start the job
-    job_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:" + str(config.get("SpeosServerPort")),
-        stub_type=job_pb2_grpc.SpeosJobStub,
-    )
+    job_stub = job_pb2_grpc.SpeosJobStub(speos.client.channel)
     job_start_req = job_pb2.Start_Request(guid=job_create_res.guid)
     job_start_res = job_stub.Start(job_start_req)
 
