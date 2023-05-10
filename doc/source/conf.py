@@ -5,7 +5,7 @@ import os
 from ansys_sphinx_theme import get_version_match, pyansys_logo_black
 from sphinx.builders.latex import LaTeXBuilder
 
-from ansys.pyoptics.speos import __version__
+from ansys.optics.speos import __version__
 
 LaTeXBuilder.supported_image_types = ["image/png", "image/pdf", "image/svg+xml"]
 
@@ -37,6 +37,7 @@ extensions = [
     "sphinx.ext.autosummary",
     "numpydoc",
     "sphinx.ext.intersphinx",
+    "sphinx.ext.autosectionlabel",
     "sphinx_copybutton",
 ]
 
@@ -82,3 +83,6 @@ source_suffix = ".rst"
 
 # The master toctree document.
 master_doc = "index"
+
+# Generate section labels up to four levels deep
+autosectionlabel_maxdepth = 4

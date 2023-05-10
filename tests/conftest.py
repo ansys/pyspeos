@@ -15,7 +15,7 @@ from pathlib import Path
 
 import pytest
 
-from ansys.pyoptics.speos.speos import Speos
+from ansys.optics.speos.speos import Speos
 
 # import grpc
 
@@ -59,7 +59,7 @@ import logging as deflogging  # Default logging
 import pytest
 
 # Define default pytest logging level to DEBUG and stdout
-from ansys.pyoptics.speos import LOG
+from ansys.optics.speos import LOG
 
 LOG.setLevel(level="DEBUG")
 LOG.log_to_stdout()

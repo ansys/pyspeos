@@ -7,7 +7,7 @@ Usage:
 
 With coverage.
 .. code::
-   $ pytest --cov ansys.pyoptics.speos
+   $ pytest --cov ansys.optics.speos
 
 """
 import math
@@ -17,7 +17,7 @@ import ansys.api.speos.bsdf.v1.anisotropic_bsdf_pb2 as anisotropic_bsdf__v1__pb2
 import ansys.api.speos.bsdf.v1.anisotropic_bsdf_pb2_grpc as anisotropic_bsdf__v1__pb2_grpc
 from google.protobuf.empty_pb2 import Empty
 
-from ansys.pyoptics.speos.speos import Speos
+from ansys.optics.speos.speos import Speos
 from conftest import test_path
 import helper
 

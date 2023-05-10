@@ -1,7 +1,7 @@
 import os
 
-from ansys.pyoptics.speos import LOG as logger
-from ansys.pyoptics.speos.speos import Speos
+from ansys.optics.speos import LOG as logger
+from ansys.optics.speos.speos import Speos
 
 MAX_MESSAGE_LENGTH = int(os.environ.get("SPEOS_MAX_MESSAGE_LENGTH", 256 * 1024**2))
 
@@ -35,7 +35,7 @@ def launch_remote_speos(
 
     Returns
     -------
-    ansys.pyoptics.speos.speos.Speos
+    ansys.optics.speos.speos.Speos
         An instance of the Speos Service.
     """
     if not _HAS_PIM:  # pragma: no cover

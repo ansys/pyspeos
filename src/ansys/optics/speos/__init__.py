@@ -22,8 +22,8 @@ Then add the import within this module to enable:
 """
 import logging
 
-from ansys.pyoptics.speos._version import __version__
-from ansys.pyoptics.speos.logger import Logger
+from ansys.optics.speos._version import __version__
+from ansys.optics.speos.logger import Logger
 
 # Logger
 # ------------------------------------------------------------------------------

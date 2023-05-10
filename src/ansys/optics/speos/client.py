@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING, Optional, Union
 import grpc
 from grpc._channel import _InactiveRpcError
 
-from ansys.pyoptics.speos import LOG as logger
-from ansys.pyoptics.speos.logger import PyOpticsCustomAdapter
+from ansys.optics.speos import LOG as logger
+from ansys.optics.speos.logger import PyOpticsCustomAdapter
 
 DEFAULT_HOST = "localhost"
 DEFAULT_PORT = "50051"
@@ -65,7 +65,7 @@ class SpeosClient:
     remote_instance : ansys.platform.instancemanagement.Instance
         The corresponding remote instance when the Speos Service
         is launched through PyPIM. This instance will be deleted when calling
-        :func:`SpeosClient.close <ansys.pyoptics.speos.client.SpeosClient.close >`.
+        :func:`SpeosClient.close <ansys.optics.speos.client.SpeosClient.close >`.
     timeout : Real, optional
         Timeout in seconds to achieve the connection.
         By default, 60 seconds.

@@ -7,7 +7,7 @@ Usage:
 
 With coverage.
 .. code::
-   $ pytest --cov ansys.pyoptics.speos
+   $ pytest --cov ansys.optics.speos
 
 """
 import os
@@ -18,7 +18,7 @@ import ansys.api.speos.file.v1.file_transfer_pb2_grpc as file_transfer__v1__pb2_
 import ansys.api.speos.lpf.v2.lpf_file_reader_pb2 as lpf_file_reader__v2__pb2
 import ansys.api.speos.lpf.v2.lpf_file_reader_pb2_grpc as lpf_file_reader__v2__pb2_grpc
 
-from ansys.pyoptics.speos.speos import Speos
+from ansys.optics.speos.speos import Speos
 from conftest import local_test_path, test_path
 
 

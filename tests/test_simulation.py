@@ -5,7 +5,7 @@ Usage:
    $ pytest -vx
 With coverage.
 .. code::
-   $ pytest --cov ansys.pyoptics.speos
+   $ pytest --cov ansys.optics.speos
 """
 import json
 import os
@@ -23,7 +23,7 @@ from ansys.api.speos.simulation.v1 import (
 import grpc
 import pytest
 
-from ansys.pyoptics.speos.speos import Speos
+from ansys.optics.speos.speos import Speos
 from conftest import local_test_path, test_path
 import helper
 

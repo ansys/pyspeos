@@ -4,7 +4,7 @@ To make the logging of events consistent, PyOptics has a specific logging archit
 
 Logging API
 -----------
-.. currentmodule:: ansys.pyoptics.speos.logger
+.. currentmodule:: ansys.optics.speos.logger
 
 .. autosummary::
    :toctree: _autosummary

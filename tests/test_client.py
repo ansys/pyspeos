@@ -4,7 +4,7 @@ Test basic client connection.
 from grpc import insecure_channel
 import pytest
 
-from ansys.pyoptics.speos.client import SpeosClient
+from ansys.optics.speos.client import SpeosClient
 from conftest import config
 
 
