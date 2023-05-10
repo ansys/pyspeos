@@ -9,6 +9,5 @@
    :hidden:
    :maxdepth: 3
 
-   class_documentation
    api/index
 

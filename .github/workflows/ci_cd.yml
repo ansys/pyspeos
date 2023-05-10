@@ -13,6 +13,7 @@ on:
 env:
   MAIN_PYTHON_VERSION: '3.9'
   PIP_EXTRA_INDEX_URL: 'https://${{ secrets.PYANSYS_PYPI_PRIVATE_PAT }}@pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/simple/'
+  DOCUMENTATION_CNAME: 'optics.docs.pyansys.com'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -97,6 +98,18 @@ jobs:
           name: ansys-pyoptics-wheel
           path: dist/
           retention-days: 7
+
+  doc-deploy-development:
+    name: Doc dev version deploy
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    needs: build-library
+    steps:
+      - name: "Deploy developers documentation"
+        uses: pyansys/actions/doc-deploy-dev@v4
+        with:
+            cname: ${{ env.DOCUMENTATION_CNAME }}
+            token: ${{ secrets.GITHUB_TOKEN }}
 
   release:
 

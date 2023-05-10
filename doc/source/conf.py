@@ -1,7 +1,8 @@
 """Sphinx documentation configuration file."""
 from datetime import datetime
+import os
 
-from ansys_sphinx_theme import pyansys_logo_black
+from ansys_sphinx_theme import get_version_match, pyansys_logo_black
 from sphinx.builders.latex import LaTeXBuilder
 
 from ansys.pyoptics.speos import __version__
@@ -13,13 +14,22 @@ project = "ansys-pyoptics"
 copyright = f"(c) {datetime.now().year} ANSYS, Inc. All rights reserved"
 author = "Ansys Inc."
 release = version = __version__
+cname = os.getenv("DOCUMENTATION_CNAME", default="optics.docs.pyansys.com")
 
 # use the default pyansys logo
 html_logo = pyansys_logo_black
 html_theme = "ansys_sphinx_theme"
 
 # specify the location of your github repo
-html_theme_options = {"github_url": "https://github.com/pyansys/pyoptics", "show_prev_next": False}
+html_theme_options = {
+    "github_url": "https://github.com/pyansys/pyoptics",
+    "show_prev_next": False,
+    "switcher": {
+        "json_url": f"https://{cname}/versions.json",
+        "version_match": get_version_match(__version__),
+    },
+    "check_switcher": False,
+}
 
 # Sphinx extensions
 extensions = [
