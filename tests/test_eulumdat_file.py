@@ -11,9 +11,9 @@ import logging
 import os
 
 from ansys.api.speos.intensity_distributions.v1 import eulumdat_pb2, eulumdat_pb2_grpc
-import grpc
 
-from conftest import config, test_path
+from ansys.pyoptics.speos.speos import Speos
+from conftest import test_path
 import helper
 
 
@@ -188,34 +188,33 @@ def compareEulumdatIntensities(eulumdat1, eulumdat2):
     return True
 
 
-def test_grpc_eulumdat_intensity():
-    with grpc.insecure_channel(f"localhost:" + str(config.get("SpeosServerPort"))) as channel:
-        stub = eulumdat_pb2_grpc.EulumdatIntensityServiceStub(channel)
-        save_name = eulumdat_pb2.Save_Request()
-        save_name.file_uri = os.path.join(test_path, "eulumdat_tmp00.ldt")
-        load_name = eulumdat_pb2.Load_Request()
-        load_name.file_uri = os.path.join(test_path, "eulumdat_tmp00.ldt")
+def test_grpc_eulumdat_intensity(speos: Speos):
+    stub = eulumdat_pb2_grpc.EulumdatIntensityServiceStub(speos.client.channel)
+    save_name = eulumdat_pb2.Save_Request()
+    save_name.file_uri = os.path.join(test_path, "eulumdat_tmp00.ldt")
+    load_name = eulumdat_pb2.Load_Request()
+    load_name.file_uri = os.path.join(test_path, "eulumdat_tmp00.ldt")
 
-        logging.debug("Creating eulumdat intensity protocol buffer")
-        eulumdat = createEulumdatIntensity()
+    logging.debug("Creating eulumdat intensity protocol buffer")
+    eulumdat = createEulumdatIntensity()
 
-        logging.debug("Sending protocol buffer to server")
-        import_response = eulumdat_pb2.Import_Response()
-        import_response = stub.Import(eulumdat)
+    logging.debug("Sending protocol buffer to server")
+    import_response = eulumdat_pb2.Import_Response()
+    import_response = stub.Import(eulumdat)
 
-        logging.debug("Writing as {save_name.file_uri}")
-        save_response = eulumdat_pb2.Save_Response()
-        save_response = stub.Save(save_name)
-        assert helper.does_file_exist(save_name.file_uri)
+    logging.debug("Writing as {save_name.file_uri}")
+    save_response = eulumdat_pb2.Save_Response()
+    save_response = stub.Save(save_name)
+    assert helper.does_file_exist(save_name.file_uri)
 
-        logging.debug("Reading {load_name.file_uri} back")
-        load_response = eulumdat_pb2.Load_Response()
-        load_response = stub.Load(load_name)
-        helper.remove_file(load_name.file_uri)
+    logging.debug("Reading {load_name.file_uri} back")
+    load_response = eulumdat_pb2.Load_Response()
+    load_response = stub.Load(load_name)
+    helper.remove_file(load_name.file_uri)
 
-        logging.debug("Exporting eulumdat intensity protocol buffer")
-        export_request = eulumdat_pb2.Export_Request()
-        eulumdat2 = stub.Export(export_request)
+    logging.debug("Exporting eulumdat intensity protocol buffer")
+    export_request = eulumdat_pb2.Export_Request()
+    eulumdat2 = stub.Export(export_request)
 
-        logging.debug("Check equal")
-        assert compareEulumdatIntensities(eulumdat, eulumdat2)
+    logging.debug("Check equal")
+    assert compareEulumdatIntensities(eulumdat, eulumdat2)

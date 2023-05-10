@@ -11,9 +11,9 @@ import logging
 import os
 
 from ansys.api.speos.intensity_distributions.v1 import ies_pb2, ies_pb2_grpc
-import grpc
 
-from conftest import config, test_path
+from ansys.pyoptics.speos.speos import Speos
+from conftest import test_path
 import helper
 
 
@@ -117,35 +117,34 @@ def compareIesIntensities(ies1, ies2):
     return True
 
 
-def test_grpc_ies_intensity():
-    with grpc.insecure_channel(f"localhost:" + str(config.get("SpeosServerPort"))) as channel:
-        stub = ies_pb2_grpc.IesIntensityServiceStub(channel)
-        save_request = ies_pb2.Save_Request()
-        save_request.file_uri = os.path.join(test_path, "tmp2_file.ies")
-        load_request = ies_pb2.Load_Request()
-        load_request.file_uri = os.path.join(test_path, "tmp2_file.ies")
+def test_grpc_ies_intensity(speos: Speos):
+    stub = ies_pb2_grpc.IesIntensityServiceStub(speos.client.channel)
+    save_request = ies_pb2.Save_Request()
+    save_request.file_uri = os.path.join(test_path, "tmp2_file.ies")
+    load_request = ies_pb2.Load_Request()
+    load_request.file_uri = os.path.join(test_path, "tmp2_file.ies")
 
-        logging.debug("Creating ies intensity protocol buffer")
-        ies = createIesIntensity()
+    logging.debug("Creating ies intensity protocol buffer")
+    ies = createIesIntensity()
 
-        logging.debug("Sending protocol buffer to server")
-        import_response = ies_pb2.Import_Response()
-        import_response = stub.Import(ies)
+    logging.debug("Sending protocol buffer to server")
+    import_response = ies_pb2.Import_Response()
+    import_response = stub.Import(ies)
 
-        logging.debug("Writing as {save_request.file_uri}")
-        save_response = ies_pb2.Save_Response()
-        save_response = stub.Save(save_request)
-        assert helper.does_file_exist(save_request.file_uri)
+    logging.debug("Writing as {save_request.file_uri}")
+    save_response = ies_pb2.Save_Response()
+    save_response = stub.Save(save_request)
+    assert helper.does_file_exist(save_request.file_uri)
 
-        logging.debug("Reading {load_response.file_uri}")
-        load_response = ies_pb2.Load_Response()
-        load_response = stub.Load(load_request)
-        helper.remove_file(load_request.file_uri)
+    logging.debug("Reading {load_response.file_uri}")
+    load_response = ies_pb2.Load_Response()
+    load_response = stub.Load(load_request)
+    helper.remove_file(load_request.file_uri)
 
-        logging.debug("Exporting ies intensity protocol buffer")
-        export_request = ies_pb2.Export_Request()
-        ies2 = ies_pb2.IesIntensityDistribution()
-        ies2 = stub.Export(export_request)
+    logging.debug("Exporting ies intensity protocol buffer")
+    export_request = ies_pb2.Export_Request()
+    ies2 = ies_pb2.IesIntensityDistribution()
+    ies2 = stub.Export(export_request)
 
-        logging.debug("Comparing ies intensity distributions")
-        assert compareIesIntensities(ies, ies2)
+    logging.debug("Comparing ies intensity distributions")
+    assert compareIesIntensities(ies, ies2)

@@ -16,7 +16,6 @@ import os
 import ansys.api.speos.bsdf.v1.bsdf_creation_pb2 as bsdf_creation__v1__pb2
 import ansys.api.speos.bsdf.v1.bsdf_creation_pb2_grpc as bsdf_creation__v1__pb2_grpc
 
-# from ansys.api.speos import grpc_stub
 from ansys.pyoptics.speos.speos import Speos
 from conftest import test_path
 import helper

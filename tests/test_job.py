@@ -10,34 +10,22 @@ With coverage.
 import os
 import time
 
-from ansys.api.speos import grpc_stub
 import ansys.api.speos.job.v1.job_pb2 as job__v1__pb2
 import ansys.api.speos.job.v1.job_pb2_grpc as job__v1__pb2_grpc
 import ansys.api.speos.simulation.v1.simulation_pb2 as simulation__v1__pb2
 import ansys.api.speos.simulation.v1.simulation_pb2_grpc as simulation__v1__pb2_grpc
 
+from ansys.pyoptics.speos.speos import Speos
 from conftest import config, test_path
 
 
-def test_job():
+def test_job(speos: Speos):
     # Stubs creations for Simulations
-    simu_manager_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:" + str(config.get("SpeosServerPort")),
-        stub_type=simulation__v1__pb2_grpc.SimulationsManagerStub,
-    )
-    simu_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:" + str(config.get("SpeosServerPort")),
-        stub_type=simulation__v1__pb2_grpc.SpeosSimulationStub,
-    )
+    simu_manager_stub = simulation__v1__pb2_grpc.SimulationsManagerStub(speos.client.channel)
+    simu_stub = simulation__v1__pb2_grpc.SpeosSimulationStub(speos.client.channel)
     # Stubs creations for Jobs
-    job_manager_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:" + str(config.get("SpeosServerPort")),
-        stub_type=job__v1__pb2_grpc.SpeosJobsManagerStub,
-    )
-    job_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:" + str(config.get("SpeosServerPort")),
-        stub_type=job__v1__pb2_grpc.SpeosJobStub,
-    )
+    job_manager_stub = job__v1__pb2_grpc.SpeosJobsManagerStub(speos.client.channel)
+    job_stub = job__v1__pb2_grpc.SpeosJobStub(speos.client.channel)
 
     speos_simulation_name = "LG_50M_Colorimetric_short.sv5"
     folder_path = os.path.join(test_path, speos_simulation_name)
