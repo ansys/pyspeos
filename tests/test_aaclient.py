@@ -25,6 +25,9 @@ def test_client_through_channel():
     target = "localhost:" + str(config.get("SpeosServerPort"))
     channel = insecure_channel(target)
     client = SpeosClient(channel=channel)
+    client_repr = repr(client)
+    assert "Target" in client_repr
+    assert "Connection" in client_repr
     assert client.healthy is True
-    assert client._target == target
+    assert client.target() == target
     assert client.channel
