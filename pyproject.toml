@@ -47,7 +47,7 @@ doc = [
 name = "ansys.pyoptics.speos"
 
 [project.urls]
-Source = "https://github.com/pyansys/pyoptics"
+Source = "https://github.com/ansys/pyoptics"
 
 [tool.black]
 line-length = 100
