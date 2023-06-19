@@ -16,7 +16,7 @@ def client(speos):
 
 
 def test_client_init(client: SpeosClient):
-    """Test the instantiation of a client from the default ctor."""
+    """Test the instantiation of a client from the default constructor."""
     assert client.healthy is True
 
 

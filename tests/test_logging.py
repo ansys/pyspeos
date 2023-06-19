@@ -17,7 +17,7 @@ LOG_LEVELS = {"CRITICAL": 50, "ERROR": 40, "WARNING": 30, "INFO": 20, "DEBUG": 1
 
 
 def test_stdout_reading(capfd: pytest.CaptureFixture):
-    """Test for checking simple standard output reading by pytest
+    """Test for checking simple standard output reading by pytest.
 
     Parameters
     ----------

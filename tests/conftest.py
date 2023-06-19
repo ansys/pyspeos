@@ -27,7 +27,7 @@ def speos():
     except OSError:
         pass
 
-    speos = Speos(logging_level=logging.DEBUG, logging_file=log_file_path)
+    speos = Speos(logging_level=logging.DEBUG, logging_file=log_file_path, port=str(config.get("SpeosServerPort")))
 
     yield speos
 
