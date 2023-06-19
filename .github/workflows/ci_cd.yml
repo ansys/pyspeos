@@ -92,7 +92,7 @@ jobs:
     needs: [docs-build, tests]
     steps:
       - name: "Build library source and wheel artifacts"
-        uses: pyansys/actions/build-library@v4
+        uses: ansys/actions/build-library@v4
         with:
           library-name: ${{ env.PACKAGE_NAME }}
 
@@ -103,7 +103,7 @@ jobs:
     needs: [build-library]
     steps:
       - name: "Deploy developers documentation"
-        uses: pyansys/actions/doc-deploy-dev@v4
+        uses: ansys/actions/doc-deploy-dev@v4
         with:
             cname: ${{ env.DOCUMENTATION_CNAME }}
             token: ${{ secrets.GITHUB_TOKEN }}
