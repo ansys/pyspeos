@@ -35,14 +35,14 @@ dependencies=[
 
 [project.optional-dependencies]
 tests = [
-    "pytest==7.3.1",
+    "pytest==7.3.2",
     "pytest-cov==4.0.0",
     "ansys-platform-instancemanagement>=1.0.3",
 ]
 doc = [
-    "ansys-sphinx-theme==0.9.8",
+    "ansys-sphinx-theme==0.9.9",
     "numpydoc==1.5.0",
-    "Sphinx==7.0.0",
+    "Sphinx==7.0.1",
     "sphinx-copybutton==0.5.2",
 ]
 
@@ -50,7 +50,7 @@ doc = [
 name = "ansys.optics.speos"
 
 [project.urls]
-Source = "https://github.com/pyansys/pyoptics"
+Source = "https://github.com/ansys/pyoptics"
 
 [tool.black]
 line-length = 100

@@ -6,8 +6,8 @@ PyOptics library
    :target: https://docs.pyansys.com/
    :alt: PyAnsys
 
-.. |GH-CI| image:: https://github.com/pyansys/pyoptics/actions/workflows/ci_cd.yml/badge.svg
-   :target: https://github.com/pyansys/pyoptics/actions/workflows/ci_cd.yml
+.. |GH-CI| image:: https://github.com/ansys/pyoptics/actions/workflows/ci_cd.yml/badge.svg
+   :target: https://github.com/ansys/pyoptics/actions/workflows/ci_cd.yml
 
 .. |MIT| image:: https://img.shields.io/badge/License-MIT-yellow.svg
    :target: https://opensource.org/licenses/MIT
@@ -47,7 +47,7 @@ Clone and install
 
 .. code::
 
-   git clone https://<PAT>@github.com/pyansys/pyoptics.git
+   git clone https://<PAT>@github.com/ansys/pyoptics.git
    cd pyoptics
    python -m pip install --upgrade pip
    pip install -U pip tox
@@ -105,7 +105,7 @@ Then, you can launch SpeosRPC server with:
    
    export LICENSE_SERVER=1055@XXX.XXX.XXX.XXX
    
-   docker login ghcr.io/pyansys/pyoptics
+   docker login ghcr.io/ansys/pyoptics
    docker-compose up -d
 
 On the other hand, SpeosRPC server can be started locally.
@@ -140,6 +140,6 @@ License
 The full license can be found in the root directory of the repository, see `<LICENSE>`_.
 
 .. LINKS AND REFERENCES
-.. _PyOptics: https://github.com/pyansys/pyoptics
+.. _PyOptics: https://github.com/ansys/pyoptics
 .. _PyAnsys: https://docs.pyansys.com
 .. _Sphinx: https://www.sphinx-doc.org/en/master/

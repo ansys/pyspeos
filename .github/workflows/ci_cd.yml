@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: PyAnsys code style checks
-        uses: pyansys/actions/code-style@v4
+        uses: ansys/actions/code-style@v4
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
 
@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: PyAnsys documentation style checks
-        uses: pyansys/actions/doc-style@v4
+        uses: ansys/actions/doc-style@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -45,7 +45,7 @@ jobs:
     needs: [docs-style]
     steps:
       - name: "Run Ansys documentation building action"
-        uses: pyansys/actions/doc-build@v4
+        uses: ansys/actions/doc-build@v4
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
   tests:
@@ -64,7 +64,7 @@ jobs:
       - name: Login to GitHub Packages
         uses: docker/login-action@v2
         with:
-          registry: ghcr.io/pyansys/pyoptics
+          registry: ghcr.io/ansys/pyoptics
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
@@ -116,20 +116,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     #  - name: "Release to the private PyPI repository"
-    #    uses: pyansys/actions/release-pypi-private@v1
+    #    uses: ansys/actions/release-pypi-private@v1
     #    with:
     #      library-name: ${{ env.PACKAGE_NAME }}
     #      twine-username: "__token__"
     #      twine-token: ${{ secrets.PYANSYS_PYPI_PRIVATE_PAT }}
 #
     #  - name: "Release to the public PyPI repository"
-    #    uses: pyansys/actions/release-pypi-public@v1
+    #    uses: ansys/actions/release-pypi-public@v1
     #    with:
     #      library-name: ${{ env.PACKAGE_NAME }}
     #      twine-username: "__token__"
     #      twine-token: ${{ secrets.PYPI_TOKEN }}
 #
     - name: "Release to GitHub"
-      uses: pyansys/actions/release-github@v4
+      uses: ansys/actions/release-github@v4
       with:
         library-name: ${{ env.PACKAGE_NAME }}
