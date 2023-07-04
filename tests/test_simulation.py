@@ -5,14 +5,13 @@ Usage:
    $ pytest -vx
 With coverage.
 .. code::
-   $ pytest --cov ansys.pyoptics.speos
+   $ pytest --cov ansys.optics.speos
 """
 import json
 import os
 import shutil
 import time
 
-from ansys.api.speos import grpc_stub
 from ansys.api.speos.file.v1 import file_transfer, file_transfer_pb2, file_transfer_pb2_grpc
 from ansys.api.speos.job.v1 import job_pb2, job_pb2_grpc
 from ansys.api.speos.simulation.v1 import (
@@ -24,22 +23,17 @@ from ansys.api.speos.simulation.v1 import (
 import grpc
 import pytest
 
-from conftest import config, local_test_path, test_path
+from ansys.optics.speos.speos import Speos
+from conftest import local_test_path, test_path
 import helper
 
 
-def test_simulation():
+def test_simulation(speos: Speos):
     # Stub on simulation manager
-    simulation_manager_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:" + str(config.get("SpeosServerPort")),
-        stub_type=simulation_pb2_grpc.SimulationsManagerStub,
-    )
+    simulation_manager_stub = simulation_pb2_grpc.SimulationsManagerStub(speos.client.channel)
 
     # Stub on simulation
-    simulation_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:" + str(config.get("SpeosServerPort")),
-        stub_type=simulation_pb2_grpc.SpeosSimulationStub,
-    )
+    simulation_stub = simulation_pb2_grpc.SpeosSimulationStub(speos.client.channel)
 
     # Create a new simulation on the server
     guid_simu = simulation_manager_stub.Create(simulation_pb2.Create_Request())
@@ -61,20 +55,11 @@ def test_simulation():
     simulation_manager_stub.Delete(delete_request)
 
 
-def test_simu_allocateSyst_load_with_file_transfer():
+def test_simu_allocateSyst_load_with_file_transfer(speos: Speos):
     # Stubs creations
-    file_transfer_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:" + str(config.get("SpeosServerPort")),
-        stub_type=file_transfer_pb2_grpc.FileTransferServiceStub,
-    )
-    simu_manager_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:" + str(config.get("SpeosServerPort")),
-        stub_type=simulation_pb2_grpc.SimulationsManagerStub,
-    )
-    simu_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:" + str(config.get("SpeosServerPort")),
-        stub_type=simulation_pb2_grpc.SpeosSimulationStub,
-    )
+    file_transfer_stub = file_transfer_pb2_grpc.FileTransferServiceStub(speos.client.channel)
+    simu_manager_stub = simulation_pb2_grpc.SimulationsManagerStub(speos.client.channel)
+    simu_stub = simulation_pb2_grpc.SpeosSimulationStub(speos.client.channel)
 
     # Use upload_folder helper provided within ansys.api.speos.file.v1
     sv5_name = "LG_50M_Colorimetric_short.sv5"
@@ -96,20 +81,11 @@ def test_simu_allocateSyst_load_with_file_transfer():
     file_transfer_stub.Delete(file_transfer_pb2.Delete_Request(uri=sv5_res_uri))
 
 
-def test_simu_allocateSyst_load_save_with_file_transfer():
+def test_simu_allocateSyst_load_save_with_file_transfer(speos: Speos):
     # Stubs creations
-    file_transfer_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:" + str(config.get("SpeosServerPort")),
-        stub_type=file_transfer_pb2_grpc.FileTransferServiceStub,
-    )
-    simu_manager_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:" + str(config.get("SpeosServerPort")),
-        stub_type=simulation_pb2_grpc.SimulationsManagerStub,
-    )
-    simu_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:" + str(config.get("SpeosServerPort")),
-        stub_type=simulation_pb2_grpc.SpeosSimulationStub,
-    )
+    file_transfer_stub = file_transfer_pb2_grpc.FileTransferServiceStub(speos.client.channel)
+    simu_manager_stub = simulation_pb2_grpc.SimulationsManagerStub(speos.client.channel)
+    simu_stub = simulation_pb2_grpc.SpeosSimulationStub(speos.client.channel)
     sv5_name = "LG_50M_Colorimetric_short.sv5"
     blue_spectrum = "Blue Spectrum.spectrum"
     red_spectrum = "Red Spectrum.spectrum"
@@ -154,21 +130,15 @@ def test_simu_allocateSyst_load_save_with_file_transfer():
     file_transfer_stub.Delete(file_transfer_pb2.Delete_Request(uri=reserve_res.uri))
 
 
-def test_simu_load_read_update():
+def test_simu_load_read_update(speos: Speos):
     # Create empty Simulation
-    simu_manager_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:" + str(config.get("SpeosServerPort")),
-        stub_type=simulation_pb2_grpc.SimulationsManagerStub,
-    )
+    simu_manager_stub = simulation_pb2_grpc.SimulationsManagerStub(speos.client.channel)
     simu_create_res = simu_manager_stub.Create(simulation_pb2.Create_Request())
 
     # Load speos file into allocated simulation
     sv5_path = os.path.join(test_path, "Inverse_SeveralSensors.speos")
 
-    simu_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:" + str(config.get("SpeosServerPort")),
-        stub_type=simulation_pb2_grpc.SpeosSimulationStub,
-    )
+    simu_stub = simulation_pb2_grpc.SpeosSimulationStub(speos.client.channel)
     simu_load_req = simulation_pb2.Load_Request(guid=simu_create_res.guid, input_file_path=sv5_path)
     simu_load_res = simu_stub.Load(simu_load_req)
 
@@ -179,9 +149,8 @@ def test_simu_load_read_update():
     assert simu_read_res.simulation.name == "Inverse.1"
 
     # Read simu template dm
-    simulation_templates_manager_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:" + str(config.get("SpeosServerPort")),
-        stub_type=simulation_template_pb2_grpc.SimulationTemplatesManagerStub,
+    simulation_templates_manager_stub = simulation_template_pb2_grpc.SimulationTemplatesManagerStub(
+        speos.client.channel
     )
     simu_template_read_req = simulation_template_pb2.Read_Request(guid=simu_read_res.simulation.guid)
     simu_template_read_res = simulation_templates_manager_stub.Read(simu_template_read_req)
@@ -207,10 +176,7 @@ def test_simu_load_read_update():
     assert error_details["ErrorName"] == "OPTCAALPAWithSplitting"
 
     # Create Job from simu guid + choose type + simu properties
-    job_manager_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:" + str(config.get("SpeosServerPort")),
-        stub_type=job_pb2_grpc.SpeosJobsManagerStub,
-    )
+    job_manager_stub = job_pb2_grpc.SpeosJobsManagerStub(speos.client.channel)
 
     j = job_pb2.Job()
     j.simu_guid = simu_create_res.guid
@@ -224,10 +190,7 @@ def test_simu_load_read_update():
     job_create_res = job_manager_stub.Create(job_create_req)
 
     # Start the job
-    job_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:" + str(config.get("SpeosServerPort")),
-        stub_type=job_pb2_grpc.SpeosJobStub,
-    )
+    job_stub = job_pb2_grpc.SpeosJobStub(speos.client.channel)
     job_start_req = job_pb2.Start_Request(guid=job_create_res.guid)
     job_start_res = job_stub.Start(job_start_req)
 
@@ -269,9 +232,8 @@ def test_simu_load_read_update():
     import ansys.api.speos.sensor.v1.sensor_pb2 as sensor_v1
     import ansys.api.speos.sensor.v1.sensor_pb2_grpc
 
-    sensor_templates_manager_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:" + str(config.get("SpeosServerPort")),
-        stub_type=ansys.api.speos.sensor.v1.sensor_pb2_grpc.SensorTemplatesManagerStub,
+    sensor_templates_manager_stub = ansys.api.speos.sensor.v1.sensor_pb2_grpc.SensorTemplatesManagerStub(
+        speos.client.channel
     )
     sensor_templates_list_res = sensor_templates_manager_stub.List(sensor_v1.List_Request())
     for sensor_template_guid in sensor_templates_list_res.guids:

@@ -7,25 +7,22 @@ Usage:
 
 With coverage.
 .. code::
-   $ pytest --cov ansys.pyoptics.speos
+   $ pytest --cov ansys.optics.speos
 
 """
 import math
 import os
 
-from ansys.api.speos import grpc_stub
 import ansys.api.speos.bsdf.v1.bsdf_creation_pb2 as bsdf_creation__v1__pb2
 import ansys.api.speos.bsdf.v1.bsdf_creation_pb2_grpc as bsdf_creation__v1__pb2_grpc
 
-from conftest import config, test_path
+from ansys.optics.speos.speos import Speos
+from conftest import test_path
 import helper
 
 
-def test_grpc_spectral_bsdf():
-    stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:" + str(config.get("SpeosServerPort")),
-        stub_type=bsdf_creation__v1__pb2_grpc.BsdfCreationServiceStub,
-    )
+def test_grpc_spectral_bsdf(speos: Speos):
+    stub = bsdf_creation__v1__pb2_grpc.BsdfCreationServiceStub(speos.client.channel)
 
     # BSDF180
     bsdf180_request = bsdf_creation__v1__pb2.Bsdf180InputData()

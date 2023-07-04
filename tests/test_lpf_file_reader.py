@@ -7,27 +7,24 @@ Usage:
 
 With coverage.
 .. code::
-   $ pytest --cov ansys.pyoptics.speos
+   $ pytest --cov ansys.optics.speos
 
 """
 import os
 
-from ansys.api.speos import grpc_stub
 import ansys.api.speos.file.v1.file_transfer as file_transfer_helper__v1
 import ansys.api.speos.file.v1.file_transfer_pb2 as file_transfer__v1__pb2
 import ansys.api.speos.file.v1.file_transfer_pb2_grpc as file_transfer__v1__pb2_grpc
 import ansys.api.speos.lpf.v2.lpf_file_reader_pb2 as lpf_file_reader__v2__pb2
 import ansys.api.speos.lpf.v2.lpf_file_reader_pb2_grpc as lpf_file_reader__v2__pb2_grpc
 
-from conftest import config, local_test_path, test_path
+from ansys.optics.speos.speos import Speos
+from conftest import local_test_path, test_path
 
 
-def test_lpf_file_reader_mono_v2_DirectSimu():
+def test_lpf_file_reader_mono_v2_DirectSimu(speos: Speos):
     # Lpf file reader creation
-    stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:" + str(config.get("SpeosServerPort")),
-        stub_type=lpf_file_reader__v2__pb2_grpc.LpfFileReader_MonoStub,
-    )
+    stub = lpf_file_reader__v2__pb2_grpc.LpfFileReader_MonoStub(speos.client.channel)
 
     # Init with file local path
     path = os.path.join(test_path, "basic_DirectSimu.lpf")
@@ -73,12 +70,9 @@ def test_lpf_file_reader_mono_v2_DirectSimu():
     stub.CloseLpfFileName(lpf_file_reader__v2__pb2.CloseLpfFileName_Request_Mono())
 
 
-def test_lpf_file_reader_mono_v2_InverseSimu():
+def test_lpf_file_reader_mono_v2_InverseSimu(speos: Speos):
     # Lpf file reader creation
-    stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:" + str(config.get("SpeosServerPort")),
-        stub_type=lpf_file_reader__v2__pb2_grpc.LpfFileReader_MonoStub,
-    )
+    stub = lpf_file_reader__v2__pb2_grpc.LpfFileReader_MonoStub(speos.client.channel)
 
     # Init with file local path
     path = os.path.join(test_path, "basic_InverseSimu.lpf")
@@ -110,12 +104,9 @@ def test_lpf_file_reader_mono_v2_InverseSimu():
     stub.CloseLpfFileName(lpf_file_reader__v2__pb2.CloseLpfFileName_Request_Mono())
 
 
-def test_lpf_file_reader_multi_v2():
+def test_lpf_file_reader_multi_v2(speos: Speos):
     # Lpf file reader multi creation
-    stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:" + str(config.get("SpeosServerPort")),
-        stub_type=lpf_file_reader__v2__pb2_grpc.LpfFileReader_MultiStub,
-    )
+    stub = lpf_file_reader__v2__pb2_grpc.LpfFileReader_MultiStub(speos.client.channel)
 
     # Create a reader and retrieve its associated guid
     create_lpf_reader_response = stub.Create(lpf_file_reader__v2__pb2.Create_Request_Multi())
@@ -181,20 +172,14 @@ def test_lpf_file_reader_multi_v2():
     stub.Delete(lpf_file_reader__v2__pb2.Delete_Request_Multi(lpf_reader_guid=guid))
 
 
-def test_lpf_file_reader_mono_v2_DirectSimu_with_file_transfer():
+def test_lpf_file_reader_mono_v2_DirectSimu_with_file_transfer(speos: Speos):
     # local file upload to the server
     path = os.path.join(local_test_path, "basic_DirectSimu.lpf")
-    file_transfer_stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:" + str(config.get("SpeosServerPort")),
-        stub_type=file_transfer__v1__pb2_grpc.FileTransferServiceStub,
-    )
+    file_transfer_stub = file_transfer__v1__pb2_grpc.FileTransferServiceStub(speos.client.channel)
     upload_response = file_transfer_helper__v1.upload_file(file_transfer_stub, path)
 
     # Lpf file reader creation
-    stub = grpc_stub.get_stub_insecure_channel(
-        target="localhost:" + str(config.get("SpeosServerPort")),
-        stub_type=lpf_file_reader__v2__pb2_grpc.LpfFileReader_MonoStub,
-    )
+    stub = lpf_file_reader__v2__pb2_grpc.LpfFileReader_MonoStub(speos.client.channel)
 
     # Init with uri from file transfer
     stub.InitLpfFileName(lpf_file_reader__v2__pb2.InitLpfFileName_Request_Mono(lpf_file_uri=upload_response.info.uri))
