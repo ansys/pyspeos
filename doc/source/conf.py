@@ -1,45 +1,52 @@
 """Sphinx documentation configuration file."""
 from datetime import datetime
+import os
 
-from ansys_sphinx_theme import pyansys_logo_black
-
-from ansys.pyoptics.speos import __version__
-
+from ansys_sphinx_theme import get_version_match, pyansys_logo_black
 from sphinx.builders.latex import LaTeXBuilder
+
+from ansys.optics.speos import __version__
 
 LaTeXBuilder.supported_image_types = ["image/png", "image/pdf", "image/svg+xml"]
 
 # Project information
-project = 'ansys-pyoptics'
+project = "ansys-pyoptics"
 copyright = f"(c) {datetime.now().year} ANSYS, Inc. All rights reserved"
 author = "Ansys Inc."
 release = version = __version__
+cname = os.getenv("DOCUMENTATION_CNAME", default="optics.docs.pyansys.com")
 
 # use the default pyansys logo
 html_logo = pyansys_logo_black
-html_theme = 'ansys_sphinx_theme'
+html_theme = "ansys_sphinx_theme"
 
 # specify the location of your github repo
 html_theme_options = {
-    "github_url": "https://github.com/pyansys/pyansys-sphinx-theme",
-    "show_prev_next": False
+    "github_url": "https://github.com/pyansys/pyoptics",
+    "show_prev_next": False,
+    "switcher": {
+        "json_url": f"https://{cname}/versions.json",
+        "version_match": get_version_match(__version__),
+    },
+    "check_switcher": False,
 }
 
 # Sphinx extensions
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.autosummary',
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
     "numpydoc",
     "sphinx.ext.intersphinx",
+    "sphinx.ext.autosectionlabel",
     "sphinx_copybutton",
 ]
 
 # Intersphinx mapping
 intersphinx_mapping = {
-    "python": ("https://docs.python.org/dev", None),
-
+    "python": ("https://docs.python.org/3/", None),
+    "grpc": ("https://grpc.github.io/grpc/python/", None),
+    "pypim": ("https://pypim.docs.pyansys.com/", None),
     # kept here as an example
-
     # "scipy": ("https://docs.scipy.org/doc/scipy/reference", None),
     # "numpy": ("https://numpy.org/devdocs", None),
     # "matplotlib": ("https://matplotlib.org/stable", None),
@@ -47,12 +54,8 @@ intersphinx_mapping = {
     # "pyvista": ("https://docs.pyvista.org/", None),
 }
 
-# numpydoc configuration
 numpydoc_show_class_members = False
 numpydoc_xref_param_type = True
-
-# Consider enabling numpydoc validation. See:
-# https://numpydoc.readthedocs.io/en/latest/validation.html#
 numpydoc_validate = True
 numpydoc_validation_checks = {
     "GL06",  # Found unknown section
@@ -69,7 +72,6 @@ numpydoc_validation_checks = {
     # type, unless multiple values are being returned"
 }
 
-
 # static path
 html_static_path = ["_static"]
 
@@ -77,7 +79,10 @@ html_static_path = ["_static"]
 templates_path = ["_templates"]
 
 # The suffix(es) of source filenames.
-source_suffix = '.rst'
+source_suffix = ".rst"
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = "index"
+
+# Generate section labels up to four levels deep
+autosectionlabel_maxdepth = 4

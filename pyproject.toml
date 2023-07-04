@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 # Check https://flit.readthedocs.io/en/latest/pyproject_toml.html for all available sections
-name = "ansys-pyoptics-speos"
+name = "ansys-optics-speos"
 version = "0.1.dev0"
 description = "A Python wrapper for Ansys Optics"
 readme = "README.rst"
@@ -24,16 +24,19 @@ classifiers=[
     "Programming Language :: Python :: 3.10",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
+    "Private :: Do Not Upload",
 ]
 dependencies=[
     "grpcio==1.55.0",
     "grpcio-tools==1.48.2",
+    "grpcio-health-checking==1.48.2",
     "ansys-api-speos==0.3.0",
 ]
 
 [project.optional-dependencies]
 tests = [
     "pytest==7.4.0",
+    "ansys-platform-instancemanagement>=1.0.3",
     "pytest-cov==4.1.0",
 ]
 doc = [
@@ -44,7 +47,7 @@ doc = [
 ]
 
 [tool.flit.module]
-name = "ansys.pyoptics.speos"
+name = "ansys.optics.speos"
 
 [project.urls]
 Source = "https://github.com/ansys/pyoptics"
@@ -60,7 +63,7 @@ default_section = "THIRDPARTY"
 src_paths = ["doc", "src", "tests"]
 
 [tool.coverage.run]
-source = ["ansys.pyoptics.speos"]
+source = ["ansys.optics.speos"]
 
 [tool.coverage.report]
 show_missing = true

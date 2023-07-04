@@ -1,7 +1,5 @@
-# check spelling, codestyle
 name: GitHub CI
 
-# run only on main branch.  This avoids duplicated actions on PRs
 on:
   pull_request:
   push:
@@ -13,6 +11,9 @@ on:
 env:
   MAIN_PYTHON_VERSION: '3.9'
   PIP_EXTRA_INDEX_URL: 'https://${{ secrets.PYANSYS_PYPI_PRIVATE_PAT }}@pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/simple/'
+  DOCUMENTATION_CNAME: 'optics.docs.pyansys.com'
+  PACKAGE_NAMESPACE: 'ansys.optics.speos'
+  PACKAGE_NAME: 'ansys-optics-speos'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -39,20 +40,18 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
   docs-build:
-
     name: Doc building
     runs-on: ubuntu-latest
-    needs: docs-style
+    needs: [docs-style]
     steps:
       - name: "Run Ansys documentation building action"
         uses: ansys/actions/doc-build@v4
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
-
   tests:
-    name: Build and testing
+    name: "Unit testing"
     runs-on: ubuntu-latest
-    needs: [style,docs-build]
+    needs: [style]
   
     steps:
       - uses: actions/checkout@v3
@@ -61,18 +60,6 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip build twine
-
-      - name: Build wheel and sdist
-        run: |
-          python -m build
-          python -m twine check dist/*
-
-      - name: Install library
-        run: pip install .
 
       - name: Login to GitHub Packages
         uses: docker/login-action@v2
@@ -99,11 +86,33 @@ jobs:
           path: dist/
           retention-days: 7
 
+  build-library:
+    name: "Build library"
+    runs-on: ubuntu-latest
+    needs: [docs-build, tests]
+    steps:
+      - name: "Build library source and wheel artifacts"
+        uses: ansys/actions/build-library@v4
+        with:
+          library-name: ${{ env.PACKAGE_NAME }}
+
+  doc-deploy-development:
+    name: "Doc dev version deploy"
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    needs: [build-library]
+    steps:
+      - name: "Deploy developers documentation"
+        uses: ansys/actions/doc-deploy-dev@v4
+        with:
+            cname: ${{ env.DOCUMENTATION_CNAME }}
+            token: ${{ secrets.GITHUB_TOKEN }}
+
   release:
 
-    name: "Release project to private PyPI, public PyPI and GitHub"
+    name: "Release"
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
-    needs: [tests]
+    needs: [build-library]
     runs-on: ubuntu-latest
     steps:
     #  - name: "Release to the private PyPI repository"
