@@ -8,7 +8,7 @@ import grpc
 from grpc._channel import _InactiveRpcError
 
 from ansys.optics.speos import LOG as logger
-from ansys.optics.speos.logger import PyOpticsCustomAdapter
+from ansys.optics.speos.logger import PySpeosCustomAdapter
 
 DEFAULT_HOST = "localhost"
 DEFAULT_PORT = "50051"
@@ -112,7 +112,7 @@ class SpeosClient:
         return self._channel
 
     @property
-    def log(self) -> PyOpticsCustomAdapter:
+    def log(self) -> PySpeosCustomAdapter:
         """The specific instance logger."""
         return self._log
 

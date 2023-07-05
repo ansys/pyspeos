@@ -4,7 +4,7 @@ Unit Test Configuration Module
 
 Description
 ===========
-This module loads the configuration for pyoptics unit tests.
+This module loads the configuration for PySpeos unit tests.
 The configuration can be changed by modifying a file called local_config.json in the same
 directory as this module.
 """

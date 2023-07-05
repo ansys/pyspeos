@@ -46,7 +46,7 @@ repos:
 #   rev: 6.1.1
 #   hooks:
 #   - id: pydocstyle
-#     files: ^pyoptics/
+#     files: ^pyspeos/
 #     args: ["--ignore=D205,D100,D213"]
 #     additional_dependencies: [toml]
 

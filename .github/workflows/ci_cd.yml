@@ -82,7 +82,7 @@ jobs:
       - name: Upload wheel
         uses: actions/upload-artifact@v3
         with:
-          name: ansys-pyoptics-wheel
+          name: ansys-pyspeos-wheel
           path: dist/
           retention-days: 7
 
