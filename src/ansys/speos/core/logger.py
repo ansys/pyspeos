@@ -15,18 +15,18 @@ Usage
 Global logger
 ~~~~~~~~~~~~~
 There is a global logger named ``pyspeos_global`` that is created at
-``ansys.optics.speos.__init__``.  If you want to use this global logger,
+``ansys.speos.core.__init__``.  If you want to use this global logger,
 you must call it at the top of your module:
 
 .. code:: python
 
-   from ansys.optics.speos import LOG
+   from ansys.speos.core import LOG
 
 You can also rename it to avoid conflicts with other loggers (if any):
 
 .. code:: python
 
-   from ansys.optics.speos import LOG as logger
+   from ansys.speos.core import LOG as logger
 
 It should be noticed that the default logging level of ``LOG`` is ``ERROR``.
 You can change this and output lower-level messages with:
@@ -57,21 +57,21 @@ you can add a file handler with:
 This sets the logger to be redirected also to this file. If you want
 to change the characteristics of this global logger from the beginning
 of the execution, you must edit the ``__init__`` file in the directory
-``ansys.optics.speos``.
+``ansys.speos.core``.
 
 To log using this logger, call the desired method as a normal logger with:
 
 .. code:: pycon
 
     >>> import logging
-    >>> from ansys.optics.speos.logger import Logger
+    >>> from ansys.speos.core.logger import Logger
     >>> LOG = Logger(level=logging.DEBUG, to_file=False, to_stdout=True)
     >>> LOG.debug("This is LOG debug message.")
     DEBUG -  -  <ipython-input-24-80df150fe31f> - <module> - This is LOG debug message.
 
 Instance Logger
 ~~~~~~~~~~~~~~~
-Every time an instance of :class:`speos <ansys.optics.speos.speos.speos>`
+Every time an instance of :class:`speos <ansys.speos.core.speos.speos>`
 is created, a logger is created and stored in ``LOG._instances``. This field is a
 dictionary where the key is the name of the created logger.
 These instance loggers inherit the ``pyspeos_global`` output handlers and
@@ -83,7 +83,7 @@ You can use this logger like this:
 
 .. code:: pycon
 
-    >>> from ansys.optics.speos import SpeosClient
+    >>> from ansys.speos.core import SpeosClient
     >>> speos = SpeosClient()
     >>> speos._log.info("This is a useful message")
     INFO - GRPC_127.0.0.1:50056 -  <...> - <module> - This is a useful message
@@ -104,7 +104,7 @@ from typing import TYPE_CHECKING, Optional
 import weakref
 
 if TYPE_CHECKING:
-    from ansys.optics.speos.client import SpeosClient  # pragma: no cover
+    from ansys.speos.core.client import SpeosClient  # pragma: no cover
 
 ## Default configuration
 LOG_LEVEL = logging.DEBUG
@@ -298,7 +298,7 @@ class Logger:
     Demonstrate logger usage from the ``Speos`` instance, which is automatically
     created when a speos instance is created.
 
-    >>> from ansys.optics.speos import speos
+    >>> from ansys.speos.core import speos
     >>> speos = Speos(loglevel='DEBUG')
     >>> speos._log.info('This is a useful message')
     INFO -  -  <ipython-input-24-80df150fe31f> - <module> - This is LOG debug message.
@@ -306,7 +306,7 @@ class Logger:
     Import the global pyspeos logger and add a file output handler.
 
     >>> import os
-    >>> from ansys.optics.speos import LOG
+    >>> from ansys.speos.core import LOG
     >>> file_path = os.path.join(os.getcwd(), 'pyspeos.log')
     >>> LOG.log_to_file(file_path)
     """
@@ -374,7 +374,7 @@ class Logger:
         --------
         Write to the ``"pyspeos.log"`` file in the current working directory.
 
-        >>> from ansys.optics.speos import LOG
+        >>> from ansys.speos.core import LOG
         >>> import os
         >>> file_path = os.path.join(os.getcwd(), 'pyspeos.log')
         >>> LOG.log_to_file(file_path)

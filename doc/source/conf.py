@@ -5,7 +5,7 @@ import os
 from ansys_sphinx_theme import get_version_match, pyansys_logo_black
 from sphinx.builders.latex import LaTeXBuilder
 
-from ansys.optics.speos import __version__
+from ansys.speos.core import __version__
 
 LaTeXBuilder.supported_image_types = ["image/png", "image/pdf", "image/svg+xml"]
 

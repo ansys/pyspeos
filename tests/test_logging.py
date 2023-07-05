@@ -5,8 +5,8 @@ from typing import Callable
 
 import pytest
 
-from ansys.optics.speos import LOG  # Global logger
-import ansys.optics.speos.logger as logger
+from ansys.speos.core import LOG  # Global logger
+import ansys.speos.core.logger as logger
 
 ## Notes
 # Use the next fixtures for:

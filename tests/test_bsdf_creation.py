@@ -7,7 +7,7 @@ Usage:
 
 With coverage.
 .. code::
-   $ pytest --cov ansys.optics.speos
+   $ pytest --cov ansys.speos.core
 
 """
 import math
@@ -16,7 +16,7 @@ import os
 import ansys.api.speos.bsdf.v1.bsdf_creation_pb2 as bsdf_creation__v1__pb2
 import ansys.api.speos.bsdf.v1.bsdf_creation_pb2_grpc as bsdf_creation__v1__pb2_grpc
 
-from ansys.optics.speos.speos import Speos
+from ansys.speos.core.speos import Speos
 from conftest import test_path
 import helper
 

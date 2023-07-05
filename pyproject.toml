@@ -47,7 +47,7 @@ doc = [
 ]
 
 [tool.flit.module]
-name = "ansys.optics.speos"
+name = "ansys.speos.core"
 
 [project.urls]
 Source = "https://github.com/ansys-internal/pyspeos"
@@ -63,7 +63,7 @@ default_section = "THIRDPARTY"
 src_paths = ["doc", "src", "tests"]
 
 [tool.coverage.run]
-source = ["ansys.optics.speos"]
+source = ["ansys.speos.core"]
 
 [tool.coverage.report]
 show_missing = true
