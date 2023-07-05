@@ -1,21 +1,19 @@
-"""Version of ansys-<product/service>-<library> library.
+"""Version of ansys-speos-core library.
+
 
 On the ``main`` branch, use 'dev0' to denote a development version.
 For example:
 
-version_info = 0, 1, 'dev0'
-
-Examples
---------
-Print the version
-
->>> from ansys.product import library
->>> print(library.__version__)
-0.1.dev0
+# major, minor, patch
+version_info = 0, 58, 'dev0'
 
 """
-# major, minor, patch
-version_info = 0, 1, "dev0"
 
-# Nice string for the version
-__version__ = ".".join(map(str, version_info))
+try:
+    import importlib.metadata as importlib_metadata
+except ModuleNotFoundError:  # pragma: no cover
+    import importlib_metadata
+
+# Read from the pyproject.toml
+# major, minor, patch
+__version__ = importlib_metadata.version("ansys-speos-core")

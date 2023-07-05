@@ -20,7 +20,7 @@ PySpeos library
 
 Project overview
 ----------------
-``PySpeos`` is a Python library that gathers functionalities and tools based on remote API of Ansys software `Speos <https://www.ansys.com/fr-fr/products/optics-vr>`_, `Zemax <https://www.zemax.com/>`_ and `Lumerical <https://www.lumerical.com/>`_.
+``PySpeos`` is a Python library that gathers functionalities and tools based on remote API of Ansys software `Speos <https://www.ansys.com/fr-fr/products/optics-vr>`_ .
 
 Installation
 ------------
