@@ -1,4 +1,4 @@
-PyOptics library
+PySpeos library
 ================
 |pyansys| |GH-CI| |MIT| |black|
 
@@ -6,8 +6,8 @@ PyOptics library
    :target: https://docs.pyansys.com/
    :alt: PyAnsys
 
-.. |GH-CI| image:: https://github.com/ansys/pyoptics/actions/workflows/ci_cd.yml/badge.svg
-   :target: https://github.com/ansys/pyoptics/actions/workflows/ci_cd.yml
+.. |GH-CI| image:: https://github.com/ansys-internal/pyspeos/actions/workflows/ci_cd.yml/badge.svg
+   :target: https://github.com/ansys-internal/pyspeos/actions/workflows/ci_cd.yml
 
 .. |MIT| image:: https://img.shields.io/badge/License-MIT-yellow.svg
    :target: https://opensource.org/licenses/MIT
@@ -20,7 +20,7 @@ PyOptics library
 
 Project overview
 ----------------
-``PyOptics`` is a Python library that gathers functionalities and tools based on remote API of Ansys software `Speos <https://www.ansys.com/fr-fr/products/optics-vr>`_, `Zemax <https://www.zemax.com/>`_ and `Lumerical <https://www.lumerical.com/>`_.
+``PySpeos`` is a Python library that gathers functionalities and tools based on remote API of Ansys software `Speos <https://www.ansys.com/fr-fr/products/optics-vr>`_ .
 
 Installation
 ------------
@@ -30,12 +30,12 @@ Package
 ~~~~~~~
 .. warning:: Not currently available, work in progress. Please use `Sources`_. 
 
-This repository is deployed as the Python packages `ansys-pyoptics <...>`_.
+This repository is deployed as the Python packages `ansys-pyspeos <...>`_.
 As usual, installation is done by running:
 
 .. code:: 
 
-   pip install ansys-pyoptics
+   pip install ansys-pyspeos
 
 Sources
 ~~~~~~~
@@ -47,8 +47,8 @@ Clone and install
 
 .. code::
 
-   git clone https://<PAT>@github.com/ansys/pyoptics.git
-   cd pyoptics
+   git clone https://<PAT>@github.com/ansys-internal/pyspeos.git
+   cd pyspeos
    python -m pip install --upgrade pip
    pip install -U pip tox
    tox -e style
@@ -61,7 +61,7 @@ All sources are located in `<src/>`_ folder.
 
 .. code:: python
 
-    from src.ansys.pyoptics import speos
+    from src.ansys.pyspeos import speos
 
     stub = speos.get_stub_insecure_channel()
     print(stub)
@@ -84,7 +84,7 @@ To build it manually :
 Testing
 -------
 Tests and assets are in `<tests>`_ and `<tests/assets>`_ folder. 
-Running PyOptics tests requires a running SpeosRPC server.
+Running PySpeos tests requires a running SpeosRPC server.
 A configuration file allows to choose between a local server and a Docker server (by default).
 
 Test configuration file
@@ -96,7 +96,7 @@ The configuration file `<tests/local_config.json>`_ located in tests folder cont
 
 Start server
 ~~~~~~~~~~~~
-First option is to use the Docker container of `SpeosRPC_Server <https://github.com/orgs/pyansys/packages/container/package/pyoptics%2Fspeos-rpc>`_.
+First option is to use the Docker container of `SpeosRPC_Server <https://github.com/orgs/pyansys/packages/container/package/pyspeos%2Fspeos-rpc>`_.
 It can be started using `<docker-compose.yml>`_ (if needed, please provide GitHub username and PAT as password).
 Since the Docker image contains no license server, you will need to enter your license server IP address in the `LICENSE_SERVER` environment variable.
 Then, you can launch SpeosRPC server with:
@@ -105,7 +105,7 @@ Then, you can launch SpeosRPC server with:
    
    export LICENSE_SERVER=1055@XXX.XXX.XXX.XXX
    
-   docker login ghcr.io/ansys/pyoptics
+   docker login ghcr.io/ansys-internal/pyspeos
    docker-compose up -d
 
 On the other hand, SpeosRPC server can be started locally.
@@ -136,10 +136,10 @@ Launch unit tests
 
 License
 -------
-`PyOptics`_ is licensed under the MIT license.
+`PySpeos`_ is licensed under the MIT license.
 The full license can be found in the root directory of the repository, see `<LICENSE>`_.
 
 .. LINKS AND REFERENCES
-.. _PyOptics: https://github.com/ansys/pyoptics
+.. _PySpeos: https://github.com/ansys-internal/pyspeos
 .. _PyAnsys: https://docs.pyansys.com
 .. _Sphinx: https://www.sphinx-doc.org/en/master/

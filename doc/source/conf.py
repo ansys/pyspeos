@@ -5,12 +5,12 @@ import os
 from ansys_sphinx_theme import get_version_match, pyansys_logo_black
 from sphinx.builders.latex import LaTeXBuilder
 
-from ansys.optics.speos import __version__
+from ansys.speos.core import __version__
 
 LaTeXBuilder.supported_image_types = ["image/png", "image/pdf", "image/svg+xml"]
 
 # Project information
-project = "ansys-pyoptics"
+project = "ansys-pyspeos"
 copyright = f"(c) {datetime.now().year} ANSYS, Inc. All rights reserved"
 author = "Ansys Inc."
 release = version = __version__
@@ -22,7 +22,7 @@ html_theme = "ansys_sphinx_theme"
 
 # specify the location of your github repo
 html_theme_options = {
-    "github_url": "https://github.com/pyansys/pyoptics",
+    "github_url": "https://github.com/ansys-internal/pyspeos",
     "show_prev_next": False,
     "switcher": {
         "json_url": f"https://{cname}/versions.json",

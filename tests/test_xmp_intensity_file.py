@@ -5,7 +5,7 @@ Usage:
    $ pytest -vx
 With coverage.
 .. code::
-   $ pytest --cov ansys.optics.speos
+   $ pytest --cov ansys.speos.core
 """
 import logging
 import os
@@ -17,7 +17,7 @@ from ansys.api.speos.intensity_distributions.v1 import (
     xmp_pb2_grpc,
 )
 
-from ansys.optics.speos.speos import Speos
+from ansys.speos.core.speos import Speos
 from conftest import test_path
 import helper
 

@@ -1,32 +1,32 @@
 """Logging module.
 
-This module supplies a general framework for logging in pyoptics.  This module is
+This module supplies a general framework for logging in PySpeos.  This module is
 built upon `logging <https://docs.python.org/3/library/logging.html>`_ library
 and it does not intend to replace it but rather provide a way to interact between
-``logging`` and pyoptics.
+``logging`` and pyspeos.
 
 The loggers used in the module include the name of the instance, which
 is intended to be unique. This name is printed in all active
-outputs and is used to track the different pyoptics speos instances.
+outputs and is used to track the different PySpeos instances.
 
 Usage
 -----
 
 Global logger
 ~~~~~~~~~~~~~
-There is a global logger named ``pyoptics_global`` that is created at
-``ansys.optics.speos.__init__``.  If you want to use this global logger,
+There is a global logger named ``pyspeos_global`` that is created at
+``ansys.speos.core.__init__``.  If you want to use this global logger,
 you must call it at the top of your module:
 
 .. code:: python
 
-   from ansys.optics.speos import LOG
+   from ansys.speos.core import LOG
 
 You can also rename it to avoid conflicts with other loggers (if any):
 
 .. code:: python
 
-   from ansys.optics.speos import LOG as logger
+   from ansys.speos.core import LOG as logger
 
 It should be noticed that the default logging level of ``LOG`` is ``ERROR``.
 You can change this and output lower-level messages with:
@@ -51,39 +51,39 @@ you can add a file handler with:
 
    import os
 
-   file_path = os.path.join(os.getcwd(), "pyoptics.log")
+   file_path = os.path.join(os.getcwd(), "pyspeos.log")
    LOG.log_to_file(file_path)
 
 This sets the logger to be redirected also to this file. If you want
 to change the characteristics of this global logger from the beginning
 of the execution, you must edit the ``__init__`` file in the directory
-``ansys.optics.speos``.
+``ansys.speos.core``.
 
 To log using this logger, call the desired method as a normal logger with:
 
 .. code:: pycon
 
     >>> import logging
-    >>> from ansys.optics.speos.logger import Logger
+    >>> from ansys.speos.core.logger import Logger
     >>> LOG = Logger(level=logging.DEBUG, to_file=False, to_stdout=True)
     >>> LOG.debug("This is LOG debug message.")
     DEBUG -  -  <ipython-input-24-80df150fe31f> - <module> - This is LOG debug message.
 
 Instance Logger
 ~~~~~~~~~~~~~~~
-Every time an instance of :class:`speos <ansys.optics.speos.speos.speos>`
+Every time an instance of :class:`speos <ansys.speos.core.speos.speos>`
 is created, a logger is created and stored in ``LOG._instances``. This field is a
 dictionary where the key is the name of the created logger.
-These instance loggers inherit the ``pyoptics_global`` output handlers and
+These instance loggers inherit the ``pyspeos_global`` output handlers and
 logging level unless otherwise specified. The way this logger works is very
 similar to the global logger. If you want to add a file handler, you can use
-the :func:`log_to_file() <PyOpticsCustomAdapter.log_to_file>` method. If you want
+the :func:`log_to_file() <PySpeosCustomAdapter.log_to_file>` method. If you want
 to change the log level, you can use the :func:`logger.Logging.setLevel` method.
 You can use this logger like this:
 
 .. code:: pycon
 
-    >>> from ansys.optics.speos import SpeosClient
+    >>> from ansys.speos.core import SpeosClient
     >>> speos = SpeosClient()
     >>> speos._log.info("This is a useful message")
     INFO - GRPC_127.0.0.1:50056 -  <...> - <module> - This is a useful message
@@ -104,11 +104,11 @@ from typing import TYPE_CHECKING, Optional
 import weakref
 
 if TYPE_CHECKING:
-    from ansys.optics.speos.client import SpeosClient  # pragma: no cover
+    from ansys.speos.core.client import SpeosClient  # pragma: no cover
 
 ## Default configuration
 LOG_LEVEL = logging.DEBUG
-FILE_NAME = "pyoptics.log"
+FILE_NAME = "pyspeos.log"
 
 # For convenience
 DEBUG = logging.DEBUG
@@ -143,7 +143,7 @@ string_to_loglevel = {
 }
 
 
-class PyOpticsCustomAdapter(logging.LoggerAdapter):
+class PySpeosCustomAdapter(logging.LoggerAdapter):
     """Keeps the reference to the speos instance name dynamic.
 
     If we use the standard approach, which is supplying **extra** input
@@ -182,7 +182,7 @@ class PyOpticsCustomAdapter(logging.LoggerAdapter):
         ----------
         filename : str, optional
             Name of the file to write log messages to. The default is
-            ``"pyoptics.log"``.
+            ``"pyspeos.log"``.
         level : str, optional
             Level of logging. The default is ``10``, in which case the
             ``logging.DEBUG`` level is used.
@@ -221,7 +221,7 @@ class PyOpticsCustomAdapter(logging.LoggerAdapter):
         self.level = level
 
 
-class PyOpticsPercentStyle(logging.PercentStyle):
+class PySpeosPercentStyle(logging.PercentStyle):
     def __init__(self, fmt, *, defaults=None):
         self._fmt = fmt or self.default_format
         self._defaults = defaults
@@ -247,7 +247,7 @@ class PyOpticsPercentStyle(logging.PercentStyle):
         return STDOUT_MSG_FORMAT % values
 
 
-class PyOpticsFormatter(logging.Formatter):
+class PySpeosFormatter(logging.Formatter):
     """Provides the customized ``Formatter`` class for overwriting default format styles."""
 
     def __init__(
@@ -263,7 +263,7 @@ class PyOpticsFormatter(logging.Formatter):
         else:
             # 3.8: The validate parameter was added
             super().__init__(fmt, datefmt, style, validate)
-        self._style = PyOpticsPercentStyle(fmt, defaults=defaults)  # overwriting
+        self._style = PySpeosPercentStyle(fmt, defaults=defaults)  # overwriting
 
 
 class InstanceFilter(logging.Filter):
@@ -276,7 +276,7 @@ class InstanceFilter(logging.Filter):
 
 
 class Logger:
-    """Provides the logger used for each PyOptics session.
+    """Provides the logger used for each PySpeos session.
 
     This class allows you to add handlers to the logger to output messages
     to a file or to the standard output.
@@ -290,7 +290,7 @@ class Logger:
         Whether to write log messages to a file.
     to_stdout : bool, default: True
         Whether to write log messages to the standard output (stdout).
-    filename : str, default: "pyoptics.log"
+    filename : str, default: "pyspeos.log"
         Name of the file to write log log messages to.
 
     Examples
@@ -298,16 +298,16 @@ class Logger:
     Demonstrate logger usage from the ``Speos`` instance, which is automatically
     created when a speos instance is created.
 
-    >>> from ansys.optics.speos import speos
+    >>> from ansys.speos.core import speos
     >>> speos = Speos(loglevel='DEBUG')
     >>> speos._log.info('This is a useful message')
     INFO -  -  <ipython-input-24-80df150fe31f> - <module> - This is LOG debug message.
 
-    Import the global pyoptics logger and add a file output handler.
+    Import the global pyspeos logger and add a file output handler.
 
     >>> import os
-    >>> from ansys.optics.speos import LOG
-    >>> file_path = os.path.join(os.getcwd(), 'pyoptics.log')
+    >>> from ansys.speos.core import LOG
+    >>> file_path = os.path.join(os.getcwd(), 'pyspeos.log')
     >>> LOG.log_to_file(file_path)
     """
 
@@ -317,7 +317,7 @@ class Logger:
     _instances = {}
 
     def __init__(self, level=logging.DEBUG, to_file=False, to_stdout=True, filename=FILE_NAME):
-        """Customize the logger class for pyoptics.
+        """Customize the logger class for PySpeos.
 
         Parameters
         ----------
@@ -330,11 +330,11 @@ class Logger:
             Whether to write log messages to the standard output (stdout). The
             default is ``True``.
         filename : str, optional
-           Name of the file to write log messages to. The default is ``"pyoptics.log"``.
+           Name of the file to write log messages to. The default is ``"pyspeos.log"``.
         """
 
         # create default main logger
-        self.logger = logging.getLogger("pyoptics_global")
+        self.logger = logging.getLogger("pyspeos_global")
         self.logger.addFilter(InstanceFilter())
         self.logger.setLevel(level)
         self.logger.propagate = True
@@ -365,18 +365,18 @@ class Logger:
         ----------
         filename : str, optional
             Name of the file to write log messages to. The default
-            is ``"pyoptics.log"``.
+            is ``"pyspeos.log"``.
         level : int, optional
             Level of logging. The default is ``10``, in which case the
             ``logging.DEBUG`` level is used.
 
         Examples
         --------
-        Write to the ``"pyoptics.log"`` file in the current working directory.
+        Write to the ``"pyspeos.log"`` file in the current working directory.
 
-        >>> from ansys.optics.speos import LOG
+        >>> from ansys.speos.core import LOG
         >>> import os
-        >>> file_path = os.path.join(os.getcwd(), 'pyoptics.log')
+        >>> file_path = os.path.join(os.getcwd(), 'pyspeos.log')
         >>> LOG.log_to_file(file_path)
         """
 
@@ -407,7 +407,7 @@ class Logger:
         """Create a child logger.
 
         This method uses the ``getChild`` method or copies attributes between the
-        ``pyoptics_global`` logger and the new one.
+        ``pyspeos_global`` logger and the new one.
         """
         logger = logging.getLogger(sufix)
         logger.std_out_handler = None
@@ -470,7 +470,7 @@ class Logger:
 
     def add_instance_logger(
         self, name: str, client_instance: "SpeosClient", level: Optional[int] = None
-    ) -> PyOpticsCustomAdapter:
+    ) -> PySpeosCustomAdapter:
         """Add a logger for a speos instance.
 
         The speos instance logger is a logger with an adapter that adds
@@ -489,7 +489,7 @@ class Logger:
 
         Returns
         -------
-        PyOpticsCustomAdapter
+        PySpeosCustomAdapter
             Logger adapter customized to add speos information to the
             logs. You can use this class to log events in the same
             way you would with the ``Logger`` class.
@@ -501,7 +501,7 @@ class Logger:
             count_ += 1
             new_name = f"{name}_{count_}"
 
-        self._instances[new_name] = PyOpticsCustomAdapter(self._make_child_logger(name, level), client_instance)
+        self._instances[new_name] = PySpeosCustomAdapter(self._make_child_logger(name, level), client_instance)
 
         return self._instances[new_name]
 
@@ -537,7 +537,7 @@ def addfile_handler(logger, filename=FILE_NAME, level=LOG_LEVEL, write_headers=F
     logger : logging.Logger or logging.Logger, optional
         Logger to add the file handler to.
     filename : str, optional
-        Name of the output file. The default is ``"pyoptics.log"``.
+        Name of the output file. The default is ``"pyspeos.log"``.
     level : int, optional
         Level of logging. The default is ``LOG_LEVEL``.
     write_headers : bool, optional
@@ -589,7 +589,7 @@ def add_stdout_handler(logger, level=LOG_LEVEL, write_headers=False):
 
     std_out_handler = logging.StreamHandler()
     std_out_handler.setLevel(level)
-    std_out_handler.setFormatter(PyOpticsFormatter(STDOUT_MSG_FORMAT))
+    std_out_handler.setFormatter(PySpeosFormatter(STDOUT_MSG_FORMAT))
 
     if isinstance(logger, Logger):
         logger.std_out_handler = std_out_handler

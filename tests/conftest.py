@@ -4,7 +4,7 @@ Unit Test Configuration Module
 
 Description
 ===========
-This module loads the configuration for pyoptics unit tests.
+This module loads the configuration for PySpeos unit tests.
 The configuration can be changed by modifying a file called local_config.json in the same
 directory as this module.
 """
@@ -15,7 +15,7 @@ from pathlib import Path
 
 import pytest
 
-from ansys.optics.speos.speos import Speos
+from ansys.speos.core.speos import Speos
 
 
 @pytest.fixture(scope="session")
@@ -57,7 +57,7 @@ import logging as deflogging  # Default logging
 import pytest
 
 # Define default pytest logging level to DEBUG and stdout
-from ansys.optics.speos import LOG
+from ansys.speos.core import LOG
 
 LOG.setLevel(level="DEBUG")
 LOG.log_to_stdout()

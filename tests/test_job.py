@@ -5,7 +5,7 @@ Usage:
    $ pytest -vx
 With coverage.
 .. code::
-   $ pytest --cov ansys.optics.speos
+   $ pytest --cov ansys.speos.core
 """
 import os
 import time
@@ -15,7 +15,7 @@ import ansys.api.speos.job.v1.job_pb2_grpc as job__v1__pb2_grpc
 import ansys.api.speos.simulation.v1.simulation_pb2 as simulation__v1__pb2
 import ansys.api.speos.simulation.v1.simulation_pb2_grpc as simulation__v1__pb2_grpc
 
-from ansys.optics.speos.speos import Speos
+from ansys.speos.core.speos import Speos
 from conftest import config, test_path
 
 
