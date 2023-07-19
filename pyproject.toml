@@ -29,7 +29,7 @@ classifiers=[
 dependencies=[
     "grpcio==1.55.0",
     "grpcio-tools==1.48.2",
-    "grpcio-health-checking==1.48.2",
+    "grpcio-health-checking==1.56.2",
     "ansys-api-speos==0.3.0",
 ]
 
