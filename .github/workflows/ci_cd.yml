@@ -74,8 +74,8 @@ jobs:
           docker-compose up -d
           cd tests  # so we're testing the install, not local
           pytest -vxs
-          docker kill optics_speos-rpc
-          docker rm optics_speos-rpc
+          docker kill speos-rpc
+          docker rm speos-rpc
         env:
           LICENSE_SERVER: ${{ format('1055@{0}', secrets.LICENSE_SERVER) }}
 
