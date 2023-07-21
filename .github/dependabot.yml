@@ -6,7 +6,15 @@ updates:
     schedule:
       interval: "daily"
     ignore:
-      - dependency-name: "grpcio-tools"
+      - dependency-name: "grpcio"
+    commit-message:
+      prefix: "MAINT"
+    groups:
+       grpc-deps:
+          patterns:
+            - "google*"
+            - "grpc*"
+            - "protobuf"
 
   - package-ecosystem: "github-actions"
     directory: "/"
