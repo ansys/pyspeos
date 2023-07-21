@@ -1,8 +1,8 @@
 version: "3.4"
 services:
-  optics_speos-rpc:
-    image: ghcr.io/ansys/pyoptics/speos-rpc:2024.1.0.686
-    container_name: optics_speos-rpc
+  speos-rpc:
+    image: ghcr.io/ansys-internal/speos-rpc:2024.1.0.1069
+    container_name: speos-rpc
     ports:
       - "50051:50051"
     environment:
