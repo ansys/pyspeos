@@ -6,7 +6,8 @@ updates:
     schedule:
       interval: "daily"
     ignore:
-      - dependency-name: "grpcio"
+      - dependency-name: "grpcio-tools"
+      - dependency-name: "grpcio-health-checking"
     commit-message:
       prefix: "MAINT"
     groups:
