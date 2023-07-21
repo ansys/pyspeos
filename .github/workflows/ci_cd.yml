@@ -64,7 +64,7 @@ jobs:
       - name: Login to GitHub Packages
         uses: docker/login-action@v2
         with:
-          registry: ghcr.io/ansys/pyoptics
+          registry: ghcr.io/ansys-internal
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
@@ -74,8 +74,8 @@ jobs:
           docker-compose up -d
           cd tests  # so we're testing the install, not local
           pytest -vxs
-          docker kill optics_speos-rpc
-          docker rm optics_speos-rpc
+          docker kill speos-rpc
+          docker rm speos-rpc
         env:
           LICENSE_SERVER: ${{ format('1055@{0}', secrets.LICENSE_SERVER) }}
 

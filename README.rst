@@ -105,7 +105,7 @@ Then, you can launch SpeosRPC server with:
    
    export LICENSE_SERVER=1055@XXX.XXX.XXX.XXX
    
-   docker login ghcr.io/ansys-internal/pyspeos
+   docker login ghcr.io/ansys-internal
    docker-compose up -d
 
 On the other hand, SpeosRPC server can be started locally.
@@ -121,7 +121,7 @@ And test configuration file `<tests/local_config.json>`_ must be updated to use 
    
    {
       "SpeosServerOnDocker": false,
-      "SpeosContainerName" : "optics_speos-rpc",
+      "SpeosContainerName" : "speos-rpc",
       "SpeosServerPort": 50051
    }
 
