@@ -8,6 +8,8 @@ updates:
     ignore:
       - dependency-name: "grpcio-tools"
       - dependency-name: "grpcio-health-checking"
+    assignees:
+      - "pyansys-ci-bot"
     commit-message:
       prefix: "MAINT"
     groups:
