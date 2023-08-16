@@ -45,7 +45,7 @@ extensions = [
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", None),
     "grpc": ("https://grpc.github.io/grpc/python/", None),
-    "pypim": ("https://pypim.docs.pyansys.com/", None),
+    "pypim": ("https://pypim.docs.pyansys.com/version/stable", None),
     # kept here as an example
     # "scipy": ("https://docs.scipy.org/doc/scipy/reference", None),
     # "numpy": ("https://numpy.org/devdocs", None),
