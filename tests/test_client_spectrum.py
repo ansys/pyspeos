@@ -4,6 +4,7 @@ Test basic spectrum database connection.
 import pytest
 
 from ansys.speos.core.client import SpeosClient
+from ansys.speos.core.spectrum import Spectrum
 from conftest import config
 
 
@@ -21,18 +22,26 @@ def test_client_spectrum_init(client: SpeosClient):
     sDB = client.getSpectrumDB()  # Create spectrum stub from client channel
     # Create new blackbody spectrum
     sBB5321 = sDB.NewBlackbody(temperature=5321)
-    assert sBB5321.key() != ""
-    assert sBB5321.database() is not None
-    # Get spectrum data
-    sBB5321data = sBB5321.getContent()
+    assert sBB5321.get_key() != ""
+    assert sBB5321.get_database() is not None
+    # Get data
+    sBB5321data = sBB5321.get_content()
     assert sBB5321data.blackbody.temperature == 5321
-    # Set data
+    # Update data
     sBB5321data.blackbody.temperature = 5326
-    sBB5321.setContent(sBB5321data)
-    # Duplicate spectrum
-    # SBB5321_2 = sBB5321.Clone()
-
-    sBB5321data.blackbody.temperature = 5326
-    # Create a new spectrum
-    # sp = sDB.CreateBlackbody(temperature = 5000)
-    # sp.Delete()
+    sBB5321.set_content(sBB5321data)
+    sBB5321data = sBB5321.get_content()
+    assert sBB5321data.blackbody.temperature == 5326
+    # New from scratch spectrum
+    sM659data = Spectrum.Content()
+    sM659data.name = "blipo"
+    sM659data.description = "tion"
+    sM659data.monochromatic.wavelength = 659
+    SM659 = sDB.New(sM659data)
+    # Duplicate
+    SM659_bis = sDB.New(SM659.get_content())
+    SM659_bisdata = SM659_bis.get_content()
+    assert SM659_bis.get_key() != SM659.get_key()
+    assert SM659_bisdata == sM659data
+    # Delete
+    SM659_bis.delete()
