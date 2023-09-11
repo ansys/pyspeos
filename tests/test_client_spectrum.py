@@ -19,18 +19,18 @@ def test_client_spectrum_init(client: SpeosClient):
     """Test the instantiation of a client from the default constructor."""
     assert client.healthy is True
     # Get DB
-    sDB = client.getSpectrumDB()  # Create spectrum stub from client channel
+    sDB = client.get_spectrum_db()  # Create spectrum stub from client channel
     # Create new blackbody spectrum
     sBB5321 = sDB.NewBlackbody(temperature=5321)
-    assert sBB5321.get_key() != ""
-    assert sBB5321.get_database() is not None
+    assert sBB5321.key() != ""
+    assert sBB5321.database() is not None
     # Get data
-    sBB5321data = sBB5321.get_content()
+    sBB5321data = sBB5321.content()
     assert sBB5321data.blackbody.temperature == 5321
     # Update data
     sBB5321data.blackbody.temperature = 5326
     sBB5321.set_content(sBB5321data)
-    sBB5321data = sBB5321.get_content()
+    sBB5321data = sBB5321.content()
     assert sBB5321data.blackbody.temperature == 5326
     # New from scratch spectrum
     sM659data = Spectrum.Content()
@@ -39,9 +39,9 @@ def test_client_spectrum_init(client: SpeosClient):
     sM659data.monochromatic.wavelength = 659
     SM659 = sDB.New(sM659data)
     # Duplicate
-    SM659_bis = sDB.New(SM659.get_content())
-    SM659_bisdata = SM659_bis.get_content()
-    assert SM659_bis.get_key() != SM659.get_key()
+    SM659_bis = sDB.New(SM659.content())
+    SM659_bisdata = SM659_bis.content()
+    assert SM659_bis.key() != SM659.key()
     assert SM659_bisdata == sM659data
     # Delete
     SM659_bis.delete()

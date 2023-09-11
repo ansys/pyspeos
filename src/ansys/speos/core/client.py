@@ -137,7 +137,7 @@ class SpeosClient:
             return ""
         return self._channel._channel.target().decode()
 
-    def getSpectrumDB(self) -> SpectrumDB:
+    def get_spectrum_db(self) -> SpectrumDB:
         """Get spectrum database access."""
         if self._closed:
             return ""

@@ -10,18 +10,18 @@ class Spectrum:
 
     Content = spectrum_pb2.Spectrum
 
-    def get_database(self):
+    def database(self):
         """The database."""
         return self._database
 
-    def get_key(self) -> str:
+    def key(self) -> str:
         """The guid in database."""
         return self._key
 
-    def get_content(self) -> spectrum_pb2.Spectrum:
+    def read_content(self) -> spectrum_pb2.Spectrum:
         return self._database.Read(self._key)
 
-    def set_content(self, data: spectrum_pb2.Spectrum):
+    def update_content(self, data: spectrum_pb2.Spectrum):
         self._database.Update(self._key, data)
 
     def delete(self):
@@ -35,29 +35,45 @@ class SpectrumDB:
     Wraps a speos gRPC connection.
     """
 
+    Content = spectrum_pb2.Spectrum
+
     def __init__(self, channel: grpc.Channel):
-        """Initialize the ``SpeosClient`` object."""
+        """Initialize the service stub."""
         self._stubManager = spectrum_pb2_grpc.SpectrumsManagerStub(channel)
+
+    """Create a new entry."""
 
     def Create(self, message: spectrum_pb2.Spectrum) -> str:
         request = spectrum_pb2.Create_Request(spectrum=message)
-        print(request)
         resp = self._stubManager.Create(request)
-        print(resp)
         return resp.guid
+
+    """Get an existing entry."""
 
     def Read(self, key: str) -> spectrum_pb2.Spectrum:
         request = spectrum_pb2.Read_Request(guid=key)
         resp = self._stubManager.Read(request)
         return resp.spectrum
 
+    """Change an existing entry."""
+
     def Update(self, key: str, message: spectrum_pb2.Spectrum):
         request = spectrum_pb2.Update_Request(guid=key, spectrum=message)
         self._stubManager.Update(request)
 
+    """Remove an existing entry."""
+
     def Delete(self, key: str):
         request = spectrum_pb2.Delete_Request(guid=key)
         self._stubManager.Delete(request)
+
+    """List existing entries."""
+
+    def List(self):
+        resp = self._stubManager.List(spectrum_pb2.List_Request())
+        return resp.guids
+
+    """ Factories"""
 
     def New(self, message: spectrum_pb2.Spectrum) -> Spectrum:
         k = self.Create(message)
