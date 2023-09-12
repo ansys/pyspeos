@@ -6,7 +6,7 @@ from google.protobuf.json_format import MessageToJson, Parse
 import ansys.speos.core.client as pys
 
 # main speos client
-speoscli = pys.SpeosClient()
+speoscli = pys.SpeosClient(timeout=5)
 
 # list all available services
 services_list = ("spectrum", "...")
@@ -27,6 +27,8 @@ def get_service_database(service):
 
 # get content of selected item
 def get_item_content():
+    if not selected_item:
+        return ""
     return MessageToJson(get_service_database(selected_service).Read(selected_item), indent=4)
 
 
@@ -38,6 +40,7 @@ layout = [
             sg.Text("Database:"),
             sg.Combo(values=services_list, size=(None, 20), default_value="spectrum", key="-SERVICES-"),
             sg.Button("Refresh"),
+            sg.Push(),
         ]
     ],
     [
@@ -46,10 +49,10 @@ layout = [
             sg.Multiline("item content", size=(60, 32), key="-CONTENT-"),
         ]
     ],
-    [sg.Button("New"), sg.Push(), sg.Button("Reload"), sg.Button("Save"), sg.Button("Delete")],
+    [[sg.Button("New"), sg.Push(), sg.Button("Reload"), sg.Button("Save"), sg.Button("Delete")]],
 ]
 
-window = sg.Window("Pick a color", layout, finalize=True)
+window = sg.Window("PySpeos Database viewer", layout, finalize=True, resizable=True)
 window.set_min_size((500, 250))
 items_list = window["-ITEMS-"]
 item_inputtext = window["-CONTENT-"]
@@ -61,7 +64,7 @@ while True:  # the event loop
     elif event == "Refresh":
         # restart client
         serverstr = values["-SERVER-"].split(":")
-        speoscli = pys.SpeosClient(host=serverstr[0], port=serverstr[1])
+        speoscli = pys.SpeosClient(host=serverstr[0], port=serverstr[1], timeout=5)
         # store item list
         selected_service = values["-SERVICES-"]
         available_items = get_service_database(selected_service).List()
@@ -69,7 +72,9 @@ while True:  # the event loop
         items_list.update(values=available_items)
     elif event == "-ITEMS-":
         # store selected item
-        selected_item = values["-ITEMS-"][0]
+        selected_item = values["-ITEMS-"]
+        if selected_item:
+            selected_item = selected_item[0]
         # refresh item content
         item_inputtext.update(get_item_content())
     elif event == "New":
