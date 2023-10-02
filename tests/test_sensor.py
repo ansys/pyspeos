@@ -17,8 +17,6 @@ from ansys.api.speos.simulation.v1 import sensor_properties_pb2, simulation_pb2,
 from ansys.speos.core.speos import Speos
 from conftest import test_path
 
-tests_data_path = os.path.join(os.path.join("tests", "tests_data"))
-
 
 def test_create_camera_sensor(speos: Speos):
     # Create empty Simulation
@@ -43,7 +41,7 @@ def test_create_camera_sensor(speos: Speos):
     assert sensor_read_res.sensor_template.HasField("irradiance_sensor_template")
 
     # Create a camera sensor template dm
-    camera_input_files_path = os.path.join(tests_data_path, "CameraInputFiles")
+    camera_input_files_path = os.path.join(test_path, "CameraInputFiles")
     red_spectrum = os.path.join(camera_input_files_path, "CameraSensitivityRed.spectrum")
     green_spectrum = os.path.join(camera_input_files_path, "CameraSensitivityGreen.spectrum")
     blue_spectrum = os.path.join(camera_input_files_path, "CameraSensitivityBlue.spectrum")
