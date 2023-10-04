@@ -30,8 +30,8 @@ def test_client_spectrum_init(client: SpeosClient):
     assert sBB5321data.blackbody.temperature == 5321
     # Update data
     sBB5321data.blackbody.temperature = 5326
-    sBB5321.send_update(sBB5321data)
-    sBB5321data = sBB5321.send_read()
+    sBB5321.update_content(sBB5321data)
+    sBB5321data = sBB5321.read_content()
     assert sBB5321data.blackbody.temperature == 5326
     # New from scratch spectrum
     sM659data = Spectrum.Content()
