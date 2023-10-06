@@ -22,27 +22,31 @@ def test_client_spectrum_init(client: SpeosClient):
     sDB = client.spectrums()  # Create spectrum stub from client channel
 
     # Create new blackbody spectrum
-    sBB5321 = sDB.NewSpectrumBlackbody(temperature=5321)
-    assert sBB5321.key() != ""
-    assert sBB5321.database() is not None
+    sBB5321 = Spectrum()
+    sBB5321.name = "myspectrm"
+    sBB5321.description = "tion"
+    sBB5321.blackbody.temperature = 5321
+    sBB5321 = sDB.Create(sBB5321)
+    assert sBB5321.key != ""
+    assert sBB5321.stub is not None
     # Get data
-    sBB5321data = sBB5321.send_read()
+    sBB5321data = sBB5321.get()
     assert sBB5321data.blackbody.temperature == 5321
     # Update data
     sBB5321data.blackbody.temperature = 5326
-    sBB5321.update_content(sBB5321data)
-    sBB5321data = sBB5321.read_content()
+    sBB5321.set(sBB5321data)
+    sBB5321data = sBB5321.get()
     assert sBB5321data.blackbody.temperature == 5326
     # New from scratch spectrum
-    sM659data = Spectrum.Content()
+    sM659data = Spectrum()
     sM659data.name = "blipo"
     sM659data.description = "tion"
     sM659data.monochromatic.wavelength = 659
-    SM659 = sDB.NewSpectrum(sM659data)
+    SM659 = sDB.Create(sM659data)
     # Duplicate
-    SM659_bis = sDB.NewSpectrum(SM659.send_read())
-    SM659_bisdata = SM659_bis.send_read()
-    assert SM659_bis.key() != SM659.key()
-    assert SM659_bisdata == sM659data
+    SM659_bis = sDB.Create(SM659.get())
+    assert SM659_bis.stub == SM659.stub
+    assert SM659_bis.key != SM659.key
+    assert SM659_bis.get() == SM659.get()
     # Delete
-    SM659_bis.send_delete()
+    SM659_bis.delete()

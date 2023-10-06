@@ -2,55 +2,54 @@
 from ansys.api.speos.spectrum.v1 import spectrum_pb2 as messages
 from ansys.api.speos.spectrum.v1 import spectrum_pb2_grpc as service
 
-from ansys.speos.core.crud import Database, DatabaseItem
+from ansys.speos.core.crud import CrudItem, CrudStub
+
+Spectrum = messages.Spectrum
 
 
-class Spectrum(DatabaseItem):
-    Content = messages.Spectrum
-
+class SpectrumLink(CrudItem):
     def __init__(self, db, key: str):
         super().__init__(db, key)
 
-    def send_read(self) -> Content:
-        return DatabaseItem.send_read(self)
+    def get(self) -> Spectrum:
+        return self._stub.Read(self)
+
+    def set(self, data: Spectrum) -> None:
+        self._stub.Update(self, data)
+
+    def delete(self) -> None:
+        self._stub.Delete(self)
 
 
-class SpectrumDatabase(Database):
+class SpectrumStub(CrudStub):
     def __init__(self, channel):
         super().__init__(stub=service.SpectrumsManagerStub(channel=channel))
 
-    """Create a new entry."""
+    def Create(self, message: Spectrum) -> SpectrumLink:
+        """Create a new entry."""
+        resp = CrudStub.Create(self, messages.Create_Request(spectrum=message))
+        return SpectrumLink(self, resp.guid)
 
-    def Create(self, message: DatabaseItem) -> str:
-        return Database.Create(self, messages.Create_Request(spectrum=message)).guid
+    def Read(self, ref: SpectrumLink) -> Spectrum:
+        """Get an existing entry."""
+        if not ref.stub == self:
+            raise ValueError("SpectrumLink is not on current database")
+        resp = CrudStub.Read(self, messages.Read_Request(guid=ref.key))
+        return resp.spectrum
 
-    """Get an existing entry."""
+    def Update(self, ref: SpectrumLink, data: Spectrum):
+        """Change an existing entry."""
+        if not ref.stub == self:
+            raise ValueError("SpectrumLink is not on current database")
+        CrudStub.Update(self, messages.Update_Request(guid=ref.key, spectrum=data))
 
-    def Read(self, key: str) -> DatabaseItem:
-        return Database.Read(self, messages.Read_Request(guid=key)).spectrum
-
-    """Change an existing entry."""
-
-    def Update(self, key: str, message: DatabaseItem):
-        Database.Update(self, messages.Update_Request(guid=key, spectrum=message))
-
-    """Remove an existing entry."""
-
-    def Delete(self, key: str):
-        Database.Delete(self, messages.Delete_Request(guid=key))
-
-    """List existing entries."""
+    def Delete(self, ref: SpectrumLink) -> None:
+        """Remove an existing entry."""
+        if not ref.stub == self:
+            raise ValueError("SpectrumLink is not on current database")
+        CrudStub.Delete(self, messages.Delete_Request(guid=ref.key))
 
     def List(self) -> list:
-        return Database.List(self, messages.List_Request()).guids
-
-    def NewSpectrum(self, message: Spectrum.Content) -> Spectrum:
-        k = self.Create(message)
-        return Spectrum(db=self, key=k)
-
-    def NewSpectrumBlackbody(self, temperature: float) -> Spectrum:
-        mess = Spectrum.Content()
-        mess.name = "toto"
-        mess.description = "my spectrum"
-        mess.blackbody.temperature = temperature
-        return self.NewSpectrum(message=mess)
+        """List existing entries."""
+        guids = CrudStub.List(self, messages.List_Request()).guids
+        return list(map(lambda x: SpectrumLink(self, x), guids))
