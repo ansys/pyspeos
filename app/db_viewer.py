@@ -4,32 +4,59 @@ import PySimpleGUI as sg
 from google.protobuf.json_format import MessageToJson, Parse
 
 import ansys.speos.core.client as pys
+from ansys.speos.core.crud import CrudItem, CrudStub
+from ansys.speos.core.spectrum import Spectrum, SpectrumLink
 
 # main speos client
-speoscli = pys.SpeosClient(timeout=5)
+speos_client = pys.SpeosClient(timeout=5)
 
 # list all available services
 services_list = ("spectrum", "...")
 selected_service = None
 
 # list all items
-available_items = ()
+items_list = ()
 selected_item = None
 
 
-# get service CRUD database
-def get_service_database(service):
+def get_service_selected(service) -> CrudStub:
+    """Get service CRUD database"""
     if service == "spectrum":
-        return speoscli.get_spectrum_db()
+        return speos_client.spectrums()
     # ...
     return None
 
 
+def list_items(service) -> list:
+    """List all items in database"""
+    if service == "spectrum":
+        return speos_client.spectrums().List()
+    # ...
+    return None
+
+
+def create_new_item(service) -> CrudItem:
+    """Get service CRUD database"""
+    if service == "spectrum":
+        sp = Spectrum()
+        sp.name = "new"
+        sp.description = "new"
+        sp.monochromatic.wavelength = 486
+        return speos_client.spectrums().Create(sp)
+    # ...
+    return None
+
+
+def list_items_name(service) -> list:
+    return list(map(lambda x: x.key, list_items(service)))
+
+
 # get content of selected item
-def get_item_content():
+def item_content(service):
+    """Get content of selected item"""
     if not selected_item:
         return ""
-    return MessageToJson(get_service_database(selected_service).Read(selected_item), indent=4)
+    return MessageToJson(selected_item.get(), indent=4)
 
 
 layout = [
@@ -59,49 +86,52 @@ item_inputtext = window["-CONTENT-"]
 
 while True:  # the event loop
     event, values = window.read()
+    if values and "-SERVICES-" in values.keys():
+        service_name = values["-SERVICES-"]
     if event == sg.WIN_CLOSED:
         break
     elif event == "Refresh":
         # restart client
         serverstr = values["-SERVER-"].split(":")
-        speoscli = pys.SpeosClient(host=serverstr[0], port=serverstr[1], timeout=5)
-        # store item list
-        selected_service = values["-SERVICES-"]
-        available_items = get_service_database(selected_service).List()
+        speos_client = pys.SpeosClient(host=serverstr[0], port=serverstr[1], timeout=5)
         # Refresh item list
-        items_list.update(values=available_items)
+        items_list.update(values=list_items_name(service_name))
     elif event == "-ITEMS-":
         # store selected item
-        selected_item = values["-ITEMS-"]
-        if selected_item:
-            selected_item = selected_item[0]
+        selected_key = values["-ITEMS-"]
+        if selected_key:
+            selected_key = selected_key[0]
         # refresh item content
-        item_inputtext.update(get_item_content())
+        selected_service = get_service_selected(service_name)
+        selected_item = SpectrumLink(selected_service, selected_key)
+        item_inputtext.update(item_content(service_name))
     elif event == "New":
         # create new item
-        selected_item = get_service_database(selected_service).NewBlackbody(5555).key()
-        # update item list
-        available_items = get_service_database(selected_service).List()
+        selected_item = create_new_item(service_name)
         # Refresh item list
-        items_list.update(values=available_items)
+        items = list_items_name(service_name)
+        items_list.update(values=items)
+        items_list.update(set_to_index=len(items), scroll_to_index=len(items))
         # refresh item content
-        item_inputtext.update(get_item_content())
+        item_inputtext.update(item_content(service_name))
     elif event == "Reload":
         # refresh item content
-        item_inputtext.update(get_item_content())
+        item_inputtext.update(item_content(service_name))
     elif event == "Save":
         # update item
-        content = Parse(values["-CONTENT-"], get_service_database(selected_service).Content())
-        get_service_database(selected_service).Update(selected_item, content)
-        # refresh item content
-        item_inputtext.update(get_item_content())
+        try:
+            content = Parse(values["-CONTENT-"], Spectrum())
+            selected_item.set(content)
+            # refresh item content
+            item_inputtext.update(item_content(service_name))
+        except Exception as e:
+            sg.popup_error(e)
+
     elif event == "Delete":
         # remove item
-        get_service_database(selected_service).Delete(selected_item)
-        # refresh item list and context
-        selected_item = ""
-        available_items = get_service_database(selected_service).List()
-        items_list.update(values=available_items)
+        selected_item.delete()
+        # Refresh item list
+        items_list.update(values=list_items_name(service_name))
         item_inputtext.update("")
 
 window.close()
