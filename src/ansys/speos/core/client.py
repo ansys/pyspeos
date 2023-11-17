@@ -9,6 +9,7 @@ from grpc._channel import _InactiveRpcError
 
 from ansys.speos.core import LOG as logger
 from ansys.speos.core.logger import PySpeosCustomAdapter
+from ansys.speos.core.spectrum import SpectrumStub
 
 DEFAULT_HOST = "localhost"
 DEFAULT_PORT = "50051"
@@ -106,6 +107,9 @@ class SpeosClient:
                 logging_file = str(logging_file)
             self._log.log_to_file(filename=logging_file, level=logging_level)
 
+        # Initialise databases
+        self._spectrumDB = None
+
     @property
     def channel(self) -> grpc.Channel:
         """The gRPC channel of this client."""
@@ -132,6 +136,15 @@ class SpeosClient:
         if self._closed:
             return ""
         return self._channel._channel.target().decode()
+
+    def spectrums(self) -> SpectrumStub:
+        """Get spectrum database access."""
+        if self._closed:
+            return ""
+        # connect to databases
+        if self._spectrumDB is None:
+            self._spectrumDB = SpectrumStub(self._channel)
+        return self._spectrumDB
 
     def __repr__(self) -> str:
         """Represent the client as a string."""
