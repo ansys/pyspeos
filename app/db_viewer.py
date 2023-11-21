@@ -5,8 +5,8 @@ from google.protobuf.json_format import MessageToJson, Parse
 
 import ansys.speos.core.client as pys
 from ansys.speos.core.crud import CrudItem, CrudStub
-from ansys.speos.core.sensor_template import SensorTemplate, SensorTemplateLink
-from ansys.speos.core.spectrum import Spectrum, SpectrumLink
+from ansys.speos.core.sensor_template import SensorTemplate, SensorTemplateLink, SensorTemplateStub
+from ansys.speos.core.spectrum import Spectrum, SpectrumLink, SpectrumStub
 
 # main speos client
 speos_client = pys.SpeosClient(port="50055", timeout=5)
@@ -31,9 +31,9 @@ def get_service_selected(service) -> CrudStub:
 
 
 def get_item_selected(db, key) -> CrudItem:
-    if service == "spectrum":
+    if isinstance(db, SpectrumStub):
         return SpectrumLink(db, key)
-    elif service == "sensor_template":
+    elif isinstance(db, SensorTemplateStub):
         return SensorTemplateLink(db, key)
     # ...
     return None
@@ -47,6 +47,23 @@ def list_items(service) -> list:
         return speos_client.sensor_templates().List()
     # ...
     return None
+
+
+def update_item(json_content):
+    try:
+        if not selected_item:
+            return ""
+
+        content = None
+        if isinstance(selected_item, SpectrumLink):
+            content = Parse(json_content, Spectrum())
+        elif isinstance(selected_item, SensorTemplateLink):
+            content = Parse(json_content, SensorTemplate())
+
+        if content:
+            selected_item.set(content)
+    except Exception as e:
+        sg.popup_error(e)
 
 
 def create_new_item(service) -> CrudItem:
@@ -64,11 +81,12 @@ def create_new_item(service) -> CrudItem:
         ssr.irradiance_sensor_template.sensor_type_photometric.SetInParent()
         ssr.irradiance_sensor_template.illuminance_type_planar.SetInParent()
         ssr.irradiance_sensor_template.dimensions.x_start = -50.0
-        ssr.irradiance_sensor_template.dimensions.x_end = -50.0
+        ssr.irradiance_sensor_template.dimensions.x_end = 50.0
         ssr.irradiance_sensor_template.dimensions.x_sampling = 100
         ssr.irradiance_sensor_template.dimensions.y_start = -50.0
-        ssr.irradiance_sensor_template.dimensions.y_end = -50.0
+        ssr.irradiance_sensor_template.dimensions.y_end = 50.0
         ssr.irradiance_sensor_template.dimensions.y_sampling = 100
+        return speos_client.sensor_templates().Create(ssr)
     # ...
     return None
 
@@ -122,6 +140,7 @@ while True:  # the event loop
         speos_client = pys.SpeosClient(host=serverstr[0], port=serverstr[1], timeout=5)
         # Refresh item list
         items_list.update(values=list_items_name(service_name))
+        item_inputtext.update("item content")
     elif event == "-ITEMS-":
         # store selected item
         selected_key = values["-ITEMS-"]
@@ -145,13 +164,9 @@ while True:  # the event loop
         item_inputtext.update(item_content(service_name))
     elif event == "Save":
         # update item
-        try:
-            content = Parse(values["-CONTENT-"], Spectrum())
-            selected_item.set(content)
-            # refresh item content
-            item_inputtext.update(item_content(service_name))
-        except Exception as e:
-            sg.popup_error(e)
+        update_item(values["-CONTENT-"])
+        # refresh item content
+        item_inputtext.update(item_content(service_name))
 
     elif event == "Delete":
         # remove item
