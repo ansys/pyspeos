@@ -52,6 +52,7 @@ Clone and install
    python -m pip install --upgrade pip
    pip install -U pip tox
    tox -e style
+   export PIP_EXTRA_INDEX_URL=https://<PYANSYS_PYPI_PRIVATE_PAT>@pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/simple/
    pip install -e .
 
 
@@ -133,6 +134,13 @@ Launch unit tests
    pip install .[tests]
    pytest -vx
 
+Use app db_viewer
+~~~~~~~~~~~~~~~~~
+
+.. code::
+
+   pip install .[app]
+   python app/db_viewer.py
 
 License
 -------

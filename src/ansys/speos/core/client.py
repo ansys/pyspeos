@@ -9,6 +9,7 @@ from grpc._channel import _InactiveRpcError
 
 from ansys.speos.core import LOG as logger
 from ansys.speos.core.logger import PySpeosCustomAdapter
+from ansys.speos.core.sensor_template import SensorTemplateStub
 from ansys.speos.core.spectrum import SpectrumStub
 
 DEFAULT_HOST = "localhost"
@@ -109,6 +110,7 @@ class SpeosClient:
 
         # Initialise databases
         self._spectrumDB = None
+        self._sensorTemplateDB = None
 
     @property
     def channel(self) -> grpc.Channel:
@@ -141,10 +143,19 @@ class SpeosClient:
         """Get spectrum database access."""
         if self._closed:
             return ""
-        # connect to databases
+        # connect to database
         if self._spectrumDB is None:
             self._spectrumDB = SpectrumStub(self._channel)
         return self._spectrumDB
+
+    def sensor_templates(self) -> SensorTemplateStub:
+        """Get sensor template database access."""
+        if self._closed:
+            return ""
+        # connect to database
+        if self._sensorTemplateDB is None:
+            self._sensorTemplateDB = SensorTemplateStub(self._channel)
+        return self._sensorTemplateDB
 
     def __repr__(self) -> str:
         """Represent the client as a string."""
