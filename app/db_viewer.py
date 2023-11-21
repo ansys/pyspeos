@@ -9,7 +9,7 @@ from ansys.speos.core.sensor_template import SensorTemplate, SensorTemplateLink,
 from ansys.speos.core.spectrum import Spectrum, SpectrumLink, SpectrumStub
 
 # main speos client
-speos_client = pys.SpeosClient(port="50055", timeout=5)
+speos_client = pys.SpeosClient(port="50051", timeout=5)
 
 # list all available services
 services_list = ("spectrum", "sensor_template", "...")
