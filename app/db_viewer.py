@@ -5,7 +5,12 @@ from google.protobuf.json_format import MessageToJson, Parse
 
 import ansys.speos.core.client as pys
 from ansys.speos.core.crud import CrudItem, CrudStub
-from ansys.speos.core.sensor_template import SensorTemplate, SensorTemplateLink, SensorTemplateStub
+from ansys.speos.core.sensor_template import (
+    SensorTemplate,
+    SensorTemplateHelper,
+    SensorTemplateLink,
+    SensorTemplateStub,
+)
 from ansys.speos.core.spectrum import Spectrum, SpectrumLink, SpectrumStub
 
 # main speos client
@@ -75,18 +80,16 @@ def create_new_item(service) -> CrudItem:
         sp.monochromatic.wavelength = 486
         return speos_client.spectrums().Create(sp)
     elif service == "sensor_template":
-        ssr = SensorTemplate()
-        ssr.name = "new"
-        ssr.description = "new"
-        ssr.irradiance_sensor_template.sensor_type_photometric.SetInParent()
-        ssr.irradiance_sensor_template.illuminance_type_planar.SetInParent()
-        ssr.irradiance_sensor_template.dimensions.x_start = -50.0
-        ssr.irradiance_sensor_template.dimensions.x_end = 50.0
-        ssr.irradiance_sensor_template.dimensions.x_sampling = 100
-        ssr.irradiance_sensor_template.dimensions.y_start = -50.0
-        ssr.irradiance_sensor_template.dimensions.y_end = 50.0
-        ssr.irradiance_sensor_template.dimensions.y_sampling = 100
-        return speos_client.sensor_templates().Create(ssr)
+        return SensorTemplateHelper.CreateIrradiance(
+            sensor_template_stub=speos_client.sensor_templates(),
+            name="new",
+            description="new",
+            type=SensorTemplateHelper.Type.Photometric,
+            illuminance_type=SensorTemplateHelper.IlluminanceType.Planar,
+            dimensions=SensorTemplateHelper.Dimensions(
+                x_start=-50.0, x_end=50.0, x_sampling=100, y_start=-50.0, y_end=50.0, y_sampling=100
+            ),
+        )
     # ...
     return None
 

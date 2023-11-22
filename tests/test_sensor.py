@@ -39,8 +39,7 @@ def test_create_camera_sensor(speos: Speos):
 
     # Read first sensor template dm
     irr = ssr_db.FromKey(key=simu_read_res.simulation.sensors[0].guid)
-    irr_dm = irr.get()
-    assert irr_dm.HasField("irradiance_sensor_template")
+    assert irr.get().HasField("irradiance_sensor_template")
 
     # Create a camera sensor template dm
     camera_input_files_path = os.path.join(test_path, "CameraInputFiles")
@@ -50,23 +49,23 @@ def test_create_camera_sensor(speos: Speos):
     transmittance = os.path.join(camera_input_files_path, "CameraTransmittance.spectrum")
     distortion = os.path.join(camera_input_files_path, "CameraDistortion.OPTDistortion")
 
-    cam_t = SensorTemplateHelper.CreateCamera(
+    camera_t = SensorTemplateHelper.CreateCamera(
         ssr_db,
         name="CameraSensorPhotometric",
         description=".",
         transmittance_file_uri=transmittance,
         gamma_correction=2.2,
         spectrum_file_uris=[red_spectrum, green_spectrum, blue_spectrum],
-        wavelengths_range=SensorTemplateHelper.WavelengthsRange(400, 800, 10),
-        settings=SensorTemplateHelper.CameraSettings(4, 10, 30),
+        wavelengths_range=SensorTemplateHelper.WavelengthsRange(start=400, end=800, sampling=10),
+        settings=SensorTemplateHelper.CameraSettings(focal_length=4, imager_distance=10, f_number=30),
         distorsion_file_uri=distortion,
-        dimensions=SensorTemplateHelper.CameraDimensions(640, 480, 5, 5),
+        dimensions=SensorTemplateHelper.CameraDimensions(horz_pixel=640, vert_pixel=480, width=5, height=5),
     )
 
     # Create a camera sensor using template + properties
     camera_sensor = simulation_pb2.Sensor()
-    camera_sensor.name = cam_t.get().name + "_1"
-    camera_sensor.guid = cam_t.key
+    camera_sensor.name = camera_t.get().name + "_1"
+    camera_sensor.guid = camera_t.key
 
     camera_sensor.camera_sensor_properties.sensor_position.origin[:] = [25.0, 0.0, 0.0]
     camera_sensor.camera_sensor_properties.sensor_position.x_vector[:] = [0.0, 0.0, -1.0]
