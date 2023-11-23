@@ -52,14 +52,14 @@ class SensorTemplateStub(CrudStub):
             raise ValueError("SensorTemplateLink is not on current database")
         CrudStub.Delete(self, messages.Delete_Request(guid=ref.key))
 
-    def FromKey(self, key: str) -> SensorTemplateLink:
-        """Retrieve entry from a key."""
-        return SensorTemplateLink(self, key)
-
     def List(self) -> list:
         """List existing entries."""
         guids = CrudStub.List(self, messages.List_Request()).guids
         return list(map(lambda x: SensorTemplateLink(self, x), guids))
+
+    def FromKey(self, key: str) -> SensorTemplateLink:
+        """Retrieve entry from a key."""
+        return SensorTemplateLink(self, key)
 
 
 class SensorTemplateHelper:
