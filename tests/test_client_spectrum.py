@@ -1,25 +1,15 @@
 """
 Test basic spectrum database connection.
 """
-import pytest
-
-from ansys.speos.core.client import SpeosClient
 from ansys.speos.core.spectrum import Spectrum
-from conftest import config
+from ansys.speos.core.speos import Speos
 
 
-@pytest.fixture(scope="function")
-def client(speos):
-    # this uses DEFAULT_HOST and DEFAULT_PORT which are set by environment
-    # variables in the workflow
-    return SpeosClient(port=str(config.get("SpeosServerPort")))
-
-
-def test_client_spectrum_init(client: SpeosClient):
+def test_client_spectrum_init(speos: Speos):
     """Test the instantiation of a client from the default constructor."""
-    assert client.healthy is True
+    assert speos.client.healthy is True
     # Get DB
-    sDB = client.spectrums()  # Create spectrum stub from client channel
+    sDB = speos.client.spectrums()  # Create spectrum stub from client channel
 
     # Create new blackbody spectrum
     sBB5321 = Spectrum()

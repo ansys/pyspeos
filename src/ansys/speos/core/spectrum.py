@@ -49,7 +49,7 @@ class SpectrumStub(CrudStub):
             raise ValueError("SpectrumLink is not on current database")
         CrudStub.Delete(self, messages.Delete_Request(guid=ref.key))
 
-    def List(self) -> list:
+    def List(self) -> list[SpectrumLink]:
         """List existing entries."""
         guids = CrudStub.List(self, messages.List_Request()).guids
         return list(map(lambda x: SpectrumLink(self, x), guids))
