@@ -5,13 +5,19 @@ from google.protobuf.json_format import MessageToJson, Parse
 
 import ansys.speos.core.client as pys
 from ansys.speos.core.crud import CrudItem, CrudStub
-from ansys.speos.core.spectrum import Spectrum, SpectrumLink
+from ansys.speos.core.sensor_template import (
+    SensorTemplate,
+    SensorTemplateHelper,
+    SensorTemplateLink,
+    SensorTemplateStub,
+)
+from ansys.speos.core.spectrum import Spectrum, SpectrumLink, SpectrumStub
 
 # main speos client
-speos_client = pys.SpeosClient(timeout=5)
+speos_client = pys.SpeosClient(port="50051", timeout=5)
 
 # list all available services
-services_list = ("spectrum", "...")
+services_list = ("spectrum", "sensor_template", "...")
 selected_service = None
 
 # list all items
@@ -23,6 +29,17 @@ def get_service_selected(service) -> CrudStub:
     """Get service CRUD database"""
     if service == "spectrum":
         return speos_client.spectrums()
+    elif service == "sensor_template":
+        return speos_client.sensor_templates()
+    # ...
+    return None
+
+
+def get_item_selected(db, key) -> CrudItem:
+    if isinstance(db, SpectrumStub):
+        return SpectrumLink(db, key)
+    elif isinstance(db, SensorTemplateStub):
+        return SensorTemplateLink(db, key)
     # ...
     return None
 
@@ -30,9 +47,28 @@ def get_service_selected(service) -> CrudStub:
 def list_items(service) -> list:
     """List all items in database"""
     if service == "spectrum":
-        return speos_client.spectrums().List()
+        return speos_client.spectrums().list()
+    elif service == "sensor_template":
+        return speos_client.sensor_templates().list()
     # ...
     return None
+
+
+def update_item(json_content):
+    try:
+        if not selected_item:
+            return ""
+
+        content = None
+        if isinstance(selected_item, SpectrumLink):
+            content = Parse(json_content, Spectrum())
+        elif isinstance(selected_item, SensorTemplateLink):
+            content = Parse(json_content, SensorTemplate())
+
+        if content:
+            selected_item.set(content)
+    except Exception as e:
+        sg.popup_error(e)
 
 
 def create_new_item(service) -> CrudItem:
@@ -42,7 +78,18 @@ def create_new_item(service) -> CrudItem:
         sp.name = "new"
         sp.description = "new"
         sp.monochromatic.wavelength = 486
-        return speos_client.spectrums().Create(sp)
+        return speos_client.spectrums().create(sp)
+    elif service == "sensor_template":
+        return SensorTemplateHelper.create_irradiance(
+            sensor_template_stub=speos_client.sensor_templates(),
+            name="new",
+            description="new",
+            type=SensorTemplateHelper.Type.Photometric,
+            illuminance_type=SensorTemplateHelper.IlluminanceType.Planar,
+            dimensions=SensorTemplateHelper.Dimensions(
+                x_start=-50.0, x_end=50.0, x_sampling=100, y_start=-50.0, y_end=50.0, y_sampling=100
+            ),
+        )
     # ...
     return None
 
@@ -56,7 +103,9 @@ def item_content(service):
     """Get content of selected item"""
     if not selected_item:
         return ""
-    return MessageToJson(selected_item.get(), indent=4)
+    return MessageToJson(
+        selected_item.get(), indent=4, including_default_value_fields=True, preserving_proto_field_name=True
+    )
 
 
 layout = [
@@ -96,6 +145,7 @@ while True:  # the event loop
         speos_client = pys.SpeosClient(host=serverstr[0], port=serverstr[1], timeout=5)
         # Refresh item list
         items_list.update(values=list_items_name(service_name))
+        item_inputtext.update("item content")
     elif event == "-ITEMS-":
         # store selected item
         selected_key = values["-ITEMS-"]
@@ -103,7 +153,7 @@ while True:  # the event loop
             selected_key = selected_key[0]
         # refresh item content
         selected_service = get_service_selected(service_name)
-        selected_item = SpectrumLink(selected_service, selected_key)
+        selected_item = get_item_selected(selected_service, selected_key)
         item_inputtext.update(item_content(service_name))
     elif event == "New":
         # create new item
@@ -119,13 +169,9 @@ while True:  # the event loop
         item_inputtext.update(item_content(service_name))
     elif event == "Save":
         # update item
-        try:
-            content = Parse(values["-CONTENT-"], Spectrum())
-            selected_item.set(content)
-            # refresh item content
-            item_inputtext.update(item_content(service_name))
-        except Exception as e:
-            sg.popup_error(e)
+        update_item(values["-CONTENT-"])
+        # refresh item content
+        item_inputtext.update(item_content(service_name))
 
     elif event == "Delete":
         # remove item

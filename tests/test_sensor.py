@@ -11,14 +11,17 @@ import os
 import time
 
 from ansys.api.speos.job.v1 import job_pb2, job_pb2_grpc
-from ansys.api.speos.sensor.v1 import sensor_pb2, sensor_pb2_grpc
 from ansys.api.speos.simulation.v1 import sensor_properties_pb2, simulation_pb2, simulation_pb2_grpc
 
+from ansys.speos.core.sensor_template import SensorTemplateHelper, SensorTemplateLink
 from ansys.speos.core.speos import Speos
 from conftest import test_path
 
 
 def test_create_camera_sensor(speos: Speos):
+    # Create spectrum stub from client channel
+    ssr_db = speos.client.sensor_templates()
+
     # Create empty Simulation
     simu_manager_stub = simulation_pb2_grpc.SimulationsManagerStub(speos.client.channel)
     simu_create_res = simu_manager_stub.Create(simulation_pb2.Create_Request())
@@ -35,10 +38,9 @@ def test_create_camera_sensor(speos: Speos):
     assert len(simu_read_res.simulation.sensors) == 1
 
     # Read first sensor template dm
-    sensor_templates_manager_stub = sensor_pb2_grpc.SensorTemplatesManagerStub(speos.client.channel)
-    sensor_read_req = sensor_pb2.Read_Request(guid=simu_read_res.simulation.sensors[0].guid)
-    sensor_read_res = sensor_templates_manager_stub.Read(sensor_read_req)
-    assert sensor_read_res.sensor_template.HasField("irradiance_sensor_template")
+    irr = speos.client.get_item(key=simu_read_res.simulation.sensors[0].guid)
+    assert isinstance(irr, SensorTemplateLink)
+    assert irr.get().HasField("irradiance_sensor_template")
 
     # Create a camera sensor template dm
     camera_input_files_path = os.path.join(test_path, "CameraInputFiles")
@@ -48,32 +50,24 @@ def test_create_camera_sensor(speos: Speos):
     transmittance = os.path.join(camera_input_files_path, "CameraTransmittance.spectrum")
     distortion = os.path.join(camera_input_files_path, "CameraDistortion.OPTDistortion")
 
-    camera_t = sensor_pb2.SensorTemplate()
-    camera_t.name = "CameraSensorPhotometric"
-    camera_t.camera_sensor_template.sensor_mode_photometric.transmittance_file_uri = transmittance
-    camera_t.camera_sensor_template.sensor_mode_photometric.gamma_correction = 2.2
-    camera_t.camera_sensor_template.sensor_mode_photometric.color_mode_color.red_spectrum_file_uri = red_spectrum
-    camera_t.camera_sensor_template.sensor_mode_photometric.color_mode_color.green_spectrum_file_uri = green_spectrum
-    camera_t.camera_sensor_template.sensor_mode_photometric.color_mode_color.blue_spectrum_file_uri = blue_spectrum
-    camera_t.camera_sensor_template.sensor_mode_photometric.wavelengths_range.w_start = 400
-    camera_t.camera_sensor_template.sensor_mode_photometric.wavelengths_range.w_end = 800
-    camera_t.camera_sensor_template.sensor_mode_photometric.wavelengths_range.w_sampling = 10
-    camera_t.camera_sensor_template.focal_length = 4
-    camera_t.camera_sensor_template.imager_distance = 10
-    camera_t.camera_sensor_template.f_number = 30
-    camera_t.camera_sensor_template.distorsion_file_uri = distortion
-    camera_t.camera_sensor_template.horz_pixel = 640
-    camera_t.camera_sensor_template.vert_pixel = 480
-    camera_t.camera_sensor_template.width = 5
-    camera_t.camera_sensor_template.height = 5
-
-    cam_sensor_create_req = sensor_pb2.Create_Request(sensor_template=camera_t)
-    cam_sensor_create_res = sensor_templates_manager_stub.Create(cam_sensor_create_req)
+    camera_t = SensorTemplateHelper.create_camera(
+        sensor_template_stub=ssr_db,
+        name="CameraSensorPhotometric",
+        description=".",
+        settings=SensorTemplateHelper.CameraSettings(
+            gamma_correction=2.2, focal_length=4, imager_distance=10, f_number=30
+        ),
+        dimensions=SensorTemplateHelper.CameraDimensions(horz_pixel=640, vert_pixel=480, width=5, height=5),
+        distorsion_file_uri=distortion,
+        transmittance_file_uri=transmittance,
+        spectrum_file_uris=[red_spectrum, green_spectrum, blue_spectrum],
+        wavelengths_range=SensorTemplateHelper.WavelengthsRange(start=400, end=800, sampling=10),
+    )
 
     # Create a camera sensor using template + properties
     camera_sensor = simulation_pb2.Sensor()
-    camera_sensor.name = camera_t.name + "_1"
-    camera_sensor.guid = cam_sensor_create_res.guid
+    camera_sensor.name = camera_t.get().name + "_1"
+    camera_sensor.guid = camera_t.key
 
     camera_sensor.camera_sensor_properties.sensor_position.origin[:] = [25.0, 0.0, 0.0]
     camera_sensor.camera_sensor_properties.sensor_position.x_vector[:] = [0.0, 0.0, -1.0]
@@ -125,6 +119,5 @@ def test_create_camera_sensor(speos: Speos):
     delete_res = simu_manager_stub.Delete(simulation_pb2.Delete_Request(guid=simu_create_res.guid))
 
     # Delete all sensor templates
-    sensor_templates_list_res = sensor_templates_manager_stub.List(sensor_pb2.List_Request())
-    for sensor_template_guid in sensor_templates_list_res.guids:
-        delete_res = sensor_templates_manager_stub.Delete(sensor_pb2.Delete_Request(guid=sensor_template_guid))
+    for ssr in ssr_db.list():
+        ssr.delete()

@@ -9,7 +9,8 @@ from grpc._channel import _InactiveRpcError
 
 from ansys.speos.core import LOG as logger
 from ansys.speos.core.logger import PySpeosCustomAdapter
-from ansys.speos.core.spectrum import SpectrumStub
+from ansys.speos.core.sensor_template import SensorTemplateLink, SensorTemplateStub
+from ansys.speos.core.spectrum import SpectrumLink, SpectrumStub
 
 DEFAULT_HOST = "localhost"
 DEFAULT_PORT = "50051"
@@ -109,6 +110,7 @@ class SpeosClient:
 
         # Initialise databases
         self._spectrumDB = None
+        self._sensorTemplateDB = None
 
     @property
     def channel(self) -> grpc.Channel:
@@ -140,11 +142,32 @@ class SpeosClient:
     def spectrums(self) -> SpectrumStub:
         """Get spectrum database access."""
         if self._closed:
-            return ""
-        # connect to databases
+            raise ConnectionAbortedError()
+        # connect to database
         if self._spectrumDB is None:
             self._spectrumDB = SpectrumStub(self._channel)
         return self._spectrumDB
+
+    def sensor_templates(self) -> SensorTemplateStub:
+        """Get sensor template database access."""
+        if self._closed:
+            raise ConnectionAbortedError()
+        # connect to database
+        if self._sensorTemplateDB is None:
+            self._sensorTemplateDB = SensorTemplateStub(self._channel)
+        return self._sensorTemplateDB
+
+    def get_item(self, key: str) -> Union[SpectrumLink, SensorTemplateLink, None]:
+        """Get item from key."""
+        if self._closed:
+            raise ConnectionAbortedError()
+        for spec in self.spectrums().list():
+            if spec.key == key:
+                return spec
+        for ssr in self.sensor_templates().list():
+            if ssr.key == key:
+                return ssr
+        return None
 
     def __repr__(self) -> str:
         """Represent the client as a string."""
@@ -171,3 +194,5 @@ class SpeosClient:
             self._remote_instance.delete()
         self._closed = True
         self._channel.close()
+        self._spectrumDB = None
+        self._sensorTemplateDB = None
