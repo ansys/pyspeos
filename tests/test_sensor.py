@@ -39,7 +39,7 @@ def test_create_camera_sensor(speos: Speos):
 
     # Read first sensor template dm
     irr = speos.client.get_item(key=simu_read_res.simulation.sensors[0].guid)
-    assert irr is not None and isinstance(irr, SensorTemplateLink)
+    assert isinstance(irr, SensorTemplateLink)
     assert irr.get().HasField("irradiance_sensor_template")
 
     # Create a camera sensor template dm

@@ -142,7 +142,7 @@ class SpeosClient:
     def spectrums(self) -> SpectrumStub:
         """Get spectrum database access."""
         if self._closed:
-            return ""
+            raise ConnectionAbortedError()
         # connect to database
         if self._spectrumDB is None:
             self._spectrumDB = SpectrumStub(self._channel)
@@ -151,16 +151,16 @@ class SpeosClient:
     def sensor_templates(self) -> SensorTemplateStub:
         """Get sensor template database access."""
         if self._closed:
-            return ""
+            raise ConnectionAbortedError()
         # connect to database
         if self._sensorTemplateDB is None:
             self._sensorTemplateDB = SensorTemplateStub(self._channel)
         return self._sensorTemplateDB
 
-    def get_item(self, key: str) -> SpectrumLink | SensorTemplateLink:
+    def get_item(self, key: str) -> Union[SpectrumLink, SensorTemplateLink, None]:
         """Get item from key."""
         if self._closed:
-            return None
+            raise ConnectionAbortedError()
         for spec in self.spectrums().list():
             if spec.key == key:
                 return spec
@@ -194,3 +194,5 @@ class SpeosClient:
             self._remote_instance.delete()
         self._closed = True
         self._channel.close()
+        self._spectrumDB = None
+        self._sensorTemplateDB = None
