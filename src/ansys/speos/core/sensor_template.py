@@ -15,49 +15,49 @@ class SensorTemplateLink(CrudItem):
         super().__init__(db, key)
 
     def get(self) -> SensorTemplate:
-        return self._stub.Read(self)
+        return self._stub.read(self)
 
     def set(self, data: SensorTemplate) -> None:
-        self._stub.Update(self, data)
+        self._stub.update(self, data)
 
     def delete(self) -> None:
-        self._stub.Delete(self)
+        self._stub.delete(self)
 
 
 class SensorTemplateStub(CrudStub):
     def __init__(self, channel):
         super().__init__(stub=service.SensorTemplatesManagerStub(channel=channel))
 
-    def Create(self, message: SensorTemplate) -> SensorTemplateLink:
+    def create(self, message: SensorTemplate) -> SensorTemplateLink:
         """Create a new entry."""
-        resp = CrudStub.Create(self, messages.Create_Request(sensor_template=message))
+        resp = CrudStub.create(self, messages.Create_Request(sensor_template=message))
         return SensorTemplateLink(self, resp.guid)
 
-    def Read(self, ref: SensorTemplateLink) -> SensorTemplate:
+    def read(self, ref: SensorTemplateLink) -> SensorTemplate:
         """Get an existing entry."""
         if not ref.stub == self:
             raise ValueError("SensorTemplateLink is not on current database")
-        resp = CrudStub.Read(self, messages.Read_Request(guid=ref.key))
+        resp = CrudStub.read(self, messages.Read_Request(guid=ref.key))
         return resp.sensor_template
 
-    def Update(self, ref: SensorTemplateLink, data: SensorTemplate):
+    def update(self, ref: SensorTemplateLink, data: SensorTemplate):
         """Change an existing entry."""
         if not ref.stub == self:
             raise ValueError("SensorTemplateLink is not on current database")
-        CrudStub.Update(self, messages.Update_Request(guid=ref.key, sensor_template=data))
+        CrudStub.update(self, messages.Update_Request(guid=ref.key, sensor_template=data))
 
-    def Delete(self, ref: SensorTemplateLink) -> None:
+    def delete(self, ref: SensorTemplateLink) -> None:
         """Remove an existing entry."""
         if not ref.stub == self:
             raise ValueError("SensorTemplateLink is not on current database")
-        CrudStub.Delete(self, messages.Delete_Request(guid=ref.key))
+        CrudStub.delete(self, messages.Delete_Request(guid=ref.key))
 
-    def List(self) -> list[SensorTemplateLink]:
+    def list(self) -> list[SensorTemplateLink]:
         """List existing entries."""
-        guids = CrudStub.List(self, messages.List_Request()).guids
+        guids = CrudStub.list(self, messages.List_Request()).guids
         return list(map(lambda x: SensorTemplateLink(self, x), guids))
 
-    def FromKey(self, key: str) -> SensorTemplateLink:
+    def from_key(self, key: str) -> SensorTemplateLink:
         """Retrieve entry from a key."""
         return SensorTemplateLink(self, key)
 
@@ -95,7 +95,7 @@ class SensorTemplateHelper:
             self._f_number = f_number
             pass
 
-    def CreateIrradiance(
+    def create_irradiance(
         sensor_template_stub: SensorTemplateStub,
         name: str,
         description: str,
@@ -142,9 +142,9 @@ class SensorTemplateHelper:
         ssr.irradiance_sensor_template.dimensions.y_end = dimensions._y_end
         ssr.irradiance_sensor_template.dimensions.y_sampling = dimensions._y_sampling
 
-        return sensor_template_stub.Create(message=ssr)
+        return sensor_template_stub.create(message=ssr)
 
-    def CreateCamera(
+    def create_camera(
         sensor_template_stub: SensorTemplateStub,
         name: str,
         description: str,
@@ -203,4 +203,4 @@ class SensorTemplateHelper:
         ssr.camera_sensor_template.width = dimensions._width
         ssr.camera_sensor_template.height = dimensions._height
 
-        return sensor_template_stub.Create(message=ssr)
+        return sensor_template_stub.create(message=ssr)

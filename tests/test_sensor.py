@@ -38,7 +38,7 @@ def test_create_camera_sensor(speos: Speos):
     assert len(simu_read_res.simulation.sensors) == 1
 
     # Read first sensor template dm
-    irr = ssr_db.FromKey(key=simu_read_res.simulation.sensors[0].guid)
+    irr = ssr_db.from_key(key=simu_read_res.simulation.sensors[0].guid)
     assert irr.get().HasField("irradiance_sensor_template")
 
     # Create a camera sensor template dm
@@ -49,7 +49,7 @@ def test_create_camera_sensor(speos: Speos):
     transmittance = os.path.join(camera_input_files_path, "CameraTransmittance.spectrum")
     distortion = os.path.join(camera_input_files_path, "CameraDistortion.OPTDistortion")
 
-    camera_t = SensorTemplateHelper.CreateCamera(
+    camera_t = SensorTemplateHelper.create_camera(
         ssr_db,
         name="CameraSensorPhotometric",
         description=".",
@@ -117,5 +117,5 @@ def test_create_camera_sensor(speos: Speos):
     delete_res = simu_manager_stub.Delete(simulation_pb2.Delete_Request(guid=simu_create_res.guid))
 
     # Delete all sensor templates
-    for ssr in ssr_db.List():
+    for ssr in ssr_db.list():
         ssr.delete()

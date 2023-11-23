@@ -47,9 +47,9 @@ def get_item_selected(db, key) -> CrudItem:
 def list_items(service) -> list:
     """List all items in database"""
     if service == "spectrum":
-        return speos_client.spectrums().List()
+        return speos_client.spectrums().list()
     elif service == "sensor_template":
-        return speos_client.sensor_templates().List()
+        return speos_client.sensor_templates().list()
     # ...
     return None
 
@@ -78,9 +78,9 @@ def create_new_item(service) -> CrudItem:
         sp.name = "new"
         sp.description = "new"
         sp.monochromatic.wavelength = 486
-        return speos_client.spectrums().Create(sp)
+        return speos_client.spectrums().create(sp)
     elif service == "sensor_template":
-        return SensorTemplateHelper.CreateIrradiance(
+        return SensorTemplateHelper.create_irradiance(
             sensor_template_stub=speos_client.sensor_templates(),
             name="new",
             description="new",

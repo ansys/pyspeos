@@ -7,23 +7,23 @@ class CrudStub:
     def __init__(self, stub):
         self._stubMngr = stub
 
-    def Create(self, request):
+    def create(self, request):
         """Create a new entry."""
         return self._stubMngr.Create(request)
 
-    def Read(self, request):
+    def read(self, request):
         """Get an existing entry."""
         return self._stubMngr.Read(request)
 
-    def Update(self, request):
+    def update(self, request):
         """Change an existing entry."""
         self._stubMngr.Update(request)
 
-    def Delete(self, request):
+    def delete(self, request):
         """Remove an existing entry."""
         self._stubMngr.Delete(request)
 
-    def List(self, request):
+    def list(self, request):
         """List existing entries."""
         return self._stubMngr.List(request)
 
