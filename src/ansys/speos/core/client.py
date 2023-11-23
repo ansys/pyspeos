@@ -9,8 +9,8 @@ from grpc._channel import _InactiveRpcError
 
 from ansys.speos.core import LOG as logger
 from ansys.speos.core.logger import PySpeosCustomAdapter
-from ansys.speos.core.sensor_template import SensorTemplateStub
-from ansys.speos.core.spectrum import SpectrumStub
+from ansys.speos.core.sensor_template import SensorTemplateLink, SensorTemplateStub
+from ansys.speos.core.spectrum import SpectrumLink, SpectrumStub
 
 DEFAULT_HOST = "localhost"
 DEFAULT_PORT = "50051"
@@ -156,6 +156,18 @@ class SpeosClient:
         if self._sensorTemplateDB is None:
             self._sensorTemplateDB = SensorTemplateStub(self._channel)
         return self._sensorTemplateDB
+
+    def get_item(self, key: str) -> SpectrumLink | SensorTemplateLink:
+        """Get item from key."""
+        if self._closed:
+            return None
+        for spec in self.spectrums().list():
+            if spec.key == key:
+                return spec
+        for ssr in self.sensor_templates().list():
+            if ssr.key == key:
+                return ssr
+        return None
 
     def __repr__(self) -> str:
         """Represent the client as a string."""

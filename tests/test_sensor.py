@@ -13,7 +13,7 @@ import time
 from ansys.api.speos.job.v1 import job_pb2, job_pb2_grpc
 from ansys.api.speos.simulation.v1 import sensor_properties_pb2, simulation_pb2, simulation_pb2_grpc
 
-from ansys.speos.core.sensor_template import SensorTemplateHelper
+from ansys.speos.core.sensor_template import SensorTemplateHelper, SensorTemplateLink
 from ansys.speos.core.speos import Speos
 from conftest import test_path
 
@@ -38,7 +38,8 @@ def test_create_camera_sensor(speos: Speos):
     assert len(simu_read_res.simulation.sensors) == 1
 
     # Read first sensor template dm
-    irr = ssr_db.from_key(key=simu_read_res.simulation.sensors[0].guid)
+    irr = speos.client.get_item(key=simu_read_res.simulation.sensors[0].guid)
+    assert irr is not None and isinstance(irr, SensorTemplateLink)
     assert irr.get().HasField("irradiance_sensor_template")
 
     # Create a camera sensor template dm

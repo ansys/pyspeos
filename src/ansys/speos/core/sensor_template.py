@@ -57,10 +57,6 @@ class SensorTemplateStub(CrudStub):
         guids = CrudStub.list(self, messages.List_Request()).guids
         return list(map(lambda x: SensorTemplateLink(self, x), guids))
 
-    def from_key(self, key: str) -> SensorTemplateLink:
-        """Retrieve entry from a key."""
-        return SensorTemplateLink(self, key)
-
 
 class SensorTemplateHelper:
     Type = Enum("Type", ["Photometric", "Colorimetric", "Radiometric", "Spectral"])
