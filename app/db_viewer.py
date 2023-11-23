@@ -103,7 +103,9 @@ def item_content(service):
     """Get content of selected item"""
     if not selected_item:
         return ""
-    return MessageToJson(selected_item.get(), indent=4)
+    return MessageToJson(
+        selected_item.get(), indent=4, including_default_value_fields=True, preserving_proto_field_name=True
+    )
 
 
 layout = [

@@ -50,16 +50,17 @@ def test_create_camera_sensor(speos: Speos):
     distortion = os.path.join(camera_input_files_path, "CameraDistortion.OPTDistortion")
 
     camera_t = SensorTemplateHelper.create_camera(
-        ssr_db,
+        sensor_template_stub=ssr_db,
         name="CameraSensorPhotometric",
         description=".",
+        settings=SensorTemplateHelper.CameraSettings(
+            gamma_correction=2.2, focal_length=4, imager_distance=10, f_number=30
+        ),
+        dimensions=SensorTemplateHelper.CameraDimensions(horz_pixel=640, vert_pixel=480, width=5, height=5),
+        distorsion_file_uri=distortion,
         transmittance_file_uri=transmittance,
-        gamma_correction=2.2,
         spectrum_file_uris=[red_spectrum, green_spectrum, blue_spectrum],
         wavelengths_range=SensorTemplateHelper.WavelengthsRange(start=400, end=800, sampling=10),
-        settings=SensorTemplateHelper.CameraSettings(focal_length=4, imager_distance=10, f_number=30),
-        distorsion_file_uri=distortion,
-        dimensions=SensorTemplateHelper.CameraDimensions(horz_pixel=640, vert_pixel=480, width=5, height=5),
     )
 
     # Create a camera sensor using template + properties
