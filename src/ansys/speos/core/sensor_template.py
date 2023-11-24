@@ -181,7 +181,7 @@ class SensorTemplateHelper:
             ssr.camera_sensor_template.sensor_mode_photometric.color_mode_color.blue_spectrum_file_uri = (
                 spectrum_file_uris[2]
             )
-            ssr.camera_sensor_template.sensor_mode_photometric.balance_mode_none.SetInParent()
+            ssr.camera_sensor_template.sensor_mode_photometric.color_mode_color.balance_mode_none.SetInParent()
         else:
             raise ValueError(
                 "One or three spectrum files are expected in spectrum_file_uris parameter: \
