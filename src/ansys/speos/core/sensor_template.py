@@ -105,9 +105,7 @@ class SensorTemplateHelper:
         dimensions: Dimensions,
         wavelengths_range: WavelengthsRange = None,
     ) -> SensorTemplateLink:
-        ssr = SensorTemplate()
-        ssr.name = name
-        ssr.description = description
+        ssr = SensorTemplate(name=name, description=description)
         if type == SensorTemplateHelper.Type.Photometric:
             ssr.irradiance_sensor_template.sensor_type_photometric.SetInParent()
         elif type == SensorTemplateHelper.Type.Colorimetric and wavelengths_range is not None:
@@ -156,10 +154,7 @@ class SensorTemplateHelper:
         spectrum_file_uris: list[str],
         wavelengths_range: WavelengthsRange,
     ) -> SensorTemplateLink:
-        ssr = SensorTemplate()
-        ssr.name = name
-        ssr.description = description
-
+        ssr = SensorTemplate(name=name, description=description)
         ssr.camera_sensor_template.sensor_mode_photometric.acquisition_integration = 0.1
         ssr.camera_sensor_template.sensor_mode_photometric.acquisition_lag_time = 0
 

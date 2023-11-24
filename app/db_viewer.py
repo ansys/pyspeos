@@ -11,7 +11,7 @@ from ansys.speos.core.sensor_template import (
     SensorTemplateLink,
     SensorTemplateStub,
 )
-from ansys.speos.core.spectrum import Spectrum, SpectrumLink, SpectrumStub
+from ansys.speos.core.spectrum import Spectrum, SpectrumHelper, SpectrumLink, SpectrumStub
 
 # main speos client
 speos_client = pys.SpeosClient(port="50051", timeout=5)
@@ -74,11 +74,9 @@ def update_item(json_content):
 def create_new_item(service) -> CrudItem:
     """Get service CRUD database"""
     if service == "spectrum":
-        sp = Spectrum()
-        sp.name = "new"
-        sp.description = "new"
-        sp.monochromatic.wavelength = 486
-        return speos_client.spectrums().create(sp)
+        return SpectrumHelper.create_monochromatic(
+            spectrum_stub=speos_client.spectrums(), name="new", description="new", wavelength=486
+        )
     elif service == "sensor_template":
         return SensorTemplateHelper.create_irradiance(
             sensor_template_stub=speos_client.sensor_templates(),
