@@ -8,6 +8,7 @@ import grpc
 from grpc._channel import _InactiveRpcError
 
 from ansys.speos.core import LOG as logger
+from ansys.speos.core.intensity_template import IntensityTemplateLink, IntensityTemplateStub
 from ansys.speos.core.logger import PySpeosCustomAdapter
 from ansys.speos.core.sensor_template import SensorTemplateLink, SensorTemplateStub
 from ansys.speos.core.spectrum import SpectrumLink, SpectrumStub
@@ -110,6 +111,7 @@ class SpeosClient:
 
         # Initialise databases
         self._spectrumDB = None
+        self._intensityTemplateDB = None
         self._sensorTemplateDB = None
 
     @property
@@ -148,6 +150,15 @@ class SpeosClient:
             self._spectrumDB = SpectrumStub(self._channel)
         return self._spectrumDB
 
+    def intensity_templates(self) -> IntensityTemplateStub:
+        """Get intensity template database access."""
+        if self._closed:
+            raise ConnectionAbortedError()
+        # connect to database
+        if self._intensityTemplateDB is None:
+            self._intensityTemplateDB = IntensityTemplateStub(self._channel)
+        return self._intensityTemplateDB
+
     def sensor_templates(self) -> SensorTemplateStub:
         """Get sensor template database access."""
         if self._closed:
@@ -157,13 +168,16 @@ class SpeosClient:
             self._sensorTemplateDB = SensorTemplateStub(self._channel)
         return self._sensorTemplateDB
 
-    def get_item(self, key: str) -> Union[SpectrumLink, SensorTemplateLink, None]:
+    def get_item(self, key: str) -> Union[SpectrumLink, IntensityTemplateLink, SensorTemplateLink, None]:
         """Get item from key."""
         if self._closed:
             raise ConnectionAbortedError()
         for spec in self.spectrums().list():
             if spec.key == key:
                 return spec
+        for intens in self.intensity_templates().list():
+            if intens.key == key:
+                return intens
         for ssr in self.sensor_templates().list():
             if ssr.key == key:
                 return ssr
@@ -195,4 +209,5 @@ class SpeosClient:
         self._closed = True
         self._channel.close()
         self._spectrumDB = None
+        self._intensityTemplateDB = None
         self._sensorTemplateDB = None
