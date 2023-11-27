@@ -20,7 +20,7 @@ def test_client_spectrum_init(speos: Speos):
     assert sPH.key != ""
     assert sPH.stub is not None
 
-    # Create SpectrumLink by using helper method - this way no need to write data
+    # Create SpectrumLink by using helper method - this way, no need to write data
     sBB5321 = SpectrumHelper.create_blackbody(
         spectrum_stub=sDB, name="blackbody_0", description="Blackbody spectrum", temperature=5321.0
     )  # the spectrum created is stored in DB

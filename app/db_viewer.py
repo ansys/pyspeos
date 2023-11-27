@@ -17,13 +17,19 @@ from ansys.speos.core.sensor_template import (
     SensorTemplateLink,
     SensorTemplateStub,
 )
+from ansys.speos.core.source_template import (
+    SourceTemplate,
+    SourceTemplateHelper,
+    SourceTemplateLink,
+    SourceTemplateStub,
+)
 from ansys.speos.core.spectrum import Spectrum, SpectrumHelper, SpectrumLink, SpectrumStub
 
 # main speos client
 speos_client = pys.SpeosClient(port="50051", timeout=5)
 
 # list all available services
-services_list = ("spectrum", "intensity_template", "sensor_template", "...")
+services_list = ("spectrum", "intensity_template", "source_template", "sensor_template", "...")
 selected_service = None
 
 # list all items
@@ -37,6 +43,8 @@ def get_service_selected(service) -> CrudStub:
         return speos_client.spectrums()
     elif service == "intensity_template":
         return speos_client.intensity_templates()
+    elif service == "source_template":
+        return speos_client.source_templates()
     elif service == "sensor_template":
         return speos_client.sensor_templates()
     # ...
@@ -48,6 +56,8 @@ def get_item_selected(db, key) -> CrudItem:
         return SpectrumLink(db, key)
     elif isinstance(db, IntensityTemplateStub):
         return IntensityTemplateLink(db, key)
+    elif isinstance(db, SourceTemplateStub):
+        return SourceTemplateLink(db, key)
     elif isinstance(db, SensorTemplateStub):
         return SensorTemplateLink(db, key)
     # ...
@@ -60,6 +70,8 @@ def list_items(service) -> list:
         return speos_client.spectrums().list()
     elif service == "intensity_template":
         return speos_client.intensity_templates().list()
+    elif service == "source_template":
+        return speos_client.source_templates().list()
     elif service == "sensor_template":
         return speos_client.sensor_templates().list()
     # ...
@@ -76,6 +88,8 @@ def update_item(json_content):
             content = Parse(json_content, Spectrum())
         elif isinstance(selected_item, IntensityTemplateLink):
             content = Parse(json_content, IntensityTemplate())
+        elif isinstance(selected_item, SourceTemplateLink):
+            content = Parse(json_content, SourceTemplate())
         elif isinstance(selected_item, SensorTemplateLink):
             content = Parse(json_content, SensorTemplate())
 
@@ -94,6 +108,26 @@ def create_new_item(service) -> CrudItem:
     elif service == "intensity_template":
         return IntensityTemplateHelper.create_lambertian(
             intensity_template_stub=speos_client.intensity_templates(), name="new", description="new", total_angle=180.0
+        )
+    elif service == "source_template":
+        return SourceTemplateHelper.create_surface(
+            source_template_stub=speos_client.source_templates(),
+            name="new",
+            description="new",
+            intensity_template=IntensityTemplateHelper.create_symmetric_gaussian(
+                intensity_template_stub=speos_client.intensity_templates(),
+                name="symmetric_gaussian",
+                description="symmetruc gaussian intensity template for surfacic source template",
+                FWHM_angle=30.0,
+                total_angle=180.0,
+            ),
+            flux=SourceTemplateHelper.Flux(unit=SourceTemplateHelper.Flux.Unit.Lumen, value=683.0),
+            spectrum=SpectrumHelper.create_blackbody(
+                spectrum_stub=speos_client.spectrums(),
+                name="blackbody",
+                description="blackbody spectrum for surfacic source template",
+                temperature=2856.0,
+            ),
         )
     elif service == "sensor_template":
         return SensorTemplateHelper.create_irradiance(
