@@ -1,7 +1,7 @@
 """
 Test basic spectrum database connection.
 """
-from ansys.speos.core.spectrum import Spectrum, SpectrumHelper
+from ansys.speos.core.spectrum import Spectrum, SpectrumFactory
 from ansys.speos.core.speos import Speos
 
 
@@ -21,8 +21,8 @@ def test_client_spectrum_init(speos: Speos):
     assert sPH.stub is not None
 
     # Create SpectrumLink by using helper method - this way, no need to write data
-    sBB5321 = SpectrumHelper.create_blackbody(
-        spectrum_stub=sDB, name="blackbody_0", description="Blackbody spectrum", temperature=5321.0
+    sBB5321 = sDB.create(
+        message=SpectrumFactory.blackbody(name="blackbody_0", description="Blackbody spectrum", temperature=5321.0)
     )  # the spectrum created is stored in DB
     # Get data
     sBB5321data = sBB5321.get()
@@ -36,8 +36,8 @@ def test_client_spectrum_init(speos: Speos):
     sBB5321.delete()  # Delete from DB
 
     # Create SpectrumLink by using helper method
-    sM659 = SpectrumHelper.create_monochromatic(
-        spectrum_stub=sDB, name="monochr_0", description="Monochromatic spectrum", wavelength=659.0
+    sM659 = sDB.create(
+        SpectrumFactory.monochromatic(name="monochr_0", description="Monochromatic spectrum", wavelength=659.0)
     )
     # Duplicate = same data but different keys
     sM659_bis = sDB.create(sM659.get())

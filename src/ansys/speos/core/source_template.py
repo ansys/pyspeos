@@ -59,7 +59,7 @@ class SourceTemplateStub(CrudStub):
         return list(map(lambda x: SourceTemplateLink(self, x), guids))
 
 
-class SourceTemplateHelper:
+class SourceTemplateFactory:
     class Flux:
         Unit = Enum("Unit", ["Lumen", "Watt", "Candela"])
 
@@ -67,47 +67,45 @@ class SourceTemplateHelper:
             self.unit = unit
             self.value = value
 
-    def create_luminaire(
-        source_template_stub: SourceTemplateStub,
+    def luminaire(
         name: str,
         description: str,
         intensity_file_uri: str,
         spectrum: SpectrumLink,
         flux: Flux = None,
-    ) -> SourceTemplateLink:
+    ) -> SourceTemplate:
         src = SourceTemplate(name=name, description=description)
 
         if flux is None:
             src.luminaire.flux_from_intensity_file.SetInParent()
-        elif flux.unit == SourceTemplateHelper.Flux.Unit.Lumen:
+        elif flux.unit == SourceTemplateFactory.Flux.Unit.Lumen:
             src.luminaire.luminous_flux.luminous_value = flux.value
-        elif flux.unit == SourceTemplateHelper.Flux.Unit.Watt:
+        elif flux.unit == SourceTemplateFactory.Flux.Unit.Watt:
             src.luminaire.radiant_flux.radiant_value = flux.value
         else:
             src.luminaire.flux_from_intensity_file.SetInParent()
 
         src.luminaire.intensity_file_uri = intensity_file_uri
         src.luminaire.spectrum_guid = spectrum.key
-        return source_template_stub.create(message=src)
+        return src
 
-    def create_surface(
-        source_template_stub: SourceTemplateStub,
+    def surface(
         name: str,
         description: str,
         intensity_template: IntensityTemplateLink,
         flux: Flux = None,
         exitance_xmp_file_uri: str = "",
         spectrum: SpectrumLink = None,
-    ) -> SourceTemplateLink:
+    ) -> SourceTemplate:
         src = SourceTemplate(name=name, description=description)
 
         if flux is None:
             src.surface.flux_from_intensity_file.SetInParent()
-        elif flux.unit == SourceTemplateHelper.Flux.Unit.Lumen:
+        elif flux.unit == SourceTemplateFactory.Flux.Unit.Lumen:
             src.surface.luminous_flux.luminous_value = flux.value
-        elif flux.unit == SourceTemplateHelper.Flux.Unit.Watt:
+        elif flux.unit == SourceTemplateFactory.Flux.Unit.Watt:
             src.surface.radiant_flux.radiant_value = flux.value
-        elif flux.unit == SourceTemplateHelper.Flux.Unit.Candela:
+        elif flux.unit == SourceTemplateFactory.Flux.Unit.Candela:
             src.surface.luminous_intensity_flux.luminous_intensity_value = flux.value
         else:
             src.surface.flux_from_intensity_file.SetInParent()
@@ -124,4 +122,4 @@ class SourceTemplateHelper:
         else:
             src.surface.spectrum_from_xmp_file.SetInParent()
 
-        return source_template_stub.create(message=src)
+        return src

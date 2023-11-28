@@ -13,7 +13,7 @@ import time
 from ansys.api.speos.job.v1 import job_pb2, job_pb2_grpc
 from ansys.api.speos.simulation.v1 import sensor_properties_pb2, simulation_pb2, simulation_pb2_grpc
 
-from ansys.speos.core.sensor_template import SensorTemplateHelper, SensorTemplateLink
+from ansys.speos.core.sensor_template import SensorTemplateFactory, SensorTemplateLink
 from ansys.speos.core.speos import Speos
 from conftest import test_path
 
@@ -50,18 +50,19 @@ def test_create_camera_sensor(speos: Speos):
     transmittance = os.path.join(camera_input_files_path, "CameraTransmittance.spectrum")
     distortion = os.path.join(camera_input_files_path, "CameraDistortion.OPTDistortion")
 
-    camera_t = SensorTemplateHelper.create_camera(
-        sensor_template_stub=ssr_db,
-        name="CameraSensorPhotometric",
-        description=".",
-        settings=SensorTemplateHelper.CameraSettings(
-            gamma_correction=2.2, focal_length=4, imager_distance=10, f_number=30
-        ),
-        dimensions=SensorTemplateHelper.CameraDimensions(horz_pixel=640, vert_pixel=480, width=5, height=5),
-        distorsion_file_uri=distortion,
-        transmittance_file_uri=transmittance,
-        spectrum_file_uris=[red_spectrum, green_spectrum, blue_spectrum],
-        wavelengths_range=SensorTemplateHelper.WavelengthsRange(start=400, end=800, sampling=10),
+    camera_t = ssr_db.create(
+        SensorTemplateFactory.camera(
+            name="CameraSensorPhotometric",
+            description=".",
+            settings=SensorTemplateFactory.CameraSettings(
+                gamma_correction=2.2, focal_length=4, imager_distance=10, f_number=30
+            ),
+            dimensions=SensorTemplateFactory.CameraDimensions(horz_pixel=640, vert_pixel=480, width=5, height=5),
+            distorsion_file_uri=distortion,
+            transmittance_file_uri=transmittance,
+            spectrum_file_uris=[red_spectrum, green_spectrum, blue_spectrum],
+            wavelengths_range=SensorTemplateFactory.WavelengthsRange(start=400, end=800, sampling=10),
+        )
     )
 
     # Create a camera sensor using template + properties

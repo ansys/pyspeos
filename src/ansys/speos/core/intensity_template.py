@@ -55,51 +55,39 @@ class IntensityTemplateStub(CrudStub):
         return list(map(lambda x: IntensityTemplateLink(self, x), guids))
 
 
-class IntensityTemplateHelper:
-    def create_library(
-        intensity_template_stub: IntensityTemplateStub, name: str, description: str, file_uri: str
-    ) -> IntensityTemplateLink:
+class IntensityTemplateFactory:
+    def library(name: str, description: str, file_uri: str) -> IntensityTemplate:
         intens = IntensityTemplate(name=name, description=description)
         intens.library.intensity_file_uri = file_uri
-        return intensity_template_stub.create(message=intens)
+        return intens
 
-    def create_lambertian(
-        intensity_template_stub: IntensityTemplateStub, name: str, description: str, total_angle: float
-    ) -> IntensityTemplateLink:
+    def lambertian(name: str, description: str, total_angle: float) -> IntensityTemplate:
         intens = IntensityTemplate(name=name, description=description)
         intens.lambertian.total_angle = total_angle
-        return intensity_template_stub.create(message=intens)
+        return intens
 
-    def create_cos(
-        intensity_template_stub: IntensityTemplateStub, name: str, description: str, N: float, total_angle: float
-    ) -> IntensityTemplateLink:
+    def cos(name: str, description: str, N: float, total_angle: float) -> IntensityTemplate:
         intens = IntensityTemplate(name=name, description=description)
         intens.cos.N = N
         intens.cos.total_angle = total_angle
-        return intensity_template_stub.create(message=intens)
+        return intens
 
-    def create_symmetric_gaussian(
-        intensity_template_stub: IntensityTemplateStub,
+    def symmetric_gaussian(
         name: str,
         description: str,
         FWHM_angle: float,
         total_angle: float,
-    ) -> IntensityTemplateLink:
+    ) -> IntensityTemplate:
         intens = IntensityTemplate(name=name, description=description)
         intens.symmetric_gaussian.FWHM_angle = FWHM_angle
         intens.symmetric_gaussian.total_angle = total_angle
-        return intensity_template_stub.create(message=intens)
+        return intens
 
-    def create_asymmetric_gaussian(
-        intensity_template_stub: IntensityTemplateStub,
-        name: str,
-        description: str,
-        FWHM_angle_x: float,
-        FWHM_angle_y: float,
-        total_angle: float,
-    ) -> IntensityTemplateLink:
+    def asymmetric_gaussian(
+        name: str, description: str, FWHM_angle_x: float, FWHM_angle_y: float, total_angle: float
+    ) -> IntensityTemplate:
         intens = IntensityTemplate(name=name, description=description)
         intens.asymmetric_gaussian.FWHM_angle_x = FWHM_angle_x
         intens.asymmetric_gaussian.FWHM_angle_y = FWHM_angle_y
         intens.asymmetric_gaussian.total_angle = total_angle
-        return intensity_template_stub.create(message=intens)
+        return intens

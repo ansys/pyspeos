@@ -57,7 +57,7 @@ class SpectrumStub(CrudStub):
         return list(map(lambda x: SpectrumLink(self, x), guids))
 
 
-class SpectrumHelper:
+class SpectrumFactory:
     PredefinedType = Enum(
         "PredefinedType",
         [
@@ -71,48 +71,42 @@ class SpectrumHelper:
         ],
     )
 
-    def create_monochromatic(
-        spectrum_stub: SpectrumStub, name: str, description: str, wavelength: float
-    ) -> SpectrumLink:
+    def monochromatic(name: str, description: str, wavelength: float) -> Spectrum:
         spec = Spectrum(name=name, description=description)
         spec.monochromatic.wavelength = wavelength
-        return spectrum_stub.create(message=spec)
+        return spec
 
-    def create_blackbody(spectrum_stub: SpectrumStub, name: str, description: str, temperature: float) -> SpectrumLink:
+    def blackbody(name: str, description: str, temperature: float) -> Spectrum:
         spec = Spectrum(name=name, description=description)
         spec.blackbody.temperature = temperature
-        return spectrum_stub.create(message=spec)
+        return spec
 
-    def create_sampled(
-        spectrum_stub: SpectrumStub, name: str, description: str, wavelengths: list[float], values: list[float]
-    ) -> SpectrumLink:
+    def sampled(name: str, description: str, wavelengths: list[float], values: list[float]) -> Spectrum:
         spec = Spectrum(name=name, description=description)
         spec.sampled.wavelengths = wavelengths
         spec.sampled.values = values
-        return spectrum_stub.create(message=spec)
+        return spec
 
-    def create_library(spectrum_stub: SpectrumStub, name: str, description: str, file_uri: str) -> SpectrumLink:
+    def library(name: str, description: str, file_uri: str) -> Spectrum:
         spec = Spectrum(name=name, description=description)
         spec.library.file_uri = file_uri
-        return spectrum_stub.create(message=spec)
+        return spec
 
-    def create_predefined(
-        spectrum_stub: SpectrumStub, name: str, description: str, type: PredefinedType
-    ) -> SpectrumLink:
+    def predefined(name: str, description: str, type: PredefinedType) -> Spectrum:
         spec = Spectrum(name=name, description=description)
-        if type == SpectrumHelper.Type.Incandescent:
+        if type == SpectrumFactory.PredefinedType.Incandescent:
             spec.predefined.incandescent.SetInParent()
-        elif type == SpectrumHelper.Type.WarmWhiteFluorescent:
+        elif type == SpectrumFactory.PredefinedType.WarmWhiteFluorescent:
             spec.predefined.warmwhitefluorescent.SetInParent()
-        elif type == SpectrumHelper.Type.DaylightFluorescent:
+        elif type == SpectrumFactory.PredefinedType.DaylightFluorescent:
             spec.predefined.daylightfluorescent.SetInParent()
-        elif type == SpectrumHelper.Type.WhiteLED:
+        elif type == SpectrumFactory.PredefinedType.WhiteLED:
             spec.predefined.whiteLED.SetInParent()
-        elif type == SpectrumHelper.Type.Halogen:
+        elif type == SpectrumFactory.PredefinedType.Halogen:
             spec.predefined.halogen.SetInParent()
-        elif type == SpectrumHelper.Type.MetalHalide:
+        elif type == SpectrumFactory.PredefinedType.MetalHalide:
             spec.predefined.metalhalide.SetInParent()
-        elif type == SpectrumHelper.Type.HighPressureSodium:
+        elif type == SpectrumFactory.PredefinedType.HighPressureSodium:
             spec.predefined.highpressuresodium.SetInParent()
 
-        return spectrum_stub.create(message=spec)
+        return spec

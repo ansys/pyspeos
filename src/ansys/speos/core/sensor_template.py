@@ -58,7 +58,7 @@ class SensorTemplateStub(CrudStub):
         return list(map(lambda x: SensorTemplateLink(self, x), guids))
 
 
-class SensorTemplateHelper:
+class SensorTemplateFactory:
     Type = Enum("Type", ["Photometric", "Colorimetric", "Radiometric", "Spectral"])
     IlluminanceType = Enum("IlluminanceType", ["Planar", "Radial", "Hemispherical", "Cylindrical", "SemiCylindrical"])
 
@@ -96,42 +96,41 @@ class SensorTemplateHelper:
             self.f_number = f_number
             pass
 
-    def create_irradiance(
-        sensor_template_stub: SensorTemplateStub,
+    def irradiance(
         name: str,
         description: str,
         type: Type,
         illuminance_type: IlluminanceType,
         dimensions: Dimensions,
         wavelengths_range: WavelengthsRange = None,
-    ) -> SensorTemplateLink:
+    ) -> SensorTemplate:
         ssr = SensorTemplate(name=name, description=description)
-        if type == SensorTemplateHelper.Type.Photometric:
+        if type == SensorTemplateFactory.Type.Photometric:
             ssr.irradiance_sensor_template.sensor_type_photometric.SetInParent()
-        elif type == SensorTemplateHelper.Type.Colorimetric and wavelengths_range is not None:
+        elif type == SensorTemplateFactory.Type.Colorimetric and wavelengths_range is not None:
             ssr.irradiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_start = wavelengths_range.start
             ssr.irradiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_end = wavelengths_range.end
             ssr.irradiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_sampling = (
                 wavelengths_range.sampling
             )
-        elif type == SensorTemplateHelper.Type.Radiometric:
+        elif type == SensorTemplateFactory.Type.Radiometric:
             ssr.irradiance_sensor_template.sensor_type_radiometric.SetInParent()
-        elif type == SensorTemplateHelper.Type.Spectral and wavelengths_range is not None:
+        elif type == SensorTemplateFactory.Type.Spectral and wavelengths_range is not None:
             ssr.irradiance_sensor_template.sensor_type_spectral.wavelengths_range.w_start = wavelengths_range.start
             ssr.irradiance_sensor_template.sensor_type_spectral.wavelengths_range.w_end = wavelengths_range.end
             ssr.irradiance_sensor_template.sensor_type_spectral.wavelengths_range.w_sampling = (
                 wavelengths_range.sampling
             )
 
-        if illuminance_type == SensorTemplateHelper.IlluminanceType.Planar:
+        if illuminance_type == SensorTemplateFactory.IlluminanceType.Planar:
             ssr.irradiance_sensor_template.illuminance_type_planar.SetInParent()
-        elif illuminance_type == SensorTemplateHelper.IlluminanceType.Radial:
+        elif illuminance_type == SensorTemplateFactory.IlluminanceType.Radial:
             ssr.irradiance_sensor_template.illuminance_type_radial.SetInParent()
-        elif illuminance_type == SensorTemplateHelper.IlluminanceType.Hemispherical:
+        elif illuminance_type == SensorTemplateFactory.IlluminanceType.Hemispherical:
             ssr.irradiance_sensor_template.illuminance_type_hemispherical.SetInParent()
-        elif illuminance_type == SensorTemplateHelper.IlluminanceType.Cylindrical:
+        elif illuminance_type == SensorTemplateFactory.IlluminanceType.Cylindrical:
             ssr.irradiance_sensor_template.illuminance_type_cylindrical.SetInParent()
-        elif illuminance_type == SensorTemplateHelper.IlluminanceType.SemiCylindrical:
+        elif illuminance_type == SensorTemplateFactory.IlluminanceType.SemiCylindrical:
             ssr.irradiance_sensor_template.illuminance_type_semi_cylindrical.SetInParent()
 
         ssr.irradiance_sensor_template.dimensions.x_start = dimensions.x_start
@@ -141,10 +140,9 @@ class SensorTemplateHelper:
         ssr.irradiance_sensor_template.dimensions.y_end = dimensions.y_end
         ssr.irradiance_sensor_template.dimensions.y_sampling = dimensions.y_sampling
 
-        return sensor_template_stub.create(message=ssr)
+        return ssr
 
-    def create_camera(
-        sensor_template_stub: SensorTemplateStub,
+    def camera(
         name: str,
         description: str,
         settings: CameraSettings,
@@ -153,7 +151,7 @@ class SensorTemplateHelper:
         transmittance_file_uri: str,
         spectrum_file_uris: list[str],
         wavelengths_range: WavelengthsRange,
-    ) -> SensorTemplateLink:
+    ) -> SensorTemplate:
         ssr = SensorTemplate(name=name, description=description)
         ssr.camera_sensor_template.sensor_mode_photometric.acquisition_integration = 0.1
         ssr.camera_sensor_template.sensor_mode_photometric.acquisition_lag_time = 0
@@ -198,4 +196,4 @@ class SensorTemplateHelper:
         ssr.camera_sensor_template.width = dimensions.width
         ssr.camera_sensor_template.height = dimensions.height
 
-        return sensor_template_stub.create(message=ssr)
+        return ssr
