@@ -164,3 +164,10 @@ def test_sensor_template_factory(speos: Speos):
             )
         )
     assert exc.value.args[0] == "For colorimetric type, please provide wavelengths_range parameter"
+
+    camera_t0.delete()
+    camera_t1.delete()
+    camera_t2.delete()
+    camera_t3.delete()
+    irradiance_t0.delete()
+    irradiance_t1.delete()

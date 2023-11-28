@@ -7,23 +7,23 @@ import ansys.speos.core.client as pys
 from ansys.speos.core.crud import CrudItem, CrudStub
 from ansys.speos.core.intensity_template import (
     IntensityTemplate,
-    IntensityTemplateHelper,
+    IntensityTemplateFactory,
     IntensityTemplateLink,
     IntensityTemplateStub,
 )
 from ansys.speos.core.sensor_template import (
     SensorTemplate,
-    SensorTemplateHelper,
+    SensorTemplateFactory,
     SensorTemplateLink,
     SensorTemplateStub,
 )
 from ansys.speos.core.source_template import (
     SourceTemplate,
-    SourceTemplateHelper,
+    SourceTemplateFactory,
     SourceTemplateLink,
     SourceTemplateStub,
 )
-from ansys.speos.core.spectrum import Spectrum, SpectrumHelper, SpectrumLink, SpectrumStub
+from ansys.speos.core.spectrum import Spectrum, SpectrumFactory, SpectrumLink, SpectrumStub
 
 # main speos client
 speos_client = pys.SpeosClient(port="50051", timeout=5)
@@ -102,43 +102,47 @@ def update_item(json_content):
 def create_new_item(service) -> CrudItem:
     """Get service CRUD database"""
     if service == "spectrum":
-        return SpectrumHelper.create_monochromatic(
-            spectrum_stub=speos_client.spectrums(), name="new", description="new", wavelength=486
+        return speos_client.spectrums().create(
+            message=SpectrumFactory.monochromatic(name="new", description="new", wavelength=486)
         )
     elif service == "intensity_template":
-        return IntensityTemplateHelper.create_lambertian(
-            intensity_template_stub=speos_client.intensity_templates(), name="new", description="new", total_angle=180.0
+        return speos_client.intensity_templates().create(
+            message=IntensityTemplateFactory.lambertian(name="new", description="new", total_angle=180.0)
         )
     elif service == "source_template":
-        return SourceTemplateHelper.create_surface(
-            source_template_stub=speos_client.source_templates(),
-            name="new",
-            description="new",
-            intensity_template=IntensityTemplateHelper.create_symmetric_gaussian(
-                intensity_template_stub=speos_client.intensity_templates(),
-                name="symmetric_gaussian",
-                description="symmetruc gaussian intensity template for surfacic source template",
-                FWHM_angle=30.0,
-                total_angle=180.0,
-            ),
-            flux=SourceTemplateHelper.Flux(unit=SourceTemplateHelper.Flux.Unit.Lumen, value=683.0),
-            spectrum=SpectrumHelper.create_blackbody(
-                spectrum_stub=speos_client.spectrums(),
-                name="blackbody",
-                description="blackbody spectrum for surfacic source template",
-                temperature=2856.0,
-            ),
+        return speos_client.source_templates().create(
+            message=SourceTemplateFactory.surface(
+                name="new",
+                description="new",
+                intensity_template=speos_client.intensity_templates().create(
+                    message=IntensityTemplateFactory.symmetric_gaussian(
+                        name="symmetric_gaussian",
+                        description="symmetric gaussian intensity template for surfacic source template",
+                        FWHM_angle=30.0,
+                        total_angle=180.0,
+                    )
+                ),
+                flux=SourceTemplateFactory.Flux(unit=SourceTemplateFactory.Flux.Unit.Lumen, value=683.0),
+                spectrum=speos_client.spectrums().create(
+                    message=SpectrumFactory.blackbody(
+                        name="blackbody",
+                        description="blackbody spectrum for surfacic source template",
+                        temperature=2856.0,
+                    )
+                ),
+            )
         )
     elif service == "sensor_template":
-        return SensorTemplateHelper.create_irradiance(
-            sensor_template_stub=speos_client.sensor_templates(),
-            name="new",
-            description="new",
-            type=SensorTemplateHelper.Type.Photometric,
-            illuminance_type=SensorTemplateHelper.IlluminanceType.Planar,
-            dimensions=SensorTemplateHelper.Dimensions(
-                x_start=-50.0, x_end=50.0, x_sampling=100, y_start=-50.0, y_end=50.0, y_sampling=100
-            ),
+        return speos_client.sensor_templates().create(
+            message=SensorTemplateFactory.irradiance(
+                name="new",
+                description="new",
+                type=SensorTemplateFactory.Type.Photometric,
+                illuminance_type=SensorTemplateFactory.IlluminanceType.Planar,
+                dimensions=SensorTemplateFactory.Dimensions(
+                    x_start=-50.0, x_end=50.0, x_sampling=100, y_start=-50.0, y_end=50.0, y_sampling=100
+                ),
+            )
         )
     # ...
     return None
