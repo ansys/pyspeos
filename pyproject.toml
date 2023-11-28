@@ -30,7 +30,7 @@ dependencies=[
     "grpcio==1.59.3",
     "grpcio-tools==1.48.2",
     "grpcio-health-checking==1.48.2",
-    "ansys-api-speos==0.5.0",
+    "ansys-api-speos==0.6.dev0",
 ]
 
 [project.optional-dependencies]
