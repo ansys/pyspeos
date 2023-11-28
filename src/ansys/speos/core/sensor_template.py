@@ -80,7 +80,7 @@ class SensorTemplateFactory:
             self.sampling = sampling
 
     class CameraDimensions:
-        def __init__(self, horz_pixel: int, vert_pixel: int, width: float, height: float):
+        def __init__(self, horz_pixel: int, vert_pixel: int, width: float, height: float) -> None:
             self.horz_pixel = horz_pixel
             self.vert_pixel = vert_pixel
             self.width = width
@@ -94,7 +94,22 @@ class SensorTemplateFactory:
             self.focal_length = focal_length
             self.imager_distance = imager_distance
             self.f_number = f_number
-            pass
+
+    class CameraBalanceMode:
+        Type = Enum("Type", ["Greyworld", "Userwhite", "Display"])
+
+        def __init__(self, type: Type, values: list = []) -> None:
+            if type == SensorTemplateFactory.CameraBalanceMode.Type.Userwhite and len(values) != 3:
+                raise ValueError(
+                    "For userwhite balance mode, three values are expected: [red_gain, green_gain, blue_gain]"
+                )
+            if type == SensorTemplateFactory.CameraBalanceMode.Type.Display and len(values) != 3:
+                raise ValueError(
+                    "For display balance mode, three values are expected: \
+                    [red_display_file_uri, green_display_file_uri, blue_display_file_uri]"
+                )
+            self.type = type
+            self.value = values
 
     def irradiance(
         name: str,
@@ -107,7 +122,9 @@ class SensorTemplateFactory:
         ssr = SensorTemplate(name=name, description=description)
         if type == SensorTemplateFactory.Type.Photometric:
             ssr.irradiance_sensor_template.sensor_type_photometric.SetInParent()
-        elif type == SensorTemplateFactory.Type.Colorimetric and wavelengths_range is not None:
+        elif type == SensorTemplateFactory.Type.Colorimetric:
+            if wavelengths_range is None:
+                raise ValueError("For colorimetric type, please provide wavelengths_range parameter")
             ssr.irradiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_start = wavelengths_range.start
             ssr.irradiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_end = wavelengths_range.end
             ssr.irradiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_sampling = (
@@ -115,7 +132,9 @@ class SensorTemplateFactory:
             )
         elif type == SensorTemplateFactory.Type.Radiometric:
             ssr.irradiance_sensor_template.sensor_type_radiometric.SetInParent()
-        elif type == SensorTemplateFactory.Type.Spectral and wavelengths_range is not None:
+        elif type == SensorTemplateFactory.Type.Spectral:
+            if wavelengths_range is None:
+                raise ValueError("For spectral type, please provide wavelengths_range parameter")
             ssr.irradiance_sensor_template.sensor_type_spectral.wavelengths_range.w_start = wavelengths_range.start
             ssr.irradiance_sensor_template.sensor_type_spectral.wavelengths_range.w_end = wavelengths_range.end
             ssr.irradiance_sensor_template.sensor_type_spectral.wavelengths_range.w_sampling = (
@@ -151,6 +170,7 @@ class SensorTemplateFactory:
         transmittance_file_uri: str,
         spectrum_file_uris: list[str],
         wavelengths_range: WavelengthsRange,
+        camera_balance_mode: CameraBalanceMode = None,
     ) -> SensorTemplate:
         ssr = SensorTemplate(name=name, description=description)
         ssr.camera_sensor_template.sensor_mode_photometric.acquisition_integration = 0.1
@@ -174,7 +194,27 @@ class SensorTemplateFactory:
             ssr.camera_sensor_template.sensor_mode_photometric.color_mode_color.blue_spectrum_file_uri = (
                 spectrum_file_uris[2]
             )
-            ssr.camera_sensor_template.sensor_mode_photometric.color_mode_color.balance_mode_none.SetInParent()
+            if camera_balance_mode is None:
+                ssr.camera_sensor_template.sensor_mode_photometric.color_mode_color.balance_mode_none.SetInParent()
+            elif camera_balance_mode.type == SensorTemplateFactory.CameraBalanceMode.Type.Greyworld:
+                ssr.camera_sensor_template.sensor_mode_photometric.color_mode_color.balance_mode_greyworld.SetInParent()
+            elif camera_balance_mode.type == SensorTemplateFactory.CameraBalanceMode.Type.Userwhite:
+                mode_userwhite = camera_sensor_pb2.SensorCameraBalanceModeUserwhite()
+                mode_userwhite.red_gain = camera_balance_mode.value[0]
+                mode_userwhite.green_gain = camera_balance_mode.value[1]
+                mode_userwhite.blue_gain = camera_balance_mode.value[2]
+                ssr.camera_sensor_template.sensor_mode_photometric.color_mode_color.balance_mode_userwhite.CopyFrom(
+                    mode_userwhite
+                )
+
+            elif camera_balance_mode.type == SensorTemplateFactory.CameraBalanceMode.Type.Display:
+                mode_display = camera_sensor_pb2.SensorCameraBalanceModeDisplay()
+                mode_display.red_display_file_uri = camera_balance_mode.value[0]
+                mode_display.green_display_file_uri = camera_balance_mode.value[1]
+                mode_display.blue_display_file_uri = camera_balance_mode.value[2]
+                ssr.camera_sensor_template.sensor_mode_photometric.color_mode_color.balance_mode_display.CopyFrom(
+                    mode_display
+                )
         else:
             raise ValueError(
                 "One or three spectrum files are expected in spectrum_file_uris parameter: \
