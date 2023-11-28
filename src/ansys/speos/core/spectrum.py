@@ -83,8 +83,8 @@ class SpectrumFactory:
 
     def sampled(name: str, description: str, wavelengths: list[float], values: list[float]) -> Spectrum:
         spec = Spectrum(name=name, description=description)
-        spec.sampled.wavelengths = wavelengths
-        spec.sampled.values = values
+        spec.sampled.wavelengths.extend(wavelengths)
+        spec.sampled.values.extend(values)
         return spec
 
     def library(name: str, description: str, file_uri: str) -> Spectrum:
