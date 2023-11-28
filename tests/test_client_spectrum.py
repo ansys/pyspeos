@@ -23,7 +23,7 @@ def test_client_spectrum_init(speos: Speos):
     assert s_ph.key != ""
     assert s_ph.stub is not None
 
-    # Create SpectrumLink by using helper method - this way, no need to write data
+    # Create SpectrumLink and use factory to get message data
     s_bb_5321 = spec_db.create(
         message=SpectrumFactory.blackbody(name="blackbody_0", description="Blackbody spectrum", temperature=5321.0)
     )  # the spectrum created is stored in DB
@@ -38,7 +38,7 @@ def test_client_spectrum_init(speos: Speos):
     # Delete
     s_bb_5321.delete()  # Delete from DB
 
-    # Create SpectrumLink by using helper method
+    # Create SpectrumLink
     s_m_659 = spec_db.create(
         SpectrumFactory.monochromatic(name="monochr_0", description="Monochromatic spectrum", wavelength=659.0)
     )

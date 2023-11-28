@@ -63,6 +63,6 @@ def test_intensity_template_factory(speos: Speos):
     )
     assert intens_t_asym_gauss.key != ""
 
-    # Delete all spectrums from DB
+    # Delete all intensity_templates from DB
     for intens_t in intens_t_db.list():
         intens_t.delete()
