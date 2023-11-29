@@ -3,6 +3,7 @@ from ansys.api.speos.intensity.v1 import intensity_pb2 as messages
 from ansys.api.speos.intensity.v1 import intensity_pb2_grpc as service
 
 from ansys.speos.core.crud import CrudItem, CrudStub
+from ansys.speos.core.proto_message import protobuf_message_to_str
 
 IntensityTemplate = messages.IntensityTemplate
 
@@ -10,6 +11,9 @@ IntensityTemplate = messages.IntensityTemplate
 class IntensityTemplateLink(CrudItem):
     def __init__(self, db, key: str):
         super().__init__(db, key)
+
+    def __str__(self) -> str:
+        return protobuf_message_to_str(self.get())
 
     def get(self) -> IntensityTemplate:
         return self._stub.read(self)

@@ -1,7 +1,7 @@
 # (c) 2023 ANSYS, Inc. Unauthorized use, distribution, or duplication is prohibited. ANSYS Confidential Information
 
 import PySimpleGUI as sg
-from google.protobuf.json_format import MessageToJson, Parse
+from google.protobuf.json_format import Parse
 
 import ansys.speos.core.client as pys
 from ansys.speos.core.crud import CrudItem, CrudStub
@@ -11,6 +11,7 @@ from ansys.speos.core.intensity_template import (
     IntensityTemplateLink,
     IntensityTemplateStub,
 )
+from ansys.speos.core.proto_message import protobuf_message_to_str
 from ansys.speos.core.sensor_template import (
     SensorTemplate,
     SensorTemplateFactory,
@@ -153,13 +154,11 @@ def list_items_name(service) -> list:
 
 
 # get content of selected item
-def item_content(service):
+def item_content():
     """Get content of selected item"""
     if not selected_item:
         return ""
-    return MessageToJson(
-        selected_item.get(), indent=4, including_default_value_fields=True, preserving_proto_field_name=True
-    )
+    return protobuf_message_to_str(selected_item.get())
 
 
 layout = [
@@ -208,7 +207,7 @@ while True:  # the event loop
         # refresh item content
         selected_service = get_service_selected(service_name)
         selected_item = get_item_selected(selected_service, selected_key)
-        item_inputtext.update(item_content(service_name))
+        item_inputtext.update(item_content())
     elif event == "New":
         # create new item
         selected_item = create_new_item(service_name)
@@ -217,15 +216,15 @@ while True:  # the event loop
         items_list.update(values=items)
         items_list.update(set_to_index=len(items), scroll_to_index=len(items))
         # refresh item content
-        item_inputtext.update(item_content(service_name))
+        item_inputtext.update(item_content())
     elif event == "Reload":
         # refresh item content
-        item_inputtext.update(item_content(service_name))
+        item_inputtext.update(item_content())
     elif event == "Save":
         # update item
         update_item(values["-CONTENT-"])
         # refresh item content
-        item_inputtext.update(item_content(service_name))
+        item_inputtext.update(item_content())
 
     elif event == "Delete":
         # remove item

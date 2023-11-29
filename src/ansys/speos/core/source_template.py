@@ -6,6 +6,7 @@ from ansys.api.speos.source.v1 import source_pb2_grpc as service
 
 from ansys.speos.core.crud import CrudItem, CrudStub
 from ansys.speos.core.intensity_template import IntensityTemplateLink
+from ansys.speos.core.proto_message import protobuf_message_to_str
 from ansys.speos.core.spectrum import SpectrumLink
 
 SourceTemplate = messages.SourceTemplate
@@ -14,6 +15,9 @@ SourceTemplate = messages.SourceTemplate
 class SourceTemplateLink(CrudItem):
     def __init__(self, db, key: str):
         super().__init__(db, key)
+
+    def __str__(self) -> str:
+        return protobuf_message_to_str(self.get())
 
     def get(self) -> SourceTemplate:
         return self._stub.read(self)

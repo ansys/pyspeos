@@ -6,6 +6,7 @@ from ansys.api.speos.sensor.v1 import sensor_pb2 as messages
 from ansys.api.speos.sensor.v1 import sensor_pb2_grpc as service
 
 from ansys.speos.core.crud import CrudItem, CrudStub
+from ansys.speos.core.proto_message import protobuf_message_to_str
 
 SensorTemplate = messages.SensorTemplate
 
@@ -13,6 +14,9 @@ SensorTemplate = messages.SensorTemplate
 class SensorTemplateLink(CrudItem):
     def __init__(self, db, key: str):
         super().__init__(db, key)
+
+    def __str__(self) -> str:
+        return protobuf_message_to_str(self.get())
 
     def get(self) -> SensorTemplate:
         return self._stub.read(self)

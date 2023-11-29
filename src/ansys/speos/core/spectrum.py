@@ -5,6 +5,7 @@ from ansys.api.speos.spectrum.v1 import spectrum_pb2 as messages
 from ansys.api.speos.spectrum.v1 import spectrum_pb2_grpc as service
 
 from ansys.speos.core.crud import CrudItem, CrudStub
+from ansys.speos.core.proto_message import protobuf_message_to_str
 
 Spectrum = messages.Spectrum
 
@@ -12,6 +13,9 @@ Spectrum = messages.Spectrum
 class SpectrumLink(CrudItem):
     def __init__(self, db, key: str):
         super().__init__(db, key)
+
+    def __str__(self) -> str:
+        return protobuf_message_to_str(self.get())
 
     def get(self) -> Spectrum:
         return self._stub.read(self)
