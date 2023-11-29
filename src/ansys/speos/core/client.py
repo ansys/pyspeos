@@ -13,6 +13,7 @@ from ansys.speos.core.logger import PySpeosCustomAdapter
 from ansys.speos.core.sensor_template import SensorTemplateLink, SensorTemplateStub
 from ansys.speos.core.source_template import SourceTemplateLink, SourceTemplateStub
 from ansys.speos.core.spectrum import SpectrumLink, SpectrumStub
+from ansys.speos.core.vop_template import VOPTemplateLink, VOPTemplateStub
 
 DEFAULT_HOST = "localhost"
 DEFAULT_PORT = "50051"
@@ -111,6 +112,7 @@ class SpeosClient:
             self._log.log_to_file(filename=logging_file, level=logging_level)
 
         # Initialise databases
+        self._vopTemplateDB = None
         self._spectrumDB = None
         self._intensityTemplateDB = None
         self._sourceTemplateDB = None
@@ -142,6 +144,15 @@ class SpeosClient:
         if self._closed:
             return ""
         return self._channel._channel.target().decode()
+
+    def vop_templates(self) -> VOPTemplateStub:
+        """Get vop template database access."""
+        if self._closed:
+            raise ConnectionAbortedError()
+        # connect to database
+        if self._vopTemplateDB is None:
+            self._vopTemplateDB = VOPTemplateStub(self._channel)
+        return self._vopTemplateDB
 
     def spectrums(self) -> SpectrumStub:
         """Get spectrum database access."""
@@ -181,10 +192,13 @@ class SpeosClient:
 
     def get_item(
         self, key: str
-    ) -> Union[SpectrumLink, IntensityTemplateLink, SourceTemplateLink, SensorTemplateLink, None]:
+    ) -> Union[VOPTemplateLink, SpectrumLink, IntensityTemplateLink, SourceTemplateLink, SensorTemplateLink, None]:
         """Get item from key."""
         if self._closed:
             raise ConnectionAbortedError()
+        for vop in self.vop_templates().list():
+            if vop.key == key:
+                return vop
         for spec in self.spectrums().list():
             if spec.key == key:
                 return spec
@@ -224,6 +238,7 @@ class SpeosClient:
             self._remote_instance.delete()
         self._closed = True
         self._channel.close()
+        self._vopTemplateDB = None
         self._spectrumDB = None
         self._intensityTemplateDB = None
         self._sourceTemplateDB = None

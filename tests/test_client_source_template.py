@@ -2,7 +2,7 @@
 Test source template.
 """
 import json
-from os import path
+import os
 
 import grpc
 import pytest
@@ -44,7 +44,7 @@ def test_source_template_factory(speos: Speos):
         message=SourceTemplateFactory.luminaire(
             name="luminaire_0",
             description="Luminaire source template",
-            intensity_file_uri=path.join(test_path, "IES_C_DETECTOR.ies"),
+            intensity_file_uri=os.path.join(test_path, "IES_C_DETECTOR.ies"),
             spectrum=spec_bb_2500,
         ),
     )

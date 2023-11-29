@@ -1,7 +1,7 @@
 """
 Test source template.
 """
-from os import path
+import os
 
 import pytest
 
@@ -17,12 +17,12 @@ def test_sensor_template_factory(speos: Speos):
     # Get DB
     sensor_t_db = speos.client.sensor_templates()  # Create sensor_templates stub from client channel
 
-    camera_input_files_path = path.join(test_path, "CameraInputFiles")
-    red_spectrum = path.join(camera_input_files_path, "CameraSensitivityRed.spectrum")
-    green_spectrum = path.join(camera_input_files_path, "CameraSensitivityGreen.spectrum")
-    blue_spectrum = path.join(camera_input_files_path, "CameraSensitivityBlue.spectrum")
-    transmittance = path.join(camera_input_files_path, "CameraTransmittance.spectrum")
-    distortion = path.join(camera_input_files_path, "CameraDistortion.OPTDistortion")
+    camera_input_files_path = os.path.join(test_path, "CameraInputFiles")
+    red_spectrum = os.path.join(camera_input_files_path, "CameraSensitivityRed.spectrum")
+    green_spectrum = os.path.join(camera_input_files_path, "CameraSensitivityGreen.spectrum")
+    blue_spectrum = os.path.join(camera_input_files_path, "CameraSensitivityBlue.spectrum")
+    transmittance = os.path.join(camera_input_files_path, "CameraTransmittance.spectrum")
+    distortion = os.path.join(camera_input_files_path, "CameraDistortion.OPTDistortion")
 
     # Camera sensor template mode monochrome
     camera_t0 = sensor_t_db.create(

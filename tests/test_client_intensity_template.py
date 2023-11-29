@@ -1,7 +1,7 @@
 """
 Test basic spectrum database connection.
 """
-from os import path
+import os
 
 from ansys.speos.core.intensity_template import IntensityTemplateFactory
 from ansys.speos.core.speos import Speos
@@ -19,7 +19,7 @@ def test_intensity_template_factory(speos: Speos):
         message=IntensityTemplateFactory.library(
             name="library_0",
             description="library intensity template",
-            file_uri=path.join(test_path, "IES_C_DETECTOR.ies"),
+            file_uri=os.path.join(test_path, "IES_C_DETECTOR.ies"),
         )
     )
     assert intens_t_lib.key != ""
