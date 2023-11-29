@@ -9,7 +9,7 @@ from conftest import test_path
 
 
 def test_client_spectrum_init(speos: Speos):
-    """Test the instantiation of a client from the default constructor."""
+    """Test the abstraction layer for spectrums. How to use SpectrumLink objects"""
     assert speos.client.healthy is True
     # Get DB
     spec_db = speos.client.spectrums()  # Create spectrum stub from client channel
@@ -54,7 +54,7 @@ def test_client_spectrum_init(speos: Speos):
 
 
 def test_spectrum_factory(speos: Speos):
-    """Test the instantiation of a client from the default constructor."""
+    """Test spectrum factory."""
     assert speos.client.healthy is True
     # Get DB
     spec_db = speos.client.spectrums()  # Create spectrum stub from client channel

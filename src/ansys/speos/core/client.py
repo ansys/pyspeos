@@ -11,6 +11,7 @@ from ansys.speos.core import LOG as logger
 from ansys.speos.core.intensity_template import IntensityTemplateLink, IntensityTemplateStub
 from ansys.speos.core.logger import PySpeosCustomAdapter
 from ansys.speos.core.sensor_template import SensorTemplateLink, SensorTemplateStub
+from ansys.speos.core.simulation_template import SimulationTemplateLink, SimulationTemplateStub
 from ansys.speos.core.sop_template import SOPTemplateLink, SOPTemplateStub
 from ansys.speos.core.source_template import SourceTemplateLink, SourceTemplateStub
 from ansys.speos.core.spectrum import SpectrumLink, SpectrumStub
@@ -119,6 +120,7 @@ class SpeosClient:
         self._intensityTemplateDB = None
         self._sourceTemplateDB = None
         self._sensorTemplateDB = None
+        self._simulationTemplateDB = None
 
     @property
     def channel(self) -> grpc.Channel:
@@ -201,6 +203,15 @@ class SpeosClient:
             self._sensorTemplateDB = SensorTemplateStub(self._channel)
         return self._sensorTemplateDB
 
+    def simulation_templates(self) -> SimulationTemplateStub:
+        """Get simulation template database access."""
+        if self._closed:
+            raise ConnectionAbortedError()
+        # connect to database
+        if self._simulationTemplateDB is None:
+            self._simulationTemplateDB = SimulationTemplateStub(self._channel)
+        return self._simulationTemplateDB
+
     def get_item(
         self, key: str
     ) -> Union[
@@ -210,6 +221,7 @@ class SpeosClient:
         IntensityTemplateLink,
         SourceTemplateLink,
         SensorTemplateLink,
+        SimulationTemplateLink,
         None,
     ]:
         """Get item from key."""
@@ -227,12 +239,15 @@ class SpeosClient:
         for intens in self.intensity_templates().list():
             if intens.key == key:
                 return intens
-        for ssr in self.source_templates().list():
-            if ssr.key == key:
-                return ssr
+        for src in self.source_templates().list():
+            if src.key == key:
+                return src
         for ssr in self.sensor_templates().list():
             if ssr.key == key:
                 return ssr
+        for sim in self.simulation_templates().list():
+            if sim.key == key:
+                return sim
         return None
 
     def __repr__(self) -> str:
@@ -266,3 +281,4 @@ class SpeosClient:
         self._intensityTemplateDB = None
         self._sourceTemplateDB = None
         self._sensorTemplateDB = None
+        self._simulationTemplateDB = None

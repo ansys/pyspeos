@@ -13,7 +13,7 @@ from conftest import test_path
 
 
 def test_vop_template_factory(speos: Speos):
-    """Test the instantiation of a client from the default constructor."""
+    """Test the vop template factory."""
     assert speos.client.healthy is True
     # Get DB
     vop_t_db = speos.client.vop_templates()  # Create spectrum stub from client channel

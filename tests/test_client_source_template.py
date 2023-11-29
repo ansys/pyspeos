@@ -15,7 +15,7 @@ from conftest import test_path
 
 
 def test_source_template_factory(speos: Speos):
-    """Test the instantiation of a client from the default constructor."""
+    """Test the source template factory."""
     assert speos.client.healthy is True
 
     # Get DB

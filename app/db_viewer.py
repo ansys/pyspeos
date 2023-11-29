@@ -18,6 +18,12 @@ from ansys.speos.core.sensor_template import (
     SensorTemplateLink,
     SensorTemplateStub,
 )
+from ansys.speos.core.simulation_template import (
+    SimulationTemplate,
+    SimulationTemplateFactory,
+    SimulationTemplateLink,
+    SimulationTemplateStub,
+)
 from ansys.speos.core.sop_template import (
     SOPTemplate,
     SOPTemplateFactory,
@@ -42,7 +48,15 @@ from ansys.speos.core.vop_template import (
 speos_client = pys.SpeosClient(port="50051", timeout=5)
 
 # list all available services
-services_list = ("sop_template", "vop_template", "spectrum", "intensity_template", "source_template", "sensor_template")
+services_list = (
+    "sop_template",
+    "vop_template",
+    "spectrum",
+    "intensity_template",
+    "source_template",
+    "sensor_template",
+    "simulation_template",
+)
 selected_service = None
 
 # list all items
@@ -64,6 +78,8 @@ def get_service_selected(service) -> CrudStub:
         return speos_client.source_templates()
     elif service == "sensor_template":
         return speos_client.sensor_templates()
+    elif service == "simulation_template":
+        return speos_client.simulation_templates()
     # ...
     return None
 
@@ -81,6 +97,8 @@ def get_item_selected(db, key) -> CrudItem:
         return SourceTemplateLink(db, key)
     elif isinstance(db, SensorTemplateStub):
         return SensorTemplateLink(db, key)
+    elif isinstance(db, SimulationTemplateStub):
+        return SimulationTemplateLink(db, key)
     # ...
     return None
 
@@ -99,6 +117,8 @@ def list_items(service) -> list:
         return speos_client.source_templates().list()
     elif service == "sensor_template":
         return speos_client.sensor_templates().list()
+    elif service == "simulation_template":
+        return speos_client.simulation_templates().list()
     # ...
     return None
 
@@ -121,6 +141,8 @@ def update_item(json_content):
             content = Parse(json_content, SourceTemplate())
         elif isinstance(selected_item, SensorTemplateLink):
             content = Parse(json_content, SensorTemplate())
+        elif isinstance(selected_item, SimulationTemplateLink):
+            content = Parse(json_content, SimulationTemplate())
 
         if content:
             selected_item.set(content)
@@ -180,6 +202,10 @@ def create_new_item(service) -> CrudItem:
                     x_start=-50.0, x_end=50.0, x_sampling=100, y_start=-50.0, y_end=50.0, y_sampling=100
                 ),
             )
+        )
+    elif service == "simulation_template":
+        return speos_client.simulation_templates().create(
+            message=SimulationTemplateFactory.direct_mc(name="new", description="new")
         )
     # ...
     return None

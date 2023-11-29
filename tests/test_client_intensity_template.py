@@ -9,7 +9,7 @@ from conftest import test_path
 
 
 def test_intensity_template_factory(speos: Speos):
-    """Test the instantiation of a client from the default constructor."""
+    """Test the intensity template factory."""
     assert speos.client.healthy is True
     # Get DB
     intens_t_db = speos.client.intensity_templates()  # Create intensity template stub from client channel
@@ -34,9 +34,7 @@ def test_intensity_template_factory(speos: Speos):
 
     # Cos
     intens_t_cos = intens_t_db.create(
-        message=IntensityTemplateFactory.cos(
-            name="cos_0", description="cos intensity template", N=3.0, total_angle=180.0
-        )
+        message=IntensityTemplateFactory.cos(name="cos_0", description="cos intensity template", N=3.0, total_angle=180.0)
     )
     assert intens_t_cos.key != ""
 

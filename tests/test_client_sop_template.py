@@ -13,7 +13,7 @@ from conftest import test_path
 
 
 def test_sop_template_factory(speos: Speos):
-    """Test the instantiation of a client from the default constructor."""
+    """Test the sop template factory."""
     assert speos.client.healthy is True
     # Get DB
     sop_t_db = speos.client.sop_templates()  # Create sop_template stub from client channel
@@ -26,9 +26,7 @@ def test_sop_template_factory(speos: Speos):
 
     # OpticalPolished
     sop_t_optical_polished = sop_t_db.create(
-        message=SOPTemplateFactory.optical_polished(
-            name="optical_polished_0", description="Optical polished sop template"
-        )
+        message=SOPTemplateFactory.optical_polished(name="optical_polished_0", description="Optical polished sop template")
     )
     assert sop_t_optical_polished.key != ""
 
@@ -44,9 +42,7 @@ def test_sop_template_factory(speos: Speos):
 
     # Example of wrong sop template
     with pytest.raises(grpc.RpcError) as exc_info:
-        sop_t_db.create(
-            message=SOPTemplateFactory.mirror(name="mirror_0", description="Mirror sop template", reflectance=150.0)
-        )
+        sop_t_db.create(message=SOPTemplateFactory.mirror(name="mirror_0", description="Mirror sop template", reflectance=150.0))
     error_details = json.loads(exc_info.value.details())
     assert error_details["ErrorName"] == "OPTSOPReflectionOutOfBound"
 

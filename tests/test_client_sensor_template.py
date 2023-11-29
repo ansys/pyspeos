@@ -11,7 +11,7 @@ from conftest import test_path
 
 
 def test_sensor_template_factory(speos: Speos):
-    """Test the instantiation of a client from the default constructor."""
+    """Test the sensor template factory."""
     assert speos.client.healthy is True
 
     # Get DB
@@ -29,9 +29,7 @@ def test_sensor_template_factory(speos: Speos):
         message=SensorTemplateFactory.camera(
             name="camera_monochrome",
             description="Camera sensor template mode monochrome",
-            settings=SensorTemplateFactory.CameraSettings(
-                gamma_correction=2.2, focal_length=4, imager_distance=10, f_number=30
-            ),
+            settings=SensorTemplateFactory.CameraSettings(gamma_correction=2.2, focal_length=4, imager_distance=10, f_number=30),
             dimensions=SensorTemplateFactory.CameraDimensions(horz_pixel=640, vert_pixel=480, width=5, height=5),
             distorsion_file_uri=distortion,
             transmittance_file_uri=transmittance,
@@ -46,9 +44,7 @@ def test_sensor_template_factory(speos: Speos):
         message=SensorTemplateFactory.camera(
             name="camera_color",
             description="Camera sensor template mode color with balance mode none",
-            settings=SensorTemplateFactory.CameraSettings(
-                gamma_correction=2.2, focal_length=4, imager_distance=10, f_number=30
-            ),
+            settings=SensorTemplateFactory.CameraSettings(gamma_correction=2.2, focal_length=4, imager_distance=10, f_number=30),
             dimensions=SensorTemplateFactory.CameraDimensions(horz_pixel=640, vert_pixel=480, width=5, height=5),
             distorsion_file_uri=distortion,
             transmittance_file_uri=transmittance,
@@ -63,9 +59,7 @@ def test_sensor_template_factory(speos: Speos):
         message=SensorTemplateFactory.camera(
             name="camera_color_greyworld",
             description="Camera sensor template mode color with balance mode greyworld",
-            settings=SensorTemplateFactory.CameraSettings(
-                gamma_correction=2.2, focal_length=4, imager_distance=10, f_number=30
-            ),
+            settings=SensorTemplateFactory.CameraSettings(gamma_correction=2.2, focal_length=4, imager_distance=10, f_number=30),
             dimensions=SensorTemplateFactory.CameraDimensions(horz_pixel=640, vert_pixel=480, width=5, height=5),
             distorsion_file_uri=distortion,
             transmittance_file_uri=transmittance,
@@ -83,9 +77,7 @@ def test_sensor_template_factory(speos: Speos):
         message=SensorTemplateFactory.camera(
             name="camera_color_userwhite",
             description="Camera sensor template mode color with balance mode userwhite",
-            settings=SensorTemplateFactory.CameraSettings(
-                gamma_correction=2.2, focal_length=4, imager_distance=10, f_number=30
-            ),
+            settings=SensorTemplateFactory.CameraSettings(gamma_correction=2.2, focal_length=4, imager_distance=10, f_number=30),
             dimensions=SensorTemplateFactory.CameraDimensions(horz_pixel=640, vert_pixel=480, width=5, height=5),
             distorsion_file_uri=distortion,
             transmittance_file_uri=transmittance,
@@ -117,9 +109,7 @@ def test_sensor_template_factory(speos: Speos):
                 ),
             )
         )
-    assert (
-        exc.value.args[0] == "For userwhite balance mode, three values are expected: [red_gain, green_gain, blue_gain]"
-    )
+    assert exc.value.args[0] == "For userwhite balance mode, three values are expected: [red_gain, green_gain, blue_gain]"
 
     # Irradiance sensor template photometric
     irradiance_t0 = sensor_t_db.create(
