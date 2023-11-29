@@ -1,5 +1,5 @@
 """
-Test basic spectrum database connection.
+Test basic vop template database connection.
 """
 import json
 import os
@@ -85,3 +85,9 @@ def test_vop_template_factory(speos: Speos):
         )
     error_details = json.loads(exc_info.value.details())
     assert error_details["ErrorName"] == "OPTOutOfRangeValueForFeature"
+
+    vop_t_opaque.delete()
+    vop_t_optic0.delete()
+    vop_t_optic1.delete()
+    vop_t_lib.delete()
+    vop_t_non_hom.delete()

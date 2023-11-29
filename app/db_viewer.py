@@ -18,6 +18,12 @@ from ansys.speos.core.sensor_template import (
     SensorTemplateLink,
     SensorTemplateStub,
 )
+from ansys.speos.core.sop_template import (
+    SOPTemplate,
+    SOPTemplateFactory,
+    SOPTemplateLink,
+    SOPTemplateStub,
+)
 from ansys.speos.core.source_template import (
     SourceTemplate,
     SourceTemplateFactory,
@@ -36,7 +42,7 @@ from ansys.speos.core.vop_template import (
 speos_client = pys.SpeosClient(port="50051", timeout=5)
 
 # list all available services
-services_list = ("vop_template", "spectrum", "intensity_template", "source_template", "sensor_template")
+services_list = ("sop_template", "vop_template", "spectrum", "intensity_template", "source_template", "sensor_template")
 selected_service = None
 
 # list all items
@@ -46,7 +52,9 @@ selected_item = None
 
 def get_service_selected(service) -> CrudStub:
     """Get service CRUD database"""
-    if service == "vop_template":
+    if service == "sop_template":
+        return speos_client.sop_templates()
+    elif service == "vop_template":
         return speos_client.vop_templates()
     elif service == "spectrum":
         return speos_client.spectrums()
@@ -61,7 +69,9 @@ def get_service_selected(service) -> CrudStub:
 
 
 def get_item_selected(db, key) -> CrudItem:
-    if isinstance(db, VOPTemplateStub):
+    if isinstance(db, SOPTemplateStub):
+        return SOPTemplateLink(db, key)
+    elif isinstance(db, VOPTemplateStub):
         return VOPTemplateLink(db, key)
     elif isinstance(db, SpectrumStub):
         return SpectrumLink(db, key)
@@ -77,7 +87,9 @@ def get_item_selected(db, key) -> CrudItem:
 
 def list_items(service) -> list:
     """List all items in database"""
-    if service == "vop_template":
+    if service == "sop_template":
+        return speos_client.sop_templates().list()
+    elif service == "vop_template":
         return speos_client.vop_templates().list()
     elif service == "spectrum":
         return speos_client.spectrums().list()
@@ -97,7 +109,9 @@ def update_item(json_content):
             return ""
 
         content = None
-        if isinstance(selected_item, VOPTemplateLink):
+        if isinstance(selected_item, SOPTemplateLink):
+            content = Parse(json_content, SOPTemplate())
+        elif isinstance(selected_item, VOPTemplateLink):
             content = Parse(json_content, VOPTemplate())
         elif isinstance(selected_item, SpectrumLink):
             content = Parse(json_content, Spectrum())
@@ -116,7 +130,11 @@ def update_item(json_content):
 
 def create_new_item(service) -> CrudItem:
     """Get service CRUD database"""
-    if service == "vop_template":
+    if service == "sop_template":
+        return speos_client.sop_templates().create(
+            message=SOPTemplateFactory.mirror(name="new", description="new", reflectance=100.0)
+        )
+    elif service == "vop_template":
         return speos_client.vop_templates().create(
             message=VOPTemplateFactory.optic(name="new", description="new", index=1.5, absorption=0.0)
         )

@@ -1,5 +1,5 @@
 """
-Test basic spectrum database connection.
+Test basic intensity template database connection.
 """
 import os
 

@@ -11,6 +11,7 @@ from ansys.speos.core import LOG as logger
 from ansys.speos.core.intensity_template import IntensityTemplateLink, IntensityTemplateStub
 from ansys.speos.core.logger import PySpeosCustomAdapter
 from ansys.speos.core.sensor_template import SensorTemplateLink, SensorTemplateStub
+from ansys.speos.core.sop_template import SOPTemplateLink, SOPTemplateStub
 from ansys.speos.core.source_template import SourceTemplateLink, SourceTemplateStub
 from ansys.speos.core.spectrum import SpectrumLink, SpectrumStub
 from ansys.speos.core.vop_template import VOPTemplateLink, VOPTemplateStub
@@ -112,6 +113,7 @@ class SpeosClient:
             self._log.log_to_file(filename=logging_file, level=logging_level)
 
         # Initialise databases
+        self._sopTemplateDB = None
         self._vopTemplateDB = None
         self._spectrumDB = None
         self._intensityTemplateDB = None
@@ -144,6 +146,15 @@ class SpeosClient:
         if self._closed:
             return ""
         return self._channel._channel.target().decode()
+
+    def sop_templates(self) -> SOPTemplateStub:
+        """Get sop template database access."""
+        if self._closed:
+            raise ConnectionAbortedError()
+        # connect to database
+        if self._sopTemplateDB is None:
+            self._sopTemplateDB = SOPTemplateStub(self._channel)
+        return self._sopTemplateDB
 
     def vop_templates(self) -> VOPTemplateStub:
         """Get vop template database access."""
@@ -192,10 +203,21 @@ class SpeosClient:
 
     def get_item(
         self, key: str
-    ) -> Union[VOPTemplateLink, SpectrumLink, IntensityTemplateLink, SourceTemplateLink, SensorTemplateLink, None]:
+    ) -> Union[
+        SOPTemplateLink,
+        VOPTemplateLink,
+        SpectrumLink,
+        IntensityTemplateLink,
+        SourceTemplateLink,
+        SensorTemplateLink,
+        None,
+    ]:
         """Get item from key."""
         if self._closed:
             raise ConnectionAbortedError()
+        for sop in self.sop_templates().list():
+            if sop.key == key:
+                return sop
         for vop in self.vop_templates().list():
             if vop.key == key:
                 return vop
@@ -238,6 +260,7 @@ class SpeosClient:
             self._remote_instance.delete()
         self._closed = True
         self._channel.close()
+        self._sopTemplateDB = None
         self._vopTemplateDB = None
         self._spectrumDB = None
         self._intensityTemplateDB = None
