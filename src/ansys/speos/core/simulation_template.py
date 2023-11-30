@@ -85,7 +85,7 @@ class SimulationTemplateFactory:
 
     def direct_mc(
         name: str,
-        description: str,
+        description: str = "",
         common_propagation_parameters: CommonPropagationParameters = CommonPropagationParameters(),
         dispersion: bool = True,
         fast_transmission_gathering: bool = False,
@@ -116,7 +116,7 @@ class SimulationTemplateFactory:
 
     def inverse_mc(
         name: str,
-        description: str,
+        description: str = "",
         common_propagation_parameters: CommonPropagationParameters = CommonPropagationParameters(),
         dispersion: bool = False,
         splitting: bool = False,
@@ -153,7 +153,7 @@ class SimulationTemplateFactory:
 
     def interactive(
         name: str,
-        description: str,
+        description: str = "",
         common_propagation_parameters: CommonPropagationParameters = CommonPropagationParameters(),
     ) -> SimulationTemplate:
         simu = SimulationTemplate(name=name, description=description)

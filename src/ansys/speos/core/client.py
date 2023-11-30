@@ -8,7 +8,8 @@ import grpc
 from grpc._channel import _InactiveRpcError
 
 from ansys.speos.core import LOG as logger
-from ansys.speos.core.geometry import FaceLink, FaceStub
+from ansys.speos.core.body import BodyLink, BodyStub
+from ansys.speos.core.face import FaceLink, FaceStub
 from ansys.speos.core.intensity_template import IntensityTemplateLink, IntensityTemplateStub
 from ansys.speos.core.logger import PySpeosCustomAdapter
 from ansys.speos.core.sensor_template import SensorTemplateLink, SensorTemplateStub
@@ -116,6 +117,7 @@ class SpeosClient:
 
         # Initialise databases
         self._faceDB = None
+        self._bodyDB = None
         self._sopTemplateDB = None
         self._vopTemplateDB = None
         self._spectrumDB = None
@@ -159,6 +161,15 @@ class SpeosClient:
         if self._faceDB is None:
             self._faceDB = FaceStub(self._channel)
         return self._faceDB
+
+    def bodies(self) -> BodyStub:
+        """Get body database access."""
+        if self._closed:
+            raise ConnectionAbortedError()
+        # connect to database
+        if self._bodyDB is None:
+            self._bodyDB = BodyStub(self._channel)
+        return self._bodyDB
 
     def sop_templates(self) -> SOPTemplateStub:
         """Get sop template database access."""
@@ -234,6 +245,7 @@ class SpeosClient:
         SensorTemplateLink,
         SimulationTemplateLink,
         FaceLink,
+        BodyLink,
         None,
     ]:
         """Get item from key."""
@@ -263,6 +275,9 @@ class SpeosClient:
         for face in self.faces().list():
             if face.key == key:
                 return face
+        for body in self.bodies().list():
+            if body.key == key:
+                return body
         return None
 
     def __repr__(self) -> str:
@@ -291,6 +306,7 @@ class SpeosClient:
         self._closed = True
         self._channel.close()
         self._faceDB = None
+        self._bodyDB = None
         self._sopTemplateDB = None
         self._vopTemplateDB = None
         self._spectrumDB = None
