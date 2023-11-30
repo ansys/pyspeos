@@ -15,6 +15,7 @@ from ansys.speos.core.intensity_template import (
 )
 from ansys.speos.core.part import Part, PartFactory, PartLink, PartStub
 from ansys.speos.core.proto_message import protobuf_message_to_str
+from ansys.speos.core.scene import Scene, SceneLink, SceneStub
 from ansys.speos.core.sensor_template import (
     SensorTemplate,
     SensorTemplateFactory,
@@ -62,6 +63,7 @@ services_list = (
     "source_template",
     "sensor_template",
     "simulation_template",
+    "scene",
 )
 selected_service = None
 
@@ -92,6 +94,8 @@ def get_service_selected(service) -> CrudStub:
         return speos_client.sensor_templates()
     elif service == "simulation_template":
         return speos_client.simulation_templates()
+    elif service == "scene":
+        return speos_client.scenes()
     # ...
     return None
 
@@ -117,6 +121,8 @@ def get_item_selected(db, key) -> CrudItem:
         return SensorTemplateLink(db, key)
     elif isinstance(db, SimulationTemplateStub):
         return SimulationTemplateLink(db, key)
+    elif isinstance(db, SceneStub):
+        return SceneLink(db, key)
     # ...
     return None
 
@@ -143,6 +149,8 @@ def list_items(service) -> list:
         return speos_client.sensor_templates().list()
     elif service == "simulation_template":
         return speos_client.simulation_templates().list()
+    elif service == "scene":
+        return speos_client.scenes().list()
     # ...
     return None
 
@@ -173,6 +181,8 @@ def update_item(json_content):
             content = Parse(json_content, SensorTemplate())
         elif isinstance(selected_item, SimulationTemplateLink):
             content = Parse(json_content, SimulationTemplate())
+        elif isinstance(selected_item, SceneLink):
+            content = Parse(json_content, Scene())
 
         if content:
             selected_item.set(content)
@@ -253,6 +263,8 @@ def create_new_item(service) -> CrudItem:
         return speos_client.simulation_templates().create(
             message=SimulationTemplateFactory.direct_mc(name="new", description="new")
         )
+    elif service == "scene":
+        return speos_client.scenes().create(message=Scene(name="new", description="new"))
     # ...
     return None
 
@@ -266,7 +278,7 @@ def item_content():
     """Get content of selected item"""
     if not selected_item:
         return ""
-    return protobuf_message_to_str(selected_item.get())
+    return protobuf_message_to_str(selected_item.get(), with_full_name=False)
 
 
 layout = [

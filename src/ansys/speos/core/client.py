@@ -13,6 +13,7 @@ from ansys.speos.core.face import FaceLink, FaceStub
 from ansys.speos.core.intensity_template import IntensityTemplateLink, IntensityTemplateStub
 from ansys.speos.core.logger import PySpeosCustomAdapter
 from ansys.speos.core.part import PartLink, PartStub
+from ansys.speos.core.scene import SceneLink, SceneStub
 from ansys.speos.core.sensor_template import SensorTemplateLink, SensorTemplateStub
 from ansys.speos.core.simulation_template import SimulationTemplateLink, SimulationTemplateStub
 from ansys.speos.core.sop_template import SOPTemplateLink, SOPTemplateStub
@@ -127,6 +128,7 @@ class SpeosClient:
         self._sourceTemplateDB = None
         self._sensorTemplateDB = None
         self._simulationTemplateDB = None
+        self._sceneDB = None
 
     @property
     def channel(self) -> grpc.Channel:
@@ -245,6 +247,15 @@ class SpeosClient:
             self._simulationTemplateDB = SimulationTemplateStub(self._channel)
         return self._simulationTemplateDB
 
+    def scenes(self) -> SceneStub:
+        """Get scene database access."""
+        if self._closed:
+            raise ConnectionAbortedError()
+        # connect to database
+        if self._sceneDB is None:
+            self._sceneDB = SceneStub(self._channel)
+        return self._sceneDB
+
     def get_item(
         self, key: str
     ) -> Union[
@@ -255,6 +266,7 @@ class SpeosClient:
         SourceTemplateLink,
         SensorTemplateLink,
         SimulationTemplateLink,
+        SceneLink,
         PartLink,
         BodyLink,
         FaceLink,
@@ -284,6 +296,9 @@ class SpeosClient:
         for sim in self.simulation_templates().list():
             if sim.key == key:
                 return sim
+        for sce in self.scenes().list():
+            if sce.key == key:
+                return sce
         for part in self.parts().list():
             if part.key == key:
                 return part
@@ -330,3 +345,4 @@ class SpeosClient:
         self._sourceTemplateDB = None
         self._sensorTemplateDB = None
         self._simulationTemplateDB = None
+        self._sceneDB = None
