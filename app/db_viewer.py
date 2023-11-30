@@ -5,6 +5,7 @@ from google.protobuf.json_format import Parse
 
 import ansys.speos.core.client as pys
 from ansys.speos.core.crud import CrudItem, CrudStub
+from ansys.speos.core.geometry import Face, FaceFactory, FaceLink, FaceStub
 from ansys.speos.core.intensity_template import (
     IntensityTemplate,
     IntensityTemplateFactory,
@@ -49,6 +50,7 @@ speos_client = pys.SpeosClient(port="50051", timeout=5)
 
 # list all available services
 services_list = (
+    "face",
     "sop_template",
     "vop_template",
     "spectrum",
@@ -66,7 +68,9 @@ selected_item = None
 
 def get_service_selected(service) -> CrudStub:
     """Get service CRUD database"""
-    if service == "sop_template":
+    if service == "face":
+        return speos_client.faces()
+    elif service == "sop_template":
         return speos_client.sop_templates()
     elif service == "vop_template":
         return speos_client.vop_templates()
@@ -85,7 +89,9 @@ def get_service_selected(service) -> CrudStub:
 
 
 def get_item_selected(db, key) -> CrudItem:
-    if isinstance(db, SOPTemplateStub):
+    if isinstance(db, FaceStub):
+        return FaceLink(db, key)
+    elif isinstance(db, SOPTemplateStub):
         return SOPTemplateLink(db, key)
     elif isinstance(db, VOPTemplateStub):
         return VOPTemplateLink(db, key)
@@ -105,7 +111,9 @@ def get_item_selected(db, key) -> CrudItem:
 
 def list_items(service) -> list:
     """List all items in database"""
-    if service == "sop_template":
+    if service == "face":
+        return speos_client.faces().list()
+    elif service == "sop_template":
         return speos_client.sop_templates().list()
     elif service == "vop_template":
         return speos_client.vop_templates().list()
@@ -129,7 +137,9 @@ def update_item(json_content):
             return ""
 
         content = None
-        if isinstance(selected_item, SOPTemplateLink):
+        if isinstance(selected_item, FaceLink):
+            content = Parse(json_content, Face())
+        elif isinstance(selected_item, SOPTemplateLink):
             content = Parse(json_content, SOPTemplate())
         elif isinstance(selected_item, VOPTemplateLink):
             content = Parse(json_content, VOPTemplate())
@@ -152,7 +162,9 @@ def update_item(json_content):
 
 def create_new_item(service) -> CrudItem:
     """Get service CRUD database"""
-    if service == "sop_template":
+    if service == "face":
+        return speos_client.faces().create(message=FaceFactory.rectangle("new", description="new"))
+    elif service == "sop_template":
         return speos_client.sop_templates().create(
             message=SOPTemplateFactory.mirror(name="new", description="new", reflectance=100.0)
         )
@@ -229,7 +241,7 @@ layout = [
             sg.Text("Server address:"),
             sg.Input("localhost:50051", font=("Consolas", 10), key="-SERVER-"),
             sg.Text("Database:"),
-            sg.Combo(values=services_list, size=(None, 20), default_value="spectrum", key="-SERVICES-"),
+            sg.Combo(values=services_list, size=(None, 20), default_value="face", key="-SERVICES-"),
             sg.Button("Refresh"),
             sg.Push(),
         ]

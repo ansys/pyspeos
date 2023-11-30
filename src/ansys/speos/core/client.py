@@ -8,6 +8,7 @@ import grpc
 from grpc._channel import _InactiveRpcError
 
 from ansys.speos.core import LOG as logger
+from ansys.speos.core.geometry import FaceLink, FaceStub
 from ansys.speos.core.intensity_template import IntensityTemplateLink, IntensityTemplateStub
 from ansys.speos.core.logger import PySpeosCustomAdapter
 from ansys.speos.core.sensor_template import SensorTemplateLink, SensorTemplateStub
@@ -114,6 +115,7 @@ class SpeosClient:
             self._log.log_to_file(filename=logging_file, level=logging_level)
 
         # Initialise databases
+        self._faceDB = None
         self._sopTemplateDB = None
         self._vopTemplateDB = None
         self._spectrumDB = None
@@ -148,6 +150,15 @@ class SpeosClient:
         if self._closed:
             return ""
         return self._channel._channel.target().decode()
+
+    def faces(self) -> FaceStub:
+        """Get face database access."""
+        if self._closed:
+            raise ConnectionAbortedError()
+        # connect to database
+        if self._faceDB is None:
+            self._faceDB = FaceStub(self._channel)
+        return self._faceDB
 
     def sop_templates(self) -> SOPTemplateStub:
         """Get sop template database access."""
@@ -222,6 +233,7 @@ class SpeosClient:
         SourceTemplateLink,
         SensorTemplateLink,
         SimulationTemplateLink,
+        FaceLink,
         None,
     ]:
         """Get item from key."""
@@ -248,6 +260,9 @@ class SpeosClient:
         for sim in self.simulation_templates().list():
             if sim.key == key:
                 return sim
+        for face in self.faces().list():
+            if face.key == key:
+                return face
         return None
 
     def __repr__(self) -> str:
@@ -275,6 +290,7 @@ class SpeosClient:
             self._remote_instance.delete()
         self._closed = True
         self._channel.close()
+        self._faceDB = None
         self._sopTemplateDB = None
         self._vopTemplateDB = None
         self._spectrumDB = None
