@@ -1,4 +1,6 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
+from typing import Mapping
+
 from ansys.api.speos.part.v1 import face_pb2 as messages
 from ansys.api.speos.part.v1 import face_pb2_grpc as service
 import numpy as np
@@ -61,6 +63,19 @@ class FaceStub(CrudStub):
 
 
 class FaceFactory:
+    def new(
+        name: str,
+        vertices: list[float],
+        facets: list[int],
+        normals: list[float],
+        description: str = "",
+        metadata: Mapping[str, str] = None,
+    ) -> Face:
+        face = Face(name=name, description=description, vertices=vertices, facets=facets, normals=normals)
+        if metadata is not None:
+            face.metadata.update(metadata)
+        return face
+
     def rectangle(
         name: str,
         description: str = "",
@@ -69,8 +84,11 @@ class FaceFactory:
         y_axis: list[float] = [0, 1, 0],
         x_size: float = 200,
         y_size: float = 100,
+        metadata: Mapping[str, str] = None,
     ) -> Face:
         face = Face(name=name, description=description)
+        if metadata is not None:
+            face.metadata.update(metadata)
 
         face.vertices.extend(center - np.multiply(0.5 * x_size, x_axis) - np.multiply(0.5 * y_size, y_axis))
         face.vertices.extend(center + np.multiply(0.5 * x_size, x_axis) - np.multiply(0.5 * y_size, y_axis))

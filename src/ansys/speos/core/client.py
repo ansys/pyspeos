@@ -12,6 +12,7 @@ from ansys.speos.core.body import BodyLink, BodyStub
 from ansys.speos.core.face import FaceLink, FaceStub
 from ansys.speos.core.intensity_template import IntensityTemplateLink, IntensityTemplateStub
 from ansys.speos.core.logger import PySpeosCustomAdapter
+from ansys.speos.core.part import PartLink, PartStub
 from ansys.speos.core.sensor_template import SensorTemplateLink, SensorTemplateStub
 from ansys.speos.core.simulation_template import SimulationTemplateLink, SimulationTemplateStub
 from ansys.speos.core.sop_template import SOPTemplateLink, SOPTemplateStub
@@ -118,6 +119,7 @@ class SpeosClient:
         # Initialise databases
         self._faceDB = None
         self._bodyDB = None
+        self._partDB = None
         self._sopTemplateDB = None
         self._vopTemplateDB = None
         self._spectrumDB = None
@@ -170,6 +172,15 @@ class SpeosClient:
         if self._bodyDB is None:
             self._bodyDB = BodyStub(self._channel)
         return self._bodyDB
+
+    def parts(self) -> PartStub:
+        """Get part database access."""
+        if self._closed:
+            raise ConnectionAbortedError()
+        # connect to database
+        if self._partDB is None:
+            self._partDB = PartStub(self._channel)
+        return self._partDB
 
     def sop_templates(self) -> SOPTemplateStub:
         """Get sop template database access."""
@@ -244,8 +255,9 @@ class SpeosClient:
         SourceTemplateLink,
         SensorTemplateLink,
         SimulationTemplateLink,
-        FaceLink,
+        PartLink,
         BodyLink,
+        FaceLink,
         None,
     ]:
         """Get item from key."""
@@ -272,12 +284,15 @@ class SpeosClient:
         for sim in self.simulation_templates().list():
             if sim.key == key:
                 return sim
-        for face in self.faces().list():
-            if face.key == key:
-                return face
+        for part in self.parts().list():
+            if part.key == key:
+                return part
         for body in self.bodies().list():
             if body.key == key:
                 return body
+        for face in self.faces().list():
+            if face.key == key:
+                return face
         return None
 
     def __repr__(self) -> str:
@@ -307,6 +322,7 @@ class SpeosClient:
         self._channel.close()
         self._faceDB = None
         self._bodyDB = None
+        self._partDB = None
         self._sopTemplateDB = None
         self._vopTemplateDB = None
         self._spectrumDB = None

@@ -1,10 +1,12 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
+from typing import Mapping
+
 from ansys.api.speos.part.v1 import body_pb2 as messages
 from ansys.api.speos.part.v1 import body_pb2_grpc as service
 import numpy as np
 
 from ansys.speos.core.crud import CrudItem, CrudStub
-from ansys.speos.core.face import FaceFactory, FaceStub
+from ansys.speos.core.face import FaceFactory, FaceLink, FaceStub
 from ansys.speos.core.geometry import CoordSys
 from ansys.speos.core.proto_message import protobuf_message_to_str
 
@@ -63,6 +65,14 @@ class BodyStub(CrudStub):
 
 
 class BodyFactory:
+    def new(name: str, faces: list[FaceLink], description: str = "", metadata: Mapping[str, str] = None) -> Body:
+        body = Body(name=name, description=description)
+        if metadata is not None:
+            body.metadata.update(metadata)
+        for face in faces:
+            body.face_guids.append(face.key)
+        return body
+
     def box(
         name: str,
         face_stub: FaceStub,
@@ -72,9 +82,11 @@ class BodyFactory:
         y_size: float = 200,
         z_size: float = 100,
         idx_face: int = 0,
+        metadata: Mapping[str, str] = None,
     ) -> Body:
         body = Body(name=name, description=description)
-
+        if metadata is not None:
+            body.metadata.update(metadata)
         face0 = face_stub.create(
             message=FaceFactory.rectangle(
                 name="Face:" + str(idx_face),

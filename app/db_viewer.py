@@ -13,6 +13,7 @@ from ansys.speos.core.intensity_template import (
     IntensityTemplateLink,
     IntensityTemplateStub,
 )
+from ansys.speos.core.part import Part, PartFactory, PartLink, PartStub
 from ansys.speos.core.proto_message import protobuf_message_to_str
 from ansys.speos.core.sensor_template import (
     SensorTemplate,
@@ -53,6 +54,7 @@ speos_client = pys.SpeosClient(port="50051", timeout=5)
 services_list = (
     "face",
     "body",
+    "part",
     "sop_template",
     "vop_template",
     "spectrum",
@@ -74,6 +76,8 @@ def get_service_selected(service) -> CrudStub:
         return speos_client.faces()
     elif service == "body":
         return speos_client.bodies()
+    elif service == "part":
+        return speos_client.parts()
     elif service == "sop_template":
         return speos_client.sop_templates()
     elif service == "vop_template":
@@ -97,6 +101,8 @@ def get_item_selected(db, key) -> CrudItem:
         return FaceLink(db, key)
     elif isinstance(db, BodyStub):
         return BodyLink(db, key)
+    elif isinstance(db, PartStub):
+        return PartLink(db, key)
     elif isinstance(db, SOPTemplateStub):
         return SOPTemplateLink(db, key)
     elif isinstance(db, VOPTemplateStub):
@@ -121,6 +127,8 @@ def list_items(service) -> list:
         return speos_client.faces().list()
     elif service == "body":
         return speos_client.bodies().list()
+    elif service == "part":
+        return speos_client.parts().list()
     elif service == "sop_template":
         return speos_client.sop_templates().list()
     elif service == "vop_template":
@@ -149,6 +157,8 @@ def update_item(json_content):
             content = Parse(json_content, Face())
         elif isinstance(selected_item, BodyLink):
             content = Parse(json_content, Body())
+        elif isinstance(selected_item, PartLink):
+            content = Parse(json_content, Part())
         elif isinstance(selected_item, SOPTemplateLink):
             content = Parse(json_content, SOPTemplate())
         elif isinstance(selected_item, VOPTemplateLink):
@@ -177,6 +187,16 @@ def create_new_item(service) -> CrudItem:
     elif service == "body":
         return speos_client.bodies().create(
             message=BodyFactory.box(name="new", description="new", face_stub=speos_client.faces())
+        )
+    elif service == "part":
+        return speos_client.parts().create(
+            message=PartFactory.without_part_instance(
+                name="new",
+                description="new",
+                bodies=[
+                    speos_client.bodies().create(message=BodyFactory.box(name="body_for_part", face_stub=speos_client.faces()))
+                ],
+            )
         )
     elif service == "sop_template":
         return speos_client.sop_templates().create(

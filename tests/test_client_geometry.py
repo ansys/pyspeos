@@ -1,9 +1,10 @@
 """
 Test basic geometry database connection.
 """
-from ansys.speos.core.body import BodyFactory
+from ansys.speos.core.body import BodyFactory, BodyLink
 from ansys.speos.core.face import FaceFactory, FaceLink
 from ansys.speos.core.geometry import CoordSys
+from ansys.speos.core.part import PartFactory
 from ansys.speos.core.speos import Speos
 
 
@@ -13,7 +14,20 @@ def test_face_factory(speos: Speos):
     # Get DB
     face_db = speos.client.faces()  # Create face stub from client channel
 
-    # rectangle with values
+    # triangle with passing all data
+    triangle0 = face_db.create(
+        message=FaceFactory.new(
+            name="triangle_0",
+            description="triangle from data",
+            vertices=[0, 0, 0, 100, 0, 0, 0, 100, 0],
+            facets=[0, 1, 2],
+            normals=[0, 0, 1, 0, 0, 1, 0, 0, 1],
+            metadata={"key_0": "val_0", "key_1": "val_1"},
+        )
+    )
+    assert triangle0.key != ""
+
+    # rectangle by using factory rectangle creator with values
     rectangle0 = face_db.create(
         message=FaceFactory.rectangle(
             name="rectangle_0",
@@ -39,6 +53,7 @@ def test_face_factory(speos: Speos):
     assert rectangle1.get().vertices[6:9] == [100, 50, 0]
     assert rectangle1.get().vertices[9:12] == [-100, 50, 0]
 
+    triangle0.delete()
     rectangle0.delete()
     rectangle1.delete()
 
@@ -49,6 +64,22 @@ def test_body_factory(speos: Speos):
     # Get DB
     body_db = speos.client.bodies()  # Create body stub from client channel
     face_db = speos.client.faces()  # Create face stub from client channel
+
+    # Body by referencing directly FaceLinks
+    body0 = body_db.create(
+        message=BodyFactory.new(
+            name="body_0",
+            description="body from data containing one face",
+            faces=[
+                face_db.create(
+                    FaceFactory.rectangle(
+                        name="face_0", description="face_0 for body_0", metadata={"key_0": "val_0", "key_1": "val_1"}
+                    )
+                )
+            ],
+        )
+    )
+    assert body0.key != ""
 
     # box with values
     box0 = body_db.create(
@@ -68,11 +99,45 @@ def test_body_factory(speos: Speos):
     box1 = body_db.create(BodyFactory.box(name="box_1", description="box - default", face_stub=face_db))
     assert box1.key != ""
 
-    faces_list_to_delete = box0.get().face_guids
-    faces_list_to_delete.extend(box1.get().face_guids)
+    faces_to_delete = body0.get().face_guids
+    faces_to_delete.extend(box0.get().face_guids)
+    faces_to_delete.extend(box1.get().face_guids)
+    body0.delete()
     box0.delete()
     box1.delete()
-    for face_key in faces_list_to_delete:
+    for face_key in faces_to_delete:
         face = speos.client.get_item(key=face_key)
         assert isinstance(face, FaceLink)
         face.delete()
+
+
+def test_part_factory(speos: Speos):
+    """Test part factory."""
+    assert speos.client.healthy is True
+    # Get DB
+    part_db = speos.client.parts()  # Create part stub from client channel
+    body_db = speos.client.bodies()  # Create body stub from client channel
+    face_db = speos.client.faces()  # Create face stub from client channel
+
+    # Part by referencing directly BodyLinks
+    part1 = part_db.create(
+        message=PartFactory.new(
+            name="part_0",
+            description="part with one box as body",
+            bodies=[
+                body_db.create(BodyFactory.box(name="box_2", face_stub=face_db, metadata={"key_0": "val_0", "key_1": "val_1"}))
+            ],
+            metadata={"my_key0": "my_value0", "my_key1": "my_value1"},
+        )
+    )
+    assert part1.key != ""
+
+    for body_key in part1.get().body_guids:
+        body = speos.client.get_item(key=body_key)
+        assert isinstance(body, BodyLink)
+        for face_key in body.get().face_guids:
+            face = speos.client.get_item(key=face_key)
+            assert isinstance(face, FaceLink)
+            face.delete()
+        body.delete()
+    part1.delete()
