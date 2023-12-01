@@ -7,7 +7,7 @@ import numpy as np
 
 from ansys.speos.core.crud import CrudItem, CrudStub
 from ansys.speos.core.face import FaceFactory, FaceLink, FaceStub
-from ansys.speos.core.geometry import CoordSys
+from ansys.speos.core.geometry import AxisSystem
 from ansys.speos.core.proto_message import protobuf_message_to_str
 
 Body = messages.Body
@@ -77,7 +77,7 @@ class BodyFactory:
         name: str,
         face_stub: FaceStub,
         description: str = "",
-        base: CoordSys = CoordSys(),
+        base: AxisSystem = AxisSystem(),
         x_size: float = 200,
         y_size: float = 200,
         z_size: float = 100,

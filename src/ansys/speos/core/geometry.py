@@ -1,7 +1,7 @@
 """Provides some classes needed for geometry."""
 
 
-class CoordSys:
+class AxisSystem:
     def __init__(
         self,
         origin: list[float] = [0, 0, 0],
@@ -13,3 +13,20 @@ class CoordSys:
         self.x_vect = x_vect
         self.y_vect = y_vect
         self.z_vect = z_vect
+
+
+class AxisPlane:
+    def __init__(
+        self,
+        origin: list[float] = [0, 0, 0],
+        x_vect: list[float] = [1, 0, 0],
+        y_vect: list[float] = [0, 1, 0],
+    ) -> None:
+        self.origin = origin
+        self.x_vect = x_vect
+        self.y_vect = y_vect
+
+
+class GeoPaths:
+    def __init__(self, geo_paths: list[str]) -> None:
+        self.geo_paths = geo_paths

@@ -3,7 +3,7 @@ Test basic geometry database connection.
 """
 from ansys.speos.core.body import BodyFactory, BodyLink
 from ansys.speos.core.face import FaceFactory, FaceLink
-from ansys.speos.core.geometry import CoordSys
+from ansys.speos.core.geometry import AxisSystem
 from ansys.speos.core.part import PartFactory
 from ansys.speos.core.speos import Speos
 
@@ -86,7 +86,7 @@ def test_body_factory(speos: Speos):
         BodyFactory.box(
             name="box_0",
             face_stub=face_db,
-            base=CoordSys(origin=[100, 100, 100], x_vect=[1, 0, 0], y_vect=[0, 1, 0], z_vect=[0, 0, 1]),
+            base=AxisSystem(origin=[100, 100, 100], x_vect=[1, 0, 0], y_vect=[0, 1, 0], z_vect=[0, 0, 1]),
             x_size=200,
             y_size=200,
             z_size=200,
