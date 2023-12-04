@@ -10,6 +10,7 @@ from ansys.speos.core.geometry import AxisPlane, AxisSystem, GeoPathReverseNorma
 from ansys.speos.core.part import PartLink
 from ansys.speos.core.proto_message import protobuf_message_to_str
 from ansys.speos.core.sensor_template import SensorTemplateLink
+from ansys.speos.core.simulation_template import SimulationTemplateLink
 from ansys.speos.core.sop_template import SOPTemplateLink
 from ansys.speos.core.source_template import SourceTemplateLink
 from ansys.speos.core.vop_template import VOPTemplateLink
@@ -117,6 +118,7 @@ class SceneFactory:
         sop_instances: list[messages.Scene.SOPInstance],
         source_instances: list[messages.Scene.SourceInstance],
         sensor_instances: list[messages.Scene.SensorInstance],
+        simulation_instances: list[messages.Scene.SimulationInstance],
         description: str = "",
     ) -> Scene:
         scene = Scene(name=name, description=description)
@@ -125,10 +127,15 @@ class SceneFactory:
         scene.sops.extend(sop_instances)
         scene.sources.extend(source_instances)
         scene.sensors.extend(sensor_instances)
+        scene.simulations.extend(simulation_instances)
         return scene
 
     def vop_instance(
-        name: str, vop_template: VOPTemplateLink, geometries: GeoPaths, description: str = "", metadata: Mapping[str, str] = None
+        name: str,
+        vop_template: VOPTemplateLink,
+        geometries: GeoPaths = GeoPaths(),
+        description: str = "",
+        metadata: Mapping[str, str] = None,
     ) -> messages.Scene.VOPInstance:
         vop_i = messages.Scene.VOPInstance(name=name, description=description)
         if metadata is not None:
@@ -138,7 +145,11 @@ class SceneFactory:
         return vop_i
 
     def sop_instance(
-        name: str, sop_template: SOPTemplateLink, geometries: GeoPaths, description: str = "", metadata: Mapping[str, str] = None
+        name: str,
+        sop_template: SOPTemplateLink,
+        geometries: GeoPaths = GeoPaths(),
+        description: str = "",
+        metadata: Mapping[str, str] = None,
     ) -> messages.Scene.SOPInstance:
         sop_i = messages.Scene.SOPInstance(name=name, description=description)
         if metadata is not None:
@@ -239,3 +250,21 @@ class SceneFactory:
         elif isinstance(properties, messages.Scene.SensorInstance.IrradianceSensorProperties):
             ssr_i.irradiance_sensor_properties.CopyFrom(properties)
         return ssr_i
+
+    def simulation_instance(
+        name: str,
+        simulation_template: SimulationTemplateLink,
+        sensor_paths: list[str] = [],
+        source_paths: list[str] = [],
+        geometries: GeoPaths = GeoPaths(),
+        description: str = "",
+        metadata: Mapping[str, str] = None,
+    ) -> messages.Scene.SimulationInstance:
+        sim_i = messages.Scene.SimulationInstance(name=name, description=description)
+        if metadata is not None:
+            sim_i.metadata.update(metadata)
+        sim_i.simulation_guid = simulation_template.key
+        sim_i.sensor_paths.extend(sensor_paths)
+        sim_i.source_paths.extend(source_paths)
+        sim_i.geometries.geo_paths.extend(geometries.geo_paths)
+        return sim_i

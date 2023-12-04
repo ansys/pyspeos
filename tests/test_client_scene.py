@@ -9,6 +9,7 @@ from ansys.speos.core.intensity_template import IntensityTemplateFactory
 from ansys.speos.core.part import PartFactory
 from ansys.speos.core.scene import Scene, SceneFactory
 from ansys.speos.core.sensor_template import SensorTemplateFactory
+from ansys.speos.core.simulation_template import SimulationTemplateFactory
 from ansys.speos.core.sop_template import SOPTemplateFactory
 from ansys.speos.core.source_template import SourceTemplateFactory
 from ansys.speos.core.spectrum import SpectrumFactory
@@ -32,6 +33,7 @@ def test_scene_factory(speos: Speos):
     intens_t_db = speos.client.intensity_templates()
     src_t_db = speos.client.source_templates()
     ssr_t_db = speos.client.sensor_templates()
+    sim_t_db = speos.client.simulation_templates()
 
     # Blackbody spectrum
     spec_bb_2500 = spec_db.create(
@@ -78,6 +80,12 @@ def test_scene_factory(speos: Speos):
         )
     )
     assert ssr_t_irr.key != ""
+    # Direct simu with default params
+    direct_t = sim_t_db.create(
+        message=SimulationTemplateFactory.direct_mc(
+            name="direct_sim", description="Direct simulation template with default parameters"
+        )
+    )
 
     scene0 = scene_db.create(
         message=SceneFactory.scene(
@@ -98,7 +106,7 @@ def test_scene_factory(speos: Speos):
                 SceneFactory.vop_instance(
                     name="opaque.1",
                     vop_template=vop_t_db.create(message=VOPTemplateFactory.opaque("opaque", "opaque vop template")),
-                    geometries=GeoPaths(geo_paths=["part_0"]),
+                    geometries=GeoPaths(geo_paths=["body_0"]),
                 )
             ],
             sop_instances=[
@@ -107,7 +115,7 @@ def test_scene_factory(speos: Speos):
                     sop_template=sop_t_db.create(
                         message=SOPTemplateFactory.mirror("mirror_100", "mirror sop template - reflectance 100", reflectance=100)
                     ),
-                    geometries=GeoPaths(geo_paths=["part_0/body_0"]),
+                    geometries=GeoPaths(geo_paths=["body_0"]),
                 )
             ],
             source_instances=[
@@ -127,8 +135,8 @@ def test_scene_factory(speos: Speos):
                     properties=SceneFactory.Properties.Surface(
                         exitance_props=SceneFactory.Properties.Surface.ExitanceConstant(
                             geo_paths=[
-                                GeoPathReverseNormal("part_0/body_0/Face:2", reverse_normal=True),
-                                GeoPathReverseNormal("part_0/body_0/Face:3"),
+                                GeoPathReverseNormal("body_0/Face:2", reverse_normal=True),
+                                GeoPathReverseNormal("body_0/Face:3"),
                             ]
                         )
                     ),
@@ -152,6 +160,16 @@ def test_scene_factory(speos: Speos):
                         ray_file_type=Scene.SensorInstance.EnumRayFileType.RayFileNone,
                         layer_type_none=Scene.SensorInstance.LayerTypeNone(),
                     ),
+                ),
+            ],
+            simulation_instances=[
+                SceneFactory.simulation_instance(name="direct_sim.1", simulation_template=direct_t),
+                SceneFactory.simulation_instance(
+                    name="direct_sim.1",
+                    simulation_template=direct_t,
+                    source_paths=["luminaire_AA.1", "luminaire_AA.2"],
+                    sensor_paths=["irradiance_photometric.1"],
+                    geometries=GeoPaths(["body_0"]),
                 ),
             ],
         )

@@ -28,7 +28,7 @@ class AxisPlane:
 
 
 class GeoPaths:
-    def __init__(self, geo_paths: list[str]) -> None:
+    def __init__(self, geo_paths: list[str] = []) -> None:
         self.geo_paths = geo_paths
 
 
