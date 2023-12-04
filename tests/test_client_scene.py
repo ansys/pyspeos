@@ -7,7 +7,8 @@ from ansys.speos.core.body import BodyFactory
 from ansys.speos.core.geometry import AxisSystem, GeoPathReverseNormal, GeoPaths
 from ansys.speos.core.intensity_template import IntensityTemplateFactory
 from ansys.speos.core.part import PartFactory
-from ansys.speos.core.scene import SceneFactory
+from ansys.speos.core.scene import Scene, SceneFactory
+from ansys.speos.core.sensor_template import SensorTemplateFactory
 from ansys.speos.core.sop_template import SOPTemplateFactory
 from ansys.speos.core.source_template import SourceTemplateFactory
 from ansys.speos.core.spectrum import SpectrumFactory
@@ -30,6 +31,7 @@ def test_scene_factory(speos: Speos):
     spec_db = speos.client.spectrums()
     intens_t_db = speos.client.intensity_templates()
     src_t_db = speos.client.source_templates()
+    ssr_t_db = speos.client.sensor_templates()
 
     # Blackbody spectrum
     spec_bb_2500 = spec_db.create(
@@ -48,7 +50,7 @@ def test_scene_factory(speos: Speos):
             spectrum=spec_bb_2500,
         ),
     )
-    # Surface with luminous flux, exitance constant
+    # Surface source template with luminous flux, exitance constant
     src_t_surface = src_t_db.create(
         message=SourceTemplateFactory.surface(
             name="surface_BB",
@@ -63,6 +65,19 @@ def test_scene_factory(speos: Speos):
         )
     )
     assert src_t_surface.key != ""
+    # Irradiance sensor template photometric
+    ssr_t_irr = ssr_t_db.create(
+        message=SensorTemplateFactory.irradiance(
+            name="irradiance_photometric",
+            description="Irradiance sensor template photometric",
+            type=SensorTemplateFactory.Type.Photometric,
+            illuminance_type=SensorTemplateFactory.IlluminanceType.Planar,
+            dimensions=SensorTemplateFactory.Dimensions(
+                x_start=-50.0, x_end=50.0, x_sampling=100, y_start=-50.0, y_end=50.0, y_sampling=100
+            ),
+        )
+    )
+    assert ssr_t_irr.key != ""
 
     scene0 = scene_db.create(
         message=SceneFactory.scene(
@@ -116,6 +131,26 @@ def test_scene_factory(speos: Speos):
                                 GeoPathReverseNormal("part_0/body_0/Face:3"),
                             ]
                         )
+                    ),
+                ),
+            ],
+            sensor_instances=[
+                SceneFactory.sensor_instance(
+                    name="irradiance_photometric.1",
+                    sensor_template=ssr_t_irr,
+                    properties=Scene.SensorInstance.IrradianceSensorProperties(
+                        axis_system=[0, 50, 0, 1, 0, 0, 0, 0, -1, 0, 1, 0],
+                        ray_file_type=Scene.SensorInstance.EnumRayFileType.RayFileNone,
+                        layer_type_source=Scene.SensorInstance.LayerTypeSource(),
+                    ),
+                ),
+                SceneFactory.sensor_instance(
+                    name="irradiance_photometric.2",
+                    sensor_template=ssr_t_irr,
+                    properties=Scene.SensorInstance.IrradianceSensorProperties(
+                        axis_system=[0, -50, 0, 1, 0, 0, 0, 0, 1, 0, -1, 0],
+                        ray_file_type=Scene.SensorInstance.EnumRayFileType.RayFileNone,
+                        layer_type_none=Scene.SensorInstance.LayerTypeNone(),
                     ),
                 ),
             ],

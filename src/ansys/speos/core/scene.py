@@ -9,6 +9,7 @@ from ansys.speos.core.crud import CrudItem, CrudStub
 from ansys.speos.core.geometry import AxisPlane, AxisSystem, GeoPathReverseNormal, GeoPaths
 from ansys.speos.core.part import PartLink
 from ansys.speos.core.proto_message import protobuf_message_to_str
+from ansys.speos.core.sensor_template import SensorTemplateLink
 from ansys.speos.core.sop_template import SOPTemplateLink
 from ansys.speos.core.source_template import SourceTemplateLink
 from ansys.speos.core.vop_template import VOPTemplateLink
@@ -115,6 +116,7 @@ class SceneFactory:
         vop_instances: list[messages.Scene.VOPInstance],
         sop_instances: list[messages.Scene.SOPInstance],
         source_instances: list[messages.Scene.SourceInstance],
+        sensor_instances: list[messages.Scene.SensorInstance],
         description: str = "",
     ) -> Scene:
         scene = Scene(name=name, description=description)
@@ -122,6 +124,7 @@ class SceneFactory:
         scene.vops.extend(vop_instances)
         scene.sops.extend(sop_instances)
         scene.sources.extend(source_instances)
+        scene.sensors.extend(sensor_instances)
         return scene
 
     def vop_instance(
@@ -217,3 +220,22 @@ class SceneFactory:
                     ]
                 )
         return src_i
+
+    def sensor_instance(
+        name: str,
+        sensor_template: SensorTemplateLink,
+        properties: Union[
+            messages.Scene.SensorInstance.CameraSensorProperties, messages.Scene.SensorInstance.IrradianceSensorProperties
+        ],
+        description: str = "",
+        metadata: Mapping[str, str] = None,
+    ) -> messages.Scene.SensorInstance:
+        ssr_i = messages.Scene.SensorInstance(name=name, description=description)
+        if metadata is not None:
+            ssr_i.metadata.update(metadata)
+        ssr_i.sensor_guid = sensor_template.key
+        if isinstance(properties, messages.Scene.SensorInstance.CameraSensorProperties):
+            ssr_i.camera_sensor_properties.CopyFrom(properties)
+        elif isinstance(properties, messages.Scene.SensorInstance.IrradianceSensorProperties):
+            ssr_i.irradiance_sensor_properties.CopyFrom(properties)
+        return ssr_i
