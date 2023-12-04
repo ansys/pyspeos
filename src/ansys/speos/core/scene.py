@@ -6,7 +6,7 @@ from ansys.api.speos.scene.v1 import scene_pb2 as messages
 from ansys.api.speos.scene.v1 import scene_pb2_grpc as service
 
 from ansys.speos.core.crud import CrudItem, CrudStub
-from ansys.speos.core.geometry import AxisPlane, AxisSystem, GeoPaths
+from ansys.speos.core.geometry import AxisPlane, AxisSystem, GeoPathReverseNormal, GeoPaths
 from ansys.speos.core.part import PartLink
 from ansys.speos.core.proto_message import protobuf_message_to_str
 from ansys.speos.core.sop_template import SOPTemplateLink
@@ -75,12 +75,7 @@ class SceneFactory:
 
         class Surface:
             class ExitanceConstant:
-                class GeoPath:
-                    def __init__(self, geo_path: str = "", reverse_normal: bool = False) -> None:
-                        self.geo_path = geo_path
-                        self.reverse_normal = reverse_normal
-
-                def __init__(self, geo_paths: list[GeoPath]) -> None:
+                def __init__(self, geo_paths: list[GeoPathReverseNormal]) -> None:
                     self.geo_paths = geo_paths
 
             class ExitanceVariable:
@@ -108,7 +103,9 @@ class SceneFactory:
                 def __init__(self, props: Union[Library, AsymmetricGaussian]) -> None:
                     self.props = props
 
-            def __init__(self, exitance_props: Union[ExitanceConstant, ExitanceVariable], intensity_props: Intensity) -> None:
+            def __init__(
+                self, exitance_props: Union[ExitanceConstant, ExitanceVariable], intensity_props: Intensity = None
+            ) -> None:
                 self.exitance_props = exitance_props
                 self.intensity_props = intensity_props
 

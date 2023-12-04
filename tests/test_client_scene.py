@@ -4,9 +4,10 @@ Test scene.
 import os
 
 from ansys.speos.core.body import BodyFactory
-from ansys.speos.core.geometry import AxisSystem
+from ansys.speos.core.geometry import AxisSystem, GeoPathReverseNormal, GeoPaths
+from ansys.speos.core.intensity_template import IntensityTemplateFactory
 from ansys.speos.core.part import PartFactory
-from ansys.speos.core.scene import GeoPaths, SceneFactory
+from ansys.speos.core.scene import SceneFactory
 from ansys.speos.core.sop_template import SOPTemplateFactory
 from ansys.speos.core.source_template import SourceTemplateFactory
 from ansys.speos.core.spectrum import SpectrumFactory
@@ -27,6 +28,7 @@ def test_scene_factory(speos: Speos):
     vop_t_db = speos.client.vop_templates()
     sop_t_db = speos.client.sop_templates()
     spec_db = speos.client.spectrums()
+    intens_t_db = speos.client.intensity_templates()
     src_t_db = speos.client.source_templates()
 
     # Blackbody spectrum
@@ -46,6 +48,21 @@ def test_scene_factory(speos: Speos):
             spectrum=spec_bb_2500,
         ),
     )
+    # Surface with luminous flux, exitance constant
+    src_t_surface = src_t_db.create(
+        message=SourceTemplateFactory.surface(
+            name="surface_BB",
+            description="Surface source template",
+            intensity_template=intens_t_db.create(
+                message=IntensityTemplateFactory.lambertian(
+                    name="lambertian_180", description="lambertian intensity template 180", total_angle=180.0
+                ),
+            ),
+            flux=SourceTemplateFactory.Flux(unit=SourceTemplateFactory.Flux.Unit.Lumen, value=683.0),
+            spectrum=spec_bb_2500,
+        )
+    )
+    assert src_t_surface.key != ""
 
     scene0 = scene_db.create(
         message=SceneFactory.scene(
@@ -83,7 +100,24 @@ def test_scene_factory(speos: Speos):
                     name="luminaire_AA.1",
                     source_template=src_t_luminaire,
                     properties=SceneFactory.Properties.Luminaire(axis_system=AxisSystem(origin=[50, 50, 50])),
-                )
+                ),
+                SceneFactory.source_instance(
+                    name="luminaire_AA.2",
+                    source_template=src_t_luminaire,
+                    properties=SceneFactory.Properties.Luminaire(axis_system=AxisSystem(origin=[0, 0, 500])),
+                ),
+                SceneFactory.source_instance(
+                    name="surface_BB.1",
+                    source_template=src_t_surface,
+                    properties=SceneFactory.Properties.Surface(
+                        exitance_props=SceneFactory.Properties.Surface.ExitanceConstant(
+                            geo_paths=[
+                                GeoPathReverseNormal("part_0/body_0/Face:2", reverse_normal=True),
+                                GeoPathReverseNormal("part_0/body_0/Face:3"),
+                            ]
+                        )
+                    ),
+                ),
             ],
         )
     )
