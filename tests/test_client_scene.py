@@ -4,10 +4,10 @@ Test scene.
 import os
 
 from ansys.speos.core.body import BodyFactory
-from ansys.speos.core.geometry import AxisSystem, GeoPathReverseNormal, GeoPaths
+from ansys.speos.core.geometry import AxisSystem, GeoPaths
 from ansys.speos.core.intensity_template import IntensityTemplateFactory
 from ansys.speos.core.part import PartFactory
-from ansys.speos.core.scene import Scene, SceneFactory
+from ansys.speos.core.scene import SceneFactory
 from ansys.speos.core.sensor_template import SensorTemplateFactory
 from ansys.speos.core.simulation_template import SimulationTemplateFactory
 from ansys.speos.core.sop_template import SOPTemplateFactory
@@ -82,9 +82,7 @@ def test_scene_factory(speos: Speos):
     assert ssr_t_irr.key != ""
     # Direct simu with default params
     direct_t = sim_t_db.create(
-        message=SimulationTemplateFactory.direct_mc(
-            name="direct_sim", description="Direct simulation template with default parameters"
-        )
+        message=SimulationTemplateFactory.direct_mc(name="direct_sim", description="Direct simulation template with default parameters")
     )
 
     scene0 = scene_db.create(
@@ -122,23 +120,18 @@ def test_scene_factory(speos: Speos):
                 SceneFactory.source_instance(
                     name="luminaire_AA.1",
                     source_template=src_t_luminaire,
-                    properties=SceneFactory.Properties.Luminaire(axis_system=AxisSystem(origin=[50, 50, 50])),
+                    properties=SceneFactory.luminaire_source_props(axis_system=AxisSystem(origin=[50, 50, 50])),
                 ),
                 SceneFactory.source_instance(
                     name="luminaire_AA.2",
                     source_template=src_t_luminaire,
-                    properties=SceneFactory.Properties.Luminaire(axis_system=AxisSystem(origin=[0, 0, 500])),
+                    properties=SceneFactory.luminaire_source_props(axis_system=AxisSystem(origin=[0, 0, 500])),
                 ),
                 SceneFactory.source_instance(
                     name="surface_BB.1",
                     source_template=src_t_surface,
-                    properties=SceneFactory.Properties.Surface(
-                        exitance_props=SceneFactory.Properties.Surface.ExitanceConstant(
-                            geo_paths=[
-                                GeoPathReverseNormal("body_0/Face:2", reverse_normal=True),
-                                GeoPathReverseNormal("body_0/Face:3"),
-                            ]
-                        )
+                    properties=SceneFactory.surface_source_props(
+                        exitance_constant_geo_paths={"body_0/Face:2": True, "body_0/Face:3": False, "body_0/Face:4": False}
                     ),
                 ),
             ],
@@ -146,19 +139,24 @@ def test_scene_factory(speos: Speos):
                 SceneFactory.sensor_instance(
                     name="irradiance_photometric.1",
                     sensor_template=ssr_t_irr,
-                    properties=Scene.SensorInstance.IrradianceSensorProperties(
-                        axis_system=[0, 50, 0, 1, 0, 0, 0, 0, -1, 0, 1, 0],
-                        ray_file_type=Scene.SensorInstance.EnumRayFileType.RayFileNone,
-                        layer_type_source=Scene.SensorInstance.LayerTypeSource(),
+                    properties=SceneFactory.irradiance_sensor_props(
+                        axis_system=AxisSystem(origin=[0, 50, 0], x_vect=[1, 0, 0], y_vect=[0, 0, -1], z_vect=[0, 1, 0]),
+                        layer_type=SceneFactory.Properties.Sensor.LayerType.Source(),
                     ),
                 ),
                 SceneFactory.sensor_instance(
                     name="irradiance_photometric.2",
                     sensor_template=ssr_t_irr,
-                    properties=Scene.SensorInstance.IrradianceSensorProperties(
-                        axis_system=[0, -50, 0, 1, 0, 0, 0, 0, 1, 0, -1, 0],
-                        ray_file_type=Scene.SensorInstance.EnumRayFileType.RayFileNone,
-                        layer_type_none=Scene.SensorInstance.LayerTypeNone(),
+                    properties=SceneFactory.irradiance_sensor_props(
+                        axis_system=AxisSystem(origin=[0, -50, 0], x_vect=[1, 0, 0], y_vect=[0, 0, 1], z_vect=[0, -1, 0]),
+                    ),
+                ),
+                SceneFactory.sensor_instance(
+                    name="irradiance_photometric.3",
+                    sensor_template=ssr_t_irr,
+                    properties=SceneFactory.irradiance_sensor_props(
+                        axis_system=AxisSystem(origin=[0, 0, 100]),
+                        layer_type=SceneFactory.Properties.Sensor.LayerType.Source(),
                     ),
                 ),
             ],

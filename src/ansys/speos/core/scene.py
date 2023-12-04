@@ -6,7 +6,7 @@ from ansys.api.speos.scene.v1 import scene_pb2 as messages
 from ansys.api.speos.scene.v1 import scene_pb2_grpc as service
 
 from ansys.speos.core.crud import CrudItem, CrudStub
-from ansys.speos.core.geometry import AxisPlane, AxisSystem, GeoPathReverseNormal, GeoPaths
+from ansys.speos.core.geometry import AxisPlane, AxisSystem, GeoPaths
 from ansys.speos.core.part import PartLink
 from ansys.speos.core.proto_message import protobuf_message_to_str
 from ansys.speos.core.sensor_template import SensorTemplateLink
@@ -71,45 +71,42 @@ class SceneStub(CrudStub):
 
 class SceneFactory:
     class Properties:
-        class Luminaire:
-            def __init__(self, axis_system: AxisSystem = AxisSystem()) -> None:
-                self.axis_system = axis_system
+        class Sensor:
+            RayFileType = Enum("RayFileType", ["Classic", "Polarization", "TM25", "TM25NoPolarization"])
 
-        class Surface:
-            class ExitanceConstant:
-                def __init__(self, geo_paths: list[GeoPathReverseNormal]) -> None:
-                    self.geo_paths = geo_paths
+            class LayerType:
+                class Source:
+                    def __init__(self) -> None:
+                        pass
 
-            class ExitanceVariable:
-                def __init__(self, axis_plane: AxisPlane = AxisPlane()) -> None:
-                    self.axis_plane = axis_plane
+                class Sequence:
+                    Type = Enum("Type", ["Geometries", "Faces"])
+
+                    def __init__(self, maximum_nb_of_sequence: int = 10, sequence_type: Type = Type.Geometries) -> None:
+                        self.maximum_nb_of_sequence = maximum_nb_of_sequence
+                        self.sequence_type = sequence_type
+
+                class Polarization:
+                    def __init__(self) -> None:
+                        pass
+
+                class IncidenceAngle:
+                    def __init__(self, sampling: int = 9) -> None:
+                        self.sampling = sampling
+
+                def __init__(self) -> None:
+                    pass
+
+            def __init__(self) -> None:
+                pass
+
+        class Source:
+            def __init__(self) -> None:
+                pass
 
             class Intensity:
                 class Library:
-                    Orientation = Enum("Orientation", ["AxisSystem", "NormalToSurface", "NormalToUVMap"])
-
-                    def __init__(
-                        self,
-                        exit_geometries: GeoPaths = None,
-                        orientation: Orientation = Orientation.AxisSystem,
-                        axis_system: AxisSystem = AxisSystem(),
-                    ) -> None:
-                        self.exit_geometries = exit_geometries
-                        self.orientation = orientation
-                        self.axis_system = axis_system
-
-                class AsymmetricGaussian:
-                    def __init__(self, axis_system: AxisSystem = AxisSystem()) -> None:
-                        self.axis_system = axis_system
-
-                def __init__(self, props: Union[Library, AsymmetricGaussian]) -> None:
-                    self.props = props
-
-            def __init__(
-                self, exitance_props: Union[ExitanceConstant, ExitanceVariable], intensity_props: Intensity = None
-            ) -> None:
-                self.exitance_props = exitance_props
-                self.intensity_props = intensity_props
+                    Orientation = Enum("Orientation", ["ViaAxisSystem", "NormalToSurface", "NormalToUVMap"])
 
     def scene(
         name: str,
@@ -161,7 +158,7 @@ class SceneFactory:
     def source_instance(
         name: str,
         source_template: SourceTemplateLink,
-        properties: Union[Properties.Luminaire, Properties.Surface],
+        properties: Union[messages.Scene.SourceInstance.LuminaireProperties, messages.Scene.SourceInstance.SurfaceProperties],
         description: str = "",
         metadata: Mapping[str, str] = None,
     ) -> messages.Scene.SourceInstance:
@@ -169,75 +166,74 @@ class SceneFactory:
         if metadata is not None:
             src_i.metadata.update(metadata)
         src_i.source_guid = source_template.key
-        if isinstance(properties, SceneFactory.Properties.Luminaire):
-            src_i.luminaire_properties.axis_system.extend(
-                properties.axis_system.origin
-                + properties.axis_system.x_vect
-                + properties.axis_system.y_vect
-                + properties.axis_system.z_vect
-            )
-        elif isinstance(properties, SceneFactory.Properties.Surface):
-            if isinstance(properties.exitance_props, SceneFactory.Properties.Surface.ExitanceConstant):
-                src_i.surface_properties.exitance_constant_properties.geo_paths.extend(
-                    [
-                        messages.Scene.SourceInstance.SurfaceProperties.ExitanceConstantProperties.GeoPath(
-                            geo_path=g.geo_path, reverse_normal=g.reverse_normal
-                        )
-                        for g in properties.exitance_props.geo_paths
-                    ]
-                )
-            elif isinstance(properties.exitance_props, SceneFactory.Properties.Surface.ExitanceVariable):
-                src_i.surface_properties.exitance_variable_properties.axis_plane.extend(
-                    [
-                        properties.exitance_props.axis_plane.origin
-                        + properties.exitance_props.axis_plane.x_vect
-                        + properties.exitance_props.axis_plane.y_vect
-                    ]
-                )
-            if isinstance(properties.intensity_props, SceneFactory.Properties.Surface.Intensity.Library):
-                if properties.intensity_props.exit_geometries is not None:
-                    src_i.surface_properties.intensity_properties.library_properties.exit_geometries.geo_paths.extend(
-                        properties.intensity_props.exit_geometries
-                    )
-                if (
-                    properties.intensity_props.orientation
-                    == SceneFactory.Properties.Surface.Intensity.Library.Orientation.AxisSystem
-                ):
-                    src_i.surface_properties.intensity_properties.library_properties.axis_system.values.extend(
-                        [
-                            properties.intensity_props.axis_system.origin
-                            + properties.intensity_props.axis_system.x_vect
-                            + properties.intensity_props.axis_system.y_vect
-                            + properties.intensity_props.axis_system.z_vect
-                        ]
-                    )
-                elif (
-                    properties.intensity_props.orientation
-                    == SceneFactory.Properties.Surface.Intensity.Library.Orientation.NormalToSurface
-                ):
-                    src_i.surface_properties.intensity_properties.library_properties.normal_to_surface.SetInParent()
-                elif (
-                    properties.intensity_props.orientation
-                    == SceneFactory.Properties.Surface.Intensity.Library.Orientation.NormalToUVMap
-                ):
-                    src_i.surface_properties.intensity_properties.library_properties.normal_to_uv_map.SetInParent()
-            elif isinstance(properties.intensity_props, SceneFactory.Properties.Surface.Intensity.AsymmetricGaussian):
-                src_i.surface_properties.intensity_properties.asymmetric_gaussian_properties.axis_system.extend(
-                    [
-                        properties.intensity_props.axis_system.origin
-                        + properties.intensity_props.axis_system.x_vect
-                        + properties.intensity_props.axis_system.y_vect
-                        + properties.intensity_props.axis_system.z_vect
-                    ]
-                )
+
+        if isinstance(properties, messages.Scene.SourceInstance.LuminaireProperties):
+            src_i.luminaire_properties.CopyFrom(properties)
+        elif isinstance(properties, messages.Scene.SourceInstance.SurfaceProperties):
+            src_i.surface_properties.CopyFrom(properties)
         return src_i
+
+    def luminaire_source_props(axis_system: AxisSystem = AxisSystem()) -> messages.Scene.SourceInstance.LuminaireProperties:
+        lum_props = messages.Scene.SourceInstance.LuminaireProperties()
+        lum_props.axis_system.extend(axis_system.origin + axis_system.x_vect + axis_system.y_vect + axis_system.z_vect)
+        return lum_props
+
+    def surface_source_props(
+        exitance_constant_geo_paths: Mapping[str, bool] = None,
+        exitance_variable_axis_plane: AxisPlane = None,
+        intensity_properties: messages.Scene.SourceInstance.IntensityProperties = None,
+    ) -> messages.Scene.SourceInstance.SurfaceProperties:
+        surf_props = messages.Scene.SourceInstance.SurfaceProperties()
+        if exitance_constant_geo_paths is not None:
+            surf_props.exitance_constant_properties.geo_paths.extend(
+                [
+                    messages.Scene.SourceInstance.SurfaceProperties.ExitanceConstantProperties.GeoPath(geo_path=g, reverse_normal=r)
+                    for g, r in exitance_constant_geo_paths.items()
+                ]
+            )
+        elif exitance_variable_axis_plane is not None:
+            surf_props.exitance_variable_properties.axis_plane.extend(
+                exitance_variable_axis_plane.origin + exitance_variable_axis_plane.x_vect + exitance_variable_axis_plane.y_vect
+            )
+
+        if intensity_properties is not None:
+            surf_props.intensity_properties.CopyFrom(intensity_properties)
+
+        return surf_props
+
+    def library_intensity_props(
+        exit_geometries: GeoPaths = None,
+        orientation: Properties.Source.Intensity.Library.Orientation = Properties.Source.Intensity.Library.Orientation.ViaAxisSystem,
+        axis_system: Union[AxisSystem, None] = AxisSystem(),
+    ) -> messages.Scene.SourceInstance.IntensityProperties:
+        lib_intens_props = messages.Scene.SourceInstance.IntensityProperties()
+        if exit_geometries is not None:
+            lib_intens_props.library_properties.exit_geometries.geo_paths.extend(exit_geometries.geo_paths)
+
+        if orientation == SceneFactory.Properties.Source.Intensity.Library.Orientation.ViaAxisSystem and axis_system is not None:
+            lib_intens_props.library_properties.axis_system.values.extend(
+                [axis_system.origin + axis_system.x_vect + axis_system.y_vect + axis_system.z_vect]
+            )
+        elif orientation == SceneFactory.Properties.Source.Intensity.Library.Orientation.NormalToSurface:
+            lib_intens_props.library_properties.normal_to_surface.SetInParent()
+        elif orientation == SceneFactory.Properties.Source.Intensity.Library.Orientation.NormalToUVMap:
+            lib_intens_props.library_properties.normal_to_uv_map.SetInParent()
+
+        return lib_intens_props
+
+    def asymm_gaussian_intensity_props(
+        axis_system: AxisSystem = AxisSystem(),
+    ) -> messages.Scene.SourceInstance.IntensityProperties:
+        ag_intens_props = messages.Scene.SourceInstance.IntensityProperties()
+        ag_intens_props.asymmetric_gaussian_properties.axis_system.extend(
+            [axis_system.origin + axis_system.x_vect + axis_system.y_vect + axis_system.z_vect]
+        )
+        return ag_intens_props
 
     def sensor_instance(
         name: str,
         sensor_template: SensorTemplateLink,
-        properties: Union[
-            messages.Scene.SensorInstance.CameraSensorProperties, messages.Scene.SensorInstance.IrradianceSensorProperties
-        ],
+        properties: Union[messages.Scene.SensorInstance.CameraSensorProperties, messages.Scene.SensorInstance.IrradianceSensorProperties],
         description: str = "",
         metadata: Mapping[str, str] = None,
     ) -> messages.Scene.SensorInstance:
@@ -250,6 +246,62 @@ class SceneFactory:
         elif isinstance(properties, messages.Scene.SensorInstance.IrradianceSensorProperties):
             ssr_i.irradiance_sensor_properties.CopyFrom(properties)
         return ssr_i
+
+    def camera_sensor_props(
+        axis_system: AxisSystem = AxisSystem(),
+        trajectory_file_uri: str = None,
+        layer_type: Union[None, Properties.Sensor.LayerType.Source] = None,
+    ) -> messages.Scene.SensorInstance.CameraSensorProperties:
+        cam_props = messages.Scene.SensorInstance.CameraSensorProperties()
+        cam_props.axis_system.extend(axis_system.origin + axis_system.x_vect + axis_system.y_vect + axis_system.z_vect)
+        cam_props.trajectory_file_uri = trajectory_file_uri
+        if layer_type is None:
+            cam_props.layer_type_none.SetInParent()
+        elif isinstance(layer_type, SceneFactory.Properties.Sensor.LayerType.Source):
+            cam_props.layer_type_source.SetInParent()
+        return cam_props
+
+    def irradiance_sensor_props(
+        axis_system: AxisSystem = AxisSystem(),
+        ray_file_type: Properties.Sensor.RayFileType = None,
+        layer_type: Union[
+            None,
+            Properties.Sensor.LayerType.Source,
+            Properties.Sensor.LayerType.Sequence,
+            Properties.Sensor.LayerType.Polarization,
+            Properties.Sensor.LayerType.IncidenceAngle,
+        ] = None,
+    ) -> messages.Scene.SensorInstance.IrradianceSensorProperties:
+        irr_props = messages.Scene.SensorInstance.IrradianceSensorProperties()
+        irr_props.axis_system.extend(axis_system.origin + axis_system.x_vect + axis_system.y_vect + axis_system.z_vect)
+
+        if ray_file_type is None:
+            irr_props.ray_file_type = Scene.SensorInstance.EnumRayFileType.RayFileNone
+        elif isinstance(ray_file_type, SceneFactory.Properties.Sensor.RayFileType.Classic):
+            irr_props.ray_file_type = Scene.SensorInstance.EnumRayFileType.RayFileClassic
+        elif isinstance(ray_file_type, SceneFactory.Properties.Sensor.RayFileType.Polarization):
+            irr_props.ray_file_type = Scene.SensorInstance.EnumRayFileType.RayFilePolarization
+        elif isinstance(ray_file_type, SceneFactory.Properties.Sensor.RayFileType.TM25):
+            irr_props.ray_file_type = Scene.SensorInstance.EnumRayFileType.RayFileTM25
+        elif isinstance(ray_file_type, SceneFactory.Properties.Sensor.RayFileType.TM25NoPolarization):
+            irr_props.ray_file_type = Scene.SensorInstance.EnumRayFileType.RayFileTM25NoPolarization
+
+        if layer_type is None:
+            irr_props.layer_type_none.SetInParent()
+        elif isinstance(layer_type, SceneFactory.Properties.Sensor.LayerType.Source):
+            irr_props.layer_type_source.SetInParent()
+        elif isinstance(layer_type, SceneFactory.Properties.Sensor.LayerType.Sequence):
+            irr_props.layer_type_sequence.maximum_nb_of_sequence = layer_type.maximum_nb_of_sequence
+            if layer_type.sequence_type == SceneFactory.Properties.Sensor.LayerType.Sequence.Type.Geometries:
+                irr_props.layer_type_sequence.define_sequence_per = Scene.SensorInstance.LayerTypeSequence.EnumSequenceType.Geometries
+            elif layer_type.sequence_type == SceneFactory.Properties.Sensor.LayerType.Sequence.Type.Faces:
+                irr_props.layer_type_sequence.define_sequence_per = Scene.SensorInstance.LayerTypeSequence.EnumSequenceType.Faces
+        elif isinstance(layer_type, SceneFactory.Properties.Sensor.LayerType.Polarization):
+            irr_props.layer_type_polarization.SetInParent()
+        elif isinstance(layer_type, SceneFactory.Properties.Sensor.LayerType.IncidenceAngle):
+            irr_props.layer_type_incidence_angle.sampling = layer_type.sampling
+
+        return irr_props
 
     def simulation_instance(
         name: str,
