@@ -26,19 +26,37 @@ def create_basic_scene(speos: Speos) -> SceneLink:
     # Get DB
     scene_db = speos.client.scenes()  # Create scenes stub from client channel
 
+    # Create part with two bodies
+    main_part = speos.client.parts().create(
+        PartFactory.new(
+            name="main_part",
+            description="main_part for scene_0",
+            bodies=[
+                speos.client.bodies().create(
+                    message=BodyFactory.new(
+                        name="Bodysource:1",
+                        description="Body used as support for source",
+                        faces=[speos.client.faces().create(message=FaceFactory.rectangle(name="FaceSource:1", x_size=100, y_size=100))],
+                    )
+                ),
+                speos.client.bodies().create(
+                    message=BodyFactory.box(
+                        name="body_0",
+                        description="body_0 in part_0 for scene_0",
+                        face_stub=speos.client.faces(),
+                        base=AxisSystem(origin=[0, 0, 500]),
+                    )
+                ),
+            ],
+        )
+    )
+
     # Create blackbody and monochromatic spectrums
     spec_bb_3500 = speos.client.spectrums().create(
         message=SpectrumFactory.blackbody(
             name="blackbody_3500",
             description="blackbody spectrum - T 3500K",
             temperature=3500,
-        )
-    )
-    spec_mono_555 = speos.client.spectrums().create(
-        message=SpectrumFactory.monochromatic(
-            name="monochromatic_555",
-            description="monochromatic spectrum - 555nm",
-            wavelength=555,
         )
     )
     # Create lambertian intensity template
@@ -92,6 +110,11 @@ def create_basic_scene(speos: Speos) -> SceneLink:
             wavelengths_range=SensorTemplateFactory.WavelengthsRange(start=300, end=700, sampling=13),
         )
     )
+    irr_sensor_props = SceneFactory.irradiance_sensor_props(
+        axis_system=AxisSystem(origin=[0, 0, 1000], x_vect=[1, 0, 0], y_vect=[0, 1, 0], z_vect=[0, 0, -1]),
+        layer_type=SceneFactory.Properties.Sensor.LayerType.Source,
+        integration_direction=[0, 0, 1],
+    )
 
     # Create simu templates with default params
     direct_t = speos.client.simulation_templates().create(
@@ -110,31 +133,7 @@ def create_basic_scene(speos: Speos) -> SceneLink:
         message=SceneFactory.new(
             name="scene_0",
             description="scene from scratch",
-            part=speos.client.parts().create(
-                PartFactory.new(
-                    name="main_part",
-                    description="main_part for scene_0",
-                    bodies=[
-                        speos.client.bodies().create(
-                            message=BodyFactory.new(
-                                name="Bodysource:1",
-                                description="Body used as support for source",
-                                faces=[
-                                    speos.client.faces().create(message=FaceFactory.rectangle(name="FaceSource:1", x_size=100, y_size=100))
-                                ],
-                            )
-                        ),
-                        speos.client.bodies().create(
-                            message=BodyFactory.box(
-                                name="body_0",
-                                description="body_0 in part_0 for scene_0",
-                                face_stub=speos.client.faces(),
-                                base=AxisSystem(origin=[0, 0, 500]),
-                            )
-                        ),
-                    ],
-                )
-            ),
+            part=main_part,
             vop_instances=[
                 SceneFactory.vop_instance(
                     name="opaque.1",
@@ -172,20 +171,12 @@ def create_basic_scene(speos: Speos) -> SceneLink:
                 SceneFactory.sensor_instance(
                     name="irradiance_photometric.1",
                     sensor_template=ssr_t_irr_photo,
-                    properties=SceneFactory.irradiance_sensor_props(
-                        axis_system=AxisSystem(origin=[0, 0, 1000], x_vect=[1, 0, 0], y_vect=[0, 1, 0], z_vect=[0, 0, -1]),
-                        layer_type=SceneFactory.Properties.Sensor.LayerType.Source,
-                        integration_direction=[0, 0, 1],
-                    ),
+                    properties=irr_sensor_props,
                 ),
                 SceneFactory.sensor_instance(
                     name="irradiance_colorimetric.1",
                     sensor_template=ssr_t_irr_colo,
-                    properties=SceneFactory.irradiance_sensor_props(
-                        axis_system=AxisSystem(origin=[0, 0, 1000], x_vect=[1, 0, 0], y_vect=[0, 1, 0], z_vect=[0, 0, -1]),
-                        layer_type=SceneFactory.Properties.Sensor.LayerType.Source,
-                        integration_direction=[0, 0, 1],
-                    ),
+                    properties=irr_sensor_props,
                 ),
             ],
             simulation_instances=[
