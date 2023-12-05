@@ -16,6 +16,7 @@ from ansys.speos.core.spectrum import SpectrumFactory
 from ansys.speos.core.speos import Speos
 from ansys.speos.core.vop_template import VOPTemplateFactory
 from conftest import test_path
+from helper import clean_all_dbs
 
 
 def test_scene_factory(speos: Speos):
@@ -173,3 +174,5 @@ def test_scene_factory(speos: Speos):
         )
     )
     assert scene0.key != ""
+
+    clean_all_dbs(speos.client)

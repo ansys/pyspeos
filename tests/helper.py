@@ -9,7 +9,26 @@ For example a method to check file existence depending on if the file is in the 
 import os
 import subprocess
 
+from ansys.speos.core.speos import SpeosClient
 from conftest import config
+
+
+def clean_all_dbs(speos_client: SpeosClient):
+    for item in (
+        speos_client.scenes().list()
+        + speos_client.simulation_templates().list()
+        + speos_client.sensor_templates().list()
+        + speos_client.source_templates().list()
+        + speos_client.intensity_templates().list()
+        + speos_client.spectrums().list()
+        + speos_client.vop_templates().list()
+        + speos_client.sop_templates().list()
+        + speos_client.parts().list()
+        + speos_client.bodies().list()
+        + speos_client.faces().list()
+    ):
+        print(item.key)
+        item.delete()
 
 
 def does_file_exist(path):
@@ -28,10 +47,7 @@ def does_file_exist(path):
     bool
     """
     if config.get("SpeosServerOnDocker"):
-        return (
-            subprocess.call("docker exec " + config.get("SpeosContainerName") + ' test -f "' + path + '"', shell=True)
-            == 0
-        )
+        return subprocess.call("docker exec " + config.get("SpeosContainerName") + ' test -f "' + path + '"', shell=True) == 0
     else:
         return os.path.isfile(path)
 
