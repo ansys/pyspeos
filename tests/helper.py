@@ -27,7 +27,6 @@ def clean_all_dbs(speos_client: SpeosClient):
         + speos_client.bodies().list()
         + speos_client.faces().list()
     ):
-        print(item.key)
         item.delete()
 
 

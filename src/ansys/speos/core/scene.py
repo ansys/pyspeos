@@ -99,7 +99,7 @@ class SceneFactory:
                 class Library:
                     Orientation = Enum("Orientation", ["ViaAxisSystem", "NormalToSurface", "NormalToUVMap"])
 
-    def scene(
+    def new(
         name: str,
         part: PartLink,
         vop_instances: list[messages.Scene.VOPInstance],
@@ -262,6 +262,7 @@ class SceneFactory:
             Properties.Sensor.LayerType.Polarization,
             Properties.Sensor.LayerType.IncidenceAngle,
         ] = None,
+        integration_direction: list[float] = None,
     ) -> messages.Scene.SensorInstance.IrradianceSensorProperties:
         irr_props = messages.Scene.SensorInstance.IrradianceSensorProperties()
         irr_props.axis_system.extend(axis_system.origin + axis_system.x_vect + axis_system.y_vect + axis_system.z_vect)
@@ -291,6 +292,9 @@ class SceneFactory:
             irr_props.layer_type_polarization.SetInParent()
         elif isinstance(layer_type, SceneFactory.Properties.Sensor.LayerType.IncidenceAngle):
             irr_props.layer_type_incidence_angle.sampling = layer_type.sampling
+
+        if integration_direction is not None:
+            irr_props.integration_direction.extend(integration_direction)
 
         return irr_props
 

@@ -63,7 +63,7 @@ class PartStub(CrudStub):
 
 
 class PartFactory:
-    def new(name: str, bodies: list[BodyLink], description: str = "", metadata: Mapping[str, str] = None):
+    def new(name: str, bodies: list[BodyLink], description: str = "", metadata: Mapping[str, str] = None) -> Part:
         part = Part(name=name, description=description)
         if metadata is not None:
             part.metadata.update(metadata)

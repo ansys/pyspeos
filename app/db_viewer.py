@@ -13,9 +13,10 @@ from ansys.speos.core.intensity_template import (
     IntensityTemplateLink,
     IntensityTemplateStub,
 )
+from ansys.speos.core.job import Job, JobFactory, JobLink, JobStub
 from ansys.speos.core.part import Part, PartFactory, PartLink, PartStub
 from ansys.speos.core.proto_message import protobuf_message_to_str
-from ansys.speos.core.scene import Scene, SceneLink, SceneStub
+from ansys.speos.core.scene import Scene, SceneFactory, SceneLink, SceneStub
 from ansys.speos.core.sensor_template import (
     SensorTemplate,
     SensorTemplateFactory,
@@ -64,6 +65,7 @@ services_list = (
     "sensor_template",
     "simulation_template",
     "scene",
+    "job",
 )
 selected_service = None
 
@@ -96,7 +98,8 @@ def get_service_selected(service) -> CrudStub:
         return speos_client.simulation_templates()
     elif service == "scene":
         return speos_client.scenes()
-    # ...
+    elif service == "job":
+        return speos_client.jobs()
     return None
 
 
@@ -123,7 +126,8 @@ def get_item_selected(db, key) -> CrudItem:
         return SimulationTemplateLink(db, key)
     elif isinstance(db, SceneStub):
         return SceneLink(db, key)
-    # ...
+    elif isinstance(db, JobStub):
+        return JobLink(db, key)
     return None
 
 
@@ -151,7 +155,8 @@ def list_items(service) -> list:
         return speos_client.simulation_templates().list()
     elif service == "scene":
         return speos_client.scenes().list()
-    # ...
+    elif service == "job":
+        return speos_client.jobs().list()
     return None
 
 
@@ -183,6 +188,8 @@ def update_item(json_content):
             content = Parse(json_content, SimulationTemplate())
         elif isinstance(selected_item, SceneLink):
             content = Parse(json_content, Scene())
+        elif isinstance(selected_item, JobLink):
+            content = Parse(json_content, Job())
 
         if content:
             selected_item.set(content)
@@ -195,31 +202,23 @@ def create_new_item(service) -> CrudItem:
     if service == "face":
         return speos_client.faces().create(message=FaceFactory.rectangle("new", description="new"))
     elif service == "body":
-        return speos_client.bodies().create(
-            message=BodyFactory.box(name="new", description="new", face_stub=speos_client.faces())
-        )
+        return speos_client.bodies().create(message=BodyFactory.box(name="new", description="new", face_stub=speos_client.faces()))
     elif service == "part":
         return speos_client.parts().create(
-            message=PartFactory.without_part_instance(
+            message=PartFactory.new(
                 name="new",
                 description="new",
-                bodies=[
-                    speos_client.bodies().create(message=BodyFactory.box(name="body_for_part", face_stub=speos_client.faces()))
-                ],
+                bodies=[speos_client.bodies().create(message=BodyFactory.box(name="body_for_part", face_stub=speos_client.faces()))],
             )
         )
     elif service == "sop_template":
-        return speos_client.sop_templates().create(
-            message=SOPTemplateFactory.mirror(name="new", description="new", reflectance=100.0)
-        )
+        return speos_client.sop_templates().create(message=SOPTemplateFactory.mirror(name="new", description="new", reflectance=100.0))
     elif service == "vop_template":
         return speos_client.vop_templates().create(
             message=VOPTemplateFactory.optic(name="new", description="new", index=1.5, absorption=0.0)
         )
     elif service == "spectrum":
-        return speos_client.spectrums().create(
-            message=SpectrumFactory.monochromatic(name="new", description="new", wavelength=486)
-        )
+        return speos_client.spectrums().create(message=SpectrumFactory.monochromatic(name="new", description="new", wavelength=486))
     elif service == "intensity_template":
         return speos_client.intensity_templates().create(
             message=IntensityTemplateFactory.lambertian(name="new", description="new", total_angle=180.0)
@@ -260,12 +259,44 @@ def create_new_item(service) -> CrudItem:
             )
         )
     elif service == "simulation_template":
-        return speos_client.simulation_templates().create(
-            message=SimulationTemplateFactory.direct_mc(name="new", description="new")
-        )
+        return speos_client.simulation_templates().create(message=SimulationTemplateFactory.direct_mc(name="new", description="new"))
     elif service == "scene":
-        return speos_client.scenes().create(message=Scene(name="new", description="new"))
-    # ...
+        return speos_client.scenes().create(
+            message=SceneFactory.new(
+                name="new",
+                description="new",
+                part=create_new_item("part"),
+                vop_instances=[SceneFactory.vop_instance(name="Optic.1", vop_template=create_new_item("vop_template"))],
+                sop_instances=[SceneFactory.sop_instance(name="Mirror.1", sop_template=create_new_item("sop_template"))],
+                source_instances=[
+                    SceneFactory.source_instance(
+                        name="Surface.1",
+                        source_template=create_new_item("source_template"),
+                        properties=SceneFactory.surface_source_props(exitance_constant_geo_paths={"body_for_part/Face:2": False}),
+                    )
+                ],
+                sensor_instances=[
+                    SceneFactory.sensor_instance(
+                        name="Irradiance.1",
+                        sensor_template=create_new_item("sensor_template"),
+                        properties=SceneFactory.irradiance_sensor_props(),
+                    )
+                ],
+                simulation_instances=[
+                    SceneFactory.simulation_instance(name="Direct.1", simulation_template=create_new_item("simulation_template"))
+                ],
+            )
+        )
+    elif service == "job":
+        return speos_client.jobs().create(
+            message=JobFactory.new(
+                name="new",
+                description="new",
+                scene=create_new_item("scene"),
+                simulation_path="Direct.1",
+                properties=JobFactory.direct_mc_props(),
+            )
+        )
     return None
 
 

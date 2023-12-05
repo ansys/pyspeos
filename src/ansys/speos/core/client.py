@@ -11,6 +11,7 @@ from ansys.speos.core import LOG as logger
 from ansys.speos.core.body import BodyLink, BodyStub
 from ansys.speos.core.face import FaceLink, FaceStub
 from ansys.speos.core.intensity_template import IntensityTemplateLink, IntensityTemplateStub
+from ansys.speos.core.job import JobLink, JobStub
 from ansys.speos.core.logger import PySpeosCustomAdapter
 from ansys.speos.core.part import PartLink, PartStub
 from ansys.speos.core.scene import SceneLink, SceneStub
@@ -129,6 +130,7 @@ class SpeosClient:
         self._sensorTemplateDB = None
         self._simulationTemplateDB = None
         self._sceneDB = None
+        self._jobDB = None
 
     @property
     def channel(self) -> grpc.Channel:
@@ -256,6 +258,15 @@ class SpeosClient:
             self._sceneDB = SceneStub(self._channel)
         return self._sceneDB
 
+    def jobs(self) -> JobStub:
+        """Get job database access."""
+        if self._closed:
+            raise ConnectionAbortedError()
+        # connect to database
+        if self._jobDB is None:
+            self._jobDB = JobStub(self._channel)
+        return self._jobDB
+
     def get_item(
         self, key: str
     ) -> Union[
@@ -267,6 +278,7 @@ class SpeosClient:
         SensorTemplateLink,
         SimulationTemplateLink,
         SceneLink,
+        JobLink,
         PartLink,
         BodyLink,
         FaceLink,
@@ -299,6 +311,9 @@ class SpeosClient:
         for sce in self.scenes().list():
             if sce.key == key:
                 return sce
+        for job in self.jobs().list():
+            if job.key == key:
+                return job
         for part in self.parts().list():
             if part.key == key:
                 return part
@@ -346,3 +361,4 @@ class SpeosClient:
         self._sensorTemplateDB = None
         self._simulationTemplateDB = None
         self._sceneDB = None
+        self._jobDB = None
