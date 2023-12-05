@@ -15,7 +15,7 @@ from ansys.speos.core.intensity_template import (
 )
 from ansys.speos.core.job import Job, JobFactory, JobLink, JobStub
 from ansys.speos.core.part import Part, PartFactory, PartLink, PartStub
-from ansys.speos.core.proto_message import protobuf_message_to_str
+from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 from ansys.speos.core.scene import Scene, SceneFactory, SceneLink, SceneStub
 from ansys.speos.core.sensor_template import (
     SensorTemplate,

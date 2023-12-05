@@ -3,7 +3,7 @@ from ansys.api.speos.intensity.v1 import intensity_pb2 as messages
 from ansys.api.speos.intensity.v1 import intensity_pb2_grpc as service
 
 from ansys.speos.core.crud import CrudItem, CrudStub
-from ansys.speos.core.proto_message import protobuf_message_to_str
+from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 
 IntensityTemplate = messages.IntensityTemplate
 
@@ -87,9 +87,7 @@ class IntensityTemplateFactory:
         intens.symmetric_gaussian.total_angle = total_angle
         return intens
 
-    def asymmetric_gaussian(
-        name: str, description: str, FWHM_angle_x: float, FWHM_angle_y: float, total_angle: float
-    ) -> IntensityTemplate:
+    def asymmetric_gaussian(name: str, description: str, FWHM_angle_x: float, FWHM_angle_y: float, total_angle: float) -> IntensityTemplate:
         intens = IntensityTemplate(name=name, description=description)
         intens.asymmetric_gaussian.FWHM_angle_x = FWHM_angle_x
         intens.asymmetric_gaussian.FWHM_angle_y = FWHM_angle_y

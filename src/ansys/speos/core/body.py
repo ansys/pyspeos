@@ -7,8 +7,8 @@ import numpy as np
 
 from ansys.speos.core.crud import CrudItem, CrudStub
 from ansys.speos.core.face import FaceFactory, FaceLink, FaceStub
-from ansys.speos.core.geometry import AxisSystem
-from ansys.speos.core.proto_message import protobuf_message_to_str
+from ansys.speos.core.geometry_utils import AxisSystem
+from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 
 Body = messages.Body
 

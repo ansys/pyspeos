@@ -6,7 +6,7 @@ from ansys.api.speos.job.v2 import job_pb2 as messages
 from ansys.api.speos.job.v2 import job_pb2_grpc as service
 
 from ansys.speos.core.crud import CrudItem, CrudStub
-from ansys.speos.core.proto_message import protobuf_message_to_str
+from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 from ansys.speos.core.scene import SceneLink
 
 Job = messages.Job

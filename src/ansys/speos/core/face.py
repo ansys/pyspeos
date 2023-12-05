@@ -6,7 +6,7 @@ from ansys.api.speos.part.v1 import face_pb2_grpc as service
 import numpy as np
 
 from ansys.speos.core.crud import CrudItem, CrudStub
-from ansys.speos.core.proto_message import protobuf_message_to_str
+from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 
 Face = messages.Face
 

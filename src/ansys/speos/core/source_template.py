@@ -6,7 +6,7 @@ from ansys.api.speos.source.v1 import source_pb2_grpc as service
 
 from ansys.speos.core.crud import CrudItem, CrudStub
 from ansys.speos.core.intensity_template import IntensityTemplateLink
-from ansys.speos.core.proto_message import protobuf_message_to_str
+from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 from ansys.speos.core.spectrum import SpectrumLink
 
 SourceTemplate = messages.SourceTemplate

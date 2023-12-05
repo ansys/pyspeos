@@ -15,7 +15,8 @@ from conftest import config
 
 def clean_all_dbs(speos_client: SpeosClient):
     for item in (
-        speos_client.scenes().list()
+        speos_client.jobs().list()
+        + speos_client.scenes().list()
         + speos_client.simulation_templates().list()
         + speos_client.sensor_templates().list()
         + speos_client.source_templates().list()

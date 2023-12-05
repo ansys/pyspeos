@@ -3,7 +3,7 @@ from ansys.api.speos.sop.v1 import sop_pb2 as messages
 from ansys.api.speos.sop.v1 import sop_pb2_grpc as service
 
 from ansys.speos.core.crud import CrudItem, CrudStub
-from ansys.speos.core.proto_message import protobuf_message_to_str
+from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 
 SOPTemplate = messages.SOPTemplate
 

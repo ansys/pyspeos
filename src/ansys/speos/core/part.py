@@ -6,7 +6,7 @@ from ansys.api.speos.part.v1 import part_pb2_grpc as service
 
 from ansys.speos.core.body import BodyLink
 from ansys.speos.core.crud import CrudItem, CrudStub
-from ansys.speos.core.proto_message import protobuf_message_to_str
+from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 
 Part = messages.Part
 

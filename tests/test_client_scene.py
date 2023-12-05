@@ -5,7 +5,7 @@ import os
 
 from ansys.speos.core.body import BodyFactory
 from ansys.speos.core.face import FaceFactory
-from ansys.speos.core.geometry import AxisSystem, GeoPaths
+from ansys.speos.core.geometry_utils import AxisSystem, GeoPaths
 from ansys.speos.core.intensity_template import IntensityTemplateFactory
 from ansys.speos.core.part import PartFactory
 from ansys.speos.core.scene import SceneFactory, SceneLink
@@ -34,15 +34,15 @@ def create_basic_scene(speos: Speos) -> SceneLink:
             bodies=[
                 speos.client.bodies().create(
                     message=BodyFactory.new(
-                        name="Bodysource:1",
+                        name="BodySource:1",
                         description="Body used as support for source",
                         faces=[speos.client.faces().create(message=FaceFactory.rectangle(name="FaceSource:1", x_size=100, y_size=100))],
                     )
                 ),
                 speos.client.bodies().create(
                     message=BodyFactory.box(
-                        name="body_0",
-                        description="body_0 in part_0 for scene_0",
+                        name="Body0:1",
+                        description="Body0:1 in main_part",
                         face_stub=speos.client.faces(),
                         base=AxisSystem(origin=[0, 0, 500]),
                     )
@@ -112,7 +112,7 @@ def create_basic_scene(speos: Speos) -> SceneLink:
     )
     irr_sensor_props = SceneFactory.irradiance_sensor_props(
         axis_system=AxisSystem(origin=[0, 0, 1000], x_vect=[1, 0, 0], y_vect=[0, 1, 0], z_vect=[0, 0, -1]),
-        layer_type=SceneFactory.Properties.Sensor.LayerType.Source,
+        layer_type=SceneFactory.Properties.Sensor.LayerType.Source(),
         integration_direction=[0, 0, 1],
     )
 
@@ -138,7 +138,7 @@ def create_basic_scene(speos: Speos) -> SceneLink:
                 SceneFactory.vop_instance(
                     name="opaque.1",
                     vop_template=speos.client.vop_templates().create(message=VOPTemplateFactory.opaque("opaque", "opaque vop template")),
-                    geometries=GeoPaths(geo_paths=["body_0"]),
+                    geometries=GeoPaths(geo_paths=["Body0:1"]),
                 )
             ],
             sop_instances=[
@@ -147,7 +147,7 @@ def create_basic_scene(speos: Speos) -> SceneLink:
                     sop_template=speos.client.sop_templates().create(
                         message=SOPTemplateFactory.mirror("mirror_100", "mirror sop template - reflectance 100", reflectance=100)
                     ),
-                    geometries=GeoPaths(geo_paths=["body_0", "Bodysource:1/FaceSource:1"]),
+                    geometries=GeoPaths(geo_paths=["Body0:1", "BodySource:1/FaceSource:1"]),
                 )
             ],
             source_instances=[
@@ -164,7 +164,7 @@ def create_basic_scene(speos: Speos) -> SceneLink:
                 SceneFactory.source_instance(
                     name="surface_with_blackbody.1",
                     source_template=src_t_surface_bb,
-                    properties=SceneFactory.surface_source_props(exitance_constant_geo_paths={"Bodysource:1": False}),
+                    properties=SceneFactory.surface_source_props(exitance_constant_geo_paths={"BodySource:1": False}),
                 ),
             ],
             sensor_instances=[
@@ -186,7 +186,7 @@ def create_basic_scene(speos: Speos) -> SceneLink:
                     simulation_template=direct_t,
                     source_paths=["surface_with_blackbody.1"],
                     sensor_paths=["irradiance_photometric.1", "irradiance_colorimetric.1"],
-                    geometries=GeoPaths(["Bodysource:1", "body_0"]),
+                    geometries=GeoPaths(["BodySource:1", "Body0:1"]),
                 ),
                 SceneFactory.simulation_instance(
                     name="inverse_simu.1", simulation_template=inverse_t, sensor_paths=["irradiance_colorimetric.1"]

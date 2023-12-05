@@ -3,7 +3,7 @@ Test basic geometry database connection.
 """
 from ansys.speos.core.body import BodyFactory, BodyLink
 from ansys.speos.core.face import FaceFactory, FaceLink
-from ansys.speos.core.geometry import AxisSystem
+from ansys.speos.core.geometry_utils import AxisSystem
 from ansys.speos.core.part import PartFactory
 from ansys.speos.core.speos import Speos
 
@@ -72,9 +72,7 @@ def test_body_factory(speos: Speos):
             description="body from data containing one face",
             faces=[
                 face_db.create(
-                    FaceFactory.rectangle(
-                        name="face_0", description="face_0 for body_0", metadata={"key_0": "val_0", "key_1": "val_1"}
-                    )
+                    FaceFactory.rectangle(name="face_0", description="face_0 for body_0", metadata={"key_0": "val_0", "key_1": "val_1"})
                 )
             ],
         )
@@ -124,9 +122,7 @@ def test_part_factory(speos: Speos):
         message=PartFactory.new(
             name="part_0",
             description="part with one box as body",
-            bodies=[
-                body_db.create(BodyFactory.box(name="box_2", face_stub=face_db, metadata={"key_0": "val_0", "key_1": "val_1"}))
-            ],
+            bodies=[body_db.create(BodyFactory.box(name="box_2", face_stub=face_db, metadata={"key_0": "val_0", "key_1": "val_1"}))],
             metadata={"my_key0": "my_value0", "my_key1": "my_value1"},
         )
     )

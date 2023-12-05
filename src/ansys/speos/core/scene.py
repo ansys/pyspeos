@@ -6,9 +6,9 @@ from ansys.api.speos.scene.v1 import scene_pb2 as messages
 from ansys.api.speos.scene.v1 import scene_pb2_grpc as service
 
 from ansys.speos.core.crud import CrudItem, CrudStub
-from ansys.speos.core.geometry import AxisPlane, AxisSystem, GeoPaths
+from ansys.speos.core.geometry_utils import AxisPlane, AxisSystem, GeoPaths
 from ansys.speos.core.part import PartLink
-from ansys.speos.core.proto_message import protobuf_message_to_str
+from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 from ansys.speos.core.sensor_template import SensorTemplateLink
 from ansys.speos.core.simulation_template import SimulationTemplateLink
 from ansys.speos.core.sop_template import SOPTemplateLink
