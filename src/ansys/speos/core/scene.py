@@ -94,16 +94,7 @@ class SceneFactory:
                     def __init__(self, sampling: int = 9) -> None:
                         self.sampling = sampling
 
-                def __init__(self) -> None:
-                    pass
-
-            def __init__(self) -> None:
-                pass
-
         class Source:
-            def __init__(self) -> None:
-                pass
-
             class Intensity:
                 class Library:
                     Orientation = Enum("Orientation", ["ViaAxisSystem", "NormalToSurface", "NormalToUVMap"])
