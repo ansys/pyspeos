@@ -4,6 +4,7 @@ from typing import Mapping, Union
 
 from ansys.api.speos.job.v2 import job_pb2 as messages
 from ansys.api.speos.job.v2 import job_pb2_grpc as service
+from ansys.api.speos.results.v1.ray_path_pb2 import RayPath
 
 from ansys.speos.core.crud import CrudItem, CrudStub
 from ansys.speos.core.proto_message_utils import protobuf_message_to_str
@@ -13,8 +14,9 @@ Job = messages.Job
 
 
 class JobLink(CrudItem):
-    def __init__(self, db, key: str):
+    def __init__(self, db, key: str, actions_stub: service.JobActionsStub):
         super().__init__(db, key)
+        self._actions_stub = actions_stub
 
     def __str__(self) -> str:
         return protobuf_message_to_str(self.get())
@@ -28,15 +30,38 @@ class JobLink(CrudItem):
     def delete(self) -> None:
         self._stub.delete(self)
 
+    # Actions
+    def get_state(self) -> messages.GetState_Response:
+        return self._actions_stub.GetState(messages.GetState_Request(guid=self.key))
+
+    def start(self) -> None:
+        return self._actions_stub.Start(messages.Start_Request(guid=self.key))
+
+    def stop(self) -> None:
+        return self._actions_stub.Stop(messages.Stop_Request(guid=self.key))
+
+    def get_error(self) -> messages.GetError_Response:
+        return self._actions_stub.GetError(messages.GetError_Request(guid=self.key))
+
+    def get_results(self) -> messages.GetResults_Response:
+        return self._actions_stub.GetResults(messages.GetResults_Request(guid=self.key))
+
+    def get_progress_status(self) -> messages.GetInformation_Response:
+        return self._actions_stub.GetInformation(messages.GetInformation_Request(guid=self.key))
+
+    def get_ray_paths(self) -> RayPath:
+        return self._actions_stub.GetRayPaths(messages.GetRayPaths_Request(guid=self.key))
+
 
 class JobStub(CrudStub):
     def __init__(self, channel):
         super().__init__(stub=service.JobsManagerStub(channel=channel))
+        self._actions_stub = service.JobActionsStub(channel=channel)
 
     def create(self, message: Job) -> JobLink:
         """Create a new entry."""
         resp = CrudStub.create(self, messages.Create_Request(job=message))
-        return JobLink(self, resp.guid)
+        return JobLink(self, resp.guid, self._actions_stub)
 
     def read(self, ref: JobLink) -> Job:
         """Get an existing entry."""
@@ -60,7 +85,7 @@ class JobStub(CrudStub):
     def list(self) -> list[JobLink]:
         """List existing entries."""
         guids = CrudStub.list(self, messages.List_Request()).guids
-        return list(map(lambda x: JobLink(self, x), guids))
+        return list(map(lambda x: JobLink(self, x, self._actions_stub), guids))
 
 
 class JobFactory:

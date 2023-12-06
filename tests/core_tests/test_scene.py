@@ -81,7 +81,7 @@ def create_basic_scene(speos: Speos) -> SceneLink:
             name="surface_with_monochromatic",
             description="Surface source template with blackbody spectrum",
             intensity_template=intens_t_lamb_180,
-            flux=SourceTemplateFactory.Flux(unit=SourceTemplateFactory.Flux.Unit.Lumen, value=683.0),
+            flux=SourceTemplateFactory.Flux(),
             spectrum=spec_bb_3500,
         )
     )
@@ -193,7 +193,10 @@ def create_basic_scene(speos: Speos) -> SceneLink:
                     geometries=GeoPaths(["BodySource:1", "Body0:1"]),
                 ),
                 SceneFactory.simulation_instance(
-                    name="inverse_simu.1", simulation_template=inverse_t, sensor_paths=["irradiance_colorimetric.1"]
+                    name="inverse_simu.1",
+                    simulation_template=inverse_t,
+                    source_paths=["surface_with_blackbody.1"],
+                    sensor_paths=["irradiance_colorimetric.1"],
                 ),
                 SceneFactory.simulation_instance(name="interactive_simu.1", simulation_template=interactive_t),
             ],
