@@ -39,9 +39,7 @@ def test_client_spectrum_init(speos: Speos):
     s_bb_5321.delete()  # Delete from DB
 
     # Create SpectrumLink
-    s_m_659 = spec_db.create(
-        SpectrumFactory.monochromatic(name="monochr_0", description="Monochromatic spectrum", wavelength=659.0)
-    )
+    s_m_659 = spec_db.create(SpectrumFactory.monochromatic(name="monochr_0", description="Monochromatic spectrum", wavelength=659.0))
     # Duplicate = same data but different keys
     s_m_659_bis = spec_db.create(s_m_659.get())
     assert s_m_659_bis.stub == s_m_659.stub
@@ -60,9 +58,7 @@ def test_spectrum_factory(speos: Speos):
     spec_db = speos.client.spectrums()  # Create spectrum stub from client channel
 
     # Monochromatic
-    spec_mono = spec_db.create(
-        SpectrumFactory.monochromatic(name="monochr_1", description="Monochromatic spectrum", wavelength=659.0)
-    )
+    spec_mono = spec_db.create(SpectrumFactory.monochromatic(name="monochr_1", description="Monochromatic spectrum", wavelength=659.0))
     assert spec_mono.key != ""
 
     # Blackbody
@@ -84,9 +80,7 @@ def test_spectrum_factory(speos: Speos):
 
     # Library
     spectrum_path = os.path.join(test_path, os.path.join("CameraInputFiles", "CameraSensitivityBlue.spectrum"))
-    s_lib = spec_db.create(
-        message=SpectrumFactory.library(name="library_1", description="Library spectrum", file_uri=spectrum_path)
-    )
+    s_lib = spec_db.create(message=SpectrumFactory.library(name="library_1", description="Library spectrum", file_uri=spectrum_path))
     assert s_lib.key != ""
 
     # Predefined

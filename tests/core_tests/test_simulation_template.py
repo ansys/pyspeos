@@ -15,17 +15,13 @@ def test_simulation_template_factory_default(speos: Speos):
 
     # Direct
     direct_t = sim_t_db.create(
-        message=SimulationTemplateFactory.direct_mc(
-            name="direct_0", description="Direct simulation template with default parameters"
-        )
+        message=SimulationTemplateFactory.direct_mc(name="direct_0", description="Direct simulation template with default parameters")
     )
     assert direct_t.key != ""
 
     # Inverse
     inverse_t = sim_t_db.create(
-        message=SimulationTemplateFactory.inverse_mc(
-            name="inverse_0", description="Inverse simulation template with default parameters"
-        )
+        message=SimulationTemplateFactory.inverse_mc(name="inverse_0", description="Inverse simulation template with default parameters")
     )
     assert inverse_t.key != ""
 

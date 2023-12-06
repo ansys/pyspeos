@@ -26,9 +26,7 @@ def test_intensity_template_factory(speos: Speos):
 
     # Lambertian
     intens_t_lamb = intens_t_db.create(
-        message=IntensityTemplateFactory.lambertian(
-            name="lambertian_0", description="lambertian intensity template", total_angle=180.0
-        )
+        message=IntensityTemplateFactory.lambertian(name="lambertian_0", description="lambertian intensity template", total_angle=180.0)
     )
     assert intens_t_lamb.key != ""
 

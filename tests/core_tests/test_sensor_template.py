@@ -65,9 +65,7 @@ def test_sensor_template_factory(speos: Speos):
             transmittance_file_uri=transmittance,
             spectrum_file_uris=[red_spectrum, green_spectrum, blue_spectrum],
             wavelengths_range=SensorTemplateFactory.WavelengthsRange(start=400, end=800, sampling=10),
-            camera_balance_mode=SensorTemplateFactory.CameraBalanceMode(
-                type=SensorTemplateFactory.CameraBalanceMode.Type.Greyworld
-            ),
+            camera_balance_mode=SensorTemplateFactory.CameraBalanceMode(type=SensorTemplateFactory.CameraBalanceMode.Type.Greyworld),
         )
     )
     assert camera_t2.key != ""
@@ -96,17 +94,13 @@ def test_sensor_template_factory(speos: Speos):
             message=SensorTemplateFactory.camera(
                 name="camera_color_userwhite",
                 description="Camera sensor template mode color with balance mode userwhite",
-                settings=SensorTemplateFactory.CameraSettings(
-                    gamma_correction=2.2, focal_length=4, imager_distance=10, f_number=30
-                ),
+                settings=SensorTemplateFactory.CameraSettings(gamma_correction=2.2, focal_length=4, imager_distance=10, f_number=30),
                 dimensions=SensorTemplateFactory.CameraDimensions(horz_pixel=640, vert_pixel=480, width=5, height=5),
                 distorsion_file_uri=distortion,
                 transmittance_file_uri=transmittance,
                 spectrum_file_uris=[red_spectrum, green_spectrum, blue_spectrum],
                 wavelengths_range=SensorTemplateFactory.WavelengthsRange(start=400, end=800, sampling=10),
-                camera_balance_mode=SensorTemplateFactory.CameraBalanceMode(
-                    type=SensorTemplateFactory.CameraBalanceMode.Type.Userwhite
-                ),
+                camera_balance_mode=SensorTemplateFactory.CameraBalanceMode(type=SensorTemplateFactory.CameraBalanceMode.Type.Userwhite),
             )
         )
     assert exc.value.args[0] == "For userwhite balance mode, three values are expected: [red_gain, green_gain, blue_gain]"

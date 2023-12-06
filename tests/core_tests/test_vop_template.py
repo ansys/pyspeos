@@ -24,9 +24,7 @@ def test_vop_template_factory(speos: Speos):
 
     # Optic without constringence
     vop_t_optic0 = vop_t_db.create(
-        VOPTemplateFactory.optic(
-            name="optic_0", description="Optic vop template without constringence", index=1.5, absorption=0.0
-        )
+        VOPTemplateFactory.optic(name="optic_0", description="Optic vop template without constringence", index=1.5, absorption=0.0)
     )
     assert vop_t_optic0.key != ""
 
@@ -65,9 +63,7 @@ def test_vop_template_factory(speos: Speos):
     # Example of wrong vop template creation : negative absorption
     with pytest.raises(grpc.RpcError) as exc_info:
         vop_t_db.create(
-            VOPTemplateFactory.optic(
-                name="optic_2", description="Optic vop template with negative absorption", index=1.5, absorption=-50.0
-            )
+            VOPTemplateFactory.optic(name="optic_2", description="Optic vop template with negative absorption", index=1.5, absorption=-50.0)
         )
     error_details = json.loads(exc_info.value.details())
     assert error_details["ErrorName"] == "OPTUserMaterialBasicHasNegativeAbsorptionValues"

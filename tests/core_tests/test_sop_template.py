@@ -19,9 +19,7 @@ def test_sop_template_factory(speos: Speos):
     sop_t_db = speos.client.sop_templates()  # Create sop_template stub from client channel
 
     # Mirror
-    sop_t_mirror = sop_t_db.create(
-        message=SOPTemplateFactory.mirror(name="mirror_0", description="Mirror sop template", reflectance=100.0)
-    )
+    sop_t_mirror = sop_t_db.create(message=SOPTemplateFactory.mirror(name="mirror_0", description="Mirror sop template", reflectance=100.0))
     assert sop_t_mirror.key != ""
 
     # OpticalPolished

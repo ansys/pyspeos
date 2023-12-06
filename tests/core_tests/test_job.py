@@ -1,10 +1,11 @@
 """
 Test job.
 """
+from test_scene import create_basic_scene
+
 from ansys.speos.core.job import JobFactory
 from ansys.speos.core.speos import Speos
 from helper import clean_all_dbs
-from test_client_scene import create_basic_scene
 
 
 def test_job_factory(speos: Speos):
@@ -35,5 +36,7 @@ def test_job_factory(speos: Speos):
         )
     )
     assert job_int.key != ""
+
+    # job_int.run()
 
     clean_all_dbs(speos.client)
