@@ -30,3 +30,9 @@ class AxisPlane:
 class GeoPaths:
     def __init__(self, geo_paths: list[str] = []) -> None:
         self.geo_paths = geo_paths
+
+
+class GeoPathWithReverseNormal:
+    def __init__(self, geo_path: str, reverse_normal: bool = False) -> None:
+        self.geo_path = geo_path
+        self.reverse_normal = reverse_normal

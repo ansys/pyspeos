@@ -1,5 +1,6 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
 from enum import Enum
+from typing import Mapping
 
 from ansys.api.speos.spectrum.v1 import spectrum_pb2 as messages
 from ansys.api.speos.spectrum.v1 import spectrum_pb2_grpc as service
@@ -75,29 +76,43 @@ class SpectrumFactory:
         ],
     )
 
-    def monochromatic(name: str, description: str, wavelength: float) -> Spectrum:
+    def monochromatic(name: str, wavelength: float = 555, description: str = "", metadata: Mapping[str, str] = None) -> Spectrum:
         spec = Spectrum(name=name, description=description)
+        if metadata is not None:
+            spec.metadata.update(metadata)
         spec.monochromatic.wavelength = wavelength
         return spec
 
-    def blackbody(name: str, description: str, temperature: float) -> Spectrum:
+    def blackbody(name: str, temperature: float = 2856, description: str = "", metadata: Mapping[str, str] = None) -> Spectrum:
         spec = Spectrum(name=name, description=description)
+        if metadata is not None:
+            spec.metadata.update(metadata)
         spec.blackbody.temperature = temperature
         return spec
 
-    def sampled(name: str, description: str, wavelengths: list[float], values: list[float]) -> Spectrum:
+    def sampled(
+        name: str, wavelengths: list[float], values: list[float], description: str = "", metadata: Mapping[str, str] = None
+    ) -> Spectrum:
         spec = Spectrum(name=name, description=description)
+        if metadata is not None:
+            spec.metadata.update(metadata)
         spec.sampled.wavelengths.extend(wavelengths)
         spec.sampled.values.extend(values)
         return spec
 
-    def library(name: str, description: str, file_uri: str) -> Spectrum:
+    def library(name: str, file_uri: str, description: str = "", metadata: Mapping[str, str] = None) -> Spectrum:
         spec = Spectrum(name=name, description=description)
+        if metadata is not None:
+            spec.metadata.update(metadata)
         spec.library.file_uri = file_uri
         return spec
 
-    def predefined(name: str, description: str, type: PredefinedType) -> Spectrum:
+    def predefined(
+        name: str, type: PredefinedType = PredefinedType.Incandescent, description: str = "", metadata: Mapping[str, str] = None
+    ) -> Spectrum:
         spec = Spectrum(name=name, description=description)
+        if metadata is not None:
+            spec.metadata.update(metadata)
         if type == SpectrumFactory.PredefinedType.Incandescent:
             spec.predefined.incandescent.SetInParent()
         elif type == SpectrumFactory.PredefinedType.WarmWhiteFluorescent:

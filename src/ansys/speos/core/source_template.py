@@ -1,5 +1,6 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
 from enum import Enum
+from typing import Mapping
 
 from ansys.api.speos.source.v1 import source_pb2 as messages
 from ansys.api.speos.source.v1 import source_pb2_grpc as service
@@ -67,18 +68,21 @@ class SourceTemplateFactory:
     class Flux:
         Unit = Enum("Unit", ["Lumen", "Watt", "Candela"])
 
-        def __init__(self, unit: Unit, value: float) -> None:
+        def __init__(self, unit: Unit = Unit.Lumen, value: float = 683) -> None:
             self.unit = unit
             self.value = value
 
     def luminaire(
         name: str,
-        description: str,
         intensity_file_uri: str,
         spectrum: SpectrumLink,
         flux: Flux = None,
+        description: str = "",
+        metadata: Mapping[str, str] = None,
     ) -> SourceTemplate:
         src = SourceTemplate(name=name, description=description)
+        if metadata is not None:
+            src.metadata.update(metadata)
 
         if flux is None:
             src.luminaire.flux_from_intensity_file.SetInParent()
@@ -95,13 +99,16 @@ class SourceTemplateFactory:
 
     def surface(
         name: str,
-        description: str,
         intensity_template: IntensityTemplateLink,
         flux: Flux = None,
         exitance_xmp_file_uri: str = "",
         spectrum: SpectrumLink = None,
+        description: str = "",
+        metadata: Mapping[str, str] = None,
     ) -> SourceTemplate:
         src = SourceTemplate(name=name, description=description)
+        if metadata is not None:
+            src.metadata.update(metadata)
 
         if flux is None:
             src.surface.flux_from_intensity_file.SetInParent()

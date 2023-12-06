@@ -6,7 +6,12 @@ from ansys.api.speos.scene.v1 import scene_pb2 as messages
 from ansys.api.speos.scene.v1 import scene_pb2_grpc as service
 
 from ansys.speos.core.crud import CrudItem, CrudStub
-from ansys.speos.core.geometry_utils import AxisPlane, AxisSystem, GeoPaths
+from ansys.speos.core.geometry_utils import (
+    AxisPlane,
+    AxisSystem,
+    GeoPaths,
+    GeoPathWithReverseNormal,
+)
 from ansys.speos.core.part import PartLink
 from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 from ansys.speos.core.sensor_template import SensorTemplateLink
@@ -170,7 +175,7 @@ class SceneFactory:
         return lum_props
 
     def surface_source_props(
-        exitance_constant_geo_paths: Mapping[str, bool] = None,
+        exitance_constant_geo_paths: list[GeoPathWithReverseNormal] = None,
         exitance_variable_axis_plane: AxisPlane = None,
         intensity_properties: messages.Scene.SourceInstance.IntensityProperties = None,
     ) -> messages.Scene.SourceInstance.SurfaceProperties:
@@ -178,8 +183,10 @@ class SceneFactory:
         if exitance_constant_geo_paths is not None:
             surf_props.exitance_constant_properties.geo_paths.extend(
                 [
-                    messages.Scene.SourceInstance.SurfaceProperties.ExitanceConstantProperties.GeoPath(geo_path=g, reverse_normal=r)
-                    for g, r in exitance_constant_geo_paths.items()
+                    messages.Scene.SourceInstance.SurfaceProperties.ExitanceConstantProperties.GeoPath(
+                        geo_path=g.geo_path, reverse_normal=g.reverse_normal
+                    )
+                    for g in exitance_constant_geo_paths
                 ]
             )
         elif exitance_variable_axis_plane is not None:

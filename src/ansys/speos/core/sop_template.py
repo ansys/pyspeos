@@ -1,4 +1,6 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
+from typing import Mapping
+
 from ansys.api.speos.sop.v1 import sop_pb2 as messages
 from ansys.api.speos.sop.v1 import sop_pb2_grpc as service
 
@@ -60,23 +62,33 @@ class SOPTemplateStub(CrudStub):
 
 
 class SOPTemplateFactory:
-    def mirror(name: str, description: str, reflectance: float) -> SOPTemplate:
+    def mirror(name: str, reflectance: float = 100, description: str = "", metadata: Mapping[str, str] = None) -> SOPTemplate:
         sop = SOPTemplate(name=name, description=description)
+        if metadata is not None:
+            sop.metadata.update(metadata)
         sop.mirror.reflectance = reflectance
         return sop
 
-    def optical_polished(name: str, description: str) -> SOPTemplate:
+    def optical_polished(name: str, description: str = "", metadata: Mapping[str, str] = None) -> SOPTemplate:
         sop = SOPTemplate(name=name, description=description)
+        if metadata is not None:
+            sop.metadata.update(metadata)
         sop.optical_polished.SetInParent()
         return sop
 
-    def library(name: str, description: str, sop_file_uri: str) -> SOPTemplate:
+    def library(name: str, sop_file_uri: str, description: str = "", metadata: Mapping[str, str] = None) -> SOPTemplate:
         sop = SOPTemplate(name=name, description=description)
+        if metadata is not None:
+            sop.metadata.update(metadata)
         sop.library.sop_file_uri = sop_file_uri
         return sop
 
-    def plugin(name: str, description: str, plugin_sop_file_uri: str, parameters_file_uri: str) -> SOPTemplate:
+    def plugin(
+        name: str, plugin_sop_file_uri: str, parameters_file_uri: str, description: str = "", metadata: Mapping[str, str] = None
+    ) -> SOPTemplate:
         sop = SOPTemplate(name=name, description=description)
+        if metadata is not None:
+            sop.metadata.update(metadata)
         sop.plugin.plugin_sop_file_uri = plugin_sop_file_uri
         sop.plugin.parameters_file_uri = parameters_file_uri
         return sop

@@ -7,6 +7,7 @@ from ansys.speos.core.body import Body, BodyFactory, BodyLink, BodyStub
 import ansys.speos.core.client as pys
 from ansys.speos.core.crud import CrudItem, CrudStub
 from ansys.speos.core.face import Face, FaceFactory, FaceLink, FaceStub
+from ansys.speos.core.geometry_utils import GeoPathWithReverseNormal
 from ansys.speos.core.intensity_template import (
     IntensityTemplate,
     IntensityTemplateFactory,
@@ -212,51 +213,26 @@ def create_new_item(service) -> CrudItem:
             )
         )
     elif service == "sop_template":
-        return speos_client.sop_templates().create(message=SOPTemplateFactory.mirror(name="new", description="new", reflectance=100.0))
+        return speos_client.sop_templates().create(message=SOPTemplateFactory.mirror(name="new", description="new"))
     elif service == "vop_template":
-        return speos_client.vop_templates().create(
-            message=VOPTemplateFactory.optic(name="new", description="new", index=1.5, absorption=0.0)
-        )
+        return speos_client.vop_templates().create(message=VOPTemplateFactory.optic(name="new", description="new"))
     elif service == "spectrum":
-        return speos_client.spectrums().create(message=SpectrumFactory.monochromatic(name="new", description="new", wavelength=486))
+        return speos_client.spectrums().create(message=SpectrumFactory.monochromatic(name="new", description="new"))
     elif service == "intensity_template":
-        return speos_client.intensity_templates().create(
-            message=IntensityTemplateFactory.lambertian(name="new", description="new", total_angle=180.0)
-        )
+        return speos_client.intensity_templates().create(message=IntensityTemplateFactory.lambertian(name="new", description="new"))
     elif service == "source_template":
         return speos_client.source_templates().create(
             message=SourceTemplateFactory.surface(
                 name="new",
                 description="new",
-                intensity_template=speos_client.intensity_templates().create(
-                    message=IntensityTemplateFactory.symmetric_gaussian(
-                        name="symmetric_gaussian",
-                        description="symmetric gaussian intensity template for surfacic source template",
-                        FWHM_angle=30.0,
-                        total_angle=180.0,
-                    )
-                ),
+                intensity_template=create_new_item("intensity_template"),
                 flux=SourceTemplateFactory.Flux(unit=SourceTemplateFactory.Flux.Unit.Lumen, value=683.0),
-                spectrum=speos_client.spectrums().create(
-                    message=SpectrumFactory.blackbody(
-                        name="blackbody",
-                        description="blackbody spectrum for surfacic source template",
-                        temperature=2856.0,
-                    )
-                ),
+                spectrum=create_new_item("spectrum"),
             )
         )
     elif service == "sensor_template":
         return speos_client.sensor_templates().create(
-            message=SensorTemplateFactory.irradiance(
-                name="new",
-                description="new",
-                type=SensorTemplateFactory.Type.Photometric,
-                illuminance_type=SensorTemplateFactory.IlluminanceType.Planar,
-                dimensions=SensorTemplateFactory.Dimensions(
-                    x_start=-50.0, x_end=50.0, x_sampling=100, y_start=-50.0, y_end=50.0, y_sampling=100
-                ),
-            )
+            message=SensorTemplateFactory.irradiance(name="new", description="new"),
         )
     elif service == "simulation_template":
         return speos_client.simulation_templates().create(message=SimulationTemplateFactory.direct_mc(name="new", description="new"))
@@ -272,7 +248,9 @@ def create_new_item(service) -> CrudItem:
                     SceneFactory.source_instance(
                         name="Surface.1",
                         source_template=create_new_item("source_template"),
-                        properties=SceneFactory.surface_source_props(exitance_constant_geo_paths={"body_for_part/Face:2": False}),
+                        properties=SceneFactory.surface_source_props(
+                            exitance_constant_geo_paths=[GeoPathWithReverseNormal("body_for_part/Face:2")]
+                        ),
                     )
                 ],
                 sensor_instances=[

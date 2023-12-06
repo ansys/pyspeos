@@ -1,4 +1,6 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
+from typing import Mapping
+
 from ansys.api.speos.intensity.v1 import intensity_pb2 as messages
 from ansys.api.speos.intensity.v1 import intensity_pb2_grpc as service
 
@@ -60,35 +62,51 @@ class IntensityTemplateStub(CrudStub):
 
 
 class IntensityTemplateFactory:
-    def library(name: str, description: str, file_uri: str) -> IntensityTemplate:
+    def library(name: str, file_uri: str, description: str = "", metadata: Mapping[str, str] = None) -> IntensityTemplate:
         intens = IntensityTemplate(name=name, description=description)
+        if metadata is not None:
+            intens.metadata.update(metadata)
         intens.library.intensity_file_uri = file_uri
         return intens
 
-    def lambertian(name: str, description: str, total_angle: float) -> IntensityTemplate:
+    def lambertian(name: str, total_angle: float = 180, description: str = "", metadata: Mapping[str, str] = None) -> IntensityTemplate:
         intens = IntensityTemplate(name=name, description=description)
+        if metadata is not None:
+            intens.metadata.update(metadata)
         intens.lambertian.total_angle = total_angle
         return intens
 
-    def cos(name: str, description: str, N: float, total_angle: float) -> IntensityTemplate:
+    def cos(
+        name: str, N: float = 3, total_angle: float = 180, description: str = "", metadata: Mapping[str, str] = None
+    ) -> IntensityTemplate:
         intens = IntensityTemplate(name=name, description=description)
+        if metadata is not None:
+            intens.metadata.update(metadata)
         intens.cos.N = N
         intens.cos.total_angle = total_angle
         return intens
 
     def symmetric_gaussian(
-        name: str,
-        description: str,
-        FWHM_angle: float,
-        total_angle: float,
+        name: str, FWHM_angle: float = 30, total_angle: float = 180, description: str = "", metadata: Mapping[str, str] = None
     ) -> IntensityTemplate:
         intens = IntensityTemplate(name=name, description=description)
+        if metadata is not None:
+            intens.metadata.update(metadata)
         intens.symmetric_gaussian.FWHM_angle = FWHM_angle
         intens.symmetric_gaussian.total_angle = total_angle
         return intens
 
-    def asymmetric_gaussian(name: str, description: str, FWHM_angle_x: float, FWHM_angle_y: float, total_angle: float) -> IntensityTemplate:
+    def asymmetric_gaussian(
+        name: str,
+        FWHM_angle_x: float = 30,
+        FWHM_angle_y: float = 30,
+        total_angle: float = 180,
+        description: str = "",
+        metadata: Mapping[str, str] = None,
+    ) -> IntensityTemplate:
         intens = IntensityTemplate(name=name, description=description)
+        if metadata is not None:
+            intens.metadata.update(metadata)
         intens.asymmetric_gaussian.FWHM_angle_x = FWHM_angle_x
         intens.asymmetric_gaussian.FWHM_angle_y = FWHM_angle_y
         intens.asymmetric_gaussian.total_angle = total_angle

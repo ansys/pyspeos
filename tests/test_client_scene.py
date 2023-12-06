@@ -5,7 +5,7 @@ import os
 
 from ansys.speos.core.body import BodyFactory
 from ansys.speos.core.face import FaceFactory
-from ansys.speos.core.geometry_utils import AxisSystem, GeoPaths
+from ansys.speos.core.geometry_utils import AxisSystem, GeoPaths, GeoPathWithReverseNormal
 from ansys.speos.core.intensity_template import IntensityTemplateFactory
 from ansys.speos.core.part import PartFactory
 from ansys.speos.core.scene import SceneFactory, SceneLink
@@ -137,7 +137,9 @@ def create_basic_scene(speos: Speos) -> SceneLink:
             vop_instances=[
                 SceneFactory.vop_instance(
                     name="opaque.1",
-                    vop_template=speos.client.vop_templates().create(message=VOPTemplateFactory.opaque("opaque", "opaque vop template")),
+                    vop_template=speos.client.vop_templates().create(
+                        message=VOPTemplateFactory.opaque(name="opaque", description="opaque vop template")
+                    ),
                     geometries=GeoPaths(geo_paths=["Body0:1"]),
                 )
             ],
@@ -145,7 +147,9 @@ def create_basic_scene(speos: Speos) -> SceneLink:
                 SceneFactory.sop_instance(
                     name="mirror_100.1",
                     sop_template=speos.client.sop_templates().create(
-                        message=SOPTemplateFactory.mirror("mirror_100", "mirror sop template - reflectance 100", reflectance=100)
+                        message=SOPTemplateFactory.mirror(
+                            name="mirror_100", description="mirror sop template - reflectance 100", reflectance=100
+                        )
                     ),
                     geometries=GeoPaths(geo_paths=["Body0:1", "BodySource:1/FaceSource:1"]),
                 )
@@ -164,7 +168,7 @@ def create_basic_scene(speos: Speos) -> SceneLink:
                 SceneFactory.source_instance(
                     name="surface_with_blackbody.1",
                     source_template=src_t_surface_bb,
-                    properties=SceneFactory.surface_source_props(exitance_constant_geo_paths={"BodySource:1": False}),
+                    properties=SceneFactory.surface_source_props(exitance_constant_geo_paths=[GeoPathWithReverseNormal("BodySource:1")]),
                 ),
             ],
             sensor_instances=[

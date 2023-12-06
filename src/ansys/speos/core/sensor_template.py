@@ -1,5 +1,6 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
 from enum import Enum
+from typing import Mapping
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2
 from ansys.api.speos.sensor.v1 import sensor_pb2 as messages
@@ -67,7 +68,15 @@ class SensorTemplateFactory:
     IlluminanceType = Enum("IlluminanceType", ["Planar", "Radial", "Hemispherical", "Cylindrical", "SemiCylindrical"])
 
     class Dimensions:
-        def __init__(self, x_start: float, x_end: float, x_sampling: int, y_start: float, y_end: float, y_sampling: int) -> None:
+        def __init__(
+            self,
+            x_start: float = -50,
+            x_end: float = 50,
+            x_sampling: int = 100,
+            y_start: float = -50,
+            y_end: float = 50,
+            y_sampling: int = 100,
+        ) -> None:
             self.x_start = x_start
             self.x_end = x_end
             self.x_sampling = x_sampling
@@ -76,20 +85,22 @@ class SensorTemplateFactory:
             self.y_sampling = y_sampling
 
     class WavelengthsRange:
-        def __init__(self, start: float, end: float, sampling: int) -> None:
+        def __init__(self, start: float = 400, end: float = 700, sampling: int = 13) -> None:
             self.start = start
             self.end = end
             self.sampling = sampling
 
     class CameraDimensions:
-        def __init__(self, horz_pixel: int, vert_pixel: int, width: float, height: float) -> None:
+        def __init__(self, horz_pixel: int = 640, vert_pixel: int = 480, width: float = 5, height: float = 5) -> None:
             self.horz_pixel = horz_pixel
             self.vert_pixel = vert_pixel
             self.width = width
             self.height = height
 
     class CameraSettings:
-        def __init__(self, gamma_correction: float, focal_length: float, imager_distance: float, f_number: float) -> None:
+        def __init__(
+            self, gamma_correction: float = 2.2, focal_length: float = 5, imager_distance: float = 10, f_number: float = 20
+        ) -> None:
             self.gamma_correction = gamma_correction
             self.focal_length = focal_length
             self.imager_distance = imager_distance
@@ -111,13 +122,16 @@ class SensorTemplateFactory:
 
     def irradiance(
         name: str,
-        description: str,
-        type: Type,
-        illuminance_type: IlluminanceType,
-        dimensions: Dimensions,
+        type: Type = Type.Photometric,
+        illuminance_type: IlluminanceType = IlluminanceType.Planar,
+        dimensions: Dimensions = Dimensions(),
         wavelengths_range: WavelengthsRange = None,
+        description: str = "",
+        metadata: Mapping[str, str] = None,
     ) -> SensorTemplate:
         ssr = SensorTemplate(name=name, description=description)
+        if metadata is not None:
+            ssr.metadata.update(metadata)
         if type == SensorTemplateFactory.Type.Photometric:
             ssr.irradiance_sensor_template.sensor_type_photometric.SetInParent()
         elif type == SensorTemplateFactory.Type.Colorimetric:
@@ -157,16 +171,19 @@ class SensorTemplateFactory:
 
     def camera(
         name: str,
-        description: str,
-        settings: CameraSettings,
-        dimensions: CameraDimensions,
         distorsion_file_uri: str,
         transmittance_file_uri: str,
         spectrum_file_uris: list[str],
-        wavelengths_range: WavelengthsRange,
+        settings: CameraSettings = CameraSettings(),
+        dimensions: CameraDimensions = CameraDimensions(),
+        wavelengths_range: WavelengthsRange = WavelengthsRange(),
         camera_balance_mode: CameraBalanceMode = None,
+        description: str = "",
+        metadata: Mapping[str, str] = None,
     ) -> SensorTemplate:
         ssr = SensorTemplate(name=name, description=description)
+        if metadata is not None:
+            ssr.metadata.update(metadata)
         ssr.camera_sensor_template.sensor_mode_photometric.acquisition_integration = 0.1
         ssr.camera_sensor_template.sensor_mode_photometric.acquisition_lag_time = 0
 

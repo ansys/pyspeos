@@ -1,4 +1,6 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
+from typing import Mapping
+
 from ansys.api.speos.vop.v1 import vop_pb2 as messages
 from ansys.api.speos.vop.v1 import vop_pb2_grpc as service
 
@@ -60,25 +62,40 @@ class VOPTemplateStub(CrudStub):
 
 
 class VOPTemplateFactory:
-    def opaque(name: str, description: str) -> VOPTemplate:
+    def opaque(name: str, description: str = "", metadata: Mapping[str, str] = None) -> VOPTemplate:
         vop = VOPTemplate(name=name, description=description)
+        if metadata is not None:
+            vop.metadata.update(metadata)
         vop.opaque.SetInParent()
         return vop
 
-    def optic(name: str, description: str, index: float, absorption: float, constringence: float = None) -> VOPTemplate:
+    def optic(
+        name: str,
+        index: float = 1.5,
+        absorption: float = 0.0,
+        constringence: float = None,
+        description: str = "",
+        metadata: Mapping[str, str] = None,
+    ) -> VOPTemplate:
         vop = VOPTemplate(name=name, description=description)
+        if metadata is not None:
+            vop.metadata.update(metadata)
         vop.optic.index = index
         vop.optic.absorption = absorption
         if constringence is not None:
             vop.optic.constringence = constringence
         return vop
 
-    def library(name: str, description: str, material_file_uri: str) -> VOPTemplate:
+    def library(name: str, material_file_uri: str, description: str = "", metadata: Mapping[str, str] = None) -> VOPTemplate:
         vop = VOPTemplate(name=name, description=description)
+        if metadata is not None:
+            vop.metadata.update(metadata)
         vop.library.material_file_uri = material_file_uri
         return vop
 
-    def non_homogeneous(name: str, description: str, gradedmaterial_file_uri: str) -> VOPTemplate:
+    def non_homogeneous(name: str, gradedmaterial_file_uri: str, description: str = "", metadata: Mapping[str, str] = None) -> VOPTemplate:
         vop = VOPTemplate(name=name, description=description)
+        if metadata is not None:
+            vop.metadata.update(metadata)
         vop.non_homogeneous.gradedmaterial_file_uri = gradedmaterial_file_uri
         return vop
