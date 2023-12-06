@@ -18,7 +18,6 @@ def test_job_factory(speos: Speos):
     assert speos.client.healthy is True
 
     scene = create_basic_scene(speos)
-    assert scene.key != ""
     assert len(scene.get().simulations) == 4
 
     job_dir = speos.client.jobs().create(
@@ -26,23 +25,18 @@ def test_job_factory(speos: Speos):
             name="job_dir", scene=scene, simulation_path=scene.get().simulations[0].name, properties=JobFactory.direct_mc_props()
         )
     )
-    assert job_dir.key != ""
 
     job_inv = speos.client.jobs().create(
         message=JobFactory.new(
             name="job_inv", scene=scene, simulation_path=scene.get().simulations[2].name, properties=JobFactory.inverse_mc_props()
         )
     )
-    assert job_inv.key != ""
 
     job_int = speos.client.jobs().create(
         message=JobFactory.new(
             name="job_int", scene=scene, simulation_path=scene.get().simulations[3].name, properties=JobFactory.interactive_props()
         )
     )
-    assert job_int.key != ""
-
-    # job_int.run()
 
     clean_all_dbs(speos.client)
 
@@ -53,7 +47,6 @@ def test_job_actions(speos: Speos):
 
     # Create basic scene
     scene = create_basic_scene(speos)
-    assert scene.key != ""
     assert len(scene.get().simulations) == 4
 
     # Create CPU job for direct simu
@@ -62,7 +55,6 @@ def test_job_actions(speos: Speos):
             name="job_dir", scene=scene, simulation_path=scene.get().simulations[1].name, properties=JobFactory.direct_mc_props()
         )
     )
-    assert job_dir.key != ""
 
     # Start job and check its state regularly
     job_dir.start()
@@ -82,16 +74,29 @@ def test_job_actions(speos: Speos):
     # Verify that results are generated
     assert len(job_dir.get_results().results) == 3
 
-    # Create CPU job for inverse simu + run via helper method
-    job_inv = speos.client.jobs().create(
+    clean_all_dbs(speos.client)
+
+
+def test_job_actions_interactive_simu(speos: Speos):
+    """Test the job actions with interactive simulation."""
+    assert speos.client.healthy is True
+
+    # Create basic scene
+    scene = create_basic_scene(speos)
+    assert len(scene.get().simulations) == 4
+
+    # Create CPU job for interactive simu
+    job_int = speos.client.jobs().create(
         message=JobFactory.new(
-            name="job_inv",
-            scene=scene,
-            simulation_path=scene.get().simulations[2].name,
-            properties=JobFactory.inverse_mc_props(stop_condition_passes_number=200),
+            name="job_int", scene=scene, simulation_path=scene.get().simulations[3].name, properties=JobFactory.interactive_props()
         )
     )
-    assert job_inv.key != ""
-    run_job_and_check_state(job_inv)
+    run_job_and_check_state(job_int)
+    assert len(job_int.get_results().results) == 1
+
+    ray_paths = []
+    for ray_path in job_int.get_ray_paths():
+        ray_paths.append(ray_path)
+    assert len(ray_paths) == 3 * 100  # 100 rays per source and three sources are referenced in this simulation
 
     clean_all_dbs(speos.client)

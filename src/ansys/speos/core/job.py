@@ -1,6 +1,6 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
 from enum import Enum
-from typing import Mapping, Union
+from typing import Iterator, Mapping, Union
 
 from ansys.api.speos.job.v2 import job_pb2 as messages
 from ansys.api.speos.job.v2 import job_pb2_grpc as service
@@ -49,8 +49,9 @@ class JobLink(CrudItem):
     def get_progress_status(self) -> messages.GetInformation_Response:
         return self._actions_stub.GetInformation(messages.GetInformation_Request(guid=self.key))
 
-    def get_ray_paths(self) -> RayPath:
-        return self._actions_stub.GetRayPaths(messages.GetRayPaths_Request(guid=self.key))
+    def get_ray_paths(self) -> Iterator[RayPath]:
+        for rp in self._actions_stub.GetRayPaths(messages.GetRayPaths_Request(guid=self.key)):
+            yield rp
 
 
 class JobStub(CrudStub):
