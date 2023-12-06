@@ -1,7 +1,8 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
 from enum import Enum
-from typing import Mapping, Union
+from typing import Iterator, Mapping, Union
 
+from ansys.api.speos.results.v1.ray_path_pb2 import RayPath
 from ansys.api.speos.scene.v1 import scene_pb2 as messages
 from ansys.api.speos.scene.v1 import scene_pb2_grpc as service
 
@@ -24,8 +25,9 @@ Scene = messages.Scene
 
 
 class SceneLink(CrudItem):
-    def __init__(self, db, key: str):
+    def __init__(self, db, key: str, actions_stub: service.SceneActionsStub):
         super().__init__(db, key)
+        self._actions_stub = actions_stub
 
     def __str__(self) -> str:
         return protobuf_message_to_str(self.get())
@@ -39,15 +41,26 @@ class SceneLink(CrudItem):
     def delete(self) -> None:
         self._stub.delete(self)
 
+    # Actions
+    def load_file(self, file_uri: str) -> None:
+        self._actions_stub.LoadFile(messages.LoadFile_Request(guid=self.key, file_uri=file_uri))
+
+    def get_source_ray_paths(self, source_path: str, rays_nb: int = None) -> Iterator[RayPath]:
+        for rp in self._actions_stub.GetSourceRayPaths(
+            messages.GetSourceRayPaths_Request(guid=self.key, source_path=source_path, rays_nb=rays_nb)
+        ):
+            yield rp
+
 
 class SceneStub(CrudStub):
     def __init__(self, channel):
         super().__init__(stub=service.ScenesManagerStub(channel=channel))
+        self._actions_stub = service.SceneActionsStub(channel=channel)
 
-    def create(self, message: Scene) -> SceneLink:
+    def create(self, message: Scene = Scene()) -> SceneLink:
         """Create a new entry."""
         resp = CrudStub.create(self, messages.Create_Request(scene=message))
-        return SceneLink(self, resp.guid)
+        return SceneLink(self, resp.guid, self._actions_stub)
 
     def read(self, ref: SceneLink) -> Scene:
         """Get an existing entry."""
@@ -71,7 +84,7 @@ class SceneStub(CrudStub):
     def list(self) -> list[SceneLink]:
         """List existing entries."""
         guids = CrudStub.list(self, messages.List_Request()).guids
-        return list(map(lambda x: SceneLink(self, x), guids))
+        return list(map(lambda x: SceneLink(self, x, self._actions_stub), guids))
 
 
 class SceneFactory:

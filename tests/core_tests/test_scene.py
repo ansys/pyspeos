@@ -213,3 +213,98 @@ def test_scene_factory(speos: Speos):
     assert scene0.key != ""
 
     clean_all_dbs(speos.client)
+
+
+def test_scene_actions_load(speos: Speos):
+    """Test the scene action: load file."""
+    assert speos.client.healthy is True
+    speos_file_path = os.path.join(test_path, os.path.join("LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"))
+
+    # Create empty scene + load_file
+    scene = speos.client.scenes().create()
+    scene.load_file(file_uri=speos_file_path)
+
+    scene_dm = scene.get()
+    assert len(scene_dm.sources) == 2
+    assert len(scene_dm.sensors) == 1
+    assert len(scene_dm.simulations) == 1
+
+    clean_all_dbs(speos.client)
+
+
+def test_scene_actions_load_modify(speos: Speos):
+    """Test the scene action: load file and modify sensors."""
+    assert speos.client.healthy is True
+    speos_file_path = os.path.join(test_path, os.path.join("LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"))
+
+    # Create empty scene + load_file
+    scene = speos.client.scenes().create()
+    scene.load_file(file_uri=speos_file_path)
+
+    # Modify existing sensor : layer_type_source -> layer_type_none
+    scene_dm = scene.get()  # Retrieve scene data from DB
+    assert len(scene_dm.sensors) == 1
+    assert scene_dm.sensors[0].HasField("irradiance_sensor_properties")
+    assert scene_dm.sensors[0].irradiance_sensor_properties.HasField("layer_type_source")
+    scene_dm.sensors[0].irradiance_sensor_properties.layer_type_none.SetInParent()
+    scene.set(data=scene_dm)  # Update the scene in DB
+
+    # Retrieve scene data from DB
+    scene_dm = scene.get()
+    # Check that our change was effective layer_type_source -> layer_type_none
+    assert scene_dm.sensors[0].irradiance_sensor_properties.HasField("layer_type_none")
+
+    # Adding a sensor
+    scene_dm.sensors.append(
+        SceneFactory.sensor_instance(
+            name="Irradiance.1",
+            sensor_template=speos.client.get_item(scene_dm.sensors[0].sensor_guid),
+            properties=SceneFactory.irradiance_sensor_props(
+                axis_system=AxisSystem(origin=[-42, 2, 5], x_vect=[0, 1, 0], y_vect=[0, 0, -1], z_vect=[-1, 0, 0]),
+                layer_type=SceneFactory.Properties.Sensor.LayerType.Source(),
+            ),
+        )
+    )
+    scene.set(data=scene_dm)  # Update the scene in DB
+
+    assert len(scene.get().sensors) == 2
+
+    clean_all_dbs(speos.client)
+
+
+def test_scene_actions_get_source_ray_paths(speos: Speos):
+    """Test the scene action: load file and modify sensors."""
+    assert speos.client.healthy is True
+
+    # Creation of a basic scene with a luminaire source
+    main_part = speos.client.parts().create(message=PartFactory.new(name="MainPart", bodies=[]))
+
+    scene = speos.client.scenes().create(
+        message=SceneFactory.new(
+            name="Scene with sources",
+            part=main_part,
+            vop_instances=[],
+            sop_instances=[],
+            source_instances=[
+                SceneFactory.source_instance(
+                    name="Luminaire.1",
+                    source_template=speos.client.source_templates().create(
+                        message=SourceTemplateFactory.luminaire(
+                            name="Luminaire",
+                            intensity_file_uri=os.path.join(test_path, "IES_C_DETECTOR.ies"),
+                            spectrum=speos.client.spectrums().create(message=SpectrumFactory.blackbody(name="Blackbody_2856")),
+                        )
+                    ),
+                    properties=SceneFactory.luminaire_source_props(axis_system=AxisSystem(origin=[0, 0, 20])),
+                ),
+            ],
+            sensor_instances=[],
+            simulation_instances=[],
+        )
+    )
+
+    # Get ray_paths
+    for ray_path in scene.get_source_ray_paths(source_path="Luminaire.1", rays_nb=20):
+        assert ray_path.impacts_coordinates == [0, 0, 20]
+
+    clean_all_dbs(speos.client)
