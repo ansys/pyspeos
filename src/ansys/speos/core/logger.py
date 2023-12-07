@@ -170,9 +170,7 @@ class PySpeosCustomAdapter(logging.LoggerAdapter):
     def process(self, msg, kwargs):
         kwargs["extra"] = {}
         # This are the extra parameters sent to log
-        kwargs["extra"][
-            "instance_name"
-        ] = self.extra.get_name()  # here self.extra is the argument pass to the log records.
+        kwargs["extra"]["instance_name"] = self.extra.get_name()  # here self.extra is the argument pass to the log records.
         return msg, kwargs
 
     def log_to_file(self, filename: str = FILE_NAME, level: int = LOG_LEVEL):
@@ -468,9 +466,7 @@ class Logger:
         self._instances[name] = self._make_child_logger(self, name, level)
         return self._instances[name]
 
-    def add_instance_logger(
-        self, name: str, client_instance: "SpeosClient", level: Optional[int] = None
-    ) -> PySpeosCustomAdapter:
+    def add_instance_logger(self, name: str, client_instance: "SpeosClient", level: Optional[int] = None) -> PySpeosCustomAdapter:
         """Add a logger for a speos instance.
 
         The speos instance logger is a logger with an adapter that adds

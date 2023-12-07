@@ -156,10 +156,7 @@ def compareXmpIntensityDistributions(xmp1, xmp2):
                 return False
             for y in range(xmp1.base_data.y_nb):
                 for x in range(xmp1.base_data.x_nb):
-                    if (
-                        xmp1.spectral_value.layer[l].wavelength[w].y[y].x[x]
-                        != xmp2.spectral_value.layer[l].wavelength[w].y[y].x[x]
-                    ):
+                    if xmp1.spectral_value.layer[l].wavelength[w].y[y].x[x] != xmp2.spectral_value.layer[l].wavelength[w].y[y].x[x]:
                         return False
         for y in range(xmp1.base_data.y_nb):
             for x in range(xmp1.base_data.x_nb):

@@ -56,14 +56,10 @@ def test_lpf_file_reader_mono_v2_DirectSimu(speos: Speos):
     assert raypaths[0].body_context_ids[1] == 2001802324
     assert len(raypaths[0].unique_face_ids) == expected_nb_of_impact
     assert raypaths[0].unique_face_ids[1] == 1815582994
-    assert raypaths[0].lastDirection == lpf_file_reader__v2__pb2.TripletFloat(
-        x=0.0606396869, y=0.995341122, z=-0.0749590397
-    )
+    assert raypaths[0].lastDirection == lpf_file_reader__v2__pb2.TripletFloat(x=0.0606396869, y=0.995341122, z=-0.0749590397)
     assert len(raypaths[0].interaction_statuses) == expected_nb_of_impact
     assert raypaths[0].interaction_statuses[0] == lpf_file_reader__v2__pb2.RayPath.PhotonStatus.StatusJustEmitted
-    assert (
-        raypaths[0].interaction_statuses[1] == lpf_file_reader__v2__pb2.RayPath.PhotonStatus.StatusSpecularTransmitted
-    )
+    assert raypaths[0].interaction_statuses[1] == lpf_file_reader__v2__pb2.RayPath.PhotonStatus.StatusSpecularTransmitted
     assert len(raypaths[0].sensor_contributions) == 0
 
     # Close
@@ -114,9 +110,7 @@ def test_lpf_file_reader_multi_v2(speos: Speos):
 
     # Init with file local path
     path = os.path.join(test_path, "basic_DirectSimu.lpf")
-    stub.InitLpfFileName(
-        lpf_file_reader__v2__pb2.InitLpfFileName_Request_Multi(lpf_reader_guid=guid, lpf_file_uri=path)
-    )
+    stub.InitLpfFileName(lpf_file_reader__v2__pb2.InitLpfFileName_Request_Multi(lpf_reader_guid=guid, lpf_file_uri=path))
 
     # GetInformation
     res_information = stub.GetInformation(lpf_file_reader__v2__pb2.GetInformation_Request_Multi(lpf_reader_guid=guid))
@@ -128,9 +122,7 @@ def test_lpf_file_reader_multi_v2(speos: Speos):
     guid2 = stub.Create(lpf_file_reader__v2__pb2.Create_Request_Multi()).lpf_reader_guid
     # Init second reader
     path2 = os.path.join(test_path, "basic_InverseSimu.lpf")
-    stub.InitLpfFileName(
-        lpf_file_reader__v2__pb2.InitLpfFileName_Request_Multi(lpf_reader_guid=guid2, lpf_file_uri=path2)
-    )
+    stub.InitLpfFileName(lpf_file_reader__v2__pb2.InitLpfFileName_Request_Multi(lpf_reader_guid=guid2, lpf_file_uri=path2))
 
     # GetInformation and read second
     res_information = stub.GetInformation(lpf_file_reader__v2__pb2.GetInformation_Request_Multi(lpf_reader_guid=guid2))
@@ -162,9 +154,7 @@ def test_lpf_file_reader_multi_v2(speos: Speos):
     assert len(raypaths[0].impacts) == expected_nb_of_impact
     assert raypaths[0].impacts[1] == lpf_file_reader__v2__pb2.TripletFloat(x=3.19368935, y=14.999999, z=-3.94779062)
     assert len(raypaths[0].interaction_statuses) == expected_nb_of_impact
-    assert (
-        raypaths[0].interaction_statuses[1] == lpf_file_reader__v2__pb2.RayPath.PhotonStatus.StatusSpecularTransmitted
-    )
+    assert raypaths[0].interaction_statuses[1] == lpf_file_reader__v2__pb2.RayPath.PhotonStatus.StatusSpecularTransmitted
     assert len(raypaths[0].sensor_contributions) == 0
 
     # Close and Delete the first
@@ -210,14 +200,10 @@ def test_lpf_file_reader_mono_v2_DirectSimu_with_file_transfer(speos: Speos):
     assert raypaths[0].body_context_ids[1] == 2001802324
     assert len(raypaths[0].unique_face_ids) == expected_nb_of_impact
     assert raypaths[0].unique_face_ids[1] == 1815582994
-    assert raypaths[0].lastDirection == lpf_file_reader__v2__pb2.TripletFloat(
-        x=0.0606396869, y=0.995341122, z=-0.0749590397
-    )
+    assert raypaths[0].lastDirection == lpf_file_reader__v2__pb2.TripletFloat(x=0.0606396869, y=0.995341122, z=-0.0749590397)
     assert len(raypaths[0].interaction_statuses) == expected_nb_of_impact
     assert raypaths[0].interaction_statuses[0] == lpf_file_reader__v2__pb2.RayPath.PhotonStatus.StatusJustEmitted
-    assert (
-        raypaths[0].interaction_statuses[1] == lpf_file_reader__v2__pb2.RayPath.PhotonStatus.StatusSpecularTransmitted
-    )
+    assert raypaths[0].interaction_statuses[1] == lpf_file_reader__v2__pb2.RayPath.PhotonStatus.StatusSpecularTransmitted
     assert len(raypaths[0].sensor_contributions) == 0
 
     # Close
