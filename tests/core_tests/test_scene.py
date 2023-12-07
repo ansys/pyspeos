@@ -233,7 +233,7 @@ def test_scene_factory_create_instances(speos: Speos):
                     message=IntensityTemplateFactory.asymmetric_gaussian(name="Asymmetric_gaussian")
                 ),
                 flux=SourceTemplateFactory.Flux(),
-                exitance_xmp_file_uri=os.path.join(test_path, os.path.join("PROJECT.Direct-no-Ray.Irradiance Ray Spectral.xmp")),
+                exitance_xmp_file_uri=os.path.join(test_path, "PROJECT.Direct-no-Ray.Irradiance Ray Spectral.xmp"),
             )
         ),
         properties=SceneFactory.surface_source_props(
@@ -248,7 +248,7 @@ def test_scene_factory_create_instances(speos: Speos):
             message=SourceTemplateFactory.surface(
                 name="SurfaceExitanceConstant_LibIntensity",
                 intensity_template=speos.client.intensity_templates().create(
-                    message=IntensityTemplateFactory.library(name="Library", file_uri=os.path.join("IES_C_DETECTOR.ies"))
+                    message=IntensityTemplateFactory.library(name="Library", file_uri=os.path.join(test_path, "IES_C_DETECTOR.ies"))
                 ),
                 spectrum=speos.client.spectrums().create(message=SpectrumFactory.blackbody(name="Blackbody")),
             )

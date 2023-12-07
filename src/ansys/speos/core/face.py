@@ -6,6 +6,7 @@ from ansys.api.speos.part.v1 import face_pb2_grpc as service
 import numpy as np
 
 from ansys.speos.core.crud import CrudItem, CrudStub
+from ansys.speos.core.geometry_utils import AxisPlane
 from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 
 Face = messages.Face
@@ -63,6 +64,8 @@ class FaceStub(CrudStub):
 
 
 class FaceFactory:
+    """Class to help creating Face message"""
+
     def new(
         name: str,
         vertices: list[float],
@@ -71,6 +74,29 @@ class FaceFactory:
         description: str = "",
         metadata: Mapping[str, str] = None,
     ) -> Face:
+        """
+        Create a Face message.
+
+        Parameters
+        ----------
+        name : str
+            Name of the face.
+        vertices : list[float]
+            Coordinates of all points [p1x, p1y, p1z, p2x, p2y, p2z, ...].
+        facets : list[int]
+            Indexes of points for all triangles [t1_1, t1_2, t1_3, t2_1, t2_2, t2_3, ...].
+        normals: list[float],
+            Normal vector for all points [n1x, n1y, n1z, n2x, n2y, n2z, ...].
+        description : str = ""
+            Description of the face.
+        metadata : Mapping[str, str] = None
+            Metadata of the face.
+
+        Returns
+        -------
+        Face
+            Face message created.
+        """
         face = Face(name=name, description=description, vertices=vertices, facets=facets, normals=normals)
         if metadata is not None:
             face.metadata.update(metadata)
@@ -79,23 +105,44 @@ class FaceFactory:
     def rectangle(
         name: str,
         description: str = "",
-        center: list[float] = [0, 0, 0],
-        x_axis: list[float] = [1, 0, 0],
-        y_axis: list[float] = [0, 1, 0],
+        base: AxisPlane = AxisPlane(),
         x_size: float = 200,
         y_size: float = 100,
         metadata: Mapping[str, str] = None,
     ) -> Face:
+        """
+        Create a specific face: a rectangle.
+
+        Parameters
+        ----------
+        name : str
+            Name of the face.
+        description : str
+            Description of the face.
+        base : ansys.speos.core.geometry_utils.AxisPlane
+            Center and orientation of the rectangle.
+        x_size : float
+            size regarding x axis.
+        y_size : float
+            size regarding y axis.
+        metadata : Mapping[str, str]
+            Metadata of the face.
+
+        Returns
+        -------
+        Face
+            Face message created.
+        """
         face = Face(name=name, description=description)
         if metadata is not None:
             face.metadata.update(metadata)
 
-        face.vertices.extend(center - np.multiply(0.5 * x_size, x_axis) - np.multiply(0.5 * y_size, y_axis))
-        face.vertices.extend(center + np.multiply(0.5 * x_size, x_axis) - np.multiply(0.5 * y_size, y_axis))
-        face.vertices.extend(center + np.multiply(0.5 * x_size, x_axis) + np.multiply(0.5 * y_size, y_axis))
-        face.vertices.extend(center - np.multiply(0.5 * x_size, x_axis) + np.multiply(0.5 * y_size, y_axis))
+        face.vertices.extend(base.origin - np.multiply(0.5 * x_size, base.x_vect) - np.multiply(0.5 * y_size, base.y_vect))
+        face.vertices.extend(base.origin + np.multiply(0.5 * x_size, base.x_vect) - np.multiply(0.5 * y_size, base.y_vect))
+        face.vertices.extend(base.origin + np.multiply(0.5 * x_size, base.x_vect) + np.multiply(0.5 * y_size, base.y_vect))
+        face.vertices.extend(base.origin - np.multiply(0.5 * x_size, base.x_vect) + np.multiply(0.5 * y_size, base.y_vect))
 
-        normal = np.cross(x_axis, y_axis)
+        normal = np.cross(base.x_vect, base.y_vect)
         for i in range(4):
             face.normals.extend(normal)
 

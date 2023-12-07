@@ -3,7 +3,7 @@ Test basic geometry database connection.
 """
 from ansys.speos.core.body import BodyFactory, BodyLink
 from ansys.speos.core.face import FaceFactory, FaceLink
-from ansys.speos.core.geometry_utils import AxisSystem
+from ansys.speos.core.geometry_utils import AxisPlane, AxisSystem
 from ansys.speos.core.part import PartFactory
 from ansys.speos.core.speos import Speos
 
@@ -32,9 +32,7 @@ def test_face_factory(speos: Speos):
         message=FaceFactory.rectangle(
             name="rectangle_0",
             description="rectangle face",
-            center=[100, 50, 0],
-            x_axis=[1, 0, 0],
-            y_axis=[0, 1, 0],
+            base=AxisPlane(origin=[100, 50, 0], x_vect=[1, 0, 0], y_vect=[0, 1, 0]),
             x_size=200,
             y_size=100,
         )

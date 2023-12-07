@@ -7,7 +7,7 @@ import numpy as np
 
 from ansys.speos.core.crud import CrudItem, CrudStub
 from ansys.speos.core.face import FaceFactory, FaceLink, FaceStub
-from ansys.speos.core.geometry_utils import AxisSystem
+from ansys.speos.core.geometry_utils import AxisPlane, AxisSystem
 from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 
 Body = messages.Body
@@ -65,7 +65,28 @@ class BodyStub(CrudStub):
 
 
 class BodyFactory:
+    """Class to help creating Body message"""
+
     def new(name: str, faces: list[FaceLink], description: str = "", metadata: Mapping[str, str] = None) -> Body:
+        """
+        Create a Body message.
+
+        Parameters
+        ----------
+        name : str
+            Name of the body.
+        faces : list[FaceLink]
+            List of faces composing the body.
+        description : str
+            Description of the body.
+        metadata : Mapping[str, str]
+            Metadata of the body.
+
+        Returns
+        -------
+        Body
+            Body message created.
+        """
         body = Body(name=name, description=description)
         if metadata is not None:
             body.metadata.update(metadata)
@@ -84,15 +105,44 @@ class BodyFactory:
         idx_face: int = 0,
         metadata: Mapping[str, str] = None,
     ) -> Body:
+        """
+        Create a specific body: a box.
+
+        Parameters
+        ----------
+        name : str
+            Name of the box.
+        face_stub : FaceStub
+            face stub, example speos.client.faces()
+        description : str
+            Description of the box.
+        base : ansys.speos.core.geometry_utils.AxisSystem
+            Center and orientation of the box.
+        x_size : float
+            size regarding x axis.
+        y_size : float
+            size regarding y axis.
+        z_size : float
+            size regarding z axis.
+        idx_face : int
+            start index used to name the faces like Face:x, Face:x+1, ...
+        metadata : Mapping[str, str]
+            Metadata of the box.
+
+        Returns
+        -------
+        Body
+            Body message created.
+        """
         body = Body(name=name, description=description)
         if metadata is not None:
             body.metadata.update(metadata)
         face0 = face_stub.create(
             message=FaceFactory.rectangle(
                 name="Face:" + str(idx_face),
-                center=base.origin - np.multiply(0.5 * z_size, base.z_vect),
-                x_axis=np.multiply(-1, base.x_vect),
-                y_axis=base.y_vect,
+                base=AxisPlane(
+                    origin=base.origin - np.multiply(0.5 * z_size, base.z_vect), x_vect=np.multiply(-1, base.x_vect), y_vect=base.y_vect
+                ),
                 x_size=x_size,
                 y_size=y_size,
             )
@@ -100,9 +150,7 @@ class BodyFactory:
         face1 = face_stub.create(
             message=FaceFactory.rectangle(
                 name="Face:" + str(idx_face + 1),
-                center=base.origin + np.multiply(0.5 * z_size, base.z_vect),
-                x_axis=base.x_vect,
-                y_axis=base.y_vect,
+                base=AxisPlane(origin=base.origin + np.multiply(0.5 * z_size, base.z_vect), x_vect=base.x_vect, y_vect=base.y_vect),
                 x_size=x_size,
                 y_size=y_size,
             )
@@ -110,9 +158,7 @@ class BodyFactory:
         face2 = face_stub.create(
             message=FaceFactory.rectangle(
                 name="Face:" + str(idx_face + 2),
-                center=base.origin - np.multiply(0.5 * x_size, base.x_vect),
-                x_axis=base.z_vect,
-                y_axis=base.y_vect,
+                base=AxisPlane(base.origin - np.multiply(0.5 * x_size, base.x_vect), x_vect=base.z_vect, y_vect=base.y_vect),
                 x_size=z_size,
                 y_size=y_size,
             )
@@ -120,9 +166,9 @@ class BodyFactory:
         face3 = face_stub.create(
             message=FaceFactory.rectangle(
                 name="Face:" + str(idx_face + 3),
-                center=base.origin + np.multiply(0.5 * x_size, base.x_vect),
-                x_axis=np.multiply(-1, base.z_vect),
-                y_axis=base.y_vect,
+                base=AxisPlane(
+                    base.origin + np.multiply(0.5 * x_size, base.x_vect), x_vect=np.multiply(-1, base.z_vect), y_vect=base.y_vect
+                ),
                 x_size=z_size,
                 y_size=y_size,
             )
@@ -130,9 +176,7 @@ class BodyFactory:
         face4 = face_stub.create(
             message=FaceFactory.rectangle(
                 name="Face:" + str(idx_face + 4),
-                center=base.origin - np.multiply(0.5 * y_size, base.y_vect),
-                x_axis=base.x_vect,
-                y_axis=base.z_vect,
+                base=AxisPlane(base.origin - np.multiply(0.5 * y_size, base.y_vect), x_vect=base.x_vect, y_vect=base.z_vect),
                 x_size=x_size,
                 y_size=z_size,
             )
@@ -140,9 +184,9 @@ class BodyFactory:
         face5 = face_stub.create(
             message=FaceFactory.rectangle(
                 name="Face:" + str(idx_face + 5),
-                center=base.origin + np.multiply(0.5 * y_size, base.y_vect),
-                x_axis=base.x_vect,
-                y_axis=np.multiply(-1, base.z_vect),
+                base=AxisPlane(
+                    base.origin + np.multiply(0.5 * y_size, base.y_vect), x_vect=base.x_vect, y_vect=np.multiply(-1, base.z_vect)
+                ),
                 x_size=x_size,
                 y_size=z_size,
             )
