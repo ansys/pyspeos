@@ -5,7 +5,12 @@ import os
 
 from ansys.speos.core.body import BodyFactory
 from ansys.speos.core.face import FaceFactory
-from ansys.speos.core.geometry_utils import AxisSystem, GeoPaths, GeoPathWithReverseNormal
+from ansys.speos.core.geometry_utils import (
+    AxisPlane,
+    AxisSystem,
+    GeoPaths,
+    GeoPathWithReverseNormal,
+)
 from ansys.speos.core.intensity_template import IntensityTemplateFactory
 from ansys.speos.core.part import PartFactory
 from ansys.speos.core.scene import SceneFactory, SceneLink
@@ -215,6 +220,51 @@ def test_scene_factory(speos: Speos):
     clean_all_dbs(speos.client)
 
 
+def test_scene_factory_create_instances(speos: Speos):
+    """Test the scene factory - more precisely methods to create instances objects."""
+    assert speos.client.healthy is True
+
+    SceneFactory.source_instance(
+        name="SurfaceExitanceVariable_AsymmGaussIntensity.1",
+        source_template=speos.client.source_templates().create(
+            message=SourceTemplateFactory.surface(
+                name="SurfaceExitanceVariable_AsymmGaussIntensity",
+                intensity_template=speos.client.intensity_templates().create(
+                    message=IntensityTemplateFactory.asymmetric_gaussian(name="Asymmetric_gaussian")
+                ),
+                flux=SourceTemplateFactory.Flux(),
+                exitance_xmp_file_uri=os.path.join(test_path, os.path.join("PROJECT.Direct-no-Ray.Irradiance Ray Spectral.xmp")),
+            )
+        ),
+        properties=SceneFactory.surface_source_props(
+            exitance_variable_axis_plane=AxisPlane(),
+            intensity_properties=SceneFactory.asymm_gaussian_intensity_props(axis_system=AxisSystem()),
+        ),
+    )
+
+    SceneFactory.source_instance(
+        name="SurfaceExitanceConstant_LibIntensity.1",
+        source_template=speos.client.source_templates().create(
+            message=SourceTemplateFactory.surface(
+                name="SurfaceExitanceConstant_LibIntensity",
+                intensity_template=speos.client.intensity_templates().create(
+                    message=IntensityTemplateFactory.library(name="Library", file_uri=os.path.join("IES_C_DETECTOR.ies"))
+                ),
+                spectrum=speos.client.spectrums().create(message=SpectrumFactory.blackbody(name="Blackbody")),
+            )
+        ),
+        properties=SceneFactory.surface_source_props(
+            exitance_constant_geo_paths=[GeoPathWithReverseNormal("Body:1/Face:1")],
+            intensity_properties=SceneFactory.library_intensity_props(
+                exit_geometries=GeoPaths(geo_paths=["Body2"]),
+                orientation=SceneFactory.Properties.Source.Intensity.Library.Orientation.NormalToSurface,
+            ),
+        ),
+    )
+
+    clean_all_dbs(speos.client)
+
+
 def test_scene_actions_load(speos: Speos):
     """Test the scene action: load file."""
     assert speos.client.healthy is True
@@ -261,7 +311,7 @@ def test_scene_actions_load_modify(speos: Speos):
             sensor_template=speos.client.get_item(scene_dm.sensors[0].sensor_guid),
             properties=SceneFactory.irradiance_sensor_props(
                 axis_system=AxisSystem(origin=[-42, 2, 5], x_vect=[0, 1, 0], y_vect=[0, 0, -1], z_vect=[-1, 0, 0]),
-                layer_type=SceneFactory.Properties.Sensor.LayerType.Source(),
+                layer_type=SceneFactory.Properties.Sensor.LayerType.IncidenceAngle(sampling=9),
             ),
         )
     )

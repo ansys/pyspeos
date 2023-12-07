@@ -237,7 +237,7 @@ class SceneFactory:
     ) -> messages.Scene.SourceInstance.IntensityProperties:
         ag_intens_props = messages.Scene.SourceInstance.IntensityProperties()
         ag_intens_props.asymmetric_gaussian_properties.axis_system.extend(
-            [axis_system.origin + axis_system.x_vect + axis_system.y_vect + axis_system.z_vect]
+            axis_system.origin + axis_system.x_vect + axis_system.y_vect + axis_system.z_vect
         )
         return ag_intens_props
 
