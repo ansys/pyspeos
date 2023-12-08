@@ -1,5 +1,5 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
-from typing import Mapping
+from typing import List, Mapping
 
 from ansys.api.speos.part.v1 import body_pb2 as messages
 from ansys.api.speos.part.v1 import body_pb2_grpc as service
@@ -58,7 +58,7 @@ class BodyStub(CrudStub):
             raise ValueError("BodyLink is not on current database")
         CrudStub.delete(self, messages.Delete_Request(guid=ref.key))
 
-    def list(self) -> list[BodyLink]:
+    def list(self) -> List[BodyLink]:
         """List existing entries."""
         guids = CrudStub.list(self, messages.List_Request()).guids
         return list(map(lambda x: BodyLink(self, x), guids))
@@ -67,7 +67,7 @@ class BodyStub(CrudStub):
 class BodyFactory:
     """Class to help creating Body message"""
 
-    def new(name: str, faces: list[FaceLink], description: str = "", metadata: Mapping[str, str] = None) -> Body:
+    def new(name: str, faces: List[FaceLink], description: str = "", metadata: Mapping[str, str] = None) -> Body:
         """
         Create a Body message.
 
@@ -75,7 +75,7 @@ class BodyFactory:
         ----------
         name : str
             Name of the body.
-        faces : list[FaceLink]
+        faces : List[FaceLink]
             List of faces composing the body.
         description : str
             Description of the body.

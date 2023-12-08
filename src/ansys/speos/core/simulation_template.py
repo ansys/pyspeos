@@ -1,5 +1,6 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
 from enum import Enum
+from typing import List, Mapping
 
 from ansys.api.speos.simulation.v1 import simulation_template_pb2 as messages
 from ansys.api.speos.simulation.v1 import simulation_template_pb2_grpc as service
@@ -55,7 +56,7 @@ class SimulationTemplateStub(CrudStub):
             raise ValueError("SimulationTemplateLink is not on current database")
         CrudStub.delete(self, messages.Delete_Request(guid=ref.key))
 
-    def list(self) -> list[SimulationTemplateLink]:
+    def list(self) -> List[SimulationTemplateLink]:
         """List existing entries."""
         guids = CrudStub.list(self, messages.List_Request()).guids
         return list(map(lambda x: SimulationTemplateLink(self, x), guids))
@@ -85,12 +86,15 @@ class SimulationTemplateFactory:
 
     def direct_mc(
         name: str,
-        description: str = "",
         common_propagation_parameters: CommonPropagationParameters = CommonPropagationParameters(),
         dispersion: bool = True,
         fast_transmission_gathering: bool = False,
+        description: str = "",
+        metadata: Mapping[str, str] = None,
     ) -> SimulationTemplate:
         simu = SimulationTemplate(name=name, description=description)
+        if metadata is not None:
+            simu.metadata.update(metadata)
         simu.direct_mc_simulation_template.geom_distance_tolerance = common_propagation_parameters.geom_distance_tolerance
         simu.direct_mc_simulation_template.max_impact = common_propagation_parameters.max_impact
         if common_propagation_parameters.weight is not None:
@@ -116,15 +120,18 @@ class SimulationTemplateFactory:
 
     def inverse_mc(
         name: str,
-        description: str = "",
         common_propagation_parameters: CommonPropagationParameters = CommonPropagationParameters(),
         dispersion: bool = False,
         splitting: bool = False,
         number_of_gathering_rays_per_source: int = 1,
         maximum_gathering_error: int = 0,
         fast_transmission_gathering: bool = False,
+        description: str = "",
+        metadata: Mapping[str, str] = None,
     ) -> SimulationTemplate:
         simu = SimulationTemplate(name=name, description=description)
+        if metadata is not None:
+            simu.metadata.update(metadata)
         simu.inverse_mc_simulation_template.geom_distance_tolerance = common_propagation_parameters.geom_distance_tolerance
         simu.inverse_mc_simulation_template.max_impact = common_propagation_parameters.max_impact
         if simu.inverse_mc_simulation_template.weight is not None:
@@ -153,10 +160,13 @@ class SimulationTemplateFactory:
 
     def interactive(
         name: str,
-        description: str = "",
         common_propagation_parameters: CommonPropagationParameters = CommonPropagationParameters(),
+        description: str = "",
+        metadata: Mapping[str, str] = None,
     ) -> SimulationTemplate:
         simu = SimulationTemplate(name=name, description=description)
+        if metadata is not None:
+            simu.metadata.update(metadata)
         simu.interactive_simulation_template.geom_distance_tolerance = common_propagation_parameters.geom_distance_tolerance
         simu.interactive_simulation_template.max_impact = common_propagation_parameters.max_impact
         if simu.interactive_simulation_template.weight is not None:

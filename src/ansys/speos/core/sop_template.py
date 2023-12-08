@@ -1,5 +1,5 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
-from typing import Mapping
+from typing import List, Mapping
 
 from ansys.api.speos.sop.v1 import sop_pb2 as messages
 from ansys.api.speos.sop.v1 import sop_pb2_grpc as service
@@ -55,7 +55,7 @@ class SOPTemplateStub(CrudStub):
             raise ValueError("SOPTemplateLink is not on current database")
         CrudStub.delete(self, messages.Delete_Request(guid=ref.key))
 
-    def list(self) -> list[SOPTemplateLink]:
+    def list(self) -> List[SOPTemplateLink]:
         """List existing entries."""
         guids = CrudStub.list(self, messages.List_Request()).guids
         return list(map(lambda x: SOPTemplateLink(self, x), guids))

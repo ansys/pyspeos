@@ -1,5 +1,5 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
-from typing import Mapping
+from typing import List, Mapping
 
 from ansys.api.speos.intensity.v1 import intensity_pb2 as messages
 from ansys.api.speos.intensity.v1 import intensity_pb2_grpc as service
@@ -55,7 +55,7 @@ class IntensityTemplateStub(CrudStub):
             raise ValueError("IntensityTemplateLink is not on current database")
         CrudStub.delete(self, messages.Delete_Request(guid=ref.key))
 
-    def list(self) -> list[IntensityTemplateLink]:
+    def list(self) -> List[IntensityTemplateLink]:
         """List existing entries."""
         guids = CrudStub.list(self, messages.List_Request()).guids
         return list(map(lambda x: IntensityTemplateLink(self, x), guids))

@@ -1,6 +1,6 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
 from enum import Enum
-from typing import Iterator, Mapping, Union
+from typing import Iterator, List, Mapping, Union
 
 from ansys.api.speos.results.v1.ray_path_pb2 import RayPath
 from ansys.api.speos.scene.v1 import scene_pb2 as messages
@@ -81,7 +81,7 @@ class SceneStub(CrudStub):
             raise ValueError("SceneLink is not on current database")
         CrudStub.delete(self, messages.Delete_Request(guid=ref.key))
 
-    def list(self) -> list[SceneLink]:
+    def list(self) -> List[SceneLink]:
         """List existing entries."""
         guids = CrudStub.list(self, messages.List_Request()).guids
         return list(map(lambda x: SceneLink(self, x, self._actions_stub), guids))
@@ -120,11 +120,11 @@ class SceneFactory:
     def new(
         name: str,
         part: PartLink,
-        vop_instances: list[messages.Scene.VOPInstance],
-        sop_instances: list[messages.Scene.SOPInstance],
-        source_instances: list[messages.Scene.SourceInstance],
-        sensor_instances: list[messages.Scene.SensorInstance],
-        simulation_instances: list[messages.Scene.SimulationInstance],
+        vop_instances: List[messages.Scene.VOPInstance],
+        sop_instances: List[messages.Scene.SOPInstance],
+        source_instances: List[messages.Scene.SourceInstance],
+        sensor_instances: List[messages.Scene.SensorInstance],
+        simulation_instances: List[messages.Scene.SimulationInstance],
         description: str = "",
     ) -> Scene:
         scene = Scene(name=name, description=description)
@@ -188,7 +188,7 @@ class SceneFactory:
         return lum_props
 
     def surface_source_props(
-        exitance_constant_geo_paths: list[GeoPathWithReverseNormal] = None,
+        exitance_constant_geo_paths: List[GeoPathWithReverseNormal] = None,
         exitance_variable_axis_plane: AxisPlane = None,
         intensity_properties: messages.Scene.SourceInstance.IntensityProperties = None,
     ) -> messages.Scene.SourceInstance.SurfaceProperties:
@@ -282,7 +282,7 @@ class SceneFactory:
             Properties.Sensor.LayerType.Polarization,
             Properties.Sensor.LayerType.IncidenceAngle,
         ] = None,
-        integration_direction: list[float] = None,
+        integration_direction: List[float] = None,
     ) -> messages.Scene.SensorInstance.IrradianceSensorProperties:
         irr_props = messages.Scene.SensorInstance.IrradianceSensorProperties()
         irr_props.axis_system.extend(axis_system.origin + axis_system.x_vect + axis_system.y_vect + axis_system.z_vect)
@@ -321,8 +321,8 @@ class SceneFactory:
     def simulation_instance(
         name: str,
         simulation_template: SimulationTemplateLink,
-        sensor_paths: list[str] = [],
-        source_paths: list[str] = [],
+        sensor_paths: List[str] = [],
+        source_paths: List[str] = [],
         geometries: GeoPaths = GeoPaths(),
         description: str = "",
         metadata: Mapping[str, str] = None,

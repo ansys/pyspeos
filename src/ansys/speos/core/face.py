@@ -1,5 +1,5 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
-from typing import Mapping
+from typing import List, Mapping
 
 from ansys.api.speos.part.v1 import face_pb2 as messages
 from ansys.api.speos.part.v1 import face_pb2_grpc as service
@@ -57,7 +57,7 @@ class FaceStub(CrudStub):
             raise ValueError("FaceLink is not on current database")
         CrudStub.delete(self, messages.Delete_Request(guid=ref.key))
 
-    def list(self) -> list[FaceLink]:
+    def list(self) -> List[FaceLink]:
         """List existing entries."""
         guids = CrudStub.list(self, messages.List_Request()).guids
         return list(map(lambda x: FaceLink(self, x), guids))
@@ -68,9 +68,9 @@ class FaceFactory:
 
     def new(
         name: str,
-        vertices: list[float],
-        facets: list[int],
-        normals: list[float],
+        vertices: List[float],
+        facets: List[int],
+        normals: List[float],
         description: str = "",
         metadata: Mapping[str, str] = None,
     ) -> Face:
@@ -81,11 +81,11 @@ class FaceFactory:
         ----------
         name : str
             Name of the face.
-        vertices : list[float]
+        vertices : List[float]
             Coordinates of all points [p1x, p1y, p1z, p2x, p2y, p2z, ...].
-        facets : list[int]
+        facets : List[int]
             Indexes of points for all triangles [t1_1, t1_2, t1_3, t2_1, t2_2, t2_3, ...].
-        normals: list[float],
+        normals: List[float],
             Normal vector for all points [n1x, n1y, n1z, n2x, n2y, n2z, ...].
         description : str = ""
             Description of the face.

@@ -1,5 +1,5 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
-from typing import Mapping
+from typing import List, Mapping
 
 from ansys.api.speos.part.v1 import part_pb2 as messages
 from ansys.api.speos.part.v1 import part_pb2_grpc as service
@@ -56,14 +56,14 @@ class PartStub(CrudStub):
             raise ValueError("PartLink is not on current database")
         CrudStub.delete(self, messages.Delete_Request(guid=ref.key))
 
-    def list(self) -> list[PartLink]:
+    def list(self) -> List[PartLink]:
         """List existing entries."""
         guids = CrudStub.list(self, messages.List_Request()).guids
         return list(map(lambda x: PartLink(self, x), guids))
 
 
 class PartFactory:
-    def new(name: str, bodies: list[BodyLink], description: str = "", metadata: Mapping[str, str] = None) -> Part:
+    def new(name: str, bodies: List[BodyLink], description: str = "", metadata: Mapping[str, str] = None) -> Part:
         part = Part(name=name, description=description)
         if metadata is not None:
             part.metadata.update(metadata)

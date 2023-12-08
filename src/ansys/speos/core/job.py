@@ -1,6 +1,6 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
 from enum import Enum
-from typing import Iterator, Mapping, Union
+from typing import Iterator, List, Mapping, Union
 
 from ansys.api.speos.job.v2 import job_pb2 as messages
 from ansys.api.speos.job.v2 import job_pb2_grpc as service
@@ -83,7 +83,7 @@ class JobStub(CrudStub):
             raise ValueError("JobLink is not on current database")
         CrudStub.delete(self, messages.Delete_Request(guid=ref.key))
 
-    def list(self) -> list[JobLink]:
+    def list(self) -> List[JobLink]:
         """List existing entries."""
         guids = CrudStub.list(self, messages.List_Request()).guids
         return list(map(lambda x: JobLink(self, x, self._actions_stub), guids))
@@ -163,7 +163,7 @@ class JobFactory:
         return props
 
     def interactive_props(
-        rays_nb_per_source: list[RaysNbPerSource] = None, light_expert: bool = False, impact_report: bool = False
+        rays_nb_per_source: List[RaysNbPerSource] = None, light_expert: bool = False, impact_report: bool = False
     ) -> messages.Job.InteractiveSimulationProperties:
         props = messages.Job.InteractiveSimulationProperties()
         if rays_nb_per_source is not None:

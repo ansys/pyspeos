@@ -1,13 +1,14 @@
 """Provides some classes needed for geometry."""
+from typing import List
 
 
 class AxisSystem:
     def __init__(
         self,
-        origin: list[float] = [0, 0, 0],
-        x_vect: list[float] = [1, 0, 0],
-        y_vect: list[float] = [0, 1, 0],
-        z_vect: list[float] = [0, 0, 1],
+        origin: List[float] = [0, 0, 0],
+        x_vect: List[float] = [1, 0, 0],
+        y_vect: List[float] = [0, 1, 0],
+        z_vect: List[float] = [0, 0, 1],
     ) -> None:
         self.origin = origin
         self.x_vect = x_vect
@@ -18,9 +19,9 @@ class AxisSystem:
 class AxisPlane:
     def __init__(
         self,
-        origin: list[float] = [0, 0, 0],
-        x_vect: list[float] = [1, 0, 0],
-        y_vect: list[float] = [0, 1, 0],
+        origin: List[float] = [0, 0, 0],
+        x_vect: List[float] = [1, 0, 0],
+        y_vect: List[float] = [0, 1, 0],
     ) -> None:
         self.origin = origin
         self.x_vect = x_vect
@@ -28,7 +29,7 @@ class AxisPlane:
 
 
 class GeoPaths:
-    def __init__(self, geo_paths: list[str] = []) -> None:
+    def __init__(self, geo_paths: List[str] = []) -> None:
         self.geo_paths = geo_paths
 
 
