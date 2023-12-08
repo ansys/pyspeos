@@ -1,6 +1,6 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
 from enum import Enum
-from typing import Mapping
+from typing import List, Mapping
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2
 from ansys.api.speos.sensor.v1 import sensor_pb2 as messages
@@ -57,7 +57,7 @@ class SensorTemplateStub(CrudStub):
             raise ValueError("SensorTemplateLink is not on current database")
         CrudStub.delete(self, messages.Delete_Request(guid=ref.key))
 
-    def list(self) -> list[SensorTemplateLink]:
+    def list(self) -> List[SensorTemplateLink]:
         """List existing entries."""
         guids = CrudStub.list(self, messages.List_Request()).guids
         return list(map(lambda x: SensorTemplateLink(self, x), guids))
@@ -173,7 +173,7 @@ class SensorTemplateFactory:
         name: str,
         distorsion_file_uri: str,
         transmittance_file_uri: str,
-        spectrum_file_uris: list[str],
+        spectrum_file_uris: List[str],
         settings: CameraSettings = CameraSettings(),
         dimensions: CameraDimensions = CameraDimensions(),
         wavelengths_range: WavelengthsRange = WavelengthsRange(),

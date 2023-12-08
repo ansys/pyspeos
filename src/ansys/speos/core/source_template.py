@@ -1,6 +1,6 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
 from enum import Enum
-from typing import Mapping
+from typing import List, Mapping
 
 from ansys.api.speos.source.v1 import source_pb2 as messages
 from ansys.api.speos.source.v1 import source_pb2_grpc as service
@@ -58,7 +58,7 @@ class SourceTemplateStub(CrudStub):
             raise ValueError("SourceTemplateLink is not on current database")
         CrudStub.delete(self, messages.Delete_Request(guid=ref.key))
 
-    def list(self) -> list[SourceTemplateLink]:
+    def list(self) -> List[SourceTemplateLink]:
         """List existing entries."""
         guids = CrudStub.list(self, messages.List_Request()).guids
         return list(map(lambda x: SourceTemplateLink(self, x), guids))
