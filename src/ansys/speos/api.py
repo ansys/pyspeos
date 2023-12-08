@@ -74,7 +74,8 @@ class OptPropB:
 
 #
 # Fluent approach
-# - functions for
+# - functions for option menu
+# - function's parameter with data corresponding to option
 #
 
 
@@ -117,7 +118,7 @@ op.surface_mirror_reflectance = 50
 op.volume_type = OptPropB.VolumeType.OPAQUE
 p.add(op)
 # Same with Fluent interface
-p.add(OptPropF("mirror50").set_volume_opaque().set_mirror(50))
+p.add(OptPropF("mirror50", Spectrum("monspectr").set_blackbody(5000)).set_volume_opaque().set_mirror(50))
 # Add bsdf
 op = OptPropB()
 op.surface_type = OptPropB.SurfaceType.LIBRARY
