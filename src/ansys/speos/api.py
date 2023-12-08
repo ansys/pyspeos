@@ -33,8 +33,8 @@ class Project:
 
 #
 # Basic approach
-# - Members for all entries
-# - Enums for option menus
+# - Public members for all entries
+# - Public enums for option menus
 #
 
 
