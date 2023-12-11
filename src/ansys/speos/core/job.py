@@ -1,6 +1,6 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
 from enum import Enum
-from typing import Iterator, List, Mapping, Union
+from typing import Iterator, List, Mapping, Optional, Union
 
 from ansys.api.speos.job.v2 import job_pb2 as messages
 from ansys.api.speos.job.v2 import job_pb2_grpc as service
@@ -14,9 +14,9 @@ Job = messages.Job
 
 
 class JobLink(CrudItem):
-    def __init__(self, db, key: str, actions_stub: service.JobActionsStub):
+    def __init__(self, db, key: str):
         super().__init__(db, key)
-        self._actions_stub = actions_stub
+        self._actions_stub = db._actions_stub
 
     def __str__(self) -> str:
         return protobuf_message_to_str(self.get())
@@ -62,7 +62,7 @@ class JobStub(CrudStub):
     def create(self, message: Job) -> JobLink:
         """Create a new entry."""
         resp = CrudStub.create(self, messages.Create_Request(job=message))
-        return JobLink(self, resp.guid, self._actions_stub)
+        return JobLink(self, resp.guid)
 
     def read(self, ref: JobLink) -> Job:
         """Get an existing entry."""
@@ -86,14 +86,29 @@ class JobStub(CrudStub):
     def list(self) -> List[JobLink]:
         """List existing entries."""
         guids = CrudStub.list(self, messages.List_Request()).guids
-        return list(map(lambda x: JobLink(self, x, self._actions_stub), guids))
+        return list(map(lambda x: JobLink(self, x), guids))
 
 
 class JobFactory:
+    """Class to help creating Job message"""
+
     Type = Enum("Type", ["CPU", "GPU"])
 
     class RaysNbPerSource:
-        def __init__(self, source_path: str, rays_nb: int = 100) -> None:
+        """
+        Define number of rays emitted by a specific source.
+
+        Parameters
+        ----------
+        source_path : str
+            Source path allowing to point to a specific source instance in the scene.
+            Example: "source_instance_name", "subscene_name/source_instance_name"
+        rays_nb : int, optional
+            Number of rays to be emitted.
+            By default, ``100``.
+        """
+
+        def __init__(self, source_path: str, rays_nb: Optional[int] = 100) -> None:
             self.source_path = source_path
             self.rays_nb = rays_nb
 
@@ -102,14 +117,46 @@ class JobFactory:
         scene: SceneLink,
         simulation_path: str,
         properties: Union[
-            messages.Job.DirectMCSimulationProperties,
-            messages.Job.InverseMCSimulationProperties,
-            messages.Job.InteractiveSimulationProperties,
+            Job.DirectMCSimulationProperties,
+            Job.InverseMCSimulationProperties,
+            Job.InteractiveSimulationProperties,
         ],
-        type: Type = Type.CPU,
-        description: str = "",
-        metadata: Mapping[str, str] = None,
+        type: Optional[Type] = Type.CPU,
+        description: Optional[str] = "",
+        metadata: Optional[Mapping[str, str]] = None,
     ) -> Job:
+        """
+        Create a Job message.
+
+        Parameters
+        ----------
+        name : str
+            Name of the job.
+        scene : SceneLink
+            Scene used as base to create a job.
+        simulation_path : str
+            Simulation path to choose a SimulationInstance in the selected scene.
+            Example: "simulation_instance_name", "subscene_name/simulation_instance_name"
+        properties : Union[Job.DirectMCSimulationProperties, Job.InverseMCSimulationProperties, Job.InteractiveSimulationProperties]
+            simulation properties, depends on the type of the simulation selected.
+            Those properties can contains for example stop conditions for the job.
+            Some methods can help to build needed messages:
+            JobFactory.direct_mc_props(...), JobFactory.inverse_mc_props(...), JobFactory.interactive_props(...)
+        type : Type, optional
+            Job type.
+            By default, ``JobFactory.Type.CPU``.
+        description : str, optional
+            Description of the job.
+            By default, ``""``.
+        metadata : Mapping[str, str], optional
+            Metadata of the job.
+            By default, ``None``.
+
+        Returns
+        -------
+        Job
+            Job message created.
+        """
         job = Job(name=name, description=description)
         if metadata is not None:
             job.metadata.update(metadata)
@@ -121,25 +168,48 @@ class JobFactory:
             job.simulation_path = simulation_path
 
         if type == JobFactory.Type.CPU:
-            job.job_type = messages.Job.Type.CPU
+            job.job_type = Job.Type.CPU
         elif type == JobFactory.Type.GPU:
-            job.job_type = messages.Job.Type.GPU
+            job.job_type = Job.Type.GPU
 
-        if isinstance(properties, messages.Job.DirectMCSimulationProperties):
+        if isinstance(properties, Job.DirectMCSimulationProperties):
             job.direct_mc_simulation_properties.CopyFrom(properties)
-        elif isinstance(properties, messages.Job.InverseMCSimulationProperties):
+        elif isinstance(properties, Job.InverseMCSimulationProperties):
             job.inverse_mc_simulation_properties.CopyFrom(properties)
-        elif isinstance(properties, messages.Job.InteractiveSimulationProperties):
+        elif isinstance(properties, Job.InteractiveSimulationProperties):
             job.interactive_simulation_properties.CopyFrom(properties)
 
         return job
 
     def direct_mc_props(
-        stop_condition_rays_nb: Union[int, None] = 200000,
-        stop_condition_duration: Union[int, None] = None,
-        automatic_save_frequency: int = 1800,
-    ) -> messages.Job.DirectMCSimulationProperties:
-        props = messages.Job.DirectMCSimulationProperties()
+        stop_condition_rays_nb: Optional[int] = 200000,
+        stop_condition_duration: Optional[int] = None,
+        automatic_save_frequency: Optional[int] = 1800,
+    ) -> Job.DirectMCSimulationProperties:
+        """
+        Create a DirectMCSimulationProperties message.
+
+        Parameters
+        ----------
+        stop_condition_rays_nb : int, optional
+            To stop the simulation after a certain number of rays were sent.
+            None = no stop condition regarding rays emitted.
+            By default, ``200000``.
+        stop_condition_duration : int, optional
+            To stop the simulation after a certain duration.
+            None = no stop condition regarding duration.
+            By default, ``None``.
+        automatic_save_frequency : int, optional
+            Define a backup interval (s). This option is useful when computing long simulations.
+            But a reduced number of save operations naturally increases the simulation performance.
+            By default, ``1800``.
+
+        Returns
+        -------
+        Job.DirectMCSimulationProperties
+            DirectMCSimulationProperties message created.
+        """
+        props = Job.DirectMCSimulationProperties()
         if stop_condition_rays_nb is not None:
             props.stop_condition_rays_number = stop_condition_rays_nb
         if stop_condition_duration is not None:
@@ -148,11 +218,34 @@ class JobFactory:
         return props
 
     def inverse_mc_props(
-        stop_condition_passes_number: Union[int, None] = 5,
-        stop_condition_duration: Union[int, None] = None,
-        automatic_save_frequency: int = 1800,
-    ) -> messages.Job.InverseMCSimulationProperties:
-        props = messages.Job.InverseMCSimulationProperties()
+        stop_condition_passes_number: Optional[int] = 5,
+        stop_condition_duration: Optional[int] = None,
+        automatic_save_frequency: Optional[int] = 1800,
+    ) -> Job.InverseMCSimulationProperties:
+        """
+        Create a InverseMCSimulationProperties message.
+
+        Parameters
+        ----------
+        stop_condition_passes_number : int, optional
+            To stop the simulation after a certain number of passes.
+            None = no stop condition regarding number of passes.
+            By default, ``5``.
+        stop_condition_duration : int, optional
+            To stop the simulation after a certain duration.
+            None = no stop condition regarding duration.
+            By default, ``None``.
+        automatic_save_frequency : int, optional
+            Define a backup interval (s). This option is useful when computing long simulations.
+            But a reduced number of save operations naturally increases the simulation performance.
+            By default, ``1800``.
+
+        Returns
+        -------
+        Job.InverseMCSimulationProperties
+            InverseMCSimulationProperties message created.
+        """
+        props = Job.InverseMCSimulationProperties()
         if stop_condition_passes_number is not None:
             props.optimized_propagation_none.stop_condition_passes_number = stop_condition_passes_number
         else:
@@ -163,13 +256,37 @@ class JobFactory:
         return props
 
     def interactive_props(
-        rays_nb_per_source: List[RaysNbPerSource] = None, light_expert: bool = False, impact_report: bool = False
-    ) -> messages.Job.InteractiveSimulationProperties:
-        props = messages.Job.InteractiveSimulationProperties()
+        rays_nb_per_source: Optional[List[RaysNbPerSource]] = None,
+        light_expert: Optional[bool] = False,
+        impact_report: Optional[bool] = False,
+    ) -> Job.InteractiveSimulationProperties:
+        """
+        Create a InteractiveSimulationProperties message.
+
+        Parameters
+        ----------
+        rays_nb_per_source : List[RaysNbPerSource], optional
+            Defines number of rays that will be emitted by each source instance.
+            Source instances that are not mentioned will default to 100 rays.
+            None = each source instance will generate default number of rays, ie 100.
+            By default, ``None``.
+        light_expert : bool, optional
+            True to generate a light expert file.
+            By default, ``False``.
+        impact_report : bool, optional
+            True to integrate details like number of impacts, position and surface state to the HTML simulation report.
+            By default, ``False``.
+
+        Returns
+        -------
+        Job.InteractiveSimulationProperties
+            InteractiveSimulationProperties message created.
+        """
+        props = Job.InteractiveSimulationProperties()
         if rays_nb_per_source is not None:
             props.rays_number_per_sources.extend(
                 [
-                    messages.Job.InteractiveSimulationProperties.RaysNumberPerSource(source_path=rnps.source_path, rays_nb=rnps.rays_nb)
+                    Job.InteractiveSimulationProperties.RaysNumberPerSource(source_path=rnps.source_path, rays_nb=rnps.rays_nb)
                     for rnps in rays_nb_per_source
                 ]
             )

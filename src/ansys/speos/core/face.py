@@ -1,5 +1,5 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
-from typing import List, Mapping
+from typing import List, Mapping, Optional
 
 from ansys.api.speos.part.v1 import face_pb2 as messages
 from ansys.api.speos.part.v1 import face_pb2_grpc as service
@@ -71,8 +71,8 @@ class FaceFactory:
         vertices: List[float],
         facets: List[int],
         normals: List[float],
-        description: str = "",
-        metadata: Mapping[str, str] = None,
+        description: Optional[str] = "",
+        metadata: Optional[Mapping[str, str]] = None,
     ) -> Face:
         """
         Create a Face message.
@@ -87,10 +87,12 @@ class FaceFactory:
             Indexes of points for all triangles [t1_1, t1_2, t1_3, t2_1, t2_2, t2_3, ...].
         normals: List[float],
             Normal vector for all points [n1x, n1y, n1z, n2x, n2y, n2z, ...].
-        description : str = ""
+        description : str, optional
             Description of the face.
-        metadata : Mapping[str, str] = None
+            By default, ``""``.
+        metadata : Mapping[str, str], optional
             Metadata of the face.
+            By default, ``None``.
 
         Returns
         -------
@@ -104,11 +106,11 @@ class FaceFactory:
 
     def rectangle(
         name: str,
-        description: str = "",
-        base: AxisPlane = AxisPlane(),
-        x_size: float = 200,
-        y_size: float = 100,
-        metadata: Mapping[str, str] = None,
+        description: Optional[str] = "",
+        base: Optional[AxisPlane] = AxisPlane(),
+        x_size: Optional[float] = 200,
+        y_size: Optional[float] = 100,
+        metadata: Optional[Mapping[str, str]] = None,
     ) -> Face:
         """
         Create a specific face: a rectangle.
@@ -117,16 +119,21 @@ class FaceFactory:
         ----------
         name : str
             Name of the face.
-        description : str
+        description : str, optional
             Description of the face.
+            By default, ``""``.
         base : ansys.speos.core.geometry_utils.AxisPlane
             Center and orientation of the rectangle.
-        x_size : float
+            By default, ``ansys.speos.core.geometry_utils.AxisPlane()``.
+        x_size : float, optional
             size regarding x axis.
-        y_size : float
+            By default, ``200``.
+        y_size : float, optional
             size regarding y axis.
-        metadata : Mapping[str, str]
+            By default, ``100``.
+        metadata : Mapping[str, str], optional
             Metadata of the face.
+            By default, ``None``.
 
         Returns
         -------

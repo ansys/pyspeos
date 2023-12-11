@@ -1,5 +1,5 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
-from typing import List, Mapping
+from typing import List, Mapping, Optional
 
 from ansys.api.speos.part.v1 import body_pb2 as messages
 from ansys.api.speos.part.v1 import body_pb2_grpc as service
@@ -67,7 +67,7 @@ class BodyStub(CrudStub):
 class BodyFactory:
     """Class to help creating Body message"""
 
-    def new(name: str, faces: List[FaceLink], description: str = "", metadata: Mapping[str, str] = None) -> Body:
+    def new(name: str, faces: List[FaceLink], description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None) -> Body:
         """
         Create a Body message.
 
@@ -77,10 +77,12 @@ class BodyFactory:
             Name of the body.
         faces : List[FaceLink]
             List of faces composing the body.
-        description : str
+        description : str, optional
             Description of the body.
-        metadata : Mapping[str, str]
+            By default, ``""``.
+        metadata : Mapping[str, str], optional
             Metadata of the body.
+            By default, ``None``.
 
         Returns
         -------
@@ -97,13 +99,13 @@ class BodyFactory:
     def box(
         name: str,
         face_stub: FaceStub,
-        description: str = "",
-        base: AxisSystem = AxisSystem(),
-        x_size: float = 200,
-        y_size: float = 200,
-        z_size: float = 100,
-        idx_face: int = 0,
-        metadata: Mapping[str, str] = None,
+        description: Optional[str] = "",
+        base: Optional[AxisSystem] = AxisSystem(),
+        x_size: Optional[float] = 200,
+        y_size: Optional[float] = 200,
+        z_size: Optional[float] = 100,
+        idx_face: Optional[int] = 0,
+        metadata: Optional[Mapping[str, str]] = None,
     ) -> Body:
         """
         Create a specific body: a box.
@@ -114,20 +116,27 @@ class BodyFactory:
             Name of the box.
         face_stub : FaceStub
             face stub, example speos.client.faces()
-        description : str
+        description : str, optional
             Description of the box.
-        base : ansys.speos.core.geometry_utils.AxisSystem
+            By default, ``""``.
+        base : ansys.speos.core.geometry_utils.AxisSystem, optional
             Center and orientation of the box.
-        x_size : float
+            By default, ``ansys.speos.core.geometry_utils.AxisSystem()``.
+        x_size : float, optional
             size regarding x axis.
-        y_size : float
+            By default, ``200``.
+        y_size : float, optional
             size regarding y axis.
-        z_size : float
+            By default, ``200``.
+        z_size : float, optional
             size regarding z axis.
-        idx_face : int
+            By default, ``100``.
+        idx_face : int, optional
             start index used to name the faces like Face:x, Face:x+1, ...
-        metadata : Mapping[str, str]
+            By default, ``0``.
+        metadata : Mapping[str, str], optional
             Metadata of the box.
+            By default, ``None``.
 
         Returns
         -------

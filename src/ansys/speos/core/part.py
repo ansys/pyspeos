@@ -1,5 +1,5 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
-from typing import List, Mapping
+from typing import List, Mapping, Optional
 
 from ansys.api.speos.part.v1 import part_pb2 as messages
 from ansys.api.speos.part.v1 import part_pb2_grpc as service
@@ -63,7 +63,30 @@ class PartStub(CrudStub):
 
 
 class PartFactory:
-    def new(name: str, bodies: List[BodyLink], description: str = "", metadata: Mapping[str, str] = None) -> Part:
+    """Class to help creating Part message"""
+
+    def new(name: str, bodies: List[BodyLink], description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None) -> Part:
+        """
+        Create a Part message.
+
+        Parameters
+        ----------
+        name : str
+            Name of the part.
+        bodies : List[BodyLink]
+            List of all bodies contained in this part.
+        description : str, optional
+            Description of the part.
+            By default, ``""``.
+        metadata : Mapping[str, str], optional
+            Metadata of the part.
+            By default, ``None``.
+
+        Returns
+        -------
+        Part
+            Part message created.
+        """
         part = Part(name=name, description=description)
         if metadata is not None:
             part.metadata.update(metadata)

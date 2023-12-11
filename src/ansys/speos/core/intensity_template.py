@@ -1,5 +1,5 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
-from typing import List, Mapping
+from typing import List, Mapping, Optional
 
 from ansys.api.speos.intensity.v1 import intensity_pb2 as messages
 from ansys.api.speos.intensity.v1 import intensity_pb2_grpc as service
@@ -62,14 +62,63 @@ class IntensityTemplateStub(CrudStub):
 
 
 class IntensityTemplateFactory:
-    def library(name: str, file_uri: str, description: str = "", metadata: Mapping[str, str] = None) -> IntensityTemplate:
+    """Class to help creating IntensityTemplate message"""
+
+    def library(
+        name: str, file_uri: str, description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None
+    ) -> IntensityTemplate:
+        """
+        Create a IntensityTemplate message, with library type.
+
+        Parameters
+        ----------
+        name : str
+            Name of the intensity template.
+        file_uri : str
+            Uri of the intensity file IES (.ies), Eulumdat (.ldt), speos intensities (.xmp).
+        description : str, optional
+            Description of the intensity template.
+            By default, ``""``.
+        metadata : Mapping[str, str], optional
+            Metadata of the intensity template.
+            By default, ``None``.
+
+        Returns
+        -------
+        IntensityTemplate
+            IntensityTemplate message created.
+        """
         intens = IntensityTemplate(name=name, description=description)
         if metadata is not None:
             intens.metadata.update(metadata)
         intens.library.intensity_file_uri = file_uri
         return intens
 
-    def lambertian(name: str, total_angle: float = 180, description: str = "", metadata: Mapping[str, str] = None) -> IntensityTemplate:
+    def lambertian(
+        name: str, total_angle: Optional[float] = 180, description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None
+    ) -> IntensityTemplate:
+        """
+        Create a IntensityTemplate message, with lambertian type.
+
+        Parameters
+        ----------
+        name : str
+            Name of the intensity template.
+        total_angle : float, optional
+            Total angle in degrees of the emission of the light source.
+            By default, ``180``.
+        description : str, optional
+            Description of the intensity template.
+            By default, ``""``.
+        metadata : Mapping[str, str], optional
+            Metadata of the intensity template.
+            By default, ``None``.
+
+        Returns
+        -------
+        IntensityTemplate
+            IntensityTemplate message created.
+        """
         intens = IntensityTemplate(name=name, description=description)
         if metadata is not None:
             intens.metadata.update(metadata)
@@ -77,8 +126,37 @@ class IntensityTemplateFactory:
         return intens
 
     def cos(
-        name: str, N: float = 3, total_angle: float = 180, description: str = "", metadata: Mapping[str, str] = None
+        name: str,
+        N: Optional[float] = 3,
+        total_angle: Optional[float] = 180,
+        description: Optional[str] = "",
+        metadata: Optional[Mapping[str, str]] = None,
     ) -> IntensityTemplate:
+        """
+        Create a IntensityTemplate message, with cos type.
+
+        Parameters
+        ----------
+        name : str
+            Name of the intensity template.
+        N : float, optional
+            Order of cos law.
+            By default, ``3``.
+        total_angle : float, optional
+            Total angle in degrees of the emission of the light source.
+            By default, ``180``.
+        description : str, optional
+            Description of the intensity template.
+            By default, ``""``.
+        metadata : Mapping[str, str], optional
+            Metadata of the intensity template.
+            By default, ``None``.
+
+        Returns
+        -------
+        IntensityTemplate
+            IntensityTemplate message created.
+        """
         intens = IntensityTemplate(name=name, description=description)
         if metadata is not None:
             intens.metadata.update(metadata)
@@ -87,8 +165,37 @@ class IntensityTemplateFactory:
         return intens
 
     def symmetric_gaussian(
-        name: str, FWHM_angle: float = 30, total_angle: float = 180, description: str = "", metadata: Mapping[str, str] = None
+        name: str,
+        FWHM_angle: Optional[float] = 30,
+        total_angle: Optional[float] = 180,
+        description: Optional[str] = "",
+        metadata: Optional[Mapping[str, str]] = None,
     ) -> IntensityTemplate:
+        """
+        Create a IntensityTemplate message, with symmetric gaussian type.
+
+        Parameters
+        ----------
+        name : str
+            Name of the intensity template.
+        FWHM_angle : float, optional
+            Full Width in degrees at Half Maximum.
+            By default, ``30``.
+        total_angle : float, optional
+            Total angle in degrees of the emission of the light source.
+            By default, ``180``.
+        description : str, optional
+            Description of the intensity template.
+            By default, ``""``.
+        metadata : Mapping[str, str], optional
+            Metadata of the intensity template.
+            By default, ``None``.
+
+        Returns
+        -------
+        IntensityTemplate
+            IntensityTemplate message created.
+        """
         intens = IntensityTemplate(name=name, description=description)
         if metadata is not None:
             intens.metadata.update(metadata)
@@ -98,12 +205,40 @@ class IntensityTemplateFactory:
 
     def asymmetric_gaussian(
         name: str,
-        FWHM_angle_x: float = 30,
-        FWHM_angle_y: float = 30,
-        total_angle: float = 180,
-        description: str = "",
-        metadata: Mapping[str, str] = None,
+        FWHM_angle_x: Optional[float] = 30,
+        FWHM_angle_y: Optional[float] = 30,
+        total_angle: Optional[float] = 180,
+        description: Optional[str] = "",
+        metadata: Optional[Mapping[str, str]] = None,
     ) -> IntensityTemplate:
+        """
+        Create a IntensityTemplate message, with asymmetric gaussian type.
+
+        Parameters
+        ----------
+        name : str
+            Name of the intensity template.
+        FWHM_angle_x : float, optional
+            Full Width in degrees following x at Half Maximum.
+            By default, ``30``.
+        FWHM_angle_y : float, optional
+            Full Width in degrees following y at Half Maximum.
+            By default, ``30``.
+        total_angle : float, optional
+            Total angle in degrees of the emission of the light source.
+            By default, ``180``.
+        description : str, optional
+            Description of the intensity template.
+            By default, ``""``.
+        metadata : Mapping[str, str], optional
+            Metadata of the intensity template.
+            By default, ``None``.
+
+        Returns
+        -------
+        IntensityTemplate
+            IntensityTemplate message created.
+        """
         intens = IntensityTemplate(name=name, description=description)
         if metadata is not None:
             intens.metadata.update(metadata)
