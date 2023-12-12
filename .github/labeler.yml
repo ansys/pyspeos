@@ -1,8 +1,8 @@
 Documentation:
-- any-glob-to-any-file: [doc/source/**/*]
+- any-glob-to-any-file: ['doc/source/**/*']
 Maintenance:
 - any-glob-to-any-file: ['.github/**/*', '.flake8', 'ignore_words.txt']
 Dependencies:
-- any-glob-to-any-file: [requirements/*]
+- any-glob-to-any-file: ['requirements/*']
 CI/CD:
-- any-glob-to-any-file: [.github/**/*]
+- any-glob-to-any-file: ['.github/**/*']
