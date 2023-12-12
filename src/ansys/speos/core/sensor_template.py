@@ -374,7 +374,7 @@ class SensorTemplateFactory:
         ssr = SensorTemplate(name=name, description=description)
         if metadata is not None:
             ssr.metadata.update(metadata)
-        ssr.camera_sensor_template.sensor_mode_photometric.acquisition_integration = 0.1
+        ssr.camera_sensor_template.sensor_mode_photometric.acquisition_integration = 0.01
         ssr.camera_sensor_template.sensor_mode_photometric.acquisition_lag_time = 0
 
         ssr.camera_sensor_template.sensor_mode_photometric.transmittance_file_uri = transmittance_file_uri
