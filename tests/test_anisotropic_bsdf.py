@@ -253,9 +253,7 @@ def compareSpecularEnhancementData(data1, data2):
     if data1.refractive_index_1 != data2.refractive_index_1 or data1.refractive_index_2 != data2.refractive_index_2:
         return False
 
-    return compareEnhancementData(data1.reflection, data2.reflection) and compareEnhancementData(
-        data1.transmission, data2.transmission
-    )
+    return compareEnhancementData(data1.reflection, data2.reflection) and compareEnhancementData(data1.transmission, data2.transmission)
 
 
 def test_grpc_anisotropic_bsdf(speos: Speos):
