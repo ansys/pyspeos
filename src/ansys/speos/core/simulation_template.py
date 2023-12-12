@@ -1,6 +1,6 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
 from enum import Enum
-from typing import List, Mapping
+from typing import List, Mapping, Optional
 
 from ansys.api.speos.simulation.v1 import simulation_template_pb2 as messages
 from ansys.api.speos.simulation.v1 import simulation_template_pb2_grpc as service
@@ -63,21 +63,60 @@ class SimulationTemplateStub(CrudStub):
 
 
 class SimulationTemplateFactory:
+    """Class to help creating SimulationTemplate message"""
+
     class CommonPropagationParameters:
         ColorimetricStandard = Enum("ColorimetricStandard", ["CIE_1931", "CIE_1964"])
 
         class Weight:
-            def __init__(self, minimum_energy_percentage: float = 0.5) -> None:
+            """
+            The Weight represents the ray energy. In real life, a ray looses some energy (power) when it interacts with an object.
+            Activating weight means that the Weight message is present.
+            When weight is not activated, rays' energy stay constant and probability laws dictate if they continue or stop propagating.
+            When weight is activated, the ray's energy evolves with interactions until they reach the sensors.
+            It is highly recommended to use Weight excepted in interactive simulation.
+            Not using Weight is useful to understand certain phenomena as absorption.
+
+            Parameters
+            ----------
+            minimum_energy_percentage : float, optional
+                The Minimum energy percentage parameter defines the minimum energy ratio to continue to propagate a ray with weight.
+                By default, ``0.5``.
+            """
+
+            def __init__(self, minimum_energy_percentage: Optional[float] = 0.5) -> None:
                 self.minimum_energy_percentage = minimum_energy_percentage
 
         def __init__(
             self,
-            geom_distance_tolerance: float = 0.05,
-            max_impact: int = 100,
-            colorimetric_standard: ColorimetricStandard = ColorimetricStandard.CIE_1931,
-            ambient_material_uri: str = "",
-            weight: Weight | None = Weight(),
+            geom_distance_tolerance: Optional[float] = 0.05,
+            max_impact: Optional[int] = 100,
+            colorimetric_standard: Optional[ColorimetricStandard] = ColorimetricStandard.CIE_1931,
+            ambient_material_uri: Optional[str] = "",
+            weight: Optional[Weight] = Weight(),
         ) -> None:
+            """
+            Represents common propagation parameters for a simulation.
+
+            Parameters
+            ----------
+            geom_distance_tolerance : float, optional
+                Maximum distance in mm to consider two faces as tangent.
+                By default, ``0.05``.
+            max_impact : int, optional
+                Define a value to determine the maximum number of ray impacts during propagation.
+                When a ray has interacted N times with the geometry, the propagation of the ray stops.
+                By default, ``100``.
+            colorimetric_standard : SimulationTemplateFactory.CommonPropagationParameters.ColorimetricStandard, optional
+                Default Colorimetric Standard.
+                By default, ``SimulationTemplateFactory.CommonPropagationParameters.ColorimetricStandard.CIE_1931``.
+            ambient_material_uri : str, optional
+                Define the environment in which the light will propagate (water, fog, smoke etc.). It is expressed in a .material file.
+                By default, ``""``, ie air material.
+            weight : SimulationTemplateFactory.CommonPropagationParameters.Weight, optional
+                Activates Weight. Highly recommended to fill. See Weight class description.
+                By default, ``SimulationTemplateFactory.CommonPropagationParameters.Weight()``.
+            """
             self.geom_distance_tolerance = geom_distance_tolerance
             self.max_impact = max_impact
             self.colorimetric_standard = colorimetric_standard
@@ -86,12 +125,41 @@ class SimulationTemplateFactory:
 
     def direct_mc(
         name: str,
-        common_propagation_parameters: CommonPropagationParameters = CommonPropagationParameters(),
-        dispersion: bool = True,
-        fast_transmission_gathering: bool = False,
-        description: str = "",
-        metadata: Mapping[str, str] = None,
+        common_propagation_parameters: Optional[CommonPropagationParameters] = CommonPropagationParameters(),
+        dispersion: Optional[bool] = True,
+        fast_transmission_gathering: Optional[bool] = False,
+        description: Optional[str] = "",
+        metadata: Optional[Mapping[str, str]] = None,
     ) -> SimulationTemplate:
+        """
+        Create a SimulationTemplate message, with direct type.
+
+        Parameters
+        ----------
+        name : str
+            Name of the simulation template.
+        common_propagation_parameters : SimulationTemplateFactory.CommonPropagationParameters, optional
+            Common propagation parameters.
+            By default, ``SimulationTemplateFactory.CommonPropagationParameters()``.
+        dispersion : bool, optional
+            To activate the dispersion calculation.
+            By default, ``True``.
+        fast_transmission_gathering : bool, optional
+            To accelerate the simulation by neglecting the light refraction that occurs when the light is being
+            transmitted though a transparent surface.
+            By default, ``False``.
+        description : str, optional
+            Description of the simulation template.
+            By default, ``""``.
+        metadata : Mapping[str, str], optional
+            Metadata of the simulation template.
+            By default, ``None``.
+
+        Returns
+        -------
+        SimulationTemplate
+            SimulationTemplate message created.
+        """
         simu = SimulationTemplate(name=name, description=description)
         if metadata is not None:
             simu.metadata.update(metadata)
@@ -120,21 +188,60 @@ class SimulationTemplateFactory:
 
     def inverse_mc(
         name: str,
-        common_propagation_parameters: CommonPropagationParameters = CommonPropagationParameters(),
-        dispersion: bool = False,
-        splitting: bool = False,
-        number_of_gathering_rays_per_source: int = 1,
-        maximum_gathering_error: int = 0,
-        fast_transmission_gathering: bool = False,
-        description: str = "",
-        metadata: Mapping[str, str] = None,
+        common_propagation_parameters: Optional[CommonPropagationParameters] = CommonPropagationParameters(),
+        dispersion: Optional[bool] = False,
+        splitting: Optional[bool] = False,
+        number_of_gathering_rays_per_source: Optional[int] = 1,
+        maximum_gathering_error: Optional[int] = 0,
+        fast_transmission_gathering: Optional[bool] = False,
+        description: Optional[str] = "",
+        metadata: Optional[Mapping[str, str]] = None,
     ) -> SimulationTemplate:
+        """
+        Create a SimulationTemplate message, with inverse type.
+
+        Parameters
+        ----------
+        name : str
+            Name of the simulation template.
+        common_propagation_parameters : SimulationTemplateFactory.CommonPropagationParameters, optional
+            Common propagation parameters.
+            By default, ``SimulationTemplateFactory.CommonPropagationParameters()``.
+        dispersion : bool, optional
+            To activate the dispersion calculation.
+            By default, ``False``.
+        splitting : bool, optional
+            To split each propagated ray into several paths at their first impact after leaving the observer point.
+            By default, ``False``.
+        number_of_gathering_rays_per_source : int, optional
+            This number pilots the number of shadow rays to target at each source.
+            By default, ``1``.
+        maximum_gathering_error : int, optional
+            This value defines the level below which a source can be neglected. 0,
+            the default value means that no approximation will be done.
+            By default, ``0``.
+        fast_transmission_gathering : bool, optional
+            To accelerate the simulation by neglecting the light refraction that occurs when the light is being
+            transmitted though a transparent surface.
+            By default, ``False``.
+        description : str, optional
+            Description of the simulation template.
+            By default, ``""``.
+        metadata : Mapping[str, str], optional
+            Metadata of the simulation template.
+            By default, ``None``.
+
+        Returns
+        -------
+        SimulationTemplate
+            SimulationTemplate message created.
+        """
         simu = SimulationTemplate(name=name, description=description)
         if metadata is not None:
             simu.metadata.update(metadata)
         simu.inverse_mc_simulation_template.geom_distance_tolerance = common_propagation_parameters.geom_distance_tolerance
         simu.inverse_mc_simulation_template.max_impact = common_propagation_parameters.max_impact
-        if simu.inverse_mc_simulation_template.weight is not None:
+        if common_propagation_parameters.weight is not None:
             simu.inverse_mc_simulation_template.weight.minimum_energy_percentage = (
                 common_propagation_parameters.weight.minimum_energy_percentage
             )
@@ -160,16 +267,38 @@ class SimulationTemplateFactory:
 
     def interactive(
         name: str,
-        common_propagation_parameters: CommonPropagationParameters = CommonPropagationParameters(),
-        description: str = "",
-        metadata: Mapping[str, str] = None,
+        common_propagation_parameters: Optional[CommonPropagationParameters] = CommonPropagationParameters(weight=None),
+        description: Optional[str] = "",
+        metadata: Optional[Mapping[str, str]] = None,
     ) -> SimulationTemplate:
+        """
+        Create a SimulationTemplate message, with interactive type.
+
+        Parameters
+        ----------
+        name : str
+            Name of the simulation template.
+        common_propagation_parameters : SimulationTemplateFactory.CommonPropagationParameters, optional
+            Common propagation parameters.
+            By default, ``SimulationTemplateFactory.CommonPropagationParameters(weight=None)``.
+        description : str, optional
+            Description of the simulation template.
+            By default, ``""``.
+        metadata : Mapping[str, str], optional
+            Metadata of the simulation template.
+            By default, ``None``.
+
+        Returns
+        -------
+        SimulationTemplate
+            SimulationTemplate message created.
+        """
         simu = SimulationTemplate(name=name, description=description)
         if metadata is not None:
             simu.metadata.update(metadata)
         simu.interactive_simulation_template.geom_distance_tolerance = common_propagation_parameters.geom_distance_tolerance
         simu.interactive_simulation_template.max_impact = common_propagation_parameters.max_impact
-        if simu.interactive_simulation_template.weight is not None:
+        if common_propagation_parameters.weight is not None:
             simu.interactive_simulation_template.weight.minimum_energy_percentage = (
                 common_propagation_parameters.weight.minimum_energy_percentage
             )

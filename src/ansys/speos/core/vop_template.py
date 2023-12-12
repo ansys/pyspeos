@@ -1,5 +1,5 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
-from typing import List, Mapping
+from typing import List, Mapping, Optional
 
 from ansys.api.speos.vop.v1 import vop_pb2 as messages
 from ansys.api.speos.vop.v1 import vop_pb2_grpc as service
@@ -62,7 +62,29 @@ class VOPTemplateStub(CrudStub):
 
 
 class VOPTemplateFactory:
-    def opaque(name: str, description: str = "", metadata: Mapping[str, str] = None) -> VOPTemplate:
+    """Class to help creating VOPTemplate message. Volume Optical Property template."""
+
+    def opaque(name: str, description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None) -> VOPTemplate:
+        """
+        Create a VOPTemplate message, with opaque type.
+        Non transparent material.
+
+        Parameters
+        ----------
+        name : str
+            Name of the vop template.
+        description : str, optional
+            Description of the vop template.
+            By default, ``""``.
+        metadata : Mapping[str, str], optional
+            Metadata of the vop template.
+            By default, ``None``.
+
+        Returns
+        -------
+        VOPTemplate
+            VOPTemplate message created.
+        """
         vop = VOPTemplate(name=name, description=description)
         if metadata is not None:
             vop.metadata.update(metadata)
@@ -71,12 +93,41 @@ class VOPTemplateFactory:
 
     def optic(
         name: str,
-        index: float = 1.5,
-        absorption: float = 0.0,
-        constringence: float = None,
-        description: str = "",
-        metadata: Mapping[str, str] = None,
+        index: Optional[float] = 1.5,
+        absorption: Optional[float] = 0.0,
+        constringence: Optional[float] = None,
+        description: Optional[str] = "",
+        metadata: Optional[Mapping[str, str]] = None,
     ) -> VOPTemplate:
+        """
+        Create a VOPTemplate message, with optic type.
+        Transparent colorless material without bulk scattering.
+
+        Parameters
+        ----------
+        name : str
+            Name of the vop template.
+        index : float, optional
+            Refractive index.
+            By default, ``1.5``.
+        absorption : float, optional
+            Absorption coefficient value. mm-1
+            By default, ``0.0``.
+        constringence : float, optional
+            Abbe number.
+            By default, ``None``, ie no constringence.
+        description : str, optional
+            Description of the vop template.
+            By default, ``""``.
+        metadata : Mapping[str, str], optional
+            Metadata of the vop template.
+            By default, ``None``.
+
+        Returns
+        -------
+        VOPTemplate
+            VOPTemplate message created.
+        """
         vop = VOPTemplate(name=name, description=description)
         if metadata is not None:
             vop.metadata.update(metadata)
@@ -86,14 +137,63 @@ class VOPTemplateFactory:
             vop.optic.constringence = constringence
         return vop
 
-    def library(name: str, material_file_uri: str, description: str = "", metadata: Mapping[str, str] = None) -> VOPTemplate:
+    def library(
+        name: str, material_file_uri: str, description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None
+    ) -> VOPTemplate:
+        """
+        Create a VOPTemplate message, with library type.
+        Based on *.material file
+
+        Parameters
+        ----------
+        name : str
+            Name of the vop template.
+        material_file_uri : str
+            *.material file
+        description : str, optional
+            Description of the vop template.
+            By default, ``""``.
+        metadata : Mapping[str, str], optional
+            Metadata of the vop template.
+            By default, ``None``.
+
+        Returns
+        -------
+        VOPTemplate
+            VOPTemplate message created.
+        """
         vop = VOPTemplate(name=name, description=description)
         if metadata is not None:
             vop.metadata.update(metadata)
         vop.library.material_file_uri = material_file_uri
         return vop
 
-    def non_homogeneous(name: str, gradedmaterial_file_uri: str, description: str = "", metadata: Mapping[str, str] = None) -> VOPTemplate:
+    def non_homogeneous(
+        name: str, gradedmaterial_file_uri: str, description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None
+    ) -> VOPTemplate:
+        """
+        Create a VOPTemplate message, with non homogeneous type.
+        Material with non-homogeneous refractive index.
+
+        Parameters
+        ----------
+        name : str
+            Name of the vop template.
+        gradedmaterial_file_uri : str
+            *.gradedmaterial file that describes the spectral variations of
+            refractive index and absorption with the respect to position in space.
+        description : str, optional
+            Description of the vop template.
+            By default, ``""``.
+        metadata : Mapping[str, str], optional
+            Metadata of the vop template.
+            By default, ``None``.
+
+        Returns
+        -------
+        VOPTemplate
+            VOPTemplate message created.
+        """
         vop = VOPTemplate(name=name, description=description)
         if metadata is not None:
             vop.metadata.update(metadata)

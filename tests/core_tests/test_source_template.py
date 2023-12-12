@@ -71,6 +71,7 @@ def test_source_template_factory(speos: Speos):
                 name="surface_err0",
                 description="Surface source template in error",
                 intensity_template=intens_t_lamb,
+                flux=None,
                 spectrum=spec_bb_2500,
             )
         )

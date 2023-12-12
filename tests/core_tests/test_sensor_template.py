@@ -65,7 +65,7 @@ def test_sensor_template_factory(speos: Speos):
             transmittance_file_uri=transmittance,
             spectrum_file_uris=[red_spectrum, green_spectrum, blue_spectrum],
             wavelengths_range=SensorTemplateFactory.WavelengthsRange(start=400, end=800, sampling=10),
-            camera_balance_mode=SensorTemplateFactory.CameraBalanceMode(type=SensorTemplateFactory.CameraBalanceMode.Type.Greyworld),
+            camera_balance_mode=SensorTemplateFactory.CameraBalanceMode(type=SensorTemplateFactory.CameraBalanceMode.Type.GreyWorld),
         )
     )
     assert camera_t2.key != ""
@@ -82,7 +82,7 @@ def test_sensor_template_factory(speos: Speos):
             spectrum_file_uris=[red_spectrum, green_spectrum, blue_spectrum],
             wavelengths_range=SensorTemplateFactory.WavelengthsRange(start=400, end=800, sampling=10),
             camera_balance_mode=SensorTemplateFactory.CameraBalanceMode(
-                type=SensorTemplateFactory.CameraBalanceMode.Type.Userwhite, values=[1, 1, 1]
+                type=SensorTemplateFactory.CameraBalanceMode.Type.UserWhiteBalance, values=[1, 1, 1]
             ),
         )
     )
@@ -100,7 +100,9 @@ def test_sensor_template_factory(speos: Speos):
                 transmittance_file_uri=transmittance,
                 spectrum_file_uris=[red_spectrum, green_spectrum, blue_spectrum],
                 wavelengths_range=SensorTemplateFactory.WavelengthsRange(start=400, end=800, sampling=10),
-                camera_balance_mode=SensorTemplateFactory.CameraBalanceMode(type=SensorTemplateFactory.CameraBalanceMode.Type.Userwhite),
+                camera_balance_mode=SensorTemplateFactory.CameraBalanceMode(
+                    type=SensorTemplateFactory.CameraBalanceMode.Type.UserWhiteBalance
+                ),
             )
         )
     assert exc.value.args[0] == "For userwhite balance mode, three values are expected: [red_gain, green_gain, blue_gain]"

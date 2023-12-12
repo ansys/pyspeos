@@ -1,5 +1,5 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
-from typing import List, Mapping
+from typing import List, Mapping, Optional
 
 from ansys.api.speos.sop.v1 import sop_pb2 as messages
 from ansys.api.speos.sop.v1 import sop_pb2_grpc as service
@@ -62,21 +62,90 @@ class SOPTemplateStub(CrudStub):
 
 
 class SOPTemplateFactory:
-    def mirror(name: str, reflectance: float = 100, description: str = "", metadata: Mapping[str, str] = None) -> SOPTemplate:
+    """Class to help creating SOPTemplate message. Surface Optical Property template."""
+
+    def mirror(
+        name: str, reflectance: Optional[float] = 100, description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None
+    ) -> SOPTemplate:
+        """
+        Create a SOPTemplate message, with mirror type.
+        Perfect specular surface.
+
+        Parameters
+        ----------
+        name : str
+            Name of the sop template.
+        reflectance : float, optional
+            Reflectance, expected from 0. to 100. in %
+            By default, ``100``.
+        description : str, optional
+            Description of the sop template.
+            By default, ``""``.
+        metadata : Mapping[str, str], optional
+            Metadata of the sop template.
+            By default, ``None``.
+
+        Returns
+        -------
+        SOPTemplate
+            SOPTemplate message created.
+        """
         sop = SOPTemplate(name=name, description=description)
         if metadata is not None:
             sop.metadata.update(metadata)
         sop.mirror.reflectance = reflectance
         return sop
 
-    def optical_polished(name: str, description: str = "", metadata: Mapping[str, str] = None) -> SOPTemplate:
+    def optical_polished(name: str, description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None) -> SOPTemplate:
+        """
+        Create a SOPTemplate message, with optical polished type.
+        Transparent or perfectly polished material (glass, plastic)
+
+        Parameters
+        ----------
+        name : str
+            Name of the sop template.
+        description : str, optional
+            Description of the sop template.
+            By default, ``""``.
+        metadata : Mapping[str, str], optional
+            Metadata of the sop template.
+            By default, ``None``.
+
+        Returns
+        -------
+        SOPTemplate
+            SOPTemplate message created.
+        """
         sop = SOPTemplate(name=name, description=description)
         if metadata is not None:
             sop.metadata.update(metadata)
         sop.optical_polished.SetInParent()
         return sop
 
-    def library(name: str, sop_file_uri: str, description: str = "", metadata: Mapping[str, str] = None) -> SOPTemplate:
+    def library(name: str, sop_file_uri: str, description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None) -> SOPTemplate:
+        """
+        Create a SOPTemplate message, with library type.
+        Based on surface optical properties file
+
+        Parameters
+        ----------
+        name : str
+            Name of the sop template.
+        sop_file_uri : str
+            Surface optical properties file, *.scattering, *.bsdf, *.brdf, *.coated, ...
+        description : str, optional
+            Description of the sop template.
+            By default, ``""``.
+        metadata : Mapping[str, str], optional
+            Metadata of the sop template.
+            By default, ``None``.
+
+        Returns
+        -------
+        SOPTemplate
+            SOPTemplate message created.
+        """
         sop = SOPTemplate(name=name, description=description)
         if metadata is not None:
             sop.metadata.update(metadata)
@@ -84,8 +153,36 @@ class SOPTemplateFactory:
         return sop
 
     def plugin(
-        name: str, plugin_sop_file_uri: str, parameters_file_uri: str, description: str = "", metadata: Mapping[str, str] = None
+        name: str,
+        plugin_sop_file_uri: str,
+        parameters_file_uri: str,
+        description: Optional[str] = "",
+        metadata: Optional[Mapping[str, str]] = None,
     ) -> SOPTemplate:
+        """
+        Create a SOPTemplate message, with plugin type.
+        Custom made plug-in
+
+        Parameters
+        ----------
+        name : str
+            Name of the sop template.
+        plugin_sop_file_uri : str
+            *.sop plug-in
+        parameters_file_uri : str
+            Parameters file needed for the plug-in
+        description : str, optional
+            Description of the sop template.
+            By default, ``""``.
+        metadata : Mapping[str, str], optional
+            Metadata of the sop template.
+            By default, ``None``.
+
+        Returns
+        -------
+        SOPTemplate
+            SOPTemplate message created.
+        """
         sop = SOPTemplate(name=name, description=description)
         if metadata is not None:
             sop.metadata.update(metadata)

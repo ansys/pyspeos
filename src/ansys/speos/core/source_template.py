@@ -1,6 +1,6 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
 from enum import Enum
-from typing import List, Mapping
+from typing import List, Mapping, Optional
 
 from ansys.api.speos.source.v1 import source_pb2 as messages
 from ansys.api.speos.source.v1 import source_pb2_grpc as service
@@ -65,10 +65,24 @@ class SourceTemplateStub(CrudStub):
 
 
 class SourceTemplateFactory:
+    """Class to help creating SourceTemplate message"""
+
     class Flux:
         Unit = Enum("Unit", ["Lumen", "Watt", "Candela"])
 
-        def __init__(self, unit: Unit = Unit.Lumen, value: float = 683) -> None:
+        def __init__(self, unit: Optional[Unit] = Unit.Lumen, value: Optional[float] = 683) -> None:
+            """
+            Represents source flux.
+
+            Parameters
+            ----------
+            unit : SourceTemplateFactory.Flux.Unit, optional
+                Flux unit.
+                By default, ``SourceTemplateFactory.Flux.Unit.Lumen``.
+            value : float, optional
+                Flux value.
+                By default, ``683``.
+            """
             self.unit = unit
             self.value = value
 
@@ -76,10 +90,37 @@ class SourceTemplateFactory:
         name: str,
         intensity_file_uri: str,
         spectrum: SpectrumLink,
-        flux: Flux = None,
-        description: str = "",
-        metadata: Mapping[str, str] = None,
+        flux: Optional[Flux] = None,
+        description: Optional[str] = "",
+        metadata: Optional[Mapping[str, str]] = None,
     ) -> SourceTemplate:
+        """
+        Create a SourceTemplate message, with luminaire type.
+
+        Parameters
+        ----------
+        name : str
+            Name of the source template.
+        intensity_file_uri : str
+            IES or EULUMDAT format file uri
+        spectrum : SpectrumLink
+            Spectrum.
+        flux : SourceTemplateFactory.Flux, optional
+            Can be filled not to take the flux from intensity file.
+            Flux units allowed are Lumen or Watt.
+            By default, ``None``, ie flux taken from intensity_file_uri.
+        description : str, optional
+            Description of the source template.
+            By default, ``""``.
+        metadata : Mapping[str, str], optional
+            Metadata of the source template.
+            By default, ``None``.
+
+        Returns
+        -------
+        SourceTemplate
+            SourceTemplate message created.
+        """
         src = SourceTemplate(name=name, description=description)
         if metadata is not None:
             src.metadata.update(metadata)
@@ -100,12 +141,44 @@ class SourceTemplateFactory:
     def surface(
         name: str,
         intensity_template: IntensityTemplateLink,
-        flux: Flux = None,
-        exitance_xmp_file_uri: str = "",
-        spectrum: SpectrumLink = None,
-        description: str = "",
-        metadata: Mapping[str, str] = None,
+        flux: Optional[Flux] = Flux(),
+        exitance_xmp_file_uri: Optional[str] = "",
+        spectrum: Optional[SpectrumLink] = None,
+        description: Optional[str] = "",
+        metadata: Optional[Mapping[str, str]] = None,
     ) -> SourceTemplate:
+        """
+        Create a SourceTemplate message, with surface type.
+
+        Parameters
+        ----------
+        name : str
+            Name of the source template.
+        intensity_template : IntensityTemplateLink
+            Intensity template.
+        flux : SourceTemplateFactory.Flux, optional
+            If set to None, take the flux from intensity file. Ok if intensity_template.get().HasField("library").
+            By default, ``SourceTemplateFactory.Flux()``
+        exitance_xmp_file_uri : str, optional
+            If defined, surface source template has exitance variable.
+            XMP file describing exitance.
+            By default, ``""``, ie exitance constant
+        spectrum : SpectrumLink, optional
+            Spectrum.
+            No need to fill if exitance_xmp_file_uri is spectral
+            By default, ``None``, ie spectrum from xmp file.
+        description : str, optional
+            Description of the source template.
+            By default, ``""``.
+        metadata : Mapping[str, str], optional
+            Metadata of the source template.
+            By default, ``None``.
+
+        Returns
+        -------
+        SourceTemplate
+            SourceTemplate message created.
+        """
         src = SourceTemplate(name=name, description=description)
         if metadata is not None:
             src.metadata.update(metadata)

@@ -1,6 +1,6 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
 from enum import Enum
-from typing import List, Mapping
+from typing import List, Mapping, Optional
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2
 from ansys.api.speos.sensor.v1 import sensor_pb2 as messages
@@ -64,18 +64,45 @@ class SensorTemplateStub(CrudStub):
 
 
 class SensorTemplateFactory:
+    """Class to help creating SensorTemplate message"""
+
     Type = Enum("Type", ["Photometric", "Colorimetric", "Radiometric", "Spectral"])
     IlluminanceType = Enum("IlluminanceType", ["Planar", "Radial", "Hemispherical", "Cylindrical", "SemiCylindrical"])
 
     class Dimensions:
+        """
+        Represents sensor dimensions.
+
+        Parameters
+        ----------
+        x_start : float, optional
+            Start of the sensor regarding x axis.
+            By default, ``-50``.
+        x_end : float, optional
+            End of the sensor regarding x axis.
+            By default, ``50``.
+        x_sampling : int, optional
+            Sampling on x axis.
+            By default, ``100``.
+        y_start : float, optional
+            Start of the sensor regarding y axis.
+            By default, ``-50``.
+        y_end : float, optional
+            End of the sensor regarding y axis.
+            By default, ``50``.
+        y_sampling : int, optional
+            Sampling on y axis.
+            By default, ``100``.
+        """
+
         def __init__(
             self,
-            x_start: float = -50,
-            x_end: float = 50,
-            x_sampling: int = 100,
-            y_start: float = -50,
-            y_end: float = 50,
-            y_sampling: int = 100,
+            x_start: Optional[float] = -50,
+            x_end: Optional[float] = 50,
+            x_sampling: Optional[int] = 100,
+            y_start: Optional[float] = -50,
+            y_end: Optional[float] = 50,
+            y_sampling: Optional[int] = 100,
         ) -> None:
             self.x_start = x_start
             self.x_end = x_end
@@ -85,21 +112,81 @@ class SensorTemplateFactory:
             self.y_sampling = y_sampling
 
     class WavelengthsRange:
-        def __init__(self, start: float = 400, end: float = 700, sampling: int = 13) -> None:
+        """
+        Represents range of wavelenths.
+
+        Parameters
+        ----------
+        start : float, optional
+            Minimum wavelength. (nm)
+            By default, ``400``.
+        end : float, optional
+            Maximum wavelength. (nm)
+            By default, ``700``.
+        sampling : int, optional
+            Number of wavelength to be taken into account between the minimum and minimum wavelengths set.
+            By default, ``13``.
+        """
+
+        def __init__(self, start: Optional[float] = 400, end: Optional[float] = 700, sampling: Optional[int] = 13) -> None:
             self.start = start
             self.end = end
             self.sampling = sampling
 
     class CameraDimensions:
-        def __init__(self, horz_pixel: int = 640, vert_pixel: int = 480, width: float = 5, height: float = 5) -> None:
+        """
+        Represents camera sensor dimensions.
+
+        Parameters
+        ----------
+        horz_pixel : int, optional
+            Horizontal pixels number corresponding to the camera resolution.
+            By default, ``640``.
+        vert_pixel : int, optional
+            Vertical pixels number corresponding to the camera resolution.
+            By default, ``480``.
+        width : float, optional
+            Sensor's width in mm.
+            By default, ``5``.
+        height : float, optional
+            Sensor's height in mm.
+            By default, ``5``.
+        """
+
+        def __init__(
+            self, horz_pixel: Optional[int] = 640, vert_pixel: Optional[int] = 480, width: Optional[float] = 5, height: Optional[float] = 5
+        ) -> None:
             self.horz_pixel = horz_pixel
             self.vert_pixel = vert_pixel
             self.width = width
             self.height = height
 
     class CameraSettings:
+        """
+        Represents camera settings.
+
+        Parameters
+        ----------
+        gamma_correction : float, optional
+            Compensation of the curve before the display on the screen.
+            By default, ``2.2``.
+        focal_length : float, optional
+            Distance between the center of the optical system and the focus. (mm)
+            By default, ``5``.
+        imager_distance : float, optional
+            Imager distance in mm, the imager is located at the focal point. The Imager distance has no impact on the result.
+            By default, ``10``.
+        f_number : float, optional
+            F-number represent the aperture of the front lens. F number has no impact on the result.
+            By default, ``20``.
+        """
+
         def __init__(
-            self, gamma_correction: float = 2.2, focal_length: float = 5, imager_distance: float = 10, f_number: float = 20
+            self,
+            gamma_correction: Optional[float] = 2.2,
+            focal_length: Optional[float] = 5,
+            imager_distance: Optional[float] = 10,
+            f_number: Optional[float] = 20,
         ) -> None:
             self.gamma_correction = gamma_correction
             self.focal_length = focal_length
@@ -107,12 +194,32 @@ class SensorTemplateFactory:
             self.f_number = f_number
 
     class CameraBalanceMode:
-        Type = Enum("Type", ["Greyworld", "Userwhite", "Display"])
+        Type = Enum("Type", ["GreyWorld", "UserWhiteBalance", "DisplayPrimaries"])
 
-        def __init__(self, type: Type, values: list = []) -> None:
-            if type == SensorTemplateFactory.CameraBalanceMode.Type.Userwhite and len(values) != 3:
+        def __init__(self, type: Optional[Type] = None, values: Optional[List] = []) -> None:
+            """
+            Represents camera balance mode.
+
+            Parameters
+            ----------
+            type : SensorTemplateFactory.CameraBalanceMode.Type, optional
+                Type of balance mode.
+                By default, ``None``.
+            values : List, optional
+                To be filled in case of types UserWhiteBalance and DisplayPrimaries
+                If UserWhiteBalance, gains are expected. List[float] : [red_gain, green_gain, blue_gain]
+                If DisplayPrimaries, display files are expected. List[str] :
+                [red_display_file_uri, green_display_file_uri, blue_display_file_uri]
+                By default, ``[]``.
+
+            Raises
+            ------
+            ValueError
+                Raised when the expected values are not given in input.
+            """
+            if type == SensorTemplateFactory.CameraBalanceMode.Type.UserWhiteBalance and len(values) != 3:
                 raise ValueError("For userwhite balance mode, three values are expected: [red_gain, green_gain, blue_gain]")
-            if type == SensorTemplateFactory.CameraBalanceMode.Type.Display and len(values) != 3:
+            if type == SensorTemplateFactory.CameraBalanceMode.Type.DisplayPrimaries and len(values) != 3:
                 raise ValueError(
                     "For display balance mode, three values are expected: \
                     [red_display_file_uri, green_display_file_uri, blue_display_file_uri]"
@@ -122,13 +229,50 @@ class SensorTemplateFactory:
 
     def irradiance(
         name: str,
-        type: Type = Type.Photometric,
-        illuminance_type: IlluminanceType = IlluminanceType.Planar,
-        dimensions: Dimensions = Dimensions(),
-        wavelengths_range: WavelengthsRange = None,
-        description: str = "",
-        metadata: Mapping[str, str] = None,
+        type: Optional[Type] = Type.Photometric,
+        illuminance_type: Optional[IlluminanceType] = IlluminanceType.Planar,
+        dimensions: Optional[Dimensions] = Dimensions(),
+        wavelengths_range: Optional[WavelengthsRange] = None,
+        description: Optional[str] = "",
+        metadata: Optional[Mapping[str, str]] = None,
     ) -> SensorTemplate:
+        """
+        Create a SensorTemplate message, with irradiance type.
+
+        Parameters
+        ----------
+        name : str
+            Name of the sensor template.
+        type : SensorTemplateFactory.Type, optional
+            Type of the sensor.
+            By default, ``SensorTemplateFactory.Type.Photometric``.
+        illuminance_type : SensorTemplateFactory.IlluminanceType, optional
+            Select how the light should be integrated to the sensor.
+            By default, ``SensorTemplateFactory.IlluminanceType.Planar``.
+        dimensions : SensorTemplateFactory.Dimensions, optional
+            Dimensions of the sensor.
+            By default, ``SensorTemplateFactory.Dimensions()``.
+        wavelengths_range : SensorTemplateFactory.WavelengthsRange, optional
+            Range of wavelengths.
+            To be filled in case of type Colorimetric or Spectral
+            By default, ``None``.
+        description : str, optional
+            Description of the sensor template.
+            By default, ``""``.
+        metadata : Mapping[str, str], optional
+            Metadata of the sensor template.
+            By default, ``None``.
+
+        Returns
+        -------
+        SensorTemplate
+            SensorTemplate message created.
+
+        Raises
+        ------
+        ValueError
+            Raised when wavelengths_range is not given but expected.
+        """
         ssr = SensorTemplate(name=name, description=description)
         if metadata is not None:
             ssr.metadata.update(metadata)
@@ -174,13 +318,59 @@ class SensorTemplateFactory:
         distorsion_file_uri: str,
         transmittance_file_uri: str,
         spectrum_file_uris: List[str],
-        settings: CameraSettings = CameraSettings(),
-        dimensions: CameraDimensions = CameraDimensions(),
-        wavelengths_range: WavelengthsRange = WavelengthsRange(),
-        camera_balance_mode: CameraBalanceMode = None,
-        description: str = "",
-        metadata: Mapping[str, str] = None,
+        settings: Optional[CameraSettings] = CameraSettings(),
+        dimensions: Optional[CameraDimensions] = CameraDimensions(),
+        wavelengths_range: Optional[WavelengthsRange] = WavelengthsRange(),
+        camera_balance_mode: Optional[CameraBalanceMode] = None,
+        description: Optional[str] = "",
+        metadata: Optional[Mapping[str, str]] = None,
     ) -> SensorTemplate:
+        """
+        Create a SensorTemplate message, with camera type.
+
+        Parameters
+        ----------
+        name : str
+            Name of the sensor template.
+        distorsion_file_uri : str
+            Optical aberration that deforms and bend straight lines. The distortion is expressed in a .OPTDistortion file.
+        transmittance_file_uri : str
+            Amount of light of the source that passes through the lens and reaches the sensor.
+            The transmittance is expressed in a .spectrum file.
+        spectrum_file_uris : List[str]
+            Spectrum files.
+            To get the sensor in color mode : [red_spectrum_file_uri, green_spectrum_file_uri, blue_spectrum_file_uri]
+            To get the sensor in monochromatic mode : [spectrum_file_uri]
+        settings : SensorTemplateFactory.CameraSettings, optional
+            Settings for the camera.
+            By default, ``SensorTemplateFactory.CameraSettings()``.
+        dimensions : SensorTemplateFactory.CameraDimensions, optional
+            Dimensions of the camera.
+            By default, ``SensorTemplateFactory.CameraDimensions()``.
+        wavelengths_range : SensorTemplateFactory.WavelengthsRange, optional
+            Range of wavelengths.
+            By default, ``SensorTemplateFactory.WavelengthsRange()``.
+        camera_balance_mode : SensorTemplateFactory.CameraBalanceMode, optional
+            Camera balance mode.
+            Can be filled if the camera is in color mode.
+            By default, ``None``.
+        description : str, optional
+            Description of the sensor template.
+            By default, ``""``.
+        metadata : Mapping[str, str], optional
+            Metadata of the sensor template.
+            By default, ``None``.
+
+        Returns
+        -------
+        SensorTemplate
+            SensorTemplate message created.
+
+        Raises
+        ------
+        ValueError
+            Raised when incorrect number of spectrum_file_uris is given.
+        """
         ssr = SensorTemplate(name=name, description=description)
         if metadata is not None:
             ssr.metadata.update(metadata)
@@ -197,18 +387,18 @@ class SensorTemplateFactory:
             ssr.camera_sensor_template.sensor_mode_photometric.color_mode_color.red_spectrum_file_uri = spectrum_file_uris[0]
             ssr.camera_sensor_template.sensor_mode_photometric.color_mode_color.green_spectrum_file_uri = spectrum_file_uris[1]
             ssr.camera_sensor_template.sensor_mode_photometric.color_mode_color.blue_spectrum_file_uri = spectrum_file_uris[2]
-            if camera_balance_mode is None:
+            if camera_balance_mode is None or camera_balance_mode.type == None:
                 ssr.camera_sensor_template.sensor_mode_photometric.color_mode_color.balance_mode_none.SetInParent()
-            elif camera_balance_mode.type == SensorTemplateFactory.CameraBalanceMode.Type.Greyworld:
+            elif camera_balance_mode.type == SensorTemplateFactory.CameraBalanceMode.Type.GreyWorld:
                 ssr.camera_sensor_template.sensor_mode_photometric.color_mode_color.balance_mode_greyworld.SetInParent()
-            elif camera_balance_mode.type == SensorTemplateFactory.CameraBalanceMode.Type.Userwhite:
+            elif camera_balance_mode.type == SensorTemplateFactory.CameraBalanceMode.Type.UserWhiteBalance:
                 mode_userwhite = camera_sensor_pb2.SensorCameraBalanceModeUserwhite()
                 mode_userwhite.red_gain = camera_balance_mode.value[0]
                 mode_userwhite.green_gain = camera_balance_mode.value[1]
                 mode_userwhite.blue_gain = camera_balance_mode.value[2]
                 ssr.camera_sensor_template.sensor_mode_photometric.color_mode_color.balance_mode_userwhite.CopyFrom(mode_userwhite)
 
-            elif camera_balance_mode.type == SensorTemplateFactory.CameraBalanceMode.Type.Display:
+            elif camera_balance_mode.type == SensorTemplateFactory.CameraBalanceMode.Type.DisplayPrimaries:
                 mode_display = camera_sensor_pb2.SensorCameraBalanceModeDisplay()
                 mode_display.red_display_file_uri = camera_balance_mode.value[0]
                 mode_display.green_display_file_uri = camera_balance_mode.value[1]

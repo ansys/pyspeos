@@ -1,6 +1,6 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
 from enum import Enum
-from typing import List, Mapping
+from typing import List, Mapping, Optional
 
 from ansys.api.speos.spectrum.v1 import spectrum_pb2 as messages
 from ansys.api.speos.spectrum.v1 import spectrum_pb2_grpc as service
@@ -63,6 +63,8 @@ class SpectrumStub(CrudStub):
 
 
 class SpectrumFactory:
+    """Class to help creating Spectrum message."""
+
     PredefinedType = Enum(
         "PredefinedType",
         [
@@ -76,14 +78,62 @@ class SpectrumFactory:
         ],
     )
 
-    def monochromatic(name: str, wavelength: float = 555, description: str = "", metadata: Mapping[str, str] = None) -> Spectrum:
+    def monochromatic(
+        name: str, wavelength: Optional[float] = 555, description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None
+    ) -> Spectrum:
+        """
+        Create a Spectrum message, with monochromatic type.
+
+        Parameters
+        ----------
+        name : str
+            Name of the spectrum.
+        wavelength : float, optional
+            Wavelength of the monochromatic spectrum, in nm.
+            By default, ``555``.
+        description : str, optional
+            Description of the spectrum.
+            By default, ``""``.
+        metadata : Mapping[str, str], optional
+            Metadata of the spectrum.
+            By default, ``None``.
+
+        Returns
+        -------
+        Spectrum
+            Spectrum message created.
+        """
         spec = Spectrum(name=name, description=description)
         if metadata is not None:
             spec.metadata.update(metadata)
         spec.monochromatic.wavelength = wavelength
         return spec
 
-    def blackbody(name: str, temperature: float = 2856, description: str = "", metadata: Mapping[str, str] = None) -> Spectrum:
+    def blackbody(
+        name: str, temperature: Optional[float] = 2856, description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None
+    ) -> Spectrum:
+        """
+        Create a Spectrum message, with blackbody type.
+
+        Parameters
+        ----------
+        name : str
+            Name of the spectrum.
+        temperature : float, optional
+            Temperature of the blackbody, in K
+            By default, ``2856``.
+        description : str, optional
+            Description of the spectrum.
+            By default, ``""``.
+        metadata : Mapping[str, str], optional
+            Metadata of the spectrum.
+            By default, ``None``.
+
+        Returns
+        -------
+        Spectrum
+            Spectrum message created.
+        """
         spec = Spectrum(name=name, description=description)
         if metadata is not None:
             spec.metadata.update(metadata)
@@ -91,8 +141,35 @@ class SpectrumFactory:
         return spec
 
     def sampled(
-        name: str, wavelengths: List[float], values: List[float], description: str = "", metadata: Mapping[str, str] = None
+        name: str,
+        wavelengths: List[float],
+        values: List[float],
+        description: Optional[str] = "",
+        metadata: Optional[Mapping[str, str]] = None,
     ) -> Spectrum:
+        """
+        Create a Spectrum message, with sampled type.
+
+        Parameters
+        ----------
+        name : str
+            Name of the spectrum.
+        wavelengths : List[float]
+            List of wavelengths, in nm.
+        values : List[float]
+            List of values, expected from 0. to 100. in %.
+        description : str, optional
+            Description of the spectrum.
+            By default, ``""``.
+        metadata : Mapping[str, str], optional
+            Metadata of the spectrum.
+            By default, ``None``.
+
+        Returns
+        -------
+        Spectrum
+            Spectrum message created.
+        """
         spec = Spectrum(name=name, description=description)
         if metadata is not None:
             spec.metadata.update(metadata)
@@ -100,7 +177,28 @@ class SpectrumFactory:
         spec.sampled.values.extend(values)
         return spec
 
-    def library(name: str, file_uri: str, description: str = "", metadata: Mapping[str, str] = None) -> Spectrum:
+    def library(name: str, file_uri: str, description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None) -> Spectrum:
+        """
+        Create a Spectrum message, with library type.
+
+        Parameters
+        ----------
+        name : str
+            Name of the spectrum.
+        file_uri : str
+            Spectrum file, expressed in *.spectrum.
+        description : str, optional
+            Description of the spectrum.
+            By default, ``""``.
+        metadata : Mapping[str, str], optional
+            Metadata of the spectrum.
+            By default, ``None``.
+
+        Returns
+        -------
+        Spectrum
+            Spectrum message created.
+        """
         spec = Spectrum(name=name, description=description)
         if metadata is not None:
             spec.metadata.update(metadata)
@@ -108,8 +206,33 @@ class SpectrumFactory:
         return spec
 
     def predefined(
-        name: str, type: PredefinedType = PredefinedType.Incandescent, description: str = "", metadata: Mapping[str, str] = None
+        name: str,
+        type: Optional[PredefinedType] = PredefinedType.Incandescent,
+        description: Optional[str] = "",
+        metadata: Optional[Mapping[str, str]] = None,
     ) -> Spectrum:
+        """
+        Create a Spectrum message, with predefined type.
+
+        Parameters
+        ----------
+        name : str
+            Name of the spectrum.
+        type : SpectrumFactory.PredefinedType, optional
+            Predefined type.
+            By default, ``SpectrumFactory.PredefinedType.Incandescent``.
+        description : str, optional
+            Description of the spectrum.
+            By default, ``""``.
+        metadata : Mapping[str, str], optional
+            Metadata of the spectrum.
+            By default, ``None``.
+
+        Returns
+        -------
+        Spectrum
+            Spectrum message created.
+        """
         spec = Spectrum(name=name, description=description)
         if metadata is not None:
             spec.metadata.update(metadata)
