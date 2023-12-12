@@ -534,7 +534,8 @@ class SceneFactory:
         """
         cam_props = Scene.SensorInstance.CameraSensorProperties()
         cam_props.axis_system.extend(axis_system.origin + axis_system.x_vect + axis_system.y_vect + axis_system.z_vect)
-        cam_props.trajectory_file_uri = trajectory_file_uri
+        if trajectory_file_uri is not None:
+            cam_props.trajectory_file_uri = trajectory_file_uri
         if layer_type is None:
             cam_props.layer_type_none.SetInParent()
         elif isinstance(layer_type, SceneFactory.Properties.Sensor.LayerType.Source):
