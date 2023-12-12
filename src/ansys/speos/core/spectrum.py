@@ -1,4 +1,6 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
+from typing import List
+
 from ansys.api.speos.spectrum.v1 import spectrum_pb2 as messages
 from ansys.api.speos.spectrum.v1 import spectrum_pb2_grpc as service
 
@@ -49,7 +51,7 @@ class SpectrumStub(CrudStub):
             raise ValueError("SpectrumLink is not on current database")
         CrudStub.delete(self, messages.Delete_Request(guid=ref.key))
 
-    def list(self) -> list[SpectrumLink]:
+    def list(self) -> List[SpectrumLink]:
         """List existing entries."""
         guids = CrudStub.list(self, messages.List_Request()).guids
         return list(map(lambda x: SpectrumLink(self, x), guids))
