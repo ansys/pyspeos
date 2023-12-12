@@ -1,10 +1,8 @@
 Documentation:
-- doc/source/**/*
+- any-glob-to-any-file: ['doc/source/**/*']
 Maintenance:
-- .github/**/*
-- .flake8
-- ignore_words.txt
+- any-glob-to-any-file: ['.github/**/*', '.flake8', 'ignore_words.txt']
 Dependencies:
-- requirements/*
+- any-glob-to-any-file: ['requirements/*']
 CI/CD:
-- .github/**/*
+- any-glob-to-any-file: ['.github/**/*']
