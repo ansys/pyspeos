@@ -11,7 +11,19 @@ SOPTemplate = messages.SOPTemplate
 
 
 class SOPTemplateLink(CrudItem):
-    """Link object for Surface Optical Properties template in database."""
+    """
+    Link object for Surface Optical Properties template in database.
+
+    Examples
+    --------
+
+    >>> from ansys.speos.core.speos import Speos
+    >>> from ansys.speos.core.sop_template import SOPTemplateFactory
+    >>> speos = Speos(host="localhost", port=50051)
+    >>> sop_t_db = speos.client.sop_templates()
+    >>> sop_t_link = sop_t_db.create(message=SOPTemplateFactory.mirror(name="Mirror_50", reflectance=50))
+
+    """
 
     def __init__(self, db, key: str):
         super().__init__(db, key)
@@ -33,7 +45,17 @@ class SOPTemplateLink(CrudItem):
 
 
 class SOPTemplateStub(CrudStub):
-    """Database interactions for Surface Optical Properties templates."""
+    """
+    Database interactions for Surface Optical Properties templates.
+
+    Examples
+    --------
+
+    >>> from ansys.speos.core.speos import Speos
+    >>> speos = Speos(host="localhost", port=50051)
+    >>> sop_t_db = speos.client.sop_templates()
+
+    """
 
     def __init__(self, channel):
         super().__init__(stub=service.SOPTemplatesManagerStub(channel=channel))

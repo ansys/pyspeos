@@ -11,7 +11,19 @@ VOPTemplate = messages.VOPTemplate
 
 
 class VOPTemplateLink(CrudItem):
-    """Link object for Volume Optical Properties template in database."""
+    """
+    Link object for Volume Optical Properties template in database.
+
+    Examples
+    --------
+
+    >>> from ansys.speos.core.speos import Speos
+    >>> from ansys.speos.core.vop_template import VOPTemplateFactory
+    >>> speos = Speos(host="localhost", port=50051)
+    >>> vop_t_db = speos.client.vop_templates()
+    >>> vop_t_link = vop_t_db.create(message=VOPTemplateFactory.opaque(name="Opaque"))
+
+    """
 
     def __init__(self, db, key: str):
         super().__init__(db, key)
@@ -33,7 +45,17 @@ class VOPTemplateLink(CrudItem):
 
 
 class VOPTemplateStub(CrudStub):
-    """Database interactions for Volume Optical Properties templates."""
+    """
+    Database interactions for Volume Optical Properties templates.
+
+    Examples
+    --------
+
+    >>> from ansys.speos.core.speos import Speos
+    >>> speos = Speos(host="localhost", port=50051)
+    >>> vop_t_db = speos.client.vop_templates()
+
+    """
 
     def __init__(self, channel):
         super().__init__(stub=service.VOPTemplatesManagerStub(channel=channel))
