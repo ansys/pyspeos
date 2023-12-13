@@ -11,6 +11,8 @@ VOPTemplate = messages.VOPTemplate
 
 
 class VOPTemplateLink(CrudItem):
+    """Link object for Volume Optical Properties template in database."""
+
     def __init__(self, db, key: str):
         super().__init__(db, key)
 
@@ -18,16 +20,21 @@ class VOPTemplateLink(CrudItem):
         return protobuf_message_to_str(self.get())
 
     def get(self) -> VOPTemplate:
+        """Get the datamodel from database."""
         return self._stub.read(self)
 
     def set(self, data: VOPTemplate) -> None:
+        """Change datamodel in database."""
         self._stub.update(self, data)
 
     def delete(self) -> None:
+        """Remove datamodel from database."""
         self._stub.delete(self)
 
 
 class VOPTemplateStub(CrudStub):
+    """Database interactions for Volume Optical Properties templates."""
+
     def __init__(self, channel):
         super().__init__(stub=service.VOPTemplatesManagerStub(channel=channel))
 
@@ -66,15 +73,15 @@ class VOPTemplateFactory:
 
     def opaque(name: str, description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None) -> VOPTemplate:
         """
-        Create a VOPTemplate message, with opaque type.
         Non transparent material.
+        Create a VOPTemplate message, with opaque type.
 
         Parameters
         ----------
         name : str
             Name of the vop template.
         description : str, optional
-            Description of the vop template.
+            Description of the vop template.\n
             By default, ``""``.
         metadata : Mapping[str, str], optional
             Metadata of the vop template.
@@ -100,8 +107,8 @@ class VOPTemplateFactory:
         metadata: Optional[Mapping[str, str]] = None,
     ) -> VOPTemplate:
         """
-        Create a VOPTemplate message, with optic type.
         Transparent colorless material without bulk scattering.
+        Create a VOPTemplate message, with optic type.
 
         Parameters
         ----------
@@ -141,15 +148,15 @@ class VOPTemplateFactory:
         name: str, material_file_uri: str, description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None
     ) -> VOPTemplate:
         """
+        Based on \*.material file.
         Create a VOPTemplate message, with library type.
-        Based on *.material file
 
         Parameters
         ----------
         name : str
             Name of the vop template.
         material_file_uri : str
-            *.material file
+            \*.material file
         description : str, optional
             Description of the vop template.
             By default, ``""``.
@@ -172,15 +179,15 @@ class VOPTemplateFactory:
         name: str, gradedmaterial_file_uri: str, description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None
     ) -> VOPTemplate:
         """
-        Create a VOPTemplate message, with non homogeneous type.
         Material with non-homogeneous refractive index.
+        Create a VOPTemplate message, with non homogeneous type.
 
         Parameters
         ----------
         name : str
             Name of the vop template.
         gradedmaterial_file_uri : str
-            *.gradedmaterial file that describes the spectral variations of
+            \*.gradedmaterial file that describes the spectral variations of
             refractive index and absorption with the respect to position in space.
         description : str, optional
             Description of the vop template.

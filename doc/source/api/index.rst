@@ -10,3 +10,5 @@ on the left sidebar.
    :hidden:
 
    logging
+   client
+   crud_items/index
