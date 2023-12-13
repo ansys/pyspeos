@@ -53,9 +53,7 @@ def createSpectralBsdf() -> spectral_bsdf__v1__pb2.SpectralBsdfData:
             for t in range(nb_theta):
                 IW.transmission.theta_samples.append(math.pi * 0.5 * (1 + t / (nb_theta - 1)))
                 for p in range(nb_phi):
-                    IW.transmission.bsdf_cos_theta.append(
-                        0.5 * abs(math.cos(IW.transmission.theta_samples[t])) / math.pi
-                    )
+                    IW.transmission.bsdf_cos_theta.append(0.5 * abs(math.cos(IW.transmission.theta_samples[t])) / math.pi)
 
     return bsdf
 
