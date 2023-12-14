@@ -11,6 +11,20 @@ SOPTemplate = messages.SOPTemplate
 
 
 class SOPTemplateLink(CrudItem):
+    """
+    Link object for Surface Optical Properties template in database.
+
+    Examples
+    --------
+
+    >>> from ansys.speos.core.speos import Speos
+    >>> from ansys.speos.core.sop_template import SOPTemplateFactory
+    >>> speos = Speos(host="localhost", port=50051)
+    >>> sop_t_db = speos.client.sop_templates()
+    >>> sop_t_link = sop_t_db.create(message=SOPTemplateFactory.mirror(name="Mirror_50", reflectance=50))
+
+    """
+
     def __init__(self, db, key: str):
         super().__init__(db, key)
 
@@ -18,16 +32,31 @@ class SOPTemplateLink(CrudItem):
         return protobuf_message_to_str(self.get())
 
     def get(self) -> SOPTemplate:
+        """Get the datamodel from database."""
         return self._stub.read(self)
 
     def set(self, data: SOPTemplate) -> None:
+        """Change datamodel in database."""
         self._stub.update(self, data)
 
     def delete(self) -> None:
+        """Remove datamodel from database."""
         self._stub.delete(self)
 
 
 class SOPTemplateStub(CrudStub):
+    """
+    Database interactions for Surface Optical Properties templates.
+
+    Examples
+    --------
+
+    >>> from ansys.speos.core.speos import Speos
+    >>> speos = Speos(host="localhost", port=50051)
+    >>> sop_t_db = speos.client.sop_templates()
+
+    """
+
     def __init__(self, channel):
         super().__init__(stub=service.SOPTemplatesManagerStub(channel=channel))
 
@@ -68,8 +97,8 @@ class SOPTemplateFactory:
         name: str, reflectance: Optional[float] = 100, description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None
     ) -> SOPTemplate:
         """
-        Create a SOPTemplate message, with mirror type.
         Perfect specular surface.
+        Create a SOPTemplate message, with mirror type.
 
         Parameters
         ----------
@@ -98,8 +127,8 @@ class SOPTemplateFactory:
 
     def optical_polished(name: str, description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None) -> SOPTemplate:
         """
+        Transparent or perfectly polished material (glass, plastic).
         Create a SOPTemplate message, with optical polished type.
-        Transparent or perfectly polished material (glass, plastic)
 
         Parameters
         ----------
@@ -125,15 +154,15 @@ class SOPTemplateFactory:
 
     def library(name: str, sop_file_uri: str, description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None) -> SOPTemplate:
         """
+        Based on surface optical properties file.
         Create a SOPTemplate message, with library type.
-        Based on surface optical properties file
 
         Parameters
         ----------
         name : str
             Name of the sop template.
         sop_file_uri : str
-            Surface optical properties file, *.scattering, *.bsdf, *.brdf, *.coated, ...
+            Surface optical properties file, \*.scattering, \*.bsdf, \*.brdf, \*.coated, ...
         description : str, optional
             Description of the sop template.
             By default, ``""``.
@@ -160,15 +189,15 @@ class SOPTemplateFactory:
         metadata: Optional[Mapping[str, str]] = None,
     ) -> SOPTemplate:
         """
+        Custom made plug-in.
         Create a SOPTemplate message, with plugin type.
-        Custom made plug-in
 
         Parameters
         ----------
         name : str
             Name of the sop template.
         plugin_sop_file_uri : str
-            *.sop plug-in
+            \*.sop plug-in
         parameters_file_uri : str
             Parameters file needed for the plug-in
         description : str, optional

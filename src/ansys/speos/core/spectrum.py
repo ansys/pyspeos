@@ -12,6 +12,20 @@ Spectrum = messages.Spectrum
 
 
 class SpectrumLink(CrudItem):
+    """
+    Link object for spectrum in database.
+
+    Examples
+    --------
+
+    >>> from ansys.speos.core.speos import Speos
+    >>> from ansys.speos.core.spectrum import SpectrumFactory
+    >>> speos = Speos(host="localhost", port=50051)
+    >>> spe_db = speos.client.spectrums()
+    >>> spe_link = spe_db.create(message=SpectrumFactory.monochromatic(name="Monochromatic_600", wavelength=600))
+
+    """
+
     def __init__(self, db, key: str):
         super().__init__(db, key)
 
@@ -19,16 +33,31 @@ class SpectrumLink(CrudItem):
         return protobuf_message_to_str(self.get())
 
     def get(self) -> Spectrum:
+        """Get the datamodel from database."""
         return self._stub.read(self)
 
     def set(self, data: Spectrum) -> None:
+        """Change datamodel in database."""
         self._stub.update(self, data)
 
     def delete(self) -> None:
+        """Remove datamodel from database."""
         self._stub.delete(self)
 
 
 class SpectrumStub(CrudStub):
+    """
+    Database interactions for spectrums.
+
+    Examples
+    --------
+
+    >>> from ansys.speos.core.speos import Speos
+    >>> speos = Speos(host="localhost", port=50051)
+    >>> spe_db = speos.client.spectrums()
+
+    """
+
     def __init__(self, channel):
         super().__init__(stub=service.SpectrumsManagerStub(channel=channel))
 
@@ -186,7 +215,7 @@ class SpectrumFactory:
         name : str
             Name of the spectrum.
         file_uri : str
-            Spectrum file, expressed in *.spectrum.
+            Spectrum file, expressed in \*.spectrum.
         description : str, optional
             Description of the spectrum.
             By default, ``""``.

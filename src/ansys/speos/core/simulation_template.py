@@ -12,6 +12,20 @@ SimulationTemplate = messages.SimulationTemplate
 
 
 class SimulationTemplateLink(CrudItem):
+    """
+    Link object for simulation template in database.
+
+    Examples
+    --------
+
+    >>> from ansys.speos.core.speos import Speos
+    >>> from ansys.speos.core.simulation_template import SimulationTemplateFactory
+    >>> speos = Speos(host="localhost", port=50051)
+    >>> sim_t_db = speos.client.simulation_templates()
+    >>> sim_t_link = sim_t_db.create(message=SimulationTemplateFactory.direct_mc(name="Direct_Default"))
+
+    """
+
     def __init__(self, db, key: str):
         super().__init__(db, key)
 
@@ -19,16 +33,31 @@ class SimulationTemplateLink(CrudItem):
         return protobuf_message_to_str(self.get())
 
     def get(self) -> SimulationTemplate:
+        """Get the datamodel from database."""
         return self._stub.read(self)
 
     def set(self, data: SimulationTemplate) -> None:
+        """Change datamodel in database."""
         self._stub.update(self, data)
 
     def delete(self) -> None:
+        """Remove datamodel from database."""
         self._stub.delete(self)
 
 
 class SimulationTemplateStub(CrudStub):
+    """
+    Database interactions for simulation templates.
+
+    Examples
+    --------
+
+    >>> from ansys.speos.core.speos import Speos
+    >>> speos = Speos(host="localhost", port=50051)
+    >>> sim_t_db = speos.client.simulation_templates()
+
+    """
+
     def __init__(self, channel):
         super().__init__(stub=service.SimulationTemplatesManagerStub(channel=channel))
 
