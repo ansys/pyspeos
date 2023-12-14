@@ -13,3 +13,6 @@ You can find them on the left sidebar.
    intensity_template
    source_template
    sensor_template
+   simulation_template
+   scene
+   job
