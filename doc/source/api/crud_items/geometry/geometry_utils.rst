@@ -5,7 +5,6 @@ Geometry utils
 
 .. autosummary::
    :toctree: _autosummary
-   :recursive:
 
    AxisSystem
    AxisPlane

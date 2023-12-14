@@ -5,7 +5,6 @@ Job
 
 .. autosummary::
    :toctree: _autosummary
-   :recursive:
 
    JobStub
    JobLink

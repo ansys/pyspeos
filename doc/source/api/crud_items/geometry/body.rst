@@ -5,7 +5,6 @@ Body
 
 .. autosummary::
    :toctree: _autosummary
-   :recursive:
 
    BodyStub
    BodyLink

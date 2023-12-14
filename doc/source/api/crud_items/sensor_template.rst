@@ -5,7 +5,6 @@ Sensor template
 
 .. autosummary::
    :toctree: _autosummary
-   :recursive:
 
    SensorTemplateStub
    SensorTemplateLink

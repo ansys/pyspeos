@@ -5,7 +5,6 @@ Source template
 
 .. autosummary::
    :toctree: _autosummary
-   :recursive:
 
    SourceTemplateStub
    SourceTemplateLink

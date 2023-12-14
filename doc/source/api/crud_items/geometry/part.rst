@@ -5,7 +5,6 @@ Part
 
 .. autosummary::
    :toctree: _autosummary
-   :recursive:
 
    PartStub
    PartLink

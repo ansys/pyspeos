@@ -5,7 +5,6 @@ Scene
 
 .. autosummary::
    :toctree: _autosummary
-   :recursive:
 
    SceneStub
    SceneLink

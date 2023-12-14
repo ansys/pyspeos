@@ -5,7 +5,6 @@ Spectrum
 
 .. autosummary::
    :toctree: _autosummary
-   :recursive:
 
    SpectrumStub
    SpectrumLink

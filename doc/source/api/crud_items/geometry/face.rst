@@ -5,7 +5,6 @@ Face
 
 .. autosummary::
    :toctree: _autosummary
-   :recursive:
 
    FaceStub
    FaceLink
