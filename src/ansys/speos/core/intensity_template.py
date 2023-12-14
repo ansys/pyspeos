@@ -11,6 +11,20 @@ IntensityTemplate = messages.IntensityTemplate
 
 
 class IntensityTemplateLink(CrudItem):
+    """
+    Link object for intensity template in database.
+
+    Examples
+    --------
+
+    >>> from ansys.speos.core.speos import Speos
+    >>> from ansys.speos.core.intensity_template import IntensityTemplateFactory
+    >>> speos = Speos(host="localhost", port=50051)
+    >>> int_t_db = speos.client.intensity_templates()
+    >>> int_t_link = int_t_db.create(message=IntensityTemplateFactory.lambertian(name="Lambertian_170", total_angle=170))
+
+    """
+
     def __init__(self, db, key: str):
         super().__init__(db, key)
 
@@ -18,16 +32,31 @@ class IntensityTemplateLink(CrudItem):
         return protobuf_message_to_str(self.get())
 
     def get(self) -> IntensityTemplate:
+        """Get the datamodel from database."""
         return self._stub.read(self)
 
     def set(self, data: IntensityTemplate) -> None:
+        """Change datamodel in database."""
         self._stub.update(self, data)
 
     def delete(self) -> None:
+        """Remove datamodel from database."""
         self._stub.delete(self)
 
 
 class IntensityTemplateStub(CrudStub):
+    """
+    Database interactions for intensity templates.
+
+    Examples
+    --------
+
+    >>> from ansys.speos.core.speos import Speos
+    >>> speos = Speos(host="localhost", port=50051)
+    >>> int_t_db = speos.client.intensity_templates()
+
+    """
+
     def __init__(self, channel):
         super().__init__(stub=service.IntensityTemplatesManagerStub(channel=channel))
 

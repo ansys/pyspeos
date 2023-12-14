@@ -9,3 +9,7 @@ You can find them on the left sidebar.
 
    vop_template
    sop_template
+   spectrum
+   intensity_template
+   source_template
+   sensor_template

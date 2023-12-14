@@ -14,6 +14,8 @@ SourceTemplate = messages.SourceTemplate
 
 
 class SourceTemplateLink(CrudItem):
+    """Link object for source template in database."""
+
     def __init__(self, db, key: str):
         super().__init__(db, key)
 
@@ -21,16 +23,31 @@ class SourceTemplateLink(CrudItem):
         return protobuf_message_to_str(self.get())
 
     def get(self) -> SourceTemplate:
+        """Get the datamodel from database."""
         return self._stub.read(self)
 
     def set(self, data: SourceTemplate) -> None:
+        """Change datamodel in database."""
         self._stub.update(self, data)
 
     def delete(self) -> None:
+        """Remove datamodel from database."""
         self._stub.delete(self)
 
 
 class SourceTemplateStub(CrudStub):
+    """
+    Database interactions for source templates.
+
+    Examples
+    --------
+
+    >>> from ansys.speos.core.speos import Speos
+    >>> speos = Speos(host="localhost", port=50051)
+    >>> src_t_db = speos.client.source_templates()
+
+    """
+
     def __init__(self, channel):
         super().__init__(stub=service.SourceTemplatesManagerStub(channel=channel))
 
