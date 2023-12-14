@@ -49,6 +49,7 @@ jobs:
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           check-links: false
+          sphinxopts: -j auto -W --keep-going -D suppress_warnings=autosectionlabel.*
   tests:
     name: "Unit testing"
     runs-on: ubuntu-latest
