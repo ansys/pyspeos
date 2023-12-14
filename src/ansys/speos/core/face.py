@@ -13,6 +13,8 @@ Face = messages.Face
 
 
 class FaceLink(CrudItem):
+    """Link object for job in database."""
+
     def __init__(self, db, key: str):
         super().__init__(db, key)
 
@@ -20,16 +22,31 @@ class FaceLink(CrudItem):
         return protobuf_message_to_str(self.get())
 
     def get(self) -> Face:
+        """Get the datamodel from database."""
         return self._stub.read(self)
 
     def set(self, data: Face) -> None:
+        """Change datamodel in database."""
         self._stub.update(self, data)
 
     def delete(self) -> None:
+        """Remove datamodel from database."""
         self._stub.delete(self)
 
 
 class FaceStub(CrudStub):
+    """
+    Database interactions for face.
+
+    Examples
+    --------
+
+    >>> from ansys.speos.core.speos import Speos
+    >>> speos = Speos(host="localhost", port=50051)
+    >>> face_db = speos.client.faces()
+
+    """
+
     def __init__(self, channel):
         super().__init__(stub=service.FacesManagerStub(channel=channel))
 

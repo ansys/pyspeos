@@ -1,6 +1,6 @@
 CRUD Items: base objects
 ========================
-Here are referenced all PySpeos base objects that are useful to create optic characteristics.
+Here are referenced all PySpeos base objects that are useful to create optic scene.
 You can find them on the left sidebar.
 
 .. toctree::
@@ -16,3 +16,4 @@ You can find them on the left sidebar.
    simulation_template
    scene
    job
+   geometry/index

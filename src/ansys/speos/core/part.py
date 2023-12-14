@@ -12,6 +12,8 @@ Part = messages.Part
 
 
 class PartLink(CrudItem):
+    """Link object for body in database."""
+
     def __init__(self, db, key: str):
         super().__init__(db, key)
 
@@ -19,16 +21,31 @@ class PartLink(CrudItem):
         return protobuf_message_to_str(self.get())
 
     def get(self) -> Part:
+        """Get the datamodel from database."""
         return self._stub.read(self)
 
     def set(self, data: Part) -> None:
+        """Change datamodel in database."""
         self._stub.update(self, data)
 
     def delete(self) -> None:
+        """Remove datamodel from database."""
         self._stub.delete(self)
 
 
 class PartStub(CrudStub):
+    """
+    Database interactions for part.
+
+    Examples
+    --------
+
+    >>> from ansys.speos.core.speos import Speos
+    >>> speos = Speos(host="localhost", port=50051)
+    >>> part_db = speos.client.parts()
+
+    """
+
     def __init__(self, channel):
         super().__init__(stub=service.PartsManagerStub(channel=channel))
 

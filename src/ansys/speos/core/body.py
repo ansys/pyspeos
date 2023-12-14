@@ -14,6 +14,8 @@ Body = messages.Body
 
 
 class BodyLink(CrudItem):
+    """Link object for body in database."""
+
     def __init__(self, db, key: str):
         super().__init__(db, key)
 
@@ -21,16 +23,31 @@ class BodyLink(CrudItem):
         return protobuf_message_to_str(self.get())
 
     def get(self) -> Body:
+        """Get the datamodel from database."""
         return self._stub.read(self)
 
     def set(self, data: Body) -> None:
+        """Change datamodel in database."""
         self._stub.update(self, data)
 
     def delete(self) -> None:
+        """Remove datamodel from database."""
         self._stub.delete(self)
 
 
 class BodyStub(CrudStub):
+    """
+    Database interactions for body.
+
+    Examples
+    --------
+
+    >>> from ansys.speos.core.speos import Speos
+    >>> speos = Speos(host="localhost", port=50051)
+    >>> body_db = speos.client.bodies()
+
+    """
+
     def __init__(self, channel):
         super().__init__(stub=service.BodiesManagerStub(channel=channel))
 
