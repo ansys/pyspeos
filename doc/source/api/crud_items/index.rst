@@ -7,8 +7,7 @@ You can find them on the left sidebar.
    :maxdepth: 2
    :hidden:
 
-   vop_template
-   sop_template
+   material/index
    spectrum
    intensity_template
    source_template
