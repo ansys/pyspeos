@@ -82,7 +82,7 @@ jobs:
           LICENSE_SERVER: ${{ format('1055@{0}', secrets.LICENSE_SERVER) }}
 
       - name: Upload wheel
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ansys-pyspeos-wheel
           path: dist/
