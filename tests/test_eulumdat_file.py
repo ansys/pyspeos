@@ -158,15 +158,9 @@ def compareEulumdatIntensities(eulumdat1, eulumdat2):
             return False
         if eulumdat1.lamp_distribution[lmp].color_temperature != eulumdat2.lamp_distribution[lmp].color_temperature:
             return False
-        if (
-            eulumdat1.lamp_distribution[lmp].color_rendering_index
-            != eulumdat2.lamp_distribution[lmp].color_rendering_index
-        ):
+        if eulumdat1.lamp_distribution[lmp].color_rendering_index != eulumdat2.lamp_distribution[lmp].color_rendering_index:
             return False
-        if (
-            eulumdat1.lamp_distribution[lmp].wattage_including_ballast
-            != eulumdat2.lamp_distribution[lmp].wattage_including_ballast
-        ):
+        if eulumdat1.lamp_distribution[lmp].wattage_including_ballast != eulumdat2.lamp_distribution[lmp].wattage_including_ballast:
             return False
 
     # polar distribution data

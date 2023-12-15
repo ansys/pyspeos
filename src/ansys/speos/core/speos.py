@@ -44,8 +44,6 @@ class Speos:
         The file to output the log, if requested. By default, ``None``.
     """
 
-    """Constructor method for ``Modeler``."""
-
     def __init__(
         self,
         host: str = DEFAULT_HOST,
@@ -68,5 +66,5 @@ class Speos:
 
     @property
     def client(self) -> SpeosClient:
-        """The ``Speos` instance client."""
+        """The ``Speos`` instance client."""
         return self._client

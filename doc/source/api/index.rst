@@ -9,4 +9,9 @@ on the left sidebar.
    :maxdepth: 2
    :hidden:
 
+   launcher
+   speos
+   client
+   crud_items/index
    logging
+   proto_message_utils
