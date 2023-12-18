@@ -1,14 +1,18 @@
 import os
 import sys
 import time
+from typing import Optional
 
 from ansys.api.speos.job.v2 import job_pb2
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2
 
+from ansys.speos.core import LOG  # Global logger
 from ansys.speos.core.client import SpeosClient
 from ansys.speos.core.job import JobFactory
+from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 from ansys.speos.core.scene import AxisSystem, SceneFactory
 from ansys.speos.core.sensor_template import SensorTemplate
+from ansys.speos.core.simulation_template import SimulationTemplateLink
 from ansys.speos.core.speos import Speos
 
 
@@ -279,23 +283,22 @@ class camera_sensor_properties:
 
 
 class speos_simulation_update:
-    def __init__(self, file_name):
+    def __init__(self, speos: Speos, file_name):
         """
         Create connection with Speos rpc server and load ".speos" simulation file
         file_name: ".speos" simulation file name
         """
 
-        self.speos = None
+        self._speos = speos
         self.scene = None
         self.status = ""
 
         if os.path.exists(file_name):
             # Create connection with Speos rpc server
-            self.speos = Speos(host="localhost", port=50051)
-            clean_all_dbs(self.speos.client)
+            clean_all_dbs(self._speos.client)
 
             # Create empty scene and load file
-            self.scene = self.speos.client.scenes().create()
+            self.scene = self._speos.client.scenes().create()
             self.scene.load_file(file_uri=file_name)
 
             self.status = "Opened"
@@ -310,7 +313,7 @@ class speos_simulation_update:
         sensor_properties: CameraSensorProperties
         """
 
-        sensor_template_db = self.speos.client.sensor_templates()
+        sensor_template_db = self._speos.client.sensor_templates()
 
         # Store SensorTemplate protobuf message in db and retrieve SensorTemplateLink
         sensor_template_link = sensor_template_db.create(message=sensor_template)
@@ -331,13 +334,28 @@ class speos_simulation_update:
         # Update value in db
         self.scene.set(scene_data)
 
-    def compute(self, job_name="new_job"):
+    def compute(self, job_name="new_job", stop_condition_duration: Optional[int] = None):
         """Compute simulation
         job_name [optional]: name of the job
         returned value: list of results
         """
 
-        new_job = self.speos.client.jobs().create(
+        scene_data = self.scene.get()
+        simu_t_link = self._speos.client.get_item(scene_data.simulations[0].simulation_guid)
+        props = None
+        if isinstance(simu_t_link, SimulationTemplateLink):
+            simu_t_data = simu_t_link.get()
+            if simu_t_data.HasField("direct_mc_simulation_template"):
+                props = JobFactory.direct_mc_props(stop_condition_duration)
+            elif simu_t_data.HasField("inverse_mc_simulation_template"):
+                props = JobFactory.inverse_mc_props(stop_condition_duration)
+            elif simu_t_data.HasField("interactive_simulation_template"):
+                props = JobFactory.interactive_props()
+
+        if props is None:
+            raise KeyError(SimulationTemplateLink)
+
+        new_job = self._speos.client.jobs().create(
             message=JobFactory.new(
                 name=job_name,
                 scene=self.scene,
@@ -348,22 +366,28 @@ class speos_simulation_update:
 
         new_job.start()
 
-        while new_job.get_state().state != job_pb2.Job.State.FINISHED:
-            PrintProgressBar(new_job.get_progress_status().progress, 1, "Processing: ")
+        job_state_res = new_job.get_state()
+        while (
+            job_state_res.state != job_pb2.Job.State.FINISHED
+            and job_state_res.state != job_pb2.Job.State.STOPPED
+            and job_state_res.state != job_pb2.Job.State.IN_ERROR
+        ):
             time.sleep(5)
+            PrintProgressBar(new_job.get_progress_status().progress, 1, "Processing: ")
+
+            job_state_res = new_job.get_state()
+            if job_state_res.state == job_pb2.Job.State.IN_ERROR:
+                LOG.error(protobuf_message_to_str(new_job.get_error()))
 
         results_list = []
         for result in new_job.get_results().results:
             results_list.append(result)
-
-        new_job.delete()
 
         return results_list
 
     def close(self):
         """Clean SpeosSimulationUpdate before closing"""
 
-        clean_all_dbs(self.speos.client)
-        self.speos = None
+        clean_all_dbs(self._speos.client)
         self.scene = None
         self.status = "Closed"
