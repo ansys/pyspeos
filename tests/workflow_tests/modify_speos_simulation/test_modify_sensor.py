@@ -10,14 +10,14 @@ def test_modify_camera(speos: Speos):
     simu_name = "Inverse_SeveralSensors.speos"
     speos_file = os.path.join(test_path, os.path.join(simu_name, simu_name))
 
-    new_sim = modify_sensor.speos_simulation_update(speos, speos_file)
+    new_sim = modify_sensor.SpeosSimulationUpdate(speos, speos_file)
 
     # Create camera database
     camera_input_path = os.path.join(test_path, "CameraInputFiles")
 
     camera_sensor_list = []
 
-    camera_sensor = modify_sensor.photometric_camera_sensor_parameters()
+    camera_sensor = modify_sensor.PhotometricCameraSensorParameters()
     camera_sensor.name = "FOV_190deg"
     camera_sensor.transmittance_file = os.path.join(camera_input_path, "CameraTransmittance.spectrum")
     camera_sensor.distorsion_file = os.path.join(camera_input_path, "CameraDistortion_190deg.OPTDistortion")
@@ -43,7 +43,7 @@ def test_modify_camera(speos: Speos):
 
     camera_sensor_list.append(camera_sensor)
 
-    camera_properties = modify_sensor.camera_sensor_properties()
+    camera_properties = modify_sensor.CameraSensorProperties()
     camera_properties.origin = [17, 10, 15]
     camera_properties.x_vector = [0.0, 0.0, -1.0]
     camera_properties.y_vector = [0.0, 1.0, 0.0]

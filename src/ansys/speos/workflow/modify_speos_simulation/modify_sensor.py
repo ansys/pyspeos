@@ -1,7 +1,7 @@
 import os
 import sys
 import time
-from typing import Optional
+from typing import List, Optional
 
 from ansys.api.speos.job.v2 import job_pb2
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2
@@ -10,7 +10,7 @@ from ansys.speos.core import LOG  # Global logger
 from ansys.speos.core.client import SpeosClient
 from ansys.speos.core.job import JobFactory
 from ansys.speos.core.proto_message_utils import protobuf_message_to_str
-from ansys.speos.core.scene import AxisSystem, SceneFactory
+from ansys.speos.core.scene import AxisSystem, Scene, SceneFactory
 from ansys.speos.core.sensor_template import SensorTemplate
 from ansys.speos.core.simulation_template import SimulationTemplateLink
 from ansys.speos.core.speos import Speos
@@ -34,18 +34,43 @@ def clean_all_dbs(speos_client: SpeosClient):
         item.delete()
 
 
-def PrintProgressBar(iteration, total, prefix="", suffix="", decimals=1, length=50, fill="█", printEnd="\r"):
+def print_progress_bar(
+    iteration: int,
+    total: int,
+    prefix: str = "",
+    suffix: str = "",
+    decimals: int = 1,
+    length: int = 50,
+    fill: str = "█",
+    printEnd: str = "\r",
+):
     """
     Call in a loop to create terminal progress bar
-    @params:
-        iteration   - Required  : current iteration (Int)
-        total       - Required  : total iterations (Int)
-        prefix      - Optional  : prefix string (Str)
-        suffix      - Optional  : suffix string (Str)
-        decimals    - Optional  : positive number of decimals in percent complete (Int)
-        length      - Optional  : character length of bar (Int)
-        fill        - Optional  : bar fill character (Str)
-        printEnd    - Optional  : end character (e.g. "\r", "\r\n") (Str)
+
+    Parameters
+    ----------
+    iteration : int
+        Current iteration.
+    total : int
+        Total iterations.
+    prefix : str, optional
+        Prefix string.
+        By default, ``""``.
+    suffix : str, optional
+        Suffix string.
+        By default, ``""``.
+    decimals : int, optional
+        Positive number of decimals in percent complete.
+        By default, ``1``.
+    length : int, optional
+        Character length of bar.
+        By default, ``50``.
+    fill : str, optional
+        Bar fill character.
+        By default, ``"█"``.
+    printEnd : str, optional
+        End character (e.g. "\r", "\r\n").
+        By default, ``"\r"``.
     """
 
     percent = ("{0:." + str(decimals) + "f}").format(100)
@@ -73,8 +98,8 @@ def PrintProgressBar(iteration, total, prefix="", suffix="", decimals=1, length=
         sys.stdout.flush()
 
 
-class photometric_camera_sensor_parameters:
-    def __init__(self):
+class PhotometricCameraSensorParameters:
+    def __init__(self) -> None:
         """
         name = name of the sensor
         focal_length
@@ -136,7 +161,15 @@ class photometric_camera_sensor_parameters:
         self.wavelengths_sampling = 13
 
     def copy(self):
-        copied_parameters = photometric_camera_sensor_parameters()
+        """
+        Copy current object into a new one.
+
+        Returns
+        -------
+        PhotometricCameraSensorParameters
+            Parameters copied.
+        """
+        copied_parameters = PhotometricCameraSensorParameters()
 
         copied_parameters.name = self.name
 
@@ -176,7 +209,15 @@ class photometric_camera_sensor_parameters:
 
         return copied_parameters
 
-    def create_template(self):
+    def create_template(self) -> SensorTemplate:
+        """
+        Create protobuf message SensorTemplate from current object.
+
+        Returns
+        -------
+        SensorTemplate
+            Protobuf message created.
+        """
         sensor_t_data = SensorTemplate(name=self.name)
 
         sensor_t_data.camera_sensor_template.distorsion_file_uri = self.distorsion_file
@@ -249,7 +290,7 @@ class photometric_camera_sensor_parameters:
         return sensor_t_data
 
 
-class camera_sensor_properties:
+class CameraSensorProperties:
     def __init__(self):
         """
         origin
@@ -267,26 +308,43 @@ class camera_sensor_properties:
         self.trajectory_file = ""
         self.layer_type = "None"
 
-    def create_properties(self):
+    def create_properties(self) -> Scene.SensorInstance.CameraSensorProperties:
+        """
+        Create protobuf message CameraSensorProperties from current object.
+
+        Returns
+        -------
+        Scene.SensorInstance.CameraSensorProperties
+            Protobuf message created.
+        """
         camera_axis_system = AxisSystem(origin=self.origin, x_vect=self.x_vector, y_vect=self.y_vector, z_vect=self.z_vector)
 
         temp_trajectory_file = None
-
         if self.trajectory_file != "":
             temp_trajectory_file = self.trajectory_file
 
-        # TODO: layer_type
+        layer_type = None
+        if self.layer_type == "Source":
+            layer_type = SceneFactory.Properties.Sensor.LayerType.Source
 
-        properties = SceneFactory.camera_sensor_props(axis_system=camera_axis_system, trajectory_file_uri=temp_trajectory_file)
+        properties = SceneFactory.camera_sensor_props(
+            axis_system=camera_axis_system, trajectory_file_uri=temp_trajectory_file, layer_type=layer_type
+        )
 
         return properties
 
 
-class speos_simulation_update:
-    def __init__(self, speos: Speos, file_name):
+class SpeosSimulationUpdate:
+    def __init__(self, speos: Speos, file_name: str):
         """
-        Create connection with Speos rpc server and load ".speos" simulation file
-        file_name: ".speos" simulation file name
+        Class to load ".speos" simulation file in order to update it.
+
+        Parameters
+        ----------
+        speos : Speos
+            Speos session (connected to gRPC server).
+        file_name : str
+            ".speos" simulation file name.
         """
 
         self._speos = speos
@@ -306,11 +364,16 @@ class speos_simulation_update:
         else:
             self.status = "Error: " + file_name + " does not exist"
 
-    def add_camera_sensor(self, sensor_template, sensor_properties):
+    def add_camera_sensor(self, sensor_template: SensorTemplate, sensor_properties: Scene.SensorInstance.CameraSensorProperties):
         """
-        Add a camera sensor template to the scene with the corresponding properties
-        sensor_template: SensorTemplate
-        sensor_properties: CameraSensorProperties
+        Add a camera sensor template to the scene with the corresponding properties.
+
+        Parameters
+        ----------
+        sensor_template : SensorTemplate
+            Sensor template protobuf message.
+        sensor_properties : CameraSensorProperties
+            Sensor properties protobuf message.
         """
 
         sensor_template_db = self._speos.client.sensor_templates()
@@ -334,10 +397,22 @@ class speos_simulation_update:
         # Update value in db
         self.scene.set(scene_data)
 
-    def compute(self, job_name="new_job", stop_condition_duration: Optional[int] = None):
-        """Compute simulation
-        job_name [optional]: name of the job
-        returned value: list of results
+    def compute(self, job_name="new_job", stop_condition_duration: Optional[int] = None) -> List[job_pb2.Result]:
+        """Compute first simulation.
+
+        Parameters
+        ----------
+        job_name : str
+            Name of the job.
+            By default, ``"new_job"``.
+        stop_condition_duration : int, optional
+            Duration in s to be used as stop condition.
+            By default, ``None``.
+
+        Returns
+        -------
+        List[job_pb2.Result]
+            List of results.
         """
 
         scene_data = self.scene.get()
@@ -373,7 +448,7 @@ class speos_simulation_update:
             and job_state_res.state != job_pb2.Job.State.IN_ERROR
         ):
             time.sleep(5)
-            PrintProgressBar(new_job.get_progress_status().progress, 1, "Processing: ")
+            print_progress_bar(new_job.get_progress_status().progress, 1, "Processing: ")
 
             job_state_res = new_job.get_state()
             if job_state_res.state == job_pb2.Job.State.IN_ERROR:
