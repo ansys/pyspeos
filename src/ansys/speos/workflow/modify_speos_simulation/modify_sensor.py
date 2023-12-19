@@ -412,7 +412,8 @@ class SpeosSimulationUpdate:
         # Modify scene datamodel
         scene_data.sensors.append(camera_sensor_instance)
 
-        del scene_data.simulations[0].sensor_paths[:]
+        if len(scene_data.simulations) > 0:
+            scene_data.simulations[0].ClearField("sensor_paths")
 
         # Update value in db
         self._scene.set(scene_data)
@@ -436,6 +437,9 @@ class SpeosSimulationUpdate:
         """
 
         scene_data = self._scene.get()
+        if len(scene_data.simulations) == 0:
+            raise ValueError("At least one simulation is needed in the scene.")
+
         simu_t_link = self._speos.client.get_item(scene_data.simulations[0].simulation_guid)
         props = None
         if isinstance(simu_t_link, SimulationTemplateLink):
