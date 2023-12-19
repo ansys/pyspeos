@@ -1,13 +1,13 @@
 import sys
 import time
-from typing import List, Optional
+from typing import Optional
 
 from ansys.api.speos.job.v2 import job_pb2
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2
 
 from ansys.speos.core import LOG  # Global logger
 from ansys.speos.core.client import SpeosClient
-from ansys.speos.core.job import JobFactory
+from ansys.speos.core.job import JobFactory, JobLink
 from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 from ansys.speos.core.scene import AxisSystem, Scene, SceneFactory, SceneLink
 from ansys.speos.core.sensor_template import SensorTemplate
@@ -412,7 +412,7 @@ class SpeosSimulationUpdate:
         # Update value in db
         self._scene.set(scene_data)
 
-    def compute(self, job_name="new_job", stop_condition_duration: Optional[int] = None) -> List[job_pb2.Result]:
+    def compute(self, job_name="new_job", stop_condition_duration: Optional[int] = None) -> JobLink:
         """Compute first simulation.
 
         Parameters
@@ -426,8 +426,8 @@ class SpeosSimulationUpdate:
 
         Returns
         -------
-        List[job_pb2.Result]
-            List of results.
+        JobLink
+            Job who launched the simulation.
         """
 
         scene_data = self._scene.get()
@@ -472,11 +472,7 @@ class SpeosSimulationUpdate:
             if job_state_res.state == job_pb2.Job.State.IN_ERROR:
                 LOG.error(protobuf_message_to_str(new_job.get_error()))
 
-        results_list = []
-        for result in new_job.get_results().results:
-            results_list.append(result)
-
-        return results_list
+        return new_job
 
     def close(self):
         """Clean SpeosSimulationUpdate before closing"""

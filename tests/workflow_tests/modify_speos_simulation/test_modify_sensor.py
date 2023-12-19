@@ -52,6 +52,8 @@ def test_modify_camera(speos: Speos):
     for camera_sensor in camera_sensor_list:
         new_sim.add_camera_sensor(camera_sensor.create_template(), camera_properties.create_properties())
 
-    results = new_sim.compute(stop_condition_duration=8)
-    assert len(results) == 17
+    job_link = new_sim.compute(stop_condition_duration=8)
+    assert job_link.key != ""
+
+    job_link.delete()
     new_sim.close()
