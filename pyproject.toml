@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 # Check https://flit.readthedocs.io/en/latest/pyproject_toml.html for all available sections
-name = "ansys-speos-core"
+name = "ansys-speos"
 version = "0.1.dev0"
 description = "A Python wrapper for Ansys Speos"
 readme = "README.rst"
@@ -51,7 +51,7 @@ app = [
 ]
 
 [tool.flit.module]
-name = "ansys.speos.core"
+name = "ansys.speos"
 
 [project.urls]
 Source = "https://github.com/ansys-internal/pyspeos"
@@ -67,7 +67,7 @@ default_section = "THIRDPARTY"
 src_paths = ["doc", "src", "tests", "app"]
 
 [tool.coverage.run]
-source = ["ansys.speos.core"]
+source = ["ansys.speos.core", "ansys.speos.workflow"]
 
 [tool.coverage.report]
 show_missing = true
