@@ -16,7 +16,15 @@ from ansys.speos.core.simulation_template import SimulationTemplateLink
 from ansys.speos.core.speos import Speos
 
 
-def clean_all_dbs(speos_client: SpeosClient):
+def clean_all_dbs(speos_client: SpeosClient) -> None:
+    """
+    Clean all databases.
+
+    Parameters
+    ----------
+    speos_client : SpeosClient
+        Speos gRPC client.
+    """
     for item in (
         speos_client.jobs().list()
         + speos_client.scenes().list()
@@ -69,8 +77,8 @@ def print_progress_bar(
         Bar fill character.
         By default, ``"█"``.
     printEnd : str, optional
-        End character (e.g. "\r", "\r\n").
-        By default, ``"\r"``.
+        End character (e.g. "\\r", "\\r\\n").
+        By default, ``"\\r"``.
     """
 
     percent = ("{0:." + str(decimals) + "f}").format(100)
@@ -99,31 +107,33 @@ def print_progress_bar(
 
 
 class PhotometricCameraSensorParameters:
-    def __init__(self) -> None:
-        """
-        name = name of the sensor
-        focal_length
-        imager_distance
-        f_number
-        distorsion_file
-        transmittance_file
-        horizontal_pixel
-        vertical_pixel
-        width
-        height
-        acquisition_integration
-        acquisition_lag_time
-        gamma_correction
-        png_bits: 8, 10, 12, 16
-        color_mode_balance_mode: "None", "Grey world", "User white balance", "Display primaries"
-        color_mode_red_spectrum_file
-        color_mode_green_spectrum_file
-        color_mode_blue_spectrum_file
-        wavelengths_start
-        wavelengths_end
-        wavelengths_sampling
-        """
+    """
+    Photometric camera sensor with its parameters.
 
+    name = name of the sensor
+    focal_length
+    imager_distance
+    f_number
+    distorsion_file
+    transmittance_file
+    horizontal_pixel
+    vertical_pixel
+    width
+    height
+    acquisition_integration
+    acquisition_lag_time
+    gamma_correction
+    png_bits: 8, 10, 12, 16
+    color_mode_balance_mode: "None", "Grey world", "User white balance", "Display primaries"
+    color_mode_red_spectrum_file
+    color_mode_green_spectrum_file
+    color_mode_blue_spectrum_file
+    wavelengths_start
+    wavelengths_end
+    wavelengths_sampling
+    """
+
+    def __init__(self) -> None:
         self.name = "camera sensor"
 
         self.focal_length = 5
@@ -291,16 +301,18 @@ class PhotometricCameraSensorParameters:
 
 
 class CameraSensorProperties:
-    def __init__(self):
-        """
-        origin
-        x_vector
-        y_vector
-        z_vector
-        trajectory_file
-        layer_type: "None", "Source"
-        """
+    """
+    Properties for camera sensor.
 
+    origin
+    x_vector
+    y_vector
+    z_vector
+    trajectory_file
+    layer_type: "None", "Source"
+    """
+
+    def __init__(self) -> None:
         self.origin = []
         self.x_vector = []
         self.y_vector = []
@@ -335,18 +347,18 @@ class CameraSensorProperties:
 
 
 class SpeosSimulationUpdate:
+    """
+    Class to load ".speos" simulation file in order to update it.
+
+    Parameters
+    ----------
+    speos : Speos
+        Speos session (connected to gRPC server).
+    file_name : str
+        ".speos" simulation file name.
+    """
+
     def __init__(self, speos: Speos, file_name: str):
-        """
-        Class to load ".speos" simulation file in order to update it.
-
-        Parameters
-        ----------
-        speos : Speos
-            Speos session (connected to gRPC server).
-        file_name : str
-            ".speos" simulation file name.
-        """
-
         self._speos = speos
         self.scene = None
         self.status = ""
@@ -372,10 +384,9 @@ class SpeosSimulationUpdate:
         ----------
         sensor_template : SensorTemplate
             Sensor template protobuf message.
-        sensor_properties : CameraSensorProperties
+        sensor_properties : Scene.SensorInstance.CameraSensorProperties
             Sensor properties protobuf message.
         """
-
         sensor_template_db = self._speos.client.sensor_templates()
 
         # Store SensorTemplate protobuf message in db and retrieve SensorTemplateLink
