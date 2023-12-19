@@ -21,4 +21,6 @@ Then add the import within this module to enable:
 
 """
 
-from ansys.speos.script.api import GeoRef, OptProp, Project
+from ansys.speos.script.geo_ref import GeoRef
+from ansys.speos.script.opt_prop import OptProp
+from ansys.speos.script.project import Project
