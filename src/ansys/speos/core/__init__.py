@@ -20,9 +20,7 @@ Then add the import within this module to enable:
    referenced at the library level.
 
 """
-import logging
 
-_
 from ansys.speos.core.body import Body, BodyFactory, BodyLink
 from ansys.speos.core.face import Face, FaceFactory, FaceLink
 from ansys.speos.core.intensity_template import (
