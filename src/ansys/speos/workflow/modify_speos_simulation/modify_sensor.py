@@ -10,7 +10,7 @@ from ansys.speos.core import LOG  # Global logger
 from ansys.speos.core.client import SpeosClient
 from ansys.speos.core.job import JobFactory
 from ansys.speos.core.proto_message_utils import protobuf_message_to_str
-from ansys.speos.core.scene import AxisSystem, Scene, SceneFactory
+from ansys.speos.core.scene import AxisSystem, Scene, SceneFactory, SceneLink
 from ansys.speos.core.sensor_template import SensorTemplate
 from ansys.speos.core.simulation_template import SimulationTemplateLink
 from ansys.speos.core.speos import Speos
@@ -360,21 +360,30 @@ class SpeosSimulationUpdate:
 
     def __init__(self, speos: Speos, file_name: str):
         self._speos = speos
-        self.scene = None
-        self.status = ""
+        self._scene = self._speos.client.scenes().create()
+        self._status = ""
 
         if os.path.exists(file_name):
             # Create connection with Speos rpc server
             clean_all_dbs(self._speos.client)
 
             # Create empty scene and load file
-            self.scene = self._speos.client.scenes().create()
             self.scene.load_file(file_uri=file_name)
 
             self.status = "Opened"
 
         else:
             self.status = "Error: " + file_name + " does not exist"
+
+    @property
+    def scene(self) -> SceneLink:
+        """The scene."""
+        return self._scene
+
+    @property
+    def status(self) -> str:
+        """The status."""
+        return self._status
 
     def add_camera_sensor(self, sensor_template: SensorTemplate, sensor_properties: Scene.SensorInstance.CameraSensorProperties):
         """
@@ -445,7 +454,7 @@ class SpeosSimulationUpdate:
             message=JobFactory.new(
                 name=job_name,
                 scene=self.scene,
-                simulation_path=self.scene.get().simulations[0].name,
+                simulation_path=scene_data.simulations[0].name,
                 properties=JobFactory.inverse_mc_props(),
             )
         )
@@ -474,6 +483,6 @@ class SpeosSimulationUpdate:
     def close(self):
         """Clean SpeosSimulationUpdate before closing"""
 
-        clean_all_dbs(self._speos.client)
-        self.scene = None
+        self.scene.delete()
         self.status = "Closed"
+        clean_all_dbs(self._speos.client)
