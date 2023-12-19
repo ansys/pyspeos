@@ -379,28 +379,30 @@ class SpeosSimulationUpdate:
         """The status."""
         return self._status
 
-    def add_camera_sensor(self, sensor_template: SensorTemplate, sensor_properties: Scene.SensorInstance.CameraSensorProperties):
+    def add_camera_sensor(self, sensor_parameters: PhotometricCameraSensorParameters, sensor_properties: CameraSensorProperties):
         """
         Add a camera sensor template to the scene with the corresponding properties.
 
         Parameters
         ----------
-        sensor_template : SensorTemplate
-            Sensor template protobuf message.
-        sensor_properties : Scene.SensorInstance.CameraSensorProperties
-            Sensor properties protobuf message.
+        sensor_template : PhotometricCameraSensorParameters
+            Sensor parameters.
+        sensor_properties : CameraSensorProperties
+            Sensor properties.
         """
         sensor_template_db = self._speos.client.sensor_templates()
 
         # Store SensorTemplate protobuf message in db and retrieve SensorTemplateLink
-        sensor_template_link = sensor_template_db.create(message=sensor_template)
+        sensor_template_link = sensor_template_db.create(message=sensor_parameters.create_template())
 
         # Retrieve scene datamodel
         scene_data = self._scene.get()
 
         # Create camera instance
         camera_sensor_instance = SceneFactory.sensor_instance(
-            name=sensor_template_link.get().name + ".1", sensor_template=sensor_template_link, properties=sensor_properties
+            name=sensor_template_link.get().name + ".1",
+            sensor_template=sensor_template_link,
+            properties=sensor_properties.create_properties(),
         )
 
         # Modify scene datamodel

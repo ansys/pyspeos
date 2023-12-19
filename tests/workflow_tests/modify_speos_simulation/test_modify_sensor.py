@@ -50,7 +50,7 @@ def test_modify_camera(speos: Speos):
     camera_properties.z_vector = [1.0, 0.0, 0.0]
 
     for camera_sensor in camera_sensor_list:
-        new_sim.add_camera_sensor(camera_sensor.create_template(), camera_properties.create_properties())
+        new_sim.add_camera_sensor(camera_sensor, camera_properties)
 
     job_link = new_sim.compute(stop_condition_duration=8)
     assert job_link.key != ""
