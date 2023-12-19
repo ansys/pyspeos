@@ -1,4 +1,3 @@
-import os
 import sys
 import time
 from typing import List, Optional
@@ -360,20 +359,15 @@ class SpeosSimulationUpdate:
 
     def __init__(self, speos: Speos, file_name: str):
         self._speos = speos
+        clean_all_dbs(self._speos.client)
+
         self._scene = self._speos.client.scenes().create()
         self._status = ""
 
-        if os.path.exists(file_name):
-            # Create connection with Speos rpc server
-            clean_all_dbs(self._speos.client)
+        # Create empty scene and load file
+        self._scene.load_file(file_uri=file_name)
 
-            # Create empty scene and load file
-            self._scene.load_file(file_uri=file_name)
-
-            self._status = "Opened"
-
-        else:
-            self._status = "Error: " + file_name + " does not exist"
+        self._status = "Opened"
 
     @property
     def scene(self) -> SceneLink:
@@ -459,7 +453,7 @@ class SpeosSimulationUpdate:
                 name=job_name,
                 scene=self._scene,
                 simulation_path=scene_data.simulations[0].name,
-                properties=JobFactory.inverse_mc_props(),
+                properties=props,
             )
         )
 
