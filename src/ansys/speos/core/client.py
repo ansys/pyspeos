@@ -7,11 +7,11 @@ from typing import TYPE_CHECKING, Optional, Union
 import grpc
 from grpc._channel import _InactiveRpcError
 
-from ansys.speos.core import LOG as logger
 from ansys.speos.core.body import BodyLink, BodyStub
 from ansys.speos.core.face import FaceLink, FaceStub
 from ansys.speos.core.intensity_template import IntensityTemplateLink, IntensityTemplateStub
 from ansys.speos.core.job import JobLink, JobStub
+from ansys.speos.core.logger import LOG as logger
 from ansys.speos.core.logger import PySpeosCustomAdapter
 from ansys.speos.core.part import PartLink, PartStub
 from ansys.speos.core.scene import SceneLink, SceneStub
