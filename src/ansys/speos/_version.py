@@ -1,4 +1,4 @@
-"""Version of ansys-speos-core library.
+"""Version of ansys-speos library.
 
 
 On the ``main`` branch, use 'dev0' to denote a development version.
@@ -16,4 +16,4 @@ except ModuleNotFoundError:  # pragma: no cover
 
 # Read from the pyproject.toml
 # major, minor, patch
-__version__ = importlib_metadata.version("ansys-speos-core")
+__version__ = importlib_metadata.version("ansys-speos")

@@ -22,7 +22,7 @@ Then add the import within this module to enable:
 """
 import logging
 
-from ansys.speos.core._version import __version__
+_
 from ansys.speos.core.body import Body, BodyFactory, BodyLink
 from ansys.speos.core.face import Face, FaceFactory, FaceLink
 from ansys.speos.core.intensity_template import (
