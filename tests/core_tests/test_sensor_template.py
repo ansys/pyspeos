@@ -22,7 +22,7 @@ def test_sensor_template_factory(speos: Speos):
     green_spectrum = os.path.join(camera_input_files_path, "CameraSensitivityGreen.spectrum")
     blue_spectrum = os.path.join(camera_input_files_path, "CameraSensitivityBlue.spectrum")
     transmittance = os.path.join(camera_input_files_path, "CameraTransmittance.spectrum")
-    distortion = os.path.join(camera_input_files_path, "CameraDistortion.OPTDistortion")
+    distortion = os.path.join(camera_input_files_path, "CameraDistortion_130deg.OPTDistortion")
 
     # Camera sensor template mode monochrome
     camera_t0 = sensor_t_db.create(
