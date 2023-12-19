@@ -62,10 +62,9 @@ All sources are located in `<src/>`_ folder.
 
 .. code:: python
 
-    from src.ansys.pyspeos import speos
+   from ansys.speos.core.speos import Speos
 
-    stub = speos.get_stub_insecure_channel()
-    print(stub)
+   speos = Speos(host="localhost", port=50051)
 
 Documentation
 -------------
@@ -75,6 +74,7 @@ To build it manually :
 .. code::
 
    pip install -U pip tox
+   pip install .[doc]
    tox -e doc && your_browser_name .tox/doc_out/index.html
    
 
