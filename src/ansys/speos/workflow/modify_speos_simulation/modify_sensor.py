@@ -368,12 +368,12 @@ class SpeosSimulationUpdate:
             clean_all_dbs(self._speos.client)
 
             # Create empty scene and load file
-            self.scene.load_file(file_uri=file_name)
+            self._scene.load_file(file_uri=file_name)
 
-            self.status = "Opened"
+            self._status = "Opened"
 
         else:
-            self.status = "Error: " + file_name + " does not exist"
+            self._status = "Error: " + file_name + " does not exist"
 
     @property
     def scene(self) -> SceneLink:
@@ -402,7 +402,7 @@ class SpeosSimulationUpdate:
         sensor_template_link = sensor_template_db.create(message=sensor_template)
 
         # Retrieve scene datamodel
-        scene_data = self.scene.get()
+        scene_data = self._scene.get()
 
         # Create camera instance
         camera_sensor_instance = SceneFactory.sensor_instance(
@@ -415,7 +415,7 @@ class SpeosSimulationUpdate:
         del scene_data.simulations[0].sensor_paths[:]
 
         # Update value in db
-        self.scene.set(scene_data)
+        self._scene.set(scene_data)
 
     def compute(self, job_name="new_job", stop_condition_duration: Optional[int] = None) -> List[job_pb2.Result]:
         """Compute first simulation.
@@ -435,7 +435,7 @@ class SpeosSimulationUpdate:
             List of results.
         """
 
-        scene_data = self.scene.get()
+        scene_data = self._scene.get()
         simu_t_link = self._speos.client.get_item(scene_data.simulations[0].simulation_guid)
         props = None
         if isinstance(simu_t_link, SimulationTemplateLink):
@@ -453,7 +453,7 @@ class SpeosSimulationUpdate:
         new_job = self._speos.client.jobs().create(
             message=JobFactory.new(
                 name=job_name,
-                scene=self.scene,
+                scene=self._scene,
                 simulation_path=scene_data.simulations[0].name,
                 properties=JobFactory.inverse_mc_props(),
             )
@@ -483,6 +483,6 @@ class SpeosSimulationUpdate:
     def close(self):
         """Clean SpeosSimulationUpdate before closing"""
 
-        self.scene.delete()
-        self.status = "Closed"
+        self._scene.delete()
+        self._status = "Closed"
         clean_all_dbs(self._speos.client)
