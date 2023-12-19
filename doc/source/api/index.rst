@@ -15,3 +15,4 @@ on the left sidebar.
    crud_items/index
    logging
    proto_message_utils
+   workflow/index

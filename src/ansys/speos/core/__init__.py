@@ -22,7 +22,6 @@ Then add the import within this module to enable:
 """
 import logging
 
-from ansys.speos.core._version import __version__
 from ansys.speos.core.logger import Logger
 
 # Logger
