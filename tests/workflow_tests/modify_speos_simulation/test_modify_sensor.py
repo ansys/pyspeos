@@ -9,11 +9,9 @@ def test_modify_camera(speos: Speos):
     # Speos simulation to load
     simu_name = "Inverse_SeveralSensors.speos"
     speos_file = os.path.join(test_path, os.path.join(simu_name, simu_name))
+    camera_input_path = os.path.join(test_path, "CameraInputFiles")
 
     new_sim = modify_sensor.SpeosSimulationUpdate(speos, speos_file)
-
-    # Create camera database
-    camera_input_path = os.path.join(test_path, "CameraInputFiles")
 
     camera_sensor_list = []
 

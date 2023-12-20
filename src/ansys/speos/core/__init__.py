@@ -23,6 +23,12 @@ Then add the import within this module to enable:
 
 from ansys.speos.core.body import Body, BodyFactory, BodyLink
 from ansys.speos.core.face import Face, FaceFactory, FaceLink
+from ansys.speos.core.geometry_utils import (
+    AxisPlane,
+    AxisSystem,
+    GeoPaths,
+    GeoPathWithReverseNormal,
+)
 from ansys.speos.core.intensity_template import (
     IntensityTemplate,
     IntensityTemplateFactory,
@@ -31,6 +37,7 @@ from ansys.speos.core.intensity_template import (
 from ansys.speos.core.job import Job, JobFactory, JobLink
 from ansys.speos.core.logger import LOG, Logger
 from ansys.speos.core.part import Part, PartFactory, PartLink
+from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 from ansys.speos.core.scene import Scene, SceneFactory, SceneLink
 from ansys.speos.core.sensor_template import (
     SensorTemplate,
@@ -49,5 +56,5 @@ from ansys.speos.core.source_template import (
     SourceTemplateLink,
 )
 from ansys.speos.core.spectrum import Spectrum, SpectrumFactory, SpectrumLink
-from ansys.speos.core.speos import Speos
+from ansys.speos.core.speos import Speos, SpeosClient
 from ansys.speos.core.vop_template import VOPTemplate, VOPTemplateFactory, VOPTemplateLink
