@@ -9,5 +9,4 @@ You can find them on the left sidebar.
    :hidden:
 
    core/index
-   script/index
    workflow/index
