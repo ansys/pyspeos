@@ -11,6 +11,7 @@ from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 from ansys.speos.core.spectrum import SpectrumLink
 
 SourceTemplate = messages.SourceTemplate
+SourceTemplate.__str__ = lambda self: protobuf_message_to_str(self)
 
 
 class SourceTemplateLink(CrudItem):
@@ -20,7 +21,7 @@ class SourceTemplateLink(CrudItem):
         super().__init__(db, key)
 
     def __str__(self) -> str:
-        return protobuf_message_to_str(self.get())
+        return str(self.get())
 
     def get(self) -> SourceTemplate:
         """Get the datamodel from database."""

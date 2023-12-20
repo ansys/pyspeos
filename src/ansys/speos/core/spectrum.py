@@ -9,6 +9,7 @@ from ansys.speos.core.crud import CrudItem, CrudStub
 from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 
 Spectrum = messages.Spectrum
+Spectrum.__str__ = lambda self: protobuf_message_to_str(self)
 
 
 class SpectrumLink(CrudItem):
@@ -30,7 +31,7 @@ class SpectrumLink(CrudItem):
         super().__init__(db, key)
 
     def __str__(self) -> str:
-        return protobuf_message_to_str(self.get())
+        return str(self.get())
 
     def get(self) -> Spectrum:
         """Get the datamodel from database."""

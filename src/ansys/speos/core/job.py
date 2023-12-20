@@ -11,6 +11,7 @@ from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 from ansys.speos.core.scene import SceneLink
 
 Job = messages.Job
+Job.__str__ = lambda self: protobuf_message_to_str(self)
 
 
 class JobLink(CrudItem):
@@ -21,7 +22,7 @@ class JobLink(CrudItem):
         self._actions_stub = db._actions_stub
 
     def __str__(self) -> str:
-        return protobuf_message_to_str(self.get())
+        return str(self.get())
 
     def get(self) -> Job:
         """Get the datamodel from database."""
