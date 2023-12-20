@@ -20,13 +20,34 @@ Then add the import within this module to enable:
    referenced at the library level.
 
 """
-import logging
 
-from ansys.speos.core.logger import Logger
-
-# Logger
-# ------------------------------------------------------------------------------
-
-
-LOG = Logger(level=logging.ERROR, to_file=False, to_stdout=True)
-LOG.debug("Loaded logging module as LOG")
+from ansys.speos.core.body import Body, BodyFactory, BodyLink
+from ansys.speos.core.face import Face, FaceFactory, FaceLink
+from ansys.speos.core.intensity_template import (
+    IntensityTemplate,
+    IntensityTemplateFactory,
+    IntensityTemplateLink,
+)
+from ansys.speos.core.job import Job, JobFactory, JobLink
+from ansys.speos.core.logger import LOG, Logger
+from ansys.speos.core.part import Part, PartFactory, PartLink
+from ansys.speos.core.scene import Scene, SceneFactory, SceneLink
+from ansys.speos.core.sensor_template import (
+    SensorTemplate,
+    SensorTemplateFactory,
+    SensorTemplateLink,
+)
+from ansys.speos.core.simulation_template import (
+    SimulationTemplate,
+    SimulationTemplateFactory,
+    SimulationTemplateLink,
+)
+from ansys.speos.core.sop_template import SOPTemplate, SOPTemplateFactory, SOPTemplateLink
+from ansys.speos.core.source_template import (
+    SourceTemplate,
+    SourceTemplateFactory,
+    SourceTemplateLink,
+)
+from ansys.speos.core.spectrum import Spectrum, SpectrumFactory, SpectrumLink
+from ansys.speos.core.speos import Speos
+from ansys.speos.core.vop_template import VOPTemplate, VOPTemplateFactory, VOPTemplateLink

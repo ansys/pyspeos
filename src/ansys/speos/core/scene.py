@@ -22,6 +22,13 @@ from ansys.speos.core.source_template import SourceTemplateLink
 from ansys.speos.core.vop_template import VOPTemplateLink
 
 Scene = messages.Scene
+Scene.__str__ = lambda self: protobuf_message_to_str(self)
+Scene.VOPInstance.__str__ = lambda self: protobuf_message_to_str(self)
+Scene.SOPInstance.__str__ = lambda self: protobuf_message_to_str(self)
+Scene.SceneInstance.__str__ = lambda self: protobuf_message_to_str(self)
+Scene.SourceInstance.__str__ = lambda self: protobuf_message_to_str(self)
+Scene.SensorInstance.__str__ = lambda self: protobuf_message_to_str(self)
+Scene.SimulationInstance.__str__ = lambda self: protobuf_message_to_str(self)
 
 
 class SceneLink(CrudItem):
@@ -44,7 +51,7 @@ class SceneLink(CrudItem):
         self._actions_stub = db._actions_stub
 
     def __str__(self) -> str:
-        return protobuf_message_to_str(self.get())
+        return str(self.get())
 
     def get(self) -> Scene:
         """Get the datamodel from database."""
