@@ -2,9 +2,8 @@ Script
 ======
 Here are referenced all script APIs.
 
-.. currentmodule:: ansys.speos.script
+.. toctree::
+   :maxdepth: 2
+   :hidden:
 
-.. autosummary::
-   :toctree: _autosummary
-
-   project.Project
+   project

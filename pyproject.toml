@@ -67,7 +67,7 @@ default_section = "THIRDPARTY"
 src_paths = ["doc", "src", "tests", "app"]
 
 [tool.coverage.run]
-source = ["ansys.speos.core", "ansys.speos.workflow"]
+source = ["ansys.speos.core", "ansys.speos.script", "ansys.speos.workflow"]
 
 [tool.coverage.report]
 show_missing = true
