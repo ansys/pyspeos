@@ -441,9 +441,9 @@ class SpeosSimulationUpdate:
         if isinstance(simu_t_link, SimulationTemplateLink):
             simu_t_data = simu_t_link.get()
             if simu_t_data.HasField("direct_mc_simulation_template"):
-                props = JobFactory.direct_mc_props(stop_condition_duration)
+                props = JobFactory.direct_mc_props(stop_condition_duration=stop_condition_duration)
             elif simu_t_data.HasField("inverse_mc_simulation_template"):
-                props = JobFactory.inverse_mc_props(stop_condition_duration)
+                props = JobFactory.inverse_mc_props(stop_condition_duration=stop_condition_duration)
             elif simu_t_data.HasField("interactive_simulation_template"):
                 props = JobFactory.interactive_props()
 
