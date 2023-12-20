@@ -23,6 +23,12 @@ from ansys.speos.core.vop_template import VOPTemplateLink
 
 Scene = messages.Scene
 Scene.__str__ = lambda self: protobuf_message_to_str(self)
+Scene.VOPInstance.__str__ = lambda self: protobuf_message_to_str(self)
+Scene.SOPInstance.__str__ = lambda self: protobuf_message_to_str(self)
+Scene.SceneInstance.__str__ = lambda self: protobuf_message_to_str(self)
+Scene.SourceInstance.__str__ = lambda self: protobuf_message_to_str(self)
+Scene.SensorInstance.__str__ = lambda self: protobuf_message_to_str(self)
+Scene.SimulationInstance.__str__ = lambda self: protobuf_message_to_str(self)
 
 
 class SceneLink(CrudItem):
