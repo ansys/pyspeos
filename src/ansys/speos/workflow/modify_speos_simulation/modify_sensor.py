@@ -5,23 +5,16 @@ from typing import Optional
 from ansys.api.speos.job.v2 import job_pb2
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2
 
-from ansys.speos.core import LOG  # Global logger
-from ansys.speos.core.client import SpeosClient
-from ansys.speos.core.job import JobFactory, JobLink
-from ansys.speos.core.proto_message_utils import protobuf_message_to_str
-from ansys.speos.core.scene import AxisSystem, Scene, SceneFactory, SceneLink
-from ansys.speos.core.sensor_template import SensorTemplate
-from ansys.speos.core.simulation_template import SimulationTemplateLink
-from ansys.speos.core.speos import Speos
+import ansys.speos.core as core
 
 
-def clean_all_dbs(speos_client: SpeosClient) -> None:
+def clean_all_dbs(speos_client: core.SpeosClient) -> None:
     """
     Clean all databases.
 
     Parameters
     ----------
-    speos_client : SpeosClient
+    speos_client : core.SpeosClient
         Speos gRPC client.
     """
     for item in (
@@ -218,16 +211,16 @@ class PhotometricCameraSensorParameters:
 
         return copied_parameters
 
-    def create_template(self) -> SensorTemplate:
+    def create_template(self) -> core.SensorTemplate:
         """
         Create protobuf message SensorTemplate from current object.
 
         Returns
         -------
-        SensorTemplate
+        core.SensorTemplate
             Protobuf message created.
         """
-        sensor_t_data = SensorTemplate(name=self.name)
+        sensor_t_data = core.SensorTemplate(name=self.name)
 
         sensor_t_data.camera_sensor_template.distorsion_file_uri = self.distorsion_file
         sensor_t_data.camera_sensor_template.sensor_mode_photometric.transmittance_file_uri = self.transmittance_file
@@ -319,16 +312,16 @@ class CameraSensorProperties:
         self.trajectory_file = ""
         self.layer_type = "None"
 
-    def create_properties(self) -> Scene.SensorInstance.CameraSensorProperties:
+    def create_properties(self) -> core.Scene.SensorInstance.CameraSensorProperties:
         """
         Create protobuf message CameraSensorProperties from current object.
 
         Returns
         -------
-        Scene.SensorInstance.CameraSensorProperties
+        core.Scene.SensorInstance.CameraSensorProperties
             Protobuf message created.
         """
-        camera_axis_system = AxisSystem(origin=self.origin, x_vect=self.x_vector, y_vect=self.y_vector, z_vect=self.z_vector)
+        camera_axis_system = core.AxisSystem(origin=self.origin, x_vect=self.x_vector, y_vect=self.y_vector, z_vect=self.z_vector)
 
         temp_trajectory_file = None
         if self.trajectory_file != "":
@@ -336,9 +329,9 @@ class CameraSensorProperties:
 
         layer_type = None
         if self.layer_type == "Source":
-            layer_type = SceneFactory.Properties.Sensor.LayerType.Source
+            layer_type = core.SceneFactory.Properties.Sensor.LayerType.Source
 
-        properties = SceneFactory.camera_sensor_props(
+        properties = core.SceneFactory.camera_sensor_props(
             axis_system=camera_axis_system, trajectory_file_uri=temp_trajectory_file, layer_type=layer_type
         )
 
@@ -351,13 +344,13 @@ class SpeosSimulationUpdate:
 
     Parameters
     ----------
-    speos : Speos
+    speos : core.Speos
         Speos session (connected to gRPC server).
     file_name : str
         ".speos" simulation file name.
     """
 
-    def __init__(self, speos: Speos, file_name: str):
+    def __init__(self, speos: core.Speos, file_name: str):
         self._speos = speos
         clean_all_dbs(self._speos.client)
 
@@ -370,7 +363,7 @@ class SpeosSimulationUpdate:
         self._status = "Opened"
 
     @property
-    def scene(self) -> SceneLink:
+    def scene(self) -> core.SceneLink:
         """The scene."""
         return self._scene
 
@@ -399,7 +392,7 @@ class SpeosSimulationUpdate:
         scene_data = self._scene.get()
 
         # Create camera instance
-        camera_sensor_instance = SceneFactory.sensor_instance(
+        camera_sensor_instance = core.SceneFactory.sensor_instance(
             name=sensor_template_link.get().name + ".1",
             sensor_template=sensor_template_link,
             properties=sensor_properties.create_properties(),
@@ -414,7 +407,7 @@ class SpeosSimulationUpdate:
         # Update value in db
         self._scene.set(scene_data)
 
-    def compute(self, job_name="new_job", stop_condition_duration: Optional[int] = None) -> JobLink:
+    def compute(self, job_name="new_job", stop_condition_duration: Optional[int] = None) -> core.JobLink:
         """Compute first simulation.
 
         Parameters
@@ -428,7 +421,7 @@ class SpeosSimulationUpdate:
 
         Returns
         -------
-        JobLink
+        core.JobLink
             Job who launched the simulation.
         """
 
@@ -438,20 +431,20 @@ class SpeosSimulationUpdate:
 
         simu_t_link = self._speos.client.get_item(scene_data.simulations[0].simulation_guid)
         props = None
-        if isinstance(simu_t_link, SimulationTemplateLink):
+        if isinstance(simu_t_link, core.SimulationTemplateLink):
             simu_t_data = simu_t_link.get()
             if simu_t_data.HasField("direct_mc_simulation_template"):
-                props = JobFactory.direct_mc_props(stop_condition_duration=stop_condition_duration)
+                props = core.JobFactory.direct_mc_props(stop_condition_duration=stop_condition_duration)
             elif simu_t_data.HasField("inverse_mc_simulation_template"):
-                props = JobFactory.inverse_mc_props(stop_condition_duration=stop_condition_duration)
+                props = core.JobFactory.inverse_mc_props(stop_condition_duration=stop_condition_duration)
             elif simu_t_data.HasField("interactive_simulation_template"):
-                props = JobFactory.interactive_props()
+                props = core.JobFactory.interactive_props()
 
         if props is None:
-            raise KeyError(SimulationTemplateLink)
+            raise KeyError(core.SimulationTemplateLink)
 
         new_job = self._speos.client.jobs().create(
-            message=JobFactory.new(
+            message=core.JobFactory.new(
                 name=job_name,
                 scene=self._scene,
                 simulation_path=scene_data.simulations[0].name,
@@ -472,7 +465,7 @@ class SpeosSimulationUpdate:
 
             job_state_res = new_job.get_state()
             if job_state_res.state == job_pb2.Job.State.IN_ERROR:
-                LOG.error(protobuf_message_to_str(new_job.get_error()))
+                core.LOG.error(core.protobuf_message_to_str(new_job.get_error()))
 
         return new_job
 
