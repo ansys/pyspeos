@@ -14,7 +14,27 @@ class GeoRef:
 
     @staticmethod
     def from_native_link(geopath: str) -> GeoRef:
+        """
+        Convert a native link to a GeoRef
+
+        Parameters
+        ----------
+        geopath : str
+            Geometry path.
+
+        Returns
+        -------
+        GeoRef
+        """
         return GeoRef("", "", {"GeoPath": geopath})
 
     def to_native_link(self) -> str:
+        """
+        Convert to a native link.
+
+        Returns
+        -------
+        str
+            Geometry path.
+        """
         return self.metadata["GeoPath"]

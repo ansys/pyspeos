@@ -9,9 +9,24 @@ import ansys.speos.script.project as project
 
 
 class OptProp:
-    """Represent a Speos optical properties"""
+    """
+    Represent a Speos optical properties
 
-    def __init__(self, project: project.Project, name: str, description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = {}):
+    Parameters
+    ----------
+    project : project.Project
+        Project that will own the optical property.
+    name : str
+        Name of the optical property.
+    description : str, optional
+        Description of the optical property.
+        By default, ``""``.
+    metadata : Mapping[str, str], optional
+        Metadata of the sop template.
+        By default, ``None``.
+    """
+
+    def __init__(self, project: project.Project, name: str, description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None):
         # Create SOP template and instance
         self._project = project
         self._unique_id = None
@@ -31,22 +46,82 @@ class OptProp:
         return
 
     def set_surface_mirror(self, reflectance: float) -> OptProp:
+        """
+        Perfect specular surface.
+
+        Parameters
+        ----------
+        reflectance : float
+            Reflectance, expected from 0. to 100. in %.
+
+        Returns
+        -------
+        OptProp
+            Optical property.
+        """
         self._sop_template.mirror.reflectance = reflectance
         return self
 
     def set_surface_opticalpolished(self) -> OptProp:
+        """
+        Transparent or perfectly polished material (glass, plastic).
+
+        Returns
+        -------
+        OptProp
+            Optical property.
+        """
         self._sop_template.optical_polished.SetInParent()
         return self
 
     def set_surface_library(self, path: str) -> OptProp:
+        """
+        Based on surface optical properties file.
+
+        Parameters
+        ----------
+        path : str
+            Surface optical properties file, \*.scattering, \*.bsdf, \*.brdf, \*.coated, ...
+
+        Returns
+        -------
+        OptProp
+            Optical property.
+        """
         self._sop_template.library.sop_file_uri = path
         return self
 
     def set_volume_opaque(self) -> OptProp:
+        """
+        Non transparent material.
+
+        Returns
+        -------
+        OptProp
+            Optical property.
+        """
         self._vop_template.opaque.SetInParent()
         return self
 
     def set_volume_optic(self, index: float, absorption: float, constringence: Optional[float]) -> OptProp:
+        """
+        Transparent colorless material without bulk scattering.
+
+        Parameters
+        ----------
+        index : float
+            Refractive index.
+        absorption : float
+            Absorption coefficient value. mm-1
+        constringence : float, optional
+            Abbe number.
+            None means no constringence.
+
+        Returns
+        -------
+        OptProp
+            Optical property.
+        """
         self._vop_template.optic.index = index
         self._vop_template.optic.absorption = absorption
         if constringence is not None:
@@ -56,10 +131,38 @@ class OptProp:
         return self
 
     def set_volume_nonhomogeneous(self, path: str, coordsys: GeoRef) -> OptProp:
+        """
+        Material with non-homogeneous refractive index.
+
+        Parameters
+        ----------
+        path : str
+            \*.gradedmaterial file that describes the spectral variations of
+            refractive index and absorption with the respect to position in space.
+        coordsys : GeoRef
+
+        Returns
+        -------
+        OptProp
+            Optical property.
+        """
         self._vop_template.non_homogeneous.gradedmaterial_file_uri = path
         return self
 
     def set_volume_library(self, path: str) -> OptProp:
+        """
+        Based on \*.material file.
+
+        Parameters
+        ----------
+        path : str
+            \*.material file
+
+        Returns
+        -------
+        OptProp
+            Optical property.
+        """
         self._vop_template.library.material_file_uri = path
         return self
 
