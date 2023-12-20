@@ -10,6 +10,7 @@ from ansys.speos.core.crud import CrudItem, CrudStub
 from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 
 SensorTemplate = messages.SensorTemplate
+SensorTemplate.__str__ = lambda self: protobuf_message_to_str(self)
 
 
 class SensorTemplateLink(CrudItem):
@@ -31,7 +32,7 @@ class SensorTemplateLink(CrudItem):
         super().__init__(db, key)
 
     def __str__(self) -> str:
-        return protobuf_message_to_str(self.get())
+        return str(self.get())
 
     def get(self) -> SensorTemplate:
         """Get the datamodel from database."""

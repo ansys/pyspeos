@@ -8,6 +8,7 @@ from ansys.speos.core.crud import CrudItem, CrudStub
 from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 
 IntensityTemplate = messages.IntensityTemplate
+IntensityTemplate.__str__ = lambda self: protobuf_message_to_str(self)
 
 
 class IntensityTemplateLink(CrudItem):
@@ -29,7 +30,7 @@ class IntensityTemplateLink(CrudItem):
         super().__init__(db, key)
 
     def __str__(self) -> str:
-        return protobuf_message_to_str(self.get())
+        return str(self.get())
 
     def get(self) -> IntensityTemplate:
         """Get the datamodel from database."""

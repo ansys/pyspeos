@@ -10,6 +10,7 @@ from ansys.speos.core.geometry_utils import AxisPlane
 from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 
 Face = messages.Face
+Face.__str__ = lambda self: protobuf_message_to_str(self)
 
 
 class FaceLink(CrudItem):
@@ -19,7 +20,7 @@ class FaceLink(CrudItem):
         super().__init__(db, key)
 
     def __str__(self) -> str:
-        return protobuf_message_to_str(self.get())
+        return str(self.get())
 
     def get(self) -> Face:
         """Get the datamodel from database."""

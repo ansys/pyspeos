@@ -46,10 +46,13 @@ class OptProp:
         self._vop_template.opaque.SetInParent()
         return self
 
-    def set_volume_optic(self, index: float, absorption: float, constringence: float) -> OptProp:
+    def set_volume_optic(self, index: float, absorption: float, constringence: Optional[float]) -> OptProp:
         self._vop_template.optic.index = index
         self._vop_template.optic.absorption = absorption
-        self._vop_template.optic.constringence = constringence
+        if constringence is not None:
+            self._vop_template.optic.constringence = constringence
+        else:
+            del self._vop_template.optic.constringence
         return self
 
     def set_volume_nonhomogeneous(self, path: str, coordsys: GeoRef) -> OptProp:
@@ -67,7 +70,12 @@ class OptProp:
         return self
 
     def __str__(self):
-        return f"SOP template: {self._sop_template}\nSOP instance: {self._sop_instance}"
+        return (
+            f"SOP template: {self._sop_template}\n"
+            + f"SOP instance: {self._sop_instance}\n"
+            + f"VOP template: {self._vop_template}\n"
+            + f"VOP instance: {self._vop_instance}"
+        )
 
     def commit(self) -> OptProp:
         """Save feature"""
