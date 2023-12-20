@@ -8,5 +8,3 @@ Here are referenced all script APIs.
    :toctree: _autosummary
 
    project.Project
-   opt_prop.OptProp
-   geo_ref.GeoRef
