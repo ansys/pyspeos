@@ -11,7 +11,7 @@ on:
 env:
   MAIN_PYTHON_VERSION: '3.9'
   PIP_EXTRA_INDEX_URL: 'https://${{ secrets.PYANSYS_PYPI_PRIVATE_PAT }}@pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/simple/'
-  DOCUMENTATION_CNAME: 'optics.docs.pyansys.com'
+  DOCUMENTATION_CNAME: 'speos.docs.pyansys.com'
   PACKAGE_NAMESPACE: 'ansys.speos.core'
   PACKAGE_NAME: 'ansys-optics-speos'
 

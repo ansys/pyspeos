@@ -14,7 +14,7 @@ project = "ansys-pyspeos"
 copyright = f"(c) {datetime.now().year} ANSYS, Inc. All rights reserved"
 author = "Ansys Inc."
 release = version = __version__
-cname = os.getenv("DOCUMENTATION_CNAME", default="optics.docs.pyansys.com")
+cname = os.getenv("DOCUMENTATION_CNAME", default="speos.docs.pyansys.com")
 
 # use the default pyansys logo
 html_logo = pyansys_logo_black
