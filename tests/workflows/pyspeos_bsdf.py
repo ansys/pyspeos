@@ -35,13 +35,13 @@ class BrdfStructure:
         self.speos = core.Speos(host="localhost", port=50051)
         self.stub = spectral_bsdf__v1__pb2_grpc.SpectralBsdfServiceStub(self.speos.client.channel)
         wavelength_list = sorted(set(wavelength_list))
-        if not all(360 < item < 830 for item in wavelength_list):
+        if not all(360 <= item <= 830 for item in wavelength_list):
             raise ValueError("Please provide correct wavelengths in range between 360 and 830nm ")
         self.rt = [1, 0]
-        self.__wavelengths = wavelength_list
-        self.__incident_angles = []
-        self.__theta_1d_ressampled = None
-        self.__phi_1d_ressampled = None
+        self.wavelengths = wavelength_list
+        self.incident_angles = []
+        self.theta_1d_ressampled = None
+        self.phi_1d_ressampled = None
         self.measurement_2d_bsdf = []
         self.brdf = []
         self.btdf = []
@@ -157,27 +157,27 @@ class BrdfStructure:
             # theta max : maximal reflected angle that is measured. for angle > theta_max we do not have values
             return weight * (bsdf_1d_func(incidence - angular_distance)) + (1 - weight) * bsdf_1d_func(incidence + angular_distance)
 
-        if len(self.__incident_angles) == 0:
+        if len(self.incident_angles) == 0:
             for measurement in self.measurement_2d_bsdf:
-                if measurement.incidence not in self.__incident_angles:
-                    self.__incident_angles.append(measurement.incidence)
+                if measurement.incidence not in self.incident_angles:
+                    self.incident_angles.append(measurement.incidence)
         # mesh grid for direct 2d matrix calculation
-        for incidence in self.__incident_angles:
-            for wavelength in self.__wavelengths:
+        for incidence in self.incident_angles:
+            for wavelength in self.wavelengths:
                 brdf_1d, btdf_1d, theta_max = self.bsdf_1d_function(wavelength, incidence)
-                self.__theta_1d_ressampled = np.linspace(0, 90, int(90 / sampling + 1))
-                self.__phi_1d_ressampled = np.linspace(0, 360, int(360 / sampling + 1))
-                theta_2d_ressampled, phi_2d_ressampled = np.meshgrid(self.__theta_1d_ressampled, self.__phi_1d_ressampled)
+                self.theta_1d_ressampled = np.linspace(0, 90, int(90 / sampling + 1))
+                self.phi_1d_ressampled = np.linspace(0, 360, int(360 / sampling + 1))
+                theta_2d_ressampled, phi_2d_ressampled = np.meshgrid(self.theta_1d_ressampled, self.phi_1d_ressampled)
                 self.brdf.append(bsdf_2d_function(theta_2d_ressampled, phi_2d_ressampled, brdf_1d))
-                self.reflectance.append(self.__bsdf_integral(self.__theta_1d_ressampled, self.__phi_1d_ressampled, self.brdf[-1]))
+                self.reflectance.append(self.__bsdf_integral(self.theta_1d_ressampled, self.phi_1d_ressampled, self.brdf[-1]))
                 if self.rt[1] == 1 and btdf_1d is not None:
                     self.btdf.append(bsdf_2d_function(theta_2d_ressampled, phi_2d_ressampled, btdf_1d))
-                    self.transmittance.append(self.__bsdf_integral(self.__theta_1d_ressampled, self.__phi_1d_ressampled, self.btdf[-1]))
+                    self.transmittance.append(self.__bsdf_integral(self.theta_1d_ressampled, self.phi_1d_ressampled, self.btdf[-1]))
         self.brdf = np.reshape(
             self.brdf,
             (
-                len(self.__incident_angles),
-                len(self.__wavelengths),
+                len(self.incident_angles),
+                len(self.wavelengths),
                 2 * int(180 / sampling + 1) - 1,
                 int(90 / sampling + 1),
             ),
@@ -186,13 +186,13 @@ class BrdfStructure:
             msg = "All NULL values at brdf structure, please provide valid inputs"
             raise ValueError(msg)
         self.brdf = np.moveaxis(self.brdf, 2, 3)
-        self.reflectance = np.reshape(self.reflectance, (len(self.__incident_angles), len(self.__wavelengths)))
+        self.reflectance = np.reshape(self.reflectance, (len(self.incident_angles), len(self.wavelengths)))
         if self.rt[1] == 1 and len(self.btdf) != 0:
             self.btdf = np.reshape(
                 self.btdf,
                 (
-                    len(self.__incident_angles),
-                    len(self.__wavelengths),
+                    len(self.incident_angles),
+                    len(self.wavelengths),
                     2 * int(180 / sampling + 1) - 1,
                     int(90 / sampling + 1),
                 ),
@@ -202,56 +202,56 @@ class BrdfStructure:
                 print(msg)
             self.btdf = np.moveaxis(self.btdf, 2, 3)
             self.btdf = np.flip(self.btdf, axis=0)
-            self.transmittance = np.reshape(self.transmittance, (len(self.__incident_angles), len(self.__wavelengths)))
+            self.transmittance = np.reshape(self.transmittance, (len(self.incident_angles), len(self.wavelengths)))
 
     def export_to_speos(self, export_dir, debug=False):
         msg = ""
-        if self.reflectance.shape != (len(self.__incident_angles), len(self.__wavelengths)):
+        if self.reflectance.shape != (len(self.incident_angles), len(self.wavelengths)):
             msg += "incorrect format: reflectance dimension does not match with incident angle and wavelength\n"
         if self.brdf.shape != (
-            len(self.__incident_angles),
-            len(self.__wavelengths),
-            len(self.__theta_1d_ressampled),
-            len(self.__phi_1d_ressampled),
+            len(self.incident_angles),
+            len(self.wavelengths),
+            len(self.theta_1d_ressampled),
+            len(self.phi_1d_ressampled),
         ):
             msg += "incorrect data format: brdf dimension does not match\n"
         if len(self.btdf) != 0:
             self.rt[1] = 1
             if self.btdf.shape != (
-                len(self.__incident_angles),
-                len(self.__wavelengths),
-                len(self.__theta_1d_ressampled),
-                len(self.__phi_1d_ressampled),
+                len(self.incident_angles),
+                len(self.wavelengths),
+                len(self.theta_1d_ressampled),
+                len(self.phi_1d_ressampled),
             ):
                 msg += "incorrect data format: btdf dimension does not match\n"
-            if self.transmittance.shape != (len(self.__incident_angles), len(self.__wavelengths)):
+            if self.transmittance.shape != (len(self.incident_angles), len(self.wavelengths)):
                 msg += "incorrect format: transmittance dimension does not match with incident angle and wavelength\n"
         if msg != "":
             print(msg)
             return
 
         bsdf = spectral_bsdf__v1__pb2.SpectralBsdfData(description="gRPC Spectral BSDF Description")
-        for incident_angle in self.__incident_angles:
+        for incident_angle in self.incident_angles:
             bsdf.incidence_samples.append(incident_angle * math.pi / 180.0)
-        for wavelength_idx, wavelength in enumerate(self.__wavelengths):
+        for wavelength_idx, wavelength in enumerate(self.wavelengths):
             bsdf.wavelength_samples.append(wavelength)
-            for incident_angle_idx, incident_angle in enumerate(self.__incident_angles):
+            for incident_angle_idx, incident_angle in enumerate(self.incident_angles):
                 iw = bsdf.wavelength_incidence_samples.add()
                 iw.reflection.integral = self.reflectance[incident_angle_idx, wavelength_idx]
-                for phi in self.__phi_1d_ressampled:
+                for phi in self.phi_1d_ressampled:
                     iw.reflection.phi_samples.append(phi * math.pi / 180.0)
-                for theta_idx, theta in enumerate(self.__theta_1d_ressampled):
+                for theta_idx, theta in enumerate(self.theta_1d_ressampled):
                     iw.reflection.theta_samples.append(theta * math.pi / 180.0)
-                    for phi_idx, _ in enumerate(self.__phi_1d_ressampled):
+                    for phi_idx, _ in enumerate(self.phi_1d_ressampled):
                         iw.reflection.bsdf_cos_theta.append(self.brdf[incident_angle_idx, wavelength_idx, theta_idx, phi_idx])
 
                 if self.rt[1] == 1:
                     iw.transmission.integral = self.transmittance[incident_angle_idx, wavelength_idx]
-                    for phi in self.__phi_1d_ressampled:
+                    for phi in self.phi_1d_ressampled:
                         iw.transmission.phi_samples.append(phi * math.pi / 180.0)
-                    for theta_idx, theta in enumerate(self.__theta_1d_ressampled):
+                    for theta_idx, theta in enumerate(self.theta_1d_ressampled):
                         iw.transmission.theta_samples.append((theta + 90) * math.pi / 180.0)
-                        for phi_idx, _ in enumerate(self.__phi_1d_ressampled):
+                        for phi_idx, _ in enumerate(self.phi_1d_ressampled):
                             iw.transmission.bsdf_cos_theta.append(self.btdf[incident_angle_idx, wavelength_idx, theta_idx, phi_idx])
 
         file_name = spectral_bsdf__v1__pb2.FileName()
