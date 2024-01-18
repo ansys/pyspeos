@@ -2,7 +2,7 @@ import math
 
 import numpy as np
 
-from tests.workflows.pyspeos_bsdf import BrdfStructure
+from src.ansys.speos.workflow.create_speos_bsdf.create_spectral_bsdf import BrdfStructure
 
 
 def create_brdf(wavelengths, incident_angles, theta_list, phi_list, reflectances, transmittances, brdf, btdf):

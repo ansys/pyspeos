@@ -2,7 +2,10 @@ import csv
 import tkinter as tk
 from tkinter import filedialog
 
-from tests.workflows.pyspeos_bsdf import BrdfStructure, BsdfMeasurementPoint
+from src.ansys.speos.workflow.create_speos_bsdf.create_spectral_bsdf import (
+    BrdfStructure,
+    BsdfMeasurementPoint,
+)
 
 
 def getfilename(extension, save=False):
