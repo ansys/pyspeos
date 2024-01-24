@@ -6,6 +6,7 @@ from src.ansys.speos.workflow.create_speos_bsdf.create_spectral_bsdf import (
     BrdfStructure,
     BsdfMeasurementPoint,
 )
+from src.ansys.speos.workflow.utilities.utils import start_server
 
 
 def getfilename(extension: str, save: bool = False) -> str:
@@ -68,6 +69,7 @@ def main():
     """
     main function to run conversion.
     """
+    start_server(version=241, msg_size_mb=256)
     path_to_csv = getfilename("*.csv")
     if path_to_csv != "":
         convert_export(path_to_csv, r"D:\\")
