@@ -35,8 +35,6 @@ class BrdfStructure:
         self.speos = core.Speos(host="localhost", port=50051)
         self.stub = spectral_bsdf__v1__pb2_grpc.SpectralBsdfServiceStub(self.speos.client.channel)
         wavelength_list = sorted(set(wavelength_list))
-        if not all(360 <= item <= 830 for item in wavelength_list):
-            raise ValueError("Please provide correct wavelengths in range between 360 and 830nm ")
         self.rt = [1, 0]
         self.wavelengths = wavelength_list
         self.incident_angles = []
