@@ -31,7 +31,7 @@ class BrdfStructure:
     class of BRDF contains method to host and convert 2d bsdf values into 3d bsdf file.
     """
 
-    def __init__(self, wavelength_list):
+    def __init__(self, wavelength_list: list):
         self.speos = core.Speos(host="localhost", port=50051)
         self.stub = spectral_bsdf__v1__pb2_grpc.SpectralBsdfServiceStub(self.speos.client.channel)
         wavelength_list = sorted(set(wavelength_list))
@@ -47,7 +47,7 @@ class BrdfStructure:
         self.transmittance = []
         self.file_name = "gRPC_export_brdf"
 
-    def bsdf_1d_function(self, wavelength, incident):
+    def bsdf_1d_function(self, wavelength: float, incident: float):
         """
         to provide a 1d linear fitting function for 2d measurement bsdf points.
 
@@ -60,7 +60,7 @@ class BrdfStructure:
 
         Returns
         -------
-
+            scipy.interpolate.interp1d function
 
         """
         theta_bsdf = [
@@ -87,7 +87,7 @@ class BrdfStructure:
             np.max(theta_brdf[0]),
         )
 
-    def __bsdf_integral(self, theta, phi, bsdf):
+    def __bsdf_integral(self, theta: np.array, phi: np.array, bsdf) -> float:
         """
         function to calculate the reflectance of the bsdf at one incident and wavelength
 
@@ -111,7 +111,7 @@ class BrdfStructure:
         # reflectance calculaiton thanks to nquad lib
         return min(r[0], 1)  # return reflectance as percentage
 
-    def convert_2D_3D(self, sampling=1):
+    def convert_2D_3D(self, sampling: int = 1) -> None:
         """
         convert the provided 2d measurement bsdf data.
 
@@ -119,25 +119,20 @@ class BrdfStructure:
         ----------
         sampling : int
             sampling used for exported 4d bsdf structure.
-
-        Returns
-        -------
-        None
-
         """
 
-        def bsdf_2d_function(theta, phi, bsdf_1d_func):
+        def bsdf_2d_function(theta: float, phi: float, bsdf_1d_func):
             """
             an internal method to calculate the 2d bsdf based on location theta and phi.
 
             Parameters
             ----------
-            bsdf_1d_func:
-                bsdf linear function
             theta : float
                 target point with theta value
             phi : float
                 target point with phi value
+            bsdf_1d_func:
+                bsdf linear function
 
             Returns
             -------
@@ -202,7 +197,17 @@ class BrdfStructure:
             self.btdf = np.flip(self.btdf, axis=0)
             self.transmittance = np.reshape(self.transmittance, (len(self.incident_angles), len(self.wavelengths)))
 
-    def export_to_speos(self, export_dir, debug=False):
+    def export_to_speos(self, export_dir: str, debug=False):
+        """
+        export brdf structure to speos brdf file.
+
+        Parameters
+        ----------
+        export_dir: str
+            directory
+        debug: bool
+            False generates only interpolation enhanced file, True generates additional un-encrypted file.
+        """
         msg = ""
         if self.reflectance.shape != (len(self.incident_angles), len(self.wavelengths)):
             msg += "incorrect format: reflectance dimension does not match with incident angle and wavelength\n"

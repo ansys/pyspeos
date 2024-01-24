@@ -5,7 +5,30 @@ import numpy as np
 from src.ansys.speos.workflow.create_speos_bsdf.create_spectral_bsdf import BrdfStructure
 
 
-def create_brdf(wavelengths, incident_angles, theta_list, phi_list, reflectances, transmittances, brdf, btdf):
+def create_brdf(
+    wavelengths: np.array,
+    incident_angles: np.array,
+    theta_list: np.array,
+    phi_list: np.array,
+    reflectances: np.array,
+    transmittances: np.array,
+    brdf: np.array,
+    btdf: np.array,
+) -> None:
+    """
+    create speos brdf file.
+
+    Parameters
+    ----------
+    wavelengths:np.array
+    incident_angles:np.array
+    theta_list:np.array
+    phi_list:np.array
+    reflectances: np.array
+    transmittances: np.array
+    brdf: np.array
+    btdf: np.array
+    """
     brdf_data = BrdfStructure(wavelengths)
     brdf_data.file_name = "example_2"
     brdf_data.incident_angles = incident_angles
@@ -19,6 +42,9 @@ def create_brdf(wavelengths, incident_angles, theta_list, phi_list, reflectances
 
 
 def main():
+    """
+    main function to create speos brdf file.
+    """
     wavelength_nb = 10
     incident_angle_nb = 7
     theta_nb = 10

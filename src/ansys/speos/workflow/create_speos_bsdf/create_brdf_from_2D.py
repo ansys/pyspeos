@@ -8,7 +8,7 @@ from src.ansys.speos.workflow.create_speos_bsdf.create_spectral_bsdf import (
 )
 
 
-def getfilename(extension, save=False):
+def getfilename(extension: str, save: bool = False) -> str:
     """
     Parameters
     ----------
@@ -33,7 +33,7 @@ def getfilename(extension, save=False):
     return file_path
 
 
-def convert_export(input_csv, output_path):
+def convert_export(input_csv: str, output_path: str) -> None:
     """
     main function to convert 2d data into brdf and export.
 
@@ -43,11 +43,6 @@ def convert_export(input_csv, output_path):
         path of csv file recording the 2d data.
     output_path : str
         path for the brdf to be exported.
-
-    Returns
-    -------
-
-
     """
     wavelength_list = []
     brdf_data = None
@@ -72,10 +67,6 @@ def convert_export(input_csv, output_path):
 def main():
     """
     main function to run conversion.
-
-    Returns
-    -------
-
     """
     path_to_csv = getfilename("*.csv")
     if path_to_csv != "":
