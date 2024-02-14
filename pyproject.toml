@@ -47,7 +47,7 @@ doc = [
     "sphinx-copybutton==0.5.2",
 ]
 app = [
-    "PySimpleGUI==4.60.5",
+    "PySimpleGUI==5.0.2",
 ]
 
 [tool.flit.module]
