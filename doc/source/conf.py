@@ -40,8 +40,6 @@ html_theme_options = {
 
 # Sphinx extensions
 extensions = [
-    "sphinx.ext.autodoc",
-    "sphinx.ext.autosummary",
     "numpydoc",
     "sphinx.ext.intersphinx",
     "sphinx_copybutton",
