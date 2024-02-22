@@ -44,7 +44,6 @@ extensions = [
     "sphinx.ext.autosummary",
     "numpydoc",
     "sphinx.ext.intersphinx",
-    "sphinx.ext.autosectionlabel",
     "sphinx_copybutton",
     "autoapi.extension",
     "sphinx_design",
