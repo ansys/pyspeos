@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 
 from ansys_sphinx_theme import (
+    ansys_favicon,
     get_autoapi_templates_dir_relative_path,
     get_version_match,
     pyansys_logo_black,
@@ -24,6 +25,7 @@ cname = os.getenv("DOCUMENTATION_CNAME", default="speos.docs.pyansys.com")
 # use the default pyansys logo
 html_logo = pyansys_logo_black
 html_theme = "ansys_sphinx_theme"
+html_favicon = ansys_favicon
 
 # specify the location of your github repo
 html_theme_options = {
