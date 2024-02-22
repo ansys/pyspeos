@@ -71,3 +71,4 @@ tmp.out
 # Sphinx documentation
 doc/_build/
 doc/**/_autosummary
+doc/source/api

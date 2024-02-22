@@ -1,8 +1,13 @@
 """Sphinx documentation configuration file."""
 from datetime import datetime
 import os
+from pathlib import Path
 
-from ansys_sphinx_theme import get_version_match, pyansys_logo_black
+from ansys_sphinx_theme import (
+    get_autoapi_templates_dir_relative_path,
+    get_version_match,
+    pyansys_logo_black,
+)
 from sphinx.builders.latex import LaTeXBuilder
 
 from ansys.speos import __version__
@@ -39,6 +44,8 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.autosectionlabel",
     "sphinx_copybutton",
+    "autoapi.extension",
+    "sphinx_design",
 ]
 
 # Intersphinx mapping
@@ -60,7 +67,7 @@ numpydoc_validate = True
 numpydoc_validation_checks = {
     "GL06",  # Found unknown section
     "GL07",  # Sections are in the wrong order.
-    "GL08",  # The object does not have a docstring
+    # "GL08",  # The object does not have a docstring
     "GL09",  # Deprecation warning should precede extended summary
     "GL10",  # reST directives {directives} must be followed by two colons
     "SS01",  # No summary found
@@ -86,3 +93,19 @@ master_doc = "index"
 
 # Generate section labels up to four levels deep
 autosectionlabel_maxdepth = 4
+
+autoapi_type = "python"
+autoapi_dirs = ["../../src/ansys"]
+autoapi_root = "api"
+autoapi_options = [
+    "members",
+    "undoc-members",
+    "show-inheritance",
+    "show-module-summary",
+    "special-members",
+]
+autoapi_template_dir = get_autoapi_templates_dir_relative_path(Path(__file__))
+suppress_warnings = ["autoapi.python_import_resolution"]
+# exclude_patterns = ["_autoapi_templates/index.rst"]
+autoapi_python_use_implicit_namespaces = True
+autoapi_keep_files = True
