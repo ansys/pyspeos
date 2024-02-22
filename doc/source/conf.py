@@ -95,7 +95,7 @@ autosectionlabel_maxdepth = 4
 
 autoapi_type = "python"
 autoapi_dirs = ["../../src/ansys"]
-autoapi_root = "api"
+autoapi_root = "autoapi"
 autoapi_options = [
     "members",
     "undoc-members",
