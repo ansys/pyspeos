@@ -86,6 +86,8 @@ class SourceTemplateFactory:
     """Class to help creating SourceTemplate message"""
 
     class Flux:
+        """Class to help creating SourceTemplate.Flux message"""
+
         Unit = Enum("Unit", ["Lumen", "Watt", "Candela"])
 
         def __init__(self, unit: Optional[Unit] = Unit.Lumen, value: Optional[float] = 683) -> None:
