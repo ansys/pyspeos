@@ -9,7 +9,8 @@ if "%SPHINXBUILD%" == "" (
 )
 set SOURCEDIR=source
 set BUILDDIR=_build
-set APIDIR=api
+set APIDIR=autoapi
+set SPHINXOPTS=-j auto --keep-going
 
 if "%1" == "" goto help
 if "%1" == "pdf" goto pdf
