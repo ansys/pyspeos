@@ -35,12 +35,14 @@ repos:
   hooks:
   - id: check-merge-conflict
   - id: debug-statements
+  - id: check-yaml
+  - id: trailing-whitespace
 
 # this validates our github workflow files
 - repo: https://github.com/python-jsonschema/check-jsonschema
   rev: 0.23.2
   hooks:
-    - id: check-github-workflows 
+    - id: check-github-workflows
 
 # - repo: https://github.com/pycqa/pydocstyle
 #   rev: 6.1.1
