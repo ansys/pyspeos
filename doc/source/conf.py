@@ -45,6 +45,7 @@ extensions = [
     "sphinx_copybutton",
     "autoapi.extension",
     "sphinx_design",
+    "sphinx.ext.autodoc",
 ]
 
 # Intersphinx mapping
@@ -108,3 +109,5 @@ suppress_warnings = ["autoapi.python_import_resolution", "design.grid"]
 # exclude_patterns = ["_autoapi_templates/index.rst"]
 autoapi_python_use_implicit_namespaces = True
 autoapi_keep_files = True
+
+autodoc_typehints = "description"
