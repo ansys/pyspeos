@@ -2,10 +2,11 @@
 #
 
 # You can set these variables from the command line.
-SPHINXOPTS    =
+SPHINXOPTS    = -j auto --keep-going
 SPHINXBUILD   = sphinx-build
 SOURCEDIR     = source
 BUILDDIR      = _build
+APIDIR        = autoapi
 
 # Put it first so that "make" without argument is like "make help".
 help:
@@ -21,7 +22,8 @@ help:
 
 # customized clean due to examples gallery
 clean:
-	rm -rf build
+	rm -rf _build
+	find . -type d -name $(APIDIR) -exec rm -rf {} +
 
 #customized pdf build due to svg badges
 pdf:
