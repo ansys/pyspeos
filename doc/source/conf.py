@@ -92,7 +92,7 @@ source_suffix = ".rst"
 master_doc = "index"
 
 autoapi_type = "python"
-autoapi_dirs = ["../../src/ansys"]
+autoapi_dirs = ["../../src"]
 autoapi_root = "api"
 autoapi_options = [
     "members",
@@ -105,7 +105,7 @@ autoapi_template_dir = get_autoapi_templates_dir_relative_path(Path(__file__))
 suppress_warnings = ["autoapi"]
 autoapi_python_use_implicit_namespaces = True
 autoapi_keep_files = True
-
+autoapi_own_page_level = "module"
 autodoc_typehints = "description"
 
 
