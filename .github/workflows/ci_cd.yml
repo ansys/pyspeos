@@ -54,7 +54,7 @@ jobs:
     name: "Unit testing"
     runs-on: ubuntu-latest
     needs: [style]
-  
+
     steps:
       - uses: actions/checkout@v4
 

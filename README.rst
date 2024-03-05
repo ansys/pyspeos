@@ -24,22 +24,22 @@ Project overview
 
 Installation
 ------------
-Installation can be done using the published `package`_ or the repository `sources`_. 
+Installation can be done using the published `package`_ or the repository `sources`_.
 
 Package
 ~~~~~~~
-.. warning:: Not currently available, work in progress. Please use `Sources`_. 
+.. warning:: Not currently available, work in progress. Please use `Sources`_.
 
 This repository is deployed as the Python packages `ansys-pyspeos <...>`_.
 As usual, installation is done by running:
 
-.. code:: 
+.. code::
 
    pip install ansys-pyspeos
 
 Sources
 ~~~~~~~
-**Prerequisite**: user needs to have a GitHub account and a valid Personal Access Token 
+**Prerequisite**: user needs to have a GitHub account and a valid Personal Access Token
 (see GitHub Settings/Developer settings/Personal access tokens/Generate new token).
 
 Clone and install
@@ -76,15 +76,15 @@ To build it manually :
    pip install -U pip tox
    pip install .[doc]
    tox -e doc && your_browser_name .tox/doc_out/index.html
-   
 
-.. note:: 
-   
+
+.. note::
+
       Include a link to the full sphinx documentation. For example `PyAnsys`_
 
 Testing
 -------
-Tests and assets are in `<tests>`_ and `<tests/assets>`_ folder. 
+Tests and assets are in `<tests>`_ and `<tests/assets>`_ folder.
 Running PySpeos tests requires a running SpeosRPC server.
 A configuration file allows to choose between a local server and a Docker server (by default).
 
@@ -93,7 +93,7 @@ Test configuration file
 The configuration file `<tests/local_config.json>`_ located in tests folder contains several parameters that can be changed according to your needs, for example:
 
  - **SpeosServerOnDocker** (Boolean): Speos server launched in a Docker container.
- - **SpeosServerPort** (integer): Port used by Speos server for HTTP transfer. 
+ - **SpeosServerPort** (integer): Port used by Speos server for HTTP transfer.
 
 Start server
 ~~~~~~~~~~~~
@@ -103,9 +103,9 @@ Since the Docker image contains no license server, you will need to enter your l
 Then, you can launch SpeosRPC server with:
 
 .. code::
-   
+
    export LICENSE_SERVER=1055@XXX.XXX.XXX.XXX
-   
+
    docker login ghcr.io/ansys-internal
    docker-compose up -d
 
@@ -119,7 +119,7 @@ The pipeline artifact can be found in La Farlède shared folders.
 And test configuration file `<tests/local_config.json>`_ must be updated to use local server:
 
 .. code-block:: json
-   
+
    {
       "SpeosServerOnDocker": false,
       "SpeosContainerName" : "speos-rpc",
