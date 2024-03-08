@@ -35,14 +35,28 @@ except ModuleNotFoundError:  # pragma: no cover
     _HAS_PIM = False
 
 
-def launch_speos():
+def launch_speos(version: str = None) -> Speos:
+    """Start the Speos Service remotely using the product instance management API.
+    Prerequisite : product instance management configured.
+
+    Parameters
+    ----------
+    version : str, optional
+        The Speos Service version to run, in the 3 digits format, such as "242".
+        If unspecified, the version will be chosen by the server.
+
+    Returns
+    -------
+    ansys.speos.core.speos.Speos
+        An instance of the Speos Service.
+    """
     if pypim.is_configured():
         logger.info("Starting Speos service remotely. The startup configuration will be ignored.")
-        return launch_remote_speos()
+        return launch_remote_speos(version)
 
 
 def launch_remote_speos(
-    version=None,
+    version: str = None,
 ) -> Speos:
     """Start the Speos Service remotely using the product instance management API.
     When calling this method, you need to ensure that you are in an
@@ -52,7 +66,7 @@ def launch_remote_speos(
     Parameters
     ----------
     version : str, optional
-        The Speos Service version to run, in the 3 digits format, such as "212".
+        The Speos Service version to run, in the 3 digits format, such as "242".
         If unspecified, the version will be chosen by the server.
 
     Returns

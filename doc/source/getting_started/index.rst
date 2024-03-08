@@ -50,18 +50,13 @@ containers. Select the option that suits your needs best.
 
             Connect to an existing Speos service locally or remotely.
 
-Compatibility with Ansys releases
-=================================
-
-PySpeos continues to evolve as the Ansys products move forward. For
-more information, see :ref:`Ansys product version compatibility <ref_ansys_comp>`.
-
 Development installation
 ========================
 
 In case you want to support the development of PySpeos, install the repository
-in development mode. For more information, see
-:ref:`Install package in development mode <ref_dev_mode>`.
+in development mode. For more information, refer to the `repository Readme file`_.
+
+.. _repository Readme file: https://github.com/ansys-internal/pyspeos
 
 Frequently asked questions
 ==========================
@@ -76,6 +71,4 @@ Any questions? Refer to :ref:`Q&A <ref_faq>` before submitting an issue.
    local/index
    remote/index
    existing/index
-   compatibility
-   installation
    faq

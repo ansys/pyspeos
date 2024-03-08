@@ -12,11 +12,11 @@ Docker for Linux containers
 ---------------------------
 
 To run the Linux Docker container for the Speos service, you need to install Docker.
-You can:
+You can choose one of the following possibilities:
 
 * Install `Docker Engine <https://docs.docker.com/engine/install/>`_ (only for Linux environment). In this case you will interact with docker by command line.
 
-* Install `Docker Desktop <https://docs.docker.com/desktop/install/windows-install/>`_. In this case you will have a GUI to interact with docker.
+* Install `Docker Desktop <https://docs.docker.com/desktop/install/windows-install/>`_. (for all environments). In this case you will have a GUI and can also interact with docker by command line.
 
 
 Install the Speos service image
@@ -26,8 +26,7 @@ The Speos service image can be downloaded from the GitHub Container Registry
 
 .. note::
 
-   This option is only available for users with write access to the repository or
-   who are members of the Ansys organization.
+   This option is only available for users who are members of the Ansys Internal organization.
 
 Once Docker is installed on your machine, follow these steps to download the Linux Docker
 container for the Speos service and install this image.
