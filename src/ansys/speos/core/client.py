@@ -350,7 +350,7 @@ class SpeosClient:
     def __repr__(self) -> str:
         """Represent the client as a string."""
         lines = []
-        lines.append(f"Ansys Spoes client ({hex(id(self))})")
+        lines.append(f"Ansys Speos client ({hex(id(self))})")
         lines.append(f"  Target:     {self._target}")
         if self._closed:
             lines.append(f"  Connection: Closed")
