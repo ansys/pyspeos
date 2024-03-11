@@ -25,12 +25,12 @@ Select the kind of Docker container you want to build:
 .. grid:: 2
    :gutter: 3 3 4 4
 
-    .. grid-item-card:: Linux Docker container
-             :link: linux_container
-             :link-type: doc
+   .. grid-item-card:: Linux Docker container
+      :link: linux_container
+      :link-type: doc
 
-             Build a Windows Docker container for the Speos service
-             and use it from PySpeos.
+      Build a Windows Docker container for the Speos service
+      and use it from PySpeos.
 
 ..   .. grid-item-card:: Windows Docker container
 ..            :link: windows_container

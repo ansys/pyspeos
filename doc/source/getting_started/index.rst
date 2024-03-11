@@ -3,7 +3,8 @@
 Getting started
 ###############
 
-``PySpeos`` is a Python client library that gathers functionalities and tools based on remote API of Ansys software `Speos <https://www.ansys.com/fr-fr/products/optics-vr>`_ .
+``PySpeos`` is a Python client library that gathers functionalities and tools based on
+remote API of Ansys software `Speos <https://www.ansys.com/fr-fr/products/optics-vr>`_ .
 
 Installation
 ============
@@ -54,9 +55,7 @@ Development installation
 ========================
 
 In case you want to support the development of PySpeos, install the repository
-in development mode. For more information, refer to the `repository Readme file`_.
-
-.. _repository Readme file: https://github.com/ansys-internal/pyspeos
+in development mode. For more information, refer to the `README`_.
 
 Frequently asked questions
 ==========================
@@ -72,3 +71,7 @@ Any questions? Refer to :ref:`Q&A <ref_faq>` before submitting an issue.
    remote/index
    existing/index
    faq
+
+
+.. Links
+.. _README: https://github.com/ansys-internal/pyspeos

@@ -22,6 +22,7 @@ If no error messages are received, your connection is established successfully.
 
 Verify the connection
 ---------------------
+
 If you want to verify that the connection is successful, request the status of the client
 connection inside your ``Speos`` object:
 
