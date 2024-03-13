@@ -33,10 +33,20 @@ class Project:
     that user can fill in. Extension .scdocx refer to Speos for SpaceClaim.
     From Speos for NX, input file must have extension .prt or .asm.
     From pySpeos, input file is related to Scene filename.
-    Project provide functions to get Speos Tree representation as a list of Features and to make actions on them."""
+    Project provide functions to get Speos Tree representation as a list of Features and to make actions on them.
+
+    Create from empty or load from a specific file.
+
+    Parameters
+    ----------
+    speos : ansys.speos.core.Speos
+        Speos session (connected to gRPC server).
+    path : str
+        The project will be loaded from this file
+        By default, ``""``, means create from empty.
+    """
 
     def __init__(self, speos: core.Speos, path: str = ""):
-        """Create from empty or load from file"""
         self.client = speos.client
         self.scene = speos.client.scenes().create()
         if len(path):
