@@ -26,15 +26,16 @@ Test basic using optical properties from script layer.
 
 import os
 
+from ansys.speos.core.speos import Speos
 import ansys.speos.script as script
 from conftest import test_path
 
 
-def test_create_OptProp():
+def test_create_OptProp(speos: Speos):
     """Test creation of optical property."""
-    p = script.Project()
+    p = script.Project(speos=speos)
     assert p is not None
-    print(p)
+
     op = (
         p.create_optical_property(name="myprop", description="mydesc")
         .set_geometries(geometries=[script.GeoRef.from_native_link(geopath="mybody")])
@@ -43,5 +44,3 @@ def test_create_OptProp():
         .commit()
     )
     assert op is not None
-    print(op)
-    print(p)

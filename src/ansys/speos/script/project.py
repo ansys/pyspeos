@@ -27,8 +27,6 @@ from typing import Mapping, Optional
 import ansys.speos.core as core
 import ansys.speos.script.opt_prop as opt_prop
 
-speos = core.Speos()
-
 
 class Project:
     """Stored in a file, a Project describe all Speos features (optical properties, sources, sensors, simulations)
@@ -37,7 +35,7 @@ class Project:
     From pySpeos, input file is related to Scene filename.
     Project provide functions to get Speos Tree representation as a list of Features and to make actions on them."""
 
-    def __init__(self, path: str = ""):
+    def __init__(self, speos: core.Speos, path: str = ""):
         """Create from empty or load from file"""
         self.client = speos.client
         self.scene = speos.client.scenes().create()
