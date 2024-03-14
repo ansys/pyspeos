@@ -107,7 +107,7 @@ autoapi_template_dir = get_autoapi_templates_dir_relative_path(Path(__file__))
 suppress_warnings = ["autoapi"]
 autoapi_python_use_implicit_namespaces = True
 autoapi_keep_files = True
-autoapi_own_page_level = "module"
+autoapi_own_page_level = "class"
 autodoc_typehints = "description"
 
 jinja_contexts = {
