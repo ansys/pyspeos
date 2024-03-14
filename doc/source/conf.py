@@ -94,7 +94,7 @@ source_suffix = ".rst"
 master_doc = "index"
 
 autoapi_type = "python"
-autoapi_dirs = ["../../src"]
+autoapi_dirs = ["../../src/ansys"]
 autoapi_root = "api"
 autoapi_options = [
     "members",
