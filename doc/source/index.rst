@@ -17,7 +17,7 @@ PySpeos documentation |version|
 
     .. grid-item-card:: API reference :fa:`book-bookmark`
         :padding: 2 2 2 2
-        :link: autoapi/index
+        :link: api/index
         :link-type: doc
 
         Understand PySpeos API endpoints, their capabilities,
@@ -29,5 +29,5 @@ PySpeos documentation |version|
    :maxdepth: 3
 
    getting_started/index
-   autoapi/index
+   api/index
 

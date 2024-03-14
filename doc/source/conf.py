@@ -43,6 +43,7 @@ extensions = [
     "numpydoc",
     "sphinx.ext.intersphinx",
     "sphinx_copybutton",
+    "sphinx.ext.autodoc",
     "autoapi.extension",
     "sphinx_design",
     "sphinx_jinja",
@@ -92,12 +93,9 @@ source_suffix = ".rst"
 # The master toctree document.
 master_doc = "index"
 
-# Generate section labels up to four levels deep
-autosectionlabel_maxdepth = 4
-
 autoapi_type = "python"
 autoapi_dirs = ["../../src/ansys"]
-autoapi_root = "autoapi"
+autoapi_root = "api"
 autoapi_options = [
     "members",
     "undoc-members",
@@ -106,11 +104,10 @@ autoapi_options = [
     "special-members",
 ]
 autoapi_template_dir = get_autoapi_templates_dir_relative_path(Path(__file__))
-suppress_warnings = ["autoapi.python_import_resolution", "design.grid"]
-# exclude_patterns = ["_autoapi_templates/index.rst"]
+suppress_warnings = ["autoapi"]
 autoapi_python_use_implicit_namespaces = True
 autoapi_keep_files = True
-
+autoapi_own_page_level = "class"
 autodoc_typehints = "description"
 
 jinja_contexts = {

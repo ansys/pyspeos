@@ -40,9 +40,19 @@ class BodyLink(CrudItem):
     """Link object for body in database."""
 
     def __init__(self, db, key: str):
+        """Create a new link to a body in the database.
+
+        Parameters
+        ----------
+        db : BodyStub
+            Database to link to.
+        key : str
+            Key of the body in the database.
+        """
         super().__init__(db, key)
 
     def __str__(self) -> str:
+        """Return the string representation of the body."""
         return str(self.get())
 
     def get(self) -> Body:
@@ -62,6 +72,11 @@ class BodyStub(CrudStub):
     """
     Database interactions for body.
 
+    Parameters
+    ----------
+    channel : grpc.Channel
+        Channel to use for the stub.
+
     Examples
     --------
 
@@ -72,6 +87,7 @@ class BodyStub(CrudStub):
     """
 
     def __init__(self, channel):
+        """Create a new body stub."""
         super().__init__(stub=service.BodiesManagerStub(channel=channel))
 
     def create(self, message: Body) -> BodyLink:
@@ -105,30 +121,29 @@ class BodyStub(CrudStub):
 
 
 class BodyFactory:
-    """Class to help creating Body message"""
+    """Class to help creating Body message
+
+    Parameters
+    ----------
+    name : str
+        Name of the body.
+    faces : List[FaceLink]
+        List of faces composing the body.
+    description : str, optional
+        Description of the body.
+        By default, ``""``.
+    metadata : Mapping[str, str], optional
+        Metadata of the body.
+        By default, ``None``.
+
+    Returns
+    -------
+    Body
+        Body message created.
+    """
 
     def new(name: str, faces: List[FaceLink], description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None) -> Body:
-        """
-        Create a Body message.
-
-        Parameters
-        ----------
-        name : str
-            Name of the body.
-        faces : List[FaceLink]
-            List of faces composing the body.
-        description : str, optional
-            Description of the body.
-            By default, ``""``.
-        metadata : Mapping[str, str], optional
-            Metadata of the body.
-            By default, ``None``.
-
-        Returns
-        -------
-        Body
-            Body message created.
-        """
+        """Create a Body message."""
         body = Body(name=name, description=description)
         if metadata is not None:
             body.metadata.update(metadata)

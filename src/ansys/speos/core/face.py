@@ -36,7 +36,15 @@ Face.__str__ = lambda self: protobuf_message_to_str(self)
 
 
 class FaceLink(CrudItem):
-    """Link object for job in database."""
+    """Link object for job in database.
+
+    Parameters
+    ----------
+    db : FaceStub
+        Database to link to.
+    key : str
+        Key of the face in the database.
+    """
 
     def __init__(self, db, key: str):
         super().__init__(db, key)
