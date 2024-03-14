@@ -110,20 +110,6 @@ autoapi_keep_files = True
 autoapi_own_page_level = "module"
 autodoc_typehints = "description"
 
-
-def prepare_jinja_env(jinja_env) -> None:
-    """
-    Customize the jinja env.
-
-    Notes
-    -----
-    See https://jinja.palletsprojects.com/en/3.0.x/api/#jinja2.Environment
-    """
-    jinja_env.globals["project_name"] = project
-
-
-autoapi_prepare_jinja_env = prepare_jinja_env
-
 jinja_contexts = {
     "linux_containers": {},
 }
