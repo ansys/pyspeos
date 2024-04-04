@@ -28,6 +28,7 @@ from ansys.api.speos.part.v1 import part_pb2_grpc as service
 
 from ansys.speos.core.body import BodyLink
 from ansys.speos.core.crud import CrudItem, CrudStub
+from ansys.speos.core.geometry_utils import AxisSystem
 from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 
 Part = messages.Part
@@ -102,10 +103,60 @@ class PartStub(CrudStub):
         return list(map(lambda x: PartLink(self, x), guids))
 
 
+class PartInstanceFactory:
+    """Class to help creating PartInstance message"""
+
+    def new(
+        name: str,
+        part: PartLink,
+        axis_system: Optional[AxisSystem] = AxisSystem(),
+        description: Optional[str] = "",
+        metadata: Optional[Mapping[str, str]] = None,
+    ) -> Part.PartInstance:
+        """
+        Create a PartInstance message.
+
+        Parameters
+        ----------
+        name : str
+            Name of the part instance.
+        part : PartLink
+            Part to be instantiated.
+        axis_system : ansys.speos.core.geometry_utils.AxisSystem, optional
+            Position of the part instance.
+            By default, ``ansys.speos.core.geometry_utils.AxisSystem()``.
+        description : str, optional
+            Description of the part instance.
+            By default, ``""``.
+        metadata : Mapping[str, str], optional
+            Metadata of the part.
+            By default, ``None``.
+
+        Returns
+        -------
+        Part.PartInstance
+            PartInstance message created.
+        """
+        part_instance = Part.PartInstance(name=name, description=description)
+        if metadata is not None:
+            part_instance.metadata.update(metadata)
+
+        part_instance.part_guid = part.key
+        part_instance.axis_system.extend(axis_system.origin + axis_system.x_vect + axis_system.y_vect + axis_system.z_vect)
+
+        return part_instance
+
+
 class PartFactory:
     """Class to help creating Part message"""
 
-    def new(name: str, bodies: List[BodyLink], description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None) -> Part:
+    def new(
+        name: str,
+        bodies: List[BodyLink],
+        parts: List[Part.PartInstance] = [],
+        description: Optional[str] = "",
+        metadata: Optional[Mapping[str, str]] = None,
+    ) -> Part:
         """
         Create a Part message.
 
@@ -115,6 +166,9 @@ class PartFactory:
             Name of the part.
         bodies : List[BodyLink]
             List of all bodies contained in this part.
+        parts : List[Part.PartInstance]
+            List of all parts instantiated in this part.
+            By default, ``[]``.
         description : str, optional
             Description of the part.
             By default, ``""``.
@@ -132,4 +186,6 @@ class PartFactory:
             part.metadata.update(metadata)
         for body in bodies:
             part.body_guids.append(body.key)
+        for part_instance in parts:
+            part.parts.append(part_instance)
         return part

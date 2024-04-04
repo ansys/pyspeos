@@ -26,7 +26,7 @@ Test basic geometry database connection.
 from ansys.speos.core.body import BodyFactory, BodyLink
 from ansys.speos.core.face import FaceFactory, FaceLink
 from ansys.speos.core.geometry_utils import AxisPlane, AxisSystem
-from ansys.speos.core.part import PartFactory
+from ansys.speos.core.part import PartFactory, PartInstanceFactory
 from ansys.speos.core.speos import Speos
 
 
@@ -140,13 +140,23 @@ def test_part_factory(speos: Speos):
     # Part by referencing directly BodyLinks
     part1 = part_db.create(
         message=PartFactory.new(
-            name="part_0",
+            name="part_1",
             description="part with one box as body",
             bodies=[body_db.create(BodyFactory.box(name="box_2", face_stub=face_db, metadata={"key_0": "val_0", "key_1": "val_1"}))],
             metadata={"my_key0": "my_value0", "my_key1": "my_value1"},
         )
     )
     assert part1.key != ""
+
+    part2 = part_db.create(
+        message=PartFactory.new(
+            name="part_2",
+            description="part containing part instance",
+            bodies=[],
+            parts=[PartInstanceFactory.new(name="part_1_instanciated", part=part1, axis_system=AxisSystem(origin=[20.0, 20.0, 20.0]))],
+        )
+    )
+    assert part2.key != ""
 
     for body_key in part1.get().body_guids:
         body = speos.client.get_item(key=body_key)
@@ -156,4 +166,5 @@ def test_part_factory(speos: Speos):
             assert isinstance(face, FaceLink)
             face.delete()
         body.delete()
+    part2.delete()
     part1.delete()
