@@ -73,7 +73,6 @@ jobs:
       - name: Unit testing
         run: |
           pip install .[tests]
-          docker -v
           docker compose up -d
           cd tests  # so we're testing the install, not local
           pytest -vxs
