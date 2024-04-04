@@ -73,7 +73,7 @@ jobs:
       - name: Unit testing
         run: |
           pip install .[tests]
-          docker-compose up -d
+          docker compose up -d
           cd tests  # so we're testing the install, not local
           pytest -vxs
           docker kill speos-rpc
