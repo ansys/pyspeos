@@ -20,6 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from ansys.speos.workflow.modify_speos_simulation.catalog_usage import Catalog, SpeosSimulationMod
 from ansys.speos.workflow.modify_speos_simulation.modify_sensor import (
     CameraSensorProperties,
     PhotometricCameraSensorParameters,
