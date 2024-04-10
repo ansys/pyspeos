@@ -556,6 +556,41 @@ class SpeosSimulationUpdate:
         # Update value in db
         self._scene.set(scene_data)
 
+    def add_irradiance_sensor(self, sensor_parameters: IrradianceSensorParameters, sensor_properties: IrradianceSensorProperties):
+        """
+        Add a irradiance sensor template to the scene with the corresponding properties.
+
+        Parameters
+        ----------
+        sensor_parameters : IrradianceSensorParameters
+            Sensor parameters.
+        sensor_properties : IrradianceSensorProperties
+            Sensor properties.
+        """
+        sensor_template_db = self._speos.client.sensor_templates()
+
+        # Store SensorTemplate protobuf message in db and retrieve SensorTemplateLink
+        sensor_template_link = sensor_template_db.create(message=sensor_parameters.create_template())
+
+        # Retrieve scene datamodel
+        scene_data = self._scene.get()
+
+        # Create camera instance
+        sensor_instance = core.SceneFactory.sensor_instance(
+            name=sensor_template_link.get().name + ".1",
+            sensor_template=sensor_template_link,
+            properties=sensor_properties.create_properties(),
+        )
+
+        # Modify scene datamodel
+        scene_data.sensors.append(sensor_instance)
+
+        if len(scene_data.simulations) > 0:
+            scene_data.simulations[0].ClearField("sensor_paths")
+
+        # Update value in db
+        self._scene.set(scene_data)
+
     def compute(self, job_name="new_job", stop_condition_duration: Optional[int] = None) -> core.JobLink:
         """Compute first simulation.
 
