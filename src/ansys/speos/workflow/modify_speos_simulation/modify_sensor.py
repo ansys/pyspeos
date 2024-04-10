@@ -527,7 +527,7 @@ class SpeosSimulationUpdate:
 
         Parameters
         ----------
-        sensor_template : PhotometricCameraSensorParameters
+        sensor_parameters : PhotometricCameraSensorParameters
             Sensor parameters.
         sensor_properties : CameraSensorProperties
             Sensor properties.
