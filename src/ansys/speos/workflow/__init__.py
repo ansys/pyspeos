@@ -22,6 +22,8 @@
 
 from ansys.speos.workflow.modify_speos_simulation.modify_sensor import (
     CameraSensorProperties,
+    IrradianceSensorParameters,
+    IrradianceSensorProperties,
     PhotometricCameraSensorParameters,
     SpeosSimulationUpdate,
     clean_all_dbs,

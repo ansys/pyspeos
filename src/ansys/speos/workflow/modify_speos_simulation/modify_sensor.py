@@ -120,6 +120,133 @@ def print_progress_bar(
         sys.stdout.flush()
 
 
+class IrradianceSensorParameters:
+    """
+    Irradiance sensor with its parameters.
+
+    name = name of the sensor
+    integration_type
+    type
+    x_range_start
+    x_range_end
+    x_range_sampling
+    y_range_start
+    y_range_end
+    y_range_sampling
+    wavelengths_start
+    wavelengths_end
+    wavelengths_sampling
+    """
+
+    def __init__(self) -> None:
+        self.name = "irradiance sensor"
+        self.integration_type = core.SensorTemplateFactory.IlluminanceType.Planar
+        self.type = core.SensorTemplateFactory.Type.Photometric
+        self.x_range_start = -50
+        self.x_range_end = 50
+        self.x_range_sampling = 100
+        self.y_range_start = -50
+        self.y_range_end = 50
+        self.y_range_sampling = 100
+        self.wavelengths_start = 400
+        self.wavelengths_end = 700
+        self.wavelengths_sampling = 13
+
+    def copy(self):
+        """
+        Copy current object into a new one.
+
+        Returns
+        -------
+        IrradianceSensorParameters
+            Parameters copied.
+        """
+        copied_parameters = IrradianceSensorParameters()
+        copied_parameters.name = self.name
+        copied_parameters.integration_type = self.integration_type
+        copied_parameters.type = self.type
+        copied_parameters.x_range_start = self.x_range_start
+        copied_parameters.x_range_start = self.x_range_start
+        copied_parameters.x_range_sampling = self.x_range_sampling
+        copied_parameters.y_range_start = self.y_range_start
+        copied_parameters.y_range_end = self.y_range_end
+        copied_parameters.y_range_sampling = self.y_range_sampling
+        copied_parameters.wavelengths_start = self.wavelengths_start
+        copied_parameters.wavelengths_end = self.wavelengths_end
+        copied_parameters.wavelengths_sampling = self.wavelengths_sampling
+        return copied_parameters
+
+    def create_template(self) -> core.SensorTemplate:
+        """
+        Create protobuf message SensorTemplate from current object.
+
+        Returns
+        -------
+        core.SensorTemplate
+            Protobuf message created.
+        """
+
+        w_range = None
+        if self.type == core.SensorTemplateFactory.Type.Colorimetric or self.type == core.SensorTemplateFactory.Type.Spectral:
+            w_range = core.SensorTemplateFactory.WavelengthsRange(
+                start=self.wavelengths_start, end=self.wavelengths_end, sampling=self.wavelengths_sampling
+            )
+        return core.SensorTemplateFactory.irradiance(
+            name=self.name,
+            type=self.type,
+            illuminance_type=self.integration_type,
+            dimensions=core.SensorTemplateFactory.Dimensions(
+                x_start=self.x_range_start,
+                x_end=self.x_range_end,
+                x_sampling=self.x_range_sampling,
+                y_start=self.y_range_start,
+                y_end=self.y_range_end,
+                y_sampling=self.y_range_sampling,
+            ),
+            wavelengths_range=w_range,
+        )
+
+
+class IrradianceSensorProperties:
+    """
+    Properties for irradiance sensor.
+
+    origin
+    x_vector
+    y_vector
+    z_vector
+    layer_type: "None", "Source"
+    """
+
+    def __init__(self) -> None:
+        self.origin = []
+        self.x_vector = []
+        self.y_vector = []
+        self.z_vector = []
+        self.layer_type = "None"
+
+    def create_properties(self) -> core.Scene.SensorInstance.IrradianceSensorProperties:
+        """
+        Create protobuf message IrradianceSensorProperties from current object.
+
+        Returns
+        -------
+        core.Scene.SensorInstance.IrradianceSensorProperties
+            Protobuf message created.
+        """
+        irradiance_sensor_axis_system = core.AxisSystem(
+            origin=self.origin, x_vect=self.x_vector, y_vect=self.y_vector, z_vect=self.z_vector
+        )
+
+        layer_type = None
+        if self.layer_type == "Source":
+            layer_type = core.SceneFactory.Properties.Sensor.LayerType.Source
+
+        properties = core.SceneFactory.irradiance_sensor_props(axis_system=irradiance_sensor_axis_system, layer_type=layer_type)
+
+        return properties
+
+
 class PhotometricCameraSensorParameters:
     """
     Photometric camera sensor with its parameters.
