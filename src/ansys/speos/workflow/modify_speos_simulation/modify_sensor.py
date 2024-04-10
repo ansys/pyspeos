@@ -591,6 +591,34 @@ class SpeosSimulationUpdate:
         # Update value in db
         self._scene.set(scene_data)
 
+    def update_sensor_position(self, sensor_name: str, sensor_properties: IrradianceSensorProperties or CameraSensorProperties):
+        """
+        Update sensor position to the scene with the sensor properties.
+
+        Parameters
+        ----------
+        sensor_name : str
+            Sensor name.
+        sensor_properties : IrradianceSensorProperties or CameraSensorProperties
+            Sensor properties.
+        """
+        sensor_properties_type = None
+        if isinstance(sensor_properties, IrradianceSensorProperties):
+            sensor_properties_type = "irradiance_sensor_properties"
+        elif isinstance(sensor_properties, CameraSensorProperties):
+            sensor_properties_type = "camera_sensor_properties"
+
+        sensors_data = self._scene.get()
+        for sensor in sensors_data.sensors:
+            if sensor.name == sensor_name:
+                assert sensor.HasField(sensor_properties_type)
+                getattr(sensor, sensor_properties_type).ClearField("axis_system")
+                getattr(sensor, sensor_properties_type).axis_system.extend(
+                    sensor_properties.origin + sensor_properties.x_vector + sensor_properties.y_vector + sensor_properties.z_vector
+                )
+                getattr(sensor, sensor_properties_type).layer_type_none.SetInParent()
+            self._scene.set(sensors_data)
+
     def compute(self, job_name="new_job", stop_condition_duration: Optional[int] = None) -> core.JobLink:
         """Compute first simulation.
 
