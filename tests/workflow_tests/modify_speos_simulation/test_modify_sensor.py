@@ -22,6 +22,7 @@
 
 import os
 
+import ansys.speos.core as core
 from ansys.speos.core.speos import Speos
 from ansys.speos.workflow.modify_speos_simulation import modify_sensor
 from conftest import test_path
@@ -78,6 +79,57 @@ def test_modify_camera(speos: Speos):
     camera_properties_update.y_vector = [0.0, 1.0, 0.0]
     camera_properties_update.z_vector = [1.0, 0.0, 0.0]
     new_sim.update_sensor_position("FOV_150deg.1", camera_properties_update)
+
+    job_link = new_sim.compute(stop_condition_duration=8)
+    assert job_link.key != ""
+
+    job_link.delete()
+    new_sim.close()
+
+
+def test_modify_irradiance(speos: Speos):
+    # Speos simulation to load
+    simu_name = "LG_50M_Colorimetric_short.sv5"
+    speos_file = os.path.join(test_path, os.path.join(simu_name, simu_name))
+
+    new_sim = modify_sensor.SpeosSimulationUpdate(speos, speos_file)
+
+    irradiance_sensor_list = []
+
+    irradiance_sensor = modify_sensor.IrradianceSensorParameters()
+    irradiance_sensor.name = "Dom Irradiance Sensor New"
+    irradiance_sensor.integration_type = core.SensorTemplateFactory.IlluminanceType.Planar
+    irradiance_sensor.type = core.SensorTemplateFactory.Type.Spectral
+    irradiance_sensor.wavelengths_start = 400
+    irradiance_sensor.wavelengths_end = 700
+    irradiance_sensor.wavelengths_sampling = 25
+    irradiance_sensor.x_range_start = -20
+    irradiance_sensor.x_range_end = 20
+    irradiance_sensor.x_range_sampling = 500
+    irradiance_sensor.y_range_start = -20
+    irradiance_sensor.y_range_end = 20
+    irradiance_sensor.y_range_sampling = 500
+    irradiance_sensor_list.append(irradiance_sensor)
+
+    irradiance_sensor = irradiance_sensor.copy()
+    irradiance_sensor.name = "Dom Irradiance Sensor Update"
+    irradiance_sensor_list.append(irradiance_sensor)
+
+    irradiance_properties = modify_sensor.IrradianceSensorProperties()
+    irradiance_properties.origin = [-42, 5, 5]
+    irradiance_properties.x_vector = [0.0, 1.0, 0.0]
+    irradiance_properties.y_vector = [0.0, 0.0, -1.0]
+    irradiance_properties.z_vector = [1.0, 0.0, 0.0]
+
+    for sensor in irradiance_sensor_list:
+        new_sim.add_camera_sensor(sensor, irradiance_properties)
+
+    irradiance_properties_update = modify_sensor.IrradianceSensorProperties()
+    irradiance_properties_update.origin = [-45, 5, 5]
+    irradiance_properties_update.x_vector = [0.0, 1.0, 0.0]
+    irradiance_properties_update.y_vector = [0.0, 0.0, -1.0]
+    irradiance_properties_update.z_vector = [1.0, 0.0, 0.0]
+    new_sim.update_sensor_position("Dom Irradiance Sensor Update.1", irradiance_properties_update)
 
     job_link = new_sim.compute(stop_condition_duration=8)
     assert job_link.key != ""
