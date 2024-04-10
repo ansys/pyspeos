@@ -72,6 +72,13 @@ def test_modify_camera(speos: Speos):
     for camera_sensor in camera_sensor_list:
         new_sim.add_camera_sensor(camera_sensor, camera_properties)
 
+    camera_properties_update = modify_sensor.CameraSensorProperties()
+    camera_properties_update.origin = [20, 10, 15]
+    camera_properties_update.x_vector = [0.0, 0.0, -1.0]
+    camera_properties_update.y_vector = [0.0, 1.0, 0.0]
+    camera_properties_update.z_vector = [1.0, 0.0, 0.0]
+    new_sim.update_sensor_position("FOV_150deg.1", camera_properties_update)
+
     job_link = new_sim.compute(stop_condition_duration=8)
     assert job_link.key != ""
 
