@@ -530,9 +530,10 @@ class SpeosSimulationUpdate:
         ".speos" simulation file name.
     """
 
-    def __init__(self, speos: core.Speos, file_name: str):
+    def __init__(self, speos: core.Speos, file_name: str, clean_dbs: bool = True):
         self._speos = speos
-        clean_all_dbs(self._speos.client)
+        if clean_dbs:
+            clean_all_dbs(self._speos.client)
 
         self._scene = self._speos.client.scenes().create()
         self._status = ""
