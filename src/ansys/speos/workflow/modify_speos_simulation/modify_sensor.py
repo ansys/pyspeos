@@ -124,6 +124,39 @@ def print_progress_bar(
         sys.stdout.flush()
 
 
+class PositionProperties:
+    """
+    Properties Position in 3D space.
+
+    origin
+    x_vector
+    y_vector
+    z_vector
+    """
+
+    def __init__(self) -> None:
+        self.origin = []
+        self.x_vector = []
+        self.y_vector = []
+        self.z_vector = []
+
+    def copy(self):
+        """
+        Copy current object into a new one.
+
+        Returns
+        -------
+        PositionProperties
+            Parameters copied.
+        """
+        copied_parameters = PositionProperties()
+        copied_parameters.origin = self.origin
+        copied_parameters.x_vector = self.x_vector
+        copied_parameters.y_vector = self.y_vector
+        copied_parameters.z_vector = self.z_vector
+        return copied_parameters
+
+
 class IrradianceSensorParameters:
     """
     Irradiance sensor with its parameters.
@@ -211,7 +244,7 @@ class IrradianceSensorParameters:
         )
 
 
-class IrradianceSensorProperties:
+class IrradianceSensorProperties(PositionProperties):
     """
     Properties for irradiance sensor.
 
@@ -223,10 +256,7 @@ class IrradianceSensorProperties:
     """
 
     def __init__(self) -> None:
-        self.origin = []
-        self.x_vector = []
-        self.y_vector = []
-        self.z_vector = []
+        super().__init__()
         self.layer_type = "None"
 
     def create_properties(self) -> core.Scene.SensorInstance.IrradianceSensorProperties:
@@ -445,7 +475,7 @@ class PhotometricCameraSensorParameters:
         return sensor_t_data
 
 
-class CameraSensorProperties:
+class CameraSensorProperties(PositionProperties):
     """
     Properties for camera sensor.
 
@@ -458,10 +488,7 @@ class CameraSensorProperties:
     """
 
     def __init__(self) -> None:
-        self.origin = []
-        self.x_vector = []
-        self.y_vector = []
-        self.z_vector = []
+        super().__init__()
         self.trajectory_file = ""
         self.layer_type = "None"
 
