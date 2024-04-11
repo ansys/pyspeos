@@ -26,6 +26,8 @@ from typing import Optional
 
 from ansys.api.speos.job.v2 import job_pb2
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2
+import numpy as np
+import pyvista as pv
 
 import ansys.speos.core as core
 
@@ -520,6 +522,62 @@ class SpeosSimulationUpdate:
     def status(self) -> str:
         """The status."""
         return self._status
+
+    def preview(self):
+        """preview cad bodies inside the scene."""
+
+        p = pv.Plotter()
+        if self._preview_mesh is not None and self._modified is False:
+            p.add_mesh(self._preview_mesh, show_edges=True)
+            p.show()
+            return
+        root_part_data = self._speos.client.get_item(self._scene.get().part_guid).get()
+        if len(root_part_data.parts) != 0:
+            for part_idx, part_item in enumerate(root_part_data.parts):
+                part_item_data = self._speos.client.get_item(part_item.part_guid).get()
+                if self._preview_mesh is None:
+                    self._preview_mesh = self.__extract_part_mesh_info(part_item_data)
+                else:
+                    self._preview_mesh = self._preview_mesh.append_polydata(self.__extract_part_mesh_info(part_item_data))
+        else:
+            self._preview_mesh = self.__extract_part_mesh_info(root_part_data)
+        self._modified = False
+        p.add_mesh(self._preview_mesh, show_edges=True)
+        p.show()
+
+    def __extract_part_mesh_info(self, part_data: part_pb2) -> pv.PolyData:
+        """
+        extract mesh data info from a part.
+
+        Parameters
+        ----------
+        part_data: ansys.api.speos.part.v1.part_pb2
+            Part from scene.
+
+        Returns
+        -------
+        pv.PolyData
+            mesh data extracted.
+
+        """
+        part_mesh_info = None
+        for body_idx, body_guid in enumerate(part_data.body_guids):
+            body_item_data = self._speos.client.get_item(body_guid).get()
+            for face_idx, face_guid in enumerate(body_item_data.face_guids):
+                face_item_data = self._speos.client.get_item(face_guid).get()
+                vertices = np.array(face_item_data.vertices)
+                facets = np.array(face_item_data.facets)
+                vertices = vertices.reshape(-1, 3)
+                facets = facets.reshape(-1, 3)
+                temp = np.full(facets.shape[0], 3)
+                temp = np.vstack(temp)
+                facets = np.hstack((temp, facets))
+                face_mesh_data = pv.PolyData(vertices, facets)
+                if part_mesh_info is None:
+                    part_mesh_info = face_mesh_data
+                else:
+                    part_mesh_info = part_mesh_info.append_polydata(face_mesh_data)
+        return part_mesh_info
 
     def add_camera_sensor(self, sensor_parameters: PhotometricCameraSensorParameters, sensor_properties: CameraSensorProperties):
         """
