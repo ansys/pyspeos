@@ -701,6 +701,95 @@ class SpeosSimulationUpdate:
                     sensor.camera_sensor_properties.layer_type_none.SetInParent()
             self._scene.set(scene_data)
 
+    def update_scene_part_position(self, new_part_positions: {str: PositionProperties}):
+        """
+        update component position with given dictionary of component_part name with corresponding position.
+
+        Parameters
+        ----------
+        new_part_positions: {str: PositionProperties}
+            dictionary with key of component_part name and value of corresponding position
+        """
+        root_part = self._speos.client.get_item(self._scene.get().part_guid)
+        root_part_data = root_part.get()
+        assert len(root_part_data.parts) != 0
+        for part_item in root_part_data.parts:
+            if part_item.name in new_part_positions:
+                print("Update {} position".format(part_item.name))
+                position_properties = new_part_positions[part_item.name]
+                part_item.ClearField("axis_system")
+                part_item.axis_system.extend(
+                    position_properties.origin + position_properties.x_vector + position_properties.y_vector + position_properties.z_vector
+                )
+        root_part.set(root_part_data)
+        self._modified = True
+
+    def add_scene(self, simulation_scene: "SpeosSimulationUpdate", position_info: PositionProperties):
+        """
+        assemble simulation scene into an assembly scene.
+
+        Parameters
+        ----------
+        simulation_scene: SpeosSimulationUpdate
+            simulation scene
+        position_info: PositionProperties
+            position information x, y, z, axis-x, axis-y, axis-z
+        """
+        new_part_instance = core.Part.PartInstance()
+        new_part_instance.name = simulation_scene.scene.get().name
+        new_part_instance.part_guid = simulation_scene.scene.get().part_guid
+        new_part_instance.axis_system.extend(
+            position_info.origin + position_info.x_vector + position_info.y_vector + position_info.z_vector
+        )
+        self._part.parts.append(new_part_instance)
+
+        part_link = self._speos.client.parts().create(message=self._part)
+        data = self._scene.get()
+        self.__adapt_sops(simulation_scene, data)
+        self.__adapt_sources(simulation_scene, data)
+        data.part_guid = part_link.key
+        self._scene.set(data)
+        self._modified = True
+
+    def __adapt_sops(self, simulation_scene: "SpeosSimulationUpdate", data: scene_pb2.Scene):
+        """
+        adapt sops geometry path on the inserted scene.
+
+        Parameters
+        ----------
+        simulation_scene: SpeosSimulationUpdate
+            simulation scene
+        data: ansys.api.speos.scene.v1.scene_pb2.Scene
+            scene data
+        """
+        adapt_path_name = simulation_scene.scene.get().name
+        for sop in simulation_scene.scene.get().sops:
+            new_sop = core.Scene.SOPInstance()
+            new_sop.CopyFrom(sop)
+            new_sop.geometries.Clear()
+            for g_path in sop.geometries.geo_paths:
+                g_path = adapt_path_name + "/" + g_path
+                new_sop.geometries.geo_paths.append(g_path)
+            data.sops.append(new_sop)
+
+    def __adapt_sources(self, simulation_scene: "SpeosSimulationUpdate", data: scene_pb2.Scene):
+        """
+        adapt sources geometry path on the inserted scene.
+
+        Parameters
+        ----------
+        simulation_scene: SpeosSimulationUpdate
+            simulation scene
+        data: ansys.api.speos.scene.v1.scene_pb2.Scene
+            scene data
+        """
+        adapt_path_name = simulation_scene.scene.get().name
+        for src in simulation_scene.scene.get().sources:
+            if src.surface_properties.HasField("exitance_constant_properties"):
+                for g in src.surface_properties.exitance_constant_properties.geo_paths:
+                    g.geo_path = adapt_path_name + "/" + g.geo_path
+                data.sources.append(src)
+
     def compute(self, job_name="new_job", stop_condition_duration: Optional[int] = None) -> core.JobLink:
         """Compute first simulation.
 
