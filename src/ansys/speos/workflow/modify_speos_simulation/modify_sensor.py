@@ -507,6 +507,9 @@ class SpeosSimulationUpdate:
 
         self._scene = self._speos.client.scenes().create()
         self._status = ""
+        self._modified = False
+        self._preview_mesh = None
+        self._part = core.Part()
 
         # Create empty scene and load file
         self._scene.load_file(file_uri=file_name)
