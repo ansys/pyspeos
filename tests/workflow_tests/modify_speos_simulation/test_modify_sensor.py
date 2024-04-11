@@ -142,3 +142,42 @@ def test_modify_irradiance(speos: Speos):
 
     job_link.delete()
     new_sim.close()
+
+
+def test_modify_scene(speos: Speos):
+    # Speos simulation to load
+    simu_name_1 = "Inverse_SeveralSensors.speos"
+    speos_file_1 = os.path.join(test_path, os.path.join(simu_name_1, simu_name_1))
+    simu_name_2 = "LG_50M_Colorimetric_short.sv5"
+    speos_file_2 = os.path.join(test_path, os.path.join(simu_name_2, simu_name_2))
+
+    sim_1 = modify_sensor.SpeosSimulationUpdate(speos, speos_file_1)
+    sim_2 = modify_sensor.SpeosSimulationUpdate(speos, speos_file_2)
+
+    sim_2_position = modify_sensor.PositionProperties()
+    sim_2_position.origin = [0.0, 0.0, 0.0]
+    sim_2_position.x_vector = [1.0, 0.0, 0.0]
+    sim_2_position.y_vector = [0.0, 1.0, 0.0]
+    sim_2_position.z_vector = [0.0, 0.0, 1.0]
+
+    sim_1.add_scene(sim_2, sim_2_position)
+    job_link = sim_1.compute(stop_condition_duration=8)
+    assert job_link.key != ""
+
+    sim_2_position_update = sim_2_position.copy()
+    sim_2_position_update.origin = [1.0, 0.0, 0.0]
+    sim_2_position_update.x_vector = [1.0, 0.0, 0.0]
+    sim_2_position_update.y_vector = [0.0, 1.0, 0.0]
+    sim_2_position_update.z_vector = [0.0, 0.0, 1.0]
+
+    sim_1.add_scene(sim_2, sim_2_position)
+    new_body_positions = {
+        "LG_50M_Colorimetric_short": sim_2_position_update,
+    }
+    sim_1.update_scene_part_position(new_part_positions=new_body_positions)
+    job_link = sim_1.compute(stop_condition_duration=8)
+    assert job_link.key != ""
+
+    job_link.delete()
+    sim_1.close()
+    sim_2.close()
