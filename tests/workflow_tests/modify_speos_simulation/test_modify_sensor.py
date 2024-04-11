@@ -151,8 +151,8 @@ def test_modify_scene(speos: Speos):
     simu_name_2 = "LG_50M_Colorimetric_short.sv5"
     speos_file_2 = os.path.join(test_path, os.path.join(simu_name_2, simu_name_2))
 
-    sim_1 = modify_sensor.SpeosSimulationUpdate(speos, speos_file_1)
-    sim_2 = modify_sensor.SpeosSimulationUpdate(speos, speos_file_2)
+    sim_1 = modify_sensor.SpeosSimulationUpdate(speos, speos_file_1, clean_dbs=False)
+    sim_2 = modify_sensor.SpeosSimulationUpdate(speos, speos_file_2, clean_dbs=False)
 
     sim_2_position = modify_sensor.PositionProperties()
     sim_2_position.origin = [0.0, 0.0, 0.0]
