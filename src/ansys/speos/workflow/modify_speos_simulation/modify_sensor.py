@@ -591,33 +591,54 @@ class SpeosSimulationUpdate:
         # Update value in db
         self._scene.set(scene_data)
 
-    def update_sensor_position(self, sensor_name: str, sensor_properties: IrradianceSensorProperties or CameraSensorProperties):
+    def update_sensor(
+        self,
+        template_parameters: IrradianceSensorParameters or PhotometricCameraSensorParameters,
+        template_properties: IrradianceSensorProperties or CameraSensorProperties,
+    ):
         """
-        Update sensor position to the scene with the sensor properties.
+        Update sensor to the scene with the sensor parameter and properties.
 
         Parameters
         ----------
-        sensor_name : str
-            Sensor name.
-        sensor_properties : IrradianceSensorProperties or CameraSensorProperties
+        template_parameters : IrradianceSensorParameters or PhotometricCameraSensorParameters,
+            Sensor parameters.
+        template_properties : IrradianceSensorProperties or CameraSensorProperties
             Sensor properties.
         """
-        sensor_properties_type = None
-        if isinstance(sensor_properties, IrradianceSensorProperties):
-            sensor_properties_type = "irradiance_sensor_properties"
-        elif isinstance(sensor_properties, CameraSensorProperties):
-            sensor_properties_type = "camera_sensor_properties"
+        if isinstance(template_parameters, IrradianceSensorParameters) and isinstance(template_properties, IrradianceSensorProperties):
+            ssr_template = template_parameters.create_template()
+            ssr = self._speos.client.sensor_templates().create(message=ssr_template)
 
-        sensors_data = self._scene.get()
-        for sensor in sensors_data.sensors:
-            if sensor.name == sensor_name:
-                assert sensor.HasField(sensor_properties_type)
-                getattr(sensor, sensor_properties_type).ClearField("axis_system")
-                getattr(sensor, sensor_properties_type).axis_system.extend(
-                    sensor_properties.origin + sensor_properties.x_vector + sensor_properties.y_vector + sensor_properties.z_vector
-                )
-                getattr(sensor, sensor_properties_type).layer_type_none.SetInParent()
-            self._scene.set(sensors_data)
+            scene_data = self._scene.get()
+            for sensor in scene_data.sensors:
+                if sensor.name == template_parameters.name + ".1":
+                    sensor.sensor_guid = ssr.key
+                    sensor.irradiance_sensor_properties.ClearField("axis_system")
+                    sensor.irradiance_sensor_properties.axis_system.extend(
+                        template_properties.origin
+                        + template_properties.x_vector
+                        + template_properties.y_vector
+                        + template_properties.z_vector
+                    )
+                    sensor.irradiance_sensor_properties.layer_type_none.SetInParent()
+            self._scene.set(scene_data)
+        elif isinstance(template_parameters, PhotometricCameraSensorParameters) and isinstance(template_properties, CameraSensorProperties):
+            ssr_template = template_parameters.create_template()
+            ssr = self._speos.client.sensor_templates().create(message=ssr_template)
+            scene_data = self._scene.get()
+            for sensor in scene_data.sensors:
+                if sensor.name == template_parameters.name + ".1":
+                    sensor.sensor_guid = ssr.key
+                    sensor.camera_sensor_properties.ClearField("axis_system")
+                    sensor.camera_sensor_properties.axis_system.extend(
+                        template_properties.origin
+                        + template_properties.x_vector
+                        + template_properties.y_vector
+                        + template_properties.z_vector
+                    )
+                    sensor.camera_sensor_properties.layer_type_none.SetInParent()
+            self._scene.set(scene_data)
 
     def compute(self, job_name="new_job", stop_condition_duration: Optional[int] = None) -> core.JobLink:
         """Compute first simulation.
