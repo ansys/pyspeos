@@ -25,6 +25,8 @@ import time
 from typing import Optional
 
 from ansys.api.speos.job.v2 import job_pb2
+from ansys.api.speos.part.v1 import part_pb2
+from ansys.api.speos.scene.v1 import scene_pb2
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2
 import numpy as np
 import pyvista as pv
