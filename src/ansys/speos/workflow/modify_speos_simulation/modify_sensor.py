@@ -820,17 +820,23 @@ class SpeosSimulationUpdate:
                     g.geo_path = adapt_path_name + "/" + g.geo_path
                 data.sources.append(src)
 
-    def compute(self, job_name="new_job", stop_condition_duration: Optional[int] = None) -> core.JobLink:
+    def compute(
+        self, job_name="new_job", stop_condition_duration: Optional[int] = None, compute_type: Optional[str] = "cpu"
+    ) -> core.JobLink:
         """Compute first simulation.
 
         Parameters
         ----------
+
         job_name : str
             Name of the job.
             By default, ``"new_job"``.
         stop_condition_duration : int, optional
             Duration in s to be used as stop condition.
             By default, ``None``.
+        compute_type: str, optional
+            compute using CPU or GPU
+            by default, "cpu"
 
         Returns
         -------
@@ -856,12 +862,15 @@ class SpeosSimulationUpdate:
         if props is None:
             raise KeyError(core.SimulationTemplateLink)
 
+        compute_type = core.JobFactory.Type.CPU if compute_type.lower() == "cpu" else core.JobFactory.Type.GPU
+
         new_job = self._speos.client.jobs().create(
             message=core.JobFactory.new(
                 name=job_name,
                 scene=self._scene,
                 simulation_path=scene_data.simulations[0].name,
                 properties=props,
+                type=compute_type,
             )
         )
 
