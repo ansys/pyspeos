@@ -569,16 +569,18 @@ class SpeosSimulationUpdate:
             for part_idx, part_item in enumerate(root_part_data.parts):
                 part_item_data = self._speos.client.get_item(part_item.part_guid).get()
                 if self._preview_mesh is None:
-                    self._preview_mesh = self.__extract_part_mesh_info(part_item_data)
+                    self._preview_mesh = self.__extract_part_mesh_info(part_item_data, part_item.axis_system)
                 else:
-                    self._preview_mesh = self._preview_mesh.append_polydata(self.__extract_part_mesh_info(part_item_data))
+                    self._preview_mesh = self._preview_mesh.append_polydata(
+                        self.__extract_part_mesh_info(part_item_data, part_item.axis_system)
+                    )
         else:
             self._preview_mesh = self.__extract_part_mesh_info(root_part_data)
         self._modified = False
         p.add_mesh(self._preview_mesh, show_edges=True)
         p.show()
 
-    def __extract_part_mesh_info(self, part_data: part_pb2) -> pv.PolyData:
+    def __extract_part_mesh_info(self, part_data: part_pb2, part_coordinate_info=None) -> pv.PolyData:
         """
         extract mesh data info from a part.
 
@@ -593,6 +595,39 @@ class SpeosSimulationUpdate:
             mesh data extracted.
 
         """
+
+        def local2absolute(local_vertice: np.ndarray) -> np.ndarray:
+            """
+            convert local coordinate to global coordinate.
+
+            Parameters
+            ----------
+            local_vertice: np.ndarray
+                numpy array includes x, y, z info.
+
+            Returns
+            -------
+            np.ndarray
+             numpy array includes x, y, z info
+
+            """
+            global_origin = np.array(part_coordinate.origin)
+            global_x = np.array(part_coordinate.x_vector) * local_vertice[0]
+            global_y = np.array(part_coordinate.y_vector) * local_vertice[1]
+            global_z = np.array(part_coordinate.z_vector) * local_vertice[2]
+            return global_origin + global_x + global_y + global_z
+
+        part_coordinate = PositionProperties()
+        part_coordinate.origin = [0.0, 0.0, 0.0]
+        part_coordinate.x_vector = [1.0, 0.0, 0.0]
+        part_coordinate.y_vector = [0.0, 1.0, 0.0]
+        part_coordinate.z_vector = [0.0, 0.0, 1.0]
+        if part_coordinate_info is not None:
+            part_coordinate.origin = part_coordinate_info[:3]
+            part_coordinate.x_vector = part_coordinate_info[3:6]
+            part_coordinate.y_vector = part_coordinate_info[6:9]
+            part_coordinate.z_vector = part_coordinate_info[9:]
+        print(part_coordinate.origin, part_coordinate.x_vector, part_coordinate.y_vector, part_coordinate.z_vector)
         part_mesh_info = None
         for body_idx, body_guid in enumerate(part_data.body_guids):
             body_item_data = self._speos.client.get_item(body_guid).get()
@@ -601,6 +636,7 @@ class SpeosSimulationUpdate:
                 vertices = np.array(face_item_data.vertices)
                 facets = np.array(face_item_data.facets)
                 vertices = vertices.reshape(-1, 3)
+                vertices = np.array([local2absolute(vertice) for vertice in vertices])
                 facets = facets.reshape(-1, 3)
                 temp = np.full(facets.shape[0], 3)
                 temp = np.vstack(temp)
@@ -649,7 +685,7 @@ class SpeosSimulationUpdate:
 
     def add_irradiance_sensor(self, sensor_parameters: IrradianceSensorParameters, sensor_properties: IrradianceSensorProperties):
         """
-        Add a irradiance sensor template to the scene with the corresponding properties.
+        Add an irradiance sensor template to the scene with the corresponding properties.
 
         Parameters
         ----------
