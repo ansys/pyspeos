@@ -128,7 +128,7 @@ class PhotometricCameraSensorParameters:
     focal_length
     imager_distance
     f_number
-    distorsion_file
+    distortion_file
     transmittance_file
     horizontal_pixel
     vertical_pixel
@@ -154,7 +154,7 @@ class PhotometricCameraSensorParameters:
         self.imager_distance = 10
         self.f_number = 20
 
-        self.distorsion_file = ""
+        self.distortion_file = ""
         self.transmittance_file = ""
 
         self.horizontal_pixel = 640
@@ -201,7 +201,7 @@ class PhotometricCameraSensorParameters:
         copied_parameters.imager_distance = self.imager_distance
         copied_parameters.f_number = self.f_number
 
-        copied_parameters.distorsion_file = self.distorsion_file
+        copied_parameters.distortion_file = self.distortion_file
         copied_parameters.transmittance_file = self.transmittance_file
 
         copied_parameters.horizontal_pixel = self.horizontal_pixel
@@ -244,7 +244,7 @@ class PhotometricCameraSensorParameters:
         """
         sensor_t_data = core.SensorTemplate(name=self.name)
 
-        sensor_t_data.camera_sensor_template.distorsion_file_uri = self.distorsion_file
+        sensor_t_data.camera_sensor_template.distorsion_file_uri = self.distortion_file
         sensor_t_data.camera_sensor_template.sensor_mode_photometric.transmittance_file_uri = self.transmittance_file
 
         sensor_t_data.camera_sensor_template.focal_length = self.focal_length

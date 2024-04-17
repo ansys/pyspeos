@@ -367,7 +367,7 @@ class SensorTemplateFactory:
 
     def camera(
         name: str,
-        distorsion_file_uri: str,
+        distortion_file_uri: str,
         transmittance_file_uri: str,
         spectrum_file_uris: List[str],
         settings: Optional[CameraSettings] = CameraSettings(),
@@ -384,7 +384,7 @@ class SensorTemplateFactory:
         ----------
         name : str
             Name of the sensor template.
-        distorsion_file_uri : str
+        distortion_file_uri : str
             Optical aberration that deforms and bend straight lines. The distortion is expressed in a .OPTDistortion file.
         transmittance_file_uri : str
             Amount of light of the source that passes through the lens and reaches the sensor.
@@ -470,7 +470,7 @@ class SensorTemplateFactory:
         ssr.camera_sensor_template.focal_length = settings.focal_length
         ssr.camera_sensor_template.imager_distance = settings.imager_distance
         ssr.camera_sensor_template.f_number = settings.f_number
-        ssr.camera_sensor_template.distorsion_file_uri = distorsion_file_uri
+        ssr.camera_sensor_template.distorsion_file_uri = distortion_file_uri
 
         ssr.camera_sensor_template.horz_pixel = dimensions.horz_pixel
         ssr.camera_sensor_template.vert_pixel = dimensions.vert_pixel
