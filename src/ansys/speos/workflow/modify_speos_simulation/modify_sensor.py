@@ -627,7 +627,6 @@ class SpeosSimulationUpdate:
             part_coordinate.x_vector = part_coordinate_info[3:6]
             part_coordinate.y_vector = part_coordinate_info[6:9]
             part_coordinate.z_vector = part_coordinate_info[9:]
-        print(part_coordinate.origin, part_coordinate.x_vector, part_coordinate.y_vector, part_coordinate.z_vector)
         part_mesh_info = None
         for body_idx, body_guid in enumerate(part_data.body_guids):
             body_item_data = self._speos.client.get_item(body_guid).get()
