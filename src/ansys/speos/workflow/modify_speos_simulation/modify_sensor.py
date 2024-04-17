@@ -837,7 +837,7 @@ class SpeosSimulationUpdate:
                 new_sop.geometries.geo_paths.append(g_path)
             data.sops.append(new_sop)
 
-    def __adapt_sources(self, simulation_scene: "SpeosSimulationUpdate", data: scene_pb2.Scene):
+    def __adapt_sources(self, simulation_scene: SpeosSimulationUpdate, data: scene_pb2.Scene):
         """
         adapt sources geometry path on the inserted scene.
 
