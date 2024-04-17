@@ -367,7 +367,7 @@ class SensorTemplateFactory:
 
     def camera(
         name: str,
-        distorsion_file_uri: str,
+        distortion_file_uri: str,
         transmittance_file_uri: str,
         spectrum_file_uris: List[str],
         settings: Optional[CameraSettings] = CameraSettings(),
@@ -470,7 +470,7 @@ class SensorTemplateFactory:
         ssr.camera_sensor_template.focal_length = settings.focal_length
         ssr.camera_sensor_template.imager_distance = settings.imager_distance
         ssr.camera_sensor_template.f_number = settings.f_number
-        ssr.camera_sensor_template.distorsion_file_uri = distorsion_file_uri
+        ssr.camera_sensor_template.distorsion_file_uri = distortion_file_uri
 
         ssr.camera_sensor_template.horz_pixel = dimensions.horz_pixel
         ssr.camera_sensor_template.vert_pixel = dimensions.vert_pixel
