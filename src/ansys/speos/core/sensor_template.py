@@ -384,7 +384,7 @@ class SensorTemplateFactory:
         ----------
         name : str
             Name of the sensor template.
-        distorsion_file_uri : str
+        distortion_file_uri : str
             Optical aberration that deforms and bend straight lines. The distortion is expressed in a .OPTDistortion file.
         transmittance_file_uri : str
             Amount of light of the source that passes through the lens and reaches the sensor.
