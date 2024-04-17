@@ -20,6 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from __future__ import annotations
+
 import sys
 import time
 from typing import Optional
@@ -28,6 +30,7 @@ from ansys.api.speos.job.v2 import job_pb2
 from ansys.api.speos.part.v1 import part_pb2
 from ansys.api.speos.scene.v1 import scene_pb2
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2
+import google.protobuf.pyext._message
 import numpy as np
 import pyvista as pv
 
@@ -135,12 +138,12 @@ class PositionProperties:
     """
 
     def __init__(self) -> None:
-        self.origin = []
-        self.x_vector = []
-        self.y_vector = []
-        self.z_vector = []
+        self.origin = [0.0, 0.0, 0.0]
+        self.x_vector = [1.0, 0.0, 0.0]
+        self.y_vector = [0.0, 1.0, 0.0]
+        self.z_vector = [0.0, 0.0, 1.0]
 
-    def copy(self):
+    def copy(self) -> PositionProperties:
         """
         Copy current object into a new one.
 
@@ -189,7 +192,7 @@ class IrradianceSensorParameters:
         self.wavelengths_end = 700
         self.wavelengths_sampling = 13
 
-    def copy(self):
+    def copy(self) -> IrradianceSensorParameters:
         """
         Copy current object into a new one.
 
@@ -248,10 +251,7 @@ class IrradianceSensorProperties(PositionProperties):
     """
     Properties for irradiance sensor.
 
-    origin
-    x_vector
-    y_vector
-    z_vector
+    PositionProperties
     layer_type: "None", "Source"
     """
 
@@ -345,7 +345,7 @@ class PhotometricCameraSensorParameters:
         self.wavelengths_end = 700
         self.wavelengths_sampling = 13
 
-    def copy(self):
+    def copy(self) -> PhotometricCameraSensorParameters:
         """
         Copy current object into a new one.
 
@@ -479,10 +479,7 @@ class CameraSensorProperties(PositionProperties):
     """
     Properties for camera sensor.
 
-    origin
-    x_vector
-    y_vector
-    z_vector
+    PositionProperties
     trajectory_file
     layer_type: "None", "Source"
     """
@@ -556,7 +553,7 @@ class SpeosSimulationUpdate:
         """The status."""
         return self._status
 
-    def preview(self):
+    def preview(self) -> None:
         """preview cad bodies inside the scene."""
 
         p = pv.Plotter()
@@ -580,7 +577,9 @@ class SpeosSimulationUpdate:
         p.add_mesh(self._preview_mesh, show_edges=True)
         p.show()
 
-    def __extract_part_mesh_info(self, part_data: part_pb2, part_coordinate_info=None) -> pv.PolyData:
+    def __extract_part_mesh_info(
+        self, part_data: part_pb2, part_coordinate_info: google.protobuf.pyext._message.RepeatedScalarContainer = None
+    ) -> pv.PolyData:
         """
         extract mesh data info from a part.
 
@@ -588,7 +587,8 @@ class SpeosSimulationUpdate:
         ----------
         part_data: ansys.api.speos.part.v1.part_pb2
             Part from scene.
-
+        part_coordinate_info: google.protobuf.pyext._message.RepeatedScalarContainer
+            message contains part coordinate info: origin, x_vector, y_vector, z_vector
         Returns
         -------
         pv.PolyData
@@ -647,7 +647,7 @@ class SpeosSimulationUpdate:
                     part_mesh_info = part_mesh_info.append_polydata(face_mesh_data)
         return part_mesh_info
 
-    def add_camera_sensor(self, sensor_parameters: PhotometricCameraSensorParameters, sensor_properties: CameraSensorProperties):
+    def add_camera_sensor(self, sensor_parameters: PhotometricCameraSensorParameters, sensor_properties: CameraSensorProperties) -> None:
         """
         Add a camera sensor template to the scene with the corresponding properties.
 
@@ -682,7 +682,7 @@ class SpeosSimulationUpdate:
         # Update value in db
         self._scene.set(scene_data)
 
-    def add_irradiance_sensor(self, sensor_parameters: IrradianceSensorParameters, sensor_properties: IrradianceSensorProperties):
+    def add_irradiance_sensor(self, sensor_parameters: IrradianceSensorParameters, sensor_properties: IrradianceSensorProperties) -> None:
         """
         Add an irradiance sensor template to the scene with the corresponding properties.
 
@@ -721,7 +721,7 @@ class SpeosSimulationUpdate:
         self,
         template_parameters: IrradianceSensorParameters or PhotometricCameraSensorParameters,
         template_properties: IrradianceSensorProperties or CameraSensorProperties,
-    ):
+    ) -> None:
         """
         Update sensor to the scene with the sensor parameter and properties.
 
@@ -766,7 +766,7 @@ class SpeosSimulationUpdate:
                     sensor.camera_sensor_properties.layer_type_none.SetInParent()
             self._scene.set(scene_data)
 
-    def update_scene_part_position(self, new_part_positions: {str: PositionProperties}):
+    def update_scene_part_position(self, new_part_positions: {str: PositionProperties}) -> None:
         """
         update component position with given dictionary of component_part name with corresponding position.
 
@@ -789,7 +789,7 @@ class SpeosSimulationUpdate:
         root_part.set(root_part_data)
         self._modified = True
 
-    def add_scene(self, simulation_scene: "SpeosSimulationUpdate", position_info: PositionProperties):
+    def add_scene(self, simulation_scene: SpeosSimulationUpdate, position_info: PositionProperties) -> None:
         """
         assemble simulation scene into an assembly scene.
 
@@ -816,7 +816,7 @@ class SpeosSimulationUpdate:
         self._scene.set(data)
         self._modified = True
 
-    def __adapt_sops(self, simulation_scene: "SpeosSimulationUpdate", data: scene_pb2.Scene):
+    def __adapt_sops(self, simulation_scene: SpeosSimulationUpdate, data: scene_pb2.Scene) -> None:
         """
         adapt sops geometry path on the inserted scene.
 
@@ -837,7 +837,7 @@ class SpeosSimulationUpdate:
                 new_sop.geometries.geo_paths.append(g_path)
             data.sops.append(new_sop)
 
-    def __adapt_sources(self, simulation_scene: SpeosSimulationUpdate, data: scene_pb2.Scene):
+    def __adapt_sources(self, simulation_scene: SpeosSimulationUpdate, data: scene_pb2.Scene) -> None:
         """
         adapt sources geometry path on the inserted scene.
 
@@ -897,7 +897,7 @@ class SpeosSimulationUpdate:
         if props is None:
             raise KeyError(core.SimulationTemplateLink)
 
-        compute_type = core.JobFactory.Type.CPU if compute_type.lower() == "cpu" else core.JobFactory.Type.GPU
+        compute_type = core.JobFactory.Type.GPU if compute_type.lower() == "gpu" else core.JobFactory.Type.CPU
 
         new_job = self._speos.client.jobs().create(
             message=core.JobFactory.new(
