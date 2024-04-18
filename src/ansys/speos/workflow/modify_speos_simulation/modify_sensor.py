@@ -30,7 +30,7 @@ from ansys.api.speos.job.v2 import job_pb2
 from ansys.api.speos.part.v1 import part_pb2
 from ansys.api.speos.scene.v1 import scene_pb2
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2
-import google.protobuf.pyext._message
+from google.protobuf.pyext._message import RepeatedScalarContainer
 import numpy as np
 import pyvista as pv
 
@@ -542,9 +542,7 @@ class SpeosSimulationUpdate:
         p.add_mesh(self._preview_mesh, show_edges=True)
         p.show()
 
-    def __extract_part_mesh_info(
-        self, part_data: part_pb2, part_coordinate_info: google.protobuf.pyext._message.RepeatedScalarContainer = None
-    ) -> pv.PolyData:
+    def __extract_part_mesh_info(self, part_data: part_pb2, part_coordinate_info: RepeatedScalarContainer = None) -> pv.PolyData:
         """
         extract mesh data info from a part.
 
@@ -552,7 +550,7 @@ class SpeosSimulationUpdate:
         ----------
         part_data: ansys.api.speos.part.v1.part_pb2
             Part from scene.
-        part_coordinate_info: google.protobuf.pyext._message.RepeatedScalarContainer
+        part_coordinate_info: RepeatedScalarContainer
             message contains part coordinate info: origin, x_vector, y_vector, z_vector
         Returns
         -------
