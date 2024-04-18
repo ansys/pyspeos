@@ -125,7 +125,7 @@ def test_modify_irradiance(speos: Speos):
     irradiance_properties.z_vect = [1.0, 0.0, 0.0]
 
     for sensor in irradiance_sensor_list:
-        new_sim.add_camera_sensor(sensor, irradiance_properties)
+        new_sim.add_irradiance_sensor(sensor, irradiance_properties)
 
     irradiance_sensor_update = irradiance_sensor.copy()
     irradiance_sensor_update.name = "Dom Irradiance Sensor Update.1"
