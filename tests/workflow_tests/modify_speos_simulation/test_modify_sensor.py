@@ -41,7 +41,7 @@ def test_modify_camera(speos: Speos):
     camera_sensor = modify_sensor.PhotometricCameraSensorParameters()
     camera_sensor.name = "FOV_190deg"
     camera_sensor.transmittance_file = os.path.join(camera_input_path, "CameraTransmittance.spectrum")
-    camera_sensor.distorsion_file = os.path.join(camera_input_path, "CameraDistortion_190deg.OPTDistortion")
+    camera_sensor.distortion_file = os.path.join(camera_input_path, "CameraDistortion_190deg.OPTDistortion")
     camera_sensor.color_mode_red_spectrum_file = os.path.join(camera_input_path, "CameraSensitivityRed.spectrum")
     camera_sensor.color_mode_green_spectrum_file = os.path.join(camera_input_path, "CameraSensitivityGreen.spectrum")
     camera_sensor.color_mode_blue_spectrum_file = os.path.join(camera_input_path, "CameraSensitivityBlue.spectrum")
@@ -60,7 +60,7 @@ def test_modify_camera(speos: Speos):
 
     camera_sensor = camera_sensor.copy()
     camera_sensor.name = "FOV_150deg"
-    camera_sensor.distorsion_file = os.path.join(camera_input_path, "CameraDistortion_150deg.OPTDistortion")
+    camera_sensor.distortion_file = os.path.join(camera_input_path, "CameraDistortion_150deg.OPTDistortion")
 
     camera_sensor_list.append(camera_sensor)
 
