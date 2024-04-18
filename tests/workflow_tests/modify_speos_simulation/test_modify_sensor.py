@@ -78,9 +78,9 @@ def test_modify_camera(speos: Speos):
 
     camera_properties_update = modify_sensor.CameraSensorProperties()
     camera_properties_update.origin = [20, 10, 15]
-    camera_properties_update.x_vector = [0.0, 0.0, -1.0]
-    camera_properties_update.y_vector = [0.0, 1.0, 0.0]
-    camera_properties_update.z_vector = [1.0, 0.0, 0.0]
+    camera_properties_update.x_vect = [0.0, 0.0, -1.0]
+    camera_properties_update.y_vect = [0.0, 1.0, 0.0]
+    camera_properties_update.z_vect = [1.0, 0.0, 0.0]
     new_sim.update_sensor(camera_sensor_update, camera_properties_update)
 
     job_link = new_sim.compute(stop_condition_duration=8)
@@ -120,9 +120,9 @@ def test_modify_irradiance(speos: Speos):
 
     irradiance_properties = modify_sensor.IrradianceSensorProperties()
     irradiance_properties.origin = [-42, 5, 5]
-    irradiance_properties.x_vector = [0.0, 1.0, 0.0]
-    irradiance_properties.y_vector = [0.0, 0.0, -1.0]
-    irradiance_properties.z_vector = [1.0, 0.0, 0.0]
+    irradiance_properties.x_vect = [0.0, 1.0, 0.0]
+    irradiance_properties.y_vect = [0.0, 0.0, -1.0]
+    irradiance_properties.z_vect = [1.0, 0.0, 0.0]
 
     for sensor in irradiance_sensor_list:
         new_sim.add_camera_sensor(sensor, irradiance_properties)
@@ -132,9 +132,9 @@ def test_modify_irradiance(speos: Speos):
 
     irradiance_properties_update = modify_sensor.IrradianceSensorProperties()
     irradiance_properties_update.origin = [-45, 5, 5]
-    irradiance_properties_update.x_vector = [0.0, 1.0, 0.0]
-    irradiance_properties_update.y_vector = [0.0, 0.0, -1.0]
-    irradiance_properties_update.z_vector = [1.0, 0.0, 0.0]
+    irradiance_properties_update.x_vect = [0.0, 1.0, 0.0]
+    irradiance_properties_update.y_vect = [0.0, 0.0, -1.0]
+    irradiance_properties_update.z_vect = [1.0, 0.0, 0.0]
     new_sim.update_sensor(irradiance_sensor_update, irradiance_properties_update)
 
     job_link = new_sim.compute(stop_condition_duration=8)
@@ -154,21 +154,18 @@ def test_modify_scene(speos: Speos):
     sim_1 = modify_sensor.SpeosSimulationUpdate(speos, speos_file_1, clean_dbs=False)
     sim_2 = modify_sensor.SpeosSimulationUpdate(speos, speos_file_2, clean_dbs=False)
 
-    sim_2_position = modify_sensor.PositionProperties()
+    sim_2_position = core.AxisSystem()
     sim_2_position.origin = [0.0, 0.0, 0.0]
-    sim_2_position.x_vector = [1.0, 0.0, 0.0]
-    sim_2_position.y_vector = [0.0, 1.0, 0.0]
-    sim_2_position.z_vector = [0.0, 0.0, 1.0]
+    sim_2_position.x_vect = [1.0, 0.0, 0.0]
+    sim_2_position.y_vect = [0.0, 1.0, 0.0]
+    sim_2_position.z_vect = [0.0, 0.0, 1.0]
 
     sim_1.add_scene(sim_2, sim_2_position)
     job_link = sim_1.compute(stop_condition_duration=8)
     assert job_link.key != ""
 
-    sim_2_position_update = sim_2_position.copy()
+    sim_2_position_update = sim_2_position
     sim_2_position_update.origin = [1.0, 0.0, 0.0]
-    sim_2_position_update.x_vector = [1.0, 0.0, 0.0]
-    sim_2_position_update.y_vector = [0.0, 1.0, 0.0]
-    sim_2_position_update.z_vector = [0.0, 0.0, 1.0]
 
     new_body_positions = {
         "LG_50M_Colorimetric_short": sim_2_position_update,
