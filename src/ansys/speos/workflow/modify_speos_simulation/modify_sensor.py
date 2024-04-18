@@ -127,39 +127,6 @@ def print_progress_bar(
         sys.stdout.flush()
 
 
-class PositionProperties:
-    """
-    Properties Position in 3D space.
-
-    origin
-    x_vector
-    y_vector
-    z_vector
-    """
-
-    def __init__(self) -> None:
-        self.origin = [0.0, 0.0, 0.0]
-        self.x_vector = [1.0, 0.0, 0.0]
-        self.y_vector = [0.0, 1.0, 0.0]
-        self.z_vector = [0.0, 0.0, 1.0]
-
-    def copy(self) -> PositionProperties:
-        """
-        Copy current object into a new one.
-
-        Returns
-        -------
-        PositionProperties
-            Parameters copied.
-        """
-        copied_parameters = PositionProperties()
-        copied_parameters.origin = self.origin
-        copied_parameters.x_vector = self.x_vector
-        copied_parameters.y_vector = self.y_vector
-        copied_parameters.z_vector = self.z_vector
-        return copied_parameters
-
-
 class IrradianceSensorParameters:
     """
     Irradiance sensor with its parameters.
@@ -247,7 +214,7 @@ class IrradianceSensorParameters:
         )
 
 
-class IrradianceSensorProperties(PositionProperties):
+class IrradianceSensorProperties(core.AxisSystem):
     """
     Properties for irradiance sensor.
 
@@ -268,9 +235,7 @@ class IrradianceSensorProperties(PositionProperties):
         core.Scene.SensorInstance.IrradianceSensorProperties
             Protobuf message created.
         """
-        irradiance_sensor_axis_system = core.AxisSystem(
-            origin=self.origin, x_vect=self.x_vector, y_vect=self.y_vector, z_vect=self.z_vector
-        )
+        irradiance_sensor_axis_system = core.AxisSystem(origin=self.origin, x_vect=self.x_vect, y_vect=self.y_vect, z_vect=self.z_vect)
 
         layer_type = None
         if self.layer_type == "Source":
@@ -475,7 +440,7 @@ class PhotometricCameraSensorParameters:
         return sensor_t_data
 
 
-class CameraSensorProperties(PositionProperties):
+class CameraSensorProperties(core.AxisSystem):
     """
     Properties for camera sensor.
 
@@ -498,7 +463,7 @@ class CameraSensorProperties(PositionProperties):
         core.Scene.SensorInstance.CameraSensorProperties
             Protobuf message created.
         """
-        camera_axis_system = core.AxisSystem(origin=self.origin, x_vect=self.x_vector, y_vect=self.y_vector, z_vect=self.z_vector)
+        camera_axis_system = core.AxisSystem(origin=self.origin, x_vect=self.x_vect, y_vect=self.y_vect, z_vect=self.z_vect)
 
         temp_trajectory_file = None
         if self.trajectory_file != "":
@@ -612,21 +577,21 @@ class SpeosSimulationUpdate:
 
             """
             global_origin = np.array(part_coordinate.origin)
-            global_x = np.array(part_coordinate.x_vector) * local_vertice[0]
-            global_y = np.array(part_coordinate.y_vector) * local_vertice[1]
-            global_z = np.array(part_coordinate.z_vector) * local_vertice[2]
+            global_x = np.array(part_coordinate.x_vect) * local_vertice[0]
+            global_y = np.array(part_coordinate.y_vect) * local_vertice[1]
+            global_z = np.array(part_coordinate.z_vect) * local_vertice[2]
             return global_origin + global_x + global_y + global_z
 
-        part_coordinate = PositionProperties()
+        part_coordinate = core.AxisSystem()
         part_coordinate.origin = [0.0, 0.0, 0.0]
-        part_coordinate.x_vector = [1.0, 0.0, 0.0]
-        part_coordinate.y_vector = [0.0, 1.0, 0.0]
-        part_coordinate.z_vector = [0.0, 0.0, 1.0]
+        part_coordinate.x_vect = [1.0, 0.0, 0.0]
+        part_coordinate.y_vect = [0.0, 1.0, 0.0]
+        part_coordinate.z_vect = [0.0, 0.0, 1.0]
         if part_coordinate_info is not None:
             part_coordinate.origin = part_coordinate_info[:3]
-            part_coordinate.x_vector = part_coordinate_info[3:6]
-            part_coordinate.y_vector = part_coordinate_info[6:9]
-            part_coordinate.z_vector = part_coordinate_info[9:]
+            part_coordinate.x_vect = part_coordinate_info[3:6]
+            part_coordinate.y_vect = part_coordinate_info[6:9]
+            part_coordinate.z_vect = part_coordinate_info[9:]
         part_mesh_info = None
         for body_idx, body_guid in enumerate(part_data.body_guids):
             body_item_data = self._speos.client.get_item(body_guid).get()
@@ -742,10 +707,7 @@ class SpeosSimulationUpdate:
                     sensor.sensor_guid = ssr.key
                     sensor.irradiance_sensor_properties.ClearField("axis_system")
                     sensor.irradiance_sensor_properties.axis_system.extend(
-                        template_properties.origin
-                        + template_properties.x_vector
-                        + template_properties.y_vector
-                        + template_properties.z_vector
+                        template_properties.origin + template_properties.x_vect + template_properties.y_vect + template_properties.z_vect
                     )
                     sensor.irradiance_sensor_properties.layer_type_none.SetInParent()
             self._scene.set(scene_data)
@@ -758,21 +720,18 @@ class SpeosSimulationUpdate:
                     sensor.sensor_guid = ssr.key
                     sensor.camera_sensor_properties.ClearField("axis_system")
                     sensor.camera_sensor_properties.axis_system.extend(
-                        template_properties.origin
-                        + template_properties.x_vector
-                        + template_properties.y_vector
-                        + template_properties.z_vector
+                        template_properties.origin + template_properties.x_vect + template_properties.y_vect + template_properties.z_vect
                     )
                     sensor.camera_sensor_properties.layer_type_none.SetInParent()
             self._scene.set(scene_data)
 
-    def update_scene_part_position(self, new_part_positions: {str: PositionProperties}) -> None:
+    def update_scene_part_position(self, new_part_positions: {str: core.AxisSystem}) -> None:
         """
         update component position with given dictionary of component_part name with corresponding position.
 
         Parameters
         ----------
-        new_part_positions: {str: PositionProperties}
+        new_part_positions: {str: core.AxisSystem}
             dictionary with key of component_part name and value of corresponding position
         """
         root_part = self._speos.client.get_item(self._scene.get().part_guid)
@@ -784,12 +743,12 @@ class SpeosSimulationUpdate:
                 position_properties = new_part_positions[part_item.name]
                 part_item.ClearField("axis_system")
                 part_item.axis_system.extend(
-                    position_properties.origin + position_properties.x_vector + position_properties.y_vector + position_properties.z_vector
+                    position_properties.origin + position_properties.x_vect + position_properties.y_vect + position_properties.z_vect
                 )
         root_part.set(root_part_data)
         self._modified = True
 
-    def add_scene(self, simulation_scene: SpeosSimulationUpdate, position_info: PositionProperties) -> None:
+    def add_scene(self, simulation_scene: SpeosSimulationUpdate, position_info: core.AxisSystem) -> None:
         """
         assemble simulation scene into an assembly scene.
 
@@ -797,15 +756,13 @@ class SpeosSimulationUpdate:
         ----------
         simulation_scene: SpeosSimulationUpdate
             simulation scene
-        position_info: PositionProperties
-            position information x, y, z, axis-x, axis-y, axis-z
+        position_info: core.AxisSystem
+            position information origin x, origin y, origin z, axis-x, axis-y, axis-z
         """
         new_part_instance = core.Part.PartInstance()
         new_part_instance.name = simulation_scene.scene.get().name
         new_part_instance.part_guid = simulation_scene.scene.get().part_guid
-        new_part_instance.axis_system.extend(
-            position_info.origin + position_info.x_vector + position_info.y_vector + position_info.z_vector
-        )
+        new_part_instance.axis_system.extend(position_info.origin + position_info.x_vect + position_info.y_vect + position_info.z_vect)
         self._part.parts.append(new_part_instance)
 
         part_link = self._speos.client.parts().create(message=self._part)
