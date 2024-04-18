@@ -20,12 +20,19 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from __future__ import annotations
+
 import sys
 import time
 from typing import Optional
 
 from ansys.api.speos.job.v2 import job_pb2
+from ansys.api.speos.part.v1 import part_pb2
+from ansys.api.speos.scene.v1 import scene_pb2
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2
+from google.protobuf.pyext._message import RepeatedScalarContainer
+import numpy as np
+import pyvista as pv
 
 import ansys.speos.core as core
 
@@ -120,6 +127,125 @@ def print_progress_bar(
         sys.stdout.flush()
 
 
+class IrradianceSensorParameters:
+    """
+    Irradiance sensor with its parameters.
+
+    name = name of the sensor
+    integration_type
+    type
+    x_range_start
+    x_range_end
+    x_range_sampling
+    y_range_start
+    y_range_end
+    y_range_sampling
+    wavelengths_start
+    wavelengths_end
+    wavelengths_sampling
+    """
+
+    def __init__(self) -> None:
+        self.name = "irradiance sensor"
+        self.integration_type = core.SensorTemplateFactory.IlluminanceType.Planar
+        self.type = core.SensorTemplateFactory.Type.Photometric
+        self.x_range_start = -50
+        self.x_range_end = 50
+        self.x_range_sampling = 100
+        self.y_range_start = -50
+        self.y_range_end = 50
+        self.y_range_sampling = 100
+        self.wavelengths_start = 400
+        self.wavelengths_end = 700
+        self.wavelengths_sampling = 13
+
+    def copy(self) -> IrradianceSensorParameters:
+        """
+        Copy current object into a new one.
+
+        Returns
+        -------
+        IrradianceSensorParameters
+            Parameters copied.
+        """
+        copied_parameters = IrradianceSensorParameters()
+        copied_parameters.name = self.name
+        copied_parameters.integration_type = self.integration_type
+        copied_parameters.type = self.type
+        copied_parameters.x_range_start = self.x_range_start
+        copied_parameters.x_range_start = self.x_range_start
+        copied_parameters.x_range_sampling = self.x_range_sampling
+        copied_parameters.y_range_start = self.y_range_start
+        copied_parameters.y_range_end = self.y_range_end
+        copied_parameters.y_range_sampling = self.y_range_sampling
+        copied_parameters.wavelengths_start = self.wavelengths_start
+        copied_parameters.wavelengths_end = self.wavelengths_end
+        copied_parameters.wavelengths_sampling = self.wavelengths_sampling
+        return copied_parameters
+
+    def create_template(self) -> core.SensorTemplate:
+        """
+        Create protobuf message SensorTemplate from current object.
+
+        Returns
+        -------
+        core.SensorTemplate
+            Protobuf message created.
+        """
+
+        w_range = None
+        if self.type == core.SensorTemplateFactory.Type.Colorimetric or self.type == core.SensorTemplateFactory.Type.Spectral:
+            w_range = core.SensorTemplateFactory.WavelengthsRange(
+                start=self.wavelengths_start, end=self.wavelengths_end, sampling=self.wavelengths_sampling
+            )
+        return core.SensorTemplateFactory.irradiance(
+            name=self.name,
+            type=self.type,
+            illuminance_type=self.integration_type,
+            dimensions=core.SensorTemplateFactory.Dimensions(
+                x_start=self.x_range_start,
+                x_end=self.x_range_end,
+                x_sampling=self.x_range_sampling,
+                y_start=self.y_range_start,
+                y_end=self.y_range_end,
+                y_sampling=self.y_range_sampling,
+            ),
+            wavelengths_range=w_range,
+        )
+
+
+class IrradianceSensorProperties(core.AxisSystem):
+    """
+    Properties for irradiance sensor.
+
+    PositionProperties
+    layer_type: "None", "Source"
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.layer_type = "None"
+
+    def create_properties(self) -> core.Scene.SensorInstance.IrradianceSensorProperties:
+        """
+        Create protobuf message IrradianceSensorProperties from current object.
+
+        Returns
+        -------
+        core.Scene.SensorInstance.IrradianceSensorProperties
+            Protobuf message created.
+        """
+        irradiance_sensor_axis_system = core.AxisSystem(origin=self.origin, x_vect=self.x_vect, y_vect=self.y_vect, z_vect=self.z_vect)
+
+        layer_type = None
+        if self.layer_type == "Source":
+            layer_type = core.SceneFactory.Properties.Sensor.LayerType.Source
+
+        properties = core.SceneFactory.irradiance_sensor_props(axis_system=irradiance_sensor_axis_system, layer_type=layer_type)
+
+        return properties
+
+
 class PhotometricCameraSensorParameters:
     """
     Photometric camera sensor with its parameters.
@@ -184,7 +310,7 @@ class PhotometricCameraSensorParameters:
         self.wavelengths_end = 700
         self.wavelengths_sampling = 13
 
-    def copy(self):
+    def copy(self) -> PhotometricCameraSensorParameters:
         """
         Copy current object into a new one.
 
@@ -314,23 +440,17 @@ class PhotometricCameraSensorParameters:
         return sensor_t_data
 
 
-class CameraSensorProperties:
+class CameraSensorProperties(core.AxisSystem):
     """
     Properties for camera sensor.
 
-    origin
-    x_vector
-    y_vector
-    z_vector
+    PositionProperties
     trajectory_file
     layer_type: "None", "Source"
     """
 
     def __init__(self) -> None:
-        self.origin = []
-        self.x_vector = []
-        self.y_vector = []
-        self.z_vector = []
+        super().__init__()
         self.trajectory_file = ""
         self.layer_type = "None"
 
@@ -343,7 +463,7 @@ class CameraSensorProperties:
         core.Scene.SensorInstance.CameraSensorProperties
             Protobuf message created.
         """
-        camera_axis_system = core.AxisSystem(origin=self.origin, x_vect=self.x_vector, y_vect=self.y_vector, z_vect=self.z_vector)
+        camera_axis_system = core.AxisSystem(origin=self.origin, x_vect=self.x_vect, y_vect=self.y_vect, z_vect=self.z_vect)
 
         temp_trajectory_file = None
         if self.trajectory_file != "":
@@ -372,12 +492,16 @@ class SpeosSimulationUpdate:
         ".speos" simulation file name.
     """
 
-    def __init__(self, speos: core.Speos, file_name: str):
+    def __init__(self, speos: core.Speos, file_name: str, clean_dbs: bool = True):
         self._speos = speos
-        clean_all_dbs(self._speos.client)
+        if clean_dbs:
+            clean_all_dbs(self._speos.client)
 
         self._scene = self._speos.client.scenes().create()
         self._status = ""
+        self._modified = False
+        self._preview_mesh = None
+        self._part = core.Part()
 
         # Create empty scene and load file
         self._scene.load_file(file_uri=file_name)
@@ -394,13 +518,105 @@ class SpeosSimulationUpdate:
         """The status."""
         return self._status
 
-    def add_camera_sensor(self, sensor_parameters: PhotometricCameraSensorParameters, sensor_properties: CameraSensorProperties):
+    def preview(self) -> None:
+        """preview cad bodies inside the scene."""
+
+        p = pv.Plotter()
+        if self._preview_mesh is not None and self._modified is False:
+            p.add_mesh(self._preview_mesh, show_edges=True)
+            p.show()
+            return
+        root_part_data = self._speos.client.get_item(self._scene.get().part_guid).get()
+        if len(root_part_data.parts) != 0:
+            for part_idx, part_item in enumerate(root_part_data.parts):
+                part_item_data = self._speos.client.get_item(part_item.part_guid).get()
+                if self._preview_mesh is None:
+                    self._preview_mesh = self.__extract_part_mesh_info(part_item_data, part_item.axis_system)
+                else:
+                    self._preview_mesh = self._preview_mesh.append_polydata(
+                        self.__extract_part_mesh_info(part_item_data, part_item.axis_system)
+                    )
+        else:
+            self._preview_mesh = self.__extract_part_mesh_info(root_part_data)
+        self._modified = False
+        p.add_mesh(self._preview_mesh, show_edges=True)
+        p.show()
+
+    def __extract_part_mesh_info(self, part_data: part_pb2, part_coordinate_info: RepeatedScalarContainer = None) -> pv.PolyData:
+        """
+        extract mesh data info from a part.
+
+        Parameters
+        ----------
+        part_data: ansys.api.speos.part.v1.part_pb2
+            Part from scene.
+        part_coordinate_info: RepeatedScalarContainer
+            message contains part coordinate info: origin, x_vector, y_vector, z_vector
+        Returns
+        -------
+        pv.PolyData
+            mesh data extracted.
+
+        """
+
+        def local2absolute(local_vertice: np.ndarray) -> np.ndarray:
+            """
+            convert local coordinate to global coordinate.
+
+            Parameters
+            ----------
+            local_vertice: np.ndarray
+                numpy array includes x, y, z info.
+
+            Returns
+            -------
+            np.ndarray
+             numpy array includes x, y, z info
+
+            """
+            global_origin = np.array(part_coordinate.origin)
+            global_x = np.array(part_coordinate.x_vect) * local_vertice[0]
+            global_y = np.array(part_coordinate.y_vect) * local_vertice[1]
+            global_z = np.array(part_coordinate.z_vect) * local_vertice[2]
+            return global_origin + global_x + global_y + global_z
+
+        part_coordinate = core.AxisSystem()
+        part_coordinate.origin = [0.0, 0.0, 0.0]
+        part_coordinate.x_vect = [1.0, 0.0, 0.0]
+        part_coordinate.y_vect = [0.0, 1.0, 0.0]
+        part_coordinate.z_vect = [0.0, 0.0, 1.0]
+        if part_coordinate_info is not None:
+            part_coordinate.origin = part_coordinate_info[:3]
+            part_coordinate.x_vect = part_coordinate_info[3:6]
+            part_coordinate.y_vect = part_coordinate_info[6:9]
+            part_coordinate.z_vect = part_coordinate_info[9:]
+        part_mesh_info = None
+        for body_idx, body_guid in enumerate(part_data.body_guids):
+            body_item_data = self._speos.client.get_item(body_guid).get()
+            for face_idx, face_guid in enumerate(body_item_data.face_guids):
+                face_item_data = self._speos.client.get_item(face_guid).get()
+                vertices = np.array(face_item_data.vertices)
+                facets = np.array(face_item_data.facets)
+                vertices = vertices.reshape(-1, 3)
+                vertices = np.array([local2absolute(vertice) for vertice in vertices])
+                facets = facets.reshape(-1, 3)
+                temp = np.full(facets.shape[0], 3)
+                temp = np.vstack(temp)
+                facets = np.hstack((temp, facets))
+                face_mesh_data = pv.PolyData(vertices, facets)
+                if part_mesh_info is None:
+                    part_mesh_info = face_mesh_data
+                else:
+                    part_mesh_info = part_mesh_info.append_polydata(face_mesh_data)
+        return part_mesh_info
+
+    def add_camera_sensor(self, sensor_parameters: PhotometricCameraSensorParameters, sensor_properties: CameraSensorProperties) -> None:
         """
         Add a camera sensor template to the scene with the corresponding properties.
 
         Parameters
         ----------
-        sensor_template : PhotometricCameraSensorParameters
+        sensor_parameters : PhotometricCameraSensorParameters
             Sensor parameters.
         sensor_properties : CameraSensorProperties
             Sensor properties.
@@ -429,17 +645,188 @@ class SpeosSimulationUpdate:
         # Update value in db
         self._scene.set(scene_data)
 
-    def compute(self, job_name="new_job", stop_condition_duration: Optional[int] = None) -> core.JobLink:
+    def add_irradiance_sensor(self, sensor_parameters: IrradianceSensorParameters, sensor_properties: IrradianceSensorProperties) -> None:
+        """
+        Add an irradiance sensor template to the scene with the corresponding properties.
+
+        Parameters
+        ----------
+        sensor_parameters : IrradianceSensorParameters
+            Sensor parameters.
+        sensor_properties : IrradianceSensorProperties
+            Sensor properties.
+        """
+        sensor_template_db = self._speos.client.sensor_templates()
+
+        # Store SensorTemplate protobuf message in db and retrieve SensorTemplateLink
+        sensor_template_link = sensor_template_db.create(message=sensor_parameters.create_template())
+
+        # Retrieve scene datamodel
+        scene_data = self._scene.get()
+
+        # Create camera instance
+        sensor_instance = core.SceneFactory.sensor_instance(
+            name=sensor_template_link.get().name + ".1",
+            sensor_template=sensor_template_link,
+            properties=sensor_properties.create_properties(),
+        )
+
+        # Modify scene datamodel
+        scene_data.sensors.append(sensor_instance)
+
+        if len(scene_data.simulations) > 0:
+            scene_data.simulations[0].ClearField("sensor_paths")
+
+        # Update value in db
+        self._scene.set(scene_data)
+
+    def update_sensor(
+        self,
+        template_parameters: IrradianceSensorParameters or PhotometricCameraSensorParameters,
+        template_properties: IrradianceSensorProperties or CameraSensorProperties,
+    ) -> None:
+        """
+        Update sensor to the scene with the sensor parameter and properties.
+
+        Parameters
+        ----------
+        template_parameters : IrradianceSensorParameters or PhotometricCameraSensorParameters,
+            Sensor parameters.
+        template_properties : IrradianceSensorProperties or CameraSensorProperties
+            Sensor properties.
+        """
+        if isinstance(template_parameters, IrradianceSensorParameters) and isinstance(template_properties, IrradianceSensorProperties):
+            ssr_template = template_parameters.create_template()
+            ssr = self._speos.client.sensor_templates().create(message=ssr_template)
+
+            scene_data = self._scene.get()
+            for sensor in scene_data.sensors:
+                if sensor.name == template_parameters.name + ".1":
+                    sensor.sensor_guid = ssr.key
+                    sensor.irradiance_sensor_properties.ClearField("axis_system")
+                    sensor.irradiance_sensor_properties.axis_system.extend(
+                        template_properties.origin + template_properties.x_vect + template_properties.y_vect + template_properties.z_vect
+                    )
+                    sensor.irradiance_sensor_properties.layer_type_none.SetInParent()
+            self._scene.set(scene_data)
+        elif isinstance(template_parameters, PhotometricCameraSensorParameters) and isinstance(template_properties, CameraSensorProperties):
+            ssr_template = template_parameters.create_template()
+            ssr = self._speos.client.sensor_templates().create(message=ssr_template)
+            scene_data = self._scene.get()
+            for sensor in scene_data.sensors:
+                if sensor.name == template_parameters.name + ".1":
+                    sensor.sensor_guid = ssr.key
+                    sensor.camera_sensor_properties.ClearField("axis_system")
+                    sensor.camera_sensor_properties.axis_system.extend(
+                        template_properties.origin + template_properties.x_vect + template_properties.y_vect + template_properties.z_vect
+                    )
+                    sensor.camera_sensor_properties.layer_type_none.SetInParent()
+            self._scene.set(scene_data)
+
+    def update_scene_part_position(self, new_part_positions: {str: core.AxisSystem}) -> None:
+        """
+        update component position with given dictionary of component_part name with corresponding position.
+
+        Parameters
+        ----------
+        new_part_positions: {str: core.AxisSystem}
+            dictionary with key of component_part name and value of corresponding position
+        """
+        root_part = self._speos.client.get_item(self._scene.get().part_guid)
+        root_part_data = root_part.get()
+        assert len(root_part_data.parts) != 0
+        for part_item in root_part_data.parts:
+            if part_item.name in new_part_positions:
+                print("Update {} position".format(part_item.name))
+                position_properties = new_part_positions[part_item.name]
+                part_item.ClearField("axis_system")
+                part_item.axis_system.extend(
+                    position_properties.origin + position_properties.x_vect + position_properties.y_vect + position_properties.z_vect
+                )
+        root_part.set(root_part_data)
+        self._modified = True
+
+    def add_scene(self, simulation_scene: SpeosSimulationUpdate, position_info: core.AxisSystem) -> None:
+        """
+        assemble simulation scene into an assembly scene.
+
+        Parameters
+        ----------
+        simulation_scene: SpeosSimulationUpdate
+            simulation scene
+        position_info: core.AxisSystem
+            position information origin x, origin y, origin z, axis-x, axis-y, axis-z
+        """
+        new_part_instance = core.Part.PartInstance()
+        new_part_instance.name = simulation_scene.scene.get().name
+        new_part_instance.part_guid = simulation_scene.scene.get().part_guid
+        new_part_instance.axis_system.extend(position_info.origin + position_info.x_vect + position_info.y_vect + position_info.z_vect)
+        self._part.parts.append(new_part_instance)
+
+        part_link = self._speos.client.parts().create(message=self._part)
+        data = self._scene.get()
+        self.__adapt_sops(simulation_scene, data)
+        self.__adapt_sources(simulation_scene, data)
+        data.part_guid = part_link.key
+        self._scene.set(data)
+        self._modified = True
+
+    def __adapt_sops(self, simulation_scene: SpeosSimulationUpdate, data: scene_pb2.Scene) -> None:
+        """
+        adapt sops geometry path on the inserted scene.
+
+        Parameters
+        ----------
+        simulation_scene: SpeosSimulationUpdate
+            simulation scene
+        data: ansys.api.speos.scene.v1.scene_pb2.Scene
+            scene data
+        """
+        adapt_path_name = simulation_scene.scene.get().name
+        for sop in simulation_scene.scene.get().sops:
+            new_sop = core.Scene.SOPInstance()
+            new_sop.CopyFrom(sop)
+            new_sop.geometries.Clear()
+            for g_path in sop.geometries.geo_paths:
+                g_path = adapt_path_name + "/" + g_path
+                new_sop.geometries.geo_paths.append(g_path)
+            data.sops.append(new_sop)
+
+    def __adapt_sources(self, simulation_scene: SpeosSimulationUpdate, data: scene_pb2.Scene) -> None:
+        """
+        adapt sources geometry path on the inserted scene.
+
+        Parameters
+        ----------
+        simulation_scene: SpeosSimulationUpdate
+            simulation scene
+        data: ansys.api.speos.scene.v1.scene_pb2.Scene
+            scene data
+        """
+        adapt_path_name = simulation_scene.scene.get().name
+        for src in simulation_scene.scene.get().sources:
+            if src.surface_properties.HasField("exitance_constant_properties"):
+                for g in src.surface_properties.exitance_constant_properties.geo_paths:
+                    g.geo_path = adapt_path_name + "/" + g.geo_path
+                data.sources.append(src)
+
+    def compute(
+        self, job_name="new_job", stop_condition_duration: Optional[int] = None, compute_type: Optional[str] = "cpu"
+    ) -> core.JobLink:
         """Compute first simulation.
 
         Parameters
         ----------
+
         job_name : str
             Name of the job.
             By default, ``"new_job"``.
         stop_condition_duration : int, optional
             Duration in s to be used as stop condition.
             By default, ``None``.
+        compute_type: str, optional
+            compute using CPU or GPU
+            by default, "cpu"
 
         Returns
         -------
@@ -465,12 +852,15 @@ class SpeosSimulationUpdate:
         if props is None:
             raise KeyError(core.SimulationTemplateLink)
 
+        compute_type = core.JobFactory.Type.GPU if compute_type.lower() == "gpu" else core.JobFactory.Type.CPU
+
         new_job = self._speos.client.jobs().create(
             message=core.JobFactory.new(
                 name=job_name,
                 scene=self._scene,
                 simulation_path=scene_data.simulations[0].name,
                 properties=props,
+                type=compute_type,
             )
         )
 
