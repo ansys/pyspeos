@@ -66,9 +66,9 @@ def test_modify_camera(speos: Speos):
 
     camera_properties = modify_sensor.CameraSensorProperties()
     camera_properties.origin = [17, 10, 15]
-    camera_properties.x_vector = [0.0, 0.0, -1.0]
-    camera_properties.y_vector = [0.0, 1.0, 0.0]
-    camera_properties.z_vector = [1.0, 0.0, 0.0]
+    camera_properties.x_vect = [0.0, 0.0, -1.0]
+    camera_properties.y_vect = [0.0, 1.0, 0.0]
+    camera_properties.z_vect = [1.0, 0.0, 0.0]
 
     for camera_sensor in camera_sensor_list:
         new_sim.add_camera_sensor(camera_sensor, camera_properties)
