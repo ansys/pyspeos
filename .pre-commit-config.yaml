@@ -28,7 +28,7 @@ repos:
   rev: v2.2.5
   hooks:
   - id: codespell
-    args: ["--ignore-words=ignore_words.txt", "doc/styles/vocab/ANSYS/accept.txt"]
+    args: ["--ignore-words=ignore_words.txt", "doc/styles/config/vocabularies/ANSYS/accept.txt"]
 
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v4.4.0
