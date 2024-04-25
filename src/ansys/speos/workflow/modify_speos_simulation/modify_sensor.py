@@ -780,6 +780,10 @@ class SpeosSimulationUpdate:
         for simu in simulation_scene_data.simulations:
             data.simulations.append(simu)
 
+        for src in simulation_scene_data.sources:
+            if src.name not in data.simulations[0].source_paths:
+                data.simulations[0].source_paths.append(src.name)
+
         self._scene.set(data)
         self._modified = True
 
