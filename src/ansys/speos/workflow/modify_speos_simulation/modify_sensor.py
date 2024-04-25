@@ -880,7 +880,7 @@ class SpeosSimulationUpdate:
         if simulation_idx >= len(scene_data.simulations):
             raise ValueError("Issue with a too high simulation_idx. The scene does not contain as many simulations.")
 
-        simu_t_link = self._speos.client.get_item(scene_data.simulations[0].simulation_guid)
+        simu_t_link = self._speos.client.get_item(scene_data.simulations[simulation_idx].simulation_guid)
         props = None
         if isinstance(simu_t_link, core.SimulationTemplateLink):
             simu_t_data = simu_t_link.get()
