@@ -490,9 +490,10 @@ class SpeosSimulationUpdate:
         Speos session (connected to gRPC server).
     file_name : str
         ".speos" simulation file name.
+        By Default , ``""`` (this means empty speos simulation).
     """
 
-    def __init__(self, speos: core.Speos, file_name: str, clean_dbs: bool = True):
+    def __init__(self, speos: core.Speos, file_name: str = "", clean_dbs: bool = True):
         self._speos = speos
         if clean_dbs:
             clean_all_dbs(self._speos.client)
@@ -504,7 +505,8 @@ class SpeosSimulationUpdate:
         self._part = core.Part()
 
         # Create empty scene and load file
-        self._scene.load_file(file_uri=file_name)
+        if len(file_name) != 0:
+            self._scene.load_file(file_uri=file_name)
 
         self._status = "Opened"
 
@@ -757,17 +759,27 @@ class SpeosSimulationUpdate:
         position_info: core.AxisSystem
             position information origin x, origin y, origin z, axis-x, axis-y, axis-z
         """
+        simulation_scene_data = simulation_scene.scene.get()
+
         new_part_instance = core.Part.PartInstance()
-        new_part_instance.name = simulation_scene.scene.get().name
-        new_part_instance.part_guid = simulation_scene.scene.get().part_guid
+        new_part_instance.name = simulation_scene_data.name
+        new_part_instance.part_guid = simulation_scene_data.part_guid
         new_part_instance.axis_system.extend(position_info.origin + position_info.x_vect + position_info.y_vect + position_info.z_vect)
         self._part.parts.append(new_part_instance)
 
         part_link = self._speos.client.parts().create(message=self._part)
         data = self._scene.get()
+        self.__adapt_vops(simulation_scene, data)
         self.__adapt_sops(simulation_scene, data)
         self.__adapt_sources(simulation_scene, data)
         data.part_guid = part_link.key
+
+        for ssr in simulation_scene_data.sensors:
+            data.sensors.append(ssr)
+
+        for simu in simulation_scene_data.simulations:
+            data.simulations.append(simu)
+
         self._scene.set(data)
         self._modified = True
 
@@ -792,6 +804,27 @@ class SpeosSimulationUpdate:
                 new_sop.geometries.geo_paths.append(g_path)
             data.sops.append(new_sop)
 
+    def __adapt_vops(self, simulation_scene: SpeosSimulationUpdate, data: scene_pb2.Scene) -> None:
+        """
+        adapt vops geometry path on the inserted scene.
+
+        Parameters
+        ----------
+        simulation_scene: SpeosSimulationUpdate
+            simulation scene
+        data: ansys.api.speos.scene.v1.scene_pb2.Scene
+            scene data
+        """
+        adapt_path_name = simulation_scene.scene.get().name
+        for vop in simulation_scene.scene.get().vops:
+            new_vop = core.Scene.VOPInstance()
+            new_vop.CopyFrom(vop)
+            new_vop.geometries.Clear()
+            for g_path in vop.geometries.geo_paths:
+                g_path = adapt_path_name + "/" + g_path
+                new_vop.geometries.geo_paths.append(g_path)
+            data.vops.append(new_vop)
+
     def __adapt_sources(self, simulation_scene: SpeosSimulationUpdate, data: scene_pb2.Scene) -> None:
         """
         adapt sources geometry path on the inserted scene.
@@ -811,7 +844,11 @@ class SpeosSimulationUpdate:
                 data.sources.append(src)
 
     def compute(
-        self, job_name="new_job", stop_condition_duration: Optional[int] = None, compute_type: Optional[str] = "cpu"
+        self,
+        job_name="new_job",
+        stop_condition_duration: Optional[int] = None,
+        compute_type: Optional[str] = "cpu",
+        simulation_idx: int = 0,
     ) -> core.JobLink:
         """Compute first simulation.
 
@@ -826,7 +863,10 @@ class SpeosSimulationUpdate:
             By default, ``None``.
         compute_type: str, optional
             compute using CPU or GPU
-            by default, "cpu"
+            by default, ``"cpu"``.
+        simulation_idx: int, optional
+            index of the simulation to compute.
+            By default, ``0``, ie the first simulation.
 
         Returns
         -------
@@ -837,6 +877,8 @@ class SpeosSimulationUpdate:
         scene_data = self._scene.get()
         if len(scene_data.simulations) == 0:
             raise ValueError("At least one simulation is needed in the scene.")
+        if simulation_idx >= len(scene_data.simulations):
+            raise ValueError("Issue with a too high simulation_idx. The scene does not contain as many simulations.")
 
         simu_t_link = self._speos.client.get_item(scene_data.simulations[0].simulation_guid)
         props = None
@@ -858,7 +900,7 @@ class SpeosSimulationUpdate:
             message=core.JobFactory.new(
                 name=job_name,
                 scene=self._scene,
-                simulation_path=scene_data.simulations[0].name,
+                simulation_path=scene_data.simulations[simulation_idx].name,
                 properties=props,
                 type=compute_type,
             )
