@@ -885,7 +885,7 @@ class SpeosSimulationUpdate:
         compute_type: Optional[str] = "cpu",
         simulation_idx: int = 0,
     ) -> core.JobLink:
-        """Compute first simulation.
+        """Compute selected simulation.
 
         Parameters
         ----------
