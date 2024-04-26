@@ -24,7 +24,7 @@ from __future__ import annotations
 
 import sys
 import time
-from typing import Optional
+from typing import List, Optional
 
 from ansys.api.speos.job.v2 import job_pb2
 from ansys.api.speos.part.v1 import part_pb2
@@ -490,9 +490,10 @@ class SpeosSimulationUpdate:
         Speos session (connected to gRPC server).
     file_name : str
         ".speos" simulation file name.
+        By Default , ``""`` (this means empty speos simulation).
     """
 
-    def __init__(self, speos: core.Speos, file_name: str, clean_dbs: bool = True):
+    def __init__(self, speos: core.Speos, file_name: str = "", clean_dbs: bool = True):
         self._speos = speos
         if clean_dbs:
             clean_all_dbs(self._speos.client)
@@ -504,7 +505,8 @@ class SpeosSimulationUpdate:
         self._part = core.Part()
 
         # Create empty scene and load file
-        self._scene.load_file(file_uri=file_name)
+        if len(file_name) != 0:
+            self._scene.load_file(file_uri=file_name)
 
         self._status = "Opened"
 
@@ -610,9 +612,14 @@ class SpeosSimulationUpdate:
                     part_mesh_info = part_mesh_info.append_polydata(face_mesh_data)
         return part_mesh_info
 
-    def add_camera_sensor(self, sensor_parameters: PhotometricCameraSensorParameters, sensor_properties: CameraSensorProperties) -> None:
+    def add_camera_sensor(
+        self,
+        sensor_parameters: PhotometricCameraSensorParameters,
+        sensor_properties: CameraSensorProperties,
+        simulation_idxs: List[int] = [0],
+    ) -> None:
         """
-        Add a camera sensor template to the scene with the corresponding properties.
+        Add a camera sensor template to the scene with the corresponding properties, and reference it in the chosen simulations.
 
         Parameters
         ----------
@@ -620,6 +627,9 @@ class SpeosSimulationUpdate:
             Sensor parameters.
         sensor_properties : CameraSensorProperties
             Sensor properties.
+        simulation_idxs : List[int]
+            List of the chosen simulation indexes where the sensor will be referenced.
+            By default, ``[0]``, ie the first simulation.
         """
         sensor_template_db = self._speos.client.sensor_templates()
 
@@ -639,13 +649,17 @@ class SpeosSimulationUpdate:
         # Modify scene datamodel
         scene_data.sensors.append(camera_sensor_instance)
 
-        if len(scene_data.simulations) > 0:
-            scene_data.simulations[0].ClearField("sensor_paths")
+        # Reference camera sensor instance in the chosen simulation instances
+        for simu_idx in simulation_idxs:
+            if camera_sensor_instance.name not in scene_data.simulations[simu_idx].sensor_paths:
+                scene_data.simulations[simu_idx].sensor_paths.append(camera_sensor_instance.name)
 
         # Update value in db
         self._scene.set(scene_data)
 
-    def add_irradiance_sensor(self, sensor_parameters: IrradianceSensorParameters, sensor_properties: IrradianceSensorProperties) -> None:
+    def add_irradiance_sensor(
+        self, sensor_parameters: IrradianceSensorParameters, sensor_properties: IrradianceSensorProperties, simulation_idxs: List[int] = [0]
+    ) -> None:
         """
         Add an irradiance sensor template to the scene with the corresponding properties.
 
@@ -655,6 +669,9 @@ class SpeosSimulationUpdate:
             Sensor parameters.
         sensor_properties : IrradianceSensorProperties
             Sensor properties.
+        simulation_idxs : List[int]
+            List of the chosen simulation indexes where the sensor will be referenced.
+            By default, ``[0]``, ie the first simulation.
         """
         sensor_template_db = self._speos.client.sensor_templates()
 
@@ -674,8 +691,10 @@ class SpeosSimulationUpdate:
         # Modify scene datamodel
         scene_data.sensors.append(sensor_instance)
 
-        if len(scene_data.simulations) > 0:
-            scene_data.simulations[0].ClearField("sensor_paths")
+        # Reference camera sensor instance in the chosen simulation instances
+        for simu_idx in simulation_idxs:
+            if sensor_instance.name not in scene_data.simulations[simu_idx].sensor_paths:
+                scene_data.simulations[simu_idx].sensor_paths.append(sensor_instance.name)
 
         # Update value in db
         self._scene.set(scene_data)
@@ -746,7 +765,7 @@ class SpeosSimulationUpdate:
         root_part.set(root_part_data)
         self._modified = True
 
-    def add_scene(self, simulation_scene: SpeosSimulationUpdate, position_info: core.AxisSystem) -> None:
+    def add_scene(self, simulation_scene: SpeosSimulationUpdate, position_info: core.AxisSystem, only_geometry: bool = False) -> None:
         """
         assemble simulation scene into an assembly scene.
 
@@ -756,18 +775,49 @@ class SpeosSimulationUpdate:
             simulation scene
         position_info: core.AxisSystem
             position information origin x, origin y, origin z, axis-x, axis-y, axis-z
+        only_geometry: bool
+            In case only the geometry need to be added (no sources, sensors, simulations), set this boolean to True.
+            By default, ``False``.
         """
-        new_part_instance = core.Part.PartInstance()
-        new_part_instance.name = simulation_scene.scene.get().name
-        new_part_instance.part_guid = simulation_scene.scene.get().part_guid
-        new_part_instance.axis_system.extend(position_info.origin + position_info.x_vect + position_info.y_vect + position_info.z_vect)
-        self._part.parts.append(new_part_instance)
+        simulation_scene_data = simulation_scene.scene.get()
 
+        # Create new part instance from the part of simulation_scene_data + place it to the selected position
+        new_part_instance = core.Part.PartInstance()
+        new_part_instance.name = simulation_scene_data.name
+        new_part_instance.part_guid = simulation_scene_data.part_guid
+        new_part_instance.axis_system.extend(position_info.origin + position_info.x_vect + position_info.y_vect + position_info.z_vect)
+
+        # Append to the SSU root part + create the corresponding part link
+        self._part.parts.append(new_part_instance)
         part_link = self._speos.client.parts().create(message=self._part)
+
+        # Retrieve scene data + use new part_link
         data = self._scene.get()
-        self.__adapt_sops(simulation_scene, data)
-        self.__adapt_sources(simulation_scene, data)
         data.part_guid = part_link.key
+
+        # Adapt vops and sops geo_paths (geo_path="part_instance_name/" + geo_path)
+        self.__adapt_vops(simulation_scene, data)
+        self.__adapt_sops(simulation_scene, data)
+
+        # In case only the geometry is needed, don't take care of sources, sensors, simulations
+        if not only_geometry:
+            # Retrieve all sensor instances and add them to the scene
+            for ssr in simulation_scene_data.sensors:
+                data.sensors.append(ssr)
+
+            # Retrieve all source instances and add them to the scene
+            for simu in simulation_scene_data.simulations:
+                data.simulations.append(simu)
+
+            # Retrieve all source instances and add them to the scene
+            for src in simulation_scene_data.sources:
+                # Adapt srcs geo_path (in case of surface source)
+                self.__adapt_source(source_instance=src, simulation_scene_name=simulation_scene_data.name)
+                data.sources.append(src)
+
+                if src.name not in data.simulations[0].source_paths:
+                    data.simulations[0].source_paths.append(src.name)
+
         self._scene.set(data)
         self._modified = True
 
@@ -792,9 +842,9 @@ class SpeosSimulationUpdate:
                 new_sop.geometries.geo_paths.append(g_path)
             data.sops.append(new_sop)
 
-    def __adapt_sources(self, simulation_scene: SpeosSimulationUpdate, data: scene_pb2.Scene) -> None:
+    def __adapt_vops(self, simulation_scene: SpeosSimulationUpdate, data: scene_pb2.Scene) -> None:
         """
-        adapt sources geometry path on the inserted scene.
+        adapt vops geometry path on the inserted scene.
 
         Parameters
         ----------
@@ -804,16 +854,38 @@ class SpeosSimulationUpdate:
             scene data
         """
         adapt_path_name = simulation_scene.scene.get().name
-        for src in simulation_scene.scene.get().sources:
-            if src.surface_properties.HasField("exitance_constant_properties"):
-                for g in src.surface_properties.exitance_constant_properties.geo_paths:
-                    g.geo_path = adapt_path_name + "/" + g.geo_path
-                data.sources.append(src)
+        for vop in simulation_scene.scene.get().vops:
+            new_vop = core.Scene.VOPInstance()
+            new_vop.CopyFrom(vop)
+            new_vop.geometries.Clear()
+            for g_path in vop.geometries.geo_paths:
+                g_path = adapt_path_name + "/" + g_path
+                new_vop.geometries.geo_paths.append(g_path)
+            data.vops.append(new_vop)
+
+    def __adapt_source(self, source_instance: core.Scene.SourceInstance, simulation_scene_name: str) -> None:
+        """
+        adapt source geometry path on the inserted scene.
+
+        Parameters
+        ----------
+        source_instance: core.Scene.SourceInstance
+            Source instance to adapt geometry path
+        simulation_scene_name: str
+            Simulation scene name to be added to the geometry path so that it is correct
+        """
+        if source_instance.surface_properties.HasField("exitance_constant_properties"):
+            for g in source_instance.surface_properties.exitance_constant_properties.geo_paths:
+                g.geo_path = simulation_scene_name + "/" + g.geo_path
 
     def compute(
-        self, job_name="new_job", stop_condition_duration: Optional[int] = None, compute_type: Optional[str] = "cpu"
+        self,
+        job_name="new_job",
+        stop_condition_duration: Optional[int] = None,
+        compute_type: Optional[str] = "cpu",
+        simulation_idx: int = 0,
     ) -> core.JobLink:
-        """Compute first simulation.
+        """Compute selected simulation.
 
         Parameters
         ----------
@@ -826,7 +898,10 @@ class SpeosSimulationUpdate:
             By default, ``None``.
         compute_type: str, optional
             compute using CPU or GPU
-            by default, "cpu"
+            By default, ``"cpu"``.
+        simulation_idx: int, optional
+            index of the simulation to compute.
+            By default, ``0``, ie the first simulation.
 
         Returns
         -------
@@ -837,8 +912,10 @@ class SpeosSimulationUpdate:
         scene_data = self._scene.get()
         if len(scene_data.simulations) == 0:
             raise ValueError("At least one simulation is needed in the scene.")
+        if simulation_idx >= len(scene_data.simulations):
+            raise ValueError("Issue with a too high simulation_idx. The scene does not contain as many simulations.")
 
-        simu_t_link = self._speos.client.get_item(scene_data.simulations[0].simulation_guid)
+        simu_t_link = self._speos.client.get_item(scene_data.simulations[simulation_idx].simulation_guid)
         props = None
         if isinstance(simu_t_link, core.SimulationTemplateLink):
             simu_t_data = simu_t_link.get()
@@ -858,7 +935,7 @@ class SpeosSimulationUpdate:
             message=core.JobFactory.new(
                 name=job_name,
                 scene=self._scene,
-                simulation_path=scene_data.simulations[0].name,
+                simulation_path=scene_data.simulations[simulation_idx].name,
                 properties=props,
                 type=compute_type,
             )
