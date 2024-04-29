@@ -135,7 +135,7 @@ Launch unit tests
    pytest -vx
 
 Use jupyter notebook
-~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
 
 .. code::
 
