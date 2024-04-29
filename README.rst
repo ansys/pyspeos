@@ -134,6 +134,16 @@ Launch unit tests
    pip install .[tests]
    pytest -vx
 
+Use jupyter notebook
+~~~~~~~~~~~~~~~~~~~~
+
+.. code::
+
+   pip install .[jupyter]
+   jupyter notebook
+
+jupyter notebook files are stored in `<tests/jupyter_notebooks>`_ folder.
+
 Use app db_viewer
 ~~~~~~~~~~~~~~~~~
 
