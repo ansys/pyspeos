@@ -297,7 +297,7 @@ def test_scene_actions_load(speos: Speos):
     scene.load_file(file_uri=speos_file_path)
 
     scene_dm = scene.get()
-    assert len(scene_dm.sources) == 0
+    assert len(scene_dm.sources) == 2
     assert len(scene_dm.sensors) == 1
     assert len(scene_dm.simulations) == 1
 
