@@ -144,36 +144,35 @@ def test_modify_irradiance(speos: Speos):
     new_sim.close()
 
 
-# Will be activated with new Server release usage
-# def test_modify_scene(speos: Speos):
-#    # Speos simulation to load
-#    simu_name_1 = "Inverse_SeveralSensors.speos"
-#    speos_file_1 = os.path.join(test_path, os.path.join(simu_name_1, simu_name_1))
-#    simu_name_2 = "LG_50M_Colorimetric_short.sv5"
-#    speos_file_2 = os.path.join(test_path, os.path.join(simu_name_2, simu_name_2))
-#
-#    # Main ssu
-#    ssu = modify_sensor.SpeosSimulationUpdate(speos)
-#
-#    # Create ssu to be added
-#    sim_1 = modify_sensor.SpeosSimulationUpdate(speos, speos_file_1, clean_dbs=False)
-#    sim_2 = modify_sensor.SpeosSimulationUpdate(speos, speos_file_2, clean_dbs=False)
-#
-#    ssu.add_scene(sim_1, core.AxisSystem())
-#    ssu.add_scene(sim_2, core.AxisSystem())
-#    job_link1 = ssu.compute(stop_condition_duration=8)
-#    assert job_link1.key != ""
-#
-#    sim_1_position_update = core.AxisSystem()
-#    sim_1_position_update.origin = [1.0, 0.0, 0.0]
-#
-#    new_body_positions = {
-#        "Inverse_SeveralSensors.speos": sim_1_position_update,
-#    }
-#    ssu.update_scene_part_position(new_part_positions=new_body_positions)
-#    job_link2 = ssu.compute(stop_condition_duration=8)
-#    assert job_link2.key != ""
-#
-#    job_link1.delete()
-#    job_link2.delete()
-#    ssu.close()
+def test_modify_scene(speos: Speos):
+    # Speos simulation to load
+    simu_name_1 = "Inverse_SeveralSensors.speos"
+    speos_file_1 = os.path.join(test_path, os.path.join(simu_name_1, simu_name_1))
+    simu_name_2 = "LG_50M_Colorimetric_short.sv5"
+    speos_file_2 = os.path.join(test_path, os.path.join(simu_name_2, simu_name_2))
+
+    # Main ssu
+    ssu = modify_sensor.SpeosSimulationUpdate(speos)
+
+    # Create ssu to be added
+    sim_1 = modify_sensor.SpeosSimulationUpdate(speos, speos_file_1, clean_dbs=False)
+    sim_2 = modify_sensor.SpeosSimulationUpdate(speos, speos_file_2, clean_dbs=False)
+
+    ssu.add_scene(sim_1, core.AxisSystem())
+    ssu.add_scene(sim_2, core.AxisSystem())
+    job_link1 = ssu.compute(stop_condition_duration=8)
+    assert job_link1.key != ""
+
+    sim_1_position_update = core.AxisSystem()
+    sim_1_position_update.origin = [1.0, 0.0, 0.0]
+
+    new_body_positions = {
+        "Inverse_SeveralSensors.speos": sim_1_position_update,
+    }
+    ssu.update_scene_part_position(new_part_positions=new_body_positions)
+    job_link2 = ssu.compute(stop_condition_duration=8)
+    assert job_link2.key != ""
+
+    job_link1.delete()
+    job_link2.delete()
+    ssu.close()
