@@ -31,7 +31,7 @@ dependencies=[
     "ansys-api-speos==0.6.0",
     "numpy~=1.24.4",
     "pyvista==0.43.8",
-    "comtypes==1.4.1",
+    "comtypes==1.4.2",
 ]
 
 [project.optional-dependencies]
