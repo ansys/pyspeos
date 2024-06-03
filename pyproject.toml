@@ -56,7 +56,7 @@ doc = [
     "sphinx-jinja==2.0.2",
 ]
 app = [
-    "PySimpleGUI==5.0.4",
+    "PySimpleGUI==5.0.5",
 ]
 
 [tool.flit.module]
