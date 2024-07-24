@@ -22,6 +22,7 @@
 
 from typing import Optional
 
+from google.protobuf import __version__ as protobuf_version
 from google.protobuf.json_format import MessageToJson
 from google.protobuf.message import Message
 
@@ -46,5 +47,10 @@ def protobuf_message_to_str(message: Message, with_full_name: Optional[bool] = T
     ret = ""
     if with_full_name:
         ret += message.DESCRIPTOR.full_name + "\n"
-    ret += MessageToJson(message=message, including_default_value_fields=True, preserving_proto_field_name=True, indent=4)
+
+    protobuf_major_version = int(protobuf_version.split(sep=".", maxsplit=1)[0])
+    if protobuf_major_version < 5:
+        ret += MessageToJson(message=message, including_default_value_fields=True, preserving_proto_field_name=True, indent=4)
+    else:
+        ret += MessageToJson(message=message, always_print_fields_with_no_presence=True, preserving_proto_field_name=True, indent=4)
     return ret
