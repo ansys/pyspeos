@@ -44,7 +44,7 @@ def test_client_init(client: SpeosClient):
 
 def test_client_through_channel():
     """Test the instantiation of a client from a gRPC channel."""
-    target = "localhost:" + str(config.get("SpeosServerPort"))
+    target = "dns:///localhost:" + str(config.get("SpeosServerPort"))
     channel = insecure_channel(target)
     client = SpeosClient(channel=channel)
     client_repr = repr(client)
