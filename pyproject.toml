@@ -48,7 +48,7 @@ jupyter = [
     "pyvista[jupyter]",
 ]
 doc = [
-    "ansys-sphinx-theme==0.16.6",
+    "ansys-sphinx-theme==1.0.5",
     "numpydoc==1.7.0",
     "Sphinx==7.4.7",
     "sphinx-copybutton==0.5.2",
