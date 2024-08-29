@@ -9,7 +9,7 @@ on:
       - main
 
 env:
-  MAIN_PYTHON_VERSION: '3.9'
+  MAIN_PYTHON_VERSION: '3.10'
   PIP_EXTRA_INDEX_URL: 'https://${{ secrets.PYANSYS_PYPI_PRIVATE_PAT }}@pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/simple/'
   DOCUMENTATION_CNAME: 'speos.docs.pyansys.com'
   PACKAGE_NAMESPACE: 'ansys.speos.core'
