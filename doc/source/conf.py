@@ -1,14 +1,8 @@
 """Sphinx documentation configuration file."""
 from datetime import datetime
 import os
-from pathlib import Path
 
-from ansys_sphinx_theme import (
-    ansys_favicon,
-    get_autoapi_templates_dir_relative_path,
-    get_version_match,
-    pyansys_logo_black,
-)
+from ansys_sphinx_theme import ansys_favicon, get_version_match
 from sphinx.builders.latex import LaTeXBuilder
 
 from ansys.speos import __version__
@@ -23,12 +17,12 @@ release = version = __version__
 cname = os.getenv("DOCUMENTATION_CNAME", default="speos.docs.pyansys.com")
 
 # use the default pyansys logo
-html_logo = pyansys_logo_black
 html_theme = "ansys_sphinx_theme"
 html_favicon = ansys_favicon
 
 # specify the location of your github repo
 html_theme_options = {
+    "logo": "pyansys",
     "github_url": "https://github.com/ansys-internal/pyspeos",
     "show_prev_next": False,
     "switcher": {
@@ -36,6 +30,9 @@ html_theme_options = {
         "version_match": get_version_match(__version__),
     },
     "check_switcher": False,
+    "ansys_sphinx_theme_autoapi": {
+        "project": project,
+    },
 }
 
 # Sphinx extensions
@@ -44,10 +41,10 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx_copybutton",
     "sphinx.ext.autodoc",
-    "autoapi.extension",
     "sphinx_design",
     "sphinx_jinja",
     "sphinx.ext.autodoc",
+    "ansys_sphinx_theme.extension.autoapi",
 ]
 
 # Intersphinx mapping
@@ -92,22 +89,7 @@ source_suffix = ".rst"
 
 # The master toctree document.
 master_doc = "index"
-
-autoapi_type = "python"
-autoapi_dirs = ["../../src/ansys"]
-autoapi_root = "api"
-autoapi_options = [
-    "members",
-    "undoc-members",
-    "show-inheritance",
-    "show-module-summary",
-    "special-members",
-]
-autoapi_template_dir = get_autoapi_templates_dir_relative_path(Path(__file__))
 suppress_warnings = ["autoapi"]
-autoapi_python_use_implicit_namespaces = True
-autoapi_keep_files = True
-autoapi_own_page_level = "class"
 autodoc_typehints = "description"
 
 jinja_contexts = {
