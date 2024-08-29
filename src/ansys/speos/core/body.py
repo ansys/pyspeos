@@ -33,22 +33,22 @@ from ansys.speos.core.geometry_utils import AxisPlane, AxisSystem
 from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 
 Body = messages.Body
+"""Body protobuf class : ansys.api.speos.part.v1.body_pb2.Body"""
 Body.__str__ = lambda self: protobuf_message_to_str(self)
 
 
 class BodyLink(CrudItem):
-    """Link object for body in database."""
+    """Link object for a body in database.
+
+    Parameters
+    ----------
+    db : ansys.speos.core.body.BodyStub
+        Database to link to.
+    key : str
+        Key of the body in the database.
+    """
 
     def __init__(self, db, key: str):
-        """Create a new link to a body in the database.
-
-        Parameters
-        ----------
-        db : BodyStub
-            Database to link to.
-        key : str
-            Key of the body in the database.
-        """
         super().__init__(db, key)
 
     def __str__(self) -> str:
@@ -56,11 +56,23 @@ class BodyLink(CrudItem):
         return str(self.get())
 
     def get(self) -> Body:
-        """Get the datamodel from database."""
+        """Get the datamodel from database.
+
+        Returns
+        -------
+        body.Body
+            Body datamodel.
+        """
         return self._stub.read(self)
 
     def set(self, data: Body) -> None:
-        """Change datamodel in database."""
+        """Change datamodel in database.
+
+        Parameters
+        ----------
+        data : body.Body
+            New body datamodel.
+        """
         self._stub.update(self, data)
 
     def delete(self) -> None:
@@ -79,6 +91,8 @@ class BodyStub(CrudStub):
 
     Examples
     --------
+    The best way to get a BodyStub is to retrieve it from SpeosClient via bodies() method.
+    Like in the following example:
 
     >>> from ansys.speos.core.speos import Speos
     >>> speos = Speos(host="localhost", port=50051)
@@ -87,63 +101,106 @@ class BodyStub(CrudStub):
     """
 
     def __init__(self, channel):
-        """Create a new body stub."""
         super().__init__(stub=service.BodiesManagerStub(channel=channel))
 
     def create(self, message: Body) -> BodyLink:
-        """Create a new entry."""
+        """Create a new entry.
+
+        Parameters
+        ----------
+        message : body.Body
+            Datamodel for the new entry.
+
+        Returns
+        -------
+        ansys.speos.core.body.BodyLink
+            Link object created.
+        """
         resp = CrudStub.create(self, messages.Create_Request(body=message))
         return BodyLink(self, resp.guid)
 
     def read(self, ref: BodyLink) -> Body:
-        """Get an existing entry."""
+        """Get an existing entry.
+
+        Parameters
+        ----------
+        ref : ansys.speos.core.body.BodyLink
+            Link object to read.
+
+        Returns
+        -------
+        body.Body
+            Datamodel of the entry.
+        """
         if not ref.stub == self:
             raise ValueError("BodyLink is not on current database")
         resp = CrudStub.read(self, messages.Read_Request(guid=ref.key))
         return resp.body
 
-    def update(self, ref: BodyLink, data: Body):
-        """Change an existing entry."""
+    def update(self, ref: BodyLink, data: Body) -> None:
+        """Change an existing entry.
+
+        Parameters
+        ----------
+        ref : ansys.speos.core.body.BodyLink
+            Link object to update.
+
+        data : body.Body
+            New datamodel for the entry.
+        """
         if not ref.stub == self:
             raise ValueError("BodyLink is not on current database")
         CrudStub.update(self, messages.Update_Request(guid=ref.key, body=data))
 
     def delete(self, ref: BodyLink) -> None:
-        """Remove an existing entry."""
+        """Remove an existing entry.
+
+        Parameters
+        ----------
+        ref : ansys.speos.core.body.BodyLink
+            Link object to delete.
+        """
         if not ref.stub == self:
             raise ValueError("BodyLink is not on current database")
         CrudStub.delete(self, messages.Delete_Request(guid=ref.key))
 
     def list(self) -> List[BodyLink]:
-        """List existing entries."""
+        """List existing entries.
+
+        Returns
+        -------
+        List[ansys.speos.core.body.BodyLink]
+            Link objects.
+        """
         guids = CrudStub.list(self, messages.List_Request()).guids
         return list(map(lambda x: BodyLink(self, x), guids))
 
 
 class BodyFactory:
-    """Class to help creating Body message
+    """Class to help creating Body message"""
 
-    Parameters
-    ----------
-    name : str
-        Name of the body.
-    faces : List[FaceLink]
-        List of faces composing the body.
-    description : str, optional
-        Description of the body.
-        By default, ``""``.
-    metadata : Mapping[str, str], optional
-        Metadata of the body.
-        By default, ``None``.
-
-    Returns
-    -------
-    Body
-        Body message created.
-    """
-
+    @staticmethod
     def new(name: str, faces: List[FaceLink], description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None) -> Body:
-        """Create a Body message."""
+        """Create a Body message.
+
+        Parameters
+        ----------
+        name : str
+            Name of the body.
+        faces : List[ansys.speos.core.face.FaceLink]
+            List of faces composing the body.
+        description : str, optional
+            Description of the body.
+            By default, ``""``.
+        metadata : Mapping[str, str], optional
+            Metadata of the body.
+            By default, ``None``.
+
+        Returns
+        -------
+        body.Body
+            Body message created.
+        """
         body = Body(name=name, description=description)
         if metadata is not None:
             body.metadata.update(metadata)
@@ -151,6 +208,7 @@ class BodyFactory:
             body.face_guids.append(face.key)
         return body
 
+    @staticmethod
     def box(
         name: str,
         face_stub: FaceStub,
@@ -169,14 +227,14 @@ class BodyFactory:
         ----------
         name : str
             Name of the box.
-        face_stub : FaceStub
-            face stub, example speos.client.faces()
+        face_stub : ansys.speos.core.face.FaceStub
+            Face stub, example speos.client.faces()
         description : str, optional
             Description of the box.
             By default, ``""``.
         base : ansys.speos.core.geometry_utils.AxisSystem, optional
             Center and orientation of the box.
-            By default, ``ansys.speos.core.geometry_utils.AxisSystem()``.
+            By default, ``AxisSystem()``.
         x_size : float, optional
             size regarding x axis.
             By default, ``200``.
@@ -195,7 +253,7 @@ class BodyFactory:
 
         Returns
         -------
-        Body
+        body.Body
             Body message created.
         """
         body = Body(name=name, description=description)
