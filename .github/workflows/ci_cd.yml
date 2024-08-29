@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: PyAnsys code style checks
-        uses: ansys/actions/code-style@v6
+        uses: ansys/actions/code-style@v7
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
 
@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: PyAnsys documentation style checks
-        uses: ansys/actions/doc-style@v6
+        uses: ansys/actions/doc-style@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -45,7 +45,7 @@ jobs:
     needs: [docs-style]
     steps:
       - name: "Run Ansys documentation building action"
-        uses: ansys/actions/doc-build@v6
+        uses: ansys/actions/doc-build@v7
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           check-links: false
@@ -94,7 +94,7 @@ jobs:
     needs: [docs-build, tests]
     steps:
       - name: "Build library source and wheel artifacts"
-        uses: ansys/actions/build-library@v6
+        uses: ansys/actions/build-library@v7
         with:
           library-name: ${{ env.PACKAGE_NAME }}
 
@@ -105,7 +105,7 @@ jobs:
     needs: [build-library]
     steps:
       - name: "Deploy developers documentation"
-        uses: ansys/actions/doc-deploy-dev@v6
+        uses: ansys/actions/doc-deploy-dev@v7
         with:
             cname: ${{ env.DOCUMENTATION_CNAME }}
             token: ${{ secrets.GITHUB_TOKEN }}
@@ -132,6 +132,6 @@ jobs:
     #      twine-token: ${{ secrets.PYPI_TOKEN }}
 #
     - name: "Release to GitHub"
-      uses: ansys/actions/release-github@v6
+      uses: ansys/actions/release-github@v7
       with:
         library-name: ${{ env.PACKAGE_NAME }}
