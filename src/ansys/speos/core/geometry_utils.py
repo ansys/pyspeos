@@ -52,9 +52,13 @@ class AxisSystem:
         z_vect: Optional[List[float]] = [0, 0, 1],
     ) -> None:
         self.origin = origin
+        """Origin of the axis system"""
         self.x_vect = x_vect
+        """X vector of the axis system"""
         self.y_vect = y_vect
+        """Y vector of the axis system"""
         self.z_vect = z_vect
+        """Z vector of the axis system"""
 
 
 class AxisPlane:
@@ -81,8 +85,11 @@ class AxisPlane:
         y_vect: Optional[List[float]] = [0, 1, 0],
     ) -> None:
         self.origin = origin
+        """Origin of the axis plane"""
         self.x_vect = x_vect
+        """X vector of the axis plane"""
         self.y_vect = y_vect
+        """Y vector of the axis plane"""
 
 
 class GeoPaths:
@@ -105,6 +112,7 @@ class GeoPaths:
 
     def __init__(self, geo_paths: Optional[List[str]] = []) -> None:
         self.geo_paths = geo_paths
+        """List of geometry paths"""
 
 
 class GeoPathWithReverseNormal:
@@ -132,4 +140,6 @@ class GeoPathWithReverseNormal:
 
     def __init__(self, geo_path: Optional[str] = "", reverse_normal: Optional[bool] = False) -> None:
         self.geo_path = geo_path
+        """Geometry path"""
         self.reverse_normal = reverse_normal
+        """Is normal reversed"""
