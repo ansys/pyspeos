@@ -306,7 +306,30 @@ class SpeosClient:
         FaceLink,
         None,
     ]:
-        """Get item from key."""
+        """Get item from key.
+
+        Parameters
+        ----------
+        key : str
+            Key of the item (also named guid).
+
+        Returns
+        -------
+        Union[ansys.speos.core.sop_template.SOPTemplateLink, \
+ansys.speos.core.vop_template.VOPTemplateLink, \
+ansys.speos.core.spectrum.SpectrumLink, \
+ansys.speos.core.intensity_template.IntensityTemplateLink, \
+ansys.speos.core.source_template.SourceTemplateLink, \
+ansys.speos.core.sensor_template.SensorTemplateLink, \
+ansys.speos.core.simulation_template.SimulationTemplateLink, \
+ansys.speos.core.scene.SceneLink, \
+ansys.speos.core.job.JobLink, \
+ansys.speos.core.part.PartLink, \
+ansys.speos.core.body.BodyLink, \
+ansys.speos.core.face.FaceLink, \
+None]
+            Link object corresponding to the key - None if no objects corresponds to the key.
+        """
         if self._closed:
             raise ConnectionAbortedError()
         for sop in self.sop_templates().list():
