@@ -27,10 +27,10 @@ classifiers=[
 ]
 dependencies=[
     "protobuf>=3.20,<6",
-    "grpcio==1.65.4",
+    "grpcio==1.66.1",
     "grpcio-health-checking==1.48.2",
     "ansys-api-speos==0.6.0",
-    "numpy~=2.0.0",
+    "numpy~=2.1.0",
     "pyvista==0.44.1",
     "comtypes==1.4.6",
 ]
@@ -48,11 +48,11 @@ jupyter = [
     "pyvista[jupyter]",
 ]
 doc = [
-    "ansys-sphinx-theme==0.16.6",
-    "numpydoc==1.7.0",
-    "Sphinx==7.4.7",
+    "ansys-sphinx-theme==1.0.7",
+    "numpydoc==1.8.0",
+    "Sphinx==8.0.2",
     "sphinx-copybutton==0.5.2",
-    "sphinx-autoapi==3.2.1",
+    "sphinx-autoapi==3.3.0",
     "sphinx_design==0.6.1",
     "sphinx-jinja==2.0.2",
 ]
