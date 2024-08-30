@@ -50,7 +50,7 @@ jupyter = [
 doc = [
     "ansys-sphinx-theme==1.0.7",
     "numpydoc==1.8.0",
-    "Sphinx==7.4.7",
+    "Sphinx==8.0.2",
     "sphinx-copybutton==0.5.2",
     "sphinx-autoapi==3.2.1",
     "sphinx_design==0.6.1",
