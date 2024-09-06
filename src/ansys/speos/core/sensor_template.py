@@ -279,6 +279,28 @@ class SensorTemplateFactory:
             self.type = type
             self.value = values
 
+    class RadianceSettings:
+        """
+        Represents radiance settings.
+
+        Parameters
+        ----------
+        focal : float, optional
+            Distance between the center of the optical system and the focus. (mm)
+            By default, ``250``.
+        integration_angle : float, optional
+            in degrees represents the integration of the angle
+            By default, ``5``.
+        """
+
+        def __init__(
+            self,
+            focal: Optional[float] = 250,
+            integration_angle: Optional[float] = 5,
+        ) -> None:
+            self.focal = focal
+            self.integration_angle = integration_angle
+
     def irradiance(
         name: str,
         type: Optional[Type] = Type.Photometric,
@@ -476,5 +498,81 @@ class SensorTemplateFactory:
         ssr.camera_sensor_template.vert_pixel = dimensions.vert_pixel
         ssr.camera_sensor_template.width = dimensions.width
         ssr.camera_sensor_template.height = dimensions.height
+
+        return ssr
+
+    def radiance(
+        name: str,
+        description: Optional[str] = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        type: Optional[Type] = Type.Photometric,
+        wavelengths_range: Optional[WavelengthsRange] = None,
+        dimensions: Optional[Dimensions] = Dimensions(),
+        settings: Optional[RadianceSettings] = RadianceSettings(),
+    ) -> SensorTemplate:
+        """
+        Create a SensorTemplate message, with radiance type.
+
+        Parameters
+        ----------
+        name : str
+            Name of the sensor template.
+        type : SensorTemplateFactory.Type, optional
+            Type of the sensor.
+            By default, ``SensorTemplateFactory.Type.Photometric``.
+        description : str, optional
+            Description of the sensor template.
+            By default, ``""``.
+        metadata : Mapping[str, str], optional
+            Metadata of the sensor template.
+            By default, ``None``.
+        wavelengths_range : SensorTemplateFactory.WavelengthsRange, optional
+            Range of wavelengths.
+            By default, ``SensorTemplateFactory.WavelengthsRange()``.
+        dimensions : SensorTemplateFactory.Dimensions, optional
+            Dimensions of the sensor.
+            By default, ``SensorTemplateFactory.Dimensions()``.
+        settings : SensorTemplateFactory.RadianceSettings, optional
+            Settings for the radiance.
+            By default, ``SensorTemplateFactory.RadianceSettings()``.
+        Returns
+        -------
+        SensorTemplate
+            SensorTemplate message created.
+
+        Raises
+        ------
+        ValueError
+            Raised when wavelengths_range is not given but expected.
+        """
+        ssr = SensorTemplate(name=name, description=description)
+        if metadata is not None:
+            ssr.metadata.update(metadata)
+        if type == SensorTemplateFactory.Type.Photometric:
+            ssr.radiance_sensor_template.sensor_type_photometric.SetInParent()
+        elif type == SensorTemplateFactory.Type.Colorimetric:
+            if wavelengths_range is None:
+                raise ValueError("For colorimetric type, please provide wavelengths_range parameter")
+            ssr.radiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_start = wavelengths_range.start
+            ssr.radiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_end = wavelengths_range.end
+            ssr.radiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_sampling = wavelengths_range.sampling
+        elif type == SensorTemplateFactory.Type.Radiometric:
+            ssr.radiance_sensor_template.sensor_type_radiometric.SetInParent()
+        elif type == SensorTemplateFactory.Type.Spectral:
+            if wavelengths_range is None:
+                raise ValueError("For spectral type, please provide wavelengths_range parameter")
+            ssr.radiance_sensor_template.sensor_type_spectral.wavelengths_range.w_start = wavelengths_range.start
+            ssr.radiance_sensor_template.sensor_type_spectral.wavelengths_range.w_end = wavelengths_range.end
+            ssr.radiance_sensor_template.sensor_type_spectral.wavelengths_range.w_sampling = wavelengths_range.sampling
+
+        ssr.radiance_sensor_template.dimensions.x_start = dimensions.x_start
+        ssr.radiance_sensor_template.dimensions.x_end = dimensions.x_end
+        ssr.radiance_sensor_template.dimensions.x_sampling = dimensions.x_sampling
+        ssr.radiance_sensor_template.dimensions.y_start = dimensions.y_start
+        ssr.radiance_sensor_template.dimensions.y_end = dimensions.y_end
+        ssr.radiance_sensor_template.dimensions.y_sampling = dimensions.y_sampling
+
+        ssr.radiance_sensor_template.focal = settings.focal
+        ssr.radiance_sensor_template.integration_angle = settings.integration_angle
 
         return ssr

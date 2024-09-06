@@ -549,7 +549,11 @@ class SceneFactory:
     def sensor_instance(
         name: str,
         sensor_template: SensorTemplateLink,
-        properties: Union[Scene.SensorInstance.CameraSensorProperties, Scene.SensorInstance.IrradianceSensorProperties],
+        properties: Union[
+            Scene.SensorInstance.CameraSensorProperties,
+            Scene.SensorInstance.IrradianceSensorProperties,
+            Scene.SensorInstance.RadianceSensorProperties,
+        ],
         description: Optional[str] = "",
         metadata: Optional[Mapping[str, str]] = None,
     ) -> Scene.SensorInstance:
@@ -562,12 +566,15 @@ class SceneFactory:
             Name of the sensor instance.
         sensor_template : SensorTemplateLink
             Sensor template used as a base of this instance.
-        properties : Union[Scene.SensorInstance.CameraSensorProperties, Scene.SensorInstance.IrradianceSensorProperties]
+        properties : Union[ Scene.SensorInstance.CameraSensorProperties,
+                            Scene.SensorInstance.IrradianceSensorProperties,
+                            Scene.SensorInstance.RadianceSensorProperties]
             Properties to apply to this sensor instance.
             Choose the correct properties type depending on the sensor template.
             Example:
             In case sensor_template.get().HasField("camera_sensor_template") is True, use CameraSensorProperties
             In case sensor_template.get().HasField("irradiance_sensor_template") is True, use IrradianceSensorProperties
+            In case sensor_template.get().HasField("radiance_sensor_template") is True, use RadianceSensorProperties
         description : str, optional
             Description of the sensor instance.
             By default, ``""``.
@@ -588,6 +595,8 @@ class SceneFactory:
             ssr_i.camera_sensor_properties.CopyFrom(properties)
         elif isinstance(properties, Scene.SensorInstance.IrradianceSensorProperties):
             ssr_i.irradiance_sensor_properties.CopyFrom(properties)
+        elif isinstance(properties, Scene.SensorInstance.RadianceSensorProperties):
+            ssr_i.radiance_sensor_properties.CopyFrom(properties)
         return ssr_i
 
     def camera_sensor_props(
@@ -699,6 +708,54 @@ class SceneFactory:
             irr_props.integration_direction.extend(integration_direction)
 
         return irr_props
+
+    def radiance_sensor_props(
+        axis_system: Optional[AxisSystem] = AxisSystem(),
+        observer_point: Optional[List[float]] = [0, 0, 0],
+        layer_type: Optional[
+            Union[
+                Properties.Sensor.LayerType.Source,
+                Properties.Sensor.LayerType.Sequence,
+            ]
+        ] = None,
+    ) -> Scene.SensorInstance.RadianceSensorProperties:
+        """
+        Create a RadianceSensorProperties message.
+
+        Parameters
+        ----------
+        axis_system : ansys.speos.core.geometry_utils.AxisSystem, optional
+            Position of the sensor.
+            By default, ``ansys.speos.core.geometry_utils.AxisSystem()``.
+        observer_point : Represents an position 3D., optional
+            to position the focal.
+            By default, ``0,0,0``.
+        layer_type : Union[Properties.Sensor.LayerType.Source, \
+                        Properties.Sensor.LayerType.Sequence, optional
+            Layer type for the sensor.
+            By default, ``None``, ie no layers.
+
+        Returns
+        -------
+        Scene.SensorInstance.RadianceSensorProperties
+            RadianceSensorProperties message created.
+        """
+        rs_props = Scene.SensorInstance.RadianceSensorProperties()
+        rs_props.axis_system.extend(axis_system.origin + axis_system.x_vect + axis_system.y_vect + axis_system.z_vect)
+        rs_props.observer_point.extend(observer_point[0] + observer_point[1] + observer_point[2])
+
+        if layer_type is None:
+            rs_props.layer_type_none.SetInParent()
+        elif isinstance(layer_type, SceneFactory.Properties.Sensor.LayerType.Source):
+            rs_props.layer_type_source.SetInParent()
+        elif isinstance(layer_type, SceneFactory.Properties.Sensor.LayerType.Sequence):
+            rs_props.layer_type_sequence.maximum_nb_of_sequence = layer_type.maximum_nb_of_sequence
+            if layer_type.sequence_type == SceneFactory.Properties.Sensor.LayerType.Sequence.Type.Geometries:
+                rs_props.layer_type_sequence.define_sequence_per = Scene.SensorInstance.LayerTypeSequence.EnumSequenceType.Geometries
+            elif layer_type.sequence_type == SceneFactory.Properties.Sensor.LayerType.Sequence.Type.Faces:
+                rs_props.layer_type_sequence.define_sequence_per = Scene.SensorInstance.LayerTypeSequence.EnumSequenceType.Faces
+
+        return rs_props
 
     def simulation_instance(
         name: str,

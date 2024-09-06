@@ -173,9 +173,55 @@ def test_sensor_template_factory(speos: Speos):
         )
     assert exc.value.args[0] == "For colorimetric type, please provide wavelengths_range parameter"
 
+    # Radiance sensor template photometric
+    radiance_t0 = sensor_t_db.create(
+        message=SensorTemplateFactory.radiance(
+            name="radiance_photometric",
+            description="radiance sensor template photometric",
+            type=SensorTemplateFactory.Type.Photometric,
+            dimensions=SensorTemplateFactory.Dimensions(
+                x_start=-50.0, x_end=50.0, x_sampling=100, y_start=-50.0, y_end=50.0, y_sampling=100
+            ),
+            settings=SensorTemplateFactory.RadianceSettings(focal=300, integration_angle=10),
+        )
+    )
+    assert radiance_t0.key != ""
+
+    # Radiance sensor template colorimetric -> wavelengths_range is needed
+    radiance_t1 = sensor_t_db.create(
+        message=SensorTemplateFactory.radiance(
+            name="radiance_colorimetric",
+            description="Radiance sensor template colorimetric",
+            type=SensorTemplateFactory.Type.Colorimetric,
+            dimensions=SensorTemplateFactory.Dimensions(
+                x_start=-50.0, x_end=50.0, x_sampling=100, y_start=-50.0, y_end=50.0, y_sampling=100
+            ),
+            wavelengths_range=SensorTemplateFactory.WavelengthsRange(start=400, end=800, sampling=10),
+            settings=SensorTemplateFactory.RadianceSettings(focal=300, integration_angle=10),
+        )
+    )
+    assert radiance_t1.key != ""
+
+    # Radiance sensor template colorimetric -> wavelengths_range is needed but not provided
+    with pytest.raises(ValueError) as exc:
+        sensor_t_db.create(
+            message=SensorTemplateFactory.radiance(
+                name="radiance_colorimetric",
+                description="Radiance sensor template colorimetric",
+                type=SensorTemplateFactory.Type.Colorimetric,
+                dimensions=SensorTemplateFactory.Dimensions(
+                    x_start=-50.0, x_end=50.0, x_sampling=100, y_start=-50.0, y_end=50.0, y_sampling=100
+                ),
+                settings=SensorTemplateFactory.RadianceSettings(focal=300, integration_angle=10),
+            )
+        )
+    assert exc.value.args[0] == "For colorimetric type, please provide wavelengths_range parameter"
+
     camera_t0.delete()
     camera_t1.delete()
     camera_t2.delete()
     camera_t3.delete()
     irradiance_t0.delete()
     irradiance_t1.delete()
+    radiance_t0.delete()
+    radiance_t1.delete()

@@ -143,6 +143,36 @@ def create_basic_scene(speos: Speos) -> SceneLink:
         integration_direction=[0, 0, 1],
     )
 
+    # Create two radiance sensor templates: photometric, colorimetric
+    ssr_t_r_photo = speos.client.sensor_templates().create(
+        message=SensorTemplateFactory.radiance(
+            name="radiance_photometric",
+            description="Radiance sensor template photometric",
+            type=SensorTemplateFactory.Type.Photometric,
+            dimensions=SensorTemplateFactory.Dimensions(
+                x_start=-1000.0, x_end=1000.0, x_sampling=200, y_start=-1000.0, y_end=1000.0, y_sampling=200
+            ),
+            settings=SensorTemplateFactory.RadianceSettings(focal=300, integration_angle=10),
+        )
+    )
+    ssr_t_r_colo = speos.client.sensor_templates().create(
+        message=SensorTemplateFactory.radiance(
+            name="radiance_colorimetric",
+            description="Radiance sensor template colorimetric",
+            type=SensorTemplateFactory.Type.Colorimetric,
+            dimensions=SensorTemplateFactory.Dimensions(
+                x_start=-1000.0, x_end=1000.0, x_sampling=200, y_start=-1000.0, y_end=1000.0, y_sampling=200
+            ),
+            settings=SensorTemplateFactory.RadianceSettings(focal=300, integration_angle=10),
+            wavelengths_range=SensorTemplateFactory.WavelengthsRange(start=300, end=700, sampling=13),
+        )
+    )
+    r_sensor_props = SceneFactory.radiance_sensor_props(
+        axis_system=AxisSystem(origin=[0, 0, 1000], x_vect=[1, 0, 0], y_vect=[0, 1, 0], z_vect=[0, 0, -1]),
+        observer_point=[0, 0, 0],
+        layer_type=SceneFactory.Properties.Sensor.LayerType.Source(),
+    )
+
     # Create simu templates with default params
     direct_t = speos.client.simulation_templates().create(
         message=SimulationTemplateFactory.direct_mc(name="direct_simu", description="Direct simulation template with default parameters")
@@ -208,6 +238,16 @@ def create_basic_scene(speos: Speos) -> SceneLink:
                     name="irradiance_colorimetric.1",
                     sensor_template=ssr_t_irr_colo,
                     properties=irr_sensor_props,
+                ),
+                SceneFactory.sensor_instance(
+                    name="radiance_photometric.1",
+                    sensor_template=ssr_t_r_photo,
+                    properties=r_sensor_props,
+                ),
+                SceneFactory.sensor_instance(
+                    name="radiance_colorimetric.1",
+                    sensor_template=ssr_t_r_colo,
+                    properties=r_sensor_props,
                 ),
             ],
             simulation_instances=[
