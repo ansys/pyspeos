@@ -707,7 +707,7 @@ class OpticalBody:
         if self.__opt_sop_type == "optical_polished":
             self.__opt_sop_instance = core.scene.SceneFactory.sop_instance(
                 name="sop of body {}: {}".format(self.name, self.__opt_sop_type),
-                sop_template=speos.client.sop_templates().create(
+                sop_template=self.__speos.client.sop_templates().create(
                     message=core.sop_template.SOPTemplateFactory.optical_polished(
                         name="sop of body {}: {}".format(self.name, self.__opt_sop_type)
                     ),
@@ -717,7 +717,7 @@ class OpticalBody:
         elif self.__opt_sop_type == "mirror":
             self.__opt_sop_instance = core.scene.SceneFactory.sop_instance(
                 name="sop of body {}: {}".format(self.name, self.__opt_sop_type),
-                sop_template=speos.client.sop_templates().create(
+                sop_template=self.__speos.client.sop_templates().create(
                     message=core.sop_template.SOPTemplateFactory.mirror(
                         name="sop of body {}: {}".format(self.name, self.__opt_sop_type),
                         reflectance=self.__opt_sop_reflection,
@@ -728,7 +728,7 @@ class OpticalBody:
         elif self.__opt_sop_type == "library":
             self.__opt_sop_instance = core.scene.SceneFactory.sop_instance(
                 name="sop of body {}: {}".format(self.name, self.__opt_sop_type),
-                sop_template=speos.client.sop_templates().create(
+                sop_template=self.__speos.client.sop_templates().create(
                     message=core.sop_template.SOPTemplateFactory.library(
                         name="sop of body {}: {}".format(self.name, self.__opt_sop_type),
                         sop_file_uri=self.__opt_sop_file_path,
@@ -865,10 +865,10 @@ class DirectSimulation:
         return new_job
 
     def gpu_compute(self):
-        self.__compute(cpu_compute=False)
+        return self.__compute(cpu_compute=False)
 
     def cpu_compute(self):
-        self.__compute(cpu_compute=True)
+        return self.__compute(cpu_compute=True)
 
 
 class SpeosProject:
