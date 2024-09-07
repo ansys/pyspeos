@@ -28,6 +28,9 @@ import time
 import uuid
 
 import ansys.api.speos.job.v2.job_pb2 as job_pb2
+from comtypes.client import CreateObject
+import matplotlib.image as mpimg
+import matplotlib.pyplot as plt
 
 import ansys.speos.core as core
 import ansys.speos.workflow as workflow
@@ -96,6 +99,32 @@ class Utilities:
         if iteration == total:
             sys.stdout.write("\n")
             sys.stdout.flush()
+
+    def open_file(file):
+        dpf_instance = None
+        if file.endswith("xmp") or file.endswith("XMP"):
+            dpf_instance = CreateObject("XMPViewer.Application")
+            dpf_instance.OpenFile(file)
+            res = dpf_instance.ExportXMPImage(file + ".png", 1)
+            if res:
+                img = mpimg.imread(file + ".png")
+                plt.imshow(img)
+                plt.axis("off")  # turns off axes
+                plt.axis("tight")  # gets rid of white border
+                plt.axis("image")  # square up the image instead of filling the "figure" space
+                plt.show()
+        elif file.endswith("hdr") or file.endswith("HDR"):
+            dpf_instance = CreateObject("HDRIViewer.Application")
+            dpf_instance.OpenFile(file)
+            dpf_instance.Show(1)
+        elif file.endswith("png") or file.endswith("PNG"):
+            img = mpimg.imread(file)
+            plt.imshow(img)
+            plt.axis("off")  # turns off axes
+            plt.axis("tight")  # gets rid of white border
+            plt.axis("image")  # square up the image instead of filling the "figure" space
+            plt.show()
+        return dpf_instance
 
 
 class SourceIntensity:
@@ -911,198 +940,203 @@ class SpeosProject:
         return simulation
 
 
-speos = core.Speos(host="localhost", port=50051)
-workflow.clean_all_dbs(speos.client)
+if __name__ == "__main__":
+    print("Hello, World!")
+    speos = core.Speos(host="localhost", port=50051)
+    workflow.clean_all_dbs(speos.client)
 
-Debug_Solid_Mesh = OptBodyMesh(body_name="Solid")
-Debug_Solid_Mesh.faces_nb = 6
-for face_id in range(Debug_Solid_Mesh.faces_nb):
-    face_info = OptFaceMesh(id=face_id, facets_number=2, vertices_number=4)
-    Debug_Solid_Mesh.faces.append(face_info)
-    for facet_id in range(face_info.facets_nb):
-        facet_info = OptFacetMesh(facet_id)
-        face_info.facets.append(facet_info)
-        if facet_id == 0:
-            facet_info.vertice_ids = [1, 2, 0]
-        else:
-            facet_info.vertice_ids = [2, 3, 0]
-    if face_id == 0:
-        face_info.vertice_coordinates = [
-            -0.0050000000000000001,
-            0.0,
-            0.0050000000000000001,
-            -0.0050000000000000001,
-            0.0,
-            -0.0050000000000000001,
-            0.0050000000000000001,
-            0.0,
-            -0.0050000000000000001,
-            0.0050000000000000001,
-            0.0,
-            0.0050000000000000001,
-        ]
-        face_info.vertice_normals = [-0.0, -1.0, -0.0, -0.0, -1.0, -0.0, -0.0, -1.0, -0.0, -0.0, -1.0, -0.0]
-    elif face_id == 1:
-        face_info.vertice_coordinates = [
-            0.0050000000000000001,
-            0.0,
-            -0.0050000000000000001,
-            0.0050000000000000001,
-            0.01,
-            -0.0050000000000000001,
-            0.0050000000000000001,
-            0.01,
-            0.0050000000000000001,
-            0.0050000000000000001,
-            0.0,
-            0.0050000000000000001,
-        ]
-        face_info.vertice_normals = [1.0, -0.0, 0.0, 1.0, -0.0, 0.0, 1.0, -0.0, 0.0, 1.0, -0.0, 0.0]
-    elif face_id == 2:
-        face_info.vertice_coordinates = [
-            -0.0050000000000000001,
-            0.01,
-            0.0050000000000000001,
-            0.0050000000000000001,
-            0.01,
-            0.0050000000000000001,
-            0.0050000000000000001,
-            0.01,
-            -0.0050000000000000001,
-            -0.0050000000000000001,
-            0.01,
-            -0.0050000000000000001,
-        ]
-        face_info.vertice_normals = [0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0]
-    elif face_id == 3:
-        face_info.vertice_coordinates = [
-            -0.0050000000000000001,
-            0.0,
-            -0.0050000000000000001,
-            -0.0050000000000000001,
-            0.01,
-            -0.0050000000000000001,
-            0.0050000000000000001,
-            0.01,
-            -0.0050000000000000001,
-            0.0050000000000000001,
-            0.0,
-            -0.0050000000000000001,
-        ]
-        face_info.vertice_normals = [0.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0]
-    elif face_id == 4:
-        face_info.vertice_coordinates = [
-            -0.0050000000000000001,
-            0.0,
-            0.0050000000000000001,
-            -0.0050000000000000001,
-            0.01,
-            0.0050000000000000001,
-            -0.0050000000000000001,
-            0.01,
-            -0.0050000000000000001,
-            -0.0050000000000000001,
-            0.0,
-            -0.0050000000000000001,
-        ]
-        face_info.vertice_normals = [-1.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0]
-    elif face_id == 5:
-        face_info.vertice_coordinates = [
-            0.0050000000000000001,
-            0.0,
-            0.0050000000000000001,
-            0.0050000000000000001,
-            0.01,
-            0.0050000000000000001,
-            -0.0050000000000000001,
-            0.01,
-            0.0050000000000000001,
-            -0.0050000000000000001,
-            0.0,
-            0.0050000000000000001,
-        ]
-        face_info.vertice_normals = [0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0]
-    face_info.vertice_coordinates = [item * 1000 for item in face_info.vertice_coordinates]
-Debug_Surface_Mesh = OptBodyMesh(body_name="Surface")
-Debug_Surface_Mesh.faces_nb = 1
-for face_id in range(Debug_Surface_Mesh.faces_nb):
-    face_info = OptFaceMesh(id=face_id, facets_number=2, vertices_number=4)
-    Debug_Surface_Mesh.faces.append(face_info)
-    for facet_id in range(face_info.facets_nb):
-        facet_info = OptFacetMesh(facet_id)
-        face_info.facets.append(facet_info)
-        if facet_id == 0:
-            facet_info.vertice_ids = [1, 2, 0]
-        else:
-            facet_info.vertice_ids = [2, 3, 0]
-    if face_id == 0:
-        face_info.vertice_coordinates = [
-            -0.0050000000000000001,
-            -0.011228,
-            0.0050000000000000001,
-            0.0050000000000000001,
-            -0.011228,
-            0.0050000000000000001,
-            0.0050000000000000001,
-            -0.011228,
-            -0.0050000000000000001,
-            -0.0050000000000000001,
-            -0.011228,
-            -0.0050000000000000001,
-        ]
-        face_info.vertice_normals = [0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0]
-    face_info.vertice_coordinates = [item * 1000 for item in face_info.vertice_coordinates]
+    Debug_Solid_Mesh = OptBodyMesh(body_name="Solid")
+    Debug_Solid_Mesh.faces_nb = 6
+    for face_id in range(Debug_Solid_Mesh.faces_nb):
+        face_info = OptFaceMesh(id=face_id, facets_number=2, vertices_number=4)
+        Debug_Solid_Mesh.faces.append(face_info)
+        for facet_id in range(face_info.facets_nb):
+            facet_info = OptFacetMesh(facet_id)
+            face_info.facets.append(facet_info)
+            if facet_id == 0:
+                facet_info.vertice_ids = [1, 2, 0]
+            else:
+                facet_info.vertice_ids = [2, 3, 0]
+        if face_id == 0:
+            face_info.vertice_coordinates = [
+                -0.0050000000000000001,
+                0.0,
+                0.0050000000000000001,
+                -0.0050000000000000001,
+                0.0,
+                -0.0050000000000000001,
+                0.0050000000000000001,
+                0.0,
+                -0.0050000000000000001,
+                0.0050000000000000001,
+                0.0,
+                0.0050000000000000001,
+            ]
+            face_info.vertice_normals = [-0.0, -1.0, -0.0, -0.0, -1.0, -0.0, -0.0, -1.0, -0.0, -0.0, -1.0, -0.0]
+        elif face_id == 1:
+            face_info.vertice_coordinates = [
+                0.0050000000000000001,
+                0.0,
+                -0.0050000000000000001,
+                0.0050000000000000001,
+                0.01,
+                -0.0050000000000000001,
+                0.0050000000000000001,
+                0.01,
+                0.0050000000000000001,
+                0.0050000000000000001,
+                0.0,
+                0.0050000000000000001,
+            ]
+            face_info.vertice_normals = [1.0, -0.0, 0.0, 1.0, -0.0, 0.0, 1.0, -0.0, 0.0, 1.0, -0.0, 0.0]
+        elif face_id == 2:
+            face_info.vertice_coordinates = [
+                -0.0050000000000000001,
+                0.01,
+                0.0050000000000000001,
+                0.0050000000000000001,
+                0.01,
+                0.0050000000000000001,
+                0.0050000000000000001,
+                0.01,
+                -0.0050000000000000001,
+                -0.0050000000000000001,
+                0.01,
+                -0.0050000000000000001,
+            ]
+            face_info.vertice_normals = [0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0]
+        elif face_id == 3:
+            face_info.vertice_coordinates = [
+                -0.0050000000000000001,
+                0.0,
+                -0.0050000000000000001,
+                -0.0050000000000000001,
+                0.01,
+                -0.0050000000000000001,
+                0.0050000000000000001,
+                0.01,
+                -0.0050000000000000001,
+                0.0050000000000000001,
+                0.0,
+                -0.0050000000000000001,
+            ]
+            face_info.vertice_normals = [0.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0]
+        elif face_id == 4:
+            face_info.vertice_coordinates = [
+                -0.0050000000000000001,
+                0.0,
+                0.0050000000000000001,
+                -0.0050000000000000001,
+                0.01,
+                0.0050000000000000001,
+                -0.0050000000000000001,
+                0.01,
+                -0.0050000000000000001,
+                -0.0050000000000000001,
+                0.0,
+                -0.0050000000000000001,
+            ]
+            face_info.vertice_normals = [-1.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0]
+        elif face_id == 5:
+            face_info.vertice_coordinates = [
+                0.0050000000000000001,
+                0.0,
+                0.0050000000000000001,
+                0.0050000000000000001,
+                0.01,
+                0.0050000000000000001,
+                -0.0050000000000000001,
+                0.01,
+                0.0050000000000000001,
+                -0.0050000000000000001,
+                0.0,
+                0.0050000000000000001,
+            ]
+            face_info.vertice_normals = [0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0]
+        face_info.vertice_coordinates = [item * 1000 for item in face_info.vertice_coordinates]
+    Debug_Surface_Mesh = OptBodyMesh(body_name="Surface")
+    Debug_Surface_Mesh.faces_nb = 1
+    for face_id in range(Debug_Surface_Mesh.faces_nb):
+        face_info = OptFaceMesh(id=face_id, facets_number=2, vertices_number=4)
+        Debug_Surface_Mesh.faces.append(face_info)
+        for facet_id in range(face_info.facets_nb):
+            facet_info = OptFacetMesh(facet_id)
+            face_info.facets.append(facet_info)
+            if facet_id == 0:
+                facet_info.vertice_ids = [1, 2, 0]
+            else:
+                facet_info.vertice_ids = [2, 3, 0]
+        if face_id == 0:
+            face_info.vertice_coordinates = [
+                -0.0050000000000000001,
+                -0.011228,
+                0.0050000000000000001,
+                0.0050000000000000001,
+                -0.011228,
+                0.0050000000000000001,
+                0.0050000000000000001,
+                -0.011228,
+                -0.0050000000000000001,
+                -0.0050000000000000001,
+                -0.011228,
+                -0.0050000000000000001,
+            ]
+            face_info.vertice_normals = [0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0]
+        face_info.vertice_coordinates = [item * 1000 for item in face_info.vertice_coordinates]
 
-""" Create an empty Speos project """
-Sim = SpeosProject(speos, "pySpeos test")
+    """ Create an empty Speos project """
+    Sim = SpeosProject(speos, "pySpeos test")
 
-""" Add geometries into Speos project """
-""" to be compatible with pyGeometry  """
-solid = Sim.add_optical_body(Debug_Solid_Mesh)  # default material property as VOP none and SOP Mirror
-solid.volume_properties_type = "optic"  # default optic as index 1.5 with absorption 0
-solid.surface_properties_type = "optical_polished"
-surface = Sim.add_optical_body(Debug_Surface_Mesh)
-surface.volume_properties_type = "opaque"
-surface.surface_properties_type = "mirror"  # default mirror as 100% reflectance
+    """ Add geometries into Speos project """
+    """ to be compatible with pyGeometry  """
+    solid = Sim.add_optical_body(Debug_Solid_Mesh)  # default material property as VOP none and SOP Mirror
+    solid.volume_properties_type = "optic"  # default optic as index 1.5 with absorption 0
+    solid.surface_properties_type = "optical_polished"
+    surface = Sim.add_optical_body(Debug_Surface_Mesh)
+    surface.volume_properties_type = "opaque"
+    surface.surface_properties_type = "mirror"  # default mirror as 100% reflectance
 
-""" Add surface source int Speos project """
-"""   surface source default as lambertian 180 and monochromatic 555 nm """
-surface_source = Sim.create_source_surface(name="pySpeos surface source", faces_list=surface.optical_faces)
-surface_source.spectrum.type = "blackbody"  # change spectrum type to blackbody: default blackbody as 2856k
-surface_source.intensity.type = "symmetric gaussian"  # change intensity to symmetric gaussian default with total
-# angle 180 and 30 FWHM
-surface_source.intensity.total_angle = 180
-surface_source.intensity.FWHM_angle = 35
+    """ Add surface source int Speos project """
+    """   surface source default as lambertian 180 and monochromatic 555 nm """
+    surface_source = Sim.create_source_surface(name="pySpeos surface source", faces_list=surface.optical_faces)
+    surface_source.spectrum.type = "blackbody"  # change spectrum type to blackbody: default blackbody as 2856k
+    surface_source.intensity.type = "symmetric gaussian"  # change intensity to symmetric gaussian default with total
+    # angle 180 and 30 FWHM
+    surface_source.intensity.total_angle = 180
+    surface_source.intensity.FWHM_angle = 35
 
-""" Add irradiance sensor into Speos project """
-"""  photometric plannar irradiance sensor and other default values from Speos """
-irradiance_sensor = Sim.create_sensor_irradiance(name="pySpeos irradiance sensor")
-irradiance_sensor.parameters.type = "spectral"  # change parameter type to spectral
-irradiance_sensor.properties.origin = [0, 20, 0]  # update sensor position
-irradiance_sensor.properties.x_vect = [1, 0, 0]
-irradiance_sensor.properties.y_vect = [0, 0, 1]
-irradiance_sensor.properties.z_vect = [0, 1, 0]
+    """ Add irradiance sensor into Speos project """
+    """  photometric plannar irradiance sensor and other default values from Speos """
+    irradiance_sensor = Sim.create_sensor_irradiance(name="pySpeos irradiance sensor")
+    irradiance_sensor.parameters.type = "spectral"  # change parameter type to spectral
+    irradiance_sensor.properties.origin = [0, 20, 0]  # update sensor position
+    irradiance_sensor.properties.x_vect = [1, 0, 0]
+    irradiance_sensor.properties.y_vect = [0, 0, 1]
+    irradiance_sensor.properties.z_vect = [0, 1, 0]
 
-""" Create simulation inside Speos project """
-"""  default with all the bodies, sources, and sensors and 200000 rays as stop condition """
-direct_sim = Sim.create_direction_simulation(name="pySpeos direction simulation")
-direct_sim.cpu_compute()
+    """ Create simulation inside Speos project """
+    """  default with all the bodies, sources, and sensors and 200000 rays as stop condition """
+    direct_sim = Sim.create_direction_simulation(name="pySpeos direction simulation")
+    res = direct_sim.cpu_compute()
+    Utilities.open_file(res.get_results().results[0].path)
 
-# Update simulation with new material property
-solid.volume_properties_type = "opaque"  # update material from optic to opaque
-solid.surface_properties_type = "mirror"
-direct_sim.cpu_compute()
+    # Update simulation with new material property
+    solid.volume_properties_type = "opaque"  # update material from optic to opaque
+    solid.surface_properties_type = "mirror"
+    direct_sim.cpu_compute()
 
-# Update simulation with new source intensity
-surface_source.intensity.type = "lambertian"  # update source intensity from symmetric gaussian to lambertian
-surface_source.intensity.total_angle = 10
-direct_sim.cpu_compute()
+    # Update simulation with new source intensity
+    surface_source.intensity.type = "lambertian"  # update source intensity from symmetric gaussian to lambertian
+    surface_source.intensity.total_angle = 10
+    res = direct_sim.cpu_compute()
+    Utilities.open_file(res.get_results().results[0].path)
 
-# Update simulation with new sensor property
-irradiance_sensor.parameters.x_range_start *= 0.5  # update sensor dimension and sampling
-irradiance_sensor.parameters.x_range_end *= 0.5
-irradiance_sensor.parameters.x_range_sampling *= 2
-irradiance_sensor.parameters.y_range_start *= 0.5
-irradiance_sensor.parameters.y_range_end *= 0.5
-irradiance_sensor.parameters.y_range_sampling *= 2
-direct_sim.gpu_compute()
+    # Update simulation with new sensor property
+    irradiance_sensor.parameters.x_range_start *= 0.5  # update sensor dimension and sampling
+    irradiance_sensor.parameters.x_range_end *= 0.5
+    irradiance_sensor.parameters.x_range_sampling *= 2
+    irradiance_sensor.parameters.y_range_start *= 0.5
+    irradiance_sensor.parameters.y_range_end *= 0.5
+    irradiance_sensor.parameters.y_range_sampling *= 2
+    res = direct_sim.gpu_compute()
+    Utilities.open_file(res.get_results().results[0].path)
