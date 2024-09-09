@@ -44,7 +44,7 @@ class IntensityTemplateLink(CrudItem):
     >>> from ansys.speos.core.intensity_template import IntensityTemplateFactory
     >>> speos = Speos(host="localhost", port=50051)
     >>> int_t_db = speos.client.intensity_templates()
-    >>> int_t_link = int_t_db.create(message=IntensityTemplateFactory.lambertian(name="Lambertian_170", total_angle=170))
+    >>> int_t_link = int_t_db.create(message=IntensityTemplateFactory.cos(name="Cos_3_170", N=3.0, total_angle=170))
 
     """
 
@@ -146,37 +146,6 @@ class IntensityTemplateFactory:
         intens.library.intensity_file_uri = file_uri
         return intens
 
-    def lambertian(
-        name: str, total_angle: Optional[float] = 180, description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None
-    ) -> IntensityTemplate:
-        """
-        Create a IntensityTemplate message, with lambertian type.
-
-        Parameters
-        ----------
-        name : str
-            Name of the intensity template.
-        total_angle : float, optional
-            Total angle in degrees of the emission of the light source.
-            By default, ``180``.
-        description : str, optional
-            Description of the intensity template.
-            By default, ``""``.
-        metadata : Mapping[str, str], optional
-            Metadata of the intensity template.
-            By default, ``None``.
-
-        Returns
-        -------
-        IntensityTemplate
-            IntensityTemplate message created.
-        """
-        intens = IntensityTemplate(name=name, description=description)
-        if metadata is not None:
-            intens.metadata.update(metadata)
-        intens.lambertian.total_angle = total_angle
-        return intens
-
     def cos(
         name: str,
         N: Optional[float] = 3,
@@ -216,46 +185,7 @@ class IntensityTemplateFactory:
         intens.cos.total_angle = total_angle
         return intens
 
-    def symmetric_gaussian(
-        name: str,
-        FWHM_angle: Optional[float] = 30,
-        total_angle: Optional[float] = 180,
-        description: Optional[str] = "",
-        metadata: Optional[Mapping[str, str]] = None,
-    ) -> IntensityTemplate:
-        """
-        Create a IntensityTemplate message, with symmetric gaussian type.
-
-        Parameters
-        ----------
-        name : str
-            Name of the intensity template.
-        FWHM_angle : float, optional
-            Full Width in degrees at Half Maximum.
-            By default, ``30``.
-        total_angle : float, optional
-            Total angle in degrees of the emission of the light source.
-            By default, ``180``.
-        description : str, optional
-            Description of the intensity template.
-            By default, ``""``.
-        metadata : Mapping[str, str], optional
-            Metadata of the intensity template.
-            By default, ``None``.
-
-        Returns
-        -------
-        IntensityTemplate
-            IntensityTemplate message created.
-        """
-        intens = IntensityTemplate(name=name, description=description)
-        if metadata is not None:
-            intens.metadata.update(metadata)
-        intens.symmetric_gaussian.FWHM_angle = FWHM_angle
-        intens.symmetric_gaussian.total_angle = total_angle
-        return intens
-
-    def asymmetric_gaussian(
+    def gaussian(
         name: str,
         FWHM_angle_x: Optional[float] = 30,
         FWHM_angle_y: Optional[float] = 30,
@@ -264,7 +194,7 @@ class IntensityTemplateFactory:
         metadata: Optional[Mapping[str, str]] = None,
     ) -> IntensityTemplate:
         """
-        Create a IntensityTemplate message, with asymmetric gaussian type.
+        Create a IntensityTemplate message, with gaussian type.
 
         Parameters
         ----------
@@ -294,7 +224,7 @@ class IntensityTemplateFactory:
         intens = IntensityTemplate(name=name, description=description)
         if metadata is not None:
             intens.metadata.update(metadata)
-        intens.asymmetric_gaussian.FWHM_angle_x = FWHM_angle_x
-        intens.asymmetric_gaussian.FWHM_angle_y = FWHM_angle_y
-        intens.asymmetric_gaussian.total_angle = total_angle
+        intens.gaussian.FWHM_angle_x = FWHM_angle_x
+        intens.gaussian.FWHM_angle_y = FWHM_angle_y
+        intens.gaussian.total_angle = total_angle
         return intens

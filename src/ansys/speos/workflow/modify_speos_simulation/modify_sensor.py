@@ -28,7 +28,7 @@ from typing import List, Optional
 
 from ansys.api.speos.job.v2 import job_pb2
 from ansys.api.speos.part.v1 import part_pb2
-from ansys.api.speos.scene.v1 import scene_pb2
+from ansys.api.speos.scene.v2 import scene_pb2
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2
 from google.protobuf.internal.containers import RepeatedScalarFieldContainer
 import numpy as np
@@ -226,13 +226,13 @@ class IrradianceSensorProperties(core.AxisSystem):
         super().__init__()
         self.layer_type = "None"
 
-    def create_properties(self) -> core.Scene.SensorInstance.IrradianceSensorProperties:
+    def create_properties(self) -> core.Scene.SensorInstance.IrradianceProperties:
         """
-        Create protobuf message IrradianceSensorProperties from current object.
+        Create protobuf message IrradianceProperties from current object.
 
         Returns
         -------
-        core.Scene.SensorInstance.IrradianceSensorProperties
+        core.Scene.SensorInstance.IrradianceProperties
             Protobuf message created.
         """
         irradiance_sensor_axis_system = core.AxisSystem(origin=self.origin, x_vect=self.x_vect, y_vect=self.y_vect, z_vect=self.z_vect)
@@ -454,13 +454,13 @@ class CameraSensorProperties(core.AxisSystem):
         self.trajectory_file = ""
         self.layer_type = "None"
 
-    def create_properties(self) -> core.Scene.SensorInstance.CameraSensorProperties:
+    def create_properties(self) -> core.Scene.SensorInstance.CameraProperties:
         """
-        Create protobuf message CameraSensorProperties from current object.
+        Create protobuf message CameraProperties from current object.
 
         Returns
         -------
-        core.Scene.SensorInstance.CameraSensorProperties
+        core.Scene.SensorInstance.CameraProperties
             Protobuf message created.
         """
         camera_axis_system = core.AxisSystem(origin=self.origin, x_vect=self.x_vect, y_vect=self.y_vect, z_vect=self.z_vect)
@@ -722,11 +722,11 @@ class SpeosSimulationUpdate:
             for sensor in scene_data.sensors:
                 if sensor.name == template_parameters.name + ".1":
                     sensor.sensor_guid = ssr.key
-                    sensor.irradiance_sensor_properties.ClearField("axis_system")
-                    sensor.irradiance_sensor_properties.axis_system.extend(
+                    sensor.irradiance_properties.ClearField("axis_system")
+                    sensor.irradiance_properties.axis_system.extend(
                         template_properties.origin + template_properties.x_vect + template_properties.y_vect + template_properties.z_vect
                     )
-                    sensor.irradiance_sensor_properties.layer_type_none.SetInParent()
+                    sensor.irradiance_properties.layer_type_none.SetInParent()
             self._scene.set(scene_data)
         elif isinstance(template_parameters, PhotometricCameraSensorParameters) and isinstance(template_properties, CameraSensorProperties):
             ssr_template = template_parameters.create_template()
@@ -735,11 +735,11 @@ class SpeosSimulationUpdate:
             for sensor in scene_data.sensors:
                 if sensor.name == template_parameters.name + ".1":
                     sensor.sensor_guid = ssr.key
-                    sensor.camera_sensor_properties.ClearField("axis_system")
-                    sensor.camera_sensor_properties.axis_system.extend(
+                    sensor.camera_properties.ClearField("axis_system")
+                    sensor.camera_properties.axis_system.extend(
                         template_properties.origin + template_properties.x_vect + template_properties.y_vect + template_properties.z_vect
                     )
-                    sensor.camera_sensor_properties.layer_type_none.SetInParent()
+                    sensor.camera_properties.layer_type_none.SetInParent()
             self._scene.set(scene_data)
 
     def update_scene_part_position(self, new_part_positions: {str: core.AxisSystem}) -> None:
@@ -796,8 +796,7 @@ class SpeosSimulationUpdate:
         data.part_guid = part_link.key
 
         # Adapt vops and sops geo_paths (geo_path="part_instance_name/" + geo_path)
-        self.__adapt_vops(simulation_scene, data)
-        self.__adapt_sops(simulation_scene, data)
+        self.__adapt_materials(simulation_scene, data)
 
         # In case only the geometry is needed, don't take care of sources, sensors, simulations
         if not only_geometry:
@@ -821,47 +820,26 @@ class SpeosSimulationUpdate:
         self._scene.set(data)
         self._modified = True
 
-    def __adapt_sops(self, simulation_scene: SpeosSimulationUpdate, data: scene_pb2.Scene) -> None:
+    def __adapt_materials(self, simulation_scene: SpeosSimulationUpdate, data: scene_pb2.Scene) -> None:
         """
-        adapt sops geometry path on the inserted scene.
+        adapt materials geometry path on the inserted scene.
 
         Parameters
         ----------
         simulation_scene: SpeosSimulationUpdate
             simulation scene
-        data: ansys.api.speos.scene.v1.scene_pb2.Scene
+        data: ansys.api.speos.scene.v2.scene_pb2.Scene
             scene data
         """
         adapt_path_name = simulation_scene.scene.get().name
-        for sop in simulation_scene.scene.get().sops:
-            new_sop = core.Scene.SOPInstance()
-            new_sop.CopyFrom(sop)
-            new_sop.geometries.Clear()
-            for g_path in sop.geometries.geo_paths:
+        for mat in simulation_scene.scene.get().materials:
+            new_mat = core.Scene.MaterialInstance()
+            new_mat.CopyFrom(mat)
+            new_mat.geometries.Clear()
+            for g_path in mat.geometries.geo_paths:
                 g_path = adapt_path_name + "/" + g_path
-                new_sop.geometries.geo_paths.append(g_path)
-            data.sops.append(new_sop)
-
-    def __adapt_vops(self, simulation_scene: SpeosSimulationUpdate, data: scene_pb2.Scene) -> None:
-        """
-        adapt vops geometry path on the inserted scene.
-
-        Parameters
-        ----------
-        simulation_scene: SpeosSimulationUpdate
-            simulation scene
-        data: ansys.api.speos.scene.v1.scene_pb2.Scene
-            scene data
-        """
-        adapt_path_name = simulation_scene.scene.get().name
-        for vop in simulation_scene.scene.get().vops:
-            new_vop = core.Scene.VOPInstance()
-            new_vop.CopyFrom(vop)
-            new_vop.geometries.Clear()
-            for g_path in vop.geometries.geo_paths:
-                g_path = adapt_path_name + "/" + g_path
-                new_vop.geometries.geo_paths.append(g_path)
-            data.vops.append(new_vop)
+                new_mat.geometries.geo_paths.append(g_path)
+            data.materials.append(new_mat)
 
     def __adapt_source(self, source_instance: core.Scene.SourceInstance, simulation_scene_name: str) -> None:
         """

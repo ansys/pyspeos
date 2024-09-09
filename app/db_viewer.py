@@ -219,7 +219,7 @@ def create_new_item(service) -> CrudItem:
     elif service == "spectrum":
         return speos_client.spectrums().create(message=SpectrumFactory.monochromatic(name="new", description="new"))
     elif service == "intensity_template":
-        return speos_client.intensity_templates().create(message=IntensityTemplateFactory.lambertian(name="new", description="new"))
+        return speos_client.intensity_templates().create(message=IntensityTemplateFactory.cos(name="new", description="new"))
     elif service == "source_template":
         return speos_client.source_templates().create(
             message=SourceTemplateFactory.surface(
@@ -242,8 +242,11 @@ def create_new_item(service) -> CrudItem:
                 name="new",
                 description="new",
                 part=create_new_item("part"),
-                vop_instances=[SceneFactory.vop_instance(name="Optic.1", vop_template=create_new_item("vop_template"))],
-                sop_instances=[SceneFactory.sop_instance(name="Mirror.1", sop_template=create_new_item("sop_template"))],
+                material_instances=[
+                    SceneFactory.material_instance(
+                        name="Material.1", vop_template=create_new_item("vop_template"), sop_templates=[create_new_item("sop_template")]
+                    )
+                ],
                 source_instances=[
                     SceneFactory.source_instance(
                         name="Surface.1",

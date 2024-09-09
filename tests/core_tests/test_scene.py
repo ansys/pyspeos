@@ -88,8 +88,8 @@ def create_basic_scene(speos: Speos) -> SceneLink:
     )
     # Create lambertian intensity template
     intens_t_lamb_180 = speos.client.intensity_templates().create(
-        message=IntensityTemplateFactory.lambertian(
-            name="lambertian_180", description="lambertian intensity template 180", total_angle=180.0
+        message=IntensityTemplateFactory.cos(
+            name="lambertian_180", description="lambertian intensity template 180", N=1.0, total_angle=180.0
         )
     )
 
@@ -156,30 +156,30 @@ def create_basic_scene(speos: Speos) -> SceneLink:
         )
     )
 
+    # Create a sop template that can be used in different materials
+    mirror_100_t = speos.client.sop_templates().create(
+        message=SOPTemplateFactory.mirror(name="mirror_100", description="mirror sop template - reflectance 100", reflectance=100)
+    )
+
     scene = scene_db.create(
         message=SceneFactory.new(
             name="scene_0",
             description="scene from scratch",
             part=main_part,
-            vop_instances=[
-                SceneFactory.vop_instance(
-                    name="opaque.1",
+            material_instances=[
+                SceneFactory.material_instance(
+                    name="Material.1",
                     vop_template=speos.client.vop_templates().create(
                         message=VOPTemplateFactory.opaque(name="opaque", description="opaque vop template")
                     ),
+                    sop_templates=[mirror_100_t],
                     geometries=GeoPaths(geo_paths=["Body0:1"]),
-                )
-            ],
-            sop_instances=[
-                SceneFactory.sop_instance(
-                    name="mirror_100.1",
-                    sop_template=speos.client.sop_templates().create(
-                        message=SOPTemplateFactory.mirror(
-                            name="mirror_100", description="mirror sop template - reflectance 100", reflectance=100
-                        )
-                    ),
-                    geometries=GeoPaths(geo_paths=["Body0:1", "BodySource:1/FaceSource:1"]),
-                )
+                ),
+                SceneFactory.material_instance(
+                    name="FOP.1",
+                    sop_templates=[mirror_100_t],
+                    geometries=GeoPaths(geo_paths=["BodySource:1/FaceSource:1"]),
+                ),
             ],
             source_instances=[
                 SceneFactory.source_instance(
@@ -211,7 +211,12 @@ def create_basic_scene(speos: Speos) -> SceneLink:
                 ),
             ],
             simulation_instances=[
-                SceneFactory.simulation_instance(name="direct_simu.1", simulation_template=direct_t),
+                SceneFactory.simulation_instance(
+                    name="direct_simu.1",
+                    simulation_template=direct_t,
+                    source_paths=["luminaire_AA.1", "luminaire_AA.2", "surface_with_blackbody.1"],
+                    sensor_paths=["irradiance_photometric.1", "irradiance_colorimetric.1"],
+                ),
                 SceneFactory.simulation_instance(
                     name="direct_simu.2",
                     simulation_template=direct_t,
@@ -225,7 +230,12 @@ def create_basic_scene(speos: Speos) -> SceneLink:
                     source_paths=["surface_with_blackbody.1"],
                     sensor_paths=["irradiance_colorimetric.1"],
                 ),
-                SceneFactory.simulation_instance(name="interactive_simu.1", simulation_template=interactive_t),
+                SceneFactory.simulation_instance(
+                    name="interactive_simu.1",
+                    simulation_template=interactive_t,
+                    source_paths=["luminaire_AA.1", "luminaire_AA.2", "surface_with_blackbody.1"],
+                    sensor_paths=["irradiance_photometric.1", "irradiance_colorimetric.1"],
+                ),
             ],
         )
     )
@@ -252,7 +262,7 @@ def test_scene_factory_create_instances(speos: Speos):
             message=SourceTemplateFactory.surface(
                 name="SurfaceExitanceVariable_AsymmGaussIntensity",
                 intensity_template=speos.client.intensity_templates().create(
-                    message=IntensityTemplateFactory.asymmetric_gaussian(name="Asymmetric_gaussian")
+                    message=IntensityTemplateFactory.gaussian(name="Asymmetric_gaussian")
                 ),
                 flux=SourceTemplateFactory.Flux(),
                 exitance_xmp_file_uri=os.path.join(test_path, "PROJECT.Direct-no-Ray.Irradiance Ray Spectral.xmp"),
@@ -260,7 +270,7 @@ def test_scene_factory_create_instances(speos: Speos):
         ),
         properties=SceneFactory.surface_source_props(
             exitance_variable_axis_plane=AxisPlane(),
-            intensity_properties=SceneFactory.asymm_gaussian_intensity_props(axis_system=AxisSystem()),
+            intensity_properties=SceneFactory.gaussian_intensity_props(axis_system=AxisSystem()),
         ),
     )
 
@@ -316,15 +326,15 @@ def test_scene_actions_load_modify(speos: Speos):
     # Modify existing sensor : layer_type_source -> layer_type_none
     scene_dm = scene.get()  # Retrieve scene data from DB
     assert len(scene_dm.sensors) == 1
-    assert scene_dm.sensors[0].HasField("irradiance_sensor_properties")
-    assert scene_dm.sensors[0].irradiance_sensor_properties.HasField("layer_type_source")
-    scene_dm.sensors[0].irradiance_sensor_properties.layer_type_none.SetInParent()
+    assert scene_dm.sensors[0].HasField("irradiance_properties")
+    assert scene_dm.sensors[0].irradiance_properties.HasField("layer_type_source")
+    scene_dm.sensors[0].irradiance_properties.layer_type_none.SetInParent()
     scene.set(data=scene_dm)  # Update the scene in DB
 
     # Retrieve scene data from DB
     scene_dm = scene.get()
     # Check that our change was effective layer_type_source -> layer_type_none
-    assert scene_dm.sensors[0].irradiance_sensor_properties.HasField("layer_type_none")
+    assert scene_dm.sensors[0].irradiance_properties.HasField("layer_type_none")
 
     # Adding a sensor
     scene_dm.sensors.append(
@@ -355,8 +365,7 @@ def test_scene_actions_get_source_ray_paths(speos: Speos):
         message=SceneFactory.new(
             name="Scene with sources",
             part=main_part,
-            vop_instances=[],
-            sop_instances=[],
+            material_instances=[],
             source_instances=[
                 SceneFactory.source_instance(
                     name="Luminaire.1",

@@ -25,8 +25,8 @@ from enum import Enum
 from typing import Iterator, List, Mapping, Optional, Union
 
 from ansys.api.speos.results.v1.ray_path_pb2 import RayPath
-from ansys.api.speos.scene.v1 import scene_pb2 as messages
-from ansys.api.speos.scene.v1 import scene_pb2_grpc as service
+from ansys.api.speos.scene.v2 import scene_pb2 as messages
+from ansys.api.speos.scene.v2 import scene_pb2_grpc as service
 
 from ansys.speos.core.crud import CrudItem, CrudStub
 from ansys.speos.core.geometry_utils import (
@@ -45,8 +45,7 @@ from ansys.speos.core.vop_template import VOPTemplateLink
 
 Scene = messages.Scene
 Scene.__str__ = lambda self: protobuf_message_to_str(self)
-Scene.VOPInstance.__str__ = lambda self: protobuf_message_to_str(self)
-Scene.SOPInstance.__str__ = lambda self: protobuf_message_to_str(self)
+Scene.MaterialInstance.__str__ = lambda self: protobuf_message_to_str(self)
 Scene.SceneInstance.__str__ = lambda self: protobuf_message_to_str(self)
 Scene.SourceInstance.__str__ = lambda self: protobuf_message_to_str(self)
 Scene.SensorInstance.__str__ = lambda self: protobuf_message_to_str(self)
@@ -239,8 +238,7 @@ class SceneFactory:
     def new(
         name: str,
         part: PartLink,
-        vop_instances: List[Scene.VOPInstance],
-        sop_instances: List[Scene.SOPInstance],
+        material_instances: List[Scene.MaterialInstance],
         source_instances: List[Scene.SourceInstance],
         sensor_instances: List[Scene.SensorInstance],
         simulation_instances: List[Scene.SimulationInstance],
@@ -256,10 +254,8 @@ class SceneFactory:
             Name of the scene.
         part : PartLink
             Part to be referenced as root part in the scene.
-        vop_instances : List[Scene.VOPInstance]
-            list of volume optical properties instantiated in the scene
-        sop_instances : List[Scene.SOPInstance]
-            list of surface optical properties instantiated in the scene
+        material_instances : List[Scene.MaterialInstance]
+            list of optical properties instantiated in the scene
         source_instances : List[Scene.SourceInstance]
             list of sources instantiated in the scene
         sensor_instances : List[Scene.SourceInstance]
@@ -282,88 +278,56 @@ class SceneFactory:
         if metadata is not None:
             scene.metadata.update(metadata)
         scene.part_guid = part.key
-        scene.vops.extend(vop_instances)
-        scene.sops.extend(sop_instances)
+        scene.materials.extend(material_instances)
         scene.sources.extend(source_instances)
         scene.sensors.extend(sensor_instances)
         scene.simulations.extend(simulation_instances)
         return scene
 
-    def vop_instance(
+    def material_instance(
         name: str,
-        vop_template: VOPTemplateLink,
+        sop_templates: List[SOPTemplateLink],
+        vop_template: Optional[VOPTemplateLink] = None,
         geometries: Optional[GeoPaths] = GeoPaths(),
         description: Optional[str] = "",
         metadata: Optional[Mapping[str, str]] = None,
-    ) -> Scene.VOPInstance:
+    ) -> Scene.MaterialInstance:
         """
-        Create a VOPInstance message. Volume Optical Property instance.
+        Create a MaterialInstance message. This is an optical property gathering volume and surface optical properties.
 
         Parameters
         ----------
         name : str
-            Name of the vop instance.
-        vop_template : VOPTemplateLink
-            Vop template used as a base of this instance.
+            Name of the material instance.
+        sop_templates : List[SOPTemplateLink]
+            Sop templates used this instance.
+        vop_template : VOPTemplateLink, optional
+            Vop template used in this instance.
+            By default, Volume optical property ``None`` is chosen.
         geometries : ansys.speos.core.geometry_utils.GeoPaths, optional
             Geometries that will use this material.
             By default, ``ansys.speos.core.geometry_utils.GeoPaths()``, ie all geometries.
         description : str, optional
-            Description of the vop instance.
+            Description of the material instance.
             By default, ``""``.
         metadata : Mapping[str, str], optional
-            Metadata of the vop instance.
+            Metadata of the material instance.
             By default, ``None``.
 
         Returns
         -------
-        Scene.VOPInstance
-            VOPInstance message created.
+        Scene.MaterialInstance
+            MaterialInstance message created.
         """
-        vop_i = Scene.VOPInstance(name=name, description=description)
+        mat_i = Scene.MaterialInstance(name=name, description=description)
         if metadata is not None:
-            vop_i.metadata.update(metadata)
-        vop_i.vop_guid = vop_template.key
-        vop_i.geometries.geo_paths.extend(geometries.geo_paths)
-        return vop_i
-
-    def sop_instance(
-        name: str,
-        sop_template: SOPTemplateLink,
-        geometries: GeoPaths = GeoPaths(),
-        description: str = "",
-        metadata: Mapping[str, str] = None,
-    ) -> Scene.SOPInstance:
-        """
-        Create a SOPInstance message. Surface Optical Property instance.
-
-        Parameters
-        ----------
-        name : str
-            Name of the sop instance.
-        sop_template : SOPTemplateLink
-            Sop template used as a base of this instance.
-        geometries : ansys.speos.core.geometry_utils.GeoPaths, optional
-            Geometries that will use this material.
-            By default, ``ansys.speos.core.geometry_utils.GeoPaths()``, ie all geometries.
-        description : str, optional
-            Description of the sop instance.
-            By default, ``""``.
-        metadata : Mapping[str, str], optional
-            Metadata of the sop instance.
-            By default, ``None``.
-
-        Returns
-        -------
-        Scene.SOPInstance
-            SOPInstance message created.
-        """
-        sop_i = Scene.SOPInstance(name=name, description=description)
-        if metadata is not None:
-            sop_i.metadata.update(metadata)
-        sop_i.sop_guid = sop_template.key
-        sop_i.geometries.geo_paths.extend(geometries.geo_paths)
-        return sop_i
+            mat_i.metadata.update(metadata)
+        if vop_template is not None:
+            mat_i.vop_guid = vop_template.key
+        for sop_t in sop_templates:
+            mat_i.sop_guids.append(sop_t.key)
+        mat_i.geometries.geo_paths.extend(geometries.geo_paths)
+        return mat_i
 
     def source_instance(
         name: str,
@@ -449,11 +413,11 @@ class SceneFactory:
             Example: parameter to be filled if source_template.get().surface.HasField("exitance_variable")
             By default, ``None``.
         intensity_properties : Scene.SourceInstance.IntensityProperties, optional
-            To be filled in case the intensity template used is library or asymmetric gaussian.
+            To be filled in case the intensity template used is library or gaussian.
             Example if speos.client.get_item(src_t_surface.get().surface.intensity_guid).get().HasField("library")
-            Or speos.client.get_item(src_t_surface.get().surface.intensity_guid).get().HasField("asymmetric_gaussian")
+            Or speos.client.get_item(src_t_surface.get().surface.intensity_guid).get().HasField("gaussian")
             Some methods can help to build needed messages:
-            SceneFactory.library_intensity_props(...), SceneFactory.asymm_gaussian_intensity_props(...)
+            SceneFactory.library_intensity_props(...), SceneFactory.gaussian_intensity_props(...)
             By default, ``None``.
 
         Returns
@@ -464,12 +428,7 @@ class SceneFactory:
         surf_props = Scene.SourceInstance.SurfaceProperties()
         if exitance_constant_geo_paths is not None:
             surf_props.exitance_constant_properties.geo_paths.extend(
-                [
-                    Scene.SourceInstance.SurfaceProperties.ExitanceConstantProperties.GeoPath(
-                        geo_path=g.geo_path, reverse_normal=g.reverse_normal
-                    )
-                    for g in exitance_constant_geo_paths
-                ]
+                [Scene.GeoPath(geo_path=g.geo_path, reverse_normal=g.reverse_normal) for g in exitance_constant_geo_paths]
             )
         elif exitance_variable_axis_plane is not None:
             surf_props.exitance_variable_properties.axis_plane.extend(
@@ -523,11 +482,11 @@ class SceneFactory:
 
         return lib_intens_props
 
-    def asymm_gaussian_intensity_props(
+    def gaussian_intensity_props(
         axis_system: Optional[AxisSystem] = AxisSystem(),
     ) -> Scene.SourceInstance.IntensityProperties:
         """
-        Create a IntensityProperties message, corresponding to asymmetric_gaussian intensity template.
+        Create a IntensityProperties message, corresponding to gaussian intensity template.
 
         Parameters
         ----------
@@ -541,7 +500,7 @@ class SceneFactory:
             IntensityProperties message created.
         """
         ag_intens_props = Scene.SourceInstance.IntensityProperties()
-        ag_intens_props.asymmetric_gaussian_properties.axis_system.extend(
+        ag_intens_props.gaussian_properties.axis_system.extend(
             axis_system.origin + axis_system.x_vect + axis_system.y_vect + axis_system.z_vect
         )
         return ag_intens_props
@@ -549,7 +508,7 @@ class SceneFactory:
     def sensor_instance(
         name: str,
         sensor_template: SensorTemplateLink,
-        properties: Union[Scene.SensorInstance.CameraSensorProperties, Scene.SensorInstance.IrradianceSensorProperties],
+        properties: Union[Scene.SensorInstance.CameraProperties, Scene.SensorInstance.IrradianceProperties],
         description: Optional[str] = "",
         metadata: Optional[Mapping[str, str]] = None,
     ) -> Scene.SensorInstance:
@@ -562,12 +521,12 @@ class SceneFactory:
             Name of the sensor instance.
         sensor_template : SensorTemplateLink
             Sensor template used as a base of this instance.
-        properties : Union[Scene.SensorInstance.CameraSensorProperties, Scene.SensorInstance.IrradianceSensorProperties]
+        properties : Union[Scene.SensorInstance.CameraProperties, Scene.SensorInstance.IrradianceProperties]
             Properties to apply to this sensor instance.
             Choose the correct properties type depending on the sensor template.
             Example:
-            In case sensor_template.get().HasField("camera_sensor_template") is True, use CameraSensorProperties
-            In case sensor_template.get().HasField("irradiance_sensor_template") is True, use IrradianceSensorProperties
+            In case sensor_template.get().HasField("camera_sensor_template") is True, use CameraProperties
+            In case sensor_template.get().HasField("irradiance_sensor_template") is True, use IrradianceProperties
         description : str, optional
             Description of the sensor instance.
             By default, ``""``.
@@ -584,19 +543,19 @@ class SceneFactory:
         if metadata is not None:
             ssr_i.metadata.update(metadata)
         ssr_i.sensor_guid = sensor_template.key
-        if isinstance(properties, Scene.SensorInstance.CameraSensorProperties):
-            ssr_i.camera_sensor_properties.CopyFrom(properties)
-        elif isinstance(properties, Scene.SensorInstance.IrradianceSensorProperties):
-            ssr_i.irradiance_sensor_properties.CopyFrom(properties)
+        if isinstance(properties, Scene.SensorInstance.CameraProperties):
+            ssr_i.camera_properties.CopyFrom(properties)
+        elif isinstance(properties, Scene.SensorInstance.IrradianceProperties):
+            ssr_i.irradiance_properties.CopyFrom(properties)
         return ssr_i
 
     def camera_sensor_props(
         axis_system: Optional[AxisSystem] = AxisSystem(),
         trajectory_file_uri: Optional[str] = None,
         layer_type: Optional[Properties.Sensor.LayerType.Source] = None,
-    ) -> Scene.SensorInstance.CameraSensorProperties:
+    ) -> Scene.SensorInstance.CameraProperties:
         """
-        Create a CameraSensorProperties message.
+        Create a CameraProperties message.
 
         Parameters
         ----------
@@ -612,10 +571,10 @@ class SceneFactory:
 
         Returns
         -------
-        Scene.SensorInstance.CameraSensorProperties
-            CameraSensorProperties message created.
+        Scene.SensorInstance.CameraProperties
+            CameraProperties message created.
         """
-        cam_props = Scene.SensorInstance.CameraSensorProperties()
+        cam_props = Scene.SensorInstance.CameraProperties()
         cam_props.axis_system.extend(axis_system.origin + axis_system.x_vect + axis_system.y_vect + axis_system.z_vect)
         if trajectory_file_uri is not None:
             cam_props.trajectory_file_uri = trajectory_file_uri
@@ -637,9 +596,9 @@ class SceneFactory:
             ]
         ] = None,
         integration_direction: Optional[List[float]] = None,
-    ) -> Scene.SensorInstance.IrradianceSensorProperties:
+    ) -> Scene.SensorInstance.IrradianceProperties:
         """
-        Create a IrradianceSensorProperties message.
+        Create a IrradianceProperties message.
 
         Parameters
         ----------
@@ -663,10 +622,10 @@ class SceneFactory:
 
         Returns
         -------
-        Scene.SensorInstance.IrradianceSensorProperties
-            IrradianceSensorProperties message created.
+        Scene.SensorInstance.IrradianceProperties
+            IrradianceProperties message created.
         """
-        irr_props = Scene.SensorInstance.IrradianceSensorProperties()
+        irr_props = Scene.SensorInstance.IrradianceProperties()
         irr_props.axis_system.extend(axis_system.origin + axis_system.x_vect + axis_system.y_vect + axis_system.z_vect)
 
         if ray_file_type is None:
@@ -703,8 +662,8 @@ class SceneFactory:
     def simulation_instance(
         name: str,
         simulation_template: SimulationTemplateLink,
-        sensor_paths: Optional[List[str]] = [],
-        source_paths: Optional[List[str]] = [],
+        sensor_paths: List[str],
+        source_paths: List[str],
         geometries: Optional[GeoPaths] = GeoPaths(),
         description: Optional[str] = "",
         metadata: Optional[Mapping[str, str]] = None,
@@ -718,14 +677,12 @@ class SceneFactory:
             Name of the simulation instance.
         simulation_template : SimulationTemplateLink
             Simulation template used as a base of this instance.
-        sensor_paths : List[str], optional
+        sensor_paths : List[str]
             Sensor paths to select some SensorInstances.
             Example: "sensor_instance_name", "subscene_name/sensor_instance_name"
-            By default, ``[]``, means all sensor instances.
-        source_paths : List[str], optional
+        source_paths : List[str]
             Source paths to select some SourceInstances.
             Example: "source_instance_name", "subscene_name/source_instance_name"
-            By default, ``[]``, means all source instances.
         geometries : ansys.speos.core.geometry_utils.GeoPaths, optional
             Geometries that will be needed.
             By default, ``ansys.speos.core.geometry_utils.GeoPaths()``, ie all geometries.
