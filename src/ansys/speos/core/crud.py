@@ -24,7 +24,10 @@
 
 
 class CrudStub:
-    """Wraps a speos gRPC CRUD connection."""
+    """Wraps a speos gRPC CRUD connection.
+    This class is used as base class for all Speos databases interactions.
+    Better use directly those inherited classes like SOPTemplateStub, SpectrumStub, ...
+    """
 
     def __init__(self, stub):
         self._stubMngr = stub
@@ -51,6 +54,16 @@ class CrudStub:
 
 
 class CrudItem:
+    """Item of a database.
+
+    Parameters
+    ----------
+    db : ansys.speos.core.crud.CrudStub
+        Database to link to.
+    key : str
+        Key (also named guid) of the item in the database.
+    """
+
     def __init__(self, db: CrudStub, key: str):
         self._stub = db
         self._key = key
