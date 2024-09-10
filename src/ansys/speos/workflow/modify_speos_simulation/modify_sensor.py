@@ -835,10 +835,11 @@ class SpeosSimulationUpdate:
         for mat in simulation_scene.scene.get().materials:
             new_mat = core.Scene.MaterialInstance()
             new_mat.CopyFrom(mat)
-            new_mat.geometries.Clear()
-            for g_path in mat.geometries.geo_paths:
-                g_path = adapt_path_name + "/" + g_path
-                new_mat.geometries.geo_paths.append(g_path)
+            if mat.HasField("geometries"):
+                new_mat.geometries.Clear()
+                for g_path in mat.geometries.geo_paths:
+                    g_path = adapt_path_name + "/" + g_path
+                    new_mat.geometries.geo_paths.append(g_path)
             data.materials.append(new_mat)
 
     def __adapt_source(self, source_instance: core.Scene.SourceInstance, simulation_scene_name: str) -> None:
