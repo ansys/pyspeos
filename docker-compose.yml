@@ -1,7 +1,7 @@
 version: "3.4"
 services:
   speos-rpc:
-    image: ghcr.io/ansys-internal/speos-rpc:2024.2.0.11893
+    image: ghcr.io/ansys-internal/speos-rpc:2025.1.0.22838-beta
     container_name: speos-rpc
     ports:
       - "50051:50051"
