@@ -46,9 +46,9 @@ def test_intensity_template_factory(speos: Speos):
     )
     assert intens_t_lib.key != ""
 
-    # Lambertian
+    # Lambertian (cos with N = 1.0)
     intens_t_lamb = intens_t_db.create(
-        message=IntensityTemplateFactory.lambertian(name="lambertian_0", description="lambertian intensity template", total_angle=180.0)
+        message=IntensityTemplateFactory.cos(name="lambertian_0", description="lambertian intensity template", N=1.0, total_angle=180.0)
     )
     assert intens_t_lamb.key != ""
 
@@ -58,20 +58,21 @@ def test_intensity_template_factory(speos: Speos):
     )
     assert intens_t_cos.key != ""
 
-    # SymmetricGaussian
+    # Symmetric gaussian
     intens_t_sym_gauss = intens_t_db.create(
-        message=IntensityTemplateFactory.symmetric_gaussian(
+        message=IntensityTemplateFactory.gaussian(
             name="symmetric_gaussian_0",
             description="symmetric gaussian intensity template",
-            FWHM_angle=30.0,
+            FWHM_angle_x=30.0,
+            FWHM_angle_y=30.0,
             total_angle=180.0,
         )
     )
     assert intens_t_sym_gauss.key != ""
 
-    # AsymmetricGaussian
+    # Asymmetric gaussian
     intens_t_asym_gauss = intens_t_db.create(
-        message=IntensityTemplateFactory.asymmetric_gaussian(
+        message=IntensityTemplateFactory.gaussian(
             name="asymmetric_gaussian_0",
             description="asymmetric gaussian intensity template",
             FWHM_angle_x=30.0,
