@@ -56,8 +56,8 @@ def test_source_template_factory(speos: Speos):
 
     # This intensity template will be used in several luminaire source template
     intens_t_lamb = intens_t_db.create(
-        message=IntensityTemplateFactory.lambertian(
-            name="lambertian_180", description="lambertian intensity template 180", total_angle=180.0
+        message=IntensityTemplateFactory.cos(
+            name="lambertian_180", description="lambertian intensity template 180", N=1.0, total_angle=180.0
         )
     )
 
