@@ -245,7 +245,6 @@ class JobFactory:
         CPU = 1
         GPU = 2
 
-    @staticmethod
     class RaysNbPerSource:
         """
         Define number of rays emitted by a specific source.
@@ -264,6 +263,7 @@ class JobFactory:
             self.source_path = source_path
             self.rays_nb = rays_nb
 
+    @staticmethod
     def new(
         name: str,
         scene: SceneLink,
@@ -284,7 +284,7 @@ class JobFactory:
         ----------
         name : str
             Name of the job.
-        scene : SceneLink
+        scene : ansys.speos.core.scene.SceneLink
             Scene used as base to create a job.
         simulation_path : str
             Simulation path to choose a SimulationInstance in the selected scene.
@@ -359,7 +359,7 @@ class JobFactory:
 
         Returns
         -------
-        ansys.api.speos.job.v2.job_pb2.DirectMCSimulationProperties
+        ansys.api.speos.Job.v2.job_pb2.Job.DirectMCSimulationProperties
             DirectMCSimulationProperties message created.
         """
         props = Job.DirectMCSimulationProperties()
@@ -396,7 +396,7 @@ class JobFactory:
 
         Returns
         -------
-        ansys.api.speos.job.v2.job_pb2.InverseMCSimulationProperties
+        ansys.api.speos.Job.v2.job_pb2.Job.InverseMCSimulationProperties
             InverseMCSimulationProperties message created.
         """
         props = Job.InverseMCSimulationProperties()
@@ -420,7 +420,7 @@ class JobFactory:
 
         Parameters
         ----------
-        rays_nb_per_source : List[RaysNbPerSource], optional
+        rays_nb_per_source : List[ansys.speos.core.job.JobFactory.RaysNbPerSource], optional
             Defines number of rays that will be emitted by each source instance.
             Source instances that are not mentioned will default to 100 rays.
             None = each source instance will generate default number of rays, ie 100.
@@ -434,7 +434,7 @@ class JobFactory:
 
         Returns
         -------
-        ansys.api.speos.job.v2.job_pb2.InteractiveSimulationProperties
+        ansys.api.speos.Job.v2.job_pb2.Job.InteractiveSimulationProperties
             InteractiveSimulationProperties message created.
         """
         props = Job.InteractiveSimulationProperties()
