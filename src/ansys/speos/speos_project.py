@@ -132,15 +132,16 @@ class SourceIntensity:
         self.__speos = speos
         self.__type = "lambertian"
         # lambertian property
-        self.__total_angle = 180
+        self.__total_angle = 180.0
         # symmetric gaussian property
-        self.__FWHM_angle = 30
+        self.__FWHM_angle = 30.0
         # intensity class property
         self.__instance = None
         self.__create()
 
     @property
     def intensity(self):
+        self.__create()
         return self.__instance
 
     @property
@@ -165,28 +166,30 @@ class SourceIntensity:
 
     @property
     def FWHM_angle(self):
-        return self.__FWHM_angle
+        return float(self.__FWHM_angle)
 
     @FWHM_angle.setter
     def FWHM_angle(self, angle_val: float = 30):
-        self.__FWHM_angle = angle_val if 0.0 < angle_val < 180.0 else (0.0 if angle_val < 0.0 else 180.0)
+        self.__FWHM_angle = float(angle_val) if 0.0 < angle_val < 180.0 else (0.0 if angle_val < 0.0 else 180.0)
         self.__create()
 
     def __create(self):
         if self.__type == "lambertian":
             self.__instance = self.__speos.client.intensity_templates().create(
-                message=core.intensity_template.IntensityTemplateFactory.lambertian(
+                message=core.intensity_template.IntensityTemplateFactory.cos(
                     name="lambertian_{}".format(self.__total_angle),
                     description="lambertian intensity template {}".format(self.__total_angle),
+                    N=1.0,
                     total_angle=self.__total_angle,
-                )
+                ),
             )
         elif self.__type == "symmetric gaussian":
             self.__instance = self.__speos.client.intensity_templates().create(
-                message=core.intensity_template.IntensityTemplateFactory.symmetric_gaussian(
+                message=core.intensity_template.IntensityTemplateFactory.gaussian(
                     name="symmetric gaussian_{}".format(self.__total_angle),
                     description="symmetric gaussian intensity template {}".format(self.__total_angle),
-                    FWHM_angle=self.__FWHM_angle,
+                    FWHM_angle_x=self.__FWHM_angle,
+                    FWHM_angle_y=self.__FWHM_angle,
                     total_angle=self.__total_angle,
                 )
             )
@@ -308,7 +311,8 @@ class SourceSurface:
             name=self.name,
             source_template=surface_source,
             properties=core.scene.SceneFactory.surface_source_props(
-                exitance_constant_geo_paths=[core.geometry_utils.GeoPathWithReverseNormal(face) for face in self.__emissive_faces]
+                exitance_constant_geo_paths=[core.geometry_utils.GeoPathWithReverseNormal(face) for face in self.__emissive_faces],
+                intensity_properties=core.scene.SceneFactory.gaussian_intensity_props(),
             ),
         )
 
@@ -531,16 +535,20 @@ class OpticalBody:
         self.__speos = speos
         # surface properties
         self.__opt_sop_instance = None
+        self.__opt_sop_template = None
         self.__opt_sop_type = "mirror"
         self.__opt_sop_reflection = 100
         self.__opt_sop_file_path = None
         # vop properties
         self.__opt_vop_instance = None
+        self.__opt_vop_template = None
         self.__opt_vop_type = "none"
         self.__opt_vop_index = 1.5
         self.__opt_vop_absorption = 0.0
         self.__opt_vop_constringence = None
         self.__opt_vop_file_path = None
+        # material property
+        self.__opt_material_instance = None
         # pySpeos properties
         self.__opt_face_list = []
         self.__opt_body_list = []
@@ -697,74 +705,117 @@ class OpticalBody:
             self.__body_instance_updated = False
 
         if self.__opt_vop_type == "none":
-            self.__opt_vop_instance = None
+            # self.__opt_vop_instance = None
+            self.__opt_vop_template = None
         elif self.__opt_vop_type == "optic":
-            self.__opt_vop_instance = core.scene.SceneFactory.vop_instance(
-                name="vop of body {}: {}".format(self.name, self.__opt_vop_type),
-                vop_template=self.__speos.client.vop_templates().create(
-                    message=core.vop_template.VOPTemplateFactory.optic(
-                        name="vop of body {}: {}".format(self.name, self.__opt_vop_type),
-                        index=self.__opt_vop_index,
-                        absorption=self.__opt_vop_absorption,
-                        constringence=self.__opt_vop_constringence,
-                    )
-                ),
-                geometries=core.geometry_utils.GeoPaths(geo_paths=self.__opt_body_geopath_list),
+            # self.__opt_vop_instance = core.scene.SceneFactory.vop_instance(
+            #     name="vop of body {}: {}".format(self.name, self.__opt_vop_type),
+            #     vop_template=self.__speos.client.vop_templates().create(
+            #         message=core.vop_template.VOPTemplateFactory.optic(
+            #             name="vop of body {}: {}".format(self.name, self.__opt_vop_type),
+            #             index=self.__opt_vop_index,
+            #             absorption=self.__opt_vop_absorption,
+            #             constringence=self.__opt_vop_constringence,
+            #         )
+            #     ),
+            #     geometries=core.geometry_utils.GeoPaths(geo_paths=self.__opt_body_geopath_list),
+            # )
+            self.__opt_vop_template = self.__speos.client.vop_templates().create(
+                message=core.vop_template.VOPTemplateFactory.optic(
+                    name="vop of body {}: {}".format(self.name, self.__opt_vop_type),
+                    index=self.__opt_vop_index,
+                    absorption=self.__opt_vop_absorption,
+                    constringence=self.__opt_vop_constringence,
+                )
             )
         elif self.__opt_vop_type == "opaque":
-            self.__opt_vop_instance = core.scene.SceneFactory.vop_instance(
-                name="vop of body {}: {}".format(self.name, self.__opt_vop_type),
-                vop_template=self.__speos.client.vop_templates().create(
-                    message=core.vop_template.VOPTemplateFactory.opaque(
-                        name="vop of body {}: {}".format(self.name, self.__opt_vop_type),
-                    )
-                ),
-                geometries=core.geometry_utils.GeoPaths(geo_paths=self.__opt_body_geopath_list),
+            # self.__opt_vop_instance = core.scene.SceneFactory.vop_instance(
+            #     name="vop of body {}: {}".format(self.name, self.__opt_vop_type),
+            #     vop_template=self.__speos.client.vop_templates().create(
+            #         message=core.vop_template.VOPTemplateFactory.opaque(
+            #             name="vop of body {}: {}".format(self.name, self.__opt_vop_type),
+            #         )
+            #     ),
+            #     geometries=core.geometry_utils.GeoPaths(geo_paths=self.__opt_body_geopath_list),
+            # )
+            self.__opt_vop_template = self.__speos.client.vop_templates().create(
+                message=core.vop_template.VOPTemplateFactory.opaque(
+                    name="vop of body {}: {}".format(self.name, self.__opt_vop_type),
+                )
             )
         elif self.__opt_vop_type == "library":
-            self.__opt_vop_instance = core.scene.SceneFactory.vop_instance(
-                name="vop of body {}: {}".format(self.name, self.__opt_vop_type),
-                vop_template=self.__speos.client.vop_templates().create(
-                    message=core.vop_template.VOPTemplateFactory.library(
-                        name="vop of body {}: {}".format(self.name, self.__opt_vop_type),
-                        material_file_uri=self.__opt_vop_file_path,
-                    )
-                ),
-                geometries=core.geometry_utils.GeoPaths(geo_paths=self.__opt_body_geopath_list),
+            # self.__opt_vop_instance = core.scene.SceneFactory.vop_instance(
+            #     name="vop of body {}: {}".format(self.name, self.__opt_vop_type),
+            #     vop_template=self.__speos.client.vop_templates().create(
+            #         message=core.vop_template.VOPTemplateFactory.library(
+            #             name="vop of body {}: {}".format(self.name, self.__opt_vop_type),
+            #             material_file_uri=self.__opt_vop_file_path,
+            #         )
+            #     ),
+            #     geometries=core.geometry_utils.GeoPaths(geo_paths=self.__opt_body_geopath_list),
+            # )
+            self.__opt_vop_template = self.__speos.client.vop_templates().create(
+                message=core.vop_template.VOPTemplateFactory.library(
+                    name="vop of body {}: {}".format(self.name, self.__opt_vop_type),
+                    material_file_uri=self.__opt_vop_file_path,
+                )
             )
 
         if self.__opt_sop_type == "optical_polished":
-            self.__opt_sop_instance = core.scene.SceneFactory.sop_instance(
-                name="sop of body {}: {}".format(self.name, self.__opt_sop_type),
-                sop_template=self.__speos.client.sop_templates().create(
-                    message=core.sop_template.SOPTemplateFactory.optical_polished(
-                        name="sop of body {}: {}".format(self.name, self.__opt_sop_type)
-                    ),
-                ),
-                geometries=core.geometry_utils.GeoPaths(geo_paths=self.__opt_face_geopath_list),
+            # self.__opt_sop_instance = core.scene.SceneFactory.sop_instance(
+            #     name="sop of body {}: {}".format(self.name, self.__opt_sop_type),
+            #     sop_template=self.__speos.client.sop_templates().create(
+            #         message=core.sop_template.SOPTemplateFactory.optical_polished(
+            #             name="sop of body {}: {}".format(self.name, self.__opt_sop_type)
+            #         ),
+            #     ),
+            #     geometries=core.geometry_utils.GeoPaths(geo_paths=self.__opt_face_geopath_list),
+            # )
+            self.__opt_sop_template = self.__speos.client.sop_templates().create(
+                message=core.sop_template.SOPTemplateFactory.optical_polished(
+                    name="sop of body {}: {}".format(self.name, self.__opt_sop_type)
+                )
             )
         elif self.__opt_sop_type == "mirror":
-            self.__opt_sop_instance = core.scene.SceneFactory.sop_instance(
-                name="sop of body {}: {}".format(self.name, self.__opt_sop_type),
-                sop_template=self.__speos.client.sop_templates().create(
-                    message=core.sop_template.SOPTemplateFactory.mirror(
-                        name="sop of body {}: {}".format(self.name, self.__opt_sop_type),
-                        reflectance=self.__opt_sop_reflection,
-                    ),
-                ),
-                geometries=core.geometry_utils.GeoPaths(geo_paths=self.__opt_face_geopath_list),
+            # self.__opt_sop_instance = core.scene.SceneFactory.sop_instance(
+            #     name="sop of body {}: {}".format(self.name, self.__opt_sop_type),
+            #     sop_template=self.__speos.client.sop_templates().create(
+            #         message=core.sop_template.SOPTemplateFactory.mirror(
+            #             name="sop of body {}: {}".format(self.name, self.__opt_sop_type),
+            #             reflectance=self.__opt_sop_reflection,
+            #         ),
+            #     ),
+            #     geometries=core.geometry_utils.GeoPaths(geo_paths=self.__opt_face_geopath_list),
+            # )
+            self.__opt_sop_template = self.__speos.client.sop_templates().create(
+                message=core.sop_template.SOPTemplateFactory.mirror(
+                    name="sop of body {}: {}".format(self.name, self.__opt_sop_type),
+                    reflectance=self.__opt_sop_reflection,
+                )
             )
         elif self.__opt_sop_type == "library":
-            self.__opt_sop_instance = core.scene.SceneFactory.sop_instance(
-                name="sop of body {}: {}".format(self.name, self.__opt_sop_type),
-                sop_template=self.__speos.client.sop_templates().create(
-                    message=core.sop_template.SOPTemplateFactory.library(
-                        name="sop of body {}: {}".format(self.name, self.__opt_sop_type),
-                        sop_file_uri=self.__opt_sop_file_path,
-                    ),
-                ),
-                geometries=core.geometry_utils.GeoPaths(geo_paths=self.__opt_face_geopath_list),
+            # self.__opt_sop_instance = core.scene.SceneFactory.sop_instance(
+            #     name="sop of body {}: {}".format(self.name, self.__opt_sop_type),
+            #     sop_template=self.__speos.client.sop_templates().create(
+            #         message=core.sop_template.SOPTemplateFactory.library(
+            #             name="sop of body {}: {}".format(self.name, self.__opt_sop_type),
+            #             sop_file_uri=self.__opt_sop_file_path,
+            #         ),
+            #     ),
+            #     geometries=core.geometry_utils.GeoPaths(geo_paths=self.__opt_face_geopath_list),
+            # )
+            self.__opt_sop_template = self.__speos.client.sop_templates().create(
+                message=core.sop_template.SOPTemplateFactory.library(
+                    name="sop of body {}: {}".format(self.name, self.__opt_sop_type),
+                    sop_file_uri=self.__opt_sop_file_path,
+                )
             )
+        self.__opt_material_instance = core.SceneFactory.material_instance(
+            name="body {}: vop {} and sop".format(self.name, self.__opt_vop_type, self.__opt_sop_type),
+            vop_template=self.__opt_vop_template,
+            sop_templates=[self.__opt_sop_template],
+            geometries=core.geometry_utils.GeoPaths(geo_paths=self.__opt_body_geopath_list),
+        )
 
 
 class DirectSimulation:
@@ -832,7 +883,8 @@ class DirectSimulation:
         )
         simulation_paramters = self.__speos.client.simulation_templates().create(
             message=core.simulation_template.SimulationTemplateFactory.direct_mc(
-                name="pySpeos direct simulation", description="pySpeos Direct simulation template with default parameters"
+                name="pySpeos direct simulation",
+                description="pySpeos Direct simulation template with default parameters",
             )
         )
 
@@ -843,10 +895,11 @@ class DirectSimulation:
                 ),
                 description="scene created from pySpeos",
                 part=assemble_part,
-                vop_instances=[
-                    body._OpticalBody__opt_vop_instance for body in self.__bodies if body._OpticalBody__opt_vop_instance is not None
-                ],
-                sop_instances=[body._OpticalBody__opt_sop_instance for body in self.__bodies],
+                material_instances=[body._OpticalBody__opt_material_instance for body in self.__bodies],
+                # vop_instances=[
+                #     body._OpticalBody__opt_vop_instance for body in self.__bodies if body._OpticalBody__opt_vop_instance is not None
+                # ],
+                # sop_instances=[body._OpticalBody__opt_sop_instance for body in self.__bodies],
                 source_instances=[source.source for source in self.__sources],
                 sensor_instances=[sensor.sensor for sensor in self.__sensors],
                 simulation_instances=[

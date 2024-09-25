@@ -483,7 +483,7 @@ class SceneFactory:
         return lib_intens_props
 
     def gaussian_intensity_props(
-        axis_system: Optional[AxisSystem] = AxisSystem(),
+        axis_system: Optional[AxisSystem] = None,
     ) -> Scene.SourceInstance.IntensityProperties:
         """
         Create a IntensityProperties message, corresponding to gaussian intensity template.
@@ -500,9 +500,11 @@ class SceneFactory:
             IntensityProperties message created.
         """
         ag_intens_props = Scene.SourceInstance.IntensityProperties()
-        ag_intens_props.gaussian_properties.axis_system.extend(
-            axis_system.origin + axis_system.x_vect + axis_system.y_vect + axis_system.z_vect
-        )
+        ag_intens_props.gaussian_properties.SetInParent()
+        if axis_system is not None:
+            ag_intens_props.gaussian_properties.axis_system.extend(
+                axis_system.origin + axis_system.x_vect + axis_system.y_vect + axis_system.z_vect
+            )
         return ag_intens_props
 
     def sensor_instance(
