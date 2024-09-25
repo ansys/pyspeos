@@ -33,12 +33,20 @@ from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 from ansys.speos.core.scene import SceneLink
 
 Job = messages.Job
-"""Job protobuf class : ansys.api.speos.Job.v2.job_pb2.Job"""
+"""Job protobuf class : ansys.api.speos.job.v2.job_pb2.Job"""
 Job.__str__ = lambda self: protobuf_message_to_str(self)
 
 
 class JobLink(CrudItem):
-    """Link object for job in database."""
+    """Link object for job in database.
+
+    Parameters
+    ----------
+    db : ansys.speos.core.job.JobStub
+        Database to link to.
+    key : str
+        Key of the job in the database.
+    """
 
     def __init__(self, db, key: str):
         super().__init__(db, key)
@@ -359,7 +367,7 @@ class JobFactory:
 
         Returns
         -------
-        ansys.api.speos.Job.v2.job_pb2.Job.DirectMCSimulationProperties
+        ansys.api.speos.job.v2.job_pb2.Job.DirectMCSimulationProperties
             DirectMCSimulationProperties message created.
         """
         props = Job.DirectMCSimulationProperties()
@@ -396,7 +404,7 @@ class JobFactory:
 
         Returns
         -------
-        ansys.api.speos.Job.v2.job_pb2.Job.InverseMCSimulationProperties
+        ansys.api.speos.job.v2.job_pb2.Job.InverseMCSimulationProperties
             InverseMCSimulationProperties message created.
         """
         props = Job.InverseMCSimulationProperties()
@@ -434,7 +442,7 @@ class JobFactory:
 
         Returns
         -------
-        ansys.api.speos.Job.v2.job_pb2.Job.InteractiveSimulationProperties
+        ansys.api.speos.job.v2.job_pb2.Job.InteractiveSimulationProperties
             InteractiveSimulationProperties message created.
         """
         props = Job.InteractiveSimulationProperties()
