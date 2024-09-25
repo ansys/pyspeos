@@ -91,6 +91,11 @@ class VOPTemplateStub(CrudStub):
     """
     Database interactions for Volume Optical Properties templates.
 
+    Parameters
+    ----------
+    channel : grpc.Channel
+        Channel to use for the stub.
+
     Examples
     --------
     The best way to get a VOPTemplateStub is to retrieve it from SpeosClient via vop_templates() method.
