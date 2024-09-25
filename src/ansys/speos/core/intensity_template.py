@@ -99,6 +99,8 @@ class IntensityTemplateStub(CrudStub):
 
     Examples
     --------
+    The best way to get a IntensityTemplateStub is to retrieve it from SpeosClient via intensity_templates() method.
+    Like in the following example:
 
     >>> from ansys.speos.core.speos import Speos
     >>> speos = Speos(host="localhost", port=50051)
