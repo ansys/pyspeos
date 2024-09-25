@@ -51,6 +51,7 @@ class FaceLink(CrudItem):
         super().__init__(db, key)
 
     def __str__(self) -> str:
+        """Return the string representation of the face."""
         return str(self.get())
 
     def get(self) -> Face:
@@ -89,6 +90,8 @@ class FaceStub(CrudStub):
 
     Examples
     --------
+    The best way to get a FaceStub is to retrieve it from SpeosClient via faces() method.
+    Like in the following example:
 
     >>> from ansys.speos.core.speos import Speos
     >>> speos = Speos(host="localhost", port=50051)
