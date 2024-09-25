@@ -60,6 +60,7 @@ class VOPTemplateLink(CrudItem):
         super().__init__(db, key)
 
     def __str__(self) -> str:
+        """Return the string representation of the vop template."""
         return str(self.get())
 
     def get(self) -> VOPTemplate:
