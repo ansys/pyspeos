@@ -82,6 +82,11 @@ class FaceStub(CrudStub):
     """
     Database interactions for face.
 
+    Parameters
+    ----------
+    channel : grpc.Channel
+        Channel to use for the stub.
+
     Examples
     --------
 
@@ -201,7 +206,7 @@ class FaceFactory:
 
         Returns
         -------
-        Face
+        face.Face
             Face message created.
         """
         face = Face(name=name, description=description, vertices=vertices, facets=facets, normals=normals)
@@ -243,7 +248,7 @@ class FaceFactory:
 
         Returns
         -------
-        Face
+        face.Face
             Face message created.
         """
         face = Face(name=name, description=description)
