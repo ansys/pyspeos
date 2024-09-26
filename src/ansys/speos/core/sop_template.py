@@ -30,12 +30,20 @@ from ansys.speos.core.crud import CrudItem, CrudStub
 from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 
 SOPTemplate = messages.SOPTemplate
+"""SOPTemplate protobuf class : ansys.api.speos.sop.v1.sop_pb2.SOPTemplate"""
 SOPTemplate.__str__ = lambda self: protobuf_message_to_str(self)
 
 
 class SOPTemplateLink(CrudItem):
     """
     Link object for Surface Optical Properties template in database.
+
+    Parameters
+    ----------
+    db : ansys.speos.core.sop_template.SOPTemplateStub
+        Database to link to.
+    key : str
+        Key of the sop_template in the database.
 
     Examples
     --------
@@ -52,14 +60,27 @@ class SOPTemplateLink(CrudItem):
         super().__init__(db, key)
 
     def __str__(self) -> str:
+        """Return the string representation of the sop_template."""
         return str(self.get())
 
     def get(self) -> SOPTemplate:
-        """Get the datamodel from database."""
+        """Get the datamodel from database.
+
+        Returns
+        -------
+        sop_template.SOPTemplate
+            SOPTemplate datamodel.
+        """
         return self._stub.read(self)
 
     def set(self, data: SOPTemplate) -> None:
-        """Change datamodel in database."""
+        """Change datamodel in database.
+
+        Parameters
+        ----------
+        data : sop_template.SOPTemplate
+            New SOPTemplate datamodel.
+        """
         self._stub.update(self, data)
 
     def delete(self) -> None:
@@ -71,8 +92,15 @@ class SOPTemplateStub(CrudStub):
     """
     Database interactions for Surface Optical Properties templates.
 
+    Parameters
+    ----------
+    channel : grpc.Channel
+        Channel to use for the stub.
+
     Examples
     --------
+    The best way to get a SOPTemplateStub is to retrieve it from SpeosClient via sop_templates() method.
+    Like in the following example:
 
     >>> from ansys.speos.core.speos import Speos
     >>> speos = Speos(host="localhost", port=50051)
@@ -84,31 +112,73 @@ class SOPTemplateStub(CrudStub):
         super().__init__(stub=service.SOPTemplatesManagerStub(channel=channel))
 
     def create(self, message: SOPTemplate) -> SOPTemplateLink:
-        """Create a new entry."""
+        """Create a new entry.
+
+        Parameters
+        ----------
+        message : sop_template.SOPTemplate
+            Datamodel for the new entry.
+
+        Returns
+        -------
+        ansys.speos.core.sop_template.SOPTemplateLink
+            Link object created.
+        """
         resp = CrudStub.create(self, messages.Create_Request(sop_template=message))
         return SOPTemplateLink(self, resp.guid)
 
     def read(self, ref: SOPTemplateLink) -> SOPTemplate:
-        """Get an existing entry."""
+        """Get an existing entry.
+
+        Parameters
+        ----------
+        ref : ansys.speos.core.sop_template.SOPTemplateLink
+            Link object to read.
+
+        Returns
+        -------
+        sop_template.SOPTemplate
+            Datamodel of the entry.
+        """
         if not ref.stub == self:
             raise ValueError("SOPTemplateLink is not on current database")
         resp = CrudStub.read(self, messages.Read_Request(guid=ref.key))
         return resp.sop_template
 
     def update(self, ref: SOPTemplateLink, data: SOPTemplate):
-        """Change an existing entry."""
+        """Change an existing entry.
+
+        Parameters
+        ----------
+        ref : ansys.speos.core.sop_template.SOPTemplateLink
+            Link object to update.
+        data : sop_template.SOPTemplate
+            New datamodel for the entry.
+        """
         if not ref.stub == self:
             raise ValueError("SOPTemplateLink is not on current database")
         CrudStub.update(self, messages.Update_Request(guid=ref.key, sop_template=data))
 
     def delete(self, ref: SOPTemplateLink) -> None:
-        """Remove an existing entry."""
+        """Remove an existing entry.
+
+        Parameters
+        ----------
+        ref : ansys.speos.core.sop_template.SOPTemplateLink
+            Link object to delete.
+        """
         if not ref.stub == self:
             raise ValueError("SOPTemplateLink is not on current database")
         CrudStub.delete(self, messages.Delete_Request(guid=ref.key))
 
     def list(self) -> List[SOPTemplateLink]:
-        """List existing entries."""
+        """List existing entries.
+
+        Returns
+        -------
+        List[ansys.speos.core.sop_template.SOPTemplateLink]
+            Link objects.
+        """
         guids = CrudStub.list(self, messages.List_Request()).guids
         return list(map(lambda x: SOPTemplateLink(self, x), guids))
 
@@ -116,6 +186,7 @@ class SOPTemplateStub(CrudStub):
 class SOPTemplateFactory:
     """Class to help creating SOPTemplate message. Surface Optical Property template."""
 
+    @staticmethod
     def mirror(
         name: str, reflectance: Optional[float] = 100, description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None
     ) -> SOPTemplate:
@@ -139,7 +210,7 @@ class SOPTemplateFactory:
 
         Returns
         -------
-        SOPTemplate
+        sop_template.SOPTemplate
             SOPTemplate message created.
         """
         sop = SOPTemplate(name=name, description=description)
@@ -148,6 +219,7 @@ class SOPTemplateFactory:
         sop.mirror.reflectance = reflectance
         return sop
 
+    @staticmethod
     def optical_polished(name: str, description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None) -> SOPTemplate:
         """
         Transparent or perfectly polished material (glass, plastic).
@@ -166,7 +238,7 @@ class SOPTemplateFactory:
 
         Returns
         -------
-        SOPTemplate
+        sop_template.SOPTemplate
             SOPTemplate message created.
         """
         sop = SOPTemplate(name=name, description=description)
@@ -175,6 +247,7 @@ class SOPTemplateFactory:
         sop.optical_polished.SetInParent()
         return sop
 
+    @staticmethod
     def library(name: str, sop_file_uri: str, description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None) -> SOPTemplate:
         """
         Based on surface optical properties file.
@@ -195,7 +268,7 @@ class SOPTemplateFactory:
 
         Returns
         -------
-        SOPTemplate
+        sop_template.SOPTemplate
             SOPTemplate message created.
         """
         sop = SOPTemplate(name=name, description=description)
@@ -204,6 +277,7 @@ class SOPTemplateFactory:
         sop.library.sop_file_uri = sop_file_uri
         return sop
 
+    @staticmethod
     def plugin(
         name: str,
         plugin_sop_file_uri: str,
@@ -232,7 +306,7 @@ class SOPTemplateFactory:
 
         Returns
         -------
-        SOPTemplate
+        sop_template.SOPTemplate
             SOPTemplate message created.
         """
         sop = SOPTemplate(name=name, description=description)
