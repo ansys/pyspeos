@@ -33,25 +33,47 @@ from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 from ansys.speos.core.scene import SceneLink
 
 Job = messages.Job
+"""Job protobuf class : ansys.api.speos.job.v2.job_pb2.Job"""
 Job.__str__ = lambda self: protobuf_message_to_str(self)
 
 
 class JobLink(CrudItem):
-    """Link object for job in database."""
+    """Link object for job in database.
+
+    Parameters
+    ----------
+    db : ansys.speos.core.job.JobStub
+        Database to link to.
+    key : str
+        Key of the job in the database.
+    """
 
     def __init__(self, db, key: str):
         super().__init__(db, key)
         self._actions_stub = db._actions_stub
 
     def __str__(self) -> str:
+        """Return the string representation of the Job."""
         return str(self.get())
 
     def get(self) -> Job:
-        """Get the datamodel from database."""
+        """Get the datamodel from database.
+
+        Returns
+        -------
+        job.Job
+            Job datamodel.
+        """
         return self._stub.read(self)
 
     def set(self, data: Job) -> None:
-        """Change datamodel in database."""
+        """Change datamodel in database.
+
+        Parameters
+        ----------
+        data : job.Job
+            New Job datamodel.
+        """
         self._stub.update(self, data)
 
     def delete(self) -> None:
@@ -65,18 +87,18 @@ class JobLink(CrudItem):
 
         Returns
         -------
-        messages.GetState_Response
+        ansys.api.speos.job.v2.job_pb2.GetState_Response
             State of the job.
         """
         return self._actions_stub.GetState(messages.GetState_Request(guid=self.key))
 
     def start(self) -> None:
         """Start the job."""
-        return self._actions_stub.Start(messages.Start_Request(guid=self.key))
+        self._actions_stub.Start(messages.Start_Request(guid=self.key))
 
     def stop(self) -> None:
         """Stop the job."""
-        return self._actions_stub.Stop(messages.Stop_Request(guid=self.key))
+        self._actions_stub.Stop(messages.Stop_Request(guid=self.key))
 
     def get_error(self) -> messages.GetError_Response:
         """
@@ -84,7 +106,7 @@ class JobLink(CrudItem):
 
         Returns
         -------
-        messages.GetError_Response
+        ansys.api.speos.job.v2.job_pb2.GetError_Response
             Error of the job.
         """
         return self._actions_stub.GetError(messages.GetError_Request(guid=self.key))
@@ -95,7 +117,7 @@ class JobLink(CrudItem):
 
         Returns
         -------
-        messages.GetResults_Response
+        ansys.api.speos.job.v2.job_pb2.GetResults_Response
             Results of the job.
         """
         return self._actions_stub.GetResults(messages.GetResults_Request(guid=self.key))
@@ -106,7 +128,7 @@ class JobLink(CrudItem):
 
         Returns
         -------
-        messages.GetProgressStatus_Response
+        ansys.api.speos.job.v2.job_pb2.GetProgressStatus_Response
             Progress status of the job.
         """
         return self._actions_stub.GetProgressStatus(messages.GetProgressStatus_Request(guid=self.key))
@@ -129,8 +151,15 @@ class JobStub(CrudStub):
     """
     Database interactions for job.
 
+    Parameters
+    ----------
+    channel : grpc.Channel
+        Channel to use for the stub.
+
     Examples
     --------
+    The best way to get a JobStub is to retrieve it from SpeosClient via jobs() method.
+    Like in the following example:
 
     >>> from ansys.speos.core.speos import Speos
     >>> speos = Speos(host="localhost", port=50051)
@@ -143,31 +172,74 @@ class JobStub(CrudStub):
         self._actions_stub = service.JobActionsStub(channel=channel)
 
     def create(self, message: Job) -> JobLink:
-        """Create a new entry."""
+        """Create a new entry.
+
+        Parameters
+        ----------
+        message : job.Job
+            Datamodel for the new entry.
+
+        Returns
+        -------
+        ansys.speos.core.job.JobLink
+            Link object created.
+        """
         resp = CrudStub.create(self, messages.Create_Request(job=message))
         return JobLink(self, resp.guid)
 
     def read(self, ref: JobLink) -> Job:
-        """Get an existing entry."""
+        """Get an existing entry.
+
+        Parameters
+        ----------
+        ref : ansys.speos.core.job.JobLink
+            Link object to read.
+
+        Returns
+        -------
+        job.Job
+            Datamodel of the entry.
+        """
         if not ref.stub == self:
             raise ValueError("JobLink is not on current database")
         resp = CrudStub.read(self, messages.Read_Request(guid=ref.key))
         return resp.job
 
     def update(self, ref: JobLink, data: Job):
-        """Change an existing entry."""
+        """Change an existing entry.
+
+        Parameters
+        ----------
+        ref : ansys.speos.core.job.JobLink
+            Link object to update.
+
+        data : job.Job
+            New datamodel for the entry.
+        """
         if not ref.stub == self:
             raise ValueError("JobLink is not on current database")
         CrudStub.update(self, messages.Update_Request(guid=ref.key, job=data))
 
     def delete(self, ref: JobLink) -> None:
-        """Remove an existing entry."""
+        """Remove an existing entry.
+
+        Parameters
+        ----------
+        ref : ansys.speos.core.job.JobLink
+            Link object to delete.
+        """
         if not ref.stub == self:
             raise ValueError("JobLink is not on current database")
         CrudStub.delete(self, messages.Delete_Request(guid=ref.key))
 
     def list(self) -> List[JobLink]:
-        """List existing entries."""
+        """List existing entries.
+
+        Returns
+        -------
+        List[ansys.speos.core.job.JobLink]
+            Link objects.
+        """
         guids = CrudStub.list(self, messages.List_Request()).guids
         return list(map(lambda x: JobLink(self, x), guids))
 
@@ -175,7 +247,11 @@ class JobStub(CrudStub):
 class JobFactory:
     """Class to help creating Job message"""
 
-    Type = Enum("Type", ["CPU", "GPU"])
+    class Type(Enum):
+        """Enum representing the type of the device desired"""
+
+        CPU = 1
+        GPU = 2
 
     class RaysNbPerSource:
         """
@@ -195,6 +271,7 @@ class JobFactory:
             self.source_path = source_path
             self.rays_nb = rays_nb
 
+    @staticmethod
     def new(
         name: str,
         scene: SceneLink,
@@ -215,19 +292,19 @@ class JobFactory:
         ----------
         name : str
             Name of the job.
-        scene : SceneLink
+        scene : ansys.speos.core.scene.SceneLink
             Scene used as base to create a job.
         simulation_path : str
             Simulation path to choose a SimulationInstance in the selected scene.
             Example: "simulation_instance_name", "subscene_name/simulation_instance_name"
-        properties : Union[Job.DirectMCSimulationProperties, Job.InverseMCSimulationProperties, Job.InteractiveSimulationProperties]
+        properties : Union[JobFactory.direct_mc_props, JobFactory.inverse_mc_props, JobFactory.interactive_props]
             simulation properties, depends on the type of the simulation selected.
             Those properties can contains for example stop conditions for the job.
             Some methods can help to build needed messages:
             JobFactory.direct_mc_props(...), JobFactory.inverse_mc_props(...), JobFactory.interactive_props(...)
-        type : Type, optional
+        type : ansys.speos.core.job.JobFactory.Type, optional
             Job type.
-            By default, ``JobFactory.Type.CPU``.
+            By default, ``Type.CPU``.
         description : str, optional
             Description of the job.
             By default, ``""``.
@@ -237,7 +314,7 @@ class JobFactory:
 
         Returns
         -------
-        Job
+        job.Job
             Job message created.
         """
         job = Job(name=name, description=description)
@@ -264,6 +341,7 @@ class JobFactory:
 
         return job
 
+    @staticmethod
     def direct_mc_props(
         stop_condition_rays_nb: Optional[int] = 200000,
         stop_condition_duration: Optional[int] = None,
@@ -289,7 +367,7 @@ class JobFactory:
 
         Returns
         -------
-        Job.DirectMCSimulationProperties
+        ansys.api.speos.job.v2.job_pb2.Job.DirectMCSimulationProperties
             DirectMCSimulationProperties message created.
         """
         props = Job.DirectMCSimulationProperties()
@@ -300,6 +378,7 @@ class JobFactory:
         props.automatic_save_frequency = automatic_save_frequency
         return props
 
+    @staticmethod
     def inverse_mc_props(
         stop_condition_passes_number: Optional[int] = 5,
         stop_condition_duration: Optional[int] = None,
@@ -325,7 +404,7 @@ class JobFactory:
 
         Returns
         -------
-        Job.InverseMCSimulationProperties
+        ansys.api.speos.job.v2.job_pb2.Job.InverseMCSimulationProperties
             InverseMCSimulationProperties message created.
         """
         props = Job.InverseMCSimulationProperties()
@@ -338,6 +417,7 @@ class JobFactory:
         props.automatic_save_frequency = automatic_save_frequency
         return props
 
+    @staticmethod
     def interactive_props(
         rays_nb_per_source: Optional[List[RaysNbPerSource]] = None,
         light_expert: Optional[bool] = False,
@@ -348,7 +428,7 @@ class JobFactory:
 
         Parameters
         ----------
-        rays_nb_per_source : List[RaysNbPerSource], optional
+        rays_nb_per_source : List[ansys.speos.core.job.JobFactory.RaysNbPerSource], optional
             Defines number of rays that will be emitted by each source instance.
             Source instances that are not mentioned will default to 100 rays.
             None = each source instance will generate default number of rays, ie 100.
@@ -362,7 +442,7 @@ class JobFactory:
 
         Returns
         -------
-        Job.InteractiveSimulationProperties
+        ansys.api.speos.job.v2.job_pb2.Job.InteractiveSimulationProperties
             InteractiveSimulationProperties message created.
         """
         props = Job.InteractiveSimulationProperties()
