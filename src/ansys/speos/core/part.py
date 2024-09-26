@@ -197,7 +197,7 @@ class PartFactory:
 
         Returns
         -------
-        Part
+        part.Part
             Part message created.
         """
         part = Part(name=name, description=description)
