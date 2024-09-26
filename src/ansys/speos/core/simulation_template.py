@@ -190,6 +190,30 @@ class SimulationTemplateFactory:
     """Class to help creating SimulationTemplate message"""
 
     class CommonPropagationParameters:
+        """Represents common propagation parameters for a simulation.
+
+        Parameters
+        ----------
+        geom_distance_tolerance : float, optional
+            Maximum distance in mm to consider two faces as tangent.
+            By default, ``0.05``.
+        max_impact : int, optional
+            Define a value to determine the maximum number of ray impacts during propagation.
+            When a ray has interacted N times with the geometry, the propagation of the ray stops.
+            By default, ``100``.
+        colorimetric_standard : \
+ansys.speos.core.simulation_template.SimulationTemplateFactory.CommonPropagationParameters.ColorimetricStandard, \
+optional
+            Default Colorimetric Standard.
+            By default, ``ColorimetricStandard.CIE_1931``.
+        ambient_material_uri : str, optional
+            Define the environment in which the light will propagate (water, fog, smoke etc.). It is expressed in a .material file.
+            By default, ``""``, ie air material.
+        weight : ansys.speos.core.simulation_template.SimulationTemplateFactory.CommonPropagationParameters.Weight, optional
+            Activates Weight. Highly recommended to fill. See Weight class description.
+            By default, ``Weight()``.
+        """
+
         class ColorimetricStandard(Enum):
             """the various coordinate systems for color space"""
 
@@ -223,31 +247,6 @@ class SimulationTemplateFactory:
             ambient_material_uri: Optional[str] = "",
             weight: Optional[Weight] = Weight(),
         ) -> None:
-            """
-            Represents common propagation parameters for a simulation.
-
-            Parameters
-            ----------
-            geom_distance_tolerance : float, optional
-                Maximum distance in mm to consider two faces as tangent.
-                By default, ``0.05``.
-            max_impact : int, optional
-                Define a value to determine the maximum number of ray impacts during propagation.
-                When a ray has interacted N times with the geometry, the propagation of the ray stops.
-                By default, ``100``.
-            colorimetric_standard: (
-                ansys.speos.core.simulation_template.SimulationTemplateFactory.CommonPropagationParameters.ColorimetricStandard,
-                optional
-                )
-                Default Colorimetric Standard.
-                By default, ``ColorimetricStandard.CIE_1931``.
-            ambient_material_uri : str, optional
-                Define the environment in which the light will propagate (water, fog, smoke etc.). It is expressed in a .material file.
-                By default, ``""``, ie air material.
-            weight : SimulationTemplateFactory.CommonPropagationParameters.Weight, optional
-                Activates Weight. Highly recommended to fill. See Weight class description.
-                By default, ``SimulationTemplateFactory.CommonPropagationParameters.Weight()``.
-            """
             self.geom_distance_tolerance = geom_distance_tolerance
             self.max_impact = max_impact
             self.colorimetric_standard = colorimetric_standard
