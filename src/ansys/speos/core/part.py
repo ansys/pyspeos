@@ -31,24 +31,46 @@ from ansys.speos.core.crud import CrudItem, CrudStub
 from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 
 Part = messages.Part
+"""Part protobuf class : ansys.api.speos.part.v1.part_pb2.Part"""
 Part.__str__ = lambda self: protobuf_message_to_str(self)
 
 
 class PartLink(CrudItem):
-    """Link object for body in database."""
+    """Link object for a part in database.
+
+    Parameters
+    ----------
+    db : ansys.speos.core.part.PartStub
+        Database to link to.
+    key : str
+        Key of the part in the database.
+    """
 
     def __init__(self, db, key: str):
         super().__init__(db, key)
 
     def __str__(self) -> str:
+        """Return the string representation of the part."""
         return str(self.get())
 
     def get(self) -> Part:
-        """Get the datamodel from database."""
+        """Get the datamodel from database.
+
+        Returns
+        -------
+        part.Part
+            Part datamodel.
+        """
         return self._stub.read(self)
 
     def set(self, data: Part) -> None:
-        """Change datamodel in database."""
+        """Change datamodel in database.
+
+        Parameters
+        ----------
+        data : part.Part
+            New part datamodel.
+        """
         self._stub.update(self, data)
 
     def delete(self) -> None:
@@ -60,8 +82,15 @@ class PartStub(CrudStub):
     """
     Database interactions for part.
 
+    Parameters
+    ----------
+    channel : grpc.Channel
+        Channel to use for the stub.
+
     Examples
     --------
+    The best way to get a PartStub is to retrieve it from SpeosClient via parts() method.
+    Like in the following example:
 
     >>> from ansys.speos.core.speos import Speos
     >>> speos = Speos(host="localhost", port=50051)
@@ -73,31 +102,74 @@ class PartStub(CrudStub):
         super().__init__(stub=service.PartsManagerStub(channel=channel))
 
     def create(self, message: Part) -> PartLink:
-        """Create a new entry."""
+        """Create a new entry.
+
+        Parameters
+        ----------
+        message : part.Part
+            Datamodel for the new entry.
+
+        Returns
+        -------
+        ansys.speos.core.part.PartLink
+            Link object created.
+        """
         resp = CrudStub.create(self, messages.Create_Request(part=message))
         return PartLink(self, resp.guid)
 
     def read(self, ref: PartLink) -> Part:
-        """Get an existing entry."""
+        """Get an existing entry.
+
+        Parameters
+        ----------
+        ref : ansys.speos.core.part.PartLink
+            Link object to read.
+
+        Returns
+        -------
+        part.Part
+            Datamodel of the entry.
+        """
         if not ref.stub == self:
             raise ValueError("PartLink is not on current database")
         resp = CrudStub.read(self, messages.Read_Request(guid=ref.key))
         return resp.part
 
     def update(self, ref: PartLink, data: Part):
-        """Change an existing entry."""
+        """Change an existing entry.
+
+        Parameters
+        ----------
+        ref : ansys.speos.core.part.PartLink
+            Link object to update.
+
+        data : part.Part
+            New datamodel for the entry.
+        """
         if not ref.stub == self:
             raise ValueError("PartLink is not on current database")
         CrudStub.update(self, messages.Update_Request(guid=ref.key, part=data))
 
     def delete(self, ref: PartLink) -> None:
-        """Remove an existing entry."""
+        """Remove an existing entry.
+
+        Parameters
+        ----------
+        ref : ansys.speos.core.part.PartLink
+            Link object to delete.
+        """
         if not ref.stub == self:
             raise ValueError("PartLink is not on current database")
         CrudStub.delete(self, messages.Delete_Request(guid=ref.key))
 
     def list(self) -> List[PartLink]:
-        """List existing entries."""
+        """List existing entries.
+
+        Returns
+        -------
+        List[ansys.speos.core.part.PartLink]
+            Link objects.
+        """
         guids = CrudStub.list(self, messages.List_Request()).guids
         return list(map(lambda x: PartLink(self, x), guids))
 
@@ -105,6 +177,7 @@ class PartStub(CrudStub):
 class PartFactory:
     """Class to help creating Part message"""
 
+    @staticmethod
     def new(name: str, bodies: List[BodyLink], description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None) -> Part:
         """
         Create a Part message.
@@ -113,7 +186,7 @@ class PartFactory:
         ----------
         name : str
             Name of the part.
-        bodies : List[BodyLink]
+        bodies : List[ansys.speos.core.body.BodyLink]
             List of all bodies contained in this part.
         description : str, optional
             Description of the part.
@@ -124,7 +197,7 @@ class PartFactory:
 
         Returns
         -------
-        Part
+        part.Part
             Part message created.
         """
         part = Part(name=name, description=description)
