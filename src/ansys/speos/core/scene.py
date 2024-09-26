@@ -44,6 +44,7 @@ from ansys.speos.core.source_template import SourceTemplateLink
 from ansys.speos.core.vop_template import VOPTemplateLink
 
 Scene = messages.Scene
+"""Scene protobuf class : ansys.api.speos.scene.v2.scene_pb2.Scene"""
 Scene.__str__ = lambda self: protobuf_message_to_str(self)
 Scene.MaterialInstance.__str__ = lambda self: protobuf_message_to_str(self)
 Scene.SceneInstance.__str__ = lambda self: protobuf_message_to_str(self)
@@ -54,7 +55,14 @@ Scene.SimulationInstance.__str__ = lambda self: protobuf_message_to_str(self)
 
 class SceneLink(CrudItem):
     """
-    Link object for scene in database.
+    Link object for a scene in database.
+
+    Parameters
+    ----------
+    db : ansys.speos.core.scene.SceneStub
+        Database to link to.
+    key : str
+        Key of the scene in the database.
 
     Examples
     --------
@@ -72,14 +80,27 @@ class SceneLink(CrudItem):
         self._actions_stub = db._actions_stub
 
     def __str__(self) -> str:
+        """Return the string representation of the scene."""
         return str(self.get())
 
     def get(self) -> Scene:
-        """Get the datamodel from database."""
+        """Get the datamodel from database.
+
+        Returns
+        -------
+        scene.Scene
+            Scene datamodel.
+        """
         return self._stub.read(self)
 
     def set(self, data: Scene) -> None:
-        """Change datamodel in database."""
+        """Change datamodel in database.
+
+        Parameters
+        ----------
+        data : scene.Scene
+            New scene datamodel.
+        """
         self._stub.update(self, data)
 
     def delete(self) -> None:
@@ -126,8 +147,15 @@ class SceneStub(CrudStub):
     """
     Database interactions for scenes.
 
+    Parameters
+    ----------
+    channel : grpc.Channel
+        Channel to use for the stub.
+
     Examples
     --------
+    The best way to get a SceneStub is to retrieve it from SpeosClient via scenes() method.
+    Like in the following example:
 
     >>> from ansys.speos.core.speos import Speos
     >>> speos = Speos(host="localhost", port=50051)
@@ -140,31 +168,73 @@ class SceneStub(CrudStub):
         self._actions_stub = service.SceneActionsStub(channel=channel)
 
     def create(self, message: Scene = Scene()) -> SceneLink:
-        """Create a new entry."""
+        """Create a new entry.
+
+        Parameters
+        ----------
+        message : scene.Scene
+            Datamodel for the new entry.
+
+        Returns
+        -------
+        ansys.speos.core.scene.SceneLink
+            Link object created.
+        """
         resp = CrudStub.create(self, messages.Create_Request(scene=message))
         return SceneLink(self, resp.guid)
 
     def read(self, ref: SceneLink) -> Scene:
-        """Get an existing entry."""
+        """Get an existing entry.
+
+        Parameters
+        ----------
+        ref : ansys.speos.core.scene.SceneLink
+            Link object to read.
+
+        Returns
+        -------
+        scene.Scene
+            Datamodel of the entry.
+        """
         if not ref.stub == self:
             raise ValueError("SceneLink is not on current database")
         resp = CrudStub.read(self, messages.Read_Request(guid=ref.key))
         return resp.scene
 
     def update(self, ref: SceneLink, data: Scene):
-        """Change an existing entry."""
+        """Change an existing entry.
+
+        Parameters
+        ----------
+        ref : ansys.speos.core.scene.SceneLink
+            Link object to update.
+        data : scene.Scene
+            New datamodel for the entry.
+        """
         if not ref.stub == self:
             raise ValueError("SceneLink is not on current database")
         CrudStub.update(self, messages.Update_Request(guid=ref.key, scene=data))
 
     def delete(self, ref: SceneLink) -> None:
-        """Remove an existing entry."""
+        """Remove an existing entry.
+
+        Parameters
+        ----------
+        ref : ansys.speos.core.scene.SceneLink
+            Link object to delete.
+        """
         if not ref.stub == self:
             raise ValueError("SceneLink is not on current database")
         CrudStub.delete(self, messages.Delete_Request(guid=ref.key))
 
     def list(self) -> List[SceneLink]:
-        """List existing entries."""
+        """List existing entries.
+
+        Returns
+        -------
+        List[ansys.speos.core.scene.SceneLink]
+            Link objects.
+        """
         guids = CrudStub.list(self, messages.List_Request()).guids
         return list(map(lambda x: SceneLink(self, x), guids))
 
@@ -178,7 +248,17 @@ class SceneFactory:
         class Sensor:
             """Class to gather sensor instance properties."""
 
-            RayFileType = Enum("RayFileType", ["Classic", "Polarization", "TM25", "TM25NoPolarization"])
+            class RayFileType(Enum):
+                """Enum representing the different types available for a ray file"""
+
+                Classic = 1
+                """To generate a .ray file without polarization data."""
+                Polarization = 2
+                """To generate a .ray file with the polarization data for each ray."""
+                TM25 = 3
+                """To generate a .tm25ray file with polarization data for each ray."""
+                TM25NoPolarization = 4
+                """To generate a .tm25ray file without polarization data."""
 
             class LayerType:
                 """Class to gather sensor instance layer types."""
@@ -190,21 +270,26 @@ class SceneFactory:
                         pass
 
                 class Sequence:
-                    Type = Enum("Type", ["Geometries", "Faces"])
+                    """
+                    Layers separated by sequence.
+
+                    Parameters
+                    ----------
+                    maximum_nb_of_sequence : int, optional
+                        Maximum number of sequences.
+                        By default, ``10``.
+                    sequence_type : ansys.speos.core.scene.SceneFactory.Properties.Sensor.LayerType.Sequence.Type, optional
+                        Type of sequences.
+                        By default, ``Type.Geometries``.
+                    """
+
+                    class Type(Enum):
+                        """Enum representing the different types available for a layer type by sequence."""
+
+                        Geometries = 1
+                        Faces = 2
 
                     def __init__(self, maximum_nb_of_sequence: Optional[int] = 10, sequence_type: Optional[Type] = Type.Geometries) -> None:
-                        """
-                        Layers separated by sequence.
-
-                        Parameters
-                        ----------
-                        maximum_nb_of_sequence : int, optional
-                            Maximum number of sequences.
-                            By default, ``10``.
-                        sequence_type : Sequence.Type, optional
-                            Type of sequences.
-                            By default, ``Sequence.Type.Geometries``.
-                        """
                         self.maximum_nb_of_sequence = maximum_nb_of_sequence
                         self.sequence_type = sequence_type
 
@@ -232,9 +317,22 @@ class SceneFactory:
             """Class to gather source instance properties."""
 
             class Intensity:
-                class Library:
-                    Orientation = Enum("Orientation", ["ViaAxisSystem", "NormalToSurface", "NormalToUVMap"])
+                """Class to gather source's intensity properties."""
 
+                class Library:
+                    """Class to gather intensity properties of type library."""
+
+                    class Orientation(Enum):
+                        """Enum representing the different orientations available"""
+
+                        ViaAxisSystem = 1
+                        """Intensity distribution is oriented by a selected axis system."""
+                        NormalToSurface = 2
+                        """Intensity distribution is oriented as normal to the selected surface."""
+                        NormalToUVMap = 3
+                        """Intensity distribution is oriented as normal to the selected emissive surface."""
+
+    @staticmethod
     def new(
         name: str,
         part: PartLink,
@@ -252,15 +350,15 @@ class SceneFactory:
         ----------
         name : str
             Name of the scene.
-        part : PartLink
+        part : ansys.speos.core.part.PartLink
             Part to be referenced as root part in the scene.
-        material_instances : List[Scene.MaterialInstance]
+        material_instances : List[SceneFactory.material_instance]
             list of optical properties instantiated in the scene
-        source_instances : List[Scene.SourceInstance]
+        source_instances : List[SceneFactory.source_instance]
             list of sources instantiated in the scene
-        sensor_instances : List[Scene.SourceInstance]
+        sensor_instances : List[SceneFactory.sensor_instance]
             list of sensors instantiated in the scene
-        simulation_instances : List[Scene.SourceInstance]
+        simulation_instances : List[SceneFactory.simulation_instance]
             list of simulations instantiated in the scene
         description : str, optional
             Description of the scene.
@@ -271,7 +369,7 @@ class SceneFactory:
 
         Returns
         -------
-        Scene
+        scene.Scene
             Scene message created.
         """
         scene = Scene(name=name, description=description)
@@ -284,6 +382,7 @@ class SceneFactory:
         scene.simulations.extend(simulation_instances)
         return scene
 
+    @staticmethod
     def material_instance(
         name: str,
         sop_templates: List[SOPTemplateLink],
@@ -299,14 +398,14 @@ class SceneFactory:
         ----------
         name : str
             Name of the material instance.
-        sop_templates : List[SOPTemplateLink]
+        sop_templates : List[ansys.speos.core.sop_template.SOPTemplateLink]
             Sop templates used this instance.
-        vop_template : VOPTemplateLink, optional
+        vop_template : ansys.speos.core.vop_template.VOPTemplateLink, optional
             Vop template used in this instance.
             By default, Volume optical property ``None`` is chosen.
         geometries : ansys.speos.core.geometry_utils.GeoPaths, optional
             Geometries that will use this material.
-            By default, ``ansys.speos.core.geometry_utils.GeoPaths()``, ie all geometries.
+            By default, ``GeoPaths()``, ie all geometries.
         description : str, optional
             Description of the material instance.
             By default, ``""``.
@@ -316,7 +415,7 @@ class SceneFactory:
 
         Returns
         -------
-        Scene.MaterialInstance
+        ansys.api.speos.scene.v2.scene_pb2.Scene.MaterialInstance
             MaterialInstance message created.
         """
         mat_i = Scene.MaterialInstance(name=name, description=description)
@@ -329,6 +428,7 @@ class SceneFactory:
         mat_i.geometries.geo_paths.extend(geometries.geo_paths)
         return mat_i
 
+    @staticmethod
     def source_instance(
         name: str,
         source_template: SourceTemplateLink,
@@ -343,9 +443,9 @@ class SceneFactory:
         ----------
         name : str
             Name of the source instance.
-        source_template : SourceTemplateLink
+        source_template : ansys.speos.core.source_template.SourceTemplateLink
             Source template used as a base of this instance.
-        properties : Union[Scene.SourceInstance.LuminaireProperties, Scene.SourceInstance.SurfaceProperties]
+        properties : Union[SceneFactory.luminaire_source_props, SceneFactory.surface_source_props]
             Properties to apply to this source instance.
             Choose the correct properties type depending on the source template type.
             Example:
@@ -361,7 +461,7 @@ class SceneFactory:
 
         Returns
         -------
-        Scene.SourceInstance
+        ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance
             SourceInstance message created.
         """
         src_i = Scene.SourceInstance(name=name, description=description)
@@ -375,6 +475,7 @@ class SceneFactory:
             src_i.surface_properties.CopyFrom(properties)
         return src_i
 
+    @staticmethod
     def luminaire_source_props(axis_system: Optional[AxisSystem] = AxisSystem()) -> Scene.SourceInstance.LuminaireProperties:
         """
         Create a LuminaireProperties message.
@@ -383,17 +484,18 @@ class SceneFactory:
         ----------
         axis_system : ansys.speos.core.geometry_utils.AxisSystem, optional
             Position of the source.
-            By default, ``ansys.speos.core.geometry_utils.AxisSystem()``.
+            By default, ``AxisSystem()``.
 
         Returns
         -------
-        Scene.SourceInstance.LuminaireProperties
+        ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.LuminaireProperties
             LuminaireProperties message created.
         """
         lum_props = Scene.SourceInstance.LuminaireProperties()
         lum_props.axis_system.extend(axis_system.origin + axis_system.x_vect + axis_system.y_vect + axis_system.z_vect)
         return lum_props
 
+    @staticmethod
     def surface_source_props(
         exitance_constant_geo_paths: Optional[List[GeoPathWithReverseNormal]] = None,
         exitance_variable_axis_plane: Optional[AxisPlane] = None,
@@ -412,7 +514,7 @@ class SceneFactory:
             In case the surface source has variable exitance, precise the position of the exitance map.
             Example: parameter to be filled if source_template.get().surface.HasField("exitance_variable")
             By default, ``None``.
-        intensity_properties : Scene.SourceInstance.IntensityProperties, optional
+        intensity_properties : Union[SceneFactory.library_intensity_props, SceneFactory.gaussian_intensity_props], optional
             To be filled in case the intensity template used is library or gaussian.
             Example if speos.client.get_item(src_t_surface.get().surface.intensity_guid).get().HasField("library")
             Or speos.client.get_item(src_t_surface.get().surface.intensity_guid).get().HasField("gaussian")
@@ -422,7 +524,7 @@ class SceneFactory:
 
         Returns
         -------
-        Scene.SourceInstance.SurfaceProperties
+        ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.SurfaceProperties
             SurfaceProperties message created.
         """
         surf_props = Scene.SourceInstance.SurfaceProperties()
@@ -440,6 +542,7 @@ class SceneFactory:
 
         return surf_props
 
+    @staticmethod
     def library_intensity_props(
         exit_geometries: Optional[GeoPaths] = None,
         orientation: Optional[
@@ -452,19 +555,19 @@ class SceneFactory:
 
         Parameters
         ----------
-        exit_geometries : GeoPaths, optional
+        exit_geometries : ansys.speos.core.geometry_utils.GeoPaths, optional
             Exit geometries for the source.
             By default, ``None``, ie no exit geometries.
-        orientation : Properties.Source.Intensity.Library.Orientation, optional
+        orientation : ansys.speos.core.scene.SceneFactory.Properties.Source.Intensity.Library.Orientation, optional
             Orientation of the source intensity distribution.
-            By default, ``Properties.Source.Intensity.Library.Orientation.ViaAxisSystem``.
+            By default, ``Orientation.ViaAxisSystem``.
         axis_system : ansys.speos.core.geometry_utils.AxisSystem, optional
             To be filled if the orientation ViaAxisSystem is chosen.
-            By default, ``ansys.speos.core.geometry_utils.AxisSystem()``.
+            By default, ``AxisSystem()``.
 
         Returns
         -------
-        Scene.SourceInstance.IntensityProperties
+        ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.IntensityProperties
             IntensityProperties message created.
         """
         lib_intens_props = Scene.SourceInstance.IntensityProperties()
@@ -482,6 +585,7 @@ class SceneFactory:
 
         return lib_intens_props
 
+    @staticmethod
     def gaussian_intensity_props(
         axis_system: Optional[AxisSystem] = None,
     ) -> Scene.SourceInstance.IntensityProperties:
@@ -490,13 +594,13 @@ class SceneFactory:
 
         Parameters
         ----------
-        axis_system : Union[ansys.speos.core.geometry_utils.AxisSystem, None], optional
+        axis_system : ansys.speos.core.geometry_utils.AxisSystem, optional
             Orientation of the intensity distribution.
             By default, ``None``, means normal to surface map.
 
         Returns
         -------
-        Scene.SourceInstance.IntensityProperties
+        ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.IntensityProperties
             IntensityProperties message created.
         """
         ag_intens_props = Scene.SourceInstance.IntensityProperties()
@@ -507,6 +611,7 @@ class SceneFactory:
             )
         return ag_intens_props
 
+    @staticmethod
     def sensor_instance(
         name: str,
         sensor_template: SensorTemplateLink,
@@ -521,9 +626,9 @@ class SceneFactory:
         ----------
         name : str
             Name of the sensor instance.
-        sensor_template : SensorTemplateLink
+        sensor_template : ansys.speos.core.sensor_template.SensorTemplateLink
             Sensor template used as a base of this instance.
-        properties : Union[Scene.SensorInstance.CameraProperties, Scene.SensorInstance.IrradianceProperties]
+        properties : Union[SceneFactory.camera_sensor_props, SceneFactory.irradiance_sensor_props]
             Properties to apply to this sensor instance.
             Choose the correct properties type depending on the sensor template.
             Example:
@@ -538,7 +643,7 @@ class SceneFactory:
 
         Returns
         -------
-        Scene.SensorInstance
+        ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance
             SensorInstance message created.
         """
         ssr_i = Scene.SensorInstance(name=name, description=description)
@@ -551,6 +656,7 @@ class SceneFactory:
             ssr_i.irradiance_properties.CopyFrom(properties)
         return ssr_i
 
+    @staticmethod
     def camera_sensor_props(
         axis_system: Optional[AxisSystem] = AxisSystem(),
         trajectory_file_uri: Optional[str] = None,
@@ -563,17 +669,17 @@ class SceneFactory:
         ----------
         axis_system : ansys.speos.core.geometry_utils.AxisSystem, optional
             Position of the sensor.
-            By default, ``ansys.speos.core.geometry_utils.AxisSystem()``.
+            By default, ``AxisSystem()``.
         trajectory_file_uri : str, optional
             Trajectory file, used to define the position and orientations of the Camera sensor in time.
             By default, ``None``.
-        layer_type : Properties.Sensor.LayerType.Source, optional
+        layer_type : ansys.speos.core.scene.SceneFactory.Properties.Sensor.LayerType.Source, optional
             Layer type for the sensor.
             By default, ``None``, ie no layers.
 
         Returns
         -------
-        Scene.SensorInstance.CameraProperties
+        ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance.CameraProperties
             CameraProperties message created.
         """
         cam_props = Scene.SensorInstance.CameraProperties()
@@ -586,6 +692,7 @@ class SceneFactory:
             cam_props.layer_type_source.SetInParent()
         return cam_props
 
+    @staticmethod
     def irradiance_sensor_props(
         axis_system: Optional[AxisSystem] = AxisSystem(),
         ray_file_type: Optional[Properties.Sensor.RayFileType] = None,
@@ -606,14 +713,14 @@ class SceneFactory:
         ----------
         axis_system : ansys.speos.core.geometry_utils.AxisSystem, optional
             Position of the sensor.
-            By default, ``ansys.speos.core.geometry_utils.AxisSystem()``.
-        ray_file_type : Properties.Sensor.RayFileType, optional
+            By default, ``AxisSystem()``.
+        ray_file_type : ansys.speos.core.scene.SceneFactory.Properties.Sensor.RayFileType, optional
             Type of ray file generated after the simulation.
             By default, ``None``, ie no ray file type generated.
-        layer_type : Union[Properties.Sensor.LayerType.Source, \
-                        Properties.Sensor.LayerType.Sequence, \
-                        Properties.Sensor.LayerType.Polarization, \
-                        Properties.Sensor.LayerType.IncidenceAngle], optional
+        layer_type : Union[ansys.speos.core.scene.SceneFactory.Properties.Sensor.LayerType.Source, \
+                        ansys.speos.core.scene.SceneFactory.Properties.Sensor.LayerType.Sequence, \
+                        ansys.speos.core.scene.SceneFactory.Properties.Sensor.LayerType.Polarization, \
+                        ansys.speos.core.scene.SceneFactory.Properties.Sensor.LayerType.IncidenceAngle], optional
             Layer type for the sensor.
             By default, ``None``, ie no layers.
         integration_direction : List[float]
@@ -624,7 +731,7 @@ class SceneFactory:
 
         Returns
         -------
-        Scene.SensorInstance.IrradianceProperties
+        ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance.IrradianceProperties
             IrradianceProperties message created.
         """
         irr_props = Scene.SensorInstance.IrradianceProperties()
@@ -661,6 +768,7 @@ class SceneFactory:
 
         return irr_props
 
+    @staticmethod
     def simulation_instance(
         name: str,
         simulation_template: SimulationTemplateLink,
@@ -677,7 +785,7 @@ class SceneFactory:
         ----------
         name : str
             Name of the simulation instance.
-        simulation_template : SimulationTemplateLink
+        simulation_template : ansys.speos.core.simulation_template.SimulationTemplateLink
             Simulation template used as a base of this instance.
         sensor_paths : List[str]
             Sensor paths to select some SensorInstances.
@@ -687,7 +795,7 @@ class SceneFactory:
             Example: "source_instance_name", "subscene_name/source_instance_name"
         geometries : ansys.speos.core.geometry_utils.GeoPaths, optional
             Geometries that will be needed.
-            By default, ``ansys.speos.core.geometry_utils.GeoPaths()``, ie all geometries.
+            By default, ``GeoPaths()``, ie all geometries.
         description : str, optional
             Description of the simulation instance.
             By default, ``""``.
@@ -697,7 +805,7 @@ class SceneFactory:
 
         Returns
         -------
-        Scene.SimulationInstance
+        ansys.api.speos.scene.v2.scene_pb2.Scene.SimulationInstance
             SimulationInstance message created.
         """
         sim_i = Scene.SimulationInstance(name=name, description=description)
