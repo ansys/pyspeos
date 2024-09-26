@@ -46,6 +46,16 @@ class SimulationTemplateLink(CrudItem):
         Database to link to.
     key : str
         Key of the simulation_template in the database.
+
+    Examples
+    --------
+
+    >>> from ansys.speos.core.speos import Speos
+    >>> from ansys.speos.core.simulation_template import SimulationTemplateFactory
+    >>> speos = Speos(host="localhost", port=50051)
+    >>> sim_t_db = speos.client.simulation_templates()
+    >>> sim_t_link = sim_t_db.create(message=SimulationTemplateFactory.direct_mc(name="Direct_Default"))
+
     """
 
     def __init__(self, db, key: str):
