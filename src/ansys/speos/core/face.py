@@ -32,6 +32,7 @@ from ansys.speos.core.geometry_utils import AxisPlane
 from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 
 Face = messages.Face
+"""Face protobuf class : ansys.api.speos.part.v1.face_pb2.Face"""
 Face.__str__ = lambda self: protobuf_message_to_str(self)
 
 
@@ -40,7 +41,7 @@ class FaceLink(CrudItem):
 
     Parameters
     ----------
-    db : FaceStub
+    db : ansys.speos.core.face.FaceStub
         Database to link to.
     key : str
         Key of the face in the database.
@@ -50,14 +51,27 @@ class FaceLink(CrudItem):
         super().__init__(db, key)
 
     def __str__(self) -> str:
+        """Return the string representation of the face."""
         return str(self.get())
 
     def get(self) -> Face:
-        """Get the datamodel from database."""
+        """Get the datamodel from database.
+
+        Returns
+        -------
+        face.Face
+            Face datamodel.
+        """
         return self._stub.read(self)
 
     def set(self, data: Face) -> None:
-        """Change datamodel in database."""
+        """Change datamodel in database.
+
+        Parameters
+        ----------
+        data : face.Face
+            New Face datamodel.
+        """
         self._stub.update(self, data)
 
     def delete(self) -> None:
@@ -69,8 +83,15 @@ class FaceStub(CrudStub):
     """
     Database interactions for face.
 
+    Parameters
+    ----------
+    channel : grpc.Channel
+        Channel to use for the stub.
+
     Examples
     --------
+    The best way to get a FaceStub is to retrieve it from SpeosClient via faces() method.
+    Like in the following example:
 
     >>> from ansys.speos.core.speos import Speos
     >>> speos = Speos(host="localhost", port=50051)
@@ -82,31 +103,74 @@ class FaceStub(CrudStub):
         super().__init__(stub=service.FacesManagerStub(channel=channel))
 
     def create(self, message: Face) -> FaceLink:
-        """Create a new entry."""
+        """Create a new entry.
+
+        Parameters
+        ----------
+        message : face.Face
+            Datamodel for the new entry.
+
+        Returns
+        -------
+        ansys.speos.core.face.FaceLink
+            Link object created.
+        """
         resp = CrudStub.create(self, messages.Create_Request(face=message))
         return FaceLink(self, resp.guid)
 
     def read(self, ref: FaceLink) -> Face:
-        """Get an existing entry."""
+        """Get an existing entry.
+
+        Parameters
+        ----------
+        ref : ansys.speos.core.face.FaceLink
+            Link object to read.
+
+        Returns
+        -------
+        face.Face
+            Datamodel of the entry.
+        """
         if not ref.stub == self:
             raise ValueError("FaceLink is not on current database")
         resp = CrudStub.read(self, messages.Read_Request(guid=ref.key))
         return resp.face
 
     def update(self, ref: FaceLink, data: Face):
-        """Change an existing entry."""
+        """Change an existing entry.
+
+        Parameters
+        ----------
+        ref : ansys.speos.core.face.FaceLink
+            Link object to update.
+
+        data : face.Face
+            New datamodel for the entry.
+        """
         if not ref.stub == self:
             raise ValueError("FaceLink is not on current database")
         CrudStub.update(self, messages.Update_Request(guid=ref.key, face=data))
 
     def delete(self, ref: FaceLink) -> None:
-        """Remove an existing entry."""
+        """Remove an existing entry.
+
+        Parameters
+        ----------
+        ref : ansys.speos.core.face.FaceLink
+            Link object to delete.
+        """
         if not ref.stub == self:
             raise ValueError("FaceLink is not on current database")
         CrudStub.delete(self, messages.Delete_Request(guid=ref.key))
 
     def list(self) -> List[FaceLink]:
-        """List existing entries."""
+        """List existing entries.
+
+        Returns
+        -------
+        List[ansys.speos.core.face.FaceLink]
+            Link objects.
+        """
         guids = CrudStub.list(self, messages.List_Request()).guids
         return list(map(lambda x: FaceLink(self, x), guids))
 
@@ -114,6 +178,7 @@ class FaceStub(CrudStub):
 class FaceFactory:
     """Class to help creating Face message"""
 
+    @staticmethod
     def new(
         name: str,
         vertices: List[float],
@@ -144,7 +209,7 @@ class FaceFactory:
 
         Returns
         -------
-        Face
+        face.Face
             Face message created.
         """
         face = Face(name=name, description=description, vertices=vertices, facets=facets, normals=normals)
@@ -152,6 +217,7 @@ class FaceFactory:
             face.metadata.update(metadata)
         return face
 
+    @staticmethod
     def rectangle(
         name: str,
         description: Optional[str] = "",
@@ -185,7 +251,7 @@ class FaceFactory:
 
         Returns
         -------
-        Face
+        face.Face
             Face message created.
         """
         face = Face(name=name, description=description)

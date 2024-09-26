@@ -32,12 +32,20 @@ from ansys.speos.core.crud import CrudItem, CrudStub
 from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 
 SensorTemplate = messages.SensorTemplate
+"""SensorTemplate protobuf class : ansys.api.speos.sensor.v1.sensor_pb2.SensorTemplate"""
 SensorTemplate.__str__ = lambda self: protobuf_message_to_str(self)
 
 
 class SensorTemplateLink(CrudItem):
     """
     Link object for sensor template in database.
+
+    Parameters
+    ----------
+    db : ansys.speos.core.sensor_template.SensorTemplateStub
+        Database to link to.
+    key : str
+        Key of the sensor template in the database.
 
     Examples
     --------
@@ -54,14 +62,27 @@ class SensorTemplateLink(CrudItem):
         super().__init__(db, key)
 
     def __str__(self) -> str:
+        """Return the string representation of the sensor template."""
         return str(self.get())
 
     def get(self) -> SensorTemplate:
-        """Get the datamodel from database."""
+        """Get the datamodel from database.
+
+        Returns
+        -------
+        sensor_template.SensorTemplate
+            Sensor template datamodel.
+        """
         return self._stub.read(self)
 
     def set(self, data: SensorTemplate) -> None:
-        """Change datamodel in database."""
+        """Change datamodel in database.
+
+        Parameters
+        ----------
+        data : sensor_template.SensorTemplate
+            New sensor template datamodel.
+        """
         self._stub.update(self, data)
 
     def delete(self) -> None:
@@ -73,8 +94,15 @@ class SensorTemplateStub(CrudStub):
     """
     Database interactions for sensor templates.
 
+    Parameters
+    ----------
+    channel : grpc.Channel
+        Channel to use for the stub.
+
     Examples
     --------
+    The best way to get a SensorTemplateStub is to retrieve it from SpeosClient via sensor_templates() method.
+    Like in the following example:
 
     >>> from ansys.speos.core.speos import Speos
     >>> speos = Speos(host="localhost", port=50051)
@@ -86,31 +114,74 @@ class SensorTemplateStub(CrudStub):
         super().__init__(stub=service.SensorTemplatesManagerStub(channel=channel))
 
     def create(self, message: SensorTemplate) -> SensorTemplateLink:
-        """Create a new entry."""
+        """Create a new entry.
+
+        Parameters
+        ----------
+        message : sensor_template.SensorTemplate
+            Datamodel for the new entry.
+
+        Returns
+        -------
+        ansys.speos.core.sensor_template.SensorTemplateLink
+            Link object created.
+        """
         resp = CrudStub.create(self, messages.Create_Request(sensor_template=message))
         return SensorTemplateLink(self, resp.guid)
 
     def read(self, ref: SensorTemplateLink) -> SensorTemplate:
-        """Get an existing entry."""
+        """Get an existing entry.
+
+        Parameters
+        ----------
+        ref : ansys.speos.core.sensor_template.SensorTemplateLink
+            Link object to read.
+
+        Returns
+        -------
+        sensor_template.SensorTemplate
+            Datamodel of the entry.
+        """
         if not ref.stub == self:
             raise ValueError("SensorTemplateLink is not on current database")
         resp = CrudStub.read(self, messages.Read_Request(guid=ref.key))
         return resp.sensor_template
 
     def update(self, ref: SensorTemplateLink, data: SensorTemplate):
-        """Change an existing entry."""
+        """Change an existing entry.
+
+        Parameters
+        ----------
+        ref : ansys.speos.core.sensor_template.SensorTemplateLink
+            Link object to update.
+
+        data : sensor_template.SensorTemplate
+            New datamodel for the entry.
+        """
         if not ref.stub == self:
             raise ValueError("SensorTemplateLink is not on current database")
         CrudStub.update(self, messages.Update_Request(guid=ref.key, sensor_template=data))
 
     def delete(self, ref: SensorTemplateLink) -> None:
-        """Remove an existing entry."""
+        """Remove an existing entry.
+
+        Parameters
+        ----------
+        ref : ansys.speos.core.sensor_template.SensorTemplateLink
+            Link object to delete.
+        """
         if not ref.stub == self:
             raise ValueError("SensorTemplateLink is not on current database")
         CrudStub.delete(self, messages.Delete_Request(guid=ref.key))
 
     def list(self) -> List[SensorTemplateLink]:
-        """List existing entries."""
+        """List existing entries.
+
+        Returns
+        -------
+        List[ansys.speos.core.sensor_template.SensorTemplateLink]
+            Link objects.
+        """
         guids = CrudStub.list(self, messages.List_Request()).guids
         return list(map(lambda x: SensorTemplateLink(self, x), guids))
 
@@ -118,8 +189,27 @@ class SensorTemplateStub(CrudStub):
 class SensorTemplateFactory:
     """Class to help creating SensorTemplate message"""
 
-    Type = Enum("Type", ["Photometric", "Colorimetric", "Radiometric", "Spectral"])
-    IlluminanceType = Enum("IlluminanceType", ["Planar", "Radial", "Hemispherical", "Cylindrical", "SemiCylindrical"])
+    class Type(Enum):
+        """Enum representing the type of the sensor"""
+
+        Photometric = 1
+        """The sensor considers the visible spectrum and get the results in lm/m2 or lx."""
+        Colorimetric = 2
+        """The sensor returns color results without any spectral data or layer separation (in lx or W//m2)"""
+        Radiometric = 3
+        """The sensor considers the entire spectrum and get the results in W/m2"""
+        Spectral = 4
+        """The sensor returns color results and spectral data separated by wavelength (in lx or W/m2)"""
+
+    class IlluminanceType(Enum):
+        """Enum representing how the light should be integrated to the sensor."""
+
+        Planar = 1
+        """Integration is made orthogonally with the sensor plan"""
+        Radial = 2
+        Hemispherical = 3
+        Cylindrical = 4
+        SemiCylindrical = 5
 
     class Dimensions:
         """
@@ -157,15 +247,21 @@ class SensorTemplateFactory:
             y_sampling: Optional[int] = 100,
         ) -> None:
             self.x_start = x_start
+            """Start of the sensor regarding x axis"""
             self.x_end = x_end
+            """End of the sensor regarding x axis"""
             self.x_sampling = x_sampling
+            """Sampling on x axis"""
             self.y_start = y_start
+            """Start of the sensor regarding y axis"""
             self.y_end = y_end
+            """End of the sensor regarding y axis"""
             self.y_sampling = y_sampling
+            """Sampling on y axis"""
 
     class WavelengthsRange:
         """
-        Represents range of wavelenths.
+        Represents range of wavelengths.
 
         Parameters
         ----------
@@ -182,8 +278,11 @@ class SensorTemplateFactory:
 
         def __init__(self, start: Optional[float] = 400, end: Optional[float] = 700, sampling: Optional[int] = 13) -> None:
             self.start = start
+            """Minimum wavelength. (nm)"""
             self.end = end
+            """Maximum wavelength. (nm)"""
             self.sampling = sampling
+            """Number of wavelength to be taken into account between the minimum and minimum wavelengths set"""
 
     class CameraDimensions:
         """
@@ -209,9 +308,13 @@ class SensorTemplateFactory:
             self, horz_pixel: Optional[int] = 640, vert_pixel: Optional[int] = 480, width: Optional[float] = 5, height: Optional[float] = 5
         ) -> None:
             self.horz_pixel = horz_pixel
+            """Horizontal pixels number corresponding to the camera resolution"""
             self.vert_pixel = vert_pixel
+            """Vertical pixels number corresponding to the camera resolution"""
             self.width = width
+            """Sensor's width in mm"""
             self.height = height
+            """Sensor's height in mm"""
 
     class CameraSettings:
         """
@@ -241,34 +344,48 @@ class SensorTemplateFactory:
             f_number: Optional[float] = 20,
         ) -> None:
             self.gamma_correction = gamma_correction
+            """Compensation of the curve before the display on the screen"""
             self.focal_length = focal_length
+            """Distance between the center of the optical system and the focus. (mm)"""
             self.imager_distance = imager_distance
+            """Imager distance in mm, the imager is located at the focal point. The Imager distance has no impact on the result"""
             self.f_number = f_number
+            """F-number represent the aperture of the front lens. F number has no impact on the result"""
 
     class CameraBalanceMode:
-        Type = Enum("Type", ["GreyWorld", "UserWhiteBalance", "DisplayPrimaries"])
+        """
+        Represents camera balance mode.
+
+        Parameters
+        ----------
+        type : ansys.speos.core.sensor_template.SensorTemplateFactory.CameraBalanceMode.Type, optional
+            Type of balance mode.
+            By default, ``None``.
+        values : List, optional
+            To be filled in case of types UserWhiteBalance and DisplayPrimaries
+            If UserWhiteBalance, gains are expected. List[float] : [red_gain, green_gain, blue_gain]
+            If DisplayPrimaries, display files are expected. List[str] :
+            [red_display_file_uri, green_display_file_uri, blue_display_file_uri]
+            By default, ``[]``.
+
+        Raises
+        ------
+        ValueError
+            Raised when the expected values are not given in input.
+        """
+
+        class Type(Enum):
+            """Enum representing the white balance mode"""
+
+            GreyWorld = 1
+            """The grey world assumption states that the content of the image is grey on average."""
+            UserWhiteBalance = 2
+            """In addition to the basic treatment, it allows you to apply your own coefficients to the red, green, blue images"""
+            DisplayPrimaries = 3
+            """Spectral results are converted in a three channels result. Then a post-treatment is realized to take the distortion induced \
+by the display devices into account"""
 
         def __init__(self, type: Optional[Type] = None, values: Optional[List] = []) -> None:
-            """
-            Represents camera balance mode.
-
-            Parameters
-            ----------
-            type : SensorTemplateFactory.CameraBalanceMode.Type, optional
-                Type of balance mode.
-                By default, ``None``.
-            values : List, optional
-                To be filled in case of types UserWhiteBalance and DisplayPrimaries
-                If UserWhiteBalance, gains are expected. List[float] : [red_gain, green_gain, blue_gain]
-                If DisplayPrimaries, display files are expected. List[str] :
-                [red_display_file_uri, green_display_file_uri, blue_display_file_uri]
-                By default, ``[]``.
-
-            Raises
-            ------
-            ValueError
-                Raised when the expected values are not given in input.
-            """
             if type == SensorTemplateFactory.CameraBalanceMode.Type.UserWhiteBalance and len(values) != 3:
                 raise ValueError("For userwhite balance mode, three values are expected: [red_gain, green_gain, blue_gain]")
             if type == SensorTemplateFactory.CameraBalanceMode.Type.DisplayPrimaries and len(values) != 3:
@@ -277,7 +394,10 @@ class SensorTemplateFactory:
                     [red_display_file_uri, green_display_file_uri, blue_display_file_uri]"
                 )
             self.type = type
+            """Type of balance mode"""
             self.value = values
+            """Gains in case of Type.UserWhiteBalance [red_gain, green_gain, blue_gain], or display files in case of Type.DisplayPrimaries \
+[red_display_file_uri, green_display_file_uri, blue_display_file_uri]"""
 
     class RadianceSettings:
         """
@@ -301,6 +421,7 @@ class SensorTemplateFactory:
             self.focal = focal
             self.integration_angle = integration_angle
 
+    @staticmethod
     def irradiance(
         name: str,
         type: Optional[Type] = Type.Photometric,
@@ -317,16 +438,16 @@ class SensorTemplateFactory:
         ----------
         name : str
             Name of the sensor template.
-        type : SensorTemplateFactory.Type, optional
+        type : ansys.speos.core.sensor_template.SensorTemplateFactory.Type, optional
             Type of the sensor.
-            By default, ``SensorTemplateFactory.Type.Photometric``.
-        illuminance_type : SensorTemplateFactory.IlluminanceType, optional
+            By default, ``Type.Photometric``.
+        illuminance_type : ansys.speos.core.sensor_template.SensorTemplateFactory.IlluminanceType, optional
             Select how the light should be integrated to the sensor.
-            By default, ``SensorTemplateFactory.IlluminanceType.Planar``.
-        dimensions : SensorTemplateFactory.Dimensions, optional
+            By default, ``IlluminanceType.Planar``.
+        dimensions : ansys.speos.core.sensor_template.SensorTemplateFactory.Dimensions, optional
             Dimensions of the sensor.
-            By default, ``SensorTemplateFactory.Dimensions()``.
-        wavelengths_range : SensorTemplateFactory.WavelengthsRange, optional
+            By default, ``Dimensions()``.
+        wavelengths_range : ansys.speos.core.sensor_template.SensorTemplateFactory.WavelengthsRange, optional
             Range of wavelengths.
             To be filled in case of type Colorimetric or Spectral
             By default, ``None``.
@@ -339,7 +460,7 @@ class SensorTemplateFactory:
 
         Returns
         -------
-        SensorTemplate
+        sensor_template.SensorTemplate
             SensorTemplate message created.
 
         Raises
@@ -387,6 +508,7 @@ class SensorTemplateFactory:
 
         return ssr
 
+    @staticmethod
     def camera(
         name: str,
         distortion_file_uri: str,
@@ -415,16 +537,16 @@ class SensorTemplateFactory:
             Spectrum files.
             To get the sensor in color mode : [red_spectrum_file_uri, green_spectrum_file_uri, blue_spectrum_file_uri]
             To get the sensor in monochromatic mode : [spectrum_file_uri]
-        settings : SensorTemplateFactory.CameraSettings, optional
+        settings : ansys.speos.core.sensor_template.SensorTemplateFactory.CameraSettings, optional
             Settings for the camera.
-            By default, ``SensorTemplateFactory.CameraSettings()``.
-        dimensions : SensorTemplateFactory.CameraDimensions, optional
+            By default, ``CameraSettings()``.
+        dimensions : ansys.speos.core.sensor_template.SensorTemplateFactory.CameraDimensions, optional
             Dimensions of the camera.
-            By default, ``SensorTemplateFactory.CameraDimensions()``.
-        wavelengths_range : SensorTemplateFactory.WavelengthsRange, optional
+            By default, ``CameraDimensions()``.
+        wavelengths_range : ansys.speos.core.sensor_template.SensorTemplateFactory.WavelengthsRange, optional
             Range of wavelengths.
-            By default, ``SensorTemplateFactory.WavelengthsRange()``.
-        camera_balance_mode : SensorTemplateFactory.CameraBalanceMode, optional
+            By default, ``WavelengthsRange()``.
+        camera_balance_mode : ansys.speos.core.sensor_template.SensorTemplateFactory.CameraBalanceMode, optional
             Camera balance mode.
             Can be filled if the camera is in color mode.
             By default, ``None``.
@@ -437,7 +559,7 @@ class SensorTemplateFactory:
 
         Returns
         -------
-        SensorTemplate
+        sensor_template.SensorTemplate
             SensorTemplate message created.
 
         Raises
@@ -526,18 +648,18 @@ class SensorTemplateFactory:
         metadata : Mapping[str, str], optional
             Metadata of the sensor template.
             By default, ``None``.
-        wavelengths_range : SensorTemplateFactory.WavelengthsRange, optional
+        wavelengths_range : ansys.speos.core.sensor_template.SensorTemplateFactory.WavelengthsRange, optional
             Range of wavelengths.
-            By default, ``SensorTemplateFactory.WavelengthsRange()``.
-        dimensions : SensorTemplateFactory.Dimensions, optional
+            By default, ``WavelengthsRange()``.
+        dimensions : ansys.speos.core.sensor_template.SensorTemplateFactory.Dimensions, optional
             Dimensions of the sensor.
-            By default, ``SensorTemplateFactory.Dimensions()``.
-        settings : SensorTemplateFactory.RadianceSettings, optional
+            By default, ``Dimensions()``.
+        settings : ansys.speos.core.sensor_template.SensorTemplateFactory.RadianceSettings, optional
             Settings for the radiance.
-            By default, ``SensorTemplateFactory.RadianceSettings()``.
+            By default, ``RadianceSettings()``.
         Returns
         -------
-        SensorTemplate
+        sensor_template.SensorTemplate
             SensorTemplate message created.
 
         Raises

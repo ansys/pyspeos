@@ -33,7 +33,7 @@ def protobuf_message_to_str(message: Message, with_full_name: Optional[bool] = T
 
     Parameters
     ----------
-    message : Message
+    message : google.protobuf.message.Message
         Protobuf message.
     with_full_name : bool, optional
         Prepend the returned string with protobuf message full name.

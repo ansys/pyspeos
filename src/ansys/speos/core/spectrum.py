@@ -31,12 +31,20 @@ from ansys.speos.core.crud import CrudItem, CrudStub
 from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 
 Spectrum = messages.Spectrum
+"""Spectrum protobuf class : ansys.api.speos.spectrum.v1.spectrum_pb2.Spectrum"""
 Spectrum.__str__ = lambda self: protobuf_message_to_str(self)
 
 
 class SpectrumLink(CrudItem):
     """
-    Link object for spectrum in database.
+    Link object for a spectrum in database.
+
+    Parameters
+    ----------
+    db : ansys.speos.core.spectrum.SpectrumStub
+        Database to link to.
+    key : str
+        Key of the spectrum in the database.
 
     Examples
     --------
@@ -53,14 +61,27 @@ class SpectrumLink(CrudItem):
         super().__init__(db, key)
 
     def __str__(self) -> str:
+        """Return the string representation of the spectrum."""
         return str(self.get())
 
     def get(self) -> Spectrum:
-        """Get the datamodel from database."""
+        """Get the datamodel from database.
+
+        Returns
+        -------
+        spectrum.Spectrum
+            Spectrum datamodel.
+        """
         return self._stub.read(self)
 
     def set(self, data: Spectrum) -> None:
-        """Change datamodel in database."""
+        """Change datamodel in database.
+
+        Parameters
+        ----------
+        data : spectrum.Spectrum
+            New spectrum datamodel.
+        """
         self._stub.update(self, data)
 
     def delete(self) -> None:
@@ -72,8 +93,15 @@ class SpectrumStub(CrudStub):
     """
     Database interactions for spectrums.
 
+    Parameters
+    ----------
+    channel : grpc.Channel
+        Channel to use for the stub.
+
     Examples
     --------
+    The best way to get a SpectrumStub is to retrieve it from SpeosClient via spectrums() method.
+    Like in the following example:
 
     >>> from ansys.speos.core.speos import Speos
     >>> speos = Speos(host="localhost", port=50051)
@@ -85,31 +113,73 @@ class SpectrumStub(CrudStub):
         super().__init__(stub=service.SpectrumsManagerStub(channel=channel))
 
     def create(self, message: Spectrum) -> SpectrumLink:
-        """Create a new entry."""
+        """Create a new entry.
+
+        Parameters
+        ----------
+        message : spectrum.Spectrum
+            Datamodel for the new entry.
+
+        Returns
+        -------
+        ansys.speos.core.spectrum.SpectrumLink
+            Link object created.
+        """
         resp = CrudStub.create(self, messages.Create_Request(spectrum=message))
         return SpectrumLink(self, resp.guid)
 
     def read(self, ref: SpectrumLink) -> Spectrum:
-        """Get an existing entry."""
+        """Get an existing entry.
+
+        Parameters
+        ----------
+        ref : ansys.speos.core.spectrum.SpectrumLink
+            Link object to read.
+
+        Returns
+        -------
+        spectrum.Spectrum
+            Datamodel of the entry.
+        """
         if not ref.stub == self:
             raise ValueError("SpectrumLink is not on current database")
         resp = CrudStub.read(self, messages.Read_Request(guid=ref.key))
         return resp.spectrum
 
     def update(self, ref: SpectrumLink, data: Spectrum):
-        """Change an existing entry."""
+        """Change an existing entry.
+
+        Parameters
+        ----------
+        ref : ansys.speos.core.spectrum.SpectrumLink
+            Link object to update.
+        data : spectrum.Spectrum
+            New datamodel for the entry.
+        """
         if not ref.stub == self:
             raise ValueError("SpectrumLink is not on current database")
         CrudStub.update(self, messages.Update_Request(guid=ref.key, spectrum=data))
 
     def delete(self, ref: SpectrumLink) -> None:
-        """Remove an existing entry."""
+        """Remove an existing entry.
+
+        Parameters
+        ----------
+        ref : ansys.speos.core.spectrum.SpectrumLink
+            Link object to delete.
+        """
         if not ref.stub == self:
             raise ValueError("SpectrumLink is not on current database")
         CrudStub.delete(self, messages.Delete_Request(guid=ref.key))
 
     def list(self) -> List[SpectrumLink]:
-        """List existing entries."""
+        """List existing entries.
+
+        Returns
+        -------
+        List[ansys.speos.core.spectrum.SpectrumLink]
+            Link objects.
+        """
         guids = CrudStub.list(self, messages.List_Request()).guids
         return list(map(lambda x: SpectrumLink(self, x), guids))
 
@@ -117,19 +187,18 @@ class SpectrumStub(CrudStub):
 class SpectrumFactory:
     """Class to help creating Spectrum message."""
 
-    PredefinedType = Enum(
-        "PredefinedType",
-        [
-            "Incandescent",
-            "WarmWhiteFluorescent",
-            "DaylightFluorescent",
-            "WhiteLED",
-            "Halogen",
-            "MetalHalide",
-            "HighPressureSodium",
-        ],
-    )
+    class PredefinedType(Enum):
+        """Enum representing the predefined types available for a spectrum"""
 
+        Incandescent = 1
+        WarmWhiteFluorescent = 2
+        DaylightFluorescent = 3
+        WhiteLED = 4
+        Halogen = 5
+        MetalHalide = 6
+        HighPressureSodium = 7
+
+    @staticmethod
     def monochromatic(
         name: str, wavelength: Optional[float] = 555, description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None
     ) -> Spectrum:
@@ -152,7 +221,7 @@ class SpectrumFactory:
 
         Returns
         -------
-        Spectrum
+        spectrum.Spectrum
             Spectrum message created.
         """
         spec = Spectrum(name=name, description=description)
@@ -161,6 +230,7 @@ class SpectrumFactory:
         spec.monochromatic.wavelength = wavelength
         return spec
 
+    @staticmethod
     def blackbody(
         name: str, temperature: Optional[float] = 2856, description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None
     ) -> Spectrum:
@@ -183,7 +253,7 @@ class SpectrumFactory:
 
         Returns
         -------
-        Spectrum
+        spectrum.Spectrum
             Spectrum message created.
         """
         spec = Spectrum(name=name, description=description)
@@ -192,6 +262,7 @@ class SpectrumFactory:
         spec.blackbody.temperature = temperature
         return spec
 
+    @staticmethod
     def sampled(
         name: str,
         wavelengths: List[float],
@@ -219,7 +290,7 @@ class SpectrumFactory:
 
         Returns
         -------
-        Spectrum
+        spectrum.Spectrum
             Spectrum message created.
         """
         spec = Spectrum(name=name, description=description)
@@ -229,6 +300,7 @@ class SpectrumFactory:
         spec.sampled.values.extend(values)
         return spec
 
+    @staticmethod
     def library(name: str, file_uri: str, description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None) -> Spectrum:
         """
         Create a Spectrum message, with library type.
@@ -248,7 +320,7 @@ class SpectrumFactory:
 
         Returns
         -------
-        Spectrum
+        spectrum.Spectrum
             Spectrum message created.
         """
         spec = Spectrum(name=name, description=description)
@@ -257,6 +329,7 @@ class SpectrumFactory:
         spec.library.file_uri = file_uri
         return spec
 
+    @staticmethod
     def predefined(
         name: str,
         type: Optional[PredefinedType] = PredefinedType.Incandescent,
@@ -270,9 +343,9 @@ class SpectrumFactory:
         ----------
         name : str
             Name of the spectrum.
-        type : SpectrumFactory.PredefinedType, optional
+        type : ansys.speos.core.spectrum.SpectrumFactory.PredefinedType, optional
             Predefined type.
-            By default, ``SpectrumFactory.PredefinedType.Incandescent``.
+            By default, ``PredefinedType.Incandescent``.
         description : str, optional
             Description of the spectrum.
             By default, ``""``.
@@ -282,7 +355,7 @@ class SpectrumFactory:
 
         Returns
         -------
-        Spectrum
+        spectrum.Spectrum
             Spectrum message created.
         """
         spec = Spectrum(name=name, description=description)
