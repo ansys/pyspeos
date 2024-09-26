@@ -33,24 +33,46 @@ from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 from ansys.speos.core.spectrum import SpectrumLink
 
 SourceTemplate = messages.SourceTemplate
+"""SourceTemplate protobuf class : ansys.api.speos.source.v1.source_pb2.SourceTemplate"""
 SourceTemplate.__str__ = lambda self: protobuf_message_to_str(self)
 
 
 class SourceTemplateLink(CrudItem):
-    """Link object for source template in database."""
+    """Link object for a source template in database.
+
+    Parameters
+    ----------
+    db : ansys.speos.core.source_template.SourceTemplateStub
+        Database to link to.
+    key : str
+        Key of the source template in the database.
+    """
 
     def __init__(self, db, key: str):
         super().__init__(db, key)
 
     def __str__(self) -> str:
+        """Return the string representation of the source template."""
         return str(self.get())
 
     def get(self) -> SourceTemplate:
-        """Get the datamodel from database."""
+        """Get the datamodel from database.
+
+        Returns
+        -------
+        source_template.SourceTemplate
+            Source template datamodel.
+        """
         return self._stub.read(self)
 
     def set(self, data: SourceTemplate) -> None:
-        """Change datamodel in database."""
+        """Change datamodel in database.
+
+        Parameters
+        ----------
+        data : source_template.SourceTemplate
+            New source template datamodel.
+        """
         self._stub.update(self, data)
 
     def delete(self) -> None:
@@ -62,8 +84,15 @@ class SourceTemplateStub(CrudStub):
     """
     Database interactions for source templates.
 
+    Parameters
+    ----------
+    channel : grpc.Channel
+        Channel to use for the stub.
+
     Examples
     --------
+    The best way to get a SourceTemplateStub is to retrieve it from SpeosClient via source_templates() method.
+    Like in the following example:
 
     >>> from ansys.speos.core.speos import Speos
     >>> speos = Speos(host="localhost", port=50051)
@@ -75,31 +104,73 @@ class SourceTemplateStub(CrudStub):
         super().__init__(stub=service.SourceTemplatesManagerStub(channel=channel))
 
     def create(self, message: SourceTemplate) -> SourceTemplateLink:
-        """Create a new entry."""
+        """Create a new entry.
+
+        Parameters
+        ----------
+        message : source_template.SourceTemplate
+            Datamodel for the new entry.
+
+        Returns
+        -------
+        ansys.speos.core.source_template.SourceTemplateLink
+            Link object created.
+        """
         resp = CrudStub.create(self, messages.Create_Request(source_template=message))
         return SourceTemplateLink(self, resp.guid)
 
     def read(self, ref: SourceTemplateLink) -> SourceTemplate:
-        """Get an existing entry."""
+        """Get an existing entry.
+
+        Parameters
+        ----------
+        ref : ansys.speos.core.source_template.SourceTemplateLink
+            Link object to read.
+
+        Returns
+        -------
+        source_template.SourceTemplate
+            Datamodel of the entry.
+        """
         if not ref.stub == self:
             raise ValueError("SourceTemplateLink is not on current database")
         resp = CrudStub.read(self, messages.Read_Request(guid=ref.key))
         return resp.source_template
 
     def update(self, ref: SourceTemplateLink, data: SourceTemplate):
-        """Change an existing entry."""
+        """Change an existing entry.
+
+        Parameters
+        ----------
+        ref : ansys.speos.core.source_template.SourceTemplateLink
+            Link object to update.
+        data : source_template.SourceTemplate
+            New datamodel for the entry.
+        """
         if not ref.stub == self:
             raise ValueError("SourceTemplateLink is not on current database")
         CrudStub.update(self, messages.Update_Request(guid=ref.key, source_template=data))
 
     def delete(self, ref: SourceTemplateLink) -> None:
-        """Remove an existing entry."""
+        """Remove an existing entry.
+
+        Parameters
+        ----------
+        ref : ansys.speos.core.source_template.SourceTemplateLink
+            Link object to delete.
+        """
         if not ref.stub == self:
             raise ValueError("SourceTemplateLink is not on current database")
         CrudStub.delete(self, messages.Delete_Request(guid=ref.key))
 
     def list(self) -> List[SourceTemplateLink]:
-        """List existing entries."""
+        """List existing entries.
+
+        Returns
+        -------
+        List[ansys.speos.core.source_template.SourceTemplateLink]
+            Link objects.
+        """
         guids = CrudStub.list(self, messages.List_Request()).guids
         return list(map(lambda x: SourceTemplateLink(self, x), guids))
 
@@ -108,26 +179,31 @@ class SourceTemplateFactory:
     """Class to help creating SourceTemplate message"""
 
     class Flux:
-        """Class to help creating SourceTemplate.Flux message"""
+        """
+        Class to help creating SourceTemplate.Flux message. It represents the source flux.
 
-        Unit = Enum("Unit", ["Lumen", "Watt", "Candela"])
-
-        def __init__(self, unit: Optional[Unit] = Unit.Lumen, value: Optional[float] = 683) -> None:
-            """
-            Represents source flux.
-
-            Parameters
+        Parameters
             ----------
-            unit : SourceTemplateFactory.Flux.Unit, optional
+            unit : ansys.speos.core.source_template.SourceTemplateFactory.Flux.Unit, optional
                 Flux unit.
-                By default, ``SourceTemplateFactory.Flux.Unit.Lumen``.
+                By default, ``Unit.Lumen``.
             value : float, optional
                 Flux value.
                 By default, ``683``.
-            """
+        """
+
+        class Unit(Enum):
+            """Enum representing the unit of the flux."""
+
+            Lumen = 1
+            Watt = 2
+            Candela = 3
+
+        def __init__(self, unit: Optional[Unit] = Unit.Lumen, value: Optional[float] = 683) -> None:
             self.unit = unit
             self.value = value
 
+    @staticmethod
     def luminaire(
         name: str,
         intensity_file_uri: str,
@@ -145,9 +221,9 @@ class SourceTemplateFactory:
             Name of the source template.
         intensity_file_uri : str
             IES or EULUMDAT format file uri
-        spectrum : SpectrumLink
+        spectrum : ansys.speos.core.spectrum.SpectrumLink
             Spectrum.
-        flux : SourceTemplateFactory.Flux, optional
+        flux : ansys.speos.core.source_template.SourceTemplateFactory.Flux, optional
             Can be filled not to take the flux from intensity file.
             Flux units allowed are Lumen or Watt.
             By default, ``None``, ie flux taken from intensity_file_uri.
@@ -160,7 +236,7 @@ class SourceTemplateFactory:
 
         Returns
         -------
-        SourceTemplate
+        source_template.SourceTemplate
             SourceTemplate message created.
         """
         src = SourceTemplate(name=name, description=description)
@@ -180,6 +256,7 @@ class SourceTemplateFactory:
         src.luminaire.spectrum_guid = spectrum.key
         return src
 
+    @staticmethod
     def surface(
         name: str,
         intensity_template: IntensityTemplateLink,
@@ -196,16 +273,16 @@ class SourceTemplateFactory:
         ----------
         name : str
             Name of the source template.
-        intensity_template : IntensityTemplateLink
+        intensity_template : ansys.speos.core.intensity_template.IntensityTemplateLink
             Intensity template.
-        flux : SourceTemplateFactory.Flux, optional
+        flux : ansys.speos.core.source_template.SourceTemplateFactory.Flux, optional
             If set to None, take the flux from intensity file. Ok if intensity_template.get().HasField("library").
-            By default, ``SourceTemplateFactory.Flux()``
+            By default, ``Flux()``
         exitance_xmp_file_uri : str, optional
             If defined, surface source template has exitance variable.
             XMP file describing exitance.
             By default, ``""``, ie exitance constant
-        spectrum : SpectrumLink, optional
+        spectrum : ansys.speos.core.spectrum.SpectrumLink, optional
             Spectrum.
             No need to fill if exitance_xmp_file_uri is spectral
             By default, ``None``, ie spectrum from xmp file.
@@ -218,7 +295,7 @@ class SourceTemplateFactory:
 
         Returns
         -------
-        SourceTemplate
+        source_template.SourceTemplate
             SourceTemplate message created.
         """
         src = SourceTemplate(name=name, description=description)
