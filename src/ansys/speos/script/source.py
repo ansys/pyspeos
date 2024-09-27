@@ -21,7 +21,7 @@
 # SOFTWARE.
 from __future__ import annotations
 
-from typing import Mapping
+from typing import List, Mapping
 
 import ansys.speos.core as core
 import ansys.speos.script.project as project
@@ -83,6 +83,10 @@ class Source:
             )
         return self._luminaire
 
+    def set_luminaire_properties(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> Source:
+        self._source_properties = core.Scene.SourceInstance.LuminaireProperties(axis_system=axis_system)
+        return self
+
     def __str__(self) -> str:
         out_str = ""
         if self._source_template_link is None:
@@ -94,6 +98,8 @@ class Source:
             out_str += "\n"
             out_str += str(self._luminaire)
 
+        if self._source_properties is not None:
+            out_str += f"\nlocal: " + core.protobuf_message_to_str(self._source_properties)
         return out_str
 
     def commit(self) -> Source:

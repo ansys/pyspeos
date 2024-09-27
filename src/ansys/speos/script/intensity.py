@@ -36,7 +36,7 @@ class Intensity:
         self._intensity_template = core.IntensityTemplate(name=name, description=description, metadata=metadata)
         self.set_lambertian()  # By default will be lambertian
         # Create IntensityProperties
-        self._intensity_properties = core.Scene.SourceInstance.IntensityProperties()
+        self._intensity_properties = None
 
     def set_library(self, intensity_file_uri: str) -> Intensity:
         self._intensity_template.library.intensity_file_uri = intensity_file_uri
@@ -45,13 +45,13 @@ class Intensity:
     def set_lambertian(self, total_angle: float = 180) -> Intensity:
         self._intensity_template.cos.N = 1
         self._intensity_template.cos.total_angle = total_angle
-        self._intensity_properties = core.Scene.SourceInstance.IntensityProperties()
+        self._intensity_properties = None
         return self
 
     def set_cos(self, N: float = 3, total_angle: float = 180) -> Intensity:
         self._intensity_template.cos.N = N
         self._intensity_template.cos.total_angle = total_angle
-        self._intensity_properties = core.Scene.SourceInstance.IntensityProperties()
+        self._intensity_properties = None
         return self
 
     def set_gaussian(self, FWHM_angle_x: float = 30, FWHM_angle_y: float = 30, total_angle: float = 180) -> Intensity:
@@ -63,24 +63,28 @@ class Intensity:
     def set_library_properties_axis_system(
         self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1], exit_geometries: Optional[List[GeoRef]] = None
     ) -> Intensity:
+        self._intensity_properties = core.Scene.SourceInstance.IntensityProperties()
         self._intensity_properties.library_properties.axis_system.values[:] = axis_system
-        if self._intensity_properties.library_properties.exit_geometries is not None:
+        if exit_geometries is not None:
             self._intensity_properties.library_properties.exit_geometries.geo_paths[:] = [gr.to_native_link() for gr in exit_geometries]
         return self
 
     def set_library_properties_normal_to_surface(self, exit_geometries: Optional[List[GeoRef]] = None) -> Intensity:
+        self._intensity_properties = core.Scene.SourceInstance.IntensityProperties()
         self._intensity_properties.library_properties.normal_to_surface.SetInParent()
-        if self._intensity_properties.library_properties.exit_geometries is not None:
+        if exit_geometries is not None:
             self._intensity_properties.library_properties.exit_geometries.geo_paths[:] = [gr.to_native_link() for gr in exit_geometries]
         return self
 
     def set_library_properties_normal_to_uv_map(self, exit_geometries: Optional[List[GeoRef]] = None) -> Intensity:
+        self._intensity_properties = core.Scene.SourceInstance.IntensityProperties()
         self._intensity_properties.library_properties.normal_to_uv_map.SetInParent()
-        if self._intensity_properties.library_properties.exit_geometries is not None:
+        if exit_geometries is not None:
             self._intensity_properties.library_properties.exit_geometries.geo_paths[:] = [gr.to_native_link() for gr in exit_geometries]
         return self
 
     def set_gaussian_properties(self, axis_system: List[float] = None) -> Intensity:
+        self._intensity_properties = core.Scene.SourceInstance.IntensityProperties()
         if axis_system is None:
             self._intensity_properties.gaussian_properties.SetInParent()
         else:
@@ -88,14 +92,15 @@ class Intensity:
         return self
 
     def __str__(self) -> str:
-        template = ""
+        out_str = ""
         if self._intensity_template_link is None:
-            template = f"local: {self._intensity_template}"
+            out_str += f"local: {self._intensity_template}"
         else:
-            template = str(self._intensity_template_link)
+            out_str += str(self._intensity_template_link)
+
         if self._intensity_properties is not None:
-            template += f"\n{self._intensity_properties}"
-        return template
+            out_str += f"\nlocal: " + core.protobuf_message_to_str(self._intensity_properties)
+        return out_str
 
     def commit(self) -> Intensity:
         """Save feature"""
