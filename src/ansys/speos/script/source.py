@@ -193,10 +193,9 @@ class Source:
 
         if self._source_template_link is None:
             self._source_template_link = self._project.client.source_templates().create(message=self._source_template)
+            self._source_instance.source_guid = self._source_template_link.key
         else:
             self._source_template_link.set(data=self._source_template)
-
-        self._source_instance.source_guid = self._source_template_link.key
 
         if self._project.scene:
             scene_data = self._project.scene.get()  # retrieve scene data
@@ -218,10 +217,16 @@ class Source:
 
         self._source_instance.source_guid = ""
 
-        if self._luminaire is not None:
+        if self._luminaire is not None and self._luminaire._spectrum is not None:
             self._luminaire._spectrum.delete()
-        elif self._rayfile is not None:
+        elif self._rayfile is not None and self._rayfile._spectrum is not None:
             self._rayfile._spectrum.delete()
+
+        scene_data = self._project.scene.get()  # retrieve scene data
+        src_inst = next((x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None)
+        if src_inst is not None:
+            scene_data.sources.remove(src_inst)
+            self._project.scene.set(data=scene_data)  # update scene data
 
         self._unique_id = None
         return self
