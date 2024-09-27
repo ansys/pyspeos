@@ -215,6 +215,6 @@ class OptProp:
                 scene_data = self._project.scene.get()  # retrieve scene
                 mat_inst = next((x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id), None)
                 if mat_inst:
-                    mat_inst = self._material_instance
+                    mat_inst.CopyFrom(self._material_instance)
                 self._project.scene.set(data=scene_data)
         return self

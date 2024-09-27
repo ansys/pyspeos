@@ -117,8 +117,12 @@ class Spectrum:
         if self._source_template is not None and self._spectrum_link is not None:
             if self._source_template.HasField("luminaire"):
                 self._source_template.luminaire.spectrum_guid = self._spectrum_link.key
+            elif self._source_template.HasField("rayfile") and self._source_template.rayfile.HasField("spectrum_guid"):
+                self._source_template.rayfile.spectrum_guid = self._spectrum_link.key
 
     def _del_spectrum_in_source_template(self) -> None:
         if self._source_template is not None and self._spectrum_link is None:
             if self._source_template.HasField("luminaire"):
                 self._source_template.luminaire.spectrum_guid = ""
+            elif self._source_template.HasField("rayfile") and self._source_template.rayfile.HasField("spectrum_guid"):
+                self._source_template.rayfile.spectrum_guid = ""
