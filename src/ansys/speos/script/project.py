@@ -22,10 +22,11 @@
 
 from __future__ import annotations
 
-from typing import Mapping, Optional
+from typing import Mapping
 
 import ansys.speos.core as core
 import ansys.speos.script.opt_prop as opt_prop
+import ansys.speos.script.source as source
 
 
 class Project:
@@ -57,15 +58,14 @@ class Project:
         """Return all feature key as a tree, can be used to list all features"""
         pass
 
-    def create_optical_property(
-        self, name: str, description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = {}
-    ) -> opt_prop.OptProp:
+    def create_optical_property(self, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> opt_prop.OptProp:
         """Create a new feature, to associate to main ribbon commands"""
-        return opt_prop.OptProp(
-            project=self, name=name, description=description if description else "", metadata=metadata if metadata else {}
-        )
+        return opt_prop.OptProp(project=self, name=name, description=description, metadata=metadata)
 
-    def find(self, name: str, id: Optional[str]):
+    def create_source(self, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> source.Source:
+        return source.Source(project=self, name=name, description=description, metadata=metadata)
+
+    def find(self, name: str, id: str = ""):
         """Get details about a feature"""
 
     def action(self, name: str):

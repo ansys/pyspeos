@@ -48,23 +48,17 @@ class OptProp:
         By default, ``None``.
     """
 
-    def __init__(self, project: project.Project, name: str, description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None):
+    def __init__(self, project: project.Project, name: str, description: str = "", metadata: Mapping[str, str] = {}):
         self._project = project
         self._unique_id = None
         # Create SOP template
-        self._sop_template = core.SOPTemplate(
-            name=name, description=description if description else "", metadata=metadata if metadata else {}
-        )
+        self._sop_template = core.SOPTemplate(name=name, description=description, metadata=metadata)
 
         # Create VOP template
-        self._vop_template = core.VOPTemplate(
-            name=name, description=description if description else "", metadata=metadata if metadata else {}
-        )
+        self._vop_template = core.VOPTemplate(name=name, description=description, metadata=metadata)
 
         # Create material instance
-        self._material_instance = core.Scene.MaterialInstance(
-            name=name, description=description if description else "", metadata=metadata if metadata else {}
-        )
+        self._material_instance = core.Scene.MaterialInstance(name=name, description=description, metadata=metadata)
 
     def set_surface_mirror(self, reflectance: float) -> OptProp:
         """

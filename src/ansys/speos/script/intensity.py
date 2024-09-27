@@ -24,17 +24,17 @@ from __future__ import annotations
 from typing import List, Mapping, Optional
 
 import ansys.speos.core as core
+from ansys.speos.script.geo_ref import GeoRef
 
 
 class Intensity:
-    def __init__(self, speos: core.Speos, name: str, description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None) -> None:
-        self._client = speos.client
+    def __init__(self, speos_client: core.SpeosClient, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> None:
+        self._client = speos_client
         self._intensity_template_link = None
 
         # Create IntensityTemplate
-        self._intensity_template = core.IntensityTemplate(
-            name=name, description=description if description else "", metadata=metadata if metadata else {}
-        )
+        self._intensity_template = core.IntensityTemplate(name=name, description=description, metadata=metadata)
+        self.set_lambertian()  # By default will be lambertian
         # Create IntensityProperties
         self._intensity_properties = core.Scene.SourceInstance.IntensityProperties()
 
@@ -42,37 +42,49 @@ class Intensity:
         self._intensity_template.library.intensity_file_uri = intensity_file_uri
         return self
 
-    def set_cos(self, N: float, total_angle: float) -> Intensity:
+    def set_lambertian(self, total_angle: float = 180) -> Intensity:
+        self._intensity_template.cos.N = 1
+        self._intensity_template.cos.total_angle = total_angle
+        self._intensity_properties = core.Scene.SourceInstance.IntensityProperties()
+        return self
+
+    def set_cos(self, N: float = 3, total_angle: float = 180) -> Intensity:
         self._intensity_template.cos.N = N
         self._intensity_template.cos.total_angle = total_angle
         self._intensity_properties = core.Scene.SourceInstance.IntensityProperties()
         return self
 
-    def set_gaussian(self, FWHM_angle_x: float, FWHM_angle_y: float, total_angle: float) -> Intensity:
+    def set_gaussian(self, FWHM_angle_x: float = 30, FWHM_angle_y: float = 30, total_angle: float = 180) -> Intensity:
         self._intensity_template.gaussian.FWHM_angle_x = FWHM_angle_x
         self._intensity_template.gaussian.FWHM_angle_y = FWHM_angle_y
         self._intensity_template.gaussian.total_angle = total_angle
         return self
 
-    def set_library_properties_axis_system(self, axis_system: List[float]) -> Intensity:
-        self._intensity_properties.library_properties.axis_system.ClearField("values")
-        self._intensity_properties.library_properties.axis_system.values.extend(axis_system)
+    def set_library_properties_axis_system(
+        self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1], exit_geometries: Optional[List[GeoRef]] = None
+    ) -> Intensity:
+        self._intensity_properties.library_properties.axis_system.values[:] = axis_system
+        if self._intensity_properties.library_properties.exit_geometries is not None:
+            self._intensity_properties.library_properties.exit_geometries.geo_paths[:] = [gr.to_native_link() for gr in exit_geometries]
         return self
 
-    def set_library_properties_normal_to_surface(self) -> Intensity:
+    def set_library_properties_normal_to_surface(self, exit_geometries: Optional[List[GeoRef]] = None) -> Intensity:
         self._intensity_properties.library_properties.normal_to_surface.SetInParent()
+        if self._intensity_properties.library_properties.exit_geometries is not None:
+            self._intensity_properties.library_properties.exit_geometries.geo_paths[:] = [gr.to_native_link() for gr in exit_geometries]
         return self
 
-    def set_library_properties_normal_to_uv_map(self) -> Intensity:
+    def set_library_properties_normal_to_uv_map(self, exit_geometries: Optional[List[GeoRef]] = None) -> Intensity:
         self._intensity_properties.library_properties.normal_to_uv_map.SetInParent()
+        if self._intensity_properties.library_properties.exit_geometries is not None:
+            self._intensity_properties.library_properties.exit_geometries.geo_paths[:] = [gr.to_native_link() for gr in exit_geometries]
         return self
 
     def set_gaussian_properties(self, axis_system: List[float] = None) -> Intensity:
         if axis_system is None:
             self._intensity_properties.gaussian_properties.SetInParent()
         else:
-            self._intensity_properties.gaussian_properties.ClearField("axis_system")
-            self._intensity_properties.gaussian_properties.axis_system.extend(axis_system)
+            self._intensity_properties.gaussian_properties.axis_system[:] = axis_system
         return self
 
     def __str__(self) -> str:
@@ -95,6 +107,7 @@ class Intensity:
         return self
 
     def delete(self) -> Intensity:
-        self._intensity_template_link.delete()
-        self._intensity_template_link = None
+        if self._intensity_template_link is not None:
+            self._intensity_template_link.delete()
+            self._intensity_template_link = None
         return self

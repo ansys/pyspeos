@@ -27,26 +27,34 @@ import ansys.speos.core as core
 
 
 class Spectrum:
-    def __init__(self, speos: core.Speos, name: str, description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None) -> None:
-        self._client = speos.client
+    def __init__(
+        self,
+        speos_client: core.SpeosClient,
+        name: str,
+        source_template: Optional[core.SourceTemplate] = None,
+        description: str = "",
+        metadata: Mapping[str, str] = {},
+    ) -> None:
+        self._client = speos_client
         self._spectrum_link = None
 
-        # Create Spectrum
-        self._spectrum = core.Spectrum(name=name, description=description if description else "", metadata=metadata if metadata else {})
+        self._source_template = source_template
 
-    def set_monochromatic(self, wavelength: float) -> Spectrum:
+        # Create Spectrum
+        self._spectrum = core.Spectrum(name=name, description=description, metadata=metadata)
+        self.set_monochromatic()  # By default will be monochromatic
+
+    def set_monochromatic(self, wavelength: float = 555.0) -> Spectrum:
         self._spectrum.monochromatic.wavelength = wavelength
         return self
 
-    def set_blackbody(self, temperature: float) -> Spectrum:
+    def set_blackbody(self, temperature: float = 2856) -> Spectrum:
         self._spectrum.blackbody.temperature = temperature
         return self
 
     def set_sampled(self, wavelengths: List[float], values: List[float]) -> Spectrum:
-        self._spectrum.sampled.ClearField("wavelengths")
-        self._spectrum.sampled.wavelengths.extend(wavelengths)
-        self._spectrum.sampled.ClearField("values")
-        self._spectrum.sampled.values.extend(values)
+        self._spectrum.sampled.wavelengths[:] = wavelengths
+        self._spectrum.sampled.values[:] = values
         return self
 
     def set_library(self, file_uri: str) -> Spectrum:
@@ -94,9 +102,23 @@ class Spectrum:
         else:
             self._spectrum_link.set(data=self._spectrum)
 
+        self._set_spectrum_in_source_template()
         return self
 
     def delete(self) -> Spectrum:
-        self._spectrum_link.delete()
-        self._spectrum_link = None
+        if self._spectrum_link is not None:
+            self._spectrum_link.delete()
+            self._spectrum_link = None
+
+        self._del_spectrum_in_source_template()
         return self
+
+    def _set_spectrum_in_source_template(self) -> None:
+        if self._source_template is not None and self._spectrum_link is not None:
+            if self._source_template.HasField("luminaire"):
+                self._source_template.luminaire.spectrum_guid = self._spectrum_link.key
+
+    def _del_spectrum_in_source_template(self) -> None:
+        if self._source_template is not None and self._spectrum_link is None:
+            if self._source_template.HasField("luminaire"):
+                self._source_template.luminaire.spectrum_guid = ""

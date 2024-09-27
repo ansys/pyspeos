@@ -47,4 +47,5 @@ from ansys.speos.script.geo_ref import GeoRef
 from ansys.speos.script.intensity import Intensity
 from ansys.speos.script.opt_prop import OptProp
 from ansys.speos.script.project import Project
+from ansys.speos.script.source import Source
 from ansys.speos.script.spectrum import Spectrum
