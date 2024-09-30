@@ -117,7 +117,7 @@ class Source:
     def __init__(self, project: project.Project, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> None:
         self._project = project
         self._unique_id = None
-        self._source_template_link = None
+        self.source_template_link = None
 
         self._luminaire = None
         self._rayfile = None
@@ -156,6 +156,7 @@ class Source:
 
     def __str__(self) -> str:
         out_str = ""
+        # SourceInstance (= source guid + source properties)
         if self._project.scene and self._unique_id is not None:
             scene_data = self._project.scene.get()
             src_inst = next((x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None)
@@ -166,11 +167,13 @@ class Source:
         else:
             out_str += f"local: " + core.protobuf_message_to_str(self._source_instance)
 
-        if self._source_template_link is None:
+        # SourceTemplate
+        if self.source_template_link is None:
             out_str += f"\nlocal: {self._source_template}"
         else:
-            out_str += "\n" + str(self._source_template_link)
+            out_str += "\n" + str(self.source_template_link)
 
+        # Contained objects like Spectrum, IntensityTemplate
         if self._luminaire is not None:
             out_str += "\n"
             out_str += str(self._luminaire)
@@ -182,51 +185,55 @@ class Source:
 
     def commit(self) -> Source:
         """Save feature"""
+        # The _unique_id will help to find correct item in the scene.sources (the list of SourceInstance)
         if self._unique_id is None:
             self._unique_id = str(uuid.uuid4())
             self._source_instance.metadata["UniqueId"] = self._unique_id
 
+        # This allows to commit managed object contained in _luminaire, _rayfile, etc.. Like Spectrum, IntensityTemplate
         if self._luminaire is not None:
             self._luminaire._commit()
         elif self._rayfile is not None:
             self._rayfile._commit()
 
-        if self._source_template_link is None:
-            self._source_template_link = self._project.client.source_templates().create(message=self._source_template)
-            self._source_instance.source_guid = self._source_template_link.key
+        # Save or Update the source template (depending on if it was already saved before)
+        if self.source_template_link is None:
+            self.source_template_link = self._project.client.source_templates().create(message=self._source_template)
+            self._source_instance.source_guid = self.source_template_link.key
         else:
-            self._source_template_link.set(data=self._source_template)
+            self.source_template_link.set(data=self._source_template)
 
+        # Update the scene with the source instance
         if self._project.scene:
             scene_data = self._project.scene.get()  # retrieve scene data
 
+            # Look if an element corresponds to the _unique_id
             src_inst = next((x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None)
             if src_inst is not None:
-                src_inst.CopyFrom(self._source_instance)
+                src_inst.CopyFrom(self._source_instance)  # if yes, just replace
             else:
-                scene_data.sources.append(self._source_instance)
+                scene_data.sources.append(self._source_instance)  # if no, just add it to the list of sources
 
             self._project.scene.set(data=scene_data)  # update scene data
 
         return self
 
     def delete(self) -> Source:
-        if self._source_template_link is not None:
-            self._source_template_link.delete()
-            self._source_template_link = None
+        # Delete the source template
+        if self.source_template_link is not None:
+            self.source_template_link.delete()
+            self.source_template_link = None
 
+        # Reset then the source_guid (as the source template was deleted just above)
         self._source_instance.source_guid = ""
 
-        if self._luminaire is not None and self._luminaire._spectrum is not None:
-            self._luminaire._spectrum.delete()
-        elif self._rayfile is not None and self._rayfile._spectrum is not None:
-            self._rayfile._spectrum.delete()
-
+        # Remove the source from the scene
         scene_data = self._project.scene.get()  # retrieve scene data
         src_inst = next((x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None)
         if src_inst is not None:
             scene_data.sources.remove(src_inst)
             self._project.scene.set(data=scene_data)  # update scene data
 
+        # Reset the _unique_id
         self._unique_id = None
         return self

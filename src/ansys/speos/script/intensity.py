@@ -30,7 +30,7 @@ from ansys.speos.script.geo_ref import GeoRef
 class Intensity:
     def __init__(self, speos_client: core.SpeosClient, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> None:
         self._client = speos_client
-        self._intensity_template_link = None
+        self.intensity_template_link = None
 
         # Create IntensityTemplate
         self._intensity_template = core.IntensityTemplate(name=name, description=description, metadata=metadata)
@@ -93,10 +93,10 @@ class Intensity:
 
     def __str__(self) -> str:
         out_str = ""
-        if self._intensity_template_link is None:
+        if self.intensity_template_link is None:
             out_str += f"local: {self._intensity_template}"
         else:
-            out_str += str(self._intensity_template_link)
+            out_str += str(self.intensity_template_link)
 
         if self._intensity_properties is not None:
             out_str += f"\nlocal: " + core.protobuf_message_to_str(self._intensity_properties)
@@ -104,15 +104,15 @@ class Intensity:
 
     def commit(self) -> Intensity:
         """Save feature"""
-        if self._intensity_template_link is None:
-            self._intensity_template_link = self._client.intensity_templates().create(message=self._intensity_template)
+        if self.intensity_template_link is None:
+            self.intensity_template_link = self._client.intensity_templates().create(message=self._intensity_template)
         else:
-            self._intensity_template_link.set(data=self._intensity_template)
+            self.intensity_template_link.set(data=self._intensity_template)
 
         return self
 
     def delete(self) -> Intensity:
-        if self._intensity_template_link is not None:
-            self._intensity_template_link.delete()
-            self._intensity_template_link = None
+        if self.intensity_template_link is not None:
+            self.intensity_template_link.delete()
+            self.intensity_template_link = None
         return self

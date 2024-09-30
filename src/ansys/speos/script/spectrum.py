@@ -36,7 +36,7 @@ class Spectrum:
         metadata: Mapping[str, str] = {},
     ) -> None:
         self._client = speos_client
-        self._spectrum_link = None
+        self.spectrum_link = None
 
         self._source_template = source_template
 
@@ -90,38 +90,38 @@ class Spectrum:
         return self
 
     def __str__(self) -> str:
-        if self._spectrum_link is None:
+        if self.spectrum_link is None:
             return f"local: {self._spectrum}"
         else:
-            return str(self._spectrum_link)
+            return str(self.spectrum_link)
 
     def commit(self) -> Spectrum:
         """Save feature"""
-        if self._spectrum_link is None:
-            self._spectrum_link = self._client.spectrums().create(message=self._spectrum)
+        if self.spectrum_link is None:
+            self.spectrum_link = self._client.spectrums().create(message=self._spectrum)
         else:
-            self._spectrum_link.set(data=self._spectrum)
+            self.spectrum_link.set(data=self._spectrum)
 
         self._set_spectrum_in_source_template()
         return self
 
     def delete(self) -> Spectrum:
-        if self._spectrum_link is not None:
-            self._spectrum_link.delete()
-            self._spectrum_link = None
+        if self.spectrum_link is not None:
+            self.spectrum_link.delete()
+            self.spectrum_link = None
 
         self._del_spectrum_in_source_template()
         return self
 
     def _set_spectrum_in_source_template(self) -> None:
-        if self._source_template is not None and self._spectrum_link is not None:
+        if self._source_template is not None and self.spectrum_link is not None:
             if self._source_template.HasField("luminaire"):
-                self._source_template.luminaire.spectrum_guid = self._spectrum_link.key
+                self._source_template.luminaire.spectrum_guid = self.spectrum_link.key
             elif self._source_template.HasField("rayfile") and self._source_template.rayfile.HasField("spectrum_guid"):
-                self._source_template.rayfile.spectrum_guid = self._spectrum_link.key
+                self._source_template.rayfile.spectrum_guid = self.spectrum_link.key
 
     def _del_spectrum_in_source_template(self) -> None:
-        if self._source_template is not None and self._spectrum_link is None:
+        if self._source_template is not None and self.spectrum_link is None:
             if self._source_template.HasField("luminaire"):
                 self._source_template.luminaire.spectrum_guid = ""
             elif self._source_template.HasField("rayfile") and self._source_template.rayfile.HasField("spectrum_guid"):
