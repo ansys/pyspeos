@@ -21,7 +21,7 @@
 # SOFTWARE.
 from __future__ import annotations
 
-from typing import List, Mapping, Optional
+from typing import List, Mapping
 
 import ansys.speos.core as core
 
@@ -31,14 +31,11 @@ class Spectrum:
         self,
         speos_client: core.SpeosClient,
         name: str,
-        source_template: Optional[core.SourceTemplate] = None,
         description: str = "",
         metadata: Mapping[str, str] = {},
     ) -> None:
         self._client = speos_client
         self.spectrum_link = None
-
-        self._source_template = source_template
 
         # Create Spectrum
         self._spectrum = core.Spectrum(name=name, description=description, metadata=metadata)
@@ -102,7 +99,6 @@ class Spectrum:
         else:
             self.spectrum_link.set(data=self._spectrum)
 
-        self._set_spectrum_in_source_template()
         return self
 
     def delete(self) -> Spectrum:
@@ -110,19 +106,4 @@ class Spectrum:
             self.spectrum_link.delete()
             self.spectrum_link = None
 
-        self._del_spectrum_in_source_template()
         return self
-
-    def _set_spectrum_in_source_template(self) -> None:
-        if self._source_template is not None and self.spectrum_link is not None:
-            if self._source_template.HasField("luminaire"):
-                self._source_template.luminaire.spectrum_guid = self.spectrum_link.key
-            elif self._source_template.HasField("rayfile") and self._source_template.rayfile.HasField("spectrum_guid"):
-                self._source_template.rayfile.spectrum_guid = self.spectrum_link.key
-
-    def _del_spectrum_in_source_template(self) -> None:
-        if self._source_template is not None and self.spectrum_link is None:
-            if self._source_template.HasField("luminaire"):
-                self._source_template.luminaire.spectrum_guid = ""
-            elif self._source_template.HasField("rayfile") and self._source_template.rayfile.HasField("spectrum_guid"):
-                self._source_template.rayfile.spectrum_guid = ""

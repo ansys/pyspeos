@@ -35,7 +35,7 @@ class Source:
         def __init__(self, project: project.Project, source_template: core.SourceTemplate, name: str) -> None:
             self._project = project
             self._source_template = source_template
-            self._spectrum = Spectrum(speos_client=self._project.client, name=name + ".Spectrum", source_template=self._source_template)
+            self._spectrum = Spectrum(speos_client=self._project.client, name=name + ".Spectrum")
 
             # Default values
             self.set_flux_from_intensity_file().set_spectrum().set_incandescent()
@@ -64,6 +64,7 @@ class Source:
 
         def _commit(self) -> Source.Luminaire:
             self._spectrum.commit()
+            self._source_template.luminaire.spectrum_guid = self._spectrum.spectrum_link.key
             return self
 
     class RayFile:
@@ -97,9 +98,7 @@ class Source:
             return self
 
         def set_spectrum(self) -> Spectrum:
-            self._spectrum = Spectrum(
-                speos_client=self._project.client, name=self._source_template.name + ".Spectrum", source_template=self._source_template
-            )
+            self._spectrum = Spectrum(speos_client=self._project.client, name=self._source_template.name + ".Spectrum")
             self._source_template.rayfile.spectrum_guid = ""
             return self._spectrum
 
@@ -112,6 +111,8 @@ class Source:
         def _commit(self) -> Source.RayFile:
             if self._spectrum is not None:
                 self._spectrum.commit()
+                self._source_template.rayfile.spectrum_guid = self._spectrum.spectrum_link.key
+
             return self
 
     def __init__(self, project: project.Project, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> None:
@@ -123,10 +124,10 @@ class Source:
             None  # Attribute representing the kind of source. Can be on object of type script.Source.Luminaire, script.Source.RayFile, ...
         )
 
-        # Create SourceTemplate
+        # Create local SourceTemplate
         self._source_template = core.SourceTemplate(name=name, description=description, metadata=metadata)
 
-        # Create SourceInstance
+        # Create local SourceInstance
         self._source_instance = core.Scene.SourceInstance(name=name, description=description, metadata=metadata)
 
     def set_luminaire(self) -> Luminaire:
