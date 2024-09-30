@@ -28,15 +28,28 @@ from ansys.speos.script.geo_ref import GeoRef
 
 
 class Intensity:
-    def __init__(self, speos_client: core.SpeosClient, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> None:
+    def __init__(
+        self,
+        speos_client: core.SpeosClient,
+        name: str,
+        description: str = "",
+        metadata: Mapping[str, str] = {},
+        intensity_props_to_complete: Optional[core.Scene.SourceInstance.IntensityProperties] = None,
+    ) -> None:
         self._client = speos_client
         self.intensity_template_link = None
 
         # Create IntensityTemplate
         self._intensity_template = core.IntensityTemplate(name=name, description=description, metadata=metadata)
-        self.set_lambertian()  # By default will be lambertian
+
         # Create IntensityProperties
-        self._intensity_properties = None
+        self._intensity_properties = core.Scene.SourceInstance.IntensityProperties()
+        if intensity_props_to_complete is not None:
+            self._intensity_properties = intensity_props_to_complete
+            self._light_print = True
+
+        # Default values
+        self.set_lambertian()  # By default will be lambertian
 
     def set_library(self, intensity_file_uri: str) -> Intensity:
         self._intensity_template.library.intensity_file_uri = intensity_file_uri
@@ -45,13 +58,13 @@ class Intensity:
     def set_lambertian(self, total_angle: float = 180) -> Intensity:
         self._intensity_template.cos.N = 1
         self._intensity_template.cos.total_angle = total_angle
-        self._intensity_properties = None
+        self._intensity_properties.Clear()
         return self
 
     def set_cos(self, N: float = 3, total_angle: float = 180) -> Intensity:
         self._intensity_template.cos.N = N
         self._intensity_template.cos.total_angle = total_angle
-        self._intensity_properties = None
+        self._intensity_properties.Clear()
         return self
 
     def set_gaussian(self, FWHM_angle_x: float = 30, FWHM_angle_y: float = 30, total_angle: float = 180) -> Intensity:
@@ -63,28 +76,28 @@ class Intensity:
     def set_library_properties_axis_system(
         self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1], exit_geometries: Optional[List[GeoRef]] = None
     ) -> Intensity:
-        self._intensity_properties = core.Scene.SourceInstance.IntensityProperties()
+        self._intensity_properties.Clear()
         self._intensity_properties.library_properties.axis_system.values[:] = axis_system
         if exit_geometries is not None:
             self._intensity_properties.library_properties.exit_geometries.geo_paths[:] = [gr.to_native_link() for gr in exit_geometries]
         return self
 
     def set_library_properties_normal_to_surface(self, exit_geometries: Optional[List[GeoRef]] = None) -> Intensity:
-        self._intensity_properties = core.Scene.SourceInstance.IntensityProperties()
+        self._intensity_properties.Clear()
         self._intensity_properties.library_properties.normal_to_surface.SetInParent()
         if exit_geometries is not None:
             self._intensity_properties.library_properties.exit_geometries.geo_paths[:] = [gr.to_native_link() for gr in exit_geometries]
         return self
 
     def set_library_properties_normal_to_uv_map(self, exit_geometries: Optional[List[GeoRef]] = None) -> Intensity:
-        self._intensity_properties = core.Scene.SourceInstance.IntensityProperties()
+        self._intensity_properties.Clear()
         self._intensity_properties.library_properties.normal_to_uv_map.SetInParent()
         if exit_geometries is not None:
             self._intensity_properties.library_properties.exit_geometries.geo_paths[:] = [gr.to_native_link() for gr in exit_geometries]
         return self
 
     def set_gaussian_properties(self, axis_system: List[float] = None) -> Intensity:
-        self._intensity_properties = core.Scene.SourceInstance.IntensityProperties()
+        self._intensity_properties.Clear()
         if axis_system is None:
             self._intensity_properties.gaussian_properties.SetInParent()
         else:
@@ -98,7 +111,7 @@ class Intensity:
         else:
             out_str += str(self.intensity_template_link)
 
-        if self._intensity_properties is not None:
+        if self._light_print is None:
             out_str += f"\nlocal: " + core.protobuf_message_to_str(self._intensity_properties)
         return out_str
 

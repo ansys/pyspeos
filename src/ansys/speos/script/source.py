@@ -26,6 +26,7 @@ import uuid
 
 import ansys.speos.core as core
 from ansys.speos.script.geo_ref import GeoRef
+from ansys.speos.script.intensity import Intensity
 import ansys.speos.script.project as project
 from ansys.speos.script.spectrum import Spectrum
 
@@ -67,6 +68,81 @@ class Source:
             self._source_template.luminaire.spectrum_guid = self._spectrum.spectrum_link.key
             return self
 
+    class Surface:
+        def __init__(
+            self,
+            project: project.Project,
+            source_template: core.SourceTemplate,
+            name: str,
+            intensity_properties: core.Scene.SourceInstance.IntensityProperties,
+        ) -> None:
+            self._project = project
+            self._source_template = source_template
+            self._spectrum = None
+            self._intensity = Intensity(
+                speos_client=project.client, name=name + ".Intensity", intensity_props_to_complete=intensity_properties
+            )
+
+            # Default values
+            self.set_flux_luminous().set_exitance_constant().set_intensity()
+            self.set_spectrum()
+
+        def set_flux_from_intensity_file(self) -> Source.Surface:
+            self._source_template.surface.flux_from_intensity_file.SetInParent()
+            return self
+
+        def set_flux_luminous(self, value: float = 683) -> Source.Surface:
+            self._source_template.surface.luminous_flux.luminous_value = value
+            return self
+
+        def set_flux_radiant(self, value: float = 1) -> Source.Surface:
+            self._source_template.surface.radiant_flux.radiant_value = value
+            return self
+
+        def set_flux_luminous_intensity(self, value: float = 5) -> Source.Surface:
+            self._source_template.surface.luminous_intensity_flux.luminous_intensity_value = value
+            return self
+
+        def set_intensity(self) -> Intensity:
+            return self._intensity
+
+        def set_exitance_constant(self) -> Source.Surface:
+            self._source_template.surface.exitance_constant.SetInParent()
+            return self
+
+        def set_exitance_variable(self, uri: str) -> Source.Surface:
+            self._source_template.surface.exitance_variable.exitance_xmp_file_uri = uri
+            return self
+
+        def set_spectrum_from_xmp_file(self) -> Source.Surface:
+            self._source_template.surface.spectrum_from_xmp_file.SetInParent()
+            self._spectrum = None
+            return self
+
+        def set_spectrum(self) -> Spectrum:
+            if self._spectrum is None:
+                self._spectrum = Spectrum(speos_client=self._project.client, name=self._source_template.name + ".Spectrum")
+                self._source_template.surface.spectrum_guid = ""
+            return self._spectrum
+
+        def __str__(self) -> str:
+            out_str = ""
+            out_str += str(self._intensity)
+            if self._spectrum is not None:
+                out_str += str(self._spectrum)
+            return out_str
+
+        def _commit(self) -> Source.Surface:
+            # intensity
+            self._intensity.commit()
+            self._source_template.surface.intensity_guid = self._intensity.intensity_template_link.key
+
+            # spectrum
+            if self._spectrum is not None:
+                self._spectrum.commit()
+                self._source_template.surface.spectrum_guid = self._spectrum.spectrum_link.key
+            return self
+
     class RayFile:
         def __init__(self, project: project.Project, source_template: core.SourceTemplate, name: str) -> None:
             self._project = project
@@ -98,8 +174,9 @@ class Source:
             return self
 
         def set_spectrum(self) -> Spectrum:
-            self._spectrum = Spectrum(speos_client=self._project.client, name=self._source_template.name + ".Spectrum")
-            self._source_template.rayfile.spectrum_guid = ""
+            if self._spectrum is None:
+                self._spectrum = Spectrum(speos_client=self._project.client, name=self._source_template.name + ".Spectrum")
+                self._source_template.rayfile.spectrum_guid = ""
             return self._spectrum
 
         def __str__(self) -> str:
@@ -115,14 +192,47 @@ class Source:
 
             return self
 
+    class RayFileProperties:
+        def __init__(self, source_instance: core.Scene.SourceInstance) -> None:
+            self._source_instance = source_instance
+
+            # Default values
+            self.set_axis_system()
+
+        def set_axis_system(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> Source.RayFileProperties:
+            self._source_instance.rayfile_properties.axis_system[:] = axis_system
+            return self
+
+        def set_exit_geometries(self, exit_geometries: Optional[List[GeoRef]] = None) -> Source.RayFileProperties:
+            if exit_geometries is not None:
+                self._source_instance.rayfile_properties.exit_geometries.geo_paths[:] = [gr.to_native_link() for gr in exit_geometries]
+            return self
+
+    class SurfaceProperties:
+        def __init__(self, source_instance: core.Scene.SourceInstance) -> None:
+            self._source_instance = source_instance
+
+        def set_exitance_constant_properties(self, geometries: List[tuple[GeoRef, bool]]) -> Source.SurfaceProperties:
+            my_list = [
+                core.Scene.GeoPath(geo_path=gr.to_native_link(), reverse_normal=reverse_normal) for (gr, reverse_normal) in geometries
+            ]
+            self._source_instance.surface_properties.exitance_constant_properties.ClearField("geo_paths")
+            self._source_instance.surface_properties.exitance_constant_properties.geo_paths.extend(my_list)
+            return self
+
+        def set_exitance_variable_properties(self, axis_plane: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0]) -> Source.SurfaceProperties:
+            self._source_instance.surface_properties.exitance_variable_properties.axis_plane[:] = axis_plane
+            return self
+
     def __init__(self, project: project.Project, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> None:
         self._project = project
         self._unique_id = None
         self.source_template_link = None
 
-        self._type = (
-            None  # Attribute representing the kind of source. Can be on object of type script.Source.Luminaire, script.Source.RayFile, ...
-        )
+        # Attribute representing the kind of source. Can be on object of type script.Source.Luminaire, script.Source.RayFile, ...
+        self._type = None
+        # Attribute gathering more complex source properties
+        self._props = None
 
         # Create local SourceTemplate
         self._source_template = core.SourceTemplate(name=name, description=description, metadata=metadata)
@@ -133,25 +243,37 @@ class Source:
     def set_luminaire(self) -> Luminaire:
         if type(self._type) != Source.Luminaire:
             self._type = Source.Luminaire(project=self._project, source_template=self._source_template, name=self._source_template.name)
+        return self._type
 
+    def set_surface(self) -> Surface:
+        if type(self._props) != Source.SurfaceProperties:
+            self._props = Source.SurfaceProperties(source_instance=self._source_instance)
+        if type(self._type) != Source.Surface:
+            self._type = Source.Surface(
+                project=self._project,
+                source_template=self._source_template,
+                name=self._source_template.name,
+                intensity_properties=self._source_instance.surface_properties.intensity_properties,
+            )
         return self._type
 
     def set_rayfile(self) -> RayFile:
         if type(self._type) != Source.RayFile:
             self._type = Source.RayFile(project=self._project, source_template=self._source_template, name=self._source_template.name)
-
         return self._type
 
     def set_luminaire_properties(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> Source:
         self._source_instance.luminaire_properties.axis_system[:] = axis_system
         return self
 
-    def set_rayfile_properties(
-        self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1], exit_geometries: Optional[List[GeoRef]] = None
-    ) -> Source:
-        self._source_instance.rayfile_properties.axis_system[:] = axis_system
-        if exit_geometries is not None:
-            self._source_instance.rayfile_properties.exit_geometries.geo_paths[:] = [gr.to_native_link() for gr in exit_geometries]
+    def set_surface_properties(self) -> Source.SurfaceProperties:
+        if type(self._props) != Source.SurfaceProperties:
+            self._props = Source.SurfaceProperties(source_instance=self._source_instance)
+        return self._props
+
+    def set_rayfile_properties(self) -> Source.RayFileProperties:
+        if type(self._props) != Source.RayFileProperties:
+            self._props = Source.RayFileProperties(source_instance=self._source_instance)
         return self
 
     def __str__(self) -> str:
