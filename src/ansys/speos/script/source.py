@@ -119,8 +119,9 @@ class Source:
         self._unique_id = None
         self.source_template_link = None
 
-        self._luminaire = None
-        self._rayfile = None
+        self._type = (
+            None  # Attribute representing the kind of source. Can be on object of type script.Source.Luminaire, script.Source.RayFile, ...
+        )
 
         # Create SourceTemplate
         self._source_template = core.SourceTemplate(name=name, description=description, metadata=metadata)
@@ -129,18 +130,16 @@ class Source:
         self._source_instance = core.Scene.SourceInstance(name=name, description=description, metadata=metadata)
 
     def set_luminaire(self) -> Luminaire:
-        if self._luminaire is None:
-            self._luminaire = Source.Luminaire(
-                project=self._project, source_template=self._source_template, name=self._source_template.name
-            )
-        self._rayfile = None
-        return self._luminaire
+        if type(self._type) != Source.Luminaire:
+            self._type = Source.Luminaire(project=self._project, source_template=self._source_template, name=self._source_template.name)
+
+        return self._type
 
     def set_rayfile(self) -> RayFile:
-        if self._rayfile is None:
-            self._rayfile = Source.RayFile(project=self._project, source_template=self._source_template, name=self._source_template.name)
-        self._luminaire = None
-        return self._rayfile
+        if type(self._type) != Source.RayFile:
+            self._type = Source.RayFile(project=self._project, source_template=self._source_template, name=self._source_template.name)
+
+        return self._type
 
     def set_luminaire_properties(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> Source:
         self._source_instance.luminaire_properties.axis_system[:] = axis_system
@@ -174,12 +173,9 @@ class Source:
             out_str += "\n" + str(self.source_template_link)
 
         # Contained objects like Spectrum, IntensityTemplate
-        if self._luminaire is not None:
+        if self._type is not None:
             out_str += "\n"
-            out_str += str(self._luminaire)
-        elif self._rayfile is not None:
-            out_str += "\n"
-            out_str += str(self._rayfile)
+            out_str += str(self._type)
 
         return out_str
 
@@ -191,10 +187,8 @@ class Source:
             self._source_instance.metadata["UniqueId"] = self._unique_id
 
         # This allows to commit managed object contained in _luminaire, _rayfile, etc.. Like Spectrum, IntensityTemplate
-        if self._luminaire is not None:
-            self._luminaire._commit()
-        elif self._rayfile is not None:
-            self._rayfile._commit()
+        if self._type is not None:
+            self._type._commit()
 
         # Save or Update the source template (depending on if it was already saved before)
         if self.source_template_link is None:
