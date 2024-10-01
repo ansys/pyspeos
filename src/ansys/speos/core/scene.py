@@ -789,7 +789,7 @@ class SceneFactory:
         ] = None,
     ) -> Scene.SensorInstance.RadianceProperties:
         """
-        Create a RadianceSensorProperties message.
+        Create a RadianceProperties message.
 
         Parameters
         ----------
