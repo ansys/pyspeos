@@ -31,12 +31,21 @@ from ansys.speos.core.crud import CrudItem, CrudStub
 from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 
 SimulationTemplate = messages.SimulationTemplate
+"""SimulationTemplate protobuf class : ansys.api.speos.simulation.v1.simulation_template_pb2.SimulationTemplate"""
 SimulationTemplate.__str__ = lambda self: protobuf_message_to_str(self)
 
 
 class SimulationTemplateLink(CrudItem):
     """
     Link object for simulation template in database.
+
+
+    Parameters
+    ----------
+    db : ansys.speos.core.simulation_template.SimulationTemplateStub
+        Database to link to.
+    key : str
+        Key of the simulation_template in the database.
 
     Examples
     --------
@@ -53,14 +62,27 @@ class SimulationTemplateLink(CrudItem):
         super().__init__(db, key)
 
     def __str__(self) -> str:
+        """Return the string representation of the simulation_template."""
         return str(self.get())
 
     def get(self) -> SimulationTemplate:
-        """Get the datamodel from database."""
+        """Get the datamodel from database.
+
+        Returns
+        -------
+        simulation_template.SimulationTemplate
+            SimulationTemplate datamodel.
+        """
         return self._stub.read(self)
 
     def set(self, data: SimulationTemplate) -> None:
-        """Change datamodel in database."""
+        """Change datamodel in database.
+
+        Parameters
+        ----------
+        data : simulation_template.SimulationTemplate
+            New simulation_template datamodel.
+        """
         self._stub.update(self, data)
 
     def delete(self) -> None:
@@ -72,8 +94,15 @@ class SimulationTemplateStub(CrudStub):
     """
     Database interactions for simulation templates.
 
+    Parameters
+    ----------
+    channel : grpc.Channel
+        Channel to use for the stub.
+
     Examples
     --------
+    The best way to get a SimulationTemplateStub is to retrieve it from SpeosClient via simulation_templates() method.
+    Like in the following example:
 
     >>> from ansys.speos.core.speos import Speos
     >>> speos = Speos(host="localhost", port=50051)
@@ -85,31 +114,74 @@ class SimulationTemplateStub(CrudStub):
         super().__init__(stub=service.SimulationTemplatesManagerStub(channel=channel))
 
     def create(self, message: SimulationTemplate) -> SimulationTemplateLink:
-        """Create a new entry."""
+        """Create a new entry.
+
+        Parameters
+        ----------
+        message : simulation_template.SimulationTemplate
+            Datamodel for the new entry.
+
+        Returns
+        -------
+        ansys.speos.core.simulation_template.SimulationTemplateLink
+            Link object created.
+        """
         resp = CrudStub.create(self, messages.Create_Request(simulation_template=message))
         return SimulationTemplateLink(self, resp.guid)
 
     def read(self, ref: SimulationTemplateLink) -> SimulationTemplate:
-        """Get an existing entry."""
+        """Get an existing entry.
+
+        Parameters
+        ----------
+        ref : ansys.speos.core.simulation_template.SimulationTemplateLink
+            Link object to read.
+
+        Returns
+        -------
+        simulation_template.SimulationTemplate
+            Datamodel of the entry.
+        """
         if not ref.stub == self:
             raise ValueError("SimulationTemplateLink is not on current database")
         resp = CrudStub.read(self, messages.Read_Request(guid=ref.key))
         return resp.simulation_template
 
     def update(self, ref: SimulationTemplateLink, data: SimulationTemplate):
-        """Change an existing entry."""
+        """Change an existing entry.
+
+        Parameters
+        ----------
+        ref : ansys.speos.core.simulation_template.SimulationTemplateLink
+            Link object to update.
+
+        data : simulation_template.SimulationTemplate
+            New datamodel for the entry.
+        """
         if not ref.stub == self:
             raise ValueError("SimulationTemplateLink is not on current database")
         CrudStub.update(self, messages.Update_Request(guid=ref.key, simulation_template=data))
 
     def delete(self, ref: SimulationTemplateLink) -> None:
-        """Remove an existing entry."""
+        """Remove an existing entry.
+
+        Parameters
+        ----------
+        ref : ansys.speos.core.simulation_template.SimulationTemplateLink
+            Link object to delete.
+        """
         if not ref.stub == self:
             raise ValueError("SimulationTemplateLink is not on current database")
         CrudStub.delete(self, messages.Delete_Request(guid=ref.key))
 
     def list(self) -> List[SimulationTemplateLink]:
-        """List existing entries."""
+        """List existing entries.
+
+        Returns
+        -------
+        List[ansys.speos.core.simulation_template.SimulationTemplateLink]
+            Link objects.
+        """
         guids = CrudStub.list(self, messages.List_Request()).guids
         return list(map(lambda x: SimulationTemplateLink(self, x), guids))
 
@@ -118,7 +190,35 @@ class SimulationTemplateFactory:
     """Class to help creating SimulationTemplate message"""
 
     class CommonPropagationParameters:
-        ColorimetricStandard = Enum("ColorimetricStandard", ["CIE_1931", "CIE_1964"])
+        """Represents common propagation parameters for a simulation.
+
+        Parameters
+        ----------
+        geom_distance_tolerance : float, optional
+            Maximum distance in mm to consider two faces as tangent.
+            By default, ``0.05``.
+        max_impact : int, optional
+            Define a value to determine the maximum number of ray impacts during propagation.
+            When a ray has interacted N times with the geometry, the propagation of the ray stops.
+            By default, ``100``.
+        colorimetric_standard : \
+ansys.speos.core.simulation_template.SimulationTemplateFactory.CommonPropagationParameters.ColorimetricStandard, \
+optional
+            Default Colorimetric Standard.
+            By default, ``ColorimetricStandard.CIE_1931``.
+        ambient_material_uri : str, optional
+            Define the environment in which the light will propagate (water, fog, smoke etc.). It is expressed in a .material file.
+            By default, ``""``, ie air material.
+        weight : ansys.speos.core.simulation_template.SimulationTemplateFactory.CommonPropagationParameters.Weight, optional
+            Activates Weight. Highly recommended to fill. See Weight class description.
+            By default, ``Weight()``.
+        """
+
+        class ColorimetricStandard(Enum):
+            """the various coordinate systems for color space"""
+
+            CIE_1931 = 1
+            CIE_1964 = 2
 
         class Weight:
             """
@@ -147,34 +247,13 @@ class SimulationTemplateFactory:
             ambient_material_uri: Optional[str] = "",
             weight: Optional[Weight] = Weight(),
         ) -> None:
-            """
-            Represents common propagation parameters for a simulation.
-
-            Parameters
-            ----------
-            geom_distance_tolerance : float, optional
-                Maximum distance in mm to consider two faces as tangent.
-                By default, ``0.05``.
-            max_impact : int, optional
-                Define a value to determine the maximum number of ray impacts during propagation.
-                When a ray has interacted N times with the geometry, the propagation of the ray stops.
-                By default, ``100``.
-            colorimetric_standard : SimulationTemplateFactory.CommonPropagationParameters.ColorimetricStandard, optional
-                Default Colorimetric Standard.
-                By default, ``SimulationTemplateFactory.CommonPropagationParameters.ColorimetricStandard.CIE_1931``.
-            ambient_material_uri : str, optional
-                Define the environment in which the light will propagate (water, fog, smoke etc.). It is expressed in a .material file.
-                By default, ``""``, ie air material.
-            weight : SimulationTemplateFactory.CommonPropagationParameters.Weight, optional
-                Activates Weight. Highly recommended to fill. See Weight class description.
-                By default, ``SimulationTemplateFactory.CommonPropagationParameters.Weight()``.
-            """
             self.geom_distance_tolerance = geom_distance_tolerance
             self.max_impact = max_impact
             self.colorimetric_standard = colorimetric_standard
             self.ambient_material_uri = ambient_material_uri
             self.weight = weight
 
+    @staticmethod
     def direct_mc(
         name: str,
         common_propagation_parameters: Optional[CommonPropagationParameters] = CommonPropagationParameters(),
@@ -190,7 +269,7 @@ class SimulationTemplateFactory:
         ----------
         name : str
             Name of the simulation template.
-        common_propagation_parameters : SimulationTemplateFactory.CommonPropagationParameters, optional
+        common_propagation_parameters : ansys.speos.core.simulation_template.SimulationTemplateFactory.CommonPropagationParameters, optional
             Common propagation parameters.
             By default, ``SimulationTemplateFactory.CommonPropagationParameters()``.
         dispersion : bool, optional
@@ -209,7 +288,7 @@ class SimulationTemplateFactory:
 
         Returns
         -------
-        SimulationTemplate
+        simulation_template.SimulationTemplate
             SimulationTemplate message created.
         """
         simu = SimulationTemplate(name=name, description=description)
@@ -238,6 +317,7 @@ class SimulationTemplateFactory:
         simu.direct_mc_simulation_template.ambient_material_uri = common_propagation_parameters.ambient_material_uri
         return simu
 
+    @staticmethod
     def inverse_mc(
         name: str,
         common_propagation_parameters: Optional[CommonPropagationParameters] = CommonPropagationParameters(),
@@ -256,7 +336,7 @@ class SimulationTemplateFactory:
         ----------
         name : str
             Name of the simulation template.
-        common_propagation_parameters : SimulationTemplateFactory.CommonPropagationParameters, optional
+        common_propagation_parameters : ansys.speos.core.simulation_template.SimulationTemplateFactory.CommonPropagationParameters, optional
             Common propagation parameters.
             By default, ``SimulationTemplateFactory.CommonPropagationParameters()``.
         dispersion : bool, optional
@@ -285,7 +365,7 @@ class SimulationTemplateFactory:
 
         Returns
         -------
-        SimulationTemplate
+        simulation_template.SimulationTemplate
             SimulationTemplate message created.
         """
         simu = SimulationTemplate(name=name, description=description)
@@ -317,6 +397,7 @@ class SimulationTemplateFactory:
         simu.inverse_mc_simulation_template.ambient_material_uri = common_propagation_parameters.ambient_material_uri
         return simu
 
+    @staticmethod
     def interactive(
         name: str,
         common_propagation_parameters: Optional[CommonPropagationParameters] = CommonPropagationParameters(weight=None),
@@ -330,7 +411,7 @@ class SimulationTemplateFactory:
         ----------
         name : str
             Name of the simulation template.
-        common_propagation_parameters : SimulationTemplateFactory.CommonPropagationParameters, optional
+        common_propagation_parameters : ansys.speos.core.simulation_template.SimulationTemplateFactory.CommonPropagationParameters, optional
             Common propagation parameters.
             By default, ``SimulationTemplateFactory.CommonPropagationParameters(weight=None)``.
         description : str, optional
@@ -342,7 +423,7 @@ class SimulationTemplateFactory:
 
         Returns
         -------
-        SimulationTemplate
+        simulation_template.SimulationTemplate
             SimulationTemplate message created.
         """
         simu = SimulationTemplate(name=name, description=description)
