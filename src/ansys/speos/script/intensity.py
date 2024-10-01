@@ -54,6 +54,81 @@ class Intensity:
         Link object for the intensity template in database.
     """
 
+    class LibraryProperties:
+        """Properties for intensity of type: Library.
+
+        Parameters
+        ----------
+        intensity_properties : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.IntensityProperties
+            Intensity properties to complete.
+        """
+
+        def __init__(
+            self,
+            intensity_properties: core.Scene.SourceInstance.IntensityProperties,
+        ) -> None:
+            self._intensity_properties = intensity_properties
+
+        def set_orientation_axis_system(
+            self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+        ) -> Intensity.LibraryProperties:
+            """Set the intensity orientation from an axis system.
+
+            Parameters
+            ----------
+            axis_system : List[float]
+                Orientation of the intensity [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz]
+                By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+
+            Returns
+            -------
+            ansys.speos.script.intensity.Intensity.LibraryProperties
+                Library Intensity properties.
+            """
+            self._intensity_properties.library_properties.axis_system.values[:] = axis_system
+            return self
+
+        def set_orientation_normal_to_surface(self) -> Intensity.LibraryProperties:
+            """Set the intensity orientation as normal to surface.
+
+            Returns
+            -------
+            ansys.speos.script.intensity.Intensity.LibraryProperties
+                Library Intensity properties.
+            """
+            self._intensity_properties.library_properties.normal_to_surface.SetInParent()
+            return self
+
+        def set_orientation_normal_to_uv_map(self) -> Intensity.LibraryProperties:
+            """Set the intensity orientation as normal to uv map.
+
+            Returns
+            -------
+            ansys.speos.script.intensity.Intensity.LibraryProperties
+                Library Intensity properties.
+            """
+            self._intensity_properties.library_properties.normal_to_uv_map.SetInParent()
+            return self
+
+        def set_exit_geometries(self, exit_geometries: Optional[List[GeoRef]] = None) -> Intensity.LibraryProperties:
+            """Set the exit geometries.
+
+            Parameters
+            ----------
+            exit_geometries : List[ansys.speos.script.geo_ref.GeoRef], optional
+                Exit geometries list.
+                By default, ``None``.
+
+            Returns
+            -------
+            ansys.speos.script.intensity.Intensity.LibraryProperties
+                Library Intensity properties.
+            """
+            self._intensity_properties.library_properties.ClearField()
+            if exit_geometries is not None:
+                self._intensity_properties.library_properties.exit_geometries.geo_paths[:] = [gr.to_native_link() for gr in exit_geometries]
+            return self
+
     def __init__(
         self,
         speos_client: core.SpeosClient,
@@ -75,6 +150,9 @@ class Intensity:
         if intensity_props_to_complete is not None:
             self._intensity_properties = intensity_props_to_complete
             self._light_print = True
+
+        # Attribute gathering more complex intensity properties
+        self._props = None
 
         # Default values
         self.set_lambertian()  # By default will be lambertian
@@ -161,28 +239,17 @@ class Intensity:
         self._intensity_template.gaussian.total_angle = total_angle
         return self
 
-    def set_library_properties_axis_system(
-        self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1], exit_geometries: Optional[List[GeoRef]] = None
-    ) -> Intensity:
-        self._intensity_properties.Clear()
-        self._intensity_properties.library_properties.axis_system.values[:] = axis_system
-        if exit_geometries is not None:
-            self._intensity_properties.library_properties.exit_geometries.geo_paths[:] = [gr.to_native_link() for gr in exit_geometries]
-        return self
+    def set_library_properties(self) -> Intensity.LibraryProperties:
+        """Set the properties related to library template.
 
-    def set_library_properties_normal_to_surface(self, exit_geometries: Optional[List[GeoRef]] = None) -> Intensity:
-        self._intensity_properties.Clear()
-        self._intensity_properties.library_properties.normal_to_surface.SetInParent()
-        if exit_geometries is not None:
-            self._intensity_properties.library_properties.exit_geometries.geo_paths[:] = [gr.to_native_link() for gr in exit_geometries]
-        return self
-
-    def set_library_properties_normal_to_uv_map(self, exit_geometries: Optional[List[GeoRef]] = None) -> Intensity:
-        self._intensity_properties.Clear()
-        self._intensity_properties.library_properties.normal_to_uv_map.SetInParent()
-        if exit_geometries is not None:
-            self._intensity_properties.library_properties.exit_geometries.geo_paths[:] = [gr.to_native_link() for gr in exit_geometries]
-        return self
+        Returns
+        -------
+        ansys.speos.script.intensity.Intensity.LibraryProperties
+            Library Intensity properties.
+        """
+        if type(self._props) != Intensity.LibraryProperties:
+            self._props = Intensity.LibraryProperties(intensity_properties=self._intensity_properties)
+        return self._props
 
     def set_gaussian_properties(self, axis_system: Optional[List[float]] = None) -> Intensity:
         """Set the properties related to gaussian template.
