@@ -124,7 +124,7 @@ class Intensity:
             ansys.speos.script.intensity.Intensity.LibraryProperties
                 Library Intensity properties.
             """
-            self._intensity_properties.library_properties.ClearField()
+            self._intensity_properties.library_properties.ClearField("exit_geometries")
             if exit_geometries is not None:
                 self._intensity_properties.library_properties.exit_geometries.geo_paths[:] = [gr.to_native_link() for gr in exit_geometries]
             return self
