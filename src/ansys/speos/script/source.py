@@ -176,6 +176,7 @@ class Source:
             name: str,
             intensity_properties: core.Scene.SourceInstance.IntensityProperties,
         ) -> None:
+            self._speos_client = speos_client
             self._source_template = source_template
             self._spectrum = None
             self._intensity = Intensity(
@@ -306,7 +307,7 @@ class Source:
                 Spectrum.
             """
             if self._spectrum is None:
-                self._spectrum = Spectrum(speos_client=self._project.client, name=self._source_template.name + ".Spectrum")
+                self._spectrum = Spectrum(speos_client=self._speos_client, name=self._source_template.name + ".Spectrum")
                 self._source_template.surface.spectrum_guid = ""
             return self._spectrum
 
@@ -431,7 +432,7 @@ class Source:
                 Spectrum.
             """
             if self._spectrum is None:
-                self._spectrum = Spectrum(speos_client=self.client, name=self._source_template.name + ".Spectrum")
+                self._spectrum = Spectrum(speos_client=self._client, name=self._source_template.name + ".Spectrum")
                 self._source_template.rayfile.spectrum_guid = ""
             return self._spectrum
 
@@ -573,7 +574,9 @@ class Source:
             Luminaire source.
         """
         if type(self._type) != Source.Luminaire:
-            self._type = Source.Luminaire(project=self._project, source_template=self._source_template, name=self._source_template.name)
+            self._type = Source.Luminaire(
+                speos_client=self._project.client, source_template=self._source_template, name=self._source_template.name
+            )
         return self._type
 
     def set_surface(self) -> Surface:
@@ -588,7 +591,7 @@ class Source:
             self._props = Source.SurfaceProperties(source_instance=self._source_instance)
         if type(self._type) != Source.Surface:
             self._type = Source.Surface(
-                project=self._project,
+                speos_client=self._project.client,
                 source_template=self._source_template,
                 name=self._source_template.name,
                 intensity_properties=self._source_instance.surface_properties.intensity_properties,
@@ -604,7 +607,9 @@ class Source:
             Surface source.
         """
         if type(self._type) != Source.RayFile:
-            self._type = Source.RayFile(project=self._project, source_template=self._source_template, name=self._source_template.name)
+            self._type = Source.RayFile(
+                speos_client=self._project.client, source_template=self._source_template, name=self._source_template.name
+            )
         return self._type
 
     def set_luminaire_properties(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> Source:
@@ -652,8 +657,8 @@ class Source:
         """Return the string representation of the source."""
         out_str = ""
         # SourceInstance (= source guid + source properties)
-        if self._project.scene and self._unique_id is not None:
-            scene_data = self._project.scene.get()
+        if self._project.scene_link and self._unique_id is not None:
+            scene_data = self._project.scene_link.get()
             src_inst = next((x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None)
             if src_inst is not None:
                 out_str += core.protobuf_message_to_str(src_inst)
@@ -700,8 +705,8 @@ class Source:
             self.source_template_link.set(data=self._source_template)
 
         # Update the scene with the source instance
-        if self._project.scene:
-            scene_data = self._project.scene.get()  # retrieve scene data
+        if self._project.scene_link:
+            scene_data = self._project.scene_link.get()  # retrieve scene data
 
             # Look if an element corresponds to the _unique_id
             src_inst = next((x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None)
@@ -710,7 +715,7 @@ class Source:
             else:
                 scene_data.sources.append(self._source_instance)  # if no, just add it to the list of sources
 
-            self._project.scene.set(data=scene_data)  # update scene data
+            self._project.scene_link.set(data=scene_data)  # update scene data
 
         return self
 
@@ -727,8 +732,8 @@ class Source:
             self._source_template = self.source_template_link.get()
 
         # Reset source instance
-        if self._project.scene is not None:
-            scene_data = self._project.scene.get()  # retrieve scene data
+        if self._project.scene_link is not None:
+            scene_data = self._project.scene_link.get()  # retrieve scene data
             # Look if an element corresponds to the _unique_id
             src_inst = next((x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None)
             if src_inst is not None:
@@ -753,11 +758,11 @@ class Source:
         self._source_instance.source_guid = ""
 
         # Remove the source from the scene
-        scene_data = self._project.scene.get()  # retrieve scene data
+        scene_data = self._project.scene_link.get()  # retrieve scene data
         src_inst = next((x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None)
         if src_inst is not None:
             scene_data.sources.remove(src_inst)
-            self._project.scene.set(data=scene_data)  # update scene data
+            self._project.scene_link.set(data=scene_data)  # update scene data
 
         # Reset the _unique_id
         self._unique_id = None
