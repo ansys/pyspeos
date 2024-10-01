@@ -811,7 +811,7 @@ class SceneFactory:
         """
         rs_props = Scene.SensorInstance.RadianceProperties()
         rs_props.axis_system.extend(axis_system.origin + axis_system.x_vect + axis_system.y_vect + axis_system.z_vect)
-        rs_props.observer_point.extend(observer_point[0] + observer_point[1] + observer_point[2])
+        rs_props.observer_point.extend(observer_point)
 
         if layer_type is None:
             rs_props.layer_type_none.SetInParent()
