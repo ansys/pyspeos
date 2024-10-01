@@ -616,9 +616,9 @@ class SceneFactory:
         name: str,
         sensor_template: SensorTemplateLink,
         properties: Union[
-            Scene.SensorInstance.CameraSensorProperties,
-            Scene.SensorInstance.IrradianceSensorProperties,
-            Scene.SensorInstance.RadianceSensorProperties,
+            Scene.SensorInstance.CameraProperties,
+            Scene.SensorInstance.IrradianceProperties,
+            Scene.SensorInstance.RadianceProperties,
         ],
         description: Optional[str] = "",
         metadata: Optional[Mapping[str, str]] = None,
@@ -632,9 +632,9 @@ class SceneFactory:
             Name of the sensor instance.
         sensor_template : ansys.speos.core.sensor_template.SensorTemplateLink
             Sensor template used as a base of this instance.
-        properties : Union[ SceneFactory.camera_sensor_props,
-                            SceneFactory.irradiance_sensor_props,
-                            SceneFactory.radiance_sensor_props]
+        properties : Union[ SceneFactory.camera_sensor_props,  \
+        SceneFactory.irradiance_sensor_props,  \
+        SceneFactory.radiance_sensor_props]
             Properties to apply to this sensor instance.
             Choose the correct properties type depending on the sensor template.
             Example:
@@ -787,7 +787,7 @@ class SceneFactory:
                 Properties.Sensor.LayerType.Sequence,
             ]
         ] = None,
-    ) -> Scene.SensorInstance.RadianceSensorProperties:
+    ) -> Scene.SensorInstance.RadianceProperties:
         """
         Create a RadianceSensorProperties message.
 

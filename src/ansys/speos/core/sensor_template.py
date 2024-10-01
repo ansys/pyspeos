@@ -623,6 +623,7 @@ by the display devices into account"""
 
         return ssr
 
+    @staticmethod
     def radiance(
         name: str,
         description: Optional[str] = "",
@@ -639,9 +640,9 @@ by the display devices into account"""
         ----------
         name : str
             Name of the sensor template.
-        type : SensorTemplateFactory.Type, optional
+        type : ansys.speos.core.sensor_template.SensorTemplateFactory.Type, optional
             Type of the sensor.
-            By default, ``SensorTemplateFactory.Type.Photometric``.
+            By default, ``Photometric``.
         description : str, optional
             Description of the sensor template.
             By default, ``""``.
