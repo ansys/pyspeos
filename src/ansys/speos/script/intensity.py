@@ -44,6 +44,7 @@ class Intensity:
 
         # Create IntensityProperties
         self._intensity_properties = core.Scene.SourceInstance.IntensityProperties()
+        self._light_print = False
         if intensity_props_to_complete is not None:
             self._intensity_properties = intensity_props_to_complete
             self._light_print = True
@@ -111,7 +112,7 @@ class Intensity:
         else:
             out_str += str(self.intensity_template_link)
 
-        if self._light_print is None:
+        if self._light_print is False:
             out_str += f"\nlocal: " + core.protobuf_message_to_str(self._intensity_properties)
         return out_str
 
@@ -122,6 +123,11 @@ class Intensity:
         else:
             self.intensity_template_link.set(data=self._intensity_template)
 
+        return self
+
+    def reset(self) -> Intensity:
+        if self.intensity_template_link is not None:
+            self._intensity_template = self.intensity_template_link.get()
         return self
 
     def delete(self) -> Intensity:

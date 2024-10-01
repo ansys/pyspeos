@@ -335,6 +335,20 @@ class Source:
 
         return self
 
+    def reset(self) -> Source:
+        # Reset source template
+        if self.source_template_link is not None:
+            self._source_template = self.source_template_link.get()
+
+        # Reset source instance
+        if self._project.scene is not None:
+            scene_data = self._project.scene.get()  # retrieve scene data
+            # Look if an element corresponds to the _unique_id
+            src_inst = next((x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None)
+            if src_inst is not None:
+                self._source_instance = src_inst
+        return self
+
     def delete(self) -> Source:
         # Delete the source template
         if self.source_template_link is not None:

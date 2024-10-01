@@ -101,6 +101,11 @@ class Spectrum:
 
         return self
 
+    def reset(self) -> Spectrum:
+        if self.spectrum_link is not None:
+            self._spectrum = self.spectrum_link.get()
+        return self
+
     def delete(self) -> Spectrum:
         if self.spectrum_link is not None:
             self.spectrum_link.delete()
