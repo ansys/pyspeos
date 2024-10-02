@@ -68,6 +68,10 @@ def test_create_intensity(speos: Speos):
     assert len(intensity1._intensity_properties.library_properties.exit_geometries.geo_paths) == 1
     assert intensity1._intensity_properties.library_properties.HasField("normal_to_uv_map")
 
+    intensity1.set_library_properties().set_exit_geometries()  # use default None to reset exit geometries
+    intensity1.commit()
+    assert intensity1._intensity_properties.library_properties.HasField("exit_geometries") == False
+
     # cos
     intensity1.set_lambertian(total_angle=170).commit()
     assert intensity1.intensity_template_link.get().HasField("cos")
@@ -98,6 +102,22 @@ def test_create_intensity(speos: Speos):
     assert intensity1._intensity_properties.gaussian_properties.axis_system == [10, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 
     intensity1.delete()
+
+
+def test_switch_intensity(speos: Speos):
+    """Test switch of intensity : from one with properties to one without (properties should be emptied)."""
+
+    # Use intensity library with library properties
+    intensity1 = script.Intensity(speos_client=speos.client, name="Intensity.1")
+    intensity1.set_library(intensity_file_uri=os.path.join(test_path, "IES_C_DETECTOR.ies")).set_library_properties()
+    intensity1.commit()
+    assert intensity1._intensity_properties.HasField("properties")
+    assert intensity1._intensity_properties.HasField("library_properties")
+    assert intensity1._intensity_properties.library_properties.HasField("axis_system")
+
+    # Switch to cos that has no properties
+    intensity1.set_cos().commit()
+    assert intensity1._intensity_properties.HasField("properties") == False
 
 
 def test_commit_intensity(speos: Speos):

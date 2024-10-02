@@ -315,7 +315,7 @@ class Source:
             out_str = ""
             out_str += str(self._intensity)
             if self._spectrum is not None:
-                out_str += str(self._spectrum)
+                out_str += "\n" + str(self._spectrum)
             return out_str
 
         def _commit(self) -> Source.Surface:
@@ -495,8 +495,11 @@ class Source:
             ansys.speos.script.source.Source.RayFileProperties
                 RayFile Source properties.
             """
-            if exit_geometries is not None:
+            if exit_geometries is None:
+                self._source_instance.rayfile_properties.ClearField("exit_geometries")
+            else:
                 self._source_instance.rayfile_properties.exit_geometries.geo_paths[:] = [gr.to_native_link() for gr in exit_geometries]
+
             return self
 
     class SurfaceProperties:
@@ -651,7 +654,7 @@ class Source:
         """
         if type(self._props) != Source.RayFileProperties:
             self._props = Source.RayFileProperties(source_instance=self._source_instance)
-        return self
+        return self._props
 
     def __str__(self) -> str:
         """Return the string representation of the source."""
