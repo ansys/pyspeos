@@ -372,6 +372,9 @@ def test_delete_source(speos: Speos):
 
     # Delete
     source1.delete()
+    assert source1._unique_id is None
+    assert len(source1._source_instance.metadata) == 0
+
     assert source1.source_template_link is None
     assert source1._source_template.HasField("rayfile")  # local
 

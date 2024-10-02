@@ -769,4 +769,5 @@ class Source:
 
         # Reset the _unique_id
         self._unique_id = None
+        self._source_instance.metadata.pop("UniqueId")
         return self
