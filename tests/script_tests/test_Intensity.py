@@ -68,7 +68,7 @@ def test_create_intensity(speos: Speos):
     assert len(intensity1._intensity_properties.library_properties.exit_geometries.geo_paths) == 1
     assert intensity1._intensity_properties.library_properties.HasField("normal_to_uv_map")
 
-    intensity1.set_library_properties().set_exit_geometries()  # use default None to reset exit geometries
+    intensity1.set_library_properties().set_exit_geometries()  # use default [] to reset exit geometries
     intensity1.commit()
     assert intensity1._intensity_properties.library_properties.HasField("exit_geometries") == False
 
