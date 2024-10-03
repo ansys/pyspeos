@@ -31,6 +31,7 @@ from ansys.speos.script.geo_ref import GeoRef
 
 class Intensity:
     """Speos feature : Intensity.
+    By default, a lambertian intensity is created (cos with N=1 and total_angle=180).
 
     Parameters
     ----------
@@ -56,6 +57,7 @@ class Intensity:
 
     class LibraryProperties:
         """Properties for intensity of type: Library.
+        By default, orientation by axis system is chosen.
 
         Parameters
         ----------
@@ -160,7 +162,7 @@ class Intensity:
         self._props = None
 
         # Default values
-        self.set_lambertian()  # By default will be lambertian
+        self.set_cos(N=1)  # By default will be lambertian (cos with N =1)
 
     def set_library(self, intensity_file_uri: str) -> Intensity:
         """Set the intensity as library.
@@ -176,25 +178,6 @@ class Intensity:
             Intensity feature.
         """
         self._intensity_template.library.intensity_file_uri = intensity_file_uri
-        return self
-
-    def set_lambertian(self, total_angle: float = 180) -> Intensity:
-        """Set the intensity as lambertian.
-
-        Parameters
-        ----------
-        total_angle : float
-            Total angle in degrees of the emission of the light source.
-            By default, ``180.0``.
-
-        Returns
-        -------
-        ansys.speos.script.intensity.Intensity
-            Intensity feature.
-        """
-        self._intensity_template.cos.N = 1
-        self._intensity_template.cos.total_angle = total_angle
-        self._intensity_properties.Clear()
         return self
 
     def set_cos(self, N: float = 3, total_angle: float = 180) -> Intensity:

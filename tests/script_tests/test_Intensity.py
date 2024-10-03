@@ -73,16 +73,11 @@ def test_create_intensity(speos: Speos):
     assert intensity1._intensity_properties.library_properties.HasField("exit_geometries") == False
 
     # cos
-    intensity1.set_lambertian(total_angle=170).commit()
-    assert intensity1.intensity_template_link.get().HasField("cos")
-    assert intensity1.intensity_template_link.get().cos.N == 1
-    assert intensity1.intensity_template_link.get().cos.total_angle == 170
-    assert intensity1._intensity_properties.HasField("library_properties") == False
-
     intensity1.set_cos(N=2, total_angle=160).commit()
     assert intensity1.intensity_template_link.get().HasField("cos")
     assert intensity1.intensity_template_link.get().cos.N == 2
     assert intensity1.intensity_template_link.get().cos.total_angle == 160
+    assert intensity1._intensity_properties.HasField("library_properties") == False
 
     # gaussian
     intensity1.set_gaussian(FWHM_angle_x=20, FWHM_angle_y=30, total_angle=150)

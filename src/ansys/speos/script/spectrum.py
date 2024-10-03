@@ -30,6 +30,7 @@ import ansys.speos.core as core
 
 class Spectrum:
     """Speos feature : Spectrum.
+    By default, a monochromatic spectrum is created.
 
     Parameters
     ----------

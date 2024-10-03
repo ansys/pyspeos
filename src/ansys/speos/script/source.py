@@ -57,6 +57,7 @@ class Source:
 
     class Luminaire:
         """Type of Source : Luminaire.
+        By default, a flux from intensity file is chosen, with an incandescent spectrum.
 
         Parameters
         ----------
@@ -156,6 +157,8 @@ class Source:
 
     class Surface:
         """Type of Source : Surface.
+        By default, a luminous flux and exitance constant are chosen. With a monochromatic spectrum, \
+and lambertian intensity (cos with N = 1).
 
         Parameters
         ----------
@@ -331,6 +334,7 @@ class Source:
 
     class RayFile:
         """Type of Source : RayFile.
+        By default, flux and spectrum from ray file are selected.
 
         Parameters
         ----------
@@ -451,6 +455,7 @@ class Source:
 
     class RayFileProperties:
         """Properties for source of type: RayFile.
+        By default, an axis system is selected.
 
         Parameters
         ----------
