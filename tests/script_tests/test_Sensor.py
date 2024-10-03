@@ -296,3 +296,228 @@ def test_create_camera_sensor(speos: Speos):
     assert sensor1._sensor_instance.camera_properties.HasField("layer_type_none")
 
     sensor1.delete()
+
+
+def test_create_irradiance_sensor(speos: Speos):
+    """Test creation of irradiance sensor."""
+    p = script.Project(speos=speos)
+
+    # Default value
+    sensor1 = p.create_sensor(name="Irradiance.1")
+    sensor1.set_irradiance()
+    sensor1.set_irradiance_properties()
+    sensor1.commit()
+    print(sensor1)
+    assert sensor1.sensor_template_link is not None
+    assert sensor1.sensor_template_link.get().HasField("irradiance_sensor_template")
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.HasField("sensor_type_photometric")
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.HasField("illuminance_type_planar")
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.HasField("dimensions")
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.dimensions.x_start == -50.0
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.dimensions.x_end == 50.0
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.dimensions.x_sampling == 100
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.dimensions.y_start == -50.0
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.dimensions.y_end == 50.0
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.dimensions.y_sampling == 100
+    assert sensor1._sensor_instance.HasField("irradiance_properties")
+    assert sensor1._sensor_instance.irradiance_properties.axis_system == [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    assert sensor1._sensor_instance.irradiance_properties.HasField("layer_type_none")
+    assert sensor1._sensor_instance.irradiance_properties.ray_file_type == sensor1._sensor_instance.EnumRayFileType.RayFileNone
+    assert sensor1._sensor_instance.irradiance_properties.integration_direction == []
+
+    # sensor_type_colorimetric
+    # default wavelengths range
+    sensor1.set_irradiance().set_type_colorimetric()
+    sensor1.commit()
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.HasField("sensor_type_colorimetric")
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.sensor_type_colorimetric.HasField("wavelengths_range")
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_start == 400
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_end == 700
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_sampling == 13
+    # chosen wavelengths range
+    sensor1.set_irradiance().set_type_colorimetric().set_wavelengths_range().set_start(value=450).set_end(value=800).set_sampling(value=15)
+    sensor1.commit()
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_start == 450
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_end == 800
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_sampling == 15
+
+    # sensor_type_radiometric
+    sensor1.set_irradiance().set_type_radiometric()
+    sensor1.commit()
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.HasField("sensor_type_radiometric")
+
+    # sensor_type_spectral
+    # default wavelengths range
+    sensor1.set_irradiance().set_type_spectral()
+    sensor1.commit()
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.HasField("sensor_type_spectral")
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.sensor_type_spectral.HasField("wavelengths_range")
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.sensor_type_spectral.wavelengths_range.w_start == 400
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.sensor_type_spectral.wavelengths_range.w_end == 700
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.sensor_type_spectral.wavelengths_range.w_sampling == 13
+    # chosen wavelengths range
+    sensor1.set_irradiance().set_type_spectral().set_wavelengths_range().set_start(value=450).set_end(value=800).set_sampling(value=15)
+    sensor1.commit()
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.sensor_type_spectral.wavelengths_range.w_start == 450
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.sensor_type_spectral.wavelengths_range.w_end == 800
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.sensor_type_spectral.wavelengths_range.w_sampling == 15
+
+    # sensor_type_photometric
+    sensor1.set_irradiance().set_type_photometric()
+    sensor1.commit()
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.HasField("sensor_type_photometric")
+
+    # illuminance_type_radial
+    sensor1.set_irradiance().set_illuminance_type_radial()
+    sensor1.commit()
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.HasField("illuminance_type_radial")
+
+    # illuminance_type_hemispherical - bug to be fixed
+    # sensor1.set_irradiance().set_illuminance_type_hemispherical()
+    # sensor1.commit()
+    # assert sensor1.sensor_template_link.get().irradiance_sensor_template.HasField("illuminance_type_hemispherical")
+
+    # illuminance_type_cylindrical
+    sensor1.set_irradiance().set_illuminance_type_cylindrical()
+    sensor1.commit()
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.HasField("illuminance_type_cylindrical")
+
+    # illuminance_type_semi_cylindrical - bug to be fixed
+    # sensor1.set_irradiance().set_illuminance_type_semi_cylindrical()
+    # sensor1.set_irradiance_properties().set_integration_direction([1,0,0])
+    # sensor1.commit()
+    # assert sensor1.sensor_template_link.get().irradiance_sensor_template.HasField("illuminance_type_semi_cylindrical")
+
+    # illuminance_type_planar
+    sensor1.set_irradiance().set_illuminance_type_planar()
+    sensor1.set_irradiance_properties().set_integration_direction([0, 0, -1])
+    sensor1.commit()
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.HasField("illuminance_type_planar")
+
+    # dimensions
+    sensor1.set_irradiance().set_dimensions().set_x_start(value=-10).set_x_end(value=10).set_x_sampling(value=60).set_y_start(
+        value=-20
+    ).set_y_end(value=20).set_y_sampling(value=120)
+    sensor1.commit()
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.HasField("dimensions")
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.dimensions.x_start == -10.0
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.dimensions.x_end == 10.0
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.dimensions.x_sampling == 60
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.dimensions.y_start == -20.0
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.dimensions.y_end == 20.0
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.dimensions.y_sampling == 120
+
+    # properties
+    # axis_system
+    sensor1.set_irradiance_properties().set_axis_system([10, 50, 20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    sensor1.commit()
+    assert sensor1._sensor_instance.irradiance_properties.axis_system == [10, 50, 20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+    # ray_file_type
+    sensor1.set_irradiance_properties().set_ray_file_type_classic()
+    sensor1.commit()
+    assert sensor1._sensor_instance.irradiance_properties.ray_file_type == sensor1._sensor_instance.EnumRayFileType.RayFileClassic
+
+    sensor1.set_irradiance_properties().set_ray_file_type_polarization()
+    sensor1.commit()
+    assert sensor1._sensor_instance.irradiance_properties.ray_file_type == sensor1._sensor_instance.EnumRayFileType.RayFilePolarization
+
+    sensor1.set_irradiance_properties().set_ray_file_type_tm25()
+    sensor1.commit()
+    assert sensor1._sensor_instance.irradiance_properties.ray_file_type == sensor1._sensor_instance.EnumRayFileType.RayFileTM25
+
+    sensor1.set_irradiance_properties().set_ray_file_type_tm25_no_polarization()
+    sensor1.commit()
+    assert (
+        sensor1._sensor_instance.irradiance_properties.ray_file_type == sensor1._sensor_instance.EnumRayFileType.RayFileTM25NoPolarization
+    )
+
+    sensor1.set_irradiance_properties().set_ray_file_type_none()
+    sensor1.commit()
+    assert sensor1._sensor_instance.irradiance_properties.ray_file_type == sensor1._sensor_instance.EnumRayFileType.RayFileNone
+
+    # layer_type_source
+    sensor1.set_irradiance_properties().set_layer_type_source()
+    sensor1.commit()
+    assert sensor1._sensor_instance.irradiance_properties.HasField("layer_type_source")
+
+    # layer_type_face
+    sensor1.set_irradiance_properties().set_layer_type_face().set_sca_filtering_mode_intersected_one_time().set_layers(
+        values=[
+            script.Sensor.LayerTypeFace.Layer(name="Layer.1", geometries=[script.GeoRef.from_native_link("TheBodyB")]),
+            script.Sensor.LayerTypeFace.Layer(
+                name="Layer.2",
+                geometries=[script.GeoRef.from_native_link("TheBodyC/TheFaceC1"), script.GeoRef.from_native_link("TheBodyC/TheFaceC2")],
+            ),
+        ]
+    )
+    sensor1.commit()
+    assert sensor1._sensor_instance.irradiance_properties.HasField("layer_type_face")
+    assert (
+        sensor1._sensor_instance.irradiance_properties.layer_type_face.sca_filtering_mode
+        == sensor1._sensor_instance.irradiance_properties.layer_type_face.EnumSCAFilteringType.IntersectedOneTime
+    )
+    assert len(sensor1._sensor_instance.irradiance_properties.layer_type_face.layers) == 2
+    assert sensor1._sensor_instance.irradiance_properties.layer_type_face.layers[0].name == "Layer.1"
+    assert sensor1._sensor_instance.irradiance_properties.layer_type_face.layers[0].geometries.geo_paths == ["TheBodyB"]
+    assert sensor1._sensor_instance.irradiance_properties.layer_type_face.layers[1].name == "Layer.2"
+    assert sensor1._sensor_instance.irradiance_properties.layer_type_face.layers[1].geometries.geo_paths == [
+        "TheBodyC/TheFaceC1",
+        "TheBodyC/TheFaceC2",
+    ]
+
+    sensor1.set_irradiance_properties().set_layer_type_face().set_sca_filtering_mode_last_impact()
+    sensor1.commit()
+    assert (
+        sensor1._sensor_instance.irradiance_properties.layer_type_face.sca_filtering_mode
+        == sensor1._sensor_instance.irradiance_properties.layer_type_face.EnumSCAFilteringType.LastImpact
+    )
+
+    # layer_type_sequence
+    sensor1.set_irradiance_properties().set_layer_type_sequence().set_maximum_nb_of_sequence(value=5).set_define_sequence_per_faces()
+    sensor1.commit()
+    assert sensor1._sensor_instance.irradiance_properties.HasField("layer_type_sequence")
+    assert sensor1._sensor_instance.irradiance_properties.layer_type_sequence.maximum_nb_of_sequence == 5
+    assert (
+        sensor1._sensor_instance.irradiance_properties.layer_type_sequence.define_sequence_per
+        == sensor1._sensor_instance.irradiance_properties.layer_type_sequence.EnumSequenceType.Faces
+    )
+
+    sensor1.set_irradiance_properties().set_layer_type_sequence().set_define_sequence_per_geometries()
+    sensor1.commit()
+    assert (
+        sensor1._sensor_instance.irradiance_properties.layer_type_sequence.define_sequence_per
+        == sensor1._sensor_instance.irradiance_properties.layer_type_sequence.EnumSequenceType.Geometries
+    )
+
+    # layer_type_polarization
+    sensor1.set_irradiance_properties().set_layer_type_polarization()
+    sensor1.commit()
+    assert sensor1._sensor_instance.irradiance_properties.HasField("layer_type_polarization")
+
+    # layer_type_incidence_angle
+    sensor1.set_irradiance_properties().set_layer_type_incidence_angle().set_sampling(value=8)
+    sensor1.commit()
+    assert sensor1._sensor_instance.irradiance_properties.HasField("layer_type_incidence_angle")
+    assert sensor1._sensor_instance.irradiance_properties.layer_type_incidence_angle.sampling == 8
+
+    # layer_type_none
+    sensor1.set_irradiance_properties().set_layer_type_none()
+    sensor1.commit()
+    assert sensor1._sensor_instance.irradiance_properties.HasField("layer_type_none")
+
+    # integration_direction
+    sensor1.set_irradiance_properties().set_integration_direction(value=[1, 0, 0])
+    assert sensor1._sensor_instance.irradiance_properties.integration_direction == [1, 0, 0]
+
+    # output_face_geometries
+    sensor1.set_irradiance_properties().set_output_face_geometries(
+        geometries=[
+            script.GeoRef.from_native_link(geopath="TheBodyB/TheFaceB1"),
+            script.GeoRef.from_native_link(geopath="TheBodyB/TheFaceB2"),
+        ]
+    )
+    assert sensor1._sensor_instance.irradiance_properties.output_face_geometries.geo_paths == ["TheBodyB/TheFaceB1", "TheBodyB/TheFaceB2"]
+
+    # output_face_geometries
+    sensor1.delete()

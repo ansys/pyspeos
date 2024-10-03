@@ -384,7 +384,9 @@ class Sensor:
 
         def set_layers(self, values: List[Sensor.LayerTypeFace.Layer]) -> Sensor.LayerTypeFace:
             my_list = [
-                core.Scene.SensorInstance.LayerTypeFace.Layer(name=layer.name, geometries=[gr.to_native_link() for gr in layer.geometries])
+                core.Scene.SensorInstance.LayerTypeFace.Layer(
+                    name=layer.name, geometries=core.Scene.GeoPaths(geo_paths=[gr.to_native_link() for gr in layer.geometries])
+                )
                 for layer in values
             ]
             self._layer_type_face.ClearField("layers")
@@ -485,23 +487,23 @@ class Sensor:
             return self
 
         def set_ray_file_type_none(self) -> Sensor.IrradianceProperties:
-            self._irradiance_props.ray_file_type = self._sensor_instance.EnumRayFileType.RayFileNone
+            self._irradiance_props.ray_file_type = core.Scene.SensorInstance.EnumRayFileType.RayFileNone
             return self
 
         def set_ray_file_type_classic(self) -> Sensor.IrradianceProperties:
-            self._irradiance_props.ray_file_type = self._sensor_instance.EnumRayFileType.RayFileClassic
+            self._irradiance_props.ray_file_type = core.Scene.SensorInstance.EnumRayFileType.RayFileClassic
             return self
 
         def set_ray_file_type_polarization(self) -> Sensor.IrradianceProperties:
-            self._irradiance_props.ray_file_type = self._sensor_instance.EnumRayFileType.RayFilePolarization
+            self._irradiance_props.ray_file_type = core.Scene.SensorInstance.EnumRayFileType.RayFilePolarization
             return self
 
         def set_ray_file_type_tm25(self) -> Sensor.IrradianceProperties:
-            self._irradiance_props.ray_file_type = self._sensor_instance.EnumRayFileType.RayFileTM25
+            self._irradiance_props.ray_file_type = core.Scene.SensorInstance.EnumRayFileType.RayFileTM25
             return self
 
         def set_ray_file_type_tm25_no_polarization(self) -> Sensor.IrradianceProperties:
-            self._irradiance_props.ray_file_type = self._sensor_instance.EnumRayFileType.RayFileTM25NoPolarization
+            self._irradiance_props.ray_file_type = core.Scene.SensorInstance.EnumRayFileType.RayFileTM25NoPolarization
             return self
 
         def set_layer_type_none(self) -> Sensor.IrradianceProperties:
@@ -521,7 +523,7 @@ class Sensor:
 
         def set_layer_type_sequence(self) -> Sensor.LayerTypeSequence:
             if type(self._layer_type) != Sensor.LayerTypeSequence:
-                self._layer_type = Sensor.LayerTypeSequence(layer_type_face=self._irradiance_props.layer_type_sequence)
+                self._layer_type = Sensor.LayerTypeSequence(layer_type_sequence=self._irradiance_props.layer_type_sequence)
             return self._layer_type
 
         def set_layer_type_polarization(self) -> Sensor.IrradianceProperties:
@@ -531,7 +533,9 @@ class Sensor:
 
         def set_layer_type_incidence_angle(self) -> Sensor.LayerTypeIncidenceAngle:
             if type(self._layer_type) != Sensor.LayerTypeIncidenceAngle:
-                self._layer_type = Sensor.LayerTypeIncidenceAngle(layer_type_face=self._irradiance_props.layer_type_incidence_angle)
+                self._layer_type = Sensor.LayerTypeIncidenceAngle(
+                    layer_type_incidence_angle=self._irradiance_props.layer_type_incidence_angle
+                )
             return self._layer_type
 
         def set_integration_direction(self, value: Optional[List[float]] = None) -> Sensor.IrradianceProperties:
