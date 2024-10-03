@@ -48,23 +48,17 @@ class OptProp:
         By default, ``None``.
     """
 
-    def __init__(self, project: project.Project, name: str, description: Optional[str] = "", metadata: Optional[Mapping[str, str]] = None):
+    def __init__(self, project: project.Project, name: str, description: str = "", metadata: Mapping[str, str] = {}):
         self._project = project
         self._unique_id = None
         # Create SOP template
-        self._sop_template = core.SOPTemplate(
-            name=name, description=description if description else "", metadata=metadata if metadata else {}
-        )
+        self._sop_template = core.SOPTemplate(name=name, description=description, metadata=metadata)
 
         # Create VOP template
-        self._vop_template = core.VOPTemplate(
-            name=name, description=description if description else "", metadata=metadata if metadata else {}
-        )
+        self._vop_template = core.VOPTemplate(name=name, description=description, metadata=metadata)
 
         # Create material instance
-        self._material_instance = core.Scene.MaterialInstance(
-            name=name, description=description if description else "", metadata=metadata if metadata else {}
-        )
+        self._material_instance = core.Scene.MaterialInstance(name=name, description=description, metadata=metadata)
 
     def set_surface_mirror(self, reflectance: float) -> OptProp:
         """
@@ -210,17 +204,17 @@ class OptProp:
             self._material_instance.metadata["UniqueId"] = self._unique_id
             self._material_instance.vop_guid = self._vop_template_link.key
             self._material_instance.sop_guids.append(self._sop_template_link.key)
-            if self._project.scene:
-                scene_data = self._project.scene.get()  # retrieve scene data
+            if self._project.scene_link:
+                scene_data = self._project.scene_link.get()  # retrieve scene data
                 scene_data.materials.append(self._material_instance)
-                self._project.scene.set(data=scene_data)
+                self._project.scene_link.set(data=scene_data)
         else:
             self._vop_template_link.set(data=self._vop_template)
             self._sop_template_link.set(data=self._sop_template)
-            if self._project.scene:
-                scene_data = self._project.scene.get()  # retrieve scene
+            if self._project.scene_link:
+                scene_data = self._project.scene_link.get()  # retrieve scene
                 mat_inst = next((x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id), None)
                 if mat_inst:
-                    mat_inst = self._material_instance
-                self._project.scene.set(data=scene_data)
+                    mat_inst.CopyFrom(self._material_instance)
+                self._project.scene_link.set(data=scene_data)
         return self
