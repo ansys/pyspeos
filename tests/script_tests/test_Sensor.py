@@ -307,7 +307,6 @@ def test_create_irradiance_sensor(speos: Speos):
     sensor1.set_irradiance()
     sensor1.set_irradiance_properties()
     sensor1.commit()
-    print(sensor1)
     assert sensor1.sensor_template_link is not None
     assert sensor1.sensor_template_link.get().HasField("irradiance_sensor_template")
     assert sensor1.sensor_template_link.get().irradiance_sensor_template.HasField("sensor_type_photometric")
@@ -521,3 +520,87 @@ def test_create_irradiance_sensor(speos: Speos):
 
     # output_face_geometries
     sensor1.delete()
+
+
+def test_commit_sensor(speos: Speos):
+    """Test commit of sensor."""
+    p = script.Project(speos=speos)
+
+    # Create
+    sensor1 = p.create_sensor(name="Irradiance.1")
+    sensor1.set_irradiance()
+    sensor1.set_irradiance_properties()
+    assert sensor1.sensor_template_link is None
+    assert len(p.scene_link.get().sensors) == 0
+
+    # Commit
+    sensor1.commit()
+    assert sensor1.sensor_template_link is not None
+    assert sensor1.sensor_template_link.get().HasField("irradiance_sensor_template")
+    assert len(p.scene_link.get().sensors) == 1
+    assert p.scene_link.get().sensors[0] == sensor1._sensor_instance
+
+    # Change only in local not committed
+    sensor1.set_irradiance_properties().set_axis_system([10, 10, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    assert p.scene_link.get().sensors[0] != sensor1._sensor_instance
+
+    sensor1.delete()
+
+
+def test_reset_sensor(speos: Speos):
+    """Test reset of sensor."""
+    p = script.Project(speos=speos)
+
+    # Create + commit
+    sensor1 = p.create_sensor(name="Sensor.1")
+    sensor1.set_irradiance()
+    sensor1.set_irradiance_properties()
+    sensor1.commit()
+    assert sensor1.sensor_template_link is not None
+    assert sensor1.sensor_template_link.get().HasField("irradiance_sensor_template")
+    assert len(p.scene_link.get().sensors) == 1
+    assert p.scene_link.get().sensors[0].HasField("irradiance_properties")
+
+    # Change local data (on template and on instance)
+    sensor1.set_camera()
+    sensor1.set_camera_properties()
+    assert sensor1.sensor_template_link.get().HasField("irradiance_sensor_template")
+    assert sensor1._sensor_template.HasField("camera_sensor_template")  # local template
+    assert p.scene_link.get().sensors[0].HasField("irradiance_properties")
+    assert sensor1._sensor_instance.HasField("camera_properties")  # local instance
+
+    # Ask for reset
+    sensor1.reset()
+    assert sensor1.sensor_template_link.get().HasField("irradiance_sensor_template")
+    assert sensor1._sensor_template.HasField("irradiance_sensor_template")  # local template
+    assert p.scene_link.get().sensors[0].HasField("irradiance_properties")
+    assert sensor1._sensor_instance.HasField("irradiance_properties")  # local instance
+
+    sensor1.delete()
+
+
+def test_delete_sensor(speos: Speos):
+    """Test delete of sensor."""
+    p = script.Project(speos=speos)
+
+    # Create + commit
+    sensor1 = p.create_sensor(name="Sensor.1")
+    sensor1.set_irradiance()
+    sensor1.set_irradiance_properties()
+    sensor1.commit()
+    assert sensor1.sensor_template_link.get().HasField("irradiance_sensor_template")
+    assert sensor1._sensor_template.HasField("irradiance_sensor_template")  # local
+    assert len(p.scene_link.get().sensors) == 1
+    assert p.scene_link.get().sensors[0].HasField("irradiance_properties")
+    assert sensor1._sensor_instance.HasField("irradiance_properties")  # local
+
+    # Delete
+    sensor1.delete()
+    assert sensor1._unique_id is None
+    assert len(sensor1._sensor_instance.metadata) == 0
+
+    assert sensor1.sensor_template_link is None
+    assert sensor1._sensor_template.HasField("irradiance_sensor_template")  # local
+
+    assert len(p.scene_link.get().sensors) == 0
+    assert sensor1._sensor_instance.HasField("irradiance_properties")  # local
