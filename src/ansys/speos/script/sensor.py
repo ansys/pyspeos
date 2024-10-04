@@ -362,6 +362,51 @@ class Sensor:
         def set_dimensions(self) -> Sensor.Dimensions:
             return self._dimensions
 
+    class Radiance:
+        def __init__(self, radiance_template: core.SensorTemplate.Radiance) -> None:
+            self._radiance_template = radiance_template
+
+            # Attribute gathering more complex radiance type
+            self._type = None
+
+            # Attribute to keep track of sensor dimensions object
+            self._dimensions = Sensor.Dimensions(sensor_dimensions=self._radiance_template.dimensions)
+
+            # Default values
+            self.set_focal().set_integration_angle().set_type_photometric()
+            self.set_dimensions()
+
+        def set_type_photometric(self) -> Sensor.Radiance:
+            self._radiance_template.sensor_type_photometric.SetInParent()
+            self._type = None
+            return self
+
+        def set_type_colorimetric(self) -> Sensor.Colorimetric:
+            if type(self._type) != Sensor.Colorimetric:
+                self._type = Sensor.Colorimetric(sensor_type_colorimetric=self._radiance_template.sensor_type_colorimetric)
+            return self._type
+
+        def set_type_radiometric(self) -> Sensor.Radiance:
+            self._radiance_template.sensor_type_radiometric.SetInParent()
+            self._type = None
+            return self
+
+        def set_type_spectral(self) -> Sensor.Spectral:
+            if type(self._type) != Sensor.Spectral:
+                self._type = Sensor.Spectral(sensor_type_spectral=self._radiance_template.sensor_type_spectral)
+            return self._type
+
+        def set_focal(self, value: float = 250) -> Sensor.Radiance:
+            self._radiance_template.focal = value
+            return self
+
+        def set_integration_angle(self, value: float = 5) -> Sensor.Radiance:
+            self._radiance_template.integration_angle = value
+            return self
+
+        def set_dimensions(self) -> Sensor.Dimensions:
+            return self._dimensions
+
     class LayerTypeFace:
         class Layer:
             def __init__(self, name: str, geometries: List[GeoRef]) -> None:
@@ -552,6 +597,60 @@ class Sensor:
                 self._irradiance_props.output_face_geometries.geo_paths[:] = [gr.to_native_link() for gr in geometries]
             return self
 
+    class RadianceProperties:
+        def __init__(self, radiance_props: core.Scene.SensorInstance.RadianceProperties) -> None:
+            self._radiance_props = radiance_props
+
+            # Attribute representing more complex sensor layer types
+            self._layer_type = None
+
+            # Default values
+            self.set_axis_system().set_layer_type_none()
+
+        def set_axis_system(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> Sensor.RadianceProperties:
+            """Set position of the sensor.
+
+            Parameters
+            ----------
+            axis_system : List[float]
+                Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+                By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+
+            Returns
+            -------
+            ansys.speos.script.sensor.Sensor.RadianceProperties
+                Radiance Sensor properties.
+            """
+            self._radiance_props.axis_system[:] = axis_system
+            return self
+
+        def set_observer_point(self, value: Optional[List[float]] = None) -> Sensor.RadianceProperties:
+            if value is None or value == []:
+                self._radiance_props.ClearField("observer_point")
+            else:
+                self._radiance_props.observer_point[:] = value
+            return self
+
+        def set_layer_type_none(self) -> Sensor.RadianceProperties:
+            self._radiance_props.layer_type_none.SetInParent()
+            self._layer_type = None
+            return self
+
+        def set_layer_type_source(self) -> Sensor.RadianceProperties:
+            self._radiance_props.layer_type_source.SetInParent()
+            self._layer_type = None
+            return self
+
+        def set_layer_type_face(self) -> Sensor.LayerTypeFace:
+            if type(self._layer_type) != Sensor.LayerTypeFace:
+                self._layer_type = Sensor.LayerTypeFace(layer_type_face=self._radiance_props.layer_type_face)
+            return self._layer_type
+
+        def set_layer_type_sequence(self) -> Sensor.LayerTypeSequence:
+            if type(self._layer_type) != Sensor.LayerTypeSequence:
+                self._layer_type = Sensor.LayerTypeSequence(layer_type_sequence=self._radiance_props.layer_type_sequence)
+            return self._layer_type
+
     def __init__(self, project: project.Project, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> None:
         self._project = project
         self._unique_id = None
@@ -593,6 +692,18 @@ class Sensor:
             self._type = Sensor.Irradiance(irradiance_template=self._sensor_template.irradiance_sensor_template)
         return self._type
 
+    def set_radiance(self) -> Radiance:
+        """Set the sensor as radiance.
+
+        Returns
+        -------
+        ansys.speos.script.sensor.Sensor.Radiance
+            Radiance sensor.
+        """
+        if type(self._type) != Sensor.Radiance:
+            self._type = Sensor.Radiance(radiance_template=self._sensor_template.radiance_sensor_template)
+        return self._type
+
     def set_camera_properties(self) -> Sensor.CameraProperties:
         if type(self._props) != Sensor.CameraProperties:
             self._props = Sensor.CameraProperties(camera_props=self._sensor_instance.camera_properties)
@@ -601,6 +712,11 @@ class Sensor:
     def set_irradiance_properties(self) -> Sensor.IrradianceProperties:
         if type(self._props) != Sensor.IrradianceProperties:
             self._props = Sensor.IrradianceProperties(irradiance_props=self._sensor_instance.irradiance_properties)
+        return self._props
+
+    def set_radiance_properties(self) -> Sensor.RadianceProperties:
+        if type(self._props) != Sensor.RadianceProperties:
+            self._props = Sensor.RadianceProperties(radiance_props=self._sensor_instance.radiance_properties)
         return self._props
 
     def __str__(self) -> str:
