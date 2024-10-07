@@ -96,6 +96,10 @@ def test_create_intensity(speos: Speos):
     assert intensity1._intensity_properties.HasField("gaussian_properties")
     assert intensity1._intensity_properties.gaussian_properties.axis_system == [10, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 
+    intensity1.set_gaussian_properties(axis_system=None)  # cancel chosen axis system for gaussian properties
+    assert intensity1._intensity_properties.HasField("gaussian_properties")
+    assert intensity1._intensity_properties.gaussian_properties.axis_system == []
+
     intensity1.delete()
 
 
