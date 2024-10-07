@@ -246,11 +246,11 @@ def test_create_camera_sensor(speos: Speos):
     assert mode_photometric.color_mode_color.balance_mode_display.green_display_file_uri == ""
     assert mode_photometric.color_mode_color.balance_mode_display.blue_display_file_uri == ""
 
-    sensor1.set_camera().set_mode_photometric().set_mode_color().set_balance_mode_display_primaries().set_red_spectrum_file_uri(
+    sensor1.set_camera().set_mode_photometric().set_mode_color().set_balance_mode_display_primaries().set_red_display_file_uri(
         uri=os.path.join(test_path, "CameraInputFiles", "CameraSensitivityRed.spectrum")
-    ).set_green_spectrum_file_uri(
+    ).set_green_display_file_uri(
         uri=os.path.join(test_path, "CameraInputFiles", "CameraSensitivityGreen.spectrum")
-    ).set_blue_spectrum_file_uri(
+    ).set_blue_display_file_uri(
         uri=os.path.join(test_path, "CameraInputFiles", "CameraSensitivityBlue.spectrum")
     )
     sensor1.commit()
