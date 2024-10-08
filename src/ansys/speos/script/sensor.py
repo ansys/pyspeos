@@ -1183,7 +1183,7 @@ class Sensor:
 
     class LayerTypeFace:
         """Type of layer : Face.
-        Includes one layer per surface selected.
+        Includes in the result one layer per surface selected.
         By default, a filtering mode by last impact is chosen.
 
         Parameters
@@ -1262,7 +1262,7 @@ class Sensor:
 
     class LayerTypeSequence:
         """Type of layer : Sequence.
-        Includes one layer per sequence in the result.
+        Includes in the result one layer per sequence.
         By default, the sequence is defined per geometries, with a maximum number of 10 sequences.
 
         Parameters
@@ -1318,7 +1318,7 @@ class Sensor:
 
     class LayerTypeIncidenceAngle:
         """Type of layer : IncidenceAngle.
-        Includes one layer per range of incident angles.
+        Includes in the result one layer per range of incident angles.
         By default, a sampling of 9 is chosen.
 
         Parameters
@@ -1351,6 +1351,15 @@ class Sensor:
             return self
 
     class CameraProperties:
+        """Properties for sensor of type: Camera.
+        By default, an axis system is selected, and no layer separation.
+
+        Parameters
+        ----------
+        camera_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance.CameraProperties
+            Camera properties.
+        """
+
         def __init__(self, camera_props: core.Scene.SensorInstance.CameraProperties) -> None:
             self.camera_props = camera_props
 
@@ -1375,18 +1384,53 @@ class Sensor:
             return self
 
         def set_trajectory_file_uri(self, uri: str) -> Sensor.CameraProperties:
+            """Set the trajectory file.
+
+            Parameters
+            ----------
+            uri : str
+                Trajectory file, used to define the position and orientations of the Camera sensor in time.
+
+            Returns
+            -------
+            ansys.speos.script.sensor.Sensor.CameraProperties
+                CameraProperties.
+            """
             self.camera_props.trajectory_file_uri = uri
             return self
 
         def set_layer_type_none(self) -> Sensor.CameraProperties:
+            """Set no layer separation: includes the simulation's results in one layer.
+
+            Returns
+            -------
+            ansys.speos.script.sensor.Sensor.CameraProperties
+                CameraProperties.
+            """
             self.camera_props.layer_type_none.SetInParent()
             return self
 
         def set_layer_type_source(self) -> Sensor.CameraProperties:
+            """Set layer separation by source: includes one layer per active source in the result.
+
+            Returns
+            -------
+            ansys.speos.script.sensor.Sensor.CameraProperties
+                CameraProperties.
+            """
             self.camera_props.layer_type_source.SetInParent()
             return self
 
     class IrradianceProperties:
+        """Properties for sensor of type: Irradiance.
+        By default, an axis system is selected, no layer separation and no ray file generation.
+
+        Parameters
+        ----------
+        irradiance_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance.IrradianceProperties
+            Irradiance properties.
+        """
+
         def __init__(self, irradiance_props: core.Scene.SensorInstance.IrradianceProperties) -> None:
             self._irradiance_props = irradiance_props
 
@@ -1414,51 +1458,128 @@ class Sensor:
             return self
 
         def set_ray_file_type_none(self) -> Sensor.IrradianceProperties:
+            """Set no ray file generation.
+
+            Returns
+            -------
+            ansys.speos.script.sensor.Sensor.IrradianceProperties
+                IrradianceProperties.
+            """
             self._irradiance_props.ray_file_type = core.Scene.SensorInstance.EnumRayFileType.RayFileNone
             return self
 
         def set_ray_file_type_classic(self) -> Sensor.IrradianceProperties:
+            """Set ray file generation without polarization data.
+
+            Returns
+            -------
+            ansys.speos.script.sensor.Sensor.IrradianceProperties
+                IrradianceProperties.
+            """
             self._irradiance_props.ray_file_type = core.Scene.SensorInstance.EnumRayFileType.RayFileClassic
             return self
 
         def set_ray_file_type_polarization(self) -> Sensor.IrradianceProperties:
+            """Set ray file generation with the polarization data for each ray.
+
+            Returns
+            -------
+            ansys.speos.script.sensor.Sensor.IrradianceProperties
+                IrradianceProperties.
+            """
             self._irradiance_props.ray_file_type = core.Scene.SensorInstance.EnumRayFileType.RayFilePolarization
             return self
 
         def set_ray_file_type_tm25(self) -> Sensor.IrradianceProperties:
+            """Set ray file generation: a .tm25ray file with polarization data for each ray.
+
+            Returns
+            -------
+            ansys.speos.script.sensor.Sensor.IrradianceProperties
+                IrradianceProperties.
+            """
             self._irradiance_props.ray_file_type = core.Scene.SensorInstance.EnumRayFileType.RayFileTM25
             return self
 
         def set_ray_file_type_tm25_no_polarization(self) -> Sensor.IrradianceProperties:
+            """Set ray file generation: a .tm25ray file without polarization data.
+
+            Returns
+            -------
+            ansys.speos.script.sensor.Sensor.IrradianceProperties
+                IrradianceProperties.
+            """
             self._irradiance_props.ray_file_type = core.Scene.SensorInstance.EnumRayFileType.RayFileTM25NoPolarization
             return self
 
         def set_layer_type_none(self) -> Sensor.IrradianceProperties:
+            """Set no layer separation: includes the simulation's results in one layer.
+
+            Returns
+            -------
+            ansys.speos.script.sensor.Sensor.IrradianceProperties
+                IrradianceProperties.
+            """
             self._irradiance_props.layer_type_none.SetInParent()
             self._layer_type = None
             return self
 
         def set_layer_type_source(self) -> Sensor.IrradianceProperties:
+            """Set layer separation by source: includes in the result one layer per active source.
+
+            Returns
+            -------
+            ansys.speos.script.sensor.Sensor.IrradianceProperties
+                IrradianceProperties.
+            """
             self._irradiance_props.layer_type_source.SetInParent()
             self._layer_type = None
             return self
 
         def set_layer_type_face(self) -> Sensor.LayerTypeFace:
+            """Set layer separation by face: includes in the result one layer per surface selected.
+
+            Returns
+            -------
+            ansys.speos.script.sensor.Sensor.LayerTypeFace
+                LayerTypeFace.
+            """
             if type(self._layer_type) != Sensor.LayerTypeFace:
                 self._layer_type = Sensor.LayerTypeFace(layer_type_face=self._irradiance_props.layer_type_face)
             return self._layer_type
 
         def set_layer_type_sequence(self) -> Sensor.LayerTypeSequence:
+            """Set layer separation by sequence: includes in the result one layer per sequence.
+
+            Returns
+            -------
+            ansys.speos.script.sensor.Sensor.LayerTypeSequence
+                LayerTypeSequence.
+            """
             if type(self._layer_type) != Sensor.LayerTypeSequence:
                 self._layer_type = Sensor.LayerTypeSequence(layer_type_sequence=self._irradiance_props.layer_type_sequence)
             return self._layer_type
 
         def set_layer_type_polarization(self) -> Sensor.IrradianceProperties:
+            """Set layer separation by polarization: includes one layer per Stokes parameter using the polarization parameter.
+
+            Returns
+            -------
+            ansys.speos.script.sensor.Sensor.IrradianceProperties
+                IrradianceProperties.
+            """
             self._irradiance_props.layer_type_polarization.SetInParent()
             self._layer_type = None
             return self
 
         def set_layer_type_incidence_angle(self) -> Sensor.LayerTypeIncidenceAngle:
+            """Set layer separation by incidence angle: includes in the result one layer per range of incident angles.
+
+            Returns
+            -------
+            ansys.speos.script.sensor.Sensor.LayerTypeIncidenceAngle
+                LayerTypeIncidenceAngle.
+            """
             if type(self._layer_type) != Sensor.LayerTypeIncidenceAngle:
                 self._layer_type = Sensor.LayerTypeIncidenceAngle(
                     layer_type_incidence_angle=self._irradiance_props.layer_type_incidence_angle
@@ -1466,6 +1587,19 @@ class Sensor:
             return self._layer_type
 
         def set_integration_direction(self, value: Optional[List[float]] = None) -> Sensor.IrradianceProperties:
+            """Set the sensor global integration direction. Only for sensor with illuminance type Planar or SemiCylindrical.
+
+            Parameters
+            ----------
+            value : List[float], optional
+                Sensor global integration direction [x,y,z].
+                By default, ``None``. None means that a default direction is chosen (anti-normal of the sensor plane).
+
+            Returns
+            -------
+            ansys.speos.script.sensor.Sensor.IrradianceProperties
+                Irradiance Sensor properties.
+            """
             if value is None or value == []:
                 self._irradiance_props.ClearField("integration_direction")
             else:
@@ -1473,6 +1607,19 @@ class Sensor:
             return self
 
         def set_output_face_geometries(self, geometries: List[GeoRef] = []) -> Sensor.IrradianceProperties:
+            """Select output faces for inverse simulation optimization.
+
+            Parameters
+            ----------
+            geometries : List[ansys.speos.script.geo_ref.GeoRef]
+                List of geometries that will be considered as output faces.
+                By default, ``[]``, ie no output faces.
+
+            Returns
+            -------
+            ansys.speos.script.sensor.Sensor.IrradianceProperties
+                Irradiance Sensor properties.
+            """
             if geometries == []:
                 self._irradiance_props.ClearField("output_face_geometries")
             else:
@@ -1480,6 +1627,15 @@ class Sensor:
             return self
 
     class RadianceProperties:
+        """Properties for sensor of type: Radiance.
+        By default, an axis system is selected and no layer separation.
+
+        Parameters
+        ----------
+        radiance_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance.RadianceProperties
+            Radiance properties.
+        """
+
         def __init__(self, radiance_props: core.Scene.SensorInstance.RadianceProperties) -> None:
             self._radiance_props = radiance_props
 
@@ -1507,6 +1663,20 @@ class Sensor:
             return self
 
         def set_observer_point(self, value: Optional[List[float]] = None) -> Sensor.RadianceProperties:
+            """Set the position of the observer point. This is optional, because the focal length is used by default.
+            Choosing to set an observer point will make the focal length ignored.
+
+            Parameters
+            ----------
+            value : List[float], optional
+                Position of the observer point [Ox Oy Oz].
+                By default, ``None``. None means that the focal length is used.
+
+            Returns
+            -------
+            ansys.speos.script.sensor.Sensor.IrradianceProperties
+                Irradiance Sensor properties.
+            """
             if value is None or value == []:
                 self._radiance_props.ClearField("observer_point")
             else:
@@ -1514,21 +1684,49 @@ class Sensor:
             return self
 
         def set_layer_type_none(self) -> Sensor.RadianceProperties:
+            """Set no layer separation: includes the simulation's results in one layer.
+
+            Returns
+            -------
+            ansys.speos.script.sensor.Sensor.RadianceProperties
+                RadianceProperties.
+            """
             self._radiance_props.layer_type_none.SetInParent()
             self._layer_type = None
             return self
 
         def set_layer_type_source(self) -> Sensor.RadianceProperties:
+            """Set layer separation by source: includes in the result one layer per active source.
+
+            Returns
+            -------
+            ansys.speos.script.sensor.Sensor.RadianceProperties
+                RadianceProperties.
+            """
             self._radiance_props.layer_type_source.SetInParent()
             self._layer_type = None
             return self
 
         def set_layer_type_face(self) -> Sensor.LayerTypeFace:
+            """Set layer separation by face: includes in the result one layer per surface selected.
+
+            Returns
+            -------
+            ansys.speos.script.sensor.Sensor.LayerTypeFace
+                LayerTypeFace.
+            """
             if type(self._layer_type) != Sensor.LayerTypeFace:
                 self._layer_type = Sensor.LayerTypeFace(layer_type_face=self._radiance_props.layer_type_face)
             return self._layer_type
 
         def set_layer_type_sequence(self) -> Sensor.LayerTypeSequence:
+            """Set layer separation by sequence: includes in the result one layer per sequence.
+
+            Returns
+            -------
+            ansys.speos.script.sensor.Sensor.LayerTypeSequence
+                LayerTypeSequence.
+            """
             if type(self._layer_type) != Sensor.LayerTypeSequence:
                 self._layer_type = Sensor.LayerTypeSequence(layer_type_sequence=self._radiance_props.layer_type_sequence)
             return self._layer_type
