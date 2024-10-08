@@ -68,7 +68,7 @@ def test_create_intensity(speos: Speos):
     assert len(intensity1._intensity_properties.library_properties.exit_geometries.geo_paths) == 1
     assert intensity1._intensity_properties.library_properties.HasField("normal_to_uv_map")
 
-    intensity1.set_library_properties().set_exit_geometries()  # use default None to reset exit geometries
+    intensity1.set_library_properties().set_exit_geometries()  # use default [] to reset exit geometries
     intensity1.commit()
     assert intensity1._intensity_properties.library_properties.HasField("exit_geometries") == False
 
@@ -95,6 +95,10 @@ def test_create_intensity(speos: Speos):
     intensity1.set_gaussian_properties(axis_system=[10, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     assert intensity1._intensity_properties.HasField("gaussian_properties")
     assert intensity1._intensity_properties.gaussian_properties.axis_system == [10, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+    intensity1.set_gaussian_properties(axis_system=None)  # cancel chosen axis system for gaussian properties
+    assert intensity1._intensity_properties.HasField("gaussian_properties")
+    assert intensity1._intensity_properties.gaussian_properties.axis_system == []
 
     intensity1.delete()
 

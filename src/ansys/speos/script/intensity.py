@@ -115,14 +115,14 @@ class Intensity:
             self._intensity_properties.library_properties.normal_to_uv_map.SetInParent()
             return self
 
-        def set_exit_geometries(self, exit_geometries: Optional[List[GeoRef]] = None) -> Intensity.LibraryProperties:
+        def set_exit_geometries(self, exit_geometries: List[GeoRef] = []) -> Intensity.LibraryProperties:
             """Set the exit geometries.
 
             Parameters
             ----------
-            exit_geometries : List[ansys.speos.script.geo_ref.GeoRef], optional
+            exit_geometries : List[ansys.speos.script.geo_ref.GeoRef]
                 Exit geometries list.
-                By default, ``None``.
+                By default, ``[]``.
 
             Returns
             -------
@@ -130,7 +130,7 @@ class Intensity:
                 Library Intensity properties.
             """
 
-            if exit_geometries is None:
+            if exit_geometries == []:
                 self._intensity_properties.library_properties.ClearField("exit_geometries")
             else:
                 self._intensity_properties.library_properties.exit_geometries.geo_paths[:] = [gr.to_native_link() for gr in exit_geometries]

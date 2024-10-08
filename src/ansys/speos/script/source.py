@@ -23,7 +23,7 @@
 """Provides a way to interact with Speos feature: Source."""
 from __future__ import annotations
 
-from typing import List, Mapping, Optional
+from typing import List, Mapping
 import uuid
 
 import ansys.speos.core as core
@@ -486,21 +486,21 @@ and lambertian intensity (cos with N = 1).
             self._source_instance.rayfile_properties.axis_system[:] = axis_system
             return self
 
-        def set_exit_geometries(self, exit_geometries: Optional[List[GeoRef]] = None) -> Source.RayFileProperties:
+        def set_exit_geometries(self, exit_geometries: List[GeoRef] = []) -> Source.RayFileProperties:
             """Set exit geometries.
 
             Parameters
             ----------
-            exit_geometries : List[ansys.speos.script.geo_ref.GeoRef], optional
+            exit_geometries : List[ansys.speos.script.geo_ref.GeoRef]
                 Exit Geometries that will use this rayfile source.
-                By default, ``None``.
+                By default, ``[]``.
 
             Returns
             -------
             ansys.speos.script.source.Source.RayFileProperties
                 RayFile Source properties.
             """
-            if exit_geometries is None:
+            if exit_geometries == []:
                 self._source_instance.rayfile_properties.ClearField("exit_geometries")
             else:
                 self._source_instance.rayfile_properties.exit_geometries.geo_paths[:] = [gr.to_native_link() for gr in exit_geometries]
@@ -532,11 +532,13 @@ and lambertian intensity (cos with N = 1).
             ansys.speos.script.source.Source.SurfaceProperties
                 Surface Source properties.
             """
-            my_list = [
-                core.Scene.GeoPath(geo_path=gr.to_native_link(), reverse_normal=reverse_normal) for (gr, reverse_normal) in geometries
-            ]
             self._source_instance.surface_properties.exitance_constant_properties.ClearField("geo_paths")
-            self._source_instance.surface_properties.exitance_constant_properties.geo_paths.extend(my_list)
+
+            if geometries != []:
+                my_list = [
+                    core.Scene.GeoPath(geo_path=gr.to_native_link(), reverse_normal=reverse_normal) for (gr, reverse_normal) in geometries
+                ]
+                self._source_instance.surface_properties.exitance_constant_properties.geo_paths.extend(my_list)
             return self
 
         def set_exitance_variable_properties(self, axis_plane: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0]) -> Source.SurfaceProperties:

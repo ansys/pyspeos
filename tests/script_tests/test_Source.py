@@ -174,6 +174,13 @@ def test_create_surface_source(speos: Speos):
     assert source1._source_instance.surface_properties.exitance_constant_properties.geo_paths[1].geo_path == "BodyB/FaceB2"
     assert source1._source_instance.surface_properties.exitance_constant_properties.geo_paths[1].reverse_normal == True
 
+    source1.set_surface_properties().set_exitance_constant_properties(geometries=[])  # clear geometries
+    source1.commit()
+    assert source1._source_instance.surface_properties.HasField("exitance_constant_properties")
+    assert len(source1._source_instance.surface_properties.exitance_constant_properties.geo_paths) == 0
+
+    source1.delete()
+
 
 def test_create_rayfile_source(speos: Speos):
     """Test creation of ray file source."""
@@ -240,7 +247,7 @@ def test_create_rayfile_source(speos: Speos):
     assert len(source1._source_instance.rayfile_properties.exit_geometries.geo_paths) == 2
     assert source1._source_instance.rayfile_properties.exit_geometries.geo_paths == ["BodyB", "BodyC"]
 
-    source1.set_rayfile_properties().set_exit_geometries()  # use default None to reset exit geometries
+    source1.set_rayfile_properties().set_exit_geometries()  # use default [] to reset exit geometries
     source1.commit()
     assert source1._source_instance.rayfile_properties.HasField("exit_geometries") == False
 
