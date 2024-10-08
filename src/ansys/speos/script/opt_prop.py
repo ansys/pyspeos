@@ -50,6 +50,7 @@ class OptProp:
     """
 
     def __init__(self, project: project.Project, name: str, description: str = "", metadata: Mapping[str, str] = {}):
+        self._name = name
         self._project = project
         self._unique_id = None
         self.sop_template_link = None
@@ -57,7 +58,7 @@ class OptProp:
         self.vop_template_link = None
         """Link object for the vop template in database."""
         # Create SOP template
-        self._sop_template = core.SOPTemplate(name=name, description=description, metadata=metadata)
+        self._sop_template = core.SOPTemplate(name=name + ".SOP", description=description, metadata=metadata)
 
         # Create VOP template
         self._vop_template = None
@@ -138,7 +139,7 @@ class OptProp:
         """
         if self._vop_template is None:
             self._vop_template = core.VOPTemplate(
-                name=self._sop_template.name, description=self._sop_template.description, metadata=self._sop_template.metadata
+                name=self._name + ".VOP", description=self._sop_template.description, metadata=self._sop_template.metadata
             )
         self._vop_template.opaque.SetInParent()
         return self
@@ -166,7 +167,7 @@ class OptProp:
         """
         if self._vop_template is None:
             self._vop_template = core.VOPTemplate(
-                name=self._sop_template.name, description=self._sop_template.description, metadata=self._sop_template.metadata
+                name=self._name + ".VOP", description=self._sop_template.description, metadata=self._sop_template.metadata
             )
         self._vop_template.optic.index = index
         self._vop_template.optic.absorption = absorption
@@ -196,7 +197,7 @@ class OptProp:
     #        Optical property.
     #    """
     #    if self._vop_template is None:
-    #        self._vop_template = core.VOPTemplate(name=self._sop_template.name, description=self._sop_template.description,
+    #        self._vop_template = core.VOPTemplate(name=self._name + ".VOP", description=self._sop_template.description,
     #                                              metadata=self._sop_template.metadata)
     #    self._vop_template.non_homogeneous.gradedmaterial_file_uri = path
     #    self._material_instance.non_homogeneous_properties.axis_system[:] = axis_system
@@ -218,7 +219,7 @@ class OptProp:
         """
         if self._vop_template is None:
             self._vop_template = core.VOPTemplate(
-                name=self._sop_template.name, description=self._sop_template.description, metadata=self._sop_template.metadata
+                name=self._name + ".VOP", description=self._sop_template.description, metadata=self._sop_template.metadata
             )
         self._vop_template.library.material_file_uri = path
         return self
