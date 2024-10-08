@@ -19,7 +19,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
+"""Provides a way to interact with Speos feature: Optical Property."""
 from __future__ import annotations
 
 from typing import List, Mapping, Optional
@@ -31,20 +31,19 @@ import ansys.speos.script.project as project
 
 
 class OptProp:
-    """
-    Represent a Speos optical properties
+    """Speos feature: optical property
 
     Parameters
     ----------
     project : project.Project
-        Project that will own the optical property.
+        Project that will own the feature.
     name : str
-        Name of the optical property.
+        Name of the feature.
     description : str, optional
-        Description of the optical property.
+        Description of the feature.
         By default, ``""``.
     metadata : Mapping[str, str], optional
-        Metadata of the sop template.
+        Metadata of the feature.
         By default, ``None``.
     """
 
@@ -79,7 +78,7 @@ class OptProp:
 
         Returns
         -------
-        OptProp
+        ansys.speos.script.opt_prop.OptProp
             Optical property.
         """
         self._sop_template.mirror.reflectance = reflectance
@@ -91,7 +90,7 @@ class OptProp:
 
         Returns
         -------
-        OptProp
+        ansys.speos.script.opt_prop.OptProp
             Optical property.
         """
         self._sop_template.optical_polished.SetInParent()
@@ -108,7 +107,7 @@ class OptProp:
 
         Returns
         -------
-        OptProp
+        ansys.speos.script.opt_prop.OptProp
             Optical property.
         """
         self._sop_template.library.sop_file_uri = path
@@ -120,7 +119,7 @@ class OptProp:
 
         Returns
         -------
-        OptProp
+        ansys.speos.script.opt_prop.OptProp
             Optical property.
         """
         self._vop_template = None
@@ -132,7 +131,7 @@ class OptProp:
 
         Returns
         -------
-        OptProp
+        ansys.speos.script.opt_prop.OptProp
             Optical property.
         """
         if self._vop_template is None:
@@ -160,7 +159,7 @@ class OptProp:
 
         Returns
         -------
-        OptProp
+        ansys.speos.script.opt_prop.OptProp
             Optical property.
         """
         if self._vop_template is None:
@@ -191,7 +190,7 @@ class OptProp:
     #
     #    Returns
     #    -------
-    #    OptProp
+    #    ansys.speos.script.opt_prop.OptProp
     #        Optical property.
     #    """
     #    if self._vop_template is None:
@@ -212,7 +211,7 @@ class OptProp:
 
         Returns
         -------
-        OptProp
+        ansys.speos.script.opt_prop.OptProp
             Optical property.
         """
         if self._vop_template is None:
@@ -222,9 +221,21 @@ class OptProp:
         self._vop_template.library.material_file_uri = path
         return self
 
-    def set_geometries(self, geometries: List[GeoRef]) -> OptProp:
-        """Takes all geometries if nothing provided"""
-        if geometries == []:
+    def set_geometries(self, geometries: Optional[List[GeoRef]] = None) -> OptProp:
+        """Select geometries on which the optical properties will be applied.
+
+        Parameters
+        ----------
+        geometries : List[ansys.speos.script.geo_ref.GeoRef], optional
+            List of geometries. Giving an empty list means "All geometries"
+            By default, ``None``, means "no geometry".
+
+        Returns
+        -------
+        ansys.speos.script.opt_prop.OptProp
+            Optical property.
+        """
+        if geometries == None:
             self._material_instance.ClearField("geometries")
         else:
             self._material_instance.geometries.geo_paths[:] = [gr.to_native_link() for gr in geometries]
