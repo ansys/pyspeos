@@ -96,8 +96,12 @@ def test_create_optical_property(speos: Speos):
     assert op1._material_instance.HasField("geometries")
     op1._material_instance.geometries.geo_paths == ["TheBody1", "TheBodyB2"]
 
-    op1.set_geometries(geometries=[])
+    op1.set_geometries(geometries=None)  # means no geometry
     assert op1._material_instance.HasField("geometries") == False
+
+    op1.set_geometries(geometries=[])  # means all geometries
+    assert op1._material_instance.HasField("geometries")
+    assert op1._material_instance.geometries.geo_paths == []
 
     op1.delete()
 
@@ -147,7 +151,7 @@ def test_reset_optical_property(speos: Speos):
     assert p.scene_link.get().materials[0].HasField("geometries")
 
     # Change local data (on template and on instance)
-    op1.set_surface_opticalpolished().set_volume_optic().set_geometries([])
+    op1.set_surface_opticalpolished().set_volume_optic().set_geometries(geometries=None)
     assert op1.vop_template_link.get().HasField("opaque")
     assert op1._vop_template.HasField("optic")  # local template
     assert op1.sop_template_link.get().HasField("mirror")

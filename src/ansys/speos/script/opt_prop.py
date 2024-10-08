@@ -32,6 +32,8 @@ import ansys.speos.script.project as project
 
 class OptProp:
     """Speos feature: optical property
+    By default, regarding inherent characteristics, an optical property a mirror as surface property and no volume property is chosen.
+    By default, the optical property is applied to no geometry.
 
     Parameters
     ----------
@@ -64,7 +66,7 @@ class OptProp:
         self._material_instance = core.Scene.MaterialInstance(name=name, description=description, metadata=metadata)
 
         # Default values
-        self.set_surface_mirror().set_volume_none()
+        self.set_surface_mirror().set_volume_none().set_geometries()
 
     def set_surface_mirror(self, reflectance: float = 100) -> OptProp:
         """
