@@ -133,22 +133,27 @@ class Project:
         self._features.append(feature)
         return feature
 
-    def find(self, name: str) -> Optional[Union[opt_prop.OptProp, source.Source, sensor.Sensor]]:
+    def find(self, name: str, feature_type: Optional[type] = None) -> Optional[Union[opt_prop.OptProp, source.Source, sensor.Sensor]]:
         """Find a feature, from its name.
 
         Parameters
         ----------
         name : str
             Name of the feature.
+        feature_type : type
+            Type of the wanted feature.
 
         Returns
         -------
         Union[ansys.speos.script.opt_prop.OptProp, ansys.speos.script.source.Source, ansys.speos.script.sensor.Sensor], optional
             Found feature, or None.
         """
-        feature = next((x for x in self._features if x._name == name), None)
-        if feature is not None:
-            return feature
+        if feature_type is None:
+            found_feature = next((x for x in self._features if x._name == name), None)
+        else:
+            found_feature = next((x for x in self._features if type(x) == feature_type and x._name == name), None)
+        if found_feature is not None:
+            return found_feature
         return None
 
     # def action(self, name: str):
@@ -158,6 +163,24 @@ class Project:
     # def save(self):
     #    """Save class state in file given at construction - Not yet implemented"""
     #    pass
+
+    def delete(self) -> Project:
+        """Delete project: erase scene data.
+        Delete all features contained in the project.
+
+        Returns
+        -------
+        ansys.speos.script.project.Project
+            Source feature.
+        """
+        # Erase the scene
+        if self.scene_link is not None:
+            self.scene_link.set(data=core.Scene())
+
+        # Delete each feature that was created
+        for f in self._features:
+            f.delete()
+        self._features.clear()
 
     def __str__(self):
         """Return the string representation of the project's scene."""
