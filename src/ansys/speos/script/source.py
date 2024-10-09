@@ -63,17 +63,19 @@ class Source:
         ----------
         speos_client : ansys.speos.core.client.SpeosClient
             The Speos instance client.
-        source_template : ansys.api.speos.source.v1.source_pb2.SourceTemplate
-            Template of the source.
         name : str
             Name of the source feature.
+        luminaire : ansys.api.speos.source.v1.source_pb2.SourceTemplate
+            Luminaire source to complete.
+        luminaire_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.LuminaireProperties
+            Luminaire source properties to complete.
         """
 
         def __init__(
             self,
             speos_client: core.SpeosClient,
-            luminaire: core.SourceTemplate.luminaire,
             name: str,
+            luminaire: core.SourceTemplate.luminaire,
             luminaire_props: core.Scene.SourceInstance.LuminaireProperties,
         ) -> None:
             self._luminaire = luminaire
@@ -181,7 +183,33 @@ class Source:
             return self
 
     class Surface:
+        """Type of Source : Surface.
+        By default, a luminous flux and exitance constant are chosen. With a monochromatic spectrum,
+        and lambertian intensity (cos with N = 1).
+
+        Parameters
+        ----------
+        speos_client : ansys.speos.core.client.SpeosClient
+            The Speos instance client.
+        name : str
+            Name of the source feature.
+        surface : ansys.api.speos.source.v1.source_pb2.SourceTemplate.Surface
+            Surface source to complete.
+        surface_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.SurfaceProperties
+            Surface source properties to complete.
+        """
+
         class ExitanceVariable:
+            """Type of surface source exitance : exitance variable.
+
+            Parameters
+            ----------
+            exitance_variable : ansys.api.speos.source.v1.source_pb2.SourceTemplate.Surface.ExitanceVariable
+                Exitance variable to complete.
+            exitance_variable_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.SurfaceProperties.ExitanceVariableProperties
+                Exitance variable properties to complete.
+            """
+
             def __init__(
                 self,
                 exitance_variable: core.SourceTemplate.Surface.ExitanceVariable,
@@ -226,27 +254,11 @@ class Source:
                 self._exitance_variable_props.axis_plane[:] = axis_plane
                 return self
 
-        """Type of Source : Surface.
-        By default, a luminous flux and exitance constant are chosen. With a monochromatic spectrum,
-        and lambertian intensity (cos with N = 1).
-
-        Parameters
-        ----------
-        speos_client : ansys.speos.core.client.SpeosClient
-            The Speos instance client.
-        source_template : ansys.api.speos.source.v1.source_pb2.SourceTemplate
-            Template of the source.
-        name : str
-            Name of the source feature.
-        intensity_properties : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.IntensityProperties
-            Intensity properties.
-        """
-
         def __init__(
             self,
             speos_client: core.SpeosClient,
-            surface: core.SourceTemplate.Surface,
             name: str,
+            surface: core.SourceTemplate.Surface,
             surface_props: core.Scene.SourceInstance.SurfaceProperties,
         ) -> None:
             self._speos_client = speos_client
@@ -427,18 +439,20 @@ class Source:
         ----------
         speos_client : ansys.speos.core.client.SpeosClient
             The Speos instance client.
-        source_template : ansys.api.speos.source.v1.source_pb2.SourceTemplate
-            Template of the source.
         name : str
             Name of the source feature.
+        ray_file : ansys.api.speos.source.v1.source_pb2.SourceTemplate.RayFile
+            Ray file source to complete.
+        ray_file_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.RayFileProperties
+            Ray file source properties to complete.
         """
 
         def __init__(
             self,
             speos_client: core.SpeosClient,
+            name: str,
             ray_file: core.SourceTemplate.RayFile,
             ray_file_props: core.Scene.SourceInstance.RayFileProperties,
-            name: str,
         ) -> None:
             self._client = speos_client
             self._ray_file = ray_file
@@ -589,6 +603,7 @@ class Source:
 
     def __init__(self, project: project.Project, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> None:
         self._project = project
+        self._name = name
         self._unique_id = None
         self.source_template_link = None
         """Link object for the source template in database."""
