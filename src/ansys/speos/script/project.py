@@ -19,10 +19,10 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
+"""Provides a way to gather Speos features."""
 from __future__ import annotations
 
-from typing import Mapping
+from typing import Mapping, Optional, Union
 
 import ansys.speos.core as core
 import ansys.speos.script.opt_prop as opt_prop
@@ -31,20 +31,17 @@ import ansys.speos.script.source as source
 
 
 class Project:
-    """Stored in a file, a Project describe all Speos features (optical properties, sources, sensors, simulations)
-    that user can fill in. Extension .scdocx refer to Speos for SpaceClaim.
-    From Speos for NX, input file must have extension .prt or .asm.
-    From pySpeos, input file is related to Scene filename.
-    Project provide functions to get Speos Tree representation as a list of Features and to make actions on them.
+    """A project describes all Speos features (optical properties, sources, sensors, simulations) that user can fill in.
+    Project provides functions to create new feature, find a feature.
 
-    Create from empty or load from a specific file.
+    It can be created from empty or loaded from a specific file.
 
     Parameters
     ----------
     speos : ansys.speos.core.speos.Speos
         Speos session (connected to gRPC server).
     path : str
-        The project will be loaded from this file
+        The project will be loaded from this speos file.
         By default, ``""``, means create from empty.
 
     Attributes
@@ -60,15 +57,35 @@ class Project:
         """Link object for the scene in database."""
         if len(path):
             self.scene_link.load_file(path)
+        self._features = []
         return
 
-    def list(self):
-        """Return all feature key as a tree, can be used to list all features- Not yet implemented"""
-        pass
+    # def list(self):
+    #    """Return all feature key as a tree, can be used to list all features- Not yet implemented"""
+    #    pass
 
     def create_optical_property(self, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> opt_prop.OptProp:
-        """Create a new feature, to associate to main ribbon commands"""
-        return opt_prop.OptProp(project=self, name=name, description=description, metadata=metadata)
+        """Create a new Optical Property feature.
+
+        Parameters
+        ----------
+        name : str
+            Name of the feature.
+        description : str
+            Description of the feature.
+            By default, ``""``.
+        metadata : Mapping[str, str]
+            Metadata of the feature.
+            By default, ``{}``.
+
+        Returns
+        -------
+        ansys.speos.script.opt_prop.OptProp
+            OptProp feature.
+        """
+        feature = opt_prop.OptProp(project=self, name=name, description=description, metadata=metadata)
+        self._features.append(feature)
+        return feature
 
     def create_source(self, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> source.Source:
         """Create a new Source feature.
@@ -89,22 +106,58 @@ class Project:
         ansys.speos.script.source.Source
             Source feature.
         """
-        return source.Source(project=self, name=name, description=description, metadata=metadata)
+        feature = source.Source(project=self, name=name, description=description, metadata=metadata)
+        self._features.append(feature)
+        return feature
 
     def create_sensor(self, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> sensor.Sensor:
-        return sensor.Sensor(project=self, name=name, description=description, metadata=metadata)
+        """Create a new Sensor feature.
 
-    def find(self, name: str, id: str = ""):
-        """Get details about a feature - Not yet implemented"""
-        pass
+        Parameters
+        ----------
+        name : str
+            Name of the feature.
+        description : str
+            Description of the feature.
+            By default, ``""``.
+        metadata : Mapping[str, str]
+            Metadata of the feature.
+            By default, ``{}``.
 
-    def action(self, name: str):
-        """Act on feature: update, hide/show, copy, ... - Not yet implemented"""
-        pass
+        Returns
+        -------
+        ansys.speos.script.sensor.Sensor
+            Sensor feature.
+        """
+        feature = sensor.Sensor(project=self, name=name, description=description, metadata=metadata)
+        self._features.append(feature)
+        return feature
 
-    def save(self):
-        """Save class state in file given at construction - Not yet implemented"""
-        pass
+    def find(self, name: str) -> Optional[Union[opt_prop.OptProp, source.Source, sensor.Sensor]]:
+        """Find a feature, from its name.
+
+        Parameters
+        ----------
+        name : str
+            Name of the feature.
+
+        Returns
+        -------
+        Union[ansys.speos.script.opt_prop.OptProp, ansys.speos.script.source.Source, ansys.speos.script.sensor.Sensor], optional
+            Found feature, or None.
+        """
+        feature = next((x for x in self._features if x._name == name), None)
+        if feature is not None:
+            return feature
+        return None
+
+    # def action(self, name: str):
+    #    """Act on feature: update, hide/show, copy, ... - Not yet implemented"""
+    #    pass
+
+    # def save(self):
+    #    """Save class state in file given at construction - Not yet implemented"""
+    #    pass
 
     def __str__(self):
         """Return the string representation of the project's scene."""
