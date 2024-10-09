@@ -32,8 +32,7 @@ import ansys.speos.script.project as project
 
 class OptProp:
     """Speos feature: optical property
-    By default, regarding inherent characteristics, an optical property a mirror 100% as optical surface property
-    and no volume optical property is chosen.
+    By default, a mirror 100% is chosen as surface optical property, without any volume optical property.
     By default, the optical property is applied to no geometry.
 
     Parameters
