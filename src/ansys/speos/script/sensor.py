@@ -1700,6 +1700,7 @@ class Sensor:
 
     def __init__(self, project: project.Project, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> None:
         self._project = project
+        self._name = name
         self._unique_id = None
         self.sensor_template_link = None
         """Link object for the sensor template in database."""
