@@ -23,9 +23,11 @@
 """
 Test basic using project from script layer.
 """
+import os
 
 from ansys.speos.core.speos import Speos
 import ansys.speos.script as script
+from conftest import test_path
 
 
 def test_find_feature(speos: Speos):
@@ -111,3 +113,25 @@ def test_delete(speos: Speos):
     # Delete project
     p.delete()
     assert len(p._features) == 0
+
+
+def test_from_file(speos: Speos):
+    """Test create a project from file."""
+
+    # Create a project from a file
+    p = script.Project(speos=speos, path=os.path.join(test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"))
+
+    # Check that scene is filled
+    assert len(p.scene_link.get().materials) == 4
+    assert len(p.scene_link.get().sensors) == 1
+    assert len(p.scene_link.get().sources) == 2
+
+    # Check that feature can be retrieved
+    feat_op3 = p.find(name=p.scene_link.get().materials[2].name)
+    assert feat_op3 is not None
+    assert type(feat_op3) is script.OptProp
+
+    # And that the feature retrieved has a real impact on the project
+    feat_op3.set_surface_mirror(reflectance=60).commit()
+    assert speos.client.get_item(key=p.scene_link.get().materials[2].sop_guids[0]).get().HasField("mirror")
+    assert speos.client.get_item(key=p.scene_link.get().materials[2].sop_guids[0]).get().mirror.reflectance == 60

@@ -55,9 +55,11 @@ class Project:
         """Speos instance client."""
         self.scene_link = speos.client.scenes().create()
         """Link object for the scene in database."""
-        if len(path):
-            self.scene_link.load_file(path)
         self._features = []
+        if len(path):
+            tmp_scene_link = speos.client.scenes().create()
+            tmp_scene_link.load_file(path)
+            self._fill_features(from_scene=tmp_scene_link)
         return
 
     # def list(self):
@@ -134,7 +136,7 @@ class Project:
         return feature
 
     def find(self, name: str, feature_type: Optional[type] = None) -> Optional[Union[opt_prop.OptProp, source.Source, sensor.Sensor]]:
-        """Find a feature, from its name.
+        """Find a feature.
 
         Parameters
         ----------
@@ -185,3 +187,29 @@ class Project:
     def __str__(self):
         """Return the string representation of the project's scene."""
         return str(self.scene_link)
+
+    def _fill_features(self, from_scene: core.Scene):
+        """Fill project features from a scene."""
+        scene_data = from_scene.get()
+        for mat_inst in scene_data.materials:
+            op_feature = self.create_optical_property(name=mat_inst.name)
+            op_feature._material_instance = mat_inst
+            op_feature.vop_template_link = self.client.get_item(key=mat_inst.vop_guid)
+            if len(mat_inst.sop_guids) > 0:
+                op_feature.sop_template_link = self.client.get_item(key=mat_inst.sop_guids[0])
+            op_feature.reset()
+            op_feature.commit()
+
+        for src_inst in scene_data.sources:
+            src_feat = self.create_source(name=src_inst.name)
+            src_feat._source_instance = src_inst
+            src_feat.source_template_link = self.client.get_item(key=src_inst.source_guid)
+            src_feat.reset()
+            src_feat.commit()
+
+        for ssr_inst in scene_data.sensors:
+            ssr_feat = self.create_sensor(name=ssr_inst.name)
+            ssr_feat._sensor_instance = ssr_inst
+            ssr_feat.sensor_template_link = self.client.get_item(key=ssr_inst.sensor_guid)
+            ssr_feat.reset()
+            ssr_feat.commit()
