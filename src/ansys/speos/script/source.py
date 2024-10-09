@@ -63,18 +63,28 @@ class Source:
         ----------
         speos_client : ansys.speos.core.client.SpeosClient
             The Speos instance client.
-        source_template : ansys.api.speos.source.v1.source_pb2.SourceTemplate
-            Template of the source.
         name : str
             Name of the source feature.
+        luminaire : ansys.api.speos.source.v1.source_pb2.SourceTemplate
+            Luminaire source to complete.
+        luminaire_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.LuminaireProperties
+            Luminaire source properties to complete.
         """
 
-        def __init__(self, speos_client: core.SpeosClient, source_template: core.SourceTemplate, name: str) -> None:
-            self._source_template = source_template
+        def __init__(
+            self,
+            speos_client: core.SpeosClient,
+            name: str,
+            luminaire: core.SourceTemplate.luminaire,
+            luminaire_props: core.Scene.SourceInstance.LuminaireProperties,
+        ) -> None:
+            self._luminaire = luminaire
+            self._luminaire_props = luminaire_props
             self._spectrum = Spectrum(speos_client=speos_client, name=name + ".Spectrum")
 
             # Default values
             self.set_flux_from_intensity_file().set_spectrum().set_incandescent()
+            self.set_axis_system()
 
         def set_flux_from_intensity_file(self) -> Source.Luminaire:
             """Take flux from intensity file provided.
@@ -84,7 +94,7 @@ class Source:
             ansys.speos.script.source.Source.Luminaire
                 Luminaire source.
             """
-            self._source_template.luminaire.flux_from_intensity_file.SetInParent()
+            self._luminaire.flux_from_intensity_file.SetInParent()
             return self
 
         def set_flux_luminous(self, value: float = 683) -> Source.Luminaire:
@@ -101,7 +111,7 @@ class Source:
             ansys.speos.script.source.Source.Luminaire
                 Luminaire source.
             """
-            self._source_template.luminaire.luminous_flux.luminous_value = value
+            self._luminaire.luminous_flux.luminous_value = value
             return self
 
         def set_flux_radiant(self, value: float = 1) -> Source.Luminaire:
@@ -118,7 +128,7 @@ class Source:
             ansys.speos.script.source.Source.Luminaire
                 Luminaire source.
             """
-            self._source_template.luminaire.radiant_flux.radiant_value = value
+            self._luminaire.radiant_flux.radiant_value = value
             return self
 
         def set_intensity_file_uri(self, uri: str) -> Source.Luminaire:
@@ -134,7 +144,7 @@ class Source:
             ansys.speos.script.source.Source.Luminaire
                 Luminaire source.
             """
-            self._source_template.luminaire.intensity_file_uri = uri
+            self._luminaire.intensity_file_uri = uri
             return self
 
         def set_spectrum(self) -> Spectrum:
@@ -147,47 +157,124 @@ class Source:
             """
             return self._spectrum
 
+        def set_axis_system(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> Source.Luminaire:
+            """Set position of the source.
+
+            Parameters
+            ----------
+            axis_system : List[float]
+                Position of the source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+                By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+
+            Returns
+            -------
+            ansys.speos.script.source.Source.Luminaire
+                Luminaire source.
+            """
+            self._luminaire_props.axis_system[:] = axis_system
+            return self
+
         def __str__(self) -> str:
             return str(self._spectrum)
 
         def _commit(self) -> Source.Luminaire:
             self._spectrum.commit()
-            self._source_template.luminaire.spectrum_guid = self._spectrum.spectrum_link.key
+            self._luminaire.spectrum_guid = self._spectrum.spectrum_link.key
             return self
 
     class Surface:
         """Type of Source : Surface.
-        By default, a luminous flux and exitance constant are chosen. With a monochromatic spectrum, \
-and lambertian intensity (cos with N = 1).
+        By default, a luminous flux and exitance constant are chosen. With a monochromatic spectrum,
+        and lambertian intensity (cos with N = 1).
 
         Parameters
         ----------
         speos_client : ansys.speos.core.client.SpeosClient
             The Speos instance client.
-        source_template : ansys.api.speos.source.v1.source_pb2.SourceTemplate
-            Template of the source.
         name : str
             Name of the source feature.
-        intensity_properties : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.IntensityProperties
-            Intensity properties.
+        surface : ansys.api.speos.source.v1.source_pb2.SourceTemplate.Surface
+            Surface source to complete.
+        surface_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.SurfaceProperties
+            Surface source properties to complete.
         """
+
+        class ExitanceVariable:
+            """Type of surface source exitance : exitance variable.
+
+            Parameters
+            ----------
+            exitance_variable : ansys.api.speos.source.v1.source_pb2.SourceTemplate.Surface.ExitanceVariable
+                Exitance variable to complete.
+            exitance_variable_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.SurfaceProperties.ExitanceVariableProperties
+                Exitance variable properties to complete.
+            """
+
+            def __init__(
+                self,
+                exitance_variable: core.SourceTemplate.Surface.ExitanceVariable,
+                exitance_variable_props: core.Scene.SourceInstance.SurfaceProperties.ExitanceVariableProperties,
+            ) -> None:
+                self._exitance_variable = exitance_variable
+                self._exitance_variable_props = exitance_variable_props
+
+                # Default values
+                self.set_axis_plane()
+
+            def set_xmp_file_uri(self, uri: str) -> Source.Surface.ExitanceVariable:
+                """Set exitance xmp file.
+
+                Parameters
+                ----------
+                uri : str
+                    XMP file describing exitance.
+
+                Returns
+                -------
+                ansys.speos.script.source.Source.Surface.ExitanceVariable
+                    ExitanceVariable of surface source.
+                """
+                self._exitance_variable.exitance_xmp_file_uri = uri
+                return self
+
+            def set_axis_plane(self, axis_plane: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0]) -> Source.Surface.ExitanceVariable:
+                """Set position of the exitance map.
+
+                Parameters
+                ----------
+                axis_plane : List[float]
+                    Position of the exitance map [Ox Oy Oz Xx Xy Xz Yx Yy Yz].
+                    By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0]``.
+
+                Returns
+                -------
+                ansys.speos.script.source.Source.Surface.ExitanceVariable
+                    ExitanceVariable of surface Source.
+                """
+                self._exitance_variable_props.axis_plane[:] = axis_plane
+                return self
 
         def __init__(
             self,
             speos_client: core.SpeosClient,
-            source_template: core.SourceTemplate,
             name: str,
-            intensity_properties: core.Scene.SourceInstance.IntensityProperties,
+            surface: core.SourceTemplate.Surface,
+            surface_props: core.Scene.SourceInstance.SurfaceProperties,
         ) -> None:
             self._speos_client = speos_client
-            self._source_template = source_template
+            self._surface = surface
+            self._name = name
             self._spectrum = None
+            self._surface_props = surface_props
             self._intensity = Intensity(
-                speos_client=speos_client, name=name + ".Intensity", intensity_props_to_complete=intensity_properties
+                speos_client=speos_client, name=name + ".Intensity", intensity_props_to_complete=surface_props.intensity_properties
             )
 
+            # Attribute gathering more complex exitance type
+            self._exitance_type = None
+
             # Default values
-            self.set_flux_luminous().set_exitance_constant().set_intensity()
+            self.set_flux_luminous().set_exitance_constant(geometries=[]).set_intensity()
             self.set_spectrum()
 
         def set_flux_from_intensity_file(self) -> Source.Surface:
@@ -198,7 +285,7 @@ and lambertian intensity (cos with N = 1).
             ansys.speos.script.source.Source.Surface
                 Surface source.
             """
-            self._source_template.surface.flux_from_intensity_file.SetInParent()
+            self._surface.flux_from_intensity_file.SetInParent()
             return self
 
         def set_flux_luminous(self, value: float = 683) -> Source.Surface:
@@ -215,7 +302,7 @@ and lambertian intensity (cos with N = 1).
             ansys.speos.script.source.Source.Surface
                 Surface source.
             """
-            self._source_template.surface.luminous_flux.luminous_value = value
+            self._surface.luminous_flux.luminous_value = value
             return self
 
         def set_flux_radiant(self, value: float = 1) -> Source.Surface:
@@ -232,7 +319,7 @@ and lambertian intensity (cos with N = 1).
             ansys.speos.script.source.Source.Surface
                 Surface source.
             """
-            self._source_template.surface.radiant_flux.radiant_value = value
+            self._surface.radiant_flux.radiant_value = value
             return self
 
         def set_flux_luminous_intensity(self, value: float = 5) -> Source.Surface:
@@ -249,7 +336,7 @@ and lambertian intensity (cos with N = 1).
             ansys.speos.script.source.Source.Surface
                 Surface source.
             """
-            self._source_template.surface.luminous_intensity_flux.luminous_intensity_value = value
+            self._surface.luminous_intensity_flux.luminous_intensity_value = value
             return self
 
         def set_intensity(self) -> Intensity:
@@ -262,32 +349,44 @@ and lambertian intensity (cos with N = 1).
             """
             return self._intensity
 
-        def set_exitance_constant(self) -> Source.Surface:
+        def set_exitance_constant(self, geometries: List[tuple[GeoRef, bool]]) -> Source.Surface:
             """Set exitance constant.
-
-            Returns
-            -------
-            ansys.speos.script.source.Source.Surface
-                Surface source.
-            """
-            self._source_template.surface.exitance_constant.SetInParent()
-            return self
-
-        def set_exitance_variable(self, uri: str) -> Source.Surface:
-            """Set exitance variable, taken from XMP map.
 
             Parameters
             ----------
-            uri : str
-                XMP file describing exitance.
+            geometries : List[tuple[ansys.speos.script.geo_ref.GeoRef, bool]]
+                List of (face, reverseNormal).
 
             Returns
             -------
             ansys.speos.script.source.Source.Surface
                 Surface source.
             """
-            self._source_template.surface.exitance_variable.exitance_xmp_file_uri = uri
+            self._exitance_type = None
+
+            self._surface.exitance_constant.SetInParent()
+            self._surface_props.exitance_constant_properties.ClearField("geo_paths")
+            if geometries != []:
+                my_list = [
+                    core.Scene.GeoPath(geo_path=gr.to_native_link(), reverse_normal=reverse_normal) for (gr, reverse_normal) in geometries
+                ]
+                self._surface_props.exitance_constant_properties.geo_paths.extend(my_list)
             return self
+
+        def set_exitance_variable(self) -> Source.Surface.ExitanceVariable:
+            """Set exitance variable, taken from XMP map.
+
+            Returns
+            -------
+            ansys.speos.script.source.Source.Surface.ExitanceVariable
+                ExitanceVariable of surface source.
+            """
+            if type(self._exitance_type) != Source.Surface.ExitanceVariable:
+                self._exitance_type = Source.Surface.ExitanceVariable(
+                    exitance_variable=self._surface.exitance_variable,
+                    exitance_variable_props=self._surface_props.exitance_variable_properties,
+                )
+            return self._exitance_type
 
         def set_spectrum_from_xmp_file(self) -> Source.Surface:
             """Take spectrum from xmp file provided.
@@ -297,7 +396,7 @@ and lambertian intensity (cos with N = 1).
             ansys.speos.script.source.Source.Surface
                 Surface source.
             """
-            self._source_template.surface.spectrum_from_xmp_file.SetInParent()
+            self._surface.spectrum_from_xmp_file.SetInParent()
             self._spectrum = None
             return self
 
@@ -310,8 +409,8 @@ and lambertian intensity (cos with N = 1).
                 Spectrum.
             """
             if self._spectrum is None:
-                self._spectrum = Spectrum(speos_client=self._speos_client, name=self._source_template.name + ".Spectrum")
-                self._source_template.surface.spectrum_guid = ""
+                self._spectrum = Spectrum(speos_client=self._speos_client, name=self._name + ".Spectrum")
+                self._surface.spectrum_guid = ""
             return self._spectrum
 
         def __str__(self) -> str:
@@ -324,12 +423,12 @@ and lambertian intensity (cos with N = 1).
         def _commit(self) -> Source.Surface:
             # intensity
             self._intensity.commit()
-            self._source_template.surface.intensity_guid = self._intensity.intensity_template_link.key
+            self._surface.intensity_guid = self._intensity.intensity_template_link.key
 
             # spectrum
             if self._spectrum is not None:
                 self._spectrum.commit()
-                self._source_template.surface.spectrum_guid = self._spectrum.spectrum_link.key
+                self._surface.spectrum_guid = self._spectrum.spectrum_link.key
             return self
 
     class RayFile:
@@ -340,19 +439,30 @@ and lambertian intensity (cos with N = 1).
         ----------
         speos_client : ansys.speos.core.client.SpeosClient
             The Speos instance client.
-        source_template : ansys.api.speos.source.v1.source_pb2.SourceTemplate
-            Template of the source.
         name : str
             Name of the source feature.
+        ray_file : ansys.api.speos.source.v1.source_pb2.SourceTemplate.RayFile
+            Ray file source to complete.
+        ray_file_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.RayFileProperties
+            Ray file source properties to complete.
         """
 
-        def __init__(self, speos_client: core.SpeosClient, source_template: core.SourceTemplate, name: str) -> None:
+        def __init__(
+            self,
+            speos_client: core.SpeosClient,
+            name: str,
+            ray_file: core.SourceTemplate.RayFile,
+            ray_file_props: core.Scene.SourceInstance.RayFileProperties,
+        ) -> None:
             self._client = speos_client
-            self._source_template = source_template
+            self._ray_file = ray_file
+            self._ray_file_props = ray_file_props
             self._spectrum = None
+            self._name = name
 
             # Default values
             self.set_flux_from_ray_file().set_spectrum_from_ray_file()
+            self.set_axis_system()
 
         def set_ray_file_uri(self, uri: str) -> Source.RayFile:
             """Set ray file.
@@ -367,7 +477,7 @@ and lambertian intensity (cos with N = 1).
             ansys.speos.script.source.Source.RayFile
                 RayFile source.
             """
-            self._source_template.rayfile.ray_file_uri = uri
+            self._ray_file.ray_file_uri = uri
             return self
 
         def set_flux_from_ray_file(self) -> Source.RayFile:
@@ -378,7 +488,7 @@ and lambertian intensity (cos with N = 1).
             ansys.speos.script.source.Source.RayFile
                 RayFile source.
             """
-            self._source_template.rayfile.flux_from_ray_file.SetInParent()
+            self._ray_file.flux_from_ray_file.SetInParent()
             return self
 
         def set_flux_luminous(self, value: float = 683) -> Source.RayFile:
@@ -395,7 +505,7 @@ and lambertian intensity (cos with N = 1).
             ansys.speos.script.source.Source.RayFile
                 RayFile source.
             """
-            self._source_template.rayfile.luminous_flux.luminous_value = value
+            self._ray_file.luminous_flux.luminous_value = value
             return self
 
         def set_flux_radiant(self, value: float = 1) -> Source.RayFile:
@@ -412,7 +522,7 @@ and lambertian intensity (cos with N = 1).
             ansys.speos.script.source.Source.RayFile
                 RayFile source.
             """
-            self._source_template.rayfile.radiant_flux.radiant_value = value
+            self._ray_file.radiant_flux.radiant_value = value
             return self
 
         def set_spectrum_from_ray_file(self) -> Source.RayFile:
@@ -423,7 +533,7 @@ and lambertian intensity (cos with N = 1).
             ansys.speos.script.source.Source.RayFile
                 RayFile source.
             """
-            self._source_template.rayfile.spectrum_from_ray_file.SetInParent()
+            self._ray_file.spectrum_from_ray_file.SetInParent()
             self._spectrum = None
             return self
 
@@ -436,40 +546,11 @@ and lambertian intensity (cos with N = 1).
                 Spectrum.
             """
             if self._spectrum is None:
-                self._spectrum = Spectrum(speos_client=self._client, name=self._source_template.name + ".Spectrum")
-                self._source_template.rayfile.spectrum_guid = ""
+                self._spectrum = Spectrum(speos_client=self._client, name=self._name + ".Spectrum")
+                self._ray_file.spectrum_guid = ""
             return self._spectrum
 
-        def __str__(self) -> str:
-            out_str = ""
-            if self._spectrum is not None:
-                out_str += str(self._spectrum)
-            return out_str
-
-        def _commit(self) -> Source.RayFile:
-            if self._spectrum is not None:
-                self._spectrum.commit()
-                self._source_template.rayfile.spectrum_guid = self._spectrum.spectrum_link.key
-
-            return self
-
-    class RayFileProperties:
-        """Properties for source of type: RayFile.
-        By default, an axis system is selected.
-
-        Parameters
-        ----------
-        source_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance
-            Instance of the source.
-        """
-
-        def __init__(self, source_instance: core.Scene.SourceInstance) -> None:
-            self._source_instance = source_instance
-
-            # Default values
-            self.set_axis_system()
-
-        def set_axis_system(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> Source.RayFileProperties:
+        def set_axis_system(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> Source.RayFile:
             """Set position of the source.
 
             Parameters
@@ -480,13 +561,13 @@ and lambertian intensity (cos with N = 1).
 
             Returns
             -------
-            ansys.speos.script.source.Source.RayFileProperties
-                RayFile Source properties.
+            ansys.speos.script.source.Source.RayFile
+                RayFile Source.
             """
-            self._source_instance.rayfile_properties.axis_system[:] = axis_system
+            self._ray_file_props.axis_system[:] = axis_system
             return self
 
-        def set_exit_geometries(self, exit_geometries: List[GeoRef] = []) -> Source.RayFileProperties:
+        def set_exit_geometries(self, exit_geometries: List[GeoRef] = []) -> Source.RayFile:
             """Set exit geometries.
 
             Parameters
@@ -497,77 +578,38 @@ and lambertian intensity (cos with N = 1).
 
             Returns
             -------
-            ansys.speos.script.source.Source.RayFileProperties
-                RayFile Source properties.
+            ansys.speos.script.source.Source.RayFile
+                RayFile Source.
             """
             if exit_geometries == []:
-                self._source_instance.rayfile_properties.ClearField("exit_geometries")
+                self._ray_file_props.ClearField("exit_geometries")
             else:
-                self._source_instance.rayfile_properties.exit_geometries.geo_paths[:] = [gr.to_native_link() for gr in exit_geometries]
+                self._ray_file_props.exit_geometries.geo_paths[:] = [gr.to_native_link() for gr in exit_geometries]
 
             return self
 
-    class SurfaceProperties:
-        """Properties for source of type: Surface.
+        def __str__(self) -> str:
+            out_str = ""
+            if self._spectrum is not None:
+                out_str += str(self._spectrum)
+            return out_str
 
-        Parameters
-        ----------
-        source_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance
-            Instance of the source.
-        """
+        def _commit(self) -> Source.RayFile:
+            if self._spectrum is not None:
+                self._spectrum.commit()
+                self._ray_file.spectrum_guid = self._spectrum.spectrum_link.key
 
-        def __init__(self, source_instance: core.Scene.SourceInstance) -> None:
-            self._source_instance = source_instance
-
-        def set_exitance_constant_properties(self, geometries: List[tuple[GeoRef, bool]]) -> Source.SurfaceProperties:
-            """Set geometries in case the surface source has exitance constant.
-
-            Parameters
-            ----------
-            geometries : List[tuple[ansys.speos.script.geo_ref.GeoRef, bool]]
-                List of (face, reverseNormal).
-
-            Returns
-            -------
-            ansys.speos.script.source.Source.SurfaceProperties
-                Surface Source properties.
-            """
-            self._source_instance.surface_properties.exitance_constant_properties.ClearField("geo_paths")
-
-            if geometries != []:
-                my_list = [
-                    core.Scene.GeoPath(geo_path=gr.to_native_link(), reverse_normal=reverse_normal) for (gr, reverse_normal) in geometries
-                ]
-                self._source_instance.surface_properties.exitance_constant_properties.geo_paths.extend(my_list)
-            return self
-
-        def set_exitance_variable_properties(self, axis_plane: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0]) -> Source.SurfaceProperties:
-            """Set position of the exitance map in case the surface source has exitance variable.
-
-            Parameters
-            ----------
-            axis_plane : List[float]
-                Position of the exitance map [Ox Oy Oz Xx Xy Xz Yx Yy Yz].
-                By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0]``.
-
-            Returns
-            -------
-            ansys.speos.script.source.Source.SurfaceProperties
-                Surface Source properties.
-            """
-            self._source_instance.surface_properties.exitance_variable_properties.axis_plane[:] = axis_plane
             return self
 
     def __init__(self, project: project.Project, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> None:
         self._project = project
+        self._name = name
         self._unique_id = None
         self.source_template_link = None
         """Link object for the source template in database."""
 
         # Attribute representing the kind of source. Can be on object of type script.Source.Luminaire, script.Source.RayFile, ...
         self._type = None
-        # Attribute gathering more complex source properties
-        self._props = None
 
         # Create local SourceTemplate
         self._source_template = core.SourceTemplate(name=name, description=description, metadata=metadata)
@@ -585,7 +627,10 @@ and lambertian intensity (cos with N = 1).
         """
         if type(self._type) != Source.Luminaire:
             self._type = Source.Luminaire(
-                speos_client=self._project.client, source_template=self._source_template, name=self._source_template.name
+                speos_client=self._project.client,
+                luminaire=self._source_template.luminaire,
+                name=self._source_template.name,
+                luminaire_props=self._source_instance.luminaire_properties,
             )
         return self._type
 
@@ -597,14 +642,12 @@ and lambertian intensity (cos with N = 1).
         ansys.speos.script.source.Source.Surface
             Surface source.
         """
-        if type(self._props) != Source.SurfaceProperties:
-            self._props = Source.SurfaceProperties(source_instance=self._source_instance)
         if type(self._type) != Source.Surface:
             self._type = Source.Surface(
                 speos_client=self._project.client,
-                source_template=self._source_template,
+                surface=self._source_template.surface,
                 name=self._source_template.name,
-                intensity_properties=self._source_instance.surface_properties.intensity_properties,
+                surface_props=self._source_instance.surface_properties,
             )
         return self._type
 
@@ -618,50 +661,12 @@ and lambertian intensity (cos with N = 1).
         """
         if type(self._type) != Source.RayFile:
             self._type = Source.RayFile(
-                speos_client=self._project.client, source_template=self._source_template, name=self._source_template.name
+                speos_client=self._project.client,
+                ray_file=self._source_template.rayfile,
+                ray_file_props=self._source_instance.rayfile_properties,
+                name=self._source_template.name,
             )
         return self._type
-
-    def set_luminaire_properties(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> Source:
-        """Set the properties related to luminaire template.
-
-        Parameters
-        ----------
-        axis_system : List[float]
-            Position of the source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
-            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
-
-        Returns
-        -------
-        ansys.speos.script.source.Source
-            Source feature.
-        """
-        self._source_instance.luminaire_properties.axis_system[:] = axis_system
-        return self
-
-    def set_surface_properties(self) -> Source.SurfaceProperties:
-        """Set the properties related to surface template.
-
-        Returns
-        -------
-        ansys.speos.script.source.Source.SurfaceProperties
-            Surface source properties.
-        """
-        if type(self._props) != Source.SurfaceProperties:
-            self._props = Source.SurfaceProperties(source_instance=self._source_instance)
-        return self._props
-
-    def set_rayfile_properties(self) -> Source.RayFileProperties:
-        """Set the properties related to rayfile template.
-
-        Returns
-        -------
-        ansys.speos.script.source.Source.RayFileProperties
-            RayFile source properties.
-        """
-        if type(self._props) != Source.RayFileProperties:
-            self._props = Source.RayFileProperties(source_instance=self._source_instance)
-        return self._props
 
     def __str__(self) -> str:
         """Return the string representation of the source."""
