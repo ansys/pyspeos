@@ -26,6 +26,7 @@ from typing import Mapping, Optional, Union
 
 import ansys.speos.core as core
 import ansys.speos.script.opt_prop as opt_prop
+import ansys.speos.script.part as part
 import ansys.speos.script.sensor as sensor
 import ansys.speos.script.source as source
 
@@ -60,7 +61,8 @@ class Project:
             tmp_scene_link = speos.client.scenes().create()
             tmp_scene_link.load_file(path)
             self._fill_features(from_scene=tmp_scene_link)
-        return
+
+        self._root_part = None
 
     # def list(self):
     #    """Return all feature key as a tree, can be used to list all features- Not yet implemented"""
@@ -135,7 +137,34 @@ class Project:
         self._features.append(feature)
         return feature
 
-    def find(self, name: str, feature_type: Optional[type] = None) -> Optional[Union[opt_prop.OptProp, source.Source, sensor.Sensor]]:
+    def create_root_part(self, name: str = "RootPart", description: str = "", metadata: Mapping[str, str] = {}) -> part.Part:
+        """Create the project root part feature.
+
+        Parameters
+        ----------
+        name : str
+            Name of the feature.
+            By default, ``"RootPart"``.
+        description : str
+            Description of the feature.
+            By default, ``""``.
+        metadata : Mapping[str, str]
+            Metadata of the feature.
+            By default, ``{}``.
+
+        Returns
+        -------
+        ansys.speos.script.part.Part
+            Part feature.
+        """
+        if self._root_part is None:
+            self._root_part = part.Part(project=self, name=name, description=description, metadata=metadata)
+            self._features.append(self._root_part)
+        return self._root_part
+
+    def find(
+        self, name: str, feature_type: Optional[type] = None
+    ) -> Optional[Union[opt_prop.OptProp, source.Source, sensor.Sensor, part.Part]]:
         """Find a feature.
 
         Parameters
@@ -147,7 +176,8 @@ class Project:
 
         Returns
         -------
-        Union[ansys.speos.script.opt_prop.OptProp, ansys.speos.script.source.Source, ansys.speos.script.sensor.Sensor], optional
+        Union[ansys.speos.script.opt_prop.OptProp, ansys.speos.script.source.Source, ansys.speos.script.sensor.Sensor, \
+ansys.speos.script.part.Part], optional
             Found feature, or None.
         """
         if feature_type is None:
@@ -183,6 +213,8 @@ class Project:
         for f in self._features:
             f.delete()
         self._features.clear()
+
+        return self
 
     def __str__(self):
         """Return the string representation of the project's scene."""
