@@ -170,7 +170,7 @@ class Project:
         ----------
         name : str
             Name of the feature.
-            Possibility to also for bodies, faces, subpart.
+            Possibility to look also for bodies, faces, subpart.
             Example "RootPart/BodyName/FaceName", "RootPart/SubPartName/BodyName/FaceName"
         feature_type : type
             Type of the wanted feature.
