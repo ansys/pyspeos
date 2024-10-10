@@ -24,6 +24,7 @@
 from __future__ import annotations
 
 from typing import List, Mapping, Optional, Union
+import uuid
 
 import ansys.speos.core as core
 import ansys.speos.script.body as body
@@ -32,10 +33,12 @@ import ansys.speos.script.project as project
 
 class Part:
     class SubPart:
-        def __init__(self, speos_client: core.SpeosClient, name: str, description: str = "") -> None:
+        def __init__(self, speos_client: core.SpeosClient, name: str, description: str = "", parent_part: Optional[Part] = None) -> None:
             self._speos_client = speos_client
+            self._parent_part = parent_part
             self._name = name
             self.part_link = None
+            self._unique_id = None
             """Link object for the part in database."""
             self._part_instance = core.Part.PartInstance(name=name, description=description)
 
@@ -82,6 +85,10 @@ class Part:
             ansys.speos.script.part.Part.SubPart
                 SubPart feature.
             """
+            # The _unique_id will help to find correct item in the scene.materials (the list of MaterialInstance)
+            if self._unique_id is None:
+                self._unique_id = str(uuid.uuid4())
+                self._part_instance.description = "UniqueId_" + self._unique_id
 
             for g in self._geom_features:
                 g.commit()
@@ -93,7 +100,15 @@ class Part:
 
             self._part_instance.part_guid = self.part_link.key
 
-            # Instance unique id in description?
+            # Look if an element corresponds to the instance
+            if self._parent_part is not None:
+                part_inst = next((x for x in self._parent_part._part.parts if x.description == "UniqueId_" + self._unique_id), None)
+                if part_inst is not None:
+                    part_inst.CopyFrom(self._part_instance)  # if yes, just replace
+                else:
+                    self._parent_part._part.parts.append(self._part_instance)  # if no, just add it to the list of part instances
+                if self._parent_part.part_link is not None:
+                    self._parent_part.part_link.set(data=self._parent_part._part)  # update parent part
 
             return self
 
@@ -108,6 +123,14 @@ class Part:
             # Reset part
             if self.part_link is not None:
                 self._part = self.part_link.get()
+
+            # Reset part instance
+            if self._parent_part.part_link is not None:
+                parent_part_data = self._parent_part.part_link.get()  # retrieve server data
+                # Look if an element corresponds to the _unique_id
+                part_inst = next((x for x in parent_part_data.parts if x.description == "UniqueId_" + self._unique_id), None)
+                if part_inst is not None:
+                    self._part_instance = part_inst
 
             return self
 
@@ -128,6 +151,18 @@ class Part:
             # Delete features
             for g in self._geom_features:
                 g.delete()
+
+            # Remove the part instance from the parent part
+            if self._parent_part is not None:
+                part_inst = next((x for x in self._parent_part._part.parts if x.description == "UniqueId_" + self._unique_id), None)
+                if part_inst is not None:
+                    self._parent_part._part.parts.remove(part_inst)
+                    if self._parent_part.part_link is not None:
+                        self._parent_part.part_link.set(data=self._parent_part._part)  # update parent part
+
+            # Reset the _unique_id
+            self._unique_id = None
+            self._part_instance.description = ""
 
             return self
 
@@ -183,7 +218,7 @@ class Part:
         return body_feat
 
     def create_sub_part(self, name: str, description: str = "") -> Part.SubPart:
-        sub_part_feat = Part.SubPart(speos_client=self._project.client, name=name, description=description)
+        sub_part_feat = Part.SubPart(speos_client=self._project.client, name=name, description=description, parent_part=self)
         self._geom_features.append(sub_part_feat)
         return sub_part_feat
 
@@ -215,11 +250,8 @@ class Part:
             Part feature.
         """
         # Retrieve all features to commit them
-        self._part.ClearField("parts")
         for g in self._geom_features:
             g.commit()
-            if type(g) == Part.SubPart:
-                self._part.parts.append(g._part_instance)
 
         # Save or Update the part (depending on if it was already saved before)
         if self.part_link is None:
@@ -265,10 +297,6 @@ class Part:
 
         # Retrieve all features to delete them
         for g in self._geom_features:
-            if type(g) == Part.SubPart:
-                for p in self._part.parts:
-                    if p.part_guid == g._part_instance.part_guid:
-                        p.part_guid = ""
             g.delete()
 
         # Remove the part guid from the scene
