@@ -156,6 +156,9 @@ class Body:
             self.body_link.delete()
             self.body_link = None
 
+        if self in self._parent_part._geom_features:
+            self._parent_part._geom_features.remove(self)
+
         return self
 
     def find(self, name: str) -> Optional[face.Face]:

@@ -164,6 +164,9 @@ class Part:
             self._unique_id = None
             self._part_instance.description = ""
 
+            if self in self._parent_part._geom_features:
+                self._parent_part._geom_features.remove(self)
+
             return self
 
         def find(self, name: str) -> Optional[body.Body]:

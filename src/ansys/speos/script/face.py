@@ -149,4 +149,7 @@ class Face:
             self.face_link.delete()
             self.face_link = None
 
+            if self in self._parent_body._geom_features:
+                self._parent_body._geom_features.remove(self)
+
         return self
