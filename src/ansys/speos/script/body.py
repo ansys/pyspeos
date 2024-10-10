@@ -63,7 +63,7 @@ class Body:
         self._geom_features = []
 
     def create_face(self, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> face.Face:
-        face_feat = face.Face(speos_client=self._speos_client, name=name, description=description, metadata=metadata)
+        face_feat = face.Face(speos_client=self._speos_client, name=name, description=description, metadata=metadata, parent_body=self)
         self._geom_features.append(face_feat)
         return face_feat
 
@@ -89,11 +89,9 @@ class Body:
         ansys.speos.script.body.Body
             Body feature.
         """
-        # Retrieve all features to commit them
-        self._body.ClearField("face_guids")
+        # Commit faces contained in this body
         for g in self._geom_features:
             g.commit()
-            self._body.face_guids.append(g.face_link.key)
 
         # Save or Update the body (depending on if it was already saved before)
         if self.body_link is None:
@@ -133,7 +131,6 @@ class Body:
 
         # Retrieve all features to delete them
         for g in self._geom_features:
-            self._body.face_guids.remove(g.face_link.key)
             g.delete()
 
         return self

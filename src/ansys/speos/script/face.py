@@ -23,9 +23,10 @@
 """Provides a way to interact with feature: Face."""
 from __future__ import annotations
 
-from typing import List, Mapping
+from typing import List, Mapping, Optional
 
 import ansys.speos.core as core
+import ansys.speos.script.body as body
 
 
 class Face:
@@ -50,8 +51,16 @@ class Face:
         Link object for the face in database.
     """
 
-    def __init__(self, speos_client: core.SpeosClient, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> None:
+    def __init__(
+        self,
+        speos_client: core.SpeosClient,
+        name: str,
+        description: str = "",
+        metadata: Mapping[str, str] = {},
+        parent_body: Optional[body.Body] = None,
+    ) -> None:
         self._speos_client = speos_client
+        self._parent_body = parent_body
         self._name = name
         self.face_link = None
         """Link object for the face in database."""
@@ -96,6 +105,12 @@ class Face:
         else:
             self.face_link.set(data=self._face)
 
+        # Update the parent body
+        if self._parent_body is not None:
+            if self.face_link.key not in self._parent_body._body.face_guids:
+                self._parent_body._body.face_guids.append(self.face_link.key)
+                self._parent_body.body_link.set(data=self._parent_body._body)
+
         return self
 
     def reset(self) -> Face:
@@ -121,8 +136,14 @@ class Face:
         ansys.speos.script.face.Face
             Face feature.
         """
-        # Delete the face
         if self.face_link is not None:
+            # Update the parent body
+            if self._parent_body is not None:
+                if self.face_link.key in self._parent_body._body.face_guids:
+                    self._parent_body._body.face_guids.remove(self.face_link.key)
+                    self._parent_body.body_link.set(data=self._parent_body._body)
+
+            # Delete the face
             self.face_link.delete()
             self.face_link = None
 

@@ -133,7 +133,8 @@ class Part:
             # Delete features
             for g in self._geom_features:
                 if type(g) == body.Body:
-                    self._part.body_guids.remove(g.body_link.key)
+                    if g.body_link.key in self._part.body_guids:
+                        self._part.body_guids.remove(g.body_link.key)
                     g.delete()
 
             return self
@@ -275,7 +276,7 @@ class Part:
 
         # Retrieve all features to delete them
         for g in self._geom_features:
-            if type(g) == body.Body:
+            if type(g) == body.Body and g.body_link.key in self._part.body_guids:
                 self._part.body_guids.remove(g.body_link.key)
             elif type(g) == Part.SubPart:
                 for p in self._part.parts:
