@@ -149,8 +149,8 @@ class Part:
                 self.part_link = None
 
             # Delete features
-            for g in self._geom_features:
-                g.delete()
+            # for g in self._geom_features:
+            #    g.delete()
 
             # Remove the part instance from the parent part
             if self._parent_part is not None:
@@ -296,8 +296,8 @@ class Part:
             self.part_link = None
 
         # Retrieve all features to delete them
-        for g in self._geom_features:
-            g.delete()
+        # for g in self._geom_features:
+        #    g.delete()
 
         # Remove the part guid from the scene
         scene_data = self._project.scene_link.get()  # retrieve scene data
