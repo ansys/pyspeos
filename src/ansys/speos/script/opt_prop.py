@@ -261,13 +261,13 @@ class OptProp:
         # VOPTemplate
         if self.vop_template_link is None:
             if self._vop_template is not None:
-                out_str += f"\nlocal: {self._vop_template}"
+                out_str += f"\nlocal: " + core.protobuf_message_to_str(self._vop_template)
         else:
             out_str += "\n" + str(self.vop_template_link)
 
         # SOPTemplate
         if self.sop_template_link is None:
-            out_str += f"\nlocal: {self._sop_template}"
+            out_str += f"\nlocal: " + core.protobuf_message_to_str(self._sop_template)
         else:
             out_str += "\n" + str(self.sop_template_link)
 
