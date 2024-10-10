@@ -55,28 +55,46 @@ class Intensity:
         Link object for the intensity template in database.
     """
 
-    class LibraryProperties:
-        """Properties for intensity of type: Library.
-        By default, orientation by axis system is chosen.
+    class Library:
+        """Intensity of type: Library.
+        By default, orientation as axis system is chosen and no exit geometries.
 
         Parameters
         ----------
-        intensity_properties : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.IntensityProperties
-            Intensity properties to complete.
+        library : ansys.api.speos.intensity.v1.IntensityTemplate.Library
+            Library to complete.
+        library_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.IntensityProperties.LibraryProperties
+            Library properties to complete.
         """
 
         def __init__(
             self,
-            intensity_properties: core.Scene.SourceInstance.IntensityProperties,
+            library: core.IntensityTemplate.Library,
+            library_props: core.Scene.SourceInstance.IntensityProperties.LibraryProperties,
         ) -> None:
-            self._intensity_properties = intensity_properties
+            self._library = library
+            self._library_props = library_props
 
             # Default values
             self.set_orientation_axis_system()
 
-        def set_orientation_axis_system(
-            self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-        ) -> Intensity.LibraryProperties:
+        def set_intensity_file_uri(self, uri: str) -> Intensity.Library:
+            """Set the intensity file.
+
+            Parameters
+            ----------
+            uri : str
+                uri of the intensity file IES (.ies), Eulumdat (.ldt), speos intensities (.xmp)
+
+            Returns
+            -------
+            ansys.speos.script.intensity.Intensity.Library
+                Intensity feature of type library.
+            """
+            self._library.intensity_file_uri = uri
+            return self
+
+        def set_orientation_axis_system(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> Intensity.Library:
             """Set the intensity orientation from an axis system.
 
             Parameters
@@ -87,53 +105,149 @@ class Intensity:
 
             Returns
             -------
-            ansys.speos.script.intensity.Intensity.LibraryProperties
-                Library Intensity properties.
+            ansys.speos.script.intensity.Intensity.Library
+                Library intensity.
             """
-            self._intensity_properties.library_properties.axis_system.values[:] = axis_system
+            self._library_props.axis_system.values[:] = axis_system
             return self
 
-        def set_orientation_normal_to_surface(self) -> Intensity.LibraryProperties:
+        def set_orientation_normal_to_surface(self) -> Intensity.Library:
             """Set the intensity orientation as normal to surface.
 
             Returns
             -------
-            ansys.speos.script.intensity.Intensity.LibraryProperties
-                Library Intensity properties.
+            ansys.speos.script.intensity.Intensity.Library
+                Library intensity.
             """
-            self._intensity_properties.library_properties.normal_to_surface.SetInParent()
+            self._library_props.normal_to_surface.SetInParent()
             return self
 
-        def set_orientation_normal_to_uv_map(self) -> Intensity.LibraryProperties:
+        def set_orientation_normal_to_uv_map(self) -> Intensity.Library:
             """Set the intensity orientation as normal to uv map.
 
             Returns
             -------
-            ansys.speos.script.intensity.Intensity.LibraryProperties
-                Library Intensity properties.
+            ansys.speos.script.intensity.Intensity.Library
+                Library intensity.
             """
-            self._intensity_properties.library_properties.normal_to_uv_map.SetInParent()
+            self._library_props.normal_to_uv_map.SetInParent()
             return self
 
-        def set_exit_geometries(self, exit_geometries: Optional[List[GeoRef]] = None) -> Intensity.LibraryProperties:
+        def set_exit_geometries(self, exit_geometries: List[GeoRef] = []) -> Intensity.Library:
             """Set the exit geometries.
 
             Parameters
             ----------
-            exit_geometries : List[ansys.speos.script.geo_ref.GeoRef], optional
+            exit_geometries : List[ansys.speos.script.geo_ref.GeoRef]
                 Exit geometries list.
-                By default, ``None``.
+                By default, ``[]``.
 
             Returns
             -------
-            ansys.speos.script.intensity.Intensity.LibraryProperties
-                Library Intensity properties.
+            ansys.speos.script.intensity.Intensity.Library
+                Library intensity.
             """
 
-            if exit_geometries is None:
-                self._intensity_properties.library_properties.ClearField("exit_geometries")
+            if exit_geometries == []:
+                self._library_props.ClearField("exit_geometries")
             else:
-                self._intensity_properties.library_properties.exit_geometries.geo_paths[:] = [gr.to_native_link() for gr in exit_geometries]
+                self._library_props.exit_geometries.geo_paths[:] = [gr.to_native_link() for gr in exit_geometries]
+            return self
+
+    class Gaussian:
+        """Intensity of type: Gaussian.
+        By default, full width at half maximum following x and y are set at 30 degrees, and total angle at 180 degrees.
+        By default, no axis system is chosen, that means normal to surface map.
+
+        Parameters
+        ----------
+        gaussian : ansys.api.speos.intensity.v1.IntensityTemplate.Gaussian
+            Gaussian to complete.
+        gaussian_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.IntensityProperties.GaussianProperties
+            Gaussian properties to complete.
+        """
+
+        def __init__(
+            self,
+            gaussian: core.IntensityTemplate.Gaussian,
+            gaussian_props: core.Scene.SourceInstance.IntensityProperties.GaussianProperties,
+        ) -> None:
+            self._gaussian = gaussian
+            self._gaussian_props = gaussian_props
+
+            # Default values
+            self.set_FWHM_angle_x().set_FWHM_angle_y().set_total_angle().set_axis_system()
+
+        def set_FWHM_angle_x(self, value: float = 30) -> Intensity.Gaussian:
+            """Set the full width following x at half maximum.
+
+            Parameters
+            ----------
+            value : float
+                Full Width in degrees following x at Half Maximum.
+                By default, ``30.0``.
+
+            Returns
+            -------
+            ansys.speos.script.intensity.Intensity.Gaussian
+                Gaussian intensity.
+            """
+            self._gaussian.FWHM_angle_x = value
+            return self
+
+        def set_FWHM_angle_y(self, value: float = 30) -> Intensity.Gaussian:
+            """Set the full width following y at half maximum.
+
+            Parameters
+            ----------
+            value : float
+                Full Width in degrees following y at Half Maximum.
+                By default, ``30.0``.
+
+            Returns
+            -------
+            ansys.speos.script.intensity.Intensity.Gaussian
+                Gaussian intensity.
+            """
+            self._gaussian.FWHM_angle_y = value
+            return self
+
+        def set_total_angle(self, value: float = 180) -> Intensity.Gaussian:
+            """Set the total angle of the emission of the light source.
+
+            Parameters
+            ----------
+            value : float
+                Total angle in degrees of the emission of the light source.
+                By default, ``180.0``.
+
+            Returns
+            -------
+            ansys.speos.script.intensity.Intensity.Gaussian
+                Gaussian intensity.
+            """
+            self._gaussian.total_angle = value
+            return self
+
+        def set_axis_system(self, axis_system: Optional[List[float]] = None) -> Intensity.Gaussian:
+            """Set the intensity distribution orientation.
+
+            Parameters
+            ----------
+            axis_system : List[float], optional
+                Orientation of the intensity distribution [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+                By default, ``None`` : normal to surface map.
+
+            Returns
+            -------
+            ansys.speos.script.intensity.Intensity.Gaussian
+                Gaussian intensity.
+            """
+            self._gaussian_props.Clear()
+            if axis_system is None:
+                self._gaussian_props.SetInParent()
+            else:
+                self._gaussian_props.axis_system[:] = axis_system
             return self
 
     def __init__(
@@ -147,6 +261,9 @@ class Intensity:
         self._client = speos_client
         self.intensity_template_link = None
         """Link object for the intensity template in database."""
+
+        # Attribute representing the more complex intensity.
+        self._type = None
 
         # Create IntensityTemplate
         self._intensity_template = core.IntensityTemplate(name=name, description=description, metadata=metadata)
@@ -164,21 +281,19 @@ class Intensity:
         # Default values
         self.set_cos(N=1)  # By default will be lambertian (cos with N =1)
 
-    def set_library(self, intensity_file_uri: str) -> Intensity:
+    def set_library(self) -> Intensity.Library:
         """Set the intensity as library.
-
-        Parameters
-        ----------
-        intensity_file_uri : str
-            uri of the intensity file IES (.ies), Eulumdat (.ldt), speos intensities (.xmp)
 
         Returns
         -------
-        ansys.speos.script.intensity.Intensity
-            Intensity feature.
+        ansys.speos.script.intensity.Intensity.Library
+            Library intensity.
         """
-        self._intensity_template.library.intensity_file_uri = intensity_file_uri
-        return self
+        if type(self._type) != Intensity.Library:
+            self._type = Intensity.Library(
+                library=self._intensity_template.library, library_props=self._intensity_properties.library_properties
+            )
+        return self._type
 
     def set_cos(self, N: float = 3, total_angle: float = 180) -> Intensity:
         """Set the intensity as cos.
@@ -197,68 +312,25 @@ class Intensity:
         ansys.speos.script.intensity.Intensity
             Intensity feature.
         """
+        self._type = None
         self._intensity_template.cos.N = N
         self._intensity_template.cos.total_angle = total_angle
         self._intensity_properties.Clear()
         return self
 
-    def set_gaussian(self, FWHM_angle_x: float = 30, FWHM_angle_y: float = 30, total_angle: float = 180) -> Intensity:
+    def set_gaussian(self) -> Intensity.Gaussian:
         """Set the intensity as gaussian.
 
-        Parameters
-        ----------
-        FWHM_angle_x : float
-            Full Width in degrees following x at Half Maximum.
-            By default, ``30.0``.
-        FWHM_angle_y : float
-            Full Width in degrees following y at Half Maximum.
-            By default, ``30.0``.
-        total_angle : float
-            Total angle in degrees of the emission of the light source.
-            By default, ``180.0``.
-
         Returns
         -------
-        ansys.speos.script.intensity.Intensity
-            Intensity feature.
+        ansys.speos.script.intensity.Intensity.Gaussian
+            Gaussian intensity.
         """
-        self._intensity_template.gaussian.FWHM_angle_x = FWHM_angle_x
-        self._intensity_template.gaussian.FWHM_angle_y = FWHM_angle_y
-        self._intensity_template.gaussian.total_angle = total_angle
-        return self
-
-    def set_library_properties(self) -> Intensity.LibraryProperties:
-        """Set the properties related to library template.
-
-        Returns
-        -------
-        ansys.speos.script.intensity.Intensity.LibraryProperties
-            Library Intensity properties.
-        """
-        if type(self._props) != Intensity.LibraryProperties:
-            self._props = Intensity.LibraryProperties(intensity_properties=self._intensity_properties)
-        return self._props
-
-    def set_gaussian_properties(self, axis_system: Optional[List[float]] = None) -> Intensity:
-        """Set the properties related to gaussian template.
-
-        Parameters
-        ----------
-        axis_system : List[float], optional
-            Orientation of the intensity distribution [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
-            By default, ``None`` : normal to surface map.
-
-        Returns
-        -------
-        ansys.speos.script.intensity.Intensity
-            Intensity feature.
-        """
-        self._intensity_properties.Clear()
-        if axis_system is None:
-            self._intensity_properties.gaussian_properties.SetInParent()
-        else:
-            self._intensity_properties.gaussian_properties.axis_system[:] = axis_system
-        return self
+        if type(self._type) != Intensity.Gaussian:
+            self._type = Intensity.Gaussian(
+                gaussian=self._intensity_template.gaussian, gaussian_props=self._intensity_properties.gaussian_properties
+            )
+        return self._type
 
     def __str__(self) -> str:
         """Return the string representation of the intensity."""
