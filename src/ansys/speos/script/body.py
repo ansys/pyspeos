@@ -23,10 +23,11 @@
 """Provides a way to interact with feature: Body."""
 from __future__ import annotations
 
-from typing import Mapping, Optional
+from typing import Mapping, Optional, Union
 
 import ansys.speos.core as core
 import ansys.speos.script.face as face
+import ansys.speos.script.part as part
 
 
 class Body:
@@ -51,8 +52,16 @@ class Body:
         Link object for the body in database.
     """
 
-    def __init__(self, speos_client: core.SpeosClient, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> None:
+    def __init__(
+        self,
+        speos_client: core.SpeosClient,
+        name: str,
+        description: str = "",
+        metadata: Mapping[str, str] = {},
+        parent_part: Optional[Union[part.Part, part.Part.SubPart]] = None,
+    ) -> None:
         self._speos_client = speos_client
+        self._parent_part = parent_part
         self._name = name
         self.body_link = None
         """Link object for the body in database."""
@@ -99,6 +108,13 @@ class Body:
         else:
             self.body_link.set(data=self._body)
 
+        # Update the parent part
+        if self._parent_part is not None:
+            if self.body_link.key not in self._parent_part._part.body_guids:
+                self._parent_part._part.body_guids.append(self.body_link.key)
+                if self._parent_part.part_link is not None:
+                    self._parent_part.part_link.set(data=self._parent_part._part)
+
         return self
 
     def reset(self) -> Body:
@@ -124,14 +140,21 @@ class Body:
         ansys.speos.script.body.Body
             Body feature.
         """
-        # Delete the body
-        if self.body_link is not None:
-            self.body_link.delete()
-            self.body_link = None
-
         # Retrieve all features to delete them
         for g in self._geom_features:
             g.delete()
+
+        if self.body_link is not None:
+            # Update the parent part
+            if self._parent_part is not None:
+                if self.body_link.key in self._parent_part._part.body_guids:
+                    self._parent_part._part.body_guids.remove(self.body_link.key)
+                    if self._parent_part.part_link is not None:
+                        self._parent_part.part_link.set(data=self._parent_part._part)
+
+            # Delete the body
+            self.body_link.delete()
+            self.body_link = None
 
         return self
 

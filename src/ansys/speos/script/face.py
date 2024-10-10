@@ -109,7 +109,8 @@ class Face:
         if self._parent_body is not None:
             if self.face_link.key not in self._parent_body._body.face_guids:
                 self._parent_body._body.face_guids.append(self.face_link.key)
-                self._parent_body.body_link.set(data=self._parent_body._body)
+                if self._parent_body.body_link is not None:
+                    self._parent_body.body_link.set(data=self._parent_body._body)
 
         return self
 
@@ -141,7 +142,8 @@ class Face:
             if self._parent_body is not None:
                 if self.face_link.key in self._parent_body._body.face_guids:
                     self._parent_body._body.face_guids.remove(self.face_link.key)
-                    self._parent_body.body_link.set(data=self._parent_body._body)
+                    if self._parent_body.body_link is not None:
+                        self._parent_body.body_link.set(data=self._parent_body._body)
 
             # Delete the face
             self.face_link.delete()

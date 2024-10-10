@@ -45,7 +45,7 @@ class Part:
             self._geom_features = []
 
         def create_body(self, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> body.Body:
-            body_feat = body.Body(speos_client=self._speos_client, name=name, description=description, metadata=metadata)
+            body_feat = body.Body(speos_client=self._speos_client, name=name, description=description, metadata=metadata, parent_part=self)
             self._geom_features.append(body_feat)
             return body_feat
 
@@ -65,8 +65,7 @@ class Part:
                 out_str += "\n" + str(self.part_link)
 
             for g in self._geom_features:
-                if type(g) == body.Body:
-                    out_str += "\n" + str(g)
+                out_str += "\n" + str(g)
 
             return out_str
 
@@ -84,12 +83,8 @@ class Part:
                 SubPart feature.
             """
 
-            self._part.ClearField("body_guids")
             for g in self._geom_features:
                 g.commit()
-                if type(g) == body.Body:
-                    self._part.body_guids.append(g.body_link.key)
-
             # Save or Update the part (depending on if it was already saved before)
             if self.part_link is None:
                 self.part_link = self._speos_client.parts().create(message=self._part)
@@ -132,10 +127,7 @@ class Part:
 
             # Delete features
             for g in self._geom_features:
-                if type(g) == body.Body:
-                    if g.body_link.key in self._part.body_guids:
-                        self._part.body_guids.remove(g.body_link.key)
-                    g.delete()
+                g.delete()
 
             return self
 
@@ -186,7 +178,7 @@ class Part:
         self._part = core.Part(name=name, description=description, metadata=metadata)
 
     def create_body(self, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> body.Body:
-        body_feat = body.Body(speos_client=self._project.client, name=name, description=description, metadata=metadata)
+        body_feat = body.Body(speos_client=self._project.client, name=name, description=description, metadata=metadata, parent_part=self)
         self._geom_features.append(body_feat)
         return body_feat
 
@@ -223,13 +215,10 @@ class Part:
             Part feature.
         """
         # Retrieve all features to commit them
-        self._part.ClearField("body_guids")
         self._part.ClearField("parts")
         for g in self._geom_features:
             g.commit()
-            if type(g) == body.Body:
-                self._part.body_guids.append(g.body_link.key)
-            elif type(g) == Part.SubPart:
+            if type(g) == Part.SubPart:
                 self._part.parts.append(g._part_instance)
 
         # Save or Update the part (depending on if it was already saved before)
@@ -276,9 +265,7 @@ class Part:
 
         # Retrieve all features to delete them
         for g in self._geom_features:
-            if type(g) == body.Body and g.body_link.key in self._part.body_guids:
-                self._part.body_guids.remove(g.body_link.key)
-            elif type(g) == Part.SubPart:
+            if type(g) == Part.SubPart:
                 for p in self._part.parts:
                     if p.part_guid == g._part_instance.part_guid:
                         p.part_guid = ""
