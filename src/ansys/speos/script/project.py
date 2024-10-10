@@ -26,6 +26,7 @@ from typing import Mapping
 
 import ansys.speos.core as core
 import ansys.speos.script.opt_prop as opt_prop
+import ansys.speos.script.simulation as simulation
 import ansys.speos.script.source as source
 
 
@@ -89,6 +90,9 @@ class Project:
             Source feature.
         """
         return source.Source(project=self, name=name, description=description, metadata=metadata)
+
+    def create_simulation(self, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> simulation.Simulation:
+        return simulation.Simulation(project=self, name=name, description=description, metadata=metadata)
 
     def find(self, name: str, id: str = ""):
         """Get details about a feature - Not yet implemented"""
