@@ -57,12 +57,11 @@ class Project:
         self.scene_link = speos.client.scenes().create()
         """Link object for the scene in database."""
         self._features = []
+        self._root_part = None
         if len(path):
             tmp_scene_link = speos.client.scenes().create()
             tmp_scene_link.load_file(path)
             self._fill_features(from_scene=tmp_scene_link)
-
-        self._root_part = None
 
     # def list(self):
     #    """Return all feature key as a tree, can be used to list all features- Not yet implemented"""
@@ -256,3 +255,19 @@ ansys.speos.script.part.Part], optional
             ssr_feat.sensor_template_link = self.client.get_item(key=ssr_inst.sensor_guid)
             ssr_feat.reset()
             ssr_feat.commit()
+
+        part = self.client.get_item(key=scene_data.part_guid).get()
+        part_feat = self.create_root_part()
+        for b_guid in part.body_guids:
+            b_link = self.client.get_item(key=b_guid)
+            b_feat = part_feat.create_body(name=b_link.get().name)
+            b_feat.body_link = b_link
+            for f_guid in b_link.get().face_guids:
+                f_link = self.client.get_item(key=f_guid)
+                f_feat = b_feat.create_face(name=f_link.get().name)
+                f_feat.face_link = f_link
+                f_feat.reset()
+                f_feat.commit()
+            b_feat.reset()
+            b_feat.commit()
+        part_feat.commit()
