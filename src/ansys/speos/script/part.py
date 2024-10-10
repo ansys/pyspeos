@@ -23,7 +23,7 @@
 """Provides a way to interact with feature: Part."""
 from __future__ import annotations
 
-from typing import List, Mapping
+from typing import List, Mapping, Optional, Union
 
 import ansys.speos.core as core
 import ansys.speos.script.body as body
@@ -137,6 +137,20 @@ class Part:
                     g.delete()
 
             return self
+
+        def find(self, name: str) -> Optional[body.Body]:
+            orig_name = name
+            idx = name.find("/")
+            if idx != -1:
+                name = name[0:idx]
+
+            found_feature = next((x for x in self._geom_features if x._name == name), None)
+
+            if found_feature is not None:
+                if idx != -1:
+                    found_feature = found_feature.find(orig_name[idx + 1 :])
+                return found_feature
+            return None
 
     """Feature : Part.
 
@@ -275,3 +289,17 @@ class Part:
         self._project.scene_link.set(data=scene_data)  # update scene data
 
         return self
+
+    def find(self, name: str) -> Optional[Union[body.Body, Part.SubPart]]:
+        orig_name = name
+        idx = name.find("/")
+        if idx != -1:
+            name = name[0:idx]
+
+        found_feature = next((x for x in self._geom_features if x._name == name), None)
+
+        if found_feature is not None:
+            if idx != -1:
+                found_feature = found_feature.find(orig_name[idx + 1 :])
+            return found_feature
+        return None

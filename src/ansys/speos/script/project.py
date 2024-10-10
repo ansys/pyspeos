@@ -171,8 +171,11 @@ class Project:
         ----------
         name : str
             Name of the feature.
+            Possibility to also for bodies, faces, subpart.
+            Example "RootPart/BodyName/FaceName", "RootPart/SubPartName/BodyName/FaceName"
         feature_type : type
             Type of the wanted feature.
+            If looking for geometry feature, only precise part.Part as feature_type, whatever looking for subpart, body or face.
 
         Returns
         -------
@@ -180,11 +183,19 @@ class Project:
 ansys.speos.script.part.Part], optional
             Found feature, or None.
         """
+        orig_name = name
+        idx = name.find("/")
+        if idx != -1:
+            name = name[0:idx]
+
         if feature_type is None:
             found_feature = next((x for x in self._features if x._name == name), None)
         else:
             found_feature = next((x for x in self._features if type(x) == feature_type and x._name == name), None)
+
         if found_feature is not None:
+            if idx != -1:
+                found_feature = found_feature.find(orig_name[idx + 1 :])
             return found_feature
         return None
 

@@ -23,7 +23,7 @@
 """Provides a way to interact with feature: Body."""
 from __future__ import annotations
 
-from typing import Mapping
+from typing import Mapping, Optional
 
 import ansys.speos.core as core
 import ansys.speos.script.face as face
@@ -137,3 +137,10 @@ class Body:
             g.delete()
 
         return self
+
+    def find(self, name: str) -> Optional[face.Face]:
+        found_feature = next((x for x in self._geom_features if x._name == name), None)
+
+        if found_feature is not None:
+            return found_feature
+        return None
