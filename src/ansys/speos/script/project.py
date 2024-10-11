@@ -57,7 +57,6 @@ class Project:
         self.scene_link = speos.client.scenes().create()
         """Link object for the scene in database."""
         self._features = []
-        self._root_part = None
         if len(path):
             tmp_scene_link = speos.client.scenes().create()
             tmp_scene_link.load_file(path)
@@ -156,10 +155,11 @@ class Project:
         ansys.speos.script.part.Part
             Part feature.
         """
-        if self._root_part is None:
-            self._root_part = part.Part(project=self, name=name, description=description, metadata=metadata)
-            self._features.append(self._root_part)
-        return self._root_part
+        feature = part.Part(project=self, name=name, description=description, metadata=metadata)
+        if self.find(name=name, feature_type=part.Part) is not None:
+            raise ValueError("A root part feature already exists with this name: " + name)
+        self._features.append(feature)
+        return feature
 
     def find(
         self, name: str, feature_type: Optional[type] = None

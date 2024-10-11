@@ -52,6 +52,11 @@ class Part:
             self._geom_features.append(body_feat)
             return body_feat
 
+        def create_sub_part(self, name: str, description: str = "") -> Part.SubPart:
+            sub_part_feat = Part.SubPart(speos_client=self._speos_client, name=name, description=description, parent_part=self)
+            self._geom_features.append(sub_part_feat)
+            return sub_part_feat
+
         def set_axis_system(self, axis_system: List[float]) -> Part.SubPart:
             self._part_instance.axis_system[:] = axis_system
             return self
@@ -60,7 +65,7 @@ class Part:
             out_str = ""
 
             if light_print == False:
-                out_str += f"local: " + core.protobuf_message_to_str(self._part_instance)  # how to know non local
+                out_str += f"local: " + core.protobuf_message_to_str(self._part_instance)
 
             if self.part_link is None:
                 out_str += f"\nlocal: " + core.protobuf_message_to_str(self._part)
@@ -68,7 +73,12 @@ class Part:
                 out_str += "\n" + str(self.part_link)
 
             for g in self._geom_features:
-                out_str += "\n" + str(g)
+                if type(g) == body.Body:
+                    out_str += "\n" + str(g)
+
+            for g in self._geom_features:
+                if type(g) == Part.SubPart:
+                    out_str += g._to_str(light_print=True)
 
             return out_str
 
