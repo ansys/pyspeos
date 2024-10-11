@@ -32,14 +32,56 @@ import ansys.speos.script.project as project
 
 
 class Part:
+    """Feature : Part.
+
+    Parameters
+    ----------
+    project : ansys.speos.script.project.Project
+        Project that will own the feature.
+    name : str
+        Name of the feature.
+    description : str
+        Description of the feature.
+        By default, ``""``.
+    metadata : Mapping[str, str]
+        Metadata of the feature.
+        By default, ``{}``.
+
+    Attributes
+    ----------
+    part_link : ansys.speos.core.part.PartLink
+        Link object for the part in database.
+    """
+
     class SubPart:
+        """Feature : SubPart.
+
+        Parameters
+        ----------
+        speos_client : ansys.speos.core.client.SpeosClient
+            The Speos instance client.
+        name : str
+            Name of the feature.
+        description : str
+            Description of the feature.
+            By default, ``""``.
+        parent_part : ansys.speos.script.part.Part, optional
+            Part containing this sub part.
+            By default, ``None``.
+
+        Attributes
+        ----------
+        part_link : ansys.speos.core.part.PartLink
+            Link object for the part in database.
+        """
+
         def __init__(self, speos_client: core.SpeosClient, name: str, description: str = "", parent_part: Optional[Part] = None) -> None:
             self._speos_client = speos_client
             self._parent_part = parent_part
             self._name = name
             self.part_link = None
-            self._unique_id = None
             """Link object for the part in database."""
+            self._unique_id = None
             self._part_instance = core.Part.PartInstance(name=name, description=description)
 
             # Create local Part
@@ -48,16 +90,61 @@ class Part:
             self._geom_features = []
 
         def create_body(self, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> body.Body:
+            """Create a body in this element.
+
+            Parameters
+            ----------
+            name : str
+                Name of the feature.
+            description : str
+                Description of the feature.
+                By default, ``""``.
+            metadata : Mapping[str, str]
+                Metadata of the feature.
+                By default, ``{}``.
+
+            Returns
+            -------
+            ansys.speos.script.body.Body
+                Body feature.
+            """
             body_feat = body.Body(speos_client=self._speos_client, name=name, description=description, metadata=metadata, parent_part=self)
             self._geom_features.append(body_feat)
             return body_feat
 
         def create_sub_part(self, name: str, description: str = "") -> Part.SubPart:
+            """Create a sub part in this element.
+
+            Parameters
+            ----------
+            name : str
+                Name of the feature.
+            description : str
+                Description of the feature.
+                By default, ``""``.
+
+            Returns
+            -------
+            ansys.speos.script.part.Part.SubPart
+                SubPart feature.
+            """
             sub_part_feat = Part.SubPart(speos_client=self._speos_client, name=name, description=description, parent_part=self)
             self._geom_features.append(sub_part_feat)
             return sub_part_feat
 
         def set_axis_system(self, axis_system: List[float]) -> Part.SubPart:
+            """Set the sub part orientation (relatively to parent element).
+
+            Parameters
+            ----------
+            axis_system : List[float], optional
+                Orientation of the sub part [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+
+            Returns
+            -------
+            ansys.speos.script.part.Part.SubPart
+                SubPart feature.
+            """
             self._part_instance.axis_system[:] = axis_system
             return self
 
@@ -179,7 +266,21 @@ class Part:
 
             return self
 
-        def find(self, name: str) -> Optional[body.Body]:
+        def find(self, name: str) -> Optional[Union[body.Body, Part.SubPart]]:
+            """Find a feature.
+
+            Parameters
+            ----------
+            name : str
+                Name of the feature.
+                Possibility to look also for bodies, faces, subpart.
+                Example "BodyName/FaceName", "SubPartName/BodyName/FaceName"
+
+            Returns
+            -------
+            Union[ansys.speos.script.body.Body, ansys.speos.script.part.Part.SubPart], optional
+                Found feature, or None.
+            """
             orig_name = name
             idx = name.find("/")
             if idx != -1:
@@ -193,27 +294,6 @@ class Part:
                 return found_feature
             return None
 
-    """Feature : Part.
-
-    Parameters
-    ----------
-    project : ansys.speos.script.project.Project
-        Project that will own the feature.
-    name : str
-        Name of the feature.
-    description : str
-        Description of the feature.
-        By default, ``""``.
-    metadata : Mapping[str, str]
-        Metadata of the feature.
-        By default, ``{}``.
-
-    Attributes
-    ----------
-    part_link : ansys.speos.core.part.PartLink
-        Link object for the part in database.
-    """
-
     def __init__(self, project: project.Project, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> None:
         self._project = project
         self._name = name
@@ -226,11 +306,44 @@ class Part:
         self._part = core.Part(name=name, description=description, metadata=metadata)
 
     def create_body(self, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> body.Body:
+        """Create a body in this element.
+
+        Parameters
+        ----------
+        name : str
+            Name of the feature.
+        description : str
+            Description of the feature.
+            By default, ``""``.
+        metadata : Mapping[str, str]
+            Metadata of the feature.
+            By default, ``{}``.
+
+        Returns
+        -------
+        ansys.speos.script.body.Body
+            Body feature.
+        """
         body_feat = body.Body(speos_client=self._project.client, name=name, description=description, metadata=metadata, parent_part=self)
         self._geom_features.append(body_feat)
         return body_feat
 
     def create_sub_part(self, name: str, description: str = "") -> Part.SubPart:
+        """Create a sub part in this element.
+
+        Parameters
+        ----------
+        name : str
+            Name of the feature.
+        description : str
+            Description of the feature.
+            By default, ``""``.
+
+        Returns
+        -------
+        ansys.speos.script.part.Part.SubPart
+            SubPart feature.
+        """
         sub_part_feat = Part.SubPart(speos_client=self._project.client, name=name, description=description, parent_part=self)
         self._geom_features.append(sub_part_feat)
         return sub_part_feat
@@ -320,6 +433,20 @@ class Part:
         return self
 
     def find(self, name: str) -> Optional[Union[body.Body, Part.SubPart]]:
+        """Find a feature.
+
+        Parameters
+        ----------
+        name : str
+            Name of the feature.
+            Possibility to look also for bodies, faces, subpart.
+            Example "BodyName/FaceName", "SubPartName/BodyName/FaceName"
+
+        Returns
+        -------
+        Union[ansys.speos.script.body.Body, ansys.speos.script.part.Part.SubPart], optional
+            Found feature, or None.
+        """
         orig_name = name
         idx = name.find("/")
         if idx != -1:

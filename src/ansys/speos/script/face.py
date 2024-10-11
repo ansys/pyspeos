@@ -44,6 +44,9 @@ class Face:
     metadata : Mapping[str, str]
         Metadata of the feature.
         By default, ``{}``.
+    parent_body : ansys.speos.script.body.Body, optional
+        Feature containing this face.
+        By default, ``None``.
 
     Attributes
     ----------
@@ -69,14 +72,50 @@ class Face:
         self._face = core.Face(name=name, description=description, metadata=metadata)
 
     def set_vertices(self, values: List[float]) -> Face:
+        """Set the face vertices.
+
+        Parameters
+        ----------
+        values : List[float]
+            Coordinates of all points [p1x p1y p1z p2x p2y p2z ...].
+
+        Returns
+        -------
+        ansys.speos.script.face.Face
+            Face feature.
+        """
         self._face.vertices[:] = values
         return self
 
     def set_facets(self, values: List[int]) -> Face:
+        """Set the facets.
+
+        Parameters
+        ----------
+        values : List[int]
+            Indexes of points for all triangles (t1_1 t1_2 t1_3 t2_1 t2_2 t2_3 ...)
+
+        Returns
+        -------
+        ansys.speos.script.face.Face
+            Face feature.
+        """
         self._face.facets[:] = values
         return self
 
     def set_normals(self, values: List[float]) -> Face:
+        """Set the face normals.
+
+        Parameters
+        ----------
+        values : List[float]
+            Normal vectors for all points [n1x n1y n1z n2x n2y n2z ...]
+
+        Returns
+        -------
+        ansys.speos.script.face.Face
+            Face feature.
+        """
         self._face.normals[:] = values
         return self
 

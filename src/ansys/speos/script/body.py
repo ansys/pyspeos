@@ -45,6 +45,9 @@ class Body:
     metadata : Mapping[str, str]
         Metadata of the feature.
         By default, ``{}``.
+    parent_part : Union[ansys.speos.script.part.Part, ansys.speos.script.part.Part.SubPart], optional
+        Feature containing this sub part.
+        By default, ``None``.
 
     Attributes
     ----------
@@ -72,6 +75,24 @@ class Body:
         self._geom_features = []
 
     def create_face(self, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> face.Face:
+        """Create a face in this element.
+
+        Parameters
+        ----------
+        name : str
+            Name of the feature.
+        description : str
+            Description of the feature.
+            By default, ``""``.
+        metadata : Mapping[str, str]
+            Metadata of the feature.
+            By default, ``{}``.
+
+        Returns
+        -------
+        ansys.speos.script.face.Face
+            Face feature.
+        """
         face_feat = face.Face(speos_client=self._speos_client, name=name, description=description, metadata=metadata, parent_body=self)
         self._geom_features.append(face_feat)
         return face_feat
@@ -162,6 +183,20 @@ class Body:
         return self
 
     def find(self, name: str) -> Optional[face.Face]:
+        """Find a feature.
+
+        Parameters
+        ----------
+        name : str
+            Name of the feature.
+            Possibility to look faces.
+            Example "FaceName"
+
+        Returns
+        -------
+        ansys.speos.script.face.Face, optional
+            Found feature, or None.
+        """
         found_feature = next((x for x in self._geom_features if x._name == name), None)
 
         if found_feature is not None:
