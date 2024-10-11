@@ -248,7 +248,7 @@ def test_reset_part(speos: Speos):
     p = script.Project(speos=speos)
 
     # Create + commit
-    root_part = p.create_root_part().commit
+    root_part = p.create_root_part().commit()
     assert root_part.part_link is not None
 
     # Change local data (on template and on instance)
