@@ -136,6 +136,10 @@ def test_from_file(speos: Speos):
     assert speos.client.get_item(key=p.scene_link.get().materials[2].sop_guids[0]).get().HasField("mirror")
     assert speos.client.get_item(key=p.scene_link.get().materials[2].sop_guids[0]).get().mirror.reflectance == 60
 
+    # Check that ambient mat has no sop
+    feat_op_ambient = p.find(name=p.scene_link.get().materials[-1].name)
+    assert feat_op_ambient.sop_template_link is None
+
 
 def test_find_geom(speos: Speos):
     """Test find geometry feature in a project."""

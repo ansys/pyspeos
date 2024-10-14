@@ -239,6 +239,8 @@ ansys.speos.script.part.Part], optional
             op_feature.vop_template_link = self.client.get_item(key=mat_inst.vop_guid)
             if len(mat_inst.sop_guids) > 0:
                 op_feature.sop_template_link = self.client.get_item(key=mat_inst.sop_guids[0])
+            else:  # Specific case for ambient material
+                op_feature._sop_template = None
             op_feature.reset()
             op_feature.commit()
 
