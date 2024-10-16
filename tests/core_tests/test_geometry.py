@@ -30,6 +30,41 @@ from ansys.speos.core.part import PartFactory
 from ansys.speos.core.speos import Speos
 
 
+def test_create_big_face(speos: Speos):
+    """Test create big face."""
+    assert speos.client.healthy is True
+    # Get DB
+    face_db = speos.client.faces()  # Create face stub from client channel
+
+    size = 3 * 1024 * 1024
+    vertices = [10.0] * size
+    facets = [20] * size
+
+    # Create face
+    face_link = face_db.create(
+        message=FaceFactory.new(
+            name="Face.1",
+            description="Face one",
+            vertices=vertices,
+            facets=facets,
+            normals=vertices,
+            metadata={"key_0": "val_0", "key_1": "val_1"},
+        )
+    )
+    assert face_link.key != ""
+
+    # Read face
+    face_read = face_link.get()
+    assert face_read.name == "Face.1"
+    assert face_read.description == "Face one"
+    assert face_read.metadata == {"key_0": "val_0", "key_1": "val_1"}
+    assert face_read.vertices == vertices
+    assert face_read.facets == facets
+    assert face_read.normals == vertices
+
+    face_link.delete()
+
+
 def test_face_factory(speos: Speos):
     """Test face factory."""
     assert speos.client.healthy is True

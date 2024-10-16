@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
-from typing import List, Mapping, Optional
+from typing import Iterator, List, Mapping, Optional
 
 from ansys.api.speos.part.v1 import face_pb2 as messages
 from ansys.api.speos.part.v1 import face_pb2_grpc as service
@@ -101,6 +101,7 @@ class FaceStub(CrudStub):
 
     def __init__(self, channel):
         super().__init__(stub=service.FacesManagerStub(channel=channel))
+        self._actions_stub = service.FaceActionsStub(channel=channel)
 
     def create(self, message: Face) -> FaceLink:
         """Create a new entry.
@@ -115,7 +116,11 @@ class FaceStub(CrudStub):
         ansys.speos.core.face.FaceLink
             Link object created.
         """
-        resp = CrudStub.create(self, messages.Create_Request(face=message))
+        resp = CrudStub.create(self, messages.Create_Request(face=Face(name="tmp")))
+
+        chunk_iterator = FaceStub._face_to_chunks(guid=resp.guid, message=message, nb_items=128 * 1024)
+        self._actions_stub.Upload(chunk_iterator)
+
         return FaceLink(self, resp.guid)
 
     def read(self, ref: FaceLink) -> Face:
@@ -133,8 +138,8 @@ class FaceStub(CrudStub):
         """
         if not ref.stub == self:
             raise ValueError("FaceLink is not on current database")
-        resp = CrudStub.read(self, messages.Read_Request(guid=ref.key))
-        return resp.face
+        chunks = self._actions_stub.Download(request=messages.Download_Request(guid=ref.key))
+        return FaceStub._chunks_to_face(chunks)
 
     def update(self, ref: FaceLink, data: Face):
         """Change an existing entry.
@@ -173,6 +178,50 @@ class FaceStub(CrudStub):
         """
         guids = CrudStub.list(self, messages.List_Request()).guids
         return list(map(lambda x: FaceLink(self, x), guids))
+
+    @staticmethod
+    def _face_to_chunks(guid: str, message: Face, nb_items: int) -> Iterator[messages.Chunk]:
+        for j in range(4):
+            if j == 0:
+                chunk_face_header = messages.Chunk(
+                    face_header=messages.Chunk.FaceHeader(
+                        guid=guid,
+                        name=message.name,
+                        description=message.description,
+                        metadata=message.metadata,
+                        sizes=[len(message.vertices), len(message.facets), len(message.texture_coordinates_channels)],
+                    )
+                )
+                yield chunk_face_header
+            elif j == 1:
+                for i in range(0, len(message.vertices), nb_items):
+                    chunk_vertices = messages.Chunk(vertices=messages.Chunk.Vertices(data=message.vertices[i : i + nb_items]))
+                    yield chunk_vertices
+            elif j == 2:
+                for i in range(0, len(message.facets), nb_items):
+                    chunk_facets = messages.Chunk(facets=messages.Chunk.Facets(data=message.facets[i : i + nb_items]))
+                    yield chunk_facets
+            elif j == 3:
+                for i in range(0, len(message.normals), nb_items):
+                    chunk_normals = messages.Chunk(normals=messages.Chunk.Normals(data=message.normals[i : i + nb_items]))
+                    yield chunk_normals
+
+    @staticmethod
+    def _chunks_to_face(chunks: messages.Chunk) -> Face:
+        out_face = Face()
+        for chunk in chunks:
+            if chunk.HasField("face_header"):
+                out_face.name = chunk.face_header.name
+                out_face.description = chunk.face_header.description
+                out_face.metadata.update(chunk.face_header.metadata)
+            if chunk.HasField("vertices"):
+                out_face.vertices.extend(chunk.vertices.data)
+            if chunk.HasField("facets"):
+                out_face.facets.extend(chunk.facets.data)
+            if chunk.HasField("normals"):
+                out_face.normals.extend(chunk.normals.data)
+
+        return out_face
 
 
 class FaceFactory:
