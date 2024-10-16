@@ -270,7 +270,8 @@ class OptProp:
         if "sops" not in out_dict.keys():
             # SensorTemplate
             if self.sop_template_link is None:
-                out_dict["sops"] = [proto_message_utils.replace_guids(speos_client=self._project.client, message=self._sop_template)]
+                if self._sop_template is not None:
+                    out_dict["sops"] = [proto_message_utils.replace_guids(speos_client=self._project.client, message=self._sop_template)]
             else:
                 out_dict["sops"] = [
                     proto_message_utils.replace_guids(speos_client=self._project.client, message=self.sop_template_link.get())

@@ -644,7 +644,7 @@ class Source:
         self.source_template_link = None
         """Link object for the source template in database."""
 
-        # Attribute representing the kind of source. Can be on object of type script.Source.Luminaire, script.Source.RayFile, ...
+        # Attribute representing the kind of source. Can be an object of type script.Source.Luminaire, script.Source.RayFile, ...
         self._type = None
 
         # Create local SourceTemplate
@@ -728,7 +728,8 @@ class Source:
                 )
 
         # handle spectrum & intensity
-        self._type._to_dict(dict_to_complete=out_dict)
+        if self._type is not None:
+            self._type._to_dict(dict_to_complete=out_dict)
 
         proto_message_utils.replace_properties(json_dict=out_dict)
 
