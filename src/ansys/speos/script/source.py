@@ -684,7 +684,7 @@ class Source:
 
         # SourceTemplate
         if self.source_template_link is None:
-            out_str += f"\nlocal: {self._source_template}"
+            out_str += f"\nlocal: " + core.protobuf_message_to_str(self._source_template)
         else:
             out_str += "\n" + str(self.source_template_link)
 

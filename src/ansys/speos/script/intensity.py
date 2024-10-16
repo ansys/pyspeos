@@ -336,7 +336,7 @@ class Intensity:
         """Return the string representation of the intensity."""
         out_str = ""
         if self.intensity_template_link is None:
-            out_str += f"local: {self._intensity_template}"
+            out_str += f"local: " + core.protobuf_message_to_str(self._intensity_template)
         else:
             out_str += str(self.intensity_template_link)
 

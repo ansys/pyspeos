@@ -261,13 +261,13 @@ class OptProp:
         # VOPTemplate
         if self.vop_template_link is None:
             if self._vop_template is not None:
-                out_str += f"\nlocal: {self._vop_template}"
+                out_str += f"\nlocal: " + core.protobuf_message_to_str(self._vop_template)
         else:
             out_str += "\n" + str(self.vop_template_link)
 
         # SOPTemplate
         if self.sop_template_link is None:
-            out_str += f"\nlocal: {self._sop_template}"
+            out_str += f"\nlocal: " + core.protobuf_message_to_str(self._sop_template)
         else:
             out_str += "\n" + str(self.sop_template_link)
 
@@ -296,9 +296,10 @@ class OptProp:
 
         # Save or Update the sop template (depending on if it was already saved before)
         if self.sop_template_link is None:
-            self.sop_template_link = self._project.client.sop_templates().create(message=self._sop_template)
-            self._material_instance.ClearField("sop_guids")
-            self._material_instance.sop_guids.append(self.sop_template_link.key)
+            if self._sop_template is not None:
+                self.sop_template_link = self._project.client.sop_templates().create(message=self._sop_template)
+                self._material_instance.ClearField("sop_guids")
+                self._material_instance.sop_guids.append(self.sop_template_link.key)
         else:
             self.sop_template_link.set(data=self._sop_template)
 
