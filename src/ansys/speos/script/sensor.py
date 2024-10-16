@@ -31,6 +31,7 @@ from ansys.api.speos.sensor.v1 import camera_sensor_pb2, common_pb2, irradiance_
 import ansys.speos.core as core
 from ansys.speos.script.geo_ref import GeoRef
 import ansys.speos.script.project as project
+import ansys.speos.script.proto_message_utils as proto_message_utils
 
 
 class Sensor:
@@ -1757,6 +1758,33 @@ class Sensor:
             )
         return self._type
 
+    def _to_dict(self) -> dict:
+        out_dict = {}
+
+        # SensorInstance (= sensor guid + sensor properties)
+        if self._project.scene_link and self._unique_id is not None:
+            scene_data = self._project.scene_link.get()
+            ssr_inst = next((x for x in scene_data.sensors if x.metadata["UniqueId"] == self._unique_id), None)
+            if ssr_inst is not None:
+                out_dict = proto_message_utils.replace_guids(speos_client=self._project.client, message=ssr_inst)
+            else:
+                out_dict = proto_message_utils.replace_guids(speos_client=self._project.client, message=self._sensor_instance)
+        else:
+            out_dict = proto_message_utils.replace_guids(speos_client=self._project.client, message=self._sensor_instance)
+
+        if "sensor" not in out_dict.keys():
+            # SensorTemplate
+            if self.sensor_template_link is None:
+                out_dict["sensor"] = proto_message_utils.replace_guids(speos_client=self._project.client, message=self._sensor_template)
+            else:
+                out_dict["sensor"] = proto_message_utils.replace_guids(
+                    speos_client=self._project.client, message=self.sensor_template_link.get()
+                )
+
+        proto_message_utils.replace_properties(json_dict=out_dict)
+
+        return out_dict
+
     def __str__(self) -> str:
         """Return the string representation of the sensor."""
         out_str = ""
@@ -1764,18 +1792,12 @@ class Sensor:
         if self._project.scene_link and self._unique_id is not None:
             scene_data = self._project.scene_link.get()
             ssr_inst = next((x for x in scene_data.sensors if x.metadata["UniqueId"] == self._unique_id), None)
-            if ssr_inst is not None:
-                out_str += core.protobuf_message_to_str(ssr_inst)
-            else:
-                out_str += f"local: " + core.protobuf_message_to_str(self._sensor_instance)
+            if ssr_inst is None:
+                out_str += "local: "
         else:
-            out_str += f"local: " + core.protobuf_message_to_str(self._sensor_instance)
+            out_str += "local: "
 
-        # SensorTemplate
-        if self.sensor_template_link is None:
-            out_str += f"\nlocal: " + core.protobuf_message_to_str(self._sensor_template)
-        else:
-            out_str += "\n" + str(self.sensor_template_link)
+        out_str += proto_message_utils.dict_to_str(dict=self._to_dict())
 
         return out_str
 

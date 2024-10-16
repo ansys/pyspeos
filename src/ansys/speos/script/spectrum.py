@@ -26,6 +26,7 @@ from __future__ import annotations
 from typing import List, Mapping
 
 import ansys.speos.core as core
+from ansys.speos.script.proto_message_utils import dict_to_str
 
 
 class Spectrum:
@@ -214,12 +215,19 @@ class Spectrum:
         self._spectrum.predefined.highpressuresodium.SetInParent()
         return self
 
+    def _to_dict(self) -> dict:
+        if self.spectrum_link is None:
+            return core.protobuf_message_to_dict(self._spectrum)
+        else:
+            return core.protobuf_message_to_dict(message=self.spectrum_link.get())
+
     def __str__(self) -> str:
         """Return the string representation of the spectrum."""
+        out_str = ""
         if self.spectrum_link is None:
-            return f"local: " + core.protobuf_message_to_str(self._spectrum)
-        else:
-            return str(self.spectrum_link)
+            out_str += "local: "
+        out_str += dict_to_str(self._to_dict())
+        return out_str
 
     def commit(self) -> Spectrum:
         """Save feature: send the local data to the speos server database.

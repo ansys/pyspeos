@@ -30,6 +30,7 @@ import ansys.speos.core as core
 from ansys.speos.script.geo_ref import GeoRef
 from ansys.speos.script.intensity import Intensity
 import ansys.speos.script.project as project
+import ansys.speos.script.proto_message_utils as proto_message_utils
 from ansys.speos.script.spectrum import Spectrum
 
 
@@ -173,6 +174,13 @@ class Source:
             """
             self._luminaire_props.axis_system[:] = axis_system
             return self
+
+        def _to_dict(self, dict_to_complete: dict = {}) -> dict:
+            if dict_to_complete != {}:
+                if "spectrum" not in dict_to_complete["source"]["luminaire"].keys():
+                    dict_to_complete["source"]["luminaire"]["spectrum"] = self._spectrum._to_dict()
+            else:
+                return self._spectrum._to_dict()
 
         def __str__(self) -> str:
             return str(self._spectrum)
@@ -413,6 +421,23 @@ class Source:
                 self._surface.spectrum_guid = ""
             return self._spectrum
 
+        def _to_dict(self, dict_to_complete: dict = {}) -> dict:
+            if self._spectrum is not None:
+                if dict_to_complete != {}:
+                    if (
+                        "spectrum_guid" in dict_to_complete["source"]["surface"].keys()
+                        and "spectrum" not in dict_to_complete["source"]["surface"].keys()
+                    ):
+                        dict_to_complete["source"]["surface"]["spectrum"] = self._spectrum._to_dict()
+                else:
+                    return self._spectrum._to_dict()
+
+            if dict_to_complete != {}:
+                if "intensity" not in dict_to_complete["source"]["surface"].keys():
+                    dict_to_complete["source"]["surface"]["intensity"] = self._spectrum._to_dict()
+            else:
+                return self._spectrum._to_dict()
+
         def __str__(self) -> str:
             out_str = ""
             out_str += str(self._intensity)
@@ -588,6 +613,17 @@ class Source:
 
             return self
 
+        def _to_dict(self, dict_to_complete: dict = {}) -> dict:
+            if self._spectrum is not None:
+                if dict_to_complete != {}:
+                    if (
+                        "spectrum_guid" in dict_to_complete["source"]["rayfile"].keys()
+                        and "spectrum" not in dict_to_complete["source"]["rayfile"].keys()
+                    ):
+                        dict_to_complete["source"]["rayfile"]["spectrum"] = self._spectrum._to_dict()
+                else:
+                    return self._spectrum._to_dict()
+
         def __str__(self) -> str:
             out_str = ""
             if self._spectrum is not None:
@@ -668,31 +704,48 @@ class Source:
             )
         return self._type
 
-    def __str__(self) -> str:
-        """Return the string representation of the source."""
-        out_str = ""
+    def _to_dict(self) -> str:
+        out_dict = {}
+
         # SourceInstance (= source guid + source properties)
         if self._project.scene_link and self._unique_id is not None:
             scene_data = self._project.scene_link.get()
             src_inst = next((x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None)
             if src_inst is not None:
-                out_str += core.protobuf_message_to_str(src_inst)
+                out_dict = proto_message_utils.replace_guids(speos_client=self._project.client, message=src_inst)
             else:
-                out_str += f"local: " + core.protobuf_message_to_str(self._source_instance)
+                out_dict = proto_message_utils.replace_guids(speos_client=self._project.client, message=self._source_instance)
         else:
-            out_str += f"local: " + core.protobuf_message_to_str(self._source_instance)
+            out_dict = proto_message_utils.replace_guids(speos_client=self._project.client, message=self._source_instance)
 
-        # SourceTemplate
-        if self.source_template_link is None:
-            out_str += f"\nlocal: " + core.protobuf_message_to_str(self._source_template)
+        if "source" not in out_dict.keys():
+            # SourceTemplate
+            if self.source_template_link is None:
+                out_dict["source"] = proto_message_utils.replace_guids(speos_client=self._project.client, message=self._source_template)
+            else:
+                out_dict["source"] = proto_message_utils.replace_guids(
+                    speos_client=self._project.client, message=self.source_template_link.get()
+                )
+
+        # handle spectrum & intensity
+        self._type._to_dict(dict_to_complete=out_dict)
+
+        proto_message_utils.replace_properties(json_dict=out_dict)
+
+        return out_dict
+
+    def __str__(self) -> str:
+        """Return the string representation of the source."""
+        out_str = ""
+        if self._project.scene_link and self._unique_id is not None:
+            scene_data = self._project.scene_link.get()
+            src_inst = next((x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None)
+            if src_inst is None:
+                out_str += "local: "
         else:
-            out_str += "\n" + str(self.source_template_link)
+            out_str += "local: "
 
-        # Contained objects like Spectrum, IntensityTemplate
-        if self._type is not None:
-            out_str += "\n"
-            out_str += str(self._type)
-
+        out_str += proto_message_utils.dict_to_str(dict=self._to_dict())
         return out_str
 
     def commit(self) -> Source:
