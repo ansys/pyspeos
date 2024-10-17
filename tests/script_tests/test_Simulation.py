@@ -264,10 +264,25 @@ def test_commit(speos: Speos):
     """Test commit of simulation."""
     p = script.Project(speos=speos)
 
+    # Prerequisites: a source and a sensor are needed (bug also a rootpart)
+    root_part = p.create_root_part()
+    root_part.create_body(name="Body.1").create_face(name="Face.1").set_vertices([0, 1, 0, 0, 2, 0, 1, 2, 0]).set_facets(
+        [0, 1, 2]
+    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    root_part.commit()
+
+    ssr = p.create_sensor(name="Irradiance.1")
+    ssr.set_irradiance().set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    ssr.commit()
+
+    src = p.create_source(name="Luminaire.1")
+    src.set_luminaire().set_intensity_file_uri(uri=os.path.join(test_path, "IES_C_DETECTOR.ies"))
+    src.commit()
+
     # Create
     sim1 = p.create_simulation(name="Direct.1")
     sim1.set_direct()
-    sim1.set_direct().set_ambient_material_file_uri(uri=os.path.join(test_path, "material.material"))
+    sim1.set_sensor_paths(sensor_paths=[ssr._name]).set_source_paths(source_paths=[src._name])
     assert sim1.simulation_template_link is None
     assert len(p.scene_link.get().simulations) == 0
 
@@ -278,9 +293,11 @@ def test_commit(speos: Speos):
     assert len(p.scene_link.get().simulations) == 1
     assert p.scene_link.get().simulations[0] == sim1._simulation_instance
 
-    # Change only in local not committed
+    # Change only in local not committed (on template and on instance)
     sim1.set_direct().set_geom_distance_tolerance(value=0.1)
-    assert p.scene_link.get().sources[0] != sim1._source_instance
+    assert sim1.simulation_template_link.get() != sim1._simulation_template
+    sim1.set_geometries(geometries=[script.GeoRef.from_native_link(geopath="Body.1/Face.1")])
+    assert p.scene_link.get().simulations[0] != sim1._simulation_instance
 
     sim1.delete()
 
@@ -289,23 +306,39 @@ def test_reset(speos: Speos):
     """Test reset of simulation."""
     p = script.Project(speos=speos)
 
+    # Prerequisites: a source and a sensor are needed (bug also a rootpart)
+    root_part = p.create_root_part()
+    root_part.create_body(name="Body.1").create_face(name="Face.1").set_vertices([0, 1, 0, 0, 2, 0, 1, 2, 0]).set_facets(
+        [0, 1, 2]
+    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    root_part.commit()
+
+    ssr = p.create_sensor(name="Irradiance.1")
+    ssr.set_irradiance().set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    ssr.commit()
+
+    src = p.create_source(name="Luminaire.1")
+    src.set_luminaire().set_intensity_file_uri(uri=os.path.join(test_path, "IES_C_DETECTOR.ies"))
+    src.commit()
+
     # Create + commit
     sim1 = p.create_simulation(name="Direct.1")
     sim1.set_direct()
-    sim1.set_direct().set_ambient_material_file_uri(uri=os.path.join(test_path, "material.material"))
-    sim1.commit()
+    sim1.set_sensor_paths(sensor_paths=[ssr._name]).set_source_paths(source_paths=[src._name]).commit()
     assert sim1.simulation_template_link is not None
     assert sim1.simulation_template_link.get().HasField("direct_mc_simulation_template")
     assert len(p.scene_link.get().simulations) == 1
-    assert p.scene_link.get().simulations[0].HasField("ambient_material_uri")
+
     # Change local data (on template and on instance)
+    sim1.set_direct().set_geom_distance_tolerance(value=0.1)
+    assert sim1.simulation_template_link.get() != sim1._simulation_template
+    sim1.set_geometries(geometries=[script.GeoRef.from_native_link(geopath="Body.1/Face.1")])
+    assert p.scene_link.get().simulations[0] != sim1._simulation_instance
 
     # Ask for reset
     sim1.reset()
-    assert sim1.simulation_template_link.get().HasField("direct_mc_simulation_template")
-    assert sim1._simulation_template.HasField("direct_mc_simulation_template")  # local template
-    assert p.scene_link.get().simulations[0].HasField("ambient_material_uri")
-    assert sim1._simulation_instance.HasField("ambient_material_uri")  # local instance
+    assert sim1.simulation_template_link.get() == sim1._simulation_template
+    assert p.scene_link.get().simulations[0] == sim1._simulation_instance
 
     sim1.delete()
 
@@ -314,16 +347,30 @@ def test_delete_source(speos: Speos):
     """Test delete of source."""
     p = script.Project(speos=speos)
 
+    # Prerequisites: a source and a sensor are needed (bug also a rootpart)
+    root_part = p.create_root_part()
+    root_part.create_body(name="Body.1").create_face(name="Face.1").set_vertices([0, 1, 0, 0, 2, 0, 1, 2, 0]).set_facets(
+        [0, 1, 2]
+    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    root_part.commit()
+
+    ssr = p.create_sensor(name="Irradiance.1")
+    ssr.set_irradiance().set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    ssr.commit()
+
+    src = p.create_source(name="Luminaire.1")
+    src.set_luminaire().set_intensity_file_uri(uri=os.path.join(test_path, "IES_C_DETECTOR.ies"))
+    src.commit()
+
     # Create + commit
     sim1 = p.create_simulation(name="Direct.1")
     sim1.set_direct()
-    sim1.set_direct().set_ambient_material_file_uri(uri=os.path.join(test_path, "material.material"))
-    sim1.commit()
+    sim1.set_sensor_paths(sensor_paths=[ssr._name]).set_source_paths(source_paths=[src._name]).commit()
     assert sim1.simulation_template_link.get().HasField("direct_mc_simulation_template")
     assert sim1._simulation_template.HasField("direct_mc_simulation_template")  # local template
     assert len(p.scene_link.get().simulations) == 1
-    assert p.scene_link.get().simulations[0].HasField("ambient_material_uri")
-    assert sim1._simulation_instance.HasField("ambient_material_uri")  # local instance
+    assert len(p.scene_link.get().simulations[0].sensor_paths) == 1
+    assert len(sim1._simulation_instance.sensor_paths) == 1  # local
 
     # Delete
     sim1.delete()
@@ -334,4 +381,4 @@ def test_delete_source(speos: Speos):
     assert sim1._simulation_template.HasField("direct_mc_simulation_template")  # local
 
     assert len(p.scene_link.get().simulations) == 0
-    assert sim1._simulation_instance.HasField("ambient_material_uri")  # local
+    assert len(sim1._simulation_instance.sensor_paths) == 1  # local
