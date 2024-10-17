@@ -140,6 +140,38 @@ def test_from_file(speos: Speos):
     feat_op_ambient = p.find(name=p.scene_link.get().materials[-1].name)
     assert feat_op_ambient.sop_template_link is None
 
+    # Retrieve another feature
+    feat_ssr1 = p.find(name=p.scene_link.get().sensors[0].name)
+    assert feat_ssr1 is not None
+    assert type(feat_ssr1) is script.Sensor
+
+    # And that we can modify it (and that other values are not overridden by default values)
+    feat_ssr1.set_irradiance().set_type_colorimetric().set_wavelengths_range().set_end(value=800)
+    feat_ssr1.commit()
+    ssr_link = speos.client.get_item(key=p.scene_link.get().sensors[0].sensor_guid)
+    ssr_data = ssr_link.get()
+    assert speos.client.get_item(key=p.scene_link.get().sensors[0].sensor_guid).get().HasField("irradiance_sensor_template")
+    assert (
+        speos.client.get_item(key=p.scene_link.get().sensors[0].sensor_guid)
+        .get()
+        .irradiance_sensor_template.HasField("sensor_type_colorimetric")
+    )
+    assert (
+        speos.client.get_item(key=p.scene_link.get().sensors[0].sensor_guid)
+        .get()
+        .irradiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_end
+        == 800
+    )
+    assert (
+        speos.client.get_item(key=p.scene_link.get().sensors[0].sensor_guid)
+        .get()
+        .irradiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_sampling
+        == 25
+    )
+    assert (
+        speos.client.get_item(key=p.scene_link.get().sensors[0].sensor_guid).get().irradiance_sensor_template.dimensions.x_sampling == 500
+    )
+
 
 def test_find_geom(speos: Speos):
     """Test find geometry feature in a project."""
