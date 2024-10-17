@@ -39,57 +39,72 @@ def test_create_direct(speos: Speos):
 
     # Default value
     sim1 = p.create_simulation(name="Direct.1")
-    sim1.set_direct()
-    sim1.commit()
-    assert sim1.simulation_template_link is not None
-    assert sim1.simulation_template_link.get().HasField("direct_mc_simulation_template")
-    assert sim1.simulation_template_link.get().direct_mc_simulation_template.HasField("geom_distance_tolerance")
-    assert sim1.simulation_template_link.get().direct_mc_simulation_template.geom_distance_tolerance == 0.05
-    assert sim1.simulation_template_link.get().direct_mc_simulation_template.HasField("max_impact")
-    assert sim1.simulation_template_link.get().direct_mc_simulation_template.max_impact == 100
-    assert sim1.simulation_template_link.get().direct_mc_simulation_template.HasField("colorimetric_standard_CIE")
-    assert sim1.simulation_template_link.get().direct_mc_simulation_template.colorimetric_standard == simulation_template_pb2.CIE1931
-    assert sim1.simulation_template_link.get().direct_mc_simulation_template.HasField("dispersion")
-    assert sim1.simulation_template_link.get().direct_mc_simulation_template.dispersion == True
-    assert sim1.simulation_template_link.get().direct_mc_simulation_template.HasField("fast_transmission_gathering")
-    assert sim1.simulation_template_link.get().direct_mc_simulation_template.fast_transmission_gathering == False
-    assert sim1.simulation_template_link.get().direct_mc_simulation_template.HasField("ambient_material_uri")
-    assert sim1.simulation_template_link.get().direct_mc_simulation_template.ambient_material_uri == ""
-    assert sim1.simulation_template_link.get().direct_mc_simulation_template.HasField("weight")
-    assert sim1.simulation_template_link.get().direct_mc_simulation_template.weight == simulation_template_pb2.Weight
-    assert sim1.simulation_template_link.get().direct_mc_simulation_template.weight.HasField("minimum_energy_percentage")
-    assert sim1.simulation_template_link.get().direct_mc_simulation_template.weight.minimum_energy_percentage == 0.5
+    sim1.set_direct()  # do not commit to avoid issues about No sensor in simulation
+    assert sim1._simulation_template.HasField("direct_mc_simulation_template")
+    assert sim1._simulation_template.direct_mc_simulation_template.geom_distance_tolerance == 0.01
+    assert sim1._simulation_template.direct_mc_simulation_template.max_impact == 100
+    assert sim1._simulation_template.direct_mc_simulation_template.colorimetric_standard == simulation_template_pb2.CIE_1931
+    assert sim1._simulation_template.direct_mc_simulation_template.dispersion == True
+    assert sim1._simulation_template.direct_mc_simulation_template.fast_transmission_gathering == False
+    assert sim1._simulation_template.direct_mc_simulation_template.ambient_material_uri == ""
+    assert sim1._simulation_template.direct_mc_simulation_template.HasField("weight")
+    assert sim1._simulation_template.direct_mc_simulation_template.weight.minimum_energy_percentage == 0.5
+    assert len(sim1._simulation_instance.sensor_paths) == 0
+    assert len(sim1._simulation_instance.source_paths) == 0
+    assert len(sim1._simulation_instance.geometries.geo_paths) == 0
 
     # Change value
+    # geom_distance_tolerance
     sim1.set_direct().set_geom_distance_tolerance(value=0.1)
+    assert sim1._simulation_template.direct_mc_simulation_template.geom_distance_tolerance == 0.1
+
+    # max_impact
     sim1.set_direct().set_max_impact(value=200)
+    assert sim1._simulation_template.direct_mc_simulation_template.max_impact == 200
+
+    # weight - minimum_energy_percentage
+    sim1.set_direct().set_weight_none()
+    assert sim1._simulation_template.direct_mc_simulation_template.HasField("weight") == False
+
+    sim1.set_direct().set_weight().set_minimum_energy_percentage(value=0.7)
+    assert sim1._simulation_template.direct_mc_simulation_template.HasField("weight")
+    assert sim1._simulation_template.direct_mc_simulation_template.weight.minimum_energy_percentage == 0.7
+
+    # colorimetric_standard
     sim1.set_direct().set_colorimetric_standard_CIE_1964()
-    sim1.set_direct().set_dispersion(False)
-    sim1.set_direct().set_fast_transmission_gathering(True)
-    sim1.set_direct().set_ambient_material_file_uri(uri=os.path.join(test_path, "material.material"))
-    sim1.set_direct().set_weight().set_minimum_energy_percentage(value=0.6)
-    sim1.commit()
+    assert sim1._simulation_template.direct_mc_simulation_template.colorimetric_standard == simulation_template_pb2.CIE_1964
 
+    # dispersion
+    sim1.set_direct().set_dispersion(value=False)
+    assert sim1._simulation_template.direct_mc_simulation_template.dispersion == False
+
+    # fast_transmission_gathering
+    sim1.set_direct().set_fast_transmission_gathering(value=True)
+    assert sim1._simulation_template.direct_mc_simulation_template.fast_transmission_gathering == True
+
+    # ambient_material_uri
+    sim1.set_direct().set_ambient_material_file_uri(uri=os.path.join(test_path, "AIR.material"))
+    assert sim1._simulation_template.direct_mc_simulation_template.ambient_material_uri.endswith("AIR.material")
+
+    # sensor_paths
     sim1.set_sensor_paths(sensor_paths=["sensor.1", "sensor.2"])
-    sim1.set_source_paths(source_paths=["source.1"])
+    assert sim1._simulation_instance.sensor_paths == ["sensor.1", "sensor.2"]
 
+    # source_paths
+    sim1.set_source_paths(source_paths=["source.1"])
+    assert sim1._simulation_instance.source_paths == ["source.1"]
+
+    # geometries
     sim1.set_geometries(
-        values=[
+        geometries=[
             script.GeoRef.from_native_link(geopath="mybody1"),
             script.GeoRef.from_native_link(geopath="mybody2"),
             script.GeoRef.from_native_link(geopath="mybody3"),
         ]
     )
-
-    assert len(sim1._simulation_instance.sensor_paths) == 2
-    assert len(sim1._simulation_instance.source_paths) == 1
-    assert len(sim1._simulation_instance.geometries) == 3
+    assert sim1._simulation_instance.geometries.geo_paths == ["mybody1", "mybody2", "mybody3"]
 
     sim1.delete()
-
-    assert len(sim1._simulation_instance.sensor_paths) == 0
-    assert len(sim1._simulation_instance.source_paths) == 0
-    assert len(sim1._simulation_instance.geometries) == 0
 
 
 def test_create_inverse(speos: Speos):
@@ -98,64 +113,87 @@ def test_create_inverse(speos: Speos):
 
     # Default value
     sim1 = p.create_simulation(name="Inverse.1")
-    sim1.set_inverse()
-    sim1.commit()
-    assert sim1.simulation_template_link is not None
-    assert sim1.simulation_template_link.get().HasField("inverse_mc_simulation_template")
-    assert sim1.simulation_template_link.get().inverse_mc_simulation_template.HasField("geom_distance_tolerance")
-    assert sim1.simulation_template_link.get().inverse_mc_simulation_template.geom_distance_tolerance == 0.05
-    assert sim1.simulation_template_link.get().inverse_mc_simulation_template.HasField("max_impact")
-    assert sim1.simulation_template_link.get().inverse_mc_simulation_template.max_impact == 100
-    assert sim1.simulation_template_link.get().inverse_mc_simulation_template.HasField("colorimetric_standard_CIE")
-    assert sim1.simulation_template_link.get().inverse_mc_simulation_template.colorimetric_standard == simulation_template_pb2.CIE1931
-    assert sim1.simulation_template_link.get().inverse_mc_simulation_template.HasField("weight")
-    assert sim1.simulation_template_link.get().inverse_mc_simulation_template.weight == simulation_template_pb2.Weight
-    assert sim1.simulation_template_link.get().inverse_mc_simulation_template.weight.HasField("minimum_energy_percentage")
-    assert sim1.simulation_template_link.get().inverse_mc_simulation_template.weight.minimum_energy_percentage == 0.5
-    assert sim1.simulation_template_link.get().inverse_mc_simulation_template.HasField("dispersion")
-    assert sim1.simulation_template_link.get().inverse_mc_simulation_template.dispersion == True
-    assert sim1.simulation_template_link.get().inverse_mc_simulation_template.HasField("splitting")
-    assert sim1.simulation_template_link.get().inverse_mc_simulation_template.splitting == False
-    assert sim1.simulation_template_link.get().inverse_mc_simulation_template.HasField("number_of_gathering_rays_per_source")
-    assert sim1.simulation_template_link.get().inverse_mc_simulation_template.number_of_gathering_rays_per_source == 1
-    assert sim1.simulation_template_link.get().inverse_mc_simulation_template.HasField("maximum_gathering_error")
-    assert sim1.simulation_template_link.get().inverse_mc_simulation_template.maximum_gathering_error == 0
-    assert sim1.simulation_template_link.get().inverse_mc_simulation_template.HasField("fast_transmission_gathering")
-    assert sim1.simulation_template_link.get().inverse_mc_simulation_template.fast_transmission_gathering == False
-    assert sim1.simulation_template_link.get().inverse_mc_simulation_template.HasField("ambient_material_uri")
-    assert sim1.simulation_template_link.get().inverse_mc_simulation_template.ambient_material_uri == ""
+    sim1.set_inverse()  # do not commit to avoid issues about No sensor in simulation
+    assert sim1._simulation_template.HasField("inverse_mc_simulation_template")
+    assert sim1._simulation_template.inverse_mc_simulation_template.geom_distance_tolerance == 0.01
+    assert sim1._simulation_template.inverse_mc_simulation_template.max_impact == 100
+    assert sim1._simulation_template.inverse_mc_simulation_template.colorimetric_standard == simulation_template_pb2.CIE_1931
+    assert sim1._simulation_template.inverse_mc_simulation_template.HasField("weight")
+    assert sim1._simulation_template.inverse_mc_simulation_template.weight.minimum_energy_percentage == 0.5
+    assert sim1._simulation_template.inverse_mc_simulation_template.dispersion == False
+    assert sim1._simulation_template.inverse_mc_simulation_template.splitting == False
+    assert sim1._simulation_template.inverse_mc_simulation_template.number_of_gathering_rays_per_source == 1
+    assert sim1._simulation_template.inverse_mc_simulation_template.maximum_gathering_error == 0
+    assert sim1._simulation_template.inverse_mc_simulation_template.fast_transmission_gathering == False
+    assert sim1._simulation_template.inverse_mc_simulation_template.ambient_material_uri == ""
+    assert len(sim1._simulation_instance.sensor_paths) == 0
+    assert len(sim1._simulation_instance.source_paths) == 0
+    assert len(sim1._simulation_instance.geometries.geo_paths) == 0
 
     # Change value
+    # geom_distance_tolerance
     sim1.set_inverse().set_geom_distance_tolerance(value=0.1)
+    assert sim1._simulation_template.inverse_mc_simulation_template.geom_distance_tolerance == 0.1
+
+    # max_impact
     sim1.set_inverse().set_max_impact(value=200)
+    assert sim1._simulation_template.inverse_mc_simulation_template.max_impact == 200
+
+    # weight - minimum_energy_percentage
+    sim1.set_inverse().set_weight_none()
+    assert sim1._simulation_template.inverse_mc_simulation_template.HasField("weight") == False
+
+    sim1.set_inverse().set_weight().set_minimum_energy_percentage(value=0.7)
+    assert sim1._simulation_template.inverse_mc_simulation_template.HasField("weight")
+    assert sim1._simulation_template.inverse_mc_simulation_template.weight.minimum_energy_percentage == 0.7
+
+    # colorimetric_standard
     sim1.set_inverse().set_colorimetric_standard_CIE_1964()
-    sim1.set_inverse().set_dispersion(False)
-    sim1.set_inverse().set_splitting(True)
+    assert sim1._simulation_template.inverse_mc_simulation_template.colorimetric_standard == simulation_template_pb2.CIE_1964
+
+    # dispersion
+    sim1.set_inverse().set_dispersion(value=True)
+    assert sim1._simulation_template.inverse_mc_simulation_template.dispersion == True
+
+    # splitting
+    sim1.set_inverse().set_splitting(value=True)
+    assert sim1._simulation_template.inverse_mc_simulation_template.splitting == True
+
+    # number_of_gathering_rays_per_source
     sim1.set_inverse().set_number_of_gathering_rays_per_source(value=2)
-    sim1.set_inverse().set_maximum_gathering_error(value=0.1)
-    sim1.set_inverse().set_ambient_material_file_uri(uri=os.path.join(test_path, "material.material"))
-    sim1.commit()
+    assert sim1._simulation_template.inverse_mc_simulation_template.number_of_gathering_rays_per_source == 2
 
+    # maximum_gathering_error
+    sim1.set_inverse().set_maximum_gathering_error(value=3)
+    assert sim1._simulation_template.inverse_mc_simulation_template.maximum_gathering_error == 3
+
+    # fast_transmission_gathering
+    sim1.set_inverse().set_fast_transmission_gathering(value=True)
+    assert sim1._simulation_template.inverse_mc_simulation_template.fast_transmission_gathering == True
+
+    # ambient_material_uri
+    sim1.set_inverse().set_ambient_material_file_uri(uri=os.path.join(test_path, "AIR.material"))
+    assert sim1._simulation_template.inverse_mc_simulation_template.ambient_material_uri.endswith("AIR.material")
+
+    # sensor_paths
     sim1.set_sensor_paths(sensor_paths=["sensor.1", "sensor.2"])
-    sim1.set_source_paths(source_paths=["source.1"])
+    assert sim1._simulation_instance.sensor_paths == ["sensor.1", "sensor.2"]
 
+    # source_paths
+    sim1.set_source_paths(source_paths=["source.1"])
+    assert sim1._simulation_instance.source_paths == ["source.1"]
+
+    # geometries
     sim1.set_geometries(
-        values=[
+        geometries=[
             script.GeoRef.from_native_link(geopath="mybody1"),
             script.GeoRef.from_native_link(geopath="mybody2"),
             script.GeoRef.from_native_link(geopath="mybody3"),
         ]
     )
-
-    assert len(sim1._simulation_instance.sensor_paths) == 2
-    assert len(sim1._simulation_instance.source_paths) == 1
-    assert len(sim1._simulation_instance.geometries) == 3
+    assert sim1._simulation_instance.geometries.geo_paths == ["mybody1", "mybody2", "mybody3"]
 
     sim1.delete()
-
-    assert len(sim1._simulation_instance.sensor_paths) == 0
-    assert len(sim1._simulation_instance.source_paths) == 0
-    assert len(sim1._simulation_instance.geometries) == 0
 
 
 def test_create_interactive(speos: Speos):
@@ -164,52 +202,62 @@ def test_create_interactive(speos: Speos):
 
     # Default value
     sim1 = p.create_simulation(name="Interactive.1")
-    sim1.set_interactive()
-    sim1.commit()
-    assert sim1.simulation_template_link is not None
-    assert sim1.simulation_template_link.get().HasField("interactive_simulation_template")
-    assert sim1.simulation_template_link.get().interactive_simulation_template.HasField("geom_distance_tolerance")
-    assert sim1.simulation_template_link.get().interactive_simulation_template.geom_distance_tolerance == 0.05
-    assert sim1.simulation_template_link.get().interactive_simulation_template.HasField("max_impact")
-    assert sim1.simulation_template_link.get().interactive_simulation_template.max_impact == 100
-    assert sim1.simulation_template_link.get().interactive_simulation_template.HasField("colorimetric_standard_CIE")
-    assert sim1.simulation_template_link.get().interactive_simulation_template.colorimetric_standard == simulation_template_pb2.CIE1931
-    assert sim1.simulation_template_link.get().interactive_simulation_template.HasField("weight")
-    assert sim1.simulation_template_link.get().interactive_simulation_template.weight == simulation_template_pb2.Weight
-    assert sim1.simulation_template_link.get().interactive_simulation_template.weight.HasField("minimum_energy_percentage")
-    assert sim1.simulation_template_link.get().interactive_simulation_template.weight.minimum_energy_percentage == 0.5
-    assert sim1.simulation_template_link.get().interactive_simulation_template.HasField("ambient_material_uri")
-    assert sim1.simulation_template_link.get().interactive_simulation_template.ambient_material_uri == ""
+    sim1.set_interactive()  # do not commit to avoid issues about No sensor in simulation
+    assert sim1._simulation_template.HasField("interactive_simulation_template")
+    assert sim1._simulation_template.interactive_simulation_template.geom_distance_tolerance == 0.01
+    assert sim1._simulation_template.interactive_simulation_template.max_impact == 100
+    assert sim1._simulation_template.interactive_simulation_template.colorimetric_standard == simulation_template_pb2.CIE_1931
+    assert sim1._simulation_template.interactive_simulation_template.HasField("weight")
+    assert sim1._simulation_template.interactive_simulation_template.weight.minimum_energy_percentage == 0.5
+    assert sim1._simulation_template.interactive_simulation_template.ambient_material_uri == ""
+    assert len(sim1._simulation_instance.sensor_paths) == 0
+    assert len(sim1._simulation_instance.source_paths) == 0
+    assert len(sim1._simulation_instance.geometries.geo_paths) == 0
 
     # Change value
+    # geom_distance_tolerance
     sim1.set_interactive().set_geom_distance_tolerance(value=0.1)
+    assert sim1._simulation_template.interactive_simulation_template.geom_distance_tolerance == 0.1
+
+    # max_impact
     sim1.set_interactive().set_max_impact(value=200)
+    assert sim1._simulation_template.interactive_simulation_template.max_impact == 200
+
+    # weight - minimum_energy_percentage
+    sim1.set_interactive().set_weight_none()
+    assert sim1._simulation_template.interactive_simulation_template.HasField("weight") == False
+
+    sim1.set_interactive().set_weight().set_minimum_energy_percentage(value=0.7)
+    assert sim1._simulation_template.interactive_simulation_template.HasField("weight")
+    assert sim1._simulation_template.interactive_simulation_template.weight.minimum_energy_percentage == 0.7
+
+    # colorimetric_standard
     sim1.set_interactive().set_colorimetric_standard_CIE_1964()
-    sim1.set_interactive().set_ambient_material_file_uri(uri=os.path.join(test_path, "material.material"))
-    sim1.set_interactive().set_weight().set_minimum_energy_percentage(value=0.6)
+    assert sim1._simulation_template.interactive_simulation_template.colorimetric_standard == simulation_template_pb2.CIE_1964
 
-    sim1.commit()
+    # ambient_material_uri
+    sim1.set_interactive().set_ambient_material_file_uri(uri=os.path.join(test_path, "AIR.material"))
+    assert sim1._simulation_template.interactive_simulation_template.ambient_material_uri.endswith("AIR.material")
 
+    # sensor_paths
     sim1.set_sensor_paths(sensor_paths=["sensor.1", "sensor.2"])
-    sim1.set_source_paths(source_paths=["source.1"])
+    assert sim1._simulation_instance.sensor_paths == ["sensor.1", "sensor.2"]
 
+    # source_paths
+    sim1.set_source_paths(source_paths=["source.1"])
+    assert sim1._simulation_instance.source_paths == ["source.1"]
+
+    # geometries
     sim1.set_geometries(
-        values=[
+        geometries=[
             script.GeoRef.from_native_link(geopath="mybody1"),
             script.GeoRef.from_native_link(geopath="mybody2"),
             script.GeoRef.from_native_link(geopath="mybody3"),
         ]
     )
-
-    assert len(sim1._simulation_instance.sensor_paths) == 2
-    assert len(sim1._simulation_instance.source_paths) == 1
-    assert len(sim1._simulation_instance.geometries) == 3
+    assert sim1._simulation_instance.geometries.geo_paths == ["mybody1", "mybody2", "mybody3"]
 
     sim1.delete()
-
-    assert len(sim1._simulation_instance.sensor_paths) == 0
-    assert len(sim1._simulation_instance.source_paths) == 0
-    assert len(sim1._simulation_instance.geometries) == 0
 
 
 def test_commit(speos: Speos):

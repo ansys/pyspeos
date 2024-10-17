@@ -80,11 +80,11 @@ class Simulation:
             self._weight.minimum_energy_percentage = value
             return self
 
-    class DirectSimulation:
+    class Direct:
         """
         Type of simulation : Direct
         By default,
-        geometry distance tolerance is set to 0.05,
+        geometry distance tolerance is set to 0.01,
         maximum number of impacts is set to 100,
         colorimetric standard is set to CIE 1931,
         dispersion is set to True,
@@ -94,13 +94,12 @@ class Simulation:
 
         Parameters
         ----------
-        simulation_template : ansys.api.speos.simulation.v1.simulation_template_pb2.SimulationTemplate
-            Simulation template.
-
+        direct_template : ansys.api.speos.simulation.v1.simulation_template_pb2.DirectMCSimulationTemplate
+            Direct simulation to complete.
         """
 
-        def __init__(self, simulation_template: core.SimulationTemplate) -> None:
-            self._simulation_template = simulation_template
+        def __init__(self, direct_template: simulation_template_pb2.DirectMCSimulationTemplate) -> None:
+            self._direct_template = direct_template
 
             # Default values
             self.set_geom_distance_tolerance()
@@ -111,21 +110,21 @@ class Simulation:
             self.set_ambient_material_file_uri()
             self.set_weight()
 
-        def set_geom_distance_tolerance(self, value: float = 0.05) -> Simulation.DirectSimulation:
+        def set_geom_distance_tolerance(self, value: float = 0.01) -> Simulation.DirectSimulation:
             """Set the geometry distance tolerance.
 
             Parameters
             ----------
             value : float
                 The geometry distance tolerance.
-                by default, ``0.05``.
+                by default, ``0.01``.
 
             Returns
             -------
             ansys.speos.script.simulation.Simulation.DirectSimulation
                 Direct simulation
             """
-            self._simulation_template.direct_mc_simulation_template.geom_distance_tolerance = value
+            self._direct_template.geom_distance_tolerance = value
             return self
 
         def set_max_impact(self, value: int = 100) -> Simulation.DirectSimulation:
@@ -142,7 +141,7 @@ class Simulation:
             ansys.speos.script.simulation.Simulation.DirectSimulation
                 Direct simulation
             """
-            self._simulation_template.direct_mc_simulation_template.max_impact = value
+            self._direct_template.max_impact = value
             return self
 
         def set_weight(self) -> Simulation.Weight:
@@ -153,7 +152,7 @@ class Simulation:
             ansys.speos.script.simulation.Simulation.Weight
                 Weight.
             """
-            return Simulation.Weight(self._simulation_template.direct_mc_simulation_template.weight)
+            return Simulation.Weight(self._direct_template.weight)
 
         def set_weight_none(self) -> Simulation.DirectSimulation:
             """Deactivate the weight.
@@ -163,7 +162,7 @@ class Simulation:
             ansys.speos.script.simulation.Simulation.DirectSimulation
                 Direct simulation
             """
-            self._simulation_template.ClearField("weight")
+            self._direct_template.ClearField("weight")
             return self
 
         def set_colorimetric_standard_CIE_1931(self) -> Simulation.DirectSimulation:
@@ -174,7 +173,7 @@ class Simulation:
             ansys.speos.script.simulation.Simulation.DirectSimulation
                 Direct simulation
             """
-            self._simulation_template.direct_mc_simulation_template.colorimetric_standard = simulation_template_pb2.CIE_1931
+            self._direct_template.colorimetric_standard = simulation_template_pb2.CIE_1931
             return self
 
         def set_colorimetric_standard_CIE_1964(self) -> Simulation.DirectSimulation:
@@ -185,7 +184,7 @@ class Simulation:
             ansys.speos.script.simulation.Simulation.DirectSimulation
                 Direct simulation
             """
-            self._simulation_template.direct_mc_simulation_template.colorimetric_standard = simulation_template_pb2.CIE_1964
+            self._direct_template.colorimetric_standard = simulation_template_pb2.CIE_1964
             return self
 
         def set_dispersion(self, value: bool = True) -> Simulation.DirectSimulation:
@@ -202,7 +201,7 @@ class Simulation:
             ansys.speos.script.simulation.Simulation.DirectSimulation
                 Direct simulation
             """
-            self._simulation_template.direct_mc_simulation_template.dispersion = value
+            self._direct_template.dispersion = value
             return self
 
         def set_fast_transmission_gathering(self, value: bool = False) -> Simulation.DirectSimulation:
@@ -219,24 +218,24 @@ class Simulation:
             ansys.speos.script.simulation.Simulation.DirectSimulation
                 Direct simulation
             """
-            self._simulation_template.direct_mc_simulation_template.fast_transmission_gathering = value
+            self._direct_template.fast_transmission_gathering = value
             return self
 
-        def set_ambient_material_file_uri(self, url: str = "") -> Simulation.DirectSimulation:
+        def set_ambient_material_file_uri(self, uri: str = "") -> Simulation.DirectSimulation:
             """Set the ambient material URI.
 
             Parameters
             ----------
-            url : str
+            uri : str
                 The ambient material URI.
-                by default, ``""``.
+                by default, ``""``, means air as ambient material.
 
             Returns
             -------
             ansys.speos.script.simulation.Simulation.DirectSimulation
                 Direct simulation
             """
-            self._simulation_template.direct_mc_simulation_template.ambient_material_uri = url
+            self._direct_template.ambient_material_uri = uri
             return self
 
         def __str__(self) -> str:
@@ -245,13 +244,13 @@ class Simulation:
                 out_str += str(self._simulation_template)
             return out_str
 
-    class InverseSimulation:
+    class Inverse:
         """Type of simulation : Inverse
         By default,
-        geometry distance tolerance is set to 0.05,
+        geometry distance tolerance is set to 0.01,
         maximum number of impacts is set to 100,
         colorimetric standard is set to CIE 1931,
-        dispersion is set to True,
+        dispersion is set to False,
         splitting is set to False,
         number of gathering rays per source is set to 1,
         maximum gathering error is set to 0,
@@ -261,12 +260,12 @@ class Simulation:
 
         Parameters
         ----------
-        simulation_template : ansys.api.speos.simulation.v1.simulation_template_pb2.SimulationTemplate
-            Simulation template.
+        inverse_template : ansys.api.speos.simulation.v1.simulation_template_pb2.InverseMCSimulationTemplate
+            Inverse simulation to complete.
         """
 
-        def __init__(self, simulation_template: core.SimulationTemplate) -> None:
-            self._simulation_template = simulation_template
+        def __init__(self, inverse_template: simulation_template_pb2.InverseMCSimulationTemplate) -> None:
+            self._inverse_template = inverse_template
 
             # Default values
             self.set_geom_distance_tolerance()
@@ -280,21 +279,21 @@ class Simulation:
             self.set_fast_transmission_gathering()
             self.set_ambient_material_file_uri()
 
-        def set_geom_distance_tolerance(self, value: float = 0.05) -> Simulation.InverseSimulation:
+        def set_geom_distance_tolerance(self, value: float = 0.01) -> Simulation.InverseSimulation:
             """Set the geometry distance tolerance.
 
             Parameters
             ----------
             value : float
                 The geometry distance tolerance.
-                by default, ``0.05``
+                by default, ``0.01``
 
             Returns
             -------
             ansys.speos.script.simulation.Simulation.InverseSimulation
                 Inverse simulation
             """
-            self._simulation_template.inverse_mc_simulation_template.geom_distance_tolerance = value
+            self._inverse_template.geom_distance_tolerance = value
             return self
 
         def set_max_impact(self, value: int = 100) -> Simulation.InverseSimulation:
@@ -311,7 +310,7 @@ class Simulation:
             ansys.speos.script.simulation.Simulation.InverseSimulation
                 Inverse simulation
             """
-            self._simulation_template.inverse_mc_simulation_template.max_impact = value
+            self._inverse_template.max_impact = value
             return self
 
         def set_weight(self) -> Simulation.Weight:
@@ -322,7 +321,7 @@ class Simulation:
             ansys.speos.script.simulation.Simulation.Weight
                 Simulation.Weight
             """
-            return Simulation.Weight(self._simulation_template.inverse_mc_simulation_template.weight)
+            return Simulation.Weight(self._inverse_template.weight)
 
         def set_weight_none(self) -> Simulation.InverseSimulation:
             """Deactivate the weight.
@@ -332,7 +331,7 @@ class Simulation:
             ansys.speos.script.simulation.Simulation.InverseSimulation
                 Inverse simulation
             """
-            self._simulation_template.ClearField("weight")
+            self._inverse_template.ClearField("weight")
             return self
 
         def set_colorimetric_standard_CIE_1931(self) -> Simulation.InverseSimulation:
@@ -343,7 +342,7 @@ class Simulation:
             ansys.speos.script.simulation.Simulation.InverseSimulation
                 Inverse simulation
             """
-            self._simulation_template.inverse_mc_simulation_template.colorimetric_standard = simulation_template_pb2.CIE_1931
+            self._inverse_template.colorimetric_standard = simulation_template_pb2.CIE_1931
             return self
 
         def set_colorimetric_standard_CIE_1964(self) -> Simulation.InverseSimulation:
@@ -354,24 +353,24 @@ class Simulation:
             ansys.speos.script.simulation.Simulation.InverseSimulation
                 Inverse simulation
             """
-            self._simulation_template.inverse_mc_simulation_template.colorimetric_standard = simulation_template_pb2.CIE_1964
+            self._inverse_template.colorimetric_standard = simulation_template_pb2.CIE_1964
             return self
 
-        def set_dispersion(self, value: bool = True) -> Simulation.InverseSimulation:
+        def set_dispersion(self, value: bool = False) -> Simulation.InverseSimulation:
             """Set the dispersion.
 
             Parameters
             ----------
             value : bool
                 The dispersion.
-                by default, ``True``.
+                by default, ``False``.
 
             Returns
             -------
             ansys.speos.script.simulation.Simulation.InverseSimulation
                 Inverse simulation
             """
-            self._simulation_template.inverse_mc_simulation_template.dispersion = value
+            self._inverse_template.dispersion = value
             return self
 
         def set_splitting(self, value: bool = False) -> Simulation.InverseSimulation:
@@ -388,7 +387,7 @@ class Simulation:
             ansys.speos.script.simulation.Simulation.InverseSimulation
                 Inverse simulation
             """
-            self._simulation_template.inverse_mc_simulation_template.splitting = value
+            self._inverse_template.splitting = value
             return self
 
         def set_number_of_gathering_rays_per_source(self, value: int = 1) -> Simulation.InverseSimulation:
@@ -405,7 +404,7 @@ class Simulation:
             ansys.speos.script.simulation.Simulation.InverseSimulation
                 Inverse simulation
             """
-            self._simulation_template.inverse_mc_simulation_template.number_of_gathering_rays_per_source = value
+            self._inverse_template.number_of_gathering_rays_per_source = value
             return self
 
         def set_maximum_gathering_error(self, value: int = 0) -> Simulation.InverseSimulation:
@@ -422,15 +421,15 @@ class Simulation:
             ansys.speos.script.simulation.Simulation.InverseSimulation
                 Inverse simulation
             """
-            self._simulation_template.inverse_mc_simulation_template.maximum_gathering_error = value
+            self._inverse_template.maximum_gathering_error = value
             return self
 
-        def set_fast_transmission_gathering(self, fast_transmission_gathering: bool = False) -> Simulation.InverseSimulation:
+        def set_fast_transmission_gathering(self, value: bool = False) -> Simulation.InverseSimulation:
             """Set the fast transmission gathering.
 
             Parameters
             ----------
-            fast_transmission_gathering : bool
+            value : bool
                 The fast transmission gathering.
                 by default, ``False``.
 
@@ -439,24 +438,24 @@ class Simulation:
             ansys.speos.script.simulation.Simulation.InverseSimulation
                 Inverse simulation
             """
-            self._simulation_template.inverse_mc_simulation_template.fast_transmission_gathering = fast_transmission_gathering
+            self._inverse_template.fast_transmission_gathering = value
             return self
 
-        def set_ambient_material_file_uri(self, url: str = "") -> Simulation.InverseSimulation:
+        def set_ambient_material_file_uri(self, uri: str = "") -> Simulation.InverseSimulation:
             """Set the ambient material URI.
 
             Parameters
             ----------
-            url : str
+            uri : str
                 The ambient material URI.
-                by default, ``""``.
+                by default, ``""``, means air as ambient material.
 
             Returns
             -------
             ansys.speos.script.simulation.Simulation.InverseSimulation
                 Inverse simulation
             """
-            self._simulation_template.inverse_mc_simulation_template.ambient_material_uri = url
+            self._inverse_template.ambient_material_uri = uri
             return self
 
         def __str__(self) -> str:
@@ -468,7 +467,7 @@ class Simulation:
     class Interactive:
         """Type of simulation : Interactive
         By default,
-        geometry distance tolerance is set to 0.05,
+        geometry distance tolerance is set to 0.01,
         maximum number of impacts is set to 100,
         colorimetric standard is set to CIE 1931,
         ambient material URI is empty,
@@ -476,12 +475,12 @@ class Simulation:
 
         Parameters
         ----------
-        simulation_template : ansys.api.speos.simulation.v1.simulation_template_pb2.SimulationTemplate
-            Simulation template.
+        interactive_template : ansys.api.speos.simulation.v1.simulation_template_pb2.SimulationTemplate.Interactive
+            Interactive simulation to complete.
         """
 
-        def __init__(self, simulation_template: core.SimulationTemplate) -> None:
-            self._simulation_template = simulation_template
+        def __init__(self, interactive_template: core.SimulationTemplate.Interactive) -> None:
+            self._interactive_template = interactive_template
 
             # Default values
             self.set_geom_distance_tolerance()
@@ -490,21 +489,21 @@ class Simulation:
             self.set_colorimetric_standard_CIE_1931()
             self.set_ambient_material_file_uri()
 
-        def set_geom_distance_tolerance(self, value: float = 0.05) -> Simulation.Interactive:
+        def set_geom_distance_tolerance(self, value: float = 0.01) -> Simulation.Interactive:
             """Set the geometry distance tolerance.
 
             Parameters
             ----------
             value : float
                 The geometry distance tolerance.
-                by default, ``0.05``
+                by default, ``0.01``
 
             Returns
             -------
             ansys.speos.script.simulation.Simulation.Interactive
                 Interactive simulation
             """
-            self._simulation_template.interactive_simulation_template.geom_distance_tolerance = value
+            self._interactive_template.geom_distance_tolerance = value
             return self
 
         def set_max_impact(self, value: int = 100) -> Simulation.Interactive:
@@ -521,7 +520,7 @@ class Simulation:
             ansys.speos.script.simulation.Simulation.Interactive
                 Interactive simulation
             """
-            self._simulation_template.interactive_simulation_template.max_impact = value
+            self._interactive_template.max_impact = value
             return self
 
         def set_weight(self) -> Simulation.Weight:
@@ -532,7 +531,7 @@ class Simulation:
             ansys.speos.script.simulation.Simulation.Weight
                 Simulation.Weight
             """
-            return Simulation.Weight(self._simulation_template.interactive_simulation_template.weight)
+            return Simulation.Weight(self._interactive_template.weight)
 
         def set_weight_none(self) -> Simulation.Interactive:
             """Deactivate the weight.
@@ -542,7 +541,7 @@ class Simulation:
             ansys.speos.script.simulation.Simulation.Interactive
                 Interactive simulation
             """
-            self._simulation_template.ClearField("weight")
+            self._interactive_template.ClearField("weight")
             return self
 
         def set_colorimetric_standard_CIE_1931(self) -> Simulation.Interactive:
@@ -553,7 +552,7 @@ class Simulation:
             ansys.speos.script.simulation.Simulation.Interactive
                 Interactive simulation
             """
-            self._simulation_template.interactive_simulation_template.colorimetric_standard = simulation_template_pb2.CIE_1931
+            self._interactive_template.colorimetric_standard = simulation_template_pb2.CIE_1931
             return self
 
         def set_colorimetric_standard_CIE_1964(self) -> Simulation.Interactive:
@@ -564,24 +563,24 @@ class Simulation:
             ansys.speos.script.simulation.Simulation.Interactive
                 Interactive simulation
             """
-            self._simulation_template.interactive_simulation_template.colorimetric_standard = simulation_template_pb2.CIE_1964
+            self._interactive_template.colorimetric_standard = simulation_template_pb2.CIE_1964
             return self
 
-        def set_ambient_material_file_uri(self, url: str = "") -> Simulation.Interactive:
+        def set_ambient_material_file_uri(self, uri: str = "") -> Simulation.Interactive:
             """Set the ambient material URI.
 
             Parameters
             ----------
-            url : str
+            uri : str
                 The ambient material URI.
-                by default, ``""``.
+                by default, ``""``, means air as ambient material.
 
             Returns
             -------
             ansys.speos.script.simulation.Simulation.Interactive
                 Interactive simulation
             """
-            self._simulation_template.inverse_mc_simulation_template.ambient_material_uri = url
+            self._interactive_template.ambient_material_uri = uri
             return self
 
         def __str__(self) -> str:
@@ -605,7 +604,7 @@ class Simulation:
         # Create local SimulationInstance
         self._simulation_instance = core.Scene.SimulationInstance(name=name, description=description, metadata=metadata)
 
-    def set_direct(self) -> DirectSimulation:
+    def set_direct(self) -> Direct:
         """Set the Direct simulation template.
 
         Parameters
@@ -615,16 +614,16 @@ class Simulation:
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.DirectSimulation
+        ansys.speos.script.simulation.Simulation.Direct
             Direct simulation.
         """
 
-        if type(self._type) != Simulation.DirectSimulation:
-            self._type = Simulation.DirectSimulation(direct_simulation_template=self._simulation_template)
+        if type(self._type) != Simulation.Direct:
+            self._type = Simulation.Direct(direct_template=self._simulation_template.direct_mc_simulation_template)
 
         return self._type
 
-    def set_inverse(self) -> InverseSimulation:
+    def set_inverse(self) -> Inverse:
         """Set the Inverse simulation template.
 
         Parameters
@@ -634,12 +633,12 @@ class Simulation:
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.InverseSimulation
+        ansys.speos.script.simulation.Simulation.Inverse
             Inverse simulation.
         """
 
-        if type(self._type) != Simulation.InverseSimulation:
-            self._type = Simulation.InverseSimulation(inverse_simulation_template=self._simulation_template)
+        if type(self._type) != Simulation.Inverse:
+            self._type = Simulation.Inverse(inverse_template=self._simulation_template.inverse_mc_simulation_template)
 
         return self._type
 
@@ -658,7 +657,7 @@ class Simulation:
         """
 
         if type(self._type) != Simulation.Interactive:
-            self._type = Simulation.Interactive(interactive_simulation_template=self._simulation_template)
+            self._type = Simulation.Interactive(interactive_template=self._simulation_template.interactive_simulation_template)
 
         return self._type
 
