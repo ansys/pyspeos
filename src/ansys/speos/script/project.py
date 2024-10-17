@@ -26,6 +26,7 @@ from typing import Mapping, Optional, Union
 
 import ansys.speos.core as core
 import ansys.speos.script.opt_prop as opt_prop
+import ansys.speos.script.part as part
 import ansys.speos.script.sensor as sensor
 import ansys.speos.script.simulation as simulation
 import ansys.speos.script.source as source
@@ -61,7 +62,6 @@ class Project:
             tmp_scene_link = speos.client.scenes().create()
             tmp_scene_link.load_file(path)
             self._fill_features(from_scene=tmp_scene_link)
-        return
 
     # def list(self):
     #    """Return all feature key as a tree, can be used to list all features- Not yet implemented"""
@@ -145,26 +145,66 @@ class Project:
         self._features.append(feature)
         return feature
 
-    def find(self, name: str, feature_type: Optional[type] = None) -> Optional[Union[opt_prop.OptProp, source.Source, sensor.Sensor]]:
+    def create_root_part(self, name: str = "RootPart", description: str = "", metadata: Mapping[str, str] = {}) -> part.Part:
+        """Create the project root part feature.
+
+        Parameters
+        ----------
+        name : str
+            Name of the feature.
+            By default, ``"RootPart"``.
+        description : str
+            Description of the feature.
+            By default, ``""``.
+        metadata : Mapping[str, str]
+            Metadata of the feature.
+            By default, ``{}``.
+
+        Returns
+        -------
+        ansys.speos.script.part.Part
+            Part feature.
+        """
+        feature = part.Part(project=self, name=name, description=description, metadata=metadata)
+        if self.find(name=name, feature_type=part.Part) is not None:
+            raise ValueError("A root part feature already exists with this name: " + name)
+        self._features.append(feature)
+        return feature
+
+    def find(
+        self, name: str, feature_type: Optional[type] = None
+    ) -> Optional[Union[opt_prop.OptProp, source.Source, sensor.Sensor, part.Part]]:
         """Find a feature.
 
         Parameters
         ----------
         name : str
             Name of the feature.
+            Possibility to look also for bodies, faces, subpart.
+            Example "RootPart/BodyName/FaceName", "RootPart/SubPartName/BodyName/FaceName"
         feature_type : type
             Type of the wanted feature.
+            If looking for geometry feature, only precise part.Part as feature_type, whatever looking for subpart, body or face.
 
         Returns
         -------
-        Union[ansys.speos.script.opt_prop.OptProp, ansys.speos.script.source.Source, ansys.speos.script.sensor.Sensor], optional
+        Union[ansys.speos.script.opt_prop.OptProp, ansys.speos.script.source.Source, ansys.speos.script.sensor.Sensor, \
+ansys.speos.script.part.Part], optional
             Found feature, or None.
         """
+        orig_name = name
+        idx = name.find("/")
+        if idx != -1:
+            name = name[0:idx]
+
         if feature_type is None:
             found_feature = next((x for x in self._features if x._name == name), None)
         else:
             found_feature = next((x for x in self._features if type(x) == feature_type and x._name == name), None)
+
         if found_feature is not None:
+            if idx != -1:
+                found_feature = found_feature.find(orig_name[idx + 1 :])
             return found_feature
         return None
 
@@ -194,6 +234,8 @@ class Project:
             f.delete()
         self._features.clear()
 
+        return self
+
     def __str__(self):
         """Return the string representation of the project's scene."""
         return str(self.scene_link)
@@ -207,6 +249,8 @@ class Project:
             op_feature.vop_template_link = self.client.get_item(key=mat_inst.vop_guid)
             if len(mat_inst.sop_guids) > 0:
                 op_feature.sop_template_link = self.client.get_item(key=mat_inst.sop_guids[0])
+            else:  # Specific case for ambient material
+                op_feature._sop_template = None
             op_feature.reset()
             op_feature.commit()
 
@@ -223,3 +267,19 @@ class Project:
             ssr_feat.sensor_template_link = self.client.get_item(key=ssr_inst.sensor_guid)
             ssr_feat.reset()
             ssr_feat.commit()
+
+        part = self.client.get_item(key=scene_data.part_guid).get()
+        part_feat = self.create_root_part()
+        for b_guid in part.body_guids:
+            b_link = self.client.get_item(key=b_guid)
+            b_feat = part_feat.create_body(name=b_link.get().name)
+            b_feat.body_link = b_link
+            for f_guid in b_link.get().face_guids:
+                f_link = self.client.get_item(key=f_guid)
+                f_feat = b_feat.create_face(name=f_link.get().name)
+                f_feat.face_link = f_link
+                f_feat.reset()
+                f_feat.commit()
+            b_feat.reset()
+            b_feat.commit()
+        part_feat.commit()

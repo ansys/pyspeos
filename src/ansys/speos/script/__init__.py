@@ -43,9 +43,12 @@ Then add the import within this module to enable:
 
 """
 
+from ansys.speos.script.body import Body
+from ansys.speos.script.face import Face
 from ansys.speos.script.geo_ref import GeoRef
 from ansys.speos.script.intensity import Intensity
 from ansys.speos.script.opt_prop import OptProp
+from ansys.speos.script.part import Part
 from ansys.speos.script.project import Project
 from ansys.speos.script.sensor import Sensor
 from ansys.speos.script.source import Source

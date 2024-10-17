@@ -217,7 +217,7 @@ class Spectrum:
     def __str__(self) -> str:
         """Return the string representation of the spectrum."""
         if self.spectrum_link is None:
-            return f"local: {self._spectrum}"
+            return f"local: " + core.protobuf_message_to_str(self._spectrum)
         else:
             return str(self.spectrum_link)
 

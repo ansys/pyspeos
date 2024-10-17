@@ -135,3 +135,36 @@ def test_from_file(speos: Speos):
     feat_op3.set_surface_mirror(reflectance=60).commit()
     assert speos.client.get_item(key=p.scene_link.get().materials[2].sop_guids[0]).get().HasField("mirror")
     assert speos.client.get_item(key=p.scene_link.get().materials[2].sop_guids[0]).get().mirror.reflectance == 60
+
+    # Check that ambient mat has no sop
+    feat_op_ambient = p.find(name=p.scene_link.get().materials[-1].name)
+    assert feat_op_ambient.sop_template_link is None
+
+
+def test_find_geom(speos: Speos):
+    """Test find geometry feature in a project."""
+    # Create a project from a file
+    p = script.Project(speos=speos, path=os.path.join(test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"))
+
+    # Check that scene is filled
+    assert p.scene_link.get().part_guid != ""
+
+    # Check that RootPart feature can be retrieved
+    part_data = speos.client.get_item(p.scene_link.get().part_guid).get()
+    feat_rp = p.find(name=part_data.name)
+    assert feat_rp is not None
+    assert type(feat_rp) is script.Part
+
+    # Check that body can be retrieved
+    assert len(part_data.body_guids) == 3
+    body1_data = speos.client.get_item(part_data.body_guids[1]).get()
+    feat_body = p.find(name=part_data.name + "/" + body1_data.name)
+    assert feat_body is not None
+    assert type(feat_body) is script.Body
+
+    # Check that face can be retrieved
+    assert len(body1_data.face_guids) > 4
+    face2_data = speos.client.get_item(body1_data.face_guids[2]).get()
+    feat_face = p.find(name=part_data.name + "/" + body1_data.name + "/" + face2_data.name)
+    assert feat_face is not None
+    assert type(feat_face) is script.Face

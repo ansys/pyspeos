@@ -1773,7 +1773,7 @@ class Sensor:
 
         # SensorTemplate
         if self.sensor_template_link is None:
-            out_str += f"\nlocal: {self._sensor_template}"
+            out_str += f"\nlocal: " + core.protobuf_message_to_str(self._sensor_template)
         else:
             out_str += "\n" + str(self.sensor_template_link)
 
