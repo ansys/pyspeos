@@ -20,9 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Provides a way to interact with Speos feature: Source."""
+"""Provides a way to interact with Speos feature: Simulation."""
 from __future__ import annotations
 
+from typing import List, Mapping
 import uuid
 
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
@@ -51,7 +52,7 @@ class Simulation:
     Attributes
     ----------
     simulation_template_link : ansys.speos.core.simulation_template.SimulationTemplateLink
-        Link object for the source template in database.
+        Link object for the simulation template in database.
     """
 
     class Weight:
@@ -145,7 +146,7 @@ class Simulation:
             return self
 
         def set_weight(self) -> Simulation.Weight:
-            """Set the weight .
+            """Set the weight.
 
             Returns
             -------
@@ -662,45 +663,54 @@ class Simulation:
         return self._type
 
     def set_sensor_paths(self, sensor_paths: List[str]) -> Simulation:
-        """Set the sensor paths.
+        """Set the sensors that the simulation will take into account.
 
         Parameters
         ----------
         sensor_paths : List[str]
             The sensor paths.
+
+        Returns
+        -------
+        ansys.speos.script.simulation.Simulation
+            Simulation feature.
         """
         self._simulation_instance.sensor_paths[:] = sensor_paths
         return self
 
     def set_source_paths(self, source_paths: List[str]) -> Simulation:
-        """Set the source paths.
+        """Set the sources that the simulation will take into account.
 
         Parameters
         ----------
         source_paths : List[str]
             The source paths.
+
+        Returns
+        -------
+        ansys.speos.script.simulation.Simulation
+            Simulation feature.
         """
         self._simulation_instance.source_paths[:] = source_paths
         return self
 
-    def set_geometries(self, values: List[GeoRef]) -> Simulation:
-        """Set exit geometries.
+    def set_geometries(self, geometries: List[GeoRef]) -> Simulation:
+        """Set geometries that the simulation will take into account.
 
         Parameters
         ----------
-        exit_geometries : List[ansys.speos.script.geo_ref.GeoRef], optional
-            Exit Geometries that will use this rayfile source.
-            By default, ``None``.
+        geometries : List[ansys.speos.script.geo_ref.GeoRef]
+            List of geometries.
 
         Returns
         -------
-        ansys.speos.script.source.Source.RayFileProperties
-            RayFile Source properties.
+        ansys.speos.script.simulation.Simulation
+            Simulation feature.
         """
-        if values is []:
+        if geometries is []:
             self._simulation_instance.ClearField("geometries")
         else:
-            self._simulation_instance.geometries.geo_paths[:] = [gr.to_native_link() for gr in values]
+            self._simulation_instance.geometries.geo_paths[:] = [gr.to_native_link() for gr in geometries]
 
         return self
 
@@ -710,9 +720,9 @@ class Simulation:
         # SimulationInstance (= simulation guid + simulation properties)
         if self._project.scene_link and self._unique_id is not None:
             scene_data = self._project.scene_link.get()
-            src_inst = next((x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None)
-            if src_inst is not None:
-                out_str += core.protobuf_message_to_str(src_inst)
+            sim_inst = next((x for x in scene_data.simulations if x.metadata["UniqueId"] == self._unique_id), None)
+            if sim_inst is not None:
+                out_str += core.protobuf_message_to_str(sim_inst)
             else:
                 out_str += f"local: " + core.protobuf_message_to_str(self._simulation_instance)
         else:
@@ -757,7 +767,7 @@ class Simulation:
             else:
                 scene_data.simulations.insert(
                     len(scene_data.simulations), self._simulation_instance
-                )  # if no, just add it to the list of sources
+                )  # if no, just add it to the list of simulations
 
             print(scene_data)
             self._project.scene_link.set(data=scene_data)  # update scene data
@@ -780,9 +790,9 @@ class Simulation:
         if self._project.scene_link is not None:
             scene_data = self._project.scene_link.get()  # retrieve scene data
             # Look if an element corresponds to the _unique_id
-            src_inst = next((x for x in scene_data.simulations if x.metadata["UniqueId"] == self._unique_id), None)
-            if src_inst is not None:
-                self._simulation_instance = src_inst
+            sim_inst = next((x for x in scene_data.simulations if x.metadata["UniqueId"] == self._unique_id), None)
+            if sim_inst is not None:
+                self._simulation_instance = sim_inst
         return self
 
     def delete(self) -> Simulation:
@@ -804,9 +814,9 @@ class Simulation:
 
         # Remove the simulation from the scene
         scene_data = self._project.scene_link.get()  # retrieve scene data
-        src_inst = next((x for x in scene_data.simulations if x.metadata["UniqueId"] == self._unique_id), None)
-        if src_inst is not None:
-            scene_data.simulations.remove(src_inst)
+        sim_inst = next((x for x in scene_data.simulations if x.metadata["UniqueId"] == self._unique_id), None)
+        if sim_inst is not None:
+            scene_data.simulations.remove(sim_inst)
             self._project.scene_link.set(data=scene_data)  # update scene data
 
         # Reset the _unique_id
