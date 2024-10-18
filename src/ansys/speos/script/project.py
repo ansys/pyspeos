@@ -28,6 +28,7 @@ import ansys.speos.core as core
 import ansys.speos.script.opt_prop as opt_prop
 import ansys.speos.script.part as part
 import ansys.speos.script.sensor as sensor
+import ansys.speos.script.simulation as simulation
 import ansys.speos.script.source as source
 
 
@@ -109,6 +110,17 @@ class Project:
             Source feature.
         """
         feature = source.Source(project=self, name=name, description=description, metadata=metadata)
+        self._features.append(feature)
+        return feature
+
+    def create_simulation(self, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> simulation.Simulation:
+        """Create a new Simulation feature.
+
+        Parameters
+        ----------
+
+        """
+        feature = simulation.Simulation(project=self, name=name, description=description, metadata=metadata)
         self._features.append(feature)
         return feature
 
@@ -233,6 +245,23 @@ ansys.speos.script.part.Part], optional
     def _fill_features(self, from_scene: core.Scene):
         """Fill project features from a scene."""
         scene_data = from_scene.get()
+
+        part = self.client.get_item(key=scene_data.part_guid).get()
+        part_feat = self.create_root_part()
+        for b_guid in part.body_guids:
+            b_link = self.client.get_item(key=b_guid)
+            b_feat = part_feat.create_body(name=b_link.get().name)
+            b_feat.body_link = b_link
+            for f_guid in b_link.get().face_guids:
+                f_link = self.client.get_item(key=f_guid)
+                f_feat = b_feat.create_face(name=f_link.get().name)
+                f_feat.face_link = f_link
+                f_feat.reset()
+                f_feat.commit()
+            b_feat.reset()
+            b_feat.commit()
+        part_feat.commit()
+
         for mat_inst in scene_data.materials:
             op_feature = self.create_optical_property(name=mat_inst.name)
             op_feature._material_instance = mat_inst
@@ -258,18 +287,9 @@ ansys.speos.script.part.Part], optional
             ssr_feat.reset()
             ssr_feat.commit()
 
-        part = self.client.get_item(key=scene_data.part_guid).get()
-        part_feat = self.create_root_part()
-        for b_guid in part.body_guids:
-            b_link = self.client.get_item(key=b_guid)
-            b_feat = part_feat.create_body(name=b_link.get().name)
-            b_feat.body_link = b_link
-            for f_guid in b_link.get().face_guids:
-                f_link = self.client.get_item(key=f_guid)
-                f_feat = b_feat.create_face(name=f_link.get().name)
-                f_feat.face_link = f_link
-                f_feat.reset()
-                f_feat.commit()
-            b_feat.reset()
-            b_feat.commit()
-        part_feat.commit()
+        for sim_inst in scene_data.simulations:
+            sim_feat = self.create_simulation(name=sim_inst.name)
+            sim_feat._simulation_instance = sim_inst
+            sim_feat.simulation_template_link = self.client.get_item(key=sim_inst.simulation_guid)
+            sim_feat.reset()
+            sim_feat.commit()

@@ -125,6 +125,11 @@ def test_from_file(speos: Speos):
     assert len(p.scene_link.get().materials) == 4
     assert len(p.scene_link.get().sensors) == 1
     assert len(p.scene_link.get().sources) == 2
+    assert len(p.scene_link.get().simulations) == 1
+
+    feat_sim = p.find(name=p.scene_link.get().simulations[0].name)
+    assert feat_sim is not None
+    assert type(feat_sim) is script.Simulation
 
     # Check that feature can be retrieved
     feat_op3 = p.find(name=p.scene_link.get().materials[2].name)
