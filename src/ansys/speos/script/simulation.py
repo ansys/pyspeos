@@ -32,6 +32,7 @@ import ansys.speos.core as core
 
 # from ansys.speos.script.geo_ref import GeoRef
 import ansys.speos.script.project as project
+import ansys.speos.script.proto_message_utils as proto_message_utils
 
 
 class Simulation:
@@ -721,6 +722,35 @@ class Simulation:
     #
     #    return self
 
+    def _to_dict(self) -> dict:
+        out_dict = {}
+
+        # SimulationInstance (= simulation guid + simulation properties)
+        if self._project.scene_link and self._unique_id is not None:
+            scene_data = self._project.scene_link.get()
+            sim_inst = next((x for x in scene_data.simulations if x.metadata["UniqueId"] == self._unique_id), None)
+            if sim_inst is not None:
+                out_dict = proto_message_utils.replace_guids(speos_client=self._project.client, message=sim_inst)
+            else:
+                out_dict = proto_message_utils.replace_guids(speos_client=self._project.client, message=self._simulation_instance)
+        else:
+            out_dict = proto_message_utils.replace_guids(speos_client=self._project.client, message=self._simulation_instance)
+
+        if "simulation" not in out_dict.keys():
+            # SimulationTemplate
+            if self.simulation_template_link is None:
+                out_dict["simulation"] = proto_message_utils.replace_guids(
+                    speos_client=self._project.client, message=self._simulation_template
+                )
+            else:
+                out_dict["simulation"] = proto_message_utils.replace_guids(
+                    speos_client=self._project.client, message=self.simulation_template_link.get()
+                )
+
+        proto_message_utils.replace_properties(json_dict=out_dict)
+
+        return out_dict
+
     def __str__(self) -> str:
         """Return the string representation of the simulation"""
         out_str = ""
@@ -728,18 +758,12 @@ class Simulation:
         if self._project.scene_link and self._unique_id is not None:
             scene_data = self._project.scene_link.get()
             sim_inst = next((x for x in scene_data.simulations if x.metadata["UniqueId"] == self._unique_id), None)
-            if sim_inst is not None:
-                out_str += core.protobuf_message_to_str(sim_inst)
-            else:
-                out_str += f"local: " + core.protobuf_message_to_str(self._simulation_instance)
+            if sim_inst is None:
+                out_str += "local: "
         else:
-            out_str += f"local: " + core.protobuf_message_to_str(self._simulation_instance)
+            out_str += "local: "
 
-        # SimulationTemplate
-        if self.simulation_template_link is None:
-            out_str += "\nlocal: " + core.protobuf_message_to_str(self._simulation_template)
-        else:
-            out_str += "\n" + str(self.simulation_template_link)
+        out_str += proto_message_utils.dict_to_str(dict=self._to_dict())
 
         return out_str
 
