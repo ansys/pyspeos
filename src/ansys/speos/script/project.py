@@ -120,7 +120,9 @@ class Project:
         ----------
 
         """
-        return simulation.Simulation(project=self, name=name, description=description, metadata=metadata)
+        feature = simulation.Simulation(project=self, name=name, description=description, metadata=metadata)
+        self._features.append(feature)
+        return feature
 
     def create_sensor(self, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> sensor.Sensor:
         """Create a new Sensor feature.

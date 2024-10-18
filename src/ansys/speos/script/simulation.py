@@ -75,14 +75,14 @@ class Simulation:
             # Default values
             self.set_minimum_energy_percentage()
 
-        def set_minimum_energy_percentage(self, value: float = 0.5) -> Simulation.Weight:
+        def set_minimum_energy_percentage(self, value: float = 0.005) -> Simulation.Weight:
             """Set the minimum energy percentage.
 
             Parameters
             ----------
             value : float
                 The Minimum energy percentage parameter defines the minimum energy ratio to continue to propagate a ray with weight.
-                By default, ``0.5``.
+                By default, ``0.005``.
 
             Returns
             -------
@@ -102,7 +102,7 @@ class Simulation:
         dispersion is set to True,
         fast transmission gathering is set to False,
         ambient material URI is empty,
-        and weight is set to 0.5.
+        and weight's minimum energy percentage is set to 0.005.
 
         Parameters
         ----------
@@ -270,7 +270,7 @@ class Simulation:
         maximum gathering error is set to 0,
         fast transmission gathering is set to False,
         ambient material URI is empty,
-        and weight is set to 0.5.
+        and weight's minimum energy percentage is set to 0.005.
 
         Parameters
         ----------
@@ -488,7 +488,7 @@ class Simulation:
         maximum number of impacts is set to 100,
         colorimetric standard is set to CIE 1931,
         ambient material URI is empty,
-        and weight is set to 0.5.
+        and weight's minimum energy percentage is set to 0.005.
 
         Parameters
         ----------
@@ -608,6 +608,7 @@ class Simulation:
 
     def __init__(self, project: project.Project, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> None:
         self._project = project
+        self._name = name
         self._unique_id = None
         self.simulation_template_link = None
         """Link object for the simulation template in database."""
