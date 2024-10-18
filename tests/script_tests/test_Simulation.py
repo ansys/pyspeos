@@ -48,7 +48,7 @@ def test_create_direct(speos: Speos):
     assert sim1._simulation_template.direct_mc_simulation_template.fast_transmission_gathering == False
     assert sim1._simulation_template.direct_mc_simulation_template.ambient_material_uri == ""
     assert sim1._simulation_template.direct_mc_simulation_template.HasField("weight")
-    assert sim1._simulation_template.direct_mc_simulation_template.weight.minimum_energy_percentage == 0.5
+    assert sim1._simulation_template.direct_mc_simulation_template.weight.minimum_energy_percentage == 0.005
     assert len(sim1._simulation_instance.sensor_paths) == 0
     assert len(sim1._simulation_instance.source_paths) == 0
     assert len(sim1._simulation_instance.geometries.geo_paths) == 0
@@ -119,7 +119,7 @@ def test_create_inverse(speos: Speos):
     assert sim1._simulation_template.inverse_mc_simulation_template.max_impact == 100
     assert sim1._simulation_template.inverse_mc_simulation_template.colorimetric_standard == simulation_template_pb2.CIE_1931
     assert sim1._simulation_template.inverse_mc_simulation_template.HasField("weight")
-    assert sim1._simulation_template.inverse_mc_simulation_template.weight.minimum_energy_percentage == 0.5
+    assert sim1._simulation_template.inverse_mc_simulation_template.weight.minimum_energy_percentage == 0.005
     assert sim1._simulation_template.inverse_mc_simulation_template.dispersion == False
     assert sim1._simulation_template.inverse_mc_simulation_template.splitting == False
     assert sim1._simulation_template.inverse_mc_simulation_template.number_of_gathering_rays_per_source == 1
@@ -208,7 +208,7 @@ def test_create_interactive(speos: Speos):
     assert sim1._simulation_template.interactive_simulation_template.max_impact == 100
     assert sim1._simulation_template.interactive_simulation_template.colorimetric_standard == simulation_template_pb2.CIE_1931
     assert sim1._simulation_template.interactive_simulation_template.HasField("weight")
-    assert sim1._simulation_template.interactive_simulation_template.weight.minimum_energy_percentage == 0.5
+    assert sim1._simulation_template.interactive_simulation_template.weight.minimum_energy_percentage == 0.005
     assert sim1._simulation_template.interactive_simulation_template.ambient_material_uri == ""
     assert len(sim1._simulation_instance.sensor_paths) == 0
     assert len(sim1._simulation_instance.source_paths) == 0
