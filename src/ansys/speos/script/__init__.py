@@ -51,5 +51,6 @@ from ansys.speos.script.opt_prop import OptProp
 from ansys.speos.script.part import Part
 from ansys.speos.script.project import Project
 from ansys.speos.script.sensor import Sensor
+from ansys.speos.script.simulation import Simulation
 from ansys.speos.script.source import Source
 from ansys.speos.script.spectrum import Spectrum

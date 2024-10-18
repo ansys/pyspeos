@@ -70,6 +70,8 @@ class Source:
             Luminaire source to complete.
         luminaire_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.LuminaireProperties
             Luminaire source properties to complete.
+        default_values : bool
+            Uses default values when True.
         """
 
         def __init__(
@@ -78,14 +80,20 @@ class Source:
             name: str,
             luminaire: core.SourceTemplate.luminaire,
             luminaire_props: core.Scene.SourceInstance.LuminaireProperties,
+            default_values: bool = True,
         ) -> None:
             self._luminaire = luminaire
             self._luminaire_props = luminaire_props
-            self._spectrum = Spectrum(speos_client=speos_client, name=name + ".Spectrum")
 
-            # Default values
-            self.set_flux_from_intensity_file().set_spectrum().set_incandescent()
-            self.set_axis_system()
+            if self._luminaire.spectrum_guid != "":
+                self._spectrum = Spectrum(speos_client=self._speos_client, name=self._name + ".Spectrum", key=self._luminaire.spectrum_guid)
+            else:
+                self._spectrum = Spectrum(speos_client=speos_client, name=name + ".Spectrum")
+
+            if default_values:
+                # Default values
+                self.set_flux_from_intensity_file().set_spectrum().set_incandescent()
+                self.set_axis_system()
 
         def set_flux_from_intensity_file(self) -> Source.Luminaire:
             """Take flux from intensity file provided.
@@ -205,6 +213,8 @@ class Source:
             Surface source to complete.
         surface_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.SurfaceProperties
             Surface source properties to complete.
+        default_values : bool
+            Uses default values when True.
         """
 
         class ExitanceVariable:
@@ -216,18 +226,22 @@ class Source:
                 Exitance variable to complete.
             exitance_variable_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.SurfaceProperties.ExitanceVariableProperties
                 Exitance variable properties to complete.
+            default_values : bool
+                Uses default values when True.
             """
 
             def __init__(
                 self,
                 exitance_variable: core.SourceTemplate.Surface.ExitanceVariable,
                 exitance_variable_props: core.Scene.SourceInstance.SurfaceProperties.ExitanceVariableProperties,
+                default_values: bool = True,
             ) -> None:
                 self._exitance_variable = exitance_variable
                 self._exitance_variable_props = exitance_variable_props
 
-                # Default values
-                self.set_axis_plane()
+                if default_values:
+                    # Default values
+                    self.set_axis_plane()
 
             def set_xmp_file_uri(self, uri: str) -> Source.Surface.ExitanceVariable:
                 """Set exitance xmp file.
@@ -268,22 +282,33 @@ class Source:
             name: str,
             surface: core.SourceTemplate.Surface,
             surface_props: core.Scene.SourceInstance.SurfaceProperties,
+            default_values: bool = True,
         ) -> None:
             self._speos_client = speos_client
             self._surface = surface
             self._name = name
             self._spectrum = None
             self._surface_props = surface_props
-            self._intensity = Intensity(
-                speos_client=speos_client, name=name + ".Intensity", intensity_props_to_complete=surface_props.intensity_properties
-            )
+
+            if self._surface.intensity_guid != "":
+                self._intensity = Intensity(
+                    speos_client=speos_client,
+                    name=name + ".Intensity",
+                    intensity_props_to_complete=surface_props.intensity_properties,
+                    key=self._surface.intensity_guid,
+                )
+            else:
+                self._intensity = Intensity(
+                    speos_client=speos_client, name=name + ".Intensity", intensity_props_to_complete=surface_props.intensity_properties
+                )
 
             # Attribute gathering more complex exitance type
             self._exitance_type = None
 
-            # Default values
-            self.set_flux_luminous().set_exitance_constant(geometries=[]).set_intensity()
-            self.set_spectrum()
+            if default_values:
+                # Default values
+                self.set_flux_luminous().set_exitance_constant(geometries=[]).set_intensity()
+                self.set_spectrum()
 
         def set_flux_from_intensity_file(self) -> Source.Surface:
             """Take flux from intensity file provided.
@@ -389,7 +414,13 @@ class Source:
             ansys.speos.script.source.Source.Surface.ExitanceVariable
                 ExitanceVariable of surface source.
             """
-            if type(self._exitance_type) != Source.Surface.ExitanceVariable:
+            if self._exitance_type is None and self._surface.HasField("exitance_variable"):
+                self._exitance_type = Source.Surface.ExitanceVariable(
+                    exitance_variable=self._surface.exitance_variable,
+                    exitance_variable_props=self._surface_props.exitance_variable_properties,
+                    default_values=False,
+                )
+            elif type(self._exitance_type) != Source.Surface.ExitanceVariable:
                 self._exitance_type = Source.Surface.ExitanceVariable(
                     exitance_variable=self._surface.exitance_variable,
                     exitance_variable_props=self._surface_props.exitance_variable_properties,
@@ -416,7 +447,9 @@ class Source:
             ansys.speos.script.spectrum.Spectrum
                 Spectrum.
             """
-            if self._spectrum is None:
+            if self._spectrum is None and self._surface.HasField("spectrum_guid"):
+                self._spectrum = Spectrum(speos_client=self._speos_client, name=self._name + ".Spectrum", key=self._surface.spectrum_guid)
+            elif self._spectrum is None:
                 self._spectrum = Spectrum(speos_client=self._speos_client, name=self._name + ".Spectrum")
                 self._surface.spectrum_guid = ""
             return self._spectrum
@@ -470,6 +503,8 @@ class Source:
             Ray file source to complete.
         ray_file_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.RayFileProperties
             Ray file source properties to complete.
+        default_values : bool
+            Uses default values when True.
         """
 
         def __init__(
@@ -478,6 +513,7 @@ class Source:
             name: str,
             ray_file: core.SourceTemplate.RayFile,
             ray_file_props: core.Scene.SourceInstance.RayFileProperties,
+            default_values: bool = True,
         ) -> None:
             self._client = speos_client
             self._ray_file = ray_file
@@ -485,9 +521,10 @@ class Source:
             self._spectrum = None
             self._name = name
 
-            # Default values
-            self.set_flux_from_ray_file().set_spectrum_from_ray_file()
-            self.set_axis_system()
+            if default_values:
+                # Default values
+                self.set_flux_from_ray_file().set_spectrum_from_ray_file()
+                self.set_axis_system()
 
         def set_ray_file_uri(self, uri: str) -> Source.RayFile:
             """Set ray file.
@@ -570,7 +607,9 @@ class Source:
             ansys.speos.script.spectrum.Spectrum
                 Spectrum.
             """
-            if self._spectrum is None:
+            if self._spectrum is None and self._ray_file.HasField("spectrum_guid"):
+                self._spectrum = Spectrum(speos_client=self._client, name=self._name + ".Spectrum", key=self._ray_file.spectrum_guid)
+            elif self._spectrum is None:
                 self._spectrum = Spectrum(speos_client=self._client, name=self._name + ".Spectrum")
                 self._ray_file.spectrum_guid = ""
             return self._spectrum
@@ -661,7 +700,15 @@ class Source:
         ansys.speos.script.source.Source.Luminaire
             Luminaire source.
         """
-        if type(self._type) != Source.Luminaire:
+        if self._type is None and self._source_template.HasField("luminaire"):
+            self._type = Source.Luminaire(
+                speos_client=self._project.client,
+                luminaire=self._source_template.luminaire,
+                name=self._source_template.name,
+                luminaire_props=self._source_instance.luminaire_properties,
+                default_values=False,
+            )
+        elif type(self._type) != Source.Luminaire:
             self._type = Source.Luminaire(
                 speos_client=self._project.client,
                 luminaire=self._source_template.luminaire,
@@ -678,7 +725,15 @@ class Source:
         ansys.speos.script.source.Source.Surface
             Surface source.
         """
-        if type(self._type) != Source.Surface:
+        if self._type is None and self._source_template.HasField("surface"):
+            self._type = Source.Surface(
+                speos_client=self._project.client,
+                surface=self._source_template.surface,
+                name=self._source_template.name,
+                surface_props=self._source_instance.surface_properties,
+                default_values=False,
+            )
+        elif type(self._type) != Source.Surface:
             self._type = Source.Surface(
                 speos_client=self._project.client,
                 surface=self._source_template.surface,
@@ -693,9 +748,17 @@ class Source:
         Returns
         -------
         ansys.speos.script.source.Source.RayFile
-            Surface source.
+            RayFile source.
         """
-        if type(self._type) != Source.RayFile:
+        if self._type is None and self._source_template.HasField("rayfile"):
+            self._type = Source.RayFile(
+                speos_client=self._project.client,
+                ray_file=self._source_template.rayfile,
+                ray_file_props=self._source_instance.rayfile_properties,
+                name=self._source_template.name,
+                default_values=False,
+            )
+        elif type(self._type) != Source.RayFile:
             self._type = Source.RayFile(
                 speos_client=self._project.client,
                 ray_file=self._source_template.rayfile,
