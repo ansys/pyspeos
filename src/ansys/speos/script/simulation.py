@@ -108,19 +108,22 @@ class Simulation:
         ----------
         direct_template : ansys.api.speos.simulation.v1.simulation_template_pb2.DirectMCSimulationTemplate
             Direct simulation to complete.
+        default_values : bool
+            Uses default values when True.
         """
 
-        def __init__(self, direct_template: simulation_template_pb2.DirectMCSimulationTemplate) -> None:
+        def __init__(self, direct_template: simulation_template_pb2.DirectMCSimulationTemplate, default_values: bool = True) -> None:
             self._direct_template = direct_template
 
-            # Default values
-            self.set_geom_distance_tolerance()
-            self.set_max_impact()
-            self.set_colorimetric_standard_CIE_1931()
-            self.set_dispersion()
-            # self.set_fast_transmission_gathering()
-            self.set_ambient_material_file_uri()
-            self.set_weight()
+            if default_values:
+                # Default values
+                self.set_geom_distance_tolerance()
+                self.set_max_impact()
+                self.set_colorimetric_standard_CIE_1931()
+                self.set_dispersion()
+                # self.set_fast_transmission_gathering()
+                self.set_ambient_material_file_uri()
+                self.set_weight()
 
         def set_geom_distance_tolerance(self, value: float = 0.01) -> Simulation.Direct:
             """Set the geometry distance tolerance.
@@ -273,22 +276,25 @@ class Simulation:
         ----------
         inverse_template : ansys.api.speos.simulation.v1.simulation_template_pb2.InverseMCSimulationTemplate
             Inverse simulation to complete.
+        default_values : bool
+            Uses default values when True.
         """
 
-        def __init__(self, inverse_template: simulation_template_pb2.InverseMCSimulationTemplate) -> None:
+        def __init__(self, inverse_template: simulation_template_pb2.InverseMCSimulationTemplate, default_values: bool = True) -> None:
             self._inverse_template = inverse_template
 
-            # Default values
-            self.set_geom_distance_tolerance()
-            self.set_max_impact()
-            self.set_weight()
-            self.set_colorimetric_standard_CIE_1931()
-            self.set_dispersion()
-            self.set_splitting()
-            self.set_number_of_gathering_rays_per_source()
-            self.set_maximum_gathering_error()
-            # self.set_fast_transmission_gathering()
-            self.set_ambient_material_file_uri()
+            if default_values:
+                # Default values
+                self.set_geom_distance_tolerance()
+                self.set_max_impact()
+                self.set_weight()
+                self.set_colorimetric_standard_CIE_1931()
+                self.set_dispersion()
+                self.set_splitting()
+                self.set_number_of_gathering_rays_per_source()
+                self.set_maximum_gathering_error()
+                # self.set_fast_transmission_gathering()
+                self.set_ambient_material_file_uri()
 
         def set_geom_distance_tolerance(self, value: float = 0.01) -> Simulation.Inverse:
             """Set the geometry distance tolerance.
@@ -488,17 +494,20 @@ class Simulation:
         ----------
         interactive_template : ansys.api.speos.simulation.v1.simulation_template_pb2.SimulationTemplate.Interactive
             Interactive simulation to complete.
+        default_values : bool
+            Uses default values when True.
         """
 
-        def __init__(self, interactive_template: core.SimulationTemplate.Interactive) -> None:
+        def __init__(self, interactive_template: core.SimulationTemplate.Interactive, default_values: bool = True) -> None:
             self._interactive_template = interactive_template
 
-            # Default values
-            self.set_geom_distance_tolerance()
-            self.set_max_impact()
-            self.set_weight()
-            self.set_colorimetric_standard_CIE_1931()
-            self.set_ambient_material_file_uri()
+            if default_values:
+                # Default values
+                self.set_geom_distance_tolerance()
+                self.set_max_impact()
+                self.set_weight()
+                self.set_colorimetric_standard_CIE_1931()
+                self.set_ambient_material_file_uri()
 
         def set_geom_distance_tolerance(self, value: float = 0.01) -> Simulation.Interactive:
             """Set the geometry distance tolerance.
@@ -620,8 +629,9 @@ class Simulation:
         ansys.speos.script.simulation.Simulation.Direct
             Direct simulation.
         """
-
-        if type(self._type) != Simulation.Direct:
+        if self._type is None and self._simulation_template.HasField("direct_mc_simulation_template"):
+            self._type = Simulation.Direct(direct_template=self._simulation_template.direct_mc_simulation_template, default_values=False)
+        elif type(self._type) != Simulation.Direct:
             self._type = Simulation.Direct(direct_template=self._simulation_template.direct_mc_simulation_template)
 
         return self._type
@@ -634,8 +644,9 @@ class Simulation:
         ansys.speos.script.simulation.Simulation.Inverse
             Inverse simulation.
         """
-
-        if type(self._type) != Simulation.Inverse:
+        if self._type is None and self._simulation_template.HasField("inverse_mc_simulation_template"):
+            self._type = Simulation.Inverse(inverse_template=self._simulation_template.inverse_mc_simulation_template, default_values=False)
+        elif type(self._type) != Simulation.Inverse:
             self._type = Simulation.Inverse(inverse_template=self._simulation_template.inverse_mc_simulation_template)
 
         return self._type
@@ -648,8 +659,11 @@ class Simulation:
         ansys.speos.script.simulation.Simulation.Interactive
             Interactive simulation.
         """
-
-        if type(self._type) != Simulation.Interactive:
+        if self._type is None and self._simulation_template.HasField("interactive_simulation_template"):
+            self._type = Simulation.Interactive(
+                interactive_template=self._simulation_template.interactive_simulation_template, default_values=False
+            )
+        elif type(self._type) != Simulation.Interactive:
             self._type = Simulation.Interactive(interactive_template=self._simulation_template.interactive_simulation_template)
 
         return self._type
