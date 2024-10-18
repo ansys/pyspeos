@@ -44,6 +44,8 @@ class Spectrum:
     metadata : Mapping[str, str]
         Metadata of the feature.
         By default, ``{}``.
+    key : str
+        Creation from an SpectrumLink key
 
     Attributes
     ----------
@@ -52,21 +54,22 @@ class Spectrum:
     """
 
     def __init__(
-        self,
-        speos_client: core.SpeosClient,
-        name: str,
-        description: str = "",
-        metadata: Mapping[str, str] = {},
+        self, speos_client: core.SpeosClient, name: str, description: str = "", metadata: Mapping[str, str] = {}, key: str = ""
     ) -> None:
         self._client = speos_client
         self.spectrum_link = None
         """Link object for the spectrum in database."""
 
-        # Create Spectrum
-        self._spectrum = core.Spectrum(name=name, description=description, metadata=metadata)
+        if key == "":
+            # Create Spectrum
+            self._spectrum = core.Spectrum(name=name, description=description, metadata=metadata)
 
-        # Default value
-        self.set_monochromatic()  # By default will be monochromatic
+            # Default value
+            self.set_monochromatic()  # By default will be monochromatic
+        else:
+            # Retrieve Spectrum
+            self.spectrum_link = speos_client.get_item(key=key)
+            self._spectrum = self.spectrum_link.get()
 
     def set_monochromatic(self, wavelength: float = 555.0) -> Spectrum:
         """Set the spectrum as monochromatic.

@@ -48,6 +48,8 @@ class Intensity:
     intensity_props_to_complete : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.IntensityProperties, optional
         Intensity properties to complete.
         By default, ``None``.
+    key : str
+        Creation from an IntensityTemplateLink key
 
     Attributes
     ----------
@@ -65,18 +67,22 @@ class Intensity:
             Library to complete.
         library_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.IntensityProperties.LibraryProperties
             Library properties to complete.
+        default_values : bool
+            Uses default values when True.
         """
 
         def __init__(
             self,
             library: core.IntensityTemplate.Library,
             library_props: core.Scene.SourceInstance.IntensityProperties.LibraryProperties,
+            default_values: bool = True,
         ) -> None:
             self._library = library
             self._library_props = library_props
 
-            # Default values
-            self.set_orientation_axis_system()
+            if default_values:
+                # Default values
+                self.set_orientation_axis_system()
 
         def set_intensity_file_uri(self, uri: str) -> Intensity.Library:
             """Set the intensity file.
@@ -165,18 +171,22 @@ class Intensity:
             Gaussian to complete.
         gaussian_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.IntensityProperties.GaussianProperties
             Gaussian properties to complete.
+        default_values : bool
+            Uses default values when True.
         """
 
         def __init__(
             self,
             gaussian: core.IntensityTemplate.Gaussian,
             gaussian_props: core.Scene.SourceInstance.IntensityProperties.GaussianProperties,
+            default_values: bool = True,
         ) -> None:
             self._gaussian = gaussian
             self._gaussian_props = gaussian_props
 
-            # Default values
-            self.set_FWHM_angle_x().set_FWHM_angle_y().set_total_angle().set_axis_system()
+            if default_values:
+                # Default values
+                self.set_FWHM_angle_x().set_FWHM_angle_y().set_total_angle().set_axis_system()
 
         def set_FWHM_angle_x(self, value: float = 30) -> Intensity.Gaussian:
             """Set the full width following x at half maximum.
@@ -257,6 +267,7 @@ class Intensity:
         description: str = "",
         metadata: Mapping[str, str] = {},
         intensity_props_to_complete: Optional[core.Scene.SourceInstance.IntensityProperties] = None,
+        key: str = "",
     ) -> None:
         self._client = speos_client
         self.intensity_template_link = None
@@ -265,9 +276,6 @@ class Intensity:
         # Attribute representing the more complex intensity.
         self._type = None
 
-        # Create IntensityTemplate
-        self._intensity_template = core.IntensityTemplate(name=name, description=description, metadata=metadata)
-
         # Create IntensityProperties
         self._intensity_properties = core.Scene.SourceInstance.IntensityProperties()
         self._light_print = False
@@ -275,11 +283,16 @@ class Intensity:
             self._intensity_properties = intensity_props_to_complete
             self._light_print = True
 
-        # Attribute gathering more complex intensity properties
-        self._props = None
+        if key == "":
+            # Create IntensityTemplate
+            self._intensity_template = core.IntensityTemplate(name=name, description=description, metadata=metadata)
 
-        # Default values
-        self.set_cos(N=1)  # By default will be lambertian (cos with N =1)
+            # Default values
+            self.set_cos(N=1)  # By default will be lambertian (cos with N =1)
+        else:
+            # Retrieve IntensityTemplate
+            self.intensity_template_link = speos_client.get_item(key=key)
+            self._intensity_template = self.intensity_template_link.get()
 
     def set_library(self) -> Intensity.Library:
         """Set the intensity as library.
@@ -289,7 +302,11 @@ class Intensity:
         ansys.speos.script.intensity.Intensity.Library
             Library intensity.
         """
-        if type(self._type) != Intensity.Library:
+        if self._type is None and self._intensity_template.HasField("library"):
+            self._type = Intensity.Library(
+                library=self._intensity_template.library, library_props=self._intensity_properties.library_properties, default_values=False
+            )
+        elif type(self._type) != Intensity.Library:
             self._type = Intensity.Library(
                 library=self._intensity_template.library, library_props=self._intensity_properties.library_properties
             )
@@ -326,7 +343,13 @@ class Intensity:
         ansys.speos.script.intensity.Intensity.Gaussian
             Gaussian intensity.
         """
-        if type(self._type) != Intensity.Gaussian:
+        if self._type is None and self._intensity_template.HasField("gaussian"):
+            self._type = Intensity.Gaussian(
+                gaussian=self._intensity_template.gaussian,
+                gaussian_props=self._intensity_properties.gaussian_properties,
+                default_values=False,
+            )
+        elif type(self._type) != Intensity.Gaussian:
             self._type = Intensity.Gaussian(
                 gaussian=self._intensity_template.gaussian, gaussian_props=self._intensity_properties.gaussian_properties
             )
