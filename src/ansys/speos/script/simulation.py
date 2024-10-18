@@ -29,7 +29,8 @@ import uuid
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
 
 import ansys.speos.core as core
-from ansys.speos.script.geo_ref import GeoRef
+
+# from ansys.speos.script.geo_ref import GeoRef
 import ansys.speos.script.project as project
 
 
@@ -117,7 +118,7 @@ class Simulation:
             self.set_max_impact()
             self.set_colorimetric_standard_CIE_1931()
             self.set_dispersion()
-            self.set_fast_transmission_gathering()
+            # self.set_fast_transmission_gathering()
             self.set_ambient_material_file_uri()
             self.set_weight()
 
@@ -218,24 +219,24 @@ class Simulation:
             self._direct_template.dispersion = value
             return self
 
-        def set_fast_transmission_gathering(self, value: bool = False) -> Simulation.Direct:
-            """Activate/Deactivate the fast transmission gathering.
-            To accelerate the simulation by neglecting the light refraction that occurs when the light is being
-            transmitted through a transparent surface.
-
-            Parameters
-            ----------
-            value : bool
-                Activate/Deactivate.
-                By default, ``False``, means deactivate
-
-            Returns
-            -------
-            ansys.speos.script.simulation.Simulation.Direct
-                Direct simulation
-            """
-            self._direct_template.fast_transmission_gathering = value
-            return self
+        # def set_fast_transmission_gathering(self, value: bool = False) -> Simulation.Direct:
+        #    """Activate/Deactivate the fast transmission gathering.
+        #    To accelerate the simulation by neglecting the light refraction that occurs when the light is being
+        #    transmitted through a transparent surface.
+        #
+        #    Parameters
+        #    ----------
+        #    value : bool
+        #        Activate/Deactivate.
+        #        By default, ``False``, means deactivate
+        #
+        #    Returns
+        #    -------
+        #    ansys.speos.script.simulation.Simulation.Direct
+        #        Direct simulation
+        #    """
+        #    self._direct_template.fast_transmission_gathering = value
+        #    return self
 
         def set_ambient_material_file_uri(self, uri: str = "") -> Simulation.Direct:
             """To define the environment in which the light will propagate (water, fog, smoke etc.).
@@ -286,7 +287,7 @@ class Simulation:
             self.set_splitting()
             self.set_number_of_gathering_rays_per_source()
             self.set_maximum_gathering_error()
-            self.set_fast_transmission_gathering()
+            # self.set_fast_transmission_gathering()
             self.set_ambient_material_file_uri()
 
         def set_geom_distance_tolerance(self, value: float = 0.01) -> Simulation.Inverse:
@@ -438,24 +439,24 @@ class Simulation:
             self._inverse_template.maximum_gathering_error = value
             return self
 
-        def set_fast_transmission_gathering(self, value: bool = False) -> Simulation.Inverse:
-            """Activate/Deactivate the fast transmission gathering.
-            To accelerate the simulation by neglecting the light refraction that occurs when the light is being
-            transmitted through a transparent surface.
-
-            Parameters
-            ----------
-            value : bool
-                Activate/Deactivate.
-                By default, ``False``, means deactivate
-
-            Returns
-            -------
-            ansys.speos.script.simulation.Simulation.Inverse
-                Inverse simulation
-            """
-            self._inverse_template.fast_transmission_gathering = value
-            return self
+        # def set_fast_transmission_gathering(self, value: bool = False) -> Simulation.Inverse:
+        #    """Activate/Deactivate the fast transmission gathering.
+        #    To accelerate the simulation by neglecting the light refraction that occurs when the light is being
+        #    transmitted through a transparent surface.
+        #
+        #    Parameters
+        #    ----------
+        #    value : bool
+        #        Activate/Deactivate.
+        #        By default, ``False``, means deactivate
+        #
+        #    Returns
+        #    -------
+        #    ansys.speos.script.simulation.Simulation.Inverse
+        #        Inverse simulation
+        #    """
+        #    self._inverse_template.fast_transmission_gathering = value
+        #    return self
 
         def set_ambient_material_file_uri(self, uri: str = "") -> Simulation.Inverse:
             """To define the environment in which the light will propagate (water, fog, smoke etc.).
@@ -685,25 +686,25 @@ class Simulation:
         self._simulation_instance.source_paths[:] = source_paths
         return self
 
-    def set_geometries(self, geometries: List[GeoRef]) -> Simulation:
-        """Set geometries that the simulation will take into account.
-
-        Parameters
-        ----------
-        geometries : List[ansys.speos.script.geo_ref.GeoRef]
-            List of geometries.
-
-        Returns
-        -------
-        ansys.speos.script.simulation.Simulation
-            Simulation feature.
-        """
-        if geometries is []:
-            self._simulation_instance.ClearField("geometries")
-        else:
-            self._simulation_instance.geometries.geo_paths[:] = [gr.to_native_link() for gr in geometries]
-
-        return self
+    # def set_geometries(self, geometries: List[GeoRef]) -> Simulation:
+    #    """Set geometries that the simulation will take into account.
+    #
+    #    Parameters
+    #    ----------
+    #    geometries : List[ansys.speos.script.geo_ref.GeoRef]
+    #        List of geometries.
+    #
+    #    Returns
+    #    -------
+    #    ansys.speos.script.simulation.Simulation
+    #        Simulation feature.
+    #    """
+    #    if geometries is []:
+    #        self._simulation_instance.ClearField("geometries")
+    #    else:
+    #        self._simulation_instance.geometries.geo_paths[:] = [gr.to_native_link() for gr in geometries]
+    #
+    #    return self
 
     def __str__(self) -> str:
         """Return the string representation of the simulation"""
