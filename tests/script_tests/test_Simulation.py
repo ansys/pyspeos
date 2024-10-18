@@ -52,6 +52,11 @@ def test_create_direct(speos: Speos):
     assert len(sim1._simulation_instance.sensor_paths) == 0
     assert len(sim1._simulation_instance.source_paths) == 0
     assert len(sim1._simulation_instance.geometries.geo_paths) == 0
+    assert sim1._job.HasField("direct_mc_simulation_properties")
+    assert sim1._job.direct_mc_simulation_properties.HasField("stop_condition_rays_number")
+    assert sim1._job.direct_mc_simulation_properties.stop_condition_rays_number == 200000
+    assert sim1._job.direct_mc_simulation_properties.HasField("stop_condition_duration") == False
+    assert sim1._job.direct_mc_simulation_properties.automatic_save_frequency == 1800
 
     # Change value
     # geom_distance_tolerance
@@ -85,6 +90,19 @@ def test_create_direct(speos: Speos):
     # ambient_material_uri
     sim1.set_direct().set_ambient_material_file_uri(uri=os.path.join(test_path, "AIR.material"))
     assert sim1._simulation_template.direct_mc_simulation_template.ambient_material_uri.endswith("AIR.material")
+
+    # stop_condition_rays_number
+    sim1.set_direct().set_stop_condition_rays_number(value=None)
+    assert sim1._job.direct_mc_simulation_properties.HasField("stop_condition_rays_number") == False
+
+    # stop_condition_duration
+    sim1.set_direct().set_stop_condition_duration(value=600)
+    assert sim1._job.direct_mc_simulation_properties.HasField("stop_condition_duration")
+    assert sim1._job.direct_mc_simulation_properties.stop_condition_duration == 600
+
+    # automatic_save_frequency
+    sim1.set_direct().set_automatic_save_frequency(3200)
+    assert sim1._job.direct_mc_simulation_properties.automatic_save_frequency == 3200
 
     # sensor_paths
     sim1.set_sensor_paths(sensor_paths=["sensor.1", "sensor.2"])
@@ -129,6 +147,11 @@ def test_create_inverse(speos: Speos):
     assert len(sim1._simulation_instance.sensor_paths) == 0
     assert len(sim1._simulation_instance.source_paths) == 0
     assert len(sim1._simulation_instance.geometries.geo_paths) == 0
+    assert sim1._job.HasField("inverse_mc_simulation_properties")
+    assert sim1._job.inverse_mc_simulation_properties.HasField("optimized_propagation_none")
+    assert sim1._job.inverse_mc_simulation_properties.optimized_propagation_none.stop_condition_passes_number == 5
+    assert sim1._job.inverse_mc_simulation_properties.HasField("stop_condition_duration") == False
+    assert sim1._job.inverse_mc_simulation_properties.automatic_save_frequency == 1800
 
     # Change value
     # geom_distance_tolerance
@@ -175,6 +198,20 @@ def test_create_inverse(speos: Speos):
     sim1.set_inverse().set_ambient_material_file_uri(uri=os.path.join(test_path, "AIR.material"))
     assert sim1._simulation_template.inverse_mc_simulation_template.ambient_material_uri.endswith("AIR.material")
 
+    # stop_condition_passes_number
+    sim1.set_inverse().set_stop_condition_passes_number(value=None)
+    assert sim1._job.inverse_mc_simulation_properties.HasField("optimized_propagation_none") == True
+    assert sim1._job.inverse_mc_simulation_properties.optimized_propagation_none.HasField("stop_condition_passes_number") == False
+
+    # stop_condition_duration
+    sim1.set_inverse().set_stop_condition_duration(value=50)
+    assert sim1._job.inverse_mc_simulation_properties.HasField("stop_condition_duration")
+    assert sim1._job.inverse_mc_simulation_properties.stop_condition_duration == 50
+
+    # automatic_save_frequency
+    sim1.set_inverse().set_automatic_save_frequency(value=5000)
+    assert sim1._job.inverse_mc_simulation_properties.automatic_save_frequency == 5000
+
     # sensor_paths
     sim1.set_sensor_paths(sensor_paths=["sensor.1", "sensor.2"])
     assert sim1._simulation_instance.sensor_paths == ["sensor.1", "sensor.2"]
@@ -213,6 +250,10 @@ def test_create_interactive(speos: Speos):
     assert len(sim1._simulation_instance.sensor_paths) == 0
     assert len(sim1._simulation_instance.source_paths) == 0
     assert len(sim1._simulation_instance.geometries.geo_paths) == 0
+    assert sim1._job.HasField("interactive_simulation_properties")
+    assert len(sim1._job.interactive_simulation_properties.rays_number_per_sources) == 0
+    assert sim1._job.interactive_simulation_properties.light_expert == False
+    assert sim1._job.interactive_simulation_properties.impact_report == False
 
     # Change value
     # geom_distance_tolerance
@@ -238,6 +279,30 @@ def test_create_interactive(speos: Speos):
     # ambient_material_uri
     sim1.set_interactive().set_ambient_material_file_uri(uri=os.path.join(test_path, "AIR.material"))
     assert sim1._simulation_template.interactive_simulation_template.ambient_material_uri.endswith("AIR.material")
+
+    # rays_number_per_sources
+    sim1.set_interactive().set_rays_number_per_sources(
+        values=[
+            script.Simulation.Interactive.RaysNumberPerSource(source_path="Source.1", rays_nb=50),
+            script.Simulation.Interactive.RaysNumberPerSource(source_path="Source.2", rays_nb=150),
+        ]
+    )
+    assert len(sim1._job.interactive_simulation_properties.rays_number_per_sources) == 2
+    assert sim1._job.interactive_simulation_properties.rays_number_per_sources[0].source_path == "Source.1"
+    assert sim1._job.interactive_simulation_properties.rays_number_per_sources[0].rays_nb == 50
+    assert sim1._job.interactive_simulation_properties.rays_number_per_sources[1].source_path == "Source.2"
+    assert sim1._job.interactive_simulation_properties.rays_number_per_sources[1].rays_nb == 150
+
+    sim1.set_interactive().set_rays_number_per_sources(values=[])
+    assert len(sim1._job.interactive_simulation_properties.rays_number_per_sources) == 0
+
+    # light_expert
+    sim1.set_interactive().set_light_expert(value=True)
+    assert sim1._job.interactive_simulation_properties.light_expert == True
+
+    # impact_report
+    sim1.set_interactive().set_impact_report(value=True)
+    assert sim1._job.interactive_simulation_properties.impact_report == True
 
     # sensor_paths
     sim1.set_sensor_paths(sensor_paths=["sensor.1", "sensor.2"])
@@ -289,19 +354,25 @@ def test_commit(speos: Speos):
     sim1.set_sensor_paths(sensor_paths=[ssr._name]).set_source_paths(source_paths=[src._name])
     assert sim1.simulation_template_link is None
     assert len(p.scene_link.get().simulations) == 0
+    assert sim1.job_link is None
 
     # Commit
     sim1.commit()
+    assert sim1.simulation_template_link is not None
     assert sim1.simulation_template_link.get().HasField("direct_mc_simulation_template")
+    assert sim1.job_link is not None
+    assert sim1.job_link.get().HasField("direct_mc_simulation_properties")
 
     assert len(p.scene_link.get().simulations) == 1
     assert p.scene_link.get().simulations[0] == sim1._simulation_instance
 
-    # Change only in local not committed (on template and on instance)
+    # Change only in local not committed (on template, on instance and on job)
     sim1.set_direct().set_geom_distance_tolerance(value=0.1)
     assert sim1.simulation_template_link.get() != sim1._simulation_template
     sim1.set_sensor_paths(["Irradiance.1, Irradiance.2"])
     assert p.scene_link.get().simulations[0] != sim1._simulation_instance
+    sim1.set_direct().set_stop_condition_duration(value=60)
+    assert sim1.job_link.get() != sim1._job
 
     sim1.delete()
 
@@ -336,23 +407,28 @@ def test_reset(speos: Speos):
     assert sim1.simulation_template_link is not None
     assert sim1.simulation_template_link.get().HasField("direct_mc_simulation_template")
     assert len(p.scene_link.get().simulations) == 1
+    assert sim1.job_link is not None
+    assert sim1.job_link.get().HasField("direct_mc_simulation_properties")
 
-    # Change local data (on template and on instance)
+    # Change local data (on template, on instance and on job)
     sim1.set_direct().set_geom_distance_tolerance(value=0.1)
     assert sim1.simulation_template_link.get() != sim1._simulation_template
     sim1.set_sensor_paths(["Irradiance.1, Irradiance.2"])
     assert p.scene_link.get().simulations[0] != sim1._simulation_instance
+    sim1.set_direct().set_stop_condition_duration(value=60)
+    assert sim1.job_link.get() != sim1._job
 
     # Ask for reset
     sim1.reset()
     assert sim1.simulation_template_link.get() == sim1._simulation_template
     assert p.scene_link.get().simulations[0] == sim1._simulation_instance
+    assert sim1.job_link.get() == sim1._job
 
     sim1.delete()
 
 
-def test_delete_source(speos: Speos):
-    """Test delete of source."""
+def test_delete(speos: Speos):
+    """Test delete of simulation."""
     p = script.Project(speos=speos)
 
     # Prerequisites: a source and a sensor are needed (bug also a rootpart)
@@ -379,6 +455,8 @@ def test_delete_source(speos: Speos):
     assert len(p.scene_link.get().simulations) == 1
     assert len(p.scene_link.get().simulations[0].sensor_paths) == 1
     assert len(sim1._simulation_instance.sensor_paths) == 1  # local
+    assert sim1.job_link.get().HasField("direct_mc_simulation_properties")
+    assert sim1._job.HasField("direct_mc_simulation_properties")  # local
 
     # Delete
     sim1.delete()
@@ -390,3 +468,6 @@ def test_delete_source(speos: Speos):
 
     assert len(p.scene_link.get().simulations) == 0
     assert len(sim1._simulation_instance.sensor_paths) == 1  # local
+
+    assert sim1.job_link is None
+    assert sim1._job.HasField("direct_mc_simulation_properties")  # local
