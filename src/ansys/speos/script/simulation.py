@@ -729,7 +729,7 @@ class Simulation:
 
         # SimulationTemplate
         if self.simulation_template_link is None:
-            out_str += f"\nlocal: {self._simulation_template}"
+            out_str += "\nlocal: " + core.protobuf_message_to_str(self._simulation_template)
         else:
             out_str += "\n" + str(self.simulation_template_link)
 
@@ -768,7 +768,6 @@ class Simulation:
                     len(scene_data.simulations), self._simulation_instance
                 )  # if no, just add it to the list of simulations
 
-            print(scene_data)
             self._project.scene_link.set(data=scene_data)  # update scene data
 
         return self
