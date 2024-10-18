@@ -56,7 +56,18 @@ class Simulation:
     """
 
     class Weight:
-        """Type of weight : Minimum energy percentage."""
+        """The Weight represents the ray energy. In real life, a ray looses some energy (power) when it interacts with an object.
+        Activating weight means that the Weight message is present.
+        When weight is not activated, rays' energy stays constant and probability laws dictate if rays continue or stop propagating.
+        When weight is activated, the rays' energy evolves with interactions until rays reach the sensors.
+        It is highly recommended to fill this parameter excepted in interactive simulation.
+        Not fill this parameter is useful to understand certain phenomena as absorption.
+
+        Parameters
+        ----------
+        weight : ansys.api.speos.simulation.v1.simulation_template_pb2.Weight
+            Weight to complete.
+        """
 
         def __init__(self, weight: simulation_template_pb2.Weight) -> None:
             self._weight = weight
@@ -69,8 +80,8 @@ class Simulation:
             Parameters
             ----------
             value : float
-                The minimum energy percentage.
-                by default, ``0.5``.
+                The Minimum energy percentage parameter defines the minimum energy ratio to continue to propagate a ray with weight.
+                By default, ``0.5``.
 
             Returns
             -------
@@ -82,7 +93,7 @@ class Simulation:
 
     class Direct:
         """
-        Type of simulation : Direct
+        Type of Simulation : Direct.
         By default,
         geometry distance tolerance is set to 0.01,
         maximum number of impacts is set to 100,
@@ -110,42 +121,43 @@ class Simulation:
             self.set_ambient_material_file_uri()
             self.set_weight()
 
-        def set_geom_distance_tolerance(self, value: float = 0.01) -> Simulation.DirectSimulation:
+        def set_geom_distance_tolerance(self, value: float = 0.01) -> Simulation.Direct:
             """Set the geometry distance tolerance.
 
             Parameters
             ----------
             value : float
-                The geometry distance tolerance.
-                by default, ``0.01``.
+                Maximum distance in mm to consider two faces as tangent.
+                By default, ``0.01``.
 
             Returns
             -------
-            ansys.speos.script.simulation.Simulation.DirectSimulation
+            ansys.speos.script.simulation.Simulation.Direct
                 Direct simulation
             """
             self._direct_template.geom_distance_tolerance = value
             return self
 
-        def set_max_impact(self, value: int = 100) -> Simulation.DirectSimulation:
-            """Set the maximum number of impacts.
+        def set_max_impact(self, value: int = 100) -> Simulation.Direct:
+            """Defines a value to determine the maximum number of ray impacts during propagation.
+            When a ray has interacted N times with the geometry, the propagation of the ray stops.
 
             Parameters
             ----------
             value : int
                 The maximum number of impacts.
-                by default, ``100``.
+                By default, ``100``.
 
             Returns
             -------
-            ansys.speos.script.simulation.Simulation.DirectSimulation
+            ansys.speos.script.simulation.Simulation.Direct
                 Direct simulation
             """
             self._direct_template.max_impact = value
             return self
 
         def set_weight(self) -> Simulation.Weight:
-            """Set the weight.
+            """Activate weight. Highly recommended to fill.
 
             Returns
             -------
@@ -154,98 +166,96 @@ class Simulation:
             """
             return Simulation.Weight(self._direct_template.weight)
 
-        def set_weight_none(self) -> Simulation.DirectSimulation:
-            """Deactivate the weight.
+        def set_weight_none(self) -> Simulation.Direct:
+            """Deactivate weight.
 
             Returns
             -------
-            ansys.speos.script.simulation.Simulation.DirectSimulation
+            ansys.speos.script.simulation.Simulation.Direct
                 Direct simulation
             """
             self._direct_template.ClearField("weight")
             return self
 
-        def set_colorimetric_standard_CIE_1931(self) -> Simulation.DirectSimulation:
+        def set_colorimetric_standard_CIE_1931(self) -> Simulation.Direct:
             """Set the colorimetric standard to CIE 1931.
+            2 degrees CIE Standard Colorimetric Observer Data.
 
             Returns
             -------
-            ansys.speos.script.simulation.Simulation.DirectSimulation
+            ansys.speos.script.simulation.Simulation.Direct
                 Direct simulation
             """
             self._direct_template.colorimetric_standard = simulation_template_pb2.CIE_1931
             return self
 
-        def set_colorimetric_standard_CIE_1964(self) -> Simulation.DirectSimulation:
+        def set_colorimetric_standard_CIE_1964(self) -> Simulation.Direct:
             """Set the colorimetric standard to CIE 1964.
+            10 degrees CIE Standard Colorimetric Observer Data.
 
             Returns
             -------
-            ansys.speos.script.simulation.Simulation.DirectSimulation
+            ansys.speos.script.simulation.Simulation.Direct
                 Direct simulation
             """
             self._direct_template.colorimetric_standard = simulation_template_pb2.CIE_1964
             return self
 
-        def set_dispersion(self, value: bool = True) -> Simulation.DirectSimulation:
-            """Set the dispersion.
+        def set_dispersion(self, value: bool = True) -> Simulation.Direct:
+            """Activate/Deactivate the dispersion calculation.
 
             Parameters
             ----------
             value : bool
-                The dispersion.
-                by default, ``True``.
+                Activate/Deactivate.
+                By default, ``True``, means activate.
 
             Returns
             -------
-            ansys.speos.script.simulation.Simulation.DirectSimulation
+            ansys.speos.script.simulation.Simulation.Direct
                 Direct simulation
             """
             self._direct_template.dispersion = value
             return self
 
-        def set_fast_transmission_gathering(self, value: bool = False) -> Simulation.DirectSimulation:
-            """Set the fast transmission gathering.
+        def set_fast_transmission_gathering(self, value: bool = False) -> Simulation.Direct:
+            """Activate/Deactivate the fast transmission gathering.
+            To accelerate the simulation by neglecting the light refraction that occurs when the light is being
+            transmitted through a transparent surface.
 
             Parameters
             ----------
             value : bool
-                The fast transmission gathering.
-                by default, ``False``.
+                Activate/Deactivate.
+                By default, ``False``, means deactivate
 
             Returns
             -------
-            ansys.speos.script.simulation.Simulation.DirectSimulation
+            ansys.speos.script.simulation.Simulation.Direct
                 Direct simulation
             """
             self._direct_template.fast_transmission_gathering = value
             return self
 
-        def set_ambient_material_file_uri(self, uri: str = "") -> Simulation.DirectSimulation:
-            """Set the ambient material URI.
+        def set_ambient_material_file_uri(self, uri: str = "") -> Simulation.Direct:
+            """To define the environment in which the light will propagate (water, fog, smoke etc.).
 
             Parameters
             ----------
             uri : str
-                The ambient material URI.
-                by default, ``""``, means air as ambient material.
+                The ambient material, expressed in a .material file.
+                By default, ``""``, means air as ambient material.
 
             Returns
             -------
-            ansys.speos.script.simulation.Simulation.DirectSimulation
+            ansys.speos.script.simulation.Simulation.Direct
                 Direct simulation
             """
             self._direct_template.ambient_material_uri = uri
             return self
 
-        def __str__(self) -> str:
-            out_str = ""
-            if self._simulation_template is not None:
-                out_str += str(self._simulation_template)
-            return out_str
-
     class Inverse:
-        """Type of simulation : Inverse
+        """Type of simulation : Inverse.
         By default,
         geometry distance tolerance is set to 0.01,
         maximum number of impacts is set to 100,
@@ -279,42 +289,43 @@ class Simulation:
             self.set_fast_transmission_gathering()
             self.set_ambient_material_file_uri()
 
-        def set_geom_distance_tolerance(self, value: float = 0.01) -> Simulation.InverseSimulation:
+        def set_geom_distance_tolerance(self, value: float = 0.01) -> Simulation.Inverse:
             """Set the geometry distance tolerance.
 
             Parameters
             ----------
             value : float
-                The geometry distance tolerance.
-                by default, ``0.01``
+                Maximum distance in mm to consider two faces as tangent.
+                By default, ``0.01``
 
             Returns
             -------
-            ansys.speos.script.simulation.Simulation.InverseSimulation
+            ansys.speos.script.simulation.Simulation.Inverse
                 Inverse simulation
             """
             self._inverse_template.geom_distance_tolerance = value
             return self
 
-        def set_max_impact(self, value: int = 100) -> Simulation.InverseSimulation:
-            """Set the maximum number of impacts.
+        def set_max_impact(self, value: int = 100) -> Simulation.Inverse:
+            """Defines a value to determine the maximum number of ray impacts during propagation.
+            When a ray has interacted N times with the geometry, the propagation of the ray stops.
 
             Parameters
             ----------
             value : int
                 The maximum number of impacts.
-                by default, ``100``.
+                By default, ``100``.
 
             Returns
             -------
-            ansys.speos.script.simulation.Simulation.InverseSimulation
+            ansys.speos.script.simulation.Simulation.Inverse
                 Inverse simulation
             """
             self._inverse_template.max_impact = value
             return self
 
         def set_weight(self) -> Simulation.Weight:
-            """Set the weight .
+            """Activate weight. Highly recommended to fill.
 
             Returns
             -------
@@ -323,149 +334,148 @@ class Simulation:
             """
             return Simulation.Weight(self._inverse_template.weight)
 
-        def set_weight_none(self) -> Simulation.InverseSimulation:
-            """Deactivate the weight.
+        def set_weight_none(self) -> Simulation.Inverse:
+            """Deactivate weight.
 
             Returns
             -------
-            ansys.speos.script.simulation.Simulation.InverseSimulation
+            ansys.speos.script.simulation.Simulation.Inverse
                 Inverse simulation
             """
             self._inverse_template.ClearField("weight")
             return self
 
-        def set_colorimetric_standard_CIE_1931(self) -> Simulation.InverseSimulation:
+        def set_colorimetric_standard_CIE_1931(self) -> Simulation.Inverse:
             """Set the colorimetric standard to CIE 1931.
+            2 degrees CIE Standard Colorimetric Observer Data.
 
             Returns
             -------
-            ansys.speos.script.simulation.Simulation.InverseSimulation
+            ansys.speos.script.simulation.Simulation.Inverse
                 Inverse simulation
             """
             self._inverse_template.colorimetric_standard = simulation_template_pb2.CIE_1931
             return self
 
-        def set_colorimetric_standard_CIE_1964(self) -> Simulation.InverseSimulation:
+        def set_colorimetric_standard_CIE_1964(self) -> Simulation.Inverse:
             """Set the colorimetric standard to CIE 1964.
+            10 degrees CIE Standard Colorimetric Observer Data.
 
             Returns
             -------
-            ansys.speos.script.simulation.Simulation.InverseSimulation
+            ansys.speos.script.simulation.Simulation.Inverse
                 Inverse simulation
             """
             self._inverse_template.colorimetric_standard = simulation_template_pb2.CIE_1964
             return self
 
-        def set_dispersion(self, value: bool = False) -> Simulation.InverseSimulation:
-            """Set the dispersion.
+        def set_dispersion(self, value: bool = False) -> Simulation.Inverse:
+            """Activate/Deactivate the dispersion calculation.
 
             Parameters
             ----------
             value : bool
-                The dispersion.
-                by default, ``False``.
+                Activate/Deactivate.
+                By default, ``False``, means deactivate.
 
             Returns
             -------
-            ansys.speos.script.simulation.Simulation.InverseSimulation
+            ansys.speos.script.simulation.Simulation.Inverse
                 Inverse simulation
             """
             self._inverse_template.dispersion = value
             return self
 
-        def set_splitting(self, value: bool = False) -> Simulation.InverseSimulation:
-            """Set the splitting.
+        def set_splitting(self, value: bool = False) -> Simulation.Inverse:
+            """Activate/Deactivate the splitting.
+            To split each propagated ray into several paths at their first impact after leaving the observer point.
 
             Parameters
             ----------
             value : bool
-                The splitting.
-                by default, ``False``.
+                Activate/Deactivate.
+                By default, ``False``, means deactivate.
 
             Returns
             -------
-            ansys.speos.script.simulation.Simulation.InverseSimulation
+            ansys.speos.script.simulation.Simulation.Inverse
                 Inverse simulation
             """
             self._inverse_template.splitting = value
             return self
 
-        def set_number_of_gathering_rays_per_source(self, value: int = 1) -> Simulation.InverseSimulation:
+        def set_number_of_gathering_rays_per_source(self, value: int = 1) -> Simulation.Inverse:
             """Set the number of gathering rays per source.
 
             Parameters
             ----------
             value : int
-                The number of gathering rays per source.
-                by default, ``1``.
+                This number pilots the number of shadow rays to target at each source.
+                By default, ``1``.
 
             Returns
             -------
-            ansys.speos.script.simulation.Simulation.InverseSimulation
+            ansys.speos.script.simulation.Simulation.Inverse
                 Inverse simulation
             """
             self._inverse_template.number_of_gathering_rays_per_source = value
             return self
 
-        def set_maximum_gathering_error(self, value: int = 0) -> Simulation.InverseSimulation:
+        def set_maximum_gathering_error(self, value: int = 0) -> Simulation.Inverse:
             """Set the maximum gathering error.
 
             Parameters
             ----------
             value : int
-                The maximum gathering error.
-                by default, ``0``.
+                This value defines the level below which a source can be neglected.
+                By default, ``0``, means that no approximation will be done.
 
             Returns
             -------
-            ansys.speos.script.simulation.Simulation.InverseSimulation
+            ansys.speos.script.simulation.Simulation.Inverse
                 Inverse simulation
             """
             self._inverse_template.maximum_gathering_error = value
             return self
 
-        def set_fast_transmission_gathering(self, value: bool = False) -> Simulation.InverseSimulation:
-            """Set the fast transmission gathering.
+        def set_fast_transmission_gathering(self, value: bool = False) -> Simulation.Inverse:
+            """Activate/Deactivate the fast transmission gathering.
+            To accelerate the simulation by neglecting the light refraction that occurs when the light is being
+            transmitted through a transparent surface.
 
             Parameters
             ----------
             value : bool
-                The fast transmission gathering.
-                by default, ``False``.
+                Activate/Deactivate.
+                By default, ``False``, means deactivate
 
             Returns
             -------
-            ansys.speos.script.simulation.Simulation.InverseSimulation
+            ansys.speos.script.simulation.Simulation.Inverse
                 Inverse simulation
             """
             self._inverse_template.fast_transmission_gathering = value
             return self
 
-        def set_ambient_material_file_uri(self, uri: str = "") -> Simulation.InverseSimulation:
-            """Set the ambient material URI.
+        def set_ambient_material_file_uri(self, uri: str = "") -> Simulation.Inverse:
+            """To define the environment in which the light will propagate (water, fog, smoke etc.).
 
             Parameters
             ----------
             uri : str
-                The ambient material URI.
-                by default, ``""``, means air as ambient material.
+                The ambient material, expressed in a .material file.
+                By default, ``""``, means air as ambient material.
 
             Returns
             -------
-            ansys.speos.script.simulation.Simulation.InverseSimulation
+            ansys.speos.script.simulation.Simulation.Inverse
                 Inverse simulation
             """
             self._inverse_template.ambient_material_uri = uri
             return self
 
-        def __str__(self) -> str:
-            out_str = ""
-            if self._simulation_template is not None:
-                out_str += str(self._simulation_template)
-            return out_str
-
     class Interactive:
-        """Type of simulation : Interactive
+        """Type of simulation : Interactive.
         By default,
         geometry distance tolerance is set to 0.01,
         maximum number of impacts is set to 100,
@@ -495,8 +505,8 @@ class Simulation:
             Parameters
             ----------
             value : float
-                The geometry distance tolerance.
-                by default, ``0.01``
+                Maximum distance in mm to consider two faces as tangent.
+                By default, ``0.01``
 
             Returns
             -------
@@ -507,13 +517,14 @@ class Simulation:
             return self
 
         def set_max_impact(self, value: int = 100) -> Simulation.Interactive:
-            """Set the maximum number of impacts.
+            """Defines a value to determine the maximum number of ray impacts during propagation.
+            When a ray has interacted N times with the geometry, the propagation of the ray stops.
 
             Parameters
             ----------
             value : int
                 The maximum number of impacts.
-                by default, ``100``.
+                By default, ``100``.
 
             Returns
             -------
@@ -524,7 +535,7 @@ class Simulation:
             return self
 
         def set_weight(self) -> Simulation.Weight:
-            """Set the weight .
+            """Activate weight. Highly recommended to fill.
 
             Returns
             -------
@@ -534,7 +545,7 @@ class Simulation:
             return Simulation.Weight(self._interactive_template.weight)
 
         def set_weight_none(self) -> Simulation.Interactive:
-            """Deactivate the weight.
+            """Deactivate weight.
 
             Returns
             -------
@@ -546,6 +557,7 @@ class Simulation:
 
         def set_colorimetric_standard_CIE_1931(self) -> Simulation.Interactive:
             """Set the colorimetric standard to CIE 1931.
+            2 degrees CIE Standard Colorimetric Observer Data.
 
             Returns
             -------
@@ -557,6 +569,7 @@ class Simulation:
 
         def set_colorimetric_standard_CIE_1964(self) -> Simulation.Interactive:
             """Set the colorimetric standard to CIE 1964.
+            10 degrees CIE Standard Colorimetric Observer Data.
 
             Returns
             -------
@@ -567,13 +580,13 @@ class Simulation:
             return self
 
         def set_ambient_material_file_uri(self, uri: str = "") -> Simulation.Interactive:
-            """Set the ambient material URI.
+            """To define the environment in which the light will propagate (water, fog, smoke etc.).
 
             Parameters
             ----------
             uri : str
-                The ambient material URI.
-                by default, ``""``, means air as ambient material.
+                The ambient material, expressed in a .material file.
+                By default, ``""``, means air as ambient material.
 
             Returns
             -------
@@ -582,12 +595,6 @@ class Simulation:
             """
             self._interactive_template.ambient_material_uri = uri
             return self
-
-        def __str__(self) -> str:
-            out_str = ""
-            if self._simulation_template is not None:
-                out_str += str(self._simulation_template)
-            return out_str
 
     def __init__(self, project: project.Project, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> None:
         self._project = project
@@ -605,12 +612,7 @@ class Simulation:
         self._simulation_instance = core.Scene.SimulationInstance(name=name, description=description, metadata=metadata)
 
     def set_direct(self) -> Direct:
-        """Set the Direct simulation template.
-
-        Parameters
-        ----------
-        name : str
-            Name of the Direct simulation template.
+        """Set the simulation as direct.
 
         Returns
         -------
@@ -624,12 +626,7 @@ class Simulation:
         return self._type
 
     def set_inverse(self) -> Inverse:
-        """Set the Inverse simulation template.
-
-        Parameters
-        ----------
-        name : str
-            Name of the Inverse simulation template.
+        """Set the simulation as inverse.
 
         Returns
         -------
@@ -643,12 +640,7 @@ class Simulation:
         return self._type
 
     def set_interactive(self) -> Simulation.Interactive:
-        """Set the Interactive simulation template.
-
-        Parameters
-        ----------
-        name : str
-            Name of the Interactive simulation template.
+        """Set the simulation as interactive.
 
         Returns
         -------
