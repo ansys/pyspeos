@@ -843,6 +843,8 @@ class Simulation:
         """Link object for the simulation template in database."""
         self.job_link = None
         """Link object for the job in database."""
+        self.result_list = []
+        """List of results created after a simulation compute."""
 
         # Attribute representing the kind of simulation.
         self._type = None
@@ -987,7 +989,8 @@ class Simulation:
             List of simulation results.
         """
         self._job.job_type = core.Job.Type.CPU
-        return self._run_job()
+        self.result_list = self._run_job()
+        return self.result_list
 
     def compute_GPU(self) -> List[job_pb2.Result]:
         """Compute the simulation on GPU.
@@ -998,7 +1001,8 @@ class Simulation:
             List of simulation results.
         """
         self._job.job_type = core.Job.Type.GPU
-        return self._run_job()
+        self.result_list = self._run_job()
+        return self.result_list
 
     def _run_job(self) -> List[job_pb2.Result]:
         if self.job_link is not None:
