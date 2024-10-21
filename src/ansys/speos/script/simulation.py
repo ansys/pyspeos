@@ -273,6 +273,19 @@ class Simulation:
             return self
 
         def set_stop_condition_rays_number(self, value: Optional[int] = 200000) -> Simulation.Direct:
+            """To stop the simulation after a certain number of rays were sent. Set None as value to have no condition about rays number.
+
+            Parameters
+            ----------
+            value : int, optional
+                The number of rays to send. Or None if no condition about rays number.
+                By default, ``200000``.
+
+            Returns
+            -------
+            ansys.speos.script.simulation.Simulation.Direct
+                Direct simulation
+            """
             if value is None:
                 self._direct_props_from_job.ClearField("stop_condition_rays_number")
             else:
@@ -280,6 +293,19 @@ class Simulation:
             return self
 
         def set_stop_condition_duration(self, value: Optional[int] = None) -> Simulation.Direct:
+            """To stop the simulation after a certain duration. Set None as value to have no condition about duration.
+
+            Parameters
+            ----------
+            value : int, optional
+                Duration requested (s). Or None if no condition about duration.
+                By default, ``None``.
+
+            Returns
+            -------
+            ansys.speos.script.simulation.Simulation.Direct
+                Direct simulation
+            """
             if value is None:
                 self._direct_props_from_job.ClearField("stop_condition_duration")
             else:
@@ -287,6 +313,21 @@ class Simulation:
             return self
 
         def set_automatic_save_frequency(self, value: int = 1800) -> Simulation.Direct:
+            """Define a backup interval (s).
+            This option is useful when computing long simulations.
+            But a reduced number of save operations naturally increases the simulation performance.
+
+            Parameters
+            ----------
+            value : int, optional
+                Backup interval (s).
+                By default, ``1800``.
+
+            Returns
+            -------
+            ansys.speos.script.simulation.Simulation.Direct
+                Direct simulation
+            """
             self._direct_props_from_job.automatic_save_frequency = value
             return self
 
@@ -525,6 +566,19 @@ class Simulation:
             return self
 
         def set_stop_condition_passes_number(self, value: Optional[int] = 5) -> Simulation.Inverse:
+            """To stop the simulation after a certain number of passes. Set None as value to have no condition about passes.
+
+            Parameters
+            ----------
+            value : int, optional
+                The number of passes requested. Or None if no condition about passes.
+                By default, ``5``.
+
+            Returns
+            -------
+            ansys.speos.script.simulation.Simulation.Inverse
+                Inverse simulation
+            """
             if value is None:
                 self._inverse_props_from_job.optimized_propagation_none.ClearField("stop_condition_passes_number")
             else:
@@ -532,6 +586,19 @@ class Simulation:
             return self
 
         def set_stop_condition_duration(self, value: Optional[int] = None) -> Simulation.Inverse:
+            """To stop the simulation after a certain duration. Set None as value to have no condition about duration.
+
+            Parameters
+            ----------
+            value : int, optional
+                Duration requested (s). Or None if no condition about duration.
+                By default, ``None``.
+
+            Returns
+            -------
+            ansys.speos.script.simulation.Simulation.Inverse
+                Inverse simulation
+            """
             if value is None:
                 self._inverse_props_from_job.ClearField("stop_condition_duration")
             else:
@@ -539,6 +606,21 @@ class Simulation:
             return self
 
         def set_automatic_save_frequency(self, value: int = 1800) -> Simulation.Inverse:
+            """Define a backup interval (s).
+            This option is useful when computing long simulations.
+            But a reduced number of save operations naturally increases the simulation performance.
+
+            Parameters
+            ----------
+            value : int, optional
+                Backup interval (s).
+                By default, ``1800``.
+
+            Returns
+            -------
+            ansys.speos.script.simulation.Simulation.Inverse
+                Inverse simulation
+            """
             self._inverse_props_from_job.automatic_save_frequency = value
             return self
 
@@ -562,9 +644,22 @@ class Simulation:
         """
 
         class RaysNumberPerSource:
+            """Structure to describe rays number requested for a specific source.
+
+            Parameters
+            ----------
+            source_path : str
+                Source selected via its path ("SourceName").
+            rays_nb : int, optional
+                Number of rays to be emitted by the source.
+                If None is given, 100 rays will be sent.
+            """
+
             def __init__(self, source_path: str, rays_nb: Optional[int]) -> None:
                 self.source_path = source_path
+                """Source path."""
                 self.rays_nb = rays_nb
+                """Number of rays to be emitted by the source. If None, it means 100 rays."""
 
         def __init__(
             self,
@@ -683,6 +778,19 @@ class Simulation:
             return self
 
         def set_rays_number_per_sources(self, values: List[Simulation.Interactive.RaysNumberPerSource]) -> Simulation.Interactive:
+            """Select the number of rays emitted for each source. If a source is present in the simulation but not referenced here,
+            it will send by default 100 rays.
+
+            Parameters
+            ----------
+            values : List[ansys.speos.script.simulation.Simulation.Interactive.RaysNumberPerSource]
+                List of rays number emitted by source.
+
+            Returns
+            -------
+            ansys.speos.script.simulation.Simulation.Interactive
+                Interactive simulation
+            """
             my_list = [
                 core.Job.InteractiveSimulationProperties.RaysNumberPerSource(
                     source_path=rays_nb_per_source.source_path, rays_nb=rays_nb_per_source.rays_nb
@@ -694,10 +802,36 @@ class Simulation:
             return self
 
         def set_light_expert(self, value: bool = False) -> Simulation.Interactive:
+            """Activate/Deactivate the generation of light expert file.
+
+            Parameters
+            ----------
+            value : bool
+                Activate/Deactivate.
+                By default, ``False``, means deactivate.
+
+            Returns
+            -------
+            ansys.speos.script.simulation.Simulation.Interactive
+                Interactive simulation
+            """
             self._interactive_props_from_job.light_expert = value
             return self
 
         def set_impact_report(self, value: bool = False) -> Simulation.Interactive:
+            """Activate/Deactivate the details like number of impacts, position and surface state to the HTML simulation report.
+
+            Parameters
+            ----------
+            value : bool
+                Activate/Deactivate.
+                By default, ``False``, means deactivate.
+
+            Returns
+            -------
+            ansys.speos.script.simulation.Simulation.Interactive
+                Interactive simulation
+            """
             self._interactive_props_from_job.impact_report = value
             return self
 
@@ -708,6 +842,7 @@ class Simulation:
         self.simulation_template_link = None
         """Link object for the simulation template in database."""
         self.job_link = None
+        """Link object for the job in database."""
 
         # Attribute representing the kind of simulation.
         self._type = None
@@ -844,10 +979,24 @@ class Simulation:
     #    return self
 
     def compute_CPU(self) -> List[job_pb2.Result]:
+        """Compute the simulation on CPU.
+
+        Returns
+        -------
+        List[ansys.api.speos.job.v2.job_pb2.Result]
+            List of simulation results.
+        """
         self._job.job_type = core.Job.Type.CPU
         return self._run_job()
 
     def compute_GPU(self) -> List[job_pb2.Result]:
+        """Compute the simulation on GPU.
+
+        Returns
+        -------
+        List[ansys.api.speos.job.v2.job_pb2.Result]
+            List of simulation results.
+        """
         self._job.job_type = core.Job.Type.GPU
         return self._run_job()
 
