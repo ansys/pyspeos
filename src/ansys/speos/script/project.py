@@ -292,4 +292,11 @@ ansys.speos.script.part.Part], optional
             sim_feat._simulation_instance = sim_inst
             sim_feat.simulation_template_link = self.client.get_item(key=sim_inst.simulation_guid)
             sim_feat.reset()
+            # To get default values related to job -> simu properties
+            if sim_feat._simulation_template.HasField("direct_mc_simulation_template"):
+                sim_feat.set_direct()
+            elif sim_feat._simulation_template.HasField("inverse_mc_simulation_template"):
+                sim_feat.set_inverse()
+            elif sim_feat._simulation_template.HasField("interactive_simulation_template"):
+                sim_feat.set_interactive()
             sim_feat.commit()
