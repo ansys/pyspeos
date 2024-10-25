@@ -25,7 +25,9 @@ import tempfile
 
 import ansys.api.speos.file.v1.file_transfer as file_transfer_helper__v1
 import ansys.api.speos.file.v1.file_transfer_pb2_grpc as file_transfer__v1__pb2_grpc
-from comtypes.client import CreateObject
+
+if os.name == "nt":
+    from comtypes.client import CreateObject
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 from numpy import ndarray
@@ -67,47 +69,48 @@ def _display_image(img: ndarray):
         plt.show()
 
 
-def open_result_image(simulation_feature: Simulation, result_name: str) -> None:
-    """Retrieve an image from a specific simulation result.
+if os.name == "nt":
 
-    Parameters
-    ----------
-    simulation_feature : ansys.speos.script.simulation.Simulation
-        The simulation feature.
-    result_name : str
-        The result name to open as an image.
-    """
-    file_path = _find_correct_result(simulation_feature, result_name)
-    if file_path == "":
-        raise ValueError("No result corresponding to " + result_name + " is found in " + simulation_feature._name)
+    def open_result_image(simulation_feature: Simulation, result_name: str) -> None:
+        """Retrieve an image from a specific simulation result.
 
-    if file_path.endswith("xmp") or file_path.endswith("XMP"):
-        dpf_instance = CreateObject("XMPViewer.Application")
-        dpf_instance.OpenFile(file_path)
-        res = dpf_instance.ExportXMPImage(file_path + ".png", 1)
-        if res:
-            _display_image(mpimg.imread(file_path + ".png"))
-    elif file_path.endswith("png") or file_path.endswith("PNG"):
-        _display_image(mpimg.imread(file_path))
+        Parameters
+        ----------
+        simulation_feature : ansys.speos.script.simulation.Simulation
+            The simulation feature.
+        result_name : str
+            The result name to open as an image.
+        """
+        file_path = _find_correct_result(simulation_feature, result_name)
+        if file_path == "":
+            raise ValueError("No result corresponding to " + result_name + " is found in " + simulation_feature._name)
 
+        if file_path.endswith("xmp") or file_path.endswith("XMP"):
+            dpf_instance = CreateObject("XMPViewer.Application")
+            dpf_instance.OpenFile(file_path)
+            res = dpf_instance.ExportXMPImage(file_path + ".png", 1)
+            if res:
+                _display_image(mpimg.imread(file_path + ".png"))
+        elif file_path.endswith("png") or file_path.endswith("PNG"):
+            _display_image(mpimg.imread(file_path))
 
-def open_result_in_viewer(simulation_feature: Simulation, result_name: str) -> None:
-    """Open a specific simulation result in the suitable viewer.
+    def open_result_in_viewer(simulation_feature: Simulation, result_name: str) -> None:
+        """Open a specific simulation result in the suitable viewer.
 
-    Parameters
-    ----------
-    simulation_feature : ansys.speos.script.simulation.Simulation
-        The simulation feature.
-    result_name : str
-        The result name to open in a viewer.
-    """
-    file_path = _find_correct_result(simulation_feature, result_name)
+        Parameters
+        ----------
+        simulation_feature : ansys.speos.script.simulation.Simulation
+            The simulation feature.
+        result_name : str
+            The result name to open in a viewer.
+        """
+        file_path = _find_correct_result(simulation_feature, result_name)
 
-    if file_path.endswith("xmp") or file_path.endswith("XMP"):
-        dpf_instance = CreateObject("XMPViewer.Application")
-        dpf_instance.OpenFile(file_path)
-        dpf_instance.Show(1)
-    elif file_path.endswith("hdr") or file_path.endswith("HDR"):
-        dpf_instance = CreateObject("HDRIViewer.Application")
-        dpf_instance.OpenFile(file_path)
-        dpf_instance.Show(1)
+        if file_path.endswith("xmp") or file_path.endswith("XMP"):
+            dpf_instance = CreateObject("XMPViewer.Application")
+            dpf_instance.OpenFile(file_path)
+            dpf_instance.Show(1)
+        elif file_path.endswith("hdr") or file_path.endswith("HDR"):
+            dpf_instance = CreateObject("HDRIViewer.Application")
+            dpf_instance.OpenFile(file_path)
+            dpf_instance.Show(1)
