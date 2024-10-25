@@ -344,6 +344,7 @@ class Simulation:
         fast transmission gathering is set to False,
         ambient material URI is empty,
         and weight's minimum energy percentage is set to 0.005.
+        By default, the simulation will stop after 5 passes, with an automatic save frequency of 1800s.
 
         Parameters
         ----------
@@ -632,6 +633,7 @@ class Simulation:
         colorimetric standard is set to CIE 1931,
         ambient material URI is empty,
         and weight's minimum energy percentage is set to 0.005.
+        By default, the simulation deactivates both light expert and impact report.
 
         Parameters
         ----------
