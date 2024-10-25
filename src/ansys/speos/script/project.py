@@ -258,17 +258,31 @@ ansys.speos.script.part.Part], optional
     def _add_unique_ids(self):
         scene_data = self.scene_link.get()
 
+        root_part_link = self.client.get_item(key=scene_data.part_guid)
+        root_part = root_part_link.get()
+        update_rp = False
+        for sub_part in root_part.parts:
+            if sub_part.description.startswith("UniqueId_") == False:
+                sub_part.description = "UniqueId_" + str(uuid.uuid4())
+                update_rp = True
+        if update_rp:
+            root_part_link.set(data=root_part)
+
         for mat_inst in scene_data.materials:
-            mat_inst.metadata["UniqueId"] = str(uuid.uuid4())
+            if mat_inst.metadata["UniqueId"] == "":
+                mat_inst.metadata["UniqueId"] = str(uuid.uuid4())
 
         for src_inst in scene_data.sources:
-            src_inst.metadata["UniqueId"] = str(uuid.uuid4())
+            if src_inst.metadata["UniqueId"] == "":
+                src_inst.metadata["UniqueId"] = str(uuid.uuid4())
 
         for ssr_inst in scene_data.sensors:
-            ssr_inst.metadata["UniqueId"] = str(uuid.uuid4())
+            if ssr_inst.metadata["UniqueId"] == "":
+                ssr_inst.metadata["UniqueId"] = str(uuid.uuid4())
 
         for sim_inst in scene_data.simulations:
-            sim_inst.metadata["UniqueId"] = str(uuid.uuid4())
+            if sim_inst.metadata["UniqueId"] == "":
+                sim_inst.metadata["UniqueId"] = str(uuid.uuid4())
 
         self.scene_link.set(data=scene_data)
 
@@ -286,6 +300,9 @@ ansys.speos.script.part.Part], optional
 
         for sp in part.parts:
             sp_feat = part_feat.create_sub_part(name=sp.name, description=sp.description)
+            if sp.description.startswith("UniqueId_"):
+                idx = sp.description.find("_")
+                sp_feat._unique_id = sp.description[idx + 1 :]
             sp_feat.part_link = self.client.get_item(key=sp.part_guid)
             sp_feat._part_instance = sp
             self._fill_bodies(body_guids=sp_feat.part_link.get().body_guids, feat_host=sp_feat)
