@@ -633,6 +633,7 @@ class Simulation:
         colorimetric standard is set to CIE 1931,
         ambient material URI is empty,
         and weight's minimum energy percentage is set to 0.005.
+        By default, each source will send 100 rays.
         By default, the simulation deactivates both light expert and impact report.
 
         Parameters
