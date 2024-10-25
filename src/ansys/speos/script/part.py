@@ -225,9 +225,10 @@ class Part:
             if self._parent_part.part_link is not None:
                 parent_part_data = self._parent_part.part_link.get()  # retrieve server data
                 # Look if an element corresponds to the _unique_id
-                part_inst = next((x for x in parent_part_data.parts if x.description == "UniqueId_" + self._unique_id), None)
-                if part_inst is not None:
-                    self._part_instance = part_inst
+                if self._unique_id is not None:
+                    part_inst = next((x for x in parent_part_data.parts if x.description == "UniqueId_" + self._unique_id), None)
+                    if part_inst is not None:
+                        self._part_instance = part_inst
 
             return self
 
