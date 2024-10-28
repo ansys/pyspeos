@@ -28,7 +28,7 @@ from ansys.speos.core.speos import Speos
 from ansys.speos.script.project import Project
 
 
-class LocatedSpeos:
+class SpeosFileInstance:
     """Represents a speos file that is placed and oriented in a specific way
 
     Parameters
@@ -55,7 +55,7 @@ class LocatedSpeos:
             self.name = os.path.splitext(os.path.basename(speos_file))[0]
 
 
-def insert_speos(project: Project, speos_to_insert: List[LocatedSpeos]) -> None:
+def insert_speos(project: Project, speos_to_insert: List[SpeosFileInstance]) -> None:
     """Complete a project feature with one or several speos files, placing/orienting them in the root part.
     All the features from the input project are kept.
     Only geometry and materials are taken from the speos files to combine.
@@ -64,7 +64,7 @@ def insert_speos(project: Project, speos_to_insert: List[LocatedSpeos]) -> None:
     ----------
     project : ansys.speos.script.project.Project
         Project feature to be completed with geometry and materials data.
-    speos_to_combine : List[ansys.speos.workflow.combine_speos.LocatedSpeos]
+    speos_to_combine : List[ansys.speos.workflow.combine_speos.SpeosFileInstance]
         List of speos + location/orientation to insert into the project
     """
     # Part link : either create it empty if none is present in the project's scene
@@ -79,7 +79,7 @@ def insert_speos(project: Project, speos_to_insert: List[LocatedSpeos]) -> None:
     _combine(project=project, part_link=part_link, speos_to_combine=speos_to_insert)
 
 
-def combine_speos(speos: Speos, speos_to_combine: List[LocatedSpeos]) -> Project:
+def combine_speos(speos: Speos, speos_to_combine: List[SpeosFileInstance]) -> Project:
     """Creates a project feature (from script layer) by combining several speos files, and place/orient them in the root part.
     This only combine geometry and materials.
 
@@ -87,7 +87,7 @@ def combine_speos(speos: Speos, speos_to_combine: List[LocatedSpeos]) -> Project
     ----------
     speos : ansys.speos.core.speos.Speos
         Speos session (connected to gRPC server).
-    speos_to_combine : List[ansys.speos.workflow.combine_speos.LocatedSpeos]
+    speos_to_combine : List[ansys.speos.workflow.combine_speos.SpeosFileInstance]
         List of speos + location/orientation to combine into a single project
 
     Returns
@@ -105,7 +105,7 @@ def combine_speos(speos: Speos, speos_to_combine: List[LocatedSpeos]) -> Project
     return p
 
 
-def _combine(project: Project, part_link: PartLink, speos_to_combine: List[LocatedSpeos]):
+def _combine(project: Project, part_link: PartLink, speos_to_combine: List[SpeosFileInstance]):
     scene_data = project.scene_link.get()
     part_data = part_link.get()
 

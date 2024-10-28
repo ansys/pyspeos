@@ -28,7 +28,7 @@ import os
 
 from ansys.speos.core.speos import Speos
 import ansys.speos.script as script
-from ansys.speos.workflow.combine_speos import LocatedSpeos, combine_speos, insert_speos
+from ansys.speos.workflow.combine_speos import SpeosFileInstance, combine_speos, insert_speos
 from conftest import test_path
 
 
@@ -38,15 +38,15 @@ def test_combine_speos(speos: Speos):
     p = combine_speos(
         speos=speos,
         speos_to_combine=[
-            LocatedSpeos(
+            SpeosFileInstance(
                 speos_file=os.path.join(test_path, "Env_Simplified.speos", "Env_Simplified.speos"),
                 axis_system=[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
             ),
-            LocatedSpeos(
+            SpeosFileInstance(
                 speos_file=os.path.join(test_path, "BlueCar.speos", "BlueCar.speos"),
                 axis_system=[2000, 0, 35000, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0, 0.0],
             ),
-            LocatedSpeos(
+            SpeosFileInstance(
                 speos_file=os.path.join(test_path, "RedCar.speos", "RedCar.speos"),
                 axis_system=[-4000, 0, 48000, 1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0],
             ),
@@ -97,11 +97,11 @@ def test_insert_speos(speos: Speos):
     insert_speos(
         project=p,
         speos_to_insert=[
-            LocatedSpeos(
+            SpeosFileInstance(
                 speos_file=os.path.join(test_path, "BlueCar.speos", "BlueCar.speos"),
                 axis_system=[2000, 0, 35000, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0, 0.0],
             ),
-            LocatedSpeos(
+            SpeosFileInstance(
                 speos_file=os.path.join(test_path, "RedCar.speos", "RedCar.speos"),
                 axis_system=[-4000, 0, 48000, 1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0],
             ),

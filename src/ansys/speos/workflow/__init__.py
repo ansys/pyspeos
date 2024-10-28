@@ -21,7 +21,7 @@
 # SOFTWARE.
 import os
 
-from ansys.speos.workflow.combine_speos import LocatedSpeos, combine_speos, insert_speos
+from ansys.speos.workflow.combine_speos import SpeosFileInstance, combine_speos, insert_speos
 from ansys.speos.workflow.modify_speos_simulation.modify_sensor import (
     CameraSensorProperties,
     IrradianceSensorParameters,
