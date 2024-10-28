@@ -253,31 +253,33 @@ class OptProp:
             scene_data = self._project.scene_link.get()
             mat_inst = next((x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id), None)
             if mat_inst is not None:
-                out_dict = proto_message_utils.replace_guids(speos_client=self._project.client, message=mat_inst)
+                out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=mat_inst)
             else:
-                out_dict = proto_message_utils.replace_guids(speos_client=self._project.client, message=self._material_instance)
+                out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._material_instance)
         else:
-            out_dict = proto_message_utils.replace_guids(speos_client=self._project.client, message=self._material_instance)
+            out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._material_instance)
 
         if "vop" not in out_dict.keys():
             # SensorTemplate
             if self.vop_template_link is None:
                 if self._vop_template is not None:
-                    out_dict["vop"] = proto_message_utils.replace_guids(speos_client=self._project.client, message=self._vop_template)
+                    out_dict["vop"] = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._vop_template)
             else:
-                out_dict["vop"] = proto_message_utils.replace_guids(speos_client=self._project.client, message=self.vop_template_link.get())
+                out_dict["vop"] = proto_message_utils._replace_guids(
+                    speos_client=self._project.client, message=self.vop_template_link.get()
+                )
 
         if "sops" not in out_dict.keys():
             # SensorTemplate
             if self.sop_template_link is None:
                 if self._sop_template is not None:
-                    out_dict["sops"] = [proto_message_utils.replace_guids(speos_client=self._project.client, message=self._sop_template)]
+                    out_dict["sops"] = [proto_message_utils._replace_guids(speos_client=self._project.client, message=self._sop_template)]
             else:
                 out_dict["sops"] = [
-                    proto_message_utils.replace_guids(speos_client=self._project.client, message=self.sop_template_link.get())
+                    proto_message_utils._replace_guids(speos_client=self._project.client, message=self.sop_template_link.get())
                 ]
 
-        proto_message_utils.replace_properties(json_dict=out_dict)
+        proto_message_utils._replace_properties(json_dict=out_dict)
 
         return out_dict
 

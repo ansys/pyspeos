@@ -775,18 +775,18 @@ class Source:
             scene_data = self._project.scene_link.get()
             src_inst = next((x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None)
             if src_inst is not None:
-                out_dict = proto_message_utils.replace_guids(speos_client=self._project.client, message=src_inst)
+                out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=src_inst)
             else:
-                out_dict = proto_message_utils.replace_guids(speos_client=self._project.client, message=self._source_instance)
+                out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._source_instance)
         else:
-            out_dict = proto_message_utils.replace_guids(speos_client=self._project.client, message=self._source_instance)
+            out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._source_instance)
 
         if "source" not in out_dict.keys():
             # SourceTemplate
             if self.source_template_link is None:
-                out_dict["source"] = proto_message_utils.replace_guids(speos_client=self._project.client, message=self._source_template)
+                out_dict["source"] = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._source_template)
             else:
-                out_dict["source"] = proto_message_utils.replace_guids(
+                out_dict["source"] = proto_message_utils._replace_guids(
                     speos_client=self._project.client, message=self.source_template_link.get()
                 )
 
@@ -794,7 +794,7 @@ class Source:
         if self._type is not None:
             self._type._to_dict(dict_to_complete=out_dict)
 
-        proto_message_utils.replace_properties(json_dict=out_dict)
+        proto_message_utils._replace_properties(json_dict=out_dict)
 
         return out_dict
 

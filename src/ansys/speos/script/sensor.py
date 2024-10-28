@@ -1895,22 +1895,22 @@ class Sensor:
             scene_data = self._project.scene_link.get()
             ssr_inst = next((x for x in scene_data.sensors if x.metadata["UniqueId"] == self._unique_id), None)
             if ssr_inst is not None:
-                out_dict = proto_message_utils.replace_guids(speos_client=self._project.client, message=ssr_inst)
+                out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=ssr_inst)
             else:
-                out_dict = proto_message_utils.replace_guids(speos_client=self._project.client, message=self._sensor_instance)
+                out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._sensor_instance)
         else:
-            out_dict = proto_message_utils.replace_guids(speos_client=self._project.client, message=self._sensor_instance)
+            out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._sensor_instance)
 
         if "sensor" not in out_dict.keys():
             # SensorTemplate
             if self.sensor_template_link is None:
-                out_dict["sensor"] = proto_message_utils.replace_guids(speos_client=self._project.client, message=self._sensor_template)
+                out_dict["sensor"] = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._sensor_template)
             else:
-                out_dict["sensor"] = proto_message_utils.replace_guids(
+                out_dict["sensor"] = proto_message_utils._replace_guids(
                     speos_client=self._project.client, message=self.sensor_template_link.get()
                 )
 
-        proto_message_utils.replace_properties(json_dict=out_dict)
+        proto_message_utils._replace_properties(json_dict=out_dict)
 
         return out_dict
 

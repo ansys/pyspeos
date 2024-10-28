@@ -156,18 +156,18 @@ class Part:
             if self._parent_part is not None:
                 part_inst = next((x for x in self._parent_part._part.parts if x.description == "UniqueId_" + self._unique_id), None)
                 if part_inst is not None:
-                    out_dict = proto_message_utils.replace_guids(speos_client=self._speos_client, message=part_inst)
+                    out_dict = proto_message_utils._replace_guids(speos_client=self._speos_client, message=part_inst)
                 else:
-                    out_dict = proto_message_utils.replace_guids(speos_client=self._speos_client, message=self._part_instance)
+                    out_dict = proto_message_utils._replace_guids(speos_client=self._speos_client, message=self._part_instance)
             else:
-                out_dict = proto_message_utils.replace_guids(speos_client=self._speos_client, message=self._part_instance)
+                out_dict = proto_message_utils._replace_guids(speos_client=self._speos_client, message=self._part_instance)
 
             if "part" not in out_dict.keys():
                 # Part
                 if self.part_link is None:
-                    out_dict["part"] = proto_message_utils.replace_guids(speos_client=self._speos_client, message=self._part)
+                    out_dict["part"] = proto_message_utils._replace_guids(speos_client=self._speos_client, message=self._part)
                 else:
-                    out_dict["part"] = proto_message_utils.replace_guids(speos_client=self._speos_client, message=self.part_link.get())
+                    out_dict["part"] = proto_message_utils._replace_guids(speos_client=self._speos_client, message=self.part_link.get())
 
             return out_dict
 
@@ -359,9 +359,9 @@ class Part:
         out_dict = ""
 
         if self.part_link is None:
-            out_dict = proto_message_utils.replace_guids(speos_client=self._project.client, message=self._part)
+            out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._part)
         else:
-            out_dict = proto_message_utils.replace_guids(speos_client=self._project.client, message=self.part_link.get())
+            out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=self.part_link.get())
 
         return out_dict
 

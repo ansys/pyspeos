@@ -124,9 +124,9 @@ class Face:
         out_dict = ""
 
         if self.face_link is None:
-            out_dict = proto_message_utils.replace_guids(speos_client=self._speos_client, message=self._face)
+            out_dict = proto_message_utils._replace_guids(speos_client=self._speos_client, message=self._face)
         else:
-            out_dict = proto_message_utils.replace_guids(speos_client=self._speos_client, message=self.face_link.get())
+            out_dict = proto_message_utils._replace_guids(speos_client=self._speos_client, message=self.face_link.get())
 
         return out_dict
 

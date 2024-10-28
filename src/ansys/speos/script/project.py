@@ -241,7 +241,7 @@ ansys.speos.script.part.Part], optional
 
     def _to_dict(self) -> dict:
         # Replace all guids by content of objects in the dict
-        output_dict = proto_message_utils.replace_guids(
+        output_dict = proto_message_utils._replace_guids(
             speos_client=self.client, message=self.scene_link.get(), ignore_simple_key="part_guid"
         )
 
@@ -252,15 +252,15 @@ ansys.speos.script.part.Part], optional
                     if k == "simulations":
                         sim_feat = self.find(name=inside_dict["name"], feature_type=simulation.Simulation)
                         if sim_feat.job_link is None:
-                            inside_dict["simulation_properties"] = proto_message_utils.replace_guids(
+                            inside_dict["simulation_properties"] = proto_message_utils._replace_guids(
                                 speos_client=self.client, message=sim_feat._job, ignore_simple_key="scene_guid"
                             )
                         else:
-                            inside_dict["simulation_properties"] = proto_message_utils.replace_guids(
+                            inside_dict["simulation_properties"] = proto_message_utils._replace_guids(
                                 speos_client=self.client, message=sim_feat.job_link.get(), ignore_simple_key="scene_guid"
                             )
 
-                    proto_message_utils.replace_properties(inside_dict)
+                    proto_message_utils._replace_properties(inside_dict)
         return output_dict
 
     def get(self) -> dict:

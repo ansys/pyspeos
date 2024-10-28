@@ -1040,33 +1040,33 @@ class Simulation:
             scene_data = self._project.scene_link.get()
             sim_inst = next((x for x in scene_data.simulations if x.metadata["UniqueId"] == self._unique_id), None)
             if sim_inst is not None:
-                out_dict = proto_message_utils.replace_guids(speos_client=self._project.client, message=sim_inst)
+                out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=sim_inst)
             else:
-                out_dict = proto_message_utils.replace_guids(speos_client=self._project.client, message=self._simulation_instance)
+                out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._simulation_instance)
         else:
-            out_dict = proto_message_utils.replace_guids(speos_client=self._project.client, message=self._simulation_instance)
+            out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._simulation_instance)
 
         if "simulation" not in out_dict.keys():
             # SimulationTemplate
             if self.simulation_template_link is None:
-                out_dict["simulation"] = proto_message_utils.replace_guids(
+                out_dict["simulation"] = proto_message_utils._replace_guids(
                     speos_client=self._project.client, message=self._simulation_template
                 )
             else:
-                out_dict["simulation"] = proto_message_utils.replace_guids(
+                out_dict["simulation"] = proto_message_utils._replace_guids(
                     speos_client=self._project.client, message=self.simulation_template_link.get()
                 )
 
         if self.job_link is None:
-            out_dict["simulation_properties"] = proto_message_utils.replace_guids(
+            out_dict["simulation_properties"] = proto_message_utils._replace_guids(
                 speos_client=self._project.client, message=self._job, ignore_simple_key="scene_guid"
             )
         else:
-            out_dict["simulation_properties"] = proto_message_utils.replace_guids(
+            out_dict["simulation_properties"] = proto_message_utils._replace_guids(
                 speos_client=self._project.client, message=self.job_link.get(), ignore_simple_key="scene_guid"
             )
 
-        proto_message_utils.replace_properties(json_dict=out_dict)
+        proto_message_utils._replace_properties(json_dict=out_dict)
 
         return out_dict
 

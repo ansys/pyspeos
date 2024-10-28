@@ -102,9 +102,9 @@ class Body:
         out_dict = ""
 
         if self.body_link is None:
-            out_dict = proto_message_utils.replace_guids(speos_client=self._speos_client, message=self._body)
+            out_dict = proto_message_utils._replace_guids(speos_client=self._speos_client, message=self._body)
         else:
-            out_dict = proto_message_utils.replace_guids(speos_client=self._speos_client, message=self.body_link.get())
+            out_dict = proto_message_utils._replace_guids(speos_client=self._speos_client, message=self.body_link.get())
 
         return out_dict
 
