@@ -23,9 +23,11 @@
 """Provides a way to interact with Speos feature: Simulation."""
 from __future__ import annotations
 
-from typing import List, Mapping
+import time
+from typing import List, Mapping, Optional
 import uuid
 
+from ansys.api.speos.job.v2 import job_pb2
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
 
 import ansys.speos.core as core
@@ -104,17 +106,26 @@ class Simulation:
         fast transmission gathering is set to False,
         ambient material URI is empty,
         and weight's minimum energy percentage is set to 0.005.
+        By default, the simulation will stop after 200000 rays, with an automatic save frequency of 1800s.
 
         Parameters
         ----------
         direct_template : ansys.api.speos.simulation.v1.simulation_template_pb2.DirectMCSimulationTemplate
             Direct simulation to complete.
+        direct_props_from_job : ansys.api.speos.job.v2.job_pb2.Job.DirectMCSimulationProperties
+            Direct simulation properties to complete.
         default_values : bool
             Uses default values when True.
         """
 
-        def __init__(self, direct_template: simulation_template_pb2.DirectMCSimulationTemplate, default_values: bool = True) -> None:
+        def __init__(
+            self,
+            direct_template: simulation_template_pb2.DirectMCSimulationTemplate,
+            direct_props_from_job: core.Job.DirectMCSimulationProperties,
+            default_values: bool = True,
+        ) -> None:
             self._direct_template = direct_template
+            self._direct_props_from_job = direct_props_from_job
 
             if default_values:
                 # Default values
@@ -125,6 +136,9 @@ class Simulation:
                 # self.set_fast_transmission_gathering()
                 self.set_ambient_material_file_uri()
                 self.set_weight()
+
+            # Default job properties
+            self.set_stop_condition_rays_number().set_stop_condition_duration().set_automatic_save_frequency()
 
         def set_geom_distance_tolerance(self, value: float = 0.01) -> Simulation.Direct:
             """Set the geometry distance tolerance.
@@ -259,6 +273,65 @@ class Simulation:
             self._direct_template.ambient_material_uri = uri
             return self
 
+        def set_stop_condition_rays_number(self, value: Optional[int] = 200000) -> Simulation.Direct:
+            """To stop the simulation after a certain number of rays were sent. Set None as value to have no condition about rays number.
+
+            Parameters
+            ----------
+            value : int, optional
+                The number of rays to send. Or None if no condition about rays number.
+                By default, ``200000``.
+
+            Returns
+            -------
+            ansys.speos.script.simulation.Simulation.Direct
+                Direct simulation
+            """
+            if value is None:
+                self._direct_props_from_job.ClearField("stop_condition_rays_number")
+            else:
+                self._direct_props_from_job.stop_condition_rays_number = value
+            return self
+
+        def set_stop_condition_duration(self, value: Optional[int] = None) -> Simulation.Direct:
+            """To stop the simulation after a certain duration. Set None as value to have no condition about duration.
+
+            Parameters
+            ----------
+            value : int, optional
+                Duration requested (s). Or None if no condition about duration.
+                By default, ``None``.
+
+            Returns
+            -------
+            ansys.speos.script.simulation.Simulation.Direct
+                Direct simulation
+            """
+            if value is None:
+                self._direct_props_from_job.ClearField("stop_condition_duration")
+            else:
+                self._direct_props_from_job.stop_condition_duration = value
+            return self
+
+        def set_automatic_save_frequency(self, value: int = 1800) -> Simulation.Direct:
+            """Define a backup interval (s).
+            This option is useful when computing long simulations.
+            But a reduced number of save operations naturally increases the simulation performance.
+
+            Parameters
+            ----------
+            value : int, optional
+                Backup interval (s).
+                By default, ``1800``.
+
+            Returns
+            -------
+            ansys.speos.script.simulation.Simulation.Direct
+                Direct simulation
+            """
+            self._direct_props_from_job.automatic_save_frequency = value
+            return self
+
     class Inverse:
         """Type of simulation : Inverse.
         By default,
@@ -272,17 +345,26 @@ class Simulation:
         fast transmission gathering is set to False,
         ambient material URI is empty,
         and weight's minimum energy percentage is set to 0.005.
+        By default, the simulation will stop after 5 passes, with an automatic save frequency of 1800s.
 
         Parameters
         ----------
         inverse_template : ansys.api.speos.simulation.v1.simulation_template_pb2.InverseMCSimulationTemplate
             Inverse simulation to complete.
+        inverse_props_from_job : ansys.api.speos.job.v2.job_pb2.Job.InverseMCSimulationProperties
+            Inverse simulation properties to complete.
         default_values : bool
             Uses default values when True.
         """
 
-        def __init__(self, inverse_template: simulation_template_pb2.InverseMCSimulationTemplate, default_values: bool = True) -> None:
+        def __init__(
+            self,
+            inverse_template: simulation_template_pb2.InverseMCSimulationTemplate,
+            inverse_props_from_job: core.Job.InverseMCSimulationProperties,
+            default_values: bool = True,
+        ) -> None:
             self._inverse_template = inverse_template
+            self._inverse_props_from_job = inverse_props_from_job
 
             if default_values:
                 # Default values
@@ -296,6 +378,9 @@ class Simulation:
                 self.set_maximum_gathering_error()
                 # self.set_fast_transmission_gathering()
                 self.set_ambient_material_file_uri()
+
+            # Default job properties
+            self.set_stop_condition_duration().set_stop_condition_passes_number().set_automatic_save_frequency()
 
         def set_geom_distance_tolerance(self, value: float = 0.01) -> Simulation.Inverse:
             """Set the geometry distance tolerance.
@@ -482,6 +567,65 @@ class Simulation:
             self._inverse_template.ambient_material_uri = uri
             return self
 
+        def set_stop_condition_passes_number(self, value: Optional[int] = 5) -> Simulation.Inverse:
+            """To stop the simulation after a certain number of passes. Set None as value to have no condition about passes.
+
+            Parameters
+            ----------
+            value : int, optional
+                The number of passes requested. Or None if no condition about passes.
+                By default, ``5``.
+
+            Returns
+            -------
+            ansys.speos.script.simulation.Simulation.Inverse
+                Inverse simulation
+            """
+            if value is None:
+                self._inverse_props_from_job.optimized_propagation_none.ClearField("stop_condition_passes_number")
+            else:
+                self._inverse_props_from_job.optimized_propagation_none.stop_condition_passes_number = value
+            return self
+
+        def set_stop_condition_duration(self, value: Optional[int] = None) -> Simulation.Inverse:
+            """To stop the simulation after a certain duration. Set None as value to have no condition about duration.
+
+            Parameters
+            ----------
+            value : int, optional
+                Duration requested (s). Or None if no condition about duration.
+                By default, ``None``.
+
+            Returns
+            -------
+            ansys.speos.script.simulation.Simulation.Inverse
+                Inverse simulation
+            """
+            if value is None:
+                self._inverse_props_from_job.ClearField("stop_condition_duration")
+            else:
+                self._inverse_props_from_job.stop_condition_duration = value
+            return self
+
+        def set_automatic_save_frequency(self, value: int = 1800) -> Simulation.Inverse:
+            """Define a backup interval (s).
+            This option is useful when computing long simulations.
+            But a reduced number of save operations naturally increases the simulation performance.
+
+            Parameters
+            ----------
+            value : int, optional
+                Backup interval (s).
+                By default, ``1800``.
+
+            Returns
+            -------
+            ansys.speos.script.simulation.Simulation.Inverse
+                Inverse simulation
+            """
+            self._inverse_props_from_job.automatic_save_frequency = value
+            return self
+
     class Interactive:
         """Type of simulation : Interactive.
         By default,
@@ -490,17 +634,45 @@ class Simulation:
         colorimetric standard is set to CIE 1931,
         ambient material URI is empty,
         and weight's minimum energy percentage is set to 0.005.
+        By default, each source will send 100 rays.
+        By default, the simulation deactivates both light expert and impact report.
 
         Parameters
         ----------
         interactive_template : ansys.api.speos.simulation.v1.simulation_template_pb2.SimulationTemplate.Interactive
             Interactive simulation to complete.
+        inverse_props_from_job : ansys.api.speos.job.v2.job_pb2.Job.InteractiveSimulationProperties
+            Interactive simulation properties to complete.
         default_values : bool
             Uses default values when True.
         """
 
-        def __init__(self, interactive_template: core.SimulationTemplate.Interactive, default_values: bool = True) -> None:
+        class RaysNumberPerSource:
+            """Structure to describe rays number requested for a specific source.
+
+            Parameters
+            ----------
+            source_path : str
+                Source selected via its path ("SourceName").
+            rays_nb : int, optional
+                Number of rays to be emitted by the source.
+                If None is given, 100 rays will be sent.
+            """
+
+            def __init__(self, source_path: str, rays_nb: Optional[int]) -> None:
+                self.source_path = source_path
+                """Source path."""
+                self.rays_nb = rays_nb
+                """Number of rays to be emitted by the source. If None, it means 100 rays."""
+
+        def __init__(
+            self,
+            interactive_template: core.SimulationTemplate.Interactive,
+            interactive_props_from_job: core.Job.InteractiveSimulationProperties,
+            default_values: bool = True,
+        ) -> None:
             self._interactive_template = interactive_template
+            self._interactive_props_from_job = interactive_props_from_job
 
             if default_values:
                 # Default values
@@ -509,6 +681,8 @@ class Simulation:
                 self.set_weight()
                 self.set_colorimetric_standard_CIE_1931()
                 self.set_ambient_material_file_uri()
+
+            self.set_light_expert().set_impact_report()
 
         def set_geom_distance_tolerance(self, value: float = 0.01) -> Simulation.Interactive:
             """Set the geometry distance tolerance.
@@ -607,12 +781,74 @@ class Simulation:
             self._interactive_template.ambient_material_uri = uri
             return self
 
+        def set_rays_number_per_sources(self, values: List[Simulation.Interactive.RaysNumberPerSource]) -> Simulation.Interactive:
+            """Select the number of rays emitted for each source. If a source is present in the simulation but not referenced here,
+            it will send by default 100 rays.
+
+            Parameters
+            ----------
+            values : List[ansys.speos.script.simulation.Simulation.Interactive.RaysNumberPerSource]
+                List of rays number emitted by source.
+
+            Returns
+            -------
+            ansys.speos.script.simulation.Simulation.Interactive
+                Interactive simulation
+            """
+            my_list = [
+                core.Job.InteractiveSimulationProperties.RaysNumberPerSource(
+                    source_path=rays_nb_per_source.source_path, rays_nb=rays_nb_per_source.rays_nb
+                )
+                for rays_nb_per_source in values
+            ]
+            self._interactive_props_from_job.ClearField("rays_number_per_sources")
+            self._interactive_props_from_job.rays_number_per_sources.extend(my_list)
+            return self
+
+        def set_light_expert(self, value: bool = False) -> Simulation.Interactive:
+            """Activate/Deactivate the generation of light expert file.
+
+            Parameters
+            ----------
+            value : bool
+                Activate/Deactivate.
+                By default, ``False``, means deactivate.
+
+            Returns
+            -------
+            ansys.speos.script.simulation.Simulation.Interactive
+                Interactive simulation
+            """
+            self._interactive_props_from_job.light_expert = value
+            return self
+
+        def set_impact_report(self, value: bool = False) -> Simulation.Interactive:
+            """Activate/Deactivate the details like number of impacts, position and surface state to the HTML simulation report.
+
+            Parameters
+            ----------
+            value : bool
+                Activate/Deactivate.
+                By default, ``False``, means deactivate.
+
+            Returns
+            -------
+            ansys.speos.script.simulation.Simulation.Interactive
+                Interactive simulation
+            """
+            self._interactive_props_from_job.impact_report = value
+            return self
+
     def __init__(self, project: project.Project, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> None:
         self._project = project
         self._name = name
         self._unique_id = None
         self.simulation_template_link = None
         """Link object for the simulation template in database."""
+        self.job_link = None
+        """Link object for the job in database."""
+        self.result_list = []
+        """List of results created after a simulation compute."""
 
         # Attribute representing the kind of simulation.
         self._type = None
@@ -623,6 +859,13 @@ class Simulation:
         # Create local SimulationInstance
         self._simulation_instance = core.Scene.SimulationInstance(name=name, description=description, metadata=metadata)
 
+        # Create local Job
+        self._job = core.Job(
+            name=self._name + ".Job", description=description, metadata=metadata, simulation_path=self._simulation_instance.name
+        )
+        if self._project.scene_link is not None:
+            self._job.scene_guid = self._project.scene_link.key
+
     def set_direct(self) -> Direct:
         """Set the simulation as direct.
 
@@ -632,9 +875,16 @@ class Simulation:
             Direct simulation.
         """
         if self._type is None and self._simulation_template.HasField("direct_mc_simulation_template"):
-            self._type = Simulation.Direct(direct_template=self._simulation_template.direct_mc_simulation_template, default_values=False)
+            self._type = Simulation.Direct(
+                direct_template=self._simulation_template.direct_mc_simulation_template,
+                direct_props_from_job=self._job.direct_mc_simulation_properties,
+                default_values=False,
+            )
         elif type(self._type) != Simulation.Direct:
-            self._type = Simulation.Direct(direct_template=self._simulation_template.direct_mc_simulation_template)
+            self._type = Simulation.Direct(
+                direct_template=self._simulation_template.direct_mc_simulation_template,
+                direct_props_from_job=self._job.direct_mc_simulation_properties,
+            )
 
         return self._type
 
@@ -647,9 +897,16 @@ class Simulation:
             Inverse simulation.
         """
         if self._type is None and self._simulation_template.HasField("inverse_mc_simulation_template"):
-            self._type = Simulation.Inverse(inverse_template=self._simulation_template.inverse_mc_simulation_template, default_values=False)
+            self._type = Simulation.Inverse(
+                inverse_template=self._simulation_template.inverse_mc_simulation_template,
+                inverse_props_from_job=self._job.inverse_mc_simulation_properties,
+                default_values=False,
+            )
         elif type(self._type) != Simulation.Inverse:
-            self._type = Simulation.Inverse(inverse_template=self._simulation_template.inverse_mc_simulation_template)
+            self._type = Simulation.Inverse(
+                inverse_template=self._simulation_template.inverse_mc_simulation_template,
+                inverse_props_from_job=self._job.inverse_mc_simulation_properties,
+            )
 
         return self._type
 
@@ -663,10 +920,15 @@ class Simulation:
         """
         if self._type is None and self._simulation_template.HasField("interactive_simulation_template"):
             self._type = Simulation.Interactive(
-                interactive_template=self._simulation_template.interactive_simulation_template, default_values=False
+                interactive_template=self._simulation_template.interactive_simulation_template,
+                interactive_props_from_job=self._job.interactive_simulation_properties,
+                default_values=False,
             )
         elif type(self._type) != Simulation.Interactive:
-            self._type = Simulation.Interactive(interactive_template=self._simulation_template.interactive_simulation_template)
+            self._type = Simulation.Interactive(
+                interactive_template=self._simulation_template.interactive_simulation_template,
+                interactive_props_from_job=self._job.interactive_simulation_properties,
+            )
 
         return self._type
 
@@ -722,6 +984,54 @@ class Simulation:
     #
     #    return self
 
+    def compute_CPU(self) -> List[job_pb2.Result]:
+        """Compute the simulation on CPU.
+
+        Returns
+        -------
+        List[ansys.api.speos.job.v2.job_pb2.Result]
+            List of simulation results.
+        """
+        self._job.job_type = core.Job.Type.CPU
+        self.result_list = self._run_job()
+        return self.result_list
+
+    def compute_GPU(self) -> List[job_pb2.Result]:
+        """Compute the simulation on GPU.
+
+        Returns
+        -------
+        List[ansys.api.speos.job.v2.job_pb2.Result]
+            List of simulation results.
+        """
+        self._job.job_type = core.Job.Type.GPU
+        self.result_list = self._run_job()
+        return self.result_list
+
+    def _run_job(self) -> List[job_pb2.Result]:
+        if self.job_link is not None:
+            job_state_res = self.job_link.get_state()
+            if job_state_res.state != core.Job.State.QUEUED:
+                self.job_link.delete()
+                self.job_link = None
+
+        self.commit()
+        self.job_link.start()
+
+        job_state_res = self.job_link.get_state()
+        while (
+            job_state_res.state != core.Job.State.FINISHED
+            and job_state_res.state != core.Job.State.STOPPED
+            and job_state_res.state != core.Job.State.IN_ERROR
+        ):
+            time.sleep(5)
+
+            job_state_res = self.job_link.get_state()
+            if job_state_res.state == core.Job.State.IN_ERROR:
+                core.LOG.error(core.protobuf_message_to_str(self.job_link.get_error()))
+
+        return self.job_link.get_results().results
+
     def _to_dict(self) -> dict:
         out_dict = {}
 
@@ -754,6 +1064,12 @@ class Simulation:
     def __str__(self) -> str:
         """Return the string representation of the simulation"""
         out_str = ""
+
+        if self.job_link is None:
+            out_str += "local: " + core.protobuf_message_to_str(self._job)
+        else:
+            out_str += str(self.job_link)
+
         # SimulationInstance (= simulation guid + simulation properties)
         if self._project.scene_link and self._unique_id is not None:
             scene_data = self._project.scene_link.get()
@@ -802,6 +1118,12 @@ class Simulation:
 
             self._project.scene_link.set(data=scene_data)  # update scene data
 
+        # Save or Update the job
+        if self.job_link is None:
+            self.job_link = self._project.client.jobs().create(message=self._job)
+        else:
+            self.job_link.set(data=self._job)
+
         return self
 
     def reset(self) -> Simulation:
@@ -823,6 +1145,10 @@ class Simulation:
             sim_inst = next((x for x in scene_data.simulations if x.metadata["UniqueId"] == self._unique_id), None)
             if sim_inst is not None:
                 self._simulation_instance = sim_inst
+
+        # Reset job
+        if self.job_link is not None:
+            self._job = self.job_link.get()
         return self
 
     def delete(self) -> Simulation:
@@ -852,4 +1178,9 @@ class Simulation:
         # Reset the _unique_id
         self._unique_id = None
         self._simulation_instance.metadata.pop("UniqueId")
+
+        # Delete job
+        if self.job_link is not None:
+            self.job_link.delete()
+            self.job_link = None
         return self

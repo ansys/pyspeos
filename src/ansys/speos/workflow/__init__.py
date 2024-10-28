@@ -19,7 +19,9 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import os
 
+from ansys.speos.workflow.combine_speos import SpeosFileInstance, combine_speos, insert_speos
 from ansys.speos.workflow.modify_speos_simulation.modify_sensor import (
     CameraSensorProperties,
     IrradianceSensorParameters,
@@ -28,3 +30,8 @@ from ansys.speos.workflow.modify_speos_simulation.modify_sensor import (
     SpeosSimulationUpdate,
     clean_all_dbs,
 )
+
+if os.name == "nt":
+    from ansys.speos.workflow.open_result import open_result_image, open_result_in_viewer
+
+from ansys.speos.workflow.preview import preview

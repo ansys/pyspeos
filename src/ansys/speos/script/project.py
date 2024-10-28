@@ -23,6 +23,7 @@
 from __future__ import annotations
 
 from typing import List, Mapping, Optional, Union
+import uuid
 
 import ansys.speos.core as core
 import ansys.speos.script.opt_prop as opt_prop
@@ -60,9 +61,8 @@ class Project:
         """Link object for the scene in database."""
         self._features = []
         if len(path):
-            tmp_scene_link = speos.client.scenes().create()
-            tmp_scene_link.load_file(path)
-            self._fill_features(from_scene=tmp_scene_link)
+            self.scene_link.load_file(path)
+            self._fill_features()
 
     # def list(self):
     #    """Return all feature key as a tree, can be used to list all features- Not yet implemented"""
@@ -275,28 +275,77 @@ ansys.speos.script.part.Part], optional
         """Return the string representation of the project's scene."""
         return proto_message_utils.dict_to_str(dict=self._to_dict())
 
-    def _fill_features(self, from_scene: core.Scene):
-        """Fill project features from a scene."""
-        scene_data = from_scene.get()
-
-        part = self.client.get_item(key=scene_data.part_guid).get()
-        part_feat = self.create_root_part()
-        for b_guid in part.body_guids:
+    def _fill_bodies(self, body_guids: List[str], feat_host: Union[part.Part, part.Part.SubPart]):
+        """Fill part of sub part features from a list of body guids."""
+        for b_guid in body_guids:
             b_link = self.client.get_item(key=b_guid)
-            b_feat = part_feat.create_body(name=b_link.get().name)
+            b_feat = feat_host.create_body(name=b_link.get().name)
             b_feat.body_link = b_link
             for f_guid in b_link.get().face_guids:
                 f_link = self.client.get_item(key=f_guid)
                 f_feat = b_feat.create_face(name=f_link.get().name)
                 f_feat.face_link = f_link
                 f_feat.reset()
-                f_feat.commit()
             b_feat.reset()
-            b_feat.commit()
+
+    def _add_unique_ids(self):
+        scene_data = self.scene_link.get()
+
+        root_part_link = self.client.get_item(key=scene_data.part_guid)
+        root_part = root_part_link.get()
+        update_rp = False
+        for sub_part in root_part.parts:
+            if sub_part.description.startswith("UniqueId_") == False:
+                sub_part.description = "UniqueId_" + str(uuid.uuid4())
+                update_rp = True
+        if update_rp:
+            root_part_link.set(data=root_part)
+
+        for mat_inst in scene_data.materials:
+            if mat_inst.metadata["UniqueId"] == "":
+                mat_inst.metadata["UniqueId"] = str(uuid.uuid4())
+
+        for src_inst in scene_data.sources:
+            if src_inst.metadata["UniqueId"] == "":
+                src_inst.metadata["UniqueId"] = str(uuid.uuid4())
+
+        for ssr_inst in scene_data.sensors:
+            if ssr_inst.metadata["UniqueId"] == "":
+                ssr_inst.metadata["UniqueId"] = str(uuid.uuid4())
+
+        for sim_inst in scene_data.simulations:
+            if sim_inst.metadata["UniqueId"] == "":
+                sim_inst.metadata["UniqueId"] = str(uuid.uuid4())
+
+        self.scene_link.set(data=scene_data)
+
+    def _fill_features(self):
+        """Fill project features from a scene."""
+        self._add_unique_ids()
+
+        scene_data = self.scene_link.get()
+
+        part = self.client.get_item(key=scene_data.part_guid).get()
+        part_feat = self.find(name="RootPart")
+        if part_feat is None:
+            part_feat = self.create_root_part()
+            self._fill_bodies(body_guids=part.body_guids, feat_host=part_feat)
+
+        for sp in part.parts:
+            sp_feat = part_feat.create_sub_part(name=sp.name, description=sp.description)
+            if sp.description.startswith("UniqueId_"):
+                idx = sp.description.find("_")
+                sp_feat._unique_id = sp.description[idx + 1 :]
+            sp_feat.part_link = self.client.get_item(key=sp.part_guid)
+            sp_feat._part_instance = sp
+            self._fill_bodies(body_guids=sp_feat.part_link.get().body_guids, feat_host=sp_feat)
+            sp_feat.reset()
+        part_feat.reset()
         part_feat.commit()
 
         for mat_inst in scene_data.materials:
             op_feature = self.create_optical_property(name=mat_inst.name)
+            op_feature._unique_id = mat_inst.metadata["UniqueId"]
             op_feature._material_instance = mat_inst
             op_feature.vop_template_link = self.client.get_item(key=mat_inst.vop_guid)
             if len(mat_inst.sop_guids) > 0:
@@ -304,25 +353,31 @@ ansys.speos.script.part.Part], optional
             else:  # Specific case for ambient material
                 op_feature._sop_template = None
             op_feature.reset()
-            op_feature.commit()
 
         for src_inst in scene_data.sources:
             src_feat = self.create_source(name=src_inst.name)
+            src_feat._unique_id = src_inst.metadata["UniqueId"]
             src_feat._source_instance = src_inst
             src_feat.source_template_link = self.client.get_item(key=src_inst.source_guid)
             src_feat.reset()
-            src_feat.commit()
 
         for ssr_inst in scene_data.sensors:
             ssr_feat = self.create_sensor(name=ssr_inst.name)
+            ssr_feat._unique_id = ssr_inst.metadata["UniqueId"]
             ssr_feat._sensor_instance = ssr_inst
             ssr_feat.sensor_template_link = self.client.get_item(key=ssr_inst.sensor_guid)
             ssr_feat.reset()
-            ssr_feat.commit()
 
         for sim_inst in scene_data.simulations:
             sim_feat = self.create_simulation(name=sim_inst.name)
+            sim_feat._unique_id = sim_inst.metadata["UniqueId"]
             sim_feat._simulation_instance = sim_inst
             sim_feat.simulation_template_link = self.client.get_item(key=sim_inst.simulation_guid)
             sim_feat.reset()
-            sim_feat.commit()
+            # To get default values related to job -> simu properties
+            if sim_feat._simulation_template.HasField("direct_mc_simulation_template"):
+                sim_feat.set_direct()
+            elif sim_feat._simulation_template.HasField("inverse_mc_simulation_template"):
+                sim_feat.set_inverse()
+            elif sim_feat._simulation_template.HasField("interactive_simulation_template"):
+                sim_feat.set_interactive()
