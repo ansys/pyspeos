@@ -246,9 +246,20 @@ ansys.speos.script.part.Part], optional
         )
 
         # For each feature, replace properties by putting them at correct place
-        for v in output_dict.values():
+        for k, v in output_dict.items():
             if type(v) is list:
                 for inside_dict in v:
+                    if k == "simulations":
+                        sim_feat = self.find(name=inside_dict["name"], feature_type=simulation.Simulation)
+                        if sim_feat.job_link is None:
+                            inside_dict["simulation_properties"] = proto_message_utils.replace_guids(
+                                speos_client=self.client, message=sim_feat._job, ignore_simple_key="scene_guid"
+                            )
+                        else:
+                            inside_dict["simulation_properties"] = proto_message_utils.replace_guids(
+                                speos_client=self.client, message=sim_feat.job_link.get(), ignore_simple_key="scene_guid"
+                            )
+
                     proto_message_utils.replace_properties(inside_dict)
         return output_dict
 

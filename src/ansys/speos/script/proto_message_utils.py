@@ -128,10 +128,11 @@ def replace_properties(json_dict: dict) -> None:
         replace_props_elt.key_to_remove = k
         replace_props_elt.dict_to_remove = parent
         for kk, vv in _value_finder_key_startswith(dict_var=json_dict, key=k[: k.find("_properties")]):
-            replace_props_elt.dict_to_complete = vv
-            for kkk, vvv in v.items():
-                if not kkk.endswith("_properties"):
-                    replace_props_elt.new_items[kkk] = vvv
+            if kk != k and type(vv) is dict:
+                replace_props_elt.dict_to_complete = vv
+                for kkk, vvv in v.items():
+                    if not kkk.endswith("_properties"):
+                        replace_props_elt.new_items[kkk] = vvv
         replace_props_elts.append(replace_props_elt)
 
     for rpe in replace_props_elts:

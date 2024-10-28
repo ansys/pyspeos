@@ -1057,6 +1057,15 @@ class Simulation:
                     speos_client=self._project.client, message=self.simulation_template_link.get()
                 )
 
+        if self.job_link is None:
+            out_dict["simulation_properties"] = proto_message_utils.replace_guids(
+                speos_client=self._project.client, message=self._job, ignore_simple_key="scene_guid"
+            )
+        else:
+            out_dict["simulation_properties"] = proto_message_utils.replace_guids(
+                speos_client=self._project.client, message=self.job_link.get(), ignore_simple_key="scene_guid"
+            )
+
         proto_message_utils.replace_properties(json_dict=out_dict)
 
         return out_dict
@@ -1064,11 +1073,6 @@ class Simulation:
     def __str__(self) -> str:
         """Return the string representation of the simulation"""
         out_str = ""
-
-        if self.job_link is None:
-            out_str += "local: " + core.protobuf_message_to_str(self._job)
-        else:
-            out_str += str(self.job_link)
 
         # SimulationInstance (= simulation guid + simulation properties)
         if self._project.scene_link and self._unique_id is not None:
