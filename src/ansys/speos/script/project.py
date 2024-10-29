@@ -175,7 +175,7 @@ class Project:
 
     def find(
         self, name: str, feature_type: Optional[type] = None
-    ) -> Optional[Union[opt_prop.OptProp, source.Source, sensor.Sensor, part.Part]]:
+    ) -> Optional[Union[opt_prop.OptProp, source.Source, sensor.Sensor, simulation.Simulation, part.Part]]:
         """Find a feature.
 
         Parameters
@@ -186,12 +186,17 @@ class Project:
             Example "RootPart/BodyName/FaceName", "RootPart/SubPartName/BodyName/FaceName"
         feature_type : type
             Type of the wanted feature.
+            Feature can be: ansys.speos.script.opt_prop.OptProp, ansys.speos.script.source.Source, ansys.speos.script.sensor.Sensor,
+            ansys.speos.script.simulation.Simulation, ansys.speos.script.part.Part
+            Feature can be specialized like: ansys.speos.script.source.Source.Luminaire, ansys.speos.script.sensor.Sensor.Camera,
+            ansys.speos.script.simulation.Simulation.Direct
             If looking for geometry feature, only precise part.Part as feature_type, whatever looking for subpart, body or face.
+            By default, ``None``, means that all features will be considered.
 
         Returns
         -------
         Union[ansys.speos.script.opt_prop.OptProp, ansys.speos.script.source.Source, ansys.speos.script.sensor.Sensor, \
-ansys.speos.script.part.Part], optional
+ansys.speos.script.simulation.Simulation, ansys.speos.script.part.Part], optional
             Found feature, or None.
         """
         orig_name = name
@@ -202,7 +207,14 @@ ansys.speos.script.part.Part], optional
         if feature_type is None:
             found_feature = next((x for x in self._features if x._name == name), None)
         else:
-            found_feature = next((x for x in self._features if type(x) == feature_type and x._name == name), None)
+            found_feature = next(
+                (
+                    x
+                    for x in self._features
+                    if (type(x) == feature_type or (type(x._type) == feature_type if hasattr(x, "_type") else False)) and x._name == name
+                ),
+                None,
+            )
 
         if found_feature is not None:
             if idx != -1:

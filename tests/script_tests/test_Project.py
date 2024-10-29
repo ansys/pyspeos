@@ -88,6 +88,14 @@ def test_find_feature(speos: Speos):
     feature = p.find(name="Sensor.3", feature_type=script.Sensor)
     assert feature == sensor3
 
+    # Wrong combination name-type specialized
+    feature = p.find(name="Sensor.3", feature_type=script.Sensor.Irradiance)
+    assert feature is None
+
+    # Good combination name-type specialized
+    feature = p.find(name="Sensor.3", feature_type=script.Sensor.Radiance)
+    assert feature == sensor3
+
 
 def test_delete(speos: Speos):
     """Test delete a project."""
