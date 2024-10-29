@@ -106,9 +106,10 @@ class _ReplacePropsElt:
 def _value_finder_key_startswith(dict_var: dict, key: str) -> Iterator[tuple[str, dict]]:
     """Find all (key,value) corresponding to a key that starts with input key."""
     for k, v in dict_var.items():
-        if k.startswith(key):  # if the key fit the condition
+        if k.startswith(key):  # if the key fits the condition
             yield (k, v)
-        elif isinstance(v, dict):  # Look recursively if the value is a dict
+
+        if isinstance(v, dict):  # Look recursively if the value is a dict
             for kk, vv in _value_finder_key_startswith(dict_var=v, key=key):
                 yield (kk, vv)
 
@@ -116,7 +117,7 @@ def _value_finder_key_startswith(dict_var: dict, key: str) -> Iterator[tuple[str
 def _value_finder_key_endswith(dict_var: dict, key: str) -> Iterator[tuple[str, dict, dict]]:
     """Find all (key,value,parent dict) corresponding to a key that ends with input key."""
     for k, v in dict_var.items():
-        if k.endswith(key):  # if the key fit the condition
+        if k.endswith(key):  # if the key fits the condition
             yield (k, v, dict_var)
 
         if isinstance(v, dict):  # Look recursively if the value is a dict

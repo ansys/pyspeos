@@ -193,3 +193,95 @@ def test_replace_guid_elt_complex(speos: Speos):
     assert len(find) == 3
     find = proto_message_utils._finder_by_key(dict_var=scene_dict, key="sops")
     assert len(find) == 3
+
+
+def test_value_finder_key_startswith(speos: Speos):
+    """Test _value_finder_key_startswith."""
+
+    p = script.Project(speos=speos)
+    src_feat = script.Source(project=p, name="Surface.1")
+    src_feat.set_surface()
+    src_feat.commit()
+
+    # Retrieve source instance message and transform it into dict
+    src_i_dict = protobuf_message_to_dict(message=src_feat._source_instance)
+
+    keys = []
+    for key, val in proto_message_utils._value_finder_key_startswith(dict_var=src_i_dict, key="surface"):
+        keys.append(key)
+    assert keys == ["surface_properties"]
+
+
+def test__value_finder_key_endswith(speos: Speos):
+    """Test _value_finder_key_endswith."""
+
+    p = script.Project(speos=speos)
+    src_feat = script.Source(project=p, name="Surface.1")
+    src_feat.set_surface()
+    src_feat.commit()
+
+    # Retrieve source instance message and transform it into dict
+    src_i_dict = protobuf_message_to_dict(message=src_feat._source_instance)
+
+    keys = []
+    for key, val, parent in proto_message_utils._value_finder_key_endswith(dict_var=src_i_dict, key="_properties"):
+        keys.append(key)
+    assert keys == ["surface_properties", "exitance_constant_properties", "intensity_properties"]
+
+
+def test_replace_properties(speos: Speos):
+    """Test _replace_properties."""
+
+    p = script.Project(speos=speos)
+    src_feat = script.Source(project=p, name="Surface.1")
+    src_feat.set_surface().set_intensity().set_gaussian().set_axis_system([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    src_feat.commit()
+
+    # First replace guids
+    src_i_dict = proto_message_utils._replace_guids(speos_client=speos.client, message=src_feat._source_instance)
+
+    # Then replace properties in correct elements
+    proto_message_utils._replace_properties(json_dict=src_i_dict)
+
+    # Check that properties elements are no more there
+    assert proto_message_utils._finder_by_key(dict_var=src_i_dict, key="surface_properties") == []
+    assert proto_message_utils._finder_by_key(dict_var=src_i_dict, key="exitance_constant_properties") == []
+    assert proto_message_utils._finder_by_key(dict_var=src_i_dict, key="gaussian_properties") == []
+
+    # Check that they are copied at correct place
+    find = proto_message_utils._finder_by_key(dict_var=src_i_dict, key="axis_system")
+    assert len(find) == 1
+    assert find[0][0] == ".source.surface.intensity.gaussian.axis_system"
+
+    find = proto_message_utils._finder_by_key(dict_var=src_i_dict, key="geo_paths")
+    assert len(find) == 1
+    assert find[0][0] == ".source.surface.exitance_constant.geo_paths"
+
+
+def test_finder_by_key(speos: Speos):
+    """Test _finder_by_key."""
+
+    p = script.Project(speos=speos, path=os.path.join(test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"))
+
+    scene_dict = p._to_dict()
+
+    # key at root
+    res = proto_message_utils._finder_by_key(dict_var=scene_dict, key="part_guid")
+    assert len(res) == 1
+    assert res[0][0] == ".part_guid"
+
+    # key in a list elt (with name property : sources[.name='XXXX'])
+    res = proto_message_utils._finder_by_key(dict_var=scene_dict, key="radiant_value")
+    assert len(res) == 2
+    assert res[0][0] == ".sources[.name='Dom Source 2 (0) in SOURCE2'].source.surface.radiant_flux.radiant_value"
+    assert res[0][1] == 6.590041607465698
+    assert res[1][0] == ".sources[.name='Surface Source (0) in SOURCE1'].source.surface.radiant_flux.radiant_value"
+    assert res[1][1] == 9.290411220389682
+
+    # key in a list (without name property : geo_paths[0])
+    res = proto_message_utils._finder_by_key(dict_var=scene_dict, key="geo_path")
+    assert len(res) == 2
+    assert res[0][0] == ".sources[.name='Dom Source 2 (0) in SOURCE2'].source.surface.exitance_constant.geo_paths[0].geo_path"
+    assert res[0][1] == "Solid Body in SOURCE2:2920204960/Face in SOURCE2:222"
+    assert res[1][0] == ".sources[.name='Surface Source (0) in SOURCE1'].source.surface.exitance_constant.geo_paths[0].geo_path"
+    assert res[1][1] == "Solid Body in SOURCE1:2494956811/Face in SOURCE1:187"
