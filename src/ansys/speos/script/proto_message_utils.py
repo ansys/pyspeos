@@ -59,9 +59,9 @@ def _replace_guid_elt(speos_client: SpeosClient, json_dict: dict, ignore_simple_
         if k.endswith("_guid") and v != "" and k != ignore_simple_key:
             # Retrieve the item from db and transform it to dictionary
             new_v = protobuf_message_to_dict(message=speos_client.get_item(key=v).get())
-            _replace_guid_elt(
-                speos_client=speos_client, json_dict=new_v
-            )  # This item can potentially have some "xxx_guid" fields to replace
+
+            # This item can potentially have some "xxx_guid" fields to replace
+            _replace_guid_elt(speos_client=speos_client, json_dict=new_v, ignore_simple_key=ignore_simple_key)
             # Add the new value under "xxx" key
             new_items.append((k[: k.find("_guid")], new_v))
         # Possibility to have a list of guids : "xxx_guids"
@@ -72,20 +72,20 @@ def _replace_guid_elt(speos_client: SpeosClient, json_dict: dict, ignore_simple_
             for iv in v:
                 # Retrieve the item from db and transform it to dictionary
                 new_v = protobuf_message_to_dict(message=speos_client.get_item(key=iv).get())
-                _replace_guid_elt(
-                    speos_client=speos_client, json_dict=new_v
-                )  # This item can potentially have some "xxx_guid" fields to replace
+
+                # This item can potentially have some "xxx_guid" fields to replace
+                _replace_guid_elt(speos_client=speos_client, json_dict=new_v, ignore_simple_key=ignore_simple_key)
                 # Add the new value to the "xxxs" list
                 new_value_list.append(new_v)
             new_items.append((new_key_list, new_value_list))
 
         # Call recursevely if the value is a dict or a list with dict as items values
         if type(v) == dict:
-            _replace_guid_elt(speos_client=speos_client, json_dict=v)
+            _replace_guid_elt(speos_client=speos_client, json_dict=v, ignore_simple_key=ignore_simple_key)
         elif type(v) == list:
             for iv in v:
                 if type(iv) == dict:
-                    _replace_guid_elt(speos_client=speos_client, json_dict=iv)
+                    _replace_guid_elt(speos_client=speos_client, json_dict=iv, ignore_simple_key=ignore_simple_key)
 
     # To avoid modifying a dict when reading it, all changes were stored in new_items list
     # They are applied now
