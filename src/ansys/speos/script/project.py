@@ -22,6 +22,7 @@
 """Provides a way to gather Speos features."""
 from __future__ import annotations
 
+import re
 from typing import List, Mapping, Optional, Union
 import uuid
 
@@ -174,7 +175,7 @@ class Project:
         return feature
 
     def find(
-        self, name: str, feature_type: Optional[type] = None
+        self, name: str, name_regex: bool = False, feature_type: Optional[type] = None
     ) -> Optional[Union[opt_prop.OptProp, source.Source, sensor.Sensor, simulation.Simulation, part.Part]]:
         """Find a feature.
 
@@ -183,13 +184,16 @@ class Project:
         name : str
             Name of the feature.
             Possibility to look also for bodies, faces, subpart.
-            Example "RootPart/BodyName/FaceName", "RootPart/SubPartName/BodyName/FaceName"
+            Example "RootPart/BodyName/FaceName", "RootPart/SubPartName/BodyName/FaceName".
+        name_regex : bool
+            Allows to use regex for name parameter.
+            By default, ``False``, means that regex is not used for name parameter.
         feature_type : type
             Type of the wanted feature.
             Feature can be: ansys.speos.script.opt_prop.OptProp, ansys.speos.script.source.Source, ansys.speos.script.sensor.Sensor,
             ansys.speos.script.simulation.Simulation, ansys.speos.script.part.Part
             Feature can be specialized like: ansys.speos.script.source.Source.Luminaire, ansys.speos.script.sensor.Sensor.Camera,
-            ansys.speos.script.simulation.Simulation.Direct
+            ansys.speos.script.simulation.Simulation.Direct.
             If looking for geometry feature, only precise part.Part as feature_type, whatever looking for subpart, body or face.
             By default, ``None``, means that all features will be considered.
 
@@ -204,23 +208,41 @@ ansys.speos.script.simulation.Simulation, ansys.speos.script.part.Part], optiona
         if idx != -1:
             name = name[0:idx]
 
-        if feature_type is None:
-            found_feature = next((x for x in self._features if x._name == name), None)
-        else:
-            found_feature = next(
-                (
-                    x
-                    for x in self._features
-                    if (type(x) == feature_type or (type(x._type) == feature_type if hasattr(x, "_type") else False)) and x._name == name
-                ),
-                None,
-            )
+        if name_regex:
+            p = re.compile(name)
 
-        if found_feature is not None:
-            if idx != -1:
-                found_feature = found_feature.find(orig_name[idx + 1 :])
-            return found_feature
-        return None
+        found_feature = None
+        if feature_type is None:
+            if name_regex:
+                found_feature = next((x for x in self._features if p.match(x._name)), None)
+            else:
+                found_feature = next((x for x in self._features if x._name == name), None)
+        else:
+            if name_regex:
+                found_feature = next(
+                    (
+                        x
+                        for x in self._features
+                        if (type(x) == feature_type or (type(x._type) == feature_type if hasattr(x, "_type") else False))
+                        and p.match(x._name)
+                    ),
+                    None,
+                )
+            else:
+                found_feature = next(
+                    (
+                        x
+                        for x in self._features
+                        if (type(x) == feature_type or (type(x._type) == feature_type if hasattr(x, "_type") else False))
+                        and x._name == name
+                    ),
+                    None,
+                )
+
+        if found_feature is not None and idx != -1:
+            found_feature = found_feature.find(name=orig_name[idx + 1 :], name_regex=name_regex)
+
+        return found_feature
 
     # def action(self, name: str):
     #    """Act on feature: update, hide/show, copy, ... - Not yet implemented"""

@@ -23,6 +23,7 @@
 """Provides a way to interact with feature: Part."""
 from __future__ import annotations
 
+import re
 from typing import List, Mapping, Optional, Union
 import uuid
 
@@ -287,7 +288,9 @@ class Part:
             if idx != -1:
                 name = name[0:idx]
 
-            found_feature = next((x for x in self._geom_features if x._name == name), None)
+            p = re.compile(name)
+
+            found_feature = next((x for x in self._geom_features if p.match(x._name)), None)
 
             if found_feature is not None:
                 if idx != -1:
@@ -433,7 +436,7 @@ class Part:
 
         return self
 
-    def find(self, name: str) -> Optional[Union[body.Body, Part.SubPart]]:
+    def find(self, name: str, name_regex: bool = False) -> Optional[Union[body.Body, Part.SubPart]]:
         """Find a feature.
 
         Parameters
@@ -442,6 +445,9 @@ class Part:
             Name of the feature.
             Possibility to look also for bodies, faces, subpart.
             Example "BodyName/FaceName", "SubPartName/BodyName/FaceName"
+        name_regex : bool
+            Allows to use regex for name parameter.
+            By default, ``False``, means that regex is not used for name parameter.
 
         Returns
         -------
@@ -453,10 +459,14 @@ class Part:
         if idx != -1:
             name = name[0:idx]
 
-        found_feature = next((x for x in self._geom_features if x._name == name), None)
+        found_feature = None
+        if name_regex:
+            p = re.compile(name)
+            found_feature = next((x for x in self._geom_features if p.match(x._name)), None)
+        else:
+            found_feature = next((x for x in self._geom_features if x._name == name), None)
 
-        if found_feature is not None:
-            if idx != -1:
-                found_feature = found_feature.find(orig_name[idx + 1 :])
-            return found_feature
-        return None
+        if found_feature is not None and idx != -1:
+            found_feature = found_feature.find(orig_name[idx + 1 :], name_regex=name_regex)
+
+        return found_feature

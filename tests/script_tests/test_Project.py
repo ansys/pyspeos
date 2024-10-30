@@ -78,6 +78,13 @@ def test_find_feature(speos: Speos):
     feature = p.find(name="Source.1")
     assert feature == source1
 
+    # Using regex for name
+    feature = p.find(name=".*2", name_regex=True)
+    assert feature == sensor2
+
+    feature = p.find(name=".*8", name_regex=True)
+    assert feature is None
+
     # With type filtering
 
     # Wrong combination name-type
@@ -94,6 +101,10 @@ def test_find_feature(speos: Speos):
 
     # Good combination name-type specialized
     feature = p.find(name="Sensor.3", feature_type=script.Sensor.Radiance)
+    assert feature == sensor3
+
+    # Good combination name-type specialized + regex
+    feature = p.find(name=".*sor\.3", name_regex=True, feature_type=script.Sensor.Radiance)
     assert feature == sensor3
 
 
@@ -152,6 +163,10 @@ def test_from_file(speos: Speos):
     # Check that ambient mat has no sop
     feat_op_ambient = p.find(name=p.scene_link.get().materials[-1].name)
     assert feat_op_ambient.sop_template_link is None
+
+    # Retrieve body with regex
+    feat_body = p.find(name="RootPart/Solid Body in SOURCE2.*", name_regex=True)
+    assert feat_body is not None
 
     # Retrieve another feature
     feat_ssr1 = p.find(name=p.scene_link.get().sensors[0].name)

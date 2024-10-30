@@ -23,6 +23,7 @@
 """Provides a way to interact with feature: Body."""
 from __future__ import annotations
 
+import re
 from typing import Mapping, Optional, Union
 
 import ansys.speos.core as core
@@ -182,7 +183,7 @@ class Body:
 
         return self
 
-    def find(self, name: str) -> Optional[face.Face]:
+    def find(self, name: str, name_regex: bool = False) -> Optional[face.Face]:
         """Find a feature.
 
         Parameters
@@ -191,14 +192,20 @@ class Body:
             Name of the feature.
             Possibility to look faces.
             Example "FaceName"
+        name_regex : bool
+            Allows to use regex for name parameter.
+            By default, ``False``, means that regex is not used for name parameter.
 
         Returns
         -------
         ansys.speos.script.face.Face, optional
             Found feature, or None.
         """
-        found_feature = next((x for x in self._geom_features if x._name == name), None)
+        found_feature = None
+        if name_regex:
+            p = re.compile(name)
+            found_feature = next((x for x in self._geom_features if p.match(x._name)), None)
+        else:
+            found_feature = next((x for x in self._geom_features if x._name == name), None)
 
-        if found_feature is not None:
-            return found_feature
-        return None
+        return found_feature
