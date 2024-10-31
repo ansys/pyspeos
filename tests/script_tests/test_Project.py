@@ -123,7 +123,11 @@ def test_find_feature_geom(speos: Speos):
     assert feat is not None
 
     # Retrieve face
-    feat = p.find(name="Solid Body in GUIDE:1379760262/Face in GUIDE:166", name_regex=True, feature_type=script.Part)
+    feat = p.find(name="Solid Body in GUIDE:1379760262/Face in GUIDE:166", feature_type=script.Part)
+    assert feat is not None
+
+    # Retrieve face with regex (regex at body and at face level)
+    feat = p.find(name="Solid Body in GUIDE:.*/.*166", name_regex=True, feature_type=script.Part)
     assert feat is not None
 
 
