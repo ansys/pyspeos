@@ -108,6 +108,25 @@ def test_find_feature(speos: Speos):
     assert feature == sensor3
 
 
+def test_find_feature_geom(speos: Speos):
+    """Test find a geometry feature in project loaded from speos file."""
+
+    # Create a project from a file
+    p = script.Project(speos=speos, path=os.path.join(test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"))
+
+    # Find root part
+    feat = p.find(name="", feature_type=script.Part)
+    assert feat is not None
+
+    # Retrieve body with regex
+    feat = p.find(name="Solid Body in SOURCE2.*", name_regex=True, feature_type=script.Part)
+    assert feat is not None
+
+    # Retrieve face
+    feat = p.find(name="Solid Body in GUIDE:1379760262/Face in GUIDE:166", name_regex=True, feature_type=script.Part)
+    assert feat is not None
+
+
 def test_delete(speos: Speos):
     """Test delete a project."""
 
@@ -163,10 +182,6 @@ def test_from_file(speos: Speos):
     # Check that ambient mat has no sop
     feat_op_ambient = p.find(name=p.scene_link.get().materials[-1].name)
     assert feat_op_ambient.sop_template_link is None
-
-    # Retrieve body with regex
-    feat_body = p.find(name="RootPart/Solid Body in SOURCE2.*", name_regex=True)
-    assert feat_body is not None
 
     # Retrieve another feature
     feat_ssr1 = p.find(name=p.scene_link.get().sensors[0].name)

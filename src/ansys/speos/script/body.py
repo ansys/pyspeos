@@ -155,7 +155,6 @@ class Body:
 
     def delete(self) -> Body:
         """Delete feature: delete data from the speos server database.
-        The local data are still available
 
         Returns
         -------
@@ -163,8 +162,8 @@ class Body:
             Body feature.
         """
         # Retrieve all features to delete them
-        # for g in self._geom_features:
-        #    g.delete()
+        for g in self._geom_features:
+            g.delete()
 
         if self.body_link is not None:
             # Update the parent part

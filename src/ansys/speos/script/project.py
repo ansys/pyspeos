@@ -27,6 +27,8 @@ from typing import List, Mapping, Optional, Union
 import uuid
 
 import ansys.speos.core as core
+import ansys.speos.script.body as body
+import ansys.speos.script.face as face
 import ansys.speos.script.opt_prop as opt_prop
 import ansys.speos.script.part as part
 import ansys.speos.script.sensor as sensor
@@ -148,14 +150,11 @@ class Project:
         self._features.append(feature)
         return feature
 
-    def create_root_part(self, name: str = "RootPart", description: str = "", metadata: Mapping[str, str] = {}) -> part.Part:
-        """Create the project root part feature.
+    def create_root_part(self, description: str = "", metadata: Mapping[str, str] = {}) -> part.Part:
+        """Create the project root part feature. If a root part is already created in the project, it is returned.
 
         Parameters
         ----------
-        name : str
-            Name of the feature.
-            By default, ``"RootPart"``.
         description : str
             Description of the feature.
             By default, ``""``.
@@ -168,41 +167,60 @@ class Project:
         ansys.speos.script.part.Part
             Part feature.
         """
+        name = "RootPart"
+        existing_rp = self.find(name=name, feature_type=part.Part)
+        if existing_rp is not None:
+            return existing_rp
+
         feature = part.Part(project=self, name=name, description=description, metadata=metadata)
-        if self.find(name=name, feature_type=part.Part) is not None:
-            raise ValueError("A root part feature already exists with this name: " + name)
         self._features.append(feature)
         return feature
 
     def find(
         self, name: str, name_regex: bool = False, feature_type: Optional[type] = None
-    ) -> Optional[Union[opt_prop.OptProp, source.Source, sensor.Sensor, simulation.Simulation, part.Part]]:
-        """Find a feature.
+    ) -> Optional[
+        Union[opt_prop.OptProp, source.Source, sensor.Sensor, simulation.Simulation, part.Part, body.Body, face.Face, part.Part.SubPart]
+    ]:
+        """Find a feature by name (possibility to use regex) and by feature type.
+        If looking for geometry:
+        - root part : find(name="", feature_type=ansys.speos.script.part.Part)
+        - body in root part : find(name="BodyName", feature_type=ansys.speos.script.part.Part)
+        - face from body in root part : find(name="BodyName/FaceName", feature_type=ansys.speos.script.part.Part)
+        - sub part in root part : find(name="SubPartName", feature_type=ansys.speos.script.part.Part)
+        - face in a body from sub part in root part : find(name="SubPartName/BodyName/FaceName", feature_type=ansys.speos.script.part.Part)
+        - regex can be use at each level separated by "/": find(name="Body.*/Face.*", name_regex=True,
+        feature_type=ansys.speos.script.part.Part)
 
         Parameters
         ----------
         name : str
             Name of the feature.
             Possibility to look also for bodies, faces, subpart.
-            Example "RootPart/BodyName/FaceName", "RootPart/SubPartName/BodyName/FaceName".
+            Example "BodyName/FaceName", "SubPartName/BodyName/FaceName".
         name_regex : bool
             Allows to use regex for name parameter.
             By default, ``False``, means that regex is not used for name parameter.
         feature_type : type
-            Type of the wanted feature.
-            Feature can be: ansys.speos.script.opt_prop.OptProp, ansys.speos.script.source.Source, ansys.speos.script.sensor.Sensor,
-            ansys.speos.script.simulation.Simulation, ansys.speos.script.part.Part
+            Type of the wanted feature (example: ansys.speos.script.opt_prop.OptProp, ansys.speos.script.source.Source...).
             Feature can be specialized like: ansys.speos.script.source.Source.Luminaire, ansys.speos.script.sensor.Sensor.Camera,
-            ansys.speos.script.simulation.Simulation.Direct.
-            If looking for geometry feature, only precise part.Part as feature_type, whatever looking for subpart, body or face.
+            ansys.speos.script.simulation.Simulation.Direct...
+            If looking for geometry feature, mandatory to precise ansys.speos.script.part.Part as feature_type,
+            whatever looking for subpart, body or face.
             By default, ``None``, means that all features will be considered.
 
         Returns
         -------
         Union[ansys.speos.script.opt_prop.OptProp, ansys.speos.script.source.Source, ansys.speos.script.sensor.Sensor, \
-ansys.speos.script.simulation.Simulation, ansys.speos.script.part.Part], optional
+ansys.speos.script.simulation.Simulation, ansys.speos.script.part.Part, ansys.speos.script.part.Part, \
+ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.part.Part.SubPart], optional
             Found feature, or None.
         """
+        if feature_type == part.Part:
+            if name == "":
+                name = "RootPart"
+            else:
+                name = "RootPart/" + name
+
         orig_name = name
         idx = name.find("/")
         if idx != -1:
