@@ -396,3 +396,23 @@ def test_print_source(speos: Speos):
     # Check that print is not modified
     str_after = str(source)
     assert str_before == str_after
+
+    source.delete()
+
+    # SURFACE - SPECTRUM
+    source = p.create_source(name="Source.1")
+    source.set_surface()
+    source.commit()
+
+    # Retrieve print
+    str_before = str(source)
+
+    # Modify : spectrum_from_xmp_file
+    # No commit
+    source.set_surface().set_spectrum_from_xmp_file()
+
+    # Check that print is not modified
+    str_after = str(source)
+    assert str_before == str_after
+
+    source.delete()

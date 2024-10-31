@@ -328,20 +328,21 @@ class Source:
             self._speos_client = speos_client
             self._surface = surface
             self._name = name
-            self._spectrum = None
             self._surface_props = surface_props
 
-            if self._surface.intensity_guid != "":
-                self._intensity = Intensity(
-                    speos_client=speos_client,
-                    name=name + ".Intensity",
-                    intensity_props_to_complete=surface_props.intensity_properties,
-                    key=self._surface.intensity_guid,
-                )
-            else:
-                self._intensity = Intensity(
-                    speos_client=speos_client, name=name + ".Intensity", intensity_props_to_complete=surface_props.intensity_properties
-                )
+            spectrum_guid = ""
+            if self._surface.HasField("spectrum_guid"):
+                spectrum_guid = self._surface.spectrum_guid
+            self._spectrum = Source.Spectrum(
+                speos_client=speos_client, name=name + ".Spectrum", message_to_complete=self._surface, spectrum_guid=spectrum_guid
+            )
+
+            self._intensity = Intensity(
+                speos_client=speos_client,
+                name=name + ".Intensity",
+                intensity_props_to_complete=surface_props.intensity_properties,
+                key=self._surface.intensity_guid,
+            )
 
             # Attribute gathering more complex exitance type
             self._exitance_type = None
@@ -477,7 +478,7 @@ class Source:
                 Surface source.
             """
             self._surface.spectrum_from_xmp_file.SetInParent()
-            self._spectrum = None
+            self._spectrum._no_spectrum_local = True
             return self
 
         def set_spectrum(self) -> Spectrum:
@@ -488,18 +489,18 @@ class Source:
             ansys.speos.script.spectrum.Spectrum
                 Spectrum.
             """
-            if self._spectrum is None and self._surface.HasField("spectrum_guid"):
-                self._spectrum = Spectrum(speos_client=self._speos_client, name=self._name + ".Spectrum", key=self._surface.spectrum_guid)
-            elif self._spectrum is None:
-                self._spectrum = Spectrum(speos_client=self._speos_client, name=self._name + ".Spectrum")
-                self._surface.spectrum_guid = ""
-            return self._spectrum
+            if self._surface.HasField("spectrum_from_xmp_file"):
+                guid = ""
+                if self._spectrum._spectrum.spectrum_link is not None:
+                    guid = self._spectrum._spectrum.spectrum_link.key
+                self._surface.spectrum_guid = guid
+            self._spectrum._no_spectrum_local = False
+            return self._spectrum._spectrum
 
         def __str__(self) -> str:
             out_str = ""
             out_str += str(self._intensity)
-            if self._spectrum is not None:
-                out_str += "\n" + str(self._spectrum)
+            out_str += "\n" + str(self._spectrum)
             return out_str
 
         def _commit(self) -> Source.Surface:
@@ -508,15 +509,15 @@ class Source:
             self._surface.intensity_guid = self._intensity.intensity_template_link.key
 
             # spectrum
-            if self._spectrum is not None:
-                self._spectrum.commit()
-                self._surface.spectrum_guid = self._spectrum.spectrum_link.key
+            self._spectrum._commit()
             return self
 
         def _reset(self) -> Source.Surface:
+            self._spectrum._reset()
             return self
 
         def _delete(self) -> Source.Surface:
+            self._spectrum._delete()
             return self
 
     class RayFile:
