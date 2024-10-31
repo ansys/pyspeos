@@ -647,8 +647,9 @@ class Source:
         self.source_template_link = None
         """Link object for the source template in database."""
 
-        # Attribute representing the kind of source. Can be on object of type script.Source.Luminaire, script.Source.RayFile, ...
+        # Attribute representing the kind of source. Can be an object of type script.Source.Luminaire, script.Source.RayFile, ...
         self._type = None
+        self._type_local = None
 
         # Create local SourceTemplate
         self._source_template = core.SourceTemplate(name=name, description=description, metadata=metadata)
@@ -664,22 +665,22 @@ class Source:
         ansys.speos.script.source.Source.Luminaire
             Luminaire source.
         """
-        if self._type is None and self._source_template.HasField("luminaire"):
-            self._type = Source.Luminaire(
+        if self._type_local is None and self._source_template.HasField("luminaire"):
+            self._type_local = Source.Luminaire(
                 speos_client=self._project.client,
                 luminaire=self._source_template.luminaire,
                 name=self._source_template.name,
                 luminaire_props=self._source_instance.luminaire_properties,
                 default_values=False,
             )
-        elif type(self._type) != Source.Luminaire:
-            self._type = Source.Luminaire(
+        elif type(self._type_local) != Source.Luminaire:
+            self._type_local = Source.Luminaire(
                 speos_client=self._project.client,
                 luminaire=self._source_template.luminaire,
                 name=self._source_template.name,
                 luminaire_props=self._source_instance.luminaire_properties,
             )
-        return self._type
+        return self._type_local
 
     def set_surface(self) -> Surface:
         """Set the source as surface.
@@ -689,22 +690,22 @@ class Source:
         ansys.speos.script.source.Source.Surface
             Surface source.
         """
-        if self._type is None and self._source_template.HasField("surface"):
-            self._type = Source.Surface(
+        if self._type_local is None and self._source_template.HasField("surface"):
+            self._type_local = Source.Surface(
                 speos_client=self._project.client,
                 surface=self._source_template.surface,
                 name=self._source_template.name,
                 surface_props=self._source_instance.surface_properties,
                 default_values=False,
             )
-        elif type(self._type) != Source.Surface:
-            self._type = Source.Surface(
+        elif type(self._type_local) != Source.Surface:
+            self._type_local = Source.Surface(
                 speos_client=self._project.client,
                 surface=self._source_template.surface,
                 name=self._source_template.name,
                 surface_props=self._source_instance.surface_properties,
             )
-        return self._type
+        return self._type_local
 
     def set_rayfile(self) -> RayFile:
         """Set the source as rayfile.
@@ -714,22 +715,22 @@ class Source:
         ansys.speos.script.source.Source.RayFile
             RayFile source.
         """
-        if self._type is None and self._source_template.HasField("rayfile"):
-            self._type = Source.RayFile(
+        if self._type_local is None and self._source_template.HasField("rayfile"):
+            self._type_local = Source.RayFile(
                 speos_client=self._project.client,
                 ray_file=self._source_template.rayfile,
                 ray_file_props=self._source_instance.rayfile_properties,
                 name=self._source_template.name,
                 default_values=False,
             )
-        elif type(self._type) != Source.RayFile:
-            self._type = Source.RayFile(
+        elif type(self._type_local) != Source.RayFile:
+            self._type_local = Source.RayFile(
                 speos_client=self._project.client,
                 ray_file=self._source_template.rayfile,
                 ray_file_props=self._source_instance.rayfile_properties,
                 name=self._source_template.name,
             )
-        return self._type
+        return self._type_local
 
     def __str__(self) -> str:
         """Return the string representation of the source."""
@@ -752,9 +753,14 @@ class Source:
             out_str += "\n" + str(self.source_template_link)
 
         # Contained objects like Spectrum, IntensityTemplate
-        if self._type is not None:
-            out_str += "\n"
-            out_str += str(self._type)
+        if self.source_template_link is None:
+            if self._type_local is not None:
+                out_str += "\n"
+                out_str += str(self._type_local)
+        else:
+            if self._type is not None:
+                out_str += "\n"
+                out_str += str(self._type)
 
         return out_str
 
@@ -772,8 +778,9 @@ class Source:
             self._source_instance.metadata["UniqueId"] = self._unique_id
 
         # This allows to commit managed object contained in _luminaire, _rayfile, etc.. Like Spectrum, IntensityTemplate
-        if self._type is not None:
-            self._type._commit()
+        if self._type_local is not None:
+            self._type_local._commit()
+            self._type = self._type_local
 
         # Save or Update the source template (depending on if it was already saved before)
         if self.source_template_link is None:
@@ -816,6 +823,8 @@ class Source:
             src_inst = next((x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None)
             if src_inst is not None:
                 self._source_instance = src_inst
+
+        self._type_local = self._type
         return self
 
     def delete(self) -> Source:
@@ -845,4 +854,6 @@ class Source:
         # Reset the _unique_id
         self._unique_id = None
         self._source_instance.metadata.pop("UniqueId")
+
+        self._type = None
         return self

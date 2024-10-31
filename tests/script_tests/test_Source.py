@@ -374,3 +374,24 @@ def test_delete_source(speos: Speos):
 
     assert len(p.scene_link.get().sources) == 0
     assert source1._source_instance.HasField("rayfile_properties")  # local
+
+
+def test_print_source(speos: Speos):
+    """Test delete of source."""
+    p = script.Project(speos=speos)
+
+    # TYPE
+    # Create + commit : type Surface
+    source1 = p.create_source(name="Source.1")
+    source1.set_surface()
+    source1.commit()
+
+    # Retrieve print
+    str_before = str(source1)
+
+    # Modify the type as Luminaire : only in local (no commit)
+    source1.set_luminaire()
+
+    # Check that print is not modified
+    str_after = str(source1)
+    assert str_before == str_after
