@@ -380,18 +380,19 @@ def test_print_source(speos: Speos):
     """Test delete of source."""
     p = script.Project(speos=speos)
 
-    # TYPE
-    # Create + commit : type Surface
-    source1 = p.create_source(name="Source.1")
-    source1.set_surface()
-    source1.commit()
+    # RAYFILE - SPECTRUM
+    # Create + commit
+    source = p.create_source(name="Source.1")
+    source.set_rayfile().set_ray_file_uri(uri=os.path.join(test_path, "RaysWithoutSpectralData.RAY")).set_spectrum()
+    source.commit()
 
     # Retrieve print
-    str_before = str(source1)
+    str_before = str(source)
 
-    # Modify the type as Luminaire : only in local (no commit)
-    source1.set_luminaire()
+    # Modify : spectrum_from_ray_file
+    # No commit
+    source.set_rayfile().set_spectrum_from_ray_file()
 
     # Check that print is not modified
-    str_after = str(source1)
+    str_after = str(source)
     assert str_before == str_after

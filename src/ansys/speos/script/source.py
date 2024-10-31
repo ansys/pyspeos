@@ -23,7 +23,7 @@
 """Provides a way to interact with Speos feature: Source."""
 from __future__ import annotations
 
-from typing import List, Mapping
+from typing import List, Mapping, Union
 import uuid
 
 import ansys.speos.core as core
@@ -55,6 +55,49 @@ class Source:
         Link object for the source template in database.
     """
 
+    class Spectrum:
+        def __init__(
+            self,
+            speos_client: core.SpeosClient,
+            name: str,
+            message_to_complete: Union[core.SourceTemplate.RayFile, core.SourceTemplate.Surface, core.SourceTemplate.Luminaire],
+            spectrum_guid: str = "",
+        ) -> None:
+            self._message_to_complete = message_to_complete
+            if spectrum_guid != "":
+                self._spectrum = Spectrum(speos_client=speos_client, name=name + ".Spectrum", key=spectrum_guid)
+            else:
+                self._spectrum = Spectrum(speos_client=speos_client, name=name + ".Spectrum")
+
+            self._no_spectrum = None  # None means never committed, or deleted
+            self._no_spectrum_local = False
+
+        def __str__(self) -> str:
+            if self._no_spectrum is None:
+                if self._no_spectrum_local == False:
+                    return str(self._spectrum)
+            else:
+                if self._no_spectrum == False:
+                    return str(self._spectrum)
+            return ""
+
+        def _commit(self) -> Source.RayFile:
+            if not self._no_spectrum_local:
+                self._spectrum.commit()
+                self._message_to_complete.spectrum_guid = self._spectrum.spectrum_link.key
+                self._no_spectrum = self._no_spectrum_local
+            return self
+
+        def _reset(self) -> Source.RayFile:
+            self._spectrum.reset()
+            if self._no_spectrum is not None:
+                self._no_spectrum_local = self._no_spectrum
+            return self
+
+        def _delete(self) -> Source.RayFile:
+            self._no_spectrum = None
+            return self
+
     class Luminaire:
         """Type of Source : Luminaire.
         By default, a flux from intensity file is chosen, with an incandescent spectrum.
@@ -85,7 +128,7 @@ class Source:
             self._luminaire_props = luminaire_props
 
             if self._luminaire.spectrum_guid != "":
-                self._spectrum = Spectrum(speos_client=self._speos_client, name=self._name + ".Spectrum", key=self._luminaire.spectrum_guid)
+                self._spectrum = Spectrum(speos_client=speos_client, name=name + ".Spectrum", key=self._luminaire.spectrum_guid)
             else:
                 self._spectrum = Spectrum(speos_client=speos_client, name=name + ".Spectrum")
 
@@ -188,6 +231,12 @@ class Source:
         def _commit(self) -> Source.Luminaire:
             self._spectrum.commit()
             self._luminaire.spectrum_guid = self._spectrum.spectrum_link.key
+            return self
+
+        def _reset(self) -> Source.Luminaire:
+            return self
+
+        def _delete(self) -> Source.Luminaire:
             return self
 
     class Surface:
@@ -464,6 +513,12 @@ class Source:
                 self._surface.spectrum_guid = self._spectrum.spectrum_link.key
             return self
 
+        def _reset(self) -> Source.Surface:
+            return self
+
+        def _delete(self) -> Source.Surface:
+            return self
+
     class RayFile:
         """Type of Source : RayFile.
         By default, flux and spectrum from ray file are selected.
@@ -493,7 +548,13 @@ class Source:
             self._client = speos_client
             self._ray_file = ray_file
             self._ray_file_props = ray_file_props
-            self._spectrum = None
+
+            spectrum_guid = ""
+            if self._ray_file.HasField("spectrum_guid"):
+                spectrum_guid = self._ray_file.spectrum_guid
+            self._spectrum = Source.Spectrum(
+                speos_client=speos_client, name=name, message_to_complete=self._ray_file, spectrum_guid=spectrum_guid
+            )
             self._name = name
 
             if default_values:
@@ -571,7 +632,7 @@ class Source:
                 RayFile source.
             """
             self._ray_file.spectrum_from_ray_file.SetInParent()
-            self._spectrum = None
+            self._spectrum._no_spectrum_local = True
             return self
 
         def set_spectrum(self) -> Spectrum:
@@ -582,12 +643,13 @@ class Source:
             ansys.speos.script.spectrum.Spectrum
                 Spectrum.
             """
-            if self._spectrum is None and self._ray_file.HasField("spectrum_guid"):
-                self._spectrum = Spectrum(speos_client=self._client, name=self._name + ".Spectrum", key=self._ray_file.spectrum_guid)
-            elif self._spectrum is None:
-                self._spectrum = Spectrum(speos_client=self._client, name=self._name + ".Spectrum")
-                self._ray_file.spectrum_guid = ""
-            return self._spectrum
+            if self._ray_file.HasField("spectrum_from_ray_file"):
+                guid = ""
+                if self._spectrum._spectrum.spectrum_link is not None:
+                    guid = self._spectrum._spectrum.spectrum_link.key
+                self._ray_file.spectrum_guid = guid
+            self._spectrum._no_spectrum_local = False
+            return self._spectrum._spectrum
 
         def set_axis_system(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> Source.RayFile:
             """Set position of the source.
@@ -628,16 +690,18 @@ class Source:
             return self
 
         def __str__(self) -> str:
-            out_str = ""
-            if self._spectrum is not None:
-                out_str += str(self._spectrum)
-            return out_str
+            return str(self._spectrum)
 
         def _commit(self) -> Source.RayFile:
-            if self._spectrum is not None:
-                self._spectrum.commit()
-                self._ray_file.spectrum_guid = self._spectrum.spectrum_link.key
+            self._spectrum._commit()
+            return self
 
+        def _reset(self) -> Source.RayFile:
+            self._spectrum._reset()
+            return self
+
+        def _delete(self) -> Source.RayFile:
+            self._spectrum._delete()
             return self
 
     def __init__(self, project: project.Project, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> None:
@@ -805,6 +869,10 @@ class Source:
         ansys.speos.script.source.Source
             Source feature.
         """
+        # This allows to reset managed object contained in _luminaire, _rayfile, etc.. Like Spectrum, IntensityTemplate
+        if self._type is not None:
+            self._type._reset()
+
         # Reset source template
         if self.source_template_link is not None:
             self._source_template = self.source_template_link.get()
@@ -827,6 +895,10 @@ class Source:
         ansys.speos.script.source.Source
             Source feature.
         """
+        # This allows to clean managed object contained in _luminaire, _rayfile, etc.. Like Spectrum, IntensityTemplate
+        if self._type is not None:
+            self._type._delete()
+
         # Delete the source template
         if self.source_template_link is not None:
             self.source_template_link.delete()
