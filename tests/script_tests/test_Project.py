@@ -68,44 +68,50 @@ def test_find_feature(speos: Speos):
     # Find from name only
 
     # Wrong name
-    feature = p.find(name="WrongName")
-    assert feature is None
+    features = p.find(name="WrongName")
+    assert features == []
 
     # Existing name
-    feature = p.find(name="Sensor.2")
-    assert feature == sensor2
+    features = p.find(name="Sensor.2")
+    assert len(features) == 1
+    assert features[0] == sensor2
 
-    feature = p.find(name="Source.1")
-    assert feature == source1
+    features = p.find(name="Source.1")
+    assert len(features) == 1
+    assert features[0] == source1
 
     # Using regex for name
-    feature = p.find(name=".*2", name_regex=True)
-    assert feature == sensor2
+    features = p.find(name=".*2", name_regex=True)
+    assert len(features) == 1
+    assert features[0] == sensor2
 
-    feature = p.find(name=".*8", name_regex=True)
-    assert feature is None
+    features = p.find(name=".*8", name_regex=True)
+    assert features == []
 
     # With type filtering
 
     # Wrong combination name-type
-    feature = p.find(name="Sensor.3", feature_type=script.Source)
-    assert feature is None
+    features = p.find(name="Sensor.3", feature_type=script.Source)
+    assert features == []
 
     # Good combination name-type
-    feature = p.find(name="Sensor.3", feature_type=script.Sensor)
-    assert feature == sensor3
+    features = p.find(name="Sensor.3", feature_type=script.Sensor)
+    assert len(features) == 1
+    assert features[0] == sensor3
 
     # Wrong combination name-type specialized
-    feature = p.find(name="Sensor.3", feature_type=script.Sensor.Irradiance)
-    assert feature is None
+    features = p.find(name="Sensor.3", feature_type=script.Sensor.Irradiance)
+    assert features == []
 
     # Good combination name-type specialized
-    feature = p.find(name="Sensor.3", feature_type=script.Sensor.Radiance)
-    assert feature == sensor3
+    features = p.find(name="Sensor.3", feature_type=script.Sensor.Radiance)
+    assert len(features) == 1
+    assert features[0] == sensor3
 
     # Good combination name-type specialized + regex
-    feature = p.find(name=".*sor\.3", name_regex=True, feature_type=script.Sensor.Radiance)
-    assert feature == sensor3
+    features = p.find(name=".*sor\.3", name_regex=True, feature_type=script.Sensor.Radiance)
+    assert len(features) == 1
+    assert features[0] == sensor3
 
 
 def test_find_feature_geom(speos: Speos):
@@ -115,20 +121,20 @@ def test_find_feature_geom(speos: Speos):
     p = script.Project(speos=speos, path=os.path.join(test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"))
 
     # Find root part
-    feat = p.find(name="", feature_type=script.Part)
-    assert feat is not None
+    feats = p.find(name="", feature_type=script.Part)
+    assert len(feats) == 1
 
     # Retrieve body with regex
-    feat = p.find(name="Solid Body in SOURCE2.*", name_regex=True, feature_type=script.Part)
-    assert feat is not None
+    feats = p.find(name="Solid Body in SOURCE2.*", name_regex=True, feature_type=script.Part)
+    assert len(feats) == 1
 
     # Retrieve face
-    feat = p.find(name="Solid Body in GUIDE:1379760262/Face in GUIDE:166", feature_type=script.Part)
-    assert feat is not None
+    feats = p.find(name="Solid Body in GUIDE:1379760262/Face in GUIDE:166", feature_type=script.Part)
+    assert len(feats) == 1
 
     # Retrieve face with regex (regex at body and at face level)
-    feat = p.find(name="Solid Body in GUIDE:.*/.*166", name_regex=True, feature_type=script.Part)
-    assert feat is not None
+    feats = p.find(name="Solid Body in GUIDE:.*/.*166", name_regex=True, feature_type=script.Part)
+    assert len(feats) == 1
 
 
 def test_delete(speos: Speos):
@@ -169,55 +175,40 @@ def test_from_file(speos: Speos):
     assert len(p.scene_link.get().sources) == 2
     assert len(p.scene_link.get().simulations) == 1
 
-    feat_sim = p.find(name=p.scene_link.get().simulations[0].name)
-    assert feat_sim is not None
-    assert type(feat_sim) is script.Simulation
+    feat_sims = p.find(name=p.scene_link.get().simulations[0].name)
+    assert len(feat_sims) == 1
+    assert type(feat_sims[0]) is script.Simulation
 
     # Check that feature can be retrieved
-    feat_op3 = p.find(name=p.scene_link.get().materials[2].name)
-    assert feat_op3 is not None
-    assert type(feat_op3) is script.OptProp
+    feat_ops = p.find(name=p.scene_link.get().materials[2].name)
+    assert len(feat_ops) == 1
+    assert type(feat_ops[0]) is script.OptProp
 
     # And that the feature retrieved has a real impact on the project
-    feat_op3.set_surface_mirror(reflectance=60).commit()
+    feat_ops[0].set_surface_mirror(reflectance=60).commit()
     assert speos.client.get_item(key=p.scene_link.get().materials[2].sop_guids[0]).get().HasField("mirror")
     assert speos.client.get_item(key=p.scene_link.get().materials[2].sop_guids[0]).get().mirror.reflectance == 60
 
     # Check that ambient mat has no sop
-    feat_op_ambient = p.find(name=p.scene_link.get().materials[-1].name)
-    assert feat_op_ambient.sop_template_link is None
+    feat_op_ambients = p.find(name=p.scene_link.get().materials[-1].name)
+    assert len(feat_op_ambients) == 1
+    assert feat_op_ambients[0].sop_template_link is None
 
     # Retrieve another feature
-    feat_ssr1 = p.find(name=p.scene_link.get().sensors[0].name)
-    assert feat_ssr1 is not None
-    assert type(feat_ssr1) is script.Sensor
+    feat_ssrs = p.find(name=p.scene_link.get().sensors[0].name)
+    assert len(feat_ssrs) == 1
+    assert type(feat_ssrs[0]) is script.Sensor
 
     # And that we can modify it (and that other values are not overridden by default values)
-    feat_ssr1.set_irradiance().set_type_colorimetric().set_wavelengths_range().set_end(value=800)
-    feat_ssr1.commit()
+    feat_ssrs[0].set_irradiance().set_type_colorimetric().set_wavelengths_range().set_end(value=800)
+    feat_ssrs[0].commit()
     ssr_link = speos.client.get_item(key=p.scene_link.get().sensors[0].sensor_guid)
     ssr_data = ssr_link.get()
-    assert speos.client.get_item(key=p.scene_link.get().sensors[0].sensor_guid).get().HasField("irradiance_sensor_template")
-    assert (
-        speos.client.get_item(key=p.scene_link.get().sensors[0].sensor_guid)
-        .get()
-        .irradiance_sensor_template.HasField("sensor_type_colorimetric")
-    )
-    assert (
-        speos.client.get_item(key=p.scene_link.get().sensors[0].sensor_guid)
-        .get()
-        .irradiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_end
-        == 800
-    )
-    assert (
-        speos.client.get_item(key=p.scene_link.get().sensors[0].sensor_guid)
-        .get()
-        .irradiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_sampling
-        == 25
-    )
-    assert (
-        speos.client.get_item(key=p.scene_link.get().sensors[0].sensor_guid).get().irradiance_sensor_template.dimensions.x_sampling == 500
-    )
+    assert ssr_data.HasField("irradiance_sensor_template")
+    assert ssr_data.irradiance_sensor_template.HasField("sensor_type_colorimetric")
+    assert ssr_data.irradiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_end == 800
+    assert ssr_data.irradiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_sampling == 25
+    assert ssr_data.irradiance_sensor_template.dimensions.x_sampling == 500
 
 
 def test_find_geom(speos: Speos):
@@ -230,20 +221,24 @@ def test_find_geom(speos: Speos):
 
     # Check that RootPart feature can be retrieved
     part_data = speos.client.get_item(p.scene_link.get().part_guid).get()
-    feat_rp = p.find(name=part_data.name)
-    assert feat_rp is not None
-    assert type(feat_rp) is script.Part
+    feat_rps = p.find(name="", feature_type=script.Part)
+    assert len(feat_rps) == 1
+    assert type(feat_rps[0]) is script.Part
 
     # Check that body can be retrieved
     assert len(part_data.body_guids) == 3
     body1_data = speos.client.get_item(part_data.body_guids[1]).get()
-    feat_body = p.find(name=part_data.name + "/" + body1_data.name)
-    assert feat_body is not None
-    assert type(feat_body) is script.Body
+    feat_bodies = p.find(name=body1_data.name, feature_type=script.Part)
+    assert len(feat_bodies) == 1
+    assert type(feat_bodies[0]) is script.Body
 
     # Check that face can be retrieved
     assert len(body1_data.face_guids) > 4
     face2_data = speos.client.get_item(body1_data.face_guids[2]).get()
-    feat_face = p.find(name=part_data.name + "/" + body1_data.name + "/" + face2_data.name)
-    assert feat_face is not None
-    assert type(feat_face) is script.Face
+    feat_faces = p.find(name=body1_data.name + "/" + face2_data.name, feature_type=script.Part)
+    assert len(feat_faces) == 1
+    assert type(feat_faces[0]) is script.Face
+
+    # Retrieve several features
+    all_bodies = p.find(name=".*", name_regex=True, feature_type=script.Part)
+    assert len(all_bodies) == 3

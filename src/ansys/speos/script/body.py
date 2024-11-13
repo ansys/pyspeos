@@ -24,7 +24,7 @@
 from __future__ import annotations
 
 import re
-from typing import Mapping, Optional, Union
+from typing import List, Mapping, Optional, Union
 
 import ansys.speos.core as core
 import ansys.speos.script.face as face
@@ -182,8 +182,8 @@ class Body:
 
         return self
 
-    def find(self, name: str, name_regex: bool = False) -> Optional[face.Face]:
-        """Find a feature.
+    def find(self, name: str, name_regex: bool = False) -> List[face.Face]:
+        """Find feature(s).
 
         Parameters
         ----------
@@ -197,14 +197,14 @@ class Body:
 
         Returns
         -------
-        ansys.speos.script.face.Face, optional
-            Found feature, or None.
+        List[ansys.speos.script.face.Face]
+            Found features.
         """
-        found_feature = None
+        found_features = []
         if name_regex:
             p = re.compile(name)
-            found_feature = next((x for x in self._geom_features if p.match(x._name)), None)
+            found_features.extend([x for x in self._geom_features if p.match(x._name)])
         else:
-            found_feature = next((x for x in self._geom_features if x._name == name), None)
+            found_features.extend([x for x in self._geom_features if x._name == name])
 
-        return found_feature
+        return found_features

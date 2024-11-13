@@ -267,8 +267,8 @@ class Part:
 
             return self
 
-        def find(self, name: str) -> Optional[Union[body.Body, Part.SubPart]]:
-            """Find a feature.
+        def find(self, name: str, name_regex: bool = False) -> List[Union[body.Body, Part.SubPart]]:
+            """Find feature(s).
 
             Parameters
             ----------
@@ -276,26 +276,35 @@ class Part:
                 Name of the feature.
                 Possibility to look also for bodies, faces, subpart.
                 Example "BodyName/FaceName", "SubPartName/BodyName/FaceName"
+            name_regex : bool
+                Allows to use regex for name parameter.
+                By default, ``False``, means that regex is not used for name parameter.
 
             Returns
             -------
-            Union[ansys.speos.script.body.Body, ansys.speos.script.part.Part.SubPart], optional
-                Found feature, or None.
+            List[Union[ansys.speos.script.body.Body, ansys.speos.script.part.Part.SubPart]]
+                Found features.
             """
             orig_name = name
             idx = name.find("/")
             if idx != -1:
                 name = name[0:idx]
 
-            p = re.compile(name)
+            found_features = []
+            if name_regex:
+                p = re.compile(name)
+                found_features.extend([x for x in self._geom_features if p.match(x._name)])
+            else:
+                found_features.extend([x for x in self._geom_features if x._name == name])
 
-            found_feature = next((x for x in self._geom_features if p.match(x._name)), None)
+            if found_features != [] and idx != -1:
+                tmp = [f.find(name=orig_name[idx + 1 :]) for f in found_features]
 
-            if found_feature is not None:
-                if idx != -1:
-                    found_feature = found_feature.find(orig_name[idx + 1 :])
-                return found_feature
-            return None
+                found_features.clear()
+                for feats in tmp:
+                    found_features.extend(feats)
+
+            return found_features
 
     def __init__(self, project: project.Project, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> None:
         self._project = project
@@ -434,8 +443,8 @@ class Part:
 
         return self
 
-    def find(self, name: str, name_regex: bool = False) -> Optional[Union[body.Body, Part.SubPart]]:
-        """Find a feature.
+    def find(self, name: str, name_regex: bool = False) -> List[Union[body.Body, Part.SubPart]]:
+        """Find feature(s).
 
         Parameters
         ----------
@@ -449,22 +458,26 @@ class Part:
 
         Returns
         -------
-        Union[ansys.speos.script.body.Body, ansys.speos.script.part.Part.SubPart], optional
-            Found feature, or None.
+        List[Union[ansys.speos.script.body.Body, ansys.speos.script.part.Part.SubPart]]
+            Found features.
         """
         orig_name = name
         idx = name.find("/")
         if idx != -1:
             name = name[0:idx]
 
-        found_feature = None
+        found_features = []
         if name_regex:
             p = re.compile(name)
-            found_feature = next((x for x in self._geom_features if p.match(x._name)), None)
+            found_features.extend([x for x in self._geom_features if p.match(x._name)])
         else:
-            found_feature = next((x for x in self._geom_features if x._name == name), None)
+            found_features.extend([x for x in self._geom_features if x._name == name])
 
-        if found_feature is not None and idx != -1:
-            found_feature = found_feature.find(orig_name[idx + 1 :], name_regex=name_regex)
+        if found_features != [] and idx != -1:
+            tmp = [f.find(name=orig_name[idx + 1 :], name_regex=name_regex) for f in found_features]
 
-        return found_feature
+            found_features.clear()
+            for feats in tmp:
+                found_features.extend(feats)
+
+        return found_features

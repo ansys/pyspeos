@@ -169,8 +169,8 @@ class Project:
         """
         name = "RootPart"
         existing_rp = self.find(name=name, feature_type=part.Part)
-        if existing_rp is not None:
-            return existing_rp
+        if existing_rp != []:
+            return existing_rp[0]
 
         feature = part.Part(project=self, name=name, description=description, metadata=metadata)
         self._features.append(feature)
@@ -178,10 +178,10 @@ class Project:
 
     def find(
         self, name: str, name_regex: bool = False, feature_type: Optional[type] = None
-    ) -> Optional[
+    ) -> List[
         Union[opt_prop.OptProp, source.Source, sensor.Sensor, simulation.Simulation, part.Part, body.Body, face.Face, part.Part.SubPart]
     ]:
-        """Find a feature by name (possibility to use regex) and by feature type.
+        """Find feature(s) by name (possibility to use regex) and by feature type.
         If looking for geometry:
         - root part : find(name="", feature_type=ansys.speos.script.part.Part)
         - body in root part : find(name="BodyName", feature_type=ansys.speos.script.part.Part)
@@ -210,10 +210,10 @@ class Project:
 
         Returns
         -------
-        Union[ansys.speos.script.opt_prop.OptProp, ansys.speos.script.source.Source, ansys.speos.script.sensor.Sensor, \
+        List[Union[ansys.speos.script.opt_prop.OptProp, ansys.speos.script.source.Source, ansys.speos.script.sensor.Sensor, \
 ansys.speos.script.simulation.Simulation, ansys.speos.script.part.Part, ansys.speos.script.part.Part, \
-ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.part.Part.SubPart], optional
-            Found feature, or None.
+ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.part.Part.SubPart]]
+            Found features.
         """
         if feature_type == part.Part:
             if name == "":
@@ -229,38 +229,40 @@ ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.p
         if name_regex:
             p = re.compile(name)
 
-        found_feature = None
+        found_features = []
         if feature_type is None:
             if name_regex:
-                found_feature = next((x for x in self._features if p.match(x._name)), None)
+                found_features.extend([x for x in self._features if p.match(x._name)])
             else:
-                found_feature = next((x for x in self._features if x._name == name), None)
+                found_features.extend([x for x in self._features if x._name == name])
         else:
             if name_regex:
-                found_feature = next(
-                    (
+                found_features.extend(
+                    [
                         x
                         for x in self._features
                         if (type(x) == feature_type or (type(x._type) == feature_type if hasattr(x, "_type") else False))
                         and p.match(x._name)
-                    ),
-                    None,
+                    ]
                 )
             else:
-                found_feature = next(
-                    (
+                found_features.extend(
+                    [
                         x
                         for x in self._features
                         if (type(x) == feature_type or (type(x._type) == feature_type if hasattr(x, "_type") else False))
                         and x._name == name
-                    ),
-                    None,
+                    ]
                 )
 
-        if found_feature is not None and idx != -1:
-            found_feature = found_feature.find(name=orig_name[idx + 1 :], name_regex=name_regex)
+        if found_features != [] and idx != -1:
+            tmp = [f.find(name=orig_name[idx + 1 :], name_regex=name_regex) for f in found_features]
 
-        return found_feature
+            found_features.clear()
+            for feats in tmp:
+                found_features.extend(feats)
+
+        return found_features
 
     # def action(self, name: str):
     #    """Act on feature: update, hide/show, copy, ... - Not yet implemented"""
@@ -345,10 +347,13 @@ ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.p
         scene_data = self.scene_link.get()
 
         part = self.client.get_item(key=scene_data.part_guid).get()
-        part_feat = self.find(name="RootPart")
-        if part_feat is None:
+        part_feats = self.find(name="RootPart")
+        part_feat = None
+        if part_feats == []:
             part_feat = self.create_root_part()
             self._fill_bodies(body_guids=part.body_guids, feat_host=part_feat)
+        else:
+            part_feat = part_feats[0]
 
         for sp in part.parts:
             sp_feat = part_feat.create_sub_part(name=sp.name, description=sp.description)
