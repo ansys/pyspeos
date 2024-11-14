@@ -109,7 +109,7 @@ def test_find_feature(speos: Speos):
     assert features[0] == sensor3
 
     # Good combination name-type specialized + regex
-    features = p.find(name=".*sor\.3", name_regex=True, feature_type=script.Sensor.Radiance)
+    features = p.find(name=r".*sor\.3", name_regex=True, feature_type=script.Sensor.Radiance)
     assert len(features) == 1
     assert features[0] == sensor3
 
