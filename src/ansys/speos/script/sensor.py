@@ -1992,3 +1992,16 @@ class Sensor:
         self._unique_id = None
         self._sensor_instance.metadata.pop("UniqueId")
         return self
+
+    def _fill(self, ssr_inst):
+        self._unique_id = ssr_inst.metadata["UniqueId"]
+        self._sensor_instance = ssr_inst
+        self.sensor_template_link = self._project.client.get_item(key=ssr_inst.sensor_guid)
+        self.reset()
+
+        if self._sensor_template.HasField("camera_sensor_template"):
+            self.set_camera()
+        elif self._sensor_template.HasField("irradiance_sensor_template"):
+            self.set_irradiance()
+        elif self._sensor_template.HasField("radiance_sensor_template"):
+            self.set_radiance()

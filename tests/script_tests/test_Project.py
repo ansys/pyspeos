@@ -137,6 +137,29 @@ def test_find_feature_geom(speos: Speos):
     assert len(feats) == 1
 
 
+def test_find_after_load(speos: Speos):
+    """Test find feature in project loaded from speos file."""
+
+    # Create a project from a file
+    p = script.Project(speos=speos, path=os.path.join(test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"))
+
+    # Retrieve all surface sources
+    src_feats = p.find(name=".*", name_regex=True, feature_type=script.Source.Surface)
+    assert len(src_feats) == 2
+    assert src_feats[0]._name == "Dom Source 2 (0) in SOURCE2"
+    assert src_feats[1]._name == "Surface Source (0) in SOURCE1"
+
+    # Retrieve all irradiance sensors
+    ssr_feats = p.find(name=".*", name_regex=True, feature_type=script.Sensor.Irradiance)
+    assert len(ssr_feats) == 1
+    assert ssr_feats[0]._name == "Dom Irradiance Sensor (0)"
+
+    # Retrieve all direct simulations
+    sim_feats = p.find(name=".*", name_regex=True, feature_type=script.Simulation.Direct)
+    assert len(sim_feats) == 1
+    assert sim_feats[0]._name == "ASSEMBLY1.DS (0)"
+
+
 def test_delete(speos: Speos):
     """Test delete a project."""
 
@@ -240,5 +263,18 @@ def test_find_geom(speos: Speos):
     assert type(feat_faces[0]) is script.Face
 
     # Retrieve several features
+
+    # All bodies
     all_bodies = p.find(name=".*", name_regex=True, feature_type=script.Part)
     assert len(all_bodies) == 3
+    assert all_bodies[0]._name == "Solid Body in SOURCE2:2920204960"
+    assert all_bodies[1]._name == "Solid Body in SOURCE1:2494956811"
+    assert all_bodies[2]._name == "Solid Body in GUIDE:1379760262"
+
+    # All faces of all bodies
+    all_faces = p.find(name=".*/.*", name_regex=True, feature_type=script.Part)
+    assert len(all_faces) == 23
+
+    # All faces of specific body
+    all_faces = p.find(name="Solid Body in GUIDE.*/.*", name_regex=True, feature_type=script.Part)
+    assert len(all_faces) == 11

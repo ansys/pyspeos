@@ -1160,3 +1160,17 @@ class Simulation:
             self.job_link.delete()
             self.job_link = None
         return self
+
+    def _fill(self, sim_inst):
+        self._unique_id = sim_inst.metadata["UniqueId"]
+        self._simulation_instance = sim_inst
+        self.simulation_template_link = self._project.client.get_item(key=sim_inst.simulation_guid)
+        self.reset()
+
+        # To get default values related to job -> simu properties
+        if self._simulation_template.HasField("direct_mc_simulation_template"):
+            self.set_direct()
+        elif self._simulation_template.HasField("inverse_mc_simulation_template"):
+            self.set_inverse()
+        elif self._simulation_template.HasField("interactive_simulation_template"):
+            self.set_interactive()

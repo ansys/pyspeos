@@ -346,16 +346,16 @@ ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.p
 
         scene_data = self.scene_link.get()
 
-        part = self.client.get_item(key=scene_data.part_guid).get()
-        part_feats = self.find(name="RootPart")
+        root_part = self.client.get_item(key=scene_data.part_guid).get()
+        part_feats = self.find(name="", feature_type=part.Part)
         part_feat = None
         if part_feats == []:
             part_feat = self.create_root_part()
-            self._fill_bodies(body_guids=part.body_guids, feat_host=part_feat)
+            self._fill_bodies(body_guids=root_part.body_guids, feat_host=part_feat)
         else:
             part_feat = part_feats[0]
 
-        for sp in part.parts:
+        for sp in root_part.parts:
             sp_feat = part_feat.create_sub_part(name=sp.name, description=sp.description)
             if sp.description.startswith("UniqueId_"):
                 idx = sp.description.find("_")
@@ -369,39 +369,16 @@ ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.p
 
         for mat_inst in scene_data.materials:
             op_feature = self.create_optical_property(name=mat_inst.name)
-            op_feature._unique_id = mat_inst.metadata["UniqueId"]
-            op_feature._material_instance = mat_inst
-            op_feature.vop_template_link = self.client.get_item(key=mat_inst.vop_guid)
-            if len(mat_inst.sop_guids) > 0:
-                op_feature.sop_template_link = self.client.get_item(key=mat_inst.sop_guids[0])
-            else:  # Specific case for ambient material
-                op_feature._sop_template = None
-            op_feature.reset()
+            op_feature._fill(mat_inst=mat_inst)
 
         for src_inst in scene_data.sources:
             src_feat = self.create_source(name=src_inst.name)
-            src_feat._unique_id = src_inst.metadata["UniqueId"]
-            src_feat._source_instance = src_inst
-            src_feat.source_template_link = self.client.get_item(key=src_inst.source_guid)
-            src_feat.reset()
+            src_feat._fill(src_inst=src_inst)
 
         for ssr_inst in scene_data.sensors:
             ssr_feat = self.create_sensor(name=ssr_inst.name)
-            ssr_feat._unique_id = ssr_inst.metadata["UniqueId"]
-            ssr_feat._sensor_instance = ssr_inst
-            ssr_feat.sensor_template_link = self.client.get_item(key=ssr_inst.sensor_guid)
-            ssr_feat.reset()
+            ssr_feat._fill(ssr_inst=ssr_inst)
 
         for sim_inst in scene_data.simulations:
             sim_feat = self.create_simulation(name=sim_inst.name)
-            sim_feat._unique_id = sim_inst.metadata["UniqueId"]
-            sim_feat._simulation_instance = sim_inst
-            sim_feat.simulation_template_link = self.client.get_item(key=sim_inst.simulation_guid)
-            sim_feat.reset()
-            # To get default values related to job -> simu properties
-            if sim_feat._simulation_template.HasField("direct_mc_simulation_template"):
-                sim_feat.set_direct()
-            elif sim_feat._simulation_template.HasField("inverse_mc_simulation_template"):
-                sim_feat.set_inverse()
-            elif sim_feat._simulation_template.HasField("interactive_simulation_template"):
-                sim_feat.set_interactive()
+            sim_feat._fill(sim_inst=sim_inst)

@@ -379,3 +379,13 @@ class OptProp:
         self._unique_id = None
         self._material_instance.metadata.pop("UniqueId")
         return self
+
+    def _fill(self, mat_inst):
+        self._unique_id = mat_inst.metadata["UniqueId"]
+        self._material_instance = mat_inst
+        self.vop_template_link = self._project.client.get_item(key=mat_inst.vop_guid)
+        if len(mat_inst.sop_guids) > 0:
+            self.sop_template_link = self._project.client.get_item(key=mat_inst.sop_guids[0])
+        else:  # Specific case for ambient material
+            self._sop_template = None
+        self.reset()
