@@ -57,7 +57,7 @@ class Source:
         Link object for the source template in database.
     """
 
-    class Spectrum:
+    class _Spectrum:
         def __init__(
             self,
             speos_client: core.SpeosClient,
@@ -129,10 +129,12 @@ class Source:
             self._luminaire = luminaire
             self._luminaire_props = luminaire_props
 
-            if self._luminaire.spectrum_guid != "":
-                self._spectrum = Spectrum(speos_client=speos_client, name=name + ".Spectrum", key=self._luminaire.spectrum_guid)
-            else:
-                self._spectrum = Spectrum(speos_client=speos_client, name=name + ".Spectrum")
+            self._spectrum = Source._Spectrum(
+                speos_client=speos_client,
+                name=name + ".Spectrum",
+                message_to_complete=self._luminaire,
+                spectrum_guid=self._luminaire.spectrum_guid,
+            )
 
             if default_values:
                 # Default values
@@ -208,7 +210,7 @@ class Source:
             ansys.speos.script.spectrum.Spectrum
                 Spectrum.
             """
-            return self._spectrum
+            return self._spectrum._spectrum
 
         def set_axis_system(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> Source.Luminaire:
             """Set position of the source.
@@ -231,14 +233,15 @@ class Source:
             return str(self._spectrum)
 
         def _commit(self) -> Source.Luminaire:
-            self._spectrum.commit()
-            self._luminaire.spectrum_guid = self._spectrum.spectrum_link.key
+            self._spectrum._commit()
             return self
 
         def _reset(self) -> Source.Luminaire:
+            self._spectrum._reset()
             return self
 
         def _delete(self) -> Source.Luminaire:
+            self._spectrum._delete()
             return self
 
     class Surface:
@@ -335,7 +338,7 @@ class Source:
             spectrum_guid = ""
             if self._surface.HasField("spectrum_guid"):
                 spectrum_guid = self._surface.spectrum_guid
-            self._spectrum = Source.Spectrum(
+            self._spectrum = Source._Spectrum(
                 speos_client=speos_client, name=name + ".Spectrum", message_to_complete=self._surface, spectrum_guid=spectrum_guid
             )
 
@@ -555,7 +558,7 @@ class Source:
             spectrum_guid = ""
             if self._ray_file.HasField("spectrum_guid"):
                 spectrum_guid = self._ray_file.spectrum_guid
-            self._spectrum = Source.Spectrum(
+            self._spectrum = Source._Spectrum(
                 speos_client=speos_client, name=name, message_to_complete=self._ray_file, spectrum_guid=spectrum_guid
             )
             self._name = name

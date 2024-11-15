@@ -41,8 +41,8 @@ def test_create_luminaire_source(speos: Speos):
     assert source1._source_template.HasField("luminaire")
     assert source1._source_template.luminaire.intensity_file_uri == ""
     assert source1._source_template.luminaire.HasField("flux_from_intensity_file")
-    assert source1._type._spectrum._spectrum.HasField("predefined")
-    assert source1._type._spectrum._spectrum.predefined.HasField("incandescent")
+    assert source1._type._spectrum._spectrum._spectrum.HasField("predefined")
+    assert source1._type._spectrum._spectrum._spectrum.predefined.HasField("incandescent")
     assert source1._source_instance.HasField("luminaire_properties")
     assert source1._source_instance.luminaire_properties.axis_system == [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 
@@ -385,6 +385,24 @@ def test_print_source(speos: Speos):
     """Test delete of source."""
     p = script.Project(speos=speos)
 
+    # LUMINAIRE - SPECTRUM
+    # Create + commit
+    source = p.create_source(name="Luminaire.1")
+    source.set_luminaire().set_intensity_file_uri(uri=os.path.join(test_path, "IES_C_DETECTOR.ies"))
+    source.commit()
+
+    # Retrieve print
+    str_before = str(source)
+
+    # Modify : spectrum type
+    # No commit
+    source.set_luminaire().set_spectrum().set_blackbody()
+
+    # Check that print is not modified
+    str_after = str(source)
+    assert str_before == str_after
+    source.delete()
+
     # RAYFILE - SPECTRUM
     # Create + commit
     source = p.create_source(name="Source.1")
@@ -401,7 +419,6 @@ def test_print_source(speos: Speos):
     # Check that print is not modified
     str_after = str(source)
     assert str_before == str_after
-
     source.delete()
 
     # SURFACE - SPECTRUM
@@ -419,5 +436,4 @@ def test_print_source(speos: Speos):
     # Check that print is not modified
     str_after = str(source)
     assert str_before == str_after
-
     source.delete()
