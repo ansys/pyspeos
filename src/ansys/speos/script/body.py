@@ -182,18 +182,20 @@ class Body:
 
         return self
 
-    def find(self, name: str, name_regex: bool = False) -> List[face.Face]:
-        """Find feature(s).
+    def find(self, name: str, name_regex: bool = False, feature_type: Optional[type] = None) -> List[face.Face]:
+        """Find feature(s). In a body, only faces features can be found.
 
         Parameters
         ----------
         name : str
             Name of the feature.
-            Possibility to look faces.
             Example "FaceName"
         name_regex : bool
             Allows to use regex for name parameter.
             By default, ``False``, means that regex is not used for name parameter.
+        feature_type : type
+            Type of the wanted feature (example: ansys.speos.script.face.Face).
+            By default, ``None``, means that all features will be considered.
 
         Returns
         -------
@@ -201,10 +203,11 @@ class Body:
             Found features.
         """
         found_features = []
-        if name_regex:
-            p = re.compile(name)
-            found_features.extend([x for x in self._geom_features if p.match(x._name)])
-        else:
-            found_features.extend([x for x in self._geom_features if x._name == name])
+        if feature_type == face.Face or feature_type is None:
+            if name_regex:
+                p = re.compile(name)
+                found_features.extend([x for x in self._geom_features if p.match(x._name)])
+            else:
+                found_features.extend([x for x in self._geom_features if x._name == name])
 
         return found_features

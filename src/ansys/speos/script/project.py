@@ -184,38 +184,42 @@ class Project:
         """Find feature(s) by name (possibility to use regex) and by feature type.
         If looking for geometry:
         - root part : find(name="", feature_type=ansys.speos.script.part.Part)
-        - body in root part : find(name="BodyName", feature_type=ansys.speos.script.part.Part)
-        - face from body in root part : find(name="BodyName/FaceName", feature_type=ansys.speos.script.part.Part)
-        - sub part in root part : find(name="SubPartName", feature_type=ansys.speos.script.part.Part)
-        - face in a body from sub part in root part : find(name="SubPartName/BodyName/FaceName", feature_type=ansys.speos.script.part.Part)
+        - body in root part : find(name="BodyName", feature_type=ansys.speos.script.body.Body)
+        - face from body in root part : find(name="BodyName/FaceName", feature_type=ansys.speos.script.face.Face)
+        - sub part in root part : find(name="SubPartName", feature_type=ansys.speos.script.part.Part.SubPart)
+        - face in a body from sub part in root part : find(name="SubPartName/BodyName/FaceName", feature_type=ansys.speos.script.face.Face)
         - regex can be use at each level separated by "/": find(name="Body.*/Face.*", name_regex=True,
-        feature_type=ansys.speos.script.part.Part)
+        feature_type=ansys.speos.script.face.Face)
 
         Parameters
         ----------
         name : str
             Name of the feature.
-            Possibility to look also for bodies, faces, subpart.
+            Possibility to look also for bodies, faces, subpart, using the "/" character.
             Example "BodyName/FaceName", "SubPartName/BodyName/FaceName".
         name_regex : bool
             Allows to use regex for name parameter.
             By default, ``False``, means that regex is not used for name parameter.
         feature_type : type
-            Type of the wanted feature (example: ansys.speos.script.opt_prop.OptProp, ansys.speos.script.source.Source...).
+            Type of the wanted features (example: ansys.speos.script.opt_prop.OptProp, ansys.speos.script.source.Source...).
             Feature can be specialized like: ansys.speos.script.source.Source.Luminaire, ansys.speos.script.sensor.Sensor.Camera,
             ansys.speos.script.simulation.Simulation.Direct...
-            If looking for geometry feature, mandatory to precise ansys.speos.script.part.Part as feature_type,
-            whatever looking for subpart, body or face.
-            By default, ``None``, means that all features will be considered.
+            If looking for geometry features, it is mandatory to precise a feature_type.
+            If there is no importance about the geometry feature type, just keep feature_type=ansys.speos.script.part.Part.
+            By default, ``None``, means that all features will be considered (except geometry features).
 
         Returns
         -------
         List[Union[ansys.speos.script.opt_prop.OptProp, ansys.speos.script.source.Source, ansys.speos.script.sensor.Sensor, \
-ansys.speos.script.simulation.Simulation, ansys.speos.script.part.Part, ansys.speos.script.part.Part, \
+ansys.speos.script.simulation.Simulation, ansys.speos.script.part.Part, \
 ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.part.Part.SubPart]]
             Found features.
         """
-        if feature_type == part.Part:
+        if feature_type == part.Part or feature_type == part.Part.SubPart or feature_type == body.Body or feature_type == face.Face:
+            orig_feature_type = None
+            if feature_type != part.Part:
+                orig_feature_type = feature_type
+                feature_type = part.Part
             if name == "":
                 name = "RootPart"
             else:
@@ -256,7 +260,7 @@ ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.p
                 )
 
         if found_features != [] and idx != -1:
-            tmp = [f.find(name=orig_name[idx + 1 :], name_regex=name_regex) for f in found_features]
+            tmp = [f.find(name=orig_name[idx + 1 :], name_regex=name_regex, feature_type=orig_feature_type) for f in found_features]
 
             found_features.clear()
             for feats in tmp:

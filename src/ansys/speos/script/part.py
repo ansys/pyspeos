@@ -29,6 +29,7 @@ import uuid
 
 import ansys.speos.core as core
 import ansys.speos.script.body as body
+import ansys.speos.script.face as face
 import ansys.speos.script.project as project
 
 
@@ -267,7 +268,9 @@ class Part:
 
             return self
 
-        def find(self, name: str, name_regex: bool = False) -> List[Union[body.Body, Part.SubPart]]:
+        def find(
+            self, name: str, name_regex: bool = False, feature_type: Optional[type] = None
+        ) -> List[Union[body.Body, face.Face, Part.SubPart]]:
             """Find feature(s).
 
             Parameters
@@ -279,10 +282,14 @@ class Part:
             name_regex : bool
                 Allows to use regex for name parameter.
                 By default, ``False``, means that regex is not used for name parameter.
+            feature_type : type
+                Type of the wanted feature (example: ansys.speos.script.body.Body, ansys.speos.script.face.Face,
+                ansys.speos.script.part.Part.SubPart).
+                By default, ``None``, means that all features will be considered.
 
             Returns
             -------
-            List[Union[ansys.speos.script.body.Body, ansys.speos.script.part.Part.SubPart]]
+            List[Union[ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.part.Part.SubPart]]
                 Found features.
             """
             orig_name = name
@@ -291,14 +298,22 @@ class Part:
                 name = name[0:idx]
 
             found_features = []
-            if name_regex:
-                p = re.compile(name)
-                found_features.extend([x for x in self._geom_features if p.match(x._name)])
+
+            if idx == -1 and feature_type is not None:
+                if name_regex:
+                    p = re.compile(name)
+                    found_features.extend([x for x in self._geom_features if p.match(x._name) and type(x) == feature_type])
+                else:
+                    found_features.extend([x for x in self._geom_features if x._name == name and type(x) == feature_type])
             else:
-                found_features.extend([x for x in self._geom_features if x._name == name])
+                if name_regex:
+                    p = re.compile(name)
+                    found_features.extend([x for x in self._geom_features if p.match(x._name)])
+                else:
+                    found_features.extend([x for x in self._geom_features if x._name == name])
 
             if found_features != [] and idx != -1:
-                tmp = [f.find(name=orig_name[idx + 1 :]) for f in found_features]
+                tmp = [f.find(name=orig_name[idx + 1 :], name_regex=name_regex, feature_type=feature_type) for f in found_features]
 
                 found_features.clear()
                 for feats in tmp:
@@ -443,7 +458,9 @@ class Part:
 
         return self
 
-    def find(self, name: str, name_regex: bool = False) -> List[Union[body.Body, Part.SubPart]]:
+    def find(
+        self, name: str, name_regex: bool = False, feature_type: Optional[type] = None
+    ) -> List[Union[body.Body, face.Face, Part.SubPart]]:
         """Find feature(s).
 
         Parameters
@@ -455,10 +472,14 @@ class Part:
         name_regex : bool
             Allows to use regex for name parameter.
             By default, ``False``, means that regex is not used for name parameter.
+        feature_type : type
+            Type of the wanted feature (example: ansys.speos.script.body.Body, ansys.speos.script.face.Face,
+            ansys.speos.script.part.Part.SubPart).
+            By default, ``None``, means that all features will be considered.
 
         Returns
         -------
-        List[Union[ansys.speos.script.body.Body, ansys.speos.script.part.Part.SubPart]]
+        List[Union[ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.part.Part.SubPart]]
             Found features.
         """
         orig_name = name
@@ -467,14 +488,21 @@ class Part:
             name = name[0:idx]
 
         found_features = []
-        if name_regex:
-            p = re.compile(name)
-            found_features.extend([x for x in self._geom_features if p.match(x._name)])
+        if idx == -1 and feature_type is not None:
+            if name_regex:
+                p = re.compile(name)
+                found_features.extend([x for x in self._geom_features if p.match(x._name) and type(x) == feature_type])
+            else:
+                found_features.extend([x for x in self._geom_features if x._name == name and type(x) == feature_type])
         else:
-            found_features.extend([x for x in self._geom_features if x._name == name])
+            if name_regex:
+                p = re.compile(name)
+                found_features.extend([x for x in self._geom_features if p.match(x._name)])
+            else:
+                found_features.extend([x for x in self._geom_features if x._name == name])
 
         if found_features != [] and idx != -1:
-            tmp = [f.find(name=orig_name[idx + 1 :], name_regex=name_regex) for f in found_features]
+            tmp = [f.find(name=orig_name[idx + 1 :], name_regex=name_regex, feature_type=feature_type) for f in found_features]
 
             found_features.clear()
             for feats in tmp:

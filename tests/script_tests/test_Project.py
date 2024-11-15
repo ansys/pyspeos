@@ -136,6 +136,105 @@ def test_find_feature_geom(speos: Speos):
     feats = p.find(name="Solid Body in GUIDE:.*/.*166", name_regex=True, feature_type=script.Part)
     assert len(feats) == 1
 
+    # RootPart
+    # |- Body.01
+    # |  |- Face.011
+    # |  |- Face.012
+    # |- Body.02
+    # |  |- Face.021
+    # |  |- Face.022
+    # |  |- Face.023
+    # |- SubPart.1
+    # |  |- Body.1
+    # |  |  |- Face.11
+    # |  |  |- Face.12
+    # |  |- SubPart.11
+    # |  |  |- Body.11
+    # |  |  |  |- Face.111
+    # |  |  |  |- Face.112
+    # |- SubPart.2
+    # |  |- Body.2
+    # |  |  |- Face.21
+    # |  |  |- Face.22
+    # |  |  |- Face.23
+    p2 = script.Project(speos=speos)
+    root_part = p2.create_root_part()
+    body_01 = root_part.create_body(name="Body.01")
+    face_011 = body_01.create_face(name="Face.011")
+    face_012 = body_01.create_face(name="Face.012")
+    body_02 = root_part.create_body(name="Body.02")
+    face_021 = body_01.create_face(name="Face.021")
+    face_022 = body_01.create_face(name="Face.022")
+    face_023 = body_01.create_face(name="Face.023")
+    sub_part_1 = root_part.create_sub_part(name="SubPart.1")
+    body_1 = sub_part_1.create_body(name="Body.1")
+    face_11 = body_1.create_face(name="Face.11")
+    face_12 = body_1.create_face(name="Face.12")
+    sub_part_11 = sub_part_1.create_sub_part(name="SubPart.11")
+    body_11 = sub_part_11.create_body(name="Body.11")
+    face_111 = body_11.create_face(name="Face.111")
+    face_112 = body_11.create_face(name="Face.112")
+    sub_part_2 = root_part.create_sub_part(name="SubPart.2")
+    body_2 = sub_part_2.create_body(name="Body.2")
+    face_21 = body_2.create_face(name="Face.21")
+    face_22 = body_2.create_face(name="Face.22")
+    face_23 = body_2.create_face(name="Face.23")
+
+    # Look at first level : 2 Bodies and 2 SubParts
+    found_feats = p2.find(name=".*", name_regex=True, feature_type=script.Part)
+    assert len(found_feats) == 4
+    assert found_feats[2] == sub_part_1
+
+    found_feats = p2.find(name=".*", name_regex=True, feature_type=script.Body)
+    assert len(found_feats) == 2  # 2 Bodies
+    assert found_feats[0] == body_01
+
+    found_feats = p2.find(name=".*", name_regex=True, feature_type=script.Part.SubPart)
+    assert len(found_feats) == 2  # 2 SubParts
+    assert found_feats[1] == sub_part_2
+
+    found_feats = p2.find(name=".*", name_regex=True, feature_type=script.Face)
+    assert len(found_feats) == 0  # 0 Face
+
+    # Look at second level : 5 Faces, 2 Bodies, 1 SubPart
+    found_feats = p2.find(name=".*/.*", name_regex=True, feature_type=script.Part)
+    assert len(found_feats) == 8
+    assert found_feats[7] == body_2
+
+    found_feats = p2.find(name=".*/.*", name_regex=True, feature_type=script.Face)
+    assert len(found_feats) == 5  # 5 Faces
+    assert found_feats[3] == face_022
+
+    found_feats = p2.find(name=".*/.*", name_regex=True, feature_type=script.Body)
+    assert len(found_feats) == 2  # 2 Bodies
+    assert found_feats[0] == body_1
+
+    found_feats = p2.find(name=".*/.*", name_regex=True, feature_type=script.Part.SubPart)
+    assert len(found_feats) == 1  # 1 SubPart
+    assert found_feats[0] == sub_part_11
+
+    # Look at third level : 5 Faces, 1 Body
+    found_feats = p2.find(name=".*/.*/.*", name_regex=True, feature_type=script.Part)
+    assert len(found_feats) == 6
+    assert found_feats[4] == face_22
+
+    found_feats = p2.find(name=".*/.*/.*", name_regex=True, feature_type=script.Face)
+    assert len(found_feats) == 5  # 5 Faces
+    assert found_feats[2] == face_21
+
+    found_feats = p2.find(name=".*/.*/.*", name_regex=True, feature_type=script.Body)
+    assert len(found_feats) == 1  # 1 Body
+    assert found_feats[0] == body_11
+
+    # Look at fourth level : 2 Faces
+    found_feats = p2.find(name=".*/.*/.*/.*", name_regex=True, feature_type=script.Part)
+    assert len(found_feats) == 2
+    assert found_feats[0] == face_111
+
+    found_feats = p2.find(name=".*/.*/.*/.*", name_regex=True, feature_type=script.Face)
+    assert len(found_feats) == 2
+    assert found_feats[1] == face_112
+
 
 def test_find_after_load(speos: Speos):
     """Test find feature in project loaded from speos file."""
