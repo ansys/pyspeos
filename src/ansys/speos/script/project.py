@@ -215,8 +215,8 @@ ansys.speos.script.simulation.Simulation, ansys.speos.script.part.Part, \
 ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.part.Part.SubPart]]
             Found features.
         """
+        orig_feature_type = None
         if feature_type == part.Part or feature_type == part.Part.SubPart or feature_type == body.Body or feature_type == face.Face:
-            orig_feature_type = None
             if feature_type != part.Part:
                 orig_feature_type = feature_type
                 feature_type = part.Part
