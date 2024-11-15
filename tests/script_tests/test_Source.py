@@ -253,12 +253,11 @@ def test_keep_same_internal_feature(speos: Speos):
     """Test regarding source internal features (like spectrum, intensity).
     The aim is not to pollute server each time a spectrum/intensity is modified in a source.
     So use better update of the spectrum/intensity instead of create.
-    But when changing source type, those elements cannot be kept
     """
     p = script.Project(speos=speos)
 
     # SURFACE SOURCE
-    source1 = p.create_source(name="Source.1")
+    source1 = p.create_source(name="Surface.1")
     source1.set_surface()
     source1.commit()
     spectrum_guid = source1.source_template_link.get().surface.spectrum_guid
@@ -275,25 +274,30 @@ def test_keep_same_internal_feature(speos: Speos):
     assert source1.source_template_link.get().surface.spectrum_guid == spectrum_guid
 
     # LUMINAIRE SOURCE
-    source1.set_luminaire().set_intensity_file_uri(uri=os.path.join(test_path, "IES_C_DETECTOR.ies"))
-    source1.commit()
-    spectrum_guid = source1.source_template_link.get().luminaire.spectrum_guid
+    source2 = p.create_source(name="Luminaire.1")
+    source2.set_luminaire().set_intensity_file_uri(uri=os.path.join(test_path, "IES_C_DETECTOR.ies"))
+    source2.commit()
+    spectrum_guid = source2.source_template_link.get().luminaire.spectrum_guid
 
     # Modify spectrum
-    source1.set_luminaire().set_spectrum().set_halogen()
-    source1.commit()
-    assert source1.source_template_link.get().luminaire.spectrum_guid == spectrum_guid
+    source2.set_luminaire().set_spectrum().set_halogen()
+    source2.commit()
+    assert source2.source_template_link.get().luminaire.spectrum_guid == spectrum_guid
 
     # RAY FILE SOURCE
-    source1 = p.create_source(name="Ray-file.1")
-    source1.set_rayfile().set_ray_file_uri(uri=os.path.join(test_path, "RaysWithoutSpectralData.RAY")).set_spectrum().set_blackbody()
-    source1.commit()
-    spectrum_guid = source1.source_template_link.get().rayfile.spectrum_guid
+    source3 = p.create_source(name="Ray-file.1")
+    source3.set_rayfile().set_ray_file_uri(uri=os.path.join(test_path, "RaysWithoutSpectralData.RAY")).set_spectrum().set_blackbody()
+    source3.commit()
+    spectrum_guid = source3.source_template_link.get().rayfile.spectrum_guid
 
     # Modify spectrum
-    source1.set_rayfile().set_spectrum().set_monochromatic()
-    source1.commit()
-    assert source1.source_template_link.get().rayfile.spectrum_guid == spectrum_guid
+    source3.set_rayfile().set_spectrum().set_monochromatic()
+    source3.commit()
+    assert source3.source_template_link.get().rayfile.spectrum_guid == spectrum_guid
+
+    source1.delete()
+    source2.delete()
+    source3.delete()
 
 
 def test_commit_source(speos: Speos):
@@ -334,18 +338,19 @@ def test_reset_source(speos: Speos):
     assert p.scene_link.get().sources[0].HasField("rayfile_properties")
 
     # Change local data (on template and on instance)
-    source1.set_surface().set_exitance_constant(geometries=[(script.GeoRef.from_native_link("TheBodyB/TheFaceB1"), False)])
-    assert source1.source_template_link.get().HasField("rayfile")
-    assert source1._source_template.HasField("surface")  # local template
-    assert p.scene_link.get().sources[0].HasField("rayfile_properties")
-    assert source1._source_instance.HasField("surface_properties")  # local instance
+    source1.set_rayfile().set_flux_radiant(value=3.5)  # template
+    source1.set_rayfile().set_exit_geometries(exit_geometries=[script.GeoRef.from_native_link("TheBodyB/TheFaceB1")])  # instance
+    assert source1.source_template_link.get().rayfile.HasField("flux_from_ray_file")
+    assert source1._source_template.rayfile.HasField("radiant_flux")  # local template
+    assert p.scene_link.get().sources[0].rayfile_properties.exit_geometries.geo_paths == []
+    assert source1._source_instance.rayfile_properties.exit_geometries.geo_paths == ["TheBodyB/TheFaceB1"]  # local instance
 
     # Ask for reset
     source1.reset()
-    assert source1.source_template_link.get().HasField("rayfile")
-    assert source1._source_template.HasField("rayfile")  # local template
-    assert p.scene_link.get().sources[0].HasField("rayfile_properties")
-    assert source1._source_instance.HasField("rayfile_properties")  # local instance
+    assert source1.source_template_link.get().rayfile.HasField("flux_from_ray_file")
+    assert source1._source_template.rayfile.HasField("flux_from_ray_file")  # local template
+    assert p.scene_link.get().sources[0].rayfile_properties.exit_geometries.geo_paths == []
+    assert source1._source_instance.rayfile_properties.exit_geometries.geo_paths == []  # local instance
 
     source1.delete()
 

@@ -32,6 +32,8 @@ from ansys.speos.script.intensity import Intensity
 import ansys.speos.script.project as project
 from ansys.speos.script.spectrum import Spectrum
 
+src_type_change_error = "A source feature can't change its type. Please delete this one and create a new one with correct type."
+
 
 class Source:
     """Speos feature : Source.
@@ -737,13 +739,15 @@ class Source:
                 luminaire_props=self._source_instance.luminaire_properties,
                 default_values=False,
             )
-        elif type(self._type) != Source.Luminaire:
+        elif self._type is None:
             self._type = Source.Luminaire(
                 speos_client=self._project.client,
                 luminaire=self._source_template.luminaire,
                 name=self._source_template.name,
                 luminaire_props=self._source_instance.luminaire_properties,
             )
+        elif type(self._type) != Source.Luminaire:
+            raise ValueError(src_type_change_error)
         return self._type
 
     def set_surface(self) -> Surface:
@@ -762,13 +766,15 @@ class Source:
                 surface_props=self._source_instance.surface_properties,
                 default_values=False,
             )
-        elif type(self._type) != Source.Surface:
+        elif self._type is None:
             self._type = Source.Surface(
                 speos_client=self._project.client,
                 surface=self._source_template.surface,
                 name=self._source_template.name,
                 surface_props=self._source_instance.surface_properties,
             )
+        elif type(self._type) != Source.Surface:
+            raise ValueError(src_type_change_error)
         return self._type
 
     def set_rayfile(self) -> RayFile:
@@ -787,13 +793,15 @@ class Source:
                 name=self._source_template.name,
                 default_values=False,
             )
-        elif type(self._type) != Source.RayFile:
+        elif self._type is None:
             self._type = Source.RayFile(
                 speos_client=self._project.client,
                 ray_file=self._source_template.rayfile,
                 ray_file_props=self._source_instance.rayfile_properties,
                 name=self._source_template.name,
             )
+        elif type(self._type) != Source.RayFile:
+            raise ValueError(src_type_change_error)
         return self._type
 
     def __str__(self) -> str:
