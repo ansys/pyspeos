@@ -182,30 +182,17 @@ class Project:
         Union[opt_prop.OptProp, source.Source, sensor.Sensor, simulation.Simulation, part.Part, body.Body, face.Face, part.Part.SubPart]
     ]:
         """Find feature(s) by name (possibility to use regex) and by feature type.
-        If looking for geometry:
-        - root part : find(name="", feature_type=ansys.speos.script.part.Part)
-        - body in root part : find(name="BodyName", feature_type=ansys.speos.script.body.Body)
-        - face from body in root part : find(name="BodyName/FaceName", feature_type=ansys.speos.script.face.Face)
-        - sub part in root part : find(name="SubPartName", feature_type=ansys.speos.script.part.Part.SubPart)
-        - face in a body from sub part in root part : find(name="SubPartName/BodyName/FaceName", feature_type=ansys.speos.script.face.Face)
-        - regex can be use at each level separated by "/": find(name="Body.*/Face.*", name_regex=True,
-        feature_type=ansys.speos.script.face.Face)
 
         Parameters
         ----------
         name : str
             Name of the feature.
-            Possibility to look also for bodies, faces, subpart, using the "/" character.
-            Example "BodyName/FaceName", "SubPartName/BodyName/FaceName".
         name_regex : bool
             Allows to use regex for name parameter.
             By default, ``False``, means that regex is not used for name parameter.
         feature_type : type
-            Type of the wanted features (example: ansys.speos.script.opt_prop.OptProp, ansys.speos.script.source.Source...).
-            Feature can be specialized like: ansys.speos.script.source.Source.Luminaire, ansys.speos.script.sensor.Sensor.Camera,
-            ansys.speos.script.simulation.Simulation.Direct...
-            If looking for geometry features, it is mandatory to precise a feature_type.
-            If there is no importance about the geometry feature type, just keep feature_type=ansys.speos.script.part.Part.
+            Type of the wanted features.
+            Mandatory to fill for geometry features.
             By default, ``None``, means that all features will be considered (except geometry features).
 
         Returns
@@ -214,6 +201,38 @@ class Project:
 ansys.speos.script.simulation.Simulation, ansys.speos.script.part.Part, \
 ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.part.Part.SubPart]]
             Found features.
+
+        Examples
+        --------
+
+        >>> # From name only
+        >>> find(name="Camera.1")
+        >>> # Specify feature type
+        >>> find(name="Camera.1", feature_type=ansys.speos.script.sensor.Sensor)
+        >>> # Specify feature type more specific
+        >>> find(name="Camera.1", feature_type=ansys.speos.script.sensor.Sensor.Camera)
+        >>> # Using regex
+        >>> find(name="Camera.*", name_regex=True, feature_type=ansys.speos.script.sensor.Sensor.Camera)
+
+        Here some examples when looking for a geometry feature:
+        (always precise feature_type)
+
+        >>> # Root part
+        >>> find(name="", feature_type=ansys.speos.script.part.Part)
+        >>> # Body in root part
+        >>> find(name="BodyName", feature_type=ansys.speos.script.body.Body)
+        >>> # Face from body in root part
+        >>> find(name="BodyName/FaceName", feature_type=ansys.speos.script.face.Face)
+        >>> # Sub part in root part
+        >>> find(name="SubPartName", feature_type=ansys.speos.script.part.Part.SubPart)
+        >>> # Face in a body from sub part in root part :
+        >>> find(name="SubPartName/BodyName/FaceName", feature_type=ansys.speos.script.face.Face)
+        >>> # Regex can be use at each level separated by "/"
+        >>> find(name="Body.*/Face.*", name_regex=True, feature_type=ansys.speos.script.face.Face)
+        >>> # All faces of a specific body
+        >>> find(name="BodyName/.*", name_regex=True, feature_type=ansys.speos.script.face.Face)
+        >>> # All geometry features at first level (whatever their type: body, face, sub part)
+        >>> find(name=".*", name_regex=True, feature_type=ansys.speos.script.part.Part)
         """
         orig_feature_type = None
         if feature_type == part.Part or feature_type == part.Part.SubPart or feature_type == body.Body or feature_type == face.Face:
