@@ -244,16 +244,16 @@ ansys.speos.script.part.Part], optional
 
     def _fill_bodies(self, body_guids: List[str], feat_host: Union[part.Part, part.Part.SubPart]):
         """Fill part of sub part features from a list of body guids."""
-        for b_guid in body_guids:
-            b_link = self.client.get_item(key=b_guid)
-            b_feat = feat_host.create_body(name=b_link.get().name)
+        for b_link in self.client.get_items(keys=body_guids, item_type=core.BodyLink):
+            b_data = b_link.get()
+            b_feat = feat_host.create_body(name=b_data.name)
             b_feat.body_link = b_link
-            for f_guid in b_link.get().face_guids:
-                f_link = self.client.get_item(key=f_guid)
-                f_feat = b_feat.create_face(name=f_link.get().name)
+            b_feat._body = b_data  # instead of b_feat.reset() - this avoid a useless read in server
+            for f_link in self.client.get_items(keys=b_data.face_guids, item_type=core.FaceLink):
+                f_data = f_link.get()
+                f_feat = b_feat.create_face(name=f_data.name)
                 f_feat.face_link = f_link
-                f_feat.reset()
-            b_feat.reset()
+                f_feat._face = f_data  # instead of f_feat.reset() - this avoid a useless read in server
 
     def _add_unique_ids(self):
         scene_data = self.scene_link.get()
