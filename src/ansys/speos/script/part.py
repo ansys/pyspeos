@@ -189,22 +189,28 @@ class Part:
 
             for g in self._geom_features:
                 g.commit()
+
             # Save or Update the part (depending on if it was already saved before)
             if self.part_link is None:
                 self.part_link = self._speos_client.parts().create(message=self._part)
-            else:
-                self.part_link.set(data=self._part)
+            elif self.part_link.get() != self._part:
+                self.part_link.set(data=self._part)  # Only update if data has changed
 
             self._part_instance.part_guid = self.part_link.key
 
             # Look if an element corresponds to the instance
             if self._parent_part is not None:
+                update_part = True
                 part_inst = next((x for x in self._parent_part._part.parts if x.description == "UniqueId_" + self._unique_id), None)
                 if part_inst is not None:
-                    part_inst.CopyFrom(self._part_instance)  # if yes, just replace
+                    if part_inst != self._part_instance:
+                        part_inst.CopyFrom(self._part_instance)  # if yes, just replace
+                    else:
+                        update_part = False
                 else:
                     self._parent_part._part.parts.append(self._part_instance)  # if no, just add it to the list of part instances
-                if self._parent_part.part_link is not None:
+
+                if self._parent_part.part_link is not None and update_part:
                     self._parent_part.part_link.set(data=self._parent_part._part)  # update parent part
 
             return self
@@ -383,14 +389,15 @@ class Part:
         # Save or Update the part (depending on if it was already saved before)
         if self.part_link is None:
             self.part_link = self._project.client.parts().create(message=self._part)
-        else:
-            self.part_link.set(data=self._part)
+        elif self.part_link.get() != self._part:
+            self.part_link.set(data=self._part)  # Only update if data has changed
 
         # Update the scene with the part
         if self._project.scene_link:
             scene_data = self._project.scene_link.get()  # retrieve scene data
-            scene_data.part_guid = self.part_link.key
-            self._project.scene_link.set(data=scene_data)  # update scene data
+            if scene_data.part_guid != self.part_link.key:
+                scene_data.part_guid = self.part_link.key
+                self._project.scene_link.set(data=scene_data)  # update scene data
 
         return self
 
