@@ -294,23 +294,28 @@ ansys.speos.script.part.Part], optional
 
         scene_data = self.scene_link.get()
 
-        part = self.client.get_item(key=scene_data.part_guid).get()
-        part_feat = self.find(name="RootPart")
-        if part_feat is None:
-            part_feat = self.create_root_part()
-            self._fill_bodies(body_guids=part.body_guids, feat_host=part_feat)
+        root_part_link = self.client.get_item(key=scene_data.part_guid)
+        root_part_data = root_part_link.get()
+        root_part_feat = self.find(name="RootPart")
+        if root_part_feat is None:
+            root_part_feat = self.create_root_part()
+            root_part_data.name = "RootPart"
+            root_part_link.set(root_part_data)
+            self._fill_bodies(body_guids=root_part_data.body_guids, feat_host=root_part_feat)
 
-        for sp in part.parts:
-            sp_feat = part_feat.create_sub_part(name=sp.name, description=sp.description)
+        root_part_feat.part_link = root_part_link
+        root_part_feat._part = root_part_data  # instead of root_part_feat.reset() - this avoid a useless read in server
+
+        for sp in root_part_data.parts:
+            sp_feat = root_part_feat.create_sub_part(name=sp.name, description=sp.description)
             if sp.description.startswith("UniqueId_"):
                 idx = sp.description.find("_")
                 sp_feat._unique_id = sp.description[idx + 1 :]
             sp_feat.part_link = self.client.get_item(key=sp.part_guid)
+            part_data = sp_feat.part_link.get()
             sp_feat._part_instance = sp
-            self._fill_bodies(body_guids=sp_feat.part_link.get().body_guids, feat_host=sp_feat)
-            sp_feat.reset()
-        part_feat.reset()
-        part_feat.commit()
+            sp_feat._part = part_data  # instead of sp_feat.reset() - this avoid a useless read in server
+            self._fill_bodies(body_guids=part_data.body_guids, feat_host=sp_feat)
 
         for mat_inst in scene_data.materials:
             op_feature = self.create_optical_property(name=mat_inst.name)
