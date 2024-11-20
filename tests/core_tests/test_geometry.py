@@ -24,7 +24,7 @@
 Test basic geometry database connection.
 """
 from ansys.speos.core.body import BodyFactory, BodyLink
-from ansys.speos.core.face import FaceFactory, FaceLink
+from ansys.speos.core.face import Face, FaceFactory, FaceLink
 from ansys.speos.core.geometry_utils import AxisPlane, AxisSystem
 from ansys.speos.core.part import PartFactory
 from ansys.speos.core.speos import Speos
@@ -42,7 +42,7 @@ def test_create_big_face(speos: Speos):
 
     # Create face
     face_link = face_db.create(
-        message=FaceFactory.new(
+        message=Face(
             name="Face.1",
             description="Face one",
             vertices=vertices,
@@ -63,6 +63,65 @@ def test_create_big_face(speos: Speos):
     assert face_read.normals == vertices
 
     face_link.delete()
+
+
+def test_create_big_faces(speos: Speos):
+    """Test create big faces."""
+    assert speos.client.healthy is True
+    # Get DB
+    face_db = speos.client.faces()  # Create face stub from client channel
+
+    size = 3 * 1024 * 1024
+    vertices = [10.0] * size
+    facets = [20] * size
+    size_2 = 9 * 1024
+    vertices_2 = [9.5] * size_2
+    facets_2 = [15] * size_2
+
+    # Create batch of faces
+    face_links = face_db.create_batch(
+        message_list=[
+            Face(
+                name="Face.1",
+                description="Face one",
+                metadata={"key_0": "val_0", "key_1": "val_1"},
+                vertices=vertices,
+                facets=facets,
+                normals=vertices,
+            ),
+            Face(
+                name="Face.2",
+                description="Face two",
+                metadata={"key_0": "val_00", "key_1": "val_11"},
+                vertices=vertices_2,
+                facets=facets_2,
+                normals=vertices_2,
+            ),
+        ]
+    )
+    assert len(face_links) == 2
+    for face_link in face_links:
+        assert face_link.key != ""
+
+    # Read batch of faces
+    faces_read = face_db.read_batch(refs=face_links)
+    assert len(faces_read) == 2
+    assert faces_read[0].name == "Face.1"
+    assert faces_read[0].description == "Face one"
+    assert faces_read[0].metadata == {"key_0": "val_0", "key_1": "val_1"}
+    assert faces_read[0].vertices == vertices
+    assert faces_read[0].facets == facets
+    assert faces_read[0].normals == vertices
+
+    assert faces_read[1].name == "Face.2"
+    assert faces_read[1].description == "Face two"
+    assert faces_read[1].metadata == {"key_0": "val_00", "key_1": "val_11"}
+    assert faces_read[1].vertices == vertices_2
+    assert faces_read[1].facets == facets_2
+    assert faces_read[1].normals == vertices_2
+
+    for face_link in face_links:
+        face_link.delete()
 
 
 def test_face_factory(speos: Speos):
