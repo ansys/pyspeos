@@ -779,21 +779,26 @@ class Source:
         if self.source_template_link is None:
             self.source_template_link = self._project.client.source_templates().create(message=self._source_template)
             self._source_instance.source_guid = self.source_template_link.key
-        else:
-            self.source_template_link.set(data=self._source_template)
+        elif self.source_template_link.get() != self._source_template:
+            self.source_template_link.set(data=self._source_template)  # Only update if template has changed
 
         # Update the scene with the source instance
         if self._project.scene_link:
+            update_scene = True
             scene_data = self._project.scene_link.get()  # retrieve scene data
 
             # Look if an element corresponds to the _unique_id
             src_inst = next((x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None)
             if src_inst is not None:
-                src_inst.CopyFrom(self._source_instance)  # if yes, just replace
+                if src_inst != self._source_instance:
+                    src_inst.CopyFrom(self._source_instance)  # if yes, just replace
+                else:
+                    update_scene = False
             else:
                 scene_data.sources.append(self._source_instance)  # if no, just add it to the list of sources
 
-            self._project.scene_link.set(data=scene_data)  # update scene data
+            if update_scene:  # Update scene only if instance has changed
+                self._project.scene_link.set(data=scene_data)  # update scene data
 
         return self
 

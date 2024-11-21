@@ -24,8 +24,9 @@
 import logging
 from pathlib import Path
 import time
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, List, Optional, Union
 
+from ansys.api.speos.part.v1 import body_pb2, face_pb2, part_pb2
 import grpc
 from grpc._channel import _InactiveRpcError
 
@@ -369,6 +370,79 @@ None]
             if face.key == key:
                 return face
         return None
+
+    def get_items(
+        self, keys: List[str], item_type: type
+    ) -> Union[
+        List[SOPTemplateLink],
+        List[VOPTemplateLink],
+        List[SpectrumLink],
+        List[IntensityTemplateLink],
+        List[SourceTemplateLink],
+        List[SensorTemplateLink],
+        List[SimulationTemplateLink],
+        List[SceneLink],
+        List[JobLink],
+        List[PartLink],
+        List[BodyLink],
+        List[FaceLink],
+    ]:
+        """Get items from keys.
+
+        Parameters
+        ----------
+        keys : List[str]
+            Keys of the items (also named guids).
+        item_type : type
+            Type of items expected
+
+        Returns
+        -------
+        Union[List[ansys.speos.core.sop_template.SOPTemplateLink], \
+List[ansys.speos.core.vop_template.VOPTemplateLink], \
+List[ansys.speos.core.spectrum.SpectrumLink], \
+List[ansys.speos.core.intensity_template.IntensityTemplateLink], \
+List[ansys.speos.core.source_template.SourceTemplateLink], \
+List[ansys.speos.core.sensor_template.SensorTemplateLink], \
+List[ansys.speos.core.simulation_template.SimulationTemplateLink], \
+List[ansys.speos.core.scene.SceneLink], \
+List[ansys.speos.core.job.JobLink], \
+List[ansys.speos.core.part.PartLink], \
+List[ansys.speos.core.body.BodyLink], \
+List[ansys.speos.core.face.FaceLink]]
+            List of Link objects corresponding to the keys - Empty if no objects corresponds to the keys.
+        """
+        if self._closed:
+            raise ConnectionAbortedError()
+
+        if item_type == SOPTemplateLink:
+            return [x for x in self.sop_templates().list() if x.key in keys]
+        elif item_type == VOPTemplateLink:
+            return [x for x in self.vop_templates().list() if x.key in keys]
+        elif item_type == SpectrumLink:
+            return [x for x in self.spectrums().list() if x.key in keys]
+        elif item_type == IntensityTemplateLink:
+            return [x for x in self.intensity_templates().list() if x.key in keys]
+        elif item_type == SourceTemplateLink:
+            return [x for x in self.source_templates().list() if x.key in keys]
+        elif item_type == SensorTemplateLink:
+            return [x for x in self.sensor_templates().list() if x.key in keys]
+        elif item_type == SimulationTemplateLink:
+            return [x for x in self.simulation_templates().list() if x.key in keys]
+        elif item_type == SceneLink:
+            return [x for x in self.scenes().list() if x.key in keys]
+        elif item_type == JobLink:
+            return [x for x in self.jobs().list() if x.key in keys]
+        elif item_type == PartLink:
+            guids = set(self.parts()._stubMngr.List(part_pb2.List_Request()).guids)
+            return [PartLink(self.parts(), key=k) for k in keys if k in guids]
+        elif item_type == BodyLink:
+            guids = set(self.bodies()._stubMngr.List(body_pb2.List_Request()).guids)
+            return [BodyLink(self.bodies(), key=k) for k in keys if k in guids]
+        elif item_type == FaceLink:
+            guids = set(self.faces()._stubMngr.List(face_pb2.List_Request()).guids)
+            return [FaceLink(self.faces(), key=k) for k in keys if k in guids]
+        return []
 
     def __repr__(self) -> str:
         """Represent the client as a string."""

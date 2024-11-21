@@ -248,16 +248,17 @@ ansys.speos.script.part.Part], optional
 
     def _fill_bodies(self, body_guids: List[str], feat_host: Union[part.Part, part.Part.SubPart]):
         """Fill part of sub part features from a list of body guids."""
-        for b_guid in body_guids:
-            b_link = self.client.get_item(key=b_guid)
-            b_feat = feat_host.create_body(name=b_link.get().name)
+        for b_link in self.client.get_items(keys=body_guids, item_type=core.BodyLink):
+            b_data = b_link.get()
+            b_feat = feat_host.create_body(name=b_data.name)
             b_feat.body_link = b_link
-            for f_guid in b_link.get().face_guids:
-                f_link = self.client.get_item(key=f_guid)
-                f_feat = b_feat.create_face(name=f_link.get().name)
+            b_feat._body = b_data  # instead of b_feat.reset() - this avoid a useless read in server
+            f_links = self.client.get_items(keys=b_data.face_guids, item_type=core.FaceLink)
+            for f_link in f_links:
+                f_data = f_link.get()
+                f_feat = b_feat.create_face(name=f_data.name)
                 f_feat.face_link = f_link
-                f_feat.reset()
-            b_feat.reset()
+                f_feat._face = f_data  # instead of f_feat.reset() - this avoid a useless read in server
 
     def _add_unique_ids(self):
         scene_data = self.scene_link.get()
@@ -296,23 +297,28 @@ ansys.speos.script.part.Part], optional
 
         scene_data = self.scene_link.get()
 
-        part = self.client.get_item(key=scene_data.part_guid).get()
-        part_feat = self.find(name="RootPart")
-        if part_feat is None:
-            part_feat = self.create_root_part()
-            self._fill_bodies(body_guids=part.body_guids, feat_host=part_feat)
+        root_part_link = self.client.get_item(key=scene_data.part_guid)
+        root_part_data = root_part_link.get()
+        root_part_feat = self.find(name="RootPart")
+        if root_part_feat is None:
+            root_part_feat = self.create_root_part()
+            root_part_data.name = "RootPart"
+            root_part_link.set(root_part_data)
+            self._fill_bodies(body_guids=root_part_data.body_guids, feat_host=root_part_feat)
 
-        for sp in part.parts:
-            sp_feat = part_feat.create_sub_part(name=sp.name, description=sp.description)
+        root_part_feat.part_link = root_part_link
+        root_part_feat._part = root_part_data  # instead of root_part_feat.reset() - this avoid a useless read in server
+
+        for sp in root_part_data.parts:
+            sp_feat = root_part_feat.create_sub_part(name=sp.name, description=sp.description)
             if sp.description.startswith("UniqueId_"):
                 idx = sp.description.find("_")
                 sp_feat._unique_id = sp.description[idx + 1 :]
             sp_feat.part_link = self.client.get_item(key=sp.part_guid)
+            part_data = sp_feat.part_link.get()
             sp_feat._part_instance = sp
-            self._fill_bodies(body_guids=sp_feat.part_link.get().body_guids, feat_host=sp_feat)
-            sp_feat.reset()
-        part_feat.reset()
-        part_feat.commit()
+            sp_feat._part = part_data  # instead of sp_feat.reset() - this avoid a useless read in server
+            self._fill_bodies(body_guids=part_data.body_guids, feat_host=sp_feat)
 
         for mat_inst in scene_data.materials:
             op_feature = self.create_optical_property(name=mat_inst.name)

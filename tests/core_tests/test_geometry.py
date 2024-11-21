@@ -24,7 +24,7 @@
 Test basic geometry database connection.
 """
 from ansys.speos.core.body import BodyFactory, BodyLink
-from ansys.speos.core.face import FaceFactory, FaceLink
+from ansys.speos.core.face import Face, FaceFactory, FaceLink
 from ansys.speos.core.geometry_utils import AxisPlane, AxisSystem
 from ansys.speos.core.part import PartFactory
 from ansys.speos.core.speos import Speos
@@ -61,6 +61,57 @@ def test_create_big_face(speos: Speos):
     assert face_read.vertices == vertices
     assert face_read.facets == facets
     assert face_read.normals == vertices
+
+    face_link.delete()
+
+
+def test_update_big_face(speos: Speos):
+    """Test create big face."""
+    assert speos.client.healthy is True
+    # Get DB
+    face_db = speos.client.faces()  # Create face stub from client channel
+
+    size = 3 * 1024 * 1024
+    vertices = [10.0] * size
+    facets = [20] * size
+
+    size_2 = 9 * 1024
+    vertices_2 = [9.5] * size_2
+    facets_2 = [15] * size_2
+
+    # Create face
+    face_link = face_db.create(
+        message=Face(
+            name="Face.1",
+            description="Face one",
+            vertices=vertices,
+            facets=facets,
+            normals=vertices,
+            metadata={"key_0": "val_0", "key_1": "val_1"},
+        )
+    )
+    assert face_link.key != ""
+
+    # Update
+    face_link.set(
+        data=Face(
+            name="Face.2",
+            description="Face two",
+            vertices=vertices_2,
+            facets=facets_2,
+            normals=vertices_2,
+            metadata={"key_0": "val_00", "key_1": "val_11"},
+        )
+    )
+
+    # Read face
+    face_read = face_link.get()
+    assert face_read.name == "Face.2"
+    assert face_read.description == "Face two"
+    assert face_read.metadata == {"key_0": "val_00", "key_1": "val_11"}
+    assert face_read.vertices == vertices_2
+    assert face_read.facets == facets_2
+    assert face_read.normals == vertices_2
 
     face_link.delete()
 
