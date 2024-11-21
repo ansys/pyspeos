@@ -25,6 +25,10 @@ from __future__ import annotations
 from typing import List, Mapping, Optional, Union
 import uuid
 
+from google.protobuf.internal.containers import RepeatedScalarFieldContainer
+import numpy as np
+import pyvista as pv
+
 import ansys.speos.core as core
 import ansys.speos.script.opt_prop as opt_prop
 import ansys.speos.script.part as part
@@ -348,3 +352,104 @@ ansys.speos.script.part.Part], optional
                 sim_feat.set_inverse()
             elif sim_feat._simulation_template.HasField("interactive_simulation_template"):
                 sim_feat.set_interactive()
+
+    def __extract_part_mesh_info(self, part_data: core.Part, part_coordinate_info: RepeatedScalarFieldContainer = None) -> pv.PolyData:
+        """
+        extract mesh data info from a part.
+
+        Parameters
+        ----------
+        speos_client : ansys.speos.core.client.SpeosClient
+            The Speos instance client.
+        part_data: ansys.api.speos.part.v1.part_pb2.Part
+            Part from scene.
+        part_coordinate_info: RepeatedScalarFieldContainer
+            message contains part coordinate info: origin, x_vector, y_vector, z_vector
+
+        Returns
+        -------
+        pv.PolyData
+            mesh data extracted.
+        """
+
+        def local2absolute(local_vertice: np.ndarray) -> np.ndarray:
+            """
+            convert local coordinate to global coordinate.
+
+            Parameters
+            ----------
+            local_vertice: np.ndarray
+                numpy array includes x, y, z info.
+
+            Returns
+            -------
+            np.ndarray
+                numpy array includes x, y, z info
+
+            """
+            global_origin = np.array(part_coordinate.origin)
+            global_x = np.array(part_coordinate.x_vect) * local_vertice[0]
+            global_y = np.array(part_coordinate.y_vect) * local_vertice[1]
+            global_z = np.array(part_coordinate.z_vect) * local_vertice[2]
+            return global_origin + global_x + global_y + global_z
+
+        part_coordinate = core.AxisSystem()
+        part_coordinate.origin = [0.0, 0.0, 0.0]
+        part_coordinate.x_vect = [1.0, 0.0, 0.0]
+        part_coordinate.y_vect = [0.0, 1.0, 0.0]
+        part_coordinate.z_vect = [0.0, 0.0, 1.0]
+        if part_coordinate_info is not None:
+            part_coordinate.origin = part_coordinate_info[:3]
+            part_coordinate.x_vect = part_coordinate_info[3:6]
+            part_coordinate.y_vect = part_coordinate_info[6:9]
+            part_coordinate.z_vect = part_coordinate_info[9:]
+        part_mesh_info = None
+        for body_idx, body_guid in enumerate(part_data.body_guids):
+            body_item_data = self.client.get_item(body_guid).get()
+            for face_idx, face_guid in enumerate(body_item_data.face_guids):
+                face_item_data = self.client.get_item(face_guid).get()
+                vertices = np.array(face_item_data.vertices)
+                facets = np.array(face_item_data.facets)
+                vertices = vertices.reshape(-1, 3)
+                vertices = np.array([local2absolute(vertice) for vertice in vertices])
+                facets = facets.reshape(-1, 3)
+                temp = np.full(facets.shape[0], 3)
+                temp = np.vstack(temp)
+                facets = np.hstack((temp, facets))
+                face_mesh_data = pv.PolyData(vertices, facets)
+                if part_mesh_info is None:
+                    part_mesh_info = face_mesh_data
+                else:
+                    part_mesh_info = part_mesh_info.append_polydata(face_mesh_data)
+        return part_mesh_info
+
+    def preview(self, style_options=None) -> None:
+        """Preview cad bodies inside the project's scene.
+
+        Parameters
+        ----------
+        style_options : string
+            Visualization style of the mesh. One of the following: style='surface', style='wireframe', style='points',
+            style='points_gaussian'. Defaults to 'surface'. Note that 'wireframe' only shows a wireframe of the outer
+            geometry.
+        """
+        _preview_mesh = pv.PolyData()
+        # Retrieve root part
+        root_part_data = self.client.get_item(self.scene_link.get().part_guid).get()
+
+        # Loop on all sub parts to retrieve their mesh
+        if len(root_part_data.parts) != 0:
+            for part_idx, part_item in enumerate(root_part_data.parts):
+                part_item_data = self.client.get_item(part_item.part_guid).get()
+                poly_data = self.__extract_part_mesh_info(part_data=part_item_data, part_coordinate_info=part_item.axis_system)
+                if poly_data is not None:
+                    _preview_mesh = _preview_mesh.append_polydata(poly_data)
+
+        # Add also the mesh of bodies directly contained in root part
+        poly_data = self.__extract_part_mesh_info(part_data=root_part_data)
+        if poly_data is not None:
+            _preview_mesh = _preview_mesh.append_polydata(poly_data)
+
+        p = pv.Plotter()
+        p.add_mesh(_preview_mesh, style=style_options, show_edges=True)
+        p.show()
