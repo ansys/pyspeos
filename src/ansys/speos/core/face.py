@@ -172,7 +172,7 @@ class FaceStub(CrudStub):
         """
         return self.read_batch(refs=[ref])[0]
 
-    def update(self, ref: FaceLink, data: Face):
+    def update(self, ref: FaceLink, data: Face) -> None:
         """Change an existing entry.
 
         Parameters
@@ -185,7 +185,10 @@ class FaceStub(CrudStub):
         """
         if not ref.stub == self:
             raise ValueError("FaceLink is not on current database")
-        CrudStub.update(self, messages.Update_Request(guid=ref.key, face=data))
+
+        CrudStub.update(self, messages.Update_Request(guid=ref.key, face=Face(name="tmp")))
+        chunk_iterator = FaceStub._face_to_chunks(guid=ref.key, message=data, nb_items=128 * 1024)
+        self._actions_stub.Upload(chunk_iterator)
 
     def delete(self, ref: FaceLink) -> None:
         """Remove an existing entry.
