@@ -1099,12 +1099,7 @@ class Simulation:
             if update_scene:  # Update scene only if instance has changed
                 self._project.scene_link.set(data=scene_data)  # update scene data
 
-        # Save or Update the job
-        if self.job_link is None:
-            self.job_link = self._project.client.jobs().create(message=self._job)
-        elif self.job_link.get() != self._job:
-            self.job_link.set(data=self._job)  # Update only if job data has changed
-
+        # Job will be committed when performing compute method
         return self
 
     def reset(self) -> Simulation:
