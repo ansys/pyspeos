@@ -172,6 +172,24 @@ class FaceStub(CrudStub):
         """
         return self.read_batch(refs=[ref])[0]
 
+    def update_batch(self, refs: List[FaceLink], data: List[Face]) -> None:
+        """Change existing entries.
+
+        Parameters
+        ----------
+        ref : List[ansys.speos.core.face.FaceLink]
+            Link objects to update.
+
+        data : List[face.Face]
+            New datamodels for the entries.
+        """
+        for ref in refs:
+            if not ref.stub == self:
+                raise ValueError("FaceLink is not on current database")
+
+        chunk_iterator = FaceStub._faces_to_chunks(guids=[ref.key for ref in refs], message_list=data, nb_items=128 * 1024)
+        self._actions_stub.Upload(chunk_iterator)
+
     def update(self, ref: FaceLink, data: Face) -> None:
         """Change an existing entry.
 
@@ -183,12 +201,7 @@ class FaceStub(CrudStub):
         data : face.Face
             New datamodel for the entry.
         """
-        if not ref.stub == self:
-            raise ValueError("FaceLink is not on current database")
-
-        CrudStub.update(self, messages.Update_Request(guid=ref.key, face=Face(name="tmp")))
-        chunk_iterator = FaceStub._face_to_chunks(guid=ref.key, message=data, nb_items=128 * 1024)
-        self._actions_stub.Upload(chunk_iterator)
+        self.update_batch(refs=[ref], data=[data])
 
     def delete(self, ref: FaceLink) -> None:
         """Remove an existing entry.
