@@ -1015,6 +1015,13 @@ class Simulation:
                 self.job_link = None
 
         self.commit()
+
+        # Save or Update the job
+        if self.job_link is None:
+            self.job_link = self._project.client.jobs().create(message=self._job)
+        elif self.job_link.get() != self._job:
+            self.job_link.set(data=self._job)  # Update only if job data has changed
+
         self.job_link.start()
 
         job_state_res = self.job_link.get_state()
