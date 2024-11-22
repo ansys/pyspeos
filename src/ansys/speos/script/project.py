@@ -429,16 +429,16 @@ ansys.speos.script.part.Part], optional
                     part_mesh_info = part_mesh_info.append_polydata(face_mesh_data)
         return part_mesh_info
 
-    def preview(self, style_options=None) -> None:
+    def preview(self, viz_args=None) -> None:
         """Preview cad bodies inside the project's scene.
 
         Parameters
         ----------
-        style_options : string
-            Visualization style of the mesh. One of the following: style='surface', style='wireframe', style='points',
-            style='points_gaussian'. Defaults to 'surface'. Note that 'wireframe' only shows a wireframe of the outer
-            geometry.
+        viz_args : dict
+            arguments to be transferred to the pv.add_mesh method
         """
+        if viz_args is None:
+            viz_args = {}
         _preview_mesh = pv.PolyData()
         # Retrieve root part
         root_part_data = self.client.get_item(self.scene_link.get().part_guid).get()
@@ -457,5 +457,5 @@ ansys.speos.script.part.Part], optional
             _preview_mesh = _preview_mesh.append_polydata(poly_data)
 
         p = pv.Plotter()
-        p.add_mesh(_preview_mesh, style=style_options, show_edges=True)
+        p.add_mesh(_preview_mesh, show_edges=True, **viz_args)
         p.show()
