@@ -429,14 +429,7 @@ ansys.speos.script.part.Part], optional
                     part_mesh_info = part_mesh_info.append_polydata(face_mesh_data)
         return part_mesh_info
 
-    def preview(self, viz_args=None) -> None:
-        """Preview cad bodies inside the project's scene.
-
-        Parameters
-        ----------
-        viz_args : dict
-            arguments to be transferred to the pv.add_mesh method
-        """
+    def _create_preview(self, viz_args=None) -> pv.Plotter:
         if viz_args is None:
             viz_args = {}
         _preview_mesh = pv.PolyData()
@@ -458,4 +451,15 @@ ansys.speos.script.part.Part], optional
 
         p = pv.Plotter()
         p.add_mesh(_preview_mesh, show_edges=True, **viz_args)
+        return p
+
+    def preview(self, viz_args=None) -> None:
+        """Preview cad bodies inside the project's scene.
+
+        Parameters
+        ----------
+        viz_args : dict
+            arguments to be transferred to the pv.add_mesh method
+        """
+        p = self._create_preview(viz_args=viz_args)
         p.show()
