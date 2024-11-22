@@ -1925,21 +1925,26 @@ class Sensor:
         if self.sensor_template_link is None:
             self.sensor_template_link = self._project.client.sensor_templates().create(message=self._sensor_template)
             self._sensor_instance.sensor_guid = self.sensor_template_link.key
-        else:
-            self.sensor_template_link.set(data=self._sensor_template)
+        elif self.sensor_template_link.get() != self._sensor_template:
+            self.sensor_template_link.set(data=self._sensor_template)  # Only update if template has changed
 
         # Update the scene with the sensor instance
         if self._project.scene_link:
+            update_scene = True
             scene_data = self._project.scene_link.get()  # retrieve scene data
 
             # Look if an element corresponds to the _unique_id
             ssr_inst = next((x for x in scene_data.sensors if x.metadata["UniqueId"] == self._unique_id), None)
             if ssr_inst is not None:
-                ssr_inst.CopyFrom(self._sensor_instance)  # if yes, just replace
+                if ssr_inst != self._sensor_instance:
+                    ssr_inst.CopyFrom(self._sensor_instance)  # if yes, just replace
+                else:
+                    update_scene = False
             else:
                 scene_data.sensors.append(self._sensor_instance)  # if no, just add it to the list of sensor instances
 
-            self._project.scene_link.set(data=scene_data)  # update scene data
+            if update_scene:  # Update scene only if instance has changed
+                self._project.scene_link.set(data=scene_data)  # update scene data
 
         return self
 

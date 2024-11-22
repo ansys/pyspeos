@@ -23,7 +23,7 @@
 """Provides a way to interact with Speos feature: Source."""
 from __future__ import annotations
 
-from typing import List, Mapping
+from typing import List, Mapping, Union
 import uuid
 
 import ansys.speos.core as core
@@ -31,6 +31,8 @@ from ansys.speos.script.geo_ref import GeoRef
 from ansys.speos.script.intensity import Intensity
 import ansys.speos.script.project as project
 from ansys.speos.script.spectrum import Spectrum
+
+src_type_change_error = "A source feature can't change its type. Please delete this one and create a new one with correct type."
 
 
 class Source:
@@ -54,6 +56,49 @@ class Source:
     source_template_link : ansys.speos.core.source_template.SourceTemplateLink
         Link object for the source template in database.
     """
+
+    class _Spectrum:
+        def __init__(
+            self,
+            speos_client: core.SpeosClient,
+            name: str,
+            message_to_complete: Union[core.SourceTemplate.RayFile, core.SourceTemplate.Surface, core.SourceTemplate.Luminaire],
+            spectrum_guid: str = "",
+        ) -> None:
+            self._message_to_complete = message_to_complete
+            if spectrum_guid != "":
+                self._spectrum = Spectrum(speos_client=speos_client, name=name + ".Spectrum", key=spectrum_guid)
+            else:
+                self._spectrum = Spectrum(speos_client=speos_client, name=name + ".Spectrum")
+
+            self._no_spectrum = None  # None means never committed, or deleted
+            self._no_spectrum_local = False
+
+        def __str__(self) -> str:
+            if self._no_spectrum is None:
+                if self._no_spectrum_local == False:
+                    return str(self._spectrum)
+            else:
+                if self._no_spectrum == False:
+                    return str(self._spectrum)
+            return ""
+
+        def _commit(self) -> Source.RayFile:
+            if not self._no_spectrum_local:
+                self._spectrum.commit()
+                self._message_to_complete.spectrum_guid = self._spectrum.spectrum_link.key
+                self._no_spectrum = self._no_spectrum_local
+            return self
+
+        def _reset(self) -> Source.RayFile:
+            self._spectrum.reset()
+            if self._no_spectrum is not None:
+                self._no_spectrum_local = self._no_spectrum
+            return self
+
+        def _delete(self) -> Source.RayFile:
+            self._no_spectrum = None
+            return self
 
     class Luminaire:
         """Type of Source : Luminaire.
@@ -84,10 +129,12 @@ class Source:
             self._luminaire = luminaire
             self._luminaire_props = luminaire_props
 
-            if self._luminaire.spectrum_guid != "":
-                self._spectrum = Spectrum(speos_client=self._speos_client, name=self._name + ".Spectrum", key=self._luminaire.spectrum_guid)
-            else:
-                self._spectrum = Spectrum(speos_client=speos_client, name=name + ".Spectrum")
+            self._spectrum = Source._Spectrum(
+                speos_client=speos_client,
+                name=name + ".Spectrum",
+                message_to_complete=self._luminaire,
+                spectrum_guid=self._luminaire.spectrum_guid,
+            )
 
             if default_values:
                 # Default values
@@ -163,7 +210,7 @@ class Source:
             ansys.speos.script.spectrum.Spectrum
                 Spectrum.
             """
-            return self._spectrum
+            return self._spectrum._spectrum
 
         def set_axis_system(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> Source.Luminaire:
             """Set position of the source.
@@ -186,8 +233,15 @@ class Source:
             return str(self._spectrum)
 
         def _commit(self) -> Source.Luminaire:
-            self._spectrum.commit()
-            self._luminaire.spectrum_guid = self._spectrum.spectrum_link.key
+            self._spectrum._commit()
+            return self
+
+        def _reset(self) -> Source.Luminaire:
+            self._spectrum._reset()
+            return self
+
+        def _delete(self) -> Source.Luminaire:
+            self._spectrum._delete()
             return self
 
     class Surface:
@@ -279,20 +333,21 @@ class Source:
             self._speos_client = speos_client
             self._surface = surface
             self._name = name
-            self._spectrum = None
             self._surface_props = surface_props
 
-            if self._surface.intensity_guid != "":
-                self._intensity = Intensity(
-                    speos_client=speos_client,
-                    name=name + ".Intensity",
-                    intensity_props_to_complete=surface_props.intensity_properties,
-                    key=self._surface.intensity_guid,
-                )
-            else:
-                self._intensity = Intensity(
-                    speos_client=speos_client, name=name + ".Intensity", intensity_props_to_complete=surface_props.intensity_properties
-                )
+            spectrum_guid = ""
+            if self._surface.HasField("spectrum_guid"):
+                spectrum_guid = self._surface.spectrum_guid
+            self._spectrum = Source._Spectrum(
+                speos_client=speos_client, name=name + ".Spectrum", message_to_complete=self._surface, spectrum_guid=spectrum_guid
+            )
+
+            self._intensity = Intensity(
+                speos_client=speos_client,
+                name=name + ".Intensity",
+                intensity_props_to_complete=surface_props.intensity_properties,
+                key=self._surface.intensity_guid,
+            )
 
             # Attribute gathering more complex exitance type
             self._exitance_type = None
@@ -428,7 +483,7 @@ class Source:
                 Surface source.
             """
             self._surface.spectrum_from_xmp_file.SetInParent()
-            self._spectrum = None
+            self._spectrum._no_spectrum_local = True
             return self
 
         def set_spectrum(self) -> Spectrum:
@@ -439,18 +494,18 @@ class Source:
             ansys.speos.script.spectrum.Spectrum
                 Spectrum.
             """
-            if self._spectrum is None and self._surface.HasField("spectrum_guid"):
-                self._spectrum = Spectrum(speos_client=self._speos_client, name=self._name + ".Spectrum", key=self._surface.spectrum_guid)
-            elif self._spectrum is None:
-                self._spectrum = Spectrum(speos_client=self._speos_client, name=self._name + ".Spectrum")
-                self._surface.spectrum_guid = ""
-            return self._spectrum
+            if self._surface.HasField("spectrum_from_xmp_file"):
+                guid = ""
+                if self._spectrum._spectrum.spectrum_link is not None:
+                    guid = self._spectrum._spectrum.spectrum_link.key
+                self._surface.spectrum_guid = guid
+            self._spectrum._no_spectrum_local = False
+            return self._spectrum._spectrum
 
         def __str__(self) -> str:
             out_str = ""
             out_str += str(self._intensity)
-            if self._spectrum is not None:
-                out_str += "\n" + str(self._spectrum)
+            out_str += "\n" + str(self._spectrum)
             return out_str
 
         def _commit(self) -> Source.Surface:
@@ -459,9 +514,15 @@ class Source:
             self._surface.intensity_guid = self._intensity.intensity_template_link.key
 
             # spectrum
-            if self._spectrum is not None:
-                self._spectrum.commit()
-                self._surface.spectrum_guid = self._spectrum.spectrum_link.key
+            self._spectrum._commit()
+            return self
+
+        def _reset(self) -> Source.Surface:
+            self._spectrum._reset()
+            return self
+
+        def _delete(self) -> Source.Surface:
+            self._spectrum._delete()
             return self
 
     class RayFile:
@@ -493,7 +554,13 @@ class Source:
             self._client = speos_client
             self._ray_file = ray_file
             self._ray_file_props = ray_file_props
-            self._spectrum = None
+
+            spectrum_guid = ""
+            if self._ray_file.HasField("spectrum_guid"):
+                spectrum_guid = self._ray_file.spectrum_guid
+            self._spectrum = Source._Spectrum(
+                speos_client=speos_client, name=name, message_to_complete=self._ray_file, spectrum_guid=spectrum_guid
+            )
             self._name = name
 
             if default_values:
@@ -571,7 +638,7 @@ class Source:
                 RayFile source.
             """
             self._ray_file.spectrum_from_ray_file.SetInParent()
-            self._spectrum = None
+            self._spectrum._no_spectrum_local = True
             return self
 
         def set_spectrum(self) -> Spectrum:
@@ -582,12 +649,13 @@ class Source:
             ansys.speos.script.spectrum.Spectrum
                 Spectrum.
             """
-            if self._spectrum is None and self._ray_file.HasField("spectrum_guid"):
-                self._spectrum = Spectrum(speos_client=self._client, name=self._name + ".Spectrum", key=self._ray_file.spectrum_guid)
-            elif self._spectrum is None:
-                self._spectrum = Spectrum(speos_client=self._client, name=self._name + ".Spectrum")
-                self._ray_file.spectrum_guid = ""
-            return self._spectrum
+            if self._ray_file.HasField("spectrum_from_ray_file"):
+                guid = ""
+                if self._spectrum._spectrum.spectrum_link is not None:
+                    guid = self._spectrum._spectrum.spectrum_link.key
+                self._ray_file.spectrum_guid = guid
+            self._spectrum._no_spectrum_local = False
+            return self._spectrum._spectrum
 
         def set_axis_system(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> Source.RayFile:
             """Set position of the source.
@@ -628,16 +696,18 @@ class Source:
             return self
 
         def __str__(self) -> str:
-            out_str = ""
-            if self._spectrum is not None:
-                out_str += str(self._spectrum)
-            return out_str
+            return str(self._spectrum)
 
         def _commit(self) -> Source.RayFile:
-            if self._spectrum is not None:
-                self._spectrum.commit()
-                self._ray_file.spectrum_guid = self._spectrum.spectrum_link.key
+            self._spectrum._commit()
+            return self
 
+        def _reset(self) -> Source.RayFile:
+            self._spectrum._reset()
+            return self
+
+        def _delete(self) -> Source.RayFile:
+            self._spectrum._delete()
             return self
 
     def __init__(self, project: project.Project, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> None:
@@ -672,13 +742,15 @@ class Source:
                 luminaire_props=self._source_instance.luminaire_properties,
                 default_values=False,
             )
-        elif type(self._type) != Source.Luminaire:
+        elif self._type is None:
             self._type = Source.Luminaire(
                 speos_client=self._project.client,
                 luminaire=self._source_template.luminaire,
                 name=self._source_template.name,
                 luminaire_props=self._source_instance.luminaire_properties,
             )
+        elif type(self._type) != Source.Luminaire:
+            raise ValueError(src_type_change_error)
         return self._type
 
     def set_surface(self) -> Surface:
@@ -697,13 +769,15 @@ class Source:
                 surface_props=self._source_instance.surface_properties,
                 default_values=False,
             )
-        elif type(self._type) != Source.Surface:
+        elif self._type is None:
             self._type = Source.Surface(
                 speos_client=self._project.client,
                 surface=self._source_template.surface,
                 name=self._source_template.name,
                 surface_props=self._source_instance.surface_properties,
             )
+        elif type(self._type) != Source.Surface:
+            raise ValueError(src_type_change_error)
         return self._type
 
     def set_rayfile(self) -> RayFile:
@@ -722,13 +796,15 @@ class Source:
                 name=self._source_template.name,
                 default_values=False,
             )
-        elif type(self._type) != Source.RayFile:
+        elif self._type is None:
             self._type = Source.RayFile(
                 speos_client=self._project.client,
                 ray_file=self._source_template.rayfile,
                 ray_file_props=self._source_instance.rayfile_properties,
                 name=self._source_template.name,
             )
+        elif type(self._type) != Source.RayFile:
+            raise ValueError(src_type_change_error)
         return self._type
 
     def __str__(self) -> str:
@@ -779,21 +855,26 @@ class Source:
         if self.source_template_link is None:
             self.source_template_link = self._project.client.source_templates().create(message=self._source_template)
             self._source_instance.source_guid = self.source_template_link.key
-        else:
-            self.source_template_link.set(data=self._source_template)
+        elif self.source_template_link.get() != self._source_template:
+            self.source_template_link.set(data=self._source_template)  # Only update if template has changed
 
         # Update the scene with the source instance
         if self._project.scene_link:
+            update_scene = True
             scene_data = self._project.scene_link.get()  # retrieve scene data
 
             # Look if an element corresponds to the _unique_id
             src_inst = next((x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None)
             if src_inst is not None:
-                src_inst.CopyFrom(self._source_instance)  # if yes, just replace
+                if src_inst != self._source_instance:
+                    src_inst.CopyFrom(self._source_instance)  # if yes, just replace
+                else:
+                    update_scene = False
             else:
                 scene_data.sources.append(self._source_instance)  # if no, just add it to the list of sources
 
-            self._project.scene_link.set(data=scene_data)  # update scene data
+            if update_scene:  # Update scene only if instance has changed
+                self._project.scene_link.set(data=scene_data)  # update scene data
 
         return self
 
@@ -805,6 +886,10 @@ class Source:
         ansys.speos.script.source.Source
             Source feature.
         """
+        # This allows to reset managed object contained in _luminaire, _rayfile, etc.. Like Spectrum, IntensityTemplate
+        if self._type is not None:
+            self._type._reset()
+
         # Reset source template
         if self.source_template_link is not None:
             self._source_template = self.source_template_link.get()
@@ -827,6 +912,10 @@ class Source:
         ansys.speos.script.source.Source
             Source feature.
         """
+        # This allows to clean managed object contained in _luminaire, _rayfile, etc.. Like Spectrum, IntensityTemplate
+        if self._type is not None:
+            self._type._delete()
+
         # Delete the source template
         if self.source_template_link is not None:
             self.source_template_link.delete()

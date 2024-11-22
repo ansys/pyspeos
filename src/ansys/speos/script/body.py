@@ -127,8 +127,8 @@ class Body:
         # Save or Update the body (depending on if it was already saved before)
         if self.body_link is None:
             self.body_link = self._speos_client.bodies().create(message=self._body)
-        else:
-            self.body_link.set(data=self._body)
+        elif self.body_link.get() != self._body:
+            self.body_link.set(data=self._body)  # Only Update if data has changed
 
         # Update the parent part
         if self._parent_part is not None:

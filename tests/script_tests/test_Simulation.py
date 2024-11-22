@@ -355,24 +355,22 @@ def test_commit(speos: Speos):
     assert sim1.simulation_template_link is None
     assert len(p.scene_link.get().simulations) == 0
     assert sim1.job_link is None
+    assert sim1._job.HasField("direct_mc_simulation_properties")  # local
 
     # Commit
     sim1.commit()
     assert sim1.simulation_template_link is not None
     assert sim1.simulation_template_link.get().HasField("direct_mc_simulation_template")
-    assert sim1.job_link is not None
-    assert sim1.job_link.get().HasField("direct_mc_simulation_properties")
+    assert sim1.job_link is None  # Job will be committed only at compute time
 
     assert len(p.scene_link.get().simulations) == 1
     assert p.scene_link.get().simulations[0] == sim1._simulation_instance
 
-    # Change only in local not committed (on template, on instance and on job)
+    # Change only in local not committed (on template, on instance)
     sim1.set_direct().set_geom_distance_tolerance(value=0.1)
     assert sim1.simulation_template_link.get() != sim1._simulation_template
     sim1.set_sensor_paths(["Irradiance.1, Irradiance.2"])
     assert p.scene_link.get().simulations[0] != sim1._simulation_instance
-    sim1.set_direct().set_stop_condition_duration(value=60)
-    assert sim1.job_link.get() != sim1._job
 
     sim1.delete()
 
@@ -407,22 +405,19 @@ def test_reset(speos: Speos):
     assert sim1.simulation_template_link is not None
     assert sim1.simulation_template_link.get().HasField("direct_mc_simulation_template")
     assert len(p.scene_link.get().simulations) == 1
-    assert sim1.job_link is not None
-    assert sim1.job_link.get().HasField("direct_mc_simulation_properties")
+    assert sim1.job_link is None  # Job will be committed only at compute time
+    assert sim1._job.HasField("direct_mc_simulation_properties")  # local
 
-    # Change local data (on template, on instance and on job)
+    # Change local data (on template, on instance)
     sim1.set_direct().set_geom_distance_tolerance(value=0.1)
     assert sim1.simulation_template_link.get() != sim1._simulation_template
     sim1.set_sensor_paths(["Irradiance.1, Irradiance.2"])
     assert p.scene_link.get().simulations[0] != sim1._simulation_instance
-    sim1.set_direct().set_stop_condition_duration(value=60)
-    assert sim1.job_link.get() != sim1._job
 
     # Ask for reset
     sim1.reset()
     assert sim1.simulation_template_link.get() == sim1._simulation_template
     assert p.scene_link.get().simulations[0] == sim1._simulation_instance
-    assert sim1.job_link.get() == sim1._job
 
     sim1.delete()
 
@@ -455,7 +450,7 @@ def test_delete(speos: Speos):
     assert len(p.scene_link.get().simulations) == 1
     assert len(p.scene_link.get().simulations[0].sensor_paths) == 1
     assert len(sim1._simulation_instance.sensor_paths) == 1  # local
-    assert sim1.job_link.get().HasField("direct_mc_simulation_properties")
+    assert sim1.job_link is None  # Job will be committed only at compute time
     assert sim1._job.HasField("direct_mc_simulation_properties")  # local
 
     # Delete
@@ -468,6 +463,3 @@ def test_delete(speos: Speos):
 
     assert len(p.scene_link.get().simulations) == 0
     assert len(sim1._simulation_instance.sensor_paths) == 1  # local
-
-    assert sim1.job_link is None
-    assert sim1._job.HasField("direct_mc_simulation_properties")  # local
