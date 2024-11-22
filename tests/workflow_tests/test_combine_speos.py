@@ -60,23 +60,23 @@ def test_combine_speos(speos: Speos):
     assert len(p.scene_link.get().simulations) == 0
 
     # Check that the root part contains one part per speos to combine
-    root_part = p.find(name="RootPart")
+    root_part = p.find(name="", feature_type=script.Part)[0]
     assert type(root_part) == script.Part
     rp_data = root_part.part_link.get()
     assert len(rp_data.parts) == 3
 
     # Check that materials geo_paths are well updated by using subparts
-    mat_es1 = p.find(name="Env_Simplified.Material.1")
+    mat_es1 = p.find(name="Env_Simplified.Material.1")[0]
     assert type(mat_es1) == script.OptProp
     assert len(mat_es1._material_instance.geometries.geo_paths) > 0
     assert mat_es1._material_instance.geometries.geo_paths[0].startswith("Env_Simplified/")
 
-    mat_bc1 = p.find(name="BlueCar.Material.1")
+    mat_bc1 = p.find(name="BlueCar.Material.1")[0]
     assert type(mat_bc1) == script.OptProp
     assert len(mat_bc1._material_instance.geometries.geo_paths) > 0
     assert mat_bc1._material_instance.geometries.geo_paths[0].startswith("BlueCar/")
 
-    mat_rc1 = p.find(name="RedCar.Material.1")
+    mat_rc1 = p.find(name="RedCar.Material.1")[0]
     assert type(mat_rc1) == script.OptProp
     assert len(mat_rc1._material_instance.geometries.geo_paths) > 0
     assert mat_rc1._material_instance.geometries.geo_paths[0].startswith("RedCar/")
@@ -114,18 +114,18 @@ def test_insert_speos(speos: Speos):
     assert len(p.scene_link.get().simulations) == 1
 
     # Check that the root part contains one part per speos to insert
-    root_part = p.find(name="RootPart")
+    root_part = p.find(name="", feature_type=script.Part)[0]
     assert type(root_part) == script.Part
     rp_data = root_part.part_link.get()
     assert len(rp_data.parts) == 2
 
     # Check that materials geo_paths are well updated by using subparts
-    mat_bc1 = p.find(name="BlueCar.Material.1")
+    mat_bc1 = p.find(name="BlueCar.Material.1")[0]
     assert type(mat_bc1) == script.OptProp
     assert len(mat_bc1._material_instance.geometries.geo_paths) > 0
     assert mat_bc1._material_instance.geometries.geo_paths[0].startswith("BlueCar/")
 
-    mat_rc1 = p.find(name="RedCar.Material.1")
+    mat_rc1 = p.find(name="RedCar.Material.1")[0]
     assert type(mat_rc1) == script.OptProp
     assert len(mat_rc1._material_instance.geometries.geo_paths) > 0
     assert mat_rc1._material_instance.geometries.geo_paths[0].startswith("RedCar/")

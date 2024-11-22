@@ -22,10 +22,13 @@
 """Provides a way to gather Speos features."""
 from __future__ import annotations
 
+import re
 from typing import List, Mapping, Optional, Union
 import uuid
 
 import ansys.speos.core as core
+import ansys.speos.script.body as body
+import ansys.speos.script.face as face
 import ansys.speos.script.opt_prop as opt_prop
 import ansys.speos.script.part as part
 import ansys.speos.script.sensor as sensor
@@ -147,14 +150,11 @@ class Project:
         self._features.append(feature)
         return feature
 
-    def create_root_part(self, name: str = "RootPart", description: str = "", metadata: Mapping[str, str] = {}) -> part.Part:
-        """Create the project root part feature.
+    def create_root_part(self, description: str = "", metadata: Mapping[str, str] = {}) -> part.Part:
+        """Create the project root part feature. If a root part is already created in the project, it is returned.
 
         Parameters
         ----------
-        name : str
-            Name of the feature.
-            By default, ``"RootPart"``.
         description : str
             Description of the feature.
             By default, ``""``.
@@ -167,48 +167,125 @@ class Project:
         ansys.speos.script.part.Part
             Part feature.
         """
+        name = "RootPart"
+        existing_rp = self.find(name=name, feature_type=part.Part)
+        if existing_rp != []:
+            return existing_rp[0]
+
         feature = part.Part(project=self, name=name, description=description, metadata=metadata)
-        if self.find(name=name, feature_type=part.Part) is not None:
-            raise ValueError("A root part feature already exists with this name: " + name)
         self._features.append(feature)
         return feature
 
     def find(
-        self, name: str, feature_type: Optional[type] = None
-    ) -> Optional[Union[opt_prop.OptProp, source.Source, sensor.Sensor, part.Part]]:
-        """Find a feature.
+        self, name: str, name_regex: bool = False, feature_type: Optional[type] = None
+    ) -> List[
+        Union[opt_prop.OptProp, source.Source, sensor.Sensor, simulation.Simulation, part.Part, body.Body, face.Face, part.Part.SubPart]
+    ]:
+        """Find feature(s) by name (possibility to use regex) and by feature type.
 
         Parameters
         ----------
         name : str
             Name of the feature.
-            Possibility to look also for bodies, faces, subpart.
-            Example "RootPart/BodyName/FaceName", "RootPart/SubPartName/BodyName/FaceName"
+        name_regex : bool
+            Allows to use regex for name parameter.
+            By default, ``False``, means that regex is not used for name parameter.
         feature_type : type
-            Type of the wanted feature.
-            If looking for geometry feature, only precise part.Part as feature_type, whatever looking for subpart, body or face.
+            Type of the wanted features.
+            Mandatory to fill for geometry features.
+            By default, ``None``, means that all features will be considered (except geometry features).
 
         Returns
         -------
-        Union[ansys.speos.script.opt_prop.OptProp, ansys.speos.script.source.Source, ansys.speos.script.sensor.Sensor, \
-ansys.speos.script.part.Part], optional
-            Found feature, or None.
+        List[Union[ansys.speos.script.opt_prop.OptProp, ansys.speos.script.source.Source, ansys.speos.script.sensor.Sensor, \
+ansys.speos.script.simulation.Simulation, ansys.speos.script.part.Part, \
+ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.part.Part.SubPart]]
+            Found features.
+
+        Examples
+        --------
+
+        >>> # From name only
+        >>> find(name="Camera.1")
+        >>> # Specify feature type
+        >>> find(name="Camera.1", feature_type=ansys.speos.script.sensor.Sensor)
+        >>> # Specify feature type more specific
+        >>> find(name="Camera.1", feature_type=ansys.speos.script.sensor.Sensor.Camera)
+        >>> # Using regex
+        >>> find(name="Camera.*", name_regex=True, feature_type=ansys.speos.script.sensor.Sensor.Camera)
+
+        Here some examples when looking for a geometry feature:
+        (always precise feature_type)
+
+        >>> # Root part
+        >>> find(name="", feature_type=ansys.speos.script.part.Part)
+        >>> # Body in root part
+        >>> find(name="BodyName", feature_type=ansys.speos.script.body.Body)
+        >>> # Face from body in root part
+        >>> find(name="BodyName/FaceName", feature_type=ansys.speos.script.face.Face)
+        >>> # Sub part in root part
+        >>> find(name="SubPartName", feature_type=ansys.speos.script.part.Part.SubPart)
+        >>> # Face in a body from sub part in root part :
+        >>> find(name="SubPartName/BodyName/FaceName", feature_type=ansys.speos.script.face.Face)
+        >>> # Regex can be use at each level separated by "/"
+        >>> find(name="Body.*/Face.*", name_regex=True, feature_type=ansys.speos.script.face.Face)
+        >>> # All faces of a specific body
+        >>> find(name="BodyName/.*", name_regex=True, feature_type=ansys.speos.script.face.Face)
+        >>> # All geometry features at first level (whatever their type: body, face, sub part)
+        >>> find(name=".*", name_regex=True, feature_type=ansys.speos.script.part.Part)
         """
+        orig_feature_type = None
+        if feature_type == part.Part or feature_type == part.Part.SubPart or feature_type == body.Body or feature_type == face.Face:
+            if feature_type != part.Part:
+                orig_feature_type = feature_type
+                feature_type = part.Part
+            if name == "":
+                name = "RootPart"
+            else:
+                name = "RootPart/" + name
+
         orig_name = name
         idx = name.find("/")
         if idx != -1:
             name = name[0:idx]
 
-        if feature_type is None:
-            found_feature = next((x for x in self._features if x._name == name), None)
-        else:
-            found_feature = next((x for x in self._features if type(x) == feature_type and x._name == name), None)
+        if name_regex:
+            p = re.compile(name)
 
-        if found_feature is not None:
-            if idx != -1:
-                found_feature = found_feature.find(orig_name[idx + 1 :])
-            return found_feature
-        return None
+        found_features = []
+        if feature_type is None:
+            if name_regex:
+                found_features.extend([x for x in self._features if p.match(x._name)])
+            else:
+                found_features.extend([x for x in self._features if x._name == name])
+        else:
+            if name_regex:
+                found_features.extend(
+                    [
+                        x
+                        for x in self._features
+                        if (type(x) == feature_type or (type(x._type) == feature_type if hasattr(x, "_type") else False))
+                        and p.match(x._name)
+                    ]
+                )
+            else:
+                found_features.extend(
+                    [
+                        x
+                        for x in self._features
+                        if (type(x) == feature_type or (type(x._type) == feature_type if hasattr(x, "_type") else False))
+                        and x._name == name
+                    ]
+                )
+
+        if found_features != [] and idx != -1:
+            tmp = [f.find(name=orig_name[idx + 1 :], name_regex=name_regex, feature_type=orig_feature_type) for f in found_features]
+
+            found_features.clear()
+            for feats in tmp:
+                found_features.extend(feats)
+
+        return found_features
 
     # def action(self, name: str):
     #    """Act on feature: update, hide/show, copy, ... - Not yet implemented"""
@@ -295,12 +372,15 @@ ansys.speos.script.part.Part], optional
 
         root_part_link = self.client.get_item(key=scene_data.part_guid)
         root_part_data = root_part_link.get()
-        root_part_feat = self.find(name="RootPart")
-        if root_part_feat is None:
+        root_part_feats = self.find(name="", feature_type=part.Part)
+        root_part_feat = None
+        if root_part_feats == []:
             root_part_feat = self.create_root_part()
             root_part_data.name = "RootPart"
             root_part_link.set(root_part_data)
             self._fill_bodies(body_guids=root_part_data.body_guids, feat_host=root_part_feat)
+        else:
+            root_part_feat = root_part_feats[0]
 
         root_part_feat.part_link = root_part_link
         root_part_feat._part = root_part_data  # instead of root_part_feat.reset() - this avoid a useless read in server
@@ -318,39 +398,16 @@ ansys.speos.script.part.Part], optional
 
         for mat_inst in scene_data.materials:
             op_feature = self.create_optical_property(name=mat_inst.name)
-            op_feature._unique_id = mat_inst.metadata["UniqueId"]
-            op_feature._material_instance = mat_inst
-            op_feature.vop_template_link = self.client.get_item(key=mat_inst.vop_guid)
-            if len(mat_inst.sop_guids) > 0:
-                op_feature.sop_template_link = self.client.get_item(key=mat_inst.sop_guids[0])
-            else:  # Specific case for ambient material
-                op_feature._sop_template = None
-            op_feature.reset()
+            op_feature._fill(mat_inst=mat_inst)
 
         for src_inst in scene_data.sources:
             src_feat = self.create_source(name=src_inst.name)
-            src_feat._unique_id = src_inst.metadata["UniqueId"]
-            src_feat._source_instance = src_inst
-            src_feat.source_template_link = self.client.get_item(key=src_inst.source_guid)
-            src_feat.reset()
+            src_feat._fill(src_inst=src_inst)
 
         for ssr_inst in scene_data.sensors:
             ssr_feat = self.create_sensor(name=ssr_inst.name)
-            ssr_feat._unique_id = ssr_inst.metadata["UniqueId"]
-            ssr_feat._sensor_instance = ssr_inst
-            ssr_feat.sensor_template_link = self.client.get_item(key=ssr_inst.sensor_guid)
-            ssr_feat.reset()
+            ssr_feat._fill(ssr_inst=ssr_inst)
 
         for sim_inst in scene_data.simulations:
             sim_feat = self.create_simulation(name=sim_inst.name)
-            sim_feat._unique_id = sim_inst.metadata["UniqueId"]
-            sim_feat._simulation_instance = sim_inst
-            sim_feat.simulation_template_link = self.client.get_item(key=sim_inst.simulation_guid)
-            sim_feat.reset()
-            # To get default values related to job -> simu properties
-            if sim_feat._simulation_template.HasField("direct_mc_simulation_template"):
-                sim_feat.set_direct()
-            elif sim_feat._simulation_template.HasField("inverse_mc_simulation_template"):
-                sim_feat.set_inverse()
-            elif sim_feat._simulation_template.HasField("interactive_simulation_template"):
-                sim_feat.set_interactive()
+            sim_feat._fill(sim_inst=sim_inst)

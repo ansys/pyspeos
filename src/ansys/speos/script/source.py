@@ -935,3 +935,16 @@ class Source:
         self._unique_id = None
         self._source_instance.metadata.pop("UniqueId")
         return self
+
+    def _fill(self, src_inst):
+        self._unique_id = src_inst.metadata["UniqueId"]
+        self._source_instance = src_inst
+        self.source_template_link = self._project.client.get_item(key=src_inst.source_guid)
+        self.reset()
+
+        if self._source_template.HasField("luminaire"):
+            self.set_luminaire()
+        elif self._source_template.HasField("rayfile"):
+            self.set_rayfile()
+        elif self._source_template.HasField("surface"):
+            self.set_surface()

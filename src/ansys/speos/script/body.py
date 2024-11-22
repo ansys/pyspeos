@@ -23,7 +23,8 @@
 """Provides a way to interact with feature: Body."""
 from __future__ import annotations
 
-from typing import Mapping, Optional, Union
+import re
+from typing import List, Mapping, Optional, Union
 
 import ansys.speos.core as core
 import ansys.speos.script.face as face
@@ -154,7 +155,6 @@ class Body:
 
     def delete(self) -> Body:
         """Delete feature: delete data from the speos server database.
-        The local data are still available
 
         Returns
         -------
@@ -162,8 +162,8 @@ class Body:
             Body feature.
         """
         # Retrieve all features to delete them
-        # for g in self._geom_features:
-        #    g.delete()
+        for g in self._geom_features:
+            g.delete()
 
         if self.body_link is not None:
             # Update the parent part
@@ -182,23 +182,32 @@ class Body:
 
         return self
 
-    def find(self, name: str) -> Optional[face.Face]:
-        """Find a feature.
+    def find(self, name: str, name_regex: bool = False, feature_type: Optional[type] = None) -> List[face.Face]:
+        """Find feature(s). In a body, only faces features can be found.
 
         Parameters
         ----------
         name : str
             Name of the feature.
-            Possibility to look faces.
             Example "FaceName"
+        name_regex : bool
+            Allows to use regex for name parameter.
+            By default, ``False``, means that regex is not used for name parameter.
+        feature_type : type
+            Type of the wanted feature (example: ansys.speos.script.face.Face).
+            By default, ``None``, means that all features will be considered.
 
         Returns
         -------
-        ansys.speos.script.face.Face, optional
-            Found feature, or None.
+        List[ansys.speos.script.face.Face]
+            Found features.
         """
-        found_feature = next((x for x in self._geom_features if x._name == name), None)
+        found_features = []
+        if feature_type == face.Face or feature_type is None:
+            if name_regex:
+                p = re.compile(name)
+                found_features.extend([x for x in self._geom_features if p.match(x._name)])
+            else:
+                found_features.extend([x for x in self._geom_features if x._name == name])
 
-        if found_feature is not None:
-            return found_feature
-        return None
+        return found_features
