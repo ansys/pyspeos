@@ -316,8 +316,8 @@ class OptProp:
             if self._vop_template is not None:
                 self.vop_template_link = self._project.client.vop_templates().create(message=self._vop_template)
                 self._material_instance.vop_guid = self.vop_template_link.key
-        else:
-            self.vop_template_link.set(data=self._vop_template)
+        elif self.vop_template_link.get() != self._vop_template:
+            self.vop_template_link.set(data=self._vop_template)  # Only update if vop template has changed
 
         # Save or Update the sop template (depending on if it was already saved before)
         if self.sop_template_link is None:
@@ -325,21 +325,26 @@ class OptProp:
                 self.sop_template_link = self._project.client.sop_templates().create(message=self._sop_template)
                 self._material_instance.ClearField("sop_guids")
                 self._material_instance.sop_guids.append(self.sop_template_link.key)
-        else:
-            self.sop_template_link.set(data=self._sop_template)
+        elif self.sop_template_link.get() != self._sop_template:
+            self.sop_template_link.set(data=self._sop_template)  # Only update if sop template has changed
 
         # Update the scene with the material instance
         if self._project.scene_link:
+            update_scene = True
             scene_data = self._project.scene_link.get()  # retrieve scene data
 
             # Look if an element corresponds to the _unique_id
             mat_inst = next((x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id), None)
             if mat_inst is not None:
-                mat_inst.CopyFrom(self._material_instance)  # if yes, just replace
+                if mat_inst != self._material_instance:
+                    mat_inst.CopyFrom(self._material_instance)  # if yes, just replace
+                else:
+                    update_scene = False
             else:
                 scene_data.materials.append(self._material_instance)  # if no, just add it to the list of material instances
 
-            self._project.scene_link.set(data=scene_data)  # update scene data
+            if update_scene:  # Update scene only if instance has changed
+                self._project.scene_link.set(data=scene_data)  # update scene data
 
         return self
 
@@ -404,3 +409,13 @@ class OptProp:
         self._unique_id = None
         self._material_instance.metadata.pop("UniqueId")
         return self
+
+    def _fill(self, mat_inst):
+        self._unique_id = mat_inst.metadata["UniqueId"]
+        self._material_instance = mat_inst
+        self.vop_template_link = self._project.client.get_item(key=mat_inst.vop_guid)
+        if len(mat_inst.sop_guids) > 0:
+            self.sop_template_link = self._project.client.get_item(key=mat_inst.sop_guids[0])
+        else:  # Specific case for ambient material
+            self._sop_template = None
+        self.reset()

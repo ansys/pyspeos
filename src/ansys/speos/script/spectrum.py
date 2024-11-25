@@ -242,8 +242,8 @@ class Spectrum:
         """
         if self.spectrum_link is None:
             self.spectrum_link = self._client.spectrums().create(message=self._spectrum)
-        else:
-            self.spectrum_link.set(data=self._spectrum)
+        elif self.spectrum_link.get() != self._spectrum:
+            self.spectrum_link.set(data=self._spectrum)  # Only update if data has changed
 
         return self
 

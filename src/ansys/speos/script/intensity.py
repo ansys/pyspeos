@@ -386,8 +386,8 @@ class Intensity:
         """
         if self.intensity_template_link is None:
             self.intensity_template_link = self._client.intensity_templates().create(message=self._intensity_template)
-        else:
-            self.intensity_template_link.set(data=self._intensity_template)
+        elif self.intensity_template_link.get() != self._intensity_template:
+            self.intensity_template_link.set(data=self._intensity_template)  # Only update if template has changed
 
         return self
 

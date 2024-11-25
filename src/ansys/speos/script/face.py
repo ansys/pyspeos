@@ -151,8 +151,8 @@ class Face:
         # Save or Update the face (depending on if it was already saved before)
         if self.face_link is None:
             self.face_link = self._speos_client.faces().create(message=self._face)
-        else:
-            self.face_link.set(data=self._face)
+        elif self.face_link.get() != self._face:
+            self.face_link.set(data=self._face)  # Only Update if data has changed
 
         # Update the parent body
         if self._parent_body is not None:

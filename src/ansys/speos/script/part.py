@@ -23,12 +23,14 @@
 """Provides a way to interact with feature: Part."""
 from __future__ import annotations
 
+import re
 from typing import List, Mapping, Optional, Union
 import uuid
 
 import ansys.speos.core as core
 from ansys.speos.script import proto_message_utils
 import ansys.speos.script.body as body
+import ansys.speos.script.face as face
 import ansys.speos.script.project as project
 
 
@@ -200,22 +202,28 @@ class Part:
 
             for g in self._geom_features:
                 g.commit()
+
             # Save or Update the part (depending on if it was already saved before)
             if self.part_link is None:
                 self.part_link = self._speos_client.parts().create(message=self._part)
-            else:
-                self.part_link.set(data=self._part)
+            elif self.part_link.get() != self._part:
+                self.part_link.set(data=self._part)  # Only update if data has changed
 
             self._part_instance.part_guid = self.part_link.key
 
             # Look if an element corresponds to the instance
             if self._parent_part is not None:
+                update_part = True
                 part_inst = next((x for x in self._parent_part._part.parts if x.description == "UniqueId_" + self._unique_id), None)
                 if part_inst is not None:
-                    part_inst.CopyFrom(self._part_instance)  # if yes, just replace
+                    if part_inst != self._part_instance:
+                        part_inst.CopyFrom(self._part_instance)  # if yes, just replace
+                    else:
+                        update_part = False
                 else:
                     self._parent_part._part.parts.append(self._part_instance)  # if no, just add it to the list of part instances
-                if self._parent_part.part_link is not None:
+
+                if self._parent_part.part_link is not None and update_part:
                     self._parent_part.part_link.set(data=self._parent_part._part)  # update parent part
 
             return self
@@ -245,7 +253,6 @@ class Part:
 
         def delete(self) -> Part.SubPart:
             """Delete feature: delete data from the speos server database.
-            The local data are still available
 
             Returns
             -------
@@ -253,8 +260,8 @@ class Part:
                 SubPart feature.
             """
             # Delete features
-            # for g in self._geom_features:
-            #    g.delete()
+            for g in self._geom_features:
+                g.delete()
 
             # Remove the part instance from the parent part
             if self._parent_part is not None:
@@ -273,8 +280,10 @@ class Part:
 
             return self
 
-        def find(self, name: str) -> Optional[Union[body.Body, Part.SubPart]]:
-            """Find a feature.
+        def find(
+            self, name: str, name_regex: bool = False, feature_type: Optional[type] = None
+        ) -> List[Union[body.Body, face.Face, Part.SubPart]]:
+            """Find feature(s).
 
             Parameters
             ----------
@@ -282,24 +291,47 @@ class Part:
                 Name of the feature.
                 Possibility to look also for bodies, faces, subpart.
                 Example "BodyName/FaceName", "SubPartName/BodyName/FaceName"
+            name_regex : bool
+                Allows to use regex for name parameter.
+                By default, ``False``, means that regex is not used for name parameter.
+            feature_type : type
+                Type of the wanted feature (example: ansys.speos.script.body.Body, ansys.speos.script.face.Face,
+                ansys.speos.script.part.Part.SubPart).
+                By default, ``None``, means that all features will be considered.
 
             Returns
             -------
-            Union[ansys.speos.script.body.Body, ansys.speos.script.part.Part.SubPart], optional
-                Found feature, or None.
+            List[Union[ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.part.Part.SubPart]]
+                Found features.
             """
             orig_name = name
             idx = name.find("/")
             if idx != -1:
                 name = name[0:idx]
 
-            found_feature = next((x for x in self._geom_features if x._name == name), None)
+            found_features = []
 
-            if found_feature is not None:
-                if idx != -1:
-                    found_feature = found_feature.find(orig_name[idx + 1 :])
-                return found_feature
-            return None
+            if idx == -1 and feature_type is not None:
+                if name_regex:
+                    p = re.compile(name)
+                    found_features.extend([x for x in self._geom_features if p.match(x._name) and type(x) == feature_type])
+                else:
+                    found_features.extend([x for x in self._geom_features if x._name == name and type(x) == feature_type])
+            else:
+                if name_regex:
+                    p = re.compile(name)
+                    found_features.extend([x for x in self._geom_features if p.match(x._name)])
+                else:
+                    found_features.extend([x for x in self._geom_features if x._name == name])
+
+            if found_features != [] and idx != -1:
+                tmp = [f.find(name=orig_name[idx + 1 :], name_regex=name_regex, feature_type=feature_type) for f in found_features]
+
+                found_features.clear()
+                for feats in tmp:
+                    found_features.extend(feats)
+
+            return found_features
 
     def __init__(self, project: project.Project, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> None:
         self._project = project
@@ -390,14 +422,15 @@ class Part:
         # Save or Update the part (depending on if it was already saved before)
         if self.part_link is None:
             self.part_link = self._project.client.parts().create(message=self._part)
-        else:
-            self.part_link.set(data=self._part)
+        elif self.part_link.get() != self._part:
+            self.part_link.set(data=self._part)  # Only update if data has changed
 
         # Update the scene with the part
         if self._project.scene_link:
             scene_data = self._project.scene_link.get()  # retrieve scene data
-            scene_data.part_guid = self.part_link.key
-            self._project.scene_link.set(data=scene_data)  # update scene data
+            if scene_data.part_guid != self.part_link.key:
+                scene_data.part_guid = self.part_link.key
+                self._project.scene_link.set(data=scene_data)  # update scene data
 
         return self
 
@@ -417,7 +450,6 @@ class Part:
 
     def delete(self) -> Part:
         """Delete feature: delete data from the speos server database.
-        The local data are still available
 
         Returns
         -------
@@ -430,8 +462,8 @@ class Part:
             self.part_link = None
 
         # Retrieve all features to delete them
-        # for g in self._geom_features:
-        #    g.delete()
+        for g in self._geom_features:
+            g.delete()
 
         # Remove the part guid from the scene
         scene_data = self._project.scene_link.get()  # retrieve scene data
@@ -440,8 +472,10 @@ class Part:
 
         return self
 
-    def find(self, name: str) -> Optional[Union[body.Body, Part.SubPart]]:
-        """Find a feature.
+    def find(
+        self, name: str, name_regex: bool = False, feature_type: Optional[type] = None
+    ) -> List[Union[body.Body, face.Face, Part.SubPart]]:
+        """Find feature(s).
 
         Parameters
         ----------
@@ -449,21 +483,43 @@ class Part:
             Name of the feature.
             Possibility to look also for bodies, faces, subpart.
             Example "BodyName/FaceName", "SubPartName/BodyName/FaceName"
+        name_regex : bool
+            Allows to use regex for name parameter.
+            By default, ``False``, means that regex is not used for name parameter.
+        feature_type : type
+            Type of the wanted feature (example: ansys.speos.script.body.Body, ansys.speos.script.face.Face,
+            ansys.speos.script.part.Part.SubPart).
+            By default, ``None``, means that all features will be considered.
 
         Returns
         -------
-        Union[ansys.speos.script.body.Body, ansys.speos.script.part.Part.SubPart], optional
-            Found feature, or None.
+        List[Union[ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.part.Part.SubPart]]
+            Found features.
         """
         orig_name = name
         idx = name.find("/")
         if idx != -1:
             name = name[0:idx]
 
-        found_feature = next((x for x in self._geom_features if x._name == name), None)
+        found_features = []
+        if idx == -1 and feature_type is not None:
+            if name_regex:
+                p = re.compile(name)
+                found_features.extend([x for x in self._geom_features if p.match(x._name) and type(x) == feature_type])
+            else:
+                found_features.extend([x for x in self._geom_features if x._name == name and type(x) == feature_type])
+        else:
+            if name_regex:
+                p = re.compile(name)
+                found_features.extend([x for x in self._geom_features if p.match(x._name)])
+            else:
+                found_features.extend([x for x in self._geom_features if x._name == name])
 
-        if found_feature is not None:
-            if idx != -1:
-                found_feature = found_feature.find(orig_name[idx + 1 :])
-            return found_feature
-        return None
+        if found_features != [] and idx != -1:
+            tmp = [f.find(name=orig_name[idx + 1 :], name_regex=name_regex, feature_type=feature_type) for f in found_features]
+
+            found_features.clear()
+            for feats in tmp:
+                found_features.extend(feats)
+
+        return found_features

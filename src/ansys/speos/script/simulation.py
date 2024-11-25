@@ -1016,6 +1016,13 @@ class Simulation:
                 self.job_link = None
 
         self.commit()
+
+        # Save or Update the job
+        if self.job_link is None:
+            self.job_link = self._project.client.jobs().create(message=self._job)
+        elif self.job_link.get() != self._job:
+            self.job_link.set(data=self._job)  # Update only if job data has changed
+
         self.job_link.start()
 
         job_state_res = self.job_link.get_state()
@@ -1104,30 +1111,30 @@ class Simulation:
         if self.simulation_template_link is None:
             self.simulation_template_link = self._project.client.simulation_templates().create(message=self._simulation_template)
             self._simulation_instance.simulation_guid = self.simulation_template_link.key
-        else:
-            self.simulation_template_link.set(data=self._simulation_template)
+        elif self.simulation_template_link.get() != self._simulation_template:
+            self.simulation_template_link.set(data=self._simulation_template)  # Only update if template has changed
 
         # Update the scene with the simulation instance
         if self._project.scene_link:
+            update_scene = True
             scene_data = self._project.scene_link.get()  # retrieve scene data
 
             # Look if an element corresponds to the _unique_id
             simulation_inst = next((x for x in scene_data.simulations if x.metadata["UniqueId"] == self._unique_id), None)
-            if simulation_inst is not None:
-                simulation_inst.CopyFrom(self._simulation_instance)  # if yes, just replace
+            if simulation_inst is not None:  # if yes, just replace
+                if simulation_inst != self._simulation_instance:
+                    simulation_inst.CopyFrom(self._simulation_instance)
+                else:
+                    update_scene = False
             else:
                 scene_data.simulations.insert(
                     len(scene_data.simulations), self._simulation_instance
                 )  # if no, just add it to the list of simulations
 
-            self._project.scene_link.set(data=scene_data)  # update scene data
+            if update_scene:  # Update scene only if instance has changed
+                self._project.scene_link.set(data=scene_data)  # update scene data
 
-        # Save or Update the job
-        if self.job_link is None:
-            self.job_link = self._project.client.jobs().create(message=self._job)
-        else:
-            self.job_link.set(data=self._job)
-
+        # Job will be committed when performing compute method
         return self
 
     def reset(self) -> Simulation:
@@ -1188,3 +1195,17 @@ class Simulation:
             self.job_link.delete()
             self.job_link = None
         return self
+
+    def _fill(self, sim_inst):
+        self._unique_id = sim_inst.metadata["UniqueId"]
+        self._simulation_instance = sim_inst
+        self.simulation_template_link = self._project.client.get_item(key=sim_inst.simulation_guid)
+        self.reset()
+
+        # To get default values related to job -> simu properties
+        if self._simulation_template.HasField("direct_mc_simulation_template"):
+            self.set_direct()
+        elif self._simulation_template.HasField("inverse_mc_simulation_template"):
+            self.set_inverse()
+        elif self._simulation_template.HasField("interactive_simulation_template"):
+            self.set_interactive()
