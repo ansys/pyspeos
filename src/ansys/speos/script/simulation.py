@@ -932,6 +932,16 @@ class Simulation:
 
         return self._type
 
+    @property
+    def type(self) -> type:
+        """Return type of simulation.
+
+        Returns
+        -------
+        Example: ansys.speos.script.simulation.Simulation.Direct
+        """
+        return type(self._type)
+
     def set_sensor_paths(self, sensor_paths: List[str]) -> Simulation:
         """Set the sensors that the simulation will take into account.
 

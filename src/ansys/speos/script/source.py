@@ -843,7 +843,18 @@ class Source:
             raise ValueError(src_type_change_error)
         return self._type
 
-    def _to_dict(self) -> str:
+    @property
+    def type(self) -> type:
+        """Return type of source.
+
+        Returns
+        -------
+        Example: ansys.speos.script.source.Source.RayFile
+
+        """
+        return type(self._type)
+
+    def _to_dict(self) -> dict:
         out_dict = {}
 
         # SourceInstance (= source guid + source properties)

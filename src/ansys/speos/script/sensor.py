@@ -1887,6 +1887,17 @@ class Sensor:
             )
         return self._type
 
+    @property
+    def type(self) -> type:
+        """Return type of sensor.
+
+        Returns
+        -------
+        Example: ansys.speos.script.sensor.Sensor.Irradiance
+
+        """
+        return type(self._type)
+
     def _to_dict(self) -> dict:
         out_dict = {}
 
