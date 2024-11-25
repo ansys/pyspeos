@@ -1087,6 +1087,34 @@ class Simulation:
 
         return out_dict
 
+    def get(self, key: str = "") -> str | dict:
+        """Get dictionary corresponding to the project - read only.
+
+        Parameters
+        ----------
+        key: str
+
+        Returns
+        -------
+
+        """
+
+        def flatten_dict(data):
+            flat_dict = {}
+            for k, v in data.items():
+                if isinstance(v, dict):
+                    flat_dict.update(flatten_dict(v))
+                flat_dict[k] = v
+            return flat_dict
+
+        if key == "":
+            return self._to_dict()
+        info = flatten_dict(self._to_dict())
+        if key in info.keys():
+            return info[key]
+        else:
+            print("Used key: {} not found in key list: {}.".format(key, info.keys()))
+
     def __str__(self) -> str:
         """Return the string representation of the simulation"""
         out_str = ""
