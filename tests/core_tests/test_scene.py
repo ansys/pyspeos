@@ -25,24 +25,22 @@ Test scene.
 """
 import os
 
+from ansys.api.speos.sensor.v1 import common_pb2, irradiance_sensor_pb2
+from ansys.api.speos.simulation.v1 import simulation_template_pb2
+
 from ansys.speos.core.body import BodyFactory
 from ansys.speos.core.face import FaceFactory
-from ansys.speos.core.geometry_utils import (
-    AxisPlane,
-    AxisSystem,
-    GeoPaths,
-    GeoPathWithReverseNormal,
-)
-from ansys.speos.core.intensity_template import IntensityTemplateFactory
+from ansys.speos.core.geometry_utils import AxisSystem
+from ansys.speos.core.intensity_template import IntensityTemplate
 from ansys.speos.core.part import PartFactory
-from ansys.speos.core.scene import SceneFactory, SceneLink
-from ansys.speos.core.sensor_template import SensorTemplateFactory
-from ansys.speos.core.simulation_template import SimulationTemplateFactory
-from ansys.speos.core.sop_template import SOPTemplateFactory
-from ansys.speos.core.source_template import SourceTemplateFactory
-from ansys.speos.core.spectrum import SpectrumFactory
+from ansys.speos.core.scene import Scene, SceneLink
+from ansys.speos.core.sensor_template import SensorTemplate
+from ansys.speos.core.simulation_template import SimulationTemplate
+from ansys.speos.core.sop_template import SOPTemplate
+from ansys.speos.core.source_template import SourceTemplate
+from ansys.speos.core.spectrum import Spectrum
 from ansys.speos.core.speos import Speos
-from ansys.speos.core.vop_template import VOPTemplateFactory
+from ansys.speos.core.vop_template import VOPTemplate
 from conftest import test_path
 from helper import clean_all_dbs
 
@@ -80,159 +78,199 @@ def create_basic_scene(speos: Speos) -> SceneLink:
 
     # Create blackbody and monochromatic spectrums
     spec_bb_3500 = speos.client.spectrums().create(
-        message=SpectrumFactory.blackbody(
-            name="blackbody_3500",
-            description="blackbody spectrum - T 3500K",
-            temperature=3500,
-        )
+        message=Spectrum(name="blackbody_3500", description="blackbody spectrum - T 3500K", blackbody=Spectrum.BlackBody(temperature=3500))
     )
     # Create lambertian intensity template
     intens_t_lamb_180 = speos.client.intensity_templates().create(
-        message=IntensityTemplateFactory.cos(
-            name="lambertian_180", description="lambertian intensity template 180", N=1.0, total_angle=180.0
+        message=IntensityTemplate(
+            name="lambertian_180", description="lambertian intensity template 180", cos=IntensityTemplate.Cos(N=1.0, total_angle=180.0)
         )
     )
 
     # Create a luminaire source template with flux from intensity file
     src_t_luminaire = speos.client.source_templates().create(
-        message=SourceTemplateFactory.luminaire(
+        message=SourceTemplate(
             name="luminaire_AA",
             description="Luminaire source template",
-            intensity_file_uri=os.path.join(test_path, "IES_C_DETECTOR.ies"),
-            spectrum=spec_bb_3500,
-        ),
+            luminaire=SourceTemplate.Luminaire(
+                flux_from_intensity_file=SourceTemplate.FromIntensityFile(),
+                intensity_file_uri=os.path.join(test_path, "IES_C_DETECTOR.ies"),
+                spectrum_guid=spec_bb_3500.key,
+            ),
+        )
     )
+
     # Create surface source template
     src_t_surface_bb = speos.client.source_templates().create(
-        message=SourceTemplateFactory.surface(
+        message=SourceTemplate(
             name="surface_with_monochromatic",
             description="Surface source template with blackbody spectrum",
-            intensity_template=intens_t_lamb_180,
-            flux=SourceTemplateFactory.Flux(),
-            spectrum=spec_bb_3500,
+            surface=SourceTemplate.Surface(
+                luminous_flux=SourceTemplate.Luminous(luminous_value=683),
+                intensity_guid=intens_t_lamb_180.key,
+                exitance_constant=SourceTemplate.Surface.ExitanceConstant(),
+                spectrum_guid=spec_bb_3500.key,
+            ),
         )
     )
 
     # Create two irradiance sensor templates: photometric, colorimetric
     ssr_t_irr_photo = speos.client.sensor_templates().create(
-        message=SensorTemplateFactory.irradiance(
+        message=SensorTemplate(
             name="irradiance_photometric",
             description="Irradiance sensor template photometric",
-            type=SensorTemplateFactory.Type.Photometric,
-            illuminance_type=SensorTemplateFactory.IlluminanceType.Planar,
-            dimensions=SensorTemplateFactory.Dimensions(
-                x_start=-1000.0, x_end=1000.0, x_sampling=200, y_start=-1000.0, y_end=1000.0, y_sampling=200
+            irradiance_sensor_template=irradiance_sensor_pb2.IrradianceSensorTemplate(
+                sensor_type_photometric=common_pb2.SensorTypePhotometric(),
+                illuminance_type_planar=common_pb2.IlluminanceTypePlanar(),
+                dimensions=common_pb2.SensorDimensions(
+                    x_start=-1000.0, x_end=1000.0, x_sampling=200, y_start=-1000.0, y_end=1000.0, y_sampling=200
+                ),
             ),
         )
     )
     ssr_t_irr_colo = speos.client.sensor_templates().create(
-        message=SensorTemplateFactory.irradiance(
+        message=SensorTemplate(
             name="irradiance_colorimetric",
             description="Irradiance sensor template colorimetric",
-            type=SensorTemplateFactory.Type.Colorimetric,
-            illuminance_type=SensorTemplateFactory.IlluminanceType.Planar,
-            dimensions=SensorTemplateFactory.Dimensions(
-                x_start=-1000.0, x_end=1000.0, x_sampling=200, y_start=-1000.0, y_end=1000.0, y_sampling=200
+            irradiance_sensor_template=irradiance_sensor_pb2.IrradianceSensorTemplate(
+                sensor_type_colorimetric=common_pb2.SensorTypeColorimetric(
+                    wavelengths_range=common_pb2.WavelengthsRange(w_start=300, w_end=700, w_sampling=13)
+                ),
+                illuminance_type_planar=common_pb2.IlluminanceTypePlanar(),
+                dimensions=common_pb2.SensorDimensions(
+                    x_start=-1000.0, x_end=1000.0, x_sampling=200, y_start=-1000.0, y_end=1000.0, y_sampling=200
+                ),
             ),
-            wavelengths_range=SensorTemplateFactory.WavelengthsRange(start=300, end=700, sampling=13),
         )
     )
-    irr_sensor_props = SceneFactory.irradiance_sensor_props(
-        axis_system=AxisSystem(origin=[0, 0, 1000], x_vect=[1, 0, 0], y_vect=[0, 1, 0], z_vect=[0, 0, -1]),
-        layer_type=SceneFactory.Properties.Sensor.LayerType.Source(),
-        integration_direction=[0, 0, 1],
+
+    # Careful axis_system before [0, 0, 1000, 1, 0, 0, 0, 1, 0, 0, 0, -1]
+    irr_sensor_props = Scene.SensorInstance.IrradianceProperties(
+        axis_system=[0, 0, 1000, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+        ray_file_type=Scene.SensorInstance.EnumRayFileType.RayFileNone,
+        layer_type_source=Scene.SensorInstance.LayerTypeSource(),
     )
 
     # Create simu templates with default params
     direct_t = speos.client.simulation_templates().create(
-        message=SimulationTemplateFactory.direct_mc(name="direct_simu", description="Direct simulation template with default parameters")
+        message=SimulationTemplate(
+            name="direct_simu",
+            description="Direct simulation template with default parameters",
+            direct_mc_simulation_template=simulation_template_pb2.DirectMCSimulationTemplate(
+                geom_distance_tolerance=0.01,
+                max_impact=100,
+                weight=simulation_template_pb2.Weight(minimum_energy_percentage=0.005),
+                colorimetric_standard=simulation_template_pb2.CIE_1931,
+                dispersion=True,
+            ),
+        )
     )
     inverse_t = speos.client.simulation_templates().create(
-        message=SimulationTemplateFactory.inverse_mc(name="inverse_simu", description="Inverse simulation template with default parameters")
+        message=SimulationTemplate(
+            name="inverse_simu",
+            description="Inverse simulation template with default parameters",
+            inverse_mc_simulation_template=simulation_template_pb2.InverseMCSimulationTemplate(
+                geom_distance_tolerance=0.01,
+                max_impact=100,
+                weight=simulation_template_pb2.Weight(minimum_energy_percentage=0.005),
+                colorimetric_standard=simulation_template_pb2.CIE_1931,
+                dispersion=False,
+                splitting=False,
+                number_of_gathering_rays_per_source=1,
+                maximum_gathering_error=0,
+            ),
+        )
     )
     interactive_t = speos.client.simulation_templates().create(
-        message=SimulationTemplateFactory.interactive(
-            name="interactive_simu", description="Interactive simulation template with default parameters"
+        message=SimulationTemplate(
+            name="interactive_simu",
+            description="Interactive simulation template with default parameters",
+            interactive_simulation_template=SimulationTemplate.Interactive(
+                geom_distance_tolerance=0.01,
+                max_impact=100,
+                weight=simulation_template_pb2.Weight(minimum_energy_percentage=0.005),
+                colorimetric_standard=simulation_template_pb2.CIE_1931,
+            ),
         )
     )
 
     # Create a sop template that can be used in different materials
     mirror_100_t = speos.client.sop_templates().create(
-        message=SOPTemplateFactory.mirror(name="mirror_100", description="mirror sop template - reflectance 100", reflectance=100)
+        message=SOPTemplate(
+            name="mirror_100", description="mirror sop template - reflectance 100", mirror=SOPTemplate.Mirror(reflectance=100)
+        )
     )
 
+    # Create a vop template
+    opaque_t = speos.client.vop_templates().create(
+        message=VOPTemplate(name="opaque", description="opaque vop template", opaque=VOPTemplate.Opaque())
+    )
+
+    # Create scene
     scene = scene_db.create(
-        message=SceneFactory.new(
+        message=Scene(
             name="scene_0",
             description="scene from scratch",
-            part=main_part,
-            material_instances=[
-                SceneFactory.material_instance(
-                    name="Material.1",
-                    vop_template=speos.client.vop_templates().create(
-                        message=VOPTemplateFactory.opaque(name="opaque", description="opaque vop template")
-                    ),
-                    sop_templates=[mirror_100_t],
-                    geometries=GeoPaths(geo_paths=["Body0:1"]),
+            part_guid=main_part.key,
+            materials=[
+                Scene.MaterialInstance(
+                    name="Material.1", vop_guid=opaque_t.key, sop_guids=[mirror_100_t.key], geometries=Scene.GeoPaths(geo_paths=["Body0:1"])
                 ),
-                SceneFactory.material_instance(
-                    name="FOP.1",
-                    sop_templates=[mirror_100_t],
-                    geometries=GeoPaths(geo_paths=["BodySource:1/FaceSource:1"]),
+                Scene.MaterialInstance(
+                    name="FOP.1", sop_guids=[mirror_100_t.key], geometries=Scene.GeoPaths(geo_paths=["BodySource:1/FaceSource:1"])
                 ),
             ],
-            source_instances=[
-                SceneFactory.source_instance(
+            sources=[
+                Scene.SourceInstance(
                     name="luminaire_AA.1",
-                    source_template=src_t_luminaire,
-                    properties=SceneFactory.luminaire_source_props(axis_system=AxisSystem(origin=[50, 50, 50])),
+                    source_guid=src_t_luminaire.key,
+                    luminaire_properties=Scene.SourceInstance.LuminaireProperties(axis_system=[50, 50, 50, 1, 0, 0, 0, 1, 0, 0, 0, 1]),
                 ),
-                SceneFactory.source_instance(
+                Scene.SourceInstance(
                     name="luminaire_AA.2",
-                    source_template=src_t_luminaire,
-                    properties=SceneFactory.luminaire_source_props(axis_system=AxisSystem(origin=[0, 0, 500])),
+                    source_guid=src_t_luminaire.key,
+                    luminaire_properties=Scene.SourceInstance.LuminaireProperties(axis_system=[0, 0, 500, 1, 0, 0, 0, 1, 0, 0, 0, 1]),
                 ),
-                SceneFactory.source_instance(
+                Scene.SourceInstance(
                     name="surface_with_blackbody.1",
-                    source_template=src_t_surface_bb,
-                    properties=SceneFactory.surface_source_props(exitance_constant_geo_paths=[GeoPathWithReverseNormal("BodySource:1")]),
+                    source_guid=src_t_surface_bb.key,
+                    surface_properties=Scene.SourceInstance.SurfaceProperties(
+                        exitance_constant_properties=Scene.SourceInstance.SurfaceProperties.ExitanceConstantProperties(
+                            geo_paths=[Scene.GeoPath(geo_path="BodySource:1", reverse_normal=False)]
+                        )
+                    ),
                 ),
             ],
-            sensor_instances=[
-                SceneFactory.sensor_instance(
-                    name="irradiance_photometric.1",
-                    sensor_template=ssr_t_irr_photo,
-                    properties=irr_sensor_props,
+            sensors=[
+                Scene.SensorInstance(
+                    name="irradiance_photometric.1", sensor_guid=ssr_t_irr_photo.key, irradiance_properties=irr_sensor_props
                 ),
-                SceneFactory.sensor_instance(
-                    name="irradiance_colorimetric.1",
-                    sensor_template=ssr_t_irr_colo,
-                    properties=irr_sensor_props,
+                Scene.SensorInstance(
+                    name="irradiance_colorimetric.1", sensor_guid=ssr_t_irr_colo.key, irradiance_properties=irr_sensor_props
                 ),
             ],
-            simulation_instances=[
-                SceneFactory.simulation_instance(
+            simulations=[
+                Scene.SimulationInstance(
                     name="direct_simu.1",
-                    simulation_template=direct_t,
+                    simulation_guid=direct_t.key,
                     source_paths=["luminaire_AA.1", "luminaire_AA.2", "surface_with_blackbody.1"],
                     sensor_paths=["irradiance_photometric.1", "irradiance_colorimetric.1"],
                 ),
-                SceneFactory.simulation_instance(
+                Scene.SimulationInstance(
                     name="direct_simu.2",
-                    simulation_template=direct_t,
+                    simulation_guid=direct_t.key,
                     source_paths=["surface_with_blackbody.1"],
                     sensor_paths=["irradiance_photometric.1", "irradiance_colorimetric.1"],
-                    geometries=GeoPaths(["BodySource:1", "Body0:1"]),
                 ),
-                SceneFactory.simulation_instance(
+                Scene.SimulationInstance(
                     name="inverse_simu.1",
-                    simulation_template=inverse_t,
+                    simulation_guid=inverse_t.key,
                     source_paths=["surface_with_blackbody.1"],
                     sensor_paths=["irradiance_colorimetric.1"],
                 ),
-                SceneFactory.simulation_instance(
+                Scene.SimulationInstance(
                     name="interactive_simu.1",
-                    simulation_template=interactive_t,
+                    simulation_guid=interactive_t.key,
                     source_paths=["luminaire_AA.1", "luminaire_AA.2", "surface_with_blackbody.1"],
                     sensor_paths=["irradiance_photometric.1", "irradiance_colorimetric.1"],
                 ),
@@ -248,51 +286,6 @@ def test_scene_factory(speos: Speos):
 
     scene0 = create_basic_scene(speos)
     assert scene0.key != ""
-
-    clean_all_dbs(speos.client)
-
-
-def test_scene_factory_create_instances(speos: Speos):
-    """Test the scene factory - more precisely methods to create instances objects."""
-    assert speos.client.healthy is True
-
-    SceneFactory.source_instance(
-        name="SurfaceExitanceVariable_AsymmGaussIntensity.1",
-        source_template=speos.client.source_templates().create(
-            message=SourceTemplateFactory.surface(
-                name="SurfaceExitanceVariable_AsymmGaussIntensity",
-                intensity_template=speos.client.intensity_templates().create(
-                    message=IntensityTemplateFactory.gaussian(name="Asymmetric_gaussian")
-                ),
-                flux=SourceTemplateFactory.Flux(),
-                exitance_xmp_file_uri=os.path.join(test_path, "PROJECT.Direct-no-Ray.Irradiance Ray Spectral.xmp"),
-            )
-        ),
-        properties=SceneFactory.surface_source_props(
-            exitance_variable_axis_plane=AxisPlane(),
-            intensity_properties=SceneFactory.gaussian_intensity_props(axis_system=AxisSystem()),
-        ),
-    )
-
-    SceneFactory.source_instance(
-        name="SurfaceExitanceConstant_LibIntensity.1",
-        source_template=speos.client.source_templates().create(
-            message=SourceTemplateFactory.surface(
-                name="SurfaceExitanceConstant_LibIntensity",
-                intensity_template=speos.client.intensity_templates().create(
-                    message=IntensityTemplateFactory.library(name="Library", file_uri=os.path.join(test_path, "IES_C_DETECTOR.ies"))
-                ),
-                spectrum=speos.client.spectrums().create(message=SpectrumFactory.blackbody(name="Blackbody")),
-            )
-        ),
-        properties=SceneFactory.surface_source_props(
-            exitance_constant_geo_paths=[GeoPathWithReverseNormal("Body:1/Face:1")],
-            intensity_properties=SceneFactory.library_intensity_props(
-                exit_geometries=GeoPaths(geo_paths=["Body2"]),
-                orientation=SceneFactory.Properties.Source.Intensity.Library.Orientation.NormalToSurface,
-            ),
-        ),
-    )
 
     clean_all_dbs(speos.client)
 
@@ -338,12 +331,12 @@ def test_scene_actions_load_modify(speos: Speos):
 
     # Adding a sensor
     scene_dm.sensors.append(
-        SceneFactory.sensor_instance(
+        Scene.SensorInstance(
             name="Irradiance.1",
-            sensor_template=speos.client.get_item(scene_dm.sensors[0].sensor_guid),
-            properties=SceneFactory.irradiance_sensor_props(
-                axis_system=AxisSystem(origin=[-42, 2, 5], x_vect=[0, 1, 0], y_vect=[0, 0, -1], z_vect=[-1, 0, 0]),
-                layer_type=SceneFactory.Properties.Sensor.LayerType.IncidenceAngle(sampling=9),
+            sensor_guid=scene_dm.sensors[0].sensor_guid,
+            irradiance_properties=Scene.SensorInstance.IrradianceProperties(
+                axis_system=[-42, 2, 5, 0, 1, 0, 0, 0, -1, -1, 0, 0],
+                layer_type_face=Scene.SensorInstance.LayerTypeIncidenceAngle(sampling=9),
             ),
         )
     )
@@ -361,26 +354,30 @@ def test_scene_actions_get_source_ray_paths(speos: Speos):
     # Creation of a basic scene with a luminaire source
     main_part = speos.client.parts().create(message=PartFactory.new(name="MainPart", bodies=[]))
 
+    blackbody_2856 = Spectrum(name="Blackbody_2856", blackbody=Spectrum.BlackBody(temperature=2856))
+    luminaire_t = SourceTemplate(
+        name="Luminaire",
+        luminaire=SourceTemplate.Luminaire(
+            flux_from_intensity_file=SourceTemplate.FromIntensityFile(),
+            intensity_file_uri=os.path.join(test_path, "IES_C_DETECTOR.ies"),
+            spectrum_guid=blackbody_2856.key,
+        ),
+    )
+
     scene = speos.client.scenes().create(
-        message=SceneFactory.new(
+        message=Scene(
             name="Scene with sources",
-            part=main_part,
-            material_instances=[],
-            source_instances=[
-                SceneFactory.source_instance(
+            part_guid=main_part.key,
+            materials=[],
+            sources=[
+                Scene.SourceInstance(
                     name="Luminaire.1",
-                    source_template=speos.client.source_templates().create(
-                        message=SourceTemplateFactory.luminaire(
-                            name="Luminaire",
-                            intensity_file_uri=os.path.join(test_path, "IES_C_DETECTOR.ies"),
-                            spectrum=speos.client.spectrums().create(message=SpectrumFactory.blackbody(name="Blackbody_2856")),
-                        )
-                    ),
-                    properties=SceneFactory.luminaire_source_props(axis_system=AxisSystem(origin=[0, 0, 20])),
-                ),
+                    source_guid=luminaire_t.key,
+                    luminaire_properties=Scene.SourceInstance.LuminaireProperties(axis_system=[0, 0, 20, 1, 0, 0, 0, 1, 0, 0, 0, 1]),
+                )
             ],
-            sensor_instances=[],
-            simulation_instances=[],
+            sensors=[],
+            simulations=[],
         )
     )
 

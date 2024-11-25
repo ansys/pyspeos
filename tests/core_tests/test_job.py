@@ -28,7 +28,7 @@ import time
 from test_scene import create_basic_scene
 
 from ansys.speos.core import LOG  # Global logger
-from ansys.speos.core.job import JobFactory
+from ansys.speos.core.job import Job
 from ansys.speos.core.job import messages as job_messages
 from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 from ansys.speos.core.speos import Speos
@@ -43,20 +43,34 @@ def test_job_factory(speos: Speos):
     assert len(scene.get().simulations) == 4
 
     job_dir = speos.client.jobs().create(
-        message=JobFactory.new(
-            name="job_dir", scene=scene, simulation_path=scene.get().simulations[0].name, properties=JobFactory.direct_mc_props()
+        message=Job(
+            name="job_dir",
+            scene_guid=scene.key,
+            simulation_path=scene.get().simulations[0].name,
+            direct_mc_simulation_properties=Job.DirectMCSimulationProperties(
+                stop_condition_rays_number=200000, automatic_save_frequency=1800
+            ),
         )
     )
 
     job_inv = speos.client.jobs().create(
-        message=JobFactory.new(
-            name="job_inv", scene=scene, simulation_path=scene.get().simulations[2].name, properties=JobFactory.inverse_mc_props()
+        message=Job(
+            name="job_inv",
+            scene_guid=scene.key,
+            simulation_path=scene.get().simulations[2].name,
+            inverse_mc_simulation_properties=Job.InverseMCSimulationProperties(
+                optimized_propagation_none=Job.InverseMCSimulationProperties.OptimizedPropagationNone(stop_condition_passes_number=5),
+                automatic_save_frequency=1800,
+            ),
         )
     )
 
     job_int = speos.client.jobs().create(
-        message=JobFactory.new(
-            name="job_int", scene=scene, simulation_path=scene.get().simulations[3].name, properties=JobFactory.interactive_props()
+        message=Job(
+            name="job_int",
+            scene_guid=scene.key,
+            simulation_path=scene.get().simulations[3].name,
+            interactive_simulation_properties=Job.InteractiveSimulationProperties(light_expert=False, impact_report=False),
         )
     )
 
@@ -73,8 +87,13 @@ def test_job_actions(speos: Speos):
 
     # Create CPU job for direct simu
     job_dir = speos.client.jobs().create(
-        message=JobFactory.new(
-            name="job_dir", scene=scene, simulation_path=scene.get().simulations[1].name, properties=JobFactory.direct_mc_props()
+        message=Job(
+            name="job_dir",
+            scene_guid=scene.key,
+            simulation_path=scene.get().simulations[1].name,
+            direct_mc_simulation_properties=Job.DirectMCSimulationProperties(
+                stop_condition_rays_number=200000, automatic_save_frequency=1800
+            ),
         )
     )
 
@@ -109,8 +128,11 @@ def test_job_actions_interactive_simu(speos: Speos):
 
     # Create CPU job for interactive simu
     job_int = speos.client.jobs().create(
-        message=JobFactory.new(
-            name="job_int", scene=scene, simulation_path=scene.get().simulations[3].name, properties=JobFactory.interactive_props()
+        message=Job(
+            name="job_int",
+            scene_guid=scene.key,
+            simulation_path=scene.get().simulations[3].name,
+            interactive_simulation_properties=Job.InteractiveSimulationProperties(light_expert=False, impact_report=False),
         )
     )
     run_job_and_check_state(job_int)
