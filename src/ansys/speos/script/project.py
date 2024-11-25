@@ -489,7 +489,16 @@ ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.p
                     part_mesh_info = part_mesh_info.append_polydata(face_mesh_data)
         return part_mesh_info
 
-    def _create_preview(self, viz_args=None) -> pv.Plotter:
+    def _create_preview(self, viz_args: object = None) -> pv.Plotter:
+        """
+        create preview pyvista plotter object
+
+        Parameters
+        ----------
+        viz_args : dict
+            contains arguments in dict format passed to add mesh function
+
+        """
         if viz_args is None:
             viz_args = {}
         _preview_mesh = pv.PolyData()

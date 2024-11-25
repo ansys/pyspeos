@@ -27,139 +27,215 @@ import pyvista as pv
 import ansys.speos.core as core
 from ansys.speos.script.project import Project
 
+ERROR_IDS = [7, 8, 9, 10, 11, 12, 13, 14, 15]
+NO_ERROR_IDS = [0, 1, 2, 3, 4, 5, 6, 16, -7, -6, -5, -5, -4, -3, -2, -1]
+
 
 class LightPathFinder:
+    """
+    The Lightpathfinder defines n interface to reas lpf files. These files contain a set of simulated rays with all
+    there intersections and properties.
+
+    Parameters
+    ----------
+    speos : core.Speos
+    path : str
+        path to lpf file to be opened
+
+    """
+
     def __init__(self, speos: core.Speos, path: str):
         self.client = speos.client
         self._stub = lpf_file_reader__v2__pb2_grpc.LpfFileReader_MonoStub(self.client.channel)
-        self.open(path)
+        self.__open(path)
         self._data = self._stub.GetInformation(lpf_file_reader__v2__pb2.GetInformation_Request_Mono())
-        self.nb_traces = self._data.nb_of_traces
-        self.nb_xmps = self._data.nb_of_xmps
-        self.contributions = self._data.has_sensor_contributions
-        self.sensor_names = self._data.sensor_names
-        self.rays = self.__parse_traces()
-        self.filtered_rays = None
+        self._nb_traces = self._data.nb_of_traces
+        self._nb_xmps = self._data.nb_of_xmps
+        if self._data.has_sensor_contributions:
+            self._sensor_contributions = self._data.sensor_contributions
+        else:
+            self._sensor_contributions = None
+        self._sensor_names = self._data.sensor_names
+        self._rays = self.__parse_traces()
+        self._filtered_rays = []
 
-    def open(self, path: str):
+    @property
+    def nb_traces(self):
+        """Number of light path's within LPF data set"""
+        return self._nb_traces
+
+    @property
+    def nb_xmps(self):
+        """Number of sensors involved within LPF data set"""
+        return self._nb_xmps
+
+    @property
+    def sensor_contributions(self):
+        """Sensor contribution, including coordinates"""
+        return self._sensor_contributions
+
+    @property
+    def sensor_names(self):
+        """list of involved sensor names"""
+        return self._sensor_names
+
+    @property
+    def rays(self):
+        """list raypath's within lpf file"""
+        return self._rays
+
+    @property
+    def filtered_rays(self):
+        """list of filtered ray path's"""
+        return self._filtered_rays
+
+    def __open(self, path: str):
+        """
+        method to open lpf file
+        Parameters
+        ----------
+        path : str
+            Path to file
+        """
         self._stub.InitLpfFileName(lpf_file_reader__v2__pb2.InitLpfFileName_Request_Mono(lpf_file_uri=path))
 
-    def __parse_traces(self):
+    def __parse_traces(self) -> list[object]:
+        """
+        Reads all raypathes from lpf dataset
+        Returns
+        -------
+            list[script.RayPath]
+
+        """
         raypaths = []
         for rp in self._stub.Read(lpf_file_reader__v2__pb2.Read_Request_Mono()):
             raypaths.append(RayPath(rp))
         return raypaths
 
-    def preview(self, nb_ray=100, max_ray_length=50, filter: bool = False, project: Project = None):
+    def __filter_by_last_intersection_types(self, options: list[int], new=True):
+        """filters raypathes based on last intersection types and populates filtered_rays property"""
+        if new:
+            self._filtered_rays = []
+            for ray in self._rays:
+                if int(ray.intersectiontype[-1]) in options:
+                    self._filtered_rays.append(ray)
+        else:
+            temp_rays = self._filtered_rays
+            self._filtered_rays = []
+            for ray in temp_rays:
+                if int(ray.intersectiontype[-1]) in options:
+                    self._filtered_rays.append(ray)
+
+    def filter_by_face_ids(self, options: list[int], new=True):
+        """filters raypathes based on face ids and populates filtered_rays property"""
+        if new:
+            self._filtered_rays = []
+            for ray in self._rays:
+                if int(ray.face_ids) in options:
+                    self._filtered_rays.append(ray)
+        else:
+            temp_rays = self._filtered_rays
+            self._filtered_rays = []
+            for ray in temp_rays:
+                if int(ray.face_ids) in options:
+                    self._filtered_rays.append(ray)
+
+    def filter_by_body_ids(self, options: list[int], new=True):
+        """filters raypathes based on body ids and populates filtered_rays property"""
+        if new:
+            self._filtered_rays = []
+            for ray in self._rays:
+                if int(ray.body_ids) in options:
+                    self._filtered_rays.append(ray)
+        else:
+            temp_rays = self._filtered_rays
+            self._filtered_rays = []
+            for ray in temp_rays:
+                if int(ray.body_ids) in options:
+                    self._filtered_rays.append(ray)
+
+    def filter_error_rays(self):
+        """filters rays and only shows rays in error"""
+        self.__filter_by_last_intersection_types(options=ERROR_IDS)
+
+    def remove_error_rays(self):
+        """filters rays and only shows rays not in error"""
+        self.__filter_by_last_intersection_types(options=NO_ERROR_IDS)
+
+    @staticmethod
+    def __add_ray_to_pv(plotter: pv.Plotter, ray: object, max_ray_length: float):
+        """
+        add a ray to pyvista plotter
+        Parameters
+        ----------
+        plotter : pv.Plotter
+            pyvista plotter object to which rays should be added
+        ray : script.RayPath
+            RayPath object which contains rayinformation to be added
+        max_ray_length : float
+            length of the last ray
+        """
+        temp = ray.impacts
+        if not 7 <= ray.intersectiontype[-1] <= 15:
+            temp.append(
+                [
+                    ray.impacts[-1][0] + max_ray_length * ray.last_direction[0],
+                    ray.impacts[-1][1] + max_ray_length * ray.last_direction[1],
+                    ray.impacts[-1][2] + max_ray_length * ray.last_direction[2],
+                ]
+            )
+        if len(ray.impacts) > 2:
+            mesh = pv.MultipleLines(temp)
+        else:
+            mesh = pv.Line(temp[0], temp[1])
+        plotter.add_mesh(mesh, color=wavelength_to_rgb(ray.wl), line_width=2)
+
+    def preview(self, nb_ray: int = 100, max_ray_length: float = 50.0, ray_filter: bool = False, project: Project = None):
+        """
+        method to preview lpf file with pyvista
+
+        Parameters
+        ----------
+        nb_ray : int
+            number of rays to be visualized
+        max_ray_length : float
+            length of last ray
+        ray_filter : bool
+            boolean to decide if filtered rays or all rays should be shown
+        project : script.Project
+            Speos Project/Geometry to be added to pyvista visualisation
+        """
+        if ray_filter:
+            if len(self._filtered_rays) > 0:
+                temp_rays = self._filtered_rays
+            else:
+                temp_rays = self._rays
+        else:
+            temp_rays = self._rays
         if not project:
             plotter = pv.Plotter()
-            if nb_ray > len(self.rays):
-                for ray in self.rays:
-                    temp = ray.impacts
-                    if not 7 <= ray.intersectiontype[-1] <= 15:
-                        temp.append(
-                            [
-                                ray.impacts[-1][0] + max_ray_length * ray.last_direction[0],
-                                ray.impacts[-1][1] + max_ray_length * ray.last_direction[1],
-                                ray.impacts[-1][2] + max_ray_length * ray.last_direction[2],
-                            ]
-                        )
-                    if len(ray.impacts) > 2:
-                        mesh = pv.MultipleLines(temp)
-                    else:
-                        mesh = pv.Line(temp[0], temp[1])
-                    plotter.add_mesh(mesh, color=wavelength_to_rgb(ray.wl), line_width=2)
+            if nb_ray > len(temp_rays):
+                for ray in temp_rays:
+                    self.__add_ray_to_pv(plotter, ray, max_ray_length)
             else:
                 for i in range(nb_ray):
-                    ray = self.rays[i]
-                    temp = ray.impacts
-                    if not 7 <= ray.intersectiontype[-1] <= 15:
-                        temp.append(
-                            [
-                                ray.impacts[-1][0] + max_ray_length * ray.last_direction[0],
-                                ray.impacts[-1][1] + max_ray_length * ray.last_direction[1],
-                                ray.impacts[-1][2] + max_ray_length * ray.last_direction[2],
-                            ]
-                        )
-                    if len(ray.impacts) > 2:
-                        mesh = pv.MultipleLines(temp)
-                    else:
-                        mesh = pv.Line(temp[0], temp[1])
-                    plotter.add_mesh(mesh, color=wavelength_to_rgb(ray.wl), line_width=2)
+                    self.__add_ray_to_pv(plotter, temp_rays[i], max_ray_length)
         else:
             plotter = project._create_preview(viz_args={"opacity": 0.5})
-            if nb_ray > len(self.rays):
-                for ray in self.rays:
-                    temp = ray.impacts
-                    if not 7 <= ray.intersectiontype[-1] <= 15:
-                        temp.append(
-                            [
-                                ray.impacts[-1][0] + max_ray_length * ray.last_direction[0],
-                                ray.impacts[-1][1] + max_ray_length * ray.last_direction[1],
-                                ray.impacts[-1][2] + max_ray_length * ray.last_direction[2],
-                            ]
-                        )
-                    if len(ray.impacts) > 2:
-                        mesh = pv.MultipleLines(temp)
-                    else:
-                        mesh = pv.Line(temp[0], temp[1])
-                    plotter.add_mesh(mesh, color=wavelength_to_rgb(ray.wl), line_width=2)
+            if nb_ray > len(temp_rays):
+                for ray in temp_rays:
+                    self.__add_ray_to_pv(plotter, ray, max_ray_length)
             else:
                 for i in range(nb_ray):
-                    ray = self.rays[i]
-                    temp = ray.impacts
-                    if not 7 <= ray.intersectiontype[-1] <= 15:
-                        temp.append(
-                            [
-                                ray.impacts[-1][0] + max_ray_length * ray.last_direction[0],
-                                ray.impacts[-1][1] + max_ray_length * ray.last_direction[1],
-                                ray.impacts[-1][2] + max_ray_length * ray.last_direction[2],
-                            ]
-                        )
-                    if len(ray.impacts) > 2:
-                        mesh = pv.MultipleLines(temp)
-                    else:
-                        mesh = pv.Line(temp[0], temp[1])
-                    plotter.add_mesh(mesh, color=wavelength_to_rgb(ray.wl), line_width=2)
-        plotter.show()
-
-    def show_error_rays(self, nb_ray=100, project: Project = None):
-        n, i = 0, 0
-        if not project:
-            plotter = pv.Plotter()
-            while i < nb_ray:
-                n += 1
-                if n > len(self.rays):
-                    break
-                ray = self.rays[n]
-                temp = ray.impacts
-                if 7 <= ray.intersectiontype[-1] <= 15:
-                    if len(ray.impacts) > 2:
-                        mesh = pv.MultipleLines(temp)
-                    else:
-                        mesh = pv.Line(temp[0], temp[1])
-                    plotter.add_mesh(mesh, color=wavelength_to_rgb(ray.wl), line_width=2)
-                    i += 1
-        else:
-            plotter = project._create_preview(viz_args={"opacity": 0.5})
-            while i < nb_ray:
-                n += 1
-                if (n + 1) > len(self.rays):
-                    break
-                ray = self.rays[n]
-                temp = ray.impacts
-                if 7 <= ray.intersectiontype[-1] <= 15:
-                    if len(ray.impacts) > 2:
-                        mesh = pv.MultipleLines(temp)
-                    else:
-                        mesh = pv.Line(temp[0], temp[1])
-                    plotter.add_mesh(mesh, color=wavelength_to_rgb(ray.wl), line_width=2)
-                    i += 1
-
+                    self.__add_ray_to_pv(plotter, temp_rays[i], max_ray_length)
         plotter.show()
 
 
 class RayPath:
+    """
+    Frame work representing a singular raypath
+    """
+
     def __init__(self, raypath):
         self.nb_impacts = len(raypath.impacts)
         self.impacts = [[inter.x, inter.y, inter.z] for inter in raypath.impacts]

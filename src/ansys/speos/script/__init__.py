@@ -47,7 +47,7 @@ from ansys.speos.script.body import Body
 from ansys.speos.script.face import Face
 from ansys.speos.script.geo_ref import GeoRef
 from ansys.speos.script.intensity import Intensity
-from ansys.speos.script.lxp import LightPathFinder
+from ansys.speos.script.lxp import LightPathFinder, RayPath
 from ansys.speos.script.opt_prop import OptProp
 from ansys.speos.script.part import Part
 from ansys.speos.script.project import Project
