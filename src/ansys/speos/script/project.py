@@ -327,7 +327,7 @@ ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.p
             if type(v) is list:
                 for inside_dict in v:
                     if k == "simulations":
-                        sim_feat = self.find(name=inside_dict["name"], feature_type=simulation.Simulation)
+                        sim_feat = self.find(name=inside_dict["name"], feature_type=simulation.Simulation)[0]
                         if sim_feat.job_link is None:
                             inside_dict["simulation_properties"] = proto_message_utils._replace_guids(
                                 speos_client=self.client, message=sim_feat._job, ignore_simple_key="scene_guid"
