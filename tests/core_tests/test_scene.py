@@ -144,9 +144,8 @@ def create_basic_scene(speos: Speos) -> SceneLink:
         )
     )
 
-    # Careful axis_system before [0, 0, 1000, 1, 0, 0, 0, 1, 0, 0, 0, -1]
     irr_sensor_props = Scene.SensorInstance.IrradianceProperties(
-        axis_system=[0, 0, 1000, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+        axis_system=[0, 0, 1000, -1, 0, 0, 0, 1, 0, 0, 0, -1],
         ray_file_type=Scene.SensorInstance.EnumRayFileType.RayFileNone,
         layer_type_source=Scene.SensorInstance.LayerTypeSource(),
     )
@@ -280,8 +279,8 @@ def create_basic_scene(speos: Speos) -> SceneLink:
     return scene
 
 
-def test_scene_factory(speos: Speos):
-    """Test the scene factory."""
+def test_scene(speos: Speos):
+    """Test the scene creation."""
     assert speos.client.healthy is True
 
     scene0 = create_basic_scene(speos)

@@ -35,8 +35,8 @@ from ansys.speos.core.speos import Speos
 from helper import clean_all_dbs, run_job_and_check_state
 
 
-def test_job_factory(speos: Speos):
-    """Test the job factory."""
+def test_job(speos: Speos):
+    """Test the job creation."""
     assert speos.client.healthy is True
 
     scene = create_basic_scene(speos)

@@ -34,8 +34,8 @@ from ansys.speos.core.vop_template import VOPTemplate
 from conftest import test_path
 
 
-def test_vop_template_factory(speos: Speos):
-    """Test the vop template factory."""
+def test_vop_template(speos: Speos):
+    """Test the vop template creation."""
     assert speos.client.healthy is True
     # Get DB
     vop_t_db = speos.client.vop_templates()  # Create spectrum stub from client channel
