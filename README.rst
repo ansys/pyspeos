@@ -144,14 +144,6 @@ Use jupyter notebook
 
 jupyter notebook files are stored in `<tests/jupyter_notebooks>`_ folder.
 
-Use app db_viewer
-~~~~~~~~~~~~~~~~~
-
-.. code::
-
-   pip install .[app]
-   python app/db_viewer.py
-
 License
 -------
 `PySpeos`_ is licensed under the MIT license.
