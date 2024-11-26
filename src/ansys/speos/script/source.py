@@ -132,7 +132,7 @@ class Source:
 
             self._spectrum = Source._Spectrum(
                 speos_client=speos_client,
-                name=name + ".Spectrum",
+                name=name,
                 message_to_complete=self._luminaire,
                 spectrum_guid=self._luminaire.spectrum_guid,
             )
@@ -347,7 +347,7 @@ class Source:
             if self._surface.HasField("spectrum_guid"):
                 spectrum_guid = self._surface.spectrum_guid
             self._spectrum = Source._Spectrum(
-                speos_client=speos_client, name=name + ".Spectrum", message_to_complete=self._surface, spectrum_guid=spectrum_guid
+                speos_client=speos_client, name=name, message_to_complete=self._surface, spectrum_guid=spectrum_guid
             )
 
             self._intensity = Intensity(
