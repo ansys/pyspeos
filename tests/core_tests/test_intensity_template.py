@@ -25,59 +25,58 @@ Test basic intensity template database connection.
 """
 import os
 
-from ansys.speos.core.intensity_template import IntensityTemplateFactory
+from ansys.speos.core.intensity_template import IntensityTemplate
 from ansys.speos.core.speos import Speos
 from conftest import test_path
 
 
-def test_intensity_template_factory(speos: Speos):
-    """Test the intensity template factory."""
+def test_intensity_template(speos: Speos):
+    """Test the intensity template."""
     assert speos.client.healthy is True
     # Get DB
     intens_t_db = speos.client.intensity_templates()  # Create intensity template stub from client channel
 
     # Library
     intens_t_lib = intens_t_db.create(
-        message=IntensityTemplateFactory.library(
+        message=IntensityTemplate(
             name="library_0",
             description="library intensity template",
-            file_uri=os.path.join(test_path, "IES_C_DETECTOR.ies"),
+            library=IntensityTemplate.Library(intensity_file_uri=os.path.join(test_path, "IES_C_DETECTOR.ies")),
         )
     )
     assert intens_t_lib.key != ""
 
     # Lambertian (cos with N = 1.0)
+
     intens_t_lamb = intens_t_db.create(
-        message=IntensityTemplateFactory.cos(name="lambertian_0", description="lambertian intensity template", N=1.0, total_angle=180.0)
+        message=IntensityTemplate(
+            name="lambertian_0", description="lambertian intensity template", cos=IntensityTemplate.Cos(N=1.0, total_angle=180.0)
+        )
     )
     assert intens_t_lamb.key != ""
 
     # Cos
     intens_t_cos = intens_t_db.create(
-        message=IntensityTemplateFactory.cos(name="cos_0", description="cos intensity template", N=3.0, total_angle=180.0)
+        message=IntensityTemplate(name="cos_0", description="cos intensity template", cos=IntensityTemplate.Cos(N=3.0, total_angle=180.0))
     )
     assert intens_t_cos.key != ""
 
     # Symmetric gaussian
     intens_t_sym_gauss = intens_t_db.create(
-        message=IntensityTemplateFactory.gaussian(
+        message=IntensityTemplate(
             name="symmetric_gaussian_0",
             description="symmetric gaussian intensity template",
-            FWHM_angle_x=30.0,
-            FWHM_angle_y=30.0,
-            total_angle=180.0,
+            gaussian=IntensityTemplate.Gaussian(FWHM_angle_x=30.0, FWHM_angle_y=30.0, total_angle=180.0),
         )
     )
     assert intens_t_sym_gauss.key != ""
 
     # Asymmetric gaussian
     intens_t_asym_gauss = intens_t_db.create(
-        message=IntensityTemplateFactory.gaussian(
+        message=IntensityTemplate(
             name="asymmetric_gaussian_0",
             description="asymmetric gaussian intensity template",
-            FWHM_angle_x=30.0,
-            FWHM_angle_y=20.0,
-            total_angle=180.0,
+            gaussian=IntensityTemplate.Gaussian(FWHM_angle_x=30.0, FWHM_angle_y=20.0, total_angle=180.0),
         )
     )
     assert intens_t_asym_gauss.key != ""
