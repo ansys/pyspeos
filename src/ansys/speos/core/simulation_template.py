@@ -50,10 +50,17 @@ class SimulationTemplateLink(CrudItem):
     --------
 
     >>> from ansys.speos.core.speos import Speos
-    >>> from ansys.speos.core.simulation_template import SimulationTemplateFactory
+    >>> from ansys.api.speos.simulation.v1 import simulation_template_pb2
+    >>> from ansys.speos.core.simulation_template import SimulationTemplate
     >>> speos = Speos(host="localhost", port=50051)
     >>> sim_t_db = speos.client.simulation_templates()
-    >>> sim_t_link = sim_t_db.create(message=SimulationTemplateFactory.direct_mc(name="Direct_Default"))
+    >>> sim_t_message = SimulationTemplate(name="Direct")
+    >>> sim_t_message.direct_mc_simulation_template.geom_distance_tolerance = 0.01
+    >>> sim_t_message.direct_mc_simulation_template.max_impact = 100
+    >>> sim_t_message.direct_mc_simulation_template.weight.minimum_energy_percentage = 0.005
+    >>> sim_t_message.direct_mc_simulation_template.colorimetric_standard = simulation_template_pb2.CIE_1931
+    >>> sim_t_message.direct_mc_simulation_template.dispersion = True
+    >>> sim_t_link = sim_t_db.create(message=sim_t_message)
 
     """
 

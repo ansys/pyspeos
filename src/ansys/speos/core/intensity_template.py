@@ -49,10 +49,13 @@ class IntensityTemplateLink(CrudItem):
     --------
 
     >>> from ansys.speos.core.speos import Speos
-    >>> from ansys.speos.core.intensity_template import IntensityTemplateFactory
+    >>> from ansys.speos.core.intensity_template import IntensityTemplate
     >>> speos = Speos(host="localhost", port=50051)
     >>> int_t_db = speos.client.intensity_templates()
-    >>> int_t_link = int_t_db.create(message=IntensityTemplateFactory.cos(name="Cos_3_170", N=3.0, total_angle=170))
+    >>> int_t_message = IntensityTemplate(name="Cos_3_170")
+    >>> int_t_message.cos.N = 3.0
+    >>> int_t_message.cos.total_angle = 170
+    >>> int_t_link = int_t_db.create(message=int_t_message)
 
     """
 

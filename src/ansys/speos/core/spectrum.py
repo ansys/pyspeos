@@ -49,10 +49,12 @@ class SpectrumLink(CrudItem):
     --------
 
     >>> from ansys.speos.core.speos import Speos
-    >>> from ansys.speos.core.spectrum import SpectrumFactory
+    >>> from ansys.speos.core.spectrum import Spectrum
     >>> speos = Speos(host="localhost", port=50051)
     >>> spe_db = speos.client.spectrums()
-    >>> spe_link = spe_db.create(message=SpectrumFactory.monochromatic(name="Monochromatic_600", wavelength=600))
+    >>> spe_message = Spectrum(name="Monochromatic_600")
+    >>> spe_message.monochromatic.wavelength = 600
+    >>> spe_link = spe_db.create(message=spe_message)
 
     """
 

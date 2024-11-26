@@ -49,10 +49,19 @@ class SensorTemplateLink(CrudItem):
     --------
 
     >>> from ansys.speos.core.speos import Speos
-    >>> from ansys.speos.core.sensor_template import SensorTemplateFactory
+    >>> from ansys.speos.core.sensor_template import SensorTemplate
     >>> speos = Speos(host="localhost", port=50051)
     >>> ssr_t_db = speos.client.sensor_templates()
-    >>> ssr_t_link = ssr_t_db.create(message=SensorTemplateFactory.irradiance(name="Irradiance_Default"))
+    >>> ssr_t_message = SensorTemplate(name="Irradiance")
+    >>> ssr_t_message.irradiance_sensor_template.sensor_type_photometric.SetInParent()
+    >>> ssr_t_message.irradiance_sensor_template.illuminance_type_planar.SetInParent()
+    >>> ssr_t_message.irradiance_sensor_template.dimensions.x_start = -50
+    >>> ssr_t_message.irradiance_sensor_template.dimensions.x_end = 50
+    >>> ssr_t_message.irradiance_sensor_template.dimensions.x_sampling = 100
+    >>> ssr_t_message.irradiance_sensor_template.dimensions.y_start = -50
+    >>> ssr_t_message.irradiance_sensor_template.dimensions.y_end = 50
+    >>> ssr_t_message.irradiance_sensor_template.dimensions.y_sampling = 100
+    >>> ssr_t_link = ssr_t_db.create(message=ssr_t_message)
 
     """
 
