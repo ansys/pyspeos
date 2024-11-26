@@ -127,7 +127,17 @@ class LightPathFinder:
                     self._filtered_rays.append(ray)
 
     def filter_by_face_ids(self, options: list[int], new=True):
-        """filters raypathes based on face ids and populates filtered_rays property"""
+        """filters raypathes based on face ids and populates filtered_rays property
+
+        Parameters
+        ----------
+        options : list[int]
+         list of face ids
+        new : bool
+            defines if new filter is created or existing filter is filtered
+
+
+        """
         if new:
             self._filtered_rays = []
             for ray in self._rays:
@@ -141,7 +151,15 @@ class LightPathFinder:
                     self._filtered_rays.append(ray)
 
     def filter_by_body_ids(self, options: list[int], new=True):
-        """filters raypathes based on body ids and populates filtered_rays property"""
+        """filters raypathes based on body ids and populates filtered_rays property
+
+        Parameters
+        ----------
+        options : list[int]
+            list of body ids
+        new : bool
+            defines if new filter is created or existing filter is filtered
+        """
         if new:
             self._filtered_rays = []
             for ray in self._rays:

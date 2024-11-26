@@ -489,7 +489,7 @@ ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.p
                     part_mesh_info = part_mesh_info.append_polydata(face_mesh_data)
         return part_mesh_info
 
-    def _create_preview(self, viz_args: object = None) -> pv.Plotter:
+    def _create_preview(self, viz_args=None) -> pv.Plotter:
         """
         create preview pyvista plotter object
 
@@ -497,6 +497,11 @@ ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.p
         ----------
         viz_args : dict
             contains arguments in dict format passed to add mesh function
+            e.g.
+            - {'style': 'wireframe'},
+            - {'style': 'surface', 'color':'white'},
+            - {'opacity': 0.7, 'color':'white', 'show_edges': False},
+
 
         """
         if viz_args is None:
@@ -528,7 +533,13 @@ ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.p
         Parameters
         ----------
         viz_args : dict
-            arguments to be transferred to the pv.add_mesh method
+            contains arguments in dict format passed to add mesh function
+            e.g.
+            - {'style': 'wireframe'},
+            - {'style': 'surface', 'color':'white'},
+            - {'opacity': 0.7, 'color':'white', 'show_edges': False},
         """
+        if viz_args is None:
+            viz_args = {"opacity": 1}
         p = self._create_preview(viz_args=viz_args)
         p.show()
