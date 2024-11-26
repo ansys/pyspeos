@@ -43,6 +43,7 @@ def test_create_luminaire_source(speos: Speos):
     assert source1._source_template.luminaire.HasField("flux_from_intensity_file")
     assert source1._type._spectrum._spectrum._spectrum.HasField("predefined")
     assert source1._type._spectrum._spectrum._spectrum.predefined.HasField("incandescent")
+    assert source1._type._spectrum._spectrum._spectrum.name == "Luminaire.1.Spectrum"
     assert source1._source_instance.HasField("luminaire_properties")
     assert source1._source_instance.luminaire_properties.axis_system == [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 
@@ -104,6 +105,7 @@ def test_create_surface_source(speos: Speos):
     assert source1.source_template_link.get().surface.luminous_flux.luminous_value == 683
     assert source1.source_template_link.get().surface.HasField("spectrum_guid")
     spectrum = speos.client.get_item(key=source1.source_template_link.get().surface.spectrum_guid)
+    assert spectrum.get().name == "Surface.1.Spectrum"
     assert spectrum.get().HasField("monochromatic")
     assert source1.source_template_link.get().surface.intensity_guid != ""
     intensity = speos.client.get_item(key=source1.source_template_link.get().surface.intensity_guid)
@@ -224,6 +226,7 @@ def test_create_rayfile_source(speos: Speos):
     source1.commit()
     assert source1.source_template_link.get().rayfile.spectrum_guid != ""
     spectrum = speos.client.get_item(key=source1.source_template_link.get().rayfile.spectrum_guid)
+    assert spectrum.get().name == "Ray-file.1.Spectrum"
     assert spectrum.get().HasField("blackbody")
 
     # properties
