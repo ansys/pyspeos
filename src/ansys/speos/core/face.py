@@ -231,45 +231,6 @@ class FaceFactory:
     """Class to help creating Face message"""
 
     @staticmethod
-    def new(
-        name: str,
-        vertices: List[float],
-        facets: List[int],
-        normals: List[float],
-        description: Optional[str] = "",
-        metadata: Optional[Mapping[str, str]] = None,
-    ) -> Face:
-        """
-        Create a Face message.
-
-        Parameters
-        ----------
-        name : str
-            Name of the face.
-        vertices : List[float]
-            Coordinates of all points [p1x, p1y, p1z, p2x, p2y, p2z, ...].
-        facets : List[int]
-            Indexes of points for all triangles [t1_1, t1_2, t1_3, t2_1, t2_2, t2_3, ...].
-        normals: List[float],
-            Normal vector for all points [n1x, n1y, n1z, n2x, n2y, n2z, ...].
-        description : str, optional
-            Description of the face.
-            By default, ``""``.
-        metadata : Mapping[str, str], optional
-            Metadata of the face.
-            By default, ``None``.
-
-        Returns
-        -------
-        face.Face
-            Face message created.
-        """
-        face = Face(name=name, description=description, vertices=vertices, facets=facets, normals=normals)
-        if metadata is not None:
-            face.metadata.update(metadata)
-        return face
-
-    @staticmethod
     def rectangle(
         name: str,
         description: Optional[str] = "",

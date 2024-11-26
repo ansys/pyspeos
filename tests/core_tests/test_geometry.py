@@ -42,7 +42,7 @@ def test_create_big_face(speos: Speos):
 
     # Create face
     face_link = face_db.create(
-        message=FaceFactory.new(
+        message=Face(
             name="Face.1",
             description="Face one",
             vertices=vertices,
@@ -122,19 +122,6 @@ def test_face_factory(speos: Speos):
     # Get DB
     face_db = speos.client.faces()  # Create face stub from client channel
 
-    # triangle with passing all data
-    triangle0 = face_db.create(
-        message=FaceFactory.new(
-            name="triangle_0",
-            description="triangle from data",
-            vertices=[0, 0, 0, 100, 0, 0, 0, 100, 0],
-            facets=[0, 1, 2],
-            normals=[0, 0, 1, 0, 0, 1, 0, 0, 1],
-            metadata={"key_0": "val_0", "key_1": "val_1"},
-        )
-    )
-    assert triangle0.key != ""
-
     # rectangle by using factory rectangle creator with values
     rectangle0 = face_db.create(
         message=FaceFactory.rectangle(
@@ -159,7 +146,6 @@ def test_face_factory(speos: Speos):
     assert rectangle1.get().vertices[6:9] == [100, 50, 0]
     assert rectangle1.get().vertices[9:12] == [-100, 50, 0]
 
-    triangle0.delete()
     rectangle0.delete()
     rectangle1.delete()
 
