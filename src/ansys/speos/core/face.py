@@ -21,14 +21,12 @@
 # SOFTWARE.
 
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
-from typing import Iterator, List, Mapping, Optional
+from typing import Iterator, List
 
 from ansys.api.speos.part.v1 import face_pb2 as messages
 from ansys.api.speos.part.v1 import face_pb2_grpc as service
-import numpy as np
 
 from ansys.speos.core.crud import CrudItem, CrudStub
-from ansys.speos.core.geometry_utils import AxisPlane
 from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 
 Face = messages.Face
@@ -225,61 +223,3 @@ class FaceStub(CrudStub):
                 out_face.normals.extend(chunk.normals.data)
 
         return out_face
-
-
-class FaceFactory:
-    """Class to help creating Face message"""
-
-    @staticmethod
-    def rectangle(
-        name: str,
-        description: Optional[str] = "",
-        base: Optional[AxisPlane] = AxisPlane(),
-        x_size: Optional[float] = 200,
-        y_size: Optional[float] = 100,
-        metadata: Optional[Mapping[str, str]] = None,
-    ) -> Face:
-        """
-        Create a specific face: a rectangle.
-
-        Parameters
-        ----------
-        name : str
-            Name of the face.
-        description : str, optional
-            Description of the face.
-            By default, ``""``.
-        base : ansys.speos.core.geometry_utils.AxisPlane
-            Center and orientation of the rectangle.
-            By default, ``ansys.speos.core.geometry_utils.AxisPlane()``.
-        x_size : float, optional
-            size regarding x axis.
-            By default, ``200``.
-        y_size : float, optional
-            size regarding y axis.
-            By default, ``100``.
-        metadata : Mapping[str, str], optional
-            Metadata of the face.
-            By default, ``None``.
-
-        Returns
-        -------
-        face.Face
-            Face message created.
-        """
-        face = Face(name=name, description=description)
-        if metadata is not None:
-            face.metadata.update(metadata)
-
-        face.vertices.extend(base.origin - np.multiply(0.5 * x_size, base.x_vect) - np.multiply(0.5 * y_size, base.y_vect))
-        face.vertices.extend(base.origin + np.multiply(0.5 * x_size, base.x_vect) - np.multiply(0.5 * y_size, base.y_vect))
-        face.vertices.extend(base.origin + np.multiply(0.5 * x_size, base.x_vect) + np.multiply(0.5 * y_size, base.y_vect))
-        face.vertices.extend(base.origin - np.multiply(0.5 * x_size, base.x_vect) + np.multiply(0.5 * y_size, base.y_vect))
-
-        normal = np.cross(base.x_vect, base.y_vect)
-        for i in range(4):
-            face.normals.extend(normal)
-
-        face.facets.extend([0, 1, 3, 1, 2, 3])
-
-        return face

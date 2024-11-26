@@ -24,15 +24,16 @@
 Test scene.
 """
 import os
+from typing import List, Mapping
 
 from ansys.api.speos.sensor.v1 import common_pb2, irradiance_sensor_pb2
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
+import numpy as np
 
-from ansys.speos.core.body import BodyFactory
-from ansys.speos.core.face import FaceFactory
-from ansys.speos.core.geometry_utils import AxisSystem
+from ansys.speos.core.body import Body
+from ansys.speos.core.face import Face, FaceStub
 from ansys.speos.core.intensity_template import IntensityTemplate
-from ansys.speos.core.part import PartFactory
+from ansys.speos.core.part import Part
 from ansys.speos.core.scene import Scene, SceneLink
 from ansys.speos.core.sensor_template import SensorTemplate
 from ansys.speos.core.simulation_template import SimulationTemplate
@@ -53,25 +54,31 @@ def create_basic_scene(speos: Speos) -> SceneLink:
 
     # Create part with two bodies
     main_part = speos.client.parts().create(
-        PartFactory.new(
+        Part(
             name="main_part",
             description="main_part for scene_0",
-            bodies=[
-                speos.client.bodies().create(
-                    message=BodyFactory.new(
+            body_guids=[
+                speos.client.bodies()
+                .create(
+                    message=Body(
                         name="BodySource:1",
                         description="Body used as support for source",
-                        faces=[speos.client.faces().create(message=FaceFactory.rectangle(name="FaceSource:1", x_size=100, y_size=100))],
+                        face_guids=[
+                            speos.client.faces().create(message=create_face_rectangle(name="FaceSource:1", x_size=100, y_size=100)).key
+                        ],
                     )
-                ),
-                speos.client.bodies().create(
-                    message=BodyFactory.box(
+                )
+                .key,
+                speos.client.bodies()
+                .create(
+                    message=create_body_box(
                         name="Body0:1",
                         description="Body0:1 in main_part",
                         face_stub=speos.client.faces(),
-                        base=AxisSystem(origin=[0, 0, 500]),
+                        base=[0, 0, 500, 1, 0, 0, 0, 1, 0, 0, 0, 1],
                     )
-                ),
+                )
+                .key,
             ],
         )
     )
@@ -279,6 +286,83 @@ def create_basic_scene(speos: Speos) -> SceneLink:
     return scene
 
 
+def create_face_rectangle(
+    name: str,
+    description: str = "",
+    base: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0],
+    x_size: float = 200,
+    y_size: float = 100,
+    metadata: Mapping[str, str] = {},
+) -> Face:
+    face = Face(name=name, description=description, metadata=metadata)
+
+    face.vertices.extend(base[:3] - np.multiply(0.5 * x_size, base[3:6]) - np.multiply(0.5 * y_size, base[6:9]))
+    face.vertices.extend(base[:3] + np.multiply(0.5 * x_size, base[3:6]) - np.multiply(0.5 * y_size, base[6:9]))
+    face.vertices.extend(base[:3] + np.multiply(0.5 * x_size, base[3:6]) + np.multiply(0.5 * y_size, base[6:9]))
+    face.vertices.extend(base[:3] - np.multiply(0.5 * x_size, base[3:6]) + np.multiply(0.5 * y_size, base[6:9]))
+
+    normal = np.cross(base[3:6], base[6:9])
+    for i in range(4):
+        face.normals.extend(normal)
+
+    face.facets.extend([0, 1, 3, 1, 2, 3])
+
+    return face
+
+
+def create_body_box(
+    name: str,
+    face_stub: FaceStub,
+    description: str = "",
+    base: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+    x_size: float = 200,
+    y_size: float = 200,
+    z_size: float = 100,
+    idx_face: int = 0,
+    metadata: Mapping[str, str] = {},
+) -> Body:
+    body = Body(name=name, description=description, metadata=metadata)
+
+    base0 = []
+    base0.extend(base[:3] - np.multiply(0.5 * z_size, base[9:]))  # origin
+    base0.extend(np.multiply(-1, base[3:6]))  # x_vect
+    base0.extend(base[6:9])  # y_vect
+    face0 = face_stub.create(message=create_face_rectangle(name="Face:" + str(idx_face), base=base0, x_size=x_size, y_size=y_size))
+
+    base1 = []
+    base1.extend(base[:3] + np.multiply(0.5 * z_size, base[9:]))
+    base1.extend(base[3:6])
+    base1.extend(base[6:9])
+    face1 = face_stub.create(message=create_face_rectangle(name="Face:" + str(idx_face + 1), base=base1, x_size=x_size, y_size=y_size))
+
+    base2 = []
+    base2.extend(base[:3] - np.multiply(0.5 * x_size, base[3:6]))
+    base2.extend(base[9:])
+    base2.extend(base[6:9])
+    face2 = face_stub.create(message=create_face_rectangle(name="Face:" + str(idx_face + 2), base=base2, x_size=z_size, y_size=y_size))
+
+    base3 = []
+    base3.extend(base[:3] + np.multiply(0.5 * x_size, base[3:6]))
+    base3.extend(np.multiply(-1, base[9:]))
+    base3.extend(base[6:9])
+    face3 = face_stub.create(message=create_face_rectangle(name="Face:" + str(idx_face + 3), base=base3, x_size=z_size, y_size=y_size))
+
+    base4 = []
+    base4.extend(base[:3] - np.multiply(0.5 * y_size, base[6:9]))
+    base4.extend(base[3:6])
+    base4.extend(base[9:])
+    face4 = face_stub.create(message=create_face_rectangle(name="Face:" + str(idx_face + 4), base=base4, x_size=x_size, y_size=z_size))
+
+    base5 = []
+    base5.extend(base[:3] + np.multiply(0.5 * y_size, base[6:9]))
+    base5.extend(base[3:6])
+    base5.extend(np.multiply(-1, base[9:]))
+    face5 = face_stub.create(message=create_face_rectangle(name="Face:" + str(idx_face + 5), base=base5, x_size=x_size, y_size=z_size))
+
+    body.face_guids.extend([face0.key, face1.key, face2.key, face3.key, face4.key, face5.key])
+    return body
+
+
 def test_scene(speos: Speos):
     """Test the scene creation."""
     assert speos.client.healthy is True
@@ -351,7 +435,7 @@ def test_scene_actions_get_source_ray_paths(speos: Speos):
     assert speos.client.healthy is True
 
     # Creation of a basic scene with a luminaire source
-    main_part = speos.client.parts().create(message=PartFactory.new(name="MainPart", bodies=[]))
+    main_part = speos.client.parts().create(message=Part(name="MainPart", body_guids=[]))
 
     blackbody_2856 = speos.client.spectrums().create(
         message=Spectrum(name="Blackbody_2856", blackbody=Spectrum.BlackBody(temperature=2856))
