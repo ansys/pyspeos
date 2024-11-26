@@ -127,6 +127,43 @@ def print_progress_bar(
         sys.stdout.flush()
 
 
+class AxisSystem:
+    """
+    Represents an axis system.
+
+    Parameters
+    ----------
+    origin : List[float], optional
+        Origin of the axis system.
+        By default, ``[0, 0, 0]``.
+    x_vect : List[float], optional
+        X vector of the axis system.
+        By default, ``[1, 0, 0]``.
+    y_vect : List[float], optional
+        Y vector of the axis system.
+        By default, ``[0, 1, 0]``.
+    z_vect : List[float], optional
+        Z vector of the axis system.
+        By default, ``[0, 0, 1]``.
+    """
+
+    def __init__(
+        self,
+        origin: Optional[List[float]] = [0, 0, 0],
+        x_vect: Optional[List[float]] = [1, 0, 0],
+        y_vect: Optional[List[float]] = [0, 1, 0],
+        z_vect: Optional[List[float]] = [0, 0, 1],
+    ) -> None:
+        self.origin = origin
+        """Origin of the axis system"""
+        self.x_vect = x_vect
+        """X vector of the axis system"""
+        self.y_vect = y_vect
+        """Y vector of the axis system"""
+        self.z_vect = z_vect
+        """Z vector of the axis system"""
+
+
 class IrradianceSensorParameters:
     """
     Irradiance sensor with its parameters.
@@ -214,7 +251,7 @@ class IrradianceSensorParameters:
         )
 
 
-class IrradianceSensorProperties(core.AxisSystem):
+class IrradianceSensorProperties(AxisSystem):
     """
     Properties for irradiance sensor.
 
@@ -235,7 +272,7 @@ class IrradianceSensorProperties(core.AxisSystem):
         core.Scene.SensorInstance.IrradianceProperties
             Protobuf message created.
         """
-        irradiance_sensor_axis_system = core.AxisSystem(origin=self.origin, x_vect=self.x_vect, y_vect=self.y_vect, z_vect=self.z_vect)
+        irradiance_sensor_axis_system = AxisSystem(origin=self.origin, x_vect=self.x_vect, y_vect=self.y_vect, z_vect=self.z_vect)
 
         layer_type = None
         if self.layer_type == "Source":
@@ -440,7 +477,7 @@ class PhotometricCameraSensorParameters:
         return sensor_t_data
 
 
-class CameraSensorProperties(core.AxisSystem):
+class CameraSensorProperties(AxisSystem):
     """
     Properties for camera sensor.
 
@@ -463,7 +500,7 @@ class CameraSensorProperties(core.AxisSystem):
         core.Scene.SensorInstance.CameraProperties
             Protobuf message created.
         """
-        camera_axis_system = core.AxisSystem(origin=self.origin, x_vect=self.x_vect, y_vect=self.y_vect, z_vect=self.z_vect)
+        camera_axis_system = AxisSystem(origin=self.origin, x_vect=self.x_vect, y_vect=self.y_vect, z_vect=self.z_vect)
 
         temp_trajectory_file = None
         if self.trajectory_file != "":
@@ -582,7 +619,7 @@ class SpeosSimulationUpdate:
             global_z = np.array(part_coordinate.z_vect) * local_vertice[2]
             return global_origin + global_x + global_y + global_z
 
-        part_coordinate = core.AxisSystem()
+        part_coordinate = AxisSystem()
         part_coordinate.origin = [0.0, 0.0, 0.0]
         part_coordinate.x_vect = [1.0, 0.0, 0.0]
         part_coordinate.y_vect = [0.0, 1.0, 0.0]
@@ -742,13 +779,13 @@ class SpeosSimulationUpdate:
                     sensor.camera_properties.layer_type_none.SetInParent()
             self._scene.set(scene_data)
 
-    def update_scene_part_position(self, new_part_positions: {str: core.AxisSystem}) -> None:
+    def update_scene_part_position(self, new_part_positions: {str: AxisSystem}) -> None:
         """
         update component position with given dictionary of component_part name with corresponding position.
 
         Parameters
         ----------
-        new_part_positions: {str: core.AxisSystem}
+        new_part_positions: {str: AxisSystem}
             dictionary with key of component_part name and value of corresponding position
         """
         root_part = self._speos.client.get_item(self._scene.get().part_guid)
@@ -765,7 +802,7 @@ class SpeosSimulationUpdate:
         root_part.set(root_part_data)
         self._modified = True
 
-    def add_scene(self, simulation_scene: SpeosSimulationUpdate, position_info: core.AxisSystem, only_geometry: bool = False) -> None:
+    def add_scene(self, simulation_scene: SpeosSimulationUpdate, position_info: AxisSystem, only_geometry: bool = False) -> None:
         """
         assemble simulation scene into an assembly scene.
 
@@ -773,7 +810,7 @@ class SpeosSimulationUpdate:
         ----------
         simulation_scene: SpeosSimulationUpdate
             simulation scene
-        position_info: core.AxisSystem
+        position_info: AxisSystem
             position information origin x, origin y, origin z, axis-x, axis-y, axis-z
         only_geometry: bool
             In case only the geometry need to be added (no sources, sensors, simulations), set this boolean to True.
