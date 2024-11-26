@@ -336,7 +336,7 @@ def test_scene_actions_load_modify(speos: Speos):
             sensor_guid=scene_dm.sensors[0].sensor_guid,
             irradiance_properties=Scene.SensorInstance.IrradianceProperties(
                 axis_system=[-42, 2, 5, 0, 1, 0, 0, 0, -1, -1, 0, 0],
-                layer_type_face=Scene.SensorInstance.LayerTypeIncidenceAngle(sampling=9),
+                layer_type_incidence_angle=Scene.SensorInstance.LayerTypeIncidenceAngle(sampling=9),
             ),
         )
     )
@@ -354,14 +354,18 @@ def test_scene_actions_get_source_ray_paths(speos: Speos):
     # Creation of a basic scene with a luminaire source
     main_part = speos.client.parts().create(message=PartFactory.new(name="MainPart", bodies=[]))
 
-    blackbody_2856 = Spectrum(name="Blackbody_2856", blackbody=Spectrum.BlackBody(temperature=2856))
-    luminaire_t = SourceTemplate(
-        name="Luminaire",
-        luminaire=SourceTemplate.Luminaire(
-            flux_from_intensity_file=SourceTemplate.FromIntensityFile(),
-            intensity_file_uri=os.path.join(test_path, "IES_C_DETECTOR.ies"),
-            spectrum_guid=blackbody_2856.key,
-        ),
+    blackbody_2856 = speos.client.spectrums().create(
+        message=Spectrum(name="Blackbody_2856", blackbody=Spectrum.BlackBody(temperature=2856))
+    )
+    luminaire_t = speos.client.source_templates().create(
+        message=SourceTemplate(
+            name="Luminaire",
+            luminaire=SourceTemplate.Luminaire(
+                flux_from_intensity_file=SourceTemplate.FromIntensityFile(),
+                intensity_file_uri=os.path.join(test_path, "IES_C_DETECTOR.ies"),
+                spectrum_guid=blackbody_2856.key,
+            ),
+        )
     )
 
     scene = speos.client.scenes().create(
