@@ -49,7 +49,7 @@ from ansys.speos.core.intensity_template import IntensityTemplate, IntensityTemp
 from ansys.speos.core.job import Job, JobLink
 from ansys.speos.core.logger import LOG, Logger
 from ansys.speos.core.part import Part, PartLink
-from ansys.speos.core.proto_message_utils import protobuf_message_to_str
+from ansys.speos.core.proto_message_utils import protobuf_message_to_dict, protobuf_message_to_str
 from ansys.speos.core.scene import Scene, SceneLink
 from ansys.speos.core.sensor_template import SensorTemplate, SensorTemplateLink
 from ansys.speos.core.simulation_template import SimulationTemplate, SimulationTemplateLink

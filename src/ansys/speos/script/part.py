@@ -28,6 +28,7 @@ from typing import List, Mapping, Optional, Union
 import uuid
 
 import ansys.speos.core as core
+from ansys.speos.script import proto_message_utils
 import ansys.speos.script.body as body
 import ansys.speos.script.face as face
 import ansys.speos.script.project as project
@@ -150,30 +151,40 @@ class Part:
             self._part_instance.axis_system[:] = axis_system
             return self
 
-        def _to_str(self, light_print: bool = False) -> str:
-            out_str = ""
+        def _to_dict(self) -> dict:
+            out_dict = ""
 
-            if light_print == False:
-                out_str += f"local: " + core.protobuf_message_to_str(self._part_instance)
-
-            if self.part_link is None:
-                out_str += f"\nlocal: " + core.protobuf_message_to_str(self._part)
+            # Part Instance
+            if self._parent_part is not None:
+                part_inst = next((x for x in self._parent_part._part.parts if x.description == "UniqueId_" + self._unique_id), None)
+                if part_inst is not None:
+                    out_dict = proto_message_utils._replace_guids(speos_client=self._speos_client, message=part_inst)
+                else:
+                    out_dict = proto_message_utils._replace_guids(speos_client=self._speos_client, message=self._part_instance)
             else:
-                out_str += "\n" + str(self.part_link)
+                out_dict = proto_message_utils._replace_guids(speos_client=self._speos_client, message=self._part_instance)
 
-            for g in self._geom_features:
-                if type(g) == body.Body:
-                    out_str += "\n" + str(g)
+            if "part" not in out_dict.keys():
+                # Part
+                if self.part_link is None:
+                    out_dict["part"] = proto_message_utils._replace_guids(speos_client=self._speos_client, message=self._part)
+                else:
+                    out_dict["part"] = proto_message_utils._replace_guids(speos_client=self._speos_client, message=self.part_link.get())
 
-            for g in self._geom_features:
-                if type(g) == Part.SubPart:
-                    out_str += g._to_str(light_print=True)
-
-            return out_str
+            return out_dict
 
         def __str__(self) -> str:
             """Return the string representation of the sub part."""
-            out_str = self._to_str()
+            out_str = ""
+
+            if self._parent_part is not None:
+                part_inst = next((x for x in self._parent_part._part.parts if x.description == "UniqueId_" + self._unique_id), None)
+                if part_inst is None:
+                    out_str += "local: "
+            else:
+                out_str += "local: "
+
+            out_str += proto_message_utils.dict_to_str(dict=self._to_dict())
             return out_str
 
         def commit(self) -> Part.SubPart:
@@ -248,11 +259,6 @@ class Part:
             ansys.speos.script.part.Part.SubPart
                 SubPart feature.
             """
-            # Delete the part
-            if self.part_link is not None:
-                self.part_link.delete()
-                self.part_link = None
-
             # Delete features
             for g in self._geom_features:
                 g.delete()
@@ -381,23 +387,24 @@ class Part:
         self._geom_features.append(sub_part_feat)
         return sub_part_feat
 
+    def _to_dict(self) -> dict:
+        out_dict = ""
+
+        if self.part_link is None:
+            out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._part)
+        else:
+            out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=self.part_link.get())
+
+        return out_dict
+
     def __str__(self) -> str:
         """Return the string representation of the part."""
         out_str = ""
 
         if self.part_link is None:
-            out_str += f"\nlocal: " + core.protobuf_message_to_str(self._part)
-        else:
-            out_str += "\n" + str(self.part_link)
+            out_str += "local: "
 
-        for g in self._geom_features:
-            if type(g) == body.Body:
-                out_str += "\n" + str(g)
-
-        for g in self._geom_features:
-            if type(g) == Part.SubPart:
-                out_str += g._to_str(light_print=True)
-
+        out_str += proto_message_utils.dict_to_str(dict=self._to_dict())
         return out_str
 
     def commit(self) -> Part:

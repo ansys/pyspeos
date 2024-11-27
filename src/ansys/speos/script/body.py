@@ -27,6 +27,7 @@ import re
 from typing import List, Mapping, Optional, Union
 
 import ansys.speos.core as core
+from ansys.speos.script import proto_message_utils
 import ansys.speos.script.face as face
 import ansys.speos.script.part as part
 
@@ -98,18 +99,24 @@ class Body:
         self._geom_features.append(face_feat)
         return face_feat
 
+    def _to_dict(self) -> dict:
+        out_dict = ""
+
+        if self.body_link is None:
+            out_dict = proto_message_utils._replace_guids(speos_client=self._speos_client, message=self._body)
+        else:
+            out_dict = proto_message_utils._replace_guids(speos_client=self._speos_client, message=self.body_link.get())
+
+        return out_dict
+
     def __str__(self) -> str:
         """Return the string representation of the body."""
         out_str = ""
 
         if self.body_link is None:
-            out_str += f"\nlocal: " + core.protobuf_message_to_str(self._body)
-        else:
-            out_str += "\n" + str(self.body_link)
+            out_str += "local: "
 
-        for g in self._geom_features:
-            out_str += "\n" + str(g)
-
+        out_str += proto_message_utils.dict_to_str(dict=self._to_dict())
         return out_str
 
     def commit(self) -> Body:

@@ -27,6 +27,7 @@ from typing import List, Mapping, Optional
 
 import ansys.speos.core as core
 from ansys.speos.script.geo_ref import GeoRef
+from ansys.speos.script.proto_message_utils import dict_to_str
 
 
 class Intensity:
@@ -355,16 +356,35 @@ class Intensity:
             )
         return self._type
 
+    @property
+    def type(self) -> type:
+        """Return type of sensor.
+
+        Returns
+        -------
+        Example: None for lambertian or ansys.speos.script.intensity.Intensity.Library
+
+        """
+        return type(self._type)
+
+    def _to_dict(self) -> dict:
+        out_dict = {}
+        if self.intensity_template_link is None:
+            out_dict = core.protobuf_message_to_dict(self._intensity_template)
+        else:
+            out_dict = core.protobuf_message_to_dict(message=self.intensity_template_link.get())
+
+        if self._light_print is False:
+            out_dict["intensity_properties"] = core.protobuf_message_to_dict(message=self._intensity_properties)
+
+        return out_dict
+
     def __str__(self) -> str:
         """Return the string representation of the intensity."""
         out_str = ""
         if self.intensity_template_link is None:
-            out_str += f"local: " + core.protobuf_message_to_str(self._intensity_template)
-        else:
-            out_str += str(self.intensity_template_link)
-
-        if self._light_print is False:
-            out_str += f"\nlocal: " + core.protobuf_message_to_str(self._intensity_properties)
+            out_str += "local: "
+        out_str += dict_to_str(self._to_dict())
         return out_str
 
     def commit(self) -> Intensity:

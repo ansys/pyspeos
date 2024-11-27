@@ -35,6 +35,7 @@ import ansys.speos.script.body as body
 import ansys.speos.script.face as face
 import ansys.speos.script.opt_prop as opt_prop
 import ansys.speos.script.part as part
+import ansys.speos.script.proto_message_utils as proto_message_utils
 import ansys.speos.script.sensor as sensor
 import ansys.speos.script.simulation as simulation
 import ansys.speos.script.source as source
@@ -322,9 +323,52 @@ ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.p
 
         return self
 
+    def _to_dict(self) -> dict:
+        # Replace all guids by content of objects in the dict
+        output_dict = proto_message_utils._replace_guids(
+            speos_client=self.client, message=self.scene_link.get(), ignore_simple_key="part_guid"
+        )
+
+        # For each feature, replace properties by putting them at correct place
+        for k, v in output_dict.items():
+            if type(v) is list:
+                for inside_dict in v:
+                    if k == "simulations":
+                        sim_feat = self.find(name=inside_dict["name"], feature_type=simulation.Simulation)[0]
+                        if sim_feat.job_link is None:
+                            inside_dict["simulation_properties"] = proto_message_utils._replace_guids(
+                                speos_client=self.client, message=sim_feat._job, ignore_simple_key="scene_guid"
+                            )
+                        else:
+                            inside_dict["simulation_properties"] = proto_message_utils._replace_guids(
+                                speos_client=self.client, message=sim_feat.job_link.get(), ignore_simple_key="scene_guid"
+                            )
+
+                    proto_message_utils._replace_properties(inside_dict)
+        return output_dict
+
+    def get(self) -> dict:
+        """Get dictionary corresponding to the project - read only."""
+        return self._to_dict()
+
+    def find_key(self, key: str) -> List[tuple[str, dict]]:
+        """Get values corresponding to the key in project dictionary - read only.
+
+        Parameters
+        ----------
+        key : str
+            Key to search in the project dictionary.
+
+        Returns
+        -------
+        List[tuple[str, dict]]
+            List of matching objects containing for each its x_path and its value.
+        """
+        return proto_message_utils._finder_by_key(dict_var=self._to_dict(), key=key)
+
     def __str__(self):
         """Return the string representation of the project's scene."""
-        return str(self.scene_link)
+        return proto_message_utils.dict_to_str(dict=self._to_dict())
 
     def _fill_bodies(self, body_guids: List[str], feat_host: Union[part.Part, part.Part.SubPart]):
         """Fill part of sub part features from a list of body guids."""
