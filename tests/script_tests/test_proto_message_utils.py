@@ -285,3 +285,12 @@ def test_finder_by_key(speos: Speos):
     assert res[0][1] == "Solid Body in SOURCE2:2920204960/Face in SOURCE2:222"
     assert res[1][0] == ".sources[.name='Surface Source (0) in SOURCE1'].source.surface.exitance_constant.geo_paths[0].geo_path"
     assert res[1][1] == "Solid Body in SOURCE1:2494956811/Face in SOURCE1:187"
+
+
+def test_flatten_dict(speos: Speos):
+    p = script.Project(speos=speos, path=os.path.join(test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"))
+
+    scene_dict = p._to_dict()
+    res = proto_message_utils._flatten_dict(dict_var=scene_dict)
+    expected_keys = ["name", "description", "part_guid", "sources", "sensors", "simulations", "materials", "metadata", "scenes"]
+    assert all(True if key in expected_keys else False for key in res.keys())
