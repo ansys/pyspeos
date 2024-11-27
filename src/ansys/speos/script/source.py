@@ -237,8 +237,6 @@ class BaseSource:
             Source feature.
         """
         # This allows to clean managed object contained in _luminaire, _rayfile, etc.. Like Spectrum, IntensityTemplate
-        if self._type is not None:
-            self._type._delete()
 
         # Delete the source template
         if self.source_template_link is not None:

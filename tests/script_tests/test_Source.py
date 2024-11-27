@@ -37,48 +37,48 @@ def test_create_luminaire_source(speos: Speos):
 
     # Default value
     source1 = p.create_source(name="Luminaire.1")
-    source1.set_luminaire()
+    source1 = script.source.Luminaire(p, "Luminaire.1")
     assert source1._source_template.HasField("luminaire")
     assert source1._source_template.luminaire.intensity_file_uri == ""
     assert source1._source_template.luminaire.HasField("flux_from_intensity_file")
-    assert source1._type._spectrum._spectrum._spectrum.HasField("predefined")
-    assert source1._type._spectrum._spectrum._spectrum.predefined.HasField("incandescent")
-    assert source1._type._spectrum._spectrum._spectrum.name == "Luminaire.1.Spectrum"
+    assert source1._spectrum._spectrum._spectrum.HasField("predefined")
+    assert source1._spectrum._spectrum._spectrum.predefined.HasField("incandescent")
+    assert source1._spectrum._spectrum._spectrum.name == "Luminaire.1.Spectrum"
     assert source1._source_instance.HasField("luminaire_properties")
     assert source1._source_instance.luminaire_properties.axis_system == [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 
     # intensity_file_uri
-    source1.set_luminaire().set_intensity_file_uri(uri=os.path.join(test_path, "IES_C_DETECTOR.ies"))
+    source1.set_intensity_file_uri(uri=os.path.join(test_path, "IES_C_DETECTOR.ies"))
     source1.commit()
     assert source1.source_template_link is not None
     assert source1.source_template_link.get().luminaire.intensity_file_uri != ""
 
     # spectrum
-    source1.set_luminaire().set_spectrum().set_halogen()
+    source1.set_spectrum().set_halogen()
     source1.commit()
     spectrum = speos.client.get_item(key=source1.source_template_link.get().luminaire.spectrum_guid)
     assert spectrum.get().HasField("predefined")
     assert spectrum.get().predefined.HasField("halogen")
 
     # flux luminous_flux
-    source1.set_luminaire().set_flux_luminous(value=650)
+    source1.set_flux_luminous(value=650)
     source1.commit()
     assert source1.source_template_link.get().luminaire.HasField("luminous_flux")
     assert source1.source_template_link.get().luminaire.luminous_flux.luminous_value == 650
 
     # flux radiant_flux
-    source1.set_luminaire().set_flux_radiant(value=1.2)
+    source1.set_flux_radiant(value=1.2)
     source1.commit()
     assert source1.source_template_link.get().luminaire.HasField("radiant_flux")
     assert source1.source_template_link.get().luminaire.radiant_flux.radiant_value == 1.2
 
     # flux_from_intensity_file
-    source1.set_luminaire().set_flux_from_intensity_file()
+    source1.set_flux_from_intensity_file()
     source1.commit()
     assert source1.source_template_link.get().luminaire.HasField("flux_from_intensity_file")
 
     # Properties : axis_system
-    source1.set_luminaire().set_axis_system(axis_system=[10, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    source1.set_axis_system(axis_system=[10, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     source1.commit()
     assert source1._source_instance.HasField("luminaire_properties")
     assert source1._source_instance.luminaire_properties.axis_system == [10, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
