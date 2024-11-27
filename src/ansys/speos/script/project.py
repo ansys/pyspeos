@@ -438,7 +438,7 @@ ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.p
             mesh data extracted.
         """
 
-        def local2absolute(local_vertice: np.ndarray) -> np.ndarray:
+        def local2absolute(local_vertice: np.ndarray, coordinates) -> np.ndarray:
             """
             convert local coordinate to global coordinate.
 
@@ -453,17 +453,13 @@ ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.p
                 numpy array includes x, y, z info
 
             """
-            global_origin = np.array(part_coordinate.origin)
-            global_x = np.array(part_coordinate.x_vect) * local_vertice[0]
-            global_y = np.array(part_coordinate.y_vect) * local_vertice[1]
-            global_z = np.array(part_coordinate.z_vect) * local_vertice[2]
+            global_origin = np.array(coordinates[:3])
+            global_x = np.array(coordinates[3:6]) * local_vertice[0]
+            global_y = np.array(coordinates[6:9]) * local_vertice[1]
+            global_z = np.array(coordinates[9:]) * local_vertice[2]
             return global_origin + global_x + global_y + global_z
 
-        part_coordinate = core.AxisSystem()
-        part_coordinate.origin = [0.0, 0.0, 0.0]
-        part_coordinate.x_vect = [1.0, 0.0, 0.0]
-        part_coordinate.y_vect = [0.0, 1.0, 0.0]
-        part_coordinate.z_vect = [0.0, 0.0, 1.0]
+        part_coordinate = [0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
         if part_coordinate_info is not None:
             part_coordinate.origin = part_coordinate_info[:3]
             part_coordinate.x_vect = part_coordinate_info[3:6]
@@ -477,7 +473,7 @@ ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.p
                 vertices = np.array(face_item_data.vertices)
                 facets = np.array(face_item_data.facets)
                 vertices = vertices.reshape(-1, 3)
-                vertices = np.array([local2absolute(vertice) for vertice in vertices])
+                vertices = np.array([local2absolute(vertice, part_coordinate) for vertice in vertices])
                 facets = facets.reshape(-1, 3)
                 temp = np.full(facets.shape[0], 3)
                 temp = np.vstack(temp)

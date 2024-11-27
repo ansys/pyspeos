@@ -259,7 +259,7 @@ class LightPathFinder:
             length of the last ray
         """
         temp = ray.impacts
-        if not 7 <= ray.intersectiontype[-1] <= 15:
+        if not 7 <= ray.intersection_type[-1] <= 15:
             temp.append(
                 [
                     ray.impacts[-1][0] + max_ray_length * ray.last_direction[0],
