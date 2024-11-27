@@ -1099,20 +1099,13 @@ class Simulation:
 
         """
 
-        def flatten_dict(data):
-            flat_dict = {}
-            for k, v in data.items():
-                if isinstance(v, dict):
-                    flat_dict.update(flatten_dict(v))
-                flat_dict[k] = v
-            return flat_dict
-
         if key == "":
             return self._to_dict()
-        info = flatten_dict(self._to_dict())
-        if key in info.keys():
-            return info[key]
+        info = proto_message_utils._value_finder_key_startswith(dict_var=self._to_dict(), key=key)
+        if list(info) != []:
+            return next(info)[1]
         else:
+            info = proto_message_utils._flatten_dict(dict_var=self._to_dict())
             print("Used key: {} not found in key list: {}.".format(key, info.keys()))
 
     def __str__(self) -> str:
