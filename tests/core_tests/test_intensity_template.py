@@ -25,6 +25,8 @@ Test basic intensity template database connection.
 """
 import os
 
+from ansys.api.speos.common.v1 import data_pb2
+
 from ansys.speos.core.intensity_template import IntensityTemplate
 from ansys.speos.core.speos import Speos
 from conftest import test_path
@@ -84,3 +86,26 @@ def test_intensity_template(speos: Speos):
     # Delete all intensity_templates from DB
     for intens_t in intens_t_db.list():
         intens_t.delete()
+
+
+def test_action_get_library_type_info(speos: Speos):
+    """Test the intensity template action : get_library_type_info."""
+    assert speos.client.healthy is True
+
+    # Get DB
+    intens_t_db = speos.client.intensity_templates()  # Create intensity template stub from client channel
+
+    # Library
+    intens_t_lib = intens_t_db.create(
+        message=IntensityTemplate(
+            name="library_0",
+            description="library intensity template",
+            library=IntensityTemplate.Library(intensity_file_uri=os.path.join(test_path, "IES_C_DETECTOR.ies")),
+        )
+    )
+
+    # Get flux
+    flux = intens_t_lib.get_library_type_info().flux
+    assert flux.magnitude == data_pb2.Magnitude.luminous_flux
+    assert flux.unit == data_pb2.Unit.lumens
+    assert flux.values[0] == 3966.7947473514782
