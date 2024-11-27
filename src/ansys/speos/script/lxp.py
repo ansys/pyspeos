@@ -33,39 +33,64 @@ NO_ERROR_IDS = [0, 1, 2, 3, 4, 5, 6, 16, -7, -6, -5, -5, -4, -3, -2, -1]
 
 class RayPath:
     """
-    Frame work representing a singular raypath
+    Framework representing a singular raypath.
     """
 
     def __init__(self, raypath, sensor_contribution=False):
-        self.nb_impacts = len(raypath.impacts)
-        self.impacts = [[inter.x, inter.y, inter.z] for inter in raypath.impacts]
-        self.wl = raypath.wavelengths[0]
-        self.body_ids = raypath.body_context_ids
-        self.face_ids = raypath.unique_face_ids
-        self.last_direction = [raypath.lastDirection.x, raypath.lastDirection.y, raypath.lastDirection.z]
-        self.intersectiontype = raypath.interaction_statuses
+        self._nb_impacts = len(raypath.impacts)
+        self._impacts = [[inter.x, inter.y, inter.z] for inter in raypath.impacts]
+        self._wl = raypath.wavelengths[0]
+        self._body_ids = raypath.body_context_ids
+        self._face_ids = raypath.unique_face_ids
+        self._last_direction = [raypath.lastDirection.x, raypath.lastDirection.y, raypath.lastDirection.z]
+        self._intersection_type = raypath.interaction_statuses
         if sensor_contribution:
-            self.sensor_contribution = [
+            self._sensor_contribution = [
                 {"sensor_id": sc.sensor_id, "position": [sc.coordinates.x, sc.coordinates.y]} for sc in raypath.sensor_contributions
             ]
         else:
-            self.sensor_contribution = None
+            self._sensor_contribution = None
 
-    def get(self, search_str=""):
-        data = {
-            "nb_impact": self.nb_impacts,
-            "impacts": self.impacts,
-            "wl": self.wl,
-            "body_ids": self.body_ids,
-            "face_ids": self.face_ids,
-            "last_direction": self.last_direction,
-            "intersection_type": self.intersectiontype,
-            "sensor_contribution": self.sensor_contribution,
-        }
-        if data.get(search_str):
-            return data.get(search_str)
-        else:
+    @property
+    def nb_impacts(self):
+        return self._nb_impacts
+
+    @property
+    def impacts(self):
+        return self._impacts
+
+    @property
+    def wl(self):
+        return self._wl
+
+    @property
+    def body_ids(self):
+        return self._body_ids
+
+    @property
+    def face_ids(self):
+        return self._face_ids
+
+    @property
+    def last_direction(self):
+        return self._last_direction
+
+    @property
+    def intersection_type(self):
+        return self._intersection_type
+
+    @property
+    def sensor_contribution(self):
+        return self._sensor_contribution
+
+    def get(self, key=""):
+        data = {k: v.fget(self) for k, v in RayPath.__dict__.items() if isinstance(v, property)}
+        if key == "":
             return data
+        elif data.get(key):
+            return data.get(key)
+        else:
+            print("Used key: {} not found in key list: {}.".format(key, data.keys()))
 
     def __str__(self):
         return str(self.get())
@@ -157,13 +182,13 @@ class LightPathFinder:
         if new:
             self._filtered_rays = []
             for ray in self._rays:
-                if int(ray.intersectiontype[-1]) in options:
+                if int(ray.intersection_type[-1]) in options:
                     self._filtered_rays.append(ray)
         else:
             temp_rays = self._filtered_rays
             self._filtered_rays = []
             for ray in temp_rays:
-                if int(ray.intersectiontype[-1]) in options:
+                if int(ray.intersection_type[-1]) in options:
                     self._filtered_rays.append(ray)
 
     def filter_by_face_ids(self, options: list[int], new=True):

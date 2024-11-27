@@ -35,7 +35,7 @@ def test_light_path_finder_direct(speos: Speos):
     path = os.path.join(test_path, "basic_DirectSimu.lpf")
     lpf = lxp.LightPathFinder(speos=speos, path=path)
     expected_ray = {
-        "nb_impact": 4,
+        "nb_impacts": 4,
         "impacts": [
             [0.0, 0.0, 0.0],
             [1.6715503931045532, 15.0, 6.686765193939209],
@@ -68,7 +68,7 @@ def test_light_path_finder_inverse(speos: Speos):
     path = os.path.join(test_path, "basic_InverseSimu.lpf")
     lpf = lxp.LightPathFinder(speos=speos, path=path)
     expected_ray = {
-        "nb_impact": 7,
+        "nb_impacts": 7,
         "impacts": [
             [-0.0030556267593055964, 2.9730305671691895, 3.4751179218292236],
             [-0.09766837954521179, 2.7782351970672607, 3.700000047683716],
