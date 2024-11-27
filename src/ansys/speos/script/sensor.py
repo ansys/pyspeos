@@ -809,8 +809,14 @@ class Sensor:
                         )
                     return self._mode
 
-            def __init__(self, mode_photometric: camera_sensor_pb2.SensorCameraModePhotometric, default_values: bool = True) -> None:
+            def __init__(
+                self,
+                mode_photometric: camera_sensor_pb2.SensorCameraModePhotometric,
+                camera_props: core.Scene.SensorInstance.CameraProperties,
+                default_values: bool = True,
+            ) -> None:
                 self._mode_photometric = mode_photometric
+                self._camera_props = camera_props
 
                 # Attribute gathering more complex camera color mode
                 self._mode = None
@@ -822,6 +828,8 @@ class Sensor:
                     # Default values
                     self.set_acquisition_integration().set_acquisition_lag_time().set_gamma_correction().set_png_bits_16().set_mode_color()
                     self.set_wavelengths_range()
+                    # Default values properties
+                    self.set_layer_type_none()
 
             def set_acquisition_integration(self, value: float = 0.01) -> Sensor.Camera.Photometric:
                 """Set the acquisition integration value.
@@ -978,6 +986,44 @@ class Sensor:
                     self._mode = Sensor.Camera.Photometric.Color(mode_color=self._mode_photometric.color_mode_color)
                 return self._mode
 
+            def set_trajectory_file_uri(self, uri: str) -> Sensor.Camera.Photometric:
+                """Set the trajectory file.
+
+                Parameters
+                ----------
+                uri : str
+                    Trajectory file, used to define the position and orientations of the Camera sensor in time.
+
+                Returns
+                -------
+                ansys.speos.script.sensor.Sensor.Camera.Photometric
+                    Photometric mode.
+                """
+                self._camera_props.trajectory_file_uri = uri
+                return self
+
+            def set_layer_type_none(self) -> Sensor.Camera.Photometric:
+                """Set no layer separation: includes the simulation's results in one layer.
+
+                Returns
+                -------
+                ansys.speos.script.sensor.Sensor.Camera.Photometric
+                    Photometric mode.
+                """
+                self._camera_props.layer_type_none.SetInParent()
+                return self
+
+            def set_layer_type_source(self) -> Sensor.Camera.Photometric:
+                """Set layer separation by source: includes one layer per active source in the result.
+
+                Returns
+                -------
+                ansys.speos.script.sensor.Sensor.Camera.Photometric
+                    Photometric mode.
+                """
+                self._camera_props.layer_type_source.SetInParent()
+                return self
+
         def __init__(
             self,
             camera_template: camera_sensor_pb2.CameraSensorTemplate,
@@ -995,7 +1041,7 @@ class Sensor:
                 self.set_focal_length().set_imager_distance().set_f_number().set_horz_pixel()
                 self.set_vert_pixel().set_width().set_height().set_mode_photometric()
                 # Default values properties
-                self.set_axis_system().set_layer_type_none()
+                self.set_axis_system()
 
         def set_focal_length(self, value: float = 5.0) -> Sensor.Camera:
             """Set the focal length.
@@ -1155,9 +1201,13 @@ class Sensor:
                 Photometric mode.
             """
             if self._mode is None and self._camera_template.HasField("sensor_mode_photometric"):
-                self._mode = Sensor.Camera.Photometric(mode_photometric=self._camera_template.sensor_mode_photometric, default_values=False)
+                self._mode = Sensor.Camera.Photometric(
+                    mode_photometric=self._camera_template.sensor_mode_photometric, camera_props=self._camera_props, default_values=False
+                )
             elif type(self._mode) != Sensor.Camera.Photometric:
-                self._mode = Sensor.Camera.Photometric(mode_photometric=self._camera_template.sensor_mode_photometric)
+                self._mode = Sensor.Camera.Photometric(
+                    mode_photometric=self._camera_template.sensor_mode_photometric, camera_props=self._camera_props
+                )
             return self._mode
 
         def set_axis_system(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> Sensor.Camera:
@@ -1175,44 +1225,6 @@ class Sensor:
                 Camera sensor.
             """
             self._camera_props.axis_system[:] = axis_system
-            return self
-
-        def set_trajectory_file_uri(self, uri: str) -> Sensor.Camera:
-            """Set the trajectory file.
-
-            Parameters
-            ----------
-            uri : str
-                Trajectory file, used to define the position and orientations of the Camera sensor in time.
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.Camera
-                Camera sensor.
-            """
-            self._camera_props.trajectory_file_uri = uri
-            return self
-
-        def set_layer_type_none(self) -> Sensor.Camera:
-            """Set no layer separation: includes the simulation's results in one layer.
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.Camera
-                Camera sensor.
-            """
-            self._camera_props.layer_type_none.SetInParent()
-            return self
-
-        def set_layer_type_source(self) -> Sensor.Camera:
-            """Set layer separation by source: includes one layer per active source in the result.
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.Camera
-                Camera sensor.
-            """
-            self._camera_props.layer_type_source.SetInParent()
             return self
 
     class Irradiance:
