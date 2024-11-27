@@ -43,40 +43,18 @@ Then add the import within this module to enable:
 
 """
 
-from ansys.speos.core.body import Body, BodyFactory, BodyLink
-from ansys.speos.core.face import Face, FaceFactory, FaceLink
-from ansys.speos.core.geometry_utils import (
-    AxisPlane,
-    AxisSystem,
-    GeoPaths,
-    GeoPathWithReverseNormal,
-)
-from ansys.speos.core.intensity_template import (
-    IntensityTemplate,
-    IntensityTemplateFactory,
-    IntensityTemplateLink,
-)
-from ansys.speos.core.job import Job, JobFactory, JobLink
+from ansys.speos.core.body import Body, BodyLink
+from ansys.speos.core.face import Face, FaceLink
+from ansys.speos.core.intensity_template import IntensityTemplate, IntensityTemplateLink
+from ansys.speos.core.job import Job, JobLink
 from ansys.speos.core.logger import LOG, Logger
-from ansys.speos.core.part import Part, PartFactory, PartLink
+from ansys.speos.core.part import Part, PartLink
 from ansys.speos.core.proto_message_utils import protobuf_message_to_dict, protobuf_message_to_str
-from ansys.speos.core.scene import Scene, SceneFactory, SceneLink
-from ansys.speos.core.sensor_template import (
-    SensorTemplate,
-    SensorTemplateFactory,
-    SensorTemplateLink,
-)
-from ansys.speos.core.simulation_template import (
-    SimulationTemplate,
-    SimulationTemplateFactory,
-    SimulationTemplateLink,
-)
-from ansys.speos.core.sop_template import SOPTemplate, SOPTemplateFactory, SOPTemplateLink
-from ansys.speos.core.source_template import (
-    SourceTemplate,
-    SourceTemplateFactory,
-    SourceTemplateLink,
-)
-from ansys.speos.core.spectrum import Spectrum, SpectrumFactory, SpectrumLink
+from ansys.speos.core.scene import Scene, SceneLink
+from ansys.speos.core.sensor_template import SensorTemplate, SensorTemplateLink
+from ansys.speos.core.simulation_template import SimulationTemplate, SimulationTemplateLink
+from ansys.speos.core.sop_template import SOPTemplate, SOPTemplateLink
+from ansys.speos.core.source_template import SourceTemplate, SourceTemplateLink
+from ansys.speos.core.spectrum import Spectrum, SpectrumLink
 from ansys.speos.core.speos import Speos, SpeosClient
-from ansys.speos.core.vop_template import VOPTemplate, VOPTemplateFactory, VOPTemplateLink
+from ansys.speos.core.vop_template import VOPTemplate, VOPTemplateLink

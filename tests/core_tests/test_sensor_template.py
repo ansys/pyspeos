@@ -25,15 +25,15 @@ Test source template.
 """
 import os
 
-import pytest
+from ansys.api.speos.sensor.v1 import camera_sensor_pb2, common_pb2, irradiance_sensor_pb2
 
-from ansys.speos.core.sensor_template import SensorTemplateFactory
+from ansys.speos.core.sensor_template import SensorTemplate
 from ansys.speos.core.speos import Speos
 from conftest import test_path
 
 
-def test_sensor_template_factory(speos: Speos):
-    """Test the sensor template factory."""
+def test_sensor_template(speos: Speos):
+    """Test the sensor template."""
     assert speos.client.healthy is True
 
     # Get DB
@@ -48,96 +48,142 @@ def test_sensor_template_factory(speos: Speos):
 
     # Camera sensor template mode monochrome
     camera_t0 = sensor_t_db.create(
-        message=SensorTemplateFactory.camera(
+        message=SensorTemplate(
             name="camera_monochrome",
             description="Camera sensor template mode monochrome",
-            settings=SensorTemplateFactory.CameraSettings(gamma_correction=2.2, focal_length=4, imager_distance=10, f_number=30),
-            dimensions=SensorTemplateFactory.CameraDimensions(horz_pixel=640, vert_pixel=480, width=5, height=5),
-            distortion_file_uri=distortion,
-            transmittance_file_uri=transmittance,
-            spectrum_file_uris=[green_spectrum],
-            wavelengths_range=SensorTemplateFactory.WavelengthsRange(start=400, end=800, sampling=10),
+            camera_sensor_template=camera_sensor_pb2.CameraSensorTemplate(
+                sensor_mode_photometric=camera_sensor_pb2.SensorCameraModePhotometric(
+                    acquisition_integration=0.01,
+                    acquisition_lag_time=0,
+                    transmittance_file_uri=transmittance,
+                    gamma_correction=2.2,
+                    png_bits=camera_sensor_pb2.PNG_16,
+                    color_mode_monochromatic=camera_sensor_pb2.SensorCameraColorModeMonochromatic(spectrum_file_uri=green_spectrum),
+                    wavelengths_range=common_pb2.WavelengthsRange(w_start=400, w_end=800, w_sampling=10),
+                ),
+                focal_length=4,
+                imager_distance=10,
+                f_number=30,
+                distortion_file_uri=distortion,
+                horz_pixel=640,
+                vert_pixel=480,
+                width=5,
+                height=5,
+            ),
         )
     )
     assert camera_t0.key != ""
 
     # Camera sensor template mode color with balance mode none
     camera_t1 = sensor_t_db.create(
-        message=SensorTemplateFactory.camera(
+        message=SensorTemplate(
             name="camera_color",
             description="Camera sensor template mode color with balance mode none",
-            settings=SensorTemplateFactory.CameraSettings(gamma_correction=2.2, focal_length=4, imager_distance=10, f_number=30),
-            dimensions=SensorTemplateFactory.CameraDimensions(horz_pixel=640, vert_pixel=480, width=5, height=5),
-            distortion_file_uri=distortion,
-            transmittance_file_uri=transmittance,
-            spectrum_file_uris=[red_spectrum, green_spectrum, blue_spectrum],
-            wavelengths_range=SensorTemplateFactory.WavelengthsRange(start=400, end=800, sampling=10),
+            camera_sensor_template=camera_sensor_pb2.CameraSensorTemplate(
+                sensor_mode_photometric=camera_sensor_pb2.SensorCameraModePhotometric(
+                    acquisition_integration=0.01,
+                    acquisition_lag_time=0,
+                    transmittance_file_uri=transmittance,
+                    gamma_correction=2.2,
+                    png_bits=camera_sensor_pb2.PNG_16,
+                    color_mode_color=camera_sensor_pb2.SensorCameraColorModeColor(
+                        red_spectrum_file_uri=red_spectrum,
+                        green_spectrum_file_uri=green_spectrum,
+                        blue_spectrum_file_uri=blue_spectrum,
+                        balance_mode_none=camera_sensor_pb2.SensorCameraBalanceModeNone(),
+                    ),
+                    wavelengths_range=common_pb2.WavelengthsRange(w_start=400, w_end=800, w_sampling=10),
+                ),
+                focal_length=4,
+                imager_distance=10,
+                f_number=30,
+                distortion_file_uri=distortion,
+                horz_pixel=640,
+                vert_pixel=480,
+                width=5,
+                height=5,
+            ),
         )
     )
     assert camera_t1.key != ""
 
     # Camera sensor template mode color with balance mode greyworld
     camera_t2 = sensor_t_db.create(
-        message=SensorTemplateFactory.camera(
+        message=SensorTemplate(
             name="camera_color_greyworld",
             description="Camera sensor template mode color with balance mode greyworld",
-            settings=SensorTemplateFactory.CameraSettings(gamma_correction=2.2, focal_length=4, imager_distance=10, f_number=30),
-            dimensions=SensorTemplateFactory.CameraDimensions(horz_pixel=640, vert_pixel=480, width=5, height=5),
-            distortion_file_uri=distortion,
-            transmittance_file_uri=transmittance,
-            spectrum_file_uris=[red_spectrum, green_spectrum, blue_spectrum],
-            wavelengths_range=SensorTemplateFactory.WavelengthsRange(start=400, end=800, sampling=10),
-            camera_balance_mode=SensorTemplateFactory.CameraBalanceMode(type=SensorTemplateFactory.CameraBalanceMode.Type.GreyWorld),
+            camera_sensor_template=camera_sensor_pb2.CameraSensorTemplate(
+                sensor_mode_photometric=camera_sensor_pb2.SensorCameraModePhotometric(
+                    acquisition_integration=0.01,
+                    acquisition_lag_time=0,
+                    transmittance_file_uri=transmittance,
+                    gamma_correction=2.2,
+                    png_bits=camera_sensor_pb2.PNG_16,
+                    color_mode_color=camera_sensor_pb2.SensorCameraColorModeColor(
+                        red_spectrum_file_uri=red_spectrum,
+                        green_spectrum_file_uri=green_spectrum,
+                        blue_spectrum_file_uri=blue_spectrum,
+                        balance_mode_greyworld=camera_sensor_pb2.SensorCameraBalanceModeGreyworld(),
+                    ),
+                    wavelengths_range=common_pb2.WavelengthsRange(w_start=400, w_end=800, w_sampling=10),
+                ),
+                focal_length=4,
+                imager_distance=10,
+                f_number=30,
+                distortion_file_uri=distortion,
+                horz_pixel=640,
+                vert_pixel=480,
+                width=5,
+                height=5,
+            ),
         )
     )
     assert camera_t2.key != ""
 
     # Camera sensor template mode color with balance mode userwhite
     camera_t3 = sensor_t_db.create(
-        message=SensorTemplateFactory.camera(
+        message=SensorTemplate(
             name="camera_color_userwhite",
             description="Camera sensor template mode color with balance mode userwhite",
-            settings=SensorTemplateFactory.CameraSettings(gamma_correction=2.2, focal_length=4, imager_distance=10, f_number=30),
-            dimensions=SensorTemplateFactory.CameraDimensions(horz_pixel=640, vert_pixel=480, width=5, height=5),
-            distortion_file_uri=distortion,
-            transmittance_file_uri=transmittance,
-            spectrum_file_uris=[red_spectrum, green_spectrum, blue_spectrum],
-            wavelengths_range=SensorTemplateFactory.WavelengthsRange(start=400, end=800, sampling=10),
-            camera_balance_mode=SensorTemplateFactory.CameraBalanceMode(
-                type=SensorTemplateFactory.CameraBalanceMode.Type.UserWhiteBalance, values=[1, 1, 1]
+            camera_sensor_template=camera_sensor_pb2.CameraSensorTemplate(
+                sensor_mode_photometric=camera_sensor_pb2.SensorCameraModePhotometric(
+                    acquisition_integration=0.01,
+                    acquisition_lag_time=0,
+                    transmittance_file_uri=transmittance,
+                    gamma_correction=2.2,
+                    png_bits=camera_sensor_pb2.PNG_16,
+                    color_mode_color=camera_sensor_pb2.SensorCameraColorModeColor(
+                        red_spectrum_file_uri=red_spectrum,
+                        green_spectrum_file_uri=green_spectrum,
+                        blue_spectrum_file_uri=blue_spectrum,
+                        balance_mode_userwhite=camera_sensor_pb2.SensorCameraBalanceModeUserwhite(red_gain=1, green_gain=1, blue_gain=1),
+                    ),
+                    wavelengths_range=common_pb2.WavelengthsRange(w_start=400, w_end=800, w_sampling=10),
+                ),
+                focal_length=4,
+                imager_distance=10,
+                f_number=30,
+                distortion_file_uri=distortion,
+                horz_pixel=640,
+                vert_pixel=480,
+                width=5,
+                height=5,
             ),
         )
     )
     assert camera_t3.key != ""
 
-    # Camera sensor template mode color with balance mode userwhite -> forgot to give gain values
-    with pytest.raises(ValueError) as exc:
-        sensor_t_db.create(
-            message=SensorTemplateFactory.camera(
-                name="camera_color_userwhite",
-                description="Camera sensor template mode color with balance mode userwhite",
-                settings=SensorTemplateFactory.CameraSettings(gamma_correction=2.2, focal_length=4, imager_distance=10, f_number=30),
-                dimensions=SensorTemplateFactory.CameraDimensions(horz_pixel=640, vert_pixel=480, width=5, height=5),
-                distortion_file_uri=distortion,
-                transmittance_file_uri=transmittance,
-                spectrum_file_uris=[red_spectrum, green_spectrum, blue_spectrum],
-                wavelengths_range=SensorTemplateFactory.WavelengthsRange(start=400, end=800, sampling=10),
-                camera_balance_mode=SensorTemplateFactory.CameraBalanceMode(
-                    type=SensorTemplateFactory.CameraBalanceMode.Type.UserWhiteBalance
-                ),
-            )
-        )
-    assert exc.value.args[0] == "For userwhite balance mode, three values are expected: [red_gain, green_gain, blue_gain]"
-
     # Irradiance sensor template photometric
     irradiance_t0 = sensor_t_db.create(
-        message=SensorTemplateFactory.irradiance(
+        message=SensorTemplate(
             name="irradiance_photometric",
             description="Irradiance sensor template photometric",
-            type=SensorTemplateFactory.Type.Photometric,
-            illuminance_type=SensorTemplateFactory.IlluminanceType.Planar,
-            dimensions=SensorTemplateFactory.Dimensions(
-                x_start=-50.0, x_end=50.0, x_sampling=100, y_start=-50.0, y_end=50.0, y_sampling=100
+            irradiance_sensor_template=irradiance_sensor_pb2.IrradianceSensorTemplate(
+                sensor_type_photometric=common_pb2.SensorTypePhotometric(),
+                illuminance_type_planar=common_pb2.IlluminanceTypePlanar(),
+                dimensions=common_pb2.SensorDimensions(
+                    x_start=-50.0, x_end=50.0, x_sampling=100, y_start=-50.0, y_end=50.0, y_sampling=100
+                ),
             ),
         )
     )
@@ -145,33 +191,21 @@ def test_sensor_template_factory(speos: Speos):
 
     # Irradiance sensor template colorimetric -> wavelengths_range is needed
     irradiance_t1 = sensor_t_db.create(
-        message=SensorTemplateFactory.irradiance(
+        message=SensorTemplate(
             name="irradiance_colorimetric",
             description="Irradiance sensor template colorimetric",
-            type=SensorTemplateFactory.Type.Colorimetric,
-            illuminance_type=SensorTemplateFactory.IlluminanceType.Planar,
-            dimensions=SensorTemplateFactory.Dimensions(
-                x_start=-50.0, x_end=50.0, x_sampling=100, y_start=-50.0, y_end=50.0, y_sampling=100
+            irradiance_sensor_template=irradiance_sensor_pb2.IrradianceSensorTemplate(
+                sensor_type_colorimetric=common_pb2.SensorTypeColorimetric(
+                    wavelengths_range=common_pb2.WavelengthsRange(w_start=400, w_end=800, w_sampling=10)
+                ),
+                illuminance_type_planar=common_pb2.IlluminanceTypePlanar(),
+                dimensions=common_pb2.SensorDimensions(
+                    x_start=-50.0, x_end=50.0, x_sampling=100, y_start=-50.0, y_end=50.0, y_sampling=100
+                ),
             ),
-            wavelengths_range=SensorTemplateFactory.WavelengthsRange(start=400, end=800, sampling=10),
         )
     )
     assert irradiance_t1.key != ""
-
-    # Irradiance sensor template colorimetric -> wavelengths_range is needed but not provided
-    with pytest.raises(ValueError) as exc:
-        sensor_t_db.create(
-            message=SensorTemplateFactory.irradiance(
-                name="irradiance_colorimetric",
-                description="Irradiance sensor template colorimetric",
-                type=SensorTemplateFactory.Type.Colorimetric,
-                illuminance_type=SensorTemplateFactory.IlluminanceType.Planar,
-                dimensions=SensorTemplateFactory.Dimensions(
-                    x_start=-50.0, x_end=50.0, x_sampling=100, y_start=-50.0, y_end=50.0, y_sampling=100
-                ),
-            )
-        )
-    assert exc.value.args[0] == "For colorimetric type, please provide wavelengths_range parameter"
 
     camera_t0.delete()
     camera_t1.delete()
