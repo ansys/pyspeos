@@ -344,8 +344,8 @@ def test_commit(speos: Speos):
     ssr2.set_irradiance().set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     ssr2.commit()
 
-    src = p.create_source(name="Luminaire.1")
-    src.set_luminaire().set_intensity_file_uri(uri=os.path.join(test_path, "IES_C_DETECTOR.ies"))
+    src = p.create_source(name="Luminaire.1", feature_type=script.source.Luminaire)
+    src.set_intensity_file_uri(uri=os.path.join(test_path, "IES_C_DETECTOR.ies"))
     src.commit()
 
     # Create
@@ -394,8 +394,8 @@ def test_reset(speos: Speos):
     ssr2.set_irradiance().set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     ssr2.commit()
 
-    src = p.create_source(name="Luminaire.1")
-    src.set_luminaire().set_intensity_file_uri(uri=os.path.join(test_path, "IES_C_DETECTOR.ies"))
+    src = p.create_source(name="Luminaire.1", feature_type=script.source.Luminaire)
+    src.set_intensity_file_uri(uri=os.path.join(test_path, "IES_C_DETECTOR.ies"))
     src.commit()
 
     # Create + commit
@@ -437,8 +437,8 @@ def test_delete(speos: Speos):
     ssr.set_irradiance().set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     ssr.commit()
 
-    src = p.create_source(name="Luminaire.1")
-    src.set_luminaire().set_intensity_file_uri(uri=os.path.join(test_path, "IES_C_DETECTOR.ies"))
+    src = p.create_source(name="Luminaire.1", feature_type=script.source.Luminaire)
+    src.set_intensity_file_uri(uri=os.path.join(test_path, "IES_C_DETECTOR.ies"))
     src.commit()
 
     # Create + commit
