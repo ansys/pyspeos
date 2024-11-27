@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 """
-Test basic using intensity from script layer.
+Test basic using lxp from script layer.
 """
 
 import os
