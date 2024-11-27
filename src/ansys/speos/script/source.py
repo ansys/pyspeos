@@ -26,7 +26,10 @@ from __future__ import annotations
 from typing import List, Mapping, Union
 import uuid
 
+from ansys.speos import core as core
 import ansys.speos.core as core
+from ansys.speos.script import project as project
+from ansys.speos.script import proto_message_utils as proto_message_utils
 from ansys.speos.script.geo_ref import GeoRef
 from ansys.speos.script.intensity import Intensity
 import ansys.speos.script.project as project
@@ -36,27 +39,22 @@ from ansys.speos.script.spectrum import Spectrum
 src_type_change_error = "A source feature can't change its type. Please delete this one and create a new one with correct type."
 
 
-class Source:
-    """Speos feature : Source.
+class BaseSource:
+    def __init__(self, project: project.Project, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> None:
+        self._project = project
+        self._name = name
+        self._unique_id = None
+        self.source_template_link = None
+        """Link object for the source template in database."""
 
-    Parameters
-    ----------
-    project : ansys.speos.script.project.Project
-        Project that will own the feature.
-    name : str
-        Name of the feature.
-    description : str
-        Description of the feature.
-        By default, ``""``.
-    metadata : Mapping[str, str]
-        Metadata of the feature.
-        By default, ``{}``.
+        # Attribute representing the kind of source. Can be an object of type script.Source.Luminaire, script.Source.RayFile, ...
+        self._type = None
 
-    Attributes
-    ----------
-    source_template_link : ansys.speos.core.source_template.SourceTemplateLink
-        Link object for the source template in database.
-    """
+        # Create local SourceTemplate
+        self._source_template = core.SourceTemplate(name=name, description=description, metadata=metadata)
+
+        # Create local SourceInstance
+        self._source_instance = core.Scene.SourceInstance(name=name, description=description, metadata=metadata)
 
     class _Spectrum:
         def __init__(
@@ -100,6 +98,203 @@ class Source:
         def _delete(self) -> Source.RayFile:
             self._no_spectrum = None
             return self
+
+    def _to_dict(self) -> dict:
+        out_dict = {}
+
+        # SourceInstance (= source guid + source properties)
+        if self._project.scene_link and self._unique_id is not None:
+            scene_data = self._project.scene_link.get()
+            src_inst = next((x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None)
+            if src_inst is not None:
+                out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=src_inst)
+            else:
+                out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._source_instance)
+        else:
+            out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._source_instance)
+
+        if "source" not in out_dict.keys():
+            # SourceTemplate
+            if self.source_template_link is None:
+                out_dict["source"] = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._source_template)
+            else:
+                out_dict["source"] = proto_message_utils._replace_guids(
+                    speos_client=self._project.client, message=self.source_template_link.get()
+                )
+
+        # handle spectrum & intensity
+        if self._type is not None:
+            self._type._to_dict(dict_to_complete=out_dict)
+
+        proto_message_utils._replace_properties(json_dict=out_dict)
+
+        return out_dict
+
+    def get(self, key: str = "") -> str | dict:
+        """Get dictionary corresponding to the project - read only.
+
+        Parameters
+        ----------
+        key: str
+
+        Returns
+        -------
+
+        """
+
+        if key == "":
+            return self._to_dict()
+        info = proto_message_utils._value_finder_key_startswith(dict_var=self._to_dict(), key=key)
+        if list(info) != []:
+            return next(info)[1]
+        else:
+            info = proto_message_utils._flatten_dict(dict_var=self._to_dict())
+            print("Used key: {} not found in key list: {}.".format(key, info.keys()))
+
+    def __str__(self) -> str:
+        """Return the string representation of the source."""
+        out_str = ""
+        if self._project.scene_link and self._unique_id is not None:
+            scene_data = self._project.scene_link.get()
+            src_inst = next((x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None)
+            if src_inst is None:
+                out_str += "local: "
+        else:
+            out_str += "local: "
+
+        out_str += proto_message_utils.dict_to_str(dict=self._to_dict())
+        return out_str
+
+    def commit(self) -> Source:
+        """Save feature: send the local data to the speos server database.
+
+        Returns
+        -------
+        ansys.speos.script.source.Source
+            Source feature.
+        """
+        # The _unique_id will help to find correct item in the scene.sources (the list of SourceInstance)
+        if self._unique_id is None:
+            self._unique_id = str(uuid.uuid4())
+            self._source_instance.metadata["UniqueId"] = self._unique_id
+
+        # This allows to commit managed object contained in _luminaire, _rayfile, etc.. Like Spectrum, IntensityTemplate
+        if self._type is not None:
+            self._type._commit()
+
+        # Save or Update the source template (depending on if it was already saved before)
+        if self.source_template_link is None:
+            self.source_template_link = self._project.client.source_templates().create(message=self._source_template)
+            self._source_instance.source_guid = self.source_template_link.key
+        elif self.source_template_link.get() != self._source_template:
+            self.source_template_link.set(data=self._source_template)  # Only update if template has changed
+
+        # Update the scene with the source instance
+        if self._project.scene_link:
+            update_scene = True
+            scene_data = self._project.scene_link.get()  # retrieve scene data
+
+            # Look if an element corresponds to the _unique_id
+            src_inst = next((x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None)
+            if src_inst is not None:
+                if src_inst != self._source_instance:
+                    src_inst.CopyFrom(self._source_instance)  # if yes, just replace
+                else:
+                    update_scene = False
+            else:
+                scene_data.sources.append(self._source_instance)  # if no, just add it to the list of sources
+
+            if update_scene:  # Update scene only if instance has changed
+                self._project.scene_link.set(data=scene_data)  # update scene data
+
+        return self
+
+    def reset(self) -> Source:
+        """Reset feature: override local data by the one from the speos server database.
+
+        Returns
+        -------
+        ansys.speos.script.source.Source
+            Source feature.
+        """
+        # This allows to reset managed object contained in _luminaire, _rayfile, etc.. Like Spectrum, IntensityTemplate
+        if self._type is not None:
+            self._type._reset()
+
+        # Reset source template
+        if self.source_template_link is not None:
+            self._source_template = self.source_template_link.get()
+
+        # Reset source instance
+        if self._project.scene_link is not None:
+            scene_data = self._project.scene_link.get()  # retrieve scene data
+            # Look if an element corresponds to the _unique_id
+            src_inst = next((x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None)
+            if src_inst is not None:
+                self._source_instance = src_inst
+        return self
+
+    def delete(self) -> Source:
+        """Delete feature: delete data from the speos server database.
+        The local data are still available
+
+        Returns
+        -------
+        ansys.speos.script.source.Source
+            Source feature.
+        """
+        # This allows to clean managed object contained in _luminaire, _rayfile, etc.. Like Spectrum, IntensityTemplate
+        if self._type is not None:
+            self._type._delete()
+
+        # Delete the source template
+        if self.source_template_link is not None:
+            self.source_template_link.delete()
+            self.source_template_link = None
+
+        # Reset then the source_guid (as the source template was deleted just above)
+        self._source_instance.source_guid = ""
+
+        # Remove the source from the scene
+        scene_data = self._project.scene_link.get()  # retrieve scene data
+        src_inst = next((x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None)
+        if src_inst is not None:
+            scene_data.sources.remove(src_inst)
+            self._project.scene_link.set(data=scene_data)  # update scene data
+
+        # Reset the _unique_id
+        self._unique_id = None
+        self._source_instance.metadata.pop("UniqueId")
+        return self
+
+    def _fill(self, src_inst):
+        self._unique_id = src_inst.metadata["UniqueId"]
+        self._source_instance = src_inst
+        self.source_template_link = self._project.client.get_item(key=src_inst.source_guid)
+        self.reset()
+
+
+class Source(BaseSource):
+    """Speos feature : Source.
+
+    Parameters
+    ----------
+    project : ansys.speos.script.project.Project
+        Project that will own the feature.
+    name : str
+        Name of the feature.
+    description : str
+        Description of the feature.
+        By default, ``""``.
+    metadata : Mapping[str, str]
+        Metadata of the feature.
+        By default, ``{}``.
+
+    Attributes
+    ----------
+    source_template_link : ansys.speos.core.source_template.SourceTemplateLink
+        Link object for the source template in database.
+    """
 
     class Luminaire:
         """Type of Source : Luminaire.
@@ -746,22 +941,6 @@ class Source:
             self._spectrum._delete()
             return self
 
-    def __init__(self, project: project.Project, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> None:
-        self._project = project
-        self._name = name
-        self._unique_id = None
-        self.source_template_link = None
-        """Link object for the source template in database."""
-
-        # Attribute representing the kind of source. Can be an object of type script.Source.Luminaire, script.Source.RayFile, ...
-        self._type = None
-
-        # Create local SourceTemplate
-        self._source_template = core.SourceTemplate(name=name, description=description, metadata=metadata)
-
-        # Create local SourceInstance
-        self._source_instance = core.Scene.SourceInstance(name=name, description=description, metadata=metadata)
-
     def set_luminaire(self) -> Luminaire:
         """Set the source as luminaire.
 
@@ -853,184 +1032,3 @@ class Source:
 
         """
         return type(self._type)
-
-    def _to_dict(self) -> dict:
-        out_dict = {}
-
-        # SourceInstance (= source guid + source properties)
-        if self._project.scene_link and self._unique_id is not None:
-            scene_data = self._project.scene_link.get()
-            src_inst = next((x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None)
-            if src_inst is not None:
-                out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=src_inst)
-            else:
-                out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._source_instance)
-        else:
-            out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._source_instance)
-
-        if "source" not in out_dict.keys():
-            # SourceTemplate
-            if self.source_template_link is None:
-                out_dict["source"] = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._source_template)
-            else:
-                out_dict["source"] = proto_message_utils._replace_guids(
-                    speos_client=self._project.client, message=self.source_template_link.get()
-                )
-
-        # handle spectrum & intensity
-        if self._type is not None:
-            self._type._to_dict(dict_to_complete=out_dict)
-
-        proto_message_utils._replace_properties(json_dict=out_dict)
-
-        return out_dict
-
-    def get(self, key: str = "") -> str | dict:
-        """Get dictionary corresponding to the project - read only.
-
-        Parameters
-        ----------
-        key: str
-
-        Returns
-        -------
-
-        """
-
-        if key == "":
-            return self._to_dict()
-        info = proto_message_utils._value_finder_key_startswith(dict_var=self._to_dict(), key=key)
-        if list(info) != []:
-            return next(info)[1]
-        else:
-            info = proto_message_utils._flatten_dict(dict_var=self._to_dict())
-            print("Used key: {} not found in key list: {}.".format(key, info.keys()))
-
-    def __str__(self) -> str:
-        """Return the string representation of the source."""
-        out_str = ""
-        if self._project.scene_link and self._unique_id is not None:
-            scene_data = self._project.scene_link.get()
-            src_inst = next((x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None)
-            if src_inst is None:
-                out_str += "local: "
-        else:
-            out_str += "local: "
-
-        out_str += proto_message_utils.dict_to_str(dict=self._to_dict())
-        return out_str
-
-    def commit(self) -> Source:
-        """Save feature: send the local data to the speos server database.
-
-        Returns
-        -------
-        ansys.speos.script.source.Source
-            Source feature.
-        """
-        # The _unique_id will help to find correct item in the scene.sources (the list of SourceInstance)
-        if self._unique_id is None:
-            self._unique_id = str(uuid.uuid4())
-            self._source_instance.metadata["UniqueId"] = self._unique_id
-
-        # This allows to commit managed object contained in _luminaire, _rayfile, etc.. Like Spectrum, IntensityTemplate
-        if self._type is not None:
-            self._type._commit()
-
-        # Save or Update the source template (depending on if it was already saved before)
-        if self.source_template_link is None:
-            self.source_template_link = self._project.client.source_templates().create(message=self._source_template)
-            self._source_instance.source_guid = self.source_template_link.key
-        elif self.source_template_link.get() != self._source_template:
-            self.source_template_link.set(data=self._source_template)  # Only update if template has changed
-
-        # Update the scene with the source instance
-        if self._project.scene_link:
-            update_scene = True
-            scene_data = self._project.scene_link.get()  # retrieve scene data
-
-            # Look if an element corresponds to the _unique_id
-            src_inst = next((x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None)
-            if src_inst is not None:
-                if src_inst != self._source_instance:
-                    src_inst.CopyFrom(self._source_instance)  # if yes, just replace
-                else:
-                    update_scene = False
-            else:
-                scene_data.sources.append(self._source_instance)  # if no, just add it to the list of sources
-
-            if update_scene:  # Update scene only if instance has changed
-                self._project.scene_link.set(data=scene_data)  # update scene data
-
-        return self
-
-    def reset(self) -> Source:
-        """Reset feature: override local data by the one from the speos server database.
-
-        Returns
-        -------
-        ansys.speos.script.source.Source
-            Source feature.
-        """
-        # This allows to reset managed object contained in _luminaire, _rayfile, etc.. Like Spectrum, IntensityTemplate
-        if self._type is not None:
-            self._type._reset()
-
-        # Reset source template
-        if self.source_template_link is not None:
-            self._source_template = self.source_template_link.get()
-
-        # Reset source instance
-        if self._project.scene_link is not None:
-            scene_data = self._project.scene_link.get()  # retrieve scene data
-            # Look if an element corresponds to the _unique_id
-            src_inst = next((x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None)
-            if src_inst is not None:
-                self._source_instance = src_inst
-        return self
-
-    def delete(self) -> Source:
-        """Delete feature: delete data from the speos server database.
-        The local data are still available
-
-        Returns
-        -------
-        ansys.speos.script.source.Source
-            Source feature.
-        """
-        # This allows to clean managed object contained in _luminaire, _rayfile, etc.. Like Spectrum, IntensityTemplate
-        if self._type is not None:
-            self._type._delete()
-
-        # Delete the source template
-        if self.source_template_link is not None:
-            self.source_template_link.delete()
-            self.source_template_link = None
-
-        # Reset then the source_guid (as the source template was deleted just above)
-        self._source_instance.source_guid = ""
-
-        # Remove the source from the scene
-        scene_data = self._project.scene_link.get()  # retrieve scene data
-        src_inst = next((x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None)
-        if src_inst is not None:
-            scene_data.sources.remove(src_inst)
-            self._project.scene_link.set(data=scene_data)  # update scene data
-
-        # Reset the _unique_id
-        self._unique_id = None
-        self._source_instance.metadata.pop("UniqueId")
-        return self
-
-    def _fill(self, src_inst):
-        self._unique_id = src_inst.metadata["UniqueId"]
-        self._source_instance = src_inst
-        self.source_template_link = self._project.client.get_item(key=src_inst.source_guid)
-        self.reset()
-
-        if self._source_template.HasField("luminaire"):
-            self.set_luminaire()
-        elif self._source_template.HasField("rayfile"):
-            self.set_rayfile()
-        elif self._source_template.HasField("surface"):
-            self.set_surface()
