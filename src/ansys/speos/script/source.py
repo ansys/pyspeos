@@ -232,7 +232,7 @@ class BaseSource:
         ansys.speos.script.source.Source
             Source feature.
         """
-        # This allows to clean managed object contained in _luminaire, _rayfile, etc.. Like Spectrum, IntensityTemplate
+        # This allows to clean-managed object contained in _luminaire, _rayfile, etc.. Like Spectrum, IntensityTemplate
 
         # Delete the source template
         if self.source_template_link is not None:
@@ -376,7 +376,7 @@ class Luminaire(BaseSource):
         return self._spectrum._spectrum
 
     def set_axis_system(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> Luminaire:
-        """Set position of the source.
+        """Set the position of the source.
 
         Parameters
         ----------
@@ -597,6 +597,311 @@ class RayFile(BaseSource):
         return self
 
 
+class Surface(BaseSource):
+    """Type of Source : Surface.
+    By default, a luminous flux and exitance constant are chosen. With a monochromatic spectrum,
+    and lambertian intensity (cos with N = 1).
+
+    Parameters
+    ----------
+    speos_client : ansys.speos.core.client.SpeosClient
+        The Speos instance client.
+    name : str
+        Name of the source feature.
+    surface : ansys.api.speos.source.v1.source_pb2.SourceTemplate.Surface
+        Surface source to complete.
+    surface_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.SurfaceProperties
+        Surface source properties to complete.
+    default_values : bool
+        Uses default values when True.
+    """
+
+    class ExitanceVariable:
+        """Type of surface source exitance : exitance variable.
+
+        Parameters
+        ----------
+        exitance_variable : ansys.api.speos.source.v1.source_pb2.SourceTemplate.Surface.ExitanceVariable
+            Exitance variable to complete.
+        exitance_variable_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.SurfaceProperties.ExitanceVariableProperties
+            Exitance variable properties to complete.
+        default_values : bool
+            Uses default values when True.
+        """
+
+        def __init__(
+            self,
+            exitance_variable: core.SourceTemplate.Surface.ExitanceVariable,
+            exitance_variable_props: core.Scene.SourceInstance.SurfaceProperties.ExitanceVariableProperties,
+            default_values: bool = True,
+        ) -> None:
+            self._exitance_variable = exitance_variable
+            self._exitance_variable_props = exitance_variable_props
+
+            if default_values:
+                # Default values
+                self.set_axis_plane()
+
+        def set_xmp_file_uri(self, uri: str) -> Surface.ExitanceVariable:
+            """Set exitance xmp file.
+
+            Parameters
+            ----------
+            uri : str
+                XMP file describing exitance.
+
+            Returns
+            -------
+            ansys.speos.script.source.Source.Surface.ExitanceVariable
+                ExitanceVariable of surface source.
+            """
+            self._exitance_variable.exitance_xmp_file_uri = uri
+            return self
+
+        def set_axis_plane(self, axis_plane: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0]) -> Surface.ExitanceVariable:
+            """Set position of the exitance map.
+
+            Parameters
+            ----------
+            axis_plane : List[float]
+                Position of the exitance map [Ox Oy Oz Xx Xy Xz Yx Yy Yz].
+                By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0]``.
+
+            Returns
+            -------
+            ansys.speos.script.source.Source.Surface.ExitanceVariable
+                ExitanceVariable of surface Source.
+            """
+            self._exitance_variable_props.axis_plane[:] = axis_plane
+            return self
+
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Mapping[str, str] = {},
+        default_values: bool = True,
+    ) -> None:
+        super().__init__(project=project, name=name, description=description, metadata=metadata)
+        self._speos_client = self._project.client
+        self._surface = self._source_template.surface
+        self._name = name
+        self._surface_props = self._source_instance.surface_properties
+
+        spectrum_guid = ""
+        if self._surface.HasField("spectrum_guid"):
+            spectrum_guid = self._surface.spectrum_guid
+        self._spectrum = self._Spectrum(
+            speos_client=self._speos_client, name=name, message_to_complete=self._surface, spectrum_guid=spectrum_guid
+        )
+
+        self._intensity = Intensity(
+            speos_client=self._speos_client,
+            name=name + ".Intensity",
+            intensity_props_to_complete=self._surface_props.intensity_properties,
+            key=self._surface.intensity_guid,
+        )
+
+        # Attribute gathering more complex exitance type
+        self._exitance_type = None
+
+        if default_values:
+            # Default values
+            self.set_flux_luminous().set_exitance_constant(geometries=[]).set_intensity()
+            self.set_spectrum()
+
+    def set_flux_from_intensity_file(self) -> Surface:
+        """Take flux from intensity file provided.
+
+        Returns
+        -------
+        ansys.speos.script.source.Source.Surface
+            Surface source.
+        """
+        self._surface.flux_from_intensity_file.SetInParent()
+        return self
+
+    def set_flux_luminous(self, value: float = 683) -> Surface:
+        """Set luminous flux.
+
+        Parameters
+        ----------
+        value : float
+            Luminous flux in lumens.
+            By default, ``683.0``.
+
+        Returns
+        -------
+        ansys.speos.script.source.Source.Surface
+            Surface source.
+        """
+        self._surface.luminous_flux.luminous_value = value
+        return self
+
+    def set_flux_radiant(self, value: float = 1) -> Surface:
+        """Set radiant flux.
+
+        Parameters
+        ----------
+        value : float
+            Radiant flux in watts.
+            By default, ``1.0``.
+
+        Returns
+        -------
+        ansys.speos.script.source.Source.Surface
+            Surface source.
+        """
+        self._surface.radiant_flux.radiant_value = value
+        return self
+
+    def set_flux_luminous_intensity(self, value: float = 5) -> Surface:
+        """Set luminous intensity flux.
+
+        Parameters
+        ----------
+        value : float
+            Luminous intensity in candelas.
+            By default, ``5.0``.
+
+        Returns
+        -------
+        ansys.speos.script.source.Source.Surface
+            Surface source.
+        """
+        self._surface.luminous_intensity_flux.luminous_intensity_value = value
+        return self
+
+    def set_intensity(self) -> Intensity:
+        """Set intensity.
+
+        Returns
+        -------
+        ansys.speos.script.intensity.Intensity
+            Intensity.
+        """
+        return self._intensity
+
+    def set_exitance_constant(self, geometries: List[tuple[GeoRef, bool]]) -> Surface:
+        """Set exitance constant.
+
+        Parameters
+        ----------
+        geometries : List[tuple[ansys.speos.script.geo_ref.GeoRef, bool]]
+            List of (face, reverseNormal).
+
+        Returns
+        -------
+        ansys.speos.script.source.Source.Surface
+            Surface source.
+        """
+        self._exitance_type = None
+
+        self._surface.exitance_constant.SetInParent()
+        self._surface_props.exitance_constant_properties.ClearField("geo_paths")
+        if geometries != []:
+            my_list = [
+                core.Scene.GeoPath(geo_path=gr.to_native_link(), reverse_normal=reverse_normal) for (gr, reverse_normal) in geometries
+            ]
+            self._surface_props.exitance_constant_properties.geo_paths.extend(my_list)
+        return self
+
+    def set_exitance_variable(self) -> Surface.ExitanceVariable:
+        """Set exitance variable, taken from XMP map.
+
+        Returns
+        -------
+        ansys.speos.script.source.Source.Surface.ExitanceVariable
+            ExitanceVariable of surface source.
+        """
+        if self._exitance_type is None and self._surface.HasField("exitance_variable"):
+            self._exitance_type = Surface.ExitanceVariable(
+                exitance_variable=self._surface.exitance_variable,
+                exitance_variable_props=self._surface_props.exitance_variable_properties,
+                default_values=False,
+            )
+        elif type(self._exitance_type) != Surface.ExitanceVariable:
+            self._exitance_type = Surface.ExitanceVariable(
+                exitance_variable=self._surface.exitance_variable,
+                exitance_variable_props=self._surface_props.exitance_variable_properties,
+            )
+        return self._exitance_type
+
+    def set_spectrum_from_xmp_file(self) -> Surface:
+        """Take spectrum from xmp file provided.
+
+        Returns
+        -------
+        ansys.speos.script.source.Source.Surface
+            Surface source.
+        """
+        self._surface.spectrum_from_xmp_file.SetInParent()
+        self._spectrum._no_spectrum_local = True
+        return self
+
+    def set_spectrum(self) -> Spectrum:
+        """Set spectrum
+
+        Returns
+        -------
+        ansys.speos.script.spectrum.Spectrum
+            Spectrum.
+        """
+        if self._surface.HasField("spectrum_from_xmp_file"):
+            guid = ""
+            if self._spectrum._spectrum.spectrum_link is not None:
+                guid = self._spectrum._spectrum.spectrum_link.key
+            self._surface.spectrum_guid = guid
+        self._spectrum._no_spectrum_local = False
+        return self._spectrum._spectrum
+
+    def _to_dict(self, dict_to_complete: dict = {}) -> dict:
+        if self._spectrum is not None:
+            if dict_to_complete != {}:
+                if (
+                    "spectrum_guid" in dict_to_complete["source"]["surface"].keys()
+                    and "spectrum" not in dict_to_complete["source"]["surface"].keys()
+                ):
+                    dict_to_complete["source"]["surface"]["spectrum"] = self._spectrum._to_dict()
+            else:
+                return self._spectrum._to_dict()
+
+        if dict_to_complete != {}:
+            if "intensity" not in dict_to_complete["source"]["surface"].keys():
+                dict_to_complete["source"]["surface"]["intensity"] = self._spectrum._to_dict()
+        else:
+            return self._spectrum._to_dict()
+
+    def __str__(self) -> str:
+        out_str = ""
+        out_str += str(self._intensity)
+        out_str += "\n" + str(self._spectrum)
+        return out_str
+
+    def commit(self) -> Surface:
+        # intensity
+        self._intensity.commit()
+        self._surface.intensity_guid = self._intensity.intensity_template_link.key
+
+        # spectrum
+        self._spectrum._commit()
+        self._commit()
+        return self
+
+    def reset(self) -> Surface:
+        self._intensity.reset()
+        self._spectrum._reset()
+        self._reset()
+        return self
+
+    def delete(self) -> Surface:
+        self._intensity.delete()
+        self._spectrum._delete()
+        self._delete()
+        return self
+
+
 class Source(BaseSource):
     """Speos feature : Source.
 
@@ -618,500 +923,6 @@ class Source(BaseSource):
     source_template_link : ansys.speos.core.source_template.SourceTemplateLink
         Link object for the source template in database.
     """
-
-    class Surface:
-        """Type of Source : Surface.
-        By default, a luminous flux and exitance constant are chosen. With a monochromatic spectrum,
-        and lambertian intensity (cos with N = 1).
-
-        Parameters
-        ----------
-        speos_client : ansys.speos.core.client.SpeosClient
-            The Speos instance client.
-        name : str
-            Name of the source feature.
-        surface : ansys.api.speos.source.v1.source_pb2.SourceTemplate.Surface
-            Surface source to complete.
-        surface_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.SurfaceProperties
-            Surface source properties to complete.
-        default_values : bool
-            Uses default values when True.
-        """
-
-        class ExitanceVariable:
-            """Type of surface source exitance : exitance variable.
-
-            Parameters
-            ----------
-            exitance_variable : ansys.api.speos.source.v1.source_pb2.SourceTemplate.Surface.ExitanceVariable
-                Exitance variable to complete.
-            exitance_variable_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.SurfaceProperties.ExitanceVariableProperties
-                Exitance variable properties to complete.
-            default_values : bool
-                Uses default values when True.
-            """
-
-            def __init__(
-                self,
-                exitance_variable: core.SourceTemplate.Surface.ExitanceVariable,
-                exitance_variable_props: core.Scene.SourceInstance.SurfaceProperties.ExitanceVariableProperties,
-                default_values: bool = True,
-            ) -> None:
-                self._exitance_variable = exitance_variable
-                self._exitance_variable_props = exitance_variable_props
-
-                if default_values:
-                    # Default values
-                    self.set_axis_plane()
-
-            def set_xmp_file_uri(self, uri: str) -> Source.Surface.ExitanceVariable:
-                """Set exitance xmp file.
-
-                Parameters
-                ----------
-                uri : str
-                    XMP file describing exitance.
-
-                Returns
-                -------
-                ansys.speos.script.source.Source.Surface.ExitanceVariable
-                    ExitanceVariable of surface source.
-                """
-                self._exitance_variable.exitance_xmp_file_uri = uri
-                return self
-
-            def set_axis_plane(self, axis_plane: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0]) -> Source.Surface.ExitanceVariable:
-                """Set position of the exitance map.
-
-                Parameters
-                ----------
-                axis_plane : List[float]
-                    Position of the exitance map [Ox Oy Oz Xx Xy Xz Yx Yy Yz].
-                    By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0]``.
-
-                Returns
-                -------
-                ansys.speos.script.source.Source.Surface.ExitanceVariable
-                    ExitanceVariable of surface Source.
-                """
-                self._exitance_variable_props.axis_plane[:] = axis_plane
-                return self
-
-        def __init__(
-            self,
-            speos_client: core.SpeosClient,
-            name: str,
-            surface: core.SourceTemplate.Surface,
-            surface_props: core.Scene.SourceInstance.SurfaceProperties,
-            default_values: bool = True,
-        ) -> None:
-            self._speos_client = speos_client
-            self._surface = surface
-            self._name = name
-            self._surface_props = surface_props
-
-            spectrum_guid = ""
-            if self._surface.HasField("spectrum_guid"):
-                spectrum_guid = self._surface.spectrum_guid
-            self._spectrum = Source._Spectrum(
-                speos_client=speos_client, name=name, message_to_complete=self._surface, spectrum_guid=spectrum_guid
-            )
-
-            self._intensity = Intensity(
-                speos_client=speos_client,
-                name=name + ".Intensity",
-                intensity_props_to_complete=surface_props.intensity_properties,
-                key=self._surface.intensity_guid,
-            )
-
-            # Attribute gathering more complex exitance type
-            self._exitance_type = None
-
-            if default_values:
-                # Default values
-                self.set_flux_luminous().set_exitance_constant(geometries=[]).set_intensity()
-                self.set_spectrum()
-
-        def set_flux_from_intensity_file(self) -> Source.Surface:
-            """Take flux from intensity file provided.
-
-            Returns
-            -------
-            ansys.speos.script.source.Source.Surface
-                Surface source.
-            """
-            self._surface.flux_from_intensity_file.SetInParent()
-            return self
-
-        def set_flux_luminous(self, value: float = 683) -> Source.Surface:
-            """Set luminous flux.
-
-            Parameters
-            ----------
-            value : float
-                Luminous flux in lumens.
-                By default, ``683.0``.
-
-            Returns
-            -------
-            ansys.speos.script.source.Source.Surface
-                Surface source.
-            """
-            self._surface.luminous_flux.luminous_value = value
-            return self
-
-        def set_flux_radiant(self, value: float = 1) -> Source.Surface:
-            """Set radiant flux.
-
-            Parameters
-            ----------
-            value : float
-                Radiant flux in watts.
-                By default, ``1.0``.
-
-            Returns
-            -------
-            ansys.speos.script.source.Source.Surface
-                Surface source.
-            """
-            self._surface.radiant_flux.radiant_value = value
-            return self
-
-        def set_flux_luminous_intensity(self, value: float = 5) -> Source.Surface:
-            """Set luminous intensity flux.
-
-            Parameters
-            ----------
-            value : float
-                Luminous intensity in candelas.
-                By default, ``5.0``.
-
-            Returns
-            -------
-            ansys.speos.script.source.Source.Surface
-                Surface source.
-            """
-            self._surface.luminous_intensity_flux.luminous_intensity_value = value
-            return self
-
-        def set_intensity(self) -> Intensity:
-            """Set intensity.
-
-            Returns
-            -------
-            ansys.speos.script.intensity.Intensity
-                Intensity.
-            """
-            return self._intensity
-
-        def set_exitance_constant(self, geometries: List[tuple[GeoRef, bool]]) -> Source.Surface:
-            """Set exitance constant.
-
-            Parameters
-            ----------
-            geometries : List[tuple[ansys.speos.script.geo_ref.GeoRef, bool]]
-                List of (face, reverseNormal).
-
-            Returns
-            -------
-            ansys.speos.script.source.Source.Surface
-                Surface source.
-            """
-            self._exitance_type = None
-
-            self._surface.exitance_constant.SetInParent()
-            self._surface_props.exitance_constant_properties.ClearField("geo_paths")
-            if geometries != []:
-                my_list = [
-                    core.Scene.GeoPath(geo_path=gr.to_native_link(), reverse_normal=reverse_normal) for (gr, reverse_normal) in geometries
-                ]
-                self._surface_props.exitance_constant_properties.geo_paths.extend(my_list)
-            return self
-
-        def set_exitance_variable(self) -> Source.Surface.ExitanceVariable:
-            """Set exitance variable, taken from XMP map.
-
-            Returns
-            -------
-            ansys.speos.script.source.Source.Surface.ExitanceVariable
-                ExitanceVariable of surface source.
-            """
-            if self._exitance_type is None and self._surface.HasField("exitance_variable"):
-                self._exitance_type = Source.Surface.ExitanceVariable(
-                    exitance_variable=self._surface.exitance_variable,
-                    exitance_variable_props=self._surface_props.exitance_variable_properties,
-                    default_values=False,
-                )
-            elif type(self._exitance_type) != Source.Surface.ExitanceVariable:
-                self._exitance_type = Source.Surface.ExitanceVariable(
-                    exitance_variable=self._surface.exitance_variable,
-                    exitance_variable_props=self._surface_props.exitance_variable_properties,
-                )
-            return self._exitance_type
-
-        def set_spectrum_from_xmp_file(self) -> Source.Surface:
-            """Take spectrum from xmp file provided.
-
-            Returns
-            -------
-            ansys.speos.script.source.Source.Surface
-                Surface source.
-            """
-            self._surface.spectrum_from_xmp_file.SetInParent()
-            self._spectrum._no_spectrum_local = True
-            return self
-
-        def set_spectrum(self) -> Spectrum:
-            """Set spectrum
-
-            Returns
-            -------
-            ansys.speos.script.spectrum.Spectrum
-                Spectrum.
-            """
-            if self._surface.HasField("spectrum_from_xmp_file"):
-                guid = ""
-                if self._spectrum._spectrum.spectrum_link is not None:
-                    guid = self._spectrum._spectrum.spectrum_link.key
-                self._surface.spectrum_guid = guid
-            self._spectrum._no_spectrum_local = False
-            return self._spectrum._spectrum
-
-        def _to_dict(self, dict_to_complete: dict = {}) -> dict:
-            if self._spectrum is not None:
-                if dict_to_complete != {}:
-                    if (
-                        "spectrum_guid" in dict_to_complete["source"]["surface"].keys()
-                        and "spectrum" not in dict_to_complete["source"]["surface"].keys()
-                    ):
-                        dict_to_complete["source"]["surface"]["spectrum"] = self._spectrum._to_dict()
-                else:
-                    return self._spectrum._to_dict()
-
-            if dict_to_complete != {}:
-                if "intensity" not in dict_to_complete["source"]["surface"].keys():
-                    dict_to_complete["source"]["surface"]["intensity"] = self._spectrum._to_dict()
-            else:
-                return self._spectrum._to_dict()
-
-        def __str__(self) -> str:
-            out_str = ""
-            out_str += str(self._intensity)
-            out_str += "\n" + str(self._spectrum)
-            return out_str
-
-        def _commit(self) -> Source.Surface:
-            # intensity
-            self._intensity.commit()
-            self._surface.intensity_guid = self._intensity.intensity_template_link.key
-
-            # spectrum
-            self._spectrum._commit()
-            return self
-
-        def _reset(self) -> Source.Surface:
-            self._spectrum._reset()
-            return self
-
-        def _delete(self) -> Source.Surface:
-            self._spectrum._delete()
-            return self
-
-    class RayFile:
-        """Type of Source : RayFile.
-        By default, flux and spectrum from ray file are selected.
-
-        Parameters
-        ----------
-        speos_client : ansys.speos.core.client.SpeosClient
-            The Speos instance client.
-        name : str
-            Name of the source feature.
-        ray_file : ansys.api.speos.source.v1.source_pb2.SourceTemplate.RayFile
-            Ray file source to complete.
-        ray_file_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.RayFileProperties
-            Ray file source properties to complete.
-        default_values : bool
-            Uses default values when True.
-        """
-
-        def __init__(
-            self,
-            speos_client: core.SpeosClient,
-            name: str,
-            ray_file: core.SourceTemplate.RayFile,
-            ray_file_props: core.Scene.SourceInstance.RayFileProperties,
-            default_values: bool = True,
-        ) -> None:
-            self._client = speos_client
-            self._ray_file = ray_file
-            self._ray_file_props = ray_file_props
-
-            spectrum_guid = ""
-            if self._ray_file.HasField("spectrum_guid"):
-                spectrum_guid = self._ray_file.spectrum_guid
-            self._spectrum = Source._Spectrum(
-                speos_client=speos_client, name=name, message_to_complete=self._ray_file, spectrum_guid=spectrum_guid
-            )
-            self._name = name
-
-            if default_values:
-                # Default values
-                self.set_flux_from_ray_file().set_spectrum_from_ray_file()
-                self.set_axis_system()
-
-        def set_ray_file_uri(self, uri: str) -> Source.RayFile:
-            """Set ray file.
-
-            Parameters
-            ----------
-            uri : str
-                Rayfile format file uri (.ray or .tm25ray files expected).
-
-            Returns
-            -------
-            ansys.speos.script.source.Source.RayFile
-                RayFile source.
-            """
-            self._ray_file.ray_file_uri = uri
-            return self
-
-        def set_flux_from_ray_file(self) -> Source.RayFile:
-            """Take flux from ray file provided.
-
-            Returns
-            -------
-            ansys.speos.script.source.Source.RayFile
-                RayFile source.
-            """
-            self._ray_file.flux_from_ray_file.SetInParent()
-            return self
-
-        def set_flux_luminous(self, value: float = 683) -> Source.RayFile:
-            """Set luminous flux.
-
-            Parameters
-            ----------
-            value : float
-                Luminous flux in lumens.
-                By default, ``683.0``.
-
-            Returns
-            -------
-            ansys.speos.script.source.Source.RayFile
-                RayFile source.
-            """
-            self._ray_file.luminous_flux.luminous_value = value
-            return self
-
-        def set_flux_radiant(self, value: float = 1) -> Source.RayFile:
-            """Set radiant flux.
-
-            Parameters
-            ----------
-            value : float
-                Radiant flux in watts.
-                By default, ``1.0``.
-
-            Returns
-            -------
-            ansys.speos.script.source.Source.RayFile
-                RayFile source.
-            """
-            self._ray_file.radiant_flux.radiant_value = value
-            return self
-
-        def set_spectrum_from_ray_file(self) -> Source.RayFile:
-            """Take spectrum from ray file provided.
-
-            Returns
-            -------
-            ansys.speos.script.source.Source.RayFile
-                RayFile source.
-            """
-            self._ray_file.spectrum_from_ray_file.SetInParent()
-            self._spectrum._no_spectrum_local = True
-            return self
-
-        def set_spectrum(self) -> Spectrum:
-            """Set spectrum
-
-            Returns
-            -------
-            ansys.speos.script.spectrum.Spectrum
-                Spectrum.
-            """
-            if self._ray_file.HasField("spectrum_from_ray_file"):
-                guid = ""
-                if self._spectrum._spectrum.spectrum_link is not None:
-                    guid = self._spectrum._spectrum.spectrum_link.key
-                self._ray_file.spectrum_guid = guid
-            self._spectrum._no_spectrum_local = False
-            return self._spectrum._spectrum
-
-        def set_axis_system(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> Source.RayFile:
-            """Set position of the source.
-
-            Parameters
-            ----------
-            axis_system : List[float]
-                Position of the source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
-                By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
-
-            Returns
-            -------
-            ansys.speos.script.source.Source.RayFile
-                RayFile Source.
-            """
-            self._ray_file_props.axis_system[:] = axis_system
-            return self
-
-        def set_exit_geometries(self, exit_geometries: List[GeoRef] = []) -> Source.RayFile:
-            """Set exit geometries.
-
-            Parameters
-            ----------
-            exit_geometries : List[ansys.speos.script.geo_ref.GeoRef]
-                Exit Geometries that will use this rayfile source.
-                By default, ``[]``.
-
-            Returns
-            -------
-            ansys.speos.script.source.Source.RayFile
-                RayFile Source.
-            """
-            if exit_geometries == []:
-                self._ray_file_props.ClearField("exit_geometries")
-            else:
-                self._ray_file_props.exit_geometries.geo_paths[:] = [gr.to_native_link() for gr in exit_geometries]
-
-            return self
-
-        def _to_dict(self, dict_to_complete: dict = {}) -> dict:
-            if self._spectrum is not None:
-                if dict_to_complete != {}:
-                    if (
-                        "spectrum_guid" in dict_to_complete["source"]["rayfile"].keys()
-                        and "spectrum" not in dict_to_complete["source"]["rayfile"].keys()
-                    ):
-                        dict_to_complete["source"]["rayfile"]["spectrum"] = self._spectrum._to_dict()
-                else:
-                    return self._spectrum._to_dict()
-
-        def __str__(self) -> str:
-            return str(self._spectrum)
-
-        def _commit(self) -> Source.RayFile:
-            self._spectrum._commit()
-            return self
-
-        def _reset(self) -> Source.RayFile:
-            self._spectrum._reset()
-            return self
-
-        def _delete(self) -> Source.RayFile:
-            self._spectrum._delete()
-            return self
 
     def set_luminaire(self) -> Luminaire:
         """Set the source as luminaire.
