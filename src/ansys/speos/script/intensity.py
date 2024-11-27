@@ -356,6 +356,17 @@ class Intensity:
             )
         return self._type
 
+    @property
+    def type(self) -> type:
+        """Return type of sensor.
+
+        Returns
+        -------
+        Example: None for lambertian or ansys.speos.script.intensity.Intensity.Library
+
+        """
+        return type(self._type)
+
     def _to_dict(self) -> dict:
         out_dict = {}
         if self.intensity_template_link is None:

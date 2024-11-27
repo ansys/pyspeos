@@ -189,3 +189,25 @@ def _finder_by_key(dict_var: dict, key: str, x_path: str = "") -> List[tuple[str
                 i = i + 1
             x_path = x_path_bckp  # retrieve previous x_path
     return out_list
+
+
+def _flatten_dict(dict_var: dict):
+    """Flatten a dictionary (recursively).
+    It will return a dictionary of (key, value) of items corresponding to the key.
+    If a same key appears multiple time, the last value will be used as the value.
+
+    Parameters
+    ----------
+    dict_var: dict
+
+    Returns
+    -------
+    dict
+
+    """
+    flat_dict = {}
+    for k, v in dict_var.items():
+        if isinstance(v, dict):
+            flat_dict.update(_flatten_dict(v))
+        flat_dict[k] = v
+    return flat_dict
