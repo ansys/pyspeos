@@ -47,9 +47,6 @@ class BaseSource:
         self.source_template_link = None
         """Link object for the source template in database."""
 
-        # Attribute representing the kind of source. Can be an object of type script.Source.Luminaire, script.Source.RayFile, ...
-        self._type = None
-
         # Create local SourceTemplate
         self._source_template = core.SourceTemplate(name=name, description=description, metadata=metadata)
 
@@ -130,7 +127,7 @@ class BaseSource:
 
         return out_dict
 
-    def get(self, key: str = "") -> str | dict:
+    def get(self, key: str = "") -> list[tuple[str, dict]]:
         """Get dictionary corresponding to the project - read only.
 
         Parameters
@@ -144,9 +141,9 @@ class BaseSource:
 
         if key == "":
             return self._to_dict()
-        info = proto_message_utils._value_finder_key_startswith(dict_var=self._to_dict(), key=key)
-        if list(info) != []:
-            return next(info)[1]
+        info = list(proto_message_utils._value_finder_key_startswith(dict_var=self._to_dict(), key=key))
+        if info:
+            return info
         else:
             info = proto_message_utils._flatten_dict(dict_var=self._to_dict())
             print("Used key: {} not found in key list: {}.".format(key, info.keys()))
@@ -165,7 +162,7 @@ class BaseSource:
         out_str += proto_message_utils.dict_to_str(dict=self._to_dict())
         return out_str
 
-    def commit(self) -> Source:
+    def _commit(self) -> BaseSource:
         """Save feature: send the local data to the speos server database.
 
         Returns
@@ -177,10 +174,6 @@ class BaseSource:
         if self._unique_id is None:
             self._unique_id = str(uuid.uuid4())
             self._source_instance.metadata["UniqueId"] = self._unique_id
-
-        # This allows to commit managed object contained in _luminaire, _rayfile, etc.. Like Spectrum, IntensityTemplate
-        if self._type is not None:
-            self._type._commit()
 
         # Save or Update the source template (depending on if it was already saved before)
         if self.source_template_link is None:
@@ -209,7 +202,7 @@ class BaseSource:
 
         return self
 
-    def reset(self) -> Source:
+    def reset(self) -> BaseSource:
         """Reset feature: override local data by the one from the speos server database.
 
         Returns
@@ -234,7 +227,7 @@ class BaseSource:
                 self._source_instance = src_inst
         return self
 
-    def delete(self) -> Source:
+    def delete(self) -> BaseSource:
         """Delete feature: delete data from the speos server database.
         The local data are still available
 
@@ -274,6 +267,149 @@ class BaseSource:
         self.reset()
 
 
+class Luminaire(BaseSource):
+    """Type of Source : Luminaire.
+    By default, a flux from intensity file is chosen, with an incandescent spectrum.
+
+    Parameters
+    ----------
+    speos_client : ansys.speos.core.client.SpeosClient
+        The Speos instance client.
+    name : str
+        Name of the source feature.
+    luminaire : ansys.api.speos.source.v1.source_pb2.SourceTemplate
+        Luminaire source to complete.
+    luminaire_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.LuminaireProperties
+        Luminaire source properties to complete.
+    default_values : bool
+        Uses default values when True.
+    """
+
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Mapping[str, str] = {},
+        default_values: bool = True,
+    ) -> None:
+        super().__init__(project, name, description, metadata)
+        self._luminaire = self._source_template.luminaire
+        self._luminaire_props = self._source_instance.luminaire_properties
+        self._spectrum = self._Spectrum(
+            speos_client=self._project.client,
+            name=name,
+            message_to_complete=self._luminaire,
+            spectrum_guid=self._luminaire.spectrum_guid,
+        )
+
+        if default_values:
+            # Default values
+            self.set_flux_from_intensity_file().set_spectrum().set_incandescent()
+            self.set_axis_system()
+
+    def set_flux_from_intensity_file(self) -> Luminaire:
+        """Take flux from intensity file provided.
+
+        Returns
+        -------
+        ansys.speos.script.source.Source.Luminaire
+            Luminaire source.
+        """
+        self._luminaire.flux_from_intensity_file.SetInParent()
+        return self
+
+    def set_flux_luminous(self, value: float = 683) -> Luminaire:
+        """Set luminous flux.
+
+        Parameters
+        ----------
+        value : float
+            Luminous flux in lumens.
+            By default, ``683.0``.
+
+        Returns
+        -------
+        ansys.speos.script.source.Source.Luminaire
+            Luminaire source.
+        """
+        self._luminaire.luminous_flux.luminous_value = value
+        return self
+
+    def set_flux_radiant(self, value: float = 1) -> Luminaire:
+        """Set radiant flux.
+
+        Parameters
+        ----------
+        value : float
+            Radiant flux in watts.
+            By default, ``1.0``.
+
+        Returns
+        -------
+        ansys.speos.script.source.Source.Luminaire
+            Luminaire source.
+        """
+        self._luminaire.radiant_flux.radiant_value = value
+        return self
+
+    def set_intensity_file_uri(self, uri: str) -> Luminaire:
+        """Set intensity file.
+
+        Parameters
+        ----------
+        uri : str
+            IES or EULUMDAT format file uri.
+
+        Returns
+        -------
+        ansys.speos.script.source.Source.Luminaire
+            Luminaire source.
+        """
+        self._luminaire.intensity_file_uri = uri
+        return self
+
+    def set_spectrum(self) -> Spectrum:
+        """Set spectrum.
+
+        Returns
+        -------
+        ansys.speos.script.spectrum.Spectrum
+            Spectrum.
+        """
+        return self._spectrum._spectrum
+
+    def set_axis_system(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> Luminaire:
+        """Set position of the source.
+
+        Parameters
+        ----------
+        axis_system : List[float]
+            Position of the source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+
+        Returns
+        -------
+        ansys.speos.script.source.Source.Luminaire
+            Luminaire source.
+        """
+        self._luminaire_props.axis_system[:] = axis_system
+        return self
+
+    def commit(self) -> Luminaire:
+        self._spectrum._commit()
+        self._commit()
+        return self
+
+    def _reset(self) -> Luminaire:
+        self._spectrum._reset()
+        return self
+
+    def _delete(self) -> Luminaire:
+        self._spectrum._delete()
+        return self
+
+
 class Source(BaseSource):
     """Speos feature : Source.
 
@@ -295,157 +431,6 @@ class Source(BaseSource):
     source_template_link : ansys.speos.core.source_template.SourceTemplateLink
         Link object for the source template in database.
     """
-
-    class Luminaire:
-        """Type of Source : Luminaire.
-        By default, a flux from intensity file is chosen, with an incandescent spectrum.
-
-        Parameters
-        ----------
-        speos_client : ansys.speos.core.client.SpeosClient
-            The Speos instance client.
-        name : str
-            Name of the source feature.
-        luminaire : ansys.api.speos.source.v1.source_pb2.SourceTemplate
-            Luminaire source to complete.
-        luminaire_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.LuminaireProperties
-            Luminaire source properties to complete.
-        default_values : bool
-            Uses default values when True.
-        """
-
-        def __init__(
-            self,
-            speos_client: core.SpeosClient,
-            name: str,
-            luminaire: core.SourceTemplate.luminaire,
-            luminaire_props: core.Scene.SourceInstance.LuminaireProperties,
-            default_values: bool = True,
-        ) -> None:
-            self._luminaire = luminaire
-            self._luminaire_props = luminaire_props
-
-            self._spectrum = Source._Spectrum(
-                speos_client=speos_client,
-                name=name,
-                message_to_complete=self._luminaire,
-                spectrum_guid=self._luminaire.spectrum_guid,
-            )
-
-            if default_values:
-                # Default values
-                self.set_flux_from_intensity_file().set_spectrum().set_incandescent()
-                self.set_axis_system()
-
-        def set_flux_from_intensity_file(self) -> Source.Luminaire:
-            """Take flux from intensity file provided.
-
-            Returns
-            -------
-            ansys.speos.script.source.Source.Luminaire
-                Luminaire source.
-            """
-            self._luminaire.flux_from_intensity_file.SetInParent()
-            return self
-
-        def set_flux_luminous(self, value: float = 683) -> Source.Luminaire:
-            """Set luminous flux.
-
-            Parameters
-            ----------
-            value : float
-                Luminous flux in lumens.
-                By default, ``683.0``.
-
-            Returns
-            -------
-            ansys.speos.script.source.Source.Luminaire
-                Luminaire source.
-            """
-            self._luminaire.luminous_flux.luminous_value = value
-            return self
-
-        def set_flux_radiant(self, value: float = 1) -> Source.Luminaire:
-            """Set radiant flux.
-
-            Parameters
-            ----------
-            value : float
-                Radiant flux in watts.
-                By default, ``1.0``.
-
-            Returns
-            -------
-            ansys.speos.script.source.Source.Luminaire
-                Luminaire source.
-            """
-            self._luminaire.radiant_flux.radiant_value = value
-            return self
-
-        def set_intensity_file_uri(self, uri: str) -> Source.Luminaire:
-            """Set intensity file.
-
-            Parameters
-            ----------
-            uri : str
-                IES or EULUMDAT format file uri.
-
-            Returns
-            -------
-            ansys.speos.script.source.Source.Luminaire
-                Luminaire source.
-            """
-            self._luminaire.intensity_file_uri = uri
-            return self
-
-        def set_spectrum(self) -> Spectrum:
-            """Set spectrum.
-
-            Returns
-            -------
-            ansys.speos.script.spectrum.Spectrum
-                Spectrum.
-            """
-            return self._spectrum._spectrum
-
-        def set_axis_system(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> Source.Luminaire:
-            """Set position of the source.
-
-            Parameters
-            ----------
-            axis_system : List[float]
-                Position of the source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
-                By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
-
-            Returns
-            -------
-            ansys.speos.script.source.Source.Luminaire
-                Luminaire source.
-            """
-            self._luminaire_props.axis_system[:] = axis_system
-            return self
-
-        def _to_dict(self, dict_to_complete: dict = {}) -> dict:
-            if dict_to_complete != {}:
-                if "spectrum" not in dict_to_complete["source"]["luminaire"].keys():
-                    dict_to_complete["source"]["luminaire"]["spectrum"] = self._spectrum._to_dict()
-            else:
-                return self._spectrum._to_dict()
-
-        def __str__(self) -> str:
-            return str(self._spectrum)
-
-        def _commit(self) -> Source.Luminaire:
-            self._spectrum._commit()
-            return self
-
-        def _reset(self) -> Source.Luminaire:
-            self._spectrum._reset()
-            return self
-
-        def _delete(self) -> Source.Luminaire:
-            self._spectrum._delete()
-            return self
 
     class Surface:
         """Type of Source : Surface.
