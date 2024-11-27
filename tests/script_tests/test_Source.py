@@ -185,8 +185,10 @@ def test_create_rayfile_source(speos: Speos):
     p = script.Project(speos=speos)
 
     # Default value : not committed because not valid by default due to ray_file_uri needed
-    source1 = p.create_source(name="Ray-file.1")
-    source1.set_rayfile()
+    source1 = script.source.RayFile(
+        p,
+        name="Ray-file.1",
+    )
     assert source1._source_instance.HasField("rayfile_properties")
     assert source1._source_instance.rayfile_properties.axis_system == [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     assert source1._source_template.HasField("rayfile")
@@ -195,7 +197,7 @@ def test_create_rayfile_source(speos: Speos):
     assert source1._source_template.rayfile.ray_file_uri == ""
 
     # ray_file_uri
-    source1.set_rayfile().set_ray_file_uri(uri=os.path.join(test_path, "Rays.ray"))
+    source1.set_ray_file_uri(uri=os.path.join(test_path, "Rays.ray"))
     source1.commit()
     assert source1.source_template_link is not None
     assert source1.source_template_link.get().HasField("rayfile")
@@ -204,25 +206,25 @@ def test_create_rayfile_source(speos: Speos):
     assert source1.source_template_link.get().rayfile.HasField("spectrum_from_ray_file")
 
     # luminous_flux
-    source1.set_rayfile().set_flux_luminous(value=641)
+    source1.set_flux_luminous(value=641)
     source1.commit()
     assert source1.source_template_link.get().rayfile.HasField("luminous_flux")
     assert source1.source_template_link.get().rayfile.luminous_flux.luminous_value == 641
 
     # radiant_flux
-    source1.set_rayfile().set_flux_radiant(value=1.3)
+    source1.set_flux_radiant(value=1.3)
     source1.commit()
     assert source1.source_template_link.get().rayfile.HasField("radiant_flux")
     assert source1.source_template_link.get().rayfile.radiant_flux.radiant_value == 1.3
 
     # flux_from_ray_file
-    source1.set_rayfile().set_flux_from_ray_file()
+    source1.set_flux_from_ray_file()
     source1.commit()
     assert source1.source_template_link.get().rayfile.HasField("flux_from_ray_file")
 
     # spectrum (need to change ray file so that it does not contain spectral data)
-    source1.set_rayfile().set_ray_file_uri(uri=os.path.join(test_path, "RaysWithoutSpectralData.RAY"))
-    source1.set_rayfile().set_spectrum().set_blackbody()
+    source1.set_ray_file_uri(uri=os.path.join(test_path, "RaysWithoutSpectralData.RAY"))
+    source1.set_spectrum().set_blackbody()
     source1.commit()
     assert source1.source_template_link.get().rayfile.spectrum_guid != ""
     spectrum = speos.client.get_item(key=source1.source_template_link.get().rayfile.spectrum_guid)
@@ -231,21 +233,19 @@ def test_create_rayfile_source(speos: Speos):
 
     # properties
     # axis_system
-    source1.set_rayfile().set_axis_system(axis_system=[50, 40, 50, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    source1.set_axis_system(axis_system=[50, 40, 50, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     source1.commit()
     assert source1._source_instance.HasField("rayfile_properties")
     assert source1._source_instance.rayfile_properties.axis_system == [50, 40, 50, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 
     # exit_geometries
-    source1.set_rayfile().set_exit_geometries(
-        exit_geometries=[script.GeoRef.from_native_link("BodyB"), script.GeoRef.from_native_link("BodyC")]
-    )
+    source1.set_exit_geometries(exit_geometries=[script.GeoRef.from_native_link("BodyB"), script.GeoRef.from_native_link("BodyC")])
     source1.commit()
     assert source1._source_instance.rayfile_properties.HasField("exit_geometries")
     assert len(source1._source_instance.rayfile_properties.exit_geometries.geo_paths) == 2
     assert source1._source_instance.rayfile_properties.exit_geometries.geo_paths == ["BodyB", "BodyC"]
 
-    source1.set_rayfile().set_exit_geometries()  # use default [] to reset exit geometries
+    source1.set_exit_geometries()  # use default [] to reset exit geometries
     source1.commit()
     assert source1._source_instance.rayfile_properties.HasField("exit_geometries") == False
 

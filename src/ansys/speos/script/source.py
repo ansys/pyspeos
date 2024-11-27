@@ -202,7 +202,7 @@ class BaseSource:
 
         return self
 
-    def reset(self) -> BaseSource:
+    def _reset(self) -> BaseSource:
         """Reset feature: override local data by the one from the speos server database.
 
         Returns
@@ -210,10 +210,6 @@ class BaseSource:
         ansys.speos.script.source.Source
             Source feature.
         """
-        # This allows to reset managed object contained in _luminaire, _rayfile, etc.. Like Spectrum, IntensityTemplate
-        if self._type is not None:
-            self._type._reset()
-
         # Reset source template
         if self.source_template_link is not None:
             self._source_template = self.source_template_link.get()
@@ -227,7 +223,7 @@ class BaseSource:
                 self._source_instance = src_inst
         return self
 
-    def delete(self) -> BaseSource:
+    def _delete(self) -> BaseSource:
         """Delete feature: delete data from the speos server database.
         The local data are still available
 
@@ -262,23 +258,25 @@ class BaseSource:
         self._unique_id = src_inst.metadata["UniqueId"]
         self._source_instance = src_inst
         self.source_template_link = self._project.client.get_item(key=src_inst.source_guid)
-        self.reset()
+        self._reset()
 
 
 class Luminaire(BaseSource):
-    """Type of Source : Luminaire.
+    """LuminaireSource.
     By default, a flux from intensity file is chosen, with an incandescent spectrum.
 
     Parameters
     ----------
-    speos_client : ansys.speos.core.client.SpeosClient
-        The Speos instance client.
+    project : ansys.speos.script.project.Project
+        Project that will own the feature.
     name : str
-        Name of the source feature.
-    luminaire : ansys.api.speos.source.v1.source_pb2.SourceTemplate
-        Luminaire source to complete.
-    luminaire_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.LuminaireProperties
-        Luminaire source properties to complete.
+        Name of the feature.
+    description : str
+        Description of the feature.
+        By default, ``""``.
+    metadata : Mapping[str, str]
+        Metadata of the feature.
+        By default, ``{}``.
     default_values : bool
         Uses default values when True.
     """
@@ -399,12 +397,203 @@ class Luminaire(BaseSource):
         self._commit()
         return self
 
-    def _reset(self) -> Luminaire:
+    def reset(self) -> Luminaire:
         self._spectrum._reset()
+        self._reset()
         return self
 
-    def _delete(self) -> Luminaire:
+    def delete(self) -> Luminaire:
         self._spectrum._delete()
+        self._delete()
+        return self
+
+
+class RayFile(BaseSource):
+    """RayFile Source.
+    By default, flux and spectrum from ray file are selected.
+
+    Parameters
+    ----------
+    project : ansys.speos.script.project.Project
+        Project that will own the feature.
+    name : str
+        Name of the feature.
+    description : str
+        Description of the feature.
+        By default, ``""``.
+    metadata : Mapping[str, str]
+        Metadata of the feature.
+        By default, ``{}``.
+    default_values : bool
+        Uses default values when True.
+    """
+
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Mapping[str, str] = {},
+        default_values: bool = True,
+    ) -> None:
+        super().__init__(project, name, description, metadata)
+        self._client = self._project.client
+        self._ray_file = self._source_template.rayfile
+        self._ray_file_props = self._source_instance.rayfile_properties
+
+        spectrum_guid = ""
+        if self._ray_file.HasField("spectrum_guid"):
+            spectrum_guid = self._ray_file.spectrum_guid
+        self._spectrum = self._Spectrum(
+            speos_client=self._client, name=name, message_to_complete=self._ray_file, spectrum_guid=spectrum_guid
+        )
+        self._name = name
+
+        if default_values:
+            # Default values
+            self.set_flux_from_ray_file().set_spectrum_from_ray_file()
+            self.set_axis_system()
+
+    def set_ray_file_uri(self, uri: str) -> RayFile:
+        """Set ray file.
+
+        Parameters
+        ----------
+        uri : str
+            Rayfile format file uri (.ray or .tm25ray files expected).
+
+        Returns
+        -------
+        ansys.speos.script.source.Source.RayFile
+            RayFile source.
+        """
+        self._ray_file.ray_file_uri = uri
+        return self
+
+    def set_flux_from_ray_file(self) -> RayFile:
+        """Take flux from ray file provided.
+
+        Returns
+        -------
+        ansys.speos.script.source.Source.RayFile
+            RayFile source.
+        """
+        self._ray_file.flux_from_ray_file.SetInParent()
+        return self
+
+    def set_flux_luminous(self, value: float = 683) -> RayFile:
+        """Set luminous flux.
+
+        Parameters
+        ----------
+        value : float
+            Luminous flux in lumens.
+            By default, ``683.0``.
+
+        Returns
+        -------
+        ansys.speos.script.source.Source.RayFile
+            RayFile source.
+        """
+        self._ray_file.luminous_flux.luminous_value = value
+        return self
+
+    def set_flux_radiant(self, value: float = 1) -> RayFile:
+        """Set radiant flux.
+
+        Parameters
+        ----------
+        value : float
+            Radiant flux in watts.
+            By default, ``1.0``.
+
+        Returns
+        -------
+        ansys.speos.script.source.Source.RayFile
+            RayFile source.
+        """
+        self._ray_file.radiant_flux.radiant_value = value
+        return self
+
+    def set_spectrum_from_ray_file(self) -> RayFile:
+        """Take spectrum from ray file provided.
+
+        Returns
+        -------
+        ansys.speos.script.source.Source.RayFile
+            RayFile source.
+        """
+        self._ray_file.spectrum_from_ray_file.SetInParent()
+        self._spectrum._no_spectrum_local = True
+        return self
+
+    def set_spectrum(self) -> Spectrum:
+        """Set spectrum
+
+        Returns
+        -------
+        ansys.speos.script.spectrum.Spectrum
+            Spectrum.
+        """
+        if self._ray_file.HasField("spectrum_from_ray_file"):
+            guid = ""
+            if self._spectrum._spectrum.spectrum_link is not None:
+                guid = self._spectrum._spectrum.spectrum_link.key
+            self._ray_file.spectrum_guid = guid
+        self._spectrum._no_spectrum_local = False
+        return self._spectrum._spectrum
+
+    def set_axis_system(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> RayFile:
+        """Set position of the source.
+
+        Parameters
+        ----------
+        axis_system : List[float]
+            Position of the source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+
+        Returns
+        -------
+        ansys.speos.script.source.Source.RayFile
+            RayFile Source.
+        """
+        self._ray_file_props.axis_system[:] = axis_system
+        return self
+
+    def set_exit_geometries(self, exit_geometries: List[GeoRef] = []) -> RayFile:
+        """Set exit geometries.
+
+        Parameters
+        ----------
+        exit_geometries : List[ansys.speos.script.geo_ref.GeoRef]
+            Exit Geometries that will use this rayfile source.
+            By default, ``[]``.
+
+        Returns
+        -------
+        ansys.speos.script.source.Source.RayFile
+            RayFile Source.
+        """
+        if exit_geometries == []:
+            self._ray_file_props.ClearField("exit_geometries")
+        else:
+            self._ray_file_props.exit_geometries.geo_paths[:] = [gr.to_native_link() for gr in exit_geometries]
+
+        return self
+
+    def commit(self) -> RayFile:
+        self._spectrum._commit()
+        self._commit()
+        return self
+
+    def reset(self) -> RayFile:
+        self._spectrum._reset()
+        self._reset()
+        return self
+
+    def delete(self) -> RayFile:
+        self._spectrum._delete()
+        self._delete()
         return self
 
 
