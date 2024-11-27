@@ -94,16 +94,25 @@ class Project:
         self._features.append(feature)
         return feature
 
-    def create_source(self, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> source.Source:
+    def create_source(
+        self,
+        name: str,
+        description: str = "",
+        feature_type: Optional[source.Surface, source.RayFile, source.Luminaire] = source.Surface,
+        metadata: Mapping[str, str] = {},
+    ) -> source.Source:
         """Create a new Source feature.
 
         Parameters
         ----------
+
         name : str
             Name of the feature.
         description : str
             Description of the feature.
             By default, ``""``.
+        feature_type: Optional[source.Surface, source.RayFile, source.Luminaire]
+            source type
         metadata : Mapping[str, str]
             Metadata of the feature.
             By default, ``{}``.
@@ -113,7 +122,13 @@ class Project:
         ansys.speos.script.source.Source
             Source feature.
         """
-        feature = source.Source(project=self, name=name, description=description, metadata=metadata)
+        feature = None
+        if isinstance(feature_type, source.Surface):
+            feature = source.Surface(project=self, name=name, description=description, metadata=metadata)
+        elif isinstance(feature_type, source.RayFile):
+            feature = source.RayFile(project=self, name=name, description=description, metadata=metadata)
+        elif isinstance(feature_type, source.Luminaire):
+            feature = source.Luminaire(project=self, name=name, description=description, metadata=metadata)
         self._features.append(feature)
         return feature
 
