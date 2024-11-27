@@ -20,14 +20,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Optional
+import json
 
 from google.protobuf import __version__ as protobuf_version
 from google.protobuf.json_format import MessageToJson
 from google.protobuf.message import Message
 
 
-def protobuf_message_to_str(message: Message, with_full_name: Optional[bool] = True) -> str:
+def protobuf_message_to_str(message: Message, with_full_name: bool = True) -> str:
     """
     Returns a protobuf message as formatted json string.
 
@@ -35,7 +35,7 @@ def protobuf_message_to_str(message: Message, with_full_name: Optional[bool] = T
     ----------
     message : google.protobuf.message.Message
         Protobuf message.
-    with_full_name : bool, optional
+    with_full_name : bool
         Prepend the returned string with protobuf message full name.
         By default, ``True``.
 
@@ -54,3 +54,20 @@ def protobuf_message_to_str(message: Message, with_full_name: Optional[bool] = T
     else:
         ret += MessageToJson(message=message, always_print_fields_with_no_presence=True, preserving_proto_field_name=True, indent=4)
     return ret
+
+
+def protobuf_message_to_dict(message) -> dict:
+    """
+    Returns a protobuf message as formatted json dict.
+
+    Parameters
+    ----------
+    message : google.protobuf.message.Message
+        Protobuf message.
+
+    Returns
+    -------
+    dict
+        protobuf message formatted as dict.
+    """
+    return json.loads(protobuf_message_to_str(message=message, with_full_name=False))

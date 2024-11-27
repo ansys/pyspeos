@@ -26,6 +26,7 @@ from __future__ import annotations
 from typing import List, Mapping, Optional
 
 import ansys.speos.core as core
+from ansys.speos.script import proto_message_utils
 import ansys.speos.script.body as body
 
 
@@ -119,15 +120,24 @@ class Face:
         self._face.normals[:] = values
         return self
 
+    def _to_dict(self) -> dict:
+        out_dict = ""
+
+        if self.face_link is None:
+            out_dict = proto_message_utils._replace_guids(speos_client=self._speos_client, message=self._face)
+        else:
+            out_dict = proto_message_utils._replace_guids(speos_client=self._speos_client, message=self.face_link.get())
+
+        return out_dict
+
     def __str__(self) -> str:
         """Return the string representation of the face."""
         out_str = ""
 
         if self.face_link is None:
-            out_str += f"\nlocal: " + core.protobuf_message_to_str(self._face)
-        else:
-            out_str += "\n" + str(self.face_link)
+            out_str += "local: "
 
+        out_str += proto_message_utils.dict_to_str(dict=self._to_dict())
         return out_str
 
     def commit(self) -> Face:

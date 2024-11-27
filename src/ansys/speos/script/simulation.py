@@ -34,6 +34,7 @@ import ansys.speos.core as core
 
 # from ansys.speos.script.geo_ref import GeoRef
 import ansys.speos.script.project as project
+import ansys.speos.script.proto_message_utils as proto_message_utils
 
 
 class Simulation:
@@ -931,6 +932,16 @@ class Simulation:
 
         return self._type
 
+    @property
+    def type(self) -> type:
+        """Return type of simulation.
+
+        Returns
+        -------
+        Example: ansys.speos.script.simulation.Simulation.Direct
+        """
+        return type(self._type)
+
     def set_sensor_paths(self, sensor_paths: List[str]) -> Simulation:
         """Set the sensors that the simulation will take into account.
 
@@ -1038,31 +1049,79 @@ class Simulation:
 
         return self.job_link.get_results().results
 
-    def __str__(self) -> str:
-        """Return the string representation of the simulation"""
-        out_str = ""
-
-        if self.job_link is None:
-            out_str += "local: " + core.protobuf_message_to_str(self._job)
-        else:
-            out_str += str(self.job_link)
+    def _to_dict(self) -> dict:
+        out_dict = {}
 
         # SimulationInstance (= simulation guid + simulation properties)
         if self._project.scene_link and self._unique_id is not None:
             scene_data = self._project.scene_link.get()
             sim_inst = next((x for x in scene_data.simulations if x.metadata["UniqueId"] == self._unique_id), None)
             if sim_inst is not None:
-                out_str += core.protobuf_message_to_str(sim_inst)
+                out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=sim_inst)
             else:
-                out_str += f"\nlocal: " + core.protobuf_message_to_str(self._simulation_instance)
+                out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._simulation_instance)
         else:
-            out_str += f"\nlocal: " + core.protobuf_message_to_str(self._simulation_instance)
+            out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._simulation_instance)
 
-        # SimulationTemplate
-        if self.simulation_template_link is None:
-            out_str += "\nlocal: " + core.protobuf_message_to_str(self._simulation_template)
+        if "simulation" not in out_dict.keys():
+            # SimulationTemplate
+            if self.simulation_template_link is None:
+                out_dict["simulation"] = proto_message_utils._replace_guids(
+                    speos_client=self._project.client, message=self._simulation_template
+                )
+            else:
+                out_dict["simulation"] = proto_message_utils._replace_guids(
+                    speos_client=self._project.client, message=self.simulation_template_link.get()
+                )
+
+        if self.job_link is None:
+            out_dict["simulation_properties"] = proto_message_utils._replace_guids(
+                speos_client=self._project.client, message=self._job, ignore_simple_key="scene_guid"
+            )
         else:
-            out_str += "\n" + str(self.simulation_template_link)
+            out_dict["simulation_properties"] = proto_message_utils._replace_guids(
+                speos_client=self._project.client, message=self.job_link.get(), ignore_simple_key="scene_guid"
+            )
+
+        proto_message_utils._replace_properties(json_dict=out_dict)
+
+        return out_dict
+
+    def get(self, key: str = "") -> str | dict:
+        """Get dictionary corresponding to the project - read only.
+
+        Parameters
+        ----------
+        key: str
+
+        Returns
+        -------
+
+        """
+
+        if key == "":
+            return self._to_dict()
+        info = proto_message_utils._value_finder_key_startswith(dict_var=self._to_dict(), key=key)
+        if list(info) != []:
+            return next(info)[1]
+        else:
+            info = proto_message_utils._flatten_dict(dict_var=self._to_dict())
+            print("Used key: {} not found in key list: {}.".format(key, info.keys()))
+
+    def __str__(self) -> str:
+        """Return the string representation of the simulation"""
+        out_str = ""
+
+        # SimulationInstance (= simulation guid + simulation properties)
+        if self._project.scene_link and self._unique_id is not None:
+            scene_data = self._project.scene_link.get()
+            sim_inst = next((x for x in scene_data.simulations if x.metadata["UniqueId"] == self._unique_id), None)
+            if sim_inst is None:
+                out_str += "local: "
+        else:
+            out_str += "local: "
+
+        out_str += proto_message_utils.dict_to_str(dict=self._to_dict())
 
         return out_str
 

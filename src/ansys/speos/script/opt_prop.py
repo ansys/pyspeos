@@ -28,6 +28,7 @@ import uuid
 import ansys.speos.core as core
 from ansys.speos.script.geo_ref import GeoRef
 import ansys.speos.script.project as project
+import ansys.speos.script.proto_message_utils as proto_message_utils
 
 
 class OptProp:
@@ -244,6 +245,44 @@ class OptProp:
             self._material_instance.geometries.geo_paths[:] = [gr.to_native_link() for gr in geometries]
         return self
 
+    def _to_dict(self) -> dict:
+        out_dict = {}
+
+        # MaterialInstance (= vop guid + sop guids + geometries)
+        if self._project.scene_link and self._unique_id is not None:
+            scene_data = self._project.scene_link.get()
+            mat_inst = next((x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id), None)
+            if mat_inst is not None:
+                out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=mat_inst)
+            else:
+                out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._material_instance)
+        else:
+            out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._material_instance)
+
+        if "vop" not in out_dict.keys():
+            # SensorTemplate
+            if self.vop_template_link is None:
+                if self._vop_template is not None:
+                    out_dict["vop"] = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._vop_template)
+            else:
+                out_dict["vop"] = proto_message_utils._replace_guids(
+                    speos_client=self._project.client, message=self.vop_template_link.get()
+                )
+
+        if "sops" not in out_dict.keys():
+            # SensorTemplate
+            if self.sop_template_link is None:
+                if self._sop_template is not None:
+                    out_dict["sops"] = [proto_message_utils._replace_guids(speos_client=self._project.client, message=self._sop_template)]
+            else:
+                out_dict["sops"] = [
+                    proto_message_utils._replace_guids(speos_client=self._project.client, message=self.sop_template_link.get())
+                ]
+
+        proto_message_utils._replace_properties(json_dict=out_dict)
+
+        return out_dict
+
     def __str__(self):
         """Return the string representation of the optical property."""
         out_str = ""
@@ -251,26 +290,12 @@ class OptProp:
         if self._project.scene_link and self._unique_id is not None:
             scene_data = self._project.scene_link.get()
             mat_inst = next((x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id), None)
-            if mat_inst is not None:
-                out_str += core.protobuf_message_to_str(mat_inst)
-            else:
-                out_str += f"local: " + core.protobuf_message_to_str(self._material_instance)
+            if mat_inst is None:
+                out_str += "local: "
         else:
-            out_str += f"local: " + core.protobuf_message_to_str(self._material_instance)
+            out_str += "local: "
 
-        # VOPTemplate
-        if self.vop_template_link is None:
-            if self._vop_template is not None:
-                out_str += f"\nlocal: " + core.protobuf_message_to_str(self._vop_template)
-        else:
-            out_str += "\n" + str(self.vop_template_link)
-
-        # SOPTemplate
-        if self.sop_template_link is None:
-            out_str += f"\nlocal: " + core.protobuf_message_to_str(self._sop_template)
-        else:
-            out_str += "\n" + str(self.sop_template_link)
-
+        out_str += proto_message_utils.dict_to_str(dict=self._to_dict())
         return out_str
 
     def commit(self) -> OptProp:

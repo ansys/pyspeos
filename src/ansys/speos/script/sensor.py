@@ -31,6 +31,7 @@ from ansys.api.speos.sensor.v1 import camera_sensor_pb2, common_pb2, irradiance_
 import ansys.speos.core as core
 from ansys.speos.script.geo_ref import GeoRef
 import ansys.speos.script.project as project
+import ansys.speos.script.proto_message_utils as proto_message_utils
 
 
 class Sensor:
@@ -1898,6 +1899,65 @@ class Sensor:
             )
         return self._type
 
+    @property
+    def type(self) -> type:
+        """Return type of sensor.
+
+        Returns
+        -------
+        Example: ansys.speos.script.sensor.Sensor.Irradiance
+
+        """
+        return type(self._type)
+
+    def _to_dict(self) -> dict:
+        out_dict = {}
+
+        # SensorInstance (= sensor guid + sensor properties)
+        if self._project.scene_link and self._unique_id is not None:
+            scene_data = self._project.scene_link.get()
+            ssr_inst = next((x for x in scene_data.sensors if x.metadata["UniqueId"] == self._unique_id), None)
+            if ssr_inst is not None:
+                out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=ssr_inst)
+            else:
+                out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._sensor_instance)
+        else:
+            out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._sensor_instance)
+
+        if "sensor" not in out_dict.keys():
+            # SensorTemplate
+            if self.sensor_template_link is None:
+                out_dict["sensor"] = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._sensor_template)
+            else:
+                out_dict["sensor"] = proto_message_utils._replace_guids(
+                    speos_client=self._project.client, message=self.sensor_template_link.get()
+                )
+
+        proto_message_utils._replace_properties(json_dict=out_dict)
+
+        return out_dict
+
+    def get(self, key: str = "") -> str | dict:
+        """Get dictionary corresponding to the project - read only.
+
+        Parameters
+        ----------
+        key: str
+
+        Returns
+        -------
+
+        """
+
+        if key == "":
+            return self._to_dict()
+        info = proto_message_utils._value_finder_key_startswith(dict_var=self._to_dict(), key=key)
+        if list(info) != []:
+            return next(info)[1]
+        else:
+            info = proto_message_utils._flatten_dict(dict_var=self._to_dict())
+            print("Used key: {} not found in key list: {}.".format(key, info.keys()))
+
     def __str__(self) -> str:
         """Return the string representation of the sensor."""
         out_str = ""
@@ -1905,18 +1965,12 @@ class Sensor:
         if self._project.scene_link and self._unique_id is not None:
             scene_data = self._project.scene_link.get()
             ssr_inst = next((x for x in scene_data.sensors if x.metadata["UniqueId"] == self._unique_id), None)
-            if ssr_inst is not None:
-                out_str += core.protobuf_message_to_str(ssr_inst)
-            else:
-                out_str += f"local: " + core.protobuf_message_to_str(self._sensor_instance)
+            if ssr_inst is None:
+                out_str += "local: "
         else:
-            out_str += f"local: " + core.protobuf_message_to_str(self._sensor_instance)
+            out_str += "local: "
 
-        # SensorTemplate
-        if self.sensor_template_link is None:
-            out_str += f"\nlocal: " + core.protobuf_message_to_str(self._sensor_template)
-        else:
-            out_str += "\n" + str(self.sensor_template_link)
+        out_str += proto_message_utils.dict_to_str(dict=self._to_dict())
 
         return out_str
 
