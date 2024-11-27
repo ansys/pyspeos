@@ -25,7 +25,7 @@ Test basic spectrum database connection.
 """
 import os
 
-from ansys.speos.core.spectrum import Spectrum, SpectrumFactory
+from ansys.speos.core.spectrum import Spectrum
 from ansys.speos.core.speos import Speos
 from conftest import test_path
 
@@ -36,7 +36,7 @@ def test_client_spectrum_init(speos: Speos):
     # Get DB
     spec_db = speos.client.spectrums()  # Create spectrum stub from client channel
 
-    # Create SpectrumLink from data:
+    # Create SpectrumLink:
     s_ph_data = Spectrum()
     s_ph_data.name = "predefined_halogen_0"
     s_ph_data.description = "Predefined spectrum"
@@ -45,9 +45,9 @@ def test_client_spectrum_init(speos: Speos):
     assert s_ph.key != ""
     assert s_ph.stub is not None
 
-    # Create SpectrumLink and use factory to get message data
+    # Create SpectrumLink
     s_bb_5321 = spec_db.create(
-        message=SpectrumFactory.blackbody(name="blackbody_0", description="Blackbody spectrum", temperature=5321.0)
+        message=Spectrum(name="blackbody_0", description="Blackbody spectrum", blackbody=Spectrum.BlackBody(temperature=5321.0))
     )  # the spectrum created is stored in DB
     # Get data
     s_bb_5321_data = s_bb_5321.get()
@@ -61,7 +61,9 @@ def test_client_spectrum_init(speos: Speos):
     s_bb_5321.delete()  # Delete from DB
 
     # Create SpectrumLink
-    s_m_659 = spec_db.create(SpectrumFactory.monochromatic(name="monochr_0", description="Monochromatic spectrum", wavelength=659.0))
+    s_m_659 = spec_db.create(
+        Spectrum(name="monochr_0", description="Monochromatic spectrum", monochromatic=Spectrum.Monochromatic(wavelength=659.0))
+    )
     # Duplicate = same data but different keys
     s_m_659_bis = spec_db.create(s_m_659.get())
     assert s_m_659_bis.stub == s_m_659.stub
@@ -73,44 +75,47 @@ def test_client_spectrum_init(speos: Speos):
         spec.delete()
 
 
-def test_spectrum_factory(speos: Speos):
-    """Test spectrum factory."""
+def test_spectrum(speos: Speos):
+    """Test spectrum."""
     assert speos.client.healthy is True
     # Get DB
     spec_db = speos.client.spectrums()  # Create spectrum stub from client channel
 
     # Monochromatic
-    spec_mono = spec_db.create(SpectrumFactory.monochromatic(name="monochr_1", description="Monochromatic spectrum", wavelength=659.0))
+    spec_mono = spec_db.create(
+        Spectrum(name="monochr_1", description="Monochromatic spectrum", monochromatic=Spectrum.Monochromatic(wavelength=659.0))
+    )
     assert spec_mono.key != ""
 
     # Blackbody
     spec_blackbody = spec_db.create(
-        message=SpectrumFactory.blackbody(name="blackbody_1", description="Blackbody spectrum", temperature=5321.0)
+        message=Spectrum(name="blackbody_1", description="Blackbody spectrum", blackbody=Spectrum.BlackBody(temperature=5321.0))
     )
     assert spec_blackbody.key != ""
 
     # Sampled
     s_sampled = spec_db.create(
-        message=SpectrumFactory.sampled(
+        message=Spectrum(
             name="sampled_1",
             description="Sampled spectrum",
-            wavelengths=[500.0, 550.0, 600.0],
-            values=[20.5, 100.0, 15.6],
+            sampled=Spectrum.Sampled(wavelengths=[500.0, 550.0, 600.0], values=[20.5, 100.0, 15.6]),
         )
     )
     assert s_sampled.key != ""
 
     # Library
     spectrum_path = os.path.join(test_path, os.path.join("CameraInputFiles", "CameraSensitivityBlue.spectrum"))
-    s_lib = spec_db.create(message=SpectrumFactory.library(name="library_1", description="Library spectrum", file_uri=spectrum_path))
+    s_lib = spec_db.create(
+        message=Spectrum(name="library_1", description="Library spectrum", library=Spectrum.Library(file_uri=spectrum_path))
+    )
     assert s_lib.key != ""
 
     # Predefined
     s_predefined_incandescent = spec_db.create(
-        SpectrumFactory.predefined(
+        Spectrum(
             name="predefined_1",
             description="Predefined incandescent spectrum",
-            type=SpectrumFactory.PredefinedType.Incandescent,
+            predefined=Spectrum.Predefined(incandescent=Spectrum.Incandescent()),
         )
     )
     assert s_predefined_incandescent.key != ""
