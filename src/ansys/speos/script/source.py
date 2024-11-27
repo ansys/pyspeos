@@ -72,27 +72,27 @@ class BaseSource:
 
         def __str__(self) -> str:
             if self._no_spectrum is None:
-                if self._no_spectrum_local == False:
+                if self._no_spectrum_local is False:
                     return str(self._spectrum)
             else:
-                if self._no_spectrum == False:
+                if self._no_spectrum is False:
                     return str(self._spectrum)
             return ""
 
-        def _commit(self) -> Source.RayFile:
+        def _commit(self) -> BaseSource._Spectrum:
             if not self._no_spectrum_local:
                 self._spectrum.commit()
                 self._message_to_complete.spectrum_guid = self._spectrum.spectrum_link.key
                 self._no_spectrum = self._no_spectrum_local
             return self
 
-        def _reset(self) -> Source.RayFile:
+        def _reset(self) -> BaseSource._Spectrum:
             self._spectrum.reset()
             if self._no_spectrum is not None:
                 self._no_spectrum_local = self._no_spectrum
             return self
 
-        def _delete(self) -> Source.RayFile:
+        def _delete(self) -> BaseSource._Spectrum:
             self._no_spectrum = None
             return self
 
@@ -119,9 +119,9 @@ class BaseSource:
                     speos_client=self._project.client, message=self.source_template_link.get()
                 )
 
-        # handle spectrum & intensity
-        if self._type is not None:
-            self._type._to_dict(dict_to_complete=out_dict)
+        # # handle spectrum & intensity
+        # if self._type is not None:
+        #     self._type._to_dict(dict_to_complete=out_dict)
 
         proto_message_utils._replace_properties(json_dict=out_dict)
 
@@ -856,23 +856,6 @@ class Surface(BaseSource):
         self._spectrum._no_spectrum_local = False
         return self._spectrum._spectrum
 
-    def _to_dict(self, dict_to_complete: dict = {}) -> dict:
-        if self._spectrum is not None:
-            if dict_to_complete != {}:
-                if (
-                    "spectrum_guid" in dict_to_complete["source"]["surface"].keys()
-                    and "spectrum" not in dict_to_complete["source"]["surface"].keys()
-                ):
-                    dict_to_complete["source"]["surface"]["spectrum"] = self._spectrum._to_dict()
-            else:
-                return self._spectrum._to_dict()
-
-        if dict_to_complete != {}:
-            if "intensity" not in dict_to_complete["source"]["surface"].keys():
-                dict_to_complete["source"]["surface"]["intensity"] = self._spectrum._to_dict()
-        else:
-            return self._spectrum._to_dict()
-
     def __str__(self) -> str:
         out_str = ""
         out_str += str(self._intensity)
@@ -902,116 +885,116 @@ class Surface(BaseSource):
         return self
 
 
-class Source(BaseSource):
-    """Speos feature : Source.
-
-    Parameters
-    ----------
-    project : ansys.speos.script.project.Project
-        Project that will own the feature.
-    name : str
-        Name of the feature.
-    description : str
-        Description of the feature.
-        By default, ``""``.
-    metadata : Mapping[str, str]
-        Metadata of the feature.
-        By default, ``{}``.
-
-    Attributes
-    ----------
-    source_template_link : ansys.speos.core.source_template.SourceTemplateLink
-        Link object for the source template in database.
-    """
-
-    def set_luminaire(self) -> Luminaire:
-        """Set the source as luminaire.
-
-        Returns
-        -------
-        ansys.speos.script.source.Source.Luminaire
-            Luminaire source.
-        """
-        if self._type is None and self._source_template.HasField("luminaire"):
-            self._type = Source.Luminaire(
-                speos_client=self._project.client,
-                luminaire=self._source_template.luminaire,
-                name=self._source_template.name,
-                luminaire_props=self._source_instance.luminaire_properties,
-                default_values=False,
-            )
-        elif self._type is None:
-            self._type = Source.Luminaire(
-                speos_client=self._project.client,
-                luminaire=self._source_template.luminaire,
-                name=self._source_template.name,
-                luminaire_props=self._source_instance.luminaire_properties,
-            )
-        elif type(self._type) != Source.Luminaire:
-            raise ValueError(src_type_change_error)
-        return self._type
-
-    def set_surface(self) -> Surface:
-        """Set the source as surface.
-
-        Returns
-        -------
-        ansys.speos.script.source.Source.Surface
-            Surface source.
-        """
-        if self._type is None and self._source_template.HasField("surface"):
-            self._type = Source.Surface(
-                speos_client=self._project.client,
-                surface=self._source_template.surface,
-                name=self._source_template.name,
-                surface_props=self._source_instance.surface_properties,
-                default_values=False,
-            )
-        elif self._type is None:
-            self._type = Source.Surface(
-                speos_client=self._project.client,
-                surface=self._source_template.surface,
-                name=self._source_template.name,
-                surface_props=self._source_instance.surface_properties,
-            )
-        elif type(self._type) != Source.Surface:
-            raise ValueError(src_type_change_error)
-        return self._type
-
-    def set_rayfile(self) -> RayFile:
-        """Set the source as rayfile.
-
-        Returns
-        -------
-        ansys.speos.script.source.Source.RayFile
-            RayFile source.
-        """
-        if self._type is None and self._source_template.HasField("rayfile"):
-            self._type = Source.RayFile(
-                speos_client=self._project.client,
-                ray_file=self._source_template.rayfile,
-                ray_file_props=self._source_instance.rayfile_properties,
-                name=self._source_template.name,
-                default_values=False,
-            )
-        elif self._type is None:
-            self._type = Source.RayFile(
-                speos_client=self._project.client,
-                ray_file=self._source_template.rayfile,
-                ray_file_props=self._source_instance.rayfile_properties,
-                name=self._source_template.name,
-            )
-        elif type(self._type) != Source.RayFile:
-            raise ValueError(src_type_change_error)
-        return self._type
-
-    @property
-    def type(self) -> type:
-        """Return type of source.
-
-        Returns
-        -------
-        Example: ansys.speos.script.source.Source.RayFile
-
-        """
-        return type(self._type)
+# class Source(BaseSource):
+#     """Speos feature : Source.
+#
+#     Parameters
+#     ----------
+#     project : ansys.speos.script.project.Project
+#         Project that will own the feature.
+#     name : str
+#         Name of the feature.
+#     description : str
+#         Description of the feature.
+#         By default, ``""``.
+#     metadata : Mapping[str, str]
+#         Metadata of the feature.
+#         By default, ``{}``.
+#
+#     Attributes
+#     ----------
+#     source_template_link : ansys.speos.core.source_template.SourceTemplateLink
+#         Link object for the source template in database.
+#     """
+#
+#     def set_luminaire(self) -> Luminaire:
+#         """Set the source as luminaire.
+#
+#         Returns
+#         -------
+#         ansys.speos.script.source.Source.Luminaire
+#             Luminaire source.
+#         """
+#         if self._type is None and self._source_template.HasField("luminaire"):
+#             self._type = Source.Luminaire(
+#                 speos_client=self._project.client,
+#                 luminaire=self._source_template.luminaire,
+#                 name=self._source_template.name,
+#                 luminaire_props=self._source_instance.luminaire_properties,
+#                 default_values=False,
+#             )
+#         elif self._type is None:
+#             self._type = Source.Luminaire(
+#                 speos_client=self._project.client,
+#                 luminaire=self._source_template.luminaire,
+#                 name=self._source_template.name,
+#                 luminaire_props=self._source_instance.luminaire_properties,
+#             )
+#         elif type(self._type) != Source.Luminaire:
+#             raise ValueError(src_type_change_error)
+#         return self._type
+#
+#     def set_surface(self) -> Surface:
+#         """Set the source as surface.
+#
+#         Returns
+#         -------
+#         ansys.speos.script.source.Source.Surface
+#             Surface source.
+#         """
+#         if self._type is None and self._source_template.HasField("surface"):
+#             self._type = Source.Surface(
+#                 speos_client=self._project.client,
+#                 surface=self._source_template.surface,
+#                 name=self._source_template.name,
+#                 surface_props=self._source_instance.surface_properties,
+#                 default_values=False,
+#             )
+#         elif self._type is None:
+#             self._type = Source.Surface(
+#                 speos_client=self._project.client,
+#                 surface=self._source_template.surface,
+#                 name=self._source_template.name,
+#                 surface_props=self._source_instance.surface_properties,
+#             )
+#         elif type(self._type) != Source.Surface:
+#             raise ValueError(src_type_change_error)
+#         return self._type
+#
+#     def set_rayfile(self) -> RayFile:
+#         """Set the source as rayfile.
+#
+#         Returns
+#         -------
+#         ansys.speos.script.source.Source.RayFile
+#             RayFile source.
+#         """
+#         if self._type is None and self._source_template.HasField("rayfile"):
+#             self._type = Source.RayFile(
+#                 speos_client=self._project.client,
+#                 ray_file=self._source_template.rayfile,
+#                 ray_file_props=self._source_instance.rayfile_properties,
+#                 name=self._source_template.name,
+#                 default_values=False,
+#             )
+#         elif self._type is None:
+#             self._type = Source.RayFile(
+#                 speos_client=self._project.client,
+#                 ray_file=self._source_template.rayfile,
+#                 ray_file_props=self._source_instance.rayfile_properties,
+#                 name=self._source_template.name,
+#             )
+#         elif type(self._type) != Source.RayFile:
+#             raise ValueError(src_type_change_error)
+#         return self._type
+#
+#     @property
+#     def type(self) -> type:
+#         """Return type of source.
+#
+#         Returns
+#         -------
+#         Example: ansys.speos.script.source.Source.RayFile
+#
+#         """
+#         return type(self._type)
