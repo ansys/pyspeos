@@ -98,7 +98,7 @@ class Project:
         self,
         name: str,
         description: str = "",
-        feature_type: Optional[source.Surface, source.RayFile, source.Luminaire] = source.Surface,
+        feature_type: type = source.Surface,
         metadata: Mapping[str, str] = {},
     ) -> source.Source:
         """Create a new Source feature.
@@ -123,12 +123,19 @@ class Project:
             Source feature.
         """
         feature = None
-        if isinstance(feature_type, source.Surface):
+        if feature_type == source.Surface:
             feature = source.Surface(project=self, name=name, description=description, metadata=metadata)
-        elif isinstance(feature_type, source.RayFile):
+        elif feature_type == source.RayFile:
             feature = source.RayFile(project=self, name=name, description=description, metadata=metadata)
-        elif isinstance(feature_type, source.Luminaire):
+        elif feature_type == source.Luminaire:
             feature = source.Luminaire(project=self, name=name, description=description, metadata=metadata)
+        else:
+            print(
+                "Requested feature {} does not exist in supported list {}".format(
+                    feature_type, [source.Surface, source.Luminaire, source.RayFile]
+                )
+            )
+            return None
         self._features.append(feature)
         return feature
 
@@ -195,7 +202,7 @@ class Project:
     def find(
         self, name: str, name_regex: bool = False, feature_type: Optional[type] = None
     ) -> List[
-        Union[opt_prop.OptProp, source.Source, sensor.Sensor, simulation.Simulation, part.Part, body.Body, face.Face, part.Part.SubPart]
+        Union[opt_prop.OptProp, source.Surface, sensor.Sensor, simulation.Simulation, part.Part, body.Body, face.Face, part.Part.SubPart]
     ]:
         """Find feature(s) by name (possibility to use regex) and by feature type.
 
@@ -460,8 +467,15 @@ ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.p
             op_feature._fill(mat_inst=mat_inst)
 
         for src_inst in scene_data.sources:
-            src_feat = self.create_source(name=src_inst.name)
-            src_feat._fill(src_inst=src_inst)
+            if src_inst.HasField("rayfile_properties"):
+                src_feat = self.create_source(name=src_inst.name, feature_type=source.RayFile)
+                src_feat._fill(src_inst=src_inst)
+            elif src_inst.HasField("luminaire_properties"):
+                src_feat = self.create_source(name=src_inst.name, feature_type=source.Luminaire)
+                src_feat._fill(src_inst=src_inst)
+            elif src_inst.HasField("surface_properties"):
+                src_feat = self.create_source(name=src_inst.name, feature_type=source.Surface)
+                src_feat._fill(src_inst=src_inst)
 
         for ssr_inst in scene_data.sensors:
             ssr_feat = self.create_sensor(name=ssr_inst.name)

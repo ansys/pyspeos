@@ -39,7 +39,6 @@ def test_find_feature(speos: Speos):
 
     # Create a surface source in the project
     source1 = p.create_source(name="Source.1")
-    source1.set_surface()
     assert len(p._features) == 1
     source1.commit()
     assert len(p.scene_link.get().sources) == 1
@@ -51,14 +50,14 @@ def test_find_feature(speos: Speos):
     assert len(p._features) == 2
     assert len(p.scene_link.get().sensors) == 1
 
-    # Create an radiance sensor in the project
+    # Create a radiance sensor in the project
     sensor2 = p.create_sensor(name="Sensor.2")
     sensor2.set_radiance()
     sensor2.commit()
     assert len(p._features) == 3
     assert len(p.scene_link.get().sensors) == 2
 
-    # Create an radiance sensor in the project
+    # Create a radiance sensor in the project
     sensor3 = p.create_sensor(name="Sensor.3")
     sensor3.set_radiance().set_layer_type_face()
     sensor3.commit()
@@ -91,7 +90,7 @@ def test_find_feature(speos: Speos):
     # With type filtering
 
     # Wrong combination name-type
-    features = p.find(name="Sensor.3", feature_type=script.Source)
+    features = p.find(name="Sensor.3", feature_type=script.source)
     assert features == []
 
     # Good combination name-type
@@ -243,7 +242,7 @@ def test_find_after_load(speos: Speos):
     p = script.Project(speos=speos, path=os.path.join(test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"))
 
     # Retrieve all surface sources
-    src_feats = p.find(name=".*", name_regex=True, feature_type=script.Source.Surface)
+    src_feats = p.find(name=".*", name_regex=True, feature_type=script.source.Surface)
     assert len(src_feats) == 2
     assert src_feats[0]._name == "Dom Source 2 (0) in SOURCE2"
     assert src_feats[1]._name == "Surface Source (0) in SOURCE1"
@@ -267,8 +266,7 @@ def test_delete(speos: Speos):
     assert len(p._features) == 0
 
     # Create a surface source in the project
-    source1 = p.create_source(name="Source.1")
-    source1.set_surface()
+    source1 = p.create_source(name="Source.1", feature_type=script.source.Surface)
     assert len(p._features) == 1
     source1.commit()
     assert len(p.scene_link.get().sources) == 1
