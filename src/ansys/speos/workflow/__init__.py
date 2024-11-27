@@ -33,5 +33,3 @@ from ansys.speos.workflow.modify_speos_simulation.modify_sensor import (
 
 if os.name == "nt":
     from ansys.speos.workflow.open_result import open_result_image, open_result_in_viewer
-
-from ansys.speos.workflow.preview import preview

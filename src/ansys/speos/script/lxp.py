@@ -31,6 +31,46 @@ ERROR_IDS = [7, 8, 9, 10, 11, 12, 13, 14, 15]
 NO_ERROR_IDS = [0, 1, 2, 3, 4, 5, 6, 16, -7, -6, -5, -5, -4, -3, -2, -1]
 
 
+class RayPath:
+    """
+    Frame work representing a singular raypath
+    """
+
+    def __init__(self, raypath, sensor_contribution=False):
+        self.nb_impacts = len(raypath.impacts)
+        self.impacts = [[inter.x, inter.y, inter.z] for inter in raypath.impacts]
+        self.wl = raypath.wavelengths[0]
+        self.body_ids = raypath.body_context_ids
+        self.face_ids = raypath.unique_face_ids
+        self.last_direction = [raypath.lastDirection.x, raypath.lastDirection.y, raypath.lastDirection.z]
+        self.intersectiontype = raypath.interaction_statuses
+        if sensor_contribution:
+            self.sensor_contribution = [
+                {"sensor_id": sc.sensor_id, "position": [sc.coordinates.x, sc.coordinates.y]} for sc in raypath.sensor_contributions
+            ]
+        else:
+            self.sensor_contribution = None
+
+    def get(self, search_str=""):
+        data = {
+            "nb_impact": self.nb_impacts,
+            "impacts": self.impacts,
+            "wl": self.wl,
+            "body_ids": self.body_ids,
+            "face_ids": self.face_ids,
+            "last_direction": self.last_direction,
+            "intersection_type": self.intersectiontype,
+            "sensor_contribution": self.sensor_contribution,
+        }
+        if data.get(search_str):
+            return data.get(search_str)
+        else:
+            return data
+
+    def __str__(self):
+        return str(self.get())
+
+
 class LightPathFinder:
     """
     The Lightpathfinder defines n interface to reas lpf files. These files contain a set of simulated rays with all
@@ -51,43 +91,43 @@ class LightPathFinder:
         self._data = self._stub.GetInformation(lpf_file_reader__v2__pb2.GetInformation_Request_Mono())
         self._nb_traces = self._data.nb_of_traces
         self._nb_xmps = self._data.nb_of_xmps
-        if self._data.has_sensor_contributions:
-            self._sensor_contributions = self._data.sensor_contributions
-        else:
-            self._sensor_contributions = None
+        self._has_sensor_contributions = self._data.has_sensor_contributions
         self._sensor_names = self._data.sensor_names
         self._rays = self.__parse_traces()
         self._filtered_rays = []
 
     @property
-    def nb_traces(self):
+    def nb_traces(self) -> int:
         """Number of light path's within LPF data set"""
         return self._nb_traces
 
     @property
-    def nb_xmps(self):
+    def nb_xmps(self) -> int:
         """Number of sensors involved within LPF data set"""
         return self._nb_xmps
 
     @property
-    def sensor_contributions(self):
+    def has_sensor_contributions(self) -> bool:
         """Sensor contribution, including coordinates"""
-        return self._sensor_contributions
+        return self._has_sensor_contributions
 
     @property
-    def sensor_names(self):
+    def sensor_names(self) -> list[str]:
         """list of involved sensor names"""
         return self._sensor_names
 
     @property
-    def rays(self):
+    def rays(self) -> list[RayPath]:
         """list raypath's within lpf file"""
         return self._rays
 
     @property
-    def filtered_rays(self):
+    def filtered_rays(self) -> list[RayPath]:
         """list of filtered ray path's"""
         return self._filtered_rays
+
+    def __str__(self):
+        return str({k: v.fget(self) for k, v in LightPathFinder.__dict__.items() if isinstance(v, property) and "rays" not in k})
 
     def __open(self, path: str):
         """
@@ -99,7 +139,7 @@ class LightPathFinder:
         """
         self._stub.InitLpfFileName(lpf_file_reader__v2__pb2.InitLpfFileName_Request_Mono(lpf_file_uri=path))
 
-    def __parse_traces(self) -> list[object]:
+    def __parse_traces(self) -> list[RayPath]:
         """
         Reads all raypathes from lpf dataset
         Returns
@@ -109,7 +149,7 @@ class LightPathFinder:
         """
         raypaths = []
         for rp in self._stub.Read(lpf_file_reader__v2__pb2.Read_Request_Mono()):
-            raypaths.append(RayPath(rp))
+            raypaths.append(RayPath(rp, self._has_sensor_contributions))
         return raypaths
 
     def __filter_by_last_intersection_types(self, options: list[int], new=True):
@@ -141,13 +181,13 @@ class LightPathFinder:
         if new:
             self._filtered_rays = []
             for ray in self._rays:
-                if int(ray.face_ids) in options:
+                if any([faceid in options for faceid in ray.face_ids]):
                     self._filtered_rays.append(ray)
         else:
             temp_rays = self._filtered_rays
             self._filtered_rays = []
             for ray in temp_rays:
-                if int(ray.face_ids) in options:
+                if any([faceid in options for faceid in ray.face_ids]):
                     self._filtered_rays.append(ray)
 
     def filter_by_body_ids(self, options: list[int], new=True):
@@ -163,13 +203,13 @@ class LightPathFinder:
         if new:
             self._filtered_rays = []
             for ray in self._rays:
-                if int(ray.body_ids) in options:
+                if any([body_id in options for body_id in ray.body_ids]):
                     self._filtered_rays.append(ray)
         else:
             temp_rays = self._filtered_rays
             self._filtered_rays = []
             for ray in temp_rays:
-                if int(ray.body_ids) in options:
+                if any([body_id in options for body_id in ray.body_ids]):
                     self._filtered_rays.append(ray)
 
     def filter_error_rays(self):
@@ -181,7 +221,7 @@ class LightPathFinder:
         self.__filter_by_last_intersection_types(options=NO_ERROR_IDS)
 
     @staticmethod
-    def __add_ray_to_pv(plotter: pv.Plotter, ray: object, max_ray_length: float):
+    def __add_ray_to_pv(plotter: pv.Plotter, ray: RayPath, max_ray_length: float):
         """
         add a ray to pyvista plotter
         Parameters
@@ -249,22 +289,7 @@ class LightPathFinder:
         plotter.show()
 
 
-class RayPath:
-    """
-    Frame work representing a singular raypath
-    """
-
-    def __init__(self, raypath):
-        self.nb_impacts = len(raypath.impacts)
-        self.impacts = [[inter.x, inter.y, inter.z] for inter in raypath.impacts]
-        self.wl = raypath.wavelengths[0]
-        self.body_ids = raypath.body_context_ids
-        self.face_ids = raypath.unique_face_ids
-        self.last_direction = [raypath.lastDirection.x, raypath.lastDirection.y, raypath.lastDirection.z]
-        self.intersectiontype = raypath.interaction_statuses
-
-
-def wavelength_to_rgb(wavelength, gamma=0.8):
+def wavelength_to_rgb(wavelength: float, gamma: float = 0.8) -> [int, int, int, int]:
     """This converts a given wavelength of light to an
     approximate RGB color value. The wavelength must be given
     in nanometers in the range from 380 nm through 750 nm
