@@ -26,6 +26,10 @@ import re
 from typing import List, Mapping, Optional, Union
 import uuid
 
+from google.protobuf.internal.containers import RepeatedScalarFieldContainer
+import numpy as np
+import pyvista as pv
+
 import ansys.speos.core as core
 import ansys.speos.script.body as body
 import ansys.speos.script.face as face
@@ -156,6 +160,9 @@ class Project:
 
         Parameters
         ----------
+        name : str
+            Name of the feature.
+            By default, ``"RootPart"``.
         description : str
             Description of the feature.
             By default, ``""``.
@@ -455,3 +462,124 @@ ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.p
         for sim_inst in scene_data.simulations:
             sim_feat = self.create_simulation(name=sim_inst.name)
             sim_feat._fill(sim_inst=sim_inst)
+
+    def __extract_part_mesh_info(self, part_data: core.Part, part_coordinate_info: RepeatedScalarFieldContainer = None) -> pv.PolyData:
+        """
+        extract mesh data info from a part.
+
+        Parameters
+        ----------
+        speos_client : ansys.speos.core.client.SpeosClient
+            The Speos instance client.
+        part_data: ansys.api.speos.part.v1.part_pb2.Part
+            Part from scene.
+        part_coordinate_info: RepeatedScalarFieldContainer
+            message contains part coordinate info: origin, x_vector, y_vector, z_vector
+
+        Returns
+        -------
+        pv.PolyData
+            mesh data extracted.
+        """
+
+        def local2absolute(local_vertice: np.ndarray, coordinates) -> np.ndarray:
+            """
+            convert local coordinate to global coordinate.
+
+            Parameters
+            ----------
+            local_vertice: np.ndarray
+                numpy array includes x, y, z info.
+
+            Returns
+            -------
+            np.ndarray
+                numpy array includes x, y, z info
+
+            """
+            global_origin = np.array(coordinates[:3])
+            global_x = np.array(coordinates[3:6]) * local_vertice[0]
+            global_y = np.array(coordinates[6:9]) * local_vertice[1]
+            global_z = np.array(coordinates[9:]) * local_vertice[2]
+            return global_origin + global_x + global_y + global_z
+
+        part_coordinate = [0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+        if part_coordinate_info is not None:
+            part_coordinate.origin = part_coordinate_info[:3]
+            part_coordinate.x_vect = part_coordinate_info[3:6]
+            part_coordinate.y_vect = part_coordinate_info[6:9]
+            part_coordinate.z_vect = part_coordinate_info[9:]
+        part_mesh_info = None
+        for body_idx, body_guid in enumerate(part_data.body_guids):
+            body_item_data = self.client.get_item(body_guid).get()
+            for face_idx, face_guid in enumerate(body_item_data.face_guids):
+                face_item_data = self.client.get_item(face_guid).get()
+                vertices = np.array(face_item_data.vertices)
+                facets = np.array(face_item_data.facets)
+                vertices = vertices.reshape(-1, 3)
+                vertices = np.array([local2absolute(vertice, part_coordinate) for vertice in vertices])
+                facets = facets.reshape(-1, 3)
+                temp = np.full(facets.shape[0], 3)
+                temp = np.vstack(temp)
+                facets = np.hstack((temp, facets))
+                face_mesh_data = pv.PolyData(vertices, facets)
+                if part_mesh_info is None:
+                    part_mesh_info = face_mesh_data
+                else:
+                    part_mesh_info = part_mesh_info.append_polydata(face_mesh_data)
+        return part_mesh_info
+
+    def _create_preview(self, viz_args=None) -> pv.Plotter:
+        """
+        create preview pyvista plotter object
+
+        Parameters
+        ----------
+        viz_args : dict
+            contains arguments in dict format passed to add mesh function
+            e.g.
+            - {'style': 'wireframe'},
+            - {'style': 'surface', 'color':'white'},
+            - {'opacity': 0.7, 'color':'white', 'show_edges': False},
+
+
+        """
+        if viz_args is None:
+            viz_args = {}
+        _preview_mesh = pv.PolyData()
+        # Retrieve root part
+        root_part_data = self.client.get_item(self.scene_link.get().part_guid).get()
+
+        # Loop on all sub parts to retrieve their mesh
+        if len(root_part_data.parts) != 0:
+            for part_idx, part_item in enumerate(root_part_data.parts):
+                part_item_data = self.client.get_item(part_item.part_guid).get()
+                poly_data = self.__extract_part_mesh_info(part_data=part_item_data, part_coordinate_info=part_item.axis_system)
+                if poly_data is not None:
+                    _preview_mesh = _preview_mesh.append_polydata(poly_data)
+
+        # Add also the mesh of bodies directly contained in root part
+        poly_data = self.__extract_part_mesh_info(part_data=root_part_data)
+        if poly_data is not None:
+            _preview_mesh = _preview_mesh.append_polydata(poly_data)
+
+        p = pv.Plotter()
+        p.add_mesh(_preview_mesh, show_edges=True, **viz_args)
+        return p
+
+    def preview(self, viz_args=None) -> None:
+        """Preview cad bodies inside the project's scene.
+
+        Parameters
+        ----------
+        viz_args : dict
+            contains arguments in dict format passed to add mesh function
+            e.g.
+            - {'style': 'wireframe'},
+            - {'style': 'surface', 'color':'white'},
+            - {'opacity': 0.7, 'color':'white', 'show_edges': False},
+        """
+        if viz_args is None:
+            viz_args = {"opacity": 1}
+        p = self._create_preview(viz_args=viz_args)
+        p.show()

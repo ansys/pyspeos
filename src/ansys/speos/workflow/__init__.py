@@ -25,5 +25,3 @@ from ansys.speos.workflow.combine_speos import SpeosFileInstance, combine_speos,
 
 if os.name == "nt":
     from ansys.speos.workflow.open_result import open_result_image, open_result_in_viewer
-
-from ansys.speos.workflow.preview import preview
