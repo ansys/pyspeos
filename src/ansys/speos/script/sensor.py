@@ -26,7 +26,7 @@ from __future__ import annotations
 from typing import List, Mapping, Optional
 import uuid
 
-from ansys.api.speos.sensor.v1 import camera_sensor_pb2, common_pb2, irradiance_sensor_pb2
+from ansys.api.speos.sensor.v1 import camera_sensor_pb2, common_pb2
 
 from ansys.speos import core as core
 import ansys.speos.core as core
@@ -38,7 +38,7 @@ import ansys.speos.script.proto_message_utils as proto_message_utils
 
 
 class BaseSensor:
-    LAYER_TYPES = ["face", "source", "sequence", "polarization", "incidence_angle"]
+    """BaseClass for all sensor containing generalized sensor properties"""
 
     def __init__(self, project: project.Project, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> None:
         self._project = project
@@ -656,12 +656,16 @@ class Camera(BaseSensor):
 
     Parameters
     ----------
-    camera_template : ansys.api.speos.sensor.v1.camera_sensor_pb2.CameraSensorTemplate
-        Camera sensor to complete.
-    camera_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance.CameraProperties
-        Camera sensor properties to complete.
-    default_values : bool
-        Uses default values when True.
+    project : ansys.speos.script.project.Project
+        Project that will own the feature.
+    name : str
+        Name of the feature.
+    description : str
+        Description of the feature.
+        By default, ``""``.
+    metadata : Mapping[str, str]
+        Metadata of the feature.
+        By default, ``{}``.
     """
 
     class _Photometric:
@@ -1405,13 +1409,19 @@ class Irradiance(BaseSensor):
 
     Parameters
     ----------
-    irradiance_template : ansys.api.speos.sensor.v1.irradiance_sensor_pb2.IrradianceSensorTemplate
-        Irradiance sensor to complete.
-    irradiance_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance.IrradianceProperties
-        Irradiance sensor properties to complete.
-    default_values : bool
-        Uses default values when True.
+    project : ansys.speos.script.project.Project
+        Project that will own the feature.
+    name : str
+        Name of the feature.
+    description : str
+        Description of the feature.
+        By default, ``""``.
+    metadata : Mapping[str, str]
+        Metadata of the feature.
+        By default, ``{}``.
     """
+
+    LAYER_TYPES = ["face", "source", "sequence", "polarization", "incidence_angle"]
 
     def __init__(
         self,
@@ -1753,8 +1763,10 @@ class Irradiance(BaseSensor):
         return self
 
 
-class Sensor_1(BaseSensor):
-    """Speos feature : Sensor.
+class Radiance(BaseSensor):
+    """Type of Sensor : Radiance.
+    By default, regarding inherent characteristics, a radiance sensor of type photometric is chosen.
+    By default, regarding properties, an axis system is selected to position the sensor and no layer separation is chosen.
 
     Parameters
     ----------
@@ -1768,688 +1780,233 @@ class Sensor_1(BaseSensor):
     metadata : Mapping[str, str]
         Metadata of the feature.
         By default, ``{}``.
-
-    Attributes
-    ----------
-    sensor_template_link : ansys.speos.core.sensor_template.SensorTemplateLink
-        Link object for the sensor template in database.
     """
 
-    class Irradiance:
-        """Type of Sensor : Irradiance.
-        By default, regarding inherent characteristics, an irradiance sensor of type photometric and illuminance type planar is chosen.
-        By default, regarding properties, an axis system is selected to position the sensor, no layer separation and no ray file generation
-        are chosen.
+    LAYER_TYPES = ["face", "source", "sequence"]
 
-        Parameters
-        ----------
-        irradiance_template : ansys.api.speos.sensor.v1.irradiance_sensor_pb2.IrradianceSensorTemplate
-            Irradiance sensor to complete.
-        irradiance_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance.IrradianceProperties
-            Irradiance sensor properties to complete.
-        default_values : bool
-            Uses default values when True.
-        """
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Mapping[str, str] = {},
+        default_values: bool = True,
+    ) -> None:
+        super().__init__(project=project, name=name, description=description, metadata=metadata)
+        self._radiance_template = self._sensor_template.radiance_sensor_template
+        self._radiance_props = self._sensor_instance.radiance_properties
 
-        def __init__(
-            self,
-            irradiance_template: irradiance_sensor_pb2.IrradianceSensorTemplate,
-            irradiance_props: core.Scene.SensorInstance.IrradianceProperties,
-            default_values: bool = True,
-        ) -> None:
-            self._irradiance_template = irradiance_template
-            self._irradiance_props = irradiance_props
+        # Attribute gathering more complex radiance type
+        self._type = None
 
-            # Attribute gathering more complex irradiance type
-            self._type = None
+        # Attribute gathering more complex layer type
+        self._layer_type = None
 
-            # Attribute gathering more complex layer type
-            self._layer_type = None
+        # Attribute to keep track of sensor dimensions object
+        self._sensor_dimensions = self._Dimensions(sensor_dimensions=self._radiance_template.dimensions, default_values=default_values)
 
-            # Attribute to keep track of sensor dimensions object
-            self._dimensions = Sensor._Dimensions(sensor_dimensions=self._irradiance_template.dimensions, default_values=default_values)
+        if default_values:
+            # Default values template
+            self.set_focal().set_integration_angle().set_type_photometric()
+            # Default values properties
+            self.set_axis_system().set_layer_type()
 
-            if default_values:
-                # Default values template
-                self.set_type_photometric().set_illuminance_type_planar().dimensions()
-                # Default values properties
-                self.set_axis_system().set_ray_file_type_none().set_layer_type_none()
+    @property
+    def dimensions(self):
+        return self._sensor_dimensions
 
-        def set_type_photometric(self) -> Sensor.Irradiance:
-            """Set type photometric.
-            The sensor considers the visible spectrum and gets the results in lm/m2 or lx.
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.Irradiance
-                Irradiance sensor.
-            """
-            self._irradiance_template.sensor_type_photometric.SetInParent()
-            self._type = None
-            return self
-
-        def set_type_colorimetric(self) -> Sensor._Colorimetric:
-            """Set type colorimetric.
-            The sensor will generate color results without any spectral data or layer separation (in lx or W//m2).
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.Colorimetric
-                Colorimetric type.
-            """
-            if self._type is None and self._irradiance_template.HasField("sensor_type_colorimetric"):
-                self._type = Sensor._Colorimetric(
-                    sensor_type_colorimetric=self._irradiance_template.sensor_type_colorimetric, default_values=False
-                )
-            elif type(self._type) != Sensor._Colorimetric:
-                self._type = Sensor._Colorimetric(sensor_type_colorimetric=self._irradiance_template.sensor_type_colorimetric)
+    @property
+    def type(self):
+        if type(self._type) is str:
+            return self._type
+        elif self._type == Radiance._Colorimetric:
+            return "Colorimetric"
+        elif self._type == Radiance._Spectral:
+            return "Spectral"
+        else:
             return self._type
 
-        def set_type_radiometric(self) -> Sensor.Irradiance:
-            """Set type radiometric.
-            The sensor considers the entire spectrum and gets the results in W/m2.
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.Irradiance
-                Irradiance sensor.
-            """
-            self._irradiance_template.sensor_type_radiometric.SetInParent()
-            self._type = None
-            return self
-
-        def set_type_spectral(self) -> Sensor._Spectral:
-            """Set type spectral.
-            The sensor will generate color results and spectral data separated by wavelength (in lx or W/m2).
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.Spectral
-                Spectral type.
-            """
-            if self._type is None and self._irradiance_template.HasField("sensor_type_spectral"):
-                self._type = Sensor._Spectral(sensor_type_spectral=self._irradiance_template.sensor_type_spectral, default_values=False)
-            elif type(self._type) != Sensor._Spectral:
-                self._type = Sensor._Spectral(sensor_type_spectral=self._irradiance_template.sensor_type_spectral)
+    @property
+    def colorimetric(self):
+        if self._type == Radiance._Colorimetric:
             return self._type
+        else:
+            return None
 
-        def set_illuminance_type_planar(self, integration_direction: Optional[List[float]] = None) -> Sensor.Irradiance:
-            """Set illuminance type planar.
-            The integration is made orthogonally with the sensor plane.
-
-            Parameters
-            ----------
-            integration_direction : List[float], optional
-                Sensor global integration direction [x,y,z].
-                By default, ``None``. None means that a default direction is chosen (anti-normal of the sensor plane).
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.Irradiance
-                Irradiance sensor.
-            """
-            self._irradiance_template.illuminance_type_planar.SetInParent()
-            if integration_direction is None or integration_direction == []:
-                self._irradiance_props.ClearField("integration_direction")
-            else:
-                self._irradiance_props.integration_direction[:] = integration_direction
-            return self
-
-        def set_illuminance_type_radial(self) -> Sensor.Irradiance:
-            """Set illuminance type radial.
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.Irradiance
-                Irradiance sensor.
-            """
-            self._irradiance_template.illuminance_type_radial.SetInParent()
-            return self
-
-        def set_illuminance_type_hemispherical(self) -> Sensor.Irradiance:
-            """Set illuminance type hemispherical.
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.Irradiance
-                Irradiance sensor.
-            """
-            self._irradiance_template.illuminance_type_hemispherical.SetInParent()
-            return self
-
-        def set_illuminance_type_cylindrical(self) -> Sensor.Irradiance:
-            """Set illuminance type cylindrical.
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.Irradiance
-                Irradiance sensor.
-            """
-            self._irradiance_template.illuminance_type_cylindrical.SetInParent()
-            return self
-
-        def set_illuminance_type_semi_cylindrical(self, integration_direction: Optional[List[float]] = None) -> Sensor.Irradiance:
-            """Set illuminance type semi cylindrical.
-
-            Parameters
-            ----------
-            integration_direction : List[float], optional
-                Sensor global integration direction [x,y,z].
-                By default, ``None``. None means that a default direction is chosen (anti-normal of the sensor plane).
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.Irradiance
-                Irradiance sensor.
-            """
-            self._irradiance_template.illuminance_type_semi_cylindrical.SetInParent()
-            if integration_direction is None or integration_direction == []:
-                self._irradiance_props.ClearField("integration_direction")
-            else:
-                self._irradiance_props.integration_direction[:] = integration_direction
-            return self
-
-        def set_dimensions(self) -> Sensor._Dimensions:
-            """Set the dimensions of the sensor.
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.Dimensions
-                Dimensions range.
-            """
-            return self._dimensions
-
-        def set_axis_system(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> Sensor.Irradiance:
-            """Set position of the sensor.
-
-            Parameters
-            ----------
-            axis_system : List[float]
-                Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
-                By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.Irradiance
-                Irradiance sensor.
-            """
-            self._irradiance_props.axis_system[:] = axis_system
-            return self
-
-        def set_ray_file_type_none(self) -> Sensor.Irradiance:
-            """Set no ray file generation.
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.Irradiance
-                Irradiance sensor.
-            """
-            self._irradiance_props.ray_file_type = core.Scene.SensorInstance.EnumRayFileType.RayFileNone
-            return self
-
-        def set_ray_file_type_classic(self) -> Sensor.Irradiance:
-            """Set ray file generation without polarization data.
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.Irradiance
-                Irradiance sensor.
-            """
-            self._irradiance_props.ray_file_type = core.Scene.SensorInstance.EnumRayFileType.RayFileClassic
-            return self
-
-        def set_ray_file_type_polarization(self) -> Sensor.Irradiance:
-            """Set ray file generation with the polarization data for each ray.
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.Irradiance
-                Irradiance sensor.
-            """
-            self._irradiance_props.ray_file_type = core.Scene.SensorInstance.EnumRayFileType.RayFilePolarization
-            return self
-
-        def set_ray_file_type_tm25(self) -> Sensor.Irradiance:
-            """Set ray file generation: a .tm25ray file with polarization data for each ray.
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.Irradiance
-                Irradiance sensor.
-            """
-            self._irradiance_props.ray_file_type = core.Scene.SensorInstance.EnumRayFileType.RayFileTM25
-            return self
-
-        def set_ray_file_type_tm25_no_polarization(self) -> Sensor.Irradiance:
-            """Set ray file generation: a .tm25ray file without polarization data.
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.Irradiance
-                Irradiance sensor.
-            """
-            self._irradiance_props.ray_file_type = core.Scene.SensorInstance.EnumRayFileType.RayFileTM25NoPolarization
-            return self
-
-        def set_layer_type_none(self) -> Sensor.Irradiance:
-            """Set no layer separation: includes the simulation's results in one layer.
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.Irradiance
-                Irradiance sensor.
-            """
-            self._irradiance_props.layer_type_none.SetInParent()
-            self._layer_type = None
-            return self
-
-        def set_layer_type_source(self) -> Sensor.Irradiance:
-            """Set layer separation by source: includes in the result one layer per active source.
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.Irradiance
-                Irradiance sensor.
-            """
-            self._irradiance_props.layer_type_source.SetInParent()
-            self._layer_type = None
-            return self
-
-        def set_layer_type_face(self) -> Sensor._LayerTypeFace:
-            """Set layer separation by face: includes in the result one layer per surface selected.
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.LayerTypeFace
-                LayerTypeFace.
-            """
-            if self._layer_type is None and self._irradiance_props.HasField("layer_type_face"):
-                self._layer_type = Sensor._LayerTypeFace(layer_type_face=self._irradiance_props.layer_type_face, default_values=False)
-            elif type(self._layer_type) != Sensor._LayerTypeFace:
-                self._layer_type = Sensor._LayerTypeFace(layer_type_face=self._irradiance_props.layer_type_face)
-            return self._layer_type
-
-        def set_layer_type_sequence(self) -> Sensor._LayerTypeSequence:
-            """Set layer separation by sequence: includes in the result one layer per sequence.
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.LayerTypeSequence
-                LayerTypeSequence.
-            """
-            if self._layer_type is None and self._irradiance_props.HasField("layer_type_sequence"):
-                self._layer_type = Sensor._LayerTypeSequence(
-                    layer_type_sequence=self._irradiance_props.layer_type_sequence, default_values=False
-                )
-            elif type(self._layer_type) != Sensor._LayerTypeSequence:
-                self._layer_type = Sensor._LayerTypeSequence(layer_type_sequence=self._irradiance_props.layer_type_sequence)
-            return self._layer_type
-
-        def set_layer_type_polarization(self) -> Sensor.Irradiance:
-            """Set layer separation by polarization: includes one layer per Stokes parameter using the polarization parameter.
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.Irradiance
-                Irradiance sensor.
-            """
-            self._irradiance_props.layer_type_polarization.SetInParent()
-            self._layer_type = None
-            return self
-
-        def set_layer_type_incidence_angle(self) -> Sensor._LayerTypeIncidenceAngle:
-            """Set layer separation by incidence angle: includes in the result one layer per range of incident angles.
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.LayerTypeIncidenceAngle
-                LayerTypeIncidenceAngle.
-            """
-            if self._layer_type is None and self._irradiance_props.HasField("layer_type_incidence_angle"):
-                self._layer_type = Sensor._LayerTypeIncidenceAngle(
-                    layer_type_incidence_angle=self._irradiance_props.layer_type_incidence_angle, default_values=False
-                )
-            elif type(self._layer_type) != Sensor._LayerTypeIncidenceAngle:
-                self._layer_type = Sensor._LayerTypeIncidenceAngle(
-                    layer_type_incidence_angle=self._irradiance_props.layer_type_incidence_angle
-                )
-            return self._layer_type
-
-        def set_output_face_geometries(self, geometries: List[GeoRef] = []) -> Sensor.Irradiance:
-            """Select output faces for inverse simulation optimization.
-
-            Parameters
-            ----------
-            geometries : List[ansys.speos.script.geo_ref.GeoRef]
-                List of geometries that will be considered as output faces.
-                By default, ``[]``, ie no output faces.
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.Irradiance
-                Irradiance sensor.
-            """
-            if geometries == []:
-                self._irradiance_props.ClearField("output_face_geometries")
-            else:
-                self._irradiance_props.output_face_geometries.geo_paths[:] = [gr.to_native_link() for gr in geometries]
-            return self
-
-    class Radiance:
-        """Type of Sensor : Radiance.
-        By default, regarding inherent characteristics, a radiance sensor of type photometric is chosen.
-        By default, regarding properties, an axis system is selected to position the sensor and no layer separation is chosen.
-
-        Parameters
-        ----------
-        radiance_template : ansys.api.speos.sensor.v1.sensor_pb2.SensorTemplate.Radiance
-            Radiance sensor to complete.
-        radiance_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance.RadianceProperties
-            Radiance sensor properties to complete.
-        default_values : bool
-            Uses default values when True.
-        """
-
-        def __init__(
-            self,
-            radiance_template: core.SensorTemplate.Radiance,
-            radiance_props: core.Scene.SensorInstance.RadianceProperties,
-            default_values: bool = True,
-        ) -> None:
-            self._radiance_template = radiance_template
-            self._radiance_props = radiance_props
-
-            # Attribute gathering more complex radiance type
-            self._type = None
-
-            # Attribute gathering more complex layer type
-            self._layer_type = None
-
-            # Attribute to keep track of sensor dimensions object
-            self._dimensions = Sensor._Dimensions(sensor_dimensions=self._radiance_template.dimensions, default_values=default_values)
-
-            if default_values:
-                # Default values template
-                self.set_focal().set_integration_angle().set_type_photometric()
-                self.set_dimensions()
-                # Default values properties
-                self.set_axis_system().set_layer_type_none()
-
-        def set_type_photometric(self) -> Sensor.Radiance:
-            """Set type photometric.
-            The sensor considers the visible spectrum and gets the results in lm/m2 or lx.
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.Radiance
-                Radiance sensor.
-            """
-            self._radiance_template.sensor_type_photometric.SetInParent()
-            self._type = None
-            return self
-
-        def set_type_colorimetric(self) -> Sensor._Colorimetric:
-            """Set type colorimetric.
-            The sensor will generate color results without any spectral data or layer separation (in lx or W//m2).
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.Colorimetric
-                Colorimetric type.
-            """
-            if self._type is None and self._radiance_template.HasField("sensor_type_colorimetric"):
-                self._type = Sensor._Colorimetric(
-                    sensor_type_colorimetric=self._radiance_template.sensor_type_colorimetric, default_values=False
-                )
-            elif type(self._type) != Sensor._Colorimetric:
-                self._type = Sensor._Colorimetric(sensor_type_colorimetric=self._radiance_template.sensor_type_colorimetric)
+    @property
+    def spectral(self):
+        if self._type == Radiance._Spectral:
             return self._type
+        else:
+            return None
 
-        def set_type_radiometric(self) -> Sensor.Radiance:
-            """Set type radiometric.
-            The sensor considers the entire spectrum and gets the results in W/m2.
+    @property
+    def layer(self):
+        return self._layer_type
 
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.Radiance
-                Radiance sensor.
-            """
-            self._radiance_template.sensor_type_radiometric.SetInParent()
-            self._type = None
-            return self
-
-        def set_type_spectral(self) -> Sensor._Spectral:
-            """Set type spectral.
-            The sensor will generate color results and spectral data separated by wavelength (in lx or W/m2).
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.Spectral
-                Spectral type.
-            """
-            if self._type is None and self._radiance_template.HasField("sensor_type_spectral"):
-                self._type = Sensor._Spectral(sensor_type_spectral=self._radiance_template.sensor_type_spectral, default_values=False)
-            elif type(self._type) != Sensor._Spectral:
-                self._type = Sensor._Spectral(sensor_type_spectral=self._radiance_template.sensor_type_spectral)
-            return self._type
-
-        def set_focal(self, value: float = 250) -> Sensor.Radiance:
-            """Set the focal value.
-
-            Parameters
-            ----------
-            value : float
-                Focal (mm).
-                By default, ``250``.
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.Radiance
-                Radiance sensor.
-            """
-            self._radiance_template.focal = value
-            return self
-
-        def set_integration_angle(self, value: float = 5) -> Sensor.Radiance:
-            """Set the integration angle.
-
-            Parameters
-            ----------
-            value : float
-                integration angle (degree)
-                By default, ``5``.
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.Radiance
-                Radiance sensor.
-            """
-            self._radiance_template.integration_angle = value
-            return self
-
-        def set_dimensions(self) -> Sensor._Dimensions:
-            """Set the dimensions of the sensor.
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.Dimensions
-                Dimensions range.
-            """
-            return self._dimensions
-
-        def set_axis_system(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> Sensor.Radiance:
-            """Set position of the sensor.
-
-            Parameters
-            ----------
-            axis_system : List[float]
-                Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
-                By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.Radiance
-                Radiance sensor.
-            """
-            self._radiance_props.axis_system[:] = axis_system
-            return self
-
-        def set_observer_point(self, value: Optional[List[float]] = None) -> Sensor.Radiance:
-            """Set the position of the observer point. This is optional, because the focal length is used by default.
-            Choosing to set an observer point will make the focal length ignored.
-
-            Parameters
-            ----------
-            value : List[float], optional
-                Position of the observer point [Ox Oy Oz].
-                By default, ``None``. None means that the focal length is used.
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.Radiance
-                Radiance sensor.
-            """
-            if value is None or value == []:
-                self._radiance_props.ClearField("observer_point")
-            else:
-                self._radiance_props.observer_point[:] = value
-            return self
-
-        def set_layer_type_none(self) -> Sensor.Radiance:
-            """Set no layer separation: includes the simulation's results in one layer.
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.Radiance
-                Radiance sensor.
-            """
-            self._radiance_props.layer_type_none.SetInParent()
-            self._layer_type = None
-            return self
-
-        def set_layer_type_source(self) -> Sensor.Radiance:
-            """Set layer separation by source: includes in the result one layer per active source.
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.Radiance
-                Radiance sensor.
-            """
-            self._radiance_props.layer_type_source.SetInParent()
-            self._layer_type = None
-            return self
-
-        def set_layer_type_face(self) -> Sensor._LayerTypeFace:
-            """Set layer separation by face: includes in the result one layer per surface selected.
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.LayerTypeFace
-                LayerTypeFace.
-            """
-            if self._layer_type is None and self._radiance_props.HasField("layer_type_face"):
-                self._layer_type = Sensor._LayerTypeFace(layer_type_face=self._radiance_props.layer_type_face, default_values=False)
-            elif type(self._layer_type) != Sensor._LayerTypeFace:
-                self._layer_type = Sensor._LayerTypeFace(layer_type_face=self._radiance_props.layer_type_face)
-            return self._layer_type
-
-        def set_layer_type_sequence(self) -> Sensor._LayerTypeSequence:
-            """Set layer separation by sequence: includes in the result one layer per sequence.
-
-            Returns
-            -------
-            ansys.speos.script.sensor.Sensor.LayerTypeSequence
-                LayerTypeSequence.
-            """
-            if self._layer_type is None and self._radiance_props.HasField("layer_type_sequence"):
-                self._layer_type = Sensor._LayerTypeSequence(
-                    layer_type_sequence=self._radiance_props.layer_type_sequence, default_values=False
-                )
-            elif type(self._layer_type) != Sensor._LayerTypeSequence:
-                self._layer_type = Sensor._LayerTypeSequence(layer_type_sequence=self._radiance_props.layer_type_sequence)
-            return self._layer_type
-
-    def set_camera(self) -> Camera:
-        """Set the sensor as camera.
-
-        Returns
-        -------
-        ansys.speos.script.sensor.Sensor.Camera
-            Camera sensor.
-        """
-        if self._type is None and self._sensor_template.HasField("camera_sensor_template"):
-            self._type = Sensor.Camera(
-                camera_template=self._sensor_template.camera_sensor_template,
-                camera_props=self._sensor_instance.camera_properties,
-                default_values=False,
-            )
-        elif type(self._type) != Sensor.Camera:
-            self._type = Sensor.Camera(
-                camera_template=self._sensor_template.camera_sensor_template, camera_props=self._sensor_instance.camera_properties
-            )
-        return self._type
-
-    def set_irradiance(self) -> Irradiance:
-        """Set the sensor as irradiance.
-
-        Returns
-        -------
-        ansys.speos.script.sensor.Sensor.Irradiance
-            Irradiance sensor.
-        """
-        if self._type is None and self._sensor_template.HasField("irradiance_sensor_template"):
-            self._type = Sensor.Irradiance(
-                irradiance_template=self._sensor_template.irradiance_sensor_template,
-                irradiance_props=self._sensor_instance.irradiance_properties,
-                default_values=False,
-            )
-        elif type(self._type) != Sensor.Irradiance:
-            self._type = Sensor.Irradiance(
-                irradiance_template=self._sensor_template.irradiance_sensor_template,
-                irradiance_props=self._sensor_instance.irradiance_properties,
-            )
-        return self._type
-
-    def set_radiance(self) -> Radiance:
-        """Set the sensor as radiance.
+    def set_type_photometric(self) -> Radiance:
+        """Set type photometric.
+        The sensor considers the visible spectrum and gets the results in lm/m2 or lx.
 
         Returns
         -------
         ansys.speos.script.sensor.Sensor.Radiance
             Radiance sensor.
         """
-        if self._type is None and self._sensor_template.HasField("radiance_sensor_template"):
-            self._type = Sensor.Radiance(
-                radiance_template=self._sensor_template.radiance_sensor_template,
-                radiance_props=self._sensor_instance.radiance_properties,
-                default_values=False,
-            )
-        elif type(self._type) != Sensor.Radiance:
-            self._type = Sensor.Radiance(
-                radiance_template=self._sensor_template.radiance_sensor_template, radiance_props=self._sensor_instance.radiance_properties
-            )
-        return self._type
+        self._radiance_template.sensor_type_photometric.SetInParent()
+        self._type = None
+        return self
 
-    @property
-    def type(self) -> type:
-        """Return type of sensor.
+    def set_type_colorimetric(self) -> Radiance._Colorimetric:
+        """Set type colorimetric.
+        The sensor will generate color results without any spectral data or layer separation (in lx or W//m2).
 
         Returns
         -------
-        Example: ansys.speos.script.sensor.Sensor.Irradiance
+        ansys.speos.script.sensor.Sensor.Colorimetric
+            Colorimetric type.
+        """
+        if self._type is None and self._radiance_template.HasField("sensor_type_colorimetric"):
+            self._type = self._Colorimetric(sensor_type_colorimetric=self._radiance_template.sensor_type_colorimetric, default_values=False)
+        elif type(self._type) != self._Colorimetric:
+            self._type = self._Colorimetric(sensor_type_colorimetric=self._radiance_template.sensor_type_colorimetric)
+        return self._type
+
+    def set_type_radiometric(self) -> Radiance:
+        """Set type radiometric.
+        The sensor considers the entire spectrum and gets the results in W/m2.
+
+        Returns
+        -------
+        ansys.speos.script.sensor.Sensor.Radiance
+            Radiance sensor.
+        """
+        self._radiance_template.sensor_type_radiometric.SetInParent()
+        self._type = None
+        return self
+
+    def set_type_spectral(self) -> Radiance._Spectral:
+        """Set type spectral.
+        The sensor will generate color results and spectral data separated by wavelength (in lx or W/m2).
+
+        Returns
+        -------
+        ansys.speos.script.sensor.Sensor.Spectral
+            Spectral type.
+        """
+        if self._type is None and self._radiance_template.HasField("sensor_type_spectral"):
+            self._type = self._Spectral(sensor_type_spectral=self._radiance_template.sensor_type_spectral, default_values=False)
+        elif type(self._type) != Radiance._Spectral:
+            self._type = self._Spectral(sensor_type_spectral=self._radiance_template.sensor_type_spectral)
+        return self._type
+
+    def set_focal(self, value: float = 250) -> Radiance:
+        """Set the focal value.
+
+        Parameters
+        ----------
+        value : float
+            Focal (mm).
+            By default, ``250``.
+
+        Returns
+        -------
+        ansys.speos.script.sensor.Sensor.Radiance
+            Radiance sensor.
+        """
+        self._radiance_template.focal = value
+        return self
+
+    def set_integration_angle(self, value: float = 5) -> Radiance:
+        """Set the integration angle.
+
+        Parameters
+        ----------
+        value : float
+            integration angle (degree)
+            By default, ``5``.
+
+        Returns
+        -------
+        ansys.speos.script.sensor.Sensor.Radiance
+            Radiance sensor.
+        """
+        self._radiance_template.integration_angle = value
+        return self
+
+    def set_axis_system(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> Radiance:
+        """Set position of the sensor.
+
+        Parameters
+        ----------
+        axis_system : List[float]
+            Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+
+        Returns
+        -------
+        ansys.speos.script.sensor.Sensor.Radiance
+            Radiance sensor.
+        """
+        self._radiance_props.axis_system[:] = axis_system
+        return self
+
+    def set_observer_point(self, value: Optional[List[float]] = None) -> Radiance:
+        """Set the position of the observer point. This is optional, because the focal length is used by default.
+        Choosing to set an observer point will make the focal length ignored.
+
+        Parameters
+        ----------
+        value : List[float], optional
+            Position of the observer point [Ox Oy Oz].
+            By default, ``None``. None means that the focal length is used.
+
+        Returns
+        -------
+        ansys.speos.script.sensor.Sensor.Radiance
+            Radiance sensor.
+        """
+        if value is None or value == []:
+            self._radiance_props.ClearField("observer_point")
+        else:
+            self._radiance_props.observer_point[:] = value
+        return self
+
+    def set_layer_type(self, layer_type=None):
+        """
+
+        Parameters
+        ----------
+        layer_type : str
+            defines separation type on of these values:
+            ['face', 'source', 'sequence']
+
+        Returns
+        -------
+            either self or self.layer_type-> Irradiance._LayerType
 
         """
-        return type(self._type)
-
-    def _fill(self, ssr_inst):
-        self._unique_id = ssr_inst.metadata["UniqueId"]
-        self._sensor_instance = ssr_inst
-        self.sensor_template_link = self._project.client.get_item(key=ssr_inst.sensor_guid)
-        self.reset()
-
-        if self._sensor_template.HasField("camera_sensor_template"):
-            self.set_camera()
-        elif self._sensor_template.HasField("irradiance_sensor_template"):
-            self.set_irradiance()
-        elif self._sensor_template.HasField("radiance_sensor_template"):
-            self.set_radiance()
+        if not layer_type:
+            self._radiance_props.layer_type_none.SetInParent()
+            self._layer_type = None
+            return self
+        elif layer_type.lower() not in self.LAYER_TYPES:
+            raise TypeError("Not supported layer type please choose on of {}".format(self.LAYER_TYPES))
+        elif layer_type.lower() == "source":
+            self._radiance_props.layer_type_source.SetInParent()
+            self._layer_type = None
+            return self
+        elif layer_type.lower() == "face":
+            if self._layer_type is None and self._radiance_props.HasField("layer_type_face"):
+                self._layer_type = Irradiance._LayerTypeFace(layer_type_face=self._radiance_props.layer_type_face, default_values=False)
+            elif self._layer_type != Irradiance._LayerTypeFace:
+                self._layer_type = Irradiance._LayerTypeFace(layer_type_face=self._radiance_props.layer_type_face)
+            return self._layer_type
+        elif layer_type.lower() == "sequence":
+            if self._layer_type is None and self._radiance_props.HasField("layer_type_sequence"):
+                self._layer_type = Irradiance._LayerTypeSequence(
+                    layer_type_sequence=self._radiance_props.layer_type_sequence, default_values=False
+                )
+            elif self._layer_type != Irradiance._LayerTypeSequence:
+                self._layer_type = Irradiance._LayerTypeSequence(layer_type_sequence=self._radiance_props.layer_type_sequence)
+            return self._layer_type

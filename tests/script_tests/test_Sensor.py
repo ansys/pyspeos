@@ -518,8 +518,7 @@ def test_create_radiance_sensor(speos: Speos):
     p = script.Project(speos=speos)
 
     # Default value
-    sensor1 = p.create_sensor(name="Radiance.1")
-    sensor1.set_radiance()
+    sensor1 = script.Radiance(project=p, name="Radiance.1")
     sensor1.commit()
     assert sensor1.sensor_template_link is not None
     assert sensor1.sensor_template_link.get().HasField("radiance_sensor_template")
@@ -540,13 +539,13 @@ def test_create_radiance_sensor(speos: Speos):
     assert sensor1._sensor_instance.radiance_properties.observer_point == []
 
     # sensor_type_radiometric
-    sensor1.set_radiance().set_type_radiometric()
+    sensor1.set_type_radiometric()
     sensor1.commit()
     assert sensor1.sensor_template_link.get().radiance_sensor_template.HasField("sensor_type_radiometric")
 
     # sensor_type_spectral
     # default wavelengths range
-    sensor1.set_radiance().set_type_spectral()
+    sensor1.set_type_spectral()
     sensor1.commit()
     assert sensor1.sensor_template_link.get().radiance_sensor_template.HasField("sensor_type_spectral")
     assert sensor1.sensor_template_link.get().radiance_sensor_template.sensor_type_spectral.HasField("wavelengths_range")
@@ -554,31 +553,31 @@ def test_create_radiance_sensor(speos: Speos):
     assert sensor1.sensor_template_link.get().radiance_sensor_template.sensor_type_spectral.wavelengths_range.w_end == 700
     assert sensor1.sensor_template_link.get().radiance_sensor_template.sensor_type_spectral.wavelengths_range.w_sampling == 13
     # chosen wavelengths range
-    sensor1.set_radiance().set_type_spectral().set_wavelengths_range().set_start(value=450).set_end(value=800).set_sampling(value=15)
+    sensor1.set_type_spectral().set_wavelengths_range().set_start(value=450).set_end(value=800).set_sampling(value=15)
     sensor1.commit()
     assert sensor1.sensor_template_link.get().radiance_sensor_template.sensor_type_spectral.wavelengths_range.w_start == 450
     assert sensor1.sensor_template_link.get().radiance_sensor_template.sensor_type_spectral.wavelengths_range.w_end == 800
     assert sensor1.sensor_template_link.get().radiance_sensor_template.sensor_type_spectral.wavelengths_range.w_sampling == 15
 
     # sensor_type_photometric
-    sensor1.set_radiance().set_type_photometric()
+    sensor1.set_type_photometric()
     sensor1.commit()
     assert sensor1.sensor_template_link.get().radiance_sensor_template.HasField("sensor_type_photometric")
 
     # focal
-    sensor1.set_radiance().set_focal(value=150.5)
+    sensor1.set_focal(value=150.5)
     sensor1.commit()
     assert sensor1.sensor_template_link.get().radiance_sensor_template.focal == 150.5
 
     # integration_angle
-    sensor1.set_radiance().set_integration_angle(value=4.5)
+    sensor1.set_integration_angle(value=4.5)
     sensor1.commit()
     assert sensor1.sensor_template_link.get().radiance_sensor_template.integration_angle == 4.5
 
     # dimensions
-    sensor1.set_radiance().dimensions().set_x_start(value=-10).set_x_end(value=10).set_x_sampling(value=60).set_y_start(
-        value=-20
-    ).set_y_end(value=20).set_y_sampling(value=120)
+    sensor1.dimensions.set_x_start(value=-10).set_x_end(value=10).set_x_sampling(value=60).set_y_start(value=-20).set_y_end(
+        value=20
+    ).set_y_sampling(value=120)
     sensor1.commit()
     assert sensor1.sensor_template_link.get().radiance_sensor_template.HasField("dimensions")
     assert sensor1.sensor_template_link.get().radiance_sensor_template.dimensions.x_start == -10.0
@@ -590,29 +589,29 @@ def test_create_radiance_sensor(speos: Speos):
 
     # properties
     # axis_system
-    sensor1.set_radiance().set_axis_system([10, 50, 20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    sensor1.set_axis_system([10, 50, 20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     sensor1.commit()
     assert sensor1._sensor_instance.radiance_properties.axis_system == [10, 50, 20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 
     # observer_point
-    sensor1.set_radiance().set_observer_point([20, 30, 50])
+    sensor1.set_observer_point([20, 30, 50])
     sensor1.commit()
     assert sensor1._sensor_instance.radiance_properties.observer_point == [20, 30, 50]
 
-    sensor1.set_radiance().set_observer_point(value=None)  # cancel observer point chosen previously
+    sensor1.set_observer_point(value=None)  # cancel observer point chosen previously
     sensor1.commit()
     assert sensor1._sensor_instance.radiance_properties.observer_point == []
 
     # layer_type_source
-    sensor1.set_radiance().set_layer_type_source()
+    sensor1.set_layer_type("source")
     sensor1.commit()
     assert sensor1._sensor_instance.radiance_properties.HasField("layer_type_source")
 
     # layer_type_face
-    sensor1.set_radiance().set_layer_type_face().set_sca_filtering_mode_intersected_one_time().set_layers(
+    sensor1.set_layer_type("face").set_sca_filtering_mode_intersected_one_time().set_layers(
         values=[
-            script.Sensor._LayerTypeFace.Layer(name="Layer.1", geometries=[script.GeoRef.from_native_link("TheBodyB")]),
-            script.Sensor._LayerTypeFace.Layer(
+            script.Radiance.FaceLayer(name="Layer.1", geometries=[script.GeoRef.from_native_link("TheBodyB")]),
+            script.Radiance.FaceLayer(
                 name="Layer.2",
                 geometries=[script.GeoRef.from_native_link("TheBodyC/TheFaceC1"), script.GeoRef.from_native_link("TheBodyC/TheFaceC2")],
             ),
@@ -634,7 +633,7 @@ def test_create_radiance_sensor(speos: Speos):
     ]
 
     # layer_type_face -> chose other filtering mode
-    sensor1.set_radiance().set_layer_type_face().set_sca_filtering_mode_last_impact()
+    sensor1.layer.set_sca_filtering_mode_last_impact()
     sensor1.commit()
     assert (
         sensor1._sensor_instance.radiance_properties.layer_type_face.sca_filtering_mode
@@ -642,12 +641,12 @@ def test_create_radiance_sensor(speos: Speos):
     )
 
     # layer_type_face -> clear layers list
-    sensor1.set_radiance().set_layer_type_face().set_layers(values=[])  # clear layers list
+    sensor1.layer.set_layers(values=[])  # clear layers list
     sensor1.commit()
     assert len(sensor1._sensor_instance.radiance_properties.layer_type_face.layers) == 0
 
     # layer_type_sequence
-    sensor1.set_radiance().set_layer_type_sequence().set_maximum_nb_of_sequence(value=5).set_define_sequence_per_faces()
+    sensor1.set_layer_type("sequence").set_maximum_nb_of_sequence(value=5).set_define_sequence_per_faces()
     sensor1.commit()
     assert sensor1._sensor_instance.radiance_properties.HasField("layer_type_sequence")
     assert sensor1._sensor_instance.radiance_properties.layer_type_sequence.maximum_nb_of_sequence == 5
@@ -656,7 +655,7 @@ def test_create_radiance_sensor(speos: Speos):
         == sensor1._sensor_instance.radiance_properties.layer_type_sequence.EnumSequenceType.Faces
     )
 
-    sensor1.set_radiance().set_layer_type_sequence().set_define_sequence_per_geometries()
+    sensor1.layer.set_define_sequence_per_geometries()
     sensor1.commit()
     assert (
         sensor1._sensor_instance.radiance_properties.layer_type_sequence.define_sequence_per
@@ -664,7 +663,7 @@ def test_create_radiance_sensor(speos: Speos):
     )
 
     # layer_type_none
-    sensor1.set_radiance().set_layer_type_none()
+    sensor1.set_layer_type()
     sensor1.commit()
     assert sensor1._sensor_instance.radiance_properties.HasField("layer_type_none")
 
