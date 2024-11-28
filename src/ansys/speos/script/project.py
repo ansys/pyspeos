@@ -137,14 +137,29 @@ class Project:
         self._features.append(feature)
         return feature
 
-    def create_simulation(self, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> simulation.Simulation:
+    def create_simulation(
+        self, name: str, description: str = "", feature_type: type = simulation.Direct, metadata: Mapping[str, str] = {}
+    ) -> simulation.Simulation:
         """Create a new Simulation feature.
 
         Parameters
         ----------
 
         """
-        feature = simulation.Simulation(project=self, name=name, description=description, metadata=metadata)
+        feature = None
+        if feature_type == simulation.Direct:
+            feature = simulation.Direct(project=self, name=name, description=description, metadata=metadata)
+        elif feature_type == simulation.Inverse:
+            feature = simulation.Inverse(project=self, name=name, description=description, metadata=metadata)
+        elif feature_type == simulation.Interactive:
+            feature = simulation.Interactive(project=self, name=name, description=description, metadata=metadata)
+        else:
+            print(
+                "Requested feature {} does not exist in supported list {}".format(
+                    feature_type, [simulation.Direct, simulation.Inverse, simulation.Interactive]
+                )
+            )
+            return None
         self._features.append(feature)
         return feature
 
@@ -497,5 +512,13 @@ ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.p
             ssr_feat._fill(ssr_inst=ssr_inst)
 
         for sim_inst in scene_data.simulations:
-            sim_feat = self.create_simulation(name=sim_inst.name)
-            sim_feat._fill(sim_inst=sim_inst)
+            simulation_template_link = self.client.get_item(key=sim_inst.simulation_guid).get()
+            if simulation_template_link.HasField("direct_mc_simulation_template"):
+                sim_feat = self.create_simulation(name=sim_inst.name, feature_type=simulation.Direct)
+                sim_feat._fill(sim_inst=sim_inst)
+            elif simulation_template_link.HasField("inverse_mc_simulation_template"):
+                sim_feat = self.create_simulation(name=sim_inst.name, feature_type=simulation.Inverse)
+                sim_feat._fill(sim_inst=sim_inst)
+            elif simulation_template_link.HasField("interactive_simulation_template"):
+                sim_feat = self.create_simulation(name=sim_inst.name, feature_type=simulation.Interactive)
+                sim_feat._fill(sim_inst=sim_inst)
