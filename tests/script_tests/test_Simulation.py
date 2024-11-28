@@ -339,12 +339,12 @@ def test_commit(speos: Speos):
     ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
     root_part.commit()
 
-    ssr = p.create_sensor(name="Irradiance.1")
-    ssr.set_irradiance().set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    ssr = p.create_sensor(name="Irradiance.1", feature_type=script.Irradiance)
+    ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     ssr.commit()
 
-    ssr2 = p.create_sensor(name="Irradiance.2")
-    ssr2.set_irradiance().set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    ssr2 = p.create_sensor(name="Irradiance.2", feature_type=script.Irradiance)
+    ssr2.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     ssr2.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=script.source.Luminaire)
@@ -352,9 +352,7 @@ def test_commit(speos: Speos):
     src.commit()
 
     # Create
-    sim1 = p.create_simulation(name="Direct.1")
     sim1 = script.simulation.Direct(project=p, name="Direct.1")
-    # sim1.set_direct()
     sim1.set_sensor_paths(sensor_paths=[ssr._name]).set_source_paths(source_paths=[src._name])
     assert sim1.simulation_template_link is None
     assert len(p.scene_link.get().simulations) == 0
@@ -390,12 +388,12 @@ def test_reset(speos: Speos):
     ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
     root_part.commit()
 
-    ssr = p.create_sensor(name="Irradiance.1")
-    ssr.set_irradiance().set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    ssr = p.create_sensor(name="Irradiance.1", feature_type=script.Irradiance)
+    ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     ssr.commit()
 
-    ssr2 = p.create_sensor(name="Irradiance.2")
-    ssr2.set_irradiance().set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    ssr2 = p.create_sensor(name="Irradiance.2", feature_type=script.Irradiance)
+    ssr2.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     ssr2.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=script.source.Luminaire)
@@ -403,9 +401,8 @@ def test_reset(speos: Speos):
     src.commit()
 
     # Create + commit
-    sim1 = p.create_simulation(name="Direct.1")
+
     sim1 = script.simulation.Direct(project=p, name="Direct.1")
-    # sim1.set_direct()
     sim1.set_sensor_paths(sensor_paths=[ssr._name]).set_source_paths(source_paths=[src._name]).commit()
     assert sim1.simulation_template_link is not None
     assert sim1.simulation_template_link.get().HasField("direct_mc_simulation_template")
@@ -438,8 +435,8 @@ def test_delete(speos: Speos):
     ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
     root_part.commit()
 
-    ssr = p.create_sensor(name="Irradiance.1")
-    ssr.set_irradiance().set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    ssr = p.create_sensor(name="Irradiance.1", feature_type=script.Irradiance)
+    ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     ssr.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=script.source.Luminaire)
@@ -447,9 +444,7 @@ def test_delete(speos: Speos):
     src.commit()
 
     # Create + commit
-    sim1 = p.create_simulation(name="Direct.1")
     sim1 = script.simulation.Direct(project=p, name="Direct.1")
-    # sim1.set_direct()
     sim1.set_sensor_paths(sensor_paths=[ssr._name]).set_source_paths(source_paths=[src._name]).commit()
     assert sim1.simulation_template_link.get().HasField("direct_mc_simulation_template")
     assert sim1._simulation_template.HasField("direct_mc_simulation_template")  # local template
