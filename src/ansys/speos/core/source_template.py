@@ -47,6 +47,7 @@ class SourceTemplateLink(CrudItem):
 
     def __init__(self, db, key: str):
         super().__init__(db, key)
+        self._actions_stub = db._actions_stub
 
     def __str__(self) -> str:
         """Return the string representation of the source template."""
@@ -76,6 +77,18 @@ class SourceTemplateLink(CrudItem):
         """Remove datamodel from database."""
         self._stub.delete(self)
 
+    # Actions
+    def get_ray_file_info(self) -> messages.GetRayFileInfo_Response:
+        """
+        Retrieve information about ray file source.
+
+        Returns
+        -------
+        ansys.api.speos.source.v1.source_pb2.GetRayFileInfo_Response
+            Information about ray file source, like flux value.
+        """
+        return self._actions_stub.GetRayFileInfo(messages.GetRayFileInfo_Request(guid=self.key))
+
 
 class SourceTemplateStub(CrudStub):
     """
@@ -99,6 +112,7 @@ class SourceTemplateStub(CrudStub):
 
     def __init__(self, channel):
         super().__init__(stub=service.SourceTemplatesManagerStub(channel=channel))
+        self._actions_stub = service.SourceTemplateActionsStub(channel=channel)
 
     def create(self, message: SourceTemplate) -> SourceTemplateLink:
         """Create a new entry.
