@@ -1,10 +1,10 @@
 version: "3.4"
 services:
   speos-rpc:
-    image: ghcr.io/ansys-internal/speos-rpc:2025.1.0.23033-beta
+    image: ghcr.io/ansys-internal/speos-rpc:2025.1.1.25031
     container_name: speos-rpc
     ports:
-      - "50051:50051"
+      - "50051:50098"
     environment:
       - SPEOS_LOG_LEVEL=2
       - ANSYSLMD_LICENSE_FILE=$LICENSE_SERVER

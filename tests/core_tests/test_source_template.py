@@ -26,6 +26,7 @@ Test source template.
 import json
 import os
 
+from ansys.api.speos.common.v1 import data_pb2
 import grpc
 import pytest
 
@@ -127,3 +128,32 @@ def test_source_template(speos: Speos):
     src_t_surface.delete()
     spec_bb_2500.delete()
     intens_t_lamb.delete()
+
+
+# Tests not yet available on linux
+if os.name == "nt":
+
+    def test_action_get_ray_file_info(speos: Speos):
+        """Test the source template action : get_ray_file_info."""
+        assert speos.client.healthy is True
+
+        # Create source_templates stub from client channel
+        source_t_db = speos.client.source_templates()
+
+        # Create a source template link - a Ray-File source
+        src_t_rayfile = source_t_db.create(
+            message=SourceTemplate(
+                name="Ray-File",
+                rayfile=SourceTemplate.RayFile(
+                    ray_file_uri=os.path.join(test_path, "Rays.ray"),
+                    flux_from_ray_file=SourceTemplate.FromRayFile(),
+                    spectrum_from_ray_file=SourceTemplate.RayFile.SpectrumFromRayFile(),
+                ),
+            )
+        )
+
+        # Get flux
+        flux = src_t_rayfile.get_ray_file_info().flux
+        assert flux.magnitude == data_pb2.Magnitude.radiant_flux
+        assert flux.unit == data_pb2.Unit.watts
+        assert flux.values[0] == 4.01765775680542

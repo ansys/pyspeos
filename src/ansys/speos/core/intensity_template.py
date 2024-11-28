@@ -61,6 +61,7 @@ class IntensityTemplateLink(CrudItem):
 
     def __init__(self, db, key: str):
         super().__init__(db, key)
+        self._actions_stub = db._actions_stub
 
     def __str__(self) -> str:
         """Return the string representation of the intensity_template."""
@@ -90,6 +91,18 @@ class IntensityTemplateLink(CrudItem):
         """Remove datamodel from database."""
         self._stub.delete(self)
 
+    # Actions
+    def get_library_type_info(self) -> messages.GetLibraryTypeInfo_Response:
+        """
+        Retrieve information about intensity template in case of library type.
+
+        Returns
+        -------
+        ansys.api.speos.intensity.v1.intensity_pb2.GetLibraryTypeInfo_Response
+            Information about intensity template, like flux value.
+        """
+        return self._actions_stub.GetLibraryTypeInfo(messages.GetLibraryTypeInfo_Request(guid=self.key))
+
 
 class IntensityTemplateStub(CrudStub):
     """
@@ -113,6 +126,7 @@ class IntensityTemplateStub(CrudStub):
 
     def __init__(self, channel):
         super().__init__(stub=service.IntensityTemplatesManagerStub(channel=channel))
+        self._actions_stub = service.IntensityTemplateActionsStub(channel=channel)
 
     def create(self, message: IntensityTemplate) -> IntensityTemplateLink:
         """Create a new entry.
