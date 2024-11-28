@@ -521,6 +521,12 @@ class BaseSensor:
 
         return out_dict
 
+    def _fill(self, ssr_inst):
+        self._unique_id = ssr_inst.metadata["UniqueId"]
+        self._sensor_instance = ssr_inst
+        self.sensor_template_link = self._project.client.get_item(key=ssr_inst.sensor_guid)
+        self.reset()
+
     def get(self, key: str = "") -> str | dict:
         """Get dictionary corresponding to the project - read only.
 

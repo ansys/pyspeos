@@ -391,14 +391,6 @@ class BaseSimulation:
         self.simulation_template_link = self._project.client.get_item(key=sim_inst.simulation_guid)
         self.reset()
 
-        # To get default values related to job -> simu properties
-        if self._simulation_template.HasField("direct_mc_simulation_template"):
-            self.set_direct()
-        elif self._simulation_template.HasField("inverse_mc_simulation_template"):
-            self.set_inverse()
-        elif self._simulation_template.HasField("interactive_simulation_template"):
-            self.set_interactive()
-
 
 class Direct(BaseSimulation):
     """

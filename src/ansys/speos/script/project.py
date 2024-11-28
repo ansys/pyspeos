@@ -512,8 +512,15 @@ ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.p
                 src_feat._fill(src_inst=src_inst)
 
         for ssr_inst in scene_data.sensors:
-            ssr_feat = self.create_sensor(name=ssr_inst.name)
-            ssr_feat._fill(ssr_inst=ssr_inst)
+            if ssr_inst.HasField("radiance_properties"):
+                ssr_feat = self.create_sensor(name=ssr_inst.name, feature_type=sensor.Radiance)
+                ssr_feat._fill(ssr_inst=ssr_inst)
+            elif ssr_inst.HasField("irradiance_properties"):
+                ssr_feat = self.create_sensor(name=ssr_inst.name, feature_type=sensor.Irradiance)
+                ssr_feat._fill(ssr_inst=ssr_inst)
+            elif ssr_inst.HasField("camera_properties"):
+                ssr_feat = self.create_sensor(name=ssr_inst.name, feature_type=sensor.Camera)
+                ssr_feat._fill(ssr_inst=ssr_inst)
 
         for sim_inst in scene_data.simulations:
             simulation_template_link = self.client.get_item(key=sim_inst.simulation_guid).get()
