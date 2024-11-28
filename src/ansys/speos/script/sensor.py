@@ -23,7 +23,7 @@
 """Provides a way to interact with Speos feature: Sensor."""
 from __future__ import annotations
 
-from typing import List, Mapping, Optional
+from typing import List, Mapping, Optional, Union
 import uuid
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2, common_pb2
@@ -1193,7 +1193,7 @@ class Camera(BaseSensor):
         self._camera_template = self._sensor_template.camera_sensor_template
         self._camera_props = self._sensor_instance.camera_properties
         # Attribute gathering more complex camera mode
-        self._mode = None
+        self._type = None
         if default_values:
             # Default values template
             self.set_focal_length().set_imager_distance().set_f_number().set_horz_pixel()
@@ -1202,19 +1202,16 @@ class Camera(BaseSensor):
             self.set_axis_system()
 
     @property
-    def mode(self):
+    def type(self) -> str:
         """Camera type photometric or geometric"""
-        if self._mode == Camera._Photometric:
+        if self._type == Camera._Photometric:
             return "Photometric Camera"
         else:
             return "Geometric Camera"
 
     @property
-    def photometric(self):
-        if self._mode == Camera._Photometric:
-            return self._mode
-        else:
-            return None
+    def photometric(self) -> Union[Camera._Photometric, None]:
+        return self._type
 
     def set_focal_length(self, value: float = 5.0) -> Camera:
         """Set the focal length.
@@ -1360,7 +1357,7 @@ class Camera(BaseSensor):
         ansys.speos.script.sensor.Sensor.Camera
             Camera sensor.
         """
-        self._mode = None
+        self._type = None
         self._camera_template.sensor_mode_geometric.SetInParent()
         return self
 
@@ -1373,15 +1370,15 @@ class Camera(BaseSensor):
         ansys.speos.script.sensor.Sensor.Camera.Photometric
             Photometric mode.
         """
-        if self._mode is None and self._camera_template.HasField("sensor_mode_photometric"):
-            self._mode = Camera._Photometric(
+        if self._type is None and self._camera_template.HasField("sensor_mode_photometric"):
+            self._type = Camera._Photometric(
                 mode_photometric=self._camera_template.sensor_mode_photometric, camera_props=self._camera_props, default_values=False
             )
-        elif type(self._mode) != Camera._Photometric:
-            self._mode = Camera._Photometric(
+        elif self._type != Camera._Photometric:
+            self._type = Camera._Photometric(
                 mode_photometric=self._camera_template.sensor_mode_photometric, camera_props=self._camera_props
             )
-        return self._mode
+        return self._type
 
     def set_axis_system(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> Camera:
         """Set position of the sensor.
@@ -1451,11 +1448,11 @@ class Irradiance(BaseSensor):
             self.set_axis_system().set_ray_file_type_none().set_layer_type()
 
     @property
-    def dimensions(self):
+    def dimensions(self) -> Irradiance._Dimensions:
         return self._sensor_dimensions
 
     @property
-    def type(self):
+    def type(self) -> str:
         if type(self._type) is str:
             return self._type
         elif self._type == Irradiance._Colorimetric:
@@ -1466,21 +1463,23 @@ class Irradiance(BaseSensor):
             return self._type
 
     @property
-    def colorimetric(self):
+    def colorimetric(self) -> Union[None, Irradiance._Colorimetric]:
         if self._type == Irradiance._Colorimetric:
             return self._type
         else:
             return None
 
     @property
-    def spectral(self):
+    def spectral(self) -> Union[None, Irradiance._Spectral]:
         if self._type == Irradiance._Spectral:
             return self._type
         else:
             return None
 
     @property
-    def layer(self):
+    def layer(
+        self,
+    ) -> Union[None, Irradiance, Irradiance._LayerTypeFace, Irradiance._LayerTypeSequence, Irradiance._LayerTypeIncidenceAngle]:
         return self._layer_type
 
     def set_type_photometric(self) -> Irradiance:
@@ -1689,7 +1688,9 @@ class Irradiance(BaseSensor):
         self._irradiance_props.ray_file_type = core.Scene.SensorInstance.EnumRayFileType.RayFileTM25NoPolarization
         return self
 
-    def set_layer_type(self, layer_type=None):
+    def set_layer_type(
+        self, layer_type=None
+    ) -> Union[Irradiance, Irradiance._LayerTypeFace, Irradiance._LayerTypeSequence, Irradiance._LayerTypeIncidenceAngle]:
         """
 
         Parameters
@@ -1812,11 +1813,11 @@ class Radiance(BaseSensor):
             self.set_axis_system().set_layer_type()
 
     @property
-    def dimensions(self):
+    def dimensions(self) -> Radiance._Dimensions:
         return self._sensor_dimensions
 
     @property
-    def type(self):
+    def type(self) -> str:
         if type(self._type) is str:
             return self._type
         elif self._type == Radiance._Colorimetric:
@@ -1827,21 +1828,21 @@ class Radiance(BaseSensor):
             return self._type
 
     @property
-    def colorimetric(self):
+    def colorimetric(self) -> Union[None, Radiance._Colorimetric]:
         if self._type == Radiance._Colorimetric:
             return self._type
         else:
             return None
 
     @property
-    def spectral(self):
+    def spectral(self) -> Union[None, Radiance._Spectral]:
         if self._type == Radiance._Spectral:
             return self._type
         else:
             return None
 
     @property
-    def layer(self):
+    def layer(self) -> Union[None, Radiance._LayerTypeFace, Radiance._LayerTypeSequence]:
         return self._layer_type
 
     def set_type_photometric(self) -> Radiance:
@@ -1972,7 +1973,7 @@ class Radiance(BaseSensor):
             self._radiance_props.observer_point[:] = value
         return self
 
-    def set_layer_type(self, layer_type=None):
+    def set_layer_type(self, layer_type=None) -> Union[Radiance, Radiance._LayerTypeFace, Radiance._LayerTypeSequence]:
         """
 
         Parameters

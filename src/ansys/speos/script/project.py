@@ -100,7 +100,7 @@ class Project:
         description: str = "",
         feature_type: type = source.Surface,
         metadata: Mapping[str, str] = {},
-    ) -> source.Source:
+    ) -> Union[source.Surface, source.RayFile, source.Luminaire]:
         """Create a new Source feature.
 
         Parameters
@@ -130,12 +130,10 @@ class Project:
         elif feature_type == source.Luminaire:
             feature = source.Luminaire(project=self, name=name, description=description, metadata=metadata)
         else:
-            print(
-                "Requested feature {} does not exist in supported list {}".format(
-                    feature_type, [source.Surface, source.Luminaire, source.RayFile]
-                )
+            msg = "Requested feature {} does not exist in supported list {}".format(
+                feature_type, [source.Surface, source.Luminaire, source.RayFile]
             )
-            return None
+            raise TypeError(msg)
         self._features.append(feature)
         return feature
 
@@ -150,7 +148,9 @@ class Project:
         self._features.append(feature)
         return feature
 
-    def create_sensor(self, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> sensor.Sensor:
+    def create_sensor(
+        self, name: str, description: str = "", feature_type: type = sensor.Radiance, metadata: Mapping[str, str] = {}
+    ) -> Union[sensor.Radiance, sensor.Irradiance, sensor.Camera]:
         """Create a new Sensor feature.
 
         Parameters
@@ -160,6 +160,8 @@ class Project:
         description : str
             Description of the feature.
             By default, ``""``.
+        feature_type: Optional[sensor.Radiance, sensor.Irradiance, sensor.Camera]
+            sensor type
         metadata : Mapping[str, str]
             Metadata of the feature.
             By default, ``{}``.
@@ -169,8 +171,21 @@ class Project:
         ansys.speos.script.sensor.Sensor
             Sensor feature.
         """
-        feature = sensor.Sensor(project=self, name=name, description=description, metadata=metadata)
-        self._features.append(feature)
+
+        if feature_type == sensor.Radiance:
+            feature = sensor.Radiance(project=self, name=name, description=description, metadata=metadata)
+            self._features.append(feature)
+        elif feature_type == sensor.Irradiance:
+            feature = sensor.Irradiance(project=self, name=name, description=description, metadata=metadata)
+            self._features.append(feature)
+        elif feature_type == sensor.Camera:
+            feature = sensor.Camera(project=self, name=name, description=description, metadata=metadata)
+            self._features.append(feature)
+        else:
+            msg = "Requested feature {} does not exist in supported list {}".format(
+                feature_type, [sensor.Radiance, sensor.Irradiance, sensor.Camera]
+            )
+            raise TypeError(msg)
         return feature
 
     def create_root_part(self, description: str = "", metadata: Mapping[str, str] = {}) -> part.Part:
