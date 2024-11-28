@@ -279,18 +279,20 @@ def test_create_camera_sensor(speos: Speos):
     sensor1.commit()
     assert sensor1._sensor_instance.camera_properties.axis_system == [10, 50, 20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 
+    # Properties for camera photometric
+
     # trajectory_file_uri
-    sensor1.set_camera().set_trajectory_file_uri(uri="TrajectoryFile")
+    sensor1.set_camera().set_mode_photometric().set_trajectory_file_uri(uri="TrajectoryFile")
     sensor1.commit()
     assert sensor1._sensor_instance.camera_properties.trajectory_file_uri != ""
 
     # layer_type_source
-    sensor1.set_camera().set_layer_type_source()
+    sensor1.set_camera().set_mode_photometric().set_layer_type_source()
     sensor1.commit()
     assert sensor1._sensor_instance.camera_properties.HasField("layer_type_source")
 
     # layer_type_none
-    sensor1.set_camera().set_layer_type_none()
+    sensor1.set_camera().set_mode_photometric().set_layer_type_none()
     sensor1.commit()
     assert sensor1._sensor_instance.camera_properties.HasField("layer_type_none")
 
