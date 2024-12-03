@@ -322,7 +322,6 @@ def test_from_file(speos: Speos):
     feat_ssrs[0].commit()
     ssr_link = speos.client.get_item(key=p.scene_link.get().sensors[0].sensor_guid)
     ssr_data = ssr_link.get()
-    print(ssr_data)
     assert ssr_data.HasField("irradiance_sensor_template")
     assert ssr_data.irradiance_sensor_template.HasField("sensor_type_colorimetric")
     assert ssr_data.irradiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_end == 800

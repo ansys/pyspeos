@@ -74,7 +74,6 @@ class BaseSensor:
 
         def __init__(self, wavelengths_range: common_pb2.WavelengthsRange, default_values: bool = True) -> None:
             self._wavelengths_range = wavelengths_range
-            # print("WavelegnthRange ini:", self._wavelengths_range.w_end)
 
             if default_values:
                 # Default values
@@ -113,7 +112,6 @@ class BaseSensor:
             """
 
             self._wavelengths_range.w_end = value
-            # print("set end value: ", self._wavelengths_range.w_end)
             return self
 
         def set_sampling(self, value: int = 13) -> BaseSensor.WavelengthsRange:
@@ -269,8 +267,6 @@ class BaseSensor:
 
         def __init__(self, sensor_type_colorimetric: common_pb2.SensorTypeColorimetric, default_values: bool = True) -> None:
             self._sensor_type_colorimetric = sensor_type_colorimetric
-            # print("initial: ", self._sensor_type_colorimetric.wavelengths_range.w_end)
-            # self._sensor_type_colorimetric.wavelengths_range.w_end = 1000
 
             # Attribute to keep track of wavelength range object
             self._wavelengths_range = BaseSensor.WavelengthsRange(
@@ -612,9 +608,6 @@ class BaseSensor:
             self._unique_id = str(uuid.uuid4())
             self._sensor_instance.metadata["UniqueId"] = self._unique_id
 
-        # print("sensor template link:", self.sensor_template_link.get())
-        # print("local template", self._sensor_template)
-        # print("test: ".self._)
         # Save or Update the sensor template (depending on if it was already saved before)
         if self.sensor_template_link is None:
             self.sensor_template_link = self._project.client.sensor_templates().create(message=self._sensor_template)
@@ -622,7 +615,6 @@ class BaseSensor:
         elif self.sensor_template_link.get() != self._sensor_template:
             self.sensor_template_link.set(data=self._sensor_template)  # Only update if the template has changed
 
-        # print("scene link: ", self._project.scene_link)
         # Update the scene with the sensor instance
         if self._project.scene_link:
             update_scene = True
@@ -1525,19 +1517,13 @@ class Irradiance(BaseSensor):
         ansys.speos.script.sensor.Sensor.Colorimetric
             Colorimetric type.
         """
-        # print("_type info; ", self._type)
 
         if self._type is None and self._irradiance_template.HasField("sensor_type_colorimetric"):
-            # print("set type colorimetric")
-            # print(self._irradiance_template.sensor_type_colorimetric.wavelengths_range.w_end)
             self._type = BaseSensor.Colorimetric(
                 sensor_type_colorimetric=self._irradiance_template.sensor_type_colorimetric, default_values=False
             )
         elif type(self._type) != BaseSensor.Colorimetric:
-            # print("set type colorimetric 22222")
-            # print(self._irradiance_template.sensor_type_colorimetric.wavelengths_range.w_end)
             self._type = BaseSensor.Colorimetric(sensor_type_colorimetric=self._irradiance_template.sensor_type_colorimetric)
-        # print("final")
         return self._type
 
     def set_type_radiometric(self) -> Irradiance:
