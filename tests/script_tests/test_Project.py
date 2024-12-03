@@ -44,20 +44,21 @@ def test_find_feature(speos: Speos):
     assert len(p.scene_link.get().sources) == 1
 
     # Create an irradiance sensor in the project
-    sensor1 = p.create_sensor(name="Sensor.1", feature_type=script.Irradiance)
+    sensor1 = p.create_sensor(name="Sensor.1", feature_type=script.sensor.Irradiance)
     sensor1.commit()
     assert len(p._features) == 2
     assert len(p.scene_link.get().sensors) == 1
 
-    # Create a radiance sensor in the project
-    sensor2 = p.create_sensor(name="Sensor.2", feature_type=script.Radiance)
+    # Create an radiance sensor in the project
+    # TODO enhance the initialize method
+    sensor2 = p.create_sensor(name="Sensor.2", feature_type=script.sensor.Radiance)
     sensor2.commit()
     assert len(p._features) == 3
     assert len(p.scene_link.get().sensors) == 2
 
-    # Create a radiance sensor in the project
-    sensor3 = p.create_sensor(name="Sensor.3", feature_type=script.Radiance)
-    sensor3.set_layer_type("face")
+    # Create an radiance sensor in the project
+    sensor3 = p.create_sensor(name="Sensor.3", feature_type=script.sensor.Radiance)
+    sensor3.set_layer_type_face()
     sensor3.commit()
     assert len(p._features) == 4
     assert len(p.scene_link.get().sensors) == 3
@@ -88,20 +89,25 @@ def test_find_feature(speos: Speos):
     # With type filtering
 
     # Wrong combination name-type
-    features = p.find(name="Sensor.3", feature_type=script.Surface)
+    features = p.find(name="Sensor.3", feature_type=script.source.Surface)
     assert features == []
 
+    # Good combination name-type
+    features = p.find(name="Sensor.3", feature_type=script.sensor.Radiance)
+    assert len(features) == 1
+    assert features[0] == sensor3
+
     # Wrong combination name-type specialized
-    features = p.find(name="Sensor.3", feature_type=script.Irradiance)
+    features = p.find(name="Sensor.3", feature_type=script.sensor.Irradiance)
     assert features == []
 
     # Good combination name-type specialized
-    features = p.find(name="Sensor.3", feature_type=script.Radiance)
+    features = p.find(name="Sensor.3", feature_type=script.sensor.Radiance)
     assert len(features) == 1
     assert features[0] == sensor3
 
     # Good combination name-type specialized + regex
-    features = p.find(name=r".*sor\.3", name_regex=True, feature_type=script.Radiance)
+    features = p.find(name=r".*sor\.3", name_regex=True, feature_type=script.sensor.Radiance)
     assert len(features) == 1
     assert features[0] == sensor3
 
@@ -241,7 +247,7 @@ def test_find_after_load(speos: Speos):
     assert src_feats[1]._name == "Surface Source (0) in SOURCE1"
 
     # Retrieve all irradiance sensors
-    ssr_feats = p.find(name=".*", name_regex=True, feature_type=script.Irradiance)
+    ssr_feats = p.find(name=".*", name_regex=True, feature_type=script.sensor.Irradiance)
     assert len(ssr_feats) == 1
     assert ssr_feats[0]._name == "Dom Irradiance Sensor (0)"
 
@@ -265,7 +271,7 @@ def test_delete(speos: Speos):
     assert len(p.scene_link.get().sources) == 1
 
     # Create an irradiance sensor in the project
-    sensor1 = p.create_sensor(name="Sensor.1", feature_type=script.Irradiance)
+    sensor1 = p.create_sensor(name="Sensor.1", feature_type=script.sensor.Irradiance)
     sensor1.commit()
     assert len(p._features) == 2
     assert len(p.scene_link.get().sensors) == 1
@@ -309,15 +315,15 @@ def test_from_file(speos: Speos):
     # Retrieve another feature
     feat_ssrs = p.find(name=p.scene_link.get().sensors[0].name)
     assert len(feat_ssrs) == 1
-    assert type(feat_ssrs[0]) is script.Irradiance
+    assert type(feat_ssrs[0]) is script.sensor.Irradiance
 
     # And that we can modify it (and that other values are not overridden by default values)
-    feat_ssrs[0].colorimetric.set_wavelengths_range().set_end(value=800)
+    feat_ssrs[0].set_type_colorimetric().set_wavelengths_range().set_end(value=800)
     feat_ssrs[0].commit()
     ssr_link = speos.client.get_item(key=p.scene_link.get().sensors[0].sensor_guid)
     ssr_data = ssr_link.get()
     print(ssr_data)
-    assert ssr_data.HasField("radiance_sensor_template")
+    assert ssr_data.HasField("irradiance_sensor_template")
     assert ssr_data.irradiance_sensor_template.HasField("sensor_type_colorimetric")
     assert ssr_data.irradiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_end == 800
     assert ssr_data.irradiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_sampling == 25

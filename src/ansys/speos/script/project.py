@@ -168,8 +168,8 @@ class Project:
         return feature
 
     def create_sensor(
-        self, name: str, description: str = "", feature_type: type = sensor.Radiance, metadata: Mapping[str, str] = {}
-    ) -> Union[sensor.Radiance, sensor.Irradiance, sensor.Camera]:
+        self, name: str, description: str = "", feature_type: type = sensor.Irradiance, metadata: Mapping[str, str] = {}
+    ) -> sensor.Sensor:
         """Create a new Sensor feature.
 
         Parameters
@@ -179,8 +179,6 @@ class Project:
         description : str
             Description of the feature.
             By default, ``""``.
-        feature_type: Optional[sensor.Radiance, sensor.Irradiance, sensor.Camera]
-            sensor type
         metadata : Mapping[str, str]
             Metadata of the feature.
             By default, ``{}``.
@@ -190,21 +188,21 @@ class Project:
         ansys.speos.script.sensor.Sensor
             Sensor feature.
         """
-
-        if feature_type == sensor.Radiance:
-            feature = sensor.Radiance(project=self, name=name, description=description, metadata=metadata)
-            self._features.append(feature)
-        elif feature_type == sensor.Irradiance:
+        feature = None
+        if feature_type == sensor.Irradiance:
             feature = sensor.Irradiance(project=self, name=name, description=description, metadata=metadata)
-            self._features.append(feature)
+        elif feature_type == sensor.Radiance:
+            feature = sensor.Radiance(project=self, name=name, description=description, metadata=metadata)
         elif feature_type == sensor.Camera:
             feature = sensor.Camera(project=self, name=name, description=description, metadata=metadata)
-            self._features.append(feature)
         else:
-            msg = "Requested feature {} does not exist in supported list {}".format(
-                feature_type, [sensor.Radiance, sensor.Irradiance, sensor.Camera]
+            print(
+                "Requested feature {} does not exist in supported list {}".format(
+                    feature_type, [sensor.Irradiance, sensor.Radiance, sensor.Camera]
+                )
             )
-            raise TypeError(msg)
+            return None
+        self._features.append(feature)
         return feature
 
     def create_root_part(self, description: str = "", metadata: Mapping[str, str] = {}) -> part.Part:
@@ -383,7 +381,12 @@ ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.p
             if type(v) is list:
                 for inside_dict in v:
                     if k == "simulations":
-                        sim_feat = self.find(name=inside_dict["name"], feature_type=simulation.Simulation)[0]
+                        sim_feat = self.find(name=inside_dict["name"], feature_type=simulation.Direct)
+                        if len(sim_feat) == 0:
+                            sim_feat = self.find(name=inside_dict["name"], feature_type=simulation.Inverse)
+                        elif len(sim_feat) == 0:
+                            sim_feat = self.find(name=inside_dict["name"], feature_type=simulation.Interactive)
+                        sim_feat = sim_feat[0]
                         if sim_feat.job_link is None:
                             inside_dict["simulation_properties"] = proto_message_utils._replace_guids(
                                 speos_client=self.client, message=sim_feat._job, ignore_simple_key="scene_guid"
@@ -512,15 +515,13 @@ ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.p
                 src_feat._fill(src_inst=src_inst)
 
         for ssr_inst in scene_data.sensors:
-            if ssr_inst.HasField("radiance_properties"):
-                ssr_feat = self.create_sensor(name=ssr_inst.name, feature_type=sensor.Radiance)
-                ssr_feat._fill(ssr_inst=ssr_inst)
-            elif ssr_inst.HasField("irradiance_properties"):
-                ssr_feat = self.create_sensor(name=ssr_inst.name, feature_type=sensor.Irradiance)
-                ssr_feat._fill(ssr_inst=ssr_inst)
+            if ssr_inst.HasField("irradiance_properties"):
+                ssr_feat = sensor.Irradiance(project=self, name=ssr_inst.name, sensor_instance=ssr_inst, default_values=False)
             elif ssr_inst.HasField("camera_properties"):
-                ssr_feat = self.create_sensor(name=ssr_inst.name, feature_type=sensor.Camera)
-                ssr_feat._fill(ssr_inst=ssr_inst)
+                ssr_feat = sensor.Radiance(project=self, name=ssr_inst.name, sensor_instance=ssr_inst, default_values=False)
+            elif ssr_inst.HasField("radiance_properties"):
+                ssr_feat = sensor.Camera(project=self, name=ssr_inst.name, sensor_instance=ssr_inst, default_values=False)
+            self._features.append(ssr_feat)
 
         for sim_inst in scene_data.simulations:
             simulation_template_link = self.client.get_item(key=sim_inst.simulation_guid).get()
