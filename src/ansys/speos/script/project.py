@@ -524,14 +524,12 @@ ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.p
         for sim_inst in scene_data.simulations:
             simulation_template_link = self.client.get_item(key=sim_inst.simulation_guid).get()
             if simulation_template_link.HasField("direct_mc_simulation_template"):
-                sim_feat = self.create_simulation(name=sim_inst.name, feature_type=simulation.Direct)
-                sim_feat._fill(sim_inst=sim_inst)
+                sim_feat = simulation.Direct(project=self, name=sim_inst.name, simulation_instance=sim_inst, default_values=False)
             elif simulation_template_link.HasField("inverse_mc_simulation_template"):
-                sim_feat = self.create_simulation(name=sim_inst.name, feature_type=simulation.Inverse)
-                sim_feat._fill(sim_inst=sim_inst)
+                sim_feat = simulation.Inverse(project=self, name=sim_inst.name, simulation_instance=sim_inst, default_values=False)
             elif simulation_template_link.HasField("interactive_simulation_template"):
-                sim_feat = self.create_simulation(name=sim_inst.name, feature_type=simulation.Interactive)
-                sim_feat._fill(sim_inst=sim_inst)
+                sim_feat = simulation.Interactive(project=self, name=sim_inst.name, simulation_instance=sim_inst, default_values=False)
+            self._features.append(sim_feat)
 
     def __extract_part_mesh_info(self, part_data: core.Part, part_coordinate_info: RepeatedScalarFieldContainer = None) -> pv.PolyData:
         """

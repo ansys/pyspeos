@@ -73,7 +73,14 @@ class BaseSimulation:
             self._weight.minimum_energy_percentage = value
             return self
 
-    def __init__(self, project: project.Project, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> None:
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Mapping[str, str] = {},
+        simulation_instance: Optional[core.Scene.SimulationInstance] = None,
+    ) -> None:
         self._project = project
         self._name = name
         self._unique_id = None
@@ -87,16 +94,19 @@ class BaseSimulation:
         # Attribute representing the kind of simulation.
         self._type = None
 
-        # Create local SimulationTemplate
-        self._simulation_template = core.SimulationTemplate(name=name, description=description, metadata=metadata)
+        if simulation_instance is None:
+            # Create local SimulationTemplate
+            self._simulation_template = core.SimulationTemplate(name=name, description=description, metadata=metadata)
 
-        # Create local SimulationInstance
-        self._simulation_instance = core.Scene.SimulationInstance(name=name, description=description, metadata=metadata)
+            # Create local SimulationInstance
+            self._simulation_instance = core.Scene.SimulationInstance(name=name, description=description, metadata=metadata)
+        else:
+            self._unique_id = simulation_instance.metadata["UniqueId"]
+            self.simulation_template_link = self._project.client.get_item(key=simulation_instance.simulation_guid)
+            self.reset()
 
         # Create local Job
-        self._job = core.Job(
-            name=self._name + ".Job", description=description, metadata=metadata, simulation_path=self._simulation_instance.name
-        )
+        self._job = core.Job(name=self._name, description=description, metadata=metadata, simulation_path=self._simulation_instance.name)
         if self._project.scene_link is not None:
             self._job.scene_guid = self._project.scene_link.key
 
@@ -421,9 +431,10 @@ class Direct(BaseSimulation):
         name: str,
         description: str = "",
         metadata: Mapping[str, str] = {},
+        simulation_instance: Optional[core.Scene.SimulationInstance] = None,
         default_values: bool = True,
     ) -> None:
-        super().__init__(project=project, name=name, description=description, metadata=metadata)
+        super().__init__(project=project, name=name, description=description, metadata=metadata, simulation_instance=simulation_instance)
         self._direct_template = self._simulation_template.direct_mc_simulation_template
         self._direct_props_from_job = self._job.direct_mc_simulation_properties
 
@@ -664,9 +675,10 @@ class Inverse(BaseSimulation):
         name: str,
         description: str = "",
         metadata: Mapping[str, str] = {},
+        simulation_instance: Optional[core.Scene.SimulationInstance] = None,
         default_values: bool = True,
     ) -> None:
-        super().__init__(project=project, name=name, description=description, metadata=metadata)
+        super().__init__(project=project, name=name, description=description, metadata=metadata, simulation_instance=simulation_instance)
         self._inverse_template = self._simulation_template.inverse_mc_simulation_template
         self._inverse_props_from_job = self._job.inverse_mc_simulation_properties
 
@@ -975,9 +987,10 @@ class Interactive(BaseSimulation):
         name: str,
         description: str = "",
         metadata: Mapping[str, str] = {},
+        simulation_instance: Optional[core.Scene.SimulationInstance] = None,
         default_values: bool = True,
     ) -> None:
-        super().__init__(project=project, name=name, description=description, metadata=metadata)
+        super().__init__(project=project, name=name, description=description, metadata=metadata, simulation_instance=simulation_instance)
         self._interactive_template = self._simulation_template.interactive_simulation_template
         self._interactive_props_from_job = self._job.interactive_simulation_properties
 
