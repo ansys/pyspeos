@@ -505,14 +505,12 @@ ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.p
 
         for src_inst in scene_data.sources:
             if src_inst.HasField("rayfile_properties"):
-                src_feat = self.create_source(name=src_inst.name, feature_type=source.RayFile)
-                src_feat._fill(src_inst=src_inst)
+                src_feat = source.RayFile(project=self, name=src_inst.name, source_instance=src_inst, default_values=False)
             elif src_inst.HasField("luminaire_properties"):
-                src_feat = self.create_source(name=src_inst.name, feature_type=source.Luminaire)
-                src_feat._fill(src_inst=src_inst)
+                src_feat = source.Luminaire(project=self, name=src_inst.name, source_instance=src_inst, default_values=False)
             elif src_inst.HasField("surface_properties"):
-                src_feat = self.create_source(name=src_inst.name, feature_type=source.Surface)
-                src_feat._fill(src_inst=src_inst)
+                src_feat = source.Surface(project=self, name=src_inst.name, source_instance=src_inst, default_values=False)
+            self._features.append(src_feat)
 
         for ssr_inst in scene_data.sensors:
             if ssr_inst.HasField("irradiance_properties"):

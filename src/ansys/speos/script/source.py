@@ -23,7 +23,7 @@
 """Provides a way to interact with Speos feature: Source."""
 from __future__ import annotations
 
-from typing import List, Mapping, Union
+from typing import List, Mapping, Optional, Union
 import uuid
 
 from ansys.speos import core as core
@@ -40,18 +40,30 @@ src_type_change_error = "A source feature can't change its type. Please delete t
 
 
 class BaseSource:
-    def __init__(self, project: project.Project, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> None:
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Mapping[str, str] = {},
+        source_instance: Optional[core.Scene.SourceInstance] = None,
+    ) -> None:
         self._project = project
         self._name = name
         self._unique_id = None
         self.source_template_link = None
         """Link object for the source template in database."""
 
-        # Create local SourceTemplate
-        self._source_template = core.SourceTemplate(name=name, description=description, metadata=metadata)
+        if source_instance is None:
+            # Create local SourceTemplate
+            self._source_template = core.SourceTemplate(name=name, description=description, metadata=metadata)
 
-        # Create local SourceInstance
-        self._source_instance = core.Scene.SourceInstance(name=name, description=description, metadata=metadata)
+            # Create local SourceInstance
+            self._source_instance = core.Scene.SourceInstance(name=name, description=description, metadata=metadata)
+        else:
+            self._unique_id = source_instance.metadata["UniqueId"]
+            self.source_template_link = self._project.client.get_item(key=source_instance.source_guid)
+            self._reset()
 
     class _Spectrum:
         def __init__(
@@ -287,9 +299,10 @@ class Luminaire(BaseSource):
         name: str,
         description: str = "",
         metadata: Mapping[str, str] = {},
+        source_instance: Optional[core.Scene.SourceInstance] = None,
         default_values: bool = True,
     ) -> None:
-        super().__init__(project, name, description, metadata)
+        super().__init__(project=project, name=name, description=description, metadata=metadata, source_instance=source_instance)
         self._luminaire = self._source_template.luminaire
         self._luminaire_props = self._source_instance.luminaire_properties
         self._spectrum = self._Spectrum(
@@ -434,9 +447,10 @@ class RayFile(BaseSource):
         name: str,
         description: str = "",
         metadata: Mapping[str, str] = {},
+        source_instance: Optional[core.Scene.SourceInstance] = None,
         default_values: bool = True,
     ) -> None:
-        super().__init__(project, name, description, metadata)
+        super().__init__(project=project, name=name, description=description, metadata=metadata, source_instance=source_instance)
         self._client = self._project.client
         self._ray_file = self._source_template.rayfile
         self._ray_file_props = self._source_instance.rayfile_properties
@@ -681,9 +695,10 @@ class Surface(BaseSource):
         name: str,
         description: str = "",
         metadata: Mapping[str, str] = {},
+        source_instance: Optional[core.Scene.SourceInstance] = None,
         default_values: bool = True,
     ) -> None:
-        super().__init__(project=project, name=name, description=description, metadata=metadata)
+        super().__init__(project=project, name=name, description=description, metadata=metadata, source_instance=source_instance)
         self._speos_client = self._project.client
         self._surface = self._source_template.surface
         self._name = name
