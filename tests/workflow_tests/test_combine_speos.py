@@ -82,6 +82,37 @@ def test_combine_speos(speos: Speos):
     assert mat_rc1._material_instance.geometries.geo_paths[0].startswith("RedCar/")
 
 
+def test_modify_parts_after_combine(speos: Speos):
+    """Test combining several speos files, and modify parts after that."""
+    # Combine several speos files into a new project - only geometries + materials are retrieved
+    p = combine_speos(
+        speos=speos,
+        speos_to_combine=[
+            SpeosFileInstance(
+                speos_file=os.path.join(test_path, "Env_Simplified.speos", "Env_Simplified.speos"),
+                axis_system=[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+            ),
+            SpeosFileInstance(
+                speos_file=os.path.join(test_path, "BlueCar.speos", "BlueCar.speos"),
+                axis_system=[2000, 0, 35000, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+            ),
+            SpeosFileInstance(
+                speos_file=os.path.join(test_path, "RedCar.speos", "RedCar.speos"),
+                axis_system=[-4000, 0, 48000, 1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0],
+            ),
+        ],
+    )
+
+    # Look for a specific sub part
+    blue_car_sub_part = p.find(name="BlueCar", feature_type=script.Part.SubPart)[0]
+    blue_car_sub_part.set_axis_system([2000, 0.0, 20000, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0, 0.0])
+    blue_car_sub_part.commit()
+
+    for sp in blue_car_sub_part._parent_part.part_link.get().parts:
+        if sp.name == "BlueCar":
+            assert sp.axis_system == [2000, 0.0, 20000, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
+
+
 def test_insert_speos(speos: Speos):
     """Test inserting several speos files in an existing project."""
     # Create a project from a speos file
