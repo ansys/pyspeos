@@ -435,12 +435,12 @@ def test_create_irradiance_sensor(speos: Speos):
     assert sensor1._sensor_instance.irradiance_properties.ray_file_type == sensor1._sensor_instance.EnumRayFileType.RayFileNone
 
     # layer_type_source
-    sensor1.set_layer_type("source")
+    sensor1.set_layer_type_source()
     sensor1.commit()
     assert sensor1._sensor_instance.irradiance_properties.HasField("layer_type_source")
 
     # layer_type_face
-    sensor1.set_layer_type("Face").set_sca_filtering_mode_intersected_one_time().set_layers(
+    sensor1.set_layer_type_face().set_sca_filtering_mode_intersected_one_time().set_layers(
         values=[
             script.sensor.BaseSensor.FaceLayer(name="Layer.1", geometries=[script.GeoRef.from_native_link("TheBodyB")]),
             script.sensor.BaseSensor.FaceLayer(
@@ -464,7 +464,7 @@ def test_create_irradiance_sensor(speos: Speos):
         "TheBodyC/TheFaceC2",
     ]
 
-    sensor1.set_layer_type("face").set_sca_filtering_mode_last_impact()
+    sensor1.layer.set_sca_filtering_mode_last_impact()
     sensor1.commit()
     assert (
         sensor1._sensor_instance.irradiance_properties.layer_type_face.sca_filtering_mode
@@ -472,7 +472,7 @@ def test_create_irradiance_sensor(speos: Speos):
     )
 
     # layer_type_sequence
-    sensor1.set_layer_type("sequence").set_maximum_nb_of_sequence(value=5).set_define_sequence_per_faces()
+    sensor1.set_layer_type_sequence().set_maximum_nb_of_sequence(value=5).set_define_sequence_per_faces()
     sensor1.commit()
     assert sensor1._sensor_instance.irradiance_properties.HasField("layer_type_sequence")
     assert sensor1._sensor_instance.irradiance_properties.layer_type_sequence.maximum_nb_of_sequence == 5
@@ -489,18 +489,18 @@ def test_create_irradiance_sensor(speos: Speos):
     )
 
     # layer_type_polarization
-    sensor1.set_layer_type("polarization")
+    sensor1.set_layer_type_polarization()
     sensor1.commit()
     assert sensor1._sensor_instance.irradiance_properties.HasField("layer_type_polarization")
 
     # layer_type_incidence_angle
-    sensor1.set_layer_type("incidence_angle").set_sampling(value=8)
+    sensor1.set_layer_type_incidence_angle().set_sampling(value=8)
     sensor1.commit()
     assert sensor1._sensor_instance.irradiance_properties.HasField("layer_type_incidence_angle")
     assert sensor1._sensor_instance.irradiance_properties.layer_type_incidence_angle.sampling == 8
 
     # layer_type_none
-    sensor1.set_layer_type()
+    sensor1.set_layer_type_none()
     sensor1.commit()
     assert sensor1._sensor_instance.irradiance_properties.HasField("layer_type_none")
 
@@ -607,12 +607,12 @@ def test_create_radiance_sensor(speos: Speos):
     assert sensor1._sensor_instance.radiance_properties.observer_point == []
 
     # layer_type_source
-    sensor1.set_layer_type("source")
+    sensor1.set_layer_type_source()
     sensor1.commit()
     assert sensor1._sensor_instance.radiance_properties.HasField("layer_type_source")
 
     # layer_type_face
-    sensor1.set_layer_type("FaCe").set_sca_filtering_mode_intersected_one_time().set_layers(
+    sensor1.set_layer_type_face().set_sca_filtering_mode_intersected_one_time().set_layers(
         values=[
             script.sensor.BaseSensor.FaceLayer(name="Layer.1", geometries=[script.GeoRef.from_native_link("TheBodyB")]),
             script.sensor.BaseSensor.FaceLayer(
@@ -637,7 +637,7 @@ def test_create_radiance_sensor(speos: Speos):
     ]
 
     # layer_type_face -> chose other filtering mode
-    sensor1.set_layer_type("FACE").set_sca_filtering_mode_last_impact()
+    sensor1.set_layer_type_face().set_sca_filtering_mode_last_impact()
     sensor1.commit()
     assert (
         sensor1._sensor_instance.radiance_properties.layer_type_face.sca_filtering_mode
@@ -645,12 +645,12 @@ def test_create_radiance_sensor(speos: Speos):
     )
 
     # layer_type_face -> clear layers list
-    sensor1.set_layer_type("fAcE").set_layers(values=[])  # clear layers list
+    sensor1.layer.set_layers(values=[])  # clear layers list
     sensor1.commit()
     assert len(sensor1._sensor_instance.radiance_properties.layer_type_face.layers) == 0
 
     # layer_type_sequence
-    sensor1.set_layer_type("sequence").set_maximum_nb_of_sequence(value=5).set_define_sequence_per_faces()
+    sensor1.set_layer_type_sequence().set_maximum_nb_of_sequence(value=5).set_define_sequence_per_faces()
     sensor1.commit()
     assert sensor1._sensor_instance.radiance_properties.HasField("layer_type_sequence")
     assert sensor1._sensor_instance.radiance_properties.layer_type_sequence.maximum_nb_of_sequence == 5
@@ -667,7 +667,7 @@ def test_create_radiance_sensor(speos: Speos):
     )
 
     # layer_type_none
-    sensor1.set_layer_type()
+    sensor1.set_layer_type_none()
     sensor1.commit()
     assert sensor1._sensor_instance.radiance_properties.HasField("layer_type_none")
 

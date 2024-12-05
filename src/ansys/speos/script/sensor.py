@@ -1737,60 +1737,92 @@ class Irradiance(BaseSensor):
         self._irradiance_props.ray_file_type = core.Scene.SensorInstance.EnumRayFileType.RayFileTM25NoPolarization
         return self
 
-    def set_layer_type(
-        self, layer_type=None
-    ) -> Union[Irradiance, Irradiance._LayerTypeFace, Irradiance._LayerTypeSequence, Irradiance._LayerTypeIncidenceAngle]:
+    def set_layer_type_none(self) -> Irradiance:
         """
-
+        defines layer separation type as None
         Parameters
         ----------
-        layer_type : str
-            defines separation type on of these values:
-            ['face', 'source', 'sequence', 'polarization', 'incidence_angle']
 
         Returns
         -------
-            either self or self.layer_type-> Irradiance._LayerType
+            irradiance class instance
 
         """
-        if not layer_type:
-            self._irradiance_props.layer_type_none.SetInParent()
-            self._layer_type = None
-            return self
-        elif layer_type.lower() not in self.LAYER_TYPES:
-            raise TypeError("Not supported layer type please choose on of {}".format(self.LAYER_TYPES))
-        elif layer_type.lower() == "source":
-            self._irradiance_props.layer_type_source.SetInParent()
-            self._layer_type = None
-            return self
-        elif layer_type.lower() == "face":
-            if self._layer_type is None and self._irradiance_props.HasField("layer_type_face"):
-                self._layer_type = Irradiance._LayerTypeFace(layer_type_face=self._irradiance_props.layer_type_face, default_values=False)
-            elif self._layer_type != Irradiance._LayerTypeFace:
-                self._layer_type = Irradiance._LayerTypeFace(layer_type_face=self._irradiance_props.layer_type_face)
-            return self._layer_type
-        elif layer_type.lower() == "sequence":
-            if self._layer_type is None and self._irradiance_props.HasField("layer_type_sequence"):
-                self._layer_type = Irradiance._LayerTypeSequence(
-                    layer_type_sequence=self._irradiance_props.layer_type_sequence, default_values=False
-                )
-            elif self._layer_type != Irradiance._LayerTypeSequence:
-                self._layer_type = Irradiance._LayerTypeSequence(layer_type_sequence=self._irradiance_props.layer_type_sequence)
-            return self._layer_type
-        elif layer_type.lower() == "polarization":
-            self._irradiance_props.layer_type_polarization.SetInParent()
-            self._layer_type = None
-            return self
-        elif layer_type.lower() == "incidence_angle":
-            if self._layer_type is None and self._irradiance_props.HasField("layer_type_incidence_angle"):
-                self._layer_type = Irradiance._LayerTypeIncidenceAngle(
-                    layer_type_incidence_angle=self._irradiance_props.layer_type_incidence_angle, default_values=False
-                )
-            elif self._layer_type != Irradiance._LayerTypeIncidenceAngle:
-                self._layer_type = Irradiance._LayerTypeIncidenceAngle(
-                    layer_type_incidence_angle=self._irradiance_props.layer_type_incidence_angle
-                )
-            return self._layer_type
+        self._irradiance_props.layer_type_none.SetInParent()
+        self._layer_type = None
+        return self
+
+    def set_layer_type_source(self) -> Irradiance:
+        """
+        defines layer separation as by source
+        Parameters
+        ----------
+
+        Returns
+        -------
+           irradiance class instance
+
+        """
+        self._irradiance_props.layer_type_source.SetInParent()
+        self._layer_type = None
+        return self
+
+    def set_layer_type_face(self) -> Irradiance._LayerTypeFace:
+        """
+        define layertype as by face
+        Returns
+        -------
+            LayerTypeFace property instance
+        """
+        if self._layer_type is None and self._irradiance_props.HasField("layer_type_face"):
+            self._layer_type = Irradiance._LayerTypeFace(layer_type_face=self._irradiance_props.layer_type_face, default_values=False)
+        elif self._layer_type != Irradiance._LayerTypeFace:
+            self._layer_type = Irradiance._LayerTypeFace(layer_type_face=self._irradiance_props.layer_type_face)
+        return self._layer_type
+
+    def set_layer_type_sequence(self) -> Irradiance._LayerTypeSequence:
+        """
+        define layertype as by sequence
+        Returns
+        -------
+            LayerTypeSequence property instance
+        """
+        if self._layer_type is None and self._irradiance_props.HasField("layer_type_sequence"):
+            self._layer_type = Irradiance._LayerTypeSequence(
+                layer_type_sequence=self._irradiance_props.layer_type_sequence, default_values=False
+            )
+        elif self._layer_type != Irradiance._LayerTypeSequence:
+            self._layer_type = Irradiance._LayerTypeSequence(layer_type_sequence=self._irradiance_props.layer_type_sequence)
+        return self._layer_type
+
+    def set_layer_type_polarization(self) -> Irradiance._LayerTypeSequence:
+        """
+        define layertype as by polarization
+        Returns
+        -------
+            Irradiance class instance
+        """
+
+        self._irradiance_props.layer_type_polarization.SetInParent()
+        self._layer_type = None
+        return self
+
+    def set_layer_type_incidence_angle(self):
+        """
+        define layertype as by incidence angle
+        Returns
+        -------
+            LayerTypeIncidenceAngle property instance
+        """
+        if self._layer_type is None and self._irradiance_props.HasField("layer_type_incidence_angle"):
+            self._layer_type = Irradiance._LayerTypeIncidenceAngle(
+                layer_type_incidence_angle=self._irradiance_props.layer_type_incidence_angle, default_values=False
+            )
+        elif self._layer_type != Irradiance._LayerTypeIncidenceAngle:
+            self._layer_type = Irradiance._LayerTypeIncidenceAngle(
+                layer_type_incidence_angle=self._irradiance_props.layer_type_incidence_angle
+            )
+        return self._layer_type
 
     def set_output_face_geometries(self, geometries: List[GeoRef] = []) -> Irradiance:
         """Select output faces for inverse simulation optimization.
@@ -2029,41 +2061,60 @@ class Radiance(BaseSensor):
             self._radiance_props.observer_point[:] = value
         return self
 
-    def set_layer_type(self, layer_type=None) -> Union[Radiance, Radiance._LayerTypeFace, Radiance._LayerTypeSequence]:
+    def set_layer_type_none(self) -> Radiance:
         """
-
+        defines layer separation type as None
         Parameters
         ----------
-        layer_type : str
-            defines separation type on of these values:
-            ['face', 'source', 'sequence']
 
         Returns
         -------
-            either self or self.layer_type-> Irradiance._LayerType
+            irradiance class instance
 
         """
-        if not layer_type:
-            self._radiance_props.layer_type_none.SetInParent()
-            self._layer_type = None
-            return self
-        elif layer_type.lower() not in self.LAYER_TYPES:
-            raise TypeError("Not supported layer type please choose on of {}".format(self.LAYER_TYPES))
-        elif layer_type.lower() == "source":
-            self._radiance_props.layer_type_source.SetInParent()
-            self._layer_type = None
-            return self
-        elif layer_type.lower() == "face":
-            if self._layer_type is None and self._radiance_props.HasField("layer_type_face"):
-                self._layer_type = Irradiance._LayerTypeFace(layer_type_face=self._radiance_props.layer_type_face, default_values=False)
-            elif self._layer_type != Irradiance._LayerTypeFace:
-                self._layer_type = Irradiance._LayerTypeFace(layer_type_face=self._radiance_props.layer_type_face)
-            return self._layer_type
-        elif layer_type.lower() == "sequence":
-            if self._layer_type is None and self._radiance_props.HasField("layer_type_sequence"):
-                self._layer_type = Irradiance._LayerTypeSequence(
-                    layer_type_sequence=self._radiance_props.layer_type_sequence, default_values=False
-                )
-            elif self._layer_type != Irradiance._LayerTypeSequence:
-                self._layer_type = Irradiance._LayerTypeSequence(layer_type_sequence=self._radiance_props.layer_type_sequence)
-            return self._layer_type
+        self._radiance_props.layer_type_none.SetInParent()
+        self._layer_type = None
+        return self
+
+    def set_layer_type_source(self) -> Radiance:
+        """
+        defines layer separation as by source
+        Parameters
+        ----------
+
+        Returns
+        -------
+           irradiance class instance
+
+        """
+        self._radiance_props.layer_type_source.SetInParent()
+        self._layer_type = None
+        return self
+
+    def set_layer_type_face(self) -> Radiance._LayerTypeFace:
+        """
+        define layertype as by face
+        Returns
+        -------
+            LayerTypeFace property instance
+        """
+        if self._layer_type is None and self._radiance_props.HasField("layer_type_face"):
+            self._layer_type = Radiance._LayerTypeFace(layer_type_face=self._radiance_props.layer_type_face, default_values=False)
+        elif self._layer_type != Radiance._LayerTypeFace:
+            self._layer_type = Radiance._LayerTypeFace(layer_type_face=self._radiance_props.layer_type_face)
+        return self._layer_type
+
+    def set_layer_type_sequence(self) -> Radiance._LayerTypeSequence:
+        """
+        define layertype as by sequence
+        Returns
+        -------
+            LayerTypeSequence property instance
+        """
+        if self._layer_type is None and self._radiance_props.HasField("layer_type_sequence"):
+            self._layer_type = Irradiance._LayerTypeSequence(
+                layer_type_sequence=self._radiance_props.layer_type_sequence, default_values=False
+            )
+        elif self._layer_type != Radiance._LayerTypeSequence:
+            self._layer_type = Radiance._LayerTypeSequence(layer_type_sequence=self._radiance_props.layer_type_sequence)
+        return self._layer_type
