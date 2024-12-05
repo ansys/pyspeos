@@ -20,30 +20,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from glob import glob
 import os.path
 
 from nbconvert.preprocessors import ExecutePreprocessor
 import nbformat
+import pytest
 
 from conftest import notebook_path
 
-NOTEBOOKS = [
-    "core_modify_camera.ipynb",
-    "core_object_link.ipynb",
-    "core_scene_job.ipynb",
-    "script_intensity.ipynb",
-    "script_lpf_preview.ipynb",
-    "script_opt_prop.ipynb",
-    "script_part.ipynb",
-    "script_prism_example.ipynb",
-    "script_project.ipynb",
-    "script_sensor.ipynb",
-    "script_simulation.ipynb",
-    "script_source.ipynb",
-    "script_spectrum.ipynb",
-    "workflow_combine_speos_cars.ipynb",
-    "workflow_open_result.ipynb",
-]
+NOTEBOOKS = glob(os.path.join(notebook_path, "*.ipynb"))
 
 
 def run_jupyter(notebook):
@@ -56,7 +42,6 @@ def run_jupyter(notebook):
             assert False, f"Failed executing {notebook}"
 
 
-def test_notebooks():
-    for note_book in NOTEBOOKS:
-        print("Running: " + note_book)
-        run_jupyter(os.path.join(notebook_path, note_book))
+@pytest.mark.parametrize("notebook", NOTEBOOKS)
+def test_notebook(notebook):
+    run_jupyter(notebook)
