@@ -25,7 +25,7 @@ import os.path
 from nbconvert.preprocessors import ExecutePreprocessor
 import nbformat
 
-from conftest import test_path
+from conftest import notebook_path
 
 NOTEBOOKS = [
     "core_modify_camera.ipynb",
@@ -57,7 +57,6 @@ def run_jupyter(notebook):
 
 
 def test_notebooks():
-    note_book_path = os.path.join(os.path.split(os.path.split(test_path)[0])[0], "jupyter_notebooks")
     for note_book in NOTEBOOKS:
         print("Running: " + note_book)
-        run_jupyter(os.path.join(note_book_path, note_book))
+        run_jupyter(os.path.join(notebook_path, note_book))
