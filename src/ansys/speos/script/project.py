@@ -583,10 +583,7 @@ ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.p
 
         part_coordinate = [0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
         if part_coordinate_info is not None:
-            part_coordinate.origin = part_coordinate_info[:3]
-            part_coordinate.x_vect = part_coordinate_info[3:6]
-            part_coordinate.y_vect = part_coordinate_info[6:9]
-            part_coordinate.z_vect = part_coordinate_info[9:]
+            part_coordinate = part_coordinate_info
         part_mesh_info = None
         for body_idx, body_guid in enumerate(part_data.body_guids):
             body_item_data = self.client.get_item(body_guid).get()

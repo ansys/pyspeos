@@ -58,7 +58,7 @@ def test_find_feature(speos: Speos):
 
     # Create an radiance sensor in the project
     sensor3 = p.create_sensor(name="Sensor.3", feature_type=script.sensor.Radiance)
-    sensor3.set_layer_type("face")
+    sensor3.set_layer_type_face()
     sensor3.commit()
     assert len(p._features) == 4
     assert len(p.scene_link.get().sensors) == 3

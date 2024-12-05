@@ -1493,7 +1493,7 @@ class Irradiance(BaseSensor):
             # Default values template
             self.set_type_photometric().set_illuminance_type_planar()
             # Default values properties
-            self.set_axis_system().set_ray_file_type_none().set_layer_type()
+            self.set_axis_system().set_ray_file_type_none().set_layer_type_none()
 
     @property
     def dimensions(self) -> Irradiance._Dimensions:
@@ -1898,7 +1898,7 @@ class Radiance(BaseSensor):
             # Default values template
             self.set_focal().set_integration_angle().set_type_photometric()
             # Default values properties
-            self.set_axis_system().set_layer_type()
+            self.set_axis_system().set_layer_type_none()
 
     @property
     def dimensions(self) -> Radiance._Dimensions:
