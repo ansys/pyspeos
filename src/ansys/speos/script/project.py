@@ -143,11 +143,22 @@ class Project:
 
     def create_simulation(
         self, name: str, description: str = "", feature_type: type = simulation.Direct, metadata: Mapping[str, str] = {}
-    ) -> simulation.Simulation:
+    ) -> Union[simulation.Direct, simulation.Interactive, simulation.Inverse]:
         """Create a new Simulation feature.
 
         Parameters
         ----------
+        name : str
+            Name of the feature.
+        description : str
+            Description of the feature.
+            By default, ``""``.
+        feature_type: Optional[simulation.Direct, simulation.Interactive,simulation.Inverse]
+            simulation type
+            By default, simulation.Direct
+        metadata : Mapping[str, str]
+            Metadata of the feature.
+            By default, ``{}``.
 
         """
         feature = None
@@ -158,18 +169,16 @@ class Project:
         elif feature_type == simulation.Interactive:
             feature = simulation.Interactive(project=self, name=name, description=description, metadata=metadata)
         else:
-            print(
-                "Requested feature {} does not exist in supported list {}".format(
-                    feature_type, [simulation.Direct, simulation.Inverse, simulation.Interactive]
-                )
+            msg = "Requested feature {} does not exist in supported list {}".format(
+                feature_type, [simulation.Direct, simulation.Inverse, simulation.Interactive]
             )
-            return None
+            raise TypeError(msg)
         self._features.append(feature)
         return feature
 
     def create_sensor(
         self, name: str, description: str = "", feature_type: type = sensor.Irradiance, metadata: Mapping[str, str] = {}
-    ) -> sensor.Sensor:
+    ) -> Union[sensor.Camera, sensor.Radiance, sensor.Irradiance]:
         """Create a new Sensor feature.
 
         Parameters
@@ -179,6 +188,9 @@ class Project:
         description : str
             Description of the feature.
             By default, ``""``.
+        feature_type: Optional[sensor.Camera,sensor.Radiance,sensor.Irradiance]
+            sensor type
+            By default, sensor.Irradiance
         metadata : Mapping[str, str]
             Metadata of the feature.
             By default, ``{}``.
@@ -196,12 +208,10 @@ class Project:
         elif feature_type == sensor.Camera:
             feature = sensor.Camera(project=self, name=name, description=description, metadata=metadata)
         else:
-            print(
-                "Requested feature {} does not exist in supported list {}".format(
-                    feature_type, [sensor.Irradiance, sensor.Radiance, sensor.Camera]
-                )
+            msg = "Requested feature {} does not exist in supported list {}".format(
+                feature_type, [sensor.Irradiance, sensor.Radiance, sensor.Camera]
             )
-            return None
+            raise TypeError(msg)
         self._features.append(feature)
         return feature
 
