@@ -120,6 +120,7 @@ class LightPathFinder:
         self._sensor_names = self._data.sensor_names
         self._rays = self.__parse_traces()
         self._filtered_rays = []
+        self.__close()
 
     @property
     def nb_traces(self) -> int:
@@ -163,6 +164,9 @@ class LightPathFinder:
             Path to file
         """
         self._stub.InitLpfFileName(lpf_file_reader__v2__pb2.InitLpfFileName_Request_Mono(lpf_file_uri=path))
+
+    def __close(self):
+        self._stub.CloseLpfFileName(lpf_file_reader__v2__pb2.CloseLpfFileName_Request_Mono())
 
     def __parse_traces(self) -> list[RayPath]:
         """
