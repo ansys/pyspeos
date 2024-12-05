@@ -156,7 +156,8 @@ class Part:
 
             # Part Instance
             if self._parent_part is not None:
-                part_inst = next((x for x in self._parent_part._part.parts if x.description == "UniqueId_" + self._unique_id), None)
+                parent_part_data = self._parent_part.part_link.get()
+                part_inst = next((x for x in parent_part_data.parts if x.description == "UniqueId_" + self._unique_id), None)
                 if part_inst is not None:
                     out_dict = proto_message_utils._replace_guids(speos_client=self._speos_client, message=part_inst)
                 else:
@@ -178,7 +179,8 @@ class Part:
             out_str = ""
 
             if self._parent_part is not None:
-                part_inst = next((x for x in self._parent_part._part.parts if x.description == "UniqueId_" + self._unique_id), None)
+                parent_part_data = self._parent_part.part_link.get()
+                part_inst = next((x for x in parent_part_data.parts if x.description == "UniqueId_" + self._unique_id), None)
                 if part_inst is None:
                     out_str += "local: "
             else:
@@ -214,7 +216,9 @@ class Part:
             # Look if an element corresponds to the instance
             if self._parent_part is not None:
                 update_part = True
-                part_inst = next((x for x in self._parent_part._part.parts if x.description == "UniqueId_" + self._unique_id), None)
+                parent_part_data = self._parent_part.part_link.get()
+
+                part_inst = next((x for x in parent_part_data.parts if x.description == "UniqueId_" + self._unique_id), None)
                 if part_inst is not None:
                     if part_inst != self._part_instance:
                         part_inst.CopyFrom(self._part_instance)  # if yes, just replace
@@ -265,7 +269,8 @@ class Part:
 
             # Remove the part instance from the parent part
             if self._parent_part is not None:
-                part_inst = next((x for x in self._parent_part._part.parts if x.description == "UniqueId_" + self._unique_id), None)
+                parent_part_data = self._parent_part.part_link.get()
+                part_inst = next((x for x in parent_part_data.parts if x.description == "UniqueId_" + self._unique_id), None)
                 if part_inst is not None:
                     self._parent_part._part.parts.remove(part_inst)
                     if self._parent_part.part_link is not None:
