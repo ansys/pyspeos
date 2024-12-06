@@ -109,14 +109,13 @@ class Project:
 
         Parameters
         ----------
-
         name : str
             Name of the feature.
         description : str
             Description of the feature.
             By default, ``""``.
         feature_type: type
-            Source type  to be created
+            Source type to be created
             by default, ``ansys.speos.script.source.Surface``
             allowed types:
             Union[ansys.speos.script.source.Surface, ansys.speos.script.source.RayFile, \
@@ -158,7 +157,7 @@ class Project:
             Description of the feature.
             By default, ``""``.
         feature_type: type
-            simulation type to be created
+            Simulation type to be created.
             By default, ``ansys.speos.script.simulation.Direct``
             allowed types: Union[ansys.speos.script.simulation.Direct, ansys.speos.script.simulation.Interactive, \
             ansys.speos.script.simulation.Inverse]
@@ -198,7 +197,7 @@ class Project:
             Description of the feature.
             By default, ``""``.
         feature_type: type
-            sensor type  to be created
+            Sensor type to be created.
             By default, ``ansys.speos.script.sensor.Irradiance``
             allowed types: Union[ansys.speos.script.sensor.Camera, ansys.speos.script.sensor.Radiance, \
             ansys.speos.script.sensor.Irradiance]
