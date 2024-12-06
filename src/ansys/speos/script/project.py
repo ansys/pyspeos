@@ -116,10 +116,10 @@ class Project:
             By default, ``""``.
         feature_type: type
             Source type to be created
-            by default, ``ansys.speos.script.source.Surface``
-            allowed types:
+            by default, ``ansys.speos.script.source.Surface``.
+            Allowed types:
             Union[ansys.speos.script.source.Surface, ansys.speos.script.source.RayFile, \
-            ansys.speos.script.source.Luminaire]
+            ansys.speos.script.source.Luminaire].
         metadata : Mapping[str, str]
             Metadata of the feature.
             By default, ``{}``.
@@ -158,12 +158,13 @@ class Project:
             By default, ``""``.
         feature_type: type
             Simulation type to be created.
-            By default, ``ansys.speos.script.simulation.Direct``
-            allowed types: Union[ansys.speos.script.simulation.Direct, ansys.speos.script.simulation.Interactive, \
-            ansys.speos.script.simulation.Inverse]
+            By default, ``ansys.speos.script.simulation.Direct``.
+            Allowed types: Union[ansys.speos.script.simulation.Direct, ansys.speos.script.simulation.Interactive, \
+            ansys.speos.script.simulation.Inverse].
         metadata : Mapping[str, str]
             Metadata of the feature.
             By default, ``{}``.
+
         Returns
         -------
         Union[ansys.speos.script.simulation.Direct, ansys.speos.script.simulation.Interactive, ansys.speos.script.simulation.Inverse]
@@ -198,8 +199,8 @@ class Project:
             By default, ``""``.
         feature_type: type
             Sensor type to be created.
-            By default, ``ansys.speos.script.sensor.Irradiance``
-            allowed types: Union[ansys.speos.script.sensor.Camera, ansys.speos.script.sensor.Radiance, \
+            By default, ``ansys.speos.script.sensor.Irradiance``.
+            Allowed types: Union[ansys.speos.script.sensor.Camera, ansys.speos.script.sensor.Radiance, \
             ansys.speos.script.sensor.Irradiance]
         metadata : Mapping[str, str]
             Metadata of the feature.
@@ -384,9 +385,9 @@ class Project:
     #    """Act on feature: update, hide/show, copy, ... - Not yet implemented"""
     #    pass
 
-    # def save(self, path):
+    # def save(self):
     #     """Save class state in file given at construction - Not yet implemented"""
-    #     self.scene_link.save_file(path)
+    #     pass
 
     def delete(self) -> Project:
         """Delete project: erase scene data.
