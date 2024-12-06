@@ -117,17 +117,18 @@ class Project:
             By default, ``""``.
         feature_type: type
             Source type  to be created
-            by default, source.Surface
+            by default, ansys.speos.script.source.Surface
             allowed type values:
-            Union[source.Surface, source.RayFile, source.Luminaire]
+            Union[ansys.speos.script.source.Surface, ansys.speos.script.source.RayFile, \
+            ansys.speos.script.source.Luminaire]
         metadata : Mapping[str, str]
             Metadata of the feature.
             By default, ``{}``.
 
         Returns
         -------
-        Union[source.Surface, source.RayFile, source.Luminaire]
-            Source class Instance.
+        Union[ansys.speos.script.source.Surface, ansys.speos.script.source.RayFile, ansys.speos.script.source.Luminaire]
+            Source class instance.
         """
         feature = None
         if feature_type == source.Surface:
@@ -159,13 +160,14 @@ class Project:
         feature_type: type
             simulation type to be created
             By default, simulation.Direct
-            allowed values, Union[simulation.Direct, simulation.Interactive,simulation.Inverse]
+            allowed values, Union[ansys.speos.script.simulation.Direct, ansys.speos.script.simulation.Interactive, \
+            ansys.speos.script.simulation.Inverse]
         metadata : Mapping[str, str]
             Metadata of the feature.
             By default, ``{}``.
         Returns
         -------
-        Union[simulation.Direct, simulation.Interactive, simulation.Inverse]
+        Union[ansys.speos.script.simulation.Direct, ansys.speos.script.simulation.Interactive, ansys.speos.script.simulation.Inverse]
             Simulation class instance
         """
         feature = None
@@ -197,16 +199,17 @@ class Project:
             By default, ``""``.
         feature_type: type
             sensor type  to be created
-            By default, sensor.Irradiance
-            allowed values: Union[sensor.Camera, sensor.Radiance, sensor.Irradiance]
+            By default, ansys.speos.script.sensor.Irradiance
+            allowed values: Union[ansys.speos.script.sensor.Camera, ansys.speos.script.sensor.Radiance, \
+            ansys.speos.script.sensor.Irradiance]
         metadata : Mapping[str, str]
             Metadata of the feature.
             By default, ``{}``.
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor
-            Sensor feature.
+        Union[ansys.speos.script.sensor.Camera, ansys.speos.script.sensor.Radiance, ansys.speos.script.sensor.Irradiance]
+            Sensor class instance.
         """
         feature = None
         if feature_type == sensor.Irradiance:
@@ -285,9 +288,12 @@ class Project:
 
         Returns
         -------
-        List[Union[ansys.speos.script.opt_prop.OptProp, ansys.speos.script.source.Source, ansys.speos.script.sensor.Sensor, \
-ansys.speos.script.simulation.Simulation, ansys.speos.script.part.Part, \
-ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.part.Part.SubPart]]
+        List[Union[ansys.speos.script.opt_prop.OptProp, ansys.speos.script.source.Surface, \
+        ansys.speos.script.source.RayFile, ansys.speos.script.source.Luminaireansys.speos.script.sensor.Camera, \
+        ansys.speos.script.sensor.Radiance, ansys.speos.script.sensor.Irradiance, \
+        ansys.speos.script.simulation.Direct, ansys.speos.script.simulation.Interactive, \
+        ansys.speos.script.simulation.Inverse, ansys.speos.script.part.Part, ansys.speos.script.body.Body, \
+        ansys.speos.script.face.Face, ansys.speos.script.part.Part.SubPart]]
             Found features.
 
         Examples

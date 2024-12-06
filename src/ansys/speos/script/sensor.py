@@ -1569,6 +1569,16 @@ class Irradiance(BaseSensor):
         """
         return self._layer_type
 
+    def set_dimensions(self):
+        """
+        Set the dimensions of the sensor
+        Returns
+        -------
+        ansys.speos.script.sensor.Irradiance._Dimensions
+            Dimension class
+        """
+        return self._sensor_dimensions
+
     def set_type_photometric(self) -> Irradiance:
         """Set type photometric.
         The sensor considers the visible spectrum and gets the results in lm/m2 or lx.
@@ -2008,6 +2018,16 @@ class Radiance(BaseSensor):
             Instance of Layer type Class for this sensor feature
         """
         return self._layer_type
+
+    def set_dimensions(self):
+        """
+        Set the dimensions of the sensor
+        Returns
+        -------
+        ansys.speos.script.sensor.Radiance._Dimensions
+            Dimension class
+        """
+        return self._sensor_dimensions
 
     def set_type_photometric(self) -> Radiance:
         """Set type photometric.
