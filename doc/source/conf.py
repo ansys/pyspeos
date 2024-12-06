@@ -92,6 +92,55 @@ master_doc = "index"
 suppress_warnings = ["autoapi"]
 autodoc_typehints = "description"
 
+# -- Declare the Jinja context -----------------------------------------------
+extensions.extend(["myst_parser", "nbsphinx"])
+nbsphinx_execute = "always"
+nbsphinx_custom_formats = {
+    ".mystnb": ["jupytext.reads", {"fmt": "mystnb"}],
+    ".py": ["jupytext.reads", {"fmt": ""}],
+}
+nbsphinx_prompt_width = ""
+nbsphinx_prolog = """
+
+.. grid:: 3
+    :gutter: 1
+
+    .. grid-item::
+        :child-align: center
+
+        .. button-link:: {cname_pref}/{python_file_loc}
+           :color: primary
+           :shadow:
+
+            Download as Python script :fab:`python`
+
+    .. grid-item::
+        :child-align: center
+
+        .. button-link:: {cname_pref}/{ipynb_file_loc}
+           :color: primary
+           :shadow:
+
+            Download as Jupyter notebook :fas:`book`
+
+    .. grid-item::
+        :child-align: center
+
+        .. button-link:: {cname_pref}/{pdf_file_loc}
+           :color: primary
+           :shadow:
+
+            Download as PDF document :fas:`file-pdf`
+
+----
+
+    """.format(
+    cname_pref=f"https://{cname}/version/{get_version_match(version)}",
+    python_file_loc="{{ env.docname }}.py",
+    ipynb_file_loc="{{ env.docname }}.ipynb",
+    pdf_file_loc="{{ env.docname }}.pdf",
+)
+
 jinja_contexts = {
     "linux_containers": {},
 }
