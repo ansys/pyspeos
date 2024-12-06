@@ -703,12 +703,21 @@ def test_reset_sensor(speos: Speos):
     sensor1 = p.create_sensor(name="Sensor.1", feature_type=script.sensor.Irradiance)
     sensor1.commit()
     assert sensor1.sensor_template_link is not None
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.dimensions.x_start == -50
+    assert sensor1._sensor_instance.irradiance_properties.axis_system == [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     assert sensor1.sensor_template_link.get().HasField("irradiance_sensor_template")
     assert len(p.scene_link.get().sensors) == 1
     assert p.scene_link.get().sensors[0].HasField("irradiance_properties")
-
+    sensor1.set_dimensions().set_x_start(0)
+    sensor1.set_axis_system([1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    assert sensor1._sensor_instance.irradiance_properties.axis_system == [1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    assert sensor1._sensor_template.irradiance_sensor_template.dimensions.x_start == 0
     # Ask for reset
     sensor1.reset()
+    assert sensor1._sensor_instance.irradiance_properties.axis_system != [1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    assert sensor1._sensor_template.irradiance_sensor_template.dimensions.x_start != 0
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.dimensions.x_start == -50
+    assert sensor1._sensor_instance.irradiance_properties.axis_system == [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     assert sensor1.sensor_template_link.get().HasField("irradiance_sensor_template")
     assert sensor1._sensor_template.HasField("irradiance_sensor_template")  # local template
     assert p.scene_link.get().sensors[0].HasField("irradiance_properties")
