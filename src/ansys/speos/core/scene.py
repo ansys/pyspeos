@@ -106,6 +106,17 @@ class SceneLink(CrudItem):
         """
         self._actions_stub.LoadFile(messages.LoadFile_Request(guid=self.key, file_uri=file_uri))
 
+    # def save_file(self, file_uri: str) -> None:
+    #     """
+    #     Save speos file to disk
+    #
+    #     Parameters
+    #     ----------
+    #     file_uri : str
+    #         File to be loaded.
+    #     """
+    #     self._actions_stub.LoadFile(messages.SaveFile_Request(guid=self.key, file_uri=file_uri))
+
     def get_source_ray_paths(self, source_path: str, rays_nb: int = 100) -> Iterator[RayPath]:
         """
         Retrieve source ray paths.

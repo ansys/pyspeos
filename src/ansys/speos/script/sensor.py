@@ -186,7 +186,7 @@ class BaseSensor:
 
             Returns
             -------
-            ansys.speos.script.sensor.Sensor.Dimensions
+            ansys.speos.script.sensor.BaseSensor._Dimensions
                 Dimensions.
             """
             self._sensor_dimensions.x_start = value
@@ -203,7 +203,7 @@ class BaseSensor:
 
             Returns
             -------
-            ansys.speos.script.sensor.Sensor.Dimensions
+            ansys.speos.script.sensor.BaseSensor._Dimensions
                 Dimensions.
             """
             self._sensor_dimensions.x_end = value
@@ -220,7 +220,7 @@ class BaseSensor:
 
             Returns
             -------
-            ansys.speos.script.sensor.Sensor.Dimensions
+            ansys.speos.script.sensor.BaseSensor._Dimensions
                 Dimensions.
             """
             self._sensor_dimensions.x_sampling = value
@@ -237,7 +237,7 @@ class BaseSensor:
 
             Returns
             -------
-            ansys.speos.script.sensor.Sensor.Dimensions
+            ansys.speos.script.sensor.BaseSensor._Dimensions
                 Dimensions.
             """
             self._sensor_dimensions.y_start = value
@@ -254,7 +254,7 @@ class BaseSensor:
 
             Returns
             -------
-            ansys.speos.script.sensor.Sensor.Dimensions
+            ansys.speos.script.sensor.BaseSensor._Dimensions
                 Dimensions.
             """
             self._sensor_dimensions.y_end = value
@@ -271,7 +271,7 @@ class BaseSensor:
 
             Returns
             -------
-            ansys.speos.script.sensor.Sensor.Dimensions
+            ansys.speos.script.sensor.BaseSensor._Dimensions
                 Dimensions.
             """
             self._sensor_dimensions.y_sampling = value
@@ -307,7 +307,7 @@ class BaseSensor:
 
             Returns
             -------
-            ansys.speos.script.sensor.Sensor.WavelengthsRange
+            ansys.speos.script.sensor.BaseSensor._WavelengthsRange
                 Wavelengths range.
             """
             return self._wavelengths_range
@@ -342,7 +342,7 @@ class BaseSensor:
 
             Returns
             -------
-            ansys.speos.script.sensor.Sensor.WavelengthsRange
+            ansys.speos.script.sensor.BaseSensor._WavelengthsRange
                 Wavelengths range.
             """
             return self._wavelengths_range
@@ -389,7 +389,7 @@ class BaseSensor:
 
             Returns
             -------
-            ansys.speos.script.sensor.Sensor.LayerTypeFace
+            ansys.speos.script.sensor.BaseSensor._LayerTypeFace
                 LayerTypeFace.
             """
             self._layer_type_face.sca_filtering_mode = self._layer_type_face.EnumSCAFilteringType.IntersectedOneTime
@@ -400,7 +400,7 @@ class BaseSensor:
 
             Returns
             -------
-            ansys.speos.script.sensor.Sensor.LayerTypeFace
+            ansys.speos.script.sensor.BaseSensor._LayerTypeFace
                 LayerTypeFace.
             """
             self._layer_type_face.sca_filtering_mode = self._layer_type_face.EnumSCAFilteringType.LastImpact
@@ -411,12 +411,12 @@ class BaseSensor:
 
             Parameters
             ----------
-            values : List[ansys.speos.script.sensor.Sensor.LayerTypeFace.Layer]
+            values : List[ansys.speos.script.sensor.BaseSensor._LayerTypeFace.Layer]
                 List of layers
 
             Returns
             -------
-            ansys.speos.script.sensor.Sensor.LayerTypeFace
+            ansys.speos.script.sensor.BaseSensor._LayerTypeFace
                 LayerTypeFace.
             """
             my_list = [
@@ -460,7 +460,7 @@ class BaseSensor:
 
             Returns
             -------
-            ansys.speos.script.sensor.Sensor.LayerTypeSequence
+            ansys.speos.script.sensor.BaseSensor._.LayerTypeSequence
                 LayerTypeSequence.
             """
             self._layer_type_sequence.maximum_nb_of_sequence = value
@@ -471,7 +471,7 @@ class BaseSensor:
 
             Returns
             -------
-            ansys.speos.script.sensor.Sensor.LayerTypeSequence
+            ansys.speos.script.sensor.BaseSensor._LayerTypeSequence
                 LayerTypeSequence.
             """
             self._layer_type_sequence.define_sequence_per = self._layer_type_sequence.EnumSequenceType.Geometries
@@ -482,7 +482,7 @@ class BaseSensor:
 
             Returns
             -------
-            ansys.speos.script.sensor.Sensor.LayerTypeSequence
+            ansys.speos.script.sensor.BaseSensor._LayerTypeSequence
                 LayerTypeSequence.
             """
             self._layer_type_sequence.define_sequence_per = self._layer_type_sequence.EnumSequenceType.Faces
@@ -521,7 +521,7 @@ class BaseSensor:
 
             Returns
             -------
-            ansys.speos.script.sensor.Sensor.LayerTypeIncidenceAngle
+            ansys.speos.script.sensor.BaseSensor._LayerTypeIncidenceAngle
                 LayerTypeIncidenceAngle.
             """
             self._layer_type_incidence_angle.sampling = value
@@ -563,7 +563,7 @@ class BaseSensor:
 
         Returns
         -------
-
+        str | dict
         """
 
         if key == "":
@@ -596,7 +596,7 @@ class BaseSensor:
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor
+        ansys.speos.script.sensor.BaseSensor
             Sensor feature.
         """
         # The _unique_id will help to find the correct item in the scene.sensors (the list of SensorInstance)
@@ -636,7 +636,7 @@ class BaseSensor:
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor
+        ansys.speos.script.sensor.BaseSensor
             Sensor feature.
         """
         # Reset sensor template
@@ -658,7 +658,7 @@ class BaseSensor:
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor
+        ansys.speos.script.sensor.BaseSensor
             Sensor feature.
         """
         # Delete the sensor template
@@ -766,7 +766,7 @@ class Camera(BaseSensor):
 
                     Returns
                     -------
-                    ansys.speos.script.sensor.Sensor.Camera.Photometric.Color.BalanceModeUserWhite
+                    ansys.speos.script.sensor.Camera.Photometric.Color.BalanceModeUserWhite
                         BalanceModeUserWhite.
                     """
                     self._balance_mode_user_white.red_gain = value
@@ -783,7 +783,7 @@ class Camera(BaseSensor):
 
                     Returns
                     -------
-                    ansys.speos.script.sensor.Sensor.Camera.Photometric.Color.BalanceModeUserWhite
+                    ansys.speos.script.sensor.Camera.Photometric.Color.BalanceModeUserWhite
                         BalanceModeUserWhite.
                     """
                     self._balance_mode_user_white.green_gain = value
@@ -800,7 +800,7 @@ class Camera(BaseSensor):
 
                     Returns
                     -------
-                    ansys.speos.script.sensor.Sensor.Camera.Photometric.Color.BalanceModeUserWhite
+                    ansys.speos.script.sensor.Camera.Photometric.Color.BalanceModeUserWhite
                         BalanceModeUserWhite.
                     """
                     self._balance_mode_user_white.blue_gain = value
@@ -839,7 +839,7 @@ class Camera(BaseSensor):
 
                     Returns
                     -------
-                    ansys.speos.script.sensor.Sensor.Camera.Photometric.Color.BalanceModeDisplayPrimaries
+                    ansys.speos.script.sensor.Camera.Photometric.Color.BalanceModeDisplayPrimaries
                         BalanceModeDisplayPrimaries.
                     """
                     self._balance_mode_display.red_display_file_uri = uri
@@ -855,7 +855,7 @@ class Camera(BaseSensor):
 
                     Returns
                     -------
-                    ansys.speos.script.sensor.Sensor.Camera.Photometric.Color.BalanceModeDisplayPrimaries
+                    ansys.speos.script.sensor.Camera.Photometric.Color.BalanceModeDisplayPrimaries
                         BalanceModeDisplayPrimaries.
                     """
                     self._balance_mode_display.green_display_file_uri = uri
@@ -871,7 +871,7 @@ class Camera(BaseSensor):
 
                     Returns
                     -------
-                    ansys.speos.script.sensor.Sensor.Camera.Photometric.Color.BalanceModeDisplayPrimaries
+                    ansys.speos.script.sensor.Camera.Photometric.Color.BalanceModeDisplayPrimaries
                         BalanceModeDisplayPrimaries.
                     """
                     self._balance_mode_display.blue_display_file_uri = uri
@@ -897,7 +897,7 @@ class Camera(BaseSensor):
 
                 Returns
                 -------
-                ansys.speos.script.sensor.Sensor.Camera.Photometric.Color
+                ansys.speos.script.sensor.Camera.Photometric.Color
                     Color mode.
                 """
                 self._mode_color.red_spectrum_file_uri = uri
@@ -913,7 +913,7 @@ class Camera(BaseSensor):
 
                 Returns
                 -------
-                ansys.speos.script.sensor.Sensor.Camera.Photometric.Color
+                ansys.speos.script.sensor.Camera.Photometric.Color
                     Color mode.
                 """
                 self._mode_color.green_spectrum_file_uri = uri
@@ -929,7 +929,7 @@ class Camera(BaseSensor):
 
                 Returns
                 -------
-                ansys.speos.script.sensor.Sensor.Camera.Photometric.Color
+                ansys.speos.script.sensor.Camera.Photometric.Color
                     Color mode.
                 """
                 self._mode_color.blue_spectrum_file_uri = uri
@@ -943,7 +943,7 @@ class Camera(BaseSensor):
 
                 Returns
                 -------
-                ansys.speos.script.sensor.Sensor.Camera.Photometric.Color
+                ansys.speos.script.sensor.Camera.Photometric.Color
                     Color mode.
                 """
                 self._mode = None
@@ -958,7 +958,7 @@ class Camera(BaseSensor):
 
                 Returns
                 -------
-                ansys.speos.script.sensor.Sensor.Camera.Photometric.Color
+                ansys.speos.script.sensor.Camera.Photometric.Color
                     Color mode.
                 """
                 self._mode = None
@@ -971,7 +971,7 @@ class Camera(BaseSensor):
 
                 Returns
                 -------
-                ansys.speos.script.sensor.Sensor.Camera.Photometric.Color.BalanceModeUserWhite
+                ansys.speos.script.sensor.Camera.Photometric.Color.BalanceModeUserWhite
                     Balance UserWhite mode.
                 """
                 if self._mode is None and self._mode_color.HasField("balance_mode_userwhite"):
@@ -992,7 +992,7 @@ class Camera(BaseSensor):
 
                 Returns
                 -------
-                ansys.speos.script.sensor.Sensor.Camera.Photometric.Color.BalanceModeDisplayPrimaries
+                ansys.speos.script.sensor.Camera.Photometric.Color.BalanceModeDisplayPrimaries
                     Balance DisplayPrimaries mode.
                 """
                 if self._mode is None and self._mode_color.HasField("balance_mode_display"):
@@ -1038,7 +1038,7 @@ class Camera(BaseSensor):
 
             Returns
             -------
-            ansys.speos.script.sensor.Sensor.Camera.Photometric
+            ansys.speos.script.sensor.Camera.Photometric
                 Photometric mode.
             """
             self._mode_photometric.acquisition_integration = value
@@ -1055,7 +1055,7 @@ class Camera(BaseSensor):
 
             Returns
             -------
-            ansys.speos.script.sensor.Sensor.Camera.Photometric
+            ansys.speos.script.sensor.Camera.Photometric
                 Photometric mode.
             """
             self._mode_photometric.acquisition_lag_time = value
@@ -1072,7 +1072,7 @@ class Camera(BaseSensor):
 
             Returns
             -------
-            ansys.speos.script.sensor.Sensor.Camera.Photometric
+            ansys.speos.script.sensor.Camera.Photometric
                 Photometric mode.
             """
             self._mode_photometric.transmittance_file_uri = uri
@@ -1089,7 +1089,7 @@ class Camera(BaseSensor):
 
             Returns
             -------
-            ansys.speos.script.sensor.Sensor.Camera.Photometric
+            ansys.speos.script.sensor.Camera.Photometric
                 Photometric mode.
             """
             self._mode_photometric.gamma_correction = value
@@ -1100,7 +1100,7 @@ class Camera(BaseSensor):
 
             Returns
             -------
-            ansys.speos.script.sensor.Sensor.Camera.Photometric
+            ansys.speos.script.sensor.Camera.Photometric
                 Photometric mode.
             """
             self._mode_photometric.png_bits = camera_sensor_pb2.EnumSensorCameraPNGBits.PNG_08
@@ -1111,7 +1111,7 @@ class Camera(BaseSensor):
 
             Returns
             -------
-            ansys.speos.script.sensor.Sensor.Camera.Photometric
+            ansys.speos.script.sensor.Camera.Photometric
                 Photometric mode.
             """
             self._mode_photometric.png_bits = camera_sensor_pb2.EnumSensorCameraPNGBits.PNG_10
@@ -1122,7 +1122,7 @@ class Camera(BaseSensor):
 
             Returns
             -------
-            ansys.speos.script.sensor.Sensor.Camera.Photometric
+            ansys.speos.script.sensor.Camera.Photometric
                 Photometric mode.
             """
             self._mode_photometric.png_bits = camera_sensor_pb2.EnumSensorCameraPNGBits.PNG_12
@@ -1133,7 +1133,7 @@ class Camera(BaseSensor):
 
             Returns
             -------
-            ansys.speos.script.sensor.Sensor.Camera.Photometric
+            ansys.speos.script.sensor.Camera.Photometric
                 Photometric mode.
             """
             self._mode_photometric.png_bits = camera_sensor_pb2.EnumSensorCameraPNGBits.PNG_16
@@ -1144,7 +1144,7 @@ class Camera(BaseSensor):
 
             Returns
             -------
-            ansys.speos.script.sensor.Sensor.WavelengthsRange
+            ansys.speos.script.sensor.WavelengthsRange
                 Wavelengths range.
             """
             return self._wavelengths_range
@@ -1160,7 +1160,7 @@ class Camera(BaseSensor):
 
             Returns
             -------
-            ansys.speos.script.sensor.Sensor.Camera.Photometric
+            ansys.speos.script.sensor.Camera.Photometric
                 Photometric mode.
             """
             self._mode = None
@@ -1173,7 +1173,7 @@ class Camera(BaseSensor):
 
             Returns
             -------
-            ansys.speos.script.sensor.Sensor.Camera.Photometric.Color
+            ansys.speos.script.sensor.Camera.Photometric.Color
                 Color mode.
             """
             if self._mode is None and self._mode_photometric.HasField("color_mode_color"):
@@ -1192,7 +1192,7 @@ class Camera(BaseSensor):
 
             Returns
             -------
-            ansys.speos.script.sensor.Sensor.Camera.Photometric
+            ansys.speos.script.sensor.Camera.Photometric
                 Photometric mode.
             """
             self._camera_props.trajectory_file_uri = uri
@@ -1203,7 +1203,7 @@ class Camera(BaseSensor):
 
             Returns
             -------
-            ansys.speos.script.sensor.Sensor.Camera.Photometric
+            ansys.speos.script.sensor.Camera.Photometric
                 Photometric mode.
             """
             self._camera_props.layer_type_none.SetInParent()
@@ -1214,7 +1214,7 @@ class Camera(BaseSensor):
 
             Returns
             -------
-            ansys.speos.script.sensor.Sensor.Camera.Photometric
+            ansys.speos.script.sensor.Camera.Photometric
                 Photometric mode.
             """
             self._camera_props.layer_type_source.SetInParent()
@@ -1265,8 +1265,8 @@ class Camera(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Camera
-            Camera sensor.
+        ansys.speos.script.sensor.Camera
+            Camera feature
         """
         self._camera_template.focal_length = value
         return self
@@ -1282,8 +1282,8 @@ class Camera(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Camera
-            Camera sensor.
+        ansys.speos.script.sensor.Camera
+            Camera feature
         """
         self._camera_template.imager_distance = value
         return self
@@ -1299,8 +1299,8 @@ class Camera(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Camera
-            Camera sensor.
+        ansys.speos.script.sensor.Camera
+            Camera feature
         """
         self._camera_template.f_number = value
         return self
@@ -1315,8 +1315,8 @@ class Camera(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Camera
-            Camera sensor.
+        ansys.speos.script.sensor.Camera
+            Camera feature
         """
         self._camera_template.distortion_file_uri = uri
         return self
@@ -1332,8 +1332,8 @@ class Camera(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Camera
-            Camera sensor.
+        ansys.speos.script.sensor.Camera
+            Camera feature
         """
         self._camera_template.horz_pixel = value
         return self
@@ -1349,8 +1349,8 @@ class Camera(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Camera
-            Camera sensor.
+        ansys.speos.script.sensor.Camera
+            Camera feature
         """
         self._camera_template.vert_pixel = value
         return self
@@ -1366,8 +1366,8 @@ class Camera(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Camera
-            Camera sensor.
+        ansys.speos.script.sensor.Camera
+            Camera feature
         """
         self._camera_template.width = value
         return self
@@ -1383,8 +1383,8 @@ class Camera(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Camera
-            Camera sensor.
+        ansys.speos.script.sensor.Camera
+            Camera feature
         """
         self._camera_template.height = value
         return self
@@ -1395,8 +1395,8 @@ class Camera(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Camera
-            Camera sensor.
+        ansys.speos.script.sensor.Camera
+            Geometric Camera feature
         """
         self._type = None
         self._camera_template.sensor_mode_geometric.SetInParent()
@@ -1408,8 +1408,8 @@ class Camera(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Camera.Photometric
-            Photometric mode.
+        ansys.speos.script.sensor.Camera._Photometric
+            Photometric Camera Sensor feature
         """
         if self._type is None and self._camera_template.HasField("sensor_mode_photometric"):
             self._type = Camera._Photometric(
@@ -1432,8 +1432,8 @@ class Camera(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Camera
-            Camera sensor.
+        ansys.speos.script.sensor.Camera
+            Camera Sensor feature
         """
         self._camera_props.axis_system[:] = axis_system
         return self
@@ -1497,10 +1497,25 @@ class Irradiance(BaseSensor):
 
     @property
     def dimensions(self) -> Irradiance._Dimensions:
+        """
+        Property containing all options in regard to the Dimensions sensor properties
+        Returns
+        -------
+        ansys.speos.script.Irradiance._Dimensions
+            Instance of Dimensions Class for this sensor feature
+        Returns
+        """
         return self._sensor_dimensions
 
     @property
     def type(self) -> str:
+        """
+        Type of sensor
+        Returns
+        -------
+        str
+            Sensor type as string
+        """
         if type(self._type) is str:
             return self._type
         elif self._type == Irradiance._Colorimetric:
@@ -1512,6 +1527,16 @@ class Irradiance(BaseSensor):
 
     @property
     def colorimetric(self) -> Union[None, Irradiance._Colorimetric]:
+        """
+        Property containing all options in regard to the Colorimetric sensor properties
+        Returns
+        -------
+        ansys.speos.script.Irradiance._Colorimetric
+            Instance of Colorimetric Class for this sensor feature
+        Returns
+        -------
+
+        """
         if self._type == Irradiance._Colorimetric:
             return self._type
         else:
@@ -1519,6 +1544,13 @@ class Irradiance(BaseSensor):
 
     @property
     def spectral(self) -> Union[None, Irradiance._Spectral]:
+        """
+        Property containing all options in regard to the Spectral sensor properties
+        Returns
+        -------
+        ansys.speos.script.Irradiance._Spectral
+            Instance of Spectral Class for this sensor feature
+        """
         if self._type == Irradiance._Spectral:
             return self._type
         else:
@@ -1528,6 +1560,13 @@ class Irradiance(BaseSensor):
     def layer(
         self,
     ) -> Union[None, Irradiance, Irradiance._LayerTypeFace, Irradiance._LayerTypeSequence, Irradiance._LayerTypeIncidenceAngle]:
+        """
+        Property containing all options in regard to the layer separation properties
+        Returns
+        -------
+        Union[None, Irradiance, Irradiance._LayerTypeFace, Irradiance._LayerTypeSequence, Irradiance._LayerTypeIncidenceAngle]
+            Instance of Layertype Class for this sensor feature
+        """
         return self._layer_type
 
     def set_type_photometric(self) -> Irradiance:
@@ -1536,8 +1575,8 @@ class Irradiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Irradiance
-            Irradiance sensor.
+        ansys.speos.script.sensor.Irradiance
+            Irradiance sensor
         """
         self._irradiance_template.sensor_type_photometric.SetInParent()
         self._type = "Photometric"
@@ -1549,7 +1588,7 @@ class Irradiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Colorimetric
+        ansys.speos.script.sensor.Irradiance.Colorimetric
             Colorimetric type.
         """
 
@@ -1567,7 +1606,7 @@ class Irradiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Irradiance
+        ansys.speos.script.sensor.Irradiance
             Irradiance sensor.
         """
         self._irradiance_template.sensor_type_radiometric.SetInParent()
@@ -1580,7 +1619,7 @@ class Irradiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Spectral
+        ansys.speos.script.sensor.Irradiance.Spectral
             Spectral type.
         """
         if self._type is None and self._irradiance_template.HasField("sensor_type_spectral"):
@@ -1601,7 +1640,7 @@ class Irradiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Irradiance
+        ansys.speos.script.sensor.Irradiance
             Irradiance sensor.
         """
         self._irradiance_template.illuminance_type_planar.SetInParent()
@@ -1616,7 +1655,7 @@ class Irradiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Irradiance
+        ansys.speos.script.sensor.Irradiance
             Irradiance sensor.
         """
         self._irradiance_template.illuminance_type_radial.SetInParent()
@@ -1627,7 +1666,7 @@ class Irradiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Irradiance
+        ansys.speos.script.sensor.Irradiance
             Irradiance sensor.
         """
         self._irradiance_template.illuminance_type_hemispherical.SetInParent()
@@ -1638,7 +1677,7 @@ class Irradiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Irradiance
+        ansys.speos.script.sensor.Irradiance
             Irradiance sensor.
         """
         self._irradiance_template.illuminance_type_cylindrical.SetInParent()
@@ -1655,7 +1694,7 @@ class Irradiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Irradiance
+        ansys.speos.script.sensor.Irradiance
             Irradiance sensor.
         """
         self._irradiance_template.illuminance_type_semi_cylindrical.SetInParent()
@@ -1676,7 +1715,7 @@ class Irradiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Irradiance
+        ansys.speos.script.sensor.Irradiance
             Irradiance sensor.
         """
         self._irradiance_props.axis_system[:] = axis_system
@@ -1687,7 +1726,7 @@ class Irradiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Irradiance
+        ansys.speos.script.sensor.Irradiance
             Irradiance sensor.
         """
         self._irradiance_props.ray_file_type = core.Scene.SensorInstance.EnumRayFileType.RayFileNone
@@ -1698,7 +1737,7 @@ class Irradiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Irradiance
+        ansys.speos.script.sensor.Irradiance
             Irradiance sensor.
         """
         self._irradiance_props.ray_file_type = core.Scene.SensorInstance.EnumRayFileType.RayFileClassic
@@ -1709,7 +1748,7 @@ class Irradiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Irradiance
+        ansys.speos.script.sensor.Irradiance
             Irradiance sensor.
         """
         self._irradiance_props.ray_file_type = core.Scene.SensorInstance.EnumRayFileType.RayFilePolarization
@@ -1720,7 +1759,7 @@ class Irradiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Irradiance
+        ansys.speos.script.sensor.Irradiance
             Irradiance sensor.
         """
         self._irradiance_props.ray_file_type = core.Scene.SensorInstance.EnumRayFileType.RayFileTM25
@@ -1731,7 +1770,7 @@ class Irradiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Irradiance
+        ansys.speos.script.sensor.Irradiance
             Irradiance sensor.
         """
         self._irradiance_props.ray_file_type = core.Scene.SensorInstance.EnumRayFileType.RayFileTM25NoPolarization
@@ -1740,11 +1779,10 @@ class Irradiance(BaseSensor):
     def set_layer_type_none(self) -> Irradiance:
         """
         defines layer separation type as None
-        Parameters
-        ----------
 
         Returns
         -------
+        ansys.speos.script.sensor.Irradiance
             irradiance class instance
 
         """
@@ -1760,6 +1798,7 @@ class Irradiance(BaseSensor):
 
         Returns
         -------
+        ansys.speos.script.sensor.Irradiance
            irradiance class instance
 
         """
@@ -1772,6 +1811,7 @@ class Irradiance(BaseSensor):
         define layertype as by face
         Returns
         -------
+        ansys.speos.script.sensor.Irradiance._LayerTypeFace
             LayerTypeFace property instance
         """
         if self._layer_type is None and self._irradiance_props.HasField("layer_type_face"):
@@ -1785,6 +1825,7 @@ class Irradiance(BaseSensor):
         define layertype as by sequence
         Returns
         -------
+        ansys.speos.script.sensor.Irradiance._LayerTypeSequence
             LayerTypeSequence property instance
         """
         if self._layer_type is None and self._irradiance_props.HasField("layer_type_sequence"):
@@ -1800,6 +1841,7 @@ class Irradiance(BaseSensor):
         define layertype as by polarization
         Returns
         -------
+        ansys.speos.script.sensor.Irradiance
             Irradiance class instance
         """
 
@@ -1807,11 +1849,12 @@ class Irradiance(BaseSensor):
         self._layer_type = None
         return self
 
-    def set_layer_type_incidence_angle(self):
+    def set_layer_type_incidence_angle(self) -> Irradiance._LayerTypeIncidenceAngle:
         """
         define layertype as by incidence angle
         Returns
         -------
+        ansys.speos.script.sensor.Irradiance._LayerTypeIncidenceAngle:
             LayerTypeIncidenceAngle property instance
         """
         if self._layer_type is None and self._irradiance_props.HasField("layer_type_incidence_angle"):
@@ -1835,7 +1878,7 @@ class Irradiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Irradiance
+        ansys.speos.script.sensor.Irradiance
             Irradiance sensor.
         """
         if geometries == []:
@@ -1870,8 +1913,6 @@ class Radiance(BaseSensor):
         By default, ``True``.
     """
 
-    LAYER_TYPES = ["face", "source", "sequence"]
-
     def __init__(
         self,
         project: project.Project,
@@ -1902,10 +1943,24 @@ class Radiance(BaseSensor):
 
     @property
     def dimensions(self) -> Radiance._Dimensions:
+        """
+        Property containing all options in regard to the Dimensions sensor properties
+        Returns
+        -------
+        ansys.speos.script.Irradiance._Dimensions
+            Instance of Dimensions Class for this sensor feature
+        """
         return self._sensor_dimensions
 
     @property
     def type(self) -> str:
+        """
+        Type of sensor
+        Returns
+        -------
+        str
+            Sensor type as string
+        """
         if type(self._type) is str:
             return self._type
         elif self._type == Radiance._Colorimetric:
@@ -1917,6 +1972,13 @@ class Radiance(BaseSensor):
 
     @property
     def colorimetric(self) -> Union[None, Radiance._Colorimetric]:
+        """
+        Property containing all options in regard to the Colorimetric sensor properties
+        Returns
+        -------
+        ansys.speos.script.Irradiance._Colorimetric
+            Instance of Colorimetric Class for this sensor feature
+        """
         if self._type == Radiance._Colorimetric:
             return self._type
         else:
@@ -1924,6 +1986,13 @@ class Radiance(BaseSensor):
 
     @property
     def spectral(self) -> Union[None, Radiance._Spectral]:
+        """
+        Property containing all options in regard to the Spectral sensor properties
+        Returns
+        -------
+        ansys.speos.script.Irradiance._Spectral
+            Instance of Spectral Class for this sensor feature
+        """
         if self._type == Radiance._Spectral:
             return self._type
         else:
@@ -1931,6 +2000,13 @@ class Radiance(BaseSensor):
 
     @property
     def layer(self) -> Union[None, Radiance._LayerTypeFace, Radiance._LayerTypeSequence]:
+        """
+        Property containing all options in regard to the layer separation property
+        Returns
+        -------
+        Union[None, Radiance._LayerTypeFace, Radiance._LayerTypeSequence]
+            Instance of Layer type Class for this sensor feature
+        """
         return self._layer_type
 
     def set_type_photometric(self) -> Radiance:
@@ -1939,7 +2015,7 @@ class Radiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Radiance
+        ansys.speos.script.sensor.Radiance
             Radiance sensor.
         """
         self._radiance_template.sensor_type_photometric.SetInParent()
@@ -1952,7 +2028,7 @@ class Radiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Colorimetric
+        ansys.speos.script.sensor.Colorimetric
             Colorimetric type.
         """
         if self._type is None and self._radiance_template.HasField("sensor_type_colorimetric"):
@@ -1967,7 +2043,7 @@ class Radiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Radiance
+        ansys.speos.script.sensor.Radiance
             Radiance sensor.
         """
         self._radiance_template.sensor_type_radiometric.SetInParent()
@@ -1980,7 +2056,7 @@ class Radiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Spectral
+        ansys.speos.script.sensor._Spectral
             Spectral type.
         """
         if self._type is None and self._radiance_template.HasField("sensor_type_spectral"):
@@ -2000,7 +2076,7 @@ class Radiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Radiance
+        ansys.speos.script.sensor.Radiance
             Radiance sensor.
         """
         self._radiance_template.focal = value
@@ -2017,7 +2093,7 @@ class Radiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Radiance
+        ansys.speos.script.sensor.Radiance
             Radiance sensor.
         """
         self._radiance_template.integration_angle = value
@@ -2034,7 +2110,7 @@ class Radiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Radiance
+        ansys.speos.script.sensor.Radiance
             Radiance sensor.
         """
         self._radiance_props.axis_system[:] = axis_system
@@ -2052,7 +2128,7 @@ class Radiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor.Radiance
+        ansys.speos.script.sensor.Radiance
             Radiance sensor.
         """
         if value is None or value == []:
@@ -2069,7 +2145,8 @@ class Radiance(BaseSensor):
 
         Returns
         -------
-            irradiance class instance
+        ansys.speos.script.sensor.Radiance
+            Radiance sensor
 
         """
         self._radiance_props.layer_type_none.SetInParent()
@@ -2084,7 +2161,8 @@ class Radiance(BaseSensor):
 
         Returns
         -------
-           irradiance class instance
+        ansys.speos.script.sensor.Radiance
+            Radiance sensor
 
         """
         self._radiance_props.layer_type_source.SetInParent()
@@ -2096,6 +2174,7 @@ class Radiance(BaseSensor):
         define layertype as by face
         Returns
         -------
+        ansys.speos.script.sensor.Radiance._LayerTypeFace
             LayerTypeFace property instance
         """
         if self._layer_type is None and self._radiance_props.HasField("layer_type_face"):
@@ -2109,6 +2188,7 @@ class Radiance(BaseSensor):
         define layertype as by sequence
         Returns
         -------
+        ansys.speos.script.sensor.Radiance._LayerTypeSequence
             LayerTypeSequence property instance
         """
         if self._layer_type is None and self._radiance_props.HasField("layer_type_sequence"):

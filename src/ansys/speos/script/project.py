@@ -115,7 +115,8 @@ class Project:
         description : str
             Description of the feature.
             By default, ``""``.
-        feature_type: Optional[source.Surface, source.RayFile, source.Luminaire]
+        feature_type: type
+            Optional[source.Surface, source.RayFile, source.Luminaire]
             source type
         metadata : Mapping[str, str]
             Metadata of the feature.
@@ -356,9 +357,9 @@ ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.p
     #    """Act on feature: update, hide/show, copy, ... - Not yet implemented"""
     #    pass
 
-    # def save(self):
-    #    """Save class state in file given at construction - Not yet implemented"""
-    #    pass
+    # def save(self, path):
+    #     """Save class state in file given at construction - Not yet implemented"""
+    #     self.scene_link.save_file(path)
 
     def delete(self) -> Project:
         """Delete project: erase scene data.
