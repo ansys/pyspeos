@@ -39,7 +39,7 @@ def test_create_camera_sensor(speos: Speos):
     p = script.Project(speos=speos)
 
     # Default value
-    sensor1 = p.create_sensor(name="Camera.1", feature_type=script.Camera)
+    sensor1 = p.create_sensor(name="Camera.1", feature_type=script.sensor.Camera)
     sensor1.commit()
     assert sensor1.sensor_template_link is not None
     assert sensor1.sensor_template_link.get().HasField("camera_sensor_template")
@@ -303,7 +303,7 @@ def test_create_irradiance_sensor(speos: Speos):
     p = script.Project(speos=speos)
 
     # Default value
-    sensor1 = p.create_sensor(name="Irradiance.1", feature_type=script.Irradiance)
+    sensor1 = p.create_sensor(name="Irradiance.1", feature_type=script.sensor.Irradiance)
     sensor1.commit()
     assert sensor1.sensor_template_link is not None
     assert sensor1.sensor_template_link.get().HasField("irradiance_sensor_template")
@@ -522,7 +522,7 @@ def test_create_radiance_sensor(speos: Speos):
     p = script.Project(speos=speos)
 
     # Default value
-    sensor1 = p.create_sensor(name="Radiance.1", feature_type=script.Radiance)
+    sensor1 = p.create_sensor(name="Radiance.1", feature_type=script.sensor.Radiance)
     sensor1.commit()
     assert sensor1.sensor_template_link is not None
     assert sensor1.sensor_template_link.get().HasField("radiance_sensor_template")
@@ -677,7 +677,7 @@ def test_commit_sensor(speos: Speos):
     p = script.Project(speos=speos)
 
     # Create
-    sensor1 = p.create_sensor(name="Irradiance.1", feature_type=script.Irradiance)
+    sensor1 = p.create_sensor(name="Irradiance.1", feature_type=script.sensor.Irradiance)
     assert sensor1.sensor_template_link is None
     assert len(p.scene_link.get().sensors) == 0
 
@@ -700,7 +700,7 @@ def test_reset_sensor(speos: Speos):
     p = script.Project(speos=speos)
 
     # Create + commit
-    sensor1 = p.create_sensor(name="Sensor.1", feature_type=script.Irradiance)
+    sensor1 = p.create_sensor(name="Sensor.1", feature_type=script.sensor.Irradiance)
     sensor1.commit()
     assert sensor1.sensor_template_link is not None
     assert sensor1.sensor_template_link.get().HasField("irradiance_sensor_template")
@@ -722,7 +722,7 @@ def test_delete_sensor(speos: Speos):
     p = script.Project(speos=speos)
 
     # Create + commit
-    sensor1 = p.create_sensor(name="Sensor.1", feature_type=script.Irradiance)
+    sensor1 = p.create_sensor(name="Sensor.1", feature_type=script.sensor.Irradiance)
     sensor1.commit()
     assert sensor1.sensor_template_link.get().HasField("irradiance_sensor_template")
     assert sensor1._sensor_template.HasField("irradiance_sensor_template")  # local

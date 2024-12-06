@@ -116,16 +116,18 @@ class Project:
             Description of the feature.
             By default, ``""``.
         feature_type: type
-            Optional[source.Surface, source.RayFile, source.Luminaire]
-            source type
+            Source type  to be created
+            by default, source.Surface
+            allowed type values:
+            Union[source.Surface, source.RayFile, source.Luminaire]
         metadata : Mapping[str, str]
             Metadata of the feature.
             By default, ``{}``.
 
         Returns
         -------
-        ansys.speos.script.source.Source
-            Source feature.
+        Union[source.Surface, source.RayFile, source.Luminaire]
+            Source class Instance.
         """
         feature = None
         if feature_type == source.Surface:
@@ -154,13 +156,17 @@ class Project:
         description : str
             Description of the feature.
             By default, ``""``.
-        feature_type: Optional[simulation.Direct, simulation.Interactive,simulation.Inverse]
-            simulation type
+        feature_type: type
+            simulation type to be created
             By default, simulation.Direct
+            allowed values, Union[simulation.Direct, simulation.Interactive,simulation.Inverse]
         metadata : Mapping[str, str]
             Metadata of the feature.
             By default, ``{}``.
-
+        Returns
+        -------
+        Union[simulation.Direct, simulation.Interactive, simulation.Inverse]
+            Simulation class instance
         """
         feature = None
         if feature_type == simulation.Direct:
@@ -189,9 +195,10 @@ class Project:
         description : str
             Description of the feature.
             By default, ``""``.
-        feature_type: Optional[sensor.Camera,sensor.Radiance,sensor.Irradiance]
-            sensor type
+        feature_type: type
+            sensor type  to be created
             By default, sensor.Irradiance
+            allowed values: Union[sensor.Camera, sensor.Radiance, sensor.Irradiance]
         metadata : Mapping[str, str]
             Metadata of the feature.
             By default, ``{}``.
@@ -245,7 +252,22 @@ class Project:
     def find(
         self, name: str, name_regex: bool = False, feature_type: Optional[type] = None
     ) -> List[
-        Union[opt_prop.OptProp, source.Surface, sensor.Sensor, simulation.Simulation, part.Part, body.Body, face.Face, part.Part.SubPart]
+        Union[
+            opt_prop.OptProp,
+            source.Surface,
+            source.Luminaire,
+            source.RayFile,
+            sensor.Irradiance,
+            sensor.Radiance,
+            sensor.Camera,
+            simulation.Direct,
+            simulation.Inverse,
+            simulation.Interactive,
+            part.Part,
+            body.Body,
+            face.Face,
+            part.Part.SubPart,
+        ]
     ]:
         """Find feature(s) by name (possibility to use regex) and by feature type.
 

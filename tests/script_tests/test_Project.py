@@ -252,7 +252,7 @@ def test_find_after_load(speos: Speos):
     assert ssr_feats[0]._name == "Dom Irradiance Sensor (0)"
 
     # Retrieve all direct simulations
-    sim_feats = p.find(name=".*", name_regex=True, feature_type=script.Direct)
+    sim_feats = p.find(name=".*", name_regex=True, feature_type=script.simulation.Direct)
     assert len(sim_feats) == 1
     assert sim_feats[0]._name == "ASSEMBLY1.DS (0)"
 
@@ -295,7 +295,7 @@ def test_from_file(speos: Speos):
 
     feat_sims = p.find(name=p.scene_link.get().simulations[0].name)
     assert len(feat_sims) == 1
-    assert type(feat_sims[0]) is script.Direct
+    assert type(feat_sims[0]) is script.simulation.Direct
 
     # Check that feature can be retrieved
     feat_ops = p.find(name=p.scene_link.get().materials[2].name)

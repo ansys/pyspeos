@@ -286,8 +286,8 @@ def test_create_interactive(speos: Speos):
     # rays_number_per_sources
     sim1.set_rays_number_per_sources(
         values=[
-            script.Interactive.RaysNumberPerSource(source_path="Source.1", rays_nb=50),
-            script.Interactive.RaysNumberPerSource(source_path="Source.2", rays_nb=150),
+            script.simulation.Interactive.RaysNumberPerSource(source_path="Source.1", rays_nb=50),
+            script.simulation.Interactive.RaysNumberPerSource(source_path="Source.2", rays_nb=150),
         ]
     )
     assert len(sim1._job.interactive_simulation_properties.rays_number_per_sources) == 2
@@ -339,11 +339,11 @@ def test_commit(speos: Speos):
     ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
     root_part.commit()
 
-    ssr = p.create_sensor(name="Irradiance.1", feature_type=script.Irradiance)
+    ssr = p.create_sensor(name="Irradiance.1", feature_type=script.sensor.Irradiance)
     ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     ssr.commit()
 
-    ssr2 = p.create_sensor(name="Irradiance.2", feature_type=script.Irradiance)
+    ssr2 = p.create_sensor(name="Irradiance.2", feature_type=script.sensor.Irradiance)
     ssr2.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     ssr2.commit()
 
@@ -388,11 +388,11 @@ def test_reset(speos: Speos):
     ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
     root_part.commit()
 
-    ssr = p.create_sensor(name="Irradiance.1", feature_type=script.Irradiance)
+    ssr = p.create_sensor(name="Irradiance.1", feature_type=script.sensor.Irradiance)
     ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     ssr.commit()
 
-    ssr2 = p.create_sensor(name="Irradiance.2", feature_type=script.Irradiance)
+    ssr2 = p.create_sensor(name="Irradiance.2", feature_type=script.sensor.Irradiance)
     ssr2.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     ssr2.commit()
 
@@ -435,7 +435,7 @@ def test_delete(speos: Speos):
     ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
     root_part.commit()
 
-    ssr = p.create_sensor(name="Irradiance.1", feature_type=script.Irradiance)
+    ssr = p.create_sensor(name="Irradiance.1", feature_type=script.sensor.Irradiance)
     ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     ssr.commit()
 
