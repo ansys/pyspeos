@@ -96,7 +96,6 @@ class BaseSensor:
         default_values : bool
             Uses default values when True.
 
-        :meta public:
         """
 
         def __init__(self, wavelengths_range: common_pb2.WavelengthsRange, default_values: bool = True) -> None:
@@ -169,7 +168,6 @@ class BaseSensor:
         default_values : bool
             Uses default values when True.
 
-        :meta public:
         """
 
         def __init__(self, sensor_dimensions: common_pb2.SensorDimensions, default_values: bool = True) -> None:
