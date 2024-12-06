@@ -169,8 +169,8 @@ class Body:
             Body feature.
         """
         # Retrieve all features to delete them
-        for g in self._geom_features:
-            g.delete()
+        while len(self._geom_features) > 0:
+            self._geom_features[0].delete()
 
         if self.body_link is not None:
             # Update the parent part
