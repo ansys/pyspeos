@@ -117,8 +117,8 @@ class Project:
             By default, ``""``.
         feature_type: type
             Source type  to be created
-            by default, ansys.speos.script.source.Surface
-            allowed type values:
+            by default, ``ansys.speos.script.source.Surface``
+            allowed types:
             Union[ansys.speos.script.source.Surface, ansys.speos.script.source.RayFile, \
             ansys.speos.script.source.Luminaire]
         metadata : Mapping[str, str]
@@ -159,8 +159,8 @@ class Project:
             By default, ``""``.
         feature_type: type
             simulation type to be created
-            By default, simulation.Direct
-            allowed values, Union[ansys.speos.script.simulation.Direct, ansys.speos.script.simulation.Interactive, \
+            By default, ``ansys.speos.script.simulation.Direct``
+            allowed types: Union[ansys.speos.script.simulation.Direct, ansys.speos.script.simulation.Interactive, \
             ansys.speos.script.simulation.Inverse]
         metadata : Mapping[str, str]
             Metadata of the feature.
@@ -199,8 +199,8 @@ class Project:
             By default, ``""``.
         feature_type: type
             sensor type  to be created
-            By default, ansys.speos.script.sensor.Irradiance
-            allowed values: Union[ansys.speos.script.sensor.Camera, ansys.speos.script.sensor.Radiance, \
+            By default, ``ansys.speos.script.sensor.Irradiance``
+            allowed types: Union[ansys.speos.script.sensor.Camera, ansys.speos.script.sensor.Radiance, \
             ansys.speos.script.sensor.Irradiance]
         metadata : Mapping[str, str]
             Metadata of the feature.
