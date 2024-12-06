@@ -1942,12 +1942,12 @@ class Radiance(BaseSensor):
             self.set_axis_system().set_layer_type_none()
 
     @property
-    def dimensions(self) -> Radiance._Dimensions:
+    def dimensions(self) -> BaseSensor._Dimensions:
         """
         Property containing all options in regard to the Dimensions sensor properties
         Returns
         -------
-        ansys.speos.script.Irradiance._Dimensions
+        ansys.speos.script.BaseSensor._Dimensions
             Instance of Dimensions Class for this sensor feature
         """
         return self._sensor_dimensions
@@ -2028,7 +2028,7 @@ class Radiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.Colorimetric
+        ansys.speos.script.sensor.Radiance._Colorimetric
             Colorimetric type.
         """
         if self._type is None and self._radiance_template.HasField("sensor_type_colorimetric"):
@@ -2056,7 +2056,7 @@ class Radiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor._Spectral
+        ansys.speos.script.sensor.Radiance._Spectral
             Spectral type.
         """
         if self._type is None and self._radiance_template.HasField("sensor_type_spectral"):
