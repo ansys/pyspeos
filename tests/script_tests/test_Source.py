@@ -96,7 +96,7 @@ def test_create_surface_source(speos: Speos):
 
     # Default value
     # source1 = p.create_source(name="Surface.1")
-    source1 = script.Surface(project=p, name="Surface.1")
+    source1 = script.source.Surface(project=p, name="Surface.1")
     # source1.set_surface()
     source1.commit()
     assert source1.source_template_link is not None
@@ -259,7 +259,7 @@ def test_keep_same_internal_feature(speos: Speos):
     p = script.Project(speos=speos)
 
     # SURFACE SOURCE
-    source1 = script.Surface(project=p, name="Surface.1")
+    source1 = script.source.Surface(project=p, name="Surface.1")
     source1.commit()
     spectrum_guid = source1.source_template_link.get().surface.spectrum_guid
     intensity_guid = source1.source_template_link.get().surface.intensity_guid
@@ -275,7 +275,7 @@ def test_keep_same_internal_feature(speos: Speos):
     assert source1.source_template_link.get().surface.spectrum_guid == spectrum_guid
 
     # LUMINAIRE SOURCE
-    source2 = script.Luminaire(project=p, name="Luminaire.1")
+    source2 = script.source.Luminaire(project=p, name="Luminaire.1")
     source2.set_intensity_file_uri(uri=os.path.join(test_path, "IES_C_DETECTOR.ies"))
     source2.commit()
     spectrum_guid = source2.source_template_link.get().luminaire.spectrum_guid
@@ -286,7 +286,7 @@ def test_keep_same_internal_feature(speos: Speos):
     assert source2.source_template_link.get().luminaire.spectrum_guid == spectrum_guid
 
     # RAY FILE SOURCE
-    source3 = script.RayFile(project=p, name="Ray-fiile.1")
+    source3 = script.source.RayFile(project=p, name="Ray-fiile.1")
     source3.set_ray_file_uri(uri=os.path.join(test_path, "RaysWithoutSpectralData.RAY")).set_spectrum().set_blackbody()
     source3.commit()
     spectrum_guid = source3.source_template_link.get().rayfile.spectrum_guid
@@ -306,7 +306,7 @@ def test_commit_source(speos: Speos):
     p = script.Project(speos=speos)
 
     # Create
-    source1 = script.RayFile(project=p, name="Ray-file.1")
+    source1 = script.source.RayFile(project=p, name="Ray-file.1")
     source1.set_ray_file_uri(uri=os.path.join(test_path, "Rays.ray"))
     assert source1.source_template_link is None
     assert len(p.scene_link.get().sources) == 0
@@ -330,7 +330,7 @@ def test_reset_source(speos: Speos):
     p = script.Project(speos=speos)
 
     # Create + commit
-    source1 = script.RayFile(project=p, name="Source.1")
+    source1 = script.source.RayFile(project=p, name="Source.1")
     source1.set_ray_file_uri(uri=os.path.join(test_path, "Rays.ray"))
     source1.commit()
     assert source1.source_template_link is not None
@@ -362,7 +362,7 @@ def test_delete_source(speos: Speos):
 
     # Create + commit
     # source1 = p.create_source(name="Source.1")
-    source1 = script.RayFile(project=p, name="Source.1")
+    source1 = script.source.RayFile(project=p, name="Source.1")
     source1.set_ray_file_uri(uri=os.path.join(test_path, "Rays.ray"))
     source1.commit()
     assert source1.source_template_link.get().HasField("rayfile")
@@ -390,7 +390,7 @@ def test_print_source(speos: Speos):
     # LUMINAIRE - SPECTRUM
     # Create + commit
     # source = p.create_source(name="Luminaire.1")
-    source = script.Luminaire(project=p, name="Luminaire.1")
+    source = script.source.Luminaire(project=p, name="Luminaire.1")
     source.set_intensity_file_uri(uri=os.path.join(test_path, "IES_C_DETECTOR.ies"))
     source.commit()
 
@@ -409,7 +409,7 @@ def test_print_source(speos: Speos):
     # RAYFILE - SPECTRUM
     # Create + commit
     # source = p.create_source(name="Source.1")
-    source = script.RayFile(project=p, name="Source.1")
+    source = script.source.RayFile(project=p, name="Source.1")
     source.set_ray_file_uri(uri=os.path.join(test_path, "RaysWithoutSpectralData.RAY")).set_spectrum()
     source.commit()
 
@@ -426,7 +426,7 @@ def test_print_source(speos: Speos):
     source.delete()
 
     # SURFACE - SPECTRUM
-    source = script.Surface(project=p, name="Surface.1")
+    source = script.source.Surface(project=p, name="Surface.1")
     source.commit()
 
     # Retrieve print

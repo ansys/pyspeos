@@ -109,22 +109,25 @@ class Project:
 
         Parameters
         ----------
-
         name : str
             Name of the feature.
         description : str
             Description of the feature.
             By default, ``""``.
-        feature_type: Optional[source.Surface, source.RayFile, source.Luminaire]
-            source type
+        feature_type: type
+            Source type to be created
+            by default, ``ansys.speos.script.source.Surface``.
+            Allowed types:
+            Union[ansys.speos.script.source.Surface, ansys.speos.script.source.RayFile, \
+            ansys.speos.script.source.Luminaire].
         metadata : Mapping[str, str]
             Metadata of the feature.
             By default, ``{}``.
 
         Returns
         -------
-        ansys.speos.script.source.Source
-            Source feature.
+        Union[ansys.speos.script.source.Surface, ansys.speos.script.source.RayFile, ansys.speos.script.source.Luminaire]
+            Source class instance.
         """
         feature = None
         if feature_type == source.Surface:
@@ -153,13 +156,19 @@ class Project:
         description : str
             Description of the feature.
             By default, ``""``.
-        feature_type: Optional[simulation.Direct, simulation.Interactive,simulation.Inverse]
-            simulation type
-            By default, simulation.Direct
+        feature_type: type
+            Simulation type to be created.
+            By default, ``ansys.speos.script.simulation.Direct``.
+            Allowed types: Union[ansys.speos.script.simulation.Direct, ansys.speos.script.simulation.Interactive, \
+            ansys.speos.script.simulation.Inverse].
         metadata : Mapping[str, str]
             Metadata of the feature.
             By default, ``{}``.
 
+        Returns
+        -------
+        Union[ansys.speos.script.simulation.Direct, ansys.speos.script.simulation.Interactive, ansys.speos.script.simulation.Inverse]
+            Simulation class instance
         """
         feature = None
         if feature_type == simulation.Direct:
@@ -188,17 +197,19 @@ class Project:
         description : str
             Description of the feature.
             By default, ``""``.
-        feature_type: Optional[sensor.Camera,sensor.Radiance,sensor.Irradiance]
-            sensor type
-            By default, sensor.Irradiance
+        feature_type: type
+            Sensor type to be created.
+            By default, ``ansys.speos.script.sensor.Irradiance``.
+            Allowed types: Union[ansys.speos.script.sensor.Camera, ansys.speos.script.sensor.Radiance, \
+            ansys.speos.script.sensor.Irradiance]
         metadata : Mapping[str, str]
             Metadata of the feature.
             By default, ``{}``.
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor
-            Sensor feature.
+        Union[ansys.speos.script.sensor.Camera, ansys.speos.script.sensor.Radiance, ansys.speos.script.sensor.Irradiance]
+            Sensor class instance.
         """
         feature = None
         if feature_type == sensor.Irradiance:
@@ -244,7 +255,22 @@ class Project:
     def find(
         self, name: str, name_regex: bool = False, feature_type: Optional[type] = None
     ) -> List[
-        Union[opt_prop.OptProp, source.Surface, sensor.Sensor, simulation.Simulation, part.Part, body.Body, face.Face, part.Part.SubPart]
+        Union[
+            opt_prop.OptProp,
+            source.Surface,
+            source.Luminaire,
+            source.RayFile,
+            sensor.Irradiance,
+            sensor.Radiance,
+            sensor.Camera,
+            simulation.Direct,
+            simulation.Inverse,
+            simulation.Interactive,
+            part.Part,
+            body.Body,
+            face.Face,
+            part.Part.SubPart,
+        ]
     ]:
         """Find feature(s) by name (possibility to use regex) and by feature type.
 
@@ -262,9 +288,12 @@ class Project:
 
         Returns
         -------
-        List[Union[ansys.speos.script.opt_prop.OptProp, ansys.speos.script.source.Source, ansys.speos.script.sensor.Sensor, \
-ansys.speos.script.simulation.Simulation, ansys.speos.script.part.Part, \
-ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.part.Part.SubPart]]
+        List[Union[ansys.speos.script.opt_prop.OptProp, ansys.speos.script.source.Surface, \
+        ansys.speos.script.source.RayFile, ansys.speos.script.source.Luminaireansys.speos.script.sensor.Camera, \
+        ansys.speos.script.sensor.Radiance, ansys.speos.script.sensor.Irradiance, \
+        ansys.speos.script.simulation.Direct, ansys.speos.script.simulation.Interactive, \
+        ansys.speos.script.simulation.Inverse, ansys.speos.script.part.Part, ansys.speos.script.body.Body, \
+        ansys.speos.script.face.Face, ansys.speos.script.part.Part.SubPart]]
             Found features.
 
         Examples
@@ -357,8 +386,8 @@ ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.p
     #    pass
 
     # def save(self):
-    #    """Save class state in file given at construction - Not yet implemented"""
-    #    pass
+    #     """Save class state in file given at construction - Not yet implemented"""
+    #     pass
 
     def delete(self) -> Project:
         """Delete project: erase scene data.

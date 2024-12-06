@@ -39,7 +39,7 @@ def test_create_camera_sensor(speos: Speos):
     p = script.Project(speos=speos)
 
     # Default value
-    sensor1 = p.create_sensor(name="Camera.1", feature_type=script.Camera)
+    sensor1 = p.create_sensor(name="Camera.1", feature_type=script.sensor.Camera)
     sensor1.commit()
     assert sensor1.sensor_template_link is not None
     assert sensor1.sensor_template_link.get().HasField("camera_sensor_template")
@@ -303,7 +303,7 @@ def test_create_irradiance_sensor(speos: Speos):
     p = script.Project(speos=speos)
 
     # Default value
-    sensor1 = p.create_sensor(name="Irradiance.1", feature_type=script.Irradiance)
+    sensor1 = p.create_sensor(name="Irradiance.1", feature_type=script.sensor.Irradiance)
     sensor1.commit()
     assert sensor1.sensor_template_link is not None
     assert sensor1.sensor_template_link.get().HasField("irradiance_sensor_template")
@@ -393,7 +393,7 @@ def test_create_irradiance_sensor(speos: Speos):
     assert sensor1._sensor_instance.irradiance_properties.integration_direction == []
 
     # dimensions
-    sensor1.dimensions.set_x_start(value=-10).set_x_end(value=10).set_x_sampling(value=60).set_y_start(value=-20).set_y_end(
+    sensor1.set_dimensions().set_x_start(value=-10).set_x_end(value=10).set_x_sampling(value=60).set_y_start(value=-20).set_y_end(
         value=20
     ).set_y_sampling(value=120)
     sensor1.commit()
@@ -464,7 +464,7 @@ def test_create_irradiance_sensor(speos: Speos):
         "TheBodyC/TheFaceC2",
     ]
 
-    sensor1.layer.set_sca_filtering_mode_last_impact()
+    sensor1.set_layer_type_face().set_sca_filtering_mode_last_impact()
     sensor1.commit()
     assert (
         sensor1._sensor_instance.irradiance_properties.layer_type_face.sca_filtering_mode
@@ -481,7 +481,7 @@ def test_create_irradiance_sensor(speos: Speos):
         == sensor1._sensor_instance.irradiance_properties.layer_type_sequence.EnumSequenceType.Faces
     )
 
-    sensor1.layer.set_define_sequence_per_geometries()
+    sensor1.set_layer_type_sequence().set_define_sequence_per_geometries()
     sensor1.commit()
     assert (
         sensor1._sensor_instance.irradiance_properties.layer_type_sequence.define_sequence_per
@@ -522,7 +522,7 @@ def test_create_radiance_sensor(speos: Speos):
     p = script.Project(speos=speos)
 
     # Default value
-    sensor1 = p.create_sensor(name="Radiance.1", feature_type=script.Radiance)
+    sensor1 = p.create_sensor(name="Radiance.1", feature_type=script.sensor.Radiance)
     sensor1.commit()
     assert sensor1.sensor_template_link is not None
     assert sensor1.sensor_template_link.get().HasField("radiance_sensor_template")
@@ -579,7 +579,7 @@ def test_create_radiance_sensor(speos: Speos):
     assert sensor1.sensor_template_link.get().radiance_sensor_template.integration_angle == 4.5
 
     # dimensions
-    sensor1.dimensions.set_x_start(value=-10).set_x_end(value=10).set_x_sampling(value=60).set_y_start(value=-20).set_y_end(
+    sensor1.set_dimensions().set_x_start(value=-10).set_x_end(value=10).set_x_sampling(value=60).set_y_start(value=-20).set_y_end(
         value=20
     ).set_y_sampling(value=120)
     sensor1.commit()
@@ -645,7 +645,7 @@ def test_create_radiance_sensor(speos: Speos):
     )
 
     # layer_type_face -> clear layers list
-    sensor1.layer.set_layers(values=[])  # clear layers list
+    sensor1.set_layer_type_face().set_layers(values=[])  # clear layers list
     sensor1.commit()
     assert len(sensor1._sensor_instance.radiance_properties.layer_type_face.layers) == 0
 
@@ -659,7 +659,7 @@ def test_create_radiance_sensor(speos: Speos):
         == sensor1._sensor_instance.radiance_properties.layer_type_sequence.EnumSequenceType.Faces
     )
 
-    sensor1.layer.set_define_sequence_per_geometries()
+    sensor1.set_layer_type_sequence().set_define_sequence_per_geometries()
     sensor1.commit()
     assert (
         sensor1._sensor_instance.radiance_properties.layer_type_sequence.define_sequence_per
@@ -677,7 +677,7 @@ def test_commit_sensor(speos: Speos):
     p = script.Project(speos=speos)
 
     # Create
-    sensor1 = p.create_sensor(name="Irradiance.1", feature_type=script.Irradiance)
+    sensor1 = p.create_sensor(name="Irradiance.1", feature_type=script.sensor.Irradiance)
     assert sensor1.sensor_template_link is None
     assert len(p.scene_link.get().sensors) == 0
 
@@ -700,19 +700,26 @@ def test_reset_sensor(speos: Speos):
     p = script.Project(speos=speos)
 
     # Create + commit
-    sensor1 = p.create_sensor(name="Sensor.1", feature_type=script.Irradiance)
+    sensor1 = p.create_sensor(name="Sensor.1", feature_type=script.sensor.Irradiance)
     sensor1.commit()
-    assert sensor1.sensor_template_link is not None
-    assert sensor1.sensor_template_link.get().HasField("irradiance_sensor_template")
-    assert len(p.scene_link.get().sensors) == 1
-    assert p.scene_link.get().sensors[0].HasField("irradiance_properties")
+    assert sensor1._sensor_template.irradiance_sensor_template.dimensions.x_start == -50  # local
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.dimensions.x_start == -50  # server
+    assert sensor1._sensor_instance.irradiance_properties.axis_system == [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]  # local
+    assert p.scene_link.get().sensors[0].irradiance_properties.axis_system == [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]  # server
+
+    sensor1.set_dimensions().set_x_start(0)
+    sensor1.set_axis_system([1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    assert sensor1._sensor_template.irradiance_sensor_template.dimensions.x_start == 0  # local
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.dimensions.x_start == -50  # server
+    assert sensor1._sensor_instance.irradiance_properties.axis_system == [1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1]  # local
+    assert p.scene_link.get().sensors[0].irradiance_properties.axis_system == [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]  # server
 
     # Ask for reset
     sensor1.reset()
-    assert sensor1.sensor_template_link.get().HasField("irradiance_sensor_template")
-    assert sensor1._sensor_template.HasField("irradiance_sensor_template")  # local template
-    assert p.scene_link.get().sensors[0].HasField("irradiance_properties")
-    assert sensor1._sensor_instance.HasField("irradiance_properties")  # local instance
+    assert sensor1._sensor_template.irradiance_sensor_template.dimensions.x_start == -50  # local
+    assert sensor1.sensor_template_link.get().irradiance_sensor_template.dimensions.x_start == -50  # server
+    assert sensor1._sensor_instance.irradiance_properties.axis_system == [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]  # local
+    assert p.scene_link.get().sensors[0].irradiance_properties.axis_system == [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]  # server
 
     sensor1.delete()
 
@@ -722,7 +729,7 @@ def test_delete_sensor(speos: Speos):
     p = script.Project(speos=speos)
 
     # Create + commit
-    sensor1 = p.create_sensor(name="Sensor.1", feature_type=script.Irradiance)
+    sensor1 = p.create_sensor(name="Sensor.1", feature_type=script.sensor.Irradiance)
     sensor1.commit()
     assert sensor1.sensor_template_link.get().HasField("irradiance_sensor_template")
     assert sensor1._sensor_template.HasField("irradiance_sensor_template")  # local
