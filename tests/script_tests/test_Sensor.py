@@ -393,7 +393,7 @@ def test_create_irradiance_sensor(speos: Speos):
     assert sensor1._sensor_instance.irradiance_properties.integration_direction == []
 
     # dimensions
-    sensor1.dimensions.set_x_start(value=-10).set_x_end(value=10).set_x_sampling(value=60).set_y_start(value=-20).set_y_end(
+    sensor1.set_dimensions().set_x_start(value=-10).set_x_end(value=10).set_x_sampling(value=60).set_y_start(value=-20).set_y_end(
         value=20
     ).set_y_sampling(value=120)
     sensor1.commit()
@@ -464,7 +464,7 @@ def test_create_irradiance_sensor(speos: Speos):
         "TheBodyC/TheFaceC2",
     ]
 
-    sensor1.layer.set_sca_filtering_mode_last_impact()
+    sensor1.set_layer_type_face().set_sca_filtering_mode_last_impact()
     sensor1.commit()
     assert (
         sensor1._sensor_instance.irradiance_properties.layer_type_face.sca_filtering_mode
@@ -481,7 +481,7 @@ def test_create_irradiance_sensor(speos: Speos):
         == sensor1._sensor_instance.irradiance_properties.layer_type_sequence.EnumSequenceType.Faces
     )
 
-    sensor1.layer.set_define_sequence_per_geometries()
+    sensor1.set_layer_type_sequence().set_define_sequence_per_geometries()
     sensor1.commit()
     assert (
         sensor1._sensor_instance.irradiance_properties.layer_type_sequence.define_sequence_per
@@ -579,7 +579,7 @@ def test_create_radiance_sensor(speos: Speos):
     assert sensor1.sensor_template_link.get().radiance_sensor_template.integration_angle == 4.5
 
     # dimensions
-    sensor1.dimensions.set_x_start(value=-10).set_x_end(value=10).set_x_sampling(value=60).set_y_start(value=-20).set_y_end(
+    sensor1.set_dimensions().set_x_start(value=-10).set_x_end(value=10).set_x_sampling(value=60).set_y_start(value=-20).set_y_end(
         value=20
     ).set_y_sampling(value=120)
     sensor1.commit()
@@ -645,7 +645,7 @@ def test_create_radiance_sensor(speos: Speos):
     )
 
     # layer_type_face -> clear layers list
-    sensor1.layer.set_layers(values=[])  # clear layers list
+    sensor1.set_layer_type_face().set_layers(values=[])  # clear layers list
     sensor1.commit()
     assert len(sensor1._sensor_instance.radiance_properties.layer_type_face.layers) == 0
 
@@ -659,7 +659,7 @@ def test_create_radiance_sensor(speos: Speos):
         == sensor1._sensor_instance.radiance_properties.layer_type_sequence.EnumSequenceType.Faces
     )
 
-    sensor1.layer.set_define_sequence_per_geometries()
+    sensor1.set_layer_type_sequence().set_define_sequence_per_geometries()
     sensor1.commit()
     assert (
         sensor1._sensor_instance.radiance_properties.layer_type_sequence.define_sequence_per
