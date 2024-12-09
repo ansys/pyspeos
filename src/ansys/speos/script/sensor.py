@@ -36,6 +36,7 @@ import ansys.speos.script.proto_message_utils as proto_message_utils
 
 class BaseSensor:
     """Base class for Sensor.
+
     Parameters
     ----------
     project : ansys.speos.script.project.Project
@@ -51,7 +52,6 @@ class BaseSensor:
     sensor_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance, optional
         Sensor instance to provide if the feature does not has to be created from scratch
         By default, ``None``, means that the feature is created from scratch by default.
-
 
     Attributes
     ----------
@@ -1974,7 +1974,7 @@ class Irradiance(BaseSensor):
             )
         elif self._layer_type != Irradiance.LayerTypeIncidenceAngle:
             self._layer_type = Irradiance.LayerTypeIncidenceAngle(
-                layer_type_incidence_angle=self._irradiance_props.layer_type_incidence_angle
+                layer_type_incidence_angle=self._irradiance_props.layer_type_incidence_angle, stable_ctr=True
             )
         return self._layer_type
 
