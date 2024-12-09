@@ -98,6 +98,10 @@ class BaseSensor:
         stable_ctr : bool
             variable to indicate if usage is inside class scope
 
+        Notes
+        -----
+        Do not instantiate this class yourself, use set_wavelength_range method available in sensor classes.
+
         """
 
         def __init__(self, wavelengths_range: common_pb2.WavelengthsRange, default_values: bool = True, stable_ctr: bool = False) -> None:
@@ -165,7 +169,6 @@ class BaseSensor:
     class Dimensions:
         """Dimensions of the sensor.
         By default, for both x and y axis: from -50mm to 50mm is chosen, with a sampling of 100.
-        Do not instantiate this class yourself use set dimension or sensor classes to create it
 
         Parameters
         ----------
@@ -176,6 +179,9 @@ class BaseSensor:
         stable_ctr : bool
             variable to indicate if usage is inside class scope
 
+        Notes
+        -----
+        Do not instantiate this class yourself, use set_dimensions method available in sensor classes.
         """
 
         def __init__(self, sensor_dimensions: common_pb2.SensorDimensions, default_values: bool = True, stable_ctr: bool = False) -> None:
@@ -304,6 +310,9 @@ class BaseSensor:
         stable_ctr : bool
             variable to indicate if usage is inside class scope
 
+        Notes
+        -----
+        Do not instantiate this class yourself, use set_type_colorimetric method available in sensor classes.
         """
 
         def __init__(
@@ -347,6 +356,9 @@ class BaseSensor:
         stable_ctr : bool
             variable to indicate if usage is inside class scope
 
+        Notes
+        -----
+        Do not instantiate this class yourself, use set_spectral_type method available in sensor classes.
         """
 
         def __init__(
@@ -408,6 +420,9 @@ class BaseSensor:
         stable_ctr : bool
             variable to indicate if usage is inside class scope
 
+        Notes
+        -----
+        Do not instantiate this class yourself, use set_layer_type_face method available in sensor classes.
         """
 
         def __init__(
@@ -482,6 +497,9 @@ class BaseSensor:
         stable_ctr : bool
             variable to indicate if usage is inside class scope
 
+        Notes
+        -----
+        Do not instantiate this class yourself, use set_layer_type_sequence method available in sensor classes.
         """
 
         def __init__(
@@ -550,6 +568,9 @@ class BaseSensor:
         stable_ctr : bool
             variable to indicate if usage is inside class scope
 
+        Notes
+        -----
+        Do not instantiate this class yourself, use set_layer_type_incidence_angle method available in sensor classes.
         """
 
         def __init__(
@@ -1674,13 +1695,13 @@ class Irradiance(BaseSensor):
         """
         return self._layer_type
 
-    def set_dimensions(self):
+    def set_dimensions(self) -> Irradiance.Dimensions:
         """
         Set the dimensions of the sensor.
 
         Returns
         -------
-        ansys.speos.script.sensor.Irradiance.Dimensions
+        ansys.speos.script.sensor.BaseSensor.Dimensions
             Dimension class
         """
         return self._sensor_dimensions
@@ -2137,13 +2158,13 @@ class Radiance(BaseSensor):
         """
         return self._layer_type
 
-    def set_dimensions(self):
+    def set_dimensions(self) -> Radiance.Dimensions:
         """
         Set the dimensions of the sensor.
 
         Returns
         -------
-        ansys.speos.script.sensor.Radiance.Dimensions
+        ansys.speos.script.sensor.BaseSensor.Dimensions
             Dimension class
         """
         return self._sensor_dimensions
