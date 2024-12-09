@@ -69,10 +69,8 @@ else:
 local_test_path = os.path.join(local_path, "assets/")
 if config.get("SpeosServerOnDocker"):
     test_path = "/app/assets/"
-    notebook_path = "/app/jupyter_notebooks/"
 else:
     test_path = local_test_path
-    notebook_path = os.path.join(local_path, "jupyter_notebooks/")
 
 # Wait for the grpc server - in case the timeout is reached raise an error
 

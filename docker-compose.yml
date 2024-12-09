@@ -14,7 +14,3 @@ services:
         source: ./tests/assets
         target: /app/assets
         read_only: false
-      - type: bind
-        source: ./tests/jupyter_notebooks
-        target: /app/jupyter_notebooks
-        read_only: false

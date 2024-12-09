@@ -27,9 +27,9 @@ from nbconvert.preprocessors import ExecutePreprocessor
 import nbformat
 import pytest
 
-from conftest import notebook_path
+from conftest import local_path
 
-NOTEBOOKS = glob(os.path.join(notebook_path, "*.ipynb"))
+NOTEBOOKS = glob(os.path.join(local_path, "jupyter_notebooks", "*.ipynb"))
 
 
 def run_jupyter(notebook):

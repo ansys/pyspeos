@@ -40,6 +40,10 @@ tests = [
     "pytest==8.3.4",
     "ansys-platform-instancemanagement>=1.0.3",
     "pytest-cov==6.0.0",
+    "matplotlib",
+    "jupyterlab>=3",
+    "ipywidgets",
+    "pyvista[jupyter]",
     "nbformat",
     "nbconvert",
 ]
