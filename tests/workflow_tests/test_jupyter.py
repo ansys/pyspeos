@@ -33,8 +33,10 @@ NOTEBOOKS = glob(os.path.join(local_path, "jupyter_notebooks", "*.ipynb"))
 
 
 def run_jupyter(notebook):
+    with open(os.path.join(local_path, "workflow_tests", "unit_test_pre_run.ipynb")) as f1:
+        nb1 = nbformat.read(f1, as_version=4)
     with open(notebook) as f:
-        nb = nbformat.read(f, as_version=4)
+        nb = nb1 + nbformat.read(f, as_version=4)
         ep = ExecutePreprocessor(timeout=600, kernel_name="python3")
         try:
             assert ep.preprocess(nb) is not None, f"Got empty notebook for {notebook}"
