@@ -1643,9 +1643,10 @@ class Irradiance(BaseSensor):
     def spectral(self) -> Union[None, Irradiance.Spectral]:
         """
         Property containing all options in regard to the Spectral sensor properties
+
         Returns
         -------
-        ansys.speos.script.Irradiance._Spectral
+        ansys.speos.script.sensor.BaseSensor.Spectral
             Instance of Spectral Class for this sensor feature
         """
         if self._type == Irradiance.Spectral:
@@ -1659,9 +1660,16 @@ class Irradiance(BaseSensor):
     ) -> Union[None, Irradiance, Irradiance.LayerTypeFace, Irradiance.LayerTypeSequence, Irradiance.LayerTypeIncidenceAngle]:
         """
         Property containing all options in regard to the layer separation properties
+
         Returns
         -------
-        Union[None, Irradiance, Irradiance.LayerTypeFace, Irradiance.LayerTypeSequence, Irradiance.LayerTypeIncidenceAngle]
+        Union[
+            None,
+            ansys.speos.script.sensor.Irradiance,
+            ansys.speos.script.sensor.BaseSensor.LayerTypeFace,
+            ansys.speos.script.sensor.BaseSensor.LayerTypeSequence,
+            ansys.speos.script.sensor.BaseSensor.LayerTypeIncidenceAngle
+        ]
             Instance of Layertype Class for this sensor feature
         """
         return self._layer_type
@@ -1690,13 +1698,13 @@ class Irradiance(BaseSensor):
         self._type = "Photometric"
         return self
 
-    def set_type_colorimetric(self) -> Irradiance.Colorimetric:
+    def set_type_colorimetric(self) -> BaseSensor.Colorimetric:
         """Set type colorimetric.
         The sensor will generate color results without any spectral data or layer separation (in lx or W//m2).
 
         Returns
         -------
-        ansys.speos.script.sensor.Irradiance.Colorimetric
+        ansys.speos.script.sensor.BaseSensor.Colorimetric
             Colorimetric type.
         """
 
@@ -1721,13 +1729,13 @@ class Irradiance(BaseSensor):
         self._type = "Radiometric"
         return self
 
-    def set_type_spectral(self) -> Irradiance.Spectral:
+    def set_type_spectral(self) -> BaseSensor.Spectral:
         """Set type spectral.
         The sensor will generate color results and spectral data separated by wavelength (in lx or W/m2).
 
         Returns
         -------
-        ansys.speos.script.sensor.Irradiance.Spectral
+        ansys.speos.script.sensor.BaseSensor.Spectral
             Spectral type.
         """
         if self._type is None and self._irradiance_template.HasField("sensor_type_spectral"):
@@ -1902,9 +1910,7 @@ class Irradiance(BaseSensor):
 
     def set_layer_type_source(self) -> Irradiance:
         """
-        defines layer separation as by source
-        Parameters
-        ----------
+        Defines layer separation as by source
 
         Returns
         -------
@@ -1916,12 +1922,13 @@ class Irradiance(BaseSensor):
         self._layer_type = None
         return self
 
-    def set_layer_type_face(self) -> Irradiance.LayerTypeFace:
+    def set_layer_type_face(self) -> BaseSensor.LayerTypeFace:
         """
-        define layertype as by face
+        Defines layer separation as by face.
+
         Returns
         -------
-        ansys.speos.script.sensor.Irradiance.LayerTypeFace
+        ansys.speos.script.sensor.BaseSensor.LayerTypeFace
             LayerTypeFace property instance
         """
         if self._layer_type is None and self._irradiance_props.HasField("layer_type_face"):
@@ -1932,12 +1939,13 @@ class Irradiance(BaseSensor):
             self._layer_type = Irradiance.LayerTypeFace(layer_type_face=self._irradiance_props.layer_type_face, stable_ctr=True)
         return self._layer_type
 
-    def set_layer_type_sequence(self) -> Irradiance.LayerTypeSequence:
+    def set_layer_type_sequence(self) -> BaseSensor.LayerTypeSequence:
         """
-        define layertype as by sequence
+        Defines layer separation as by face.
+
         Returns
         -------
-        ansys.speos.script.sensor.Irradiance.LayerTypeSequence
+        ansys.speos.script.sensor.BaseSensor.LayerTypeSequence
             LayerTypeSequence property instance
         """
         if self._layer_type is None and self._irradiance_props.HasField("layer_type_sequence"):
@@ -1948,7 +1956,7 @@ class Irradiance(BaseSensor):
             self._layer_type = Irradiance.LayerTypeSequence(layer_type_sequence=self._irradiance_props.layer_type_sequence, stable_ctr=True)
         return self._layer_type
 
-    def set_layer_type_polarization(self) -> Irradiance.LayerTypeSequence:
+    def set_layer_type_polarization(self) -> Irradiance:
         """
         define layertype as by polarization
         Returns
@@ -1961,12 +1969,13 @@ class Irradiance(BaseSensor):
         self._layer_type = None
         return self
 
-    def set_layer_type_incidence_angle(self) -> Irradiance.LayerTypeIncidenceAngle:
+    def set_layer_type_incidence_angle(self) -> BaseSensor.LayerTypeIncidenceAngle:
         """
-        define layertype as by incidence angle
+        Defines layer separation as by incidence angle
+
         Returns
         -------
-        ansys.speos.script.sensor.Irradiance._LayerTypeIncidenceAngle:
+        ansys.speos.script.sensor.BaseSensor._LayerTypeIncidenceAngle:
             LayerTypeIncidenceAngle property instance
         """
         if self._layer_type is None and self._irradiance_props.HasField("layer_type_incidence_angle"):
@@ -2059,6 +2068,7 @@ class Radiance(BaseSensor):
     def dimensions(self) -> BaseSensor.Dimensions:
         """
         Property containing all options in regard to the Dimensions sensor properties
+
         Returns
         -------
         ansys.speos.script.BaseSensor._Dimensions
@@ -2070,6 +2080,7 @@ class Radiance(BaseSensor):
     def type(self) -> str:
         """
         Type of sensor
+
         Returns
         -------
         str
@@ -2088,6 +2099,7 @@ class Radiance(BaseSensor):
     def colorimetric(self) -> Union[None, Radiance.Colorimetric]:
         """
         Property containing all options in regard to the Colorimetric sensor properties
+
         Returns
         -------
         ansys.speos.script.Irradiance._Colorimetric
@@ -2102,6 +2114,7 @@ class Radiance(BaseSensor):
     def spectral(self) -> Union[None, Radiance.Spectral]:
         """
         Property containing all options in regard to the Spectral sensor properties
+
         Returns
         -------
         ansys.speos.script.Irradiance._Spectral
@@ -2116,6 +2129,7 @@ class Radiance(BaseSensor):
     def layer(self) -> Union[None, Radiance.LayerTypeFace, Radiance.LayerTypeSequence]:
         """
         Property containing all options in regard to the layer separation property
+
         Returns
         -------
         Union[None, Radiance.LayerTypeFace, Radiance.LayerTypeSequence]
@@ -2177,13 +2191,13 @@ class Radiance(BaseSensor):
         self._type = None
         return self
 
-    def set_type_spectral(self) -> Radiance.Spectral:
+    def set_type_spectral(self) -> BaseSensor.Spectral:
         """Set type spectral.
         The sensor will generate color results and spectral data separated by wavelength (in lx or W/m2).
 
         Returns
         -------
-        ansys.speos.script.sensor.Radiance.Spectral
+        ansys.speos.script.sensor.BaseSensor.Spectral
             Spectral type.
         """
         if self._type is None and self._radiance_template.HasField("sensor_type_spectral"):
@@ -2284,9 +2298,7 @@ class Radiance(BaseSensor):
 
     def set_layer_type_source(self) -> Radiance:
         """
-        defines layer separation as by source
-        Parameters
-        ----------
+        Defines layer separation as by source.
 
         Returns
         -------
@@ -2298,12 +2310,13 @@ class Radiance(BaseSensor):
         self._layer_type = None
         return self
 
-    def set_layer_type_face(self) -> Radiance.LayerTypeFace:
+    def set_layer_type_face(self) -> BaseSensor.LayerTypeFace:
         """
-        define layertype as by face
+        Defines layer separation as by face.
+
         Returns
         -------
-        ansys.speos.script.sensor.Radiance.LayerTypeFace
+        ansys.speos.script.sensor.BaseSensor.LayerTypeFace
             LayerTypeFace property instance
         """
         if self._layer_type is None and self._radiance_props.HasField("layer_type_face"):
@@ -2314,12 +2327,13 @@ class Radiance(BaseSensor):
             self._layer_type = Radiance.LayerTypeFace(layer_type_face=self._radiance_props.layer_type_face, stable_ctr=True)
         return self._layer_type
 
-    def set_layer_type_sequence(self) -> Radiance.LayerTypeSequence:
+    def set_layer_type_sequence(self) -> BaseSensor.LayerTypeSequence:
         """
-        define layertype as by sequence
+        Define layer separation as by sequence.
+
         Returns
         -------
-        ansys.speos.script.sensor.Radiance.LayerTypeSequence
+        ansys.speos.script.sensor.BaseSensor.LayerTypeSequence
             LayerTypeSequence property instance
         """
         if self._layer_type is None and self._radiance_props.HasField("layer_type_sequence"):
