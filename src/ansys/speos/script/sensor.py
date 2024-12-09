@@ -100,7 +100,7 @@ class BaseSensor:
 
         Notes
         -----
-        Do not instantiate this class yourself, use set_wavelength_range method available in sensor classes.
+        **Do not instantiate this class yourself**, use set_wavelength_range method available in sensor classes.
 
         """
 
@@ -181,7 +181,7 @@ class BaseSensor:
 
         Notes
         -----
-        Do not instantiate this class yourself, use set_dimensions method available in sensor classes.
+        **Do not instantiate this class yourself**, use set_dimensions method available in sensor classes.
         """
 
         def __init__(self, sensor_dimensions: common_pb2.SensorDimensions, default_values: bool = True, stable_ctr: bool = False) -> None:
@@ -312,7 +312,7 @@ class BaseSensor:
 
         Notes
         -----
-        Do not instantiate this class yourself, use set_type_colorimetric method available in sensor classes.
+        **Do not instantiate this class yourself**, use set_type_colorimetric method available in sensor classes.
         """
 
         def __init__(
@@ -358,7 +358,7 @@ class BaseSensor:
 
         Notes
         -----
-        Do not instantiate this class yourself, use set_spectral_type method available in sensor classes.
+        **Do not instantiate this class yourself**, use set_spectral_type method available in sensor classes.
         """
 
         def __init__(
@@ -422,7 +422,7 @@ class BaseSensor:
 
         Notes
         -----
-        Do not instantiate this class yourself, use set_layer_type_face method available in sensor classes.
+        **Do not instantiate this class yourself**, use set_layer_type_face method available in sensor classes.
         """
 
         def __init__(
@@ -499,7 +499,7 @@ class BaseSensor:
 
         Notes
         -----
-        Do not instantiate this class yourself, use set_layer_type_sequence method available in sensor classes.
+        **Do not instantiate this class yourself**, use set_layer_type_sequence method available in sensor classes.
         """
 
         def __init__(
@@ -570,7 +570,7 @@ class BaseSensor:
 
         Notes
         -----
-        Do not instantiate this class yourself, use set_layer_type_incidence_angle method available in sensor classes.
+        **Do not instantiate this class yourself**, use set_layer_type_incidence_angle method available in sensor classes.
         """
 
         def __init__(
@@ -800,6 +800,10 @@ class Camera(BaseSensor):
         stable_ctr : bool
             variable to indicate if usage is inside class scope
 
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use set_photometric_type method available in sensor classes.
+
         """
 
         class Color:
@@ -816,6 +820,10 @@ class Camera(BaseSensor):
             stable_ctr : bool
                 variable to indicate if usage is inside class scope
 
+            Notes
+            -----
+            **Do not instantiate this class yourself**, use set_mode_color method available in photometric class.
+
             """
 
             class BalanceModeUserWhite:
@@ -831,6 +839,11 @@ class Camera(BaseSensor):
                     Uses default values when True.
                 stable_ctr : bool
                     variable to indicate if usage is inside class scope
+
+                Notes
+                -----
+                **Do not instantiate this class yourself**, use set_balance_mode_user_white method available in color class.
+
                 """
 
                 def __init__(
@@ -911,6 +924,11 @@ class Camera(BaseSensor):
                     SensorCameraBalanceModeDisplay protobuf object to modify.
                 default_values : bool
                     Uses default values when True.
+
+                Notes
+                -----
+                **Do not instantiate this class yourself**, use set_balance_mode_display_primaries method available in color class.
+
                 """
 
                 def __init__(
