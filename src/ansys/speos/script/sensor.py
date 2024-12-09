@@ -1668,7 +1668,8 @@ class Irradiance(BaseSensor):
 
     def set_dimensions(self):
         """
-        Set the dimensions of the sensor
+        Set the dimensions of the sensor.
+
         Returns
         -------
         ansys.speos.script.sensor.Irradiance.Dimensions
@@ -2124,7 +2125,8 @@ class Radiance(BaseSensor):
 
     def set_dimensions(self):
         """
-        Set the dimensions of the sensor
+        Set the dimensions of the sensor.
+
         Returns
         -------
         ansys.speos.script.sensor.Radiance.Dimensions
