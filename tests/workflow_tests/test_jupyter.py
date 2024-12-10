@@ -27,7 +27,7 @@ from nbconvert.preprocessors import ExecutePreprocessor
 import nbformat
 import pytest
 
-from conftest import local_path
+from conftest import config, local_path
 
 NOTEBOOKS = glob(os.path.join(local_path, "jupyter_notebooks", "*.ipynb"))
 
@@ -36,8 +36,14 @@ def run_jupyter(notebook):
     with open(os.path.join(local_path, "workflow_tests", "unit_test_pre_run.ipynb")) as f1:
         nb1 = nbformat.read(f1, as_version=4)
     with open(notebook) as f:
-        nb = nb1 + nbformat.read(f, as_version=4)
+        nb = nbformat.read(f, as_version=4)
+        if config.get("SpeosServerOnDocker"):
+            for i, item in enumerate(nb["cells"]):
+                if item.get("cell_type") == "code":
+                    nb["cells"].pop(i)
+                    break
         ep = ExecutePreprocessor(timeout=600, kernel_name="python3")
+        nb = nb1 + nb
         try:
             assert ep.preprocess(nb) is not None, f"Got empty notebook for {notebook}"
         except Exception:
