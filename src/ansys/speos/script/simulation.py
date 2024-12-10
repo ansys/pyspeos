@@ -304,9 +304,10 @@ class BaseSimulation:
         if key == "":
             return self._to_dict()
         info = proto_message_utils._value_finder_key_startswith(dict_var=self._to_dict(), key=key)
-        if list(info) != []:
-            return next(info)[1]
-        else:
+        try:
+            first = next(info)
+            return first[1]
+        except StopIteration:
             info = proto_message_utils._flatten_dict(dict_var=self._to_dict())
             print("Used key: {} not found in key list: {}.".format(key, info.keys()))
 
