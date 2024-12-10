@@ -296,6 +296,43 @@ class BaseSource:
         self.source_template_link = self._project.client.get_item(key=src_inst.source_guid)
         self._reset()
 
+    def commit(self) -> BaseSource:
+        """Save feature: send the local data to the speos server database.
+
+        Returns
+        -------
+        ansys.speos.script.source.BaseSource
+            Source feature.
+        """
+        self._spectrum._commit()
+        self._commit()
+        return self
+
+    def reset(self) -> BaseSource:
+        """Reset feature: override local data by the one from the speos server database.
+
+        Returns
+        -------
+        ansys.speos.script.source.BaseSource
+            Source feature.
+        """
+        self._spectrum._reset()
+        self._reset()
+        return self
+
+    def delete(self) -> BaseSource:
+        """Delete feature: delete data from the speos server database.
+        The local data are still available
+
+        Returns
+        -------
+        ansys.speos.script.source.BaseSource
+            Source feature.
+        """
+        self._spectrum._delete()
+        self._delete()
+        return self
+
 
 class Luminaire(BaseSource):
     """LuminaireSource.
@@ -427,43 +464,6 @@ class Luminaire(BaseSource):
             Luminaire source.
         """
         self._luminaire_props.axis_system[:] = axis_system
-        return self
-
-    def commit(self) -> Luminaire:
-        """Save feature: send the local data to the speos server database.
-
-        Returns
-        -------
-        ansys.speos.script.source.Luminaire
-            Source feature.
-        """
-        self._spectrum._commit()
-        self._commit()
-        return self
-
-    def reset(self) -> Luminaire:
-        """Reset feature: override local data by the one from the speos server database.
-
-        Returns
-        -------
-        ansys.speos.script.source.Luminaire
-            Source feature.
-        """
-        self._spectrum._reset()
-        self._reset()
-        return self
-
-    def delete(self) -> Luminaire:
-        """Delete feature: delete data from the speos server database.
-        The local data are still available
-
-        Returns
-        -------
-        ansys.speos.script.source.Luminaire
-            Source feature.
-        """
-        self._spectrum._delete()
-        self._delete()
         return self
 
 
@@ -639,43 +639,6 @@ class RayFile(BaseSource):
         else:
             self._ray_file_props.exit_geometries.geo_paths[:] = [gr.to_native_link() for gr in exit_geometries]
 
-        return self
-
-    def commit(self) -> RayFile:
-        """Save feature: send the local data to the speos server database.
-
-        Returns
-        -------
-        ansys.speos.script.source.RayFile
-            Source feature.
-        """
-        self._spectrum._commit()
-        self._commit()
-        return self
-
-    def reset(self) -> RayFile:
-        """Reset feature: override local data by the one from the speos server database.
-
-        Returns
-        -------
-        ansys.speos.script.source.RayFile
-            Source feature.
-        """
-        self._spectrum._reset()
-        self._reset()
-        return self
-
-    def delete(self) -> RayFile:
-        """Delete feature: delete data from the speos server database.
-        The local data are still available
-
-        Returns
-        -------
-        ansys.speos.script.source.RayFile
-            Source feature.
-        """
-        self._spectrum._delete()
-        self._delete()
         return self
 
 
@@ -969,9 +932,8 @@ class Surface(BaseSource):
         self._intensity.commit()
         self._surface.intensity_guid = self._intensity.intensity_template_link.key
 
-        # spectrum
-        self._spectrum._commit()
-        self._commit()
+        # spectrum & source
+        super().commit()
         return self
 
     def reset(self) -> Surface:
@@ -983,8 +945,8 @@ class Surface(BaseSource):
             Source feature.
         """
         self._intensity.reset()
-        self._spectrum._reset()
-        self._reset()
+        # spectrum & source
+        super().reset()
         return self
 
     def delete(self) -> Surface:
@@ -997,6 +959,6 @@ class Surface(BaseSource):
             Source feature.
         """
         self._intensity.delete()
-        self._spectrum._delete()
-        self._delete()
+        # spectrum & source
+        super().delete()
         return self
