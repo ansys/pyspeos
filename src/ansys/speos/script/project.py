@@ -115,8 +115,8 @@ class Project:
             Description of the feature.
             By default, ``""``.
         feature_type: type
-            Source type to be created
-            by default, ``ansys.speos.script.source.Surface``.
+            Source type to be created.
+            By default, ``ansys.speos.script.source.Surface``.
             Allowed types:
             Union[ansys.speos.script.source.Surface, ansys.speos.script.source.RayFile, \
             ansys.speos.script.source.Luminaire].
