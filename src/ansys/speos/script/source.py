@@ -40,6 +40,30 @@ src_type_change_error = "A source feature can't change its type. Please delete t
 
 
 class BaseSource:
+    """
+    Super CLass for all sources
+
+    Parameters
+    ----------
+    project : ansys.speos.script.project.Project
+        Project in which source shall be created.
+    name : str
+        Name of the source.
+    description : str
+        Description of the source.
+        By default, ``""``.
+    metadata : Mapping[str, str]
+        Metadata of the feature.
+        By default, ``{}``.
+    source_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance, optional
+        Source instance to provide if the feature does not have to be created from scratch
+        By default, ``None``, means that the feature is created from scratch by default.
+
+    Notes
+    -----
+    This is a Super class, **Do not instantiate this class yourself**
+    """
+
     def __init__(
         self,
         project: project.Project,
@@ -148,7 +172,7 @@ class BaseSource:
 
         Returns
         -------
-
+        str | dict
         """
 
         if key == "":
@@ -179,7 +203,7 @@ class BaseSource:
 
         Returns
         -------
-        ansys.speos.script.source.Source
+        ansys.speos.script.source.BaseSource
             Source feature.
         """
         # The _unique_id will help to find correct item in the scene.sources (the list of SourceInstance)
@@ -219,7 +243,7 @@ class BaseSource:
 
         Returns
         -------
-        ansys.speos.script.source.Source
+        ansys.speos.script.source.BaseSource
             Source feature.
         """
         # Reset source template
@@ -241,7 +265,7 @@ class BaseSource:
 
         Returns
         -------
-        ansys.speos.script.source.Source
+        ansys.speos.script.source.BaseSource
             Source feature.
         """
         # This allows to clean-managed object contained in _luminaire, _rayfile, etc.. Like Spectrum, IntensityTemplate
@@ -322,7 +346,7 @@ class Luminaire(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.Source.Luminaire
+        ansys.speos.script.source.Luminaire
             Luminaire source.
         """
         self._luminaire.flux_from_intensity_file.SetInParent()
@@ -339,7 +363,7 @@ class Luminaire(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.Source.Luminaire
+        ansys.speos.script.source.Luminaire
             Luminaire source.
         """
         self._luminaire.luminous_flux.luminous_value = value
@@ -356,7 +380,7 @@ class Luminaire(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.Source.Luminaire
+        ansys.speos.script.source.Luminaire
             Luminaire source.
         """
         self._luminaire.radiant_flux.radiant_value = value
@@ -372,7 +396,7 @@ class Luminaire(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.Source.Luminaire
+        ansys.speos.script.source.Luminaire
             Luminaire source.
         """
         self._luminaire.intensity_file_uri = uri
@@ -399,23 +423,45 @@ class Luminaire(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.Source.Luminaire
+        ansys.speos.script.source.Luminaire
             Luminaire source.
         """
         self._luminaire_props.axis_system[:] = axis_system
         return self
 
     def commit(self) -> Luminaire:
+        """Save feature: send the local data to the speos server database.
+
+        Returns
+        -------
+        ansys.speos.script.source.Luminaire
+            Source feature.
+        """
         self._spectrum._commit()
         self._commit()
         return self
 
     def reset(self) -> Luminaire:
+        """Reset feature: override local data by the one from the speos server database.
+
+        Returns
+        -------
+        ansys.speos.script.source.Luminaire
+            Source feature.
+        """
         self._spectrum._reset()
         self._reset()
         return self
 
     def delete(self) -> Luminaire:
+        """Delete feature: delete data from the speos server database.
+        The local data are still available
+
+        Returns
+        -------
+        ansys.speos.script.source.Luminaire
+            Source feature.
+        """
         self._spectrum._delete()
         self._delete()
         return self
@@ -478,7 +524,7 @@ class RayFile(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.Source.RayFile
+        ansys.speos.script.source.RayFile
             RayFile source.
         """
         self._ray_file.ray_file_uri = uri
@@ -489,7 +535,7 @@ class RayFile(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.Source.RayFile
+        ansys.speos.script.source.RayFile
             RayFile source.
         """
         self._ray_file.flux_from_ray_file.SetInParent()
@@ -506,7 +552,7 @@ class RayFile(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.Source.RayFile
+        ansys.speos.script.source.RayFile
             RayFile source.
         """
         self._ray_file.luminous_flux.luminous_value = value
@@ -523,7 +569,7 @@ class RayFile(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.Source.RayFile
+        ansys.speos.script.source.RayFile
             RayFile source.
         """
         self._ray_file.radiant_flux.radiant_value = value
@@ -534,7 +580,7 @@ class RayFile(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.Source.RayFile
+        ansys.speos.script.source.RayFile
             RayFile source.
         """
         self._ray_file.spectrum_from_ray_file.SetInParent()
@@ -568,7 +614,7 @@ class RayFile(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.Source.RayFile
+        ansys.speos.script.source.RayFile
             RayFile Source.
         """
         self._ray_file_props.axis_system[:] = axis_system
@@ -585,7 +631,7 @@ class RayFile(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.Source.RayFile
+        ansys.speos.script.source.RayFile
             RayFile Source.
         """
         if exit_geometries == []:
@@ -596,16 +642,38 @@ class RayFile(BaseSource):
         return self
 
     def commit(self) -> RayFile:
+        """Save feature: send the local data to the speos server database.
+
+        Returns
+        -------
+        ansys.speos.script.source.RayFile
+            Source feature.
+        """
         self._spectrum._commit()
         self._commit()
         return self
 
     def reset(self) -> RayFile:
+        """Reset feature: override local data by the one from the speos server database.
+
+        Returns
+        -------
+        ansys.speos.script.source.RayFile
+            Source feature.
+        """
         self._spectrum._reset()
         self._reset()
         return self
 
     def delete(self) -> RayFile:
+        """Delete feature: delete data from the speos server database.
+        The local data are still available
+
+        Returns
+        -------
+        ansys.speos.script.source.RayFile
+            Source feature.
+        """
         self._spectrum._delete()
         self._delete()
         return self
@@ -641,6 +709,12 @@ class Surface(BaseSource):
             Exitance variable properties to complete.
         default_values : bool
             Uses default values when True.
+                stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use set_exitance_variable method available in Source classes.
         """
 
         def __init__(
@@ -648,7 +722,11 @@ class Surface(BaseSource):
             exitance_variable: core.SourceTemplate.Surface.ExitanceVariable,
             exitance_variable_props: core.Scene.SourceInstance.SurfaceProperties.ExitanceVariableProperties,
             default_values: bool = True,
+            stable_ctr: bool = False,
         ) -> None:
+            if not stable_ctr:
+                msg = "ExitanceVariable class instantiated outside of class scope"
+                raise RuntimeError(msg)
             self._exitance_variable = exitance_variable
             self._exitance_variable_props = exitance_variable_props
 
@@ -666,7 +744,7 @@ class Surface(BaseSource):
 
             Returns
             -------
-            ansys.speos.script.source.Source.Surface.ExitanceVariable
+            ansys.speos.script.source.Surface.ExitanceVariable
                 ExitanceVariable of surface source.
             """
             self._exitance_variable.exitance_xmp_file_uri = uri
@@ -683,7 +761,7 @@ class Surface(BaseSource):
 
             Returns
             -------
-            ansys.speos.script.source.Source.Surface.ExitanceVariable
+            ansys.speos.script.source.Surface.ExitanceVariable
                 ExitanceVariable of surface Source.
             """
             self._exitance_variable_props.axis_plane[:] = axis_plane
@@ -731,7 +809,7 @@ class Surface(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.Source.Surface
+        ansys.speos.script.source.Surface
             Surface source.
         """
         self._surface.flux_from_intensity_file.SetInParent()
@@ -748,7 +826,7 @@ class Surface(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.Source.Surface
+        ansys.speos.script.source.Surface
             Surface source.
         """
         self._surface.luminous_flux.luminous_value = value
@@ -765,7 +843,7 @@ class Surface(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.Source.Surface
+        ansys.speos.script.source.Surface
             Surface source.
         """
         self._surface.radiant_flux.radiant_value = value
@@ -782,7 +860,7 @@ class Surface(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.Source.Surface
+        ansys.speos.script.source.Surface
             Surface source.
         """
         self._surface.luminous_intensity_flux.luminous_intensity_value = value
@@ -808,7 +886,7 @@ class Surface(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.Source.Surface
+        ansys.speos.script.source.Surface
             Surface source.
         """
         self._exitance_type = None
@@ -827,7 +905,7 @@ class Surface(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.Source.Surface.ExitanceVariable
+        ansys.speos.script.source.Surface.ExitanceVariable
             ExitanceVariable of surface source.
         """
         if self._exitance_type is None and self._surface.HasField("exitance_variable"):
@@ -835,11 +913,13 @@ class Surface(BaseSource):
                 exitance_variable=self._surface.exitance_variable,
                 exitance_variable_props=self._surface_props.exitance_variable_properties,
                 default_values=False,
+                stable_ctr=True,
             )
         elif type(self._exitance_type) != Surface.ExitanceVariable:
             self._exitance_type = Surface.ExitanceVariable(
                 exitance_variable=self._surface.exitance_variable,
                 exitance_variable_props=self._surface_props.exitance_variable_properties,
+                stable_ctr=True,
             )
         return self._exitance_type
 
@@ -848,7 +928,7 @@ class Surface(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.Source.Surface
+        ansys.speos.script.source.Surface
             Surface source.
         """
         self._surface.spectrum_from_xmp_file.SetInParent()
@@ -878,6 +958,13 @@ class Surface(BaseSource):
         return out_str
 
     def commit(self) -> Surface:
+        """Save feature: send the local data to the speos server database.
+
+        Returns
+        -------
+        ansys.speos.script.source.Surface
+            Source feature.
+        """
         # intensity
         self._intensity.commit()
         self._surface.intensity_guid = self._intensity.intensity_template_link.key
@@ -888,12 +975,27 @@ class Surface(BaseSource):
         return self
 
     def reset(self) -> Surface:
+        """Reset feature: override local data by the one from the speos server database.
+
+        Returns
+        -------
+        ansys.speos.script.source.Surface
+            Source feature.
+        """
         self._intensity.reset()
         self._spectrum._reset()
         self._reset()
         return self
 
     def delete(self) -> Surface:
+        """Delete feature: delete data from the speos server database.
+        The local data are still available
+
+        Returns
+        -------
+        ansys.speos.script.source.Surface
+            Source feature.
+        """
         self._intensity.delete()
         self._spectrum._delete()
         self._delete()

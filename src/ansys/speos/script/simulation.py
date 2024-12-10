@@ -82,7 +82,7 @@ class BaseSimulation:
 
         """
 
-        def __init__(self, weight: simulation_template_pb2.Weight, stable_ctr=False) -> None:
+        def __init__(self, weight: simulation_template_pb2.Weight, stable_ctr: bool = False) -> None:
             if not stable_ctr:
                 msg = "Weight class instantiated outside of class scope"
                 raise RuntimeError(msg)
