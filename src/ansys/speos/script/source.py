@@ -41,7 +41,7 @@ src_type_change_error = "A source feature can't change its type. Please delete t
 
 class BaseSource:
     """
-    Super CLass for all sources
+    Super Class for all sources
 
     Parameters
     ----------

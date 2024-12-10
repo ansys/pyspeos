@@ -186,7 +186,7 @@ class BaseSimulation:
     #
     #    Returns
     #    -------
-    #    ansys.speos.script.simulation.Simulation
+    #    ansys.speos.script.simulation.BaseSimulation
     #        Simulation feature.
     #    """
     #    if geometries is []:
@@ -333,7 +333,7 @@ class BaseSimulation:
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation
+        ansys.speos.script.simulation.BaseSimulation
             Simulation feature.
         """
         # The _unique_id will help to find correct item in the scene.simulations (the list of SimulationInstance)
@@ -376,7 +376,7 @@ class BaseSimulation:
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation
+        ansys.speos.script.simulation.BaseSimulation
             Simulation feature.
         """
         # Reset simulation template
@@ -402,7 +402,7 @@ class BaseSimulation:
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation
+        ansys.speos.script.simulation.BaseSimulation
             Simulation feature.
         """
         # Delete the simulation template
