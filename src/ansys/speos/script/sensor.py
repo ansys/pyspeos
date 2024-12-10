@@ -57,6 +57,10 @@ class BaseSensor:
     ----------
     sensor_template_link : ansys.speos.core.sensor_template.SensorTemplateLink
         Link object for the sensor template in database.
+
+    Notes
+    -----
+    This is a Superclass, **Do not instantiate this class yourself**
     """
 
     def __init__(
@@ -96,11 +100,11 @@ class BaseSensor:
         default_values : bool
             Uses default values when True.
         stable_ctr : bool
-            variable to indicate if usage is inside class scope
+            Variable to indicate if usage is inside class scope
 
         Notes
         -----
-        **Do not instantiate this class yourself**, use set_wavelength_range method available in sensor classes.
+        **Do not instantiate this class yourself**, use set_wavelengths_range method available in sensor classes.
 
         """
 
@@ -125,7 +129,7 @@ class BaseSensor:
 
             Returns
             -------
-            ansys.speos.script.sensor.Sensor.WavelengthsRange
+            ansys.speos.script.sensor.BaseSensor.WavelengthsRange
                 WavelengthsRange.
             """
             self._wavelengths_range.w_start = value
@@ -142,7 +146,7 @@ class BaseSensor:
 
             Returns
             -------
-            ansys.speos.script.sensor.Sensor.WavelengthsRange
+            ansys.speos.script.sensor.BaseSensor.WavelengthsRange
                 WavelengthsRange.
             """
 
@@ -160,7 +164,7 @@ class BaseSensor:
 
             Returns
             -------
-            ansys.speos.script.sensor.Sensor.WavelengthsRange
+            ansys.speos.script.sensor.BaseSensor.WavelengthsRange
                 WavelengthsRange.
             """
             self._wavelengths_range.w_sampling = value
@@ -177,7 +181,7 @@ class BaseSensor:
         default_values : bool
             Uses default values when True.
         stable_ctr : bool
-            variable to indicate if usage is inside class scope
+            Variable to indicate if usage is inside class scope
 
         Notes
         -----
@@ -308,7 +312,7 @@ class BaseSensor:
         default_values : bool
             Uses default values when True.
         stable_ctr : bool
-            variable to indicate if usage is inside class scope
+            Variable to indicate if usage is inside class scope
 
         Notes
         -----
@@ -354,11 +358,11 @@ class BaseSensor:
         default_values : bool
             Uses default values when True.
         stable_ctr : bool
-            variable to indicate if usage is inside class scope
+            Variable to indicate if usage is inside class scope
 
         Notes
         -----
-        **Do not instantiate this class yourself**, use set_spectral_type method available in sensor classes.
+        **Do not instantiate this class yourself**, use set_type_spectral method available in sensor classes.
         """
 
         def __init__(
@@ -418,7 +422,7 @@ class BaseSensor:
         default_values : bool
             Uses default values when True.
         stable_ctr : bool
-            variable to indicate if usage is inside class scope
+            Variable to indicate if usage is inside class scope
 
         Notes
         -----
@@ -465,7 +469,7 @@ class BaseSensor:
 
             Parameters
             ----------
-            values : List[ansys.speos.script.sensor.BaseSensor._LayerTypeFace.Layer]
+            values : List[ansys.speos.script.sensor.BaseSensor.LayerTypeFace.Layer]
                 List of layers
 
             Returns
@@ -495,7 +499,7 @@ class BaseSensor:
         default_values : bool
             Uses default values when True.
         stable_ctr : bool
-            variable to indicate if usage is inside class scope
+            Variable to indicate if usage is inside class scope
 
         Notes
         -----
@@ -526,7 +530,7 @@ class BaseSensor:
 
             Returns
             -------
-            ansys.speos.script.sensor.BaseSensor._.LayerTypeSequence
+            ansys.speos.script.sensor.BaseSensor.LayerTypeSequence
                 LayerTypeSequence.
             """
             self._layer_type_sequence.maximum_nb_of_sequence = value
@@ -566,7 +570,7 @@ class BaseSensor:
         default_values : bool
             Uses default values when True.
         stable_ctr : bool
-            variable to indicate if usage is inside class scope
+            Variable to indicate if usage is inside class scope
 
         Notes
         -----
@@ -798,11 +802,11 @@ class Camera(BaseSensor):
         default_values : bool
             Uses default values when True.
         stable_ctr : bool
-            variable to indicate if usage is inside class scope
+            Variable to indicate if usage is inside class scope
 
         Notes
         -----
-        **Do not instantiate this class yourself**, use set_photometric_type method available in sensor classes.
+        **Do not instantiate this class yourself**, use set_type_photometric method available in sensor classes.
 
         """
 
@@ -818,7 +822,7 @@ class Camera(BaseSensor):
             default_values : bool
                 Uses default values when True.
             stable_ctr : bool
-                variable to indicate if usage is inside class scope
+                Variable to indicate if usage is inside class scope
 
             Notes
             -----
@@ -838,7 +842,7 @@ class Camera(BaseSensor):
                 default_values : bool
                     Uses default values when True.
                 stable_ctr : bool
-                    variable to indicate if usage is inside class scope
+                    Variable to indicate if usage is inside class scope
 
                 Notes
                 -----
@@ -1273,7 +1277,7 @@ class Camera(BaseSensor):
 
             Returns
             -------
-            ansys.speos.script.sensor.WavelengthsRange
+            ansys.speos.script.BaseSensor.WavelengthsRange
                 Wavelengths range.
             """
             return self._wavelengths_range
@@ -1374,15 +1378,16 @@ class Camera(BaseSensor):
             self.set_axis_system()
 
     @property
-    def type(self) -> str:
-        """Camera type photometric or geometric"""
-        if self._type == Camera.Photometric:
-            return "Photometric Camera"
-        else:
-            return "Geometric Camera"
-
-    @property
     def photometric(self) -> Union[Camera.Photometric, None]:
+        """
+        Property containing the instance of Camera.Photometric used to build the sensor
+
+        Returns
+        -------
+        Union[ansys.speos.script.sensor.Camera.Photometric, None]
+            Photometric class instance if it exists
+
+        """
         return self._type
 
     def set_focal_length(self, value: float = 5.0) -> Camera:
@@ -1599,8 +1604,6 @@ class Irradiance(BaseSensor):
         By default, ``True``.
     """
 
-    LAYER_TYPES = ["face", "source", "sequence", "polarization", "incidence_angle"]
-
     def __init__(
         self,
         project: project.Project,
@@ -1635,9 +1638,10 @@ class Irradiance(BaseSensor):
     def dimensions(self) -> Irradiance.Dimensions:
         """
         Property containing all options in regard to the Dimensions sensor properties
+
         Returns
         -------
-        ansys.speos.script.Irradiance._Dimensions
+        ansys.speos.script.sensor.BaseSensor.Dimensions
             Instance of Dimensions Class for this sensor feature
         Returns
         """
@@ -1646,7 +1650,8 @@ class Irradiance(BaseSensor):
     @property
     def type(self) -> str:
         """
-        Type of sensor
+        Type of sensor.
+
         Returns
         -------
         str
@@ -1664,10 +1669,11 @@ class Irradiance(BaseSensor):
     @property
     def colorimetric(self) -> Union[None, Irradiance.Colorimetric]:
         """
-        Property containing all options in regard to the Colorimetric sensor properties
+        Property containing all options in regard to the Colorimetric sensor properties.
+
         Returns
         -------
-        ansys.speos.script.Irradiance._Colorimetric
+        Union[None, ansys.speos.script.sensor.BaseSensor.Colorimetric]
             Instance of Colorimetric Class for this sensor feature
         Returns
         -------
@@ -1681,11 +1687,11 @@ class Irradiance(BaseSensor):
     @property
     def spectral(self) -> Union[None, Irradiance.Spectral]:
         """
-        Property containing all options in regard to the Spectral sensor properties
+        Property containing all options in regard to the Spectral sensor properties.
 
         Returns
         -------
-        ansys.speos.script.sensor.BaseSensor.Spectral
+        Union[None, ansys.speos.script.sensor.BaseSensor.Spectral]
             Instance of Spectral Class for this sensor feature
         """
         if self._type == Irradiance.Spectral:
@@ -1935,7 +1941,7 @@ class Irradiance(BaseSensor):
 
     def set_layer_type_none(self) -> Irradiance:
         """
-        defines layer separation type as None
+        defines layer separation type as None.
 
         Returns
         -------
@@ -1949,7 +1955,7 @@ class Irradiance(BaseSensor):
 
     def set_layer_type_source(self) -> Irradiance:
         """
-        Defines layer separation as by source
+        Defines layer separation as by source.
 
         Returns
         -------
@@ -1980,7 +1986,7 @@ class Irradiance(BaseSensor):
 
     def set_layer_type_sequence(self) -> BaseSensor.LayerTypeSequence:
         """
-        Defines layer separation as by face.
+        Defines layer separation as by sequence.
 
         Returns
         -------
@@ -1997,7 +2003,8 @@ class Irradiance(BaseSensor):
 
     def set_layer_type_polarization(self) -> Irradiance:
         """
-        define layertype as by polarization
+        Define layer separation as by polarization.
+
         Returns
         -------
         ansys.speos.script.sensor.Irradiance
@@ -2014,7 +2021,7 @@ class Irradiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.BaseSensor._LayerTypeIncidenceAngle:
+        ansys.speos.script.sensor.BaseSensor.LayerTypeIncidenceAngle:
             LayerTypeIncidenceAngle property instance
         """
         if self._layer_type is None and self._irradiance_props.HasField("layer_type_incidence_angle"):
@@ -2110,7 +2117,7 @@ class Radiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.BaseSensor._Dimensions
+        ansys.speos.script.BaseSensor.Dimensions
             Instance of Dimensions Class for this sensor feature
         """
         return self._sensor_dimensions
@@ -2135,13 +2142,13 @@ class Radiance(BaseSensor):
             return self._type
 
     @property
-    def colorimetric(self) -> Union[None, Radiance.Colorimetric]:
+    def colorimetric(self) -> Union[None, BaseSensor.Colorimetric]:
         """
         Property containing all options in regard to the Colorimetric sensor properties
 
         Returns
         -------
-        ansys.speos.script.Irradiance._Colorimetric
+        ansys.speos.script.BaseSensor.Colorimetric
             Instance of Colorimetric Class for this sensor feature
         """
         if self._type == Radiance.Colorimetric:
@@ -2150,13 +2157,13 @@ class Radiance(BaseSensor):
             return None
 
     @property
-    def spectral(self) -> Union[None, Radiance.Spectral]:
+    def spectral(self) -> Union[None, BaseSensor.Spectral]:
         """
         Property containing all options in regard to the Spectral sensor properties
 
         Returns
         -------
-        ansys.speos.script.Irradiance._Spectral
+        ansys.speos.script.BaseSensor.Spectral
             Instance of Spectral Class for this sensor feature
         """
         if self._type == Radiance.Spectral:
@@ -2165,18 +2172,18 @@ class Radiance(BaseSensor):
             return None
 
     @property
-    def layer(self) -> Union[None, Radiance.LayerTypeFace, Radiance.LayerTypeSequence]:
+    def layer(self) -> Union[None, BaseSensor.LayerTypeFace, BaseSensor.LayerTypeSequence]:
         """
         Property containing all options in regard to the layer separation property
 
         Returns
         -------
-        Union[None, Radiance.LayerTypeFace, Radiance.LayerTypeSequence]
+        Union[None, ansys.speos.script.sensor.BaseSensor.LayerTypeFace, ansys.speos.script.sensor.BaseSensor.LayerTypeSequence]
             Instance of Layer type Class for this sensor feature
         """
         return self._layer_type
 
-    def set_dimensions(self) -> Radiance.Dimensions:
+    def set_dimensions(self) -> BaseSensor.Dimensions:
         """
         Set the dimensions of the sensor.
 
@@ -2200,13 +2207,13 @@ class Radiance(BaseSensor):
         self._type = None
         return self
 
-    def set_type_colorimetric(self) -> Radiance.Colorimetric:
+    def set_type_colorimetric(self) -> BaseSensor.Colorimetric:
         """Set type colorimetric.
         The sensor will generate color results without any spectral data or layer separation (in lx or W//m2).
 
         Returns
         -------
-        ansys.speos.script.sensor.Radiance.Colorimetric
+        ansys.speos.script.sensor.BaseSensor.Colorimetric
             Colorimetric type.
         """
         if self._type is None and self._radiance_template.HasField("sensor_type_colorimetric"):
