@@ -423,7 +423,7 @@ class Project:
                         sim_feat = self.find(name=inside_dict["name"], feature_type=simulation.Direct)
                         if len(sim_feat) == 0:
                             sim_feat = self.find(name=inside_dict["name"], feature_type=simulation.Inverse)
-                        elif len(sim_feat) == 0:
+                        if len(sim_feat) == 0:
                             sim_feat = self.find(name=inside_dict["name"], feature_type=simulation.Interactive)
                         sim_feat = sim_feat[0]
                         if sim_feat.job_link is None:
