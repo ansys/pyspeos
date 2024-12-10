@@ -60,7 +60,7 @@ class BaseSensor:
 
     Notes
     -----
-    This is a Superclass, **Do not instantiate this class yourself**
+    This is a Super class, **Do not instantiate this class yourself**
     """
 
     def __init__(
