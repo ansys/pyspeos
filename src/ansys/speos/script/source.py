@@ -177,7 +177,7 @@ class BaseSource:
 
         if key == "":
             return self._to_dict()
-        info = list(proto_message_utils._value_finder_key_startswith(dict_var=self._to_dict(), key=key))
+        info = proto_message_utils._value_finder_key_startswith(dict_var=self._to_dict(), key=key)
         try:
             first = next(info)
             return first[1]
