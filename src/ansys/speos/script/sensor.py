@@ -469,7 +469,7 @@ class BaseSensor:
 
             Parameters
             ----------
-            values : List[ansys.speos.script.sensor.BaseSensor.LayerTypeFace.Layer]
+            values : List[ansys.speos.script.sensor.BaseSensor.FaceLayer]
                 List of layers
 
             Returns
@@ -1278,7 +1278,7 @@ class Camera(BaseSensor):
 
             Returns
             -------
-            ansys.speos.script.BaseSensor.WavelengthsRange
+            ansys.speos.script.sensor.BaseSensor.WavelengthsRange
                 Wavelengths range.
             """
             return self._wavelengths_range
@@ -1644,7 +1644,6 @@ class Irradiance(BaseSensor):
         -------
         ansys.speos.script.sensor.BaseSensor.Dimensions
             Instance of Dimensions Class for this sensor feature
-        Returns
         """
         return self._sensor_dimensions
 
@@ -1676,9 +1675,6 @@ class Irradiance(BaseSensor):
         -------
         Union[None, ansys.speos.script.sensor.BaseSensor.Colorimetric]
             Instance of Colorimetric Class for this sensor feature
-        Returns
-        -------
-
         """
         if self._type == Irradiance.Colorimetric:
             return self._type
@@ -1710,11 +1706,11 @@ class Irradiance(BaseSensor):
         Returns
         -------
         Union[
-            None,
-            ansys.speos.script.sensor.Irradiance,
-            ansys.speos.script.sensor.BaseSensor.LayerTypeFace,
-            ansys.speos.script.sensor.BaseSensor.LayerTypeSequence,
-            ansys.speos.script.sensor.BaseSensor.LayerTypeIncidenceAngle
+            None,\
+            ansys.speos.script.sensor.Irradiance,\
+            ansys.speos.script.sensor.BaseSensor.LayerTypeFace,\
+            ansys.speos.script.sensor.BaseSensor.LayerTypeSequence,\
+            ansys.speos.script.sensor.BaseSensor.LayerTypeIncidenceAngle\
         ]
             Instance of Layertype Class for this sensor feature
         """
@@ -2022,7 +2018,7 @@ class Irradiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.sensor.BaseSensor.LayerTypeIncidenceAngle:
+        ansys.speos.script.sensor.BaseSensor.LayerTypeIncidenceAngle
             LayerTypeIncidenceAngle property instance
         """
         if self._layer_type is None and self._irradiance_props.HasField("layer_type_incidence_angle"):
@@ -2118,7 +2114,7 @@ class Radiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.BaseSensor.Dimensions
+        ansys.speos.script.sensor.BaseSensor.Dimensions
             Instance of Dimensions Class for this sensor feature
         """
         return self._sensor_dimensions
@@ -2149,7 +2145,7 @@ class Radiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.BaseSensor.Colorimetric
+        ansys.speos.script.sensor.BaseSensor.Colorimetric
             Instance of Colorimetric Class for this sensor feature
         """
         if self._type == Radiance.Colorimetric:
@@ -2164,7 +2160,7 @@ class Radiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.script.BaseSensor.Spectral
+        ansys.speos.script.sensor.BaseSensor.Spectral
             Instance of Spectral Class for this sensor feature
         """
         if self._type == Radiance.Spectral:
