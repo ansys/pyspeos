@@ -31,8 +31,6 @@ from ansys.speos.script.project import Project
 ERROR_IDS = [7, 8, 9, 10, 11, 12, 13, 14, 15]
 NO_ERROR_IDS = [0, 1, 2, 3, 4, 5, 6, 16, -7, -6, -5, -5, -4, -3, -2, -1]
 
-lpf_file_reader__v2__pb2.RayPath
-
 
 class RayPath:
     """
@@ -139,31 +137,31 @@ class RayPath:
 
         Notes
         -----
-        available intersection types:
-        StatusAbsorbed = 0 \
-        StatusSpecularTransmitted = 1 \
-        StatusGaussianTransmitted = 2 \
-        StatusLambertianTransmitted = 3 \
-        StatusVolumicDiffused = 4 \
-        StatusJustEmitted = 5 \
-        StatusDiracTransmitted = 6 \
-        StatusError = 7 \
-        StatusErrorVolumicBodyNotClosed = 8 \
-        StatusErrorVolumeConflict = 9 \
-        StatusError2DTangency = 10 \
-        StatusError2DIntersect3DWarning = 11 \
-        StatusErrorNonOpticalMaterial = 12 \
-        StatusErrorIntersection = 13 \
-        StatusErrorNonOpticalMaterialAtEmission = 14 \
-        StatusError3DTextureSupportTangency = 15 \
-        StatusLast = 16 \
-        StatusFirst = -7 \
-        StatusDiracReflected = -6 \
-        StatusReserved = -5 \
-        StatusGrinStep = -4 \
-        StatusLambertianReflected = -3 \
-        StatusGaussianReflected = -2 \
-        StatusSpecularReflected = -1 \
+        available intersection types: \n
+        - StatusAbsorbed = 0
+        - StatusSpecularTransmitted = 1
+        - StatusGaussianTransmitted = 2
+        - StatusLambertianTransmitted = 3
+        - StatusVolumicDiffused = 4
+        - StatusJustEmitted = 5
+        - StatusDiracTransmitted = 6
+        - StatusError = 7
+        - StatusErrorVolumicBodyNotClosed = 8
+        - StatusErrorVolumeConflict = 9
+        - StatusError2DTangency = 10
+        - StatusError2DIntersect3DWarning = 11
+        - StatusErrorNonOpticalMaterial = 12
+        - StatusErrorIntersection = 13
+        - StatusErrorNonOpticalMaterialAtEmission = 14
+        - StatusError3DTextureSupportTangency = 15
+        - StatusLast = 16
+        - StatusFirst = -7
+        - StatusDiracReflected = -6
+        - StatusReserved = -5
+        - StatusGrinStep = -4
+        - StatusLambertianReflected = -3
+        - StatusGaussianReflected = -2
+        - StatusSpecularReflected = -1
         """
         return self._intersection_type
 
