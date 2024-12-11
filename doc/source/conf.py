@@ -94,7 +94,7 @@ autodoc_typehints = "description"
 
 # -- Declare the Jinja context -----------------------------------------------
 extensions.extend(["myst_parser", "nbsphinx"])
-nbsphinx_execute = "always"
+nbsphinx_execute = "never"
 nbsphinx_custom_formats = {
     ".mystnb": ["jupytext.reads", {"fmt": "mystnb"}],
     ".py": ["jupytext.reads", {"fmt": ""}],
