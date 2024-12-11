@@ -96,7 +96,7 @@ autodoc_typehints = "description"
 BUILD_EXAMPLES = True if os.environ.get("BUILD_EXAMPLES", "true") == "true" else False
 if BUILD_EXAMPLES:
     extensions.extend(["myst_parser", "nbsphinx"])
-    nbsphinx_execute = "always"
+    nbsphinx_execute = "never"
     nbsphinx_custom_formats = {
         ".mystnb": ["jupytext.reads", {"fmt": "mystnb"}],
         ".py": ["jupytext.reads", {"fmt": ""}],
