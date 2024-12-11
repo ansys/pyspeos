@@ -45,6 +45,8 @@ extensions = [
     "sphinx_jinja",
     "sphinx.ext.autodoc",
     "ansys_sphinx_theme.extension.autoapi",
+    "nbsphinx",
+    "myst_parser",
 ]
 
 # Intersphinx mapping
@@ -96,7 +98,8 @@ autodoc_typehints = "description"
 BUILD_EXAMPLES = True if os.environ.get("BUILD_EXAMPLES", "true") == "true" else False
 if BUILD_EXAMPLES:
     extensions.extend(["myst_parser", "nbsphinx"])
-    nbsphinx_execute = "never"
+    nbsphinx_execute = "always"
+    nbsphinx_allow_errors = True
     nbsphinx_custom_formats = {
         ".mystnb": ["jupytext.reads", {"fmt": "mystnb"}],
         ".py": ["jupytext.reads", {"fmt": ""}],
@@ -150,17 +153,3 @@ jinja_contexts = {
         "build_examples": BUILD_EXAMPLES,
     },
 }
-
-
-def prepare_jinja_env(jinja_env) -> None:
-    """
-    Customize the jinja env.
-
-    Notes
-    -----
-    See https://jinja.palletsprojects.com/en/3.0.x/api/#jinja2.Environment
-    """
-    jinja_env.globals["project_name"] = project
-
-
-autoapi_prepare_jinja_env = prepare_jinja_env

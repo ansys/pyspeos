@@ -3,6 +3,9 @@ Examples
 
 .. jinja:: main_toctree
 
+    {% if build_examples %}
+
+
     Basic examples
     ==============
 
@@ -12,3 +15,12 @@ Examples
         :caption: Core layer examples
 
         examples/core-object-link
+
+    {% else %}
+
+    .. warning::
+
+        Set ``BUILD_EXAMPLES`` to ``true`` in your environment to build the
+        examples.
+
+    {% endif %}

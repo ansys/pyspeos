@@ -58,7 +58,9 @@ doc = [
     "myst-parser==4.0.0",
     "nbsphinx==0.9.5",
     "jupytext==1.16.4",
+    "jupyterlab==4.3.3",
     "jupyter-server==2.14.2",
+    "nbconvert==7.16.4",
 ]
 
 [tool.flit.module]

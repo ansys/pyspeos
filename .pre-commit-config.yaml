@@ -63,6 +63,6 @@ repos:
   rev: v0.2.9
   hooks:
     - id: add-license-headers
-      files: '(ansys|examples|tests)/.*\.(py)'
+      files: '(ansys|tests)/.*\.(py)'
       args:
       - --start_year=2023
