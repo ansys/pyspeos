@@ -505,9 +505,13 @@ class RayFile(BaseSource):
         spectrum_guid = ""
         if self._ray_file.HasField("spectrum_guid"):
             spectrum_guid = self._ray_file.spectrum_guid
-        self._spectrum = self._Spectrum(
-            speos_client=self._client, name=name, message_to_complete=self._ray_file, spectrum_guid=spectrum_guid
-        )
+            self._spectrum = self._Spectrum(
+                speos_client=self._client, name=name, message_to_complete=self._ray_file, spectrum_guid=spectrum_guid
+            )
+        else:
+            self._spectrum = self._Spectrum(speos_client=self._client, name=name, message_to_complete=self._ray_file)
+            self.set_spectrum_from_ray_file()
+
         self._name = name
 
         if default_values:
