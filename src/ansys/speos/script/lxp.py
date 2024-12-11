@@ -19,6 +19,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+from typing import Union
 
 import ansys.api.speos.lpf.v2.lpf_file_reader_pb2 as lpf_file_reader__v2__pb2
 import ansys.api.speos.lpf.v2.lpf_file_reader_pb2_grpc as lpf_file_reader__v2__pb2_grpc
@@ -30,13 +31,23 @@ from ansys.speos.script.project import Project
 ERROR_IDS = [7, 8, 9, 10, 11, 12, 13, 14, 15]
 NO_ERROR_IDS = [0, 1, 2, 3, 4, 5, 6, 16, -7, -6, -5, -5, -4, -3, -2, -1]
 
+lpf_file_reader__v2__pb2.RayPath
+
 
 class RayPath:
     """
     Framework representing a singular raypath.
+
+    Parameters
+    ----------
+    raypath : ansys.api.speos.lpf.v2.lpf_file_reader__v2__pb2.RayPath
+        Raypath object
+    sensor_contribution : bool
+        Defines if sensor contributions are stored within the data.
+        By default ´´False´´.
     """
 
-    def __init__(self, raypath, sensor_contribution=False):
+    def __init__(self, raypath: lpf_file_reader__v2__pb2.RayPath, sensor_contribution: bool = False):
         self._nb_impacts = len(raypath.impacts)
         self._impacts = [[inter.x, inter.y, inter.z] for inter in raypath.impacts]
         self._wl = raypath.wavelengths[0]
@@ -52,38 +63,138 @@ class RayPath:
             self._sensor_contribution = None
 
     @property
-    def nb_impacts(self):
+    def nb_impacts(self) -> int:
+        """Number of impacts contained in raypath
+
+        Returns
+        -------
+        int
+            Number of impacts
+        """
         return self._nb_impacts
 
     @property
-    def impacts(self):
+    def impacts(self) -> list[list[float]]:
+        """XYZ coordinates for each impact
+
+        Returns
+        -------
+        list[list[float]]
+            list containing the impact coordinates [[x0,y0,z0],[x1,y1,z1],...]
+        """
         return self._impacts
 
     @property
-    def wl(self):
+    def wl(self) -> float:
+        """Wavelength of the ray
+
+        Returns
+        -------
+        float
+            Wavelength in nm
+        """
         return self._wl
 
     @property
-    def body_ids(self):
+    def body_ids(self) -> list[int]:
+        """Body id of interacted body for each impact
+
+        Returns
+        -------
+        list[int]
+            list of face ID for each impact
+        """
         return self._body_ids
 
     @property
-    def face_ids(self):
+    def face_ids(self) -> list[int]:
+        """Body id of interacted body for each impact
+
+        Returns
+        -------
+        list[int]
+            list of face ID for each impact
+        """
         return self._face_ids
 
     @property
-    def last_direction(self):
+    def last_direction(self) -> list[float]:
+        """last direction of the ray
+
+        Returns
+        -------
+        list[float]
+            last direction of the rays as list[x,y,z]
+        """
         return self._last_direction
 
     @property
-    def intersection_type(self):
+    def intersection_type(self) -> list[int]:
+        """intersection type of the ray for each impact
+
+        Returns
+        -------
+        list[int]
+            intersection type at each impact
+
+        Notes
+        -----
+        available intersection types:
+        StatusAbsorbed = 0 \
+        StatusSpecularTransmitted = 1 \
+        StatusGaussianTransmitted = 2 \
+        StatusLambertianTransmitted = 3 \
+        StatusVolumicDiffused = 4 \
+        StatusJustEmitted = 5 \
+        StatusDiracTransmitted = 6 \
+        StatusError = 7 \
+        StatusErrorVolumicBodyNotClosed = 8 \
+        StatusErrorVolumeConflict = 9 \
+        StatusError2DTangency = 10 \
+        StatusError2DIntersect3DWarning = 11 \
+        StatusErrorNonOpticalMaterial = 12 \
+        StatusErrorIntersection = 13 \
+        StatusErrorNonOpticalMaterialAtEmission = 14 \
+        StatusError3DTextureSupportTangency = 15 \
+        StatusLast = 16 \
+        StatusFirst = -7 \
+        StatusDiracReflected = -6 \
+        StatusReserved = -5 \
+        StatusGrinStep = -4 \
+        StatusLambertianReflected = -3 \
+        StatusGaussianReflected = -2 \
+        StatusSpecularReflected = -1 \
+        """
         return self._intersection_type
 
     @property
-    def sensor_contribution(self):
+    def sensor_contribution(self) -> Union[None, list[dict]]:
+        """Provide sensor contribution information for each sensor
+
+        Returns
+        -------
+        Union[None, list[dict]]
+            If no sensor contribution None will be returned if there is sensor contribution a dictionary with \
+            following information will be returned:\
+            {"sensor_id": sc.sensor_id,
+            "position": [sc.coordinates.x, sc.coordinates.y]}
+
+        """
         return self._sensor_contribution
 
     def get(self, key=""):
+        """Method to retrieve any information from RayPath object
+
+        Parameters
+        ----------
+        key : str
+            Name of property
+
+        Returns
+        -------
+        property
+            values/content of the associated property
+        """
         data = {k: v.fget(self) for k, v in RayPath.__dict__.items() if isinstance(v, property)}
         if key == "":
             return data
@@ -157,6 +268,7 @@ class LightPathFinder:
     def __open(self, path: str):
         """
         method to open lpf file
+
         Parameters
         ----------
         path : str
@@ -167,6 +279,7 @@ class LightPathFinder:
     def __parse_traces(self) -> list[RayPath]:
         """
         Reads all raypathes from lpf dataset
+
         Returns
         -------
             list[script.RayPath]
@@ -191,7 +304,7 @@ class LightPathFinder:
                 if int(ray.intersection_type[-1]) in options:
                     self._filtered_rays.append(ray)
 
-    def filter_by_face_ids(self, options: list[int], new=True):
+    def filter_by_face_ids(self, options: list[int], new=True) -> ansys.speos.script.LightPathFinder:
         """filters raypathes based on face ids and populates filtered_rays property
 
         Parameters
@@ -201,7 +314,10 @@ class LightPathFinder:
         new : bool
             defines if new filter is created or existing filter is filtered
 
-
+        Returns
+        -------
+        ansys.speos.script.LightPathFinder
+            LightPathfinder Instance
         """
         if new:
             self._filtered_rays = []
@@ -214,6 +330,7 @@ class LightPathFinder:
             for ray in temp_rays:
                 if any([faceid in options for faceid in ray.face_ids]):
                     self._filtered_rays.append(ray)
+        return self
 
     def filter_by_body_ids(self, options: list[int], new=True):
         """filters raypathes based on body ids and populates filtered_rays property
@@ -224,6 +341,11 @@ class LightPathFinder:
             list of body ids
         new : bool
             defines if new filter is created or existing filter is filtered
+
+        Returns
+        -------
+        ansys.speos.script.LightPathFinder
+            LightPathfinder Instance
         """
         if new:
             self._filtered_rays = []
@@ -236,14 +358,29 @@ class LightPathFinder:
             for ray in temp_rays:
                 if any([body_id in options for body_id in ray.body_ids]):
                     self._filtered_rays.append(ray)
+        return self
 
     def filter_error_rays(self):
-        """filters rays and only shows rays in error"""
+        """filters rays and only shows rays in error
+
+        Returns
+        -------
+        ansys.speos.script.LightPathFinder
+            LightPathfinder Instance
+        """
         self.__filter_by_last_intersection_types(options=ERROR_IDS)
+        return self
 
     def remove_error_rays(self):
-        """filters rays and only shows rays not in error"""
+        """filters rays and only shows rays not in error
+
+        Returns
+        -------
+        ansys.speos.script.LightPathFinder
+            LightPathfinder Instance
+        """
         self.__filter_by_last_intersection_types(options=NO_ERROR_IDS)
+        return self
 
     @staticmethod
     def __add_ray_to_pv(plotter: pv.Plotter, ray: RayPath, max_ray_length: float):
@@ -287,6 +424,11 @@ class LightPathFinder:
             boolean to decide if filtered rays or all rays should be shown
         project : script.Project
             Speos Project/Geometry to be added to pyvista visualisation
+
+        Returns
+        -------
+        ansys.speos.script.LightPathFinder
+            LightPathfinder Instance
         """
         if ray_filter:
             if len(self._filtered_rays) > 0:
@@ -312,6 +454,7 @@ class LightPathFinder:
                 for i in range(nb_ray):
                     self.__add_ray_to_pv(plotter, temp_rays[i], max_ray_length)
         plotter.show()
+        return self
 
 
 def wavelength_to_rgb(wavelength: float, gamma: float = 0.8) -> [int, int, int, int]:
