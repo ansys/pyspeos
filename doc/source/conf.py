@@ -93,44 +93,46 @@ suppress_warnings = ["autoapi"]
 autodoc_typehints = "description"
 
 # -- Declare the Jinja context -----------------------------------------------
-extensions.extend(["myst_parser", "nbsphinx"])
-nbsphinx_execute = "always"
-nbsphinx_custom_formats = {
-    ".mystnb": ["jupytext.reads", {"fmt": "mystnb"}],
-    ".py": ["jupytext.reads", {"fmt": ""}],
-}
-nbsphinx_prompt_width = ""
-nbsphinx_prolog = """
+BUILD_EXAMPLES = True if os.environ.get("BUILD_EXAMPLES", "true") == "true" else False
+if BUILD_EXAMPLES:
+    extensions.extend(["myst_parser", "nbsphinx"])
+    nbsphinx_execute = "always"
+    nbsphinx_custom_formats = {
+        ".mystnb": ["jupytext.reads", {"fmt": "mystnb"}],
+        ".py": ["jupytext.reads", {"fmt": ""}],
+    }
+    nbsphinx_prompt_width = ""
+    nbsphinx_prolog = """
 
-.. grid:: 3
-    :gutter: 1
+    .. grid:: 3
+        :gutter: 1
 
-    .. grid-item::
-        :child-align: center
+        .. grid-item::
+            :child-align: center
 
-        .. button-link:: {cname_pref}/{python_file_loc}
-           :color: primary
-           :shadow:
+            .. button-link:: {cname_pref}/{python_file_loc}
+                :color: primary
+                :shadow:
 
-            Download as Python script :fab:`python`
+                Download as Python script :fab:`python`
 
-    .. grid-item::
-        :child-align: center
+        .. grid-item::
+            :child-align: center
 
-        .. button-link:: {cname_pref}/{ipynb_file_loc}
-           :color: primary
-           :shadow:
+            .. button-link:: {cname_pref}/{ipynb_file_loc}
+               :color: primary
+               :shadow:
 
-            Download as Jupyter notebook :fas:`book`
+                Download as Jupyter notebook :fas:`book`
 
-    .. grid-item::
-        :child-align: center
+        .. grid-item::
+            :child-align: center
 
-        .. button-link:: {cname_pref}/{pdf_file_loc}
-           :color: primary
-           :shadow:
+            .. button-link:: {cname_pref}/{pdf_file_loc}
+               :color: primary
+               :shadow:
 
-            Download as PDF document :fas:`file-pdf`
+                Download as PDF document :fas:`file-pdf`
 
 ----
 
@@ -141,8 +143,13 @@ nbsphinx_prolog = """
     pdf_file_loc="{{ env.docname }}.pdf",
 )
 
+
+
 jinja_contexts = {
     "linux_containers": {},
+    "main_toctree": {
+        "build_examples": BUILD_EXAMPLES,
+    },
 }
 
 
