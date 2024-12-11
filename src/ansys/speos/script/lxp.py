@@ -19,6 +19,8 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+from __future__ import annotations
+
 from typing import Union
 
 import ansys.api.speos.lpf.v2.lpf_file_reader_pb2 as lpf_file_reader__v2__pb2
@@ -302,7 +304,7 @@ class LightPathFinder:
                 if int(ray.intersection_type[-1]) in options:
                     self._filtered_rays.append(ray)
 
-    def filter_by_face_ids(self, options: list[int], new=True) -> ansys.speos.script.LightPathFinder:
+    def filter_by_face_ids(self, options: list[int], new=True) -> LightPathFinder:
         """filters raypathes based on face ids and populates filtered_rays property
 
         Parameters
@@ -330,7 +332,7 @@ class LightPathFinder:
                     self._filtered_rays.append(ray)
         return self
 
-    def filter_by_body_ids(self, options: list[int], new=True):
+    def filter_by_body_ids(self, options: list[int], new=True) -> LightPathFinder:
         """filters raypathes based on body ids and populates filtered_rays property
 
         Parameters
@@ -358,7 +360,7 @@ class LightPathFinder:
                     self._filtered_rays.append(ray)
         return self
 
-    def filter_error_rays(self):
+    def filter_error_rays(self) -> LightPathFinder:
         """filters rays and only shows rays in error
 
         Returns
@@ -369,7 +371,7 @@ class LightPathFinder:
         self.__filter_by_last_intersection_types(options=ERROR_IDS)
         return self
 
-    def remove_error_rays(self):
+    def remove_error_rays(self) -> LightPathFinder:
         """filters rays and only shows rays not in error
 
         Returns
@@ -408,7 +410,9 @@ class LightPathFinder:
             mesh = pv.Line(temp[0], temp[1])
         plotter.add_mesh(mesh, color=wavelength_to_rgb(ray.wl), line_width=2)
 
-    def preview(self, nb_ray: int = 100, max_ray_length: float = 50.0, ray_filter: bool = False, project: Project = None):
+    def preview(
+        self, nb_ray: int = 100, max_ray_length: float = 50.0, ray_filter: bool = False, project: Project = None
+    ) -> LightPathFinder:
         """
         method to preview lpf file with pyvista
 
