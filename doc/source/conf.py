@@ -137,12 +137,11 @@ if BUILD_EXAMPLES:
 ----
 
     """.format(
-    cname_pref=f"https://{cname}/version/{get_version_match(version)}",
-    python_file_loc="{{ env.docname }}.py",
-    ipynb_file_loc="{{ env.docname }}.ipynb",
-    pdf_file_loc="{{ env.docname }}.pdf",
-)
-
+        cname_pref=f"https://{cname}/version/{get_version_match(version)}",
+        python_file_loc="{{ env.docname }}.py",
+        ipynb_file_loc="{{ env.docname }}.ipynb",
+        pdf_file_loc="{{ env.docname }}.pdf",
+    )
 
 
 jinja_contexts = {
