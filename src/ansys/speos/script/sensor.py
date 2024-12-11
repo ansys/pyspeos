@@ -1273,7 +1273,7 @@ class Camera(BaseSensor):
             self._mode_photometric.png_bits = camera_sensor_pb2.EnumSensorCameraPNGBits.PNG_16
             return self
 
-        def set_wavelengths_range(self) -> Camera.WavelengthsRange:
+        def set_wavelengths_range(self) -> BaseSensor.WavelengthsRange:
             """Set the range of wavelengths.
 
             Returns
@@ -1636,7 +1636,7 @@ class Irradiance(BaseSensor):
             self.set_axis_system().set_ray_file_type_none().set_layer_type_none()
 
     @property
-    def dimensions(self) -> Irradiance.Dimensions:
+    def dimensions(self) -> BaseSensor.Dimensions:
         """
         Property containing all options in regard to the Dimensions sensor properties
 
@@ -1659,15 +1659,15 @@ class Irradiance(BaseSensor):
         """
         if type(self._type) is str:
             return self._type
-        elif self._type == Irradiance.Colorimetric:
+        elif isinstance(self._type, BaseSensor.Colorimetric):
             return "Colorimetric"
-        elif self._type == Irradiance.Spectral:
+        elif isinstance(self._type, BaseSensor.Spectral):
             return "Spectral"
         else:
             return self._type
 
     @property
-    def colorimetric(self) -> Union[None, Irradiance.Colorimetric]:
+    def colorimetric(self) -> Union[None, BaseSensor.Colorimetric]:
         """
         Property containing all options in regard to the Colorimetric sensor properties.
 
@@ -1676,13 +1676,13 @@ class Irradiance(BaseSensor):
         Union[None, ansys.speos.script.sensor.BaseSensor.Colorimetric]
             Instance of Colorimetric Class for this sensor feature
         """
-        if self._type == Irradiance.Colorimetric:
+        if isinstance(self._type, BaseSensor.Colorimetric):
             return self._type
         else:
             return None
 
     @property
-    def spectral(self) -> Union[None, Irradiance.Spectral]:
+    def spectral(self) -> Union[None, BaseSensor.Spectral]:
         """
         Property containing all options in regard to the Spectral sensor properties.
 
@@ -1691,7 +1691,7 @@ class Irradiance(BaseSensor):
         Union[None, ansys.speos.script.sensor.BaseSensor.Spectral]
             Instance of Spectral Class for this sensor feature
         """
-        if self._type == Irradiance.Spectral:
+        if isinstance(self._type, BaseSensor.Spectral):
             return self._type
         else:
             return None
@@ -1699,13 +1699,13 @@ class Irradiance(BaseSensor):
     @property
     def layer(
         self,
-    ) -> Union[None, Irradiance, Irradiance.LayerTypeFace, Irradiance.LayerTypeSequence, Irradiance.LayerTypeIncidenceAngle]:
+    ) -> Union[None, Irradiance, BaseSensor.LayerTypeFace, BaseSensor.LayerTypeSequence, BaseSensor.LayerTypeIncidenceAngle]:
         """
         Property containing all options in regard to the layer separation properties
 
         Returns
         -------
-        Union[
+        Union[\
             None,\
             ansys.speos.script.sensor.Irradiance,\
             ansys.speos.script.sensor.BaseSensor.LayerTypeFace,\
@@ -1716,7 +1716,7 @@ class Irradiance(BaseSensor):
         """
         return self._layer_type
 
-    def set_dimensions(self) -> Irradiance.Dimensions:
+    def set_dimensions(self) -> BaseSensor.Dimensions:
         """
         Set the dimensions of the sensor.
 
@@ -2131,9 +2131,9 @@ class Radiance(BaseSensor):
         """
         if type(self._type) is str:
             return self._type
-        elif self._type == Radiance.Colorimetric:
+        elif isinstance(self._type, BaseSensor.Colorimetric):
             return "Colorimetric"
-        elif self._type == Radiance.Spectral:
+        elif isinstance(self._type, BaseSensor.Spectral):
             return "Spectral"
         else:
             return self._type
@@ -2148,7 +2148,7 @@ class Radiance(BaseSensor):
         ansys.speos.script.sensor.BaseSensor.Colorimetric
             Instance of Colorimetric Class for this sensor feature
         """
-        if self._type == Radiance.Colorimetric:
+        if isinstance(self._type, BaseSensor.Colorimetric):
             return self._type
         else:
             return None
@@ -2163,7 +2163,7 @@ class Radiance(BaseSensor):
         ansys.speos.script.sensor.BaseSensor.Spectral
             Instance of Spectral Class for this sensor feature
         """
-        if self._type == Radiance.Spectral:
+        if isinstance(self._type, BaseSensor.Spectral):
             return self._type
         else:
             return None
