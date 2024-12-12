@@ -9,6 +9,7 @@
 # ## Which speos objects are used via ObjectLink?
 
 # Almost all speos objects are used via ObjectLink: like sources, sensors, simulations and more.
+# For this tutorial we will use as example the surface optical property (sop)
 
 # +
 import ansys.speos.core as core
@@ -23,18 +24,28 @@ speos = core.Speos(host="localhost", port=50098)
 
 # ## Create an ObjectLink
 
+# Retrieve the access to the database.
+
 # +
 sop_t_db = speos.client.sop_templates()
 # -
+
+# Create the protobuf message.
 
 # +
 sop_t = core.SOPTemplate()
 sop_t.name = "Mirror_90"
 sop_t.mirror.reflectance = 90.0
+# -
 
+# Create the ObjectLink (here a SOPTemplateLink).
+
+# +
 mirror_90_link = sop_t_db.create(message=sop_t)
 print(mirror_90_link)
 # -
+
+# Create another ObjectLink from another protobuf message.
 
 # +
 sop_t = core.SOPTemplate()
@@ -46,10 +57,15 @@ mirror_100_link = sop_t_db.create(message=sop_t)
 
 # ## Modify an ObjectLink
 
-# Modify data locally
+# Retrieve the protobuf message corresponding to the ObjectLink.
 
 # +
 mirror_data = mirror_90_link.get()
+# -
+
+# Modify data locally
+
+# +
 mirror_data.name = "Mirror_50"
 mirror_data.mirror.reflectance = 50
 # -
