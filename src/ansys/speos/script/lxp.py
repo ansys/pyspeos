@@ -19,6 +19,8 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+"""The LightPathFinder defines an interface to read lpf files. These files contain a set of simulated rays with all \
+their intersections and properties."""
 from __future__ import annotations
 
 from typing import Union
@@ -27,11 +29,14 @@ import ansys.api.speos.lpf.v2.lpf_file_reader_pb2 as lpf_file_reader__v2__pb2
 import ansys.api.speos.lpf.v2.lpf_file_reader_pb2_grpc as lpf_file_reader__v2__pb2_grpc
 import pyvista as pv
 
-import ansys.speos.core as core
+import ansys.speos.core
 from ansys.speos.script.project import Project
 
 ERROR_IDS = [7, 8, 9, 10, 11, 12, 13, 14, 15]
+"""Intersection types indicating an error state."""
+
 NO_ERROR_IDS = [0, 1, 2, 3, 4, 5, 6, 16, -7, -6, -5, -5, -4, -3, -2, -1]
+"""Intersection types indicating a correct ray state."""
 
 
 class RayPath:
@@ -220,7 +225,7 @@ class LightPathFinder:
 
     """
 
-    def __init__(self, speos: core.Speos, path: str):
+    def __init__(self, speos: ansys.speos.core.Speos, path: str):
         self.client = speos.client
         self._stub = lpf_file_reader__v2__pb2_grpc.LpfFileReader_MonoStub(self.client.channel)
         self.__open(path)
@@ -278,7 +283,7 @@ class LightPathFinder:
 
     def __parse_traces(self) -> list[RayPath]:
         """
-        Reads all raypathes from lpf dataset
+        Reads all raypathes from lpf dataset.
 
         Returns
         -------
@@ -305,7 +310,7 @@ class LightPathFinder:
                     self._filtered_rays.append(ray)
 
     def filter_by_face_ids(self, options: list[int], new=True) -> LightPathFinder:
-        """filters raypathes based on face ids and populates filtered_rays property
+        """filters raypaths based on face ids and populates filtered_rays property.
 
         Parameters
         ----------
@@ -316,7 +321,7 @@ class LightPathFinder:
 
         Returns
         -------
-        ansys.speos.script.LightPathFinder
+        ansys.speos.script.lxp.LightPathFinder
             LightPathfinder Instance
         """
         if new:
@@ -333,7 +338,7 @@ class LightPathFinder:
         return self
 
     def filter_by_body_ids(self, options: list[int], new=True) -> LightPathFinder:
-        """filters raypathes based on body ids and populates filtered_rays property
+        """filters raypaths based on body ids and populates filtered_rays property.
 
         Parameters
         ----------
@@ -344,7 +349,7 @@ class LightPathFinder:
 
         Returns
         -------
-        ansys.speos.script.LightPathFinder
+        ansys.speos.script.lxp.LightPathFinder
             LightPathfinder Instance
         """
         if new:
@@ -361,22 +366,22 @@ class LightPathFinder:
         return self
 
     def filter_error_rays(self) -> LightPathFinder:
-        """filters rays and only shows rays in error
+        """filters raypaths and only shows rays in error.
 
         Returns
         -------
-        ansys.speos.script.LightPathFinder
+        ansys.speos.script.lxp.LightPathFinder
             LightPathfinder Instance
         """
         self.__filter_by_last_intersection_types(options=ERROR_IDS)
         return self
 
     def remove_error_rays(self) -> LightPathFinder:
-        """filters rays and only shows rays not in error
+        """filters rays and only shows rays not in error.
 
         Returns
         -------
-        ansys.speos.script.LightPathFinder
+        ansys.speos.script.lxp.LightPathFinder
             LightPathfinder Instance
         """
         self.__filter_by_last_intersection_types(options=NO_ERROR_IDS)
@@ -385,7 +390,8 @@ class LightPathFinder:
     @staticmethod
     def __add_ray_to_pv(plotter: pv.Plotter, ray: RayPath, max_ray_length: float):
         """
-        add a ray to pyvista plotter
+        add a ray to pyvista plotter.
+
         Parameters
         ----------
         plotter : pv.Plotter
@@ -414,7 +420,7 @@ class LightPathFinder:
         self, nb_ray: int = 100, max_ray_length: float = 50.0, ray_filter: bool = False, project: Project = None
     ) -> LightPathFinder:
         """
-        method to preview lpf file with pyvista
+        method to preview lpf file with pyvista.
 
         Parameters
         ----------
@@ -429,7 +435,7 @@ class LightPathFinder:
 
         Returns
         -------
-        ansys.speos.script.LightPathFinder
+        ansys.speos.script.lxp.LightPathFinder
             LightPathfinder Instance
         """
         if ray_filter:
@@ -460,37 +466,44 @@ class LightPathFinder:
 
 
 def wavelength_to_rgb(wavelength: float, gamma: float = 0.8) -> [int, int, int, int]:
-    """This converts a given wavelength of light to an
-    approximate RGB color value. The wavelength must be given
+    """This converts a given wavelength of light to an approximate RGB color value. The wavelength must be given
     in nanometers in the range from 380 nm through 750 nm
     (789 THz through 400 THz).
     Based on code by Dan Bruton
     http://www.physics.sfasu.edu/astro/color/spectra.html
+
+    Parameters
+    ----------
+    wavelength : float
+        Wavelength in nanometer between 380-750 nm
+    gamma : float
+        Gamma value.
+        By default : ´´0.8´´
     """
 
     wavelength = float(wavelength)
-    if wavelength >= 380 and wavelength <= 440:
+    if 380 <= wavelength <= 440:
         attenuation = 0.3 + 0.7 * (wavelength - 380) / (440 - 380)
         R = ((-(wavelength - 440) / (440 - 380)) * attenuation) ** gamma
         G = 0.0
         B = (1.0 * attenuation) ** gamma
-    elif wavelength >= 440 and wavelength <= 490:
+    elif 440 <= wavelength <= 490:
         R = 0.0
         G = ((wavelength - 440) / (490 - 440)) ** gamma
         B = 1.0
-    elif wavelength >= 490 and wavelength <= 510:
+    elif 490 <= wavelength <= 510:
         R = 0.0
         G = 1.0
         B = (-(wavelength - 510) / (510 - 490)) ** gamma
-    elif wavelength >= 510 and wavelength <= 580:
+    elif 510 <= wavelength <= 580:
         R = ((wavelength - 510) / (580 - 510)) ** gamma
         G = 1.0
         B = 0.0
-    elif wavelength >= 580 and wavelength <= 645:
+    elif 580 <= wavelength <= 645:
         R = 1.0
         G = (-(wavelength - 645) / (645 - 580)) ** gamma
         B = 0.0
-    elif wavelength >= 645 and wavelength <= 750:
+    elif 645 <= wavelength <= 750:
         attenuation = 0.3 + 0.7 * (750 - wavelength) / (750 - 645)
         R = (1.0 * attenuation) ** gamma
         G = 0.0
