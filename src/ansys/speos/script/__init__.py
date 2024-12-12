@@ -51,7 +51,7 @@ from ansys.speos.script.lxp import LightPathFinder, RayPath
 from ansys.speos.script.opt_prop import OptProp
 from ansys.speos.script.part import Part
 from ansys.speos.script.project import Project
-from ansys.speos.script.sensor import Sensor
-from ansys.speos.script.simulation import Simulation
-from ansys.speos.script.source import Source
+import ansys.speos.script.sensor as sensor
+import ansys.speos.script.simulation as simulation
+import ansys.speos.script.source as source
 from ansys.speos.script.spectrum import Spectrum
