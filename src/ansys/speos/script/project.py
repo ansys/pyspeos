@@ -115,8 +115,8 @@ class Project:
             Description of the feature.
             By default, ``""``.
         feature_type: type
-            Source type to be created
-            by default, ``ansys.speos.script.source.Surface``.
+            Source type to be created.
+            By default, ``ansys.speos.script.source.Surface``.
             Allowed types:
             Union[ansys.speos.script.source.Surface, ansys.speos.script.source.RayFile, \
             ansys.speos.script.source.Luminaire].
@@ -289,7 +289,7 @@ class Project:
         Returns
         -------
         List[Union[ansys.speos.script.opt_prop.OptProp, ansys.speos.script.source.Surface, \
-        ansys.speos.script.source.RayFile, ansys.speos.script.source.Luminaireansys.speos.script.sensor.Camera, \
+        ansys.speos.script.source.RayFile, ansys.speos.script.source.Luminaire, ansys.speos.script.sensor.Camera, \
         ansys.speos.script.sensor.Radiance, ansys.speos.script.sensor.Irradiance, \
         ansys.speos.script.simulation.Direct, ansys.speos.script.simulation.Interactive, \
         ansys.speos.script.simulation.Inverse, ansys.speos.script.part.Part, ansys.speos.script.body.Body, \
@@ -302,11 +302,9 @@ class Project:
         >>> # From name only
         >>> find(name="Camera.1")
         >>> # Specify feature type
-        >>> find(name="Camera.1", feature_type=ansys.speos.script.sensor.Sensor)
-        >>> # Specify feature type more specific
-        >>> find(name="Camera.1", feature_type=ansys.speos.script.sensor.Sensor.Camera)
+        >>> find(name="Camera.1", feature_type=ansys.speos.script.sensor.Camera)
         >>> # Using regex
-        >>> find(name="Camera.*", name_regex=True, feature_type=ansys.speos.script.sensor.Sensor.Camera)
+        >>> find(name="Camera.*", name_regex=True, feature_type=ansys.speos.script.sensor.Camera)
 
         Here some examples when looking for a geometry feature:
         (always precise feature_type)
@@ -423,7 +421,7 @@ class Project:
                         sim_feat = self.find(name=inside_dict["name"], feature_type=simulation.Direct)
                         if len(sim_feat) == 0:
                             sim_feat = self.find(name=inside_dict["name"], feature_type=simulation.Inverse)
-                        elif len(sim_feat) == 0:
+                        if len(sim_feat) == 0:
                             sim_feat = self.find(name=inside_dict["name"], feature_type=simulation.Interactive)
                         sim_feat = sim_feat[0]
                         if sim_feat.job_link is None:

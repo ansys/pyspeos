@@ -30,7 +30,7 @@ dependencies=[
     "grpcio==1.68.1",
     "grpcio-health-checking==1.48.2",
     "ansys-api-speos==0.14.0",
-    "numpy~=2.1.0",
+    "numpy~=2.2.0",
     "pyvista==0.44.2",
     "comtypes==1.4.8",
 ]

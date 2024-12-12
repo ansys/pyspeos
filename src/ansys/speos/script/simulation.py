@@ -38,6 +38,30 @@ import ansys.speos.script.proto_message_utils as proto_message_utils
 
 
 class BaseSimulation:
+    """
+    Super Class for all simulations
+
+    Parameters
+    ----------
+    project : ansys.speos.script.project.Project
+        Project in which simulation shall be created.
+    name : str
+        Name of the simulation.
+    description : str
+        Description of the Simulation.
+        By default, ``""``.
+    metadata : Mapping[str, str]
+        Metadata of the feature.
+        By default, ``{}``.
+    simulation_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SimulationInstance, optional
+        Simulation instance to provide if the feature does not have to be created from scratch
+        By default, ``None``, means that the feature is created from scratch by default.
+
+    Notes
+    -----
+    This is a Super class, **Do not instantiate this class yourself**
+    """
+
     class Weight:
         """The Weight represents the ray energy. In real life, a ray loses some energy (power) when it interacts with an object.
         Activating weight means that the Weight message is present.
@@ -49,9 +73,19 @@ class BaseSimulation:
         Parameters
         ----------
         weight : ansys.api.speos.simulation.v1.simulation_template_pb2.Weight to complete.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use set_weight method available in simulation classes.
+
         """
 
-        def __init__(self, weight: simulation_template_pb2.Weight) -> None:
+        def __init__(self, weight: simulation_template_pb2.Weight, stable_ctr: bool = False) -> None:
+            if not stable_ctr:
+                msg = "Weight class instantiated outside of class scope"
+                raise RuntimeError(msg)
             self._weight = weight
             # Default values
             self.set_minimum_energy_percentage()
@@ -67,7 +101,7 @@ class BaseSimulation:
 
             Returns
             -------
-            ansys.speos.script.simulation.Simulation.Weight
+            ansys.speos.script.simulation.BaseSimulation.Weight
                 Weight.
             """
             self._weight.minimum_energy_percentage = value
@@ -120,7 +154,7 @@ class BaseSimulation:
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation
+        ansys.speos.script.simulation.BaseSimulation
             Simulation feature.
         """
         self._simulation_instance.sensor_paths[:] = sensor_paths
@@ -136,7 +170,7 @@ class BaseSimulation:
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation
+        ansys.speos.script.simulation.BaseSimulation
             Simulation feature.
         """
         self._simulation_instance.source_paths[:] = source_paths
@@ -152,7 +186,7 @@ class BaseSimulation:
     #
     #    Returns
     #    -------
-    #    ansys.speos.script.simulation.Simulation
+    #    ansys.speos.script.simulation.BaseSimulation
     #        Simulation feature.
     #    """
     #    if geometries is []:
@@ -270,9 +304,10 @@ class BaseSimulation:
         if key == "":
             return self._to_dict()
         info = proto_message_utils._value_finder_key_startswith(dict_var=self._to_dict(), key=key)
-        if list(info) != []:
-            return next(info)[1]
-        else:
+        try:
+            first = next(info)
+            return first[1]
+        except StopIteration:
             info = proto_message_utils._flatten_dict(dict_var=self._to_dict())
             print("Used key: {} not found in key list: {}.".format(key, info.keys()))
 
@@ -298,7 +333,7 @@ class BaseSimulation:
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation
+        ansys.speos.script.simulation.BaseSimulation
             Simulation feature.
         """
         # The _unique_id will help to find correct item in the scene.simulations (the list of SimulationInstance)
@@ -341,7 +376,7 @@ class BaseSimulation:
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation
+        ansys.speos.script.simulation.BaseSimulation
             Simulation feature.
         """
         # Reset simulation template
@@ -367,7 +402,7 @@ class BaseSimulation:
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation
+        ansys.speos.script.simulation.BaseSimulation
             Simulation feature.
         """
         # Delete the simulation template
@@ -417,10 +452,19 @@ class Direct(BaseSimulation):
 
     Parameters
     ----------
-    direct_template : ansys.api.speos.simulation.v1.simulation_template_pb2.DirectMCSimulationTemplate
-        Direct simulation to complete.
-    direct_props_from_job : ansys.api.speos.job.v2.job_pb2.Job.DirectMCSimulationProperties
-        Direct simulation properties to complete.
+    project : ansys.speos.script.project.Project
+        Project in which simulation shall be created.
+    name : str
+        Name of the simulation.
+    description : str
+        Description of the Simulation.
+        By default, ``""``.
+    metadata : Mapping[str, str]
+        Metadata of the feature.
+        By default, ``{}``.
+    simulation_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SimulationInstance, optional
+        Simulation instance to provide if the feature does not have to be created from scratch
+        By default, ``None``, means that the feature is created from scratch by default.
     default_values : bool
         Uses default values when True.
     """
@@ -462,7 +506,7 @@ class Direct(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Direct
+        ansys.speos.script.simulation.Direct
             Direct simulation
         """
         self._direct_template.geom_distance_tolerance = value
@@ -480,7 +524,7 @@ class Direct(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Direct
+        ansys.speos.script.simulation.Direct
             Direct simulation
         """
         self._direct_template.max_impact = value
@@ -491,17 +535,17 @@ class Direct(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Weight
+        ansys.speos.script.simulation.BaseSimulation.Weight
             Weight.
         """
-        return BaseSimulation.Weight(self._direct_template.weight)
+        return BaseSimulation.Weight(self._direct_template.weight, stable_ctr=True)
 
     def set_weight_none(self) -> Direct:
         """Deactivate weight.
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Direct
+        ansys.speos.script.simulation.Direct
             Direct simulation
         """
         self._direct_template.ClearField("weight")
@@ -513,7 +557,7 @@ class Direct(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Direct
+        ansys.speos.script.simulation.Direct
             Direct simulation
         """
         self._direct_template.colorimetric_standard = simulation_template_pb2.CIE_1931
@@ -525,7 +569,7 @@ class Direct(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Direct
+        ansys.speos.script.simulation.Direct
             Direct simulation
         """
         self._direct_template.colorimetric_standard = simulation_template_pb2.CIE_1964
@@ -542,7 +586,7 @@ class Direct(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Direct
+        ansys.speos.script.simulation.Direct
             Direct simulation
         """
         self._direct_template.dispersion = value
@@ -561,7 +605,7 @@ class Direct(BaseSimulation):
     #
     #    Returns
     #    -------
-    #    ansys.speos.script.simulation.Simulation.Direct
+    #    ansys.speos.script.simulation.Direct
     #        Direct simulation
     #    """
     #    self._direct_template.fast_transmission_gathering = value
@@ -578,7 +622,7 @@ class Direct(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Direct
+        ansys.speos.script.simulation.Direct
             Direct simulation
         """
         self._direct_template.ambient_material_uri = uri
@@ -595,7 +639,7 @@ class Direct(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Direct
+        ansys.speos.script.simulation.Direct
             Direct simulation
         """
         if value is None:
@@ -615,7 +659,7 @@ class Direct(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Direct
+        ansys.speos.script.simulation.Direct
             Direct simulation
         """
         if value is None:
@@ -637,7 +681,7 @@ class Direct(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Direct
+        ansys.speos.script.simulation.Direct
             Direct simulation
         """
         self._direct_props_from_job.automatic_save_frequency = value
@@ -661,10 +705,19 @@ class Inverse(BaseSimulation):
 
     Parameters
     ----------
-    inverse_template : ansys.api.speos.simulation.v1.simulation_template_pb2.InverseMCSimulationTemplate
-        Inverse simulation to complete.
-    inverse_props_from_job : ansys.api.speos.job.v2.job_pb2.Job.InverseMCSimulationProperties
-        Inverse simulation properties to complete.
+    project : ansys.speos.script.project.Project
+        Project in which simulation shall be created.
+    name : str
+        Name of the simulation.
+    description : str
+        Description of the Simulation.
+        By default, ``""``.
+    metadata : Mapping[str, str]
+        Metadata of the feature.
+        By default, ``{}``.
+    simulation_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SimulationInstance, optional
+        Simulation instance to provide if the feature does not have to be created from scratch
+        By default, ``None``, means that the feature is created from scratch by default.
     default_values : bool
         Uses default values when True.
     """
@@ -709,7 +762,7 @@ class Inverse(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Inverse
+        ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
         self._inverse_template.geom_distance_tolerance = value
@@ -727,7 +780,7 @@ class Inverse(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Inverse
+        ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
         self._inverse_template.max_impact = value
@@ -738,17 +791,17 @@ class Inverse(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Weight
+        ansys.speos.script.simulation.BaseSimulation.Weight
             Simulation.Weight
         """
-        return BaseSimulation.Weight(self._inverse_template.weight)
+        return BaseSimulation.Weight(self._inverse_template.weight, stable_ctr=True)
 
     def set_weight_none(self) -> Inverse:
         """Deactivate weight.
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Inverse
+        ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
         self._inverse_template.ClearField("weight")
@@ -760,7 +813,7 @@ class Inverse(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Inverse
+        ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
         self._inverse_template.colorimetric_standard = simulation_template_pb2.CIE_1931
@@ -772,7 +825,7 @@ class Inverse(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Inverse
+        ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
         self._inverse_template.colorimetric_standard = simulation_template_pb2.CIE_1964
@@ -789,7 +842,7 @@ class Inverse(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Inverse
+        ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
         self._inverse_template.dispersion = value
@@ -807,7 +860,7 @@ class Inverse(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Inverse
+        ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
         self._inverse_template.splitting = value
@@ -824,7 +877,7 @@ class Inverse(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Inverse
+        ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
         self._inverse_template.number_of_gathering_rays_per_source = value
@@ -841,7 +894,7 @@ class Inverse(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Inverse
+        ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
         self._inverse_template.maximum_gathering_error = value
@@ -860,7 +913,7 @@ class Inverse(BaseSimulation):
     #
     #    Returns
     #    -------
-    #    ansys.speos.script.simulation.Simulation.Inverse
+    #    ansys.speos.script.simulation.Inverse
     #        Inverse simulation
     #    """
     #    self._inverse_template.fast_transmission_gathering = value
@@ -877,7 +930,7 @@ class Inverse(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Inverse
+        ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
         self._inverse_template.ambient_material_uri = uri
@@ -894,7 +947,7 @@ class Inverse(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Inverse
+        ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
         if value is None:
@@ -914,7 +967,7 @@ class Inverse(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Inverse
+        ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
         if value is None:
@@ -936,7 +989,7 @@ class Inverse(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Inverse
+        ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
         self._inverse_props_from_job.automatic_save_frequency = value
@@ -956,9 +1009,19 @@ class Interactive(BaseSimulation):
 
     Parameters
     ----------
-    interactive_template : ansys.api.speos.simulation.v1.simulation_template_pb2.SimulationTemplate.Interactive simulation to complete.
-    inverse_props_from_job : ansys.api.speos.job.v2.job_pb2.Job.InteractiveSimulationProperties
-        Interactive simulation properties to complete.
+    project : ansys.speos.script.project.Project
+        Project in which simulation shall be created.
+    name : str
+        Name of the simulation.
+    description : str
+        Description of the Simulation.
+        By default, ``""``.
+    metadata : Mapping[str, str]
+        Metadata of the feature.
+        By default, ``{}``.
+    simulation_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SimulationInstance, optional
+        Simulation instance to provide if the feature does not have to be created from scratch
+        By default, ``None``, means that the feature is created from scratch by default.
     default_values : bool
         Uses default values when True.
     """
@@ -1015,7 +1078,7 @@ class Interactive(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Interactive
+        ansys.speos.script.simulation.Interactive
             Interactive simulation
         """
         self._interactive_template.geom_distance_tolerance = value
@@ -1033,7 +1096,7 @@ class Interactive(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Interactive
+        ansys.speos.script.simulation.Interactive
             Interactive simulation
         """
         self._interactive_template.max_impact = value
@@ -1044,17 +1107,17 @@ class Interactive(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Weight
+        ansys.speos.script.simulation.BaseSimulation.Weight
             Simulation.Weight
         """
-        return BaseSimulation.Weight(self._interactive_template.weight)
+        return BaseSimulation.Weight(self._interactive_template.weight, stable_ctr=True)
 
     def set_weight_none(self) -> Interactive:
         """Deactivate weight.
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Interactive
+        ansys.speos.script.simulation.Interactive
             Interactive simulation
         """
         self._interactive_template.ClearField("weight")
@@ -1066,7 +1129,7 @@ class Interactive(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Interactive
+        ansys.speos.script.simulation.Interactive
             Interactive simulation
         """
         self._interactive_template.colorimetric_standard = simulation_template_pb2.CIE_1931
@@ -1078,7 +1141,7 @@ class Interactive(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Interactive
+        ansys.speos.script.simulation.Interactive
             Interactive simulation
         """
         self._interactive_template.colorimetric_standard = simulation_template_pb2.CIE_1964
@@ -1095,24 +1158,24 @@ class Interactive(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Interactive
+        ansys.speos.script.simulation.Interactive
             Interactive simulation
         """
         self._interactive_template.ambient_material_uri = uri
         return self
 
-    def set_rays_number_per_sources(self, values: List[Simulation.Interactive.RaysNumberPerSource]) -> Interactive:
+    def set_rays_number_per_sources(self, values: List[Interactive.RaysNumberPerSource]) -> Interactive:
         """Select the number of rays emitted for each source. If a source is present in the simulation but not referenced here,
         it will send by default 100 rays.
 
         Parameters
         ----------
-        values : List[ansys.speos.script.simulation.Simulation.Interactive.RaysNumberPerSource]
+        values : List[ansys.speos.script.simulation.Interactive.RaysNumberPerSource]
             List of rays number emitted by source.
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Interactive
+        ansys.speos.script.simulation.Interactive
             Interactive simulation
         """
         my_list = [
@@ -1136,7 +1199,7 @@ class Interactive(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Interactive
+        ansys.speos.script.simulation.Interactive
             Interactive simulation
         """
         self._interactive_props_from_job.light_expert = value
@@ -1153,7 +1216,7 @@ class Interactive(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.script.simulation.Simulation.Interactive
+        ansys.speos.script.simulation.Interactive
             Interactive simulation
         """
         self._interactive_props_from_job.impact_report = value
