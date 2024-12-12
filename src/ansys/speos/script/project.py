@@ -98,7 +98,13 @@ class Project:
         self._features.append(feature)
         return feature
 
-    def create_source(self, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> source.Source:
+    def create_source(
+        self,
+        name: str,
+        description: str = "",
+        feature_type: type = source.Surface,
+        metadata: Mapping[str, str] = {},
+    ) -> Union[source.Surface, source.RayFile, source.Luminaire]:
         """Create a new Source feature.
 
         Parameters
@@ -108,31 +114,80 @@ class Project:
         description : str
             Description of the feature.
             By default, ``""``.
+        feature_type: type
+            Source type to be created.
+            By default, ``ansys.speos.script.source.Surface``.
+            Allowed types:
+            Union[ansys.speos.script.source.Surface, ansys.speos.script.source.RayFile, \
+            ansys.speos.script.source.Luminaire].
         metadata : Mapping[str, str]
             Metadata of the feature.
             By default, ``{}``.
 
         Returns
         -------
-        ansys.speos.script.source.Source
-            Source feature.
+        Union[ansys.speos.script.source.Surface, ansys.speos.script.source.RayFile, ansys.speos.script.source.Luminaire]
+            Source class instance.
         """
-        feature = source.Source(project=self, name=name, description=description, metadata=metadata)
+        feature = None
+        if feature_type == source.Surface:
+            feature = source.Surface(project=self, name=name, description=description, metadata=metadata)
+        elif feature_type == source.RayFile:
+            feature = source.RayFile(project=self, name=name, description=description, metadata=metadata)
+        elif feature_type == source.Luminaire:
+            feature = source.Luminaire(project=self, name=name, description=description, metadata=metadata)
+        else:
+            msg = "Requested feature {} does not exist in supported list {}".format(
+                feature_type, [source.Surface, source.Luminaire, source.RayFile]
+            )
+            raise TypeError(msg)
         self._features.append(feature)
         return feature
 
-    def create_simulation(self, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> simulation.Simulation:
+    def create_simulation(
+        self, name: str, description: str = "", feature_type: type = simulation.Direct, metadata: Mapping[str, str] = {}
+    ) -> Union[simulation.Direct, simulation.Interactive, simulation.Inverse]:
         """Create a new Simulation feature.
 
         Parameters
         ----------
+        name : str
+            Name of the feature.
+        description : str
+            Description of the feature.
+            By default, ``""``.
+        feature_type: type
+            Simulation type to be created.
+            By default, ``ansys.speos.script.simulation.Direct``.
+            Allowed types: Union[ansys.speos.script.simulation.Direct, ansys.speos.script.simulation.Interactive, \
+            ansys.speos.script.simulation.Inverse].
+        metadata : Mapping[str, str]
+            Metadata of the feature.
+            By default, ``{}``.
 
+        Returns
+        -------
+        Union[ansys.speos.script.simulation.Direct, ansys.speos.script.simulation.Interactive, ansys.speos.script.simulation.Inverse]
+            Simulation class instance
         """
-        feature = simulation.Simulation(project=self, name=name, description=description, metadata=metadata)
+        feature = None
+        if feature_type == simulation.Direct:
+            feature = simulation.Direct(project=self, name=name, description=description, metadata=metadata)
+        elif feature_type == simulation.Inverse:
+            feature = simulation.Inverse(project=self, name=name, description=description, metadata=metadata)
+        elif feature_type == simulation.Interactive:
+            feature = simulation.Interactive(project=self, name=name, description=description, metadata=metadata)
+        else:
+            msg = "Requested feature {} does not exist in supported list {}".format(
+                feature_type, [simulation.Direct, simulation.Inverse, simulation.Interactive]
+            )
+            raise TypeError(msg)
         self._features.append(feature)
         return feature
 
-    def create_sensor(self, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> sensor.Sensor:
+    def create_sensor(
+        self, name: str, description: str = "", feature_type: type = sensor.Irradiance, metadata: Mapping[str, str] = {}
+    ) -> Union[sensor.Camera, sensor.Radiance, sensor.Irradiance]:
         """Create a new Sensor feature.
 
         Parameters
@@ -142,16 +197,32 @@ class Project:
         description : str
             Description of the feature.
             By default, ``""``.
+        feature_type: type
+            Sensor type to be created.
+            By default, ``ansys.speos.script.sensor.Irradiance``.
+            Allowed types: Union[ansys.speos.script.sensor.Camera, ansys.speos.script.sensor.Radiance, \
+            ansys.speos.script.sensor.Irradiance]
         metadata : Mapping[str, str]
             Metadata of the feature.
             By default, ``{}``.
 
         Returns
         -------
-        ansys.speos.script.sensor.Sensor
-            Sensor feature.
+        Union[ansys.speos.script.sensor.Camera, ansys.speos.script.sensor.Radiance, ansys.speos.script.sensor.Irradiance]
+            Sensor class instance.
         """
-        feature = sensor.Sensor(project=self, name=name, description=description, metadata=metadata)
+        feature = None
+        if feature_type == sensor.Irradiance:
+            feature = sensor.Irradiance(project=self, name=name, description=description, metadata=metadata)
+        elif feature_type == sensor.Radiance:
+            feature = sensor.Radiance(project=self, name=name, description=description, metadata=metadata)
+        elif feature_type == sensor.Camera:
+            feature = sensor.Camera(project=self, name=name, description=description, metadata=metadata)
+        else:
+            msg = "Requested feature {} does not exist in supported list {}".format(
+                feature_type, [sensor.Irradiance, sensor.Radiance, sensor.Camera]
+            )
+            raise TypeError(msg)
         self._features.append(feature)
         return feature
 
@@ -160,9 +231,6 @@ class Project:
 
         Parameters
         ----------
-        name : str
-            Name of the feature.
-            By default, ``"RootPart"``.
         description : str
             Description of the feature.
             By default, ``""``.
@@ -187,7 +255,22 @@ class Project:
     def find(
         self, name: str, name_regex: bool = False, feature_type: Optional[type] = None
     ) -> List[
-        Union[opt_prop.OptProp, source.Source, sensor.Sensor, simulation.Simulation, part.Part, body.Body, face.Face, part.Part.SubPart]
+        Union[
+            opt_prop.OptProp,
+            source.Surface,
+            source.Luminaire,
+            source.RayFile,
+            sensor.Irradiance,
+            sensor.Radiance,
+            sensor.Camera,
+            simulation.Direct,
+            simulation.Inverse,
+            simulation.Interactive,
+            part.Part,
+            body.Body,
+            face.Face,
+            part.Part.SubPart,
+        ]
     ]:
         """Find feature(s) by name (possibility to use regex) and by feature type.
 
@@ -205,9 +288,12 @@ class Project:
 
         Returns
         -------
-        List[Union[ansys.speos.script.opt_prop.OptProp, ansys.speos.script.source.Source, ansys.speos.script.sensor.Sensor, \
-ansys.speos.script.simulation.Simulation, ansys.speos.script.part.Part, \
-ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.part.Part.SubPart]]
+        List[Union[ansys.speos.script.opt_prop.OptProp, ansys.speos.script.source.Surface, \
+        ansys.speos.script.source.RayFile, ansys.speos.script.source.Luminaire, ansys.speos.script.sensor.Camera, \
+        ansys.speos.script.sensor.Radiance, ansys.speos.script.sensor.Irradiance, \
+        ansys.speos.script.simulation.Direct, ansys.speos.script.simulation.Interactive, \
+        ansys.speos.script.simulation.Inverse, ansys.speos.script.part.Part, ansys.speos.script.body.Body, \
+        ansys.speos.script.face.Face, ansys.speos.script.part.Part.SubPart]]
             Found features.
 
         Examples
@@ -216,11 +302,9 @@ ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.p
         >>> # From name only
         >>> find(name="Camera.1")
         >>> # Specify feature type
-        >>> find(name="Camera.1", feature_type=ansys.speos.script.sensor.Sensor)
-        >>> # Specify feature type more specific
-        >>> find(name="Camera.1", feature_type=ansys.speos.script.sensor.Sensor.Camera)
+        >>> find(name="Camera.1", feature_type=ansys.speos.script.sensor.Camera)
         >>> # Using regex
-        >>> find(name="Camera.*", name_regex=True, feature_type=ansys.speos.script.sensor.Sensor.Camera)
+        >>> find(name="Camera.*", name_regex=True, feature_type=ansys.speos.script.sensor.Camera)
 
         Here some examples when looking for a geometry feature:
         (always precise feature_type)
@@ -300,8 +384,8 @@ ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.p
     #    pass
 
     # def save(self):
-    #    """Save class state in file given at construction - Not yet implemented"""
-    #    pass
+    #     """Save class state in file given at construction - Not yet implemented"""
+    #     pass
 
     def delete(self) -> Project:
         """Delete project: erase scene data.
@@ -334,7 +418,12 @@ ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.p
             if type(v) is list:
                 for inside_dict in v:
                     if k == "simulations":
-                        sim_feat = self.find(name=inside_dict["name"], feature_type=simulation.Simulation)[0]
+                        sim_feat = self.find(name=inside_dict["name"], feature_type=simulation.Direct)
+                        if len(sim_feat) == 0:
+                            sim_feat = self.find(name=inside_dict["name"], feature_type=simulation.Inverse)
+                        if len(sim_feat) == 0:
+                            sim_feat = self.find(name=inside_dict["name"], feature_type=simulation.Interactive)
+                        sim_feat = sim_feat[0]
                         if sim_feat.job_link is None:
                             inside_dict["simulation_properties"] = proto_message_utils._replace_guids(
                                 speos_client=self.client, message=sim_feat._job, ignore_simple_key="scene_guid"
@@ -452,16 +541,32 @@ ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.p
             op_feature._fill(mat_inst=mat_inst)
 
         for src_inst in scene_data.sources:
-            src_feat = self.create_source(name=src_inst.name)
-            src_feat._fill(src_inst=src_inst)
+            if src_inst.HasField("rayfile_properties"):
+                src_feat = source.RayFile(project=self, name=src_inst.name, source_instance=src_inst, default_values=False)
+            elif src_inst.HasField("luminaire_properties"):
+                src_feat = source.Luminaire(project=self, name=src_inst.name, source_instance=src_inst, default_values=False)
+            elif src_inst.HasField("surface_properties"):
+                src_feat = source.Surface(project=self, name=src_inst.name, source_instance=src_inst, default_values=False)
+            self._features.append(src_feat)
 
         for ssr_inst in scene_data.sensors:
-            ssr_feat = self.create_sensor(name=ssr_inst.name)
-            ssr_feat._fill(ssr_inst=ssr_inst)
+            if ssr_inst.HasField("irradiance_properties"):
+                ssr_feat = sensor.Irradiance(project=self, name=ssr_inst.name, sensor_instance=ssr_inst, default_values=False)
+            elif ssr_inst.HasField("camera_properties"):
+                ssr_feat = sensor.Radiance(project=self, name=ssr_inst.name, sensor_instance=ssr_inst, default_values=False)
+            elif ssr_inst.HasField("radiance_properties"):
+                ssr_feat = sensor.Camera(project=self, name=ssr_inst.name, sensor_instance=ssr_inst, default_values=False)
+            self._features.append(ssr_feat)
 
         for sim_inst in scene_data.simulations:
-            sim_feat = self.create_simulation(name=sim_inst.name)
-            sim_feat._fill(sim_inst=sim_inst)
+            simulation_template_link = self.client.get_item(key=sim_inst.simulation_guid).get()
+            if simulation_template_link.HasField("direct_mc_simulation_template"):
+                sim_feat = simulation.Direct(project=self, name=sim_inst.name, simulation_instance=sim_inst, default_values=False)
+            elif simulation_template_link.HasField("inverse_mc_simulation_template"):
+                sim_feat = simulation.Inverse(project=self, name=sim_inst.name, simulation_instance=sim_inst, default_values=False)
+            elif simulation_template_link.HasField("interactive_simulation_template"):
+                sim_feat = simulation.Interactive(project=self, name=sim_inst.name, simulation_instance=sim_inst, default_values=False)
+            self._features.append(sim_feat)
 
     def __extract_part_mesh_info(self, part_data: core.Part, part_coordinate_info: RepeatedScalarFieldContainer = None) -> pv.PolyData:
         """
@@ -505,10 +610,7 @@ ansys.speos.script.body.Body, ansys.speos.script.face.Face, ansys.speos.script.p
 
         part_coordinate = [0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
         if part_coordinate_info is not None:
-            part_coordinate.origin = part_coordinate_info[:3]
-            part_coordinate.x_vect = part_coordinate_info[3:6]
-            part_coordinate.y_vect = part_coordinate_info[6:9]
-            part_coordinate.z_vect = part_coordinate_info[9:]
+            part_coordinate = part_coordinate_info
         part_mesh_info = None
         for body_idx, body_guid in enumerate(part_data.body_guids):
             body_item_data = self.client.get_item(body_guid).get()

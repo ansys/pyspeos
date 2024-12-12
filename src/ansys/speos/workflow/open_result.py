@@ -22,20 +22,22 @@
 """Provides a way to open result of the simulation feature (of script layer)."""
 import os
 import tempfile
+from typing import Union
 
 import ansys.api.speos.file.v1.file_transfer as file_transfer_helper__v1
 import ansys.api.speos.file.v1.file_transfer_pb2_grpc as file_transfer__v1__pb2_grpc
 
 if os.name == "nt":
     from comtypes.client import CreateObject
+
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 from numpy import ndarray
 
-from ansys.speos.script.simulation import Simulation
+from ansys.speos.script.simulation import Direct, Interactive, Inverse
 
 
-def _find_correct_result(simulation_feature: Simulation, result_name: str) -> str:
+def _find_correct_result(simulation_feature: Union[Direct, Inverse, Interactive], result_name: str) -> str:
     if len(simulation_feature.result_list) == 0:
         raise ValueError("Please compute the simulation feature to generate results.")
 
@@ -71,7 +73,7 @@ def _display_image(img: ndarray):
 
 if os.name == "nt":
 
-    def open_result_image(simulation_feature: Simulation, result_name: str) -> None:
+    def open_result_image(simulation_feature: Union[Direct, Inverse, Interactive], result_name: str) -> None:
         """Retrieve an image from a specific simulation result.
 
         Parameters
@@ -94,7 +96,7 @@ if os.name == "nt":
         elif file_path.endswith("png") or file_path.endswith("PNG"):
             _display_image(mpimg.imread(file_path))
 
-    def open_result_in_viewer(simulation_feature: Simulation, result_name: str) -> None:
+    def open_result_in_viewer(simulation_feature: Union[Direct, Inverse], result_name: str) -> None:
         """Open a specific simulation result in the suitable viewer.
 
         Parameters
