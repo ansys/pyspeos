@@ -39,7 +39,8 @@ def test_create_direct(speos: Speos):
 
     # Default value
     sim1 = p.create_simulation(name="Direct.1")
-    sim1.set_direct()  # do not commit to avoid issues about No sensor in simulation
+    sim1 = script.simulation.Direct(project=p, name="Direct.1")
+    # sim1.set_direct()  # do not commit to avoid issues about No sensor in simulation
     assert sim1._simulation_template.HasField("direct_mc_simulation_template")
     assert sim1._simulation_template.direct_mc_simulation_template.geom_distance_tolerance == 0.01
     assert sim1._simulation_template.direct_mc_simulation_template.max_impact == 100
@@ -60,27 +61,27 @@ def test_create_direct(speos: Speos):
 
     # Change value
     # geom_distance_tolerance
-    sim1.set_direct().set_geom_distance_tolerance(value=0.1)
+    sim1.set_geom_distance_tolerance(value=0.1)
     assert sim1._simulation_template.direct_mc_simulation_template.geom_distance_tolerance == 0.1
 
     # max_impact
-    sim1.set_direct().set_max_impact(value=200)
+    sim1.set_max_impact(value=200)
     assert sim1._simulation_template.direct_mc_simulation_template.max_impact == 200
 
     # weight - minimum_energy_percentage
-    sim1.set_direct().set_weight_none()
+    sim1.set_weight_none()
     assert sim1._simulation_template.direct_mc_simulation_template.HasField("weight") == False
 
-    sim1.set_direct().set_weight().set_minimum_energy_percentage(value=0.7)
+    sim1.set_weight().set_minimum_energy_percentage(value=0.7)
     assert sim1._simulation_template.direct_mc_simulation_template.HasField("weight")
     assert sim1._simulation_template.direct_mc_simulation_template.weight.minimum_energy_percentage == 0.7
 
     # colorimetric_standard
-    sim1.set_direct().set_colorimetric_standard_CIE_1964()
+    sim1.set_colorimetric_standard_CIE_1964()
     assert sim1._simulation_template.direct_mc_simulation_template.colorimetric_standard == simulation_template_pb2.CIE_1964
 
     # dispersion
-    sim1.set_direct().set_dispersion(value=False)
+    sim1.set_dispersion(value=False)
     assert sim1._simulation_template.direct_mc_simulation_template.dispersion == False
 
     # fast_transmission_gathering
@@ -88,20 +89,20 @@ def test_create_direct(speos: Speos):
     # assert sim1._simulation_template.direct_mc_simulation_template.fast_transmission_gathering == True
 
     # ambient_material_uri
-    sim1.set_direct().set_ambient_material_file_uri(uri=os.path.join(test_path, "AIR.material"))
+    sim1.set_ambient_material_file_uri(uri=os.path.join(test_path, "AIR.material"))
     assert sim1._simulation_template.direct_mc_simulation_template.ambient_material_uri.endswith("AIR.material")
 
     # stop_condition_rays_number
-    sim1.set_direct().set_stop_condition_rays_number(value=None)
+    sim1.set_stop_condition_rays_number(value=None)
     assert sim1._job.direct_mc_simulation_properties.HasField("stop_condition_rays_number") == False
 
     # stop_condition_duration
-    sim1.set_direct().set_stop_condition_duration(value=600)
+    sim1.set_stop_condition_duration(value=600)
     assert sim1._job.direct_mc_simulation_properties.HasField("stop_condition_duration")
     assert sim1._job.direct_mc_simulation_properties.stop_condition_duration == 600
 
     # automatic_save_frequency
-    sim1.set_direct().set_automatic_save_frequency(3200)
+    sim1.set_automatic_save_frequency(3200)
     assert sim1._job.direct_mc_simulation_properties.automatic_save_frequency == 3200
 
     # sensor_paths
@@ -131,7 +132,8 @@ def test_create_inverse(speos: Speos):
 
     # Default value
     sim1 = p.create_simulation(name="Inverse.1")
-    sim1.set_inverse()  # do not commit to avoid issues about No sensor in simulation
+    sim1 = script.simulation.Inverse(project=p, name="Inverse.1")
+    # sim1.set_inverse()  # do not commit to avoid issues about No sensor in simulation
     assert sim1._simulation_template.HasField("inverse_mc_simulation_template")
     assert sim1._simulation_template.inverse_mc_simulation_template.geom_distance_tolerance == 0.01
     assert sim1._simulation_template.inverse_mc_simulation_template.max_impact == 100
@@ -155,39 +157,39 @@ def test_create_inverse(speos: Speos):
 
     # Change value
     # geom_distance_tolerance
-    sim1.set_inverse().set_geom_distance_tolerance(value=0.1)
+    sim1.set_geom_distance_tolerance(value=0.1)
     assert sim1._simulation_template.inverse_mc_simulation_template.geom_distance_tolerance == 0.1
 
     # max_impact
-    sim1.set_inverse().set_max_impact(value=200)
+    sim1.set_max_impact(value=200)
     assert sim1._simulation_template.inverse_mc_simulation_template.max_impact == 200
 
     # weight - minimum_energy_percentage
-    sim1.set_inverse().set_weight_none()
+    sim1.set_weight_none()
     assert sim1._simulation_template.inverse_mc_simulation_template.HasField("weight") == False
 
-    sim1.set_inverse().set_weight().set_minimum_energy_percentage(value=0.7)
+    sim1.set_weight().set_minimum_energy_percentage(value=0.7)
     assert sim1._simulation_template.inverse_mc_simulation_template.HasField("weight")
     assert sim1._simulation_template.inverse_mc_simulation_template.weight.minimum_energy_percentage == 0.7
 
     # colorimetric_standard
-    sim1.set_inverse().set_colorimetric_standard_CIE_1964()
+    sim1.set_colorimetric_standard_CIE_1964()
     assert sim1._simulation_template.inverse_mc_simulation_template.colorimetric_standard == simulation_template_pb2.CIE_1964
 
     # dispersion
-    sim1.set_inverse().set_dispersion(value=True)
+    sim1.set_dispersion(value=True)
     assert sim1._simulation_template.inverse_mc_simulation_template.dispersion == True
 
     # splitting
-    sim1.set_inverse().set_splitting(value=True)
+    sim1.set_splitting(value=True)
     assert sim1._simulation_template.inverse_mc_simulation_template.splitting == True
 
     # number_of_gathering_rays_per_source
-    sim1.set_inverse().set_number_of_gathering_rays_per_source(value=2)
+    sim1.set_number_of_gathering_rays_per_source(value=2)
     assert sim1._simulation_template.inverse_mc_simulation_template.number_of_gathering_rays_per_source == 2
 
     # maximum_gathering_error
-    sim1.set_inverse().set_maximum_gathering_error(value=3)
+    sim1.set_maximum_gathering_error(value=3)
     assert sim1._simulation_template.inverse_mc_simulation_template.maximum_gathering_error == 3
 
     # fast_transmission_gathering
@@ -195,21 +197,21 @@ def test_create_inverse(speos: Speos):
     # assert sim1._simulation_template.inverse_mc_simulation_template.fast_transmission_gathering == True
 
     # ambient_material_uri
-    sim1.set_inverse().set_ambient_material_file_uri(uri=os.path.join(test_path, "AIR.material"))
+    sim1.set_ambient_material_file_uri(uri=os.path.join(test_path, "AIR.material"))
     assert sim1._simulation_template.inverse_mc_simulation_template.ambient_material_uri.endswith("AIR.material")
 
     # stop_condition_passes_number
-    sim1.set_inverse().set_stop_condition_passes_number(value=None)
+    sim1.set_stop_condition_passes_number(value=None)
     assert sim1._job.inverse_mc_simulation_properties.HasField("optimized_propagation_none") == True
     assert sim1._job.inverse_mc_simulation_properties.optimized_propagation_none.HasField("stop_condition_passes_number") == False
 
     # stop_condition_duration
-    sim1.set_inverse().set_stop_condition_duration(value=50)
+    sim1.set_stop_condition_duration(value=50)
     assert sim1._job.inverse_mc_simulation_properties.HasField("stop_condition_duration")
     assert sim1._job.inverse_mc_simulation_properties.stop_condition_duration == 50
 
     # automatic_save_frequency
-    sim1.set_inverse().set_automatic_save_frequency(value=5000)
+    sim1.set_automatic_save_frequency(value=5000)
     assert sim1._job.inverse_mc_simulation_properties.automatic_save_frequency == 5000
 
     # sensor_paths
@@ -239,7 +241,8 @@ def test_create_interactive(speos: Speos):
 
     # Default value
     sim1 = p.create_simulation(name="Interactive.1")
-    sim1.set_interactive()  # do not commit to avoid issues about No sensor in simulation
+    sim1 = script.simulation.Interactive(project=p, name="Interactive.1")
+    # sim1.set_interactive()  # do not commit to avoid issues about No sensor in simulation
     assert sim1._simulation_template.HasField("interactive_simulation_template")
     assert sim1._simulation_template.interactive_simulation_template.geom_distance_tolerance == 0.01
     assert sim1._simulation_template.interactive_simulation_template.max_impact == 100
@@ -257,34 +260,34 @@ def test_create_interactive(speos: Speos):
 
     # Change value
     # geom_distance_tolerance
-    sim1.set_interactive().set_geom_distance_tolerance(value=0.1)
+    sim1.set_geom_distance_tolerance(value=0.1)
     assert sim1._simulation_template.interactive_simulation_template.geom_distance_tolerance == 0.1
 
     # max_impact
-    sim1.set_interactive().set_max_impact(value=200)
+    sim1.set_max_impact(value=200)
     assert sim1._simulation_template.interactive_simulation_template.max_impact == 200
 
     # weight - minimum_energy_percentage
-    sim1.set_interactive().set_weight_none()
+    sim1.set_weight_none()
     assert sim1._simulation_template.interactive_simulation_template.HasField("weight") == False
 
-    sim1.set_interactive().set_weight().set_minimum_energy_percentage(value=0.7)
+    sim1.set_weight().set_minimum_energy_percentage(value=0.7)
     assert sim1._simulation_template.interactive_simulation_template.HasField("weight")
     assert sim1._simulation_template.interactive_simulation_template.weight.minimum_energy_percentage == 0.7
 
     # colorimetric_standard
-    sim1.set_interactive().set_colorimetric_standard_CIE_1964()
+    sim1.set_colorimetric_standard_CIE_1964()
     assert sim1._simulation_template.interactive_simulation_template.colorimetric_standard == simulation_template_pb2.CIE_1964
 
     # ambient_material_uri
-    sim1.set_interactive().set_ambient_material_file_uri(uri=os.path.join(test_path, "AIR.material"))
+    sim1.set_ambient_material_file_uri(uri=os.path.join(test_path, "AIR.material"))
     assert sim1._simulation_template.interactive_simulation_template.ambient_material_uri.endswith("AIR.material")
 
     # rays_number_per_sources
-    sim1.set_interactive().set_rays_number_per_sources(
+    sim1.set_rays_number_per_sources(
         values=[
-            script.Simulation.Interactive.RaysNumberPerSource(source_path="Source.1", rays_nb=50),
-            script.Simulation.Interactive.RaysNumberPerSource(source_path="Source.2", rays_nb=150),
+            script.simulation.Interactive.RaysNumberPerSource(source_path="Source.1", rays_nb=50),
+            script.simulation.Interactive.RaysNumberPerSource(source_path="Source.2", rays_nb=150),
         ]
     )
     assert len(sim1._job.interactive_simulation_properties.rays_number_per_sources) == 2
@@ -293,15 +296,15 @@ def test_create_interactive(speos: Speos):
     assert sim1._job.interactive_simulation_properties.rays_number_per_sources[1].source_path == "Source.2"
     assert sim1._job.interactive_simulation_properties.rays_number_per_sources[1].rays_nb == 150
 
-    sim1.set_interactive().set_rays_number_per_sources(values=[])
+    sim1.set_rays_number_per_sources(values=[])
     assert len(sim1._job.interactive_simulation_properties.rays_number_per_sources) == 0
 
     # light_expert
-    sim1.set_interactive().set_light_expert(value=True)
+    sim1.set_light_expert(value=True)
     assert sim1._job.interactive_simulation_properties.light_expert == True
 
     # impact_report
-    sim1.set_interactive().set_impact_report(value=True)
+    sim1.set_impact_report(value=True)
     assert sim1._job.interactive_simulation_properties.impact_report == True
 
     # sensor_paths
@@ -336,21 +339,20 @@ def test_commit(speos: Speos):
     ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
     root_part.commit()
 
-    ssr = p.create_sensor(name="Irradiance.1")
-    ssr.set_irradiance().set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    ssr = p.create_sensor(name="Irradiance.1", feature_type=script.sensor.Irradiance)
+    ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     ssr.commit()
 
-    ssr2 = p.create_sensor(name="Irradiance.2")
-    ssr2.set_irradiance().set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    ssr2 = p.create_sensor(name="Irradiance.2", feature_type=script.sensor.Irradiance)
+    ssr2.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     ssr2.commit()
 
-    src = p.create_source(name="Luminaire.1")
-    src.set_luminaire().set_intensity_file_uri(uri=os.path.join(test_path, "IES_C_DETECTOR.ies"))
+    src = p.create_source(name="Luminaire.1", feature_type=script.source.Luminaire)
+    src.set_intensity_file_uri(uri=os.path.join(test_path, "IES_C_DETECTOR.ies"))
     src.commit()
 
     # Create
-    sim1 = p.create_simulation(name="Direct.1")
-    sim1.set_direct()
+    sim1 = script.simulation.Direct(project=p, name="Direct.1")
     sim1.set_sensor_paths(sensor_paths=[ssr._name]).set_source_paths(source_paths=[src._name])
     assert sim1.simulation_template_link is None
     assert len(p.scene_link.get().simulations) == 0
@@ -367,7 +369,7 @@ def test_commit(speos: Speos):
     assert p.scene_link.get().simulations[0] == sim1._simulation_instance
 
     # Change only in local not committed (on template, on instance)
-    sim1.set_direct().set_geom_distance_tolerance(value=0.1)
+    sim1.set_geom_distance_tolerance(value=0.1)
     assert sim1.simulation_template_link.get() != sim1._simulation_template
     sim1.set_sensor_paths(["Irradiance.1, Irradiance.2"])
     assert p.scene_link.get().simulations[0] != sim1._simulation_instance
@@ -386,21 +388,21 @@ def test_reset(speos: Speos):
     ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
     root_part.commit()
 
-    ssr = p.create_sensor(name="Irradiance.1")
-    ssr.set_irradiance().set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    ssr = p.create_sensor(name="Irradiance.1", feature_type=script.sensor.Irradiance)
+    ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     ssr.commit()
 
-    ssr2 = p.create_sensor(name="Irradiance.2")
-    ssr2.set_irradiance().set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    ssr2 = p.create_sensor(name="Irradiance.2", feature_type=script.sensor.Irradiance)
+    ssr2.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     ssr2.commit()
 
-    src = p.create_source(name="Luminaire.1")
-    src.set_luminaire().set_intensity_file_uri(uri=os.path.join(test_path, "IES_C_DETECTOR.ies"))
+    src = p.create_source(name="Luminaire.1", feature_type=script.source.Luminaire)
+    src.set_intensity_file_uri(uri=os.path.join(test_path, "IES_C_DETECTOR.ies"))
     src.commit()
 
     # Create + commit
-    sim1 = p.create_simulation(name="Direct.1")
-    sim1.set_direct()
+
+    sim1 = script.simulation.Direct(project=p, name="Direct.1")
     sim1.set_sensor_paths(sensor_paths=[ssr._name]).set_source_paths(source_paths=[src._name]).commit()
     assert sim1.simulation_template_link is not None
     assert sim1.simulation_template_link.get().HasField("direct_mc_simulation_template")
@@ -409,7 +411,7 @@ def test_reset(speos: Speos):
     assert sim1._job.HasField("direct_mc_simulation_properties")  # local
 
     # Change local data (on template, on instance)
-    sim1.set_direct().set_geom_distance_tolerance(value=0.1)
+    sim1.set_geom_distance_tolerance(value=0.1)
     assert sim1.simulation_template_link.get() != sim1._simulation_template
     sim1.set_sensor_paths(["Irradiance.1, Irradiance.2"])
     assert p.scene_link.get().simulations[0] != sim1._simulation_instance
@@ -433,17 +435,16 @@ def test_delete(speos: Speos):
     ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
     root_part.commit()
 
-    ssr = p.create_sensor(name="Irradiance.1")
-    ssr.set_irradiance().set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    ssr = p.create_sensor(name="Irradiance.1", feature_type=script.sensor.Irradiance)
+    ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     ssr.commit()
 
-    src = p.create_source(name="Luminaire.1")
-    src.set_luminaire().set_intensity_file_uri(uri=os.path.join(test_path, "IES_C_DETECTOR.ies"))
+    src = p.create_source(name="Luminaire.1", feature_type=script.source.Luminaire)
+    src.set_intensity_file_uri(uri=os.path.join(test_path, "IES_C_DETECTOR.ies"))
     src.commit()
 
     # Create + commit
-    sim1 = p.create_simulation(name="Direct.1")
-    sim1.set_direct()
+    sim1 = script.simulation.Direct(project=p, name="Direct.1")
     sim1.set_sensor_paths(sensor_paths=[ssr._name]).set_source_paths(source_paths=[src._name]).commit()
     assert sim1.simulation_template_link.get().HasField("direct_mc_simulation_template")
     assert sim1._simulation_template.HasField("direct_mc_simulation_template")  # local template
