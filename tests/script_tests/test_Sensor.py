@@ -747,3 +747,32 @@ def test_delete_sensor(speos: Speos):
 
     assert len(p.scene_link.get().sensors) == 0
     assert sensor1._sensor_instance.HasField("irradiance_properties")  # local
+
+
+def test_get_sensor(speos: Speos, capsys):
+    """Test get of a sensor."""
+    p = script.Project(speos=speos)
+    sensor1 = p.create_sensor(name="Sensor.1", feature_type=script.sensor.Irradiance)
+    sensor2 = p.create_sensor(name="Sensor.2", feature_type=script.sensor.Radiance)
+    sensor3 = p.create_sensor(name="Sensor.3", feature_type=script.sensor.Camera)
+    # test when key exists
+    name1 = sensor1.get(key="name")
+    assert name1 == "Sensor.1"
+    property_info = sensor2.get(key="integration_angle")
+    assert property_info is not None
+    property_info = sensor3.get(key="axis_system")
+    assert property_info is not None
+
+    # test when key does not exist
+    get_result1 = sensor1.get(key="geometry")
+    stdout, stderr = capsys.readouterr()
+    assert get_result1 is None
+    assert "Used key: geometry not found in key list" in stdout
+    get_result2 = sensor2.get(key="geometry")
+    stdout, stderr = capsys.readouterr()
+    assert get_result2 is None
+    assert "Used key: geometry not found in key list" in stdout
+    get_result3 = sensor3.get(key="geometry")
+    stdout, stderr = capsys.readouterr()
+    assert get_result3 is None
+    assert "Used key: geometry not found in key list" in stdout

@@ -440,3 +440,32 @@ def test_print_source(speos: Speos):
     str_after = str(source)
     assert str_before == str_after
     source.delete()
+
+
+def test_get_source(speos: Speos, capsys):
+    """Test get of a source."""
+    p = script.Project(speos=speos)
+    source1 = p.create_source(name="rayfile_source", feature_type=script.source.RayFile)
+    source2 = p.create_source(name="source2", feature_type=script.source.Luminaire)
+    source3 = p.create_source(name="source4", feature_type=script.source.Surface)
+    # test when key exists
+    name = source1.get(key="name")
+    assert name == "rayfile_source"
+    property_info = source2.get(key="axis_system")
+    assert property_info is not None
+    property_info = source3.get(key="geo_path")
+    assert property_info is not None
+
+    # test when key does not exist
+    get_result1 = source1.get(key="geometry")
+    stdout, stderr = capsys.readouterr()
+    assert get_result1 is None
+    assert "Used key: geometry not found in key list" in stdout
+    get_result2 = source2.get(key="geometry")
+    stdout, stderr = capsys.readouterr()
+    assert get_result2 is None
+    assert "Used key: geometry not found in key list" in stdout
+    get_result3 = source3.get(key="geometry")
+    stdout, stderr = capsys.readouterr()
+    assert get_result3 is None
+    assert "Used key: geometry not found in key list" in stdout
