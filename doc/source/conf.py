@@ -1,16 +1,14 @@
 """Sphinx documentation configuration file."""
 from datetime import datetime
 import os
-
-from ansys_sphinx_theme import ansys_favicon, get_version_match
-from sphinx.builders.latex import LaTeXBuilder
-from sphinx.util.display import status_iterator
-
-import sphinx
 import pathlib
 import shutil
-import subprocess
+
+from ansys_sphinx_theme import ansys_favicon, get_version_match
+import sphinx
+from sphinx.builders.latex import LaTeXBuilder
 from sphinx.util import logging
+from sphinx.util.display import status_iterator
 
 from ansys.speos import __version__
 
@@ -105,7 +103,7 @@ autodoc_typehints = "description"
 BUILD_EXAMPLES = True if os.environ.get("BUILD_EXAMPLES", "true") == "true" else False
 if BUILD_EXAMPLES:
     extensions.extend(["myst_parser", "nbsphinx"])
-    nbsphinx_execute = "always"
+    nbsphinx_execute = "never"
     nbsphinx_allow_errors = True
     nbsphinx_custom_formats = {
         ".mystnb": ["jupytext.reads", {"fmt": "mystnb"}],
@@ -151,6 +149,7 @@ jinja_contexts = {
         "build_examples": BUILD_EXAMPLES,
     },
 }
+
 
 def copy_examples_to_output_dir(app: sphinx.application.Sphinx, exception: Exception):
     """
@@ -239,7 +238,6 @@ def remove_examples_from_source_dir(app: sphinx.application.Sphinx, exception: E
     logger = logging.getLogger(__name__)
     logger.info(f"\nRemoving {EXAMPLES_DIRECTORY} directory...")
     shutil.rmtree(EXAMPLES_DIRECTORY)
-
 
 
 def setup(app: sphinx.application.Sphinx):
