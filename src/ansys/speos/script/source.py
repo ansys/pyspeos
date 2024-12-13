@@ -748,22 +748,20 @@ class Surface(BaseSource):
     ) -> None:
         super().__init__(project=project, name=name, description=description, metadata=metadata, source_instance=source_instance)
         self._speos_client = self._project.client
-        self._surface = self._source_template.surface
         self._name = name
-        self._surface_props = self._source_instance.surface_properties
 
         spectrum_guid = ""
-        if self._surface.HasField("spectrum_guid"):
-            spectrum_guid = self._surface.spectrum_guid
+        if self._source_template.surface.HasField("spectrum_guid"):
+            spectrum_guid = self._source_template.surface.spectrum_guid
         self._spectrum = self._Spectrum(
-            speos_client=self._speos_client, name=name, message_to_complete=self._surface, spectrum_guid=spectrum_guid
+            speos_client=self._speos_client, name=name, message_to_complete=self._source_template.surface, spectrum_guid=spectrum_guid
         )
 
         self._intensity = Intensity(
             speos_client=self._speos_client,
             name=name + ".Intensity",
-            intensity_props_to_complete=self._surface_props.intensity_properties,
-            key=self._surface.intensity_guid,
+            intensity_props_to_complete=self._source_instance.surface_properties.intensity_properties,
+            key=self._source_template.surface.intensity_guid,
         )
 
         # Attribute gathering more complex exitance type
@@ -782,7 +780,7 @@ class Surface(BaseSource):
         ansys.speos.script.source.Surface
             Surface source.
         """
-        self._surface.flux_from_intensity_file.SetInParent()
+        self._source_template.surface.flux_from_intensity_file.SetInParent()
         return self
 
     def set_flux_luminous(self, value: float = 683) -> Surface:
@@ -799,7 +797,7 @@ class Surface(BaseSource):
         ansys.speos.script.source.Surface
             Surface source.
         """
-        self._surface.luminous_flux.luminous_value = value
+        self._source_template.surface.luminous_flux.luminous_value = value
         return self
 
     def set_flux_radiant(self, value: float = 1) -> Surface:
@@ -816,7 +814,7 @@ class Surface(BaseSource):
         ansys.speos.script.source.Surface
             Surface source.
         """
-        self._surface.radiant_flux.radiant_value = value
+        self._source_template.surface.radiant_flux.radiant_value = value
         return self
 
     def set_flux_luminous_intensity(self, value: float = 5) -> Surface:
@@ -833,7 +831,7 @@ class Surface(BaseSource):
         ansys.speos.script.source.Surface
             Surface source.
         """
-        self._surface.luminous_intensity_flux.luminous_intensity_value = value
+        self._source_template.surface.luminous_intensity_flux.luminous_intensity_value = value
         return self
 
     def set_intensity(self) -> Intensity:
@@ -844,6 +842,10 @@ class Surface(BaseSource):
         ansys.speos.script.intensity.Intensity
             Intensity.
         """
+        if not self._intensity._intensity_properties is self._source_instance.surface_properties.intensity_properties:
+            # Happens in case of feature reset (to be sure to always modify correct data)
+            self._intensity._intensity_properties = self._source_instance.surface_properties.intensity_properties
+
         return self._intensity
 
     def set_exitance_constant(self, geometries: List[tuple[GeoRef, bool]]) -> Surface:
@@ -861,13 +863,13 @@ class Surface(BaseSource):
         """
         self._exitance_type = None
 
-        self._surface.exitance_constant.SetInParent()
-        self._surface_props.exitance_constant_properties.ClearField("geo_paths")
+        self._source_template.surface.exitance_constant.SetInParent()
+        self._source_instance.surface_properties.exitance_constant_properties.ClearField("geo_paths")
         if geometries != []:
             my_list = [
                 core.Scene.GeoPath(geo_path=gr.to_native_link(), reverse_normal=reverse_normal) for (gr, reverse_normal) in geometries
             ]
-            self._surface_props.exitance_constant_properties.geo_paths.extend(my_list)
+            self._source_instance.surface_properties.exitance_constant_properties.geo_paths.extend(my_list)
         return self
 
     def set_exitance_variable(self) -> Surface.ExitanceVariable:
@@ -878,19 +880,25 @@ class Surface(BaseSource):
         ansys.speos.script.source.Surface.ExitanceVariable
             ExitanceVariable of surface source.
         """
-        if self._exitance_type is None and self._surface.HasField("exitance_variable"):
+        if self._exitance_type is None and self._source_template.surface.HasField("exitance_variable"):
+            # Happens in case of project created via load of speos file
             self._exitance_type = Surface.ExitanceVariable(
-                exitance_variable=self._surface.exitance_variable,
-                exitance_variable_props=self._surface_props.exitance_variable_properties,
+                exitance_variable=self._source_template.surface.exitance_variable,
+                exitance_variable_props=self._source_instance.surface_properties.exitance_variable_properties,
                 default_values=False,
                 stable_ctr=True,
             )
         elif type(self._exitance_type) != Surface.ExitanceVariable:
+            # if the _exitance_type is not ExitanceVariable then we create a new type.
             self._exitance_type = Surface.ExitanceVariable(
-                exitance_variable=self._surface.exitance_variable,
-                exitance_variable_props=self._surface_props.exitance_variable_properties,
+                exitance_variable=self._source_template.surface.exitance_variable,
+                exitance_variable_props=self._source_instance.surface_properties.exitance_variable_properties,
                 stable_ctr=True,
             )
+        elif not self._exitance_type._exitance_variable is self._source_template.surface.exitance_variable:
+            # Happens in case of feature reset (to be sure to always modify correct data)
+            self._exitance_type._exitance_variable = self._source_template.surface.exitance_variable
+            self._exitance_type._exitance_variable_props = self._source_instance.surface_properties.exitance_variable_properties
         return self._exitance_type
 
     def set_spectrum_from_xmp_file(self) -> Surface:
@@ -901,7 +909,7 @@ class Surface(BaseSource):
         ansys.speos.script.source.Surface
             Surface source.
         """
-        self._surface.spectrum_from_xmp_file.SetInParent()
+        self._source_template.surface.spectrum_from_xmp_file.SetInParent()
         self._spectrum._no_spectrum_local = True
         return self
 
@@ -913,11 +921,16 @@ class Surface(BaseSource):
         ansys.speos.script.spectrum.Spectrum
             Spectrum.
         """
-        if self._surface.HasField("spectrum_from_xmp_file"):
+        if self._source_template.surface.HasField("spectrum_from_xmp_file"):
             guid = ""
             if self._spectrum._spectrum.spectrum_link is not None:
                 guid = self._spectrum._spectrum.spectrum_link.key
-            self._surface.spectrum_guid = guid
+            self._source_template.surface.spectrum_guid = guid
+
+        if not self._spectrum._message_to_complete is self._source_template.surface:
+            # Happens in case of feature reset (to be sure to always modify correct data)
+            self._spectrum._message_to_complete = self._source_template.surface
+
         self._spectrum._no_spectrum_local = False
         return self._spectrum._spectrum
 
@@ -937,7 +950,7 @@ class Surface(BaseSource):
         """
         # intensity
         self._intensity.commit()
-        self._surface.intensity_guid = self._intensity.intensity_template_link.key
+        self._source_template.surface.intensity_guid = self._intensity.intensity_template_link.key
 
         # spectrum & source
         super().commit()

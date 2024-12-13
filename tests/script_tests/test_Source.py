@@ -418,6 +418,42 @@ def test_rayfile_modify_after_reset(speos: Speos):
     source.delete()
 
 
+def test_surface_modify_after_reset(speos: Speos):
+    """Test reset of surface source, and then modify."""
+    p = script.Project(speos=speos)
+
+    # Create + commit
+    source = script.source.Surface(project=p, name="Surface.1").set_flux_luminous()
+    source.set_exitance_variable().set_axis_plane()
+    source.commit()
+
+    # Ask for reset
+    source.reset()
+
+    # Modify after a reset
+    # Template
+    assert source._source_template.surface.luminous_flux.luminous_value == 683
+    source.set_flux_luminous(value=500)
+    assert source._source_template.surface.luminous_flux.luminous_value == 500
+
+    # Intermediate class for spectrum
+    assert source._spectrum._spectrum._spectrum.HasField("monochromatic")
+    source.set_spectrum().set_blackbody()
+    assert source._spectrum._spectrum._spectrum.HasField("blackbody")
+
+    # Intermediate class for intensity
+    assert source._intensity._intensity_template.HasField("cos")
+    source.set_intensity().set_gaussian()
+    assert source._intensity._intensity_template.HasField("gaussian")
+
+    # Intermediate class for exitance variable + Props
+    assert source._source_instance.surface_properties.exitance_variable_properties.axis_plane == [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    source.set_exitance_variable().set_axis_plane([50, 20, 10, 1, 0, 0, 0, 1, 0])
+    assert source._source_instance.surface_properties.exitance_variable_properties.axis_plane == [50, 20, 10, 1, 0, 0, 0, 1, 0]
+
+    source.delete()
+
+
 def test_delete_source(speos: Speos):
     """Test delete of source."""
     p = script.Project(speos=speos)
