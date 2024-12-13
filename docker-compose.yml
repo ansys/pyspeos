@@ -4,7 +4,7 @@ services:
     image: ghcr.io/ansys-internal/speos-rpc:2025.1.1.25031
     container_name: speos-rpc
     ports:
-      - "50051:50098"
+      - "50098:50098"
     environment:
       - SPEOS_LOG_LEVEL=2
       - ANSYSLMD_LICENSE_FILE=$LICENSE_SERVER

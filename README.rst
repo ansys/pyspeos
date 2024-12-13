@@ -64,7 +64,7 @@ All sources are located in `<src/>`_ folder.
 
    from ansys.speos.core.speos import Speos
 
-   speos = Speos(host="localhost", port=50051)
+   speos = Speos(host="localhost", port=50098)
 
 Documentation
 -------------
@@ -123,7 +123,7 @@ And test configuration file `<tests/local_config.json>`_ must be updated to use 
    {
       "SpeosServerOnDocker": false,
       "SpeosContainerName" : "speos-rpc",
-      "SpeosServerPort": 50051
+      "SpeosServerPort": 50098
    }
 
 Launch unit tests
