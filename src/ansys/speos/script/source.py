@@ -365,13 +365,12 @@ class Luminaire(BaseSource):
         default_values: bool = True,
     ) -> None:
         super().__init__(project=project, name=name, description=description, metadata=metadata, source_instance=source_instance)
-        self._luminaire = self._source_template.luminaire
-        self._luminaire_props = self._source_instance.luminaire_properties
+
         self._spectrum = self._Spectrum(
             speos_client=self._project.client,
             name=name,
-            message_to_complete=self._luminaire,
-            spectrum_guid=self._luminaire.spectrum_guid,
+            message_to_complete=self._source_template.luminaire,
+            spectrum_guid=self._source_template.luminaire.spectrum_guid,
         )
 
         if default_values:
@@ -387,7 +386,7 @@ class Luminaire(BaseSource):
         ansys.speos.script.source.Luminaire
             Luminaire source.
         """
-        self._luminaire.flux_from_intensity_file.SetInParent()
+        self._source_template.luminaire.flux_from_intensity_file.SetInParent()
         return self
 
     def set_flux_luminous(self, value: float = 683) -> Luminaire:
@@ -404,7 +403,7 @@ class Luminaire(BaseSource):
         ansys.speos.script.source.Luminaire
             Luminaire source.
         """
-        self._luminaire.luminous_flux.luminous_value = value
+        self._source_template.luminaire.luminous_flux.luminous_value = value
         return self
 
     def set_flux_radiant(self, value: float = 1) -> Luminaire:
@@ -421,7 +420,7 @@ class Luminaire(BaseSource):
         ansys.speos.script.source.Luminaire
             Luminaire source.
         """
-        self._luminaire.radiant_flux.radiant_value = value
+        self._source_template.luminaire.radiant_flux.radiant_value = value
         return self
 
     def set_intensity_file_uri(self, uri: str) -> Luminaire:
@@ -437,7 +436,7 @@ class Luminaire(BaseSource):
         ansys.speos.script.source.Luminaire
             Luminaire source.
         """
-        self._luminaire.intensity_file_uri = uri
+        self._source_template.luminaire.intensity_file_uri = uri
         return self
 
     def set_spectrum(self) -> Spectrum:
@@ -448,6 +447,9 @@ class Luminaire(BaseSource):
         ansys.speos.script.spectrum.Spectrum
             Spectrum.
         """
+        if not self._spectrum._message_to_complete is self._source_template.luminaire:
+            # Happens in case of feature reset (to be sure to always modify correct data)
+            self._spectrum._message_to_complete = self._source_template.luminaire
         return self._spectrum._spectrum
 
     def set_axis_system(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> Luminaire:
@@ -464,7 +466,7 @@ class Luminaire(BaseSource):
         ansys.speos.script.source.Luminaire
             Luminaire source.
         """
-        self._luminaire_props.axis_system[:] = axis_system
+        self._source_instance.luminaire_properties.axis_system[:] = axis_system
         return self
 
 
