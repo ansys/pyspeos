@@ -19,8 +19,8 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-"""The LightPathFinder defines an interface to read lpf files. These files contain a set of simulated rays with all \
-their intersections and properties."""
+"""The lxp module contains classes and function to simplify the interaction with ray data e.g lpf files.\
+These files contain a set of simulated rays with all their intersections and properties."""
 from __future__ import annotations
 
 from typing import Union
@@ -107,18 +107,18 @@ class RayPath:
         Returns
         -------
         list[int]
-            list of face ID for each impact
+            list of body IDs for each impact
         """
         return self._body_ids
 
     @property
     def face_ids(self) -> list[int]:
-        """Body id of interacted body for each impact
+        """Face id of interacted body for each impact
 
         Returns
         -------
         list[int]
-            list of face ID for each impact
+            list of face IDs for each impact
         """
         return self._face_ids
 
@@ -179,7 +179,7 @@ class RayPath:
         Returns
         -------
         Union[None, list[dict]]
-            If no sensor contribution None will be returned if there is sensor contribution a dictionary with \
+            If no sensor contribution None will be returned. If there is sensor contribution a dictionary with \
             following information will be returned:\
             {"sensor_id": sc.sensor_id,
             "position": [sc.coordinates.x, sc.coordinates.y]}
@@ -214,12 +214,12 @@ class RayPath:
 
 class LightPathFinder:
     """
-    The Lightpathfinder defines n interface to reas lpf files. These files contain a set of simulated rays with all
+    The Lightpathfinder defines n interface to read lpf files. These files contain a set of simulated rays with all
     there intersections and properties.
 
     Parameters
     ----------
-    speos : core.Speos
+    speos : ansys.speos.core.Speos
     path : str
         path to lpf file to be opened
 
@@ -249,7 +249,7 @@ class LightPathFinder:
 
     @property
     def has_sensor_contributions(self) -> bool:
-        """Sensor contribution, including coordinates"""
+        """defines if a lpf file conatisn information inregards to sensor contribution"""
         return self._has_sensor_contributions
 
     @property
@@ -430,7 +430,7 @@ class LightPathFinder:
             length of last ray
         ray_filter : bool
             boolean to decide if filtered rays or all rays should be shown
-        project : script.Project
+        project : ansys.speos.script.Project
             Speos Project/Geometry to be added to pyvista visualisation
 
         Returns
