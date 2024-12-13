@@ -387,6 +387,37 @@ def test_luminaire_modify_after_reset(speos: Speos):
     source.delete()
 
 
+def test_rayfile_modify_after_reset(speos: Speos):
+    """Test reset of ray file source, and then modify."""
+    p = script.Project(speos=speos)
+
+    # Create + commit
+    source = script.source.RayFile(project=p, name="Source.1")
+    source.set_flux_luminous().set_ray_file_uri(uri=os.path.join(test_path, "RaysWithoutSpectralData.RAY")).set_spectrum()
+    source.commit()
+
+    # Ask for reset
+    source.reset()
+
+    # Modify after a reset
+    # Template
+    assert source._source_template.rayfile.luminous_flux.luminous_value == 683
+    source.set_flux_luminous(value=500)
+    assert source._source_template.rayfile.luminous_flux.luminous_value == 500
+
+    # Intermediate class for spectrum
+    assert source._spectrum._spectrum._spectrum.HasField("monochromatic")
+    source.set_spectrum().set_blackbody()
+    assert source._spectrum._spectrum._spectrum.HasField("blackbody")
+
+    # Props
+    assert source._source_instance.rayfile_properties.axis_system == [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    source.set_axis_system([50, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    assert source._source_instance.rayfile_properties.axis_system == [50, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+    source.delete()
+
+
 def test_delete_source(speos: Speos):
     """Test delete of source."""
     p = script.Project(speos=speos)

@@ -36,8 +36,6 @@ import ansys.speos.script.project as project
 import ansys.speos.script.proto_message_utils as proto_message_utils
 from ansys.speos.script.spectrum import Spectrum
 
-src_type_change_error = "A source feature can't change its type. Please delete this one and create a new one with correct type."
-
 
 class BaseSource:
     """
@@ -501,14 +499,12 @@ class RayFile(BaseSource):
     ) -> None:
         super().__init__(project=project, name=name, description=description, metadata=metadata, source_instance=source_instance)
         self._client = self._project.client
-        self._ray_file = self._source_template.rayfile
-        self._ray_file_props = self._source_instance.rayfile_properties
 
         spectrum_guid = ""
-        if self._ray_file.HasField("spectrum_guid"):
-            spectrum_guid = self._ray_file.spectrum_guid
+        if self._source_template.rayfile.HasField("spectrum_guid"):
+            spectrum_guid = self._source_template.rayfile.spectrum_guid
         self._spectrum = self._Spectrum(
-            speos_client=self._client, name=name, message_to_complete=self._ray_file, spectrum_guid=spectrum_guid
+            speos_client=self._client, name=name, message_to_complete=self._source_template.rayfile, spectrum_guid=spectrum_guid
         )
         if spectrum_guid == "":
             self.set_spectrum_from_ray_file()
@@ -533,7 +529,7 @@ class RayFile(BaseSource):
         ansys.speos.script.source.RayFile
             RayFile source.
         """
-        self._ray_file.ray_file_uri = uri
+        self._source_template.rayfile.ray_file_uri = uri
         return self
 
     def set_flux_from_ray_file(self) -> RayFile:
@@ -544,7 +540,7 @@ class RayFile(BaseSource):
         ansys.speos.script.source.RayFile
             RayFile source.
         """
-        self._ray_file.flux_from_ray_file.SetInParent()
+        self._source_template.rayfile.flux_from_ray_file.SetInParent()
         return self
 
     def set_flux_luminous(self, value: float = 683) -> RayFile:
@@ -561,7 +557,7 @@ class RayFile(BaseSource):
         ansys.speos.script.source.RayFile
             RayFile source.
         """
-        self._ray_file.luminous_flux.luminous_value = value
+        self._source_template.rayfile.luminous_flux.luminous_value = value
         return self
 
     def set_flux_radiant(self, value: float = 1) -> RayFile:
@@ -578,7 +574,7 @@ class RayFile(BaseSource):
         ansys.speos.script.source.RayFile
             RayFile source.
         """
-        self._ray_file.radiant_flux.radiant_value = value
+        self._source_template.rayfile.radiant_flux.radiant_value = value
         return self
 
     def set_spectrum_from_ray_file(self) -> RayFile:
@@ -589,7 +585,7 @@ class RayFile(BaseSource):
         ansys.speos.script.source.RayFile
             RayFile source.
         """
-        self._ray_file.spectrum_from_ray_file.SetInParent()
+        self._source_template.rayfile.spectrum_from_ray_file.SetInParent()
         self._spectrum._no_spectrum_local = True
         return self
 
@@ -601,11 +597,16 @@ class RayFile(BaseSource):
         ansys.speos.script.spectrum.Spectrum
             Spectrum.
         """
-        if self._ray_file.HasField("spectrum_from_ray_file"):
+        if self._source_template.rayfile.HasField("spectrum_from_ray_file"):
             guid = ""
             if self._spectrum._spectrum.spectrum_link is not None:
                 guid = self._spectrum._spectrum.spectrum_link.key
-            self._ray_file.spectrum_guid = guid
+            self._source_template.rayfile.spectrum_guid = guid
+
+        if not self._spectrum._message_to_complete is self._source_template.rayfile:
+            # Happens in case of feature reset (to be sure to always modify correct data)
+            self._spectrum._message_to_complete = self._source_template.rayfile
+
         self._spectrum._no_spectrum_local = False
         return self._spectrum._spectrum
 
@@ -623,7 +624,7 @@ class RayFile(BaseSource):
         ansys.speos.script.source.RayFile
             RayFile Source.
         """
-        self._ray_file_props.axis_system[:] = axis_system
+        self._source_instance.rayfile_properties.axis_system[:] = axis_system
         return self
 
     def set_exit_geometries(self, exit_geometries: List[GeoRef] = []) -> RayFile:
@@ -641,9 +642,9 @@ class RayFile(BaseSource):
             RayFile Source.
         """
         if exit_geometries == []:
-            self._ray_file_props.ClearField("exit_geometries")
+            self._source_instance.rayfile_properties.ClearField("exit_geometries")
         else:
-            self._ray_file_props.exit_geometries.geo_paths[:] = [gr.to_native_link() for gr in exit_geometries]
+            self._source_instance.rayfile_properties.exit_geometries.geo_paths[:] = [gr.to_native_link() for gr in exit_geometries]
 
         return self
 
