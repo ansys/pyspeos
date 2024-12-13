@@ -31,12 +31,18 @@ from conftest import config, local_path
 
 NOTEBOOKS = glob(os.path.join(local_path, "jupyter_notebooks", "*.ipynb"))
 
+NB_SPEOS_config = 'speos = core.Speos(host="localhost", port={})\nclean_all_dbs(speos.client)'.format(config.get("SpeosServerPort"))
+
 
 def run_jupyter(notebook):
     with open(os.path.join(local_path, "workflow_tests", "unit_test_pre_run.ipynb")) as f1:
         nb1 = nbformat.read(f1, as_version=4)
     with open(notebook) as f:
         nb = nbformat.read(f, as_version=4)
+        for i, item in enumerate(nb["cells"]):
+            if item.get("cell_type") == "code":
+                if "speos = core.Speos" in item.get("source"):
+                    nb["cells"][i]["source"] = NB_SPEOS_config
         if config.get("SpeosServerOnDocker"):
             for i, item in enumerate(nb["cells"]):
                 if item.get("cell_type") == "code":
