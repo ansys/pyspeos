@@ -48,12 +48,21 @@ jobs:
         run: |
           sudo apt update
           sudo apt install pandoc
+      - name: Start container
+        run: |
+          docker compose up -d
+        env:
+          LICENSE_SERVER: ${{ format('1055@{0}', secrets.LICENSE_SERVER) }}
       - name: "Run Ansys documentation building action"
         uses: ansys/actions/doc-build@v8
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           check-links: false
           sphinxopts: -j auto --keep-going
+      - name: Stop container
+        run: |
+          docker kill speos-rpc
+          docker rm speos-rpc
   tests:
     name: "Unit testing"
     runs-on: ubuntu-latest
