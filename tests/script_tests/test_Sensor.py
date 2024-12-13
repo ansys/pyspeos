@@ -764,6 +764,46 @@ def test_irradiance_modify_after_reset(speos: Speos):
     sensor1.delete()
 
 
+def test_radiance_modify_after_reset(speos: Speos):
+    """Test reset of radiance sensor, and then modify."""
+    p = script.Project(speos=speos)
+
+    # Create + commit
+    sensor1 = p.create_sensor(name="Sensor.1", feature_type=script.sensor.Radiance)
+    assert type(sensor1) == script.sensor.Radiance
+    sensor1.set_type_colorimetric()
+    sensor1.set_layer_type_sequence()
+    sensor1.commit()
+
+    # Ask for reset
+    sensor1.reset()
+
+    # Modify after a reset
+    # Template
+    assert sensor1._sensor_template.radiance_sensor_template.focal == 250
+    sensor1.set_focal(value=100)
+    assert sensor1._sensor_template.radiance_sensor_template.focal == 100
+    # Intermediate class for type : colorimetric
+    assert sensor1._sensor_template.radiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_start == 400
+    sensor1.set_type_colorimetric().set_wavelengths_range().set_start(value=500)
+    assert sensor1._sensor_template.radiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_start == 500
+    # Intermediate class for dimensions
+    assert sensor1._sensor_template.radiance_sensor_template.dimensions.x_start == -50
+    sensor1.set_dimensions().set_x_start(-100)
+    assert sensor1._sensor_template.radiance_sensor_template.dimensions.x_start == -100
+
+    ## Props
+    assert sensor1._sensor_instance.radiance_properties.axis_system == [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    sensor1.set_axis_system([50, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    assert sensor1._sensor_instance.radiance_properties.axis_system == [50, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    # Intermediate class for layer type
+    assert sensor1._sensor_instance.radiance_properties.layer_type_sequence.maximum_nb_of_sequence == 10
+    sensor1.set_layer_type_sequence().set_maximum_nb_of_sequence(value=15)
+    assert sensor1._sensor_instance.radiance_properties.layer_type_sequence.maximum_nb_of_sequence == 15
+
+    sensor1.delete()
+
+
 def test_delete_sensor(speos: Speos):
     """Test delete of sensor."""
     p = script.Project(speos=speos)
