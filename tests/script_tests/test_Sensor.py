@@ -804,6 +804,42 @@ def test_radiance_modify_after_reset(speos: Speos):
     sensor1.delete()
 
 
+def test_camera_modify_after_reset(speos: Speos):
+    """Test reset of camera sensor, and then modify."""
+    p = script.Project(speos=speos)
+
+    # Create + commit
+    sensor1 = p.create_sensor(name="Sensor.1", feature_type=script.sensor.Camera)
+    assert type(sensor1) == script.sensor.Camera
+    sensor1.set_mode_photometric().set_mode_color().set_balance_mode_user_white()
+    sensor1.set_mode_photometric().set_layer_type_source()
+    sensor1.commit()
+
+    # Ask for reset
+    sensor1.reset()
+
+    # Modify after a reset
+    # Template
+    assert sensor1._sensor_template.camera_sensor_template.focal_length == 5
+    sensor1.set_focal_length(value=40)
+    assert sensor1._sensor_template.camera_sensor_template.focal_length == 40
+    # Intermediate class for mode : photometric + wavelengths
+    assert sensor1._sensor_template.camera_sensor_template.sensor_mode_photometric.wavelengths_range.w_start == 400
+    sensor1.set_mode_photometric().set_wavelengths_range().set_start(value=500)
+    assert sensor1._sensor_template.camera_sensor_template.sensor_mode_photometric.wavelengths_range.w_start == 500
+    # Intermediate class for color mode + balance mode
+    assert sensor1._sensor_template.camera_sensor_template.sensor_mode_photometric.color_mode_color.balance_mode_userwhite.blue_gain == 1
+    sensor1.set_mode_photometric().set_mode_color().set_balance_mode_user_white().set_blue_gain(value=0.5)
+    assert sensor1._sensor_template.camera_sensor_template.sensor_mode_photometric.color_mode_color.balance_mode_userwhite.blue_gain == 0.5
+
+    # Props
+    assert sensor1._sensor_instance.camera_properties.axis_system == [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    sensor1.set_axis_system([50, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    assert sensor1._sensor_instance.camera_properties.axis_system == [50, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+    sensor1.delete()
+
+
 def test_delete_sensor(speos: Speos):
     """Test delete of sensor."""
     p = script.Project(speos=speos)

@@ -1108,13 +1108,18 @@ class Camera(BaseSensor):
                     Balance UserWhite mode.
                 """
                 if self._mode is None and self._mode_color.HasField("balance_mode_userwhite"):
+                    # Happens in case of project created via load of speos file
                     self._mode = Camera.Photometric.Color.BalanceModeUserWhite(
                         balance_mode_user_white=self._mode_color.balance_mode_userwhite, default_values=False, stable_ctr=True
                     )
                 elif type(self._mode) != Camera.Photometric.Color.BalanceModeUserWhite:
+                    # if the _mode is not BalanceModeUserWhite then we create a new type.
                     self._mode = Camera.Photometric.Color.BalanceModeUserWhite(
                         balance_mode_user_white=self._mode_color.balance_mode_userwhite, stable_ctr=True
                     )
+                elif not self._mode._balance_mode_user_white is self._mode_color.balance_mode_userwhite:
+                    # Happens in case of feature reset (to be sure to always modify correct data)
+                    self._mode._balance_mode_user_white = self._mode_color.balance_mode_userwhite
                 return self._mode
 
             def set_balance_mode_display_primaries(self) -> Camera.Photometric.Color.BalanceModeDisplayPrimaries:
@@ -1129,13 +1134,18 @@ class Camera(BaseSensor):
                     Balance DisplayPrimaries mode.
                 """
                 if self._mode is None and self._mode_color.HasField("balance_mode_display"):
+                    # Happens in case of project created via load of speos file
                     self._mode = Camera.Photometric.Color.BalanceModeDisplayPrimaries(
                         balance_mode_display=self._mode_color.balance_mode_display, default_values=False, stable_ctr=True
                     )
                 elif type(self._mode) != Camera.Photometric.Color.BalanceModeDisplayPrimaries:
+                    # if the _mode is not BalanceModeDisplayPrimaries then we create a new type.
                     self._mode = Camera.Photometric.Color.BalanceModeDisplayPrimaries(
                         balance_mode_display=self._mode_color.balance_mode_display, stable_ctr=True
                     )
+                elif not self._mode._balance_mode_display is self._mode_color.balance_mode_display:
+                    # Happens in case of feature reset (to be sure to always modify correct data)
+                    self._mode._balance_mode_display = self._mode_color.balance_mode_display
                 return self._mode
 
         def __init__(
@@ -1286,6 +1296,9 @@ class Camera(BaseSensor):
             ansys.speos.script.sensor.BaseSensor.WavelengthsRange
                 Wavelengths range.
             """
+            if not self._wavelengths_range._wavelengths_range is self._mode_photometric.wavelengths_range:
+                # Happens in case of feature reset (to be sure to always modify correct data)
+                self._wavelengths_range._wavelengths_range = self._mode_photometric.wavelengths_range
             return self._wavelengths_range
 
         def set_mode_monochromatic(self, spectrum_file_uri: str) -> Camera.Photometric:
@@ -1316,11 +1329,16 @@ class Camera(BaseSensor):
                 Color mode.
             """
             if self._mode is None and self._mode_photometric.HasField("color_mode_color"):
+                # Happens in case of project created via load of speos file
                 self._mode = Camera.Photometric.Color(
                     mode_color=self._mode_photometric.color_mode_color, default_values=False, stable_ctr=True
                 )
             elif type(self._mode) != Camera.Photometric.Color:
+                # if the _mode is not Color then we create a new type.
                 self._mode = Camera.Photometric.Color(mode_color=self._mode_photometric.color_mode_color, stable_ctr=True)
+            elif not self._mode._mode_color is self._mode_photometric.color_mode_color:
+                # Happens in case of feature reset (to be sure to always modify correct data)
+                self._mode._mode_color = self._mode_photometric.color_mode_color
             return self._mode
 
         def set_trajectory_file_uri(self, uri: str) -> Camera.Photometric:
@@ -1371,8 +1389,6 @@ class Camera(BaseSensor):
         default_values: bool = True,
     ) -> None:
         super().__init__(project=project, name=name, description=description, metadata=metadata, sensor_instance=sensor_instance)
-        self._camera_template = self._sensor_template.camera_sensor_template
-        self._camera_props = self._sensor_instance.camera_properties
 
         # Attribute gathering more complex camera mode
         self._type = None
@@ -1410,7 +1426,7 @@ class Camera(BaseSensor):
         ansys.speos.script.sensor.Camera
             Camera feature
         """
-        self._camera_template.focal_length = value
+        self._sensor_template.camera_sensor_template.focal_length = value
         return self
 
     def set_imager_distance(self, value: float = 10) -> Camera:
@@ -1427,7 +1443,7 @@ class Camera(BaseSensor):
         ansys.speos.script.sensor.Camera
             Camera feature
         """
-        self._camera_template.imager_distance = value
+        self._sensor_template.camera_sensor_template.imager_distance = value
         return self
 
     def set_f_number(self, value: float = 20) -> Camera:
@@ -1444,7 +1460,7 @@ class Camera(BaseSensor):
         ansys.speos.script.sensor.Camera
             Camera feature
         """
-        self._camera_template.f_number = value
+        self._sensor_template.camera_sensor_template.f_number = value
         return self
 
     def set_distortion_file_uri(self, uri: str) -> Camera:
@@ -1460,7 +1476,7 @@ class Camera(BaseSensor):
         ansys.speos.script.sensor.Camera
             Camera feature
         """
-        self._camera_template.distortion_file_uri = uri
+        self._sensor_template.camera_sensor_template.distortion_file_uri = uri
         return self
 
     def set_horz_pixel(self, value: int = 640) -> Camera:
@@ -1477,7 +1493,7 @@ class Camera(BaseSensor):
         ansys.speos.script.sensor.Camera
             Camera feature
         """
-        self._camera_template.horz_pixel = value
+        self._sensor_template.camera_sensor_template.horz_pixel = value
         return self
 
     def set_vert_pixel(self, value: int = 480) -> Camera:
@@ -1494,7 +1510,7 @@ class Camera(BaseSensor):
         ansys.speos.script.sensor.Camera
             Camera feature
         """
-        self._camera_template.vert_pixel = value
+        self._sensor_template.camera_sensor_template.vert_pixel = value
         return self
 
     def set_width(self, value: float = 5.0) -> Camera:
@@ -1511,7 +1527,7 @@ class Camera(BaseSensor):
         ansys.speos.script.sensor.Camera
             Camera feature
         """
-        self._camera_template.width = value
+        self._sensor_template.camera_sensor_template.width = value
         return self
 
     def set_height(self, value: float = 5.0) -> Camera:
@@ -1528,7 +1544,7 @@ class Camera(BaseSensor):
         ansys.speos.script.sensor.Camera
             Camera feature
         """
-        self._camera_template.height = value
+        self._sensor_template.camera_sensor_template.height = value
         return self
 
     def set_mode_geometric(self) -> Camera:
@@ -1541,7 +1557,7 @@ class Camera(BaseSensor):
             Geometric Camera feature
         """
         self._type = None
-        self._camera_template.sensor_mode_geometric.SetInParent()
+        self._sensor_template.camera_sensor_template.sensor_mode_geometric.SetInParent()
         return self
 
     def set_mode_photometric(self) -> Camera.Photometric:
@@ -1553,17 +1569,24 @@ class Camera(BaseSensor):
         ansys.speos.script.sensor.Camera.Photometric
             Photometric Camera Sensor feature
         """
-        if self._type is None and self._camera_template.HasField("sensor_mode_photometric"):
+        if self._type is None and self._sensor_template.camera_sensor_template.HasField("sensor_mode_photometric"):
+            # Happens in case of project created via load of speos file
             self._type = Camera.Photometric(
-                mode_photometric=self._camera_template.sensor_mode_photometric,
-                camera_props=self._camera_props,
+                mode_photometric=self._sensor_template.camera_sensor_template.sensor_mode_photometric,
+                camera_props=self._sensor_instance.camera_properties,
                 default_values=False,
                 stable_ctr=True,
             )
-        elif self._type != Camera.Photometric:
+        elif type(self._type) != Camera.Photometric:
+            # if the _type is not Photometric then we create a new type.
             self._type = Camera.Photometric(
-                mode_photometric=self._camera_template.sensor_mode_photometric, camera_props=self._camera_props, stable_ctr=True
+                mode_photometric=self._sensor_template.camera_sensor_template.sensor_mode_photometric,
+                camera_props=self._sensor_instance.camera_properties,
+                stable_ctr=True,
             )
+        elif not self._type._mode_photometric is self._sensor_template.camera_sensor_template.sensor_mode_photometric:
+            # Happens in case of feature reset (to be sure to always modify correct data)
+            self._type._mode_photometric = self._sensor_template.camera_sensor_template.sensor_mode_photometric
         return self._type
 
     def set_axis_system(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> Camera:
@@ -1580,7 +1603,7 @@ class Camera(BaseSensor):
         ansys.speos.script.sensor.Camera
             Camera Sensor feature
         """
-        self._camera_props.axis_system[:] = axis_system
+        self._sensor_instance.camera_properties.axis_system[:] = axis_system
         return self
 
 
