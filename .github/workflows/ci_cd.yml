@@ -48,6 +48,12 @@ jobs:
         run: |
           sudo apt update
           sudo apt install pandoc
+      - name: Login to GitHub Packages
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io/ansys-internal
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Start container
         run: |
           docker compose up -d
