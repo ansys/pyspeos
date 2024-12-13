@@ -1,9 +1,14 @@
 """Sphinx documentation configuration file."""
 from datetime import datetime
 import os
+import pathlib
+import shutil
 
 from ansys_sphinx_theme import ansys_favicon, get_version_match
+import sphinx
 from sphinx.builders.latex import LaTeXBuilder
+from sphinx.util import logging
+from sphinx.util.display import status_iterator
 
 from ansys.speos import __version__
 
@@ -45,6 +50,8 @@ extensions = [
     "sphinx_jinja",
     "sphinx.ext.autodoc",
     "ansys_sphinx_theme.extension.autoapi",
+    "nbsphinx",
+    "myst_parser",
 ]
 
 # Intersphinx mapping
@@ -92,20 +99,163 @@ master_doc = "index"
 suppress_warnings = ["autoapi"]
 autodoc_typehints = "description"
 
+# -- Declare the Jinja context -----------------------------------------------
+BUILD_EXAMPLES = True if os.environ.get("BUILD_EXAMPLES", "true") == "true" else False
+if BUILD_EXAMPLES:
+    extensions.extend(["myst_parser", "nbsphinx"])
+    nbsphinx_execute = "never"
+    nbsphinx_allow_errors = True
+    nbsphinx_custom_formats = {
+        ".mystnb": ["jupytext.reads", {"fmt": "mystnb"}],
+        ".py": ["jupytext.reads", {"fmt": ""}],
+    }
+    nbsphinx_prompt_width = ""
+    nbsphinx_prolog = """
+
+    .. grid:: 3
+        :gutter: 1
+
+        .. grid-item::
+            :child-align: center
+
+            .. button-link:: {cname_pref}/{python_file_loc}
+                :color: primary
+                :shadow:
+
+                Download as Python script :fab:`python`
+
+        .. grid-item::
+            :child-align: center
+
+            .. button-link:: {cname_pref}/{ipynb_file_loc}
+               :color: primary
+               :shadow:
+
+                Download as Jupyter notebook :fas:`book`
+
+----
+
+    """.format(
+        cname_pref=f"https://{cname}/version/{get_version_match(version)}",
+        python_file_loc="{{ env.docname }}.py",
+        ipynb_file_loc="{{ env.docname }}.ipynb",
+        pdf_file_loc="{{ env.docname }}.pdf",
+    )
+
+
 jinja_contexts = {
     "linux_containers": {},
+    "main_toctree": {
+        "build_examples": BUILD_EXAMPLES,
+    },
 }
 
 
-def prepare_jinja_env(jinja_env) -> None:
+def copy_examples_to_output_dir(app: sphinx.application.Sphinx, exception: Exception):
     """
-    Customize the jinja env.
+    Copy the examples directory to the output directory of the documentation.
 
-    Notes
-    -----
-    See https://jinja.palletsprojects.com/en/3.0.x/api/#jinja2.Environment
+    Parameters
+    ----------
+    app : sphinx.application.Sphinx
+        Sphinx application instance containing the all the doc build configuration.
+    exception : Exception
+        Exception encountered during the building of the documentation.
+
     """
-    jinja_env.globals["project_name"] = project
+    # TODO: investigate issues when using OUTPUT_EXAMPLES instead of SOURCE_EXAMPLES
+    # https://github.com/ansys-internal/pystk/issues/415
+    OUTPUT_EXAMPLES = pathlib.Path(app.outdir) / "examples"
+    OUTPUT_IMAGES = OUTPUT_EXAMPLES / "img"
+    for directory in [OUTPUT_EXAMPLES, OUTPUT_IMAGES]:
+        if not directory.exists():
+            directory.mkdir(parents=True, exist_ok=True)
+
+    SOURCE_EXAMPLES = pathlib.Path(app.srcdir) / "examples"
+    EXAMPLES_DIRECTORY = SOURCE_EXAMPLES.parent.parent.parent / "examples"
+    IMAGES_DIRECTORY = EXAMPLES_DIRECTORY / "img"
+
+    # Copyt the examples
+    examples = list(EXAMPLES_DIRECTORY.glob("*.py"))
+    for file in status_iterator(
+        examples,
+        f"Copying example to doc/_build/examples/",
+        "green",
+        len(examples),
+        verbosity=1,
+        stringify_func=(lambda x: x.name),
+    ):
+        destination_file = OUTPUT_EXAMPLES / file.name
+        destination_file.write_text(file.read_text(encoding="utf-8"), encoding="utf-8")
 
 
-autoapi_prepare_jinja_env = prepare_jinja_env
+def copy_examples_files_to_source_dir(app: sphinx.application.Sphinx):
+    """
+    Copy the examples directory to the source directory of the documentation.
+
+    Parameters
+    ----------
+    app : sphinx.application.Sphinx
+        Sphinx application instance containing the all the doc build configuration.
+
+    """
+    SOURCE_EXAMPLES = pathlib.Path(app.srcdir) / "examples"
+    SOURCE_IMAGES = SOURCE_EXAMPLES / "img"
+    for directory in [SOURCE_EXAMPLES, SOURCE_IMAGES]:
+        if not directory.exists():
+            directory.mkdir(parents=True, exist_ok=True)
+
+    EXAMPLES_DIRECTORY = SOURCE_EXAMPLES.parent.parent.parent / "examples"
+    IMAGES_DIRECTORY = EXAMPLES_DIRECTORY / "img"
+
+    # Copy the the examples
+    examples = list(EXAMPLES_DIRECTORY.glob("*.py"))
+    for file in status_iterator(
+        examples,
+        f"Copying example to doc/source/examples/",
+        "green",
+        len(examples),
+        verbosity=1,
+        stringify_func=(lambda file: file.name),
+    ):
+        destination_file = SOURCE_EXAMPLES / file.name
+        destination_file.write_text(file.read_text(encoding="utf-8"), encoding="utf-8")
+
+
+def remove_examples_from_source_dir(app: sphinx.application.Sphinx, exception: Exception):
+    """
+    Remove the example files from the documentation source directory.
+
+    Parameters
+    ----------
+    app : sphinx.application.Sphinx
+        Sphinx application instance containing the all the doc build configuration.
+    exception : Exception
+        Exception encountered during the building of the documentation.
+
+    """
+    EXAMPLES_DIRECTORY = pathlib.Path(app.srcdir) / "examples"
+    logger = logging.getLogger(__name__)
+    logger.info(f"\nRemoving {EXAMPLES_DIRECTORY} directory...")
+    shutil.rmtree(EXAMPLES_DIRECTORY)
+
+
+def setup(app: sphinx.application.Sphinx):
+    """
+    Run different hook functions during the documentation build.
+
+    Parameters
+    ----------
+    app : sphinx.application.Sphinx
+        Sphinx application instance containing the all the doc build configuration.
+
+    """
+    # HACK: rST files are copied to the doc/source directory before the build.
+    # Sphinx needs all source files to be in the source directory to build.
+    # However, the examples are desired to be kept in the root directory. Once the
+    # build has completed, no matter its success, the examples are removed from
+    # the source directory.
+    if BUILD_EXAMPLES:
+        app.connect("builder-inited", copy_examples_files_to_source_dir)
+        app.connect("build-finished", remove_examples_from_source_dir)
+        app.connect("build-finished", copy_examples_to_output_dir)

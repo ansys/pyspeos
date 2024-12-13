@@ -23,6 +23,13 @@ PySpeos documentation |version|
         Understand PySpeos API endpoints, their capabilities,
         and how to interact with them programmatically.
 
+    .. grid-item-card:: Examples :fa:`clone`
+        :padding: 2 2 2 2
+        :link: examples
+        :link-type: doc
+
+        Learn how to use PySpeos with examples that demonstrate its capabilities.
+
 
 .. toctree::
    :hidden:
@@ -30,4 +37,4 @@ PySpeos documentation |version|
 
    getting_started/index
    api/index
-
+   examples
