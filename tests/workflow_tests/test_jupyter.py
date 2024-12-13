@@ -20,36 +20,63 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from glob import glob
+# from glob import glob
 import os.path
+from pathlib import Path
 
 from nbconvert.preprocessors import ExecutePreprocessor
 import nbformat
 import pytest
 
-from conftest import config, local_path
+#
+# from nbconvert.preprocessors import ExecutePreprocessor
+# import nbformat
+# import pytest
+#
+from conftest import local_path
 
-NOTEBOOKS = glob(os.path.join(local_path, "jupyter_notebooks", "*.ipynb"))
+#
+# NOTEBOOKS = glob(os.path.join(local_path, "jupyter_notebooks", "*.ipynb"))
+#
+#
+# def run_jupyter(notebook):
+#     with open(os.path.join(local_path, "workflow_tests", "unit_test_pre_run.ipynb")) as f1:
+#         nb1 = nbformat.read(f1, as_version=4)
+#     with open(notebook) as f:
+#         nb = nbformat.read(f, as_version=4)
+#         if config.get("SpeosServerOnDocker"):
+#             for i, item in enumerate(nb["cells"]):
+#                 if item.get("cell_type") == "code":
+#                     nb["cells"].pop(i)
+#                     break
+#         ep = ExecutePreprocessor(timeout=600, kernel_name="python3")
+#         nb = nb1 + nb
+#         try:
+#             assert ep.preprocess(nb) is not None, f"Got empty notebook for {notebook}"
+#         except Exception:
+#             assert False, f"Failed executing {notebook}"
+#
+#
+# # @pytest.mark.parametrize("notebook", NOTEBOOKS)
+# # def test_notebook(notebook):
+# #     run_jupyter(notebook)
 
 
-def run_jupyter(notebook):
-    with open(os.path.join(local_path, "workflow_tests", "unit_test_pre_run.ipynb")) as f1:
-        nb1 = nbformat.read(f1, as_version=4)
-    with open(notebook) as f:
-        nb = nbformat.read(f, as_version=4)
-        if config.get("SpeosServerOnDocker"):
-            for i, item in enumerate(nb["cells"]):
-                if item.get("cell_type") == "code":
-                    nb["cells"].pop(i)
-                    break
-        ep = ExecutePreprocessor(timeout=600, kernel_name="python3")
-        nb = nb1 + nb
-        try:
-            assert ep.preprocess(nb) is not None, f"Got empty notebook for {notebook}"
-        except Exception:
-            assert False, f"Failed executing {notebook}"
+# Directory containing the notebooks
+directory = Path(os.path.join(local_path, "jupyter_notebooks"))
 
 
-@pytest.mark.parametrize("notebook", NOTEBOOKS)
-def test_notebook(notebook):
-    run_jupyter(notebook)
+@pytest.mark.parametrize("notebook_path", [str(notebook) for notebook in directory.rglob("*.ipynb")])
+def test_notebook_execution(notebook_path):
+    """
+    Test to ensure a Jupyter Notebook runs without errors.
+    """
+    with open(notebook_path, "r", encoding="utf-8") as f:
+        notebook = nbformat.read(f, as_version=4)
+
+    ep = ExecutePreprocessor(timeout=600, kernel_name="python3")
+
+    try:
+        ep.preprocess(notebook, {"metadata": {"path": directory}})
+    except Exception as e:
+        pytest.fail(f"Notebook {notebook_path} failed to execute: {e}")
