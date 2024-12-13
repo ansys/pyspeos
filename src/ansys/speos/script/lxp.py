@@ -214,12 +214,13 @@ class RayPath:
 
 class LightPathFinder:
     """
-    The Lightpathfinder defines n interface to read lpf files. These files contain a set of simulated rays with all
-    there intersections and properties.
+    The Lightpathfinder defines an interface to read lpf files. These files contain a set of simulated rays including \
+    their intersections and properties.
 
     Parameters
     ----------
-    speos : ansys.speos.core.Speos
+    speos : ansys.speos.core.speos.Speos
+        Speos Session (connected to Speos gRPC server)
     path : str
         path to lpf file to be opened
 
@@ -227,6 +228,7 @@ class LightPathFinder:
 
     def __init__(self, speos: ansys.speos.core.Speos, path: str):
         self.client = speos.client
+        """Speos instance client"""
         self._stub = lpf_file_reader__v2__pb2_grpc.LpfFileReader_MonoStub(self.client.channel)
         self.__open(path)
         self._data = self._stub.GetInformation(lpf_file_reader__v2__pb2.GetInformation_Request_Mono())
@@ -430,7 +432,7 @@ class LightPathFinder:
             length of last ray
         ray_filter : bool
             boolean to decide if filtered rays or all rays should be shown
-        project : ansys.speos.script.Project
+        project : ansys.speos.script.project.Project
             Speos Project/Geometry to be added to pyvista visualisation
 
         Returns
@@ -442,6 +444,7 @@ class LightPathFinder:
             if len(self._filtered_rays) > 0:
                 temp_rays = self._filtered_rays
             else:
+                print("no filtered rays")
                 temp_rays = self._rays
         else:
             temp_rays = self._rays
