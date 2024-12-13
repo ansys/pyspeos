@@ -448,7 +448,7 @@ def test_direct_modify_after_reset(speos: Speos):
     src.commit()
 
     # Create + commit
-    sim1 = script.simulation.Direct(project=p, name="Direct.1")
+    sim1 = p.create_simulation(name="Direct.1", feature_type=script.simulation.Direct)
     sim1.set_sensor_paths(sensor_paths=[ssr._name]).set_source_paths(source_paths=[src._name]).commit()
 
     # Ask for reset
@@ -470,7 +470,56 @@ def test_direct_modify_after_reset(speos: Speos):
     sim1.set_stop_condition_rays_number(value=500)
     assert sim1._job.direct_mc_simulation_properties.stop_condition_rays_number == 500
 
-    sim1.delete()
+    p.delete()
+
+
+def test_inverse_modify_after_reset(speos: Speos):
+    """Test reset of inverse simulation, and then modify."""
+    p = script.Project(speos=speos)
+
+    # Prerequisites: a source and a sensor are needed (bug also a rootpart)
+    root_part = p.create_root_part()
+    root_part.create_body(name="Body.1").create_face(name="Face.1").set_vertices([0, 1, 0, 0, 2, 0, 1, 2, 0]).set_facets(
+        [0, 1, 2]
+    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    root_part.commit()
+
+    ssr = p.create_sensor(name="Irradiance.1", feature_type=script.sensor.Irradiance)
+    ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]).set_type_colorimetric()
+    ssr.commit()
+
+    ssr2 = p.create_sensor(name="Irradiance.2", feature_type=script.sensor.Irradiance)
+    ssr2.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]).set_type_colorimetric()
+    ssr2.commit()
+
+    src = p.create_source(name="Luminaire.1", feature_type=script.source.Luminaire)
+    src.set_intensity_file_uri(uri=os.path.join(test_path, "IES_C_DETECTOR.ies"))
+    src.commit()
+
+    # Create + commit
+    sim1 = p.create_simulation(name="Inverse.1", feature_type=script.simulation.Inverse)
+    sim1.set_sensor_paths(sensor_paths=[ssr._name]).set_source_paths(source_paths=[src._name]).commit()
+
+    # Ask for reset
+    sim1.reset()
+
+    # Modify after a reset
+    # Template
+    assert sim1._simulation_template.inverse_mc_simulation_template.geom_distance_tolerance == 0.01
+    sim1.set_geom_distance_tolerance(value=0.05)
+    assert sim1._simulation_template.inverse_mc_simulation_template.geom_distance_tolerance == 0.05
+
+    # Props
+    assert sim1._simulation_instance.sensor_paths == [ssr._name]
+    sim1.set_sensor_paths(["NewSensor"])
+    assert sim1._simulation_instance.sensor_paths == ["NewSensor"]
+
+    # Job Props
+    assert sim1._job.inverse_mc_simulation_properties.optimized_propagation_none.stop_condition_passes_number == 5
+    sim1.set_stop_condition_passes_number(value=10)
+    assert sim1._job.inverse_mc_simulation_properties.optimized_propagation_none.stop_condition_passes_number == 10
+
+    p.delete()
 
 
 def test_delete(speos: Speos):

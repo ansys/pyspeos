@@ -730,8 +730,6 @@ class Inverse(BaseSimulation):
         default_values: bool = True,
     ) -> None:
         super().__init__(project=project, name=name, description=description, metadata=metadata, simulation_instance=simulation_instance)
-        self._inverse_template = self._simulation_template.inverse_mc_simulation_template
-        self._inverse_props_from_job = self._job.inverse_mc_simulation_properties
 
         if default_values:
             # Default values
@@ -763,7 +761,7 @@ class Inverse(BaseSimulation):
         ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
-        self._inverse_template.geom_distance_tolerance = value
+        self._simulation_template.inverse_mc_simulation_template.geom_distance_tolerance = value
         return self
 
     def set_max_impact(self, value: int = 100) -> Inverse:
@@ -781,7 +779,7 @@ class Inverse(BaseSimulation):
         ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
-        self._inverse_template.max_impact = value
+        self._simulation_template.inverse_mc_simulation_template.max_impact = value
         return self
 
     def set_weight(self) -> BaseSimulation.Weight:
@@ -792,7 +790,7 @@ class Inverse(BaseSimulation):
         ansys.speos.script.simulation.BaseSimulation.Weight
             Simulation.Weight
         """
-        return BaseSimulation.Weight(self._inverse_template.weight, stable_ctr=True)
+        return BaseSimulation.Weight(self._simulation_template.inverse_mc_simulation_template.weight, stable_ctr=True)
 
     def set_weight_none(self) -> Inverse:
         """Deactivate weight.
@@ -802,7 +800,7 @@ class Inverse(BaseSimulation):
         ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
-        self._inverse_template.ClearField("weight")
+        self._simulation_template.inverse_mc_simulation_template.ClearField("weight")
         return self
 
     def set_colorimetric_standard_CIE_1931(self) -> Inverse:
@@ -814,7 +812,7 @@ class Inverse(BaseSimulation):
         ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
-        self._inverse_template.colorimetric_standard = simulation_template_pb2.CIE_1931
+        self._simulation_template.inverse_mc_simulation_template.colorimetric_standard = simulation_template_pb2.CIE_1931
         return self
 
     def set_colorimetric_standard_CIE_1964(self) -> Inverse:
@@ -826,7 +824,7 @@ class Inverse(BaseSimulation):
         ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
-        self._inverse_template.colorimetric_standard = simulation_template_pb2.CIE_1964
+        self._simulation_template.inverse_mc_simulation_template.colorimetric_standard = simulation_template_pb2.CIE_1964
         return self
 
     def set_dispersion(self, value: bool = False) -> Inverse:
@@ -843,7 +841,7 @@ class Inverse(BaseSimulation):
         ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
-        self._inverse_template.dispersion = value
+        self._simulation_template.inverse_mc_simulation_template.dispersion = value
         return self
 
     def set_splitting(self, value: bool = False) -> Inverse:
@@ -861,7 +859,7 @@ class Inverse(BaseSimulation):
         ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
-        self._inverse_template.splitting = value
+        self._simulation_template.inverse_mc_simulation_template.splitting = value
         return self
 
     def set_number_of_gathering_rays_per_source(self, value: int = 1) -> Inverse:
@@ -878,7 +876,7 @@ class Inverse(BaseSimulation):
         ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
-        self._inverse_template.number_of_gathering_rays_per_source = value
+        self._simulation_template.inverse_mc_simulation_template.number_of_gathering_rays_per_source = value
         return self
 
     def set_maximum_gathering_error(self, value: int = 0) -> Inverse:
@@ -895,7 +893,7 @@ class Inverse(BaseSimulation):
         ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
-        self._inverse_template.maximum_gathering_error = value
+        self._simulation_template.inverse_mc_simulation_template.maximum_gathering_error = value
         return self
 
     # def set_fast_transmission_gathering(self, value: bool = False) -> Simulation.Inverse:
@@ -914,7 +912,7 @@ class Inverse(BaseSimulation):
     #    ansys.speos.script.simulation.Inverse
     #        Inverse simulation
     #    """
-    #    self._inverse_template.fast_transmission_gathering = value
+    #    self._simulation_template.inverse_mc_simulation_template.fast_transmission_gathering = value
     #    return self
 
     def set_ambient_material_file_uri(self, uri: str = "") -> Inverse:
@@ -931,7 +929,7 @@ class Inverse(BaseSimulation):
         ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
-        self._inverse_template.ambient_material_uri = uri
+        self._simulation_template.inverse_mc_simulation_template.ambient_material_uri = uri
         return self
 
     def set_stop_condition_passes_number(self, value: Optional[int] = 5) -> Inverse:
@@ -949,9 +947,9 @@ class Inverse(BaseSimulation):
             Inverse simulation
         """
         if value is None:
-            self._inverse_props_from_job.optimized_propagation_none.ClearField("stop_condition_passes_number")
+            self._job.inverse_mc_simulation_properties.optimized_propagation_none.ClearField("stop_condition_passes_number")
         else:
-            self._inverse_props_from_job.optimized_propagation_none.stop_condition_passes_number = value
+            self._job.inverse_mc_simulation_properties.optimized_propagation_none.stop_condition_passes_number = value
         return self
 
     def set_stop_condition_duration(self, value: Optional[int] = None) -> Inverse:
@@ -969,9 +967,9 @@ class Inverse(BaseSimulation):
             Inverse simulation
         """
         if value is None:
-            self._inverse_props_from_job.ClearField("stop_condition_duration")
+            self._job.inverse_mc_simulation_properties.ClearField("stop_condition_duration")
         else:
-            self._inverse_props_from_job.stop_condition_duration = value
+            self._job.inverse_mc_simulation_properties.stop_condition_duration = value
         return self
 
     def set_automatic_save_frequency(self, value: int = 1800) -> Inverse:
@@ -990,7 +988,7 @@ class Inverse(BaseSimulation):
         ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
-        self._inverse_props_from_job.automatic_save_frequency = value
+        self._job.inverse_mc_simulation_properties.automatic_save_frequency = value
         return self
 
 
