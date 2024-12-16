@@ -69,7 +69,7 @@ class RayPath:
 
     @property
     def nb_impacts(self) -> int:
-        """Number of impacts contained in raypath
+        """Number of impacts contained in raypath.
 
         Returns
         -------
@@ -102,7 +102,7 @@ class RayPath:
 
     @property
     def body_ids(self) -> list[int]:
-        """Body id of interacted body for each impact
+        """Body id of interacted body for each impact.
 
         Returns
         -------
@@ -113,7 +113,7 @@ class RayPath:
 
     @property
     def face_ids(self) -> list[int]:
-        """Face id of interacted body for each impact
+        """Face id of interacted body for each impact.
 
         Returns
         -------
@@ -251,7 +251,7 @@ class LightPathFinder:
 
     @property
     def has_sensor_contributions(self) -> bool:
-        """defines if a lpf file conatisn information inregards to sensor contribution"""
+        """defines if a lpf file contains information regarding the sensor contribution"""
         return self._has_sensor_contributions
 
     @property
@@ -285,7 +285,7 @@ class LightPathFinder:
 
     def __parse_traces(self) -> list[RayPath]:
         """
-        Reads all raypathes from lpf dataset.
+        Reads all raypaths from lpf dataset.
 
         Returns
         -------
@@ -298,7 +298,7 @@ class LightPathFinder:
         return raypaths
 
     def __filter_by_last_intersection_types(self, options: list[int], new=True):
-        """filters raypathes based on last intersection types and populates filtered_rays property"""
+        """filters raypaths based on last intersection types and populates filtered_rays property"""
         if new:
             self._filtered_rays = []
             for ray in self._rays:
@@ -399,7 +399,7 @@ class LightPathFinder:
         plotter : pv.Plotter
             pyvista plotter object to which rays should be added
         ray : script.RayPath
-            RayPath object which contains rayinformation to be added
+            RayPath object which contains ray information to be added
         max_ray_length : float
             length of the last ray
         """
