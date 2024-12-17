@@ -19,7 +19,7 @@ import ansys.speos.core as core
 # ## Create connection with speos rpc server
 
 # +
-speos = core.Speos(host="localhost", port=50055)
+speos = core.Speos(host="localhost", port=50098)
 # -
 
 # ## Create an ObjectLink
