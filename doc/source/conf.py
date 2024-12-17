@@ -104,7 +104,6 @@ BUILD_EXAMPLES = True if os.environ.get("BUILD_EXAMPLES", "true") == "true" else
 if BUILD_EXAMPLES:
     extensions.extend(["myst_parser", "nbsphinx"])
     nbsphinx_execute = "always"
-    nbsphinx_allow_errors = True
     nbsphinx_custom_formats = {
         ".mystnb": ["jupytext.reads", {"fmt": "mystnb"}],
         ".py": ["jupytext.reads", {"fmt": ""}],
