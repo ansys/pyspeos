@@ -173,6 +173,26 @@ def test_library_modify_after_reset(speos: Speos):
     intensity1.delete()
 
 
+def test_gaussian_modify_after_reset(speos: Speos):
+    """Test modify gaussian intensity feature after reset."""
+
+    # Create + commit
+    intensity1 = script.Intensity(speos_client=speos.client, name="Intensity.1").commit()
+    intensity1.set_gaussian()
+    intensity1.commit()
+
+    # Ask for reset
+    intensity1.reset()
+
+    # Template modification
+    intensity1.set_gaussian().set_FWHM_angle_y(value=40)
+    assert intensity1._intensity_template.gaussian.FWHM_angle_y == 40
+
+    # Properties modification
+    intensity1.set_gaussian().set_axis_system(axis_system=[50, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    assert intensity1._intensity_properties.gaussian_properties.axis_system == [50, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+
 def test_delete_intensity(speos: Speos):
     """Test delete of intensity."""
 
