@@ -151,6 +151,28 @@ def test_reset_intensity(speos: Speos):
     intensity1.delete()
 
 
+def test_library_modify_after_reset(speos: Speos):
+    """Test modify library intensity feature after reset."""
+
+    # Create + commit
+    intensity1 = script.Intensity(speos_client=speos.client, name="Intensity.1")
+    intensity1.set_library().set_intensity_file_uri(uri=os.path.join(test_path, "IES_C_DETECTOR.ies"))
+    intensity1.commit()
+
+    # Ask for reset
+    intensity1.reset()
+
+    # Template modification
+    intensity1.set_library().set_intensity_file_uri(uri=os.path.join(test_path, "PROJECT.Direct-no-Ray.Irradiance Ray Spectral.xmp"))
+    assert intensity1._intensity_template.library.intensity_file_uri.endswith("xmp")
+
+    # Properties modification
+    intensity1.set_library().set_orientation_axis_system(axis_system=[50, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    assert intensity1._intensity_properties.library_properties.axis_system.values == [50, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+    intensity1.delete()
+
+
 def test_delete_intensity(speos: Speos):
     """Test delete of intensity."""
 

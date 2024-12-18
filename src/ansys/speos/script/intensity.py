@@ -304,13 +304,22 @@ class Intensity:
             Library intensity.
         """
         if self._type is None and self._intensity_template.HasField("library"):
+            # Happens in case of project created via load of speos file
             self._type = Intensity.Library(
                 library=self._intensity_template.library, library_props=self._intensity_properties.library_properties, default_values=False
             )
         elif type(self._type) != Intensity.Library:
+            # if the _type is not Library then we create a new type.
             self._type = Intensity.Library(
                 library=self._intensity_template.library, library_props=self._intensity_properties.library_properties
             )
+        elif (
+            not self._type._library is self._intensity_template.library
+            or not self._type._library_props is self._intensity_properties.library_properties
+        ):
+            # Happens in case of feature reset (to be sure to always modify correct data)
+            self._type._library = self._intensity_template.library
+            self._type._library_props = self._intensity_properties.library_properties
         return self._type
 
     def set_cos(self, N: float = 3, total_angle: float = 180) -> Intensity:
