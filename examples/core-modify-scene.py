@@ -170,3 +170,24 @@ my_scene.set(my_scene_data)
 # Check scene data after update
 print(my_scene)
 # -
+
+# When loading a speos file into a scene, this creates many objects (source templates, sensor templates, vop template, sop templates).
+# Then at the end of the example, we just clean all databases
+
+# +
+for item in (
+    speos.client.jobs().list()
+    + speos.client.scenes().list()
+    + speos.client.simulation_templates().list()
+    + speos.client.sensor_templates().list()
+    + speos.client.source_templates().list()
+    + speos.client.intensity_templates().list()
+    + speos.client.spectrums().list()
+    + speos.client.vop_templates().list()
+    + speos.client.sop_templates().list()
+    + speos.client.parts().list()
+    + speos.client.bodies().list()
+    + speos.client.faces().list()
+):
+    item.delete()
+# -
