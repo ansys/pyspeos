@@ -394,7 +394,7 @@ class Project:
         Returns
         -------
         ansys.speos.script.project.Project
-            Source feature.
+            Project feature.
         """
         # Erase the scene
         if self.scene_link is not None:

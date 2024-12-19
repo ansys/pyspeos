@@ -479,8 +479,6 @@ class Direct(BaseSimulation):
         default_values: bool = True,
     ) -> None:
         super().__init__(project=project, name=name, description=description, metadata=metadata, simulation_instance=simulation_instance)
-        self._direct_template = self._simulation_template.direct_mc_simulation_template
-        self._direct_props_from_job = self._job.direct_mc_simulation_properties
 
         if default_values:
             # Default values
@@ -509,7 +507,7 @@ class Direct(BaseSimulation):
         ansys.speos.script.simulation.Direct
             Direct simulation
         """
-        self._direct_template.geom_distance_tolerance = value
+        self._simulation_template.direct_mc_simulation_template.geom_distance_tolerance = value
         return self
 
     def set_max_impact(self, value: int = 100) -> Direct:
@@ -527,7 +525,7 @@ class Direct(BaseSimulation):
         ansys.speos.script.simulation.Direct
             Direct simulation
         """
-        self._direct_template.max_impact = value
+        self._simulation_template.direct_mc_simulation_template.max_impact = value
         return self
 
     def set_weight(self) -> BaseSimulation.Weight:
@@ -538,7 +536,7 @@ class Direct(BaseSimulation):
         ansys.speos.script.simulation.BaseSimulation.Weight
             Weight.
         """
-        return BaseSimulation.Weight(self._direct_template.weight, stable_ctr=True)
+        return BaseSimulation.Weight(self._simulation_template.direct_mc_simulation_template.weight, stable_ctr=True)
 
     def set_weight_none(self) -> Direct:
         """Deactivate weight.
@@ -548,7 +546,7 @@ class Direct(BaseSimulation):
         ansys.speos.script.simulation.Direct
             Direct simulation
         """
-        self._direct_template.ClearField("weight")
+        self._simulation_template.direct_mc_simulation_template.ClearField("weight")
         return self
 
     def set_colorimetric_standard_CIE_1931(self) -> Direct:
@@ -560,7 +558,7 @@ class Direct(BaseSimulation):
         ansys.speos.script.simulation.Direct
             Direct simulation
         """
-        self._direct_template.colorimetric_standard = simulation_template_pb2.CIE_1931
+        self._simulation_template.direct_mc_simulation_template.colorimetric_standard = simulation_template_pb2.CIE_1931
         return self
 
     def set_colorimetric_standard_CIE_1964(self) -> Direct:
@@ -572,7 +570,7 @@ class Direct(BaseSimulation):
         ansys.speos.script.simulation.Direct
             Direct simulation
         """
-        self._direct_template.colorimetric_standard = simulation_template_pb2.CIE_1964
+        self._simulation_template.direct_mc_simulation_template.colorimetric_standard = simulation_template_pb2.CIE_1964
         return self
 
     def set_dispersion(self, value: bool = True) -> Direct:
@@ -589,7 +587,7 @@ class Direct(BaseSimulation):
         ansys.speos.script.simulation.Direct
             Direct simulation
         """
-        self._direct_template.dispersion = value
+        self._simulation_template.direct_mc_simulation_template.dispersion = value
         return self
 
     # def set_fast_transmission_gathering(self, value: bool = False) -> Simulation.Direct:
@@ -608,7 +606,7 @@ class Direct(BaseSimulation):
     #    ansys.speos.script.simulation.Direct
     #        Direct simulation
     #    """
-    #    self._direct_template.fast_transmission_gathering = value
+    #    self._simulation_template.direct_mc_simulation_template.fast_transmission_gathering = value
     #    return self
 
     def set_ambient_material_file_uri(self, uri: str = "") -> Direct:
@@ -625,7 +623,7 @@ class Direct(BaseSimulation):
         ansys.speos.script.simulation.Direct
             Direct simulation
         """
-        self._direct_template.ambient_material_uri = uri
+        self._simulation_template.direct_mc_simulation_template.ambient_material_uri = uri
         return self
 
     def set_stop_condition_rays_number(self, value: Optional[int] = 200000) -> Direct:
@@ -643,9 +641,9 @@ class Direct(BaseSimulation):
             Direct simulation
         """
         if value is None:
-            self._direct_props_from_job.ClearField("stop_condition_rays_number")
+            self._job.direct_mc_simulation_properties.ClearField("stop_condition_rays_number")
         else:
-            self._direct_props_from_job.stop_condition_rays_number = value
+            self._job.direct_mc_simulation_properties.stop_condition_rays_number = value
         return self
 
     def set_stop_condition_duration(self, value: Optional[int] = None) -> Direct:
@@ -663,9 +661,9 @@ class Direct(BaseSimulation):
             Direct simulation
         """
         if value is None:
-            self._direct_props_from_job.ClearField("stop_condition_duration")
+            self._job.direct_mc_simulation_properties.ClearField("stop_condition_duration")
         else:
-            self._direct_props_from_job.stop_condition_duration = value
+            self._job.direct_mc_simulation_properties.stop_condition_duration = value
         return self
 
     def set_automatic_save_frequency(self, value: int = 1800) -> Direct:
@@ -684,7 +682,7 @@ class Direct(BaseSimulation):
         ansys.speos.script.simulation.Direct
             Direct simulation
         """
-        self._direct_props_from_job.automatic_save_frequency = value
+        self._job.direct_mc_simulation_properties.automatic_save_frequency = value
         return self
 
 
@@ -732,8 +730,6 @@ class Inverse(BaseSimulation):
         default_values: bool = True,
     ) -> None:
         super().__init__(project=project, name=name, description=description, metadata=metadata, simulation_instance=simulation_instance)
-        self._inverse_template = self._simulation_template.inverse_mc_simulation_template
-        self._inverse_props_from_job = self._job.inverse_mc_simulation_properties
 
         if default_values:
             # Default values
@@ -765,7 +761,7 @@ class Inverse(BaseSimulation):
         ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
-        self._inverse_template.geom_distance_tolerance = value
+        self._simulation_template.inverse_mc_simulation_template.geom_distance_tolerance = value
         return self
 
     def set_max_impact(self, value: int = 100) -> Inverse:
@@ -783,7 +779,7 @@ class Inverse(BaseSimulation):
         ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
-        self._inverse_template.max_impact = value
+        self._simulation_template.inverse_mc_simulation_template.max_impact = value
         return self
 
     def set_weight(self) -> BaseSimulation.Weight:
@@ -794,7 +790,7 @@ class Inverse(BaseSimulation):
         ansys.speos.script.simulation.BaseSimulation.Weight
             Simulation.Weight
         """
-        return BaseSimulation.Weight(self._inverse_template.weight, stable_ctr=True)
+        return BaseSimulation.Weight(self._simulation_template.inverse_mc_simulation_template.weight, stable_ctr=True)
 
     def set_weight_none(self) -> Inverse:
         """Deactivate weight.
@@ -804,7 +800,7 @@ class Inverse(BaseSimulation):
         ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
-        self._inverse_template.ClearField("weight")
+        self._simulation_template.inverse_mc_simulation_template.ClearField("weight")
         return self
 
     def set_colorimetric_standard_CIE_1931(self) -> Inverse:
@@ -816,7 +812,7 @@ class Inverse(BaseSimulation):
         ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
-        self._inverse_template.colorimetric_standard = simulation_template_pb2.CIE_1931
+        self._simulation_template.inverse_mc_simulation_template.colorimetric_standard = simulation_template_pb2.CIE_1931
         return self
 
     def set_colorimetric_standard_CIE_1964(self) -> Inverse:
@@ -828,7 +824,7 @@ class Inverse(BaseSimulation):
         ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
-        self._inverse_template.colorimetric_standard = simulation_template_pb2.CIE_1964
+        self._simulation_template.inverse_mc_simulation_template.colorimetric_standard = simulation_template_pb2.CIE_1964
         return self
 
     def set_dispersion(self, value: bool = False) -> Inverse:
@@ -845,7 +841,7 @@ class Inverse(BaseSimulation):
         ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
-        self._inverse_template.dispersion = value
+        self._simulation_template.inverse_mc_simulation_template.dispersion = value
         return self
 
     def set_splitting(self, value: bool = False) -> Inverse:
@@ -863,7 +859,7 @@ class Inverse(BaseSimulation):
         ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
-        self._inverse_template.splitting = value
+        self._simulation_template.inverse_mc_simulation_template.splitting = value
         return self
 
     def set_number_of_gathering_rays_per_source(self, value: int = 1) -> Inverse:
@@ -880,7 +876,7 @@ class Inverse(BaseSimulation):
         ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
-        self._inverse_template.number_of_gathering_rays_per_source = value
+        self._simulation_template.inverse_mc_simulation_template.number_of_gathering_rays_per_source = value
         return self
 
     def set_maximum_gathering_error(self, value: int = 0) -> Inverse:
@@ -897,7 +893,7 @@ class Inverse(BaseSimulation):
         ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
-        self._inverse_template.maximum_gathering_error = value
+        self._simulation_template.inverse_mc_simulation_template.maximum_gathering_error = value
         return self
 
     # def set_fast_transmission_gathering(self, value: bool = False) -> Simulation.Inverse:
@@ -916,7 +912,7 @@ class Inverse(BaseSimulation):
     #    ansys.speos.script.simulation.Inverse
     #        Inverse simulation
     #    """
-    #    self._inverse_template.fast_transmission_gathering = value
+    #    self._simulation_template.inverse_mc_simulation_template.fast_transmission_gathering = value
     #    return self
 
     def set_ambient_material_file_uri(self, uri: str = "") -> Inverse:
@@ -933,7 +929,7 @@ class Inverse(BaseSimulation):
         ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
-        self._inverse_template.ambient_material_uri = uri
+        self._simulation_template.inverse_mc_simulation_template.ambient_material_uri = uri
         return self
 
     def set_stop_condition_passes_number(self, value: Optional[int] = 5) -> Inverse:
@@ -951,9 +947,9 @@ class Inverse(BaseSimulation):
             Inverse simulation
         """
         if value is None:
-            self._inverse_props_from_job.optimized_propagation_none.ClearField("stop_condition_passes_number")
+            self._job.inverse_mc_simulation_properties.optimized_propagation_none.ClearField("stop_condition_passes_number")
         else:
-            self._inverse_props_from_job.optimized_propagation_none.stop_condition_passes_number = value
+            self._job.inverse_mc_simulation_properties.optimized_propagation_none.stop_condition_passes_number = value
         return self
 
     def set_stop_condition_duration(self, value: Optional[int] = None) -> Inverse:
@@ -971,9 +967,9 @@ class Inverse(BaseSimulation):
             Inverse simulation
         """
         if value is None:
-            self._inverse_props_from_job.ClearField("stop_condition_duration")
+            self._job.inverse_mc_simulation_properties.ClearField("stop_condition_duration")
         else:
-            self._inverse_props_from_job.stop_condition_duration = value
+            self._job.inverse_mc_simulation_properties.stop_condition_duration = value
         return self
 
     def set_automatic_save_frequency(self, value: int = 1800) -> Inverse:
@@ -992,7 +988,7 @@ class Inverse(BaseSimulation):
         ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
-        self._inverse_props_from_job.automatic_save_frequency = value
+        self._job.inverse_mc_simulation_properties.automatic_save_frequency = value
         return self
 
 
@@ -1054,8 +1050,6 @@ class Interactive(BaseSimulation):
         default_values: bool = True,
     ) -> None:
         super().__init__(project=project, name=name, description=description, metadata=metadata, simulation_instance=simulation_instance)
-        self._interactive_template = self._simulation_template.interactive_simulation_template
-        self._interactive_props_from_job = self._job.interactive_simulation_properties
 
         if default_values:
             # Default values
@@ -1081,7 +1075,7 @@ class Interactive(BaseSimulation):
         ansys.speos.script.simulation.Interactive
             Interactive simulation
         """
-        self._interactive_template.geom_distance_tolerance = value
+        self._simulation_template.interactive_simulation_template.geom_distance_tolerance = value
         return self
 
     def set_max_impact(self, value: int = 100) -> Interactive:
@@ -1099,7 +1093,7 @@ class Interactive(BaseSimulation):
         ansys.speos.script.simulation.Interactive
             Interactive simulation
         """
-        self._interactive_template.max_impact = value
+        self._simulation_template.interactive_simulation_template.max_impact = value
         return self
 
     def set_weight(self) -> BaseSimulation.Weight:
@@ -1110,7 +1104,7 @@ class Interactive(BaseSimulation):
         ansys.speos.script.simulation.BaseSimulation.Weight
             Simulation.Weight
         """
-        return BaseSimulation.Weight(self._interactive_template.weight, stable_ctr=True)
+        return BaseSimulation.Weight(self._simulation_template.interactive_simulation_template.weight, stable_ctr=True)
 
     def set_weight_none(self) -> Interactive:
         """Deactivate weight.
@@ -1120,7 +1114,7 @@ class Interactive(BaseSimulation):
         ansys.speos.script.simulation.Interactive
             Interactive simulation
         """
-        self._interactive_template.ClearField("weight")
+        self._simulation_template.interactive_simulation_template.ClearField("weight")
         return self
 
     def set_colorimetric_standard_CIE_1931(self) -> Interactive:
@@ -1132,7 +1126,7 @@ class Interactive(BaseSimulation):
         ansys.speos.script.simulation.Interactive
             Interactive simulation
         """
-        self._interactive_template.colorimetric_standard = simulation_template_pb2.CIE_1931
+        self._simulation_template.interactive_simulation_template.colorimetric_standard = simulation_template_pb2.CIE_1931
         return self
 
     def set_colorimetric_standard_CIE_1964(self) -> Interactive:
@@ -1144,7 +1138,7 @@ class Interactive(BaseSimulation):
         ansys.speos.script.simulation.Interactive
             Interactive simulation
         """
-        self._interactive_template.colorimetric_standard = simulation_template_pb2.CIE_1964
+        self._simulation_template.interactive_simulation_template.colorimetric_standard = simulation_template_pb2.CIE_1964
         return self
 
     def set_ambient_material_file_uri(self, uri: str = "") -> Interactive:
@@ -1161,7 +1155,7 @@ class Interactive(BaseSimulation):
         ansys.speos.script.simulation.Interactive
             Interactive simulation
         """
-        self._interactive_template.ambient_material_uri = uri
+        self._simulation_template.interactive_simulation_template.ambient_material_uri = uri
         return self
 
     def set_rays_number_per_sources(self, values: List[Interactive.RaysNumberPerSource]) -> Interactive:
@@ -1184,8 +1178,8 @@ class Interactive(BaseSimulation):
             )
             for rays_nb_per_source in values
         ]
-        self._interactive_props_from_job.ClearField("rays_number_per_sources")
-        self._interactive_props_from_job.rays_number_per_sources.extend(my_list)
+        self._job.interactive_simulation_properties.ClearField("rays_number_per_sources")
+        self._job.interactive_simulation_properties.rays_number_per_sources.extend(my_list)
         return self
 
     def set_light_expert(self, value: bool = False) -> Interactive:
@@ -1202,7 +1196,7 @@ class Interactive(BaseSimulation):
         ansys.speos.script.simulation.Interactive
             Interactive simulation
         """
-        self._interactive_props_from_job.light_expert = value
+        self._job.interactive_simulation_properties.light_expert = value
         return self
 
     def set_impact_report(self, value: bool = False) -> Interactive:
@@ -1219,5 +1213,5 @@ class Interactive(BaseSimulation):
         ansys.speos.script.simulation.Interactive
             Interactive simulation
         """
-        self._interactive_props_from_job.impact_report = value
+        self._job.interactive_simulation_properties.impact_report = value
         return self
