@@ -16,6 +16,7 @@ Examples
 
         examples/core-object-link
         examples/core-scene-job
+        examples/core-modify-scene
 
     {% else %}
 

@@ -9,7 +9,7 @@ import ansys.speos.core as core
 tests_data_path = os.path.join("/app", "assets")
 # -
 
-# ## Create connection with speos rpc server
+# Create connection with speos rpc server
 
 # +
 speos = core.Speos(host="localhost", port=50098)

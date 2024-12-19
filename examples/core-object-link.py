@@ -16,7 +16,7 @@ import ansys.speos.core as core
 
 # -
 
-# ## Create connection with speos rpc server
+# Create connection with speos rpc server
 
 # +
 speos = core.Speos(host="localhost", port=50098)
