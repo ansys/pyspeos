@@ -15,6 +15,7 @@ Examples
         :caption: Script layer examples
 
         examples/script-opt-prop
+        examples/script-source
 
     .. nbgallery::
         :caption: Core layer examples
