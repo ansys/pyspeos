@@ -16,6 +16,7 @@ Examples
 
         examples/script-opt-prop
         examples/script-source
+        examples/script-sensor
 
     .. nbgallery::
         :caption: Core layer examples
