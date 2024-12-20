@@ -934,12 +934,6 @@ class Surface(BaseSource):
         self._spectrum._no_spectrum_local = False
         return self._spectrum._spectrum
 
-    def __str__(self) -> str:
-        out_str = ""
-        out_str += str(self._intensity)
-        out_str += "\n" + str(self._spectrum)
-        return out_str
-
     def commit(self) -> Surface:
         """Save feature: send the local data to the speos server database.
 
@@ -978,7 +972,9 @@ class Surface(BaseSource):
         ansys.speos.script.source.Surface
             Source feature.
         """
-        self._intensity.delete()
+        # Currently we don't perform delete in cascade, so deleting a surface source does not delete the intensity template used
+        # self._intensity.delete()
+
         # spectrum & source
         super().delete()
         return self
