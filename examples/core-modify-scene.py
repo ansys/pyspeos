@@ -1,5 +1,26 @@
 # # How to modify scene elements.
 
+# This tutorial demonstrates how to modify a scene. For example how to modify an existing sensor, how to add a new sensor.
+# The logic is the same to modify sources, simulations, materials.
+
+# ## Template vs Instance
+
+# When applicable, the speos objects are separated in two different notions: template and instance.
+# The template represents the feature with its inherent characteristics.
+# The instance represents the completion of a template by adding properties such as spatial position, link to geometry, etc.
+
+# ### Template
+
+# The template objects are handled by a manager.
+# It was explained how to interact with them in the core-object-link example ("How to use an ObjectLink").
+# The interesting thing about the template notion is that the same template can be used several times with different properties.
+
+# ### Instance
+
+# The template objects are instantiated in the Scene object, with properties needed to place them at the wanted position,
+# or attached to the wanted geometry.
+# The Scene object will gather all features that you need to run a job (compute a simulation).
+
 # +
 import os
 

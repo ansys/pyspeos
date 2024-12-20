@@ -1,5 +1,8 @@
 # # How to use scene and job.
 
+# This tutorial demonstrates how to create a scene, and fill it from a speos file.
+# Then this demonstrates how to create a job from the scene, and run it.
+
 # +
 import os
 import time
@@ -47,6 +50,7 @@ print(my_scene)
 job_message = core.Job(name="my_job")
 job_message.scene_guid = my_scene.key  # The job needs a scene guid
 job_message.simulation_path = my_scene.get().simulations[0].name  # And needs to know which simulation in the scene is involved.
+job_message.job_type = core.Job.Type.CPU  # Choose type of job, can also be GPU.
 job_message.direct_mc_simulation_properties.automatic_save_frequency = 1800
 job_message.direct_mc_simulation_properties.stop_condition_rays_number = 200000  # Stop condition, here 200000 rays will be sent.
 
