@@ -22,6 +22,8 @@ Examples
         :caption: Core layer examples
 
         examples/core-object-link
+        examples/core-scene-job
+        examples/core-modify-scene
 
     {% else %}
 
