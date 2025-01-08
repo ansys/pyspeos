@@ -56,7 +56,7 @@ doc = [
     "sphinx_design==0.6.1",
     "sphinx-jinja==2.0.2",
     "myst-parser==4.0.0",
-    "nbsphinx==0.9.5",
+    "nbsphinx==0.9.6",
     "jupytext==1.16.4",
     "jupyterlab==4.3.3",
     "jupyter-server==2.14.2",
