@@ -16,7 +16,14 @@ Examples
 
         examples/script-opt-prop
         examples/script-source
+        examples/script-intensity
+        examples/script-spectrum
         examples/script-sensor
+        examples/script-part
+        examples/script-simulation
+        examples/script-project
+        examples/script-lpf-preview
+        examples/script-prism-example
 
     .. nbgallery::
         :caption: Core layer examples
@@ -24,6 +31,12 @@ Examples
         examples/core-object-link
         examples/core-scene-job
         examples/core-modify-scene
+
+    .. nbgallery::
+        :caption: Workflow layer examples
+
+        examples/workflow-open_result
+        examples/workflow-combine-speos
 
     {% else %}
 
