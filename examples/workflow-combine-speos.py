@@ -1,6 +1,6 @@
-# # prism example using script layer
+# # Moving car workflow example using script layer
 
-# This tutorial demonstrates how to run a prism use case using layer.
+# This tutorial demonstrates how to run moving car workflow use case using script layer.
 
 # +
 import os
