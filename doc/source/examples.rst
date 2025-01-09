@@ -22,7 +22,6 @@ Examples
         examples/script-part
         examples/script-simulation
         examples/script-project
-        examples/script-lpf-preview
         examples/script-prism-example
 
     .. nbgallery::
