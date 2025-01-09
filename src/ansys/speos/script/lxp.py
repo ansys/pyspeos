@@ -49,7 +49,7 @@ class RayPath:
         Raypath object
     sensor_contribution : bool
         Defines if sensor contributions are stored within the data.
-        By default ´False´.
+        By default `False`.
     """
 
     def __init__(self, raypath: lpf_file_reader__v2__pb2.RayPath, sensor_contribution: bool = False):
@@ -479,7 +479,7 @@ def wavelength_to_rgb(wavelength: float, gamma: float = 0.8) -> [int, int, int, 
         Wavelength in nanometer between 380-750 nm
     gamma : float
         Gamma value.
-        By default : ´0.8´
+        By default : `0.8`
     """
 
     wavelength = float(wavelength)
