@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -720,6 +720,122 @@ def test_reset_sensor(speos: Speos):
     assert sensor1.sensor_template_link.get().irradiance_sensor_template.dimensions.x_start == -50  # server
     assert sensor1._sensor_instance.irradiance_properties.axis_system == [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]  # local
     assert p.scene_link.get().sensors[0].irradiance_properties.axis_system == [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]  # server
+
+    sensor1.delete()
+
+
+def test_irradiance_modify_after_reset(speos: Speos):
+    """Test reset of irradiance sensor, and then modify."""
+    p = script.Project(speos=speos)
+
+    # Create + commit
+    sensor1 = p.create_sensor(name="Sensor.1", feature_type=script.sensor.Irradiance)
+    sensor1.set_type_spectral()
+    sensor1.set_layer_type_sequence()
+    sensor1.commit()
+    assert type(sensor1) == script.sensor.Irradiance
+
+    # Ask for reset
+    sensor1.reset()
+
+    # Modify after a reset
+    # Template
+    assert sensor1._sensor_template.irradiance_sensor_template.HasField("illuminance_type_planar")
+    sensor1.set_illuminance_type_radial()
+    assert sensor1._sensor_template.irradiance_sensor_template.HasField("illuminance_type_radial")
+    # Intermediate class for type : spectral
+    assert sensor1._sensor_template.irradiance_sensor_template.sensor_type_spectral.wavelengths_range.w_start == 400
+    sensor1.set_type_spectral().set_wavelengths_range().set_start(value=500)
+    assert sensor1._sensor_template.irradiance_sensor_template.sensor_type_spectral.wavelengths_range.w_start == 500
+    # Intermediate class for dimensions
+    assert sensor1._sensor_template.irradiance_sensor_template.dimensions.x_start == -50
+    sensor1.set_dimensions().set_x_start(-100)
+    assert sensor1._sensor_template.irradiance_sensor_template.dimensions.x_start == -100
+
+    # Props
+    assert sensor1._sensor_instance.irradiance_properties.axis_system == [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    sensor1.set_axis_system([50, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    assert sensor1._sensor_instance.irradiance_properties.axis_system == [50, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    # Intermediate class for layer type
+    assert sensor1._sensor_instance.irradiance_properties.layer_type_sequence.maximum_nb_of_sequence == 10
+    sensor1.set_layer_type_sequence().set_maximum_nb_of_sequence(value=15)
+    assert sensor1._sensor_instance.irradiance_properties.layer_type_sequence.maximum_nb_of_sequence == 15
+
+    sensor1.delete()
+
+
+def test_radiance_modify_after_reset(speos: Speos):
+    """Test reset of radiance sensor, and then modify."""
+    p = script.Project(speos=speos)
+
+    # Create + commit
+    sensor1 = p.create_sensor(name="Sensor.1", feature_type=script.sensor.Radiance)
+    assert type(sensor1) == script.sensor.Radiance
+    sensor1.set_type_colorimetric()
+    sensor1.set_layer_type_sequence()
+    sensor1.commit()
+
+    # Ask for reset
+    sensor1.reset()
+
+    # Modify after a reset
+    # Template
+    assert sensor1._sensor_template.radiance_sensor_template.focal == 250
+    sensor1.set_focal(value=100)
+    assert sensor1._sensor_template.radiance_sensor_template.focal == 100
+    # Intermediate class for type : colorimetric
+    assert sensor1._sensor_template.radiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_start == 400
+    sensor1.set_type_colorimetric().set_wavelengths_range().set_start(value=500)
+    assert sensor1._sensor_template.radiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_start == 500
+    # Intermediate class for dimensions
+    assert sensor1._sensor_template.radiance_sensor_template.dimensions.x_start == -50
+    sensor1.set_dimensions().set_x_start(-100)
+    assert sensor1._sensor_template.radiance_sensor_template.dimensions.x_start == -100
+
+    ## Props
+    assert sensor1._sensor_instance.radiance_properties.axis_system == [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    sensor1.set_axis_system([50, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    assert sensor1._sensor_instance.radiance_properties.axis_system == [50, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    # Intermediate class for layer type
+    assert sensor1._sensor_instance.radiance_properties.layer_type_sequence.maximum_nb_of_sequence == 10
+    sensor1.set_layer_type_sequence().set_maximum_nb_of_sequence(value=15)
+    assert sensor1._sensor_instance.radiance_properties.layer_type_sequence.maximum_nb_of_sequence == 15
+
+    sensor1.delete()
+
+
+def test_camera_modify_after_reset(speos: Speos):
+    """Test reset of camera sensor, and then modify."""
+    p = script.Project(speos=speos)
+
+    # Create + commit
+    sensor1 = p.create_sensor(name="Sensor.1", feature_type=script.sensor.Camera)
+    assert type(sensor1) == script.sensor.Camera
+    sensor1.set_mode_photometric().set_mode_color().set_balance_mode_user_white()
+    sensor1.set_mode_photometric().set_layer_type_source()
+    sensor1.commit()
+
+    # Ask for reset
+    sensor1.reset()
+
+    # Modify after a reset
+    # Template
+    assert sensor1._sensor_template.camera_sensor_template.focal_length == 5
+    sensor1.set_focal_length(value=40)
+    assert sensor1._sensor_template.camera_sensor_template.focal_length == 40
+    # Intermediate class for mode : photometric + wavelengths
+    assert sensor1._sensor_template.camera_sensor_template.sensor_mode_photometric.wavelengths_range.w_start == 400
+    sensor1.set_mode_photometric().set_wavelengths_range().set_start(value=500)
+    assert sensor1._sensor_template.camera_sensor_template.sensor_mode_photometric.wavelengths_range.w_start == 500
+    # Intermediate class for color mode + balance mode
+    assert sensor1._sensor_template.camera_sensor_template.sensor_mode_photometric.color_mode_color.balance_mode_userwhite.blue_gain == 1
+    sensor1.set_mode_photometric().set_mode_color().set_balance_mode_user_white().set_blue_gain(value=0.5)
+    assert sensor1._sensor_template.camera_sensor_template.sensor_mode_photometric.color_mode_color.balance_mode_userwhite.blue_gain == 0.5
+
+    # Props
+    assert sensor1._sensor_instance.camera_properties.axis_system == [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    sensor1.set_axis_system([50, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    assert sensor1._sensor_instance.camera_properties.axis_system == [50, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 
     sensor1.delete()
 

@@ -12,9 +12,18 @@ Examples
     This series of tutorials explains basic examples involving Speos objects using Python and PySpeos.
 
     .. nbgallery::
+        :caption: Script layer examples
+
+        examples/script-opt-prop
+        examples/script-source
+        examples/script-sensor
+
+    .. nbgallery::
         :caption: Core layer examples
 
         examples/core-object-link
+        examples/core-scene-job
+        examples/core-modify-scene
 
     {% else %}
 

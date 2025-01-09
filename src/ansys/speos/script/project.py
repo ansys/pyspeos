@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -394,7 +394,7 @@ class Project:
         Returns
         -------
         ansys.speos.script.project.Project
-            Source feature.
+            Project feature.
         """
         # Erase the scene
         if self.scene_link is not None:
