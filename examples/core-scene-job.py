@@ -106,8 +106,7 @@ job_link.delete()
 
 # +
 for item in (
-    speos.client.jobs().list()
-    + speos.client.scenes().list()
+    speos.client.scenes().list()
     + speos.client.simulation_templates().list()
     + speos.client.sensor_templates().list()
     + speos.client.source_templates().list()
