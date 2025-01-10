@@ -94,11 +94,12 @@ sim.compute_CPU()
 # -
 
 # ## Check Result
-# open result
+# open result (only windows)
 # +
-from ansys.speos.workflow.open_result import open_result_image
+if os.name == "nt":
+    from ansys.speos.workflow.open_result import open_result_image
 
-open_result_image(simulation_feature=sim, result_name="Camera.1.png")
+    open_result_image(simulation_feature=sim, result_name="Camera.1.png")
 # -
 
 
@@ -117,7 +118,8 @@ sim.compute_CPU()
 
 # Review result:
 # +
-open_result_image(simulation_feature=sim, result_name="Camera.1.png")
+if os.name == "nt":
+    open_result_image(simulation_feature=sim, result_name="Camera.1.png")
 # -
 
 # Modify camera property
@@ -130,5 +132,6 @@ cam1.commit()
 # Run the simulation and review result
 # +
 sim.compute_CPU()
-open_result_image(simulation_feature=sim, result_name="Camera.1.png")
+if os.name == "nt":
+    open_result_image(simulation_feature=sim, result_name="Camera.1.png")
 # -

@@ -156,9 +156,10 @@ print(sim_feat)
 sim_feat.compute_CPU()
 # -
 
-# review simulation result
+# Preview simulation result (only windows)
 # +
-from ansys.speos.workflow.open_result import open_result_image
+if os.name == "nt":
+    from ansys.speos.workflow.open_result import open_result_image
 
-open_result_image(simulation_feature=sim_feat, result_name="ASSEMBLY1.DS (0).Dom Irradiance Sensor (0).xmp")
+    open_result_image(simulation_feature=sim_feat, result_name="ASSEMBLY1.DS (0).Dom Irradiance Sensor (0).xmp")
 # -

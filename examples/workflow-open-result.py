@@ -35,21 +35,23 @@ results = sim.compute_CPU()
 print(results)
 # -
 
-# ## Open result:
+# ## Open result (only windows):
 # Display one result as image
 # A full path can be given, or the name of the result.
 
 # +
-from ansys.speos.workflow.open_result import open_result_image
+if os.name == "nt":
+    from ansys.speos.workflow.open_result import open_result_image
 
-open_result_image(simulation_feature=sim, result_name="ASSEMBLY1.DS (0).Dom Irradiance Sensor (0).xmp")
+    open_result_image(simulation_feature=sim, result_name="ASSEMBLY1.DS (0).Dom Irradiance Sensor (0).xmp")
 # -
 
-# Display one result in the appropriate viewer
+# Display one result in the appropriate viewer (only windows).
 # A full path can be given, or the name of the result.
 
 # +
-from ansys.speos.workflow.open_result import open_result_in_viewer
+if os.name == "nt":
+    from ansys.speos.workflow.open_result import open_result_in_viewer
 
-open_result_in_viewer(simulation_feature=sim, result_name="ASSEMBLY1.DS (0).Dom Irradiance Sensor (0).xmp")
+    open_result_in_viewer(simulation_feature=sim, result_name="ASSEMBLY1.DS (0).Dom Irradiance Sensor (0).xmp")
 # -
