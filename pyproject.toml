@@ -45,7 +45,7 @@ jupyter = [
     "matplotlib",
     "jupyterlab>=3",
     "ipywidgets",
-    "pyvista[jupyter]",
+    "pyvista[jupyter]==0.44.2",
 ]
 doc = [
     "ansys-sphinx-theme==1.1.6",
@@ -61,6 +61,7 @@ doc = [
     "jupyterlab==4.3.4",
     "jupyter-server==2.15.0",
     "nbconvert==7.16.4",
+    "pyvista[jupyter]==0.44.2",
 ]
 
 [tool.flit.module]
