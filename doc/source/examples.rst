@@ -33,7 +33,7 @@ Examples
     .. nbgallery::
         :caption: Workflow layer examples
 
-        examples/workflow-open_result
+        examples/workflow-open-result
         examples/workflow-combine-speos
 
     {% else %}

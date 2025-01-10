@@ -42,7 +42,7 @@ print(results)
 # +
 from ansys.speos.workflow.open_result import open_result_image
 
-open_result_image(simulation_feature=sim, result_name=results[0].path)
+open_result_image(simulation_feature=sim, result_name="ASSEMBLY1.DS (0).Dom Irradiance Sensor (0).xmp")
 # -
 
 # Display one result in the appropriate viewer
