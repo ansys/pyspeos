@@ -30,3 +30,9 @@ pdf:
 	@$(SPHINXBUILD) -M latex "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 	cd $(BUILDDIR)/latex && latexmk -r latexmkrc -pdf *.tex -interaction=nonstopmode || true
 	(test -f $(BUILDDIR)/latex/*.pdf && echo pdf exists) || exit 1
+
+# Build HTML files and generate examples as .py files
+html:
+	pip uninstall vtk -y
+	pip install --extra-index-url https://wheels.vtk.org vtk-osmesa
+	@$(SPHINXBUILD) -M html "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
