@@ -665,9 +665,8 @@ class Project:
         poly_data = self.__extract_part_mesh_info(part_data=root_part_data)
         if poly_data is not None:
             _preview_mesh = _preview_mesh.append_polydata(poly_data)
-        from ansys.tools.visualization_interface import Plotter
-        p = Plotter()
-        p.plot(_preview_mesh)
+        p = pv.Plotter()
+        p.add_mesh(_preview_mesh, show_edges=True, **viz_args)
         return p
 
     def preview(self, viz_args=None) -> None:
