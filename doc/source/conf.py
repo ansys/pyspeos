@@ -5,11 +5,11 @@ import pathlib
 import shutil
 
 from ansys_sphinx_theme import ansys_favicon, get_version_match
+from pyvista.plotting.utilities.sphinx_gallery import DynamicScraper
 import sphinx
 from sphinx.builders.latex import LaTeXBuilder
 from sphinx.util import logging
 from sphinx.util.display import status_iterator
-from pyvista.plotting.utilities.sphinx_gallery import DynamicScraper
 
 from ansys.speos import __version__
 
