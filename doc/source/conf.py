@@ -55,6 +55,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "ansys_sphinx_theme.extension.autoapi",
     "sphinx_gallery.gen_gallery",
+    "pyvista.ext.plot_directive",
     "pyvista.ext.viewer_directive",
     "nbsphinx",
     "myst_parser",
@@ -75,7 +76,7 @@ sphinx_gallery_conf = {
     "backreferences_dir": None,
     # Modules for which function level galleries are created.  In
     "doc_module": "pyspeos",
-    "image_scrapers": (DynamicScraper(), "matplotlib"),
+    "image_scrapers": ("pyvista", "matplotlib"),
     "ignore_pattern": "flycheck*",
     "thumbnail_size": (350, 350),
     "remove_config_comments": True,
