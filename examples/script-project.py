@@ -1,13 +1,12 @@
-# # How to create a project
+"""# How to create a project
 
-# This tutorial demonstrates how to create a project in script layer.
+This tutorial demonstrates how to create a project in script layer.
 
-## What is a project?
+# What is a project?
 
-# A project is a speos simulation container that includes parts, material properties, sensor, sources and simulations.
-# In this tutorial you will learn how to create a project from scratch or from a pre-defined .speos file.
-
-# +
+A project is a speos simulation container that includes parts, material properties, sensor, sources and simulations.
+In this tutorial you will learn how to create a project from scratch or from a pre-defined .speos file.
+"""
 import os
 
 import ansys.speos.core as core
