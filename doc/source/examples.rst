@@ -22,6 +22,7 @@ Examples
         examples/script-part
         examples/script-simulation
         examples/script-project
+        examples/script-prism-example
 
     .. nbgallery::
         :caption: Core layer examples
