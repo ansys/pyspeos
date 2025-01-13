@@ -68,7 +68,10 @@ doc = [
     "jupyter_sphinx==0.5.3",
     "nbconvert==7.16.5",
     "pyvista[jupyter, trame]==0.44.2",
-    "ansys-tools-visualization-interface"
+    "ansys-tools-visualization-interface",
+    "trame >= 3.6.0,<4",
+    "trame-vtk >= 2.8.7,<3",
+    "trame-vuetify >= 2.4.3,<3",
 ]
 
 [tool.flit.module]
