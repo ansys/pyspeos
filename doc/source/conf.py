@@ -10,9 +10,9 @@ import sphinx
 from sphinx.builders.latex import LaTeXBuilder
 from sphinx.util import logging
 from sphinx.util.display import status_iterator
-
+import pyvista
 from ansys.speos import __version__
-
+pyvista.BUILDING_GALLERY = True
 LaTeXBuilder.supported_image_types = ["image/png", "image/pdf", "image/svg+xml"]
 
 # Project information
