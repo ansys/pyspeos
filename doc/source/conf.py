@@ -9,6 +9,7 @@ import sphinx
 from sphinx.builders.latex import LaTeXBuilder
 from sphinx.util import logging
 from sphinx.util.display import status_iterator
+from pyvista.plotting.utilities.sphinx_gallery import DynamicScraper
 
 from ansys.speos import __version__
 
@@ -50,9 +51,34 @@ extensions = [
     "sphinx_jinja",
     "sphinx.ext.autodoc",
     "ansys_sphinx_theme.extension.autoapi",
+    "sphinx_gallery.gen_gallery",
+    "pyvista.ext.viewer_directive",
     "nbsphinx",
     "myst_parser",
 ]
+
+nbsphinx_execute = "always"
+sphinx_gallery_conf = {
+    # path to your examples scripts
+    "examples_dirs": ["../../examples"],
+    # path where to save gallery generated examples
+    "gallery_dirs": ["examples"],
+    # Pattern to search for example files
+    "filename_pattern": r"\.py",
+    # Remove the "Download all examples" button from the top level gallery
+    "download_all_examples": False,
+    # Sort gallery example by file name instead of number of lines (default)
+    # directory where function granular galleries are stored
+    "backreferences_dir": None,
+    # Modules for which function level galleries are created.  In
+    "doc_module": "pyspeos",
+    "image_scrapers": (DynamicScraper(), "matplotlib"),
+    "ignore_pattern": "flycheck*",
+    "thumbnail_size": (350, 350),
+    "remove_config_comments": True,
+    "show_signature": False,
+}
+
 
 # Intersphinx mapping
 intersphinx_mapping = {
@@ -239,22 +265,22 @@ def remove_examples_from_source_dir(app: sphinx.application.Sphinx, exception: E
     shutil.rmtree(EXAMPLES_DIRECTORY)
 
 
-def setup(app: sphinx.application.Sphinx):
-    """
-    Run different hook functions during the documentation build.
+# def setup(app: sphinx.application.Sphinx):
+#     """
+#     Run different hook functions during the documentation build.
 
-    Parameters
-    ----------
-    app : sphinx.application.Sphinx
-        Sphinx application instance containing the all the doc build configuration.
+#     Parameters
+#     ----------
+#     app : sphinx.application.Sphinx
+#         Sphinx application instance containing the all the doc build configuration.
 
-    """
-    # HACK: rST files are copied to the doc/source directory before the build.
-    # Sphinx needs all source files to be in the source directory to build.
-    # However, the examples are desired to be kept in the root directory. Once the
-    # build has completed, no matter its success, the examples are removed from
-    # the source directory.
-    if BUILD_EXAMPLES:
-        app.connect("builder-inited", copy_examples_files_to_source_dir)
-        app.connect("build-finished", remove_examples_from_source_dir)
-        app.connect("build-finished", copy_examples_to_output_dir)
+#     """
+#     # HACK: rST files are copied to the doc/source directory before the build.
+#     # Sphinx needs all source files to be in the source directory to build.
+#     # However, the examples are desired to be kept in the root directory. Once the
+#     # build has completed, no matter its success, the examples are removed from
+#     # the source directory.
+#     if BUILD_EXAMPLES:
+#         app.connect("builder-inited", copy_examples_files_to_source_dir)
+#         app.connect("build-finished", remove_examples_from_source_dir)
+#         app.connect("build-finished", copy_examples_to_output_dir)
