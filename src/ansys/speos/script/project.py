@@ -25,6 +25,7 @@ from __future__ import annotations
 import re
 from typing import List, Mapping, Optional, Union
 import uuid
+import os
 
 from google.protobuf.internal.containers import RepeatedScalarFieldContainer
 import numpy as np
@@ -664,7 +665,6 @@ class Project:
         poly_data = self.__extract_part_mesh_info(part_data=root_part_data)
         if poly_data is not None:
             _preview_mesh = _preview_mesh.append_polydata(poly_data)
-
         p = pv.Plotter()
         p.add_mesh(_preview_mesh, show_edges=True, **viz_args)
         return p
@@ -684,4 +684,7 @@ class Project:
         if viz_args is None:
             viz_args = {"opacity": 1}
         p = self._create_preview(viz_args=viz_args)
-        p.show()
+        if os.environ.get("DOCUMENTATION_BUILDING", "true") == "true":
+            p.show(jupyter_backend="html")
+        else:
+            p.show()

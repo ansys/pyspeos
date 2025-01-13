@@ -13,6 +13,7 @@ from sphinx.util.display import status_iterator
 from ansys.speos import __version__
 
 LaTeXBuilder.supported_image_types = ["image/png", "image/pdf", "image/svg+xml"]
+os.environ["DOCUMENTATION_BUILDING"] = "true"
 
 # Project information
 project = "ansys-pyspeos"
