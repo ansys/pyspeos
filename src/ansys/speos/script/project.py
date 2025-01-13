@@ -22,10 +22,10 @@
 """Provides a way to gather Speos features."""
 from __future__ import annotations
 
+import os
 import re
 from typing import List, Mapping, Optional, Union
 import uuid
-import os
 
 from google.protobuf.internal.containers import RepeatedScalarFieldContainer
 import numpy as np
