@@ -12,7 +12,10 @@ from sphinx.util import logging
 from sphinx.util.display import status_iterator
 import pyvista
 from ansys.speos import __version__
+os.environ["PYANSYS_VISUALIZER_DOC_MODE"] = "true"
 pyvista.BUILDING_GALLERY = True
+os.environ["PYVISTA_BUILDING_GALLERY"] = "true"
+pyvista.OFF_SCREEN = True
 LaTeXBuilder.supported_image_types = ["image/png", "image/pdf", "image/svg+xml"]
 
 # Project information
