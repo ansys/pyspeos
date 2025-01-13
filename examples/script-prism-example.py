@@ -38,9 +38,10 @@ sim.compute_CPU()
 
 # Use the open_result_image method to review the result
 # +
-from ansys.speos.workflow.open_result import open_result_image
+if os.name == "nt":
+    from ansys.speos.workflow.open_result import open_result_image
 
-open_result_image(simulation_feature=sim, result_name="Prism.Irradiance.1.xmp")
+    open_result_image(simulation_feature=sim, result_name="Prism.Irradiance.1.xmp")
 # -
 
 # Retrieve the sensor feature and modify sensor definition
@@ -54,5 +55,6 @@ irr.commit()
 # re-run the simulation with new sensor definition
 # +
 sim.compute_CPU()
-open_result_image(simulation_feature=sim, result_name="Prism.Irradiance.1.xmp")
+if os.name == "nt":
+    open_result_image(simulation_feature=sim, result_name="Prism.Irradiance.1.xmp")
 # -
