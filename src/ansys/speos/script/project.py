@@ -25,6 +25,7 @@ from __future__ import annotations
 import re
 from typing import List, Mapping, Optional, Union
 import uuid
+import os
 
 from google.protobuf.internal.containers import RepeatedScalarFieldContainer
 import numpy as np
@@ -684,4 +685,7 @@ class Project:
         if viz_args is None:
             viz_args = {"opacity": 1}
         p = self._create_preview(viz_args=viz_args)
-        p.show()
+        if os.environ.get("DOCUMENTATION_BUILDING", "true") == "true":
+            p.show(jupyter_backend="html")
+        else:
+            p.show()
