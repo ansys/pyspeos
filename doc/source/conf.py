@@ -150,6 +150,10 @@ jinja_contexts = {
     },
 }
 
+nbsphinx_thumbnails = {
+    "examples/script-project": "_static/thumbnails/how_to_create_a_project.PNG",
+}
+
 
 def copy_examples_to_output_dir(app: sphinx.application.Sphinx, exception: Exception):
     """
