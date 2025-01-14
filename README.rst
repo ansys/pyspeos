@@ -30,12 +30,12 @@ Package
 ~~~~~~~
 .. warning:: Release is in process it might take some time till available. Until then, please use `Sources`_.
 
-This repository is deployed as the Python packages `ansys-speos <https://pypi.org/project/ansys-speos>`_.
+This repository is deployed as the Python packages `ansys-speos-core <https://pypi.org/project/ansys-speos-core>`_.
 As usual, installation is done by running:
 
 .. code::
 
-   pip install ansys-speos
+   pip install ansys-speos-core
 
 Sources
 ~~~~~~~
