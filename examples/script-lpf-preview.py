@@ -44,7 +44,7 @@ from IPython.display import HTML, display
 # +
 import ansys.speos.workflow.open_result as ORF
 
-data = ORF._find_correct_result(sim, "html")
+data = ORF._find_correct_result(sim, "Direct.1.html")
 display(HTML(data, metadata=dict(isolated=True)))
 # -
 
@@ -56,7 +56,7 @@ interactive_sim.set_sensor_paths(["Irradiance.1:70"])
 interactive_sim.set_source_paths(["Surface.1:4830"])
 interactive_sim.commit()
 results = interactive_sim.compute_CPU()
-path = ORF._find_correct_result(interactive_sim, "lpf")
+path = ORF._find_correct_result(interactive_sim, "error.lpf", download_if_distant=False)
 lxp = script.LightPathFinder(speos, path)
 lxp.preview(project=p)
 # -
