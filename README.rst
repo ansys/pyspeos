@@ -67,6 +67,10 @@ All sources are located in `<src/>`_ folder.
 
 Documentation
 -------------
+
+Documentation for the latest stable release of PySpeos is hosted at
+`PySpeos Documentation <https://speos.docs.pyansys.com>`_.
+
 Documentation is stored in `<doc>`_ folder and generated using `Sphinx`_.
 To build it manually :
 
