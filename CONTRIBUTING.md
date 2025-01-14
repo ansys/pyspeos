@@ -1,7 +1,5 @@
 # Contributing
 
-Repositories should have a contributing section, but we don't need to have all the contributing information here.  Have them reference the developer guide.
-
 We absolutely welcome any code contributions and we hope that this
 guide will facilitate an understanding of the pyspeos code
 repository. It is important to note that while the pyspeos software
@@ -13,4 +11,4 @@ questions or submissions to this repository.
 
 Please reference the [PyAnsys Developer's
 Guide](https://github.com/pyansys/about) for the full documentation
-regarding contributing to the TEMPLATE project.
+regarding contributing to the pyspeos project.
