@@ -81,10 +81,6 @@ To build it manually :
    tox -e doc && your_browser_name .tox/doc_out/index.html
 
 
-.. note::
-
-      Include a link to the full sphinx documentation. For example `PyAnsys`_
-
 Testing
 -------
 Tests and assets are in `<tests>`_ and `<tests/assets>`_ folder.
