@@ -118,6 +118,9 @@ if BUILD_EXAMPLES:
         "examples/script-project": "_static/thumbnails/how_to_create_a_project.PNG",
         "examples/script-lpf-preview": "_static/thumbnails/script_lpf_preview.PNG",
         "examples/script-prism-example": "_static/thumbnails/prism_example_using_script_layer.PNG",
+        "examples/core-object-link": "_static/thumbnails/pySpeos_520x520.png",
+        "examples/core-scene-job": "_static/thumbnails/pySpeos_520x520.png",
+        "examples/core-modify-scene": "_static/thumbnails/pySpeos_520x520.png",
         "examples/workflow-open-result": "_static/thumbnails/how_to_open_result_using_workflow_method.png",
         "examples/workflow-combine-speos": "_static/thumbnails/moving_car_workflow_example_using_script_layer.PNG",
     }
