@@ -109,6 +109,10 @@ if BUILD_EXAMPLES:
         ".mystnb": ["jupytext.reads", {"fmt": "mystnb"}],
         ".py": ["jupytext.reads", {"fmt": ""}],
     }
+    nbsphinx_thumbnails = {
+        "examples/script-project": "_static/thumbnails/how_to_create_a_project.PNG",
+        "examples/script-opt-prop": "_static/thumbnails/how_to_create_a_project.PNG",
+    }
     nbsphinx_prompt_width = ""
     nbsphinx_prolog = """
 
@@ -148,10 +152,6 @@ jinja_contexts = {
     "main_toctree": {
         "build_examples": BUILD_EXAMPLES,
     },
-}
-
-nbsphinx_thumbnails = {
-    "examples/script-project": "_static/thumbnails/how_to_create_a_project.PNG",
 }
 
 
