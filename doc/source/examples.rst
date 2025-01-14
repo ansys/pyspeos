@@ -16,8 +16,6 @@ Examples
 
         examples/script-opt-prop
         examples/script-source
-        examples/script-intensity
-        examples/script-spectrum
         examples/script-sensor
         examples/script-part
         examples/script-simulation
