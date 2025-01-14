@@ -111,7 +111,10 @@ if BUILD_EXAMPLES:
     }
     nbsphinx_thumbnails = {
         "examples/script-project": "_static/thumbnails/how_to_create_a_project.PNG",
-        "examples/script-opt-prop": "_static/thumbnails/how_to_create_a_project.PNG",
+        "examples/script-lpf-preview": "_static/thumbnails/script_lpf_preview.PNG",
+        "examples/script-prism-example": "_static/thumbnails/prism_example_using_script_layer.PNG",
+        "examples/workflow-open-result": "_static/thumbnails/how_to_open_result_using_workflow_method.png",
+        "examples/workflow-combine-speos": "_static/thumbnails/moving_car_workflow_example_using_script_layer.PNG",
     }
     nbsphinx_prompt_width = ""
     nbsphinx_prolog = """
