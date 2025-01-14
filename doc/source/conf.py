@@ -110,6 +110,11 @@ if BUILD_EXAMPLES:
         ".py": ["jupytext.reads", {"fmt": ""}],
     }
     nbsphinx_thumbnails = {
+        "examples/script-opt-prop": "_static/thumbnails/property_520x520.png",
+        "examples/script-source": "_static/thumbnails/source_520x520.png",
+        "examples/script-sensor": "_static/thumbnails/sensor_520x520.png",
+        "examples/script-part": "_static/thumbnails/part_520x520.png",
+        "examples/script-simulation": "_static/thumbnails/simulation_520x520.png",
         "examples/script-project": "_static/thumbnails/how_to_create_a_project.PNG",
         "examples/script-lpf-preview": "_static/thumbnails/script_lpf_preview.PNG",
         "examples/script-prism-example": "_static/thumbnails/prism_example_using_script_layer.PNG",
