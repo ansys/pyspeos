@@ -103,9 +103,9 @@ sub_part11 = sub_part1.create_sub_part(name="TheSubPartSP11").set_axis_system([1
 print(root_part)
 # -
 
-# ## Find
+# ## Find with exact name
 
-# The root part
+# Find the root part
 
 # +
 features = p.find(name="", feature_type=script.Part)
@@ -119,13 +119,15 @@ features = p.find(name="TheBodyB1", feature_type=script.Body)
 print(features[0])
 # -
 
-# Find a specific face of a body in root part#
+# Find a specific face of a body in root part
+
 # +
 features = p.find(name="TheBodyB1/TheFaceF1", feature_type=script.Face)
 print(features[0])
 # -
 
-# Find a sub part#
+# Find a sub part
+
 # +
 features = p.find(name="TheSubPartSP1", feature_type=script.Part.SubPart)
 print(features[0])
@@ -175,13 +177,10 @@ for feat in features:
     print(str(type(feat)) + " : name=" + feat._name)
 # -
 
-# all the geometry features at second level:
-
-# e.g. TheBodyB1's all faces
-
-# e.g. TheSubPartSP1's all bodies
-
-# e.g. TheSubPartSP1's all sub part
+# all the geometry features at second level: e.g.:
+# - TheBodyB1's all faces
+# - TheSubPartSP1's all bodies
+# - TheSubPartSP1's all sub part
 
 
 # +

@@ -22,7 +22,7 @@ tests_data_path = os.path.join("/app", "assets")
 speos = core.Speos(host="localhost", port=50098)
 # -
 
-# ## Create a new Project
+# ## Create a new project
 
 # The only way to create a sensor, is to create it from a project.
 
