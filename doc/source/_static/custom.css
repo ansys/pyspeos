@@ -1,6 +1,6 @@
 li.toctree-l1.current.active::before{
     content: none !important;
 }
-nav-item.current.active::before{
+li.nav-item.current.active::before{
     content: none !important;
 }
