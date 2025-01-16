@@ -147,7 +147,7 @@ Use jupyter notebook
    pip install .[jupyter]
    jupyter notebook
 
-jupyter notebook can be downloaded from the documentations example section
+jupyter notebook can be downloaded from the documentations example section.
 
 License
 -------
