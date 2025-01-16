@@ -10,5 +10,6 @@
 * [Pengyuan Lu](https://github.com/pluatansys)
 
 ## Individual Contributors
+
 * [Marouan Nefzaoui](https://github.com/mnefzaou)
 * [Etienne Lesage](https://github.com/elesage)
