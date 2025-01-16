@@ -1,6 +1,7 @@
 # # How to create a source.
 
 # This tutorial demonstrates how to create a source in script layer.
+
 # There are different type of sources available: luminaire source, surface source, ray file source.
 
 # +
@@ -9,16 +10,19 @@ import os
 import ansys.speos.core as core
 import ansys.speos.script as script
 
+# If using docker container
 tests_data_path = os.path.join("/app", "assets")
+# If using local server
+# tests_data_path = os.path.join(os.path.abspath(""), os.path.pardir, os.path.pardir, os.path.pardir, "tests", "assets")
 # -
 
-# Create connection with speos rpc server
+# ## Create connection with speos rpc server
 
 # +
 speos = core.Speos(host="localhost", port=50098)
 # -
 
-# ## New Project
+# ## Create a new project
 
 # The only way to create a source, is to create it from a project.
 
@@ -28,7 +32,9 @@ print(p)
 # -
 
 # ## Create
+
 # Create locally
+
 # The mention "local: " is added when printing the source.
 
 # +
@@ -39,7 +45,8 @@ source1.set_intensity_file_uri(uri=intensity_file_path)
 print(source1)
 # -
 
-# Push it to the server.
+# ## Push it to the server.
+
 # Now that it is committed to the server, the mention "local: " is no more present when printing the source.
 
 # +
@@ -47,7 +54,9 @@ source1.commit()
 print(source1)
 # -
 
-# Another example by setting several characteristics
+# ## Another example
+
+# Setting several more characteristics.
 
 # +
 intensity_file_path = os.path.join(tests_data_path, "IES_C_DETECTOR.ies")
@@ -62,12 +71,11 @@ source2.commit()  # Push to the server
 print(source2)
 # -
 
-# ### Default values
-# Some default values are available when applicable in every methods and class.
-
 # ## Read
+
 # ### Source Instance
-# A mention "local: " is added if it is not yet committed to the server
+
+# As mention "local: " is added if it is not yet committed to the server.
 
 # +
 print(source1)
@@ -75,12 +83,16 @@ print(source1)
 
 # ### Project
 
+# Committed feature will appear inside the project information.
+
 # +
 print(p)
 # -
 
 # ## Update
+
 # Tipp: if you are manipulating a source already committed, don't forget to commit your changes.
+
 # If you don't, you will still only watch what is committed on the server.
 
 # +
@@ -92,6 +104,7 @@ print(source1)
 # -
 
 # ## Reset
+
 # Possibility to reset local values from the one available in the server.
 
 # +
@@ -102,6 +115,7 @@ print(source1)
 # -
 
 # ## Delete
+
 # Once the data is deleted from the server, you can still work with local data and maybe commit later.
 
 # +
@@ -113,7 +127,8 @@ print(source2)
 source1.delete()
 # -
 
-# ## More content
+# ## Other Sources Examples
+
 # ### ray-file source
 
 # +
@@ -159,7 +174,10 @@ print(source4)
 # -
 
 # When creating sources, this creates some intermediate objects (spectrums, intensity templates).
-# Deleting a source does not delete in cascade those objects because they could be used by some other entities from core layer.
+
+# Deleting a source does not delete in cascade those objects
+# because they could be used by some other entities from core layer.
+
 # Then at the end of the example, we just clean all databases
 
 # +

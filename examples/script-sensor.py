@@ -1,6 +1,7 @@
-# # How to create a sensor.
+# # How to create a sensor
 
 # This tutorial demonstrates how to create a sensor in script layer.
+
 # There are different type of sensors available: irradiance sensor, radiance sensor, camera sensor.
 
 # +
@@ -9,16 +10,19 @@ import os
 import ansys.speos.core as core
 import ansys.speos.script as script
 
+# If using docker container
 tests_data_path = os.path.join("/app", "assets")
+# If using local server
+# tests_data_path = os.path.join(os.path.abspath(""), os.path.pardir, os.path.pardir, os.path.pardir, "tests", "assets")
 # -
 
-# Create connection with speos rpc server
+# ## Create connection with speos rpc server
 
 # +
 speos = core.Speos(host="localhost", port=50098)
 # -
 
-# ## New Project
+# ## Create a new Project
 
 # The only way to create a sensor, is to create it from a project.
 
@@ -28,7 +32,9 @@ print(p)
 # -
 
 # ## Create
+
 # Create locally.
+
 # The mention "local: " is added when printing the sensor
 
 # +
@@ -49,7 +55,8 @@ sensor1.set_mode_photometric().set_mode_color().set_red_spectrum_file_uri(uri=re
 print(sensor1)
 # -
 
-# Push it to the server.
+# ## Push it to the server.
+
 # Now that it is committed to the server, the mention "local: " is no more present when printing the sensor.
 
 # +
@@ -57,7 +64,14 @@ sensor1.commit()
 print(sensor1)
 # -
 
-# Another example by setting more characteristics
+# ## Another example
+#
+# Set more characteristics.
+
+# Camera feature is created with the same default values as the GUI speos.
+
+# If the user would like to modify the camera characteristics,
+# it is possible to do so as below.
 
 # +
 distortion_file_path = os.path.join(tests_data_path, "CameraInputFiles", "CameraDistortion_130deg.OPTDistortion")
@@ -81,11 +95,11 @@ sensor2.commit()
 print(sensor2)
 # -
 
-# ### Default values
-# Some default values are available when applicable in every methods and class.
 
 # ## Read
+
 # ### Sensor Instance
+
 # A mention "local: " is added if it is not yet committed to the server
 
 # +
@@ -94,12 +108,16 @@ print(sensor1)
 
 # ### Project
 
+# Committed feature will appear in the project.
+
 # +
 print(p)
 # -
 
 # ## Update
+
 # Tipp: if you are manipulating a source already committed, don't forget to commit your changes.
+
 # If you don't, you will still only watch what is committed on the server.
 
 # +
@@ -110,6 +128,7 @@ print(sensor1)
 # -
 
 # ## Reset
+
 # Possibility to reset local values from the one available in the server.
 
 # +
@@ -120,6 +139,7 @@ print(sensor1._sensor_template)
 # -
 
 # ## Delete
+
 # Once the data is deleted from the server, you can still work with local data and maybe commit later.
 
 # +
@@ -131,7 +151,8 @@ print(sensor2)
 sensor1.delete()
 # -
 
-# ## More content
+# ## Other sensors
+
 # ### Irradiance sensor
 
 # +

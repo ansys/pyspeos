@@ -1,4 +1,4 @@
-# # How to modify scene elements.
+# # How to modify scene elements
 
 # This tutorial demonstrates how to modify a scene. For example how to modify an existing sensor, how to add a new sensor.
 # The logic is the same to modify sources, simulations, materials.
@@ -28,7 +28,10 @@ from ansys.api.speos.sensor.v1 import camera_sensor_pb2
 
 import ansys.speos.core as core
 
+# If using docker container
 tests_data_path = os.path.join("/app", "assets")
+# If using local server
+# tests_data_path = os.path.join(os.path.abspath(""), os.path.pardir, os.path.pardir, os.path.pardir, "tests", "assets")
 # -
 
 # Create connection with speos rpc server
