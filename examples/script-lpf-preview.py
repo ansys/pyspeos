@@ -35,8 +35,6 @@ sim = p.find("Direct.1")[0]
 sim.compute_CPU()
 # -
 
-import tempfile
-
 from IPython.display import HTML, display
 
 # ## Method from workflow class
@@ -47,14 +45,7 @@ from IPython.display import HTML, display
 import ansys.speos.workflow.open_result as ORF
 
 data = ORF._find_correct_result(sim, "Direct.1.html")
-# display(HTML(data, metadata=dict(isolated=True)))
-with tempfile.NamedTemporaryFile(suffix=".html", delete=False) as temp_file:
-    temp_file.write(data.encode("utf-8"))
-    temp_file_path = temp_file.name
-
-iframe_html = f"""
-<iframe src="{temp_file_path}" style="width: 100%; height: 500px; border: none;"></iframe>"""
-display(HTML(iframe_html))
+display(HTML(data, metadata=dict(isolated=True)))
 # -
 
 # We will define an interactive simulation to have a look at the rays in error
