@@ -71,7 +71,7 @@ face_b1_f1 = (
 print(root_part)
 # -
 
-# ## Create bodies in sub part.
+# ### Create bodies in sub part.
 
 # Part can also be created under a sub-part.
 
@@ -82,7 +82,7 @@ sub_part1 = root_part.create_sub_part(name="TheSubPartSP1").set_axis_system(axis
 print(root_part)
 # -
 
-# ## Create body and faces in sub part body
+# ### Create body and faces in sub part body
 
 body_sp1_b1 = sub_part1.create_body(name="TheBodySP1_B1").commit()
 print(root_part)
@@ -96,14 +96,16 @@ face_sp1_b1_f1 = (
 print(root_part)
 # -
 
-# ## Create sub parts in sub part
+# ### Create sub parts in sub part
 
 # +
 sub_part11 = sub_part1.create_sub_part(name="TheSubPartSP11").set_axis_system([1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1]).commit()
 print(root_part)
 # -
 
-# ## Find with exact name
+# ## Read
+
+# ### Find with exact name
 
 # Find the root part
 
@@ -148,7 +150,7 @@ features = p.find(name="TheSubPartSP1/TheBodySP1_B1/TheFaceSP1_B1_F1", feature_t
 print(features[0])
 # -
 
-# ## Find with approximation name
+# ### Find with approximation name
 
 # Find all bodies in root part
 

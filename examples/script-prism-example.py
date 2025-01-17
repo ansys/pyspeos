@@ -1,6 +1,6 @@
 # # Prism example
 
-# This tutorial demonstrates how to run a prism use case using layer.
+# This tutorial demonstrates how to run a prism use case using script layer.
 
 # +
 import os
@@ -21,24 +21,24 @@ speos = core.Speos(host="localhost", port=50098)
 # -
 
 
-# ## Create simulation
+# ## Create project
 
-# load a simulation from .speos file.
+# Load a project from .speos file.
 
 # +
 p = script.Project(speos=speos, path=os.path.join(tests_data_path, "Prism.speos", "Prism.speos"))
 print(p)
 # -
 
-# ## preview simulation's part.
+# ## Preview.
 
 # +
 p.preview()
 # -
 
-# ## Retrieve the simulation feature and review result
+# ## Retrieve the simulation feature and open result
 
-# run the simulation
+# Run the simulation
 
 # +
 sim_features = p.find(name="Prism", feature_type=script.simulation.Direct)

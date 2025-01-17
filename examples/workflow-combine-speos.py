@@ -58,11 +58,13 @@ print(p)
 p.preview()
 # -
 
-# ## Complete the project with source/sensor/simulation
+# ## Complete the project with sensor/source/simulation
 
 # We are adding a camera sensor to have output results, a luminaire to have a light source.
 
-# And, we gather the sensor and the camera into a simulation (we will compute it just after).
+# And, we gather the source and the sensor into a simulation (we will compute it just after).
+
+# ### Create a sensor
 
 # +
 ssr = p.create_sensor(name="Camera.1", feature_type=script.sensor.Camera)
@@ -81,7 +83,7 @@ ssr.set_axis_system([-2000, 1500, 11000, -1, 0, 0, 0, 1, 0, 0, 0, -1])
 ssr.commit()
 # -
 
-# ## Create a source
+# ### Create a source
 
 # In this example, a luminaire source is created with an IES file.
 
@@ -94,7 +96,7 @@ src.set_axis_system([0, 10000, 50000, 1, 0, 0, 0, 1, 0, 0, 0, 1])
 src.commit()
 # -
 
-# ## Create a simulation
+# ### Create a simulation
 
 # More details on creating/editing simulation examples can be found in script layer examples.
 

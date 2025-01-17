@@ -73,7 +73,7 @@ for it in p.find_key(key="monochromatic"):
 
 # ## Find a feature inside a project
 
-# Use find method with an exact name
+# ### Use find method with an exact name
 
 # If no feature is found, an empty list is returned.
 
@@ -87,7 +87,7 @@ features = p.find(name="Sensor.1")
 print(features[0])
 # -
 
-# ## Use find method with feature type
+# ### Use find method with feature type
 
 # Here a wrong type is given: no source is called Sensor.1 in the project
 
@@ -101,7 +101,7 @@ features = p.find(name="Sensor.1", feature_type=script.sensor.Irradiance)
 print(features[0])
 # -
 
-# ## Use find method with approximation name with regex
+# ### Use find method with approximation name with regex
 
 # find a feature with name starting with Mat
 

@@ -35,9 +35,11 @@ p = script.Project(speos=speos)
 print(p)
 # -
 
+## Prerequisites
+
 # Create the necessary elements for a simulation: Sensor, source, root part are prerequisites.
 
-# root part body, default optical properties is used
+# ### Prepare the root part
 
 # +
 root_part = p.create_root_part()
@@ -47,7 +49,7 @@ root_part.create_body(name="Body.1").create_face(name="Face.1").set_vertices([0,
 root_part.commit()
 # -
 
-# ## Prepare an irradiance sensor
+# ### Prepare an irradiance sensor
 
 # +
 sensor1 = p.create_sensor(name="Irradiance.1")
@@ -55,7 +57,7 @@ sensor1.set_type_colorimetric()  # colorimetric or spectral so that the sensor c
 sensor1.commit()
 # -
 
-# ## Prepare a surface source
+# ### Prepare a surface source
 
 # +
 source1 = p.create_source(name="Surface.1")
@@ -129,7 +131,9 @@ simulation1.delete()  # delete (to display the local value with the below print)
 print(simulation1)
 # -
 
-# ## Example of Inverse simulation
+# ## Other simulation examples
+
+# ### Inverse simulation
 
 # +
 simulation3 = p.create_simulation(name="Simulation.3", feature_type=script.simulation.Inverse)
@@ -137,7 +141,7 @@ simulation3.set_sensor_paths(sensor_paths=["Irradiance.1"]).set_source_paths(sou
 print(simulation3)
 # -
 
-# ## Interactive simulation example
+# ### Interactive simulation
 
 # +
 simulation4 = p.create_simulation(name="Simulation.4", feature_type=script.simulation.Interactive)
