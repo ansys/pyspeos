@@ -24,12 +24,12 @@ Examples
     .. nbgallery::
         :caption: Script layer examples
 
+        examples/script-project
         examples/script-opt-prop
         examples/script-source
         examples/script-sensor
         examples/script-part
         examples/script-simulation
-        examples/script-project
         examples/script-lpf-preview
         examples/script-prism-example
 
