@@ -157,7 +157,6 @@ p2.preview()
 # use find_key method to find specific information
 
 # +
-# use find_key method to find specific information
 for it in p2.find_key(key="surface"):
     print(it)
 # -

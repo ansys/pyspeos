@@ -1,4 +1,4 @@
-# # How to preview light expert result
+# # How to preview a light expert result
 
 # This tutorial demonstrates how to review the light expert simulation result.
 
@@ -20,43 +20,39 @@ tests_data_path = os.path.join("/app", "assets")
 speos = Speos(host="localhost", port=50098)
 # -
 
-# ## New Project and Run Simulation
+# ## Create a new project
 
 # In this example, a project is created via reading a pre-defined .speos file.
 
-# +
-p = script.Project(speos=speos, path=os.path.join(tests_data_path, "error_data.speos", "error_data.speos"))
-# -
-
 # User can preview the part and mesh information.
 
+# By providing viz_args to the preview function, project part can be viewed in a semi-transparent way.
+
+# It can be found there is volume conflict in this project.
+
 # +
-p.preview()
+p = script.Project(speos=speos, path=os.path.join(tests_data_path, "error_data.speos", "error_data.speos"))
+p.preview(viz_args={"opacity": 0.7})
 # -
 
-# Retrieve the simulation feature and run
+# ## Retrieve the simulation feature and run
 
 # +
 sim = p.find("Direct.1")[0]
 sim.compute_CPU()
 # -
 
-from IPython.display import HTML, display
+# If looking to the simulation report, we will find that we have 40% simulation error
 
-# ## Methods from workflow class
+# +
+import ansys.speos.workflow.open_result as ORF
 
-# workflow class is collection of useful workflow methods
-
-# example, open_result check the result with given result file type:
-
-# If we have a look to the simulation report we will find that we have 40% simulation error
-
-
+# methods from workflow class provided a way to find the correct result file.
+# detailed information can be found in the workflow_open_result example.
 data = ORF._find_correct_result(sim, "Direct.1.html")
-display(HTML(data, metadata=dict(isolated=True)))
 # -
 
-# ## Create an interactive simulation with light expert
+# ## Create a simulation with light expert
 
 # We will define an interactive simulation to have a look at the rays in error
 
@@ -66,26 +62,26 @@ interactive_sim.set_light_expert(True)
 interactive_sim.set_sensor_paths(["Irradiance.1:70"])
 interactive_sim.set_source_paths(["Surface.1:4830"])
 interactive_sim.commit()
-results = interactive_sim.compute_CPU()
 # -
 
-# ## Retrieve the light expert file
+# ## Review the light expert result
 
-# Create a light expert from script.LightPathFinder
+# Here, we will run the simulation and preview the result via LightPathFinder class.
 
-# by default, the light expert will display all the rays collected.
+# By default, the LightPathFinder class will preview all the rays collected in the simulation.
 
 # +
+results = interactive_sim.compute_CPU()
 path = ORF._find_correct_result(interactive_sim, "error.lpf", download_if_distant=False)
 lxp = script.LightPathFinder(speos, path)
 lxp.preview(project=p)
 # -
 
-# ## Filter error rays
+# ## Review the light expert result with error filter
 
-# We can directly see a volume conflict between two solids.
+# ray_filter option is provided in the preview function that user can filter the rays to see only rays in error.
 
-# Let's filter the rays to see only rays in error
+# In this example, error rays are generated due to a volume conflict between two solids.
 
 # +
 lxp.filter_error_rays()

@@ -1,4 +1,4 @@
-# # How to create a source.
+# # How to create a source
 
 # This tutorial demonstrates how to create a source in script layer.
 
