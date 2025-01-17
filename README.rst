@@ -108,7 +108,7 @@ Then, you can launch SpeosRPC server with:
    docker login ghcr.io/ansys-internal
    docker-compose up -d
 
-On the other hand, SpeosRPC server can be started locally.
+On the other hand, the SpeosRPC server can be started locally.
 For Windows:
 
 .. code::

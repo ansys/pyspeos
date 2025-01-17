@@ -3,7 +3,12 @@
 Launch a local service
 ======================
 
-Documentation and feature in progress.
+To launch the service you need to use the following commands:
+
+.. include:: ../../../../README.rst
+    :start-after:  locally.
+    :end-before: Launch
+
 
 .. button-ref:: ../index
     :ref-type: doc
