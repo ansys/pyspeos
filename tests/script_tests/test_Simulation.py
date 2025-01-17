@@ -611,3 +611,32 @@ def test_delete(speos: Speos):
 
     assert len(p.scene_link.get().simulations) == 0
     assert len(sim1._simulation_instance.sensor_paths) == 1  # local
+
+
+def test_get_simulation(speos: Speos, capsys):
+    """Test get of a simulation."""
+    p = script.Project(speos=speos)
+    Sim1 = p.create_simulation(name="Sim.1", feature_type=script.simulation.Direct)
+    Sim2 = p.create_simulation(name="Sim.2", feature_type=script.simulation.Interactive)
+    Sim3 = p.create_simulation(name="Sim.3", feature_type=script.simulation.Inverse)
+    # test when key exists
+    name1 = Sim1.get(key="name")
+    assert name1 == "Sim.1"
+    property_info = Sim2.get(key="rays_number_per_sources")
+    assert property_info is not None
+    property_info = Sim3.get(key="source_paths")
+    assert property_info is not None
+
+    # test when key does not exist
+    get_result1 = Sim1.get(key="geometry")
+    stdout, stderr = capsys.readouterr()
+    assert get_result1 is None
+    assert "Used key: geometry not found in key list" in stdout
+    get_result2 = Sim2.get(key="geometry")
+    stdout, stderr = capsys.readouterr()
+    assert get_result2 is None
+    assert "Used key: geometry not found in key list" in stdout
+    get_result3 = Sim3.get(key="geometry")
+    stdout, stderr = capsys.readouterr()
+    assert get_result3 is None
+    assert "Used key: geometry not found in key list" in stdout
