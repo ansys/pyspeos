@@ -64,7 +64,7 @@ interactive_sim.set_source_paths(["Surface.1:4830"])
 interactive_sim.commit()
 # -
 
-# ## Review the light expert result
+# ## Preview the light expert result
 
 # Here, we will run the simulation and preview the result via LightPathFinder class.
 
@@ -77,7 +77,7 @@ lxp = script.LightPathFinder(speos, path)
 lxp.preview(project=p)
 # -
 
-# ## Review the light expert result with error filter
+# ## Preview the light expert result with error filter
 
 # ray_filter option is provided in the preview function that user can filter the rays to see only rays in error.
 
