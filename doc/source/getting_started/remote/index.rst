@@ -3,7 +3,7 @@
 Launch a remote service
 =======================
 
-If a remote server is running Ansys 2025 R1 or later and is also running PIM (Product
+If a remote server is running ansys 2025 R1 or later and is also running PIM (Product
 Instance Manager), you can use PIM to start a SpeosRPC Server Session that PySpeos
 can connect to.
 
@@ -11,9 +11,9 @@ An example of usage of the remote service can be accessed via AnsysLAB.
 
 .. warning::
 
-   **This option is only available for Ansys employees.**
+   **This option is only available for ansys employees.**
 
-   Only Ansys employees with credentials to the Artifact Repository Browser
+   Only ansys employees with credentials to the Artifact Repository Browser
    can download ZIP files for PIM.
 
 
