@@ -35,7 +35,7 @@ p = script.Project(speos=speos)
 print(p)
 # -
 
-## Prerequisites
+# ## Prepare prerequisites
 
 # Create the necessary elements for a simulation: Sensor, source, root part are prerequisites.
 
