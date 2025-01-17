@@ -1,4 +1,4 @@
-# # How to use scene and job.
+# # How to use scene and job
 
 # This tutorial demonstrates how to create a scene, and fill it from a speos file.
 # Then this demonstrates how to create a job from the scene, and run it.
@@ -9,7 +9,10 @@ import time
 
 import ansys.speos.core as core
 
+# If using docker container
 tests_data_path = os.path.join("/app", "assets")
+# If using local server
+# tests_data_path = os.path.join(os.path.abspath(""), os.path.pardir, os.path.pardir, os.path.pardir, "tests", "assets")
 # -
 
 # Create connection with speos rpc server
@@ -106,8 +109,7 @@ job_link.delete()
 
 # +
 for item in (
-    speos.client.jobs().list()
-    + speos.client.scenes().list()
+    speos.client.scenes().list()
     + speos.client.simulation_templates().list()
     + speos.client.sensor_templates().list()
     + speos.client.source_templates().list()
