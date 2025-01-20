@@ -70,33 +70,9 @@ container for the Speos service and install this image.
                type GH_TOKEN.txt | docker login ghcr.io -u %GH_USERNAME% --password-stdin
 
 
-#. To setup the docker Container Navigate to the repository root and use the predefined docker-compose file with a
-command like this:
-   .. tab-set::
-
-      .. tab-item:: Linux/Mac
-         .. code-block:: bash
-            export LICENSE_SERVER="1055@XXX.XXX.XXX.XXX"
-            docker-compose up -d
-
-      .. tab-item:: Powershell
-         .. code-block:: pwsh
-            $env:LICENSE_SERVER="1055@XXX.XXX.XXX.XXX"
-            docker-compose up -d
-
-      .. tab-item:: Windows CMD
-         .. code-block:: bash
-            set LICENSE_SERVER="1055@XXX.XXX.XXX.XXX"
-            docker-compose up -d
-
-   The <TAG> corresponds for example to 242 if you want to get the Speos service corresponding to the release 24R2.
-
-
 .. START - Include the common text for launching the service from a Docker container
 
-.. jinja:: linux_containers
-   :file: getting_started/docker/common_docker.jinja
-   :header_update_levels:
+.. include:: common_docker.rst
 
 .. END - Include the common text for launching the service from a Docker container
 
