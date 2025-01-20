@@ -23,7 +23,7 @@ Here are some terms to keep in mind:
   IP address when connecting. By default, PySpeos assumes it is on ``localhost``.
 
 * **port**: Port that exposes the Speos service on the host machine. Its
-  value is assumed to be ``50051``, but users can deploy the service on preferred ports.
+  value is assumed to be ``50098``, but users can deploy the service on preferred ports.
 
 
 Use Docker Compose
