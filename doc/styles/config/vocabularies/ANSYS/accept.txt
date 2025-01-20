@@ -1,9 +1,6 @@
-ANSYS
-Ansys
-ansys
-Pyoptics
-PyOptics
-pyoptics
+(?i)ansys
+(?i)pyansys
+(?i)pyspeos
 API
 
 Speos
