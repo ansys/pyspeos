@@ -38,22 +38,22 @@ see the next section to understand how to connect to this service instance from 
 
         .. code-block:: bash
 
-            export LICENSE_SERVER=1055@XXX.XXX.XXX.XXX
-            docker-compose up -d
+            export LICENSE_SERVER="1055@XXX.XXX.XXX.XXX"
+            docker-compose -f <path to docker-compose.yml> up -d
 
     .. tab-item:: Powershell
 
         .. code-block:: pwsh
 
-            $env:LICENSE_SERVER=1055@XXX.XXX.XXX.XXX
-            docker-compose up -d
+            $env:LICENSE_SERVER="1055@XXX.XXX.XXX.XXX"
+            docker-compose -f <path to docker-compose.yml> up -d
 
     .. tab-item:: Windows CMD
 
         .. code-block:: bash
 
-            set LICENSE_SERVER=1055@XXX.XXX.XXX.XXX
-            docker-compose up -d
+            set LICENSE_SERVER="1055@XXX.XXX.XXX.XXX"
+            docker-compose -f <path to docker-compose.yml> up -d
 
 Connect to the Speos service
 ----------------------------
