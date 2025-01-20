@@ -1,4 +1,4 @@
-# # How to use an ObjectLink.
+# # How to use an ObjectLink
 
 # This tutorial demonstrates how to use speos objects in layer core.
 

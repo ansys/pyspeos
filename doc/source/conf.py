@@ -13,6 +13,7 @@ from sphinx.util.display import status_iterator
 from ansys.speos import __version__
 
 LaTeXBuilder.supported_image_types = ["image/png", "image/pdf", "image/svg+xml"]
+os.environ["DOCUMENTATION_BUILDING"] = "true"
 
 # Project information
 project = "ansys-pyspeos"
@@ -87,6 +88,7 @@ numpydoc_validation_checks = {
 
 # static path
 html_static_path = ["_static"]
+html_css_files = ["custom.css"]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -107,6 +109,21 @@ if BUILD_EXAMPLES:
     nbsphinx_custom_formats = {
         ".mystnb": ["jupytext.reads", {"fmt": "mystnb"}],
         ".py": ["jupytext.reads", {"fmt": ""}],
+    }
+    nbsphinx_thumbnails = {
+        "examples/script-opt-prop": "_static/thumbnails/property_520x520.png",
+        "examples/script-source": "_static/thumbnails/source_520x520.png",
+        "examples/script-sensor": "_static/thumbnails/sensor_520x520.png",
+        "examples/script-part": "_static/thumbnails/part_520x520.png",
+        "examples/script-simulation": "_static/thumbnails/simulation_520x520.png",
+        "examples/script-project": "_static/thumbnails/how_to_create_a_project.PNG",
+        "examples/script-lpf-preview": "_static/thumbnails/script_lpf_preview.PNG",
+        "examples/script-prism-example": "_static/thumbnails/prism_example_using_script_layer.PNG",
+        "examples/core-object-link": "_static/thumbnails/pySpeos_520x520.png",
+        "examples/core-scene-job": "_static/thumbnails/pySpeos_520x520.png",
+        "examples/core-modify-scene": "_static/thumbnails/pySpeos_520x520.png",
+        "examples/workflow-open-result": "_static/thumbnails/how_to_open_result_using_workflow_method.png",
+        "examples/workflow-combine-speos": "_static/thumbnails/moving_car_workflow_example_using_script_layer.PNG",
     }
     nbsphinx_prompt_width = ""
     nbsphinx_prolog = """

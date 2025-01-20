@@ -23,6 +23,7 @@
 These files contain a set of simulated rays with all their intersections and properties."""
 from __future__ import annotations
 
+import os
 from typing import Union
 
 import ansys.api.speos.lpf.v2.lpf_file_reader_pb2 as lpf_file_reader__v2__pb2
@@ -464,7 +465,10 @@ class LightPathFinder:
             else:
                 for i in range(nb_ray):
                     self.__add_ray_to_pv(plotter, temp_rays[i], max_ray_length)
-        plotter.show()
+        if os.environ.get("DOCUMENTATION_BUILDING", "true") == "true":
+            plotter.show(jupyter_backend="html")
+        else:
+            plotter.show()
         return self
 
 
