@@ -1,9 +1,8 @@
 (?i)ansys
 (?i)pyansys
 (?i)pyspeos
-API
-
 Speos
+API
 Lumerical
 Zemax
 Autosummary
