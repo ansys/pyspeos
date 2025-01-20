@@ -26,8 +26,8 @@ Here are some terms to keep in mind:
   value is assumed to be ``50098``, but users can deploy the service on preferred ports.
 
 
-Use docker compose
-^^^^^^^^^^^^^^^^^^
+Docker compose for Speos service
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This method allows you to start the Speos service based on predefined environment variables and properties. Afterwards,
 see the next section to understand how to connect to this service instance from PySpeos.
