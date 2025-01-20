@@ -70,11 +70,24 @@ container for the Speos service and install this image.
                type GH_TOKEN.txt | docker login ghcr.io -u %GH_USERNAME% --password-stdin
 
 
-#. Pull the Speos service locally using Docker with a command like this:
+#. To setup the docker Container Navigate to the repository root and use the predefined docker-compose file with a
+command like this:
+   .. tab-set::
 
-   .. code:: bash
+      .. tab-item:: Linux/Mac
+         .. code-block:: bash
+            export LICENSE_SERVER="1055@XXX.XXX.XXX.XXX"
+            docker-compose up -d
 
-      docker pull ghcr.io/ansys-internal/speos-rpc:<TAG>
+      .. tab-item:: Powershell
+         .. code-block:: pwsh
+            $env:LICENSE_SERVER="1055@XXX.XXX.XXX.XXX"
+            docker-compose up -d
+
+      .. tab-item:: Windows CMD
+         .. code-block:: bash
+            set LICENSE_SERVER="1055@XXX.XXX.XXX.XXX"
+            docker-compose up -d
 
    The <TAG> corresponds for example to 242 if you want to get the Speos service corresponding to the release 24R2.
 
