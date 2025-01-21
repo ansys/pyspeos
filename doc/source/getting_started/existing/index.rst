@@ -16,7 +16,7 @@ From Python, establish a connection to the existing Speos service by creating a 
 
     from ansys.speos.core import Speos
 
-    speos = Speos(host="127.0.0.1", port=50051)
+    speos = Speos(host="127.0.0.1", port=50098)
 
 If no error messages are received, your connection is established successfully.
 
@@ -30,7 +30,7 @@ connection inside your ``Speos`` object:
 
    >>> speos.client
    Ansys Speos client (...)
-   Target:     localhost:50051
+   Target:     localhost:50098
    Connection: Healthy
 
 .. button-ref:: ../index

@@ -3,10 +3,19 @@
 Launch a remote service
 =======================
 
-An example of usage of the remote service can be via AnsysLAB.
+If a remote server is running Ansys Release 2025 R1 or later and is also running PIM (Product
+Instance Manager), you can use PIM to start a SpeosRPC Server Session that PySpeos
+can connect to.
 
-PIM (Product Instance Manager) is required to launch the remote Speos service.
-PIM is configured in AnsysLAB.
+An example of usage of the remote service can be accessed via AnsysLAB.
+
+.. warning::
+
+   **This option is only available for Ansys employees.**
+
+   Only Ansys employees with credentials to the Artifact Repository Browser
+   can download ZIP files for PIM.
+
 
 Use PySpeos launcher
 --------------------
@@ -17,9 +26,9 @@ To launch a remote Speos service:
 
     from ansys.speos.core import launcher
 
-    speos = launcher.launch_speos("242")
+    speos = launcher.launch_speos("251")
 
-The preceding commands launch a remote Speos service (version 24.2).
+The preceding commands launch a remote Speos service (version 2025 R1).
 You receive a ``Speos`` object back that you then use as a Speos session.
 
 

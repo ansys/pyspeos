@@ -28,7 +28,7 @@ The Speos service image can be downloaded from the GitHub Container Registry
 
 .. note::
 
-   This option is only available for users who are members of the ansys internal organization.
+   This option is only available for users who are members of the ansys-internal organization.
 
 Once Docker is installed on your machine, follow these steps to download the Linux Docker
 container for the Speos service and install this image.
@@ -70,20 +70,9 @@ container for the Speos service and install this image.
                type GH_TOKEN.txt | docker login ghcr.io -u %GH_USERNAME% --password-stdin
 
 
-#. Pull the Speos service locally using Docker with a command like this:
-
-   .. code:: bash
-
-      docker pull ghcr.io/ansys-internal/speos-rpc:<TAG>
-
-   The <TAG> corresponds for example to 242 if you want to get the Speos service corresponding to the release 24R2.
-
-
 .. START - Include the common text for launching the service from a Docker container
 
-.. jinja:: linux_containers
-   :file: getting_started/docker/common_docker.jinja
-   :header_update_levels:
+.. include:: common_docker.rst
 
 .. END - Include the common text for launching the service from a Docker container
 
