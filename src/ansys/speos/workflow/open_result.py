@@ -37,7 +37,9 @@ from numpy import ndarray
 from ansys.speos.script.simulation import Direct, Interactive, Inverse
 
 
-def _find_correct_result(simulation_feature: Union[Direct, Inverse, Interactive], result_name: str) -> str:
+def _find_correct_result(
+    simulation_feature: Union[Direct, Inverse, Interactive], result_name: str, download_if_distant: bool = True
+) -> str:
     if len(simulation_feature.result_list) == 0:
         raise ValueError("Please compute the simulation feature to generate results.")
 
@@ -50,14 +52,17 @@ def _find_correct_result(simulation_feature: Union[Direct, Inverse, Interactive]
                 break
         elif res.HasField("upload_response"):
             if res.upload_response.info.file_name == result_name:
-                file_transfer_helper__v1.download_file(
-                    file_transfer_service_stub=file_transfer__v1__pb2_grpc.FileTransferServiceStub(
-                        simulation_feature._project.client.channel
-                    ),
-                    file_uri=res.upload_response.info.uri,
-                    download_location=tempfile.gettempdir(),
-                )
-                file_path = os.path.join(tempfile.gettempdir(), res.upload_response.info.file_name)
+                if download_if_distant:
+                    file_transfer_helper__v1.download_file(
+                        file_transfer_service_stub=file_transfer__v1__pb2_grpc.FileTransferServiceStub(
+                            simulation_feature._project.client.channel
+                        ),
+                        file_uri=res.upload_response.info.uri,
+                        download_location=tempfile.gettempdir(),
+                    )
+                    file_path = os.path.join(tempfile.gettempdir(), res.upload_response.info.file_name)
+                else:
+                    file_path = res.upload_response.info.uri
                 break
     return file_path
 
