@@ -105,7 +105,7 @@ class SourceTemplateStub(CrudStub):
     Like in the following example:
 
     >>> from ansys.speos.core.speos import Speos
-    >>> speos = Speos(host="localhost", port=50051)
+    >>> speos = Speos(host="localhost", port=50098)
     >>> src_t_db = speos.client.source_templates()
 
     """

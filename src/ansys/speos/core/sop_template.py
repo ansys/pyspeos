@@ -50,7 +50,7 @@ class SOPTemplateLink(CrudItem):
 
     >>> from ansys.speos.core.speos import Speos
     >>> from ansys.speos.core.sop_template import SOPTemplate
-    >>> speos = Speos(host="localhost", port=50051)
+    >>> speos = Speos(host="localhost", port=50098)
     >>> sop_t_db = speos.client.sop_templates()
     >>> sop_t_message = SOPTemplate(name="Mirror_50")
     >>> sop_t_message.mirror.reflectance = 50
@@ -105,7 +105,7 @@ class SOPTemplateStub(CrudStub):
     Like in the following example:
 
     >>> from ansys.speos.core.speos import Speos
-    >>> speos = Speos(host="localhost", port=50051)
+    >>> speos = Speos(host="localhost", port=50098)
     >>> sop_t_db = speos.client.sop_templates()
 
     """

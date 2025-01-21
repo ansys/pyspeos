@@ -50,7 +50,7 @@ class VOPTemplateLink(CrudItem):
 
     >>> from ansys.speos.core.speos import Speos
     >>> from ansys.speos.core.vop_template import VOPTemplate
-    >>> speos = Speos(host="localhost", port=50051)
+    >>> speos = Speos(host="localhost", port=50098)
     >>> vop_t_db = speos.client.vop_templates()
     >>> vop_t_message = VOPTemplate(name="Opaque")
     >>> vop_t_message.opaque.SetInParent()
@@ -105,7 +105,7 @@ class VOPTemplateStub(CrudStub):
     Like in the following example:
 
     >>> from ansys.speos.core.speos import Speos
-    >>> speos = Speos(host="localhost", port=50051)
+    >>> speos = Speos(host="localhost", port=50098)
     >>> vop_t_db = speos.client.vop_templates()
 
     """
