@@ -5,9 +5,19 @@ Launch a local service
 
 To launch the service you need to use the following commands:
 
-.. include:: ../../../../README.rst
-    :start-after:  locally.
-    :end-before: And
+.. tab-set::
+
+    .. tab-item:: Windows
+
+        .. code-block:: bash
+
+            %AWP_ROOT251%\Optical Products\SPEOS_RPC\SpeosRPC_Server.exe
+
+    .. tab-item:: Linux
+
+        .. code-block:: bash
+
+            $AWP_ROOT251\OpticalProducts\SPEOS_RPC\SpeosRPC_Server.x
 
 
 .. button-ref:: ../index

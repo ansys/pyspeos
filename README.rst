@@ -110,19 +110,19 @@ Then, you can launch SpeosRPC server with:
 
 On the other hand, the SpeosRPC server can be started locally.
 
-.. tab-set::
+For Windows:
 
-    .. tab-item:: Windows
+.. code::
 
-        .. code-block:: bash
+    %AWP_ROOT251%\Optical Products\SPEOS_RPC\SpeosRPC_Server.exe
 
-            %AWP_ROOT251%\Optical Products\SPEOS_RPC\SpeosRPC_Server.exe
+For Linux:
 
-    .. tab-item:: Linux
+.. code::
 
-        .. code-block:: bash
+    $AWP_ROOT251\OpticalProducts\SPEOS_RPC\SpeosRPC_Server.x
 
-            $AWP_ROOT251\OpticalProducts\SPEOS_RPC\SpeosRPC_Server.x
+
 
 And test configuration file `<tests/local_config.json>`_ must be updated to use local server:
 
