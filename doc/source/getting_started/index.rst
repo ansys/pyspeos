@@ -12,7 +12,7 @@ You can use `pip <https://pypi.org/project/pip/>`_ to install PySpeos.
 
 .. code:: bash
 
-    pip install ansys-speos
+    pip install ansys-speos-core
 
 Available modes
 ===============

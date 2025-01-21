@@ -7,7 +7,7 @@ To launch the service you need to use the following commands:
 
 .. include:: ../../../../README.rst
     :start-after:  locally.
-    :end-before: Launch
+    :end-before: And
 
 
 .. button-ref:: ../index

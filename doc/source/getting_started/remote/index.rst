@@ -26,9 +26,9 @@ To launch a remote Speos service:
 
     from ansys.speos.core import launcher
 
-    speos = launcher.launch_speos("242")
+    speos = launcher.launch_speos("251")
 
-The preceding commands launch a remote Speos service (version 24.2).
+The preceding commands launch a remote Speos service (version 2025 R1).
 You receive a ``Speos`` object back that you then use as a Speos session.
 
 

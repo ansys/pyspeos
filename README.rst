@@ -109,17 +109,20 @@ Then, you can launch SpeosRPC server with:
    docker-compose up -d
 
 On the other hand, the SpeosRPC server can be started locally.
-For Windows:
 
-.. code::
+.. tab-set::
 
-    %AWP_ROOT251%\Optical Products\SPEOS_RPC\SpeosRPC_Server.exe
+    .. tab-item:: Windows
 
-For Linux:
+        .. code-block:: bash
 
-.. code::
+            %AWP_ROOT251%\Optical Products\SPEOS_RPC\SpeosRPC_Server.exe
 
-    $AWP_ROOT251\OpticalProducts\SPEOS_RPC\SpeosRPC_Server.x
+    .. tab-item:: Linux
+
+        .. code-block:: bash
+
+            $AWP_ROOT251\OpticalProducts\SPEOS_RPC\SpeosRPC_Server.x
 
 And test configuration file `<tests/local_config.json>`_ must be updated to use local server:
 
