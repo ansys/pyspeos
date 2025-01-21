@@ -163,6 +163,7 @@ jinja_contexts = {
     },
 }
 
+
 def copy_examples_to_output_dir(app: sphinx.application.Sphinx, exception: Exception):
     """
     Copy the examples directory to the output directory of the documentation.
