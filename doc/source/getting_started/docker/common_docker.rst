@@ -29,8 +29,9 @@ Here are some terms to keep in mind:
 Docker compose for Speos service
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This method allows you to start the Speos service based on predefined environment variables and properties. Afterwards,
-see the next section to understand how to connect to this service instance from PySpeos.
+You can find a `docker-compose.yml <https://github.com/ansys-internal/pyspeos/blob/main/docker-compose.yml>`_ file within the pySpeos
+repository. This method allows you to start the Speos service based on predefined environment variables and properties.
+Afterwards, see the next section to understand how to connect to this service instance from PySpeos.
 
 .. tab-set::
 
