@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -50,7 +50,7 @@ class SensorTemplateLink(CrudItem):
 
     >>> from ansys.speos.core.speos import Speos
     >>> from ansys.speos.core.sensor_template import SensorTemplate
-    >>> speos = Speos(host="localhost", port=50051)
+    >>> speos = Speos(host="localhost", port=50098)
     >>> ssr_t_db = speos.client.sensor_templates()
     >>> ssr_t_message = SensorTemplate(name="Irradiance")
     >>> ssr_t_message.irradiance_sensor_template.sensor_type_photometric.SetInParent()
@@ -112,7 +112,7 @@ class SensorTemplateStub(CrudStub):
     Like in the following example:
 
     >>> from ansys.speos.core.speos import Speos
-    >>> speos = Speos(host="localhost", port=50051)
+    >>> speos = Speos(host="localhost", port=50098)
     >>> ssr_t_db = speos.client.sensor_templates()
 
     """

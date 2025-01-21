@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -30,7 +30,7 @@ from grpc import Channel
 from ansys.speos.core.client import SpeosClient
 
 DEFAULT_HOST = "localhost"
-DEFAULT_PORT = "50051"
+DEFAULT_PORT = "50098"
 
 
 if TYPE_CHECKING:  # pragma: no cover

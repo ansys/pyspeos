@@ -1,7 +1,8 @@
 PySpeos documentation |version|
 ===============================
 
-``PySpeos`` is a Python client library that gathers functionalities and tools based on remote API of ansys software `Speos <https://www.ansys.com/fr-fr/products/optics-vr>`_ .
+``PySpeos`` is a Python client library that gathers functionalities and tools based on remote API of Ansys software
+`Speos <https://www.ansys.com/products/optics/ansys-speos>`_ .
 
 .. grid:: 2
 
@@ -23,6 +24,13 @@ PySpeos documentation |version|
         Understand PySpeos API endpoints, their capabilities,
         and how to interact with them programmatically.
 
+    .. grid-item-card:: Examples :fa:`clone`
+        :padding: 2 2 2 2
+        :link: examples
+        :link-type: doc
+
+        Learn how to use PySpeos with examples that demonstrate its capabilities.
+
 
 .. toctree::
    :hidden:
@@ -30,4 +38,4 @@ PySpeos documentation |version|
 
    getting_started/index
    api/index
-
+   examples

@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -228,6 +228,9 @@ def test_commit_part(speos: Speos):
 
     # Create
     root_part = p.create_root_part()
+    sp1 = root_part.create_sub_part(name="SubPart.1").set_axis_system(axis_system=[5, 4, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    sp1.create_sub_part(name="SubPart.11").set_axis_system(axis_system=[-5, -4, -10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    root_part.create_body(name="Body.1")
     assert root_part.part_link is None
     assert p.scene_link.get().part_guid == ""
 
@@ -235,6 +238,9 @@ def test_commit_part(speos: Speos):
     root_part.commit()
     assert root_part.part_link is not None
     assert p.scene_link.get().part_guid == root_part.part_link.key
+    assert len(root_part.part_link.get().parts) == 1
+    assert len(speos.client.get_item(key=root_part.part_link.get().parts[0].part_guid).get().parts) == 1
+    assert len(root_part.part_link.get().body_guids) == 1
 
     # Change only in local not committed
     root_part._part.description = "new"
@@ -248,7 +254,11 @@ def test_reset_part(speos: Speos):
     p = script.Project(speos=speos)
 
     # Create + commit
-    root_part = p.create_root_part().commit()
+    root_part = p.create_root_part()
+    sp1 = root_part.create_sub_part(name="SubPart.1").set_axis_system(axis_system=[5, 4, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    sp1.create_sub_part(name="SubPart.11").set_axis_system(axis_system=[-5, -4, -10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    root_part.create_body(name="Body.1")
+    root_part.commit()
     assert root_part.part_link is not None
 
     # Change local data (on template and on instance)
@@ -262,12 +272,16 @@ def test_reset_part(speos: Speos):
     root_part.delete()
 
 
-def test_delete_source(speos: Speos):
-    """Test delete of source."""
+def test_delete_part(speos: Speos):
+    """Test delete of part."""
     p = script.Project(speos=speos)
 
     # Create + commit
-    root_part = p.create_root_part().commit()
+    root_part = p.create_root_part()
+    sp1 = root_part.create_sub_part(name="SubPart.1").set_axis_system(axis_system=[5, 4, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    sp1.create_sub_part(name="SubPart.11").set_axis_system(axis_system=[-5, -4, -10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    root_part.create_body(name="Body.1")
+    root_part.commit()
     assert root_part.part_link is not None
 
     # Delete
@@ -276,3 +290,5 @@ def test_delete_source(speos: Speos):
 
     assert p.scene_link.get().part_guid == ""
     assert root_part._part.name == "RootPart"  # local
+    assert len(root_part._part.parts) == 0
+    assert len(root_part._part.body_guids) == 0

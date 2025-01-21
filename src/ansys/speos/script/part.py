@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -155,7 +155,7 @@ class Part:
             out_dict = ""
 
             # Part Instance
-            if self._parent_part is not None:
+            if self._parent_part is not None and self._parent_part.part_link is not None:
                 parent_part_data = self._parent_part.part_link.get()
                 part_inst = next((x for x in parent_part_data.parts if x.description == "UniqueId_" + self._unique_id), None)
                 if part_inst is not None:
@@ -178,7 +178,7 @@ class Part:
             """Return the string representation of the sub part."""
             out_str = ""
 
-            if self._parent_part is not None:
+            if self._parent_part is not None and self._parent_part.part_link is not None:
                 parent_part_data = self._parent_part.part_link.get()
                 part_inst = next((x for x in parent_part_data.parts if x.description == "UniqueId_" + self._unique_id), None)
                 if part_inst is None:
@@ -202,9 +202,6 @@ class Part:
                 self._unique_id = str(uuid.uuid4())
                 self._part_instance.description = "UniqueId_" + self._unique_id
 
-            for g in self._geom_features:
-                g.commit()
-
             # Save or Update the part (depending on if it was already saved before)
             if self.part_link is None:
                 self.part_link = self._speos_client.parts().create(message=self._part)
@@ -213,8 +210,11 @@ class Part:
 
             self._part_instance.part_guid = self.part_link.key
 
+            for g in self._geom_features:
+                g.commit()
+
             # Look if an element corresponds to the instance
-            if self._parent_part is not None:
+            if self._parent_part is not None and self._parent_part.part_link is not None:
                 update_part = True
                 parent_part_data = self._parent_part.part_link.get()
 
@@ -245,7 +245,7 @@ class Part:
                 self._part = self.part_link.get()
 
             # Reset part instance
-            if self._parent_part.part_link is not None:
+            if self._parent_part is not None and self._parent_part.part_link is not None:
                 parent_part_data = self._parent_part.part_link.get()  # retrieve server data
                 # Look if an element corresponds to the _unique_id
                 if self._unique_id is not None:
@@ -263,12 +263,12 @@ class Part:
             ansys.speos.script.part.Part.SubPart
                 SubPart feature.
             """
-            # Delete features
-            for g in self._geom_features:
-                g.delete()
+            # Retrieve all features to delete them
+            while len(self._geom_features) > 0:
+                self._geom_features[0].delete()
 
             # Remove the part instance from the parent part
-            if self._parent_part is not None:
+            if self._parent_part is not None and self._parent_part.part_link is not None:
                 parent_part_data = self._parent_part.part_link.get()
                 part_inst = next((x for x in parent_part_data.parts if x.description == "UniqueId_" + self._unique_id), None)
                 if part_inst is not None:
@@ -420,15 +420,16 @@ class Part:
         ansys.speos.script.part.Part
             Part feature.
         """
-        # Retrieve all features to commit them
-        for g in self._geom_features:
-            g.commit()
 
         # Save or Update the part (depending on if it was already saved before)
         if self.part_link is None:
             self.part_link = self._project.client.parts().create(message=self._part)
         elif self.part_link.get() != self._part:
             self.part_link.set(data=self._part)  # Only update if data has changed
+
+        # Retrieve all features to commit them
+        for g in self._geom_features:
+            g.commit()
 
         # Update the scene with the part
         if self._project.scene_link:
@@ -461,14 +462,15 @@ class Part:
         ansys.speos.script.part.Part
             Part feature.
         """
+
+        # Retrieve all features to delete them
+        while len(self._geom_features) > 0:
+            self._geom_features[0].delete()
+
         # Delete the part
         if self.part_link is not None:
             self.part_link.delete()
             self.part_link = None
-
-        # Retrieve all features to delete them
-        for g in self._geom_features:
-            g.delete()
 
         # Remove the part guid from the scene
         scene_data = self._project.scene_link.get()  # retrieve scene data

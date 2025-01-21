@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -56,7 +56,7 @@ class SceneLink(CrudItem):
 
     >>> from ansys.speos.core.speos import Speos
     >>> from ansys.speos.core.scene import Scene
-    >>> speos = Speos(host="localhost", port=50051)
+    >>> speos = Speos(host="localhost", port=50098)
     >>> sce_db = speos.client.scenes()
     >>> sce_link = sce_db.create(message=Scene(name="Empty_Scene"))
 
@@ -145,7 +145,7 @@ class SceneStub(CrudStub):
     Like in the following example:
 
     >>> from ansys.speos.core.speos import Speos
-    >>> speos = Speos(host="localhost", port=50051)
+    >>> speos = Speos(host="localhost", port=50098)
     >>> sce_db = speos.client.scenes()
 
     """

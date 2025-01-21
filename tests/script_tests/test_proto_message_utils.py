@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -38,8 +38,7 @@ def test_replace_guid_elt(speos: Speos):
 
     # Example with surface source : spectrum guid + intensity guid
     p = script.Project(speos=speos)
-    src_feat = script.Source(project=p, name="Surface.1")
-    src_feat.set_surface()
+    src_feat = script.source.Surface(project=p, name="Surface.1")
     src_feat.commit()
 
     # Retrieve source template message and transform it into dict
@@ -76,8 +75,7 @@ def test_replace_guid_elt_ignore_simple_key(speos: Speos):
 
     # Example with surface source : spectrum guid + intensity guid
     p = script.Project(speos=speos)
-    src_feat = script.Source(project=p, name="Surface.1")
-    src_feat.set_surface()
+    src_feat = script.source.Surface(project=p, name="Surface.1")
     src_feat.commit()
 
     # Retrieve source template message and transform it into dict
@@ -199,8 +197,7 @@ def test_value_finder_key_startswith(speos: Speos):
     """Test _value_finder_key_startswith."""
 
     p = script.Project(speos=speos)
-    src_feat = script.Source(project=p, name="Surface.1")
-    src_feat.set_surface()
+    src_feat = script.source.Surface(project=p, name="Surface.1")
     src_feat.commit()
 
     # Retrieve source instance message and transform it into dict
@@ -216,8 +213,7 @@ def test__value_finder_key_endswith(speos: Speos):
     """Test _value_finder_key_endswith."""
 
     p = script.Project(speos=speos)
-    src_feat = script.Source(project=p, name="Surface.1")
-    src_feat.set_surface()
+    src_feat = script.source.Surface(project=p, name="Surface.1")
     src_feat.commit()
 
     # Retrieve source instance message and transform it into dict
@@ -233,8 +229,8 @@ def test_replace_properties(speos: Speos):
     """Test _replace_properties."""
 
     p = script.Project(speos=speos)
-    src_feat = script.Source(project=p, name="Surface.1")
-    src_feat.set_surface().set_intensity().set_gaussian().set_axis_system([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    src_feat = script.source.Surface(project=p, name="Surface.1")
+    src_feat.set_intensity().set_gaussian().set_axis_system([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     src_feat.commit()
 
     # First replace guids

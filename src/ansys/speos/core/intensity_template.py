@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -50,7 +50,7 @@ class IntensityTemplateLink(CrudItem):
 
     >>> from ansys.speos.core.speos import Speos
     >>> from ansys.speos.core.intensity_template import IntensityTemplate
-    >>> speos = Speos(host="localhost", port=50051)
+    >>> speos = Speos(host="localhost", port=50098)
     >>> int_t_db = speos.client.intensity_templates()
     >>> int_t_message = IntensityTemplate(name="Cos_3_170")
     >>> int_t_message.cos.N = 3.0
@@ -119,7 +119,7 @@ class IntensityTemplateStub(CrudStub):
     Like in the following example:
 
     >>> from ansys.speos.core.speos import Speos
-    >>> speos = Speos(host="localhost", port=50051)
+    >>> speos = Speos(host="localhost", port=50098)
     >>> int_t_db = speos.client.intensity_templates()
 
     """

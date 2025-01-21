@@ -20,7 +20,7 @@ PySpeos library
 
 Project overview
 ----------------
-``PySpeos`` is a Python library that gathers functionalities and tools based on remote API of Ansys software `Speos <https://www.ansys.com/fr-fr/products/optics-vr>`_ .
+``PySpeos`` is a Python library that gathers functionalities and tools based on remote API of Ansys software `Speos <https://www.ansys.com/products/optics>`_ .
 
 Installation
 ------------
@@ -28,14 +28,14 @@ Installation can be done using the published `package`_ or the repository `sourc
 
 Package
 ~~~~~~~
-.. warning:: Not currently available, work in progress. Please use `Sources`_.
+.. warning:: Release is in process it might take some time till available. Until then, please use `Sources`_.
 
-This repository is deployed as the Python packages `ansys-pyspeos <...>`_.
+This repository is deployed as the Python packages `ansys-speos-core <https://pypi.org/project/ansys-speos-core>`_.
 As usual, installation is done by running:
 
 .. code::
 
-   pip install ansys-pyspeos
+   pip install ansys-speos-core
 
 Sources
 ~~~~~~~
@@ -47,12 +47,11 @@ Clone and install
 
 .. code::
 
-   git clone https://<PAT>@github.com/ansys-internal/pyspeos.git
+   git clone https://github.com/ansys/pyspeos.git
    cd pyspeos
    python -m pip install --upgrade pip
    pip install -U pip tox
    tox -e style
-   export PIP_EXTRA_INDEX_URL=https://<PYANSYS_PYPI_PRIVATE_PAT>@pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/simple/
    pip install -e .
 
 
@@ -64,10 +63,14 @@ All sources are located in `<src/>`_ folder.
 
    from ansys.speos.core.speos import Speos
 
-   speos = Speos(host="localhost", port=50051)
+   speos = Speos(host="localhost", port=50098)
 
 Documentation
 -------------
+
+Documentation for the latest stable release of PySpeos is hosted at
+`PySpeos Documentation <https://speos.docs.pyansys.com>`_.
+
 Documentation is stored in `<doc>`_ folder and generated using `Sphinx`_.
 To build it manually :
 
@@ -77,10 +80,6 @@ To build it manually :
    pip install .[doc]
    tox -e doc && your_browser_name .tox/doc_out/index.html
 
-
-.. note::
-
-      Include a link to the full sphinx documentation. For example `PyAnsys`_
 
 Testing
 -------
@@ -109,12 +108,21 @@ Then, you can launch SpeosRPC server with:
    docker login ghcr.io/ansys-internal
    docker-compose up -d
 
-On the other hand, SpeosRPC server can be started locally.
-The pipeline artifact can be found in La Farlède shared folders.
+On the other hand, the SpeosRPC server can be started locally.
+
+For Windows:
 
 .. code::
 
-   \\win.ansys.com\eu\LaFarlede\Product Artifacts\SpeosRPC\refs\heads\main
+    %AWP_ROOT251%\Optical Products\SPEOS_RPC\SpeosRPC_Server.exe
+
+For Linux:
+
+.. code::
+
+    $AWP_ROOT251\OpticalProducts\SPEOS_RPC\SpeosRPC_Server.x
+
+
 
 And test configuration file `<tests/local_config.json>`_ must be updated to use local server:
 
@@ -123,7 +131,7 @@ And test configuration file `<tests/local_config.json>`_ must be updated to use 
    {
       "SpeosServerOnDocker": false,
       "SpeosContainerName" : "speos-rpc",
-      "SpeosServerPort": 50051
+      "SpeosServerPort": 50098
    }
 
 Launch unit tests
@@ -142,7 +150,7 @@ Use jupyter notebook
    pip install .[jupyter]
    jupyter notebook
 
-jupyter notebook files are stored in `<tests/jupyter_notebooks>`_ folder.
+jupyter notebook can be downloaded from the documentations example section.
 
 License
 -------
