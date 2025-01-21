@@ -47,49 +47,52 @@ speos = Speos(host="127.0.0.1", port=50098)
 ## Basic methods
 
 load a solver file:
+
 ```{python}
 #| eval: false
-project = script.Project(speos=speos_server, path=r"project_file_path.speos")​
-print(project)​
-#{​
-#	“name”: project_name/*.speos file name​
-#	“description”:​
-#	“part_guid”:​
-#	“materials”:​
-#	“sources”:​
-#	“sensors”:​
-#	“simulations”:​
+project = script.Project(speos=speos_server, path=r"project_file_path.speos")
+print(project)
+#{
+#	“name”: project_name/*.speos file name
+#	“description”:
+#	“part_guid”:
+#	“materials”:
+#	“sources”:
+#	“sensors”:
+#	“simulations”:
 #}
 ```
 
 insert/combine solver file:
+
 ```{python}
 #| eval: false
-from ansys.speos.workflow.combine_speos import SpeosFileInstance, combine_speos, insert_speos​
-insert_speos(​
-    project= project,​
-    speos_to_insert=[​
-        SpeosFileInstance(​
-            speos_file=r“insert_project_file_path.speos",​
-            axis_system=[x, y, z, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0],​
-        )​
-    ],​
+from ansys.speos.workflow.combine_speos import SpeosFileInstance, combine_speos, insert_speos
+insert_speos(
+    project= project,
+    speos_to_insert=[
+        SpeosFileInstance(
+            speos_file=r“insert_project_file_path.speos",
+            axis_system=[x, y, z, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0],
+        )
+    ],
 )
-combined_project = combine_speos(​
-    speos=speos,​
-    speos_to_combine=[​
-        SpeosFileInstance(​
-            speos_file= r“combine_project_1_file_path_.speos",​
-            axis_system=[x1, y1, z1, 1, 0, 0, 0, 1, 0, 0, 0, 1],​
-        ),​
-        SpeosFileInstance(​
-            speos_file=r“combine_project_2_file_path_.speos",​
-            axis_system=[x2, y2, z2, 1, 0, 0, 0, 1, 0, 0, 0, 1],​
-    ],​
+combined_project = combine_speos(
+    speos=speos,
+    speos_to_combine=[
+        SpeosFileInstance(
+            speos_file= r“combine_project_1_file_path_.speos",
+            axis_system=[x1, y1, z1, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+        ),
+        SpeosFileInstance(
+            speos_file=r“combine_project_2_file_path_.speos",
+            axis_system=[x2, y2, z2, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+    ],
 )
 ```
 
 insert/combine solver file:
+
 ```{python}
 #| eval: false
 project.preview(viz_args={"opacity": 0.7})
@@ -97,37 +100,41 @@ project.preview(viz_args={"opacity": 0.7})
 
 # Navigation methods
 
-Find methods and it possible uses
+Find methods and it possible uses:
+
 ```{python}
 #| eval: false
-found_item = project.find(name=“test”)​
-# any body/part/sensor/source/simulation item with name of “test” are return as a list​
-found_item = project.find(name=“test”, name_regex=True)​
+found_item = project.find(name=“test”)
+# any body/part/sensor/source/simulation item with name of “test” are return as a list
+found_item = project.find(name=“test”, name_regex=True)
 # any body/part/sensor/source/simulation item with name of starting with “test” are return as a list
-Found_item = project.find(name=“.*”, name_regex=True, feature_type= script.simulation.Direct)​
-# any direct simulation item are return as a list​
+Found_item = project.find(name=“.*”, name_regex=True, feature_type= script.simulation.Direct)
+# any direct simulation item are return as a list
 ```
 
 # Modify/Change Solver files
 
 ## Sources:
+
 Surface Source
+
 ```{python}
 #| eval: false
 s_source = project.create_source(name='surface.1', feature_type=script.source.Surface)
-s_source.set_flux_luminous(value=683) # -> Source.Surface​
-s_source.set_flux_radiant(value=1) # -> Source.Surface​
-s_source.set_flux_luminous_intensity(value=5) # -> Source.Surface​
-s_source.set_exitance_constant(geometries=[(script.GeoRef.from_native_link("TheBodyB/TheFaceF"), False)]) # -> Source.Surface​
-s_source.set_exitance_variable() # -> Source.Surface.ExitanceVariable​
-s_source.set_spectrum_from_xmp_file() # -> Source.Surface​
-s_source.set_intensity() # -> Intensity​
-s_source.set_flux_from_intensity_file() # -> Source.Surface​
+s_source.set_flux_luminous(value=683) # -> Source.Surface
+s_source.set_flux_radiant(value=1) # -> Source.Surface
+s_source.set_flux_luminous_intensity(value=5) # -> Source.Surface
+s_source.set_exitance_constant(geometries=[(script.GeoRef.from_native_link("TheBodyB/TheFaceF"), False)]) # -> Source.Surface
+s_source.set_exitance_variable() # -> Source.Surface.ExitanceVariable
+s_source.set_spectrum_from_xmp_file() # -> Source.Surface
+s_source.set_intensity() # -> Intensity
+s_source.set_flux_from_intensity_file() # -> Source.Surface
 s_source.set_spectrum() # -> Spectrum
 s_source.commit()
 ```
 
 Rayfile Source
+
 ```{python}
 #| eval: false
 r_source = project.create_source(name='rayfile.1', feature_type=script.source.Rayfile)
@@ -143,12 +150,13 @@ r_source.commit()
 ```
 
 Luminaire Source
+
 ```{python}
 #| eval: false
 l_source = project.create_source(name='lumi.1', feature_type=script.source.Luminaire)
-l_source.set_intensity_file_uri("path/ies.ies") # -> Source.Luminaire​
+l_source.set_intensity_file_uri("path/ies.ies") # -> Source.Luminaire
 l_source.set_flux_luminous(value=683) # -> Source.Luminaire
-l_source.set_flux_radiant(value=1) # -> Source.Luminaire​
+l_source.set_flux_radiant(value=1) # -> Source.Luminaire
 l_source.set_spectrum() # -> Spectrum
 l_source.set_axis_system(axis_system=[0,0,0,1,0,0,0,1,0,0,0,1]) # -> Source.Luminaire
 l_source.commit()
@@ -158,14 +166,14 @@ l_source.commit()
 
 ```{python}
 #| eval: false
-mat1 = project.create_optical_property(name=“mat1”)​
-mat1.set_surface_mirror(80.0) # default as 100​
-mat1.set_surface_opticalpolished()​
-mat1.set_surface_library("path/surface.brdf")​
-mat1.set_volume_none()​
-mat1.set_volume_opaque()​
-mat1.set_volume_optic(index=1.7, absorption=0.01, constringence=55) # default as index=1.5 with absorption = 0​
-mat1.set_volume_library('path/mat.material')​
+mat1 = project.create_optical_property(name=“mat1”)
+mat1.set_surface_mirror(80.0) # default as 100
+mat1.set_surface_opticalpolished()
+mat1.set_surface_library("path/surface.brdf")
+mat1.set_volume_none()
+mat1.set_volume_opaque()
+mat1.set_volume_optic(index=1.7, absorption=0.01, constringence=55) # default as index=1.5 with absorption = 0
+mat1.set_volume_library('path/mat.material')
 mat1.set_geometries(geometries=[script.GeoRef.from_native_link(geopath="TheBodyB")])
 mat1.commit()
 ```
@@ -173,19 +181,21 @@ mat1.commit()
 ## Geometries
 
 Create new Geometries
+
 ```{python}
 #| eval: false
-root_part = project.create_root_part().commit()​
-body_1 = root_part. create_body(name="TheBodyB1")​
-body_1.commit() ​
-body_1_face_1 = Body_1.create_face(name=“TheFaceF1”)​
-body_1_face_1.set_vertices([]).set_facets([]).set_normal([])​
+root_part = project.create_root_part().commit()
+body_1 = root_part. create_body(name="TheBodyB1")
+body_1.commit()
+body_1_face_1 = Body_1.create_face(name=“TheFaceF1”)
+body_1_face_1.set_vertices([]).set_facets([]).set_normal([])
 body_1_face_1.commit()
 ```
 
 ## Sensor
 
 Radiance Sensor
+
 ```{python}
 #| eval: false
 r_sensor = project.create_sensor(name=“radiance”, feature_type=script.sensor.Radiance)
@@ -195,6 +205,7 @@ r_sensor.commit()
 ```
 
 Camera Sensor
+
 ```{python}
 #| eval: false
 c_sensor = project.create_sensor(name=“camera”, feature_type=script.sensor.Camera)
@@ -209,6 +220,7 @@ c_sensor.commit()
 ```
 
 Irradiance Sensor
+
 ```{python}
 #| eval: false
 i_sensor = project.create_sensor(name=“irradiance”, feature_type=script.sensor.Irradiance)
@@ -219,10 +231,12 @@ i_sensor.commit()
 ```
 
 ## Simulation definition
+
 Direct Simulation
+
 ```{python}
 #| eval: false
-direct_sim = project.create_simulation(name=“direct”, feature_type=script.simulation.Direct)​
+direct_sim = project.create_simulation(name=“direct”, feature_type=script.simulation.Direct)
 direct_sim.set_sensor_paths(["Irradiance.1"]).set_source_paths(["Surface.1"])
 direct_sim.set_stop_condition_rays_number(5000000).set_stop_condition_duration(3600)
 direct_sim.compute_GPU()
@@ -230,11 +244,15 @@ direct_sim.compute_CPU()
 ```
 
 Inverse Simulation
+
 ```{python}
-inverse_sim= project.create_simulation(name=“inverse”, feature_type=script.simulation.Inverse)​
+#| eval: false
+inverse_sim= project.create_simulation(name=“inverse”, feature_type=script.simulation.Inverse)
 ```
 
 Interactive Simulation
+
 ```{python}
+#| eval: false
 interactive_sim = project.create_simulation(name=“interactive”, feature_type=script.simulation.Interactive)
 ```
