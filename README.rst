@@ -108,7 +108,8 @@ Then, you can launch SpeosRPC server with:
    docker login ghcr.io/ansys-internal
    docker-compose up -d
 
-On the other hand, SpeosRPC server can be started locally.
+On the other hand, the SpeosRPC server can be started locally.
+
 For Windows:
 
 .. code::
@@ -120,6 +121,8 @@ For Linux:
 .. code::
 
     $AWP_ROOT251\OpticalProducts\SPEOS_RPC\SpeosRPC_Server.x
+
+
 
 And test configuration file `<tests/local_config.json>`_ must be updated to use local server:
 

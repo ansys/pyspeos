@@ -1,12 +1,8 @@
-ANSYS
-Ansys
-ansys
-Pyoptics
-PyOptics
-pyoptics
-API
-
+(?i)ansys
+(?i)pyansys
+(?i)pyspeos
 Speos
+API
 Lumerical
 Zemax
 Autosummary

@@ -23,15 +23,15 @@ Here are some terms to keep in mind:
   IP address when connecting. By default, PySpeos assumes it is on ``localhost``.
 
 * **port**: Port that exposes the Speos service on the host machine. Its
-  value is assumed to be ``50051``, but users can deploy the service on preferred ports.
+  value is assumed to be ``50098``, but users can deploy the service on preferred ports.
 
 
-Speos service launcher
-^^^^^^^^^^^^^^^^^^^^^^
+Docker compose for Speos service
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This method requires that you manually launch the Speos service. Remember to pass
-in the different environment variables that are needed. Afterwards, see the next section
-to understand how to connect to this service instance from PySpeos.
+You can find a `docker-compose.yml <https://github.com/ansys-internal/pyspeos/blob/main/docker-compose.yml>`_ file within the pySpeos
+repository. This method allows you to start the Speos service based on predefined environment variables and properties.
+Afterwards, see the next section to understand how to connect to this service instance from PySpeos.
 
 .. tab-set::
 
@@ -39,34 +39,22 @@ to understand how to connect to this service instance from PySpeos.
 
         .. code-block:: bash
 
-            docker run \
-                --name speos-rpc \
-                -e ANSYSLMD_LICENSE_FILE=<LICENSE_SERVER> \
-                -e SPEOS_LOG_LEVEL=<LOG_LEVEL> \
-                -p 50051:50051 \
-                ghcr.io/ansys-internal/speos-rpc:<TAG>
+            export LICENSE_SERVER="1055@XXX.XXX.XXX.XXX"
+            docker-compose -f <path to docker-compose.yml> up -d
 
     .. tab-item:: Powershell
 
         .. code-block:: pwsh
 
-            docker run `
-                --name speos-rpc `
-                -e ANSYSLMD_LICENSE_FILE=<LICENSE_SERVER> `
-                -e SPEOS_LOG_LEVEL=<LOG_LEVEL> `
-                -p 50051:50051 `
-                ghcr.io/ansys-internal/speos-rpc:<TAG>
+            $env:LICENSE_SERVER="1055@XXX.XXX.XXX.XXX"
+            docker-compose -f <path to docker-compose.yml> up -d
 
     .. tab-item:: Windows CMD
 
         .. code-block:: bash
 
-            docker run ^
-                --name speos-rpc ^
-                -e ANSYSLMD_LICENSE_FILE=<LICENSE_SERVER> ^
-                -e SPEOS_LOG_LEVEL=<LOG_LEVEL> ^
-                -p 50051:50051 ^
-                ghcr.io/ansys-internal/speos-rpc:<TAG>
+            set LICENSE_SERVER="1055@XXX.XXX.XXX.XXX"
+            docker-compose -f <path to docker-compose.yml> up -d
 
 Connect to the Speos service
 ----------------------------
@@ -80,11 +68,11 @@ After the Speos service is launched, connect to it with these commands:
    speos = Speos()
 
 By default, the ``Speos`` instance connects to ``127.0.0.1`` (``"localhost"``) on
-port ``50051``.
+port ``50098``.
 
 You can change this by modifying the ``host`` and ``port``
 parameters of the ``Speos`` object, but note that you must also modify
-your ``docker run`` command by changing the ``<HOST-PORT>-50051`` argument.
+your ``docker run`` command by changing the ``<HOST-PORT>-50098`` argument.
 
 The following tabs show the commands that set the environment variables and ``Speos``
 function.
@@ -93,4 +81,4 @@ function.
 
     from ansys.speos.core import Speos
 
-    speos = Speos(host="127.0.0.1", port=50051)
+    speos = Speos(host="127.0.0.1", port=50098)
