@@ -46,7 +46,7 @@ from ansys.speos.core.spectrum import SpectrumLink, SpectrumStub
 from ansys.speos.core.vop_template import VOPTemplateLink, VOPTemplateStub
 
 DEFAULT_HOST = "localhost"
-DEFAULT_PORT = "50051"
+DEFAULT_PORT = "50098"
 
 
 if TYPE_CHECKING:  # pragma: no cover

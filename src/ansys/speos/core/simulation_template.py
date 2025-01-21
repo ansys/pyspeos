@@ -52,7 +52,7 @@ class SimulationTemplateLink(CrudItem):
     >>> from ansys.speos.core.speos import Speos
     >>> from ansys.api.speos.simulation.v1 import simulation_template_pb2
     >>> from ansys.speos.core.simulation_template import SimulationTemplate
-    >>> speos = Speos(host="localhost", port=50051)
+    >>> speos = Speos(host="localhost", port=50098)
     >>> sim_t_db = speos.client.simulation_templates()
     >>> sim_t_message = SimulationTemplate(name="Direct")
     >>> sim_t_message.direct_mc_simulation_template.geom_distance_tolerance = 0.01
@@ -111,7 +111,7 @@ class SimulationTemplateStub(CrudStub):
     Like in the following example:
 
     >>> from ansys.speos.core.speos import Speos
-    >>> speos = Speos(host="localhost", port=50051)
+    >>> speos = Speos(host="localhost", port=50098)
     >>> sim_t_db = speos.client.simulation_templates()
 
     """
