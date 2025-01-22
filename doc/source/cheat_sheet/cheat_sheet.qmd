@@ -109,7 +109,6 @@ s_source.set_exitance_constant(
     [(script.GeoRef.from_native_link(
         'TheBodyB/TheFaceF'), False)])
 s_source.set_exitance_variable()
-s_source.set_spectrum_from_xmp_file()
 s_source.set_intensity()
 s_source.set_flux_from_intensity_file()
 s_source.set_spectrum()
@@ -126,7 +125,6 @@ r_source.set_flux_from_rayfile()
 r_source.set_flux_luminous(683)
 r_source.set_flux_radiant(1)
 r_source.set_spectrum_from_ray_file()
-r_source.set_spectrum()
 r_source.set_exit_geometries(
     [script.GeoRef.from_native_link(
         'TheBodyB/TheFaceF')])
@@ -144,7 +142,6 @@ mat1.set_surface_opticalpolished()
 mat1.set_surface_library('path/surface.brdf')
 mat1.set_volume_none()
 mat1.set_volume_opaque()
-# default as index=1.5 with absorption = 0
 mat1.set_volume_optic(index=1.7, absorption=0.01, constringence=55)
 mat1.set_volume_library('path/mat.material')
 mat1.set_geometries(
@@ -183,6 +180,16 @@ r_sensor.set_layer_type_source()
 r_sensor.commit()
 ```
 
+Irradiance Sensor
+
+```{python}
+#| eval: false
+i_sensor = project.create_sensor(name='irradiance', feature_type=script.sensor.Irradiance)
+# methods are similar to Radiance Sensor
+i_sensor.commit()
+
+```
+
 Camera Sensor
 
 ```{python}
@@ -194,28 +201,12 @@ c_sensor.set_distortion_file_uri(
 photo_cam = c_sensor.set_mode_photometric()
 photo_cam.set_transmittance_file_uri(
     'transmittance_file_path')
-# Choose color mode (will imply to give spectrum file for blue, green and red)
+# Choose color mode
 c_mode = photo_cam.set_mode_color()
 c_mode.set_blue_spectrum_file_uri(
     'blue_spectrum_path')
-c_mode.set_green_spectrum_file_uri(
-    'green_spectrum_path')
-c_mode.set_red_spectrum_file_uri(
-    'red_spectrum_path')
+# same method for red and green spectrum
 c_sensor.commit()
-```
-
-Irradiance Sensor
-
-```{python}
-#| eval: false
-i_sensor = project.create_sensor(name='irradiance', feature_type=script.sensor.Irradiance)
-dim = i_sensor.set_dimensions()
-dim.set_x_start(-5).set_x_end(5).set_x_sampling(10)
-dim.set_y_start(-5).set_y_end(5).set_y_sampling(10)
-i_sensor.set_layer_type_source()
-i_sensor.commit()
-
 ```
 
 ## Simulation definition
@@ -238,6 +229,7 @@ Inverse Simulation
 ```{python}
 #| eval: false
 inverse_sim= project.create_simulation(name='inverse', feature_type=script.simulation.Inverse)
+# methods similar to direct simulation
 ```
 
 Interactive Simulation
@@ -245,4 +237,5 @@ Interactive Simulation
 ```{python}
 #| eval: false
 interactive_sim = project.create_simulation(name='interactive', feature_type=script.simulation.Interactive)
+# methods similar to direct simulation
 ```
