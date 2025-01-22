@@ -40,6 +40,15 @@ html_theme_options = {
         "project": project,
     },
 }
+BUILD_CHEATSHEET = os.environ.get("BUILD_CHEATSHEET", "false").lower() == "true"
+if BUILD_CHEATSHEET:
+    html_theme_options["cheatsheet"] = {
+        "file": "cheat_sheet/cheat_sheet.qmd",
+        "title": "PySpeos cheat sheet",
+        "version": f"v{version}",
+        "pages": ["index"],
+    }
+
 
 # Sphinx extensions
 extensions = [
