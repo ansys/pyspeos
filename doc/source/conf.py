@@ -39,6 +39,10 @@ html_theme_options = {
     "ansys_sphinx_theme_autoapi": {
         "project": project,
     },
+    "cheatsheet": {
+        "file": "cheat_sheet/cheat_sheet.qmd",
+        "title": "PySpeos Cheat Sheet",
+    },
 }
 
 # Sphinx extensions
