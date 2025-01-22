@@ -1,5 +1,5 @@
 ---
-title: 'PySpeos cheat sheet'
+title: 'PySpeos Skript Layer cheat sheet'
 format: cheat_sheet-pdf
 params:
   version: main
@@ -38,6 +38,7 @@ jupyter:
 ```{python}
 #| eval: false
 from ansys.speos.core import Speos
+
 speos = Speos(host='127.0.0.1', port=50098)
 ```
 
@@ -49,6 +50,8 @@ load a solver file:
 
 ```{python}
 #| eval: false
+import ansys.speos.core.script as script
+
 project = script.Project(speos=speos_server, path='path_to.speos')
 print(project)
 ```
@@ -58,6 +61,7 @@ combine solver file:
 ```{python}
 #| eval: false
 from ansys.speos.workflow.combine_speos import SpeosFileInstance, combine_speos
+
 combined_project = combine_speos(
     speos=speos,
     speos_to_combine=[
@@ -66,14 +70,21 @@ combined_project = combine_speos(
             axis_system=[x1, y1, z1, 1, 0, 0, 0, 1, 0, 0, 0, 1],),
         SpeosFileInstance(
             speos_file='combine_path_to.speos',
-            axis_system=[x2, y2, z2, 1, 0, 0, 0, 1, 0, 0, 0, 1],),],)
+            axis_system=[x2, y2, z2, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+        ),
+    ],
+)
 ```
 
 preview solver file:
 
 ```{python}
 #| eval: false
+# method to show mesh stored in solver
 project.preview(viz_args={'opacity': 0.7})
+# method to display Lightpath
+lxp = script.LightPathFinder(speos=speos_server, path='path_to_lpf')
+lxp.preview(project)
 ```
 
 # Navigation methods
@@ -99,11 +110,12 @@ Surface Source
 s_source = project.create_source(name='surface.1', feature_type=script.source.Surface)
 s_source.set_flux_luminous(683)
 s_source.set_flux_radiant(1)
-s_source.set_flux_luminous_intensity(value=5)
+s_source.set_flux_luminous_intensity(5)
 s_source.set_exitance_constant(
     [(script.GeoRef.from_native_link(
         'TheBodyB/TheFaceF'), False)])
-s_source.set_intensity()
+s_int = s_source.set_intensity()
+s_int.set_cos(1,120)
 s_source.set_flux_from_intensity_file()
 s_source.set_spectrum()
 s_source.commit()
@@ -131,13 +143,16 @@ r_source.commit()
 ```{python}
 #| eval: false
 mat1 = project.create_optical_property(name='mat1')
+# Surface Properties
 mat1.set_surface_mirror(80.0) # default as 100
 mat1.set_surface_opticalpolished()
 mat1.set_surface_library('path/surface.brdf')
+# Volume Properties
 mat1.set_volume_none()
 mat1.set_volume_opaque()
 mat1.set_volume_optic(index=1.7, absorption=0.01, constringence=55)
 mat1.set_volume_library('path/mat.material')
+# Geometry
 mat1.set_geometries(
     [script.GeoRef.from_native_link(
         geopath='TheBodyB')])
@@ -150,8 +165,9 @@ Create new Geometries
 
 ```{python}
 #| eval: false
-root_part = project.create_root_part().commit()
-body_1 = root_part. create_body(name='TheBodyB1')
+root_part = project.create_root_part()
+root_part.commit()
+body_1 = root_part.create_body(name='TheBodyB1')
 body_1.commit()
 body_1_face_1 = Body_1.create_face(name='TheFaceF1')
 body_1_face_1.set_vertices([])
@@ -167,9 +183,16 @@ Radiance Sensor
 ```{python}
 #| eval: false
 r_sensor = project.create_sensor(name='radiance', feature_type=script.sensor.Radiance)
+# define size
 dim = r_sensor.set_dimensions()
 dim.set_x_start(-5).set_x_end(5).set_x_sampling(10)
 dim.set_y_start(-5).set_y_end(5).set_y_sampling(10)
+# define type and Wavelength range
+col = r_sensor.set_type_colorimetric
+wl = col.set_wavelength_range()
+wl.set_start(380).set_end(780)
+wl.set_sampling(50)
+# define Layer separation
 r_sensor.set_layer_type_source()
 r_sensor.commit()
 ```
@@ -181,7 +204,6 @@ Irradiance Sensor
 i_sensor = project.create_sensor(name='irradiance', feature_type=script.sensor.Irradiance)
 # methods are similar to Radiance Sensor
 i_sensor.commit()
-
 ```
 
 Camera Sensor
@@ -210,10 +232,13 @@ Direct Simulation
 ```{python}
 #| eval: false
 direct_sim = project.create_simulation(name='direct', feature_type=script.simulation.Direct)
+# All project geometry will be taken into account
+# General Simulation API
 direct_sim.set_sensor_paths(['Irradiance.1'])
 direct_sim.set_source_paths(['Surface.1'])
 direct_sim.set_stop_condition_rays_number(5000000)
 direct_sim.set_stop_condition_duration(3600)
+direct_sim.commit()
 direct_sim.compute_GPU()
 direct_sim.compute_CPU()
 ```
@@ -232,4 +257,15 @@ Interactive Simulation
 #| eval: false
 interactive_sim = project.create_simulation(name='interactive', feature_type=script.simulation.Interactive)
 # methods similar to direct simulation
+```
+
+Open results (Windows only)
+
+```{python}
+#| eval: false
+from ansys.speos.workflow.open_result import open_result_image, open_result_in_viewer
+# Display result image
+open_result_image(simulation_feature, 'result_name')
+# opens result in VirtualPhotometricLab
+open_result_in_viewer(simulation_feature, 'result_name')
 ```
