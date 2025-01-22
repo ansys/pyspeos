@@ -65,6 +65,7 @@ jobs:
           sphinxopts: -j 1 --keep-going # Try without parallel execution
           checkout: false
           dependencies: "pandoc"
+          needs-quarto: true
       - name: Stop container
         run: |
           docker kill speos-rpc
