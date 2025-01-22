@@ -54,7 +54,7 @@ def test_combine_speos(speos: Speos):
     )
 
     # Check that scene is filled
-    assert len(p.scene_link.get().materials) == 8
+    assert len(p.scene_link.get().materials) == 11
     assert len(p.scene_link.get().sensors) == 0
     assert len(p.scene_link.get().sources) == 0
     assert len(p.scene_link.get().simulations) == 0
@@ -119,7 +119,7 @@ def test_insert_speos(speos: Speos):
     p = script.Project(speos=speos, path=os.path.join(test_path, "Env_Simplified.speos", "Env_Simplified.speos"))
 
     # Check that scene is filled
-    assert len(p.scene_link.get().materials) == 4
+    assert len(p.scene_link.get().materials) == 7
     assert len(p.scene_link.get().sensors) == 1
     assert len(p.scene_link.get().sources) == 0
     assert len(p.scene_link.get().simulations) == 1
@@ -139,7 +139,7 @@ def test_insert_speos(speos: Speos):
         ],
     )
 
-    assert len(p.scene_link.get().materials) == 9  # 8 + 1 (ambient material)
+    assert len(p.scene_link.get().materials) == 12  # 11 + 1 (ambient material)
     assert len(p.scene_link.get().sensors) == 1
     assert len(p.scene_link.get().sources) == 0
     assert len(p.scene_link.get().simulations) == 1
