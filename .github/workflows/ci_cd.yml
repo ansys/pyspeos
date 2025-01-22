@@ -14,6 +14,7 @@ env:
   DOCUMENTATION_CNAME: 'speos.docs.pyansys.com'
   PACKAGE_NAMESPACE: 'ansys.speos.core'
   PACKAGE_NAME: 'ansys-optics-speos'
+  BUILD_CHEATSHEET: 'true'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
