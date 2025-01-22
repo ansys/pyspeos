@@ -1,5 +1,5 @@
 ---
-title: PySpeos cheat sheet
+title: 'PySpeos cheat sheet'
 format: cheat_sheet-pdf
 params:
   version: main
@@ -38,8 +38,7 @@ jupyter:
 ```{python}
 #| eval: false
 from ansys.speos.core import Speos
-
-speos = Speos(host="127.0.0.1", port=50098)
+speos = Speos(host='127.0.0.1', port=50098)
 ```
 
 # Speos Solver files
@@ -50,43 +49,27 @@ load a solver file:
 
 ```{python}
 #| eval: false
-project = script.Project(speos=speos_server, path=r"project_file_path.speos")
+project = script.Project(speos=speos_server, path='path_to.speos')
 print(project)
-#{
-#	“name”: project_name/*.speos file name
-#	“description”:
-#	“part_guid”:
-#	“materials”:
-#	“sources”:
-#	“sensors”:
-#	“simulations”:
-#}
 ```
 
-insert/combine solver file:
+combine solver file:
 
 ```{python}
 #| eval: false
-from ansys.speos.workflow.combine_speos import SpeosFileInstance, combine_speos, insert_speos
-insert_speos(
-    project= project,
-    speos_to_insert=[
-        SpeosFileInstance(
-            speos_file=r“insert_project_file_path.speos",
-            axis_system=[x, y, z, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0],
-        )
-    ],
-)
+from ansys.speos.workflow.combine_speos import SpeosFileInstance, combine_speos
+
 combined_project = combine_speos(
     speos=speos,
     speos_to_combine=[
         SpeosFileInstance(
-            speos_file= r“combine_project_1_file_path_.speos",
+            speos_file='combine_path_to.speos',
             axis_system=[x1, y1, z1, 1, 0, 0, 0, 1, 0, 0, 0, 1],
         ),
         SpeosFileInstance(
-            speos_file=r“combine_project_2_file_path_.speos",
+            speos_file='combine_path_to.speos',
             axis_system=[x2, y2, z2, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+        ),
     ],
 )
 ```
@@ -95,7 +78,7 @@ insert/combine solver file:
 
 ```{python}
 #| eval: false
-project.preview(viz_args={"opacity": 0.7})
+project.preview(viz_args={'opacity': 0.7})
 ```
 
 # Navigation methods
@@ -104,11 +87,9 @@ Find methods and it possible uses:
 
 ```{python}
 #| eval: false
-found_item = project.find(name=“test”)
-# any body/part/sensor/source/simulation item with name of “test” are return as a list
-found_item = project.find(name=“test”, name_regex=True)
-# any body/part/sensor/source/simulation item with name of starting with “test” are return as a list
-Found_item = project.find(name=“.*”, name_regex=True, feature_type= script.simulation.Direct)
+found_item = project.find(name='test')
+# any body/part/sensor/source/simulation item with name of 'test' are return as a list
+Found_item = project.find(name='*', name_regex=True, feature_type= script.simulation.Direct)
 # any direct simulation item are return as a list
 ```
 
@@ -121,15 +102,17 @@ Surface Source
 ```{python}
 #| eval: false
 s_source = project.create_source(name='surface.1', feature_type=script.source.Surface)
-s_source.set_flux_luminous(value=683) # -> Source.Surface
-s_source.set_flux_radiant(value=1) # -> Source.Surface
-s_source.set_flux_luminous_intensity(value=5) # -> Source.Surface
-s_source.set_exitance_constant(geometries=[(script.GeoRef.from_native_link("TheBodyB/TheFaceF"), False)]) # -> Source.Surface
-s_source.set_exitance_variable() # -> Source.Surface.ExitanceVariable
-s_source.set_spectrum_from_xmp_file() # -> Source.Surface
-s_source.set_intensity() # -> Intensity
-s_source.set_flux_from_intensity_file() # -> Source.Surface
-s_source.set_spectrum() # -> Spectrum
+s_source.set_flux_luminous(683)
+s_source.set_flux_radiant(1)
+s_source.set_flux_luminous_intensity(value=5)
+s_source.set_exitance_constant(
+    [(script.GeoRef.from_native_link(
+        'TheBodyB/TheFaceF'), False)])
+s_source.set_exitance_variable()
+s_source.set_spectrum_from_xmp_file()
+s_source.set_intensity()
+s_source.set_flux_from_intensity_file()
+s_source.set_spectrum()
 s_source.commit()
 ```
 
@@ -138,14 +121,16 @@ Rayfile Source
 ```{python}
 #| eval: false
 r_source = project.create_source(name='rayfile.1', feature_type=script.source.Rayfile)
-r_source.set_ray_file_uri("path/ray.ray") # -> Source.Rayfile
-r_source.set_flux_from_rayfile() # -> Source.Rayfile
-r_source.set_flux_luminous(value=683) # -> Source.Rayfile
-r_source.set_flux_radiant(value=1) # -> Source.Rayfile
-r_source.set_spectrum_from_ray_file() # -> Source.Rayfile
-r_source.set_spectrum() # -> Spectrum
-r_source.set_exit_geometries(geometries=[script.GeoRef.from_native_link("TheBodyB/TheFaceF")]) # -> Source.Rayfile
-r_source.set_axis_system(axis_system=[0,0,0,1,0,0,0,1,0,0,0,1]) # -> Source.Rayfile
+r_source.set_ray_file_uri('path/ray.ray')
+r_source.set_flux_from_rayfile()
+r_source.set_flux_luminous(683)
+r_source.set_flux_radiant(1)
+r_source.set_spectrum_from_ray_file()
+r_source.set_spectrum()
+r_source.set_exit_geometries(
+    [script.GeoRef.from_native_link(
+        'TheBodyB/TheFaceF')])
+r_source.set_axis_system([0,0,0,1,0,0,0,1,0,0,0,1])
 r_source.commit()
 ```
 
@@ -154,11 +139,11 @@ Luminaire Source
 ```{python}
 #| eval: false
 l_source = project.create_source(name='lumi.1', feature_type=script.source.Luminaire)
-l_source.set_intensity_file_uri("path/ies.ies") # -> Source.Luminaire
-l_source.set_flux_luminous(value=683) # -> Source.Luminaire
-l_source.set_flux_radiant(value=1) # -> Source.Luminaire
-l_source.set_spectrum() # -> Spectrum
-l_source.set_axis_system(axis_system=[0,0,0,1,0,0,0,1,0,0,0,1]) # -> Source.Luminaire
+l_source.set_intensity_file_uri('path/ies.ies')
+l_source.set_flux_luminous(683)
+l_source.set_flux_radiant(1)
+l_source.set_spectrum()
+l_source.set_axis_system([0,0,0,1,0,0,0,1,0,0,0,1])
 l_source.commit()
 ```
 
@@ -169,12 +154,15 @@ l_source.commit()
 mat1 = project.create_optical_property(name=“mat1”)
 mat1.set_surface_mirror(80.0) # default as 100
 mat1.set_surface_opticalpolished()
-mat1.set_surface_library("path/surface.brdf")
+mat1.set_surface_library('path/surface.brdf')
 mat1.set_volume_none()
 mat1.set_volume_opaque()
-mat1.set_volume_optic(index=1.7, absorption=0.01, constringence=55) # default as index=1.5 with absorption = 0
+# default as index=1.5 with absorption = 0
+mat1.set_volume_optic(index=1.7, absorption=0.01, constringence=55)
 mat1.set_volume_library('path/mat.material')
-mat1.set_geometries(geometries=[script.GeoRef.from_native_link(geopath="TheBodyB")])
+mat1.set_geometries(
+    [script.GeoRef.from_native_link(
+        geopath='TheBodyB')])
 mat1.commit()
 ```
 
@@ -185,10 +173,12 @@ Create new Geometries
 ```{python}
 #| eval: false
 root_part = project.create_root_part().commit()
-body_1 = root_part. create_body(name="TheBodyB1")
+body_1 = root_part. create_body(name='TheBodyB1')
 body_1.commit()
-body_1_face_1 = Body_1.create_face(name=“TheFaceF1”)
-body_1_face_1.set_vertices([]).set_facets([]).set_normal([])
+body_1_face_1 = Body_1.create_face(name='TheFaceF1')
+body_1_face_1.set_vertices([])
+body_1_face_1.set_facets([])
+body_1_face_1.set_normal([])
 body_1_face_1.commit()
 ```
 
@@ -199,7 +189,9 @@ Radiance Sensor
 ```{python}
 #| eval: false
 r_sensor = project.create_sensor(name=“radiance”, feature_type=script.sensor.Radiance)
-r_sensor.set_dimensions().set_x_start(-5).set_x_end(5).set_x_sampling(10).set_y_start(-5).set_y_end(5).set_y_sampling(10)
+dim = r_sensor.set_dimensions()
+dim.set_x_start(-5).set_x_end(5).set_x_sampling(10)
+dim.set_y_start(-5).set_y_end(5).set_y_sampling(10)
 r_sensor.set_layer_type_source()
 r_sensor.commit()
 ```
@@ -209,13 +201,20 @@ Camera Sensor
 ```{python}
 #| eval: false
 c_sensor = project.create_sensor(name=“camera”, feature_type=script.sensor.Camera)
-c_sensor.set_distortion_file_uri(uri=distortion_file_path)
+c_sensor.set_distortion_file_uri(
+    'distortion_file_path')
 # Choose photometric mode
-c_sensor.set_mode_photometric().set_transmittance_file_uri(uri=transmittance_file_path)
+photo_cam = c_sensor.set_mode_photometric()
+photo_cam.set_transmittance_file_uri(
+    'transmittance_file_path')
 # Choose color mode (will imply to give spectrum file for blue, green and red)
-c_sensor.set_mode_photometric().set_mode_color().set_blue_spectrum_file_uri(uri=blue_spectrum_path)
-c_sensor.set_mode_photometric().set_mode_color().set_green_spectrum_file_uri(uri=green_spectrum_path)
-c_sensor.set_mode_photometric().set_mode_color().set_red_spectrum_file_uri(uri=red_spectrum_path)
+c_mode = photo_cam.set_mode_color()
+c_mode.set_blue_spectrum_file_uri(
+    'blue_spectrum_path')
+c_mode.set_green_spectrum_file_uri(
+    'green_spectrum_path')
+c_mode.set_red_spectrum_file_uri(
+    'red_spectrum_path')
 c_sensor.commit()
 ```
 
@@ -224,7 +223,9 @@ Irradiance Sensor
 ```{python}
 #| eval: false
 i_sensor = project.create_sensor(name=“irradiance”, feature_type=script.sensor.Irradiance)
-i_sensor.set_dimensions().set_x_start(-5).set_x_end(5).set_x_sampling(10).set_y_start(-5).set_y_end(5).set_y_sampling(10)
+dim = i_sensor.set_dimensions()
+dim.set_x_start(-5).set_x_end(5).set_x_sampling(10)
+dim.set_y_start(-5).set_y_end(5).set_y_sampling(10)
 i_sensor.set_layer_type_source()
 i_sensor.commit()
 
@@ -236,9 +237,11 @@ Direct Simulation
 
 ```{python}
 #| eval: false
-direct_sim = project.create_simulation(name=“direct”, feature_type=script.simulation.Direct)
-direct_sim.set_sensor_paths(["Irradiance.1"]).set_source_paths(["Surface.1"])
-direct_sim.set_stop_condition_rays_number(5000000).set_stop_condition_duration(3600)
+direct_sim = project.create_simulation(name='direct', feature_type=script.simulation.Direct)
+direct_sim.set_sensor_paths(['Irradiance.1'])
+direct_sim.set_source_paths(['Surface.1'])
+direct_sim.set_stop_condition_rays_number(5000000)
+direct_sim.set_stop_condition_duration(3600)
 direct_sim.compute_GPU()
 direct_sim.compute_CPU()
 ```
@@ -247,12 +250,12 @@ Inverse Simulation
 
 ```{python}
 #| eval: false
-inverse_sim= project.create_simulation(name=“inverse”, feature_type=script.simulation.Inverse)
+inverse_sim= project.create_simulation(name='inverse', feature_type=script.simulation.Inverse)
 ```
 
 Interactive Simulation
 
 ```{python}
 #| eval: false
-interactive_sim = project.create_simulation(name=“interactive”, feature_type=script.simulation.Interactive)
+interactive_sim = project.create_simulation(name='interactive', feature_type=script.simulation.Interactive)
 ```
