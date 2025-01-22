@@ -95,6 +95,10 @@ class Project:
         ansys.speos.script.opt_prop.OptProp
             OptProp feature.
         """
+        existing_features = self.find(name=name)
+        if len(existing_features) != 0:
+            msg = "Feature {}: {} has a conflict name with an existing feature.".format(opt_prop.OptProp, name)
+            raise TypeError(msg)
         feature = opt_prop.OptProp(project=self, name=name, description=description, metadata=metadata)
         self._features.append(feature)
         return feature
@@ -130,6 +134,10 @@ class Project:
         Union[ansys.speos.script.source.Surface, ansys.speos.script.source.RayFile, ansys.speos.script.source.Luminaire]
             Source class instance.
         """
+        existing_features = self.find(name=name)
+        if len(existing_features) != 0:
+            msg = "Feature {}: {} has a conflict name with an existing feature.".format(feature_type, name)
+            raise TypeError(msg)
         feature = None
         if feature_type == source.Surface:
             feature = source.Surface(project=self, name=name, description=description, metadata=metadata)
@@ -171,6 +179,10 @@ class Project:
         Union[ansys.speos.script.simulation.Direct, ansys.speos.script.simulation.Interactive, ansys.speos.script.simulation.Inverse]
             Simulation class instance
         """
+        existing_features = self.find(name=name)
+        if len(existing_features) != 0:
+            msg = "Feature {}: {} has a conflict name with an existing feature.".format(feature_type, name)
+            raise TypeError(msg)
         feature = None
         if feature_type == simulation.Direct:
             feature = simulation.Direct(project=self, name=name, description=description, metadata=metadata)
@@ -212,6 +224,10 @@ class Project:
         Union[ansys.speos.script.sensor.Camera, ansys.speos.script.sensor.Radiance, ansys.speos.script.sensor.Irradiance]
             Sensor class instance.
         """
+        existing_features = self.find(name=name)
+        if len(existing_features) != 0:
+            msg = "Feature {}: {} has a conflict name with an existing feature.".format(feature_type, name)
+            raise TypeError(msg)
         feature = None
         if feature_type == sensor.Irradiance:
             feature = sensor.Irradiance(project=self, name=name, description=description, metadata=metadata)
