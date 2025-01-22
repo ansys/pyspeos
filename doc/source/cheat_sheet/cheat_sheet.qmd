@@ -58,20 +58,15 @@ combine solver file:
 ```{python}
 #| eval: false
 from ansys.speos.workflow.combine_speos import SpeosFileInstance, combine_speos
-
 combined_project = combine_speos(
     speos=speos,
     speos_to_combine=[
         SpeosFileInstance(
             speos_file='combine_path_to.speos',
-            axis_system=[x1, y1, z1, 1, 0, 0, 0, 1, 0, 0, 0, 1],
-        ),
+            axis_system=[x1, y1, z1, 1, 0, 0, 0, 1, 0, 0, 0, 1],),
         SpeosFileInstance(
             speos_file='combine_path_to.speos',
-            axis_system=[x2, y2, z2, 1, 0, 0, 0, 1, 0, 0, 0, 1],
-        ),
-    ],
-)
+            axis_system=[x2, y2, z2, 1, 0, 0, 0, 1, 0, 0, 0, 1],),],)
 ```
 
 preview solver file:
@@ -88,7 +83,7 @@ Find methods and it possible uses:
 ```{python}
 #| eval: false
 found_item = project.find(name='test')
-# any body/part/sensor/source/simulation item with name of 'test' are return as a list
+# any item with name 'test' are returned as a list
 Found_item = project.find(name='.*', name_regex=True, feature_type= script.simulation.Direct)
 # any direct simulation item are return as a list
 ```
@@ -108,7 +103,6 @@ s_source.set_flux_luminous_intensity(value=5)
 s_source.set_exitance_constant(
     [(script.GeoRef.from_native_link(
         'TheBodyB/TheFaceF'), False)])
-s_source.set_exitance_variable()
 s_source.set_intensity()
 s_source.set_flux_from_intensity_file()
 s_source.set_spectrum()
