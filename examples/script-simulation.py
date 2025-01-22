@@ -37,7 +37,7 @@ print(p)
 
 # ## Prepare prerequisites
 
-# Create the necessary elements for a simulation: Sensor, source, root part are prerequisites.
+# Create the necessary elements for a simulation: Sensor, source, root part, optical property are prerequisites.
 
 # ### Prepare the root part
 
@@ -47,6 +47,16 @@ root_part.create_body(name="Body.1").create_face(name="Face.1").set_vertices([0,
     [0, 0, 1, 0, 0, 1, 0, 0, 1]
 )
 root_part.commit()
+# -
+
+# ### Prepare an optical property
+
+# +
+opt_prop = p.create_optical_property("Material.1")
+opt_prop.set_volume_opaque().set_surface_mirror()  # vop as opaque and sop as mirror
+# Choose the geometry for this optical property : Body.1
+opt_prop.set_geometries(geometries=[script.GeoRef.from_native_link(geopath="Body.1")])
+opt_prop.commit()
 # -
 
 # ### Prepare an irradiance sensor
