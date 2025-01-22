@@ -74,7 +74,7 @@ combined_project = combine_speos(
 )
 ```
 
-insert/combine solver file:
+preview solver file:
 
 ```{python}
 #| eval: false
@@ -89,7 +89,7 @@ Find methods and it possible uses:
 #| eval: false
 found_item = project.find(name='test')
 # any body/part/sensor/source/simulation item with name of 'test' are return as a list
-Found_item = project.find(name='*', name_regex=True, feature_type= script.simulation.Direct)
+Found_item = project.find(name='.*', name_regex=True, feature_type= script.simulation.Direct)
 # any direct simulation item are return as a list
 ```
 
@@ -134,24 +134,11 @@ r_source.set_axis_system([0,0,0,1,0,0,0,1,0,0,0,1])
 r_source.commit()
 ```
 
-Luminaire Source
-
-```{python}
-#| eval: false
-l_source = project.create_source(name='lumi.1', feature_type=script.source.Luminaire)
-l_source.set_intensity_file_uri('path/ies.ies')
-l_source.set_flux_luminous(683)
-l_source.set_flux_radiant(1)
-l_source.set_spectrum()
-l_source.set_axis_system([0,0,0,1,0,0,0,1,0,0,0,1])
-l_source.commit()
-```
-
 ## Material
 
 ```{python}
 #| eval: false
-mat1 = project.create_optical_property(name=“mat1”)
+mat1 = project.create_optical_property(name='mat1')
 mat1.set_surface_mirror(80.0) # default as 100
 mat1.set_surface_opticalpolished()
 mat1.set_surface_library('path/surface.brdf')
@@ -188,7 +175,7 @@ Radiance Sensor
 
 ```{python}
 #| eval: false
-r_sensor = project.create_sensor(name=“radiance”, feature_type=script.sensor.Radiance)
+r_sensor = project.create_sensor(name='radiance', feature_type=script.sensor.Radiance)
 dim = r_sensor.set_dimensions()
 dim.set_x_start(-5).set_x_end(5).set_x_sampling(10)
 dim.set_y_start(-5).set_y_end(5).set_y_sampling(10)
@@ -200,7 +187,7 @@ Camera Sensor
 
 ```{python}
 #| eval: false
-c_sensor = project.create_sensor(name=“camera”, feature_type=script.sensor.Camera)
+c_sensor = project.create_sensor(name='camera', feature_type=script.sensor.Camera)
 c_sensor.set_distortion_file_uri(
     'distortion_file_path')
 # Choose photometric mode
@@ -222,7 +209,7 @@ Irradiance Sensor
 
 ```{python}
 #| eval: false
-i_sensor = project.create_sensor(name=“irradiance”, feature_type=script.sensor.Irradiance)
+i_sensor = project.create_sensor(name='irradiance', feature_type=script.sensor.Irradiance)
 dim = i_sensor.set_dimensions()
 dim.set_x_start(-5).set_x_end(5).set_x_sampling(10)
 dim.set_y_start(-5).set_y_end(5).set_y_sampling(10)
