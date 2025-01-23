@@ -241,9 +241,6 @@ direct_sim.set_source_paths(['Surface.1'])
 direct_sim.set_stop_condition_rays_number(5000000)
 direct_sim.set_stop_condition_duration(3600)
 direct_sim.commit()
-# Run Simulation
-direct_sim.compute_GPU()
-direct_sim.compute_CPU()
 ```
 
 Create inverse simulation:
@@ -261,7 +258,13 @@ Create interactive simulation:
 interactive_sim = project.create_simulation(name='interactive', feature_type=script.simulation.Interactive)
 # methods similar to direct simulation
 ```
+Run Simulation on CPU or GPU:
 
+```{python}
+#| eval: false
+simulation_feature.compute_GPU()
+simulation_feature.compute_CPU()
+```
 Open results (Windows only):
 
 ```{python}
