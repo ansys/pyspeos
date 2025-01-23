@@ -554,8 +554,9 @@ class Project:
             self._fill_bodies(body_guids=part_data.body_guids, feat_host=sp_feat)
 
         for mat_inst in scene_data.materials:
-            op_feature = self.create_optical_property(name=mat_inst.name)
-            op_feature._fill(mat_inst=mat_inst)
+            if len(self.find(name=mat_inst.name)) == 0:
+                op_feature = self.create_optical_property(name=mat_inst.name)
+                op_feature._fill(mat_inst=mat_inst)
 
         for src_inst in scene_data.sources:
             if src_inst.HasField("rayfile_properties"):
