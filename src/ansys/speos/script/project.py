@@ -98,7 +98,7 @@ class Project:
         existing_features = self.find(name=name)
         if len(existing_features) != 0:
             msg = "Feature {}: {} has a conflict name with an existing feature.".format(opt_prop.OptProp, name)
-            raise TypeError(msg)
+            raise ValueError(msg)
         feature = opt_prop.OptProp(project=self, name=name, description=description, metadata=metadata)
         self._features.append(feature)
         return feature
@@ -137,7 +137,7 @@ class Project:
         existing_features = self.find(name=name)
         if len(existing_features) != 0:
             msg = "Feature {}: {} has a conflict name with an existing feature.".format(feature_type, name)
-            raise TypeError(msg)
+            raise ValueError(msg)
         feature = None
         if feature_type == source.Surface:
             feature = source.Surface(project=self, name=name, description=description, metadata=metadata)
@@ -182,7 +182,7 @@ class Project:
         existing_features = self.find(name=name)
         if len(existing_features) != 0:
             msg = "Feature {}: {} has a conflict name with an existing feature.".format(feature_type, name)
-            raise TypeError(msg)
+            raise ValueError(msg)
         feature = None
         if feature_type == simulation.Direct:
             feature = simulation.Direct(project=self, name=name, description=description, metadata=metadata)
@@ -227,7 +227,7 @@ class Project:
         existing_features = self.find(name=name)
         if len(existing_features) != 0:
             msg = "Feature {}: {} has a conflict name with an existing feature.".format(feature_type, name)
-            raise TypeError(msg)
+            raise ValueError(msg)
         feature = None
         if feature_type == sensor.Irradiance:
             feature = sensor.Irradiance(project=self, name=name, description=description, metadata=metadata)
