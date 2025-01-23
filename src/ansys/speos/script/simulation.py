@@ -489,9 +489,8 @@ class Direct(BaseSimulation):
             # self.set_fast_transmission_gathering()
             self.set_ambient_material_file_uri()
             self.set_weight()
-
-        # Default job properties
-        self.set_stop_condition_rays_number().set_stop_condition_duration().set_automatic_save_frequency()
+            # Default job properties
+            self.set_stop_condition_rays_number().set_stop_condition_duration().set_automatic_save_frequency()
 
     def set_geom_distance_tolerance(self, value: float = 0.01) -> Direct:
         """Set the geometry distance tolerance.
@@ -743,9 +742,8 @@ class Inverse(BaseSimulation):
             self.set_maximum_gathering_error()
             # self.set_fast_transmission_gathering()
             self.set_ambient_material_file_uri()
-
-        # Default job properties
-        self.set_stop_condition_duration().set_stop_condition_passes_number().set_automatic_save_frequency()
+            # Default job properties
+            self.set_stop_condition_duration().set_stop_condition_passes_number().set_automatic_save_frequency()
 
     def set_geom_distance_tolerance(self, value: float = 0.01) -> Inverse:
         """Set the geometry distance tolerance.
@@ -1058,8 +1056,8 @@ class Interactive(BaseSimulation):
             self.set_weight()
             self.set_colorimetric_standard_CIE_1931()
             self.set_ambient_material_file_uri()
-
-        self.set_light_expert().set_impact_report()
+            # Default job parameters
+            self.set_light_expert().set_impact_report()
 
     def set_geom_distance_tolerance(self, value: float = 0.01) -> Interactive:
         """Set the geometry distance tolerance.
