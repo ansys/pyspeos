@@ -33,7 +33,7 @@ jupyter:
 
 # Connect to Speos Service
 
-## Connect to an instance locally:
+Connect to an instance locally:
 
 ```{python}
 #| eval: false
@@ -46,7 +46,7 @@ speos = Speos(host='127.0.0.1', port=50098)
 
 ## Basic methods
 
-load a solver file:
+Load a solver file:
 
 ```{python}
 #| eval: false
@@ -56,7 +56,7 @@ project = script.Project(speos=speos_server, path='path_to.speos')
 print(project)
 ```
 
-combine solver file:
+Combine solver file:
 
 ```{python}
 #| eval: false
@@ -76,7 +76,7 @@ combined_project = combine_speos(
 )
 ```
 
-preview solver file:
+Preview solver file:
 
 ```{python}
 #| eval: false
@@ -93,17 +93,17 @@ Find methods and it possible uses:
 
 ```{python}
 #| eval: false
-found_item = project.find(name='test')
+found_items = project.find(name='test')
 # any item with name 'test' are returned as a list
-Found_item = project.find(name='.*', name_regex=True, feature_type= script.simulation.Direct)
+found_items = project.find(name='.*', name_regex=True, feature_type= script.simulation.Direct)
 # any direct simulation item are return as a list
 ```
 
 # Modify/Change Solver files
 
-## Sources:
+## Sources
 
-Surface Source
+Create surface source:
 
 ```{python}
 #| eval: false
@@ -121,7 +121,7 @@ s_source.set_spectrum()
 s_source.commit()
 ```
 
-Rayfile Source
+Create rayfile source:
 
 ```{python}
 #| eval: false
@@ -139,6 +139,8 @@ r_source.commit()
 ```
 
 ## Material
+
+Create optical property:
 
 ```{python}
 #| eval: false
@@ -161,7 +163,7 @@ mat1.commit()
 
 ## Geometries
 
-Create new Geometries
+Create new Geometries:
 
 ```{python}
 #| eval: false
@@ -178,7 +180,7 @@ body_1_face_1.commit()
 
 ## Sensor
 
-Radiance Sensor
+Create radiance sensor:
 
 ```{python}
 #| eval: false
@@ -197,7 +199,7 @@ r_sensor.set_layer_type_source()
 r_sensor.commit()
 ```
 
-Irradiance Sensor
+Create irradiance Sensor:
 
 ```{python}
 #| eval: false
@@ -206,7 +208,7 @@ i_sensor = project.create_sensor(name='irradiance', feature_type=script.sensor.I
 i_sensor.commit()
 ```
 
-Camera Sensor
+Create camera Sensor:
 
 ```{python}
 #| eval: false
@@ -227,7 +229,7 @@ c_sensor.commit()
 
 ## Simulation definition
 
-Direct Simulation
+Create direct simulation:
 
 ```{python}
 #| eval: false
@@ -239,11 +241,12 @@ direct_sim.set_source_paths(['Surface.1'])
 direct_sim.set_stop_condition_rays_number(5000000)
 direct_sim.set_stop_condition_duration(3600)
 direct_sim.commit()
+# Run Simulation
 direct_sim.compute_GPU()
 direct_sim.compute_CPU()
 ```
 
-Inverse Simulation
+Create inverse simulation:
 
 ```{python}
 #| eval: false
@@ -251,7 +254,7 @@ inverse_sim= project.create_simulation(name='inverse', feature_type=script.simul
 # methods similar to direct simulation
 ```
 
-Interactive Simulation
+Create interactive simulation:
 
 ```{python}
 #| eval: false
@@ -259,7 +262,7 @@ interactive_sim = project.create_simulation(name='interactive', feature_type=scr
 # methods similar to direct simulation
 ```
 
-Open results (Windows only)
+Open results (Windows only):
 
 ```{python}
 #| eval: false
