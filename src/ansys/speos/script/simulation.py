@@ -1056,8 +1056,8 @@ class Interactive(BaseSimulation):
             self.set_weight()
             self.set_colorimetric_standard_CIE_1931()
             self.set_ambient_material_file_uri()
-
-        self.set_light_expert().set_impact_report()
+            # Default job parameters
+            self.set_light_expert().set_impact_report()
 
     def set_geom_distance_tolerance(self, value: float = 0.01) -> Interactive:
         """Set the geometry distance tolerance.
