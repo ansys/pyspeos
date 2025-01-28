@@ -13,7 +13,7 @@ updates:
       - dependency-name: "grpcio-tools"
       - dependency-name: "grpcio-health-checking"
     commit-message:
-      prefix: "BUILD"
+      prefix: "build"
     groups:
       grpc-deps:
         patterns:
@@ -41,7 +41,7 @@ updates:
     assignees:
       - "pyansys-ci-bot"
     commit-message:
-      prefix: "CI"
+      prefix: "ci"
     groups:
       actions:
         patterns:
