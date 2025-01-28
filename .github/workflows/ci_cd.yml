@@ -10,7 +10,6 @@ on:
 
 env:
   MAIN_PYTHON_VERSION: '3.10'
-  PIP_EXTRA_INDEX_URL: 'https://${{ secrets.PYANSYS_PYPI_PRIVATE_PAT }}@pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/simple/'
   DOCUMENTATION_CNAME: 'speos.docs.pyansys.com'
   PACKAGE_NAMESPACE: 'ansys.speos.core'
   PACKAGE_NAME: 'ansys-optics-speos'
@@ -21,6 +20,31 @@ concurrency:
 
 jobs:
 
+  update-changelog:
+    name: Update CHANGELOG (on release)
+    if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: ansys/actions/doc-deploy-changelog@v8
+        with:
+          token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
+          bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
+          bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
+
+  pr-name:
+    if: github.event_name == 'pull_request'
+    name: Check the name of the PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check commit name
+        uses: ansys/actions/check-pr-title@v8
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  # TODO: Should be removed once released (to leverage pre-commit.ci instead)
   style:
     name: Code style
     runs-on: ubuntu-latest
@@ -30,7 +54,7 @@ jobs:
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
 
-  docs-style:
+  doc-style:
     name: Documentation Style Check
     runs-on: ubuntu-latest
     steps:
@@ -39,10 +63,28 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-  docs-build:
-    name: Doc building
+  # TODO: Update to higher versions on python
+  smoke-tests:
+    name: Build and Smoke tests
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ['3.9', '3.10', '3.11']
+    steps:
+      - name: Build wheelhouse and perform smoke test
+        uses: ansys/actions/build-wheelhouse@v8
+        with:
+          library-name: ${{ env.PACKAGE_NAME }}
+          operating-system: ${{ matrix.os }}
+          python-version: ${{ matrix.python-version }}
+
+  # TODO: Registry should be updated to ghcr.io once released
+  doc-build:
+    name: Documentation build
     runs-on: ubuntu-latest
-    needs: [docs-style]
+    needs: [doc-style]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -69,8 +111,11 @@ jobs:
         run: |
           docker kill speos-rpc
           docker rm speos-rpc
-  tests:
-    name: "Unit testing"
+
+  # NOTE: Should this job be using ansys/actions/tests-pytest ?
+  testing:
+    name: Testing and coverage
+    needs: [smoke-tests]
     runs-on: ubuntu-latest
     needs: [style]
 
@@ -89,26 +134,31 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Unit testing
+      - name: Install packages for testing
+        if: env.SKIP_UNSTABLE == 'false'
         run: |
+          . .venv/bin/activate
+          python -m pip install --upgrade pip
+          pip install --upgrade build wheel
           pip install .[tests]
+
+      - name: Start container
+        run: |
           docker compose up -d
-          cd tests  # so we're testing the install, not local
-          pytest -vxs
-          docker kill speos-rpc
-          docker rm speos-rpc
         env:
           LICENSE_SERVER: ${{ format('1055@{0}', secrets.LICENSE_SERVER) }}
 
-      - name: Upload wheel
-        uses: actions/upload-artifact@v4
-        with:
-          name: ansys-pyspeos-wheel
-          path: dist/
-          retention-days: 7
+      - name: Run pytest
+        run: |
+          pytest -vxs
+
+      - name: Stop container
+        run: |
+          docker kill speos-rpc
+          docker rm speos-rpc
 
   build-library:
-    name: "Build library"
+    name: Build library
     runs-on: ubuntu-latest
     needs: [docs-build, tests]
     steps:
@@ -116,9 +166,10 @@ jobs:
         uses: ansys/actions/build-library@v8
         with:
           library-name: ${{ env.PACKAGE_NAME }}
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
 
   doc-deploy-development:
-    name: "Doc dev version deploy"
+    name: Doc dev version deploy
     if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     needs: [build-library]
@@ -126,17 +177,35 @@ jobs:
       - name: "Deploy developers documentation"
         uses: ansys/actions/doc-deploy-dev@v8
         with:
-            cname: ${{ env.DOCUMENTATION_CNAME }}
-            token: ${{ secrets.GITHUB_TOKEN }}
-            bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
-            bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
+          cname: ${{ env.DOCUMENTATION_CNAME }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
+          bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
+
+  upload_docs_release:
+    name: Upload release documentation
+    if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
+    runs-on: ubuntu-latest
+    needs: [release]
+    steps:
+      - name: Deploy the stable documentation
+        uses: ansys/actions/doc-deploy-stable@v8
+        with:
+          cname: ${{ env.DOCUMENTATION_CNAME }}
+          token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
+          bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
+          bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
 
   release:
-
-    name: "Release"
+    name: Release project
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
     needs: [build-library]
     runs-on: ubuntu-latest
+    # Specifying a GitHub environment is optional, but strongly encouraged
+    environment: release
+    permissions:
+      id-token: write
+      contents: write
     steps:
     #  - name: "Release to the private PyPI repository"
     #    uses: ansys/actions/release-pypi-private@v1
@@ -144,15 +213,15 @@ jobs:
     #      library-name: ${{ env.PACKAGE_NAME }}
     #      twine-username: "__token__"
     #      twine-token: ${{ secrets.PYANSYS_PYPI_PRIVATE_PAT }}
-#
+    #
     #  - name: "Release to the public PyPI repository"
     #    uses: ansys/actions/release-pypi-public@v1
     #    with:
     #      library-name: ${{ env.PACKAGE_NAME }}
     #      twine-username: "__token__"
     #      twine-token: ${{ secrets.PYPI_TOKEN }}
-#
-    - name: "Release to GitHub"
-      uses: ansys/actions/release-github@v8
-      with:
-        library-name: ${{ env.PACKAGE_NAME }}
+    #
+      - name: Release to GitHub
+        uses: ansys/actions/release-github@v8
+        with:
+          library-name: ${{ env.PACKAGE_NAME }}

@@ -2,24 +2,47 @@ version: 2
 updates:
   - package-ecosystem: "pip" # See documentation for possible values
     directory: "/" # Location of package manifests
-    insecure-external-code-execution: allow
     schedule:
       interval: "daily"
+    labels:
+      - "maintenance"
+      - "dependencies"
+    assignees:
+      - "pyansys-ci-bot"
     ignore:
       - dependency-name: "grpcio-tools"
       - dependency-name: "grpcio-health-checking"
-    assignees:
-      - "pyansys-ci-bot"
     commit-message:
-      prefix: "MAINT"
+      prefix: "BUILD"
     groups:
-       grpc-deps:
-          patterns:
-            - "google*"
-            - "grpc*"
-            - "protobuf"
+      grpc-deps:
+        patterns:
+          - "grpc*"
+          - "protobuf"
+      doc-deps:
+        patterns:
+          - "ansys-sphinx-theme*"
+          - "jupytext",
+          - "jupyterlab",
+          - "jupyter-server",
+          - "myst-parser"
+          - "nbconvert"
+          - "nbsphinx"
+          - "numpydoc"
+          - "sphinx"
+          - "sphinx*"
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "daily"
+    labels:
+      - "maintenance"
+    assignees:
+      - "pyansys-ci-bot"
+    commit-message:
+      prefix: "CI"
+    groups:
+      actions:
+        patterns:
+          - "*"
