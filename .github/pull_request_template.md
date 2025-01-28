@@ -12,4 +12,5 @@
 - [ ] I have reviewed my changes before submitting this pull request.
 - [ ] I have linked the issue or issues that are solved by the PR if any.
 - [ ] I have assigned this PR to myself.
+- [ ] I have made sure that the title of my PR follows [Conventional commits style](https://www.conventionalcommits.org/en/v1.0.0/#summary) (e.g. ``feat: add optical property``)
 - [ ] I have agreed with the Contributor License Agreement ([CLA](https://developer.ansys.com/form/cla-acceptance)).
