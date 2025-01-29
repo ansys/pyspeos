@@ -332,12 +332,17 @@ def test_commit(speos: Speos):
     """Test commit of simulation."""
     p = script.Project(speos=speos)
 
-    # Prerequisites: a source and a sensor are needed (bug also a rootpart)
+    # Prerequisites: a source and a sensor are needed (bug also a rootpart and optical property)
     root_part = p.create_root_part()
     root_part.create_body(name="Body.1").create_face(name="Face.1").set_vertices([0, 1, 0, 0, 2, 0, 1, 2, 0]).set_facets(
         [0, 1, 2]
     ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
     root_part.commit()
+
+    opt_prop = p.create_optical_property(name="Material.1")
+    opt_prop.set_volume_none().set_surface_mirror()
+    opt_prop.set_geometries(geometries=[script.GeoRef.from_native_link(geopath="Body.1")])
+    opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=script.sensor.Irradiance)
     ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
@@ -381,12 +386,17 @@ def test_reset(speos: Speos):
     """Test reset of simulation."""
     p = script.Project(speos=speos)
 
-    # Prerequisites: a source and a sensor are needed (bug also a rootpart)
+    # Prerequisites: a source and a sensor are needed (bug also a rootpart and optical property)
     root_part = p.create_root_part()
     root_part.create_body(name="Body.1").create_face(name="Face.1").set_vertices([0, 1, 0, 0, 2, 0, 1, 2, 0]).set_facets(
         [0, 1, 2]
     ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
     root_part.commit()
+
+    opt_prop = p.create_optical_property(name="Material.1")
+    opt_prop.set_volume_none().set_surface_mirror()
+    opt_prop.set_geometries(geometries=[script.GeoRef.from_native_link(geopath="Body.1")])
+    opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=script.sensor.Irradiance)
     ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
@@ -428,12 +438,17 @@ def test_direct_modify_after_reset(speos: Speos):
     """Test reset of direct simulation, and then modify."""
     p = script.Project(speos=speos)
 
-    # Prerequisites: a source and a sensor are needed (bug also a rootpart)
+    # Prerequisites: a source and a sensor are needed (bug also a rootpart and optical property)
     root_part = p.create_root_part()
     root_part.create_body(name="Body.1").create_face(name="Face.1").set_vertices([0, 1, 0, 0, 2, 0, 1, 2, 0]).set_facets(
         [0, 1, 2]
     ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
     root_part.commit()
+
+    opt_prop = p.create_optical_property(name="Material.1")
+    opt_prop.set_volume_none().set_surface_mirror()
+    opt_prop.set_geometries(geometries=[script.GeoRef.from_native_link(geopath="Body.1")])
+    opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=script.sensor.Irradiance)
     ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
@@ -477,12 +492,17 @@ def test_inverse_modify_after_reset(speos: Speos):
     """Test reset of inverse simulation, and then modify."""
     p = script.Project(speos=speos)
 
-    # Prerequisites: a source and a sensor are needed (bug also a rootpart)
+    # Prerequisites: a source and a sensor are needed (bug also a rootpart and optical property)
     root_part = p.create_root_part()
     root_part.create_body(name="Body.1").create_face(name="Face.1").set_vertices([0, 1, 0, 0, 2, 0, 1, 2, 0]).set_facets(
         [0, 1, 2]
     ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
     root_part.commit()
+
+    opt_prop = p.create_optical_property(name="Material.1")
+    opt_prop.set_volume_none().set_surface_mirror()
+    opt_prop.set_geometries(geometries=[script.GeoRef.from_native_link(geopath="Body.1")])
+    opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=script.sensor.Irradiance)
     ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]).set_type_colorimetric()
@@ -526,12 +546,17 @@ def test_interactive_modify_after_reset(speos: Speos):
     """Test reset of interactive simulation, and then modify."""
     p = script.Project(speos=speos)
 
-    # Prerequisites: a source and a sensor are needed (bug also a rootpart)
+    # Prerequisites: a source and a sensor are needed (bug also a rootpart and optical property)
     root_part = p.create_root_part()
     root_part.create_body(name="Body.1").create_face(name="Face.1").set_vertices([0, 1, 0, 0, 2, 0, 1, 2, 0]).set_facets(
         [0, 1, 2]
     ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
     root_part.commit()
+
+    opt_prop = p.create_optical_property(name="Material.1")
+    opt_prop.set_volume_none().set_surface_mirror()
+    opt_prop.set_geometries(geometries=[script.GeoRef.from_native_link(geopath="Body.1")])
+    opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=script.sensor.Irradiance)
     ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]).set_type_colorimetric()
@@ -575,12 +600,17 @@ def test_delete(speos: Speos):
     """Test delete of simulation."""
     p = script.Project(speos=speos)
 
-    # Prerequisites: a source and a sensor are needed (bug also a rootpart)
+    # Prerequisites: a source and a sensor are needed (bug also a rootpart and optical property)
     root_part = p.create_root_part()
     root_part.create_body(name="Body.1").create_face(name="Face.1").set_vertices([0, 1, 0, 0, 2, 0, 1, 2, 0]).set_facets(
         [0, 1, 2]
     ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
     root_part.commit()
+
+    opt_prop = p.create_optical_property(name="Material.1")
+    opt_prop.set_volume_none().set_surface_mirror()
+    opt_prop.set_geometries(geometries=[script.GeoRef.from_native_link(geopath="Body.1")])
+    opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=script.sensor.Irradiance)
     ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
