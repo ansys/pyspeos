@@ -87,6 +87,7 @@ source = ["ansys.speos.core", "ansys.speos.script", "ansys.speos.workflow"]
 show_missing = true
 
 [tool.towncrier]
+package = "ansys.speos.core"
 directory = "doc/changelog.d"
 filename = "doc/source/changelog.rst"
 template = "doc/changelog.d/changelog_template.jinja"
@@ -122,16 +123,6 @@ showcontent = true
 [[tool.towncrier.type]]
 directory = "miscellaneous"
 name = "Miscellaneous"
-showcontent = true
-
-[[tool.towncrier.type]]
-directory = "documentation"
-name = "Documentation"
-showcontent = true
-
-[[tool.towncrier.type]]
-directory = "maintenance"
-name = "Maintenance"
 showcontent = true
 
 [[tool.towncrier.type]]
