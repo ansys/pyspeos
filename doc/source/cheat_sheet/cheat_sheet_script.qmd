@@ -84,7 +84,7 @@ Preview solver file:
 project.preview(viz_args={'opacity': 0.7})
 # method to display Lightpath
 lxp = script.LightPathFinder(speos=speos_server, path='path_to_lpf')
-lxp.preview(project)
+lxp.preview(project=project)
 ```
 
 # Navigation methods
@@ -108,15 +108,15 @@ Create surface source:
 ```{python}
 #| eval: false
 s_source = project.create_source(name='surface.1', feature_type=script.source.Surface)
-s_source.set_flux_luminous(683)
-s_source.set_flux_radiant(1)
-s_source.set_flux_luminous_intensity(5)
+# for any conflicting property the last set property counts
+s_source.set_flux_luminous(683) # overwritten
+s_source.set_flux_radiant(1) # overwritten
+s_source.set_flux_luminous_intensity(5) # overwritten
 s_source.set_exitance_constant(
     [(script.GeoRef.from_native_link(
         'TheBodyB/TheFaceF'), False)])
 s_int = s_source.set_intensity()
 s_int.set_cos(1,120)
-s_source.set_flux_from_intensity_file()
 s_source.set_spectrum()
 s_source.commit()
 ```
@@ -125,11 +125,12 @@ Create rayfile source:
 
 ```{python}
 #| eval: false
-r_source = project.create_source(name='rayfile.1', feature_type=script.source.Rayfile)
+r_source = project.create_source(name='rayfile.1', feature_type=script.source.RayFile)
 r_source.set_ray_file_uri('path/ray.ray')
-r_source.set_flux_from_rayfile()
-r_source.set_flux_luminous(683)
-r_source.set_flux_radiant(1)
+# for any conflicting property the last set property counts
+r_source.set_flux_from_rayfile() # overwritten
+r_source.set_flux_luminous(683) # overwritten
+r_source.set_flux_radiant(1) # counts
 r_source.set_spectrum_from_ray_file()
 r_source.set_exit_geometries(
     [script.GeoRef.from_native_link(
@@ -146,14 +147,15 @@ Create optical property:
 #| eval: false
 mat1 = project.create_optical_property(name='mat1')
 # Surface Properties
-mat1.set_surface_mirror(80.0) # default as 100
-mat1.set_surface_opticalpolished()
-mat1.set_surface_library('path/surface.brdf')
+# for any conflicting property the last set property counts
+mat1.set_surface_mirror(80.0) # overwritten
+mat1.set_surface_opticalpolished() # overwritten
+mat1.set_surface_library('path/surface.brdf') # counts
 # Volume Properties
-mat1.set_volume_none()
-mat1.set_volume_opaque()
-mat1.set_volume_optic(index=1.7, absorption=0.01, constringence=55)
-mat1.set_volume_library('path/mat.material')
+mat1.set_volume_none() # overwritten
+mat1.set_volume_opaque() # overwritten
+mat1.set_volume_optic(index=1.7, absorption=0.01, constringence=55) # overwritten
+mat1.set_volume_library('path/mat.material') # counts
 # Geometry
 mat1.set_geometries(
     [script.GeoRef.from_native_link(
@@ -238,6 +240,7 @@ direct_sim = project.create_simulation(name='direct', feature_type=script.simula
 # General Simulation API
 direct_sim.set_sensor_paths(['Irradiance.1'])
 direct_sim.set_source_paths(['Surface.1'])
+# the stop condition which is hit first will stop the simulation
 direct_sim.set_stop_condition_rays_number(5000000)
 direct_sim.set_stop_condition_duration(3600)
 direct_sim.commit()
