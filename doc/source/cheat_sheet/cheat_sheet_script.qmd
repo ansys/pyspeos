@@ -127,7 +127,7 @@ Create rayfile source:
 
 ```{python}
 #| eval: false
-r_source = project.create_source(name='rayfile.1', feature_type=script.source.RayFile)
+r_source = project.create_source(name='Rayfile.1', feature_type=script.source.RayFile)
 r_source.set_ray_file_uri('path/ray.ray')
 # Choose one way to set source power
 # for any conflicting property the last set property counts
@@ -148,7 +148,7 @@ Create optical property:
 
 ```{python}
 #| eval: false
-mat1 = project.create_optical_property(name='mat1')
+mat1 = project.create_optical_property(name='Material.1')
 # Choose one way of setting Surface Properties
 # for any conflicting property the last set property counts
 mat1.set_surface_mirror(80.0)
@@ -189,7 +189,7 @@ Create radiance sensor:
 
 ```{python}
 #| eval: false
-r_sensor = project.create_sensor(name='radiance', feature_type=script.sensor.Radiance)
+r_sensor = project.create_sensor(name='Radiance.1', feature_type=script.sensor.Radiance)
 # define size
 dim = r_sensor.set_dimensions()
 dim.set_x_start(-5).set_x_end(5).set_x_sampling(10)
@@ -217,7 +217,7 @@ Create camera Sensor:
 
 ```{python}
 #| eval: false
-c_sensor = project.create_sensor(name='camera', feature_type=script.sensor.Camera)
+c_sensor = project.create_sensor(name='Camera.1', feature_type=script.sensor.Camera)
 c_sensor.set_distortion_file_uri(
     'distortion_file_path')
 # Choose photometric mode
@@ -238,7 +238,7 @@ Create direct simulation:
 
 ```{python}
 #| eval: false
-direct_sim = project.create_simulation(name='direct', feature_type=script.simulation.Direct)
+direct_sim = project.create_simulation(name='Direct.1', feature_type=script.simulation.Direct)
 # All project geometry will be taken into account
 # General Simulation API
 direct_sim.set_sensor_paths(['Irradiance.1'])
@@ -253,7 +253,7 @@ Create inverse simulation:
 
 ```{python}
 #| eval: false
-inverse_sim= project.create_simulation(name='inverse', feature_type=script.simulation.Inverse)
+inverse_sim= project.create_simulation(name='Inverse.1', feature_type=script.simulation.Inverse)
 # methods similar to direct simulation
 ```
 
@@ -261,7 +261,7 @@ Create interactive simulation:
 
 ```{python}
 #| eval: false
-interactive_sim = project.create_simulation(name='interactive', feature_type=script.simulation.Interactive)
+interactive_sim = project.create_simulation(name='Interactive.1', feature_type=script.simulation.Interactive)
 # methods similar to direct simulation
 ```
 Run Simulation on CPU or GPU:
