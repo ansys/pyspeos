@@ -257,6 +257,23 @@ def test_find_after_load(speos: Speos):
     assert sim_feats[0]._name == "ASSEMBLY1.DS (0)"
 
 
+def test_create_root_part_after_load(speos: Speos):
+    """Test create_root_part feature in project loaded from speos file."""
+
+    # Create a project from a file
+    p = script.Project(speos=speos, path=os.path.join(test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"))
+
+    # Retrieve existing root part feature
+    # assert p.find(name="", feature_type=script.Part) is p.create_root_part()
+    rp = p.find(name="", feature_type=script.Part)[0]
+
+    # Try to create root part (but it is already existing) -> the existing root part is returned
+    rp2 = p.create_root_part()
+
+    # Check object identity
+    assert rp is rp2
+
+
 def test_delete(speos: Speos):
     """Test delete a project."""
 
