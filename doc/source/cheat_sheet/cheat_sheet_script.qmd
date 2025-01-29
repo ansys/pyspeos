@@ -108,10 +108,12 @@ Create surface source:
 ```{python}
 #| eval: false
 s_source = project.create_source(name='Surface.1', feature_type=script.source.Surface)
+# Choose one way to set source power
 # for any conflicting property the last set property counts
-s_source.set_flux_luminous(683) # overwritten
-s_source.set_flux_radiant(1) # overwritten
-s_source.set_flux_luminous_intensity(5) # overwritten
+s_source.set_flux_from_intensity_file()
+s_source.set_flux_luminous(683)
+s_source.set_flux_radiant(1)
+s_source.set_flux_luminous_intensity(5)
 s_source.set_exitance_constant(
     [(script.GeoRef.from_native_link(
         'TheBodyB/TheFaceF'), False)])
@@ -127,10 +129,11 @@ Create rayfile source:
 #| eval: false
 r_source = project.create_source(name='rayfile.1', feature_type=script.source.RayFile)
 r_source.set_ray_file_uri('path/ray.ray')
+# Choose one way to set source power
 # for any conflicting property the last set property counts
-r_source.set_flux_from_rayfile() # overwritten
-r_source.set_flux_luminous(683) # overwritten
-r_source.set_flux_radiant(1) # counts
+r_source.set_flux_from_ray_file()
+r_source.set_flux_luminous(683)
+r_source.set_flux_radiant(1)
 r_source.set_spectrum_from_ray_file()
 r_source.set_exit_geometries(
     [script.GeoRef.from_native_link(
@@ -148,14 +151,14 @@ Create optical property:
 mat1 = project.create_optical_property(name='mat1')
 # Choose one way of setting Surface Properties
 # for any conflicting property the last set property counts
-mat1.set_surface_mirror(80.0) # overwritten
-mat1.set_surface_opticalpolished() # overwritten
-mat1.set_surface_library('path/surface.brdf') # counts
+mat1.set_surface_mirror(80.0)
+mat1.set_surface_opticalpolished()
+mat1.set_surface_library('path/surface.brdf')
 # Choose on way of setting Volume Properties
-mat1.set_volume_none() # overwritten
-mat1.set_volume_opaque() # overwritten
-mat1.set_volume_optic(index=1.7, absorption=0.01, constringence=55) # overwritten
-mat1.set_volume_library('path/mat.material') # counts
+mat1.set_volume_none()
+mat1.set_volume_opaque()
+mat1.set_volume_optic(index=1.7, absorption=0.01, constringence=55)
+mat1.set_volume_library('path/mat.material')
 # Geometry
 mat1.set_geometries(
     [script.GeoRef.from_native_link(
