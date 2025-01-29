@@ -1,6 +1,6 @@
 PySpeos library
 ================
-|pyansys| |GH-CI| |MIT| |black|
+|pyansys| |GH-CI| |MIT| |ruff|
 
 .. |pyansys| image:: https://img.shields.io/badge/Py-Ansys-ffc107.svg?logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAABDklEQVQ4jWNgoDfg5mD8vE7q/3bpVyskbW0sMRUwofHD7Dh5OBkZGBgW7/3W2tZpa2tLQEOyOzeEsfumlK2tbVpaGj4N6jIs1lpsDAwMJ278sveMY2BgCA0NFRISwqkhyQ1q/Nyd3zg4OBgYGNjZ2ePi4rB5loGBhZnhxTLJ/9ulv26Q4uVk1NXV/f///////69du4Zdg78lx//t0v+3S88rFISInD59GqIH2esIJ8G9O2/XVwhjzpw5EAam1xkkBJn/bJX+v1365hxxuCAfH9+3b9/+////48cPuNehNsS7cDEzMTAwMMzb+Q2u4dOnT2vWrMHu9ZtzxP9vl/69RVpCkBlZ3N7enoDXBwEAAA+YYitOilMVAAAAAElFTkSuQmCC
    :target: https://docs.pyansys.com/
@@ -13,9 +13,9 @@ PySpeos library
    :target: https://opensource.org/licenses/MIT
    :alt: MIT
 
-.. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg?style=flat
-   :target: https://github.com/psf/black
-   :alt: Black
+.. |ruff| image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json
+   :target: https://github.com/astral-sh/ruff
+   :alt: Ruff
 
 
 Project overview
@@ -33,7 +33,7 @@ Package
 This repository is deployed as the Python packages `ansys-speos-core <https://pypi.org/project/ansys-speos-core>`_.
 As usual, installation is done by running:
 
-.. code::
+.. code:: bash
 
    pip install ansys-speos-core
 
@@ -45,7 +45,7 @@ Sources
 Clone and install
 ^^^^^^^^^^^^^^^^^
 
-.. code::
+.. code:: bash
 
    git clone https://github.com/ansys/pyspeos.git
    cd pyspeos
@@ -53,7 +53,6 @@ Clone and install
    pip install -U pip tox
    tox -e style
    pip install -e .
-
 
 Functionalities
 ^^^^^^^^^^^^^^^
@@ -74,7 +73,7 @@ Documentation for the latest stable release of PySpeos is hosted at
 Documentation is stored in `<doc>`_ folder and generated using `Sphinx`_.
 To build it manually :
 
-.. code::
+.. code:: bash
 
    pip install -U pip tox
    pip install .[doc]
@@ -101,7 +100,7 @@ It can be started using `<docker-compose.yml>`_ (if needed, please provide GitHu
 Since the Docker image contains no license server, you will need to enter your license server IP address in the `LICENSE_SERVER` environment variable.
 Then, you can launch SpeosRPC server with:
 
-.. code::
+.. code:: bash
 
    export LICENSE_SERVER=1055@XXX.XXX.XXX.XXX
 
@@ -112,17 +111,15 @@ On the other hand, the SpeosRPC server can be started locally.
 
 For Windows:
 
-.. code::
+.. code:: bash
 
     %AWP_ROOT251%\Optical Products\SPEOS_RPC\SpeosRPC_Server.exe
 
 For Linux:
 
-.. code::
+.. code:: bash
 
     $AWP_ROOT251\OpticalProducts\SPEOS_RPC\SpeosRPC_Server.x
-
-
 
 And test configuration file `<tests/local_config.json>`_ must be updated to use local server:
 
@@ -137,7 +134,7 @@ And test configuration file `<tests/local_config.json>`_ must be updated to use 
 Launch unit tests
 ~~~~~~~~~~~~~~~~~
 
-.. code::
+.. code:: bash
 
    pip install .[tests]
    pytest -vx
@@ -145,7 +142,7 @@ Launch unit tests
 Use jupyter notebook
 ~~~~~~~~~~~~~~~~~~~~
 
-.. code::
+.. code:: bash
 
    pip install .[jupyter]
    jupyter notebook
