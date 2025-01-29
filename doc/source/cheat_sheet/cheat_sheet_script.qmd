@@ -107,7 +107,7 @@ Create surface source:
 
 ```{python}
 #| eval: false
-s_source = project.create_source(name='surface.1', feature_type=script.source.Surface)
+s_source = project.create_source(name='Surface.1', feature_type=script.source.Surface)
 # for any conflicting property the last set property counts
 s_source.set_flux_luminous(683) # overwritten
 s_source.set_flux_radiant(1) # overwritten
@@ -146,12 +146,12 @@ Create optical property:
 ```{python}
 #| eval: false
 mat1 = project.create_optical_property(name='mat1')
-# Surface Properties
+# Choose one way of setting Surface Properties
 # for any conflicting property the last set property counts
 mat1.set_surface_mirror(80.0) # overwritten
 mat1.set_surface_opticalpolished() # overwritten
 mat1.set_surface_library('path/surface.brdf') # counts
-# Volume Properties
+# Choose on way of setting Volume Properties
 mat1.set_volume_none() # overwritten
 mat1.set_volume_opaque() # overwritten
 mat1.set_volume_optic(index=1.7, absorption=0.01, constringence=55) # overwritten
@@ -173,10 +173,10 @@ root_part = project.create_root_part()
 root_part.commit()
 body_1 = root_part.create_body(name='TheBodyB1')
 body_1.commit()
-body_1_face_1 = Body_1.create_face(name='TheFaceF1')
+body_1_face_1 = body_1.create_face(name='TheFaceF1')
 body_1_face_1.set_vertices([])
 body_1_face_1.set_facets([])
-body_1_face_1.set_normal([])
+body_1_face_1.set_normals([])
 body_1_face_1.commit()
 ```
 
@@ -192,8 +192,8 @@ dim = r_sensor.set_dimensions()
 dim.set_x_start(-5).set_x_end(5).set_x_sampling(10)
 dim.set_y_start(-5).set_y_end(5).set_y_sampling(10)
 # define type and Wavelength range
-col = r_sensor.set_type_colorimetric
-wl = col.set_wavelength_range()
+col = r_sensor.set_type_colorimetric()
+wl = col.set_wavelengths_range()
 wl.set_start(380).set_end(780)
 wl.set_sampling(50)
 # define Layer separation
@@ -205,7 +205,7 @@ Create irradiance Sensor:
 
 ```{python}
 #| eval: false
-i_sensor = project.create_sensor(name='irradiance', feature_type=script.sensor.Irradiance)
+i_sensor = project.create_sensor(name='Irradiance.1', feature_type=script.sensor.Irradiance)
 # methods are similar to Radiance Sensor
 i_sensor.commit()
 ```
