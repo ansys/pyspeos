@@ -39,7 +39,7 @@ Connect to an instance locally:
 #| eval: false
 from ansys.speos.core import Speos
 
-speos = Speos(host='127.0.0.1', port=50098)
+speos_server = Speos(host='127.0.0.1', port=50098)
 ```
 
 # Speos Solver files
@@ -50,7 +50,7 @@ Load a solver file:
 
 ```{python}
 #| eval: false
-import ansys.speos.core.script as script
+import ansys.speos.script as script
 
 project = script.Project(speos=speos_server, path='path_to.speos')
 print(project)
@@ -63,7 +63,7 @@ Combine solver file:
 from ansys.speos.workflow.combine_speos import SpeosFileInstance, combine_speos
 
 combined_project = combine_speos(
-    speos=speos,
+    speos=speos_server,
     speos_to_combine=[
         SpeosFileInstance(
             speos_file='combine_path_to.speos',
