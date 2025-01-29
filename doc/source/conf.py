@@ -39,7 +39,20 @@ html_theme_options = {
     "ansys_sphinx_theme_autoapi": {
         "project": project,
     },
+    "cheatsheet": {
+        "file": "cheat_sheet/cheat_sheet_script.qmd",
+        "title": "PySpeos Cheat Sheet",
+    },
 }
+BUILD_CHEATSHEET = os.environ.get("BUILD_CHEATSHEET", "false").lower() == "true"
+if BUILD_CHEATSHEET:
+    html_theme_options["cheatsheet"] = {
+        "file": "cheat_sheet/cheat_sheet_script.qmd",
+        "title": "PySpeos cheat sheet",
+        "version": f"v{version}",
+        "pages": ["index"],
+    }
+
 
 # Sphinx extensions
 extensions = [

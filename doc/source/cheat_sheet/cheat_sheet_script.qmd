@@ -1,0 +1,283 @@
+---
+title: 'PySpeos script-layer cheat-sheet'
+format: cheat_sheet-pdf
+params:
+  version: main
+footer: PySpeos
+footerlinks:
+  - urls: 'https://speos.docs.pyansys.com'
+    text: Documentation
+  - urls: 'https://speos.docs.pyansys.com/version/dev/Getting_started/index.html'
+    text: Getting started
+  - urls: 'https://speos.docs.pyansys.com/version/dev/Examples.html'
+    text: Examples
+  - urls: 'https://speos.docs.pyansys.com/version/dev/API/index.html'
+    text: API reference
+execute:
+    # output: false
+    eval: false
+
+latex-clean: true
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .qmd
+      format_name: quarto
+      format_version: '1.0'
+      jupytext_version: 1.16.1
+  kernelspec:
+    display_name: Python 3 (ipykernel)
+    language: python
+    name: python3
+---
+
+# Connect to Speos Service
+
+Connect to an instance locally:
+
+```{python}
+#| eval: false
+from ansys.speos.core import Speos
+
+speos_server = Speos(host='127.0.0.1', port=50098)
+```
+
+# Speos Solver files
+
+## Basic methods
+
+Load a solver file:
+
+```{python}
+#| eval: false
+import ansys.speos.script as script
+
+project = script.Project(speos=speos_server, path='path_to.speos')
+print(project)
+```
+
+Combine solver file:
+
+```{python}
+#| eval: false
+from ansys.speos.workflow.combine_speos import SpeosFileInstance, combine_speos
+
+combined_project = combine_speos(
+    speos=speos_server,
+    speos_to_combine=[
+        SpeosFileInstance(
+            speos_file='combine_path_to.speos',
+            axis_system=[x1, y1, z1, 1, 0, 0, 0, 1, 0, 0, 0, 1],),
+        SpeosFileInstance(
+            speos_file='combine_path_to.speos',
+            axis_system=[x2, y2, z2, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+        ),
+    ],
+)
+```
+
+Preview solver file:
+
+```{python}
+#| eval: false
+# method to show mesh stored in solver
+project.preview(viz_args={'opacity': 0.7})
+# method to display Lightpath
+lxp = script.LightPathFinder(speos=speos_server, path='path_to_lpf')
+lxp.preview(project=project)
+```
+
+# Navigation methods
+
+Find methods and it possible uses:
+
+```{python}
+#| eval: false
+found_items = project.find(name='test')
+# any item with name 'test' are returned as a list
+found_items = project.find(name='.*', name_regex=True, feature_type= script.simulation.Direct)
+# any direct simulation item are return as a list
+```
+
+# Modify/Change Solver files
+
+## Sources
+
+Create surface source:
+
+```{python}
+#| eval: false
+s_source = project.create_source(name='Surface.1', feature_type=script.source.Surface)
+# Choose one way to set source power
+# for any conflicting property the last set property counts
+s_source.set_flux_from_intensity_file()
+s_source.set_flux_luminous(683)
+s_source.set_flux_radiant(1)
+s_source.set_flux_luminous_intensity(5)
+s_source.set_exitance_constant(
+    [(script.GeoRef.from_native_link(
+        'TheBodyB/TheFaceF'), False)])
+s_int = s_source.set_intensity()
+s_int.set_cos(1,120)
+s_source.set_spectrum()
+s_source.commit()
+```
+
+Create rayfile source:
+
+```{python}
+#| eval: false
+r_source = project.create_source(name='Rayfile.1', feature_type=script.source.RayFile)
+r_source.set_ray_file_uri('path/ray.ray')
+# Choose one way to set source power
+# for any conflicting property the last set property counts
+r_source.set_flux_from_ray_file()
+r_source.set_flux_luminous(683)
+r_source.set_flux_radiant(1)
+r_source.set_spectrum_from_ray_file()
+r_source.set_exit_geometries(
+    [script.GeoRef.from_native_link(
+        'TheBodyB/TheFaceF')])
+r_source.set_axis_system([0,0,0,1,0,0,0,1,0,0,0,1])
+r_source.commit()
+```
+
+## Material
+
+Create optical property:
+
+```{python}
+#| eval: false
+mat1 = project.create_optical_property(name='Material.1')
+# Choose one way of setting Surface Properties
+# for any conflicting property the last set property counts
+mat1.set_surface_mirror(80.0)
+mat1.set_surface_opticalpolished()
+mat1.set_surface_library('path/surface.brdf')
+# Choose on way of setting Volume Properties
+mat1.set_volume_none()
+mat1.set_volume_opaque()
+mat1.set_volume_optic(index=1.7, absorption=0.01, constringence=55)
+mat1.set_volume_library('path/mat.material')
+# Geometry
+mat1.set_geometries(
+    [script.GeoRef.from_native_link(
+        geopath='TheBodyB')])
+mat1.commit()
+```
+
+## Geometries
+
+Create new Geometries:
+
+```{python}
+#| eval: false
+root_part = project.create_root_part()
+root_part.commit()
+body_1 = root_part.create_body(name='TheBodyB1')
+body_1.commit()
+body_1_face_1 = body_1.create_face(name='TheFaceF1')
+body_1_face_1.set_vertices([])
+body_1_face_1.set_facets([])
+body_1_face_1.set_normals([])
+body_1_face_1.commit()
+```
+
+## Sensor
+
+Create radiance sensor:
+
+```{python}
+#| eval: false
+r_sensor = project.create_sensor(name='Radiance.1', feature_type=script.sensor.Radiance)
+# define size
+dim = r_sensor.set_dimensions()
+dim.set_x_start(-5).set_x_end(5).set_x_sampling(10)
+dim.set_y_start(-5).set_y_end(5).set_y_sampling(10)
+# define type and Wavelength range
+col = r_sensor.set_type_colorimetric()
+wl = col.set_wavelengths_range()
+wl.set_start(380).set_end(780)
+wl.set_sampling(50)
+# define Layer separation
+r_sensor.set_layer_type_source()
+r_sensor.commit()
+```
+
+Create irradiance Sensor:
+
+```{python}
+#| eval: false
+i_sensor = project.create_sensor(name='Irradiance.1', feature_type=script.sensor.Irradiance)
+# methods are similar to Radiance Sensor
+i_sensor.commit()
+```
+
+Create camera Sensor:
+
+```{python}
+#| eval: false
+c_sensor = project.create_sensor(name='Camera.1', feature_type=script.sensor.Camera)
+c_sensor.set_distortion_file_uri(
+    'distortion_file_path')
+# Choose photometric mode
+photo_cam = c_sensor.set_mode_photometric()
+photo_cam.set_transmittance_file_uri(
+    'transmittance_file_path')
+# Choose color mode
+c_mode = photo_cam.set_mode_color()
+c_mode.set_blue_spectrum_file_uri(
+    'blue_spectrum_path')
+# same method for red and green spectrum
+c_sensor.commit()
+```
+
+## Simulation definition
+
+Create direct simulation:
+
+```{python}
+#| eval: false
+direct_sim = project.create_simulation(name='Direct.1', feature_type=script.simulation.Direct)
+# All project geometry will be taken into account
+# General Simulation API
+direct_sim.set_sensor_paths(['Irradiance.1'])
+direct_sim.set_source_paths(['Surface.1'])
+# the stop condition which is hit first will stop the simulation
+direct_sim.set_stop_condition_rays_number(5000000)
+direct_sim.set_stop_condition_duration(3600)
+direct_sim.commit()
+```
+
+Create inverse simulation:
+
+```{python}
+#| eval: false
+inverse_sim= project.create_simulation(name='Inverse.1', feature_type=script.simulation.Inverse)
+# methods similar to direct simulation
+```
+
+Create interactive simulation:
+
+```{python}
+#| eval: false
+interactive_sim = project.create_simulation(name='Interactive.1', feature_type=script.simulation.Interactive)
+# methods similar to direct simulation
+```
+Run Simulation on CPU or GPU:
+
+```{python}
+#| eval: false
+simulation_feature.compute_GPU()
+simulation_feature.compute_CPU()
+```
+Open results (Windows only):
+
+```{python}
+#| eval: false
+from ansys.speos.workflow.open_result import open_result_image, open_result_in_viewer
+# Display result image
+open_result_image(simulation_feature, 'result_name')
+# opens result in VirtualPhotometricLab
+open_result_in_viewer(simulation_feature, 'result_name')
+```

@@ -14,6 +14,7 @@ env:
   DOCUMENTATION_CNAME: 'speos.docs.pyansys.com'
   PACKAGE_NAMESPACE: 'ansys.speos.core'
   PACKAGE_NAME: 'ansys-optics-speos'
+  BUILD_CHEATSHEET: 'true'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -65,6 +66,7 @@ jobs:
           sphinxopts: -j 1 --keep-going # Try without parallel execution
           checkout: false
           dependencies: "pandoc"
+          needs-quarto: true
       - name: Stop container
         run: |
           docker kill speos-rpc
