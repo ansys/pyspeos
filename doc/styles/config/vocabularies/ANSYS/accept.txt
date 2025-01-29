@@ -1,9 +1,9 @@
 (?i)ansys
+API
+[Aa]utosummary
+exitance
+Lumerical
 (?i)pyansys
 (?i)pyspeos
 Speos
-API
-Lumerical
 Zemax
-Autosummary
-autosummary
