@@ -150,7 +150,23 @@ jobs:
 
       - name: Run pytest
         run: |
-          pytest -vxs
+          . .venv/bin/activate
+          pytest -xs
+
+      - name: Upload Coverage Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html-ubuntu
+          path: .cov/html
+          retention-days: 7
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        with:
+          files: .cov/xml
 
       - name: Stop container
         run: |

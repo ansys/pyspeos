@@ -86,6 +86,11 @@ source = ["ansys.speos.core", "ansys.speos.script", "ansys.speos.workflow"]
 [tool.coverage.report]
 show_missing = true
 
+[tool.pytest.ini_options]
+minversion = "7.1"
+addopts = "-vvv --color=yes -ra --durations=25 --cov=ansys.speos --cov-report html:.cov/html --cov-report xml:.cov/xml --cov-report term"
+testpaths = ["tests"]
+
 [tool.towncrier]
 package = "ansys.speos.core"
 directory = "doc/changelog.d"
