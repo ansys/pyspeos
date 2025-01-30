@@ -96,6 +96,48 @@ select = [
     "PTH",  # flake8-use-pathlib, https://docs.astral.sh/ruff/rules/#flake8-use-pathlib-pth
     "TD",   # flake8-todos, https://docs.astral.sh/ruff/rules/#flake8-todos-td
 ]
+ignore = [
+    "PTH107", # TODO: Use Path.unlink
+    "PTH110",
+    "PTH113", # TODO: Use Path.is_file
+    "PTH119",
+    "PTH120",
+    "PTH122",
+    "PTH123", # TODO: Use Path.open
+    "PTH118", # TODO: Use pathlib instead of os.path
+    "D100",
+    "D101",
+    "D102",
+    "D103", # TODO: Add docstring to functions
+    "D104",
+    "D105",
+    "D200", # TODO: One-line doscstring should git on one line
+    "D210",
+    "D205", # TODO: Add one blank line between summary line and description
+    "D301",
+    "D400", # TODO: First line should end with a period
+    "D401",
+    "D404", # TODO: First word of the docstring should not be "This"
+    "D414",
+    "E402",
+    "E501", # TODO: Line too long
+    "E711",
+    "E712", # TODO: Avoid equality comparisons to `False`
+    "E721", # TODO: Avoid `is` and `is not` for type comparison, use `isinstance()` instead
+    "E722",
+    "E741", # TODO: Rename ambiguous variable name
+    "F401",
+    "F841", # TODO: Local variable assigned but never used
+    "N802", # TODO: Function name should be lowercase
+    "N803",
+    "N806",
+    "N811",
+    "N806", # TODO: Update variables to be lowercase
+    "N812",
+    "TD002", # Missing author in TODOs comment
+    "TD003", # Missing issue link in TODOs comment
+]
+
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
