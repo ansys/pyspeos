@@ -270,9 +270,13 @@ def test_find_after_load(speos: Speos):
 
 def test_create_root_part_after_load(speos: Speos):
     """Test create_root_part feature in project loaded from speos file."""
-
     # Create a project from a file
-    p = script.Project(speos=speos, path=os.path.join(test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"))
+    p = script.Project(
+        speos=speos,
+        path=os.path.join(
+            test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
+        ),
+    )
 
     # Retrieve existing root part feature
     # assert p.find(name="", feature_type=script.Part) is p.create_root_part()
