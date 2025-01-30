@@ -60,7 +60,7 @@ doc = [
     "jupytext==1.16.6",
     "jupyterlab==4.3.4",
     "jupyter-server==2.15.0",
-    "nbconvert==7.16.5",
+    "nbconvert==7.16.6",
     "pyvista[jupyter]==0.44.2",
 ]
 

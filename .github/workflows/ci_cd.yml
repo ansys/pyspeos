@@ -15,6 +15,7 @@ env:
   PACKAGE_NAMESPACE: 'ansys.speos.core'
   PACKAGE_NAME: 'ansys-optics-speos'
   PIP_EXTRA_INDEX_URL: 'https://${{ secrets.PYANSYS_PYPI_PRIVATE_PAT }}@pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/simple/'
+  BUILD_CHEATSHEET: 'true'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -109,6 +110,7 @@ jobs:
           sphinxopts: -j 1 --keep-going # Try without parallel execution
           checkout: false
           dependencies: "pandoc"
+          needs-quarto: true
       - name: Stop container
         run: |
           docker kill speos-rpc
