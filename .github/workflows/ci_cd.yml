@@ -14,6 +14,7 @@ env:
   DOCUMENTATION_CNAME: 'speos.docs.pyansys.com'
   PACKAGE_NAMESPACE: 'ansys.speos.core'
   PACKAGE_NAME: 'ansys-optics-speos'
+  PIP_EXTRA_INDEX_URL: 'https://${{ secrets.PYANSYS_PYPI_PRIVATE_PAT }}@pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/simple/'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

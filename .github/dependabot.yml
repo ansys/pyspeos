@@ -22,9 +22,9 @@ updates:
       doc-deps:
         patterns:
           - "ansys-sphinx-theme*"
-          - "jupytext",
-          - "jupyterlab",
-          - "jupyter-server",
+          - "jupytext"
+          - "jupyterlab"
+          - "jupyter-server"
           - "myst-parser"
           - "nbconvert"
           - "nbsphinx"
