@@ -201,3 +201,70 @@ def test_delete_optical_property(speos: Speos):
 
     assert len(p.scene_link.get().materials) == 0
     assert op1._material_instance.HasField("geometries")  # local
+
+
+def test_get_optical_property(speos: Speos, capsys):
+    """Test get of an optical property."""
+    p = script.Project(speos=speos)
+    op1 = (
+        p.create_optical_property(name="Material.1")
+        .set_volume_opaque()
+        .set_geometries(geometries=[script.GeoRef.from_native_link("TheBodyA")])
+        .commit()
+    )
+
+    name = op1.get(key="name")
+    assert name == "Material.1"
+    # test vop
+    vop_property_info = op1.get(key="vop")
+    assert "opaque" in vop_property_info
+    assert "optic" not in vop_property_info
+    assert "library" not in vop_property_info
+    # test sops
+    sop_property_info = op1.get(key="sops")[0]
+    assert "mirror" in sop_property_info
+    assert "optical_polished" not in sop_property_info
+    assert "library" not in sop_property_info
+    # test geometries
+    geometries = op1.get(key="geo_paths")
+    assert geometries == ["TheBodyA"]
+
+    op2 = (
+        p.create_optical_property(name="OpticalProperty2")
+        .set_volume_optic(index=1.7, absorption=0.01, constringence=55)
+        .set_surface_opticalpolished()
+        .set_geometries(geometries=[script.GeoRef.from_native_link("TheBodyB")])
+        .commit()
+    )
+
+    name = op2.get(key="name")
+    assert name == "OpticalProperty2"
+    # test vop
+    vop_property_info = op2.get(key="vop")
+    assert "opaque" not in vop_property_info
+    assert "optic" in vop_property_info
+    assert "library" not in vop_property_info
+    # test sops
+    sop_property_info = op2.get(key="sops")[0]
+    assert "mirror" not in sop_property_info
+    assert "optical_polished" in sop_property_info
+    assert "library" not in sop_property_info
+    geometries = op2.get(key="geo_paths")
+    assert geometries == ["TheBodyB"]
+
+    op3 = (
+        p.create_optical_property(name="OpticalProperty3")
+        .set_volume_none()
+        .set_surface_library(path=os.path.join(test_path, "R_test.anisotropicbsdf"))
+        .commit()
+    )
+
+    name = op3.get(key="name")
+    assert name == "OpticalProperty3"
+    # test vop
+    assert op3.get(key="vop") is None
+    # test sops
+    sop_property_info = op3.get(key="sops")[0]
+    assert "mirror" not in sop_property_info
+    assert "optical_polished" not in sop_property_info
+    assert "library" in sop_property_info
