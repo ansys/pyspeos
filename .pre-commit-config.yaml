@@ -27,12 +27,6 @@ repos:
   - id: codespell
     args: ["--ignore-words", "doc/styles/config/vocabularies/ANSYS/accept.txt", "-w"]
 
-- repo: https://github.com/codespell-project/codespell
-  rev: v2.2.5
-  hooks:
-  - id: codespell
-    args: ["--ignore-words=ignore_words.txt", "doc/styles/config/vocabularies/ANSYS/accept.txt"]
-
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v4.4.0
   hooks:
@@ -53,4 +47,4 @@ repos:
     - id: add-license-headers
       files: '(ansys|tests)/.*\.(py)'
       args:
-      - --start_year=2023
+      - --start_year=2021
