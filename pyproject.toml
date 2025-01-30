@@ -30,8 +30,8 @@ dependencies=[
     "grpcio==1.70.0",
     "grpcio-health-checking==1.48.2",
     "ansys-api-speos==0.14.1",
-    "numpy~=2.2.0",
-    "pyvista==0.44.2",
+    "numpy>=2.0.0,<2.3",
+    "pyvista>=0.43,<0.45",
     "comtypes==1.4.9",
 ]
 
@@ -45,7 +45,7 @@ jupyter = [
     "matplotlib",
     "jupyterlab>=3",
     "ipywidgets",
-    "pyvista[jupyter]==0.44.2",
+    "pyvista[jupyter]>=0.43,<0.45",
 ]
 doc = [
     "ansys-sphinx-theme==1.1.6",
@@ -61,7 +61,7 @@ doc = [
     "jupyterlab==4.3.4",
     "jupyter-server==2.15.0",
     "nbconvert==7.16.6",
-    "pyvista[jupyter]==0.44.2",
+    "pyvista[jupyter]>=0.43,<0.45",
 ]
 
 [project.urls]
