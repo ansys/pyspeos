@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -23,16 +23,17 @@
 """
 Test basic using project from script layer.
 """
+
 import os
+
+from conftest import test_path
 
 from ansys.speos.core.speos import Speos
 import ansys.speos.script as script
-from conftest import test_path
 
 
 def test_find_feature(speos: Speos):
     """Test find a feature in project."""
-
     # Create an empty project
     p = script.Project(speos=speos)
     assert len(p._features) == 0
@@ -50,7 +51,7 @@ def test_find_feature(speos: Speos):
     assert len(p.scene_link.get().sensors) == 1
 
     # Create an radiance sensor in the project
-    # TODO enhance the initialize method
+    # TODO: enhance the initialize method
     sensor2 = p.create_sensor(name="Sensor.2", feature_type=script.sensor.Radiance)
     sensor2.commit()
     assert len(p._features) == 3
@@ -114,9 +115,13 @@ def test_find_feature(speos: Speos):
 
 def test_find_feature_geom(speos: Speos):
     """Test find a geometry feature in project loaded from speos file."""
-
     # Create a project from a file
-    p = script.Project(speos=speos, path=os.path.join(test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"))
+    p = script.Project(
+        speos=speos,
+        path=os.path.join(
+            test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
+        ),
+    )
 
     # Find root part
     feats = p.find(name="", feature_type=script.Part)
@@ -127,7 +132,9 @@ def test_find_feature_geom(speos: Speos):
     assert len(feats) == 1
 
     # Retrieve face
-    feats = p.find(name="Solid Body in GUIDE:1379760262/Face in GUIDE:166", feature_type=script.Part)
+    feats = p.find(
+        name="Solid Body in GUIDE:1379760262/Face in GUIDE:166", feature_type=script.Part
+    )
     assert len(feats) == 1
 
     # Retrieve face with regex (regex at body and at face level)
@@ -236,9 +243,13 @@ def test_find_feature_geom(speos: Speos):
 
 def test_find_after_load(speos: Speos):
     """Test find feature in project loaded from speos file."""
-
     # Create a project from a file
-    p = script.Project(speos=speos, path=os.path.join(test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"))
+    p = script.Project(
+        speos=speos,
+        path=os.path.join(
+            test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
+        ),
+    )
 
     # Retrieve all surface sources
     src_feats = p.find(name=".*", name_regex=True, feature_type=script.source.Surface)
@@ -276,7 +287,6 @@ def test_create_root_part_after_load(speos: Speos):
 
 def test_delete(speos: Speos):
     """Test delete a project."""
-
     # Create an empty project
     p = script.Project(speos=speos)
     assert len(p._features) == 0
@@ -300,9 +310,13 @@ def test_delete(speos: Speos):
 
 def test_from_file(speos: Speos):
     """Test create a project from file."""
-
     # Create a project from a file
-    p = script.Project(speos=speos, path=os.path.join(test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"))
+    p = script.Project(
+        speos=speos,
+        path=os.path.join(
+            test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
+        ),
+    )
 
     # Check that scene is filled
     assert len(p.scene_link.get().materials) == 4
@@ -321,8 +335,17 @@ def test_from_file(speos: Speos):
 
     # And that the feature retrieved has a real impact on the project
     feat_ops[0].set_surface_mirror(reflectance=60).commit()
-    assert speos.client.get_item(key=p.scene_link.get().materials[2].sop_guids[0]).get().HasField("mirror")
-    assert speos.client.get_item(key=p.scene_link.get().materials[2].sop_guids[0]).get().mirror.reflectance == 60
+    assert (
+        speos.client.get_item(key=p.scene_link.get().materials[2].sop_guids[0])
+        .get()
+        .HasField("mirror")
+    )
+    assert (
+        speos.client.get_item(key=p.scene_link.get().materials[2].sop_guids[0])
+        .get()
+        .mirror.reflectance
+        == 60
+    )
 
     # Check that ambient mat has no sop
     feat_op_ambients = p.find(name=p.scene_link.get().materials[-1].name)
@@ -341,15 +364,25 @@ def test_from_file(speos: Speos):
     ssr_data = ssr_link.get()
     assert ssr_data.HasField("irradiance_sensor_template")
     assert ssr_data.irradiance_sensor_template.HasField("sensor_type_colorimetric")
-    assert ssr_data.irradiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_end == 800
-    assert ssr_data.irradiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_sampling == 25
+    assert (
+        ssr_data.irradiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_end == 800
+    )
+    assert (
+        ssr_data.irradiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_sampling
+        == 25
+    )
     assert ssr_data.irradiance_sensor_template.dimensions.x_sampling == 500
 
 
 def test_find_geom(speos: Speos):
     """Test find geometry feature in a project."""
     # Create a project from a file
-    p = script.Project(speos=speos, path=os.path.join(test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"))
+    p = script.Project(
+        speos=speos,
+        path=os.path.join(
+            test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
+        ),
+    )
 
     # Check that scene is filled
     assert p.scene_link.get().part_guid != ""

@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -26,9 +26,10 @@ Test basic using optical properties from script layer.
 
 import os
 
+from conftest import test_path
+
 from ansys.speos.core.speos import Speos
 import ansys.speos.script as script
-from conftest import test_path
 
 
 def test_create_optical_property(speos: Speos):
@@ -92,7 +93,12 @@ def test_create_optical_property(speos: Speos):
     assert op1.sop_template_link.get().mirror.reflectance == 80
 
     # geometries
-    op1.set_geometries(geometries=[script.GeoRef.from_native_link("TheBodyB1"), script.GeoRef.from_native_link("TheBodyB2")])
+    op1.set_geometries(
+        geometries=[
+            script.GeoRef.from_native_link("TheBodyB1"),
+            script.GeoRef.from_native_link("TheBodyB2"),
+        ]
+    )
     assert op1._material_instance.HasField("geometries")
     op1._material_instance.geometries.geo_paths == ["TheBody1", "TheBodyB2"]
 

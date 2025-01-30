@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -23,27 +23,32 @@
 """
 Test basic intensity template database connection.
 """
+
 import os
 
-from ansys.api.speos.common.v1 import data_pb2
+from conftest import test_path
 
+from ansys.api.speos.common.v1 import data_pb2
 from ansys.speos.core.intensity_template import IntensityTemplate
 from ansys.speos.core.speos import Speos
-from conftest import test_path
 
 
 def test_intensity_template(speos: Speos):
     """Test the intensity template."""
     assert speos.client.healthy is True
     # Get DB
-    intens_t_db = speos.client.intensity_templates()  # Create intensity template stub from client channel
+    intens_t_db = (
+        speos.client.intensity_templates()
+    )  # Create intensity template stub from client channel
 
     # Library
     intens_t_lib = intens_t_db.create(
         message=IntensityTemplate(
             name="library_0",
             description="library intensity template",
-            library=IntensityTemplate.Library(intensity_file_uri=os.path.join(test_path, "IES_C_DETECTOR.ies")),
+            library=IntensityTemplate.Library(
+                intensity_file_uri=os.path.join(test_path, "IES_C_DETECTOR.ies")
+            ),
         )
     )
     assert intens_t_lib.key != ""
@@ -52,14 +57,20 @@ def test_intensity_template(speos: Speos):
 
     intens_t_lamb = intens_t_db.create(
         message=IntensityTemplate(
-            name="lambertian_0", description="lambertian intensity template", cos=IntensityTemplate.Cos(N=1.0, total_angle=180.0)
+            name="lambertian_0",
+            description="lambertian intensity template",
+            cos=IntensityTemplate.Cos(N=1.0, total_angle=180.0),
         )
     )
     assert intens_t_lamb.key != ""
 
     # Cos
     intens_t_cos = intens_t_db.create(
-        message=IntensityTemplate(name="cos_0", description="cos intensity template", cos=IntensityTemplate.Cos(N=3.0, total_angle=180.0))
+        message=IntensityTemplate(
+            name="cos_0",
+            description="cos intensity template",
+            cos=IntensityTemplate.Cos(N=3.0, total_angle=180.0),
+        )
     )
     assert intens_t_cos.key != ""
 
@@ -68,7 +79,9 @@ def test_intensity_template(speos: Speos):
         message=IntensityTemplate(
             name="symmetric_gaussian_0",
             description="symmetric gaussian intensity template",
-            gaussian=IntensityTemplate.Gaussian(FWHM_angle_x=30.0, FWHM_angle_y=30.0, total_angle=180.0),
+            gaussian=IntensityTemplate.Gaussian(
+                FWHM_angle_x=30.0, FWHM_angle_y=30.0, total_angle=180.0
+            ),
         )
     )
     assert intens_t_sym_gauss.key != ""
@@ -78,7 +91,9 @@ def test_intensity_template(speos: Speos):
         message=IntensityTemplate(
             name="asymmetric_gaussian_0",
             description="asymmetric gaussian intensity template",
-            gaussian=IntensityTemplate.Gaussian(FWHM_angle_x=30.0, FWHM_angle_y=20.0, total_angle=180.0),
+            gaussian=IntensityTemplate.Gaussian(
+                FWHM_angle_x=30.0, FWHM_angle_y=20.0, total_angle=180.0
+            ),
         )
     )
     assert intens_t_asym_gauss.key != ""
@@ -93,14 +108,18 @@ def test_action_get_library_type_info(speos: Speos):
     assert speos.client.healthy is True
 
     # Get DB
-    intens_t_db = speos.client.intensity_templates()  # Create intensity template stub from client channel
+    intens_t_db = (
+        speos.client.intensity_templates()
+    )  # Create intensity template stub from client channel
 
     # Library
     intens_t_lib = intens_t_db.create(
         message=IntensityTemplate(
             name="library_0",
             description="library intensity template",
-            library=IntensityTemplate.Library(intensity_file_uri=os.path.join(test_path, "IES_C_DETECTOR.ies")),
+            library=IntensityTemplate.Library(
+                intensity_file_uri=os.path.join(test_path, "IES_C_DETECTOR.ies")
+            ),
         )
     )
 

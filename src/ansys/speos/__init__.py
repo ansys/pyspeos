@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -21,7 +21,6 @@
 # SOFTWARE.
 
 """Version of ansys-speos library.
-
 
 On the ``main`` branch, use 'dev0' to denote a development version.
 For example:

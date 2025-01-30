@@ -1,4 +1,5 @@
 """Sphinx documentation configuration file."""
+
 from datetime import datetime
 import os
 import pathlib
@@ -168,7 +169,6 @@ if BUILD_EXAMPLES:
         cname_pref=f"https://{cname}/version/{get_version_match(version)}",
         python_file_loc="{{ env.docname }}.py",
         ipynb_file_loc="{{ env.docname }}.ipynb",
-        pdf_file_loc="{{ env.docname }}.pdf",
     )
 
 
@@ -208,7 +208,7 @@ def copy_examples_to_output_dir(app: sphinx.application.Sphinx, exception: Excep
     examples = list(EXAMPLES_DIRECTORY.glob("*.py"))
     for file in status_iterator(
         examples,
-        f"Copying example to doc/_build/examples/",
+        "Copying example to doc/_build/examples/",
         "green",
         len(examples),
         verbosity=1,
@@ -241,7 +241,7 @@ def copy_examples_files_to_source_dir(app: sphinx.application.Sphinx):
     examples = list(EXAMPLES_DIRECTORY.glob("*.py"))
     for file in status_iterator(
         examples,
-        f"Copying example to doc/source/examples/",
+        "Copying example to doc/source/examples/",
         "green",
         len(examples),
         verbosity=1,

@@ -40,7 +40,9 @@ print(p)
 # +
 intensity_file_path = os.path.join(tests_data_path, "IES_C_DETECTOR.ies")
 
-source1 = p.create_source(name="Luminaire.1", feature_type=script.source.Luminaire)  # type luminaire
+source1 = p.create_source(
+    name="Luminaire.1", feature_type=script.source.Luminaire
+)  # type luminaire
 source1.set_intensity_file_uri(uri=intensity_file_path)
 print(source1)
 # -
@@ -155,7 +157,10 @@ source3.delete()
 # +
 source4 = p.create_source(name="Surface.1", feature_type=script.source.Surface)
 source4.set_exitance_constant(
-    geometries=[(script.GeoRef.from_native_link("TheBodyB/TheFaceF"), False), (script.GeoRef.from_native_link("TheBodyB/TheFaceG"), True)]
+    geometries=[
+        (script.GeoRef.from_native_link("TheBodyB/TheFaceF"), False),
+        (script.GeoRef.from_native_link("TheBodyB/TheFaceG"), True),
+    ]
 )
 source4.commit()
 print(source4)
@@ -163,7 +168,9 @@ print(source4)
 
 # +
 source4.set_flux_luminous_intensity()
-source4.set_intensity().set_gaussian().set_axis_system(axis_system=[10, 50, 20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+source4.set_intensity().set_gaussian().set_axis_system(
+    axis_system=[10, 50, 20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+)
 source4.commit()
 print(source4)
 # -

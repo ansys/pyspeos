@@ -38,11 +38,21 @@ print(p)
 # The mention "local: " is added when printing the sensor
 
 # +
-distortion_file_path = os.path.join(tests_data_path, "CameraInputFiles", "CameraDistortion_130deg.OPTDistortion")
-transmittance_file_path = os.path.join(tests_data_path, "CameraInputFiles", "CameraTransmittance.spectrum")
-blue_spectrum_path = os.path.join(tests_data_path, "CameraInputFiles", "CameraSensitivityBlue.spectrum")
-green_spectrum_path = os.path.join(tests_data_path, "CameraInputFiles", "CameraSensitivityGreen.spectrum")
-red_spectrum_path = os.path.join(tests_data_path, "CameraInputFiles", "CameraSensitivityRed.spectrum")
+distortion_file_path = os.path.join(
+    tests_data_path, "CameraInputFiles", "CameraDistortion_130deg.OPTDistortion"
+)
+transmittance_file_path = os.path.join(
+    tests_data_path, "CameraInputFiles", "CameraTransmittance.spectrum"
+)
+blue_spectrum_path = os.path.join(
+    tests_data_path, "CameraInputFiles", "CameraSensitivityBlue.spectrum"
+)
+green_spectrum_path = os.path.join(
+    tests_data_path, "CameraInputFiles", "CameraSensitivityGreen.spectrum"
+)
+red_spectrum_path = os.path.join(
+    tests_data_path, "CameraInputFiles", "CameraSensitivityRed.spectrum"
+)
 
 sensor1 = p.create_sensor(name="Camera.1", feature_type=script.sensor.Camera)
 sensor1.set_distortion_file_uri(uri=distortion_file_path)
@@ -74,11 +84,21 @@ print(sensor1)
 # it is possible to do so as below.
 
 # +
-distortion_file_path = os.path.join(tests_data_path, "CameraInputFiles", "CameraDistortion_130deg.OPTDistortion")
-transmittance_file_path = os.path.join(tests_data_path, "CameraInputFiles", "CameraTransmittance.spectrum")
-blue_spectrum_path = os.path.join(tests_data_path, "CameraInputFiles", "CameraSensitivityBlue.spectrum")
-green_spectrum_path = os.path.join(tests_data_path, "CameraInputFiles", "CameraSensitivityGreen.spectrum")
-red_spectrum_path = os.path.join(tests_data_path, "CameraInputFiles", "CameraSensitivityRed.spectrum")
+distortion_file_path = os.path.join(
+    tests_data_path, "CameraInputFiles", "CameraDistortion_130deg.OPTDistortion"
+)
+transmittance_file_path = os.path.join(
+    tests_data_path, "CameraInputFiles", "CameraTransmittance.spectrum"
+)
+blue_spectrum_path = os.path.join(
+    tests_data_path, "CameraInputFiles", "CameraSensitivityBlue.spectrum"
+)
+green_spectrum_path = os.path.join(
+    tests_data_path, "CameraInputFiles", "CameraSensitivityGreen.spectrum"
+)
+red_spectrum_path = os.path.join(
+    tests_data_path, "CameraInputFiles", "CameraSensitivityRed.spectrum"
+)
 
 sensor2 = p.create_sensor(name="Camera.2", feature_type=script.sensor.Camera)
 sensor2.set_distortion_file_uri(uri=distortion_file_path)
@@ -89,7 +109,9 @@ sensor2.set_mode_photometric().set_mode_color().set_green_spectrum_file_uri(uri=
 sensor2.set_mode_photometric().set_mode_color().set_red_spectrum_file_uri(uri=red_spectrum_path)
 sensor2.set_focal_length(5.5)
 sensor2.set_height(value=6).set_width(value=6)  # dimensions
-sensor2.set_axis_system([20, 10, 40, 1, 0, 0, 0, 1, 0, 0, 0, 1])  # camera location [Origin, Xvector, Yvector, Zvector]
+sensor2.set_axis_system(
+    [20, 10, 40, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+)  # camera location [Origin, Xvector, Yvector, Zvector]
 sensor2.commit()
 
 print(sensor2)

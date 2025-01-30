@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -30,7 +30,6 @@ import ansys.speos.script as script
 
 def test_create_root_part(speos: Speos):
     """Test create root part in project."""
-
     # Create an empty project
     p = script.Project(speos=speos)
     assert len(p._features) == 0
@@ -130,24 +129,34 @@ def test_create_subpart(speos: Speos):
     assert len(root_part.part_link.get().parts) == 0
 
     # Add a sub part
-    sp1 = root_part.create_sub_part(name="SubPart.1").set_axis_system(axis_system=[5, 4, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]).commit()
+    sp1 = (
+        root_part.create_sub_part(name="SubPart.1")
+        .set_axis_system(axis_system=[5, 4, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+        .commit()
+    )
     assert len(root_part._geom_features) == 1
     assert len(root_part.part_link.get().parts) == 1
     assert root_part.part_link.get().parts[0] == sp1._part_instance
     assert sp1._part_instance.axis_system == [5, 4, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     assert sp1._part_instance.part_guid == sp1.part_link.key
-    assert sp1.part_link.get().name == "SubPart.1"  # part contained in a sub part gets same name as the sub part
+    assert (
+        sp1.part_link.get().name == "SubPart.1"
+    )  # part contained in a sub part gets same name as the sub part
     assert len(sp1.part_link.get().body_guids) == 0
 
     # Add another sub part + commit on root part
-    sp2 = root_part.create_sub_part(name="SubPart.2").set_axis_system(axis_system=[15, 14, 14, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    sp2 = root_part.create_sub_part(name="SubPart.2").set_axis_system(
+        axis_system=[15, 14, 14, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    )
     root_part.commit()
     assert len(root_part._geom_features) == 2
     assert len(root_part.part_link.get().parts) == 2
     assert root_part.part_link.get().parts[1] == sp2._part_instance
     assert sp2._part_instance.axis_system == [15, 14, 14, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     assert sp2._part_instance.part_guid == sp2.part_link.key
-    assert sp2.part_link.get().name == "SubPart.2"  # part contained in a sub part gets same name as the sub part
+    assert (
+        sp2.part_link.get().name == "SubPart.2"
+    )  # part contained in a sub part gets same name as the sub part
     assert len(sp2.part_link.get().body_guids) == 0
 
     # Delete sub parts
@@ -161,7 +170,11 @@ def test_create_subpart_body(speos: Speos):
     # Create an empty project with a root part and sub part
     p = script.Project(speos=speos)
     root_part = p.create_root_part().commit()
-    sp1 = root_part.create_sub_part(name="SubPart.1").set_axis_system(axis_system=[5, 4, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]).commit()
+    sp1 = (
+        root_part.create_sub_part(name="SubPart.1")
+        .set_axis_system(axis_system=[5, 4, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+        .commit()
+    )
     assert len(sp1._geom_features) == 0
     assert len(sp1.part_link.get().body_guids) == 0
 
@@ -191,29 +204,43 @@ def test_create_subpart_subpart(speos: Speos):
     # Create an empty project with a root part and sub part
     p = script.Project(speos=speos)
     root_part = p.create_root_part().commit()
-    sp1 = root_part.create_sub_part(name="SubPart.1").set_axis_system(axis_system=[5, 4, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]).commit()
+    sp1 = (
+        root_part.create_sub_part(name="SubPart.1")
+        .set_axis_system(axis_system=[5, 4, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+        .commit()
+    )
     assert len(sp1._geom_features) == 0
     assert len(sp1.part_link.get().parts) == 0
 
     # Add a sub part
-    sp11 = sp1.create_sub_part(name="SubPart.11").set_axis_system(axis_system=[-5, -4, -10, 1, 0, 0, 0, 1, 0, 0, 0, 1]).commit()
+    sp11 = (
+        sp1.create_sub_part(name="SubPart.11")
+        .set_axis_system(axis_system=[-5, -4, -10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+        .commit()
+    )
     assert len(sp1._geom_features) == 1
     assert len(sp1.part_link.get().parts) == 1
     assert sp1.part_link.get().parts[0] == sp11._part_instance
     assert sp11._part_instance.axis_system == [-5, -4, -10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     assert sp11._part_instance.part_guid == sp11.part_link.key
-    assert sp11.part_link.get().name == "SubPart.11"  # part contained in a sub part gets same name as the sub part
+    assert (
+        sp11.part_link.get().name == "SubPart.11"
+    )  # part contained in a sub part gets same name as the sub part
     assert len(sp11.part_link.get().body_guids) == 0
 
     # Add another sub part + commit on root part
-    sp12 = sp1.create_sub_part(name="SubPart.12").set_axis_system(axis_system=[-15, -14, -14, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    sp12 = sp1.create_sub_part(name="SubPart.12").set_axis_system(
+        axis_system=[-15, -14, -14, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    )
     root_part.commit()
     assert len(sp1._geom_features) == 2
     assert len(sp1.part_link.get().parts) == 2
     assert sp1.part_link.get().parts[1] == sp12._part_instance
     assert sp12._part_instance.axis_system == [-15, -14, -14, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     assert sp12._part_instance.part_guid == sp12.part_link.key
-    assert sp12.part_link.get().name == "SubPart.12"  # part contained in a sub part gets same name as the sub part
+    assert (
+        sp12.part_link.get().name == "SubPart.12"
+    )  # part contained in a sub part gets same name as the sub part
     assert len(sp12.part_link.get().body_guids) == 0
 
     # Delete sub parts
@@ -228,8 +255,12 @@ def test_commit_part(speos: Speos):
 
     # Create
     root_part = p.create_root_part()
-    sp1 = root_part.create_sub_part(name="SubPart.1").set_axis_system(axis_system=[5, 4, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
-    sp1.create_sub_part(name="SubPart.11").set_axis_system(axis_system=[-5, -4, -10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    sp1 = root_part.create_sub_part(name="SubPart.1").set_axis_system(
+        axis_system=[5, 4, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    )
+    sp1.create_sub_part(name="SubPart.11").set_axis_system(
+        axis_system=[-5, -4, -10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    )
     root_part.create_body(name="Body.1")
     assert root_part.part_link is None
     assert p.scene_link.get().part_guid == ""
@@ -239,7 +270,10 @@ def test_commit_part(speos: Speos):
     assert root_part.part_link is not None
     assert p.scene_link.get().part_guid == root_part.part_link.key
     assert len(root_part.part_link.get().parts) == 1
-    assert len(speos.client.get_item(key=root_part.part_link.get().parts[0].part_guid).get().parts) == 1
+    assert (
+        len(speos.client.get_item(key=root_part.part_link.get().parts[0].part_guid).get().parts)
+        == 1
+    )
     assert len(root_part.part_link.get().body_guids) == 1
 
     # Change only in local not committed
@@ -255,8 +289,12 @@ def test_reset_part(speos: Speos):
 
     # Create + commit
     root_part = p.create_root_part()
-    sp1 = root_part.create_sub_part(name="SubPart.1").set_axis_system(axis_system=[5, 4, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
-    sp1.create_sub_part(name="SubPart.11").set_axis_system(axis_system=[-5, -4, -10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    sp1 = root_part.create_sub_part(name="SubPart.1").set_axis_system(
+        axis_system=[5, 4, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    )
+    sp1.create_sub_part(name="SubPart.11").set_axis_system(
+        axis_system=[-5, -4, -10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    )
     root_part.create_body(name="Body.1")
     root_part.commit()
     assert root_part.part_link is not None
@@ -278,8 +316,12 @@ def test_delete_part(speos: Speos):
 
     # Create + commit
     root_part = p.create_root_part()
-    sp1 = root_part.create_sub_part(name="SubPart.1").set_axis_system(axis_system=[5, 4, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
-    sp1.create_sub_part(name="SubPart.11").set_axis_system(axis_system=[-5, -4, -10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    sp1 = root_part.create_sub_part(name="SubPart.1").set_axis_system(
+        axis_system=[5, 4, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    )
+    sp1.create_sub_part(name="SubPart.11").set_axis_system(
+        axis_system=[-5, -4, -10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    )
     root_part.create_body(name="Body.1")
     root_part.commit()
     assert root_part.part_link is not None

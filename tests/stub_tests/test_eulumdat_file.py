@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -29,14 +29,15 @@ With coverage.
 .. code::
    $ pytest --cov ansys.speos.core
 """
+
 import logging
 import os
 
-from ansys.api.speos.intensity_distributions.v1 import eulumdat_pb2, eulumdat_pb2_grpc
-
-from ansys.speos.core.speos import Speos
 from conftest import test_path
 import helper
+
+from ansys.api.speos.intensity_distributions.v1 import eulumdat_pb2, eulumdat_pb2_grpc
+from ansys.speos.core.speos import Speos
 
 
 def createEulumdatIntensity():
@@ -113,7 +114,10 @@ def compareEulumdatIntensities(eulumdat1, eulumdat2):
     # file information
     if eulumdat1.file_info.company_identification != eulumdat2.file_info.company_identification:
         return False
-    if eulumdat1.file_info.measurement_report_number != eulumdat2.file_info.measurement_report_number:
+    if (
+        eulumdat1.file_info.measurement_report_number
+        != eulumdat2.file_info.measurement_report_number
+    ):
         return False
     if eulumdat1.file_info.luminaire_name != eulumdat2.file_info.luminaire_name:
         return False
@@ -172,17 +176,35 @@ def compareEulumdatIntensities(eulumdat1, eulumdat2):
     if eulumdat1.number_standard_set_lamps != eulumdat2.number_standard_set_lamps:
         return False
     for lmp in range(eulumdat1.number_standard_set_lamps):
-        if eulumdat1.lamp_distribution[lmp].number_lamps != eulumdat2.lamp_distribution[lmp].number_lamps:
+        if (
+            eulumdat1.lamp_distribution[lmp].number_lamps
+            != eulumdat2.lamp_distribution[lmp].number_lamps
+        ):
             return False
-        if eulumdat1.lamp_distribution[lmp].type_lamps != eulumdat2.lamp_distribution[lmp].type_lamps:
+        if (
+            eulumdat1.lamp_distribution[lmp].type_lamps
+            != eulumdat2.lamp_distribution[lmp].type_lamps
+        ):
             return False
-        if eulumdat1.lamp_distribution[lmp].total_luminous_flux != eulumdat2.lamp_distribution[lmp].total_luminous_flux:
+        if (
+            eulumdat1.lamp_distribution[lmp].total_luminous_flux
+            != eulumdat2.lamp_distribution[lmp].total_luminous_flux
+        ):
             return False
-        if eulumdat1.lamp_distribution[lmp].color_temperature != eulumdat2.lamp_distribution[lmp].color_temperature:
+        if (
+            eulumdat1.lamp_distribution[lmp].color_temperature
+            != eulumdat2.lamp_distribution[lmp].color_temperature
+        ):
             return False
-        if eulumdat1.lamp_distribution[lmp].color_rendering_index != eulumdat2.lamp_distribution[lmp].color_rendering_index:
+        if (
+            eulumdat1.lamp_distribution[lmp].color_rendering_index
+            != eulumdat2.lamp_distribution[lmp].color_rendering_index
+        ):
             return False
-        if eulumdat1.lamp_distribution[lmp].wattage_including_ballast != eulumdat2.lamp_distribution[lmp].wattage_including_ballast:
+        if (
+            eulumdat1.lamp_distribution[lmp].wattage_including_ballast
+            != eulumdat2.lamp_distribution[lmp].wattage_including_ballast
+        ):
             return False
 
     # polar distribution data

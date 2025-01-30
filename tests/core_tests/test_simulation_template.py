@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -23,8 +23,8 @@
 """
 Test basic sop template database connection.
 """
-from ansys.api.speos.simulation.v1 import simulation_template_pb2
 
+from ansys.api.speos.simulation.v1 import simulation_template_pb2
 from ansys.speos.core.simulation_template import SimulationTemplate
 from ansys.speos.core.speos import Speos
 
@@ -33,7 +33,9 @@ def test_simulation_template(speos: Speos):
     """Test the simulation template."""
     assert speos.client.healthy is True
     # Get DB
-    sim_t_db = speos.client.simulation_templates()  # Create simulation_templates stub from client channel
+    sim_t_db = (
+        speos.client.simulation_templates()
+    )  # Create simulation_templates stub from client channel
 
     # Direct
 

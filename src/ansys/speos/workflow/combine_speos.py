@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -20,6 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 """Provides a way to combine several speos files into one project feature (of script layer)."""
+
 import os
 from typing import List
 
@@ -43,7 +44,12 @@ class SpeosFileInstance:
         By default, ``""``, empty means that the name from speos_file basename without extension will be taken.
     """
 
-    def __init__(self, speos_file: str, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1], name: str = "") -> None:
+    def __init__(
+        self,
+        speos_file: str,
+        axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+        name: str = "",
+    ) -> None:
         self.speos_file = speos_file
         """Speos file."""
         self.axis_system = axis_system

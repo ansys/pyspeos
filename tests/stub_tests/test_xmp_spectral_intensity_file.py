@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -29,8 +29,12 @@ With coverage.
 .. code::
    $ pytest --cov ansys.speos.core
 """
+
 import logging
 import os
+
+from conftest import test_path
+import helper
 
 from ansys.api.speos.intensity_distributions.v1 import (
     base_map_template_pb2,
@@ -38,10 +42,7 @@ from ansys.api.speos.intensity_distributions.v1 import (
     xmp_pb2,
     xmp_pb2_grpc,
 )
-
 from ansys.speos.core.speos import Speos
-from conftest import test_path
-import helper
 
 
 def createXmpIntensity():
@@ -80,38 +81,38 @@ def createXmpIntensity():
     xmp.depth_data_loaded = True
 
     # fill layer data
-    for l in range(xmp.base_data.layer_nb):
+    for iter_layer in range(xmp.base_data.layer_nb):
         xmp.base_data.layer.add()
-        xmp.base_data.layer[l].layer_name = "0" + str(l)
-        xmp.base_data.layer[l].initial_source_power = 1000
-        xmp.base_data.layer[l].initial_source_power_watt = 1000
-        xmp.base_data.layer[l].initial_source_power_lumen = 1000
+        xmp.base_data.layer[iter_layer].layer_name = "0" + str(iter_layer)
+        xmp.base_data.layer[iter_layer].initial_source_power = 1000
+        xmp.base_data.layer[iter_layer].initial_source_power_watt = 1000
+        xmp.base_data.layer[iter_layer].initial_source_power_lumen = 1000
         for s in range(xmp.wavelength_nb):
-            xmp.base_data.layer[l].wavelength.append(380 + 80 * s)
-            xmp.base_data.layer[l].value.append(0.1)
+            xmp.base_data.layer[iter_layer].wavelength.append(380 + 80 * s)
+            xmp.base_data.layer[iter_layer].value.append(0.1)
 
         xmp.spectral_value.layer.add()
         for w in range(xmp.wavelength_nb):
-            xmp.spectral_value.layer[l].wavelength.add()
+            xmp.spectral_value.layer[iter_layer].wavelength.add()
             for y in range(xmp.base_data.y_nb):
-                xmp.spectral_value.layer[l].wavelength[w].y.add()
+                xmp.spectral_value.layer[iter_layer].wavelength[w].y.add()
                 for x in range(xmp.base_data.x_nb):
-                    xmp.spectral_value.layer[l].wavelength[w].y[y].x.append(1.0)
+                    xmp.spectral_value.layer[iter_layer].wavelength[w].y[y].x.append(1.0)
 
         xmp.color_value.layer.add()
         for y in range(xmp.base_data.y_nb):
-            xmp.color_value.layer[l].y.add()
+            xmp.color_value.layer[iter_layer].y.add()
             for x in range(xmp.base_data.x_nb):
-                xmp.color_value.layer[l].y[y].x.add()
-                xmp.color_value.layer[l].y[y].x[x].color_x = 0.0
-                xmp.color_value.layer[l].y[y].x[x].color_y = 0.0
-                xmp.color_value.layer[l].y[y].x[x].color_z = 0.0
-                xmp.color_value.layer[l].y[y].x[x].radio = 0.0
+                xmp.color_value.layer[iter_layer].y[y].x.add()
+                xmp.color_value.layer[iter_layer].y[y].x[x].color_x = 0.0
+                xmp.color_value.layer[iter_layer].y[y].x[x].color_y = 0.0
+                xmp.color_value.layer[iter_layer].y[y].x[x].color_z = 0.0
+                xmp.color_value.layer[iter_layer].y[y].x[x].radio = 0.0
                 if x == y:
-                    xmp.color_value.layer[l].y[y].x[x].color_x = 100
-                    xmp.color_value.layer[l].y[y].x[x].color_y = 100.0
-                    xmp.color_value.layer[l].y[y].x[x].color_z = 100.0
-                    xmp.color_value.layer[l].y[y].x[x].radio = 100.0
+                    xmp.color_value.layer[iter_layer].y[y].x[x].color_x = 100
+                    xmp.color_value.layer[iter_layer].y[y].x[x].color_y = 100.0
+                    xmp.color_value.layer[iter_layer].y[y].x[x].color_z = 100.0
+                    xmp.color_value.layer[iter_layer].y[y].x[x].radio = 100.0
 
     for y in range(xmp.base_data.y_nb):
         xmp.depth_value.y.add()
@@ -162,33 +163,66 @@ def compareXmpIntensityDistributions(xmp1, xmp2):
         return False
     if xmp1.depth_data_loaded != xmp2.depth_data_loaded:
         return False
-    for l in range(xmp1.base_data.layer_nb):
-        if xmp1.base_data.layer[l].layer_name != xmp2.base_data.layer[l].layer_name:
+    for iter_layer in range(xmp1.base_data.layer_nb):
+        if (
+            xmp1.base_data.layer[iter_layer].layer_name
+            != xmp2.base_data.layer[iter_layer].layer_name
+        ):
             return False
-        if xmp1.base_data.layer[l].initial_source_power != xmp2.base_data.layer[l].initial_source_power:
+        if (
+            xmp1.base_data.layer[iter_layer].initial_source_power
+            != xmp2.base_data.layer[iter_layer].initial_source_power
+        ):
             return False
-        if xmp1.base_data.layer[l].initial_source_power_watt != xmp2.base_data.layer[l].initial_source_power_watt:
+        if (
+            xmp1.base_data.layer[iter_layer].initial_source_power_watt
+            != xmp2.base_data.layer[iter_layer].initial_source_power_watt
+        ):
             return False
-        if xmp1.base_data.layer[l].initial_source_power_lumen != xmp2.base_data.layer[l].initial_source_power_lumen:
+        if (
+            xmp1.base_data.layer[iter_layer].initial_source_power_lumen
+            != xmp2.base_data.layer[iter_layer].initial_source_power_lumen
+        ):
             return False
         for w in range(xmp1.wavelength_nb):
-            if xmp1.base_data.layer[l].wavelength[w] != xmp2.base_data.layer[l].wavelength[w]:
+            if (
+                xmp1.base_data.layer[iter_layer].wavelength[w]
+                != xmp2.base_data.layer[iter_layer].wavelength[w]
+            ):
                 return False
-            if xmp1.base_data.layer[l].value[w] != xmp2.base_data.layer[l].value[w]:
+            if (
+                xmp1.base_data.layer[iter_layer].value[w]
+                != xmp2.base_data.layer[iter_layer].value[w]
+            ):
                 return False
             for y in range(xmp1.base_data.y_nb):
                 for x in range(xmp1.base_data.x_nb):
-                    if xmp1.spectral_value.layer[l].wavelength[w].y[y].x[x] != xmp2.spectral_value.layer[l].wavelength[w].y[y].x[x]:
+                    if (
+                        xmp1.spectral_value.layer[iter_layer].wavelength[w].y[y].x[x]
+                        != xmp2.spectral_value.layer[iter_layer].wavelength[w].y[y].x[x]
+                    ):
                         return False
         for y in range(xmp1.base_data.y_nb):
             for x in range(xmp1.base_data.x_nb):
-                if xmp1.color_value.layer[l].y[y].x[x].color_x != xmp2.color_value.layer[l].y[y].x[x].color_x:
+                if (
+                    xmp1.color_value.layer[iter_layer].y[y].x[x].color_x
+                    != xmp2.color_value.layer[iter_layer].y[y].x[x].color_x
+                ):
                     return False
-                if xmp1.color_value.layer[l].y[y].x[x].color_y != xmp2.color_value.layer[l].y[y].x[x].color_y:
+                if (
+                    xmp1.color_value.layer[iter_layer].y[y].x[x].color_y
+                    != xmp2.color_value.layer[iter_layer].y[y].x[x].color_y
+                ):
                     return False
-                if xmp1.color_value.layer[l].y[y].x[x].color_z != xmp2.color_value.layer[l].y[y].x[x].color_z:
+                if (
+                    xmp1.color_value.layer[iter_layer].y[y].x[x].color_z
+                    != xmp2.color_value.layer[iter_layer].y[y].x[x].color_z
+                ):
                     return False
-                if xmp1.color_value.layer[l].y[y].x[x].radio != xmp2.color_value.layer[l].y[y].x[x].radio:
+                if (
+                    xmp1.color_value.layer[iter_layer].y[y].x[x].radio
+                    != xmp2.color_value.layer[iter_layer].y[y].x[x].radio
+                ):
                     return False
         for y in range(xmp1.base_data.y_nb):
             for x in range(xmp1.base_data.x_nb):
@@ -201,33 +235,33 @@ def test_grpc_xmp_intensity(speos: Speos):
     stub = xmp_pb2_grpc.XmpIntensityServiceStub(speos.client.channel)
     load_request = xmp_pb2.Load_Request()
     load_request.file_uri = os.path.join(test_path, "conoscopic_intensity_spectral.xmp")
-    load_response = xmp_pb2.Load_Response()
+    xmp_pb2.Load_Response()
     save_request = xmp_pb2.Save_Request()
     save_request.file_uri = os.path.join(test_path, "conoscopic_intensity_spectral.xmp")
-    save_response = xmp_pb2.Save_Response()
+    xmp_pb2.Save_Response()
 
-    logging.debug(f"Creating xmp intensity protocol buffer")
+    logging.debug("Creating xmp intensity protocol buffer")
     xmp = createXmpIntensity()
     request = xmp_pb2.XmpDistribution()
     request.spectral_map.CopyFrom(xmp)
 
-    logging.debug(f"Sending protocol buffer to server")
-    import_response = xmp_pb2.Import_Response()
-    import_response = stub.Import(request)
+    logging.debug("Sending protocol buffer to server")
+    xmp_pb2.Import_Response()
+    stub.Import(request)
 
     logging.debug(f"Saving {save_request.file_uri}")
-    save_response = stub.Save(save_request)
+    stub.Save(save_request)
     assert helper.does_file_exist(save_request.file_uri)
 
     logging.debug(f"Reading {load_request.file_uri}")
-    load_response = stub.Load(load_request)
+    stub.Load(load_request)
     helper.remove_file(load_request.file_uri)
 
-    logging.debug(f"Export xmp intensity protocol buffer")
+    logging.debug("Export xmp intensity protocol buffer")
     export_request = xmp_pb2.Export_Request()
     distri = xmp_pb2.XmpDistribution()
     distri = stub.Export(export_request)
     xmp2 = distri.spectral_map
 
-    logging.debug(f"Comparing xmp intensity distributions")
+    logging.debug("Comparing xmp intensity distributions")
     assert compareXmpIntensityDistributions(xmp, xmp2)
