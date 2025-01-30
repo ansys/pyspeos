@@ -283,6 +283,28 @@ class OptProp:
 
         return out_dict
 
+    def get(self, key: str = "") -> str | dict:
+        """Get dictionary corresponding to the project - read only.
+
+        Parameters
+        ----------
+        key: str
+
+        Returns
+        -------
+        str | dict
+        """
+
+        if key == "":
+            return self._to_dict()
+        info = proto_message_utils._value_finder_key_startswith(dict_var=self._to_dict(), key=key)
+        try:
+            first = next(info)
+            return first[1]
+        except StopIteration:
+            info = proto_message_utils._flatten_dict(dict_var=self._to_dict())
+            print("Used key: {} not found in key list: {}.".format(key, info.keys()))
+
     def __str__(self):
         """Return the string representation of the optical property."""
         out_str = ""
