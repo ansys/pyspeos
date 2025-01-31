@@ -106,6 +106,11 @@ print(op4)
 
 # +
 print(op1)
+# -
+
+# The get methods allows you to get some properties of your feature
+
+# +
 print("op1 name: {}".format(op1.get(key="name")))
 print("geometries linked to op1: {}".format(op1.get(key="geo_paths")))
 print("op1 surface optical properties info: {}".format(op1.get(key="sops")))
