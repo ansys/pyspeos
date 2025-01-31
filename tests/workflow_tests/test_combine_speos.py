@@ -123,6 +123,7 @@ def test_insert_speos(speos: Speos):
     assert len(p.scene_link.get().sensors) == 1
     assert len(p.scene_link.get().sources) == 0
     assert len(p.scene_link.get().simulations) == 1
+    assert len(p.find(name=".*", name_regex=True, feature_type=script.opt_prop.OptProp)) == 7
 
     # Insert several speos files into the project - only geometries + materials are retrieved
     insert_speos(
@@ -143,6 +144,7 @@ def test_insert_speos(speos: Speos):
     assert len(p.scene_link.get().sensors) == 1
     assert len(p.scene_link.get().sources) == 0
     assert len(p.scene_link.get().simulations) == 1
+    assert len(p.find(name=".*", name_regex=True, feature_type=script.opt_prop.OptProp)) == 12
 
     # Check that the root part contains one part per speos to insert
     root_part = p.find(name="", feature_type=script.Part)[0]
