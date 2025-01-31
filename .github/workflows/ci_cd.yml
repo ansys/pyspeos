@@ -130,6 +130,12 @@ jobs:
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
 
+      - name: Create Python virtual environment
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          python -c "import sys; print(sys.executable)"
+
       - name: Login to GitHub Packages
         uses: docker/login-action@v3
         with:
