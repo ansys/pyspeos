@@ -261,7 +261,7 @@ class Project:
             Part feature.
         """
         name = "RootPart"
-        existing_rp = self.find(name=name, feature_type=part.Part)
+        existing_rp = self.find(name="", feature_type=part.Part)
         if existing_rp != []:
             return existing_rp[0]
 
