@@ -3,8 +3,7 @@ requires = ["flit_core >=3.2,<4"]
 build-backend = "flit_core.buildapi"
 
 [project]
-# Check https://flit.readthedocs.io/en/latest/pyproject_toml.html for all available sections
-name = "ansys-speos"
+name = "ansys-speos-core"
 version = "0.1.dev0"
 description = "A Python wrapper for Ansys Speos"
 readme = "README.rst"
