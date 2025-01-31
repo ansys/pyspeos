@@ -138,7 +138,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install packages for testing
-        if: env.SKIP_UNSTABLE == 'false'
         run: |
           . .venv/bin/activate
           python -m pip install --upgrade pip
