@@ -107,8 +107,6 @@ def _value_finder_key_startswith(dict_var: dict, key: str) -> Iterator[tuple[str
     """Find all (key,value) corresponding to a key that starts with input key."""
     for k, v in dict_var.items():
         if k.startswith(key):  # if the key fits the condition
-            if "id" in k and "id" not in key:
-                continue
             yield (k, v)
 
         if isinstance(v, dict):  # Look recursively if the value is a dict
