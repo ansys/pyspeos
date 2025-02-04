@@ -98,6 +98,12 @@ class Project:
         ansys.speos.script.opt_prop.OptProp
             OptProp feature.
         """
+        existing_features = self.find(name=name)
+        if len(existing_features) != 0:
+            msg = "Feature {}: {} has a conflict name with an existing feature.".format(
+                opt_prop.OptProp, name
+            )
+            raise ValueError(msg)
         feature = opt_prop.OptProp(
             project=self, name=name, description=description, metadata=metadata
         )
@@ -135,6 +141,12 @@ class Project:
         Union[ansys.speos.script.source.Surface, ansys.speos.script.source.RayFile, ansys.speos.script.source.Luminaire]
             Source class instance.
         """
+        existing_features = self.find(name=name)
+        if len(existing_features) != 0:
+            msg = "Feature {}: {} has a conflict name with an existing feature.".format(
+                feature_type, name
+            )
+            raise ValueError(msg)
         feature = None
         if feature_type == source.Surface:
             feature = source.Surface(
@@ -186,6 +198,12 @@ class Project:
         Union[ansys.speos.script.simulation.Direct, ansys.speos.script.simulation.Interactive, ansys.speos.script.simulation.Inverse]
             Simulation class instance
         """
+        existing_features = self.find(name=name)
+        if len(existing_features) != 0:
+            msg = "Feature {}: {} has a conflict name with an existing feature.".format(
+                feature_type, name
+            )
+            raise ValueError(msg)
         feature = None
         if feature_type == simulation.Direct:
             feature = simulation.Direct(
@@ -237,6 +255,12 @@ class Project:
         Union[ansys.speos.script.sensor.Camera, ansys.speos.script.sensor.Radiance, ansys.speos.script.sensor.Irradiance]
             Sensor class instance.
         """
+        existing_features = self.find(name=name)
+        if len(existing_features) != 0:
+            msg = "Feature {}: {} has a conflict name with an existing feature.".format(
+                feature_type, name
+            )
+            raise ValueError(msg)
         feature = None
         if feature_type == sensor.Irradiance:
             feature = sensor.Irradiance(
@@ -604,8 +628,9 @@ class Project:
             self._fill_bodies(body_guids=part_data.body_guids, feat_host=sp_feat)
 
         for mat_inst in scene_data.materials:
-            op_feature = self.create_optical_property(name=mat_inst.name)
-            op_feature._fill(mat_inst=mat_inst)
+            if len(self.find(name=mat_inst.name)) == 0:
+                op_feature = self.create_optical_property(name=mat_inst.name)
+                op_feature._fill(mat_inst=mat_inst)
 
         for src_inst in scene_data.sources:
             if src_inst.HasField("rayfile_properties"):
