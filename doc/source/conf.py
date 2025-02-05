@@ -46,6 +46,7 @@ extensions = [
     "numpydoc",
     "sphinx.ext.intersphinx",
     "sphinx_copybutton",
+    "sphinx.ext.autodoc",
     "sphinx_design",
     "sphinx_jinja",
     "ansys_sphinx_theme.extension.autoapi",
