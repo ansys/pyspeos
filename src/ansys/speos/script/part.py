@@ -522,7 +522,7 @@ class Part:
             else:
                 found_features.extend([x for x in self._geom_features if x._name == name])
 
-        if found_features != [] and idx != -1:
+        if found_features and idx != -1:
             tmp = [f.find(name=orig_name[idx + 1 :], name_regex=name_regex, feature_type=feature_type) for f in found_features]
 
             found_features.clear()

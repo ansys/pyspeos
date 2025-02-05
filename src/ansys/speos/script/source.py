@@ -641,7 +641,7 @@ class RayFile(BaseSource):
         ansys.speos.script.source.RayFile
             RayFile Source.
         """
-        if exit_geometries == []:
+        if not exit_geometries:
             self._source_instance.rayfile_properties.ClearField("exit_geometries")
         else:
             self._source_instance.rayfile_properties.exit_geometries.geo_paths[:] = [gr.to_native_link() for gr in exit_geometries]

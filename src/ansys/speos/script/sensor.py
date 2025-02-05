@@ -2403,7 +2403,7 @@ class Radiance(BaseSensor):
         ansys.speos.script.sensor.Radiance
             Radiance sensor.
         """
-        if value is None or value == []:
+        if not value:
             self._sensor_instance.radiance_properties.ClearField("observer_point")
         else:
             self._sensor_instance.radiance_properties.observer_point[:] = value

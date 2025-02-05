@@ -387,7 +387,7 @@ class Project:
                     ]
                 )
 
-        if found_features != [] and idx != -1:
+        if found_features and idx != -1:
             tmp = [f.find(name=orig_name[idx + 1 :], name_regex=name_regex, feature_type=orig_feature_type) for f in found_features]
 
             found_features.clear()
@@ -531,7 +531,7 @@ class Project:
         root_part_data = root_part_link.get()
         root_part_feats = self.find(name="", feature_type=part.Part)
         root_part_feat = None
-        if root_part_feats == []:
+        if not root_part_feats:
             root_part_feat = self.create_root_part()
             root_part_data.name = "RootPart"
             root_part_link.set(root_part_data)
