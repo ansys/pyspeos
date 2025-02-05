@@ -470,7 +470,7 @@ class Luminaire(BaseSource):
         ansys.speos.script.source.Luminaire
             Luminaire source.
         """
-        if  axis_system is None:
+        if axis_system is None:
             axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
         self._source_instance.luminaire_properties.axis_system[:] = axis_system
         return self
