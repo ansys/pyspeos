@@ -50,7 +50,7 @@ class BaseSource:
     description : str
         Description of the source.
         By default, ``""``.
-    metadata : Mapping[str, str]
+    metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
     source_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance, optional
@@ -67,7 +67,7 @@ class BaseSource:
         project: project.Project,
         name: str,
         description: str = "",
-        metadata: Mapping[str, str] = {},
+        metadata: Optional[Mapping[str, str]] = None,
         source_instance: Optional[core.Scene.SourceInstance] = None,
     ) -> None:
         self._project = project
@@ -75,6 +75,9 @@ class BaseSource:
         self._unique_id = None
         self.source_template_link = None
         """Link object for the source template in database."""
+
+        if metadata is None:
+            metadata = {}
 
         if source_instance is None:
             # Create local SourceTemplate
@@ -346,7 +349,7 @@ class Luminaire(BaseSource):
     description : str
         Description of the feature.
         By default, ``""``.
-    metadata : Mapping[str, str]
+    metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
     default_values : bool
@@ -358,10 +361,13 @@ class Luminaire(BaseSource):
         project: project.Project,
         name: str,
         description: str = "",
-        metadata: Mapping[str, str] = {},
+        metadata: Optional[Mapping[str, str]] = None,
         source_instance: Optional[core.Scene.SourceInstance] = None,
         default_values: bool = True,
     ) -> None:
+        if metadata is None:
+            metadata = {}
+
         super().__init__(project=project, name=name, description=description, metadata=metadata, source_instance=source_instance)
 
         self._spectrum = self._Spectrum(
@@ -450,12 +456,12 @@ class Luminaire(BaseSource):
             self._spectrum._message_to_complete = self._source_template.luminaire
         return self._spectrum._spectrum
 
-    def set_axis_system(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> Luminaire:
+    def set_axis_system(self, axis_system: Optional[List[float]] = None) -> Luminaire:
         """Set the position of the source.
 
         Parameters
         ----------
-        axis_system : List[float]
+        axis_system : Optional[List[float]]
             Position of the source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
@@ -464,6 +470,8 @@ class Luminaire(BaseSource):
         ansys.speos.script.source.Luminaire
             Luminaire source.
         """
+        if  axis_system is None:
+            axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
         self._source_instance.luminaire_properties.axis_system[:] = axis_system
         return self
 
@@ -481,7 +489,7 @@ class RayFile(BaseSource):
     description : str
         Description of the feature.
         By default, ``""``.
-    metadata : Mapping[str, str]
+    metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
     default_values : bool
@@ -493,10 +501,13 @@ class RayFile(BaseSource):
         project: project.Project,
         name: str,
         description: str = "",
-        metadata: Mapping[str, str] = {},
+        metadata: Optional[Mapping[str, str]] = None,
         source_instance: Optional[core.Scene.SourceInstance] = None,
         default_values: bool = True,
     ) -> None:
+        if metadata is None:
+            metadata = {}
+
         super().__init__(project=project, name=name, description=description, metadata=metadata, source_instance=source_instance)
         self._client = self._project.client
 
@@ -610,12 +621,12 @@ class RayFile(BaseSource):
         self._spectrum._no_spectrum_local = False
         return self._spectrum._spectrum
 
-    def set_axis_system(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> RayFile:
+    def set_axis_system(self, axis_system: Optional[List[float]] = None) -> RayFile:
         """Set position of the source.
 
         Parameters
         ----------
-        axis_system : List[float]
+        axis_system : Optional[List[float]]
             Position of the source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
@@ -624,10 +635,12 @@ class RayFile(BaseSource):
         ansys.speos.script.source.RayFile
             RayFile Source.
         """
+        if axis_system is None:
+            axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
         self._source_instance.rayfile_properties.axis_system[:] = axis_system
         return self
 
-    def set_exit_geometries(self, exit_geometries: List[GeoRef] = []) -> RayFile:
+    def set_exit_geometries(self, exit_geometries: Optional[List[GeoRef]] = None) -> RayFile:
         """Set exit geometries.
 
         Parameters
@@ -720,12 +733,12 @@ class Surface(BaseSource):
             self._exitance_variable.exitance_xmp_file_uri = uri
             return self
 
-        def set_axis_plane(self, axis_plane: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0]) -> Surface.ExitanceVariable:
+        def set_axis_plane(self, axis_plane: Optional[List[float]] = None) -> Surface.ExitanceVariable:
             """Set position of the exitance map.
 
             Parameters
             ----------
-            axis_plane : List[float]
+            axis_plane : Optional[List[float]]
                 Position of the exitance map [Ox Oy Oz Xx Xy Xz Yx Yy Yz].
                 By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0]``.
 
@@ -734,6 +747,8 @@ class Surface(BaseSource):
             ansys.speos.script.source.Surface.ExitanceVariable
                 ExitanceVariable of surface Source.
             """
+            if axis_plane is None:
+                axis_plane = [0, 0, 0, 1, 0, 0, 0, 1, 0]
             self._exitance_variable_props.axis_plane[:] = axis_plane
             return self
 
@@ -742,10 +757,13 @@ class Surface(BaseSource):
         project: project.Project,
         name: str,
         description: str = "",
-        metadata: Mapping[str, str] = {},
+        metadata: Optional[Mapping[str, str]] = None,
         source_instance: Optional[core.Scene.SourceInstance] = None,
         default_values: bool = True,
     ) -> None:
+        if metadata is None:
+            metadata = {}
+
         super().__init__(project=project, name=name, description=description, metadata=metadata, source_instance=source_instance)
         self._speos_client = self._project.client
         self._name = name

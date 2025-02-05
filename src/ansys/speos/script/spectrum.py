@@ -23,7 +23,7 @@
 """Provides a way to interact with Speos feature: Spectrum."""
 from __future__ import annotations
 
-from typing import List, Mapping
+from typing import List, Mapping, Optional
 
 import ansys.speos.core as core
 from ansys.speos.script.proto_message_utils import dict_to_str
@@ -42,7 +42,7 @@ class Spectrum:
     description : str
         Description of the feature.
         By default, ``""``.
-    metadata : Mapping[str, str]
+    metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
     key : str
@@ -55,11 +55,14 @@ class Spectrum:
     """
 
     def __init__(
-        self, speos_client: core.SpeosClient, name: str, description: str = "", metadata: Mapping[str, str] = {}, key: str = ""
+        self, speos_client: core.SpeosClient, name: str, description: str = "", metadata: Optional[Mapping[str, str]] = None, key: str = ""
     ) -> None:
         self._client = speos_client
         self.spectrum_link = None
         """Link object for the spectrum in database."""
+
+        if metadata is None:
+            metadata = {}
 
         if key == "":
             # Create Spectrum

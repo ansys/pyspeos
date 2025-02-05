@@ -42,7 +42,7 @@ class Face:
     description : str
         Description of the feature.
         By default, ``""``.
-    metadata : Mapping[str, str]
+    metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
     parent_body : ansys.speos.script.body.Body, optional
@@ -60,7 +60,7 @@ class Face:
         speos_client: core.SpeosClient,
         name: str,
         description: str = "",
-        metadata: Mapping[str, str] = {},
+        metadata: Optional[Mapping[str, str]] = None,
         parent_body: Optional[body.Body] = None,
     ) -> None:
         self._speos_client = speos_client
@@ -68,6 +68,8 @@ class Face:
         self._name = name
         self.face_link = None
         """Link object for the face in database."""
+        if metadata is None:
+            metadata = {}
 
         # Create local Face
         self._face = core.Face(name=name, description=description, metadata=metadata)

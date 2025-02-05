@@ -68,7 +68,7 @@ class BaseSensor:
         project: project.Project,
         name: str,
         description: str = "",
-        metadata: Mapping[str, str] = {},
+        metadata: Optional[Mapping[str, str]] = None,
         sensor_instance: Optional[core.Scene.SensorInstance] = None,
     ) -> None:
         self._project = project
@@ -76,6 +76,8 @@ class BaseSensor:
         self._unique_id = None
         self.sensor_template_link = None
         """Link object for the sensor template in database."""
+        if metadata is None:
+            metadata = {}
 
         if sensor_instance is None:
             # Create local SensorTemplate
@@ -785,7 +787,7 @@ class Camera(BaseSensor):
     description : str
         Description of the feature.
         By default, ``""``.
-    metadata : Mapping[str, str]
+    metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
     sensor_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance, optional
@@ -1384,10 +1386,13 @@ class Camera(BaseSensor):
         project: project.Project,
         name: str,
         description: str = "",
-        metadata: Mapping[str, str] = {},
+        metadata: Optional[Mapping[str, str]] = None,
         sensor_instance: Optional[core.Scene.SensorInstance] = None,
         default_values: bool = True,
     ) -> None:
+        if metadata is None:
+            metadata = {}
+
         super().__init__(project=project, name=name, description=description, metadata=metadata, sensor_instance=sensor_instance)
 
         # Attribute gathering more complex camera mode
@@ -1589,12 +1594,12 @@ class Camera(BaseSensor):
             self._type._mode_photometric = self._sensor_template.camera_sensor_template.sensor_mode_photometric
         return self._type
 
-    def set_axis_system(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> Camera:
+    def set_axis_system(self, axis_system: Optional[List[float]] = None) -> Camera:
         """Set the position of the sensor.
 
         Parameters
         ----------
-        axis_system : List[float]
+        axis_system : Optional[List[float]]
             Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
@@ -1603,6 +1608,8 @@ class Camera(BaseSensor):
         ansys.speos.script.sensor.Camera
             Camera Sensor feature
         """
+        if axis_system is None:
+            axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
         self._sensor_instance.camera_properties.axis_system[:] = axis_system
         return self
 
@@ -1622,7 +1629,7 @@ class Irradiance(BaseSensor):
     description : str
         Description of the feature.
         By default, ``""``.
-    metadata : Mapping[str, str]
+    metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
     sensor_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance, optional
@@ -1638,10 +1645,13 @@ class Irradiance(BaseSensor):
         project: project.Project,
         name: str,
         description: str = "",
-        metadata: Mapping[str, str] = {},
+        metadata: Optional[Mapping[str, str]] = None,
         sensor_instance: Optional[core.Scene.SensorInstance] = None,
         default_values: bool = True,
     ) -> None:
+        if metadata is None:
+            metadata = {}
+
         super().__init__(project=project, name=name, description=description, metadata=metadata, sensor_instance=sensor_instance)
 
         # Attribute gathering more complex irradiance type
@@ -1850,7 +1860,7 @@ class Irradiance(BaseSensor):
             Irradiance sensor.
         """
         self._sensor_template.irradiance_sensor_template.illuminance_type_planar.SetInParent()
-        if integration_direction is None or integration_direction == []:
+        if not integration_direction:
             self._sensor_instance.irradiance_properties.ClearField("integration_direction")
         else:
             self._sensor_instance.irradiance_properties.integration_direction[:] = integration_direction
@@ -1904,18 +1914,18 @@ class Irradiance(BaseSensor):
             Irradiance sensor.
         """
         self._sensor_template.irradiance_sensor_template.illuminance_type_semi_cylindrical.SetInParent()
-        if integration_direction is None or integration_direction == []:
+        if not integration_direction:
             self._sensor_instance.irradiance_properties.ClearField("integration_direction")
         else:
             self._sensor_instance.irradiance_properties.integration_direction[:] = integration_direction
         return self
 
-    def set_axis_system(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> Irradiance:
+    def set_axis_system(self, axis_system: Optional[List[float]] = None) -> Irradiance:
         """Set position of the sensor.
 
         Parameters
         ----------
-        axis_system : List[float]
+        axis_system : Optional[List[float]]
             Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
@@ -1924,6 +1934,8 @@ class Irradiance(BaseSensor):
         ansys.speos.script.sensor.Irradiance
             Irradiance sensor.
         """
+        if axis_system is None:
+            axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
         self._sensor_instance.irradiance_properties.axis_system[:] = axis_system
         return self
 
@@ -2098,7 +2110,7 @@ class Irradiance(BaseSensor):
             self._layer_type._layer_type_incidence_angle = self._sensor_instance.irradiance_properties.layer_type_incidence_angle
         return self._layer_type
 
-    def set_output_face_geometries(self, geometries: List[GeoRef] = []) -> Irradiance:
+    def set_output_face_geometries(self, geometries: Optional[List[GeoRef]] = None) -> Irradiance:
         """Select output faces for inverse simulation optimization.
 
         Parameters
@@ -2112,7 +2124,7 @@ class Irradiance(BaseSensor):
         ansys.speos.script.sensor.Irradiance
             Irradiance sensor.
         """
-        if geometries == []:
+        if not geometries:
             self._sensor_instance.irradiance_properties.ClearField("output_face_geometries")
         else:
             self._sensor_instance.irradiance_properties.output_face_geometries.geo_paths[:] = [gr.to_native_link() for gr in geometries]
@@ -2133,7 +2145,7 @@ class Radiance(BaseSensor):
     description : str
         Description of the feature.
         By default, ``""``.
-    metadata : Mapping[str, str]
+    metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
     sensor_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance, optional
@@ -2149,10 +2161,13 @@ class Radiance(BaseSensor):
         project: project.Project,
         name: str,
         description: str = "",
-        metadata: Mapping[str, str] = {},
+        metadata: Optional[Mapping[str, str]] = None,
         sensor_instance: Optional[core.Scene.SensorInstance] = None,
         default_values: bool = True,
     ) -> None:
+        if metadata is None:
+            metadata = {}
+
         super().__init__(project=project, name=name, description=description, metadata=metadata, sensor_instance=sensor_instance)
 
         # Attribute gathering more complex radiance type
@@ -2371,12 +2386,12 @@ class Radiance(BaseSensor):
         self._sensor_template.radiance_sensor_template.integration_angle = value
         return self
 
-    def set_axis_system(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> Radiance:
+    def set_axis_system(self, axis_system: Optional[List[float]] = None) -> Radiance:
         """Set position of the sensor.
 
         Parameters
         ----------
-        axis_system : List[float]
+        axis_system : Optional[List[float]]
             Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
@@ -2385,6 +2400,8 @@ class Radiance(BaseSensor):
         ansys.speos.script.sensor.Radiance
             Radiance sensor.
         """
+        if axis_system is None:
+            axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
         self._sensor_instance.radiance_properties.axis_system[:] = axis_system
         return self
 

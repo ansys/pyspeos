@@ -24,7 +24,7 @@
 Test scene.
 """
 import os
-from typing import List, Mapping
+from typing import List, Mapping, Optional
 
 from ansys.api.speos.sensor.v1 import common_pb2, irradiance_sensor_pb2
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
@@ -289,11 +289,16 @@ def create_basic_scene(speos: Speos) -> SceneLink:
 def create_face_rectangle(
     name: str,
     description: str = "",
-    base: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0],
+    base: Optional[List[float]] = None,
     x_size: float = 200,
     y_size: float = 100,
-    metadata: Mapping[str, str] = {},
+    metadata: Optional[Mapping[str, str]] = None,
 ) -> Face:
+    if base is None:
+        base = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    if metadata is None:
+        metadata = {}
+
     face = Face(name=name, description=description, metadata=metadata)
 
     face.vertices.extend(base[:3] - np.multiply(0.5 * x_size, base[3:6]) - np.multiply(0.5 * y_size, base[6:9]))
@@ -314,13 +319,18 @@ def create_body_box(
     name: str,
     face_stub: FaceStub,
     description: str = "",
-    base: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+    base: Optional[List[float]] = None,
     x_size: float = 200,
     y_size: float = 200,
     z_size: float = 100,
     idx_face: int = 0,
-    metadata: Mapping[str, str] = {},
+    metadata: Optional[Mapping[str, str]] = None,
 ) -> Body:
+    if base is None:
+        base = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    if metadata is None:
+        metadata = {}
+
     body = Body(name=name, description=description, metadata=metadata)
 
     base0 = []

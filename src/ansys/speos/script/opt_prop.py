@@ -45,12 +45,12 @@ class OptProp:
     description : str, optional
         Description of the feature.
         By default, ``""``.
-    metadata : Mapping[str, str], optional
+    metadata : Optional[Mapping[str, str]], optional
         Metadata of the feature.
         By default, ``None``.
     """
 
-    def __init__(self, project: project.Project, name: str, description: str = "", metadata: Mapping[str, str] = {}):
+    def __init__(self, project: project.Project, name: str, description: str = "", metadata: Optional[Mapping[str, str]] = None):
         self._name = name
         self._project = project
         self._unique_id = None
@@ -58,7 +58,10 @@ class OptProp:
         """Link object for the sop template in database."""
         self.vop_template_link = None
         """Link object for the vop template in database."""
+
         # Create SOP template
+        if metadata is None:
+            metadata = {}
         self._sop_template = core.SOPTemplate(name=name + ".SOP", description=description, metadata=metadata)
 
         # Create VOP template
@@ -179,7 +182,7 @@ class OptProp:
         return self
 
     # Deactivated due to a bug on SpeosRPC server side
-    # def set_volume_nonhomogeneous(self, path: str, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> OptProp:
+    # def set_volume_nonhomogeneous(self, path: str, axis_system: Optional[List[float]] = None) -> OptProp:
     #    """
     #    Material with non-homogeneous refractive index.
     #
@@ -188,7 +191,7 @@ class OptProp:
     #    path : str
     #        \*.gradedmaterial file that describes the spectral variations of
     #        refractive index and absorption with the respect to position in space.
-    #    axis_system : List[float]
+    #    axis_system : Optional[List[float]]
     #        Orientation of the non-homogeneous material [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
     #        By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
     #
@@ -197,6 +200,8 @@ class OptProp:
     #    ansys.speos.script.opt_prop.OptProp
     #        Optical property.
     #    """
+    #    if not axis_system:
+    #        axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     #    if self._vop_template is None:
     #        self._vop_template = core.VOPTemplate(name=self._name + ".VOP", description=self._sop_template.description,
     #                                              metadata=self._sop_template.metadata)

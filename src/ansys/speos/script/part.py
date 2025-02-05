@@ -46,7 +46,7 @@ class Part:
     description : str
         Description of the feature.
         By default, ``""``.
-    metadata : Mapping[str, str]
+    metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
 
@@ -92,7 +92,7 @@ class Part:
 
             self._geom_features = []
 
-        def create_body(self, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> body.Body:
+        def create_body(self, name: str, description: str = "", metadata: Optional[Mapping[str, str]] = None) -> body.Body:
             """Create a body in this element.
 
             Parameters
@@ -102,7 +102,7 @@ class Part:
             description : str
                 Description of the feature.
                 By default, ``""``.
-            metadata : Mapping[str, str]
+            metadata : Optional[Mapping[str, str]]
                 Metadata of the feature.
                 By default, ``{}``.
 
@@ -111,6 +111,9 @@ class Part:
             ansys.speos.script.body.Body
                 Body feature.
             """
+            if metadata is None:
+                metadata = {}
+
             body_feat = body.Body(speos_client=self._speos_client, name=name, description=description, metadata=metadata, parent_part=self)
             self._geom_features.append(body_feat)
             return body_feat
@@ -329,7 +332,7 @@ class Part:
                 else:
                     found_features.extend([x for x in self._geom_features if x._name == name])
 
-            if found_features != [] and idx != -1:
+            if found_features and idx != -1:
                 tmp = [f.find(name=orig_name[idx + 1 :], name_regex=name_regex, feature_type=feature_type) for f in found_features]
 
                 found_features.clear()
@@ -338,7 +341,7 @@ class Part:
 
             return found_features
 
-    def __init__(self, project: project.Project, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> None:
+    def __init__(self, project: project.Project, name: str, description: str = "", metadata: Optional[OpMapping[str, str]] = None) -> None:
         self._project = project
         self._name = name
         self.part_link = None
@@ -347,9 +350,11 @@ class Part:
         self._geom_features = []
 
         # Create local Part
+        if metadata is None:
+            metadata = {}
         self._part = core.Part(name=name, description=description, metadata=metadata)
 
-    def create_body(self, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> body.Body:
+    def create_body(self, name: str, description: str = "", metadata: Optional[Mapping[str, str]] = None) -> body.Body:
         """Create a body in this element.
 
         Parameters
@@ -368,6 +373,9 @@ class Part:
         ansys.speos.script.body.Body
             Body feature.
         """
+        if metadata is None:
+            metadata = {}
+
         body_feat = body.Body(speos_client=self._project.client, name=name, description=description, metadata=metadata, parent_part=self)
         self._geom_features.append(body_feat)
         return body_feat
