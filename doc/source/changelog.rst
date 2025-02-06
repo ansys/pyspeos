@@ -3,7 +3,7 @@
 Release notes
 #############
 
-This document contains the release notes for the PySPEOS project.
+This document contains the release notes for the PySpeos project.
 
 .. vale off
 
