@@ -173,7 +173,7 @@ def test_body(speos: Speos):
     faces_to_delete = body0.get().face_guids
     body0.delete()
     for face_key in faces_to_delete:
-        face = speos.client.get_item(key=face_key)
+        face = speos.client[face_key]
         assert isinstance(face, FaceLink)
         face.delete()
 
@@ -212,10 +212,10 @@ def test_part(speos: Speos):
     assert part1.key != ""
 
     for body_key in part1.get().body_guids:
-        body = speos.client.get_item(key=body_key)
+        body = speos.client[body_key]
         assert isinstance(body, BodyLink)
         for face_key in body.get().face_guids:
-            face = speos.client.get_item(key=face_key)
+            face = speos.client[face_key]
             assert isinstance(face, FaceLink)
             face.delete()
         body.delete()

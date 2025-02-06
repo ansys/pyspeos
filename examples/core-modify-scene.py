@@ -62,7 +62,7 @@ print(my_scene)
 # +
 for sensor_i in my_scene.get().sensors:
     print(sensor_i)  # Print instance data model
-    print(speos.client.get_item(key=sensor_i.sensor_guid))  # Print template data model
+    print(speos.client[sensor_i.sensor_guid])  # Print template data model
     print("\n")
 # -
 
@@ -72,7 +72,7 @@ for sensor_i in my_scene.get().sensors:
 for sensor_i in my_scene.get().sensors:
     if sensor_i.HasField("camera_properties"):
         print(sensor_i)  # Print instance data model
-        print(speos.client.get_item(key=sensor_i.sensor_guid))  # Print template data model
+        print(speos.client[sensor_i.sensor_guid])  # Print template data model
         print("\n")
 # -
 
@@ -104,7 +104,7 @@ print(my_scene.get().sensors[0])  # Do another get() to check new value on datab
 new_distortion_file = os.path.join(tests_data_path, os.path.join("CameraInputFiles", "CameraDistortion_150deg.OPTDistortion"))
 
 # Retrieve SensorTemplateLink corresponding to camera_i_0.sensor_guid
-camera_t_0 = speos.client.get_item(camera_i_0.sensor_guid)
+camera_t_0 = speos.client[camera_i_0.sensor_guid]
 assert isinstance(camera_t_0, core.SensorTemplateLink)
 
 # get() = retrieve datamodel corresponding to camera_t_0 from database

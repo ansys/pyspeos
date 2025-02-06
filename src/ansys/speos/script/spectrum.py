@@ -69,7 +69,7 @@ class Spectrum:
             self.set_monochromatic()  # By default will be monochromatic
         else:
             # Retrieve Spectrum
-            self.spectrum_link = speos_client.get_item(key=key)
+            self.spectrum_link = speos_client[key]
             self._spectrum = self.spectrum_link.get()
 
     def set_monochromatic(self, wavelength: float = 555.0) -> Spectrum:

@@ -239,7 +239,7 @@ def test_commit_part(speos: Speos):
     assert root_part.part_link is not None
     assert p.scene_link.get().part_guid == root_part.part_link.key
     assert len(root_part.part_link.get().parts) == 1
-    assert len(speos.client.get_item(key=root_part.part_link.get().parts[0].part_guid).get().parts) == 1
+    assert len(speos.client[root_part.part_link.get().parts[0].part_guid].get().parts) == 1
     assert len(root_part.part_link.get().body_guids) == 1
 
     # Change only in local not committed

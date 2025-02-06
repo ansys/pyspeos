@@ -84,7 +84,7 @@ class BaseSource:
             self._source_instance = core.Scene.SourceInstance(name=name, description=description, metadata=metadata)
         else:
             self._unique_id = source_instance.metadata["UniqueId"]
-            self.source_template_link = self._project.client.get_item(key=source_instance.source_guid)
+            self.source_template_link = self._project.client[source_instance.source_guid]
             self._reset()
 
     class _Spectrum:
@@ -292,7 +292,7 @@ class BaseSource:
     def _fill(self, src_inst):
         self._unique_id = src_inst.metadata["UniqueId"]
         self._source_instance = src_inst
-        self.source_template_link = self._project.client.get_item(key=src_inst.source_guid)
+        self.source_template_link = self._project.client[src_inst.source_guid]
         self._reset()
 
     def commit(self) -> BaseSource:
