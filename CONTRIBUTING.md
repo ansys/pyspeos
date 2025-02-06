@@ -13,4 +13,4 @@ For contributing to this project, please refer to the [PyAnsys Developer's Guide
 Further information about contributing to PySpeos can be found in [Contributing].
 
 [PyAnsys Developer's Guide]: https://dev.docs.pyansys.com/index.html
-[Contributing]: https://speos.docs.pyansys.com/dev/contributing.html
+[Contributing]: https://speos.docs.pyansys.com/version/stable/contributing.html
