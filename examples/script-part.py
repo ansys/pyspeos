@@ -61,13 +61,12 @@ print(root_part)
 # Each triangle/facet is defined by vertices and vertice normals.
 
 # +
-face_b1_f1 = (
-    body_b1.create_face(name="TheFaceF1")
-    .set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0])
-    .set_facets([0, 1, 2])
-    .set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
-    .commit()
-)
+face_b1_f1 = body_b1.create_face(name="TheFaceF1")
+face_b1_f1.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+face_b1_f1.facets = [0, 1, 2]
+face_b1_f1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+face_b1_f1.commit()
+
 print(root_part)
 # -
 
@@ -86,13 +85,11 @@ print(root_part)
 
 body_sp1_b1 = sub_part1.create_body(name="TheBodySP1_B1").commit()
 print(root_part)
-face_sp1_b1_f1 = (
-    body_sp1_b1.create_face(name="TheFaceSP1_B1_F1")
-    .set_vertices([0, 1, 0, 0, 2, 0, 1, 2, 0])
-    .set_facets([0, 1, 2])
-    .set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
-    .commit()
-)
+face_sp1_b1_f1 = body_sp1_b1.create_face(name="TheFaceSP1_B1_F1")
+face_sp1_b1_f1.vertices = [0, 1, 0, 0, 2, 0, 1, 2, 0]
+face_sp1_b1_f1.facets = [0, 1, 2]
+face_sp1_b1_f1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+face_sp1_b1_f1.commit()
 print(root_part)
 # -
 

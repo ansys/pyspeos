@@ -72,7 +72,13 @@ class Face:
         # Create local Face
         self._face = core.Face(name=name, description=description, metadata=metadata)
 
-    def set_vertices(self, values: List[float]) -> Face:
+    @property
+    def vertices(self):
+        res = self.face_link.get().vertices
+        return res
+
+    @vertices.setter
+    def vertices(self, values: List[float]) -> Face:
         """Set the face vertices.
 
         Parameters
@@ -88,7 +94,13 @@ class Face:
         self._face.vertices[:] = values
         return self
 
-    def set_facets(self, values: List[int]) -> Face:
+    @property
+    def facets(self):
+        res = self.face_link.get().facets
+        return res
+
+    @facets.setter
+    def facets(self, values: List[int]) -> Face:
         """Set the facets.
 
         Parameters
@@ -104,7 +116,13 @@ class Face:
         self._face.facets[:] = values
         return self
 
-    def set_normals(self, values: List[float]) -> Face:
+    @property
+    def normals(self):
+        res = self.face_link.get().normals
+        return res
+
+    @normals.setter
+    def normals(self, values: List[float]) -> Face:
         """Set the face normals.
 
         Parameters

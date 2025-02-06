@@ -177,9 +177,9 @@ root_part.commit()
 body_1 = root_part.create_body(name='TheBodyB1')
 body_1.commit()
 body_1_face_1 = body_1.create_face(name='TheFaceF1')
-body_1_face_1.set_vertices([])
-body_1_face_1.set_facets([])
-body_1_face_1.set_normals([])
+body_1_face_1.vertices = []
+body_1_face_1.facets = []
+body_1_face_1.normals = []
 body_1_face_1.commit()
 ```
 

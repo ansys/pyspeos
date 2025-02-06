@@ -84,15 +84,13 @@ def test_create_face(speos: Speos):
     assert len(body1.body_link.get().face_guids) == 0
 
     # Add a face
-    face1 = (
-        body1.create_face(name="Face.1")
-        .set_vertices([0, 1, 0, 0, 2, 0, 1, 2, 0])
-        .set_facets([0, 1, 2])
-        .set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
-        .commit()
-    )
-    assert len(body1._geom_features) == 1
+    face1 = body1.create_face(name="Face.1")
+    face1.vertices = [0, 1, 0, 0, 2, 0, 1, 2, 0]
+    face1.facets = [0, 1, 2]
+    face1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    face1.commit()
 
+    assert len(body1._geom_features) == 1
     assert len(body1.body_link.get().face_guids) == 1
     assert body1.body_link.get().face_guids[0] == face1.face_link.key
     assert face1.face_link.get().vertices == [0, 1, 0, 0, 2, 0, 1, 2, 0]
@@ -100,15 +98,13 @@ def test_create_face(speos: Speos):
     assert face1.face_link.get().normals == [0, 0, 1, 0, 0, 1, 0, 0, 1]
 
     # Add another face + commit on root part
-    face2 = (
-        body1.create_face(name="Face.2")
-        .set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0])
-        .set_facets([0, 2, 1])
-        .set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
-        .commit()
-    )
-    assert len(body1._geom_features) == 2
+    face2 = body1.create_face(name="Face.2")
+    face2.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    face2.facets = [0, 2, 1]
+    face2.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    face2.commit()
 
+    assert len(body1._geom_features) == 2
     assert len(body1.body_link.get().face_guids) == 2
     assert body1.body_link.get().face_guids[1] == face2.face_link.key
     assert face2.face_link.get().vertices == [0, 0, 0, 1, 0, 0, 0, 1, 0]

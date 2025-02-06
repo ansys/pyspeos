@@ -43,9 +43,11 @@ print(p)
 
 # +
 root_part = p.create_root_part()
-root_part.create_body(name="Body.1").create_face(name="Face.1").set_vertices([0, 1, 2, 0, 2, 2, 1, 2, 2]).set_facets([0, 1, 2]).set_normals(
-    [0, 0, 1, 0, 0, 1, 0, 0, 1]
-)
+body = root_part.create_body(name="Body.1")
+face = body.create_face(name="Face.1")
+face.vertices = [0, 1, 2, 0, 2, 2, 1, 2, 2]
+face.facets = [0, 1, 2]
+face.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
 root_part.commit()
 # -
 
