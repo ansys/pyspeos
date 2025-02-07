@@ -63,7 +63,7 @@ class Body:
         speos_client: core.SpeosClient,
         name: str,
         description: str = "",
-        metadata: Mapping[str, str] = {},
+        metadata: Optional[Mapping[str, str]] = None,
         parent_part: Optional[Union[part.Part, part.Part.SubPart]] = None,
     ) -> None:
         self._speos_client = speos_client
@@ -72,13 +72,16 @@ class Body:
         self.body_link = None
         """Link object for the body in database."""
 
+        if metadata is None:
+            metadata = {}
+
         # Create local Body
         self._body = core.Body(name=name, description=description, metadata=metadata)
 
         self._geom_features = []
 
     def create_face(
-        self, name: str, description: str = "", metadata: Mapping[str, str] = {}
+        self, name: str, description: str = "", metadata: Optional[Mapping[str, str]] = None
     ) -> face.Face:
         """Create a face in this element.
 
@@ -89,7 +92,7 @@ class Body:
         description : str
             Description of the feature.
             By default, ``""``.
-        metadata : Mapping[str, str]
+        metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
 
@@ -98,6 +101,9 @@ class Body:
         ansys.speos.script.face.Face
             Face feature.
         """
+        if metadata is None:
+            metadata = {}
+
         face_feat = face.Face(
             speos_client=self._speos_client,
             name=name,

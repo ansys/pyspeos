@@ -78,7 +78,7 @@ class Project:
     #    pass
 
     def create_optical_property(
-        self, name: str, description: str = "", metadata: Mapping[str, str] = {}
+        self, name: str, description: str = "", metadata: Optional[Mapping[str, str]] = None
     ) -> opt_prop.OptProp:
         """Create a new Optical Property feature.
 
@@ -89,7 +89,7 @@ class Project:
         description : str
             Description of the feature.
             By default, ``""``.
-        metadata : Mapping[str, str]
+        metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
 
@@ -104,6 +104,9 @@ class Project:
                 opt_prop.OptProp, name
             )
             raise ValueError(msg)
+
+        if metadata is None:
+            metadata = {}
         feature = opt_prop.OptProp(
             project=self, name=name, description=description, metadata=metadata
         )
@@ -115,7 +118,7 @@ class Project:
         name: str,
         description: str = "",
         feature_type: type = source.Surface,
-        metadata: Mapping[str, str] = {},
+        metadata: Optional[Mapping[str, str]] = None,
     ) -> Union[source.Surface, source.RayFile, source.Luminaire]:
         """Create a new Source feature.
 
@@ -132,7 +135,7 @@ class Project:
             Allowed types:
             Union[ansys.speos.script.source.Surface, ansys.speos.script.source.RayFile, \
             ansys.speos.script.source.Luminaire].
-        metadata : Mapping[str, str]
+        metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
 
@@ -141,6 +144,9 @@ class Project:
         Union[ansys.speos.script.source.Surface, ansys.speos.script.source.RayFile, ansys.speos.script.source.Luminaire]
             Source class instance.
         """
+        if metadata is None:
+            metadata = {}
+
         existing_features = self.find(name=name)
         if len(existing_features) != 0:
             msg = "Feature {}: {} has a conflict name with an existing feature.".format(
@@ -173,7 +179,7 @@ class Project:
         name: str,
         description: str = "",
         feature_type: type = simulation.Direct,
-        metadata: Mapping[str, str] = {},
+        metadata: Optional[Mapping[str, str]] = None,
     ) -> Union[simulation.Direct, simulation.Interactive, simulation.Inverse]:
         """Create a new Simulation feature.
 
@@ -189,7 +195,7 @@ class Project:
             By default, ``ansys.speos.script.simulation.Direct``.
             Allowed types: Union[ansys.speos.script.simulation.Direct, ansys.speos.script.simulation.Interactive, \
             ansys.speos.script.simulation.Inverse].
-        metadata : Mapping[str, str]
+        metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
 
@@ -198,6 +204,9 @@ class Project:
         Union[ansys.speos.script.simulation.Direct, ansys.speos.script.simulation.Interactive, ansys.speos.script.simulation.Inverse]
             Simulation class instance
         """
+        if metadata is None:
+            metadata = {}
+
         existing_features = self.find(name=name)
         if len(existing_features) != 0:
             msg = "Feature {}: {} has a conflict name with an existing feature.".format(
@@ -230,7 +239,7 @@ class Project:
         name: str,
         description: str = "",
         feature_type: type = sensor.Irradiance,
-        metadata: Mapping[str, str] = {},
+        metadata: Optional[Mapping[str, str]] = None,
     ) -> Union[sensor.Camera, sensor.Radiance, sensor.Irradiance]:
         """Create a new Sensor feature.
 
@@ -246,7 +255,7 @@ class Project:
             By default, ``ansys.speos.script.sensor.Irradiance``.
             Allowed types: Union[ansys.speos.script.sensor.Camera, ansys.speos.script.sensor.Radiance, \
             ansys.speos.script.sensor.Irradiance]
-        metadata : Mapping[str, str]
+        metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
 
@@ -255,6 +264,9 @@ class Project:
         Union[ansys.speos.script.sensor.Camera, ansys.speos.script.sensor.Radiance, ansys.speos.script.sensor.Irradiance]
             Sensor class instance.
         """
+        if metadata is None:
+            metadata = {}
+
         existing_features = self.find(name=name)
         if len(existing_features) != 0:
             msg = "Feature {}: {} has a conflict name with an existing feature.".format(
@@ -283,7 +295,7 @@ class Project:
         return feature
 
     def create_root_part(
-        self, description: str = "", metadata: Mapping[str, str] = {}
+        self, description: str = "", metadata: Optional[Mapping[str, str]] = None
     ) -> part.Part:
         """Create the project root part feature. If a root part is already created in the project, it is returned.
 
@@ -292,7 +304,7 @@ class Project:
         description : str
             Description of the feature.
             By default, ``""``.
-        metadata : Mapping[str, str]
+        metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
 
@@ -301,9 +313,12 @@ class Project:
         ansys.speos.script.part.Part
             Part feature.
         """
+        if metadata is None:
+            metadata = {}
+
         name = "RootPart"
         existing_rp = self.find(name="", feature_type=part.Part)
-        if existing_rp != []:
+        if existing_rp:
             return existing_rp[0]
 
         feature = part.Part(project=self, name=name, description=description, metadata=metadata)
@@ -438,7 +453,7 @@ class Project:
                     ]
                 )
 
-        if found_features != [] and idx != -1:
+        if found_features and idx != -1:
             tmp = [
                 f.find(
                     name=orig_name[idx + 1 :], name_regex=name_regex, feature_type=orig_feature_type
@@ -603,7 +618,7 @@ class Project:
         root_part_data = root_part_link.get()
         root_part_feats = self.find(name="", feature_type=part.Part)
         root_part_feat = None
-        if root_part_feats == []:
+        if not root_part_feats:
             root_part_feat = self.create_root_part()
             root_part_data.name = "RootPart"
             root_part_link.set(root_part_data)

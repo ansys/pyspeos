@@ -47,7 +47,7 @@ class BaseSource:
     description : str
         Description of the source.
         By default, ``""``.
-    metadata : Mapping[str, str]
+    metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
     source_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance, optional
@@ -64,7 +64,7 @@ class BaseSource:
         project: project.Project,
         name: str,
         description: str = "",
-        metadata: Mapping[str, str] = {},
+        metadata: Optional[Mapping[str, str]] = None,
         source_instance: Optional[core.Scene.SourceInstance] = None,
     ) -> None:
         self._project = project
@@ -72,6 +72,9 @@ class BaseSource:
         self._unique_id = None
         self.source_template_link = None
         """Link object for the source template in database."""
+
+        if metadata is None:
+            metadata = {}
 
         if source_instance is None:
             # Create local SourceTemplate
@@ -378,7 +381,7 @@ class Luminaire(BaseSource):
     description : str
         Description of the feature.
         By default, ``""``.
-    metadata : Mapping[str, str]
+    metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
     default_values : bool
@@ -390,10 +393,13 @@ class Luminaire(BaseSource):
         project: project.Project,
         name: str,
         description: str = "",
-        metadata: Mapping[str, str] = {},
+        metadata: Optional[Mapping[str, str]] = None,
         source_instance: Optional[core.Scene.SourceInstance] = None,
         default_values: bool = True,
     ) -> None:
+        if metadata is None:
+            metadata = {}
+
         super().__init__(
             project=project,
             name=name,
@@ -488,14 +494,12 @@ class Luminaire(BaseSource):
             self._spectrum._message_to_complete = self._source_template.luminaire
         return self._spectrum._spectrum
 
-    def set_axis_system(
-        self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-    ) -> Luminaire:
+    def set_axis_system(self, axis_system: Optional[List[float]] = None) -> Luminaire:
         """Set the position of the source.
 
         Parameters
         ----------
-        axis_system : List[float]
+        axis_system : Optional[List[float]]
             Position of the source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
@@ -504,6 +508,8 @@ class Luminaire(BaseSource):
         ansys.speos.script.source.Luminaire
             Luminaire source.
         """
+        if axis_system is None:
+            axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
         self._source_instance.luminaire_properties.axis_system[:] = axis_system
         return self
 
@@ -521,7 +527,7 @@ class RayFile(BaseSource):
     description : str
         Description of the feature.
         By default, ``""``.
-    metadata : Mapping[str, str]
+    metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
     default_values : bool
@@ -533,10 +539,13 @@ class RayFile(BaseSource):
         project: project.Project,
         name: str,
         description: str = "",
-        metadata: Mapping[str, str] = {},
+        metadata: Optional[Mapping[str, str]] = None,
         source_instance: Optional[core.Scene.SourceInstance] = None,
         default_values: bool = True,
     ) -> None:
+        if metadata is None:
+            metadata = {}
+
         super().__init__(
             project=project,
             name=name,
@@ -659,14 +668,12 @@ class RayFile(BaseSource):
         self._spectrum._no_spectrum_local = False
         return self._spectrum._spectrum
 
-    def set_axis_system(
-        self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-    ) -> RayFile:
+    def set_axis_system(self, axis_system: Optional[List[float]] = None) -> RayFile:
         """Set position of the source.
 
         Parameters
         ----------
-        axis_system : List[float]
+        axis_system : Optional[List[float]]
             Position of the source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
@@ -675,10 +682,12 @@ class RayFile(BaseSource):
         ansys.speos.script.source.RayFile
             RayFile Source.
         """
+        if axis_system is None:
+            axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
         self._source_instance.rayfile_properties.axis_system[:] = axis_system
         return self
 
-    def set_exit_geometries(self, exit_geometries: List[GeoRef] = []) -> RayFile:
+    def set_exit_geometries(self, exit_geometries: Optional[List[GeoRef]] = None) -> RayFile:
         """Set exit geometries.
 
         Parameters
@@ -692,7 +701,7 @@ class RayFile(BaseSource):
         ansys.speos.script.source.RayFile
             RayFile Source.
         """
-        if exit_geometries == []:
+        if not exit_geometries:
             self._source_instance.rayfile_properties.ClearField("exit_geometries")
         else:
             self._source_instance.rayfile_properties.exit_geometries.geo_paths[:] = [
@@ -704,7 +713,7 @@ class RayFile(BaseSource):
 
 class Surface(BaseSource):
     """Type of Source : Surface.
-    By default, a luminous flux and exitance constant are chosen. With a monochromatic spectrum,
+    By default, a luminous flux and existence constant are chosen. With a monochromatic spectrum,
     and lambertian intensity (cos with N = 1).
 
     Parameters
@@ -722,14 +731,14 @@ class Surface(BaseSource):
     """
 
     class ExitanceVariable:
-        """Type of surface source exitance : exitance variable.
+        """Type of surface source existence : existence variable.
 
         Parameters
         ----------
         exitance_variable : ansys.api.speos.source.v1.source_pb2.SourceTemplate.Surface.ExitanceVariable
-            Exitance variable to complete.
+            Existence variable to complete.
         exitance_variable_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.SurfaceProperties.ExitanceVariableProperties
-            Exitance variable properties to complete.
+            Existence variable properties to complete.
         default_values : bool
             Uses default values when True.
                 stable_ctr : bool
@@ -758,12 +767,12 @@ class Surface(BaseSource):
                 self.set_axis_plane()
 
         def set_xmp_file_uri(self, uri: str) -> Surface.ExitanceVariable:
-            """Set exitance xmp file.
+            """Set existence xmp file.
 
             Parameters
             ----------
             uri : str
-                XMP file describing exitance.
+                XMP file describing existence.
 
             Returns
             -------
@@ -774,14 +783,14 @@ class Surface(BaseSource):
             return self
 
         def set_axis_plane(
-            self, axis_plane: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+            self, axis_plane: Optional[List[float]] = None
         ) -> Surface.ExitanceVariable:
-            """Set position of the exitance map.
+            """Set position of the existence map.
 
             Parameters
             ----------
-            axis_plane : List[float]
-                Position of the exitance map [Ox Oy Oz Xx Xy Xz Yx Yy Yz].
+            axis_plane : Optional[List[float]]
+                Position of the existence map [Ox Oy Oz Xx Xy Xz Yx Yy Yz].
                 By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0]``.
 
             Returns
@@ -789,6 +798,8 @@ class Surface(BaseSource):
             ansys.speos.script.source.Surface.ExitanceVariable
                 ExitanceVariable of surface Source.
             """
+            if axis_plane is None:
+                axis_plane = [0, 0, 0, 1, 0, 0, 0, 1, 0]
             self._exitance_variable_props.axis_plane[:] = axis_plane
             return self
 
@@ -797,10 +808,13 @@ class Surface(BaseSource):
         project: project.Project,
         name: str,
         description: str = "",
-        metadata: Mapping[str, str] = {},
+        metadata: Optional[Mapping[str, str]] = None,
         source_instance: Optional[core.Scene.SourceInstance] = None,
         default_values: bool = True,
     ) -> None:
+        if metadata is None:
+            metadata = {}
+
         super().__init__(
             project=project,
             name=name,
@@ -828,7 +842,7 @@ class Surface(BaseSource):
             key=self._source_template.surface.intensity_guid,
         )
 
-        # Attribute gathering more complex exitance type
+        # Attribute gathering more complex existence type
         self._exitance_type = None
 
         if default_values:
@@ -918,7 +932,7 @@ class Surface(BaseSource):
         return self._intensity
 
     def set_exitance_constant(self, geometries: List[tuple[GeoRef, bool]]) -> Surface:
-        """Set exitance constant.
+        """Set existence constant.
 
         Parameters
         ----------
@@ -947,7 +961,7 @@ class Surface(BaseSource):
         return self
 
     def set_exitance_variable(self) -> Surface.ExitanceVariable:
-        """Set exitance variable, taken from XMP map.
+        """Set existence variable, taken from XMP map.
 
         Returns
         -------

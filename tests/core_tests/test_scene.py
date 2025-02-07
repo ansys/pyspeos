@@ -25,7 +25,7 @@ Test scene.
 """
 
 import os
-from typing import List, Mapping
+from typing import List, Mapping, Optional
 
 from conftest import test_path
 from helper import clean_all_dbs
@@ -331,11 +331,16 @@ def create_basic_scene(speos: Speos) -> SceneLink:
 def create_face_rectangle(
     name: str,
     description: str = "",
-    base: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0],
+    base: Optional[List[float]] = None,
     x_size: float = 200,
     y_size: float = 100,
-    metadata: Mapping[str, str] = {},
+    metadata: Optional[Mapping[str, str]] = None,
 ) -> Face:
+    if base is None:
+        base = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    if metadata is None:
+        metadata = {}
+
     face = Face(name=name, description=description, metadata=metadata)
 
     face.vertices.extend(
@@ -364,13 +369,18 @@ def create_body_box(
     name: str,
     face_stub: FaceStub,
     description: str = "",
-    base: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+    base: Optional[List[float]] = None,
     x_size: float = 200,
     y_size: float = 200,
     z_size: float = 100,
     idx_face: int = 0,
-    metadata: Mapping[str, str] = {},
+    metadata: Optional[Mapping[str, str]] = None,
 ) -> Body:
+    if base is None:
+        base = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    if metadata is None:
+        metadata = {}
+
     body = Body(name=name, description=description, metadata=metadata)
 
     base0 = []

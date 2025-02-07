@@ -44,7 +44,7 @@ class Intensity:
     description : str
         Description of the feature.
         By default, ``""``.
-    metadata : Mapping[str, str]
+    metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
     intensity_props_to_complete : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.IntensityProperties, optional
@@ -103,13 +103,13 @@ class Intensity:
             return self
 
         def set_orientation_axis_system(
-            self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+            self, axis_system: Optional[List[float]] = None
         ) -> Intensity.Library:
             """Set the intensity orientation from an axis system.
 
             Parameters
             ----------
-            axis_system : List[float]
+            axis_system : Optional[List[float]]
                 Orientation of the intensity [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz]
                 By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
@@ -118,6 +118,8 @@ class Intensity:
             ansys.speos.script.intensity.Intensity.Library
                 Library intensity.
             """
+            if not axis_system:
+                axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
             self._library_props.axis_system.values[:] = axis_system
             return self
 
@@ -143,12 +145,14 @@ class Intensity:
             self._library_props.normal_to_uv_map.SetInParent()
             return self
 
-        def set_exit_geometries(self, exit_geometries: List[GeoRef] = []) -> Intensity.Library:
+        def set_exit_geometries(
+            self, exit_geometries: Optional[List[GeoRef]] = None
+        ) -> Intensity.Library:
             """Set the exit geometries.
 
             Parameters
             ----------
-            exit_geometries : List[ansys.speos.script.geo_ref.GeoRef]
+            exit_geometries : Optional[List[ansys.speos.script.geo_ref.GeoRef]]
                 Exit geometries list.
                 By default, ``[]``.
 
@@ -157,7 +161,7 @@ class Intensity:
             ansys.speos.script.intensity.Intensity.Library
                 Library intensity.
             """
-            if exit_geometries == []:
+            if not exit_geometries:
                 self._library_props.ClearField("exit_geometries")
             else:
                 self._library_props.exit_geometries.geo_paths[:] = [
@@ -270,13 +274,16 @@ class Intensity:
         speos_client: core.SpeosClient,
         name: str,
         description: str = "",
-        metadata: Mapping[str, str] = {},
+        metadata: Optional[Mapping[str, str]] = None,
         intensity_props_to_complete: Optional[core.Scene.SourceInstance.IntensityProperties] = None,
         key: str = "",
     ) -> None:
         self._client = speos_client
         self.intensity_template_link = None
         """Link object for the intensity template in database."""
+
+        if metadata is None:
+            metadata = {}
 
         # Attribute representing the more complex intensity.
         self._type = None

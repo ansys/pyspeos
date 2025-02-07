@@ -38,6 +38,7 @@ Then add the import within this module to enable:
    >>> library.add(1, 2)
 
 .. note::
+
    It's best to import the version here as well so it can be
    referenced at the library level.
 

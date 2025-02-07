@@ -50,7 +50,7 @@ class BaseSimulation:
     description : str
         Description of the Simulation.
         By default, ``""``.
-    metadata : Mapping[str, str]
+    metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
     simulation_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SimulationInstance, optional
@@ -114,7 +114,7 @@ class BaseSimulation:
         project: project.Project,
         name: str,
         description: str = "",
-        metadata: Mapping[str, str] = {},
+        metadata: Optional[Mapping[str, str]] = None,
         simulation_instance: Optional[core.Scene.SimulationInstance] = None,
     ) -> None:
         self._project = project
@@ -127,6 +127,8 @@ class BaseSimulation:
         self.result_list = []
         """List of results created after a simulation compute."""
 
+        if metadata is None:
+            metadata = {}
         # Attribute representing the kind of simulation.
         self._type = None
 
@@ -497,7 +499,7 @@ class Direct(BaseSimulation):
     description : str
         Description of the Simulation.
         By default, ``""``.
-    metadata : Mapping[str, str]
+    metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
     simulation_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SimulationInstance, optional
@@ -512,10 +514,13 @@ class Direct(BaseSimulation):
         project: project.Project,
         name: str,
         description: str = "",
-        metadata: Mapping[str, str] = {},
+        metadata: Optional[Mapping[str, str]] = None,
         simulation_instance: Optional[core.Scene.SimulationInstance] = None,
         default_values: bool = True,
     ) -> None:
+        if metadata is None:
+            metadata = {}
+
         super().__init__(
             project=project,
             name=name,
@@ -759,7 +764,7 @@ class Inverse(BaseSimulation):
     description : str
         Description of the Simulation.
         By default, ``""``.
-    metadata : Mapping[str, str]
+    metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
     simulation_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SimulationInstance, optional
@@ -774,10 +779,13 @@ class Inverse(BaseSimulation):
         project: project.Project,
         name: str,
         description: str = "",
-        metadata: Mapping[str, str] = {},
+        metadata: Optional[Mapping[str, str]] = None,
         simulation_instance: Optional[core.Scene.SimulationInstance] = None,
         default_values: bool = True,
     ) -> None:
+        if metadata is None:
+            metadata = {}
+
         super().__init__(
             project=project,
             name=name,
@@ -1074,7 +1082,7 @@ class Interactive(BaseSimulation):
     description : str
         Description of the Simulation.
         By default, ``""``.
-    metadata : Mapping[str, str]
+    metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
     simulation_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SimulationInstance, optional
@@ -1107,10 +1115,13 @@ class Interactive(BaseSimulation):
         project: project.Project,
         name: str,
         description: str = "",
-        metadata: Mapping[str, str] = {},
+        metadata: Optional[Mapping[str, str]] = None,
         simulation_instance: Optional[core.Scene.SimulationInstance] = None,
         default_values: bool = True,
     ) -> None:
+        if metadata is None:
+            metadata = {}
+
         super().__init__(
             project=project,
             name=name,
