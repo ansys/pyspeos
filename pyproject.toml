@@ -3,8 +3,7 @@ requires = ["flit_core >=3.2,<4"]
 build-backend = "flit_core.buildapi"
 
 [project]
-# Check https://flit.readthedocs.io/en/latest/pyproject_toml.html for all available sections
-name = "ansys-speos"
+name = "ansys-speos-core"
 version = "0.1.dev0"
 description = "A Python wrapper for Ansys Speos"
 readme = "README.rst"
@@ -30,8 +29,8 @@ dependencies=[
     "grpcio==1.70.0",
     "grpcio-health-checking==1.48.2",
     "ansys-api-speos==0.14.1",
-    "numpy~=2.2.0",
-    "pyvista==0.44.2",
+    "numpy>=2.0.0,<2.3",
+    "pyvista>=0.43,<0.45",
     "comtypes==1.4.9",
 ]
 
@@ -45,7 +44,7 @@ jupyter = [
     "matplotlib",
     "jupyterlab>=3",
     "ipywidgets",
-    "pyvista[jupyter]==0.44.2",
+    "pyvista[jupyter]>=0.43,<0.45",
 ]
 doc = [
     "ansys-sphinx-theme==1.1.6",
@@ -61,7 +60,7 @@ doc = [
     "jupyterlab==4.3.5",
     "jupyter-server==2.15.0",
     "nbconvert==7.16.6",
-    "pyvista[jupyter]==0.44.2",
+    "pyvista[jupyter]>=0.43,<0.45",
 ]
 
 [tool.flit.module]
@@ -85,3 +84,52 @@ source = ["ansys.speos.core", "ansys.speos.script", "ansys.speos.workflow"]
 
 [tool.coverage.report]
 show_missing = true
+
+[tool.pytest.ini_options]
+minversion = "7.1"
+addopts = "-vvv --color=yes -ra --durations=25 --cov=ansys.speos --cov-report html:.cov/html --cov-report xml:.cov/xml --cov-report term"
+testpaths = ["tests"]
+
+[tool.towncrier]
+package = "ansys.speos.core"
+directory = "doc/changelog.d"
+filename = "doc/source/changelog.rst"
+template = "doc/changelog.d/changelog_template.jinja"
+start_string = ".. towncrier release notes start\n"
+title_format = "`{version} <https://github.com/ansys/pyspeos/releases/tag/v{version}>`_ - {project_date}"
+issue_format = "`#{issue} <https://github.com/ansys/pyspeos/pull/{issue}>`_"
+
+[[tool.towncrier.type]]
+directory = "added"
+name = "Added"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "dependencies"
+name = "Dependencies"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "documentation"
+name = "Documentation"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "fixed"
+name = "Fixed"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "maintenance"
+name = "Maintenance"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "miscellaneous"
+name = "Miscellaneous"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "test"
+name = "Test"
+showcontent = true
