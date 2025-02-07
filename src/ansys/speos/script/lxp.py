@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -20,16 +20,18 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 """The lxp module contains classes and function to simplify the interaction with ray data e.g lpf files. \
-These files contain a set of simulated rays with all their intersections and properties."""
+These files contain a set of simulated rays with all their intersections and properties.
+"""
+
 from __future__ import annotations
 
 import os
 from typing import Union
 
-import ansys.api.speos.lpf.v2.lpf_file_reader_pb2 as lpf_file_reader__v2__pb2
-import ansys.api.speos.lpf.v2.lpf_file_reader_pb2_grpc as lpf_file_reader__v2__pb2_grpc
 import pyvista as pv
 
+import ansys.api.speos.lpf.v2.lpf_file_reader_pb2 as lpf_file_reader__v2__pb2
+import ansys.api.speos.lpf.v2.lpf_file_reader_pb2_grpc as lpf_file_reader__v2__pb2_grpc
 import ansys.speos.core
 from ansys.speos.script.project import Project
 
@@ -53,17 +55,24 @@ class RayPath:
         By default ``False``.
     """
 
-    def __init__(self, raypath: lpf_file_reader__v2__pb2.RayPath, sensor_contribution: bool = False):
+    def __init__(
+        self, raypath: lpf_file_reader__v2__pb2.RayPath, sensor_contribution: bool = False
+    ):
         self._nb_impacts = len(raypath.impacts)
         self._impacts = [[inter.x, inter.y, inter.z] for inter in raypath.impacts]
         self._wl = raypath.wavelengths[0]
         self._body_ids = raypath.body_context_ids
         self._face_ids = raypath.unique_face_ids
-        self._last_direction = [raypath.lastDirection.x, raypath.lastDirection.y, raypath.lastDirection.z]
+        self._last_direction = [
+            raypath.lastDirection.x,
+            raypath.lastDirection.y,
+            raypath.lastDirection.z,
+        ]
         self._intersection_type = raypath.interaction_statuses
         if sensor_contribution:
             self._sensor_contribution = [
-                {"sensor_id": sc.sensor_id, "position": [sc.coordinates.x, sc.coordinates.y]} for sc in raypath.sensor_contributions
+                {"sensor_id": sc.sensor_id, "position": [sc.coordinates.x, sc.coordinates.y]}
+                for sc in raypath.sensor_contributions
             ]
         else:
             self._sensor_contribution = None
@@ -125,7 +134,7 @@ class RayPath:
 
     @property
     def last_direction(self) -> list[float]:
-        """last direction of the ray
+        """Last direction of the ray
 
         Returns
         -------
@@ -136,7 +145,7 @@ class RayPath:
 
     @property
     def intersection_type(self) -> list[int]:
-        """intersection type of the ray for each impact
+        """Intersection type of the ray for each impact
 
         Returns
         -------
@@ -232,7 +241,9 @@ class LightPathFinder:
         """Speos instance client"""
         self._stub = lpf_file_reader__v2__pb2_grpc.LpfFileReader_MonoStub(self.client.channel)
         self.__open(path)
-        self._data = self._stub.GetInformation(lpf_file_reader__v2__pb2.GetInformation_Request_Mono())
+        self._data = self._stub.GetInformation(
+            lpf_file_reader__v2__pb2.GetInformation_Request_Mono()
+        )
         self._nb_traces = self._data.nb_of_traces
         self._nb_xmps = self._data.nb_of_xmps
         self._has_sensor_contributions = self._data.has_sensor_contributions
@@ -252,37 +263,45 @@ class LightPathFinder:
 
     @property
     def has_sensor_contributions(self) -> bool:
-        """defines if a lpf file contains information regarding the sensor contribution"""
+        """Defines if a lpf file contains information regarding the sensor contribution"""
         return self._has_sensor_contributions
 
     @property
     def sensor_names(self) -> list[str]:
-        """list of involved sensor names"""
+        """List of involved sensor names"""
         return self._sensor_names
 
     @property
     def rays(self) -> list[RayPath]:
-        """list raypath's within lpf file"""
+        """List raypath's within lpf file"""
         return self._rays
 
     @property
     def filtered_rays(self) -> list[RayPath]:
-        """list of filtered ray path's"""
+        """List of filtered ray path's"""
         return self._filtered_rays
 
     def __str__(self):
-        return str({k: v.fget(self) for k, v in LightPathFinder.__dict__.items() if isinstance(v, property) and "rays" not in k})
+        return str(
+            {
+                k: v.fget(self)
+                for k, v in LightPathFinder.__dict__.items()
+                if isinstance(v, property) and "rays" not in k
+            }
+        )
 
     def __open(self, path: str):
         """
-        method to open lpf file
+        Method to open lpf file
 
         Parameters
         ----------
         path : str
             Path to file
         """
-        self._stub.InitLpfFileName(lpf_file_reader__v2__pb2.InitLpfFileName_Request_Mono(lpf_file_uri=path))
+        self._stub.InitLpfFileName(
+            lpf_file_reader__v2__pb2.InitLpfFileName_Request_Mono(lpf_file_uri=path)
+        )
 
     def __parse_traces(self) -> list[RayPath]:
         """
@@ -299,7 +318,7 @@ class LightPathFinder:
         return raypaths
 
     def __filter_by_last_intersection_types(self, options: list[int], new=True):
-        """filters raypaths based on last intersection types and populates filtered_rays property"""
+        """Filters raypaths based on last intersection types and populates filtered_rays property"""
         if new:
             self._filtered_rays = []
             for ray in self._rays:
@@ -313,7 +332,7 @@ class LightPathFinder:
                     self._filtered_rays.append(ray)
 
     def filter_by_face_ids(self, options: list[int], new=True) -> LightPathFinder:
-        """filters raypaths based on face ids and populates filtered_rays property.
+        """Filters raypaths based on face ids and populates filtered_rays property.
 
         Parameters
         ----------
@@ -341,7 +360,7 @@ class LightPathFinder:
         return self
 
     def filter_by_body_ids(self, options: list[int], new=True) -> LightPathFinder:
-        """filters raypaths based on body ids and populates filtered_rays property.
+        """Filters raypaths based on body ids and populates filtered_rays property.
 
         Parameters
         ----------
@@ -369,7 +388,7 @@ class LightPathFinder:
         return self
 
     def filter_error_rays(self) -> LightPathFinder:
-        """filters raypaths and only shows rays in error.
+        """Filters raypaths and only shows rays in error.
 
         Returns
         -------
@@ -380,7 +399,7 @@ class LightPathFinder:
         return self
 
     def remove_error_rays(self) -> LightPathFinder:
-        """filters rays and only shows rays not in error.
+        """Filters rays and only shows rays not in error.
 
         Returns
         -------
@@ -393,7 +412,7 @@ class LightPathFinder:
     @staticmethod
     def __add_ray_to_pv(plotter: pv.Plotter, ray: RayPath, max_ray_length: float):
         """
-        add a ray to pyvista plotter.
+        Add a ray to pyvista plotter.
 
         Parameters
         ----------
@@ -420,10 +439,14 @@ class LightPathFinder:
         plotter.add_mesh(mesh, color=wavelength_to_rgb(ray.wl), line_width=2)
 
     def preview(
-        self, nb_ray: int = 100, max_ray_length: float = 50.0, ray_filter: bool = False, project: Project = None
+        self,
+        nb_ray: int = 100,
+        max_ray_length: float = 50.0,
+        ray_filter: bool = False,
+        project: Project = None,
     ) -> LightPathFinder:
         """
-        method to preview lpf file with pyvista.
+        Method to preview lpf file with pyvista.
 
         Parameters
         ----------
@@ -485,7 +508,6 @@ def wavelength_to_rgb(wavelength: float, gamma: float = 0.8) -> [int, int, int, 
         Gamma value.
         By default : ``0.8``
     """
-
     wavelength = float(wavelength)
     if 380 <= wavelength <= 440:
         attenuation = 0.3 + 0.7 * (wavelength - 380) / (440 - 380)

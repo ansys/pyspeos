@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -29,8 +29,12 @@ With coverage.
 .. code::
    $ pytest --cov ansys.speos.core
 """
+
 import logging
 import os
+
+from conftest import test_path
+import helper
 
 from ansys.api.speos.intensity_distributions.v1 import (
     base_map_template_pb2,
@@ -38,10 +42,7 @@ from ansys.api.speos.intensity_distributions.v1 import (
     xmp_pb2,
     xmp_pb2_grpc,
 )
-
 from ansys.speos.core.speos import Speos
-from conftest import test_path
-import helper
 
 
 def createXmpIntensity():
@@ -128,11 +129,20 @@ def compareXmpIntensityDistributions(xmp1, xmp2):
     for l in range(xmp1.base_data.layer_nb):
         if xmp1.base_data.layer[l].layer_name != xmp2.base_data.layer[l].layer_name:
             return False
-        if xmp1.base_data.layer[l].initial_source_power != xmp2.base_data.layer[l].initial_source_power:
+        if (
+            xmp1.base_data.layer[l].initial_source_power
+            != xmp2.base_data.layer[l].initial_source_power
+        ):
             return False
-        if xmp1.base_data.layer[l].initial_source_power_watt != xmp2.base_data.layer[l].initial_source_power_watt:
+        if (
+            xmp1.base_data.layer[l].initial_source_power_watt
+            != xmp2.base_data.layer[l].initial_source_power_watt
+        ):
             return False
-        if xmp1.base_data.layer[l].initial_source_power_lumen != xmp2.base_data.layer[l].initial_source_power_lumen:
+        if (
+            xmp1.base_data.layer[l].initial_source_power_lumen
+            != xmp2.base_data.layer[l].initial_source_power_lumen
+        ):
             return False
         for y in range(xmp1.base_data.y_nb):
             for x in range(xmp1.base_data.x_nb):
@@ -145,33 +155,33 @@ def test_grpc_xmp_intensity(speos: Speos):
     stub = xmp_pb2_grpc.XmpIntensityServiceStub(speos.client.channel)
     load_request = xmp_pb2.Load_Request()
     load_request.file_uri = os.path.join(test_path, "conoscopic_intensity.xmp")
-    load_response = xmp_pb2.Load_Response()
+    xmp_pb2.Load_Response()
     save_request = xmp_pb2.Save_Request()
     save_request.file_uri = os.path.join(test_path, "conoscopic_intensity.xmp")
-    save_response = xmp_pb2.Save_Response()
+    xmp_pb2.Save_Response()
 
-    logging.debug(f"Creating xmp intensity protocol buffer")
+    logging.debug("Creating xmp intensity protocol buffer")
     xmp = createXmpIntensity()
     response = xmp_pb2.XmpDistribution()
     response.extended_map.CopyFrom(xmp)
 
-    logging.debug(f"Sending protocol buffer to server")
-    import_response = xmp_pb2.Import_Response()
-    import_response = stub.Import(response)
+    logging.debug("Sending protocol buffer to server")
+    xmp_pb2.Import_Response()
+    stub.Import(response)
 
     logging.debug(f"Saving {save_request.file_uri}")
-    save_response = stub.Save(save_request)
+    stub.Save(save_request)
     assert helper.does_file_exist(save_request.file_uri)
 
     logging.debug(f"Reading {load_request.file_uri}")
-    load_response = stub.Load(load_request)
+    stub.Load(load_request)
     helper.remove_file(load_request.file_uri)
 
-    logging.debug(f"Export xmp intensity protocol buffer")
+    logging.debug("Export xmp intensity protocol buffer")
     export_request = xmp_pb2.Export_Request()
     distri = xmp_pb2.XmpDistribution()
     distri = stub.Export(export_request)
     xmp2 = distri.extended_map
 
-    logging.debug(f"Comparing xmp intensity distributions")
+    logging.debug("Comparing xmp intensity distributions")
     assert compareXmpIntensityDistributions(xmp, xmp2)

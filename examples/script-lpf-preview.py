@@ -31,7 +31,9 @@ speos = Speos(host="localhost", port=50098)
 # It can be found there is volume conflict in this project.
 
 # +
-p = script.Project(speos=speos, path=os.path.join(tests_data_path, "error_data.speos", "error_data.speos"))
+p = script.Project(
+    speos=speos, path=os.path.join(tests_data_path, "error_data.speos", "error_data.speos")
+)
 p.preview(viz_args={"opacity": 0.7})
 # -
 

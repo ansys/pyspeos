@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -21,11 +21,10 @@
 # SOFTWARE.
 
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
+
 from typing import List
 
-from ansys.api.speos.part.v1 import part_pb2 as messages
-from ansys.api.speos.part.v1 import part_pb2_grpc as service
-
+from ansys.api.speos.part.v1 import part_pb2 as messages, part_pb2_grpc as service
 from ansys.speos.core.crud import CrudItem, CrudStub
 from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 

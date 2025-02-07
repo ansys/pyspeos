@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -21,21 +21,21 @@
 # SOFTWARE.
 
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
+
 import logging
 from pathlib import Path
 import time
 from typing import TYPE_CHECKING, List, Optional, Union
 
-from ansys.api.speos.part.v1 import body_pb2, face_pb2, part_pb2
 import grpc
 from grpc._channel import _InactiveRpcError
 
+from ansys.api.speos.part.v1 import body_pb2, face_pb2, part_pb2
 from ansys.speos.core.body import BodyLink, BodyStub
 from ansys.speos.core.face import FaceLink, FaceStub
 from ansys.speos.core.intensity_template import IntensityTemplateLink, IntensityTemplateStub
 from ansys.speos.core.job import JobLink, JobStub
-from ansys.speos.core.logger import LOG as logger
-from ansys.speos.core.logger import PySpeosCustomAdapter
+from ansys.speos.core.logger import LOG as logger, PySpeosCustomAdapter
 from ansys.speos.core.part import PartLink, PartStub
 from ansys.speos.core.scene import SceneLink, SceneStub
 from ansys.speos.core.sensor_template import SensorTemplateLink, SensorTemplateStub
@@ -79,7 +79,9 @@ def wait_until_healthy(channel: grpc.Channel, timeout: float):
             continue
     else:
         target_str = channel._channel.target().decode()
-        raise TimeoutError(f"Channel health check to target '{target_str}' timed out after {timeout} seconds.")
+        raise TimeoutError(
+            f"Channel health check to target '{target_str}' timed out after {timeout} seconds."
+        )
 
 
 class SpeosClient:
@@ -135,7 +137,9 @@ class SpeosClient:
         wait_until_healthy(self._channel, timeout)
 
         # once connection with the client is established, create a logger
-        self._log = logger.add_instance_logger(name=self._target, client_instance=self, level=logging_level)
+        self._log = logger.add_instance_logger(
+            name=self._target, client_instance=self, level=logging_level
+        )
         if logging_file:
             if isinstance(logging_file, Path):
                 logging_file = str(logging_file)
@@ -450,11 +454,11 @@ List[ansys.speos.core.face.FaceLink]]
         lines.append(f"Ansys Speos client ({hex(id(self))})")
         lines.append(f"  Target:     {self._target}")
         if self._closed:
-            lines.append(f"  Connection: Closed")
+            lines.append("  Connection: Closed")
         elif self.healthy:
-            lines.append(f"  Connection: Healthy")
+            lines.append("  Connection: Healthy")
         else:
-            lines.append(f"  Connection: Unhealthy")  # pragma: no cover
+            lines.append("  Connection: Unhealthy")  # pragma: no cover
         return "\n".join(lines)
 
     def close(self):

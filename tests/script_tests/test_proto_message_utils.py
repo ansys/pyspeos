@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -23,19 +23,20 @@
 """
 Test basic using proto_message_utils from script layer.
 """
+
 import os
+
+from conftest import test_path
 
 from ansys.speos.core import scene
 from ansys.speos.core.proto_message_utils import protobuf_message_to_dict
 from ansys.speos.core.speos import Speos
 import ansys.speos.script as script
 from ansys.speos.script import proto_message_utils
-from conftest import test_path
 
 
 def test_replace_guid_elt(speos: Speos):
     """Test _replace_guid_elt."""
-
     # Example with surface source : spectrum guid + intensity guid
     p = script.Project(speos=speos)
     src_feat = script.source.Surface(project=p, name="Surface.1")
@@ -71,8 +72,7 @@ def test_replace_guid_elt(speos: Speos):
 
 
 def test_replace_guid_elt_ignore_simple_key(speos: Speos):
-    """Test _replace_guid_elt with paraeter ignore_simple_key."""
-
+    """Test _replace_guid_elt with parameter ignore_simple_key."""
     # Example with surface source : spectrum guid + intensity guid
     p = script.Project(speos=speos)
     src_feat = script.source.Surface(project=p, name="Surface.1")
@@ -85,7 +85,9 @@ def test_replace_guid_elt_ignore_simple_key(speos: Speos):
     assert proto_message_utils._finder_by_key(dict_var=src_t_dict, key="intensity") == []
 
     # Replace guid elements for this message, by adding new key to the dict with value corresponding to database item
-    proto_message_utils._replace_guid_elt(speos_client=speos.client, json_dict=src_t_dict, ignore_simple_key="intensity_guid")
+    proto_message_utils._replace_guid_elt(
+        speos_client=speos.client, json_dict=src_t_dict, ignore_simple_key="intensity_guid"
+    )
 
     # Check that the ignored key is not replaced
     assert proto_message_utils._finder_by_key(dict_var=src_t_dict, key="intensity") == []
@@ -93,7 +95,6 @@ def test_replace_guid_elt_ignore_simple_key(speos: Speos):
 
 def test_replace_guid_elt_list(speos: Speos):
     """Test _replace_guid_elt in a specific case : list of guids like sop_guids."""
-
     # Example with material : vop guid + sop guids
     p = script.Project(speos=speos)
     mat_feat = script.OptProp(project=p, name="Material.1")
@@ -139,7 +140,11 @@ def test_replace_guid_elt_list(speos: Speos):
 def test_replace_guid_elt_complex(speos: Speos):
     """Test _replace_guid_elt in a bigger message like scene."""
     scene_link = speos.client.scenes().create(message=scene.Scene())
-    scene_link.load_file(file_uri=os.path.join(test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"))
+    scene_link.load_file(
+        file_uri=os.path.join(
+            test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
+        )
+    )
 
     scene_dict = protobuf_message_to_dict(message=scene_link.get())
 
@@ -153,7 +158,9 @@ def test_replace_guid_elt_complex(speos: Speos):
     assert proto_message_utils._finder_by_key(dict_var=scene_dict, key="sops") == []
 
     # To avoid a lot of replacements (part -> bodies -> faces), part_guid is set as ignore_simple_key
-    proto_message_utils._replace_guid_elt(speos_client=speos.client, json_dict=scene_dict, ignore_simple_key="part_guid")
+    proto_message_utils._replace_guid_elt(
+        speos_client=speos.client, json_dict=scene_dict, ignore_simple_key="part_guid"
+    )
 
     # Check that the part_guid was correctly ignored
     assert proto_message_utils._finder_by_key(dict_var=scene_dict, key="part") == []
@@ -169,9 +176,15 @@ def test_replace_guid_elt_complex(speos: Speos):
     # And their spectrums + intensities
     find = proto_message_utils._finder_by_key(dict_var=scene_dict, key="library")
     assert len(find) == 2
-    assert find[0][0] == ".sources[.name='Dom Source 2 (0) in SOURCE2'].source.surface.spectrum.library"
+    assert (
+        find[0][0]
+        == ".sources[.name='Dom Source 2 (0) in SOURCE2'].source.surface.spectrum.library"
+    )
     assert find[0][1]["file_uri"].endswith("Red Spectrum.spectrum")
-    assert find[1][0] == ".sources[.name='Surface Source (0) in SOURCE1'].source.surface.spectrum.library"
+    assert (
+        find[1][0]
+        == ".sources[.name='Surface Source (0) in SOURCE1'].source.surface.spectrum.library"
+    )
     assert find[1][1]["file_uri"].endswith("Blue Spectrum.spectrum")
 
     # Sensor correctly replaced
@@ -195,7 +208,6 @@ def test_replace_guid_elt_complex(speos: Speos):
 
 def test_value_finder_key_startswith(speos: Speos):
     """Test _value_finder_key_startswith."""
-
     p = script.Project(speos=speos)
     src_feat = script.source.Surface(project=p, name="Surface.1")
     src_feat.commit()
@@ -204,14 +216,15 @@ def test_value_finder_key_startswith(speos: Speos):
     src_i_dict = protobuf_message_to_dict(message=src_feat._source_instance)
 
     keys = []
-    for key, val in proto_message_utils._value_finder_key_startswith(dict_var=src_i_dict, key="surface"):
+    for key, val in proto_message_utils._value_finder_key_startswith(
+        dict_var=src_i_dict, key="surface"
+    ):
         keys.append(key)
     assert keys == ["surface_properties"]
 
 
 def test__value_finder_key_endswith(speos: Speos):
     """Test _value_finder_key_endswith."""
-
     p = script.Project(speos=speos)
     src_feat = script.source.Surface(project=p, name="Surface.1")
     src_feat.commit()
@@ -220,28 +233,34 @@ def test__value_finder_key_endswith(speos: Speos):
     src_i_dict = protobuf_message_to_dict(message=src_feat._source_instance)
 
     keys = []
-    for key, val, parent in proto_message_utils._value_finder_key_endswith(dict_var=src_i_dict, key="_properties"):
+    for key, val, parent in proto_message_utils._value_finder_key_endswith(
+        dict_var=src_i_dict, key="_properties"
+    ):
         keys.append(key)
     assert keys == ["surface_properties", "exitance_constant_properties", "intensity_properties"]
 
 
 def test_replace_properties(speos: Speos):
     """Test _replace_properties."""
-
     p = script.Project(speos=speos)
     src_feat = script.source.Surface(project=p, name="Surface.1")
     src_feat.set_intensity().set_gaussian().set_axis_system([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     src_feat.commit()
 
     # First replace guids
-    src_i_dict = proto_message_utils._replace_guids(speos_client=speos.client, message=src_feat._source_instance)
+    src_i_dict = proto_message_utils._replace_guids(
+        speos_client=speos.client, message=src_feat._source_instance
+    )
 
     # Then replace properties in correct elements
     proto_message_utils._replace_properties(json_dict=src_i_dict)
 
     # Check that properties elements are no more there
     assert proto_message_utils._finder_by_key(dict_var=src_i_dict, key="surface_properties") == []
-    assert proto_message_utils._finder_by_key(dict_var=src_i_dict, key="exitance_constant_properties") == []
+    assert (
+        proto_message_utils._finder_by_key(dict_var=src_i_dict, key="exitance_constant_properties")
+        == []
+    )
     assert proto_message_utils._finder_by_key(dict_var=src_i_dict, key="gaussian_properties") == []
 
     # Check that they are copied at correct place
@@ -256,8 +275,12 @@ def test_replace_properties(speos: Speos):
 
 def test_finder_by_key(speos: Speos):
     """Test _finder_by_key."""
-
-    p = script.Project(speos=speos, path=os.path.join(test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"))
+    p = script.Project(
+        speos=speos,
+        path=os.path.join(
+            test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
+        ),
+    )
 
     scene_dict = p._to_dict()
 
@@ -269,24 +292,51 @@ def test_finder_by_key(speos: Speos):
     # key in a list elt (with name property : sources[.name='XXXX'])
     res = proto_message_utils._finder_by_key(dict_var=scene_dict, key="radiant_value")
     assert len(res) == 2
-    assert res[0][0] == ".sources[.name='Dom Source 2 (0) in SOURCE2'].source.surface.radiant_flux.radiant_value"
+    assert (
+        res[0][0]
+        == ".sources[.name='Dom Source 2 (0) in SOURCE2'].source.surface.radiant_flux.radiant_value"
+    )
     assert res[0][1] == 6.590041607465698
-    assert res[1][0] == ".sources[.name='Surface Source (0) in SOURCE1'].source.surface.radiant_flux.radiant_value"
+    assert (
+        res[1][0]
+        == ".sources[.name='Surface Source (0) in SOURCE1'].source.surface.radiant_flux.radiant_value"
+    )
     assert res[1][1] == 9.290411220389682
 
     # key in a list (without name property : geo_paths[0])
     res = proto_message_utils._finder_by_key(dict_var=scene_dict, key="geo_path")
     assert len(res) == 2
-    assert res[0][0] == ".sources[.name='Dom Source 2 (0) in SOURCE2'].source.surface.exitance_constant.geo_paths[0].geo_path"
+    assert (
+        res[0][0]
+        == ".sources[.name='Dom Source 2 (0) in SOURCE2'].source.surface.exitance_constant.geo_paths[0].geo_path"
+    )
     assert res[0][1] == "Solid Body in SOURCE2:2920204960/Face in SOURCE2:222"
-    assert res[1][0] == ".sources[.name='Surface Source (0) in SOURCE1'].source.surface.exitance_constant.geo_paths[0].geo_path"
+    assert (
+        res[1][0]
+        == ".sources[.name='Surface Source (0) in SOURCE1'].source.surface.exitance_constant.geo_paths[0].geo_path"
+    )
     assert res[1][1] == "Solid Body in SOURCE1:2494956811/Face in SOURCE1:187"
 
 
 def test_flatten_dict(speos: Speos):
-    p = script.Project(speos=speos, path=os.path.join(test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"))
+    p = script.Project(
+        speos=speos,
+        path=os.path.join(
+            test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
+        ),
+    )
 
     scene_dict = p._to_dict()
     res = proto_message_utils._flatten_dict(dict_var=scene_dict)
-    expected_keys = ["name", "description", "part_guid", "sources", "sensors", "simulations", "materials", "metadata", "scenes"]
+    expected_keys = [
+        "name",
+        "description",
+        "part_guid",
+        "sources",
+        "sensors",
+        "simulations",
+        "materials",
+        "metadata",
+        "scenes",
+    ]
     assert all(True if key in expected_keys else False for key in res.keys())

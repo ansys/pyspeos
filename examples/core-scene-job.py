@@ -32,7 +32,9 @@ my_scene = speos.client.scenes().create()
 # Load a file to fill the scene
 
 # +
-speos_file = os.path.join(tests_data_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5")
+speos_file = os.path.join(
+    tests_data_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
+)
 my_scene.load_file(file_uri=speos_file)
 # -
 
@@ -52,10 +54,14 @@ print(my_scene)
 # First create the protobuf message
 job_message = core.Job(name="my_job")
 job_message.scene_guid = my_scene.key  # The job needs a scene guid
-job_message.simulation_path = my_scene.get().simulations[0].name  # And needs to know which simulation in the scene is involved.
+job_message.simulation_path = (
+    my_scene.get().simulations[0].name
+)  # And needs to know which simulation in the scene is involved.
 job_message.job_type = core.Job.Type.CPU  # Choose type of job, can also be GPU.
 job_message.direct_mc_simulation_properties.automatic_save_frequency = 1800
-job_message.direct_mc_simulation_properties.stop_condition_rays_number = 200000  # Stop condition, here 200000 rays will be sent.
+job_message.direct_mc_simulation_properties.stop_condition_rays_number = (
+    200000  # Stop condition, here 200000 rays will be sent.
+)
 
 # Create the JobLink
 job_link = speos.client.jobs().create(message=job_message)

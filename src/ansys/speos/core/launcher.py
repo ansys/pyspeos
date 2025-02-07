@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -51,7 +51,9 @@ def launch_speos(version: str = None) -> Speos:
         An instance of the Speos Service.
     """
     if not _HAS_PIM:  # pragma: no cover
-        raise ModuleNotFoundError("The package 'ansys-platform-instancemanagement' is required to use this function.")
+        raise ModuleNotFoundError(
+            "The package 'ansys-platform-instancemanagement' is required to use this function."
+        )
 
     if pypim.is_configured():
         logger.info("Starting Speos service remotely. The startup configuration will be ignored.")
@@ -78,7 +80,9 @@ def launch_remote_speos(
         An instance of the Speos Service.
     """
     if not _HAS_PIM:  # pragma: no cover
-        raise ModuleNotFoundError("The package 'ansys-platform-instancemanagement' is required to use this function.")
+        raise ModuleNotFoundError(
+            "The package 'ansys-platform-instancemanagement' is required to use this function."
+        )
 
     pim = pypim.connect()
     instance = pim.create_instance(product_name="speos", product_version=version)

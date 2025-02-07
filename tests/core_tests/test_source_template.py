@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -23,18 +23,19 @@
 """
 Test source template.
 """
+
 import json
 import os
 
-from ansys.api.speos.common.v1 import data_pb2
+from conftest import test_path
 import grpc
 import pytest
 
+from ansys.api.speos.common.v1 import data_pb2
 from ansys.speos.core.intensity_template import IntensityTemplate
 from ansys.speos.core.source_template import SourceTemplate
 from ansys.speos.core.spectrum import Spectrum
 from ansys.speos.core.speos import Speos
-from conftest import test_path
 
 
 def test_source_template(speos: Speos):
@@ -42,19 +43,29 @@ def test_source_template(speos: Speos):
     assert speos.client.healthy is True
 
     # Get DB
-    source_t_db = speos.client.source_templates()  # Create source_templates stub from client channel
+    source_t_db = (
+        speos.client.source_templates()
+    )  # Create source_templates stub from client channel
     spec_db = speos.client.spectrums()  # Create spectrums stub from client channel
-    intens_t_db = speos.client.intensity_templates()  # Create intensity_templates stub from client channel
+    intens_t_db = (
+        speos.client.intensity_templates()
+    )  # Create intensity_templates stub from client channel
 
     # This spectrum will be used by both src_t_luminaire and src_t_surface
     spec_bb_2500 = spec_db.create(
-        Spectrum(name="blackbody_2500", description="blackbody spectrum - T 2500K", blackbody=Spectrum.BlackBody(temperature=2500.0))
+        Spectrum(
+            name="blackbody_2500",
+            description="blackbody spectrum - T 2500K",
+            blackbody=Spectrum.BlackBody(temperature=2500.0),
+        )
     )
 
     # This intensity template will be used in several luminaire source template
     intens_t_lamb = intens_t_db.create(
         message=IntensityTemplate(
-            name="lambertian_180", description="lambertian intensity template 180", cos=IntensityTemplate.Cos(N=1.0, total_angle=180.0)
+            name="lambertian_180",
+            description="lambertian intensity template 180",
+            cos=IntensityTemplate.Cos(N=1.0, total_angle=180.0),
         )
     )
 

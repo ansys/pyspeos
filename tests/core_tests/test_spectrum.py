@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -23,11 +23,13 @@
 """
 Test basic spectrum database connection.
 """
+
 import os
+
+from conftest import test_path
 
 from ansys.speos.core.spectrum import Spectrum
 from ansys.speos.core.speos import Speos
-from conftest import test_path
 
 
 def test_client_spectrum_init(speos: Speos):
@@ -47,7 +49,11 @@ def test_client_spectrum_init(speos: Speos):
 
     # Create SpectrumLink
     s_bb_5321 = spec_db.create(
-        message=Spectrum(name="blackbody_0", description="Blackbody spectrum", blackbody=Spectrum.BlackBody(temperature=5321.0))
+        message=Spectrum(
+            name="blackbody_0",
+            description="Blackbody spectrum",
+            blackbody=Spectrum.BlackBody(temperature=5321.0),
+        )
     )  # the spectrum created is stored in DB
     # Get data
     s_bb_5321_data = s_bb_5321.get()
@@ -55,14 +61,20 @@ def test_client_spectrum_init(speos: Speos):
     # Update data
     s_bb_5321_data.blackbody.temperature = 5326  # data modified only locally, not in DB
     s_bb_5321.set(s_bb_5321_data)  # data modified in DB thanks to set method
-    s_bb_5321_data = s_bb_5321.get()  # retrieve value from DB to verify that it is correctly updated
+    s_bb_5321_data = (
+        s_bb_5321.get()
+    )  # retrieve value from DB to verify that it is correctly updated
     assert s_bb_5321_data.blackbody.temperature == 5326
     # Delete
     s_bb_5321.delete()  # Delete from DB
 
     # Create SpectrumLink
     s_m_659 = spec_db.create(
-        Spectrum(name="monochr_0", description="Monochromatic spectrum", monochromatic=Spectrum.Monochromatic(wavelength=659.0))
+        Spectrum(
+            name="monochr_0",
+            description="Monochromatic spectrum",
+            monochromatic=Spectrum.Monochromatic(wavelength=659.0),
+        )
     )
     # Duplicate = same data but different keys
     s_m_659_bis = spec_db.create(s_m_659.get())
@@ -83,13 +95,21 @@ def test_spectrum(speos: Speos):
 
     # Monochromatic
     spec_mono = spec_db.create(
-        Spectrum(name="monochr_1", description="Monochromatic spectrum", monochromatic=Spectrum.Monochromatic(wavelength=659.0))
+        Spectrum(
+            name="monochr_1",
+            description="Monochromatic spectrum",
+            monochromatic=Spectrum.Monochromatic(wavelength=659.0),
+        )
     )
     assert spec_mono.key != ""
 
     # Blackbody
     spec_blackbody = spec_db.create(
-        message=Spectrum(name="blackbody_1", description="Blackbody spectrum", blackbody=Spectrum.BlackBody(temperature=5321.0))
+        message=Spectrum(
+            name="blackbody_1",
+            description="Blackbody spectrum",
+            blackbody=Spectrum.BlackBody(temperature=5321.0),
+        )
     )
     assert spec_blackbody.key != ""
 
@@ -104,9 +124,15 @@ def test_spectrum(speos: Speos):
     assert s_sampled.key != ""
 
     # Library
-    spectrum_path = os.path.join(test_path, os.path.join("CameraInputFiles", "CameraSensitivityBlue.spectrum"))
+    spectrum_path = os.path.join(
+        test_path, os.path.join("CameraInputFiles", "CameraSensitivityBlue.spectrum")
+    )
     s_lib = spec_db.create(
-        message=Spectrum(name="library_1", description="Library spectrum", library=Spectrum.Library(file_uri=spectrum_path))
+        message=Spectrum(
+            name="library_1",
+            description="Library spectrum",
+            library=Spectrum.Library(file_uri=spectrum_path),
+        )
     )
     assert s_lib.key != ""
 

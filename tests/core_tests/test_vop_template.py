@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -23,15 +23,16 @@
 """
 Test basic vop template database connection.
 """
+
 import json
 import os
 
+from conftest import test_path
 import grpc
 import pytest
 
 from ansys.speos.core.speos import Speos
 from ansys.speos.core.vop_template import VOPTemplate
-from conftest import test_path
 
 
 def test_vop_template(speos: Speos):
@@ -41,13 +42,17 @@ def test_vop_template(speos: Speos):
     vop_t_db = speos.client.vop_templates()  # Create spectrum stub from client channel
 
     # Opaque
-    vop_t_opaque = vop_t_db.create(VOPTemplate(name="opaque_0", description="Opaque vop template", opaque=VOPTemplate.Opaque()))
+    vop_t_opaque = vop_t_db.create(
+        VOPTemplate(name="opaque_0", description="Opaque vop template", opaque=VOPTemplate.Opaque())
+    )
     assert vop_t_opaque.key != ""
 
     # Optic without constringence
     vop_t_optic0 = vop_t_db.create(
         VOPTemplate(
-            name="optic_0", description="Optic vop template without constringence", optic=VOPTemplate.Optic(index=1.5, absorption=0.0)
+            name="optic_0",
+            description="Optic vop template without constringence",
+            optic=VOPTemplate.Optic(index=1.5, absorption=0.0),
         )
     )
     assert vop_t_optic0.key != ""
@@ -78,7 +83,9 @@ def test_vop_template(speos: Speos):
             name="non_homogeneous_0",
             description="Non Homogeneous vop template",
             non_homogeneous=VOPTemplate.NonHomogeneous(
-                gradedmaterial_file_uri=os.path.join(test_path, "Index_1.5_Gradient_0.499_Abs_0.gradedmaterial")
+                gradedmaterial_file_uri=os.path.join(
+                    test_path, "Index_1.5_Gradient_0.499_Abs_0.gradedmaterial"
+                )
             ),
         )
     )

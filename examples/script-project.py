@@ -141,7 +141,12 @@ print(p.find(name="Sensor.1"))
 # Via passing the .speos/.sv5 file path to the script.Project class.
 
 # +
-p2 = script.Project(speos=speos, path=os.path.join(tests_data_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"))
+p2 = script.Project(
+    speos=speos,
+    path=os.path.join(
+        tests_data_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
+    ),
+)
 print(p2)
 # -
 
@@ -198,5 +203,7 @@ sim_feat.compute_CPU()
 if os.name == "nt":
     from ansys.speos.workflow.open_result import open_result_image
 
-    open_result_image(simulation_feature=sim_feat, result_name="ASSEMBLY1.DS (0).Dom Irradiance Sensor (0).xmp")
+    open_result_image(
+        simulation_feature=sim_feat, result_name="ASSEMBLY1.DS (0).Dom Irradiance Sensor (0).xmp"
+    )
 # -
