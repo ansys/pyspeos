@@ -1,0 +1,85 @@
+name: Nightly
+
+on:
+  # TODO: Remove once working
+  pull_request:
+  # workflow_dispatch:
+  # schedule:  # UTC at 0300
+  #   - cron:  '0 3 * * *'
+
+env:
+  MAIN_PYTHON_VERSION: '3.10'
+  DOCUMENTATION_CNAME: 'speos.docs.pyansys.com'
+  PACKAGE_NAMESPACE: 'ansys.speos.core'
+  PACKAGE_NAME: 'ansys-speos-core'
+  PIP_EXTRA_INDEX_URL: 'https://${{ secrets.PYANSYS_PYPI_PRIVATE_PAT }}@pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/simple/'
+  BUILD_CHEATSHEET: 'true'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  testing:
+    name: Testing and coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+
+      - name: Create Python virtual environment
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          python -c "import sys; print(sys.executable)"
+
+      - name: Install packages for testing
+        run: |
+          . .venv/bin/activate
+          python -m pip install --upgrade pip
+          pip install --upgrade build wheel
+          pip install .[tests]
+
+      - name: Login to GitHub Packages
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io/ansys-internal
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Start container
+        env:
+          ANSYSLMD_LICENSE_FILE: 1055@${{ secrets.LICENSE_SERVER }}
+        run: |
+          docker run --detach --name speos-rpc -p 50098:50098 -e LOG_LEVEL=2 -v "${{ github.workspace }}/tests/assets:/app/assets" ghcr.io/corp/proj:ip /app/server.x
+
+      - name: Run pytest
+        run: |
+          . .venv/bin/activate
+          pytest -xs
+
+      - name: Upload Coverage Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html-ubuntu
+          path: .cov/html
+          retention-days: 7
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        with:
+          files: .cov/xml
+
+      - name: Stop container
+        run: |
+          docker kill speos-rpc
+          docker rm speos-rpc
