@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -20,6 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 """Provides a way to open result of the simulation feature (of script layer)."""
+
 import os
 import tempfile
 from typing import Union
@@ -38,7 +39,9 @@ from ansys.speos.script.simulation import Direct, Interactive, Inverse
 
 
 def _find_correct_result(
-    simulation_feature: Union[Direct, Inverse, Interactive], result_name: str, download_if_distant: bool = True
+    simulation_feature: Union[Direct, Inverse, Interactive],
+    result_name: str,
+    download_if_distant: bool = True,
 ) -> str:
     if len(simulation_feature.result_list) == 0:
         raise ValueError("Please compute the simulation feature to generate results.")
@@ -60,7 +63,9 @@ def _find_correct_result(
                         file_uri=res.upload_response.info.uri,
                         download_location=tempfile.gettempdir(),
                     )
-                    file_path = os.path.join(tempfile.gettempdir(), res.upload_response.info.file_name)
+                    file_path = os.path.join(
+                        tempfile.gettempdir(), res.upload_response.info.file_name
+                    )
                 else:
                     file_path = res.upload_response.info.uri
                 break
@@ -78,7 +83,9 @@ def _display_image(img: ndarray):
 
 if os.name == "nt":
 
-    def open_result_image(simulation_feature: Union[Direct, Inverse, Interactive], result_name: str) -> None:
+    def open_result_image(
+        simulation_feature: Union[Direct, Inverse, Interactive], result_name: str
+    ) -> None:
         """Retrieve an image from a specific simulation result.
 
         Parameters
@@ -90,7 +97,12 @@ if os.name == "nt":
         """
         file_path = _find_correct_result(simulation_feature, result_name)
         if file_path == "":
-            raise ValueError("No result corresponding to " + result_name + " is found in " + simulation_feature._name)
+            raise ValueError(
+                "No result corresponding to "
+                + result_name
+                + " is found in "
+                + simulation_feature._name
+            )
 
         if file_path.endswith("xmp") or file_path.endswith("XMP"):
             dpf_instance = CreateObject("XMPViewer.Application")

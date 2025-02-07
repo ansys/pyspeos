@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -26,9 +26,10 @@ Test basic using lxp from script layer.
 
 import os
 
+from conftest import test_path
+
 from ansys.speos.core.speos import Speos
 import ansys.speos.script.lxp as lxp
-from conftest import test_path
 
 
 def test_light_path_finder_direct(speos: Speos):
@@ -79,11 +80,29 @@ def test_light_path_finder_inverse(speos: Speos):
             [0.31212788820266724, -0.2756119668483734, 0.19500020146369934],
         ],
         "wl": 564.40966796875,
-        "body_ids": [3960786643, 3744252339, 3744252339, 2356544899, 3744252339, 3744252339, 3960786643],
-        "face_ids": [898898403, 82490460, 2224221720, 4045863240, 4073137513, 3944298668, 2350472451],
+        "body_ids": [
+            3960786643,
+            3744252339,
+            3744252339,
+            2356544899,
+            3744252339,
+            3744252339,
+            3960786643,
+        ],
+        "face_ids": [
+            898898403,
+            82490460,
+            2224221720,
+            4045863240,
+            4073137513,
+            3944298668,
+            2350472451,
+        ],
         "last_direction": [0.0, 0.0, 0.0],
         "intersection_type": [5, 1, 1, -1, 1, 1, -1],
-        "sensor_contribution": [{"sensor_id": 0, "position": [-0.14824546764179047, 0.3064812525259446]}],
+        "sensor_contribution": [
+            {"sensor_id": 0, "position": [-0.14824546764179047, 0.3064812525259446]}
+        ],
     }
 
     assert lpf.nb_traces == 21044

@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 """Provides a way to interact with feature: Body."""
+
 from __future__ import annotations
 
 import re
@@ -76,7 +77,9 @@ class Body:
 
         self._geom_features = []
 
-    def create_face(self, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> face.Face:
+    def create_face(
+        self, name: str, description: str = "", metadata: Mapping[str, str] = {}
+    ) -> face.Face:
         """Create a face in this element.
 
         Parameters
@@ -95,7 +98,13 @@ class Body:
         ansys.speos.script.face.Face
             Face feature.
         """
-        face_feat = face.Face(speos_client=self._speos_client, name=name, description=description, metadata=metadata, parent_body=self)
+        face_feat = face.Face(
+            speos_client=self._speos_client,
+            name=name,
+            description=description,
+            metadata=metadata,
+            parent_body=self,
+        )
         self._geom_features.append(face_feat)
         return face_feat
 
@@ -103,9 +112,13 @@ class Body:
         out_dict = ""
 
         if self.body_link is None:
-            out_dict = proto_message_utils._replace_guids(speos_client=self._speos_client, message=self._body)
+            out_dict = proto_message_utils._replace_guids(
+                speos_client=self._speos_client, message=self._body
+            )
         else:
-            out_dict = proto_message_utils._replace_guids(speos_client=self._speos_client, message=self.body_link.get())
+            out_dict = proto_message_utils._replace_guids(
+                speos_client=self._speos_client, message=self.body_link.get()
+            )
 
         return out_dict
 
@@ -189,7 +202,9 @@ class Body:
 
         return self
 
-    def find(self, name: str, name_regex: bool = False, feature_type: Optional[type] = None) -> List[face.Face]:
+    def find(
+        self, name: str, name_regex: bool = False, feature_type: Optional[type] = None
+    ) -> List[face.Face]:
         """Find feature(s). In a body, only faces features can be found.
 
         Parameters

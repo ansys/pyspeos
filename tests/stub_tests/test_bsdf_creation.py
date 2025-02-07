@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -32,15 +32,16 @@ With coverage.
    $ pytest --cov ansys.speos.core
 
 """
+
 import math
 import os
 
-import ansys.api.speos.bsdf.v1.bsdf_creation_pb2 as bsdf_creation__v1__pb2
-import ansys.api.speos.bsdf.v1.bsdf_creation_pb2_grpc as bsdf_creation__v1__pb2_grpc
-
-from ansys.speos.core.speos import Speos
 from conftest import test_path
 import helper
+
+import ansys.api.speos.bsdf.v1.bsdf_creation_pb2 as bsdf_creation__v1__pb2
+import ansys.api.speos.bsdf.v1.bsdf_creation_pb2_grpc as bsdf_creation__v1__pb2_grpc
+from ansys.speos.core.speos import Speos
 
 
 def test_grpc_spectral_bsdf(speos: Speos):
@@ -48,8 +49,12 @@ def test_grpc_spectral_bsdf(speos: Speos):
 
     # BSDF180
     bsdf180_request = bsdf_creation__v1__pb2.Bsdf180InputData()
-    bsdf180_request.input_front_bsdf_file_name = os.path.join(test_path, "Gaussian Fresnel 10 deg.anisotropicbsdf")
-    bsdf180_request.input_opposite_bsdf_file_name = os.path.join(test_path, "Gaussian Fresnel 10 deg.anisotropicbsdf")
+    bsdf180_request.input_front_bsdf_file_name = os.path.join(
+        test_path, "Gaussian Fresnel 10 deg.anisotropicbsdf"
+    )
+    bsdf180_request.input_opposite_bsdf_file_name = os.path.join(
+        test_path, "Gaussian Fresnel 10 deg.anisotropicbsdf"
+    )
     bsdf180_request.output_file_name = os.path.join(test_path, "Test.bsdf180")
     stub.BuildBsdf180(bsdf180_request)
     assert helper.does_file_exist(bsdf180_request.output_file_name)

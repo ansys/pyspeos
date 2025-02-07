@@ -25,7 +25,6 @@
 import os
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2
-
 import ansys.speos.core as core
 
 # If using docker container
@@ -45,7 +44,9 @@ speos = core.Speos(host="localhost", port=50098)
 # +
 my_scene = speos.client.scenes().create()
 
-speos_file = os.path.join(tests_data_path, "Inverse_SeveralSensors.speos", "Inverse_SeveralSensors.speos")
+speos_file = os.path.join(
+    tests_data_path, "Inverse_SeveralSensors.speos", "Inverse_SeveralSensors.speos"
+)
 my_scene.load_file(file_uri=speos_file)
 # -
 
@@ -82,7 +83,9 @@ for sensor_i in my_scene.get().sensors:
 
 # +
 my_scene_data = my_scene.get()  # get() = retrieve datamodel corresponding to my_scene
-camera_i_0 = my_scene_data.sensors[0]  # retrieve the specific part of the message corresponding to the first sensor
+camera_i_0 = my_scene_data.sensors[
+    0
+]  # retrieve the specific part of the message corresponding to the first sensor
 assert camera_i_0.HasField("camera_properties")  # verify that it is a camera
 
 # Modification on protobuf message : axis system + layer type
@@ -101,7 +104,9 @@ print(my_scene.get().sensors[0])  # Do another get() to check new value on datab
 # ### Modify a camera template
 
 # +
-new_distortion_file = os.path.join(tests_data_path, os.path.join("CameraInputFiles", "CameraDistortion_150deg.OPTDistortion"))
+new_distortion_file = os.path.join(
+    tests_data_path, os.path.join("CameraInputFiles", "CameraDistortion_150deg.OPTDistortion")
+)
 
 # Retrieve SensorTemplateLink corresponding to camera_i_0.sensor_guid
 camera_t_0 = speos.client.get_item(camera_i_0.sensor_guid)
@@ -136,7 +141,9 @@ sensor_t_data.camera_sensor_template.sensor_mode_photometric.transmittance_file_
     tests_data_path, os.path.join("CameraInputFiles", "CameraTransmittance.spectrum")
 )
 sensor_t_data.camera_sensor_template.sensor_mode_photometric.gamma_correction = 2.2
-sensor_t_data.camera_sensor_template.sensor_mode_photometric.png_bits = camera_sensor_pb2.EnumSensorCameraPNGBits.PNG_16
+sensor_t_data.camera_sensor_template.sensor_mode_photometric.png_bits = (
+    camera_sensor_pb2.EnumSensorCameraPNGBits.PNG_16
+)
 sensor_t_data.camera_sensor_template.sensor_mode_photometric.color_mode_color.red_spectrum_file_uri = os.path.join(
     tests_data_path, os.path.join("CameraInputFiles", "CameraSensitivityRed.spectrum")
 )
@@ -170,10 +177,10 @@ print(sensor_t_new)
 
 # +
 camera_i_2 = core.Scene.SensorInstance(name=sensor_t_new.get().name + ".1")
-camera_i_2.sensor_guid = (
-    sensor_t_new.key
-)  # An instance has to reference a template - here we use the SensorTemplateLink's key that we got just above.
-camera_i_2.camera_properties.axis_system.extend([50, 50, 50, 1, 0, 0, 0, 1, 0, 0, 0, 1])  # Choose axis system
+camera_i_2.sensor_guid = sensor_t_new.key  # An instance has to reference a template - here we use the SensorTemplateLink's key that we got just above.
+camera_i_2.camera_properties.axis_system.extend(
+    [50, 50, 50, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+)  # Choose axis system
 camera_i_2.camera_properties.layer_type_source.SetInParent()  # choose separation by source
 # -
 

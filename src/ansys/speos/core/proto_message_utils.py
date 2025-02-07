@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -50,9 +50,19 @@ def protobuf_message_to_str(message: Message, with_full_name: bool = True) -> st
 
     protobuf_major_version = int(protobuf_version.split(sep=".", maxsplit=1)[0])
     if protobuf_major_version < 5:
-        ret += MessageToJson(message=message, including_default_value_fields=True, preserving_proto_field_name=True, indent=4)
+        ret += MessageToJson(
+            message=message,
+            including_default_value_fields=True,
+            preserving_proto_field_name=True,
+            indent=4,
+        )
     else:
-        ret += MessageToJson(message=message, always_print_fields_with_no_presence=True, preserving_proto_field_name=True, indent=4)
+        ret += MessageToJson(
+            message=message,
+            always_print_fields_with_no_presence=True,
+            preserving_proto_field_name=True,
+            indent=4,
+        )
     return ret
 
 

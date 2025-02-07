@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -23,11 +23,12 @@
 """
 Test basic client connection.
 """
+
+from conftest import config
 from grpc import insecure_channel
 import pytest
 
 from ansys.speos.core.client import SpeosClient
-from conftest import config
 
 
 @pytest.fixture(scope="function")

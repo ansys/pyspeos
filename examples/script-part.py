@@ -78,7 +78,11 @@ print(root_part)
 # The location sub-part can be defined using set_axis_system method.
 
 # +
-sub_part1 = root_part.create_sub_part(name="TheSubPartSP1").set_axis_system(axis_system=[5, 5, 5, 1, 0, 0, 0, 1, 0, 0, 0, 1]).commit()
+sub_part1 = (
+    root_part.create_sub_part(name="TheSubPartSP1")
+    .set_axis_system(axis_system=[5, 5, 5, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    .commit()
+)
 print(root_part)
 # -
 
@@ -99,7 +103,11 @@ print(root_part)
 # ### Create sub parts in sub part
 
 # +
-sub_part11 = sub_part1.create_sub_part(name="TheSubPartSP11").set_axis_system([1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1]).commit()
+sub_part11 = (
+    sub_part1.create_sub_part(name="TheSubPartSP11")
+    .set_axis_system([1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    .commit()
+)
 print(root_part)
 # -
 

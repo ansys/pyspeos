@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -32,16 +32,17 @@ With coverage.
    $ pytest --cov ansys.speos.core
 
 """
+
 import os
+
+from conftest import local_test_path, test_path
 
 import ansys.api.speos.file.v1.file_transfer as file_transfer_helper__v1
 import ansys.api.speos.file.v1.file_transfer_pb2 as file_transfer__v1__pb2
 import ansys.api.speos.file.v1.file_transfer_pb2_grpc as file_transfer__v1__pb2_grpc
 import ansys.api.speos.lpf.v2.lpf_file_reader_pb2 as lpf_file_reader__v2__pb2
 import ansys.api.speos.lpf.v2.lpf_file_reader_pb2_grpc as lpf_file_reader__v2__pb2_grpc
-
 from ansys.speos.core.speos import Speos
-from conftest import local_test_path, test_path
 
 
 def test_lpf_file_reader_mono_v2_DirectSimu(speos: Speos):
@@ -57,7 +58,9 @@ def test_lpf_file_reader_mono_v2_DirectSimu(speos: Speos):
     nb_of_traces = res_information.nb_of_traces
     assert nb_of_traces == 24817
     assert res_information.nb_of_xmps == 3
-    assert res_information.has_sensor_contributions == False  # No contributions stored in Direct simu
+    assert (
+        res_information.has_sensor_contributions == False
+    )  # No contributions stored in Direct simu
     assert len(res_information.sensor_names) == 3
     assert res_information.sensor_names[0] == "Irradiance Sensor (0)"
     assert res_information.sensor_names[2] == "Irradiance Sensor (2)"
@@ -71,17 +74,27 @@ def test_lpf_file_reader_mono_v2_DirectSimu(speos: Speos):
     # Check result (first entry)
     expected_nb_of_impact = 5
     assert len(raypaths[0].impacts) == expected_nb_of_impact
-    assert raypaths[0].impacts[1] == lpf_file_reader__v2__pb2.TripletFloat(x=3.19368935, y=14.999999, z=-3.94779062)
+    assert raypaths[0].impacts[1] == lpf_file_reader__v2__pb2.TripletFloat(
+        x=3.19368935, y=14.999999, z=-3.94779062
+    )
     assert len(raypaths[0].wavelengths) == expected_nb_of_impact
     assert raypaths[0].wavelengths[1] == 691.44708251953125
     assert len(raypaths[0].body_context_ids) == expected_nb_of_impact
     assert raypaths[0].body_context_ids[1] == 2001802324
     assert len(raypaths[0].unique_face_ids) == expected_nb_of_impact
     assert raypaths[0].unique_face_ids[1] == 1815582994
-    assert raypaths[0].lastDirection == lpf_file_reader__v2__pb2.TripletFloat(x=0.0606396869, y=0.995341122, z=-0.0749590397)
+    assert raypaths[0].lastDirection == lpf_file_reader__v2__pb2.TripletFloat(
+        x=0.0606396869, y=0.995341122, z=-0.0749590397
+    )
     assert len(raypaths[0].interaction_statuses) == expected_nb_of_impact
-    assert raypaths[0].interaction_statuses[0] == lpf_file_reader__v2__pb2.RayPath.PhotonStatus.StatusJustEmitted
-    assert raypaths[0].interaction_statuses[1] == lpf_file_reader__v2__pb2.RayPath.PhotonStatus.StatusSpecularTransmitted
+    assert (
+        raypaths[0].interaction_statuses[0]
+        == lpf_file_reader__v2__pb2.RayPath.PhotonStatus.StatusJustEmitted
+    )
+    assert (
+        raypaths[0].interaction_statuses[1]
+        == lpf_file_reader__v2__pb2.RayPath.PhotonStatus.StatusSpecularTransmitted
+    )
     assert len(raypaths[0].sensor_contributions) == 0
 
     # Close
@@ -114,7 +127,9 @@ def test_lpf_file_reader_mono_v2_InverseSimu(speos: Speos):
     # Check sensor_contributions in first raypath
     assert len(raypaths[0].sensor_contributions) == 1
     assert raypaths[0].sensor_contributions[0].sensor_id == 0
-    assert raypaths[0].sensor_contributions[0].coordinates == lpf_file_reader__v2__pb2.DoubletDouble(
+    assert raypaths[0].sensor_contributions[
+        0
+    ].coordinates == lpf_file_reader__v2__pb2.DoubletDouble(
         x=-0.20848463202592682, y=0.1897648665199252
     )
 
@@ -132,10 +147,16 @@ def test_lpf_file_reader_multi_v2(speos: Speos):
 
     # Init with file local path
     path = os.path.join(test_path, "basic_DirectSimu.lpf")
-    stub.InitLpfFileName(lpf_file_reader__v2__pb2.InitLpfFileName_Request_Multi(lpf_reader_guid=guid, lpf_file_uri=path))
+    stub.InitLpfFileName(
+        lpf_file_reader__v2__pb2.InitLpfFileName_Request_Multi(
+            lpf_reader_guid=guid, lpf_file_uri=path
+        )
+    )
 
     # GetInformation
-    res_information = stub.GetInformation(lpf_file_reader__v2__pb2.GetInformation_Request_Multi(lpf_reader_guid=guid))
+    res_information = stub.GetInformation(
+        lpf_file_reader__v2__pb2.GetInformation_Request_Multi(lpf_reader_guid=guid)
+    )
     nb_of_traces = res_information.nb_of_traces
     assert nb_of_traces == 24817
     assert res_information.nb_of_xmps == 3
@@ -144,10 +165,16 @@ def test_lpf_file_reader_multi_v2(speos: Speos):
     guid2 = stub.Create(lpf_file_reader__v2__pb2.Create_Request_Multi()).lpf_reader_guid
     # Init second reader
     path2 = os.path.join(test_path, "basic_InverseSimu.lpf")
-    stub.InitLpfFileName(lpf_file_reader__v2__pb2.InitLpfFileName_Request_Multi(lpf_reader_guid=guid2, lpf_file_uri=path2))
+    stub.InitLpfFileName(
+        lpf_file_reader__v2__pb2.InitLpfFileName_Request_Multi(
+            lpf_reader_guid=guid2, lpf_file_uri=path2
+        )
+    )
 
     # GetInformation and read second
-    res_information = stub.GetInformation(lpf_file_reader__v2__pb2.GetInformation_Request_Multi(lpf_reader_guid=guid2))
+    res_information = stub.GetInformation(
+        lpf_file_reader__v2__pb2.GetInformation_Request_Multi(lpf_reader_guid=guid2)
+    )
     nb_of_traces2 = res_information.nb_of_traces
     assert nb_of_traces2 == 21044
     raypaths2 = []
@@ -158,7 +185,9 @@ def test_lpf_file_reader_multi_v2(speos: Speos):
     # Check sensor_contributions in first raypath
     assert len(raypaths2[0].sensor_contributions) == 1
     assert raypaths2[0].sensor_contributions[0].sensor_id == 0
-    assert raypaths2[0].sensor_contributions[0].coordinates == lpf_file_reader__v2__pb2.DoubletDouble(
+    assert raypaths2[0].sensor_contributions[
+        0
+    ].coordinates == lpf_file_reader__v2__pb2.DoubletDouble(
         x=-0.20848463202592682, y=0.1897648665199252
     )
 
@@ -174,13 +203,20 @@ def test_lpf_file_reader_multi_v2(speos: Speos):
     # Check some result (first entry)
     expected_nb_of_impact = 5
     assert len(raypaths[0].impacts) == expected_nb_of_impact
-    assert raypaths[0].impacts[1] == lpf_file_reader__v2__pb2.TripletFloat(x=3.19368935, y=14.999999, z=-3.94779062)
+    assert raypaths[0].impacts[1] == lpf_file_reader__v2__pb2.TripletFloat(
+        x=3.19368935, y=14.999999, z=-3.94779062
+    )
     assert len(raypaths[0].interaction_statuses) == expected_nb_of_impact
-    assert raypaths[0].interaction_statuses[1] == lpf_file_reader__v2__pb2.RayPath.PhotonStatus.StatusSpecularTransmitted
+    assert (
+        raypaths[0].interaction_statuses[1]
+        == lpf_file_reader__v2__pb2.RayPath.PhotonStatus.StatusSpecularTransmitted
+    )
     assert len(raypaths[0].sensor_contributions) == 0
 
     # Close and Delete the first
-    stub.CloseLpfFileName(lpf_file_reader__v2__pb2.CloseLpfFileName_Request_Multi(lpf_reader_guid=guid))
+    stub.CloseLpfFileName(
+        lpf_file_reader__v2__pb2.CloseLpfFileName_Request_Multi(lpf_reader_guid=guid)
+    )
     stub.Delete(lpf_file_reader__v2__pb2.Delete_Request_Multi(lpf_reader_guid=guid))
 
 
@@ -194,14 +230,18 @@ def test_lpf_file_reader_mono_v2_DirectSimu_with_file_transfer(speos: Speos):
     stub = lpf_file_reader__v2__pb2_grpc.LpfFileReader_MonoStub(speos.client.channel)
 
     # Init with uri from file transfer
-    stub.InitLpfFileName(lpf_file_reader__v2__pb2.InitLpfFileName_Request_Mono(lpf_file_uri=upload_response.info.uri))
+    stub.InitLpfFileName(
+        lpf_file_reader__v2__pb2.InitLpfFileName_Request_Mono(lpf_file_uri=upload_response.info.uri)
+    )
 
     # GetInformation
     res_information = stub.GetInformation(lpf_file_reader__v2__pb2.GetInformation_Request_Mono())
     nb_of_traces = res_information.nb_of_traces
     assert nb_of_traces == 24817
     assert res_information.nb_of_xmps == 3
-    assert res_information.has_sensor_contributions == False  # No contributions stored in Direct simu
+    assert (
+        res_information.has_sensor_contributions == False
+    )  # No contributions stored in Direct simu
     assert len(res_information.sensor_names) == 3
     assert res_information.sensor_names[0] == "Irradiance Sensor (0)"
     assert res_information.sensor_names[2] == "Irradiance Sensor (2)"
@@ -215,17 +255,27 @@ def test_lpf_file_reader_mono_v2_DirectSimu_with_file_transfer(speos: Speos):
     # Check result (first entry)
     expected_nb_of_impact = 5
     assert len(raypaths[0].impacts) == expected_nb_of_impact
-    assert raypaths[0].impacts[1] == lpf_file_reader__v2__pb2.TripletFloat(x=3.19368935, y=14.999999, z=-3.94779062)
+    assert raypaths[0].impacts[1] == lpf_file_reader__v2__pb2.TripletFloat(
+        x=3.19368935, y=14.999999, z=-3.94779062
+    )
     assert len(raypaths[0].wavelengths) == expected_nb_of_impact
     assert raypaths[0].wavelengths[1] == 691.44708251953125
     assert len(raypaths[0].body_context_ids) == expected_nb_of_impact
     assert raypaths[0].body_context_ids[1] == 2001802324
     assert len(raypaths[0].unique_face_ids) == expected_nb_of_impact
     assert raypaths[0].unique_face_ids[1] == 1815582994
-    assert raypaths[0].lastDirection == lpf_file_reader__v2__pb2.TripletFloat(x=0.0606396869, y=0.995341122, z=-0.0749590397)
+    assert raypaths[0].lastDirection == lpf_file_reader__v2__pb2.TripletFloat(
+        x=0.0606396869, y=0.995341122, z=-0.0749590397
+    )
     assert len(raypaths[0].interaction_statuses) == expected_nb_of_impact
-    assert raypaths[0].interaction_statuses[0] == lpf_file_reader__v2__pb2.RayPath.PhotonStatus.StatusJustEmitted
-    assert raypaths[0].interaction_statuses[1] == lpf_file_reader__v2__pb2.RayPath.PhotonStatus.StatusSpecularTransmitted
+    assert (
+        raypaths[0].interaction_statuses[0]
+        == lpf_file_reader__v2__pb2.RayPath.PhotonStatus.StatusJustEmitted
+    )
+    assert (
+        raypaths[0].interaction_statuses[1]
+        == lpf_file_reader__v2__pb2.RayPath.PhotonStatus.StatusSpecularTransmitted
+    )
     assert len(raypaths[0].sensor_contributions) == 0
 
     # Close
