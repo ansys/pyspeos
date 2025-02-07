@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 """Provides a way to interact with Speos feature: Intensity."""
+
 from __future__ import annotations
 
 from typing import List, Mapping, Optional
@@ -101,7 +102,9 @@ class Intensity:
             self._library.intensity_file_uri = uri
             return self
 
-        def set_orientation_axis_system(self, axis_system: Optional[List[float]] = None) -> Intensity.Library:
+        def set_orientation_axis_system(
+            self, axis_system: Optional[List[float]] = None
+        ) -> Intensity.Library:
             """Set the intensity orientation from an axis system.
 
             Parameters
@@ -142,7 +145,9 @@ class Intensity:
             self._library_props.normal_to_uv_map.SetInParent()
             return self
 
-        def set_exit_geometries(self, exit_geometries: Optional[List[GeoRef]] = None) -> Intensity.Library:
+        def set_exit_geometries(
+            self, exit_geometries: Optional[List[GeoRef]] = None
+        ) -> Intensity.Library:
             """Set the exit geometries.
 
             Parameters
@@ -156,11 +161,12 @@ class Intensity:
             ansys.speos.script.intensity.Intensity.Library
                 Library intensity.
             """
-
             if not exit_geometries:
                 self._library_props.ClearField("exit_geometries")
             else:
-                self._library_props.exit_geometries.geo_paths[:] = [gr.to_native_link() for gr in exit_geometries]
+                self._library_props.exit_geometries.geo_paths[:] = [
+                    gr.to_native_link() for gr in exit_geometries
+                ]
             return self
 
     class Gaussian:
@@ -291,7 +297,9 @@ class Intensity:
 
         if key == "":
             # Create IntensityTemplate
-            self._intensity_template = core.IntensityTemplate(name=name, description=description, metadata=metadata)
+            self._intensity_template = core.IntensityTemplate(
+                name=name, description=description, metadata=metadata
+            )
 
             # Default values
             self.set_cos(N=1)  # By default will be lambertian (cos with N =1)
@@ -311,16 +319,19 @@ class Intensity:
         if self._type is None and self._intensity_template.HasField("library"):
             # Happens in case of project created via load of speos file
             self._type = Intensity.Library(
-                library=self._intensity_template.library, library_props=self._intensity_properties.library_properties, default_values=False
+                library=self._intensity_template.library,
+                library_props=self._intensity_properties.library_properties,
+                default_values=False,
             )
         elif type(self._type) != Intensity.Library:
             # if the _type is not Library then we create a new type.
             self._type = Intensity.Library(
-                library=self._intensity_template.library, library_props=self._intensity_properties.library_properties
+                library=self._intensity_template.library,
+                library_props=self._intensity_properties.library_properties,
             )
         elif (
-            not self._type._library is self._intensity_template.library
-            or not self._type._library_props is self._intensity_properties.library_properties
+            self._type._library is not self._intensity_template.library
+            or self._type._library_props is not self._intensity_properties.library_properties
         ):
             # Happens in case of feature reset (to be sure to always modify correct data)
             self._type._library = self._intensity_template.library
@@ -368,11 +379,12 @@ class Intensity:
         elif type(self._type) != Intensity.Gaussian:
             # if the _type is not Gaussian then we create a new type.
             self._type = Intensity.Gaussian(
-                gaussian=self._intensity_template.gaussian, gaussian_props=self._intensity_properties.gaussian_properties
+                gaussian=self._intensity_template.gaussian,
+                gaussian_props=self._intensity_properties.gaussian_properties,
             )
         elif (
-            not self._type._gaussian is self._intensity_template.gaussian
-            or not self._type._gaussian_props is self._intensity_properties.gaussian_properties
+            self._type._gaussian is not self._intensity_template.gaussian
+            or self._type._gaussian_props is not self._intensity_properties.gaussian_properties
         ):
             # Happens in case of feature reset (to be sure to always modify correct data)
             self._type._gaussian = self._intensity_template.gaussian
@@ -398,7 +410,9 @@ class Intensity:
             out_dict = core.protobuf_message_to_dict(message=self.intensity_template_link.get())
 
         if self._light_print is False:
-            out_dict["intensity_properties"] = core.protobuf_message_to_dict(message=self._intensity_properties)
+            out_dict["intensity_properties"] = core.protobuf_message_to_dict(
+                message=self._intensity_properties
+            )
 
         return out_dict
 
@@ -419,9 +433,13 @@ class Intensity:
             Intensity feature.
         """
         if self.intensity_template_link is None:
-            self.intensity_template_link = self._client.intensity_templates().create(message=self._intensity_template)
+            self.intensity_template_link = self._client.intensity_templates().create(
+                message=self._intensity_template
+            )
         elif self.intensity_template_link.get() != self._intensity_template:
-            self.intensity_template_link.set(data=self._intensity_template)  # Only update if template has changed
+            self.intensity_template_link.set(
+                data=self._intensity_template
+            )  # Only update if template has changed
 
         return self
 

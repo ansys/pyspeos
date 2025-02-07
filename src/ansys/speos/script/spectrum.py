@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 """Provides a way to interact with Speos feature: Spectrum."""
+
 from __future__ import annotations
 
 from typing import List, Mapping, Optional
@@ -55,7 +56,12 @@ class Spectrum:
     """
 
     def __init__(
-        self, speos_client: core.SpeosClient, name: str, description: str = "", metadata: Optional[Mapping[str, str]] = None, key: str = ""
+        self,
+        speos_client: core.SpeosClient,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        key: str = "",
     ) -> None:
         self._client = speos_client
         self.spectrum_link = None

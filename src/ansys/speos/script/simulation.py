@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 """Provides a way to interact with Speos feature: Simulation."""
+
 from __future__ import annotations
 
 import time
@@ -29,7 +30,6 @@ import uuid
 
 from ansys.api.speos.job.v2 import job_pb2
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
-
 import ansys.speos.core as core
 
 # from ansys.speos.script.geo_ref import GeoRef
@@ -82,7 +82,9 @@ class BaseSimulation:
 
         """
 
-        def __init__(self, weight: simulation_template_pb2.Weight, stable_ctr: bool = False) -> None:
+        def __init__(
+            self, weight: simulation_template_pb2.Weight, stable_ctr: bool = False
+        ) -> None:
             if not stable_ctr:
                 msg = "Weight class instantiated outside of class scope"
                 raise RuntimeError(msg)
@@ -132,17 +134,28 @@ class BaseSimulation:
 
         if simulation_instance is None:
             # Create local SimulationTemplate
-            self._simulation_template = core.SimulationTemplate(name=name, description=description, metadata=metadata)
+            self._simulation_template = core.SimulationTemplate(
+                name=name, description=description, metadata=metadata
+            )
 
             # Create local SimulationInstance
-            self._simulation_instance = core.Scene.SimulationInstance(name=name, description=description, metadata=metadata)
+            self._simulation_instance = core.Scene.SimulationInstance(
+                name=name, description=description, metadata=metadata
+            )
         else:
             self._unique_id = simulation_instance.metadata["UniqueId"]
-            self.simulation_template_link = self._project.client.get_item(key=simulation_instance.simulation_guid)
+            self.simulation_template_link = self._project.client.get_item(
+                key=simulation_instance.simulation_guid
+            )
             self.reset()
 
         # Create local Job
-        self._job = core.Job(name=self._name, description=description, metadata=metadata, simulation_path=self._simulation_instance.name)
+        self._job = core.Job(
+            name=self._name,
+            description=description,
+            metadata=metadata,
+            simulation_path=self._simulation_instance.name,
+        )
         if self._project.scene_link is not None:
             self._job.scene_guid = self._project.scene_link.key
 
@@ -259,13 +272,22 @@ class BaseSimulation:
         # SimulationInstance (= simulation guid + simulation properties)
         if self._project.scene_link and self._unique_id is not None:
             scene_data = self._project.scene_link.get()
-            sim_inst = next((x for x in scene_data.simulations if x.metadata["UniqueId"] == self._unique_id), None)
+            sim_inst = next(
+                (x for x in scene_data.simulations if x.metadata["UniqueId"] == self._unique_id),
+                None,
+            )
             if sim_inst is not None:
-                out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=sim_inst)
+                out_dict = proto_message_utils._replace_guids(
+                    speos_client=self._project.client, message=sim_inst
+                )
             else:
-                out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._simulation_instance)
+                out_dict = proto_message_utils._replace_guids(
+                    speos_client=self._project.client, message=self._simulation_instance
+                )
         else:
-            out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._simulation_instance)
+            out_dict = proto_message_utils._replace_guids(
+                speos_client=self._project.client, message=self._simulation_instance
+            )
 
         if "simulation" not in out_dict.keys():
             # SimulationTemplate
@@ -284,7 +306,9 @@ class BaseSimulation:
             )
         else:
             out_dict["simulation_properties"] = proto_message_utils._replace_guids(
-                speos_client=self._project.client, message=self.job_link.get(), ignore_simple_key="scene_guid"
+                speos_client=self._project.client,
+                message=self.job_link.get(),
+                ignore_simple_key="scene_guid",
             )
 
         proto_message_utils._replace_properties(json_dict=out_dict)
@@ -302,7 +326,6 @@ class BaseSimulation:
         -------
 
         """
-
         if key == "":
             return self._to_dict()
         info = proto_message_utils._value_finder_key_startswith(dict_var=self._to_dict(), key=key)
@@ -320,7 +343,10 @@ class BaseSimulation:
         # SimulationInstance (= simulation guid + simulation properties)
         if self._project.scene_link and self._unique_id is not None:
             scene_data = self._project.scene_link.get()
-            sim_inst = next((x for x in scene_data.simulations if x.metadata["UniqueId"] == self._unique_id), None)
+            sim_inst = next(
+                (x for x in scene_data.simulations if x.metadata["UniqueId"] == self._unique_id),
+                None,
+            )
             if sim_inst is None:
                 out_str += "local: "
         else:
@@ -345,10 +371,14 @@ class BaseSimulation:
 
         # Save or Update the simulation template (depending on if it was already saved before)
         if self.simulation_template_link is None:
-            self.simulation_template_link = self._project.client.simulation_templates().create(message=self._simulation_template)
+            self.simulation_template_link = self._project.client.simulation_templates().create(
+                message=self._simulation_template
+            )
             self._simulation_instance.simulation_guid = self.simulation_template_link.key
         elif self.simulation_template_link.get() != self._simulation_template:
-            self.simulation_template_link.set(data=self._simulation_template)  # Only update if template has changed
+            self.simulation_template_link.set(
+                data=self._simulation_template
+            )  # Only update if template has changed
 
         # Update the scene with the simulation instance
         if self._project.scene_link:
@@ -356,7 +386,10 @@ class BaseSimulation:
             scene_data = self._project.scene_link.get()  # retrieve scene data
 
             # Look if an element corresponds to the _unique_id
-            simulation_inst = next((x for x in scene_data.simulations if x.metadata["UniqueId"] == self._unique_id), None)
+            simulation_inst = next(
+                (x for x in scene_data.simulations if x.metadata["UniqueId"] == self._unique_id),
+                None,
+            )
             if simulation_inst is not None:  # if yes, just replace
                 if simulation_inst != self._simulation_instance:
                     simulation_inst.CopyFrom(self._simulation_instance)
@@ -389,7 +422,10 @@ class BaseSimulation:
         if self._project.scene_link is not None:
             scene_data = self._project.scene_link.get()  # retrieve scene data
             # Look if an element corresponds to the _unique_id
-            sim_inst = next((x for x in scene_data.simulations if x.metadata["UniqueId"] == self._unique_id), None)
+            sim_inst = next(
+                (x for x in scene_data.simulations if x.metadata["UniqueId"] == self._unique_id),
+                None,
+            )
             if sim_inst is not None:
                 self._simulation_instance = sim_inst
 
@@ -417,7 +453,9 @@ class BaseSimulation:
 
         # Remove the simulation from the scene
         scene_data = self._project.scene_link.get()  # retrieve scene data
-        sim_inst = next((x for x in scene_data.simulations if x.metadata["UniqueId"] == self._unique_id), None)
+        sim_inst = next(
+            (x for x in scene_data.simulations if x.metadata["UniqueId"] == self._unique_id), None
+        )
         if sim_inst is not None:
             scene_data.simulations.remove(sim_inst)
             self._project.scene_link.set(data=scene_data)  # update scene data
@@ -483,7 +521,13 @@ class Direct(BaseSimulation):
         if metadata is None:
             metadata = {}
 
-        super().__init__(project=project, name=name, description=description, metadata=metadata, simulation_instance=simulation_instance)
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            simulation_instance=simulation_instance,
+        )
 
         if default_values:
             # Default values
@@ -540,7 +584,9 @@ class Direct(BaseSimulation):
         ansys.speos.script.simulation.BaseSimulation.Weight
             Weight.
         """
-        return BaseSimulation.Weight(self._simulation_template.direct_mc_simulation_template.weight, stable_ctr=True)
+        return BaseSimulation.Weight(
+            self._simulation_template.direct_mc_simulation_template.weight, stable_ctr=True
+        )
 
     def set_weight_none(self) -> Direct:
         """Deactivate weight.
@@ -562,7 +608,9 @@ class Direct(BaseSimulation):
         ansys.speos.script.simulation.Direct
             Direct simulation
         """
-        self._simulation_template.direct_mc_simulation_template.colorimetric_standard = simulation_template_pb2.CIE_1931
+        self._simulation_template.direct_mc_simulation_template.colorimetric_standard = (
+            simulation_template_pb2.CIE_1931
+        )
         return self
 
     def set_colorimetric_standard_CIE_1964(self) -> Direct:
@@ -574,7 +622,9 @@ class Direct(BaseSimulation):
         ansys.speos.script.simulation.Direct
             Direct simulation
         """
-        self._simulation_template.direct_mc_simulation_template.colorimetric_standard = simulation_template_pb2.CIE_1964
+        self._simulation_template.direct_mc_simulation_template.colorimetric_standard = (
+            simulation_template_pb2.CIE_1964
+        )
         return self
 
     def set_dispersion(self, value: bool = True) -> Direct:
@@ -736,7 +786,13 @@ class Inverse(BaseSimulation):
         if metadata is None:
             metadata = {}
 
-        super().__init__(project=project, name=name, description=description, metadata=metadata, simulation_instance=simulation_instance)
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            simulation_instance=simulation_instance,
+        )
 
         if default_values:
             # Default values
@@ -796,7 +852,9 @@ class Inverse(BaseSimulation):
         ansys.speos.script.simulation.BaseSimulation.Weight
             Simulation.Weight
         """
-        return BaseSimulation.Weight(self._simulation_template.inverse_mc_simulation_template.weight, stable_ctr=True)
+        return BaseSimulation.Weight(
+            self._simulation_template.inverse_mc_simulation_template.weight, stable_ctr=True
+        )
 
     def set_weight_none(self) -> Inverse:
         """Deactivate weight.
@@ -818,7 +876,9 @@ class Inverse(BaseSimulation):
         ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
-        self._simulation_template.inverse_mc_simulation_template.colorimetric_standard = simulation_template_pb2.CIE_1931
+        self._simulation_template.inverse_mc_simulation_template.colorimetric_standard = (
+            simulation_template_pb2.CIE_1931
+        )
         return self
 
     def set_colorimetric_standard_CIE_1964(self) -> Inverse:
@@ -830,7 +890,9 @@ class Inverse(BaseSimulation):
         ansys.speos.script.simulation.Inverse
             Inverse simulation
         """
-        self._simulation_template.inverse_mc_simulation_template.colorimetric_standard = simulation_template_pb2.CIE_1964
+        self._simulation_template.inverse_mc_simulation_template.colorimetric_standard = (
+            simulation_template_pb2.CIE_1964
+        )
         return self
 
     def set_dispersion(self, value: bool = False) -> Inverse:
@@ -953,7 +1015,9 @@ class Inverse(BaseSimulation):
             Inverse simulation
         """
         if value is None:
-            self._job.inverse_mc_simulation_properties.optimized_propagation_none.ClearField("stop_condition_passes_number")
+            self._job.inverse_mc_simulation_properties.optimized_propagation_none.ClearField(
+                "stop_condition_passes_number"
+            )
         else:
             self._job.inverse_mc_simulation_properties.optimized_propagation_none.stop_condition_passes_number = value
         return self
@@ -1058,7 +1122,13 @@ class Interactive(BaseSimulation):
         if metadata is None:
             metadata = {}
 
-        super().__init__(project=project, name=name, description=description, metadata=metadata, simulation_instance=simulation_instance)
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            simulation_instance=simulation_instance,
+        )
 
         if default_values:
             # Default values
@@ -1113,7 +1183,9 @@ class Interactive(BaseSimulation):
         ansys.speos.script.simulation.BaseSimulation.Weight
             Simulation.Weight
         """
-        return BaseSimulation.Weight(self._simulation_template.interactive_simulation_template.weight, stable_ctr=True)
+        return BaseSimulation.Weight(
+            self._simulation_template.interactive_simulation_template.weight, stable_ctr=True
+        )
 
     def set_weight_none(self) -> Interactive:
         """Deactivate weight.
@@ -1135,7 +1207,9 @@ class Interactive(BaseSimulation):
         ansys.speos.script.simulation.Interactive
             Interactive simulation
         """
-        self._simulation_template.interactive_simulation_template.colorimetric_standard = simulation_template_pb2.CIE_1931
+        self._simulation_template.interactive_simulation_template.colorimetric_standard = (
+            simulation_template_pb2.CIE_1931
+        )
         return self
 
     def set_colorimetric_standard_CIE_1964(self) -> Interactive:
@@ -1147,7 +1221,9 @@ class Interactive(BaseSimulation):
         ansys.speos.script.simulation.Interactive
             Interactive simulation
         """
-        self._simulation_template.interactive_simulation_template.colorimetric_standard = simulation_template_pb2.CIE_1964
+        self._simulation_template.interactive_simulation_template.colorimetric_standard = (
+            simulation_template_pb2.CIE_1964
+        )
         return self
 
     def set_ambient_material_file_uri(self, uri: str = "") -> Interactive:
@@ -1167,7 +1243,9 @@ class Interactive(BaseSimulation):
         self._simulation_template.interactive_simulation_template.ambient_material_uri = uri
         return self
 
-    def set_rays_number_per_sources(self, values: List[Interactive.RaysNumberPerSource]) -> Interactive:
+    def set_rays_number_per_sources(
+        self, values: List[Interactive.RaysNumberPerSource]
+    ) -> Interactive:
         """Select the number of rays emitted for each source. If a source is present in the simulation but not referenced here,
         it will send by default 100 rays.
 

@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -21,19 +21,16 @@
 # SOFTWARE.
 
 """Provides a way to interact with Speos feature: Source."""
+
 from __future__ import annotations
 
 from typing import List, Mapping, Optional, Union
 import uuid
 
 from ansys.speos import core as core
-import ansys.speos.core as core
-from ansys.speos.script import project as project
-from ansys.speos.script import proto_message_utils as proto_message_utils
+from ansys.speos.script import project as project, proto_message_utils as proto_message_utils
 from ansys.speos.script.geo_ref import GeoRef
 from ansys.speos.script.intensity import Intensity
-import ansys.speos.script.project as project
-import ansys.speos.script.proto_message_utils as proto_message_utils
 from ansys.speos.script.spectrum import Spectrum
 
 
@@ -81,13 +78,19 @@ class BaseSource:
 
         if source_instance is None:
             # Create local SourceTemplate
-            self._source_template = core.SourceTemplate(name=name, description=description, metadata=metadata)
+            self._source_template = core.SourceTemplate(
+                name=name, description=description, metadata=metadata
+            )
 
             # Create local SourceInstance
-            self._source_instance = core.Scene.SourceInstance(name=name, description=description, metadata=metadata)
+            self._source_instance = core.Scene.SourceInstance(
+                name=name, description=description, metadata=metadata
+            )
         else:
             self._unique_id = source_instance.metadata["UniqueId"]
-            self.source_template_link = self._project.client.get_item(key=source_instance.source_guid)
+            self.source_template_link = self._project.client.get_item(
+                key=source_instance.source_guid
+            )
             self._reset()
 
     class _Spectrum:
@@ -95,12 +98,18 @@ class BaseSource:
             self,
             speos_client: core.SpeosClient,
             name: str,
-            message_to_complete: Union[core.SourceTemplate.RayFile, core.SourceTemplate.Surface, core.SourceTemplate.Luminaire],
+            message_to_complete: Union[
+                core.SourceTemplate.RayFile,
+                core.SourceTemplate.Surface,
+                core.SourceTemplate.Luminaire,
+            ],
             spectrum_guid: str = "",
         ) -> None:
             self._message_to_complete = message_to_complete
             if spectrum_guid != "":
-                self._spectrum = Spectrum(speos_client=speos_client, name=name + ".Spectrum", key=spectrum_guid)
+                self._spectrum = Spectrum(
+                    speos_client=speos_client, name=name + ".Spectrum", key=spectrum_guid
+                )
             else:
                 self._spectrum = Spectrum(speos_client=speos_client, name=name + ".Spectrum")
 
@@ -139,18 +148,28 @@ class BaseSource:
         # SourceInstance (= source guid + source properties)
         if self._project.scene_link and self._unique_id is not None:
             scene_data = self._project.scene_link.get()
-            src_inst = next((x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None)
+            src_inst = next(
+                (x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None
+            )
             if src_inst is not None:
-                out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=src_inst)
+                out_dict = proto_message_utils._replace_guids(
+                    speos_client=self._project.client, message=src_inst
+                )
             else:
-                out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._source_instance)
+                out_dict = proto_message_utils._replace_guids(
+                    speos_client=self._project.client, message=self._source_instance
+                )
         else:
-            out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._source_instance)
+            out_dict = proto_message_utils._replace_guids(
+                speos_client=self._project.client, message=self._source_instance
+            )
 
         if "source" not in out_dict.keys():
             # SourceTemplate
             if self.source_template_link is None:
-                out_dict["source"] = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._source_template)
+                out_dict["source"] = proto_message_utils._replace_guids(
+                    speos_client=self._project.client, message=self._source_template
+                )
             else:
                 out_dict["source"] = proto_message_utils._replace_guids(
                     speos_client=self._project.client, message=self.source_template_link.get()
@@ -175,7 +194,6 @@ class BaseSource:
         -------
         str | dict
         """
-
         if key == "":
             return self._to_dict()
         info = proto_message_utils._value_finder_key_startswith(dict_var=self._to_dict(), key=key)
@@ -191,7 +209,9 @@ class BaseSource:
         out_str = ""
         if self._project.scene_link and self._unique_id is not None:
             scene_data = self._project.scene_link.get()
-            src_inst = next((x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None)
+            src_inst = next(
+                (x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None
+            )
             if src_inst is None:
                 out_str += "local: "
         else:
@@ -215,10 +235,14 @@ class BaseSource:
 
         # Save or Update the source template (depending on if it was already saved before)
         if self.source_template_link is None:
-            self.source_template_link = self._project.client.source_templates().create(message=self._source_template)
+            self.source_template_link = self._project.client.source_templates().create(
+                message=self._source_template
+            )
             self._source_instance.source_guid = self.source_template_link.key
         elif self.source_template_link.get() != self._source_template:
-            self.source_template_link.set(data=self._source_template)  # Only update if template has changed
+            self.source_template_link.set(
+                data=self._source_template
+            )  # Only update if template has changed
 
         # Update the scene with the source instance
         if self._project.scene_link:
@@ -226,14 +250,18 @@ class BaseSource:
             scene_data = self._project.scene_link.get()  # retrieve scene data
 
             # Look if an element corresponds to the _unique_id
-            src_inst = next((x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None)
+            src_inst = next(
+                (x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None
+            )
             if src_inst is not None:
                 if src_inst != self._source_instance:
                     src_inst.CopyFrom(self._source_instance)  # if yes, just replace
                 else:
                     update_scene = False
             else:
-                scene_data.sources.append(self._source_instance)  # if no, just add it to the list of sources
+                scene_data.sources.append(
+                    self._source_instance
+                )  # if no, just add it to the list of sources
 
             if update_scene:  # Update scene only if instance has changed
                 self._project.scene_link.set(data=scene_data)  # update scene data
@@ -256,7 +284,9 @@ class BaseSource:
         if self._project.scene_link is not None:
             scene_data = self._project.scene_link.get()  # retrieve scene data
             # Look if an element corresponds to the _unique_id
-            src_inst = next((x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None)
+            src_inst = next(
+                (x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None
+            )
             if src_inst is not None:
                 self._source_instance = src_inst
         return self
@@ -282,7 +312,9 @@ class BaseSource:
 
         # Remove the source from the scene
         scene_data = self._project.scene_link.get()  # retrieve scene data
-        src_inst = next((x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None)
+        src_inst = next(
+            (x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None
+        )
         if src_inst is not None:
             scene_data.sources.remove(src_inst)
             self._project.scene_link.set(data=scene_data)  # update scene data
@@ -368,7 +400,13 @@ class Luminaire(BaseSource):
         if metadata is None:
             metadata = {}
 
-        super().__init__(project=project, name=name, description=description, metadata=metadata, source_instance=source_instance)
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            source_instance=source_instance,
+        )
 
         self._spectrum = self._Spectrum(
             speos_client=self._project.client,
@@ -451,7 +489,7 @@ class Luminaire(BaseSource):
         ansys.speos.script.spectrum.Spectrum
             Spectrum.
         """
-        if not self._spectrum._message_to_complete is self._source_template.luminaire:
+        if self._spectrum._message_to_complete is not self._source_template.luminaire:
             # Happens in case of feature reset (to be sure to always modify correct data)
             self._spectrum._message_to_complete = self._source_template.luminaire
         return self._spectrum._spectrum
@@ -508,14 +546,23 @@ class RayFile(BaseSource):
         if metadata is None:
             metadata = {}
 
-        super().__init__(project=project, name=name, description=description, metadata=metadata, source_instance=source_instance)
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            source_instance=source_instance,
+        )
         self._client = self._project.client
 
         spectrum_guid = ""
         if self._source_template.rayfile.HasField("spectrum_guid"):
             spectrum_guid = self._source_template.rayfile.spectrum_guid
         self._spectrum = self._Spectrum(
-            speos_client=self._client, name=name, message_to_complete=self._source_template.rayfile, spectrum_guid=spectrum_guid
+            speos_client=self._client,
+            name=name,
+            message_to_complete=self._source_template.rayfile,
+            spectrum_guid=spectrum_guid,
         )
         if spectrum_guid == "":
             self.set_spectrum_from_ray_file()
@@ -614,7 +661,7 @@ class RayFile(BaseSource):
                 guid = self._spectrum._spectrum.spectrum_link.key
             self._source_template.rayfile.spectrum_guid = guid
 
-        if not self._spectrum._message_to_complete is self._source_template.rayfile:
+        if self._spectrum._message_to_complete is not self._source_template.rayfile:
             # Happens in case of feature reset (to be sure to always modify correct data)
             self._spectrum._message_to_complete = self._source_template.rayfile
 
@@ -657,14 +704,16 @@ class RayFile(BaseSource):
         if not exit_geometries:
             self._source_instance.rayfile_properties.ClearField("exit_geometries")
         else:
-            self._source_instance.rayfile_properties.exit_geometries.geo_paths[:] = [gr.to_native_link() for gr in exit_geometries]
+            self._source_instance.rayfile_properties.exit_geometries.geo_paths[:] = [
+                gr.to_native_link() for gr in exit_geometries
+            ]
 
         return self
 
 
 class Surface(BaseSource):
     """Type of Source : Surface.
-    By default, a luminous flux and exitance constant are chosen. With a monochromatic spectrum,
+    By default, a luminous flux and existence constant are chosen. With a monochromatic spectrum,
     and lambertian intensity (cos with N = 1).
 
     Parameters
@@ -682,14 +731,14 @@ class Surface(BaseSource):
     """
 
     class ExitanceVariable:
-        """Type of surface source exitance : exitance variable.
+        """Type of surface source existence : existence variable.
 
         Parameters
         ----------
         exitance_variable : ansys.api.speos.source.v1.source_pb2.SourceTemplate.Surface.ExitanceVariable
-            Exitance variable to complete.
+            Existence variable to complete.
         exitance_variable_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.SurfaceProperties.ExitanceVariableProperties
-            Exitance variable properties to complete.
+            Existence variable properties to complete.
         default_values : bool
             Uses default values when True.
                 stable_ctr : bool
@@ -718,12 +767,12 @@ class Surface(BaseSource):
                 self.set_axis_plane()
 
         def set_xmp_file_uri(self, uri: str) -> Surface.ExitanceVariable:
-            """Set exitance xmp file.
+            """Set existence xmp file.
 
             Parameters
             ----------
             uri : str
-                XMP file describing exitance.
+                XMP file describing existence.
 
             Returns
             -------
@@ -733,13 +782,15 @@ class Surface(BaseSource):
             self._exitance_variable.exitance_xmp_file_uri = uri
             return self
 
-        def set_axis_plane(self, axis_plane: Optional[List[float]] = None) -> Surface.ExitanceVariable:
-            """Set position of the exitance map.
+        def set_axis_plane(
+            self, axis_plane: Optional[List[float]] = None
+        ) -> Surface.ExitanceVariable:
+            """Set position of the existence map.
 
             Parameters
             ----------
             axis_plane : Optional[List[float]]
-                Position of the exitance map [Ox Oy Oz Xx Xy Xz Yx Yy Yz].
+                Position of the existence map [Ox Oy Oz Xx Xy Xz Yx Yy Yz].
                 By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0]``.
 
             Returns
@@ -764,7 +815,13 @@ class Surface(BaseSource):
         if metadata is None:
             metadata = {}
 
-        super().__init__(project=project, name=name, description=description, metadata=metadata, source_instance=source_instance)
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            source_instance=source_instance,
+        )
         self._speos_client = self._project.client
         self._name = name
 
@@ -772,7 +829,10 @@ class Surface(BaseSource):
         if self._source_template.surface.HasField("spectrum_guid"):
             spectrum_guid = self._source_template.surface.spectrum_guid
         self._spectrum = self._Spectrum(
-            speos_client=self._speos_client, name=name, message_to_complete=self._source_template.surface, spectrum_guid=spectrum_guid
+            speos_client=self._speos_client,
+            name=name,
+            message_to_complete=self._source_template.surface,
+            spectrum_guid=spectrum_guid,
         )
 
         self._intensity = Intensity(
@@ -782,7 +842,7 @@ class Surface(BaseSource):
             key=self._source_template.surface.intensity_guid,
         )
 
-        # Attribute gathering more complex exitance type
+        # Attribute gathering more complex existence type
         self._exitance_type = None
 
         if default_values:
@@ -860,14 +920,19 @@ class Surface(BaseSource):
         ansys.speos.script.intensity.Intensity
             Intensity.
         """
-        if not self._intensity._intensity_properties is self._source_instance.surface_properties.intensity_properties:
+        if (
+            self._intensity._intensity_properties
+            is not self._source_instance.surface_properties.intensity_properties
+        ):
             # Happens in case of feature reset (to be sure to always modify correct data)
-            self._intensity._intensity_properties = self._source_instance.surface_properties.intensity_properties
+            self._intensity._intensity_properties = (
+                self._source_instance.surface_properties.intensity_properties
+            )
 
         return self._intensity
 
     def set_exitance_constant(self, geometries: List[tuple[GeoRef, bool]]) -> Surface:
-        """Set exitance constant.
+        """Set existence constant.
 
         Parameters
         ----------
@@ -882,23 +947,30 @@ class Surface(BaseSource):
         self._exitance_type = None
 
         self._source_template.surface.exitance_constant.SetInParent()
-        self._source_instance.surface_properties.exitance_constant_properties.ClearField("geo_paths")
+        self._source_instance.surface_properties.exitance_constant_properties.ClearField(
+            "geo_paths"
+        )
         if geometries != []:
             my_list = [
-                core.Scene.GeoPath(geo_path=gr.to_native_link(), reverse_normal=reverse_normal) for (gr, reverse_normal) in geometries
+                core.Scene.GeoPath(geo_path=gr.to_native_link(), reverse_normal=reverse_normal)
+                for (gr, reverse_normal) in geometries
             ]
-            self._source_instance.surface_properties.exitance_constant_properties.geo_paths.extend(my_list)
+            self._source_instance.surface_properties.exitance_constant_properties.geo_paths.extend(
+                my_list
+            )
         return self
 
     def set_exitance_variable(self) -> Surface.ExitanceVariable:
-        """Set exitance variable, taken from XMP map.
+        """Set existence variable, taken from XMP map.
 
         Returns
         -------
         ansys.speos.script.source.Surface.ExitanceVariable
             ExitanceVariable of surface source.
         """
-        if self._exitance_type is None and self._source_template.surface.HasField("exitance_variable"):
+        if self._exitance_type is None and self._source_template.surface.HasField(
+            "exitance_variable"
+        ):
             # Happens in case of project created via load of speos file
             self._exitance_type = Surface.ExitanceVariable(
                 exitance_variable=self._source_template.surface.exitance_variable,
@@ -913,10 +985,15 @@ class Surface(BaseSource):
                 exitance_variable_props=self._source_instance.surface_properties.exitance_variable_properties,
                 stable_ctr=True,
             )
-        elif not self._exitance_type._exitance_variable is self._source_template.surface.exitance_variable:
+        elif (
+            self._exitance_type._exitance_variable
+            is not self._source_template.surface.exitance_variable
+        ):
             # Happens in case of feature reset (to be sure to always modify correct data)
             self._exitance_type._exitance_variable = self._source_template.surface.exitance_variable
-            self._exitance_type._exitance_variable_props = self._source_instance.surface_properties.exitance_variable_properties
+            self._exitance_type._exitance_variable_props = (
+                self._source_instance.surface_properties.exitance_variable_properties
+            )
         return self._exitance_type
 
     def set_spectrum_from_xmp_file(self) -> Surface:
@@ -945,7 +1022,7 @@ class Surface(BaseSource):
                 guid = self._spectrum._spectrum.spectrum_link.key
             self._source_template.surface.spectrum_guid = guid
 
-        if not self._spectrum._message_to_complete is self._source_template.surface:
+        if self._spectrum._message_to_complete is not self._source_template.surface:
             # Happens in case of feature reset (to be sure to always modify correct data)
             self._spectrum._message_to_complete = self._source_template.surface
 

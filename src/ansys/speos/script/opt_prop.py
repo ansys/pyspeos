@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -20,6 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 """Provides a way to interact with Speos feature: Optical Property."""
+
 from __future__ import annotations
 
 from typing import List, Mapping, Optional
@@ -50,7 +51,13 @@ class OptProp:
         By default, ``None``.
     """
 
-    def __init__(self, project: project.Project, name: str, description: str = "", metadata: Optional[Mapping[str, str]] = None):
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+    ):
         self._name = name
         self._project = project
         self._unique_id = None
@@ -62,13 +69,17 @@ class OptProp:
         # Create SOP template
         if metadata is None:
             metadata = {}
-        self._sop_template = core.SOPTemplate(name=name + ".SOP", description=description, metadata=metadata)
+        self._sop_template = core.SOPTemplate(
+            name=name + ".SOP", description=description, metadata=metadata
+        )
 
         # Create VOP template
         self._vop_template = None
 
         # Create material instance
-        self._material_instance = core.Scene.MaterialInstance(name=name, description=description, metadata=metadata)
+        self._material_instance = core.Scene.MaterialInstance(
+            name=name, description=description, metadata=metadata
+        )
 
         # Default values
         self.set_surface_mirror().set_volume_none().set_geometries()
@@ -143,12 +154,16 @@ class OptProp:
         """
         if self._vop_template is None:
             self._vop_template = core.VOPTemplate(
-                name=self._name + ".VOP", description=self._sop_template.description, metadata=self._sop_template.metadata
+                name=self._name + ".VOP",
+                description=self._sop_template.description,
+                metadata=self._sop_template.metadata,
             )
         self._vop_template.opaque.SetInParent()
         return self
 
-    def set_volume_optic(self, index: float = 1.5, absorption: float = 0, constringence: Optional[float] = None) -> OptProp:
+    def set_volume_optic(
+        self, index: float = 1.5, absorption: float = 0, constringence: Optional[float] = None
+    ) -> OptProp:
         """
         Transparent colorless material without bulk scattering.
 
@@ -171,7 +186,9 @@ class OptProp:
         """
         if self._vop_template is None:
             self._vop_template = core.VOPTemplate(
-                name=self._name + ".VOP", description=self._sop_template.description, metadata=self._sop_template.metadata
+                name=self._name + ".VOP",
+                description=self._sop_template.description,
+                metadata=self._sop_template.metadata,
             )
         self._vop_template.optic.index = index
         self._vop_template.optic.absorption = absorption
@@ -225,7 +242,9 @@ class OptProp:
         """
         if self._vop_template is None:
             self._vop_template = core.VOPTemplate(
-                name=self._name + ".VOP", description=self._sop_template.description, metadata=self._sop_template.metadata
+                name=self._name + ".VOP",
+                description=self._sop_template.description,
+                metadata=self._sop_template.metadata,
             )
         self._vop_template.library.material_file_uri = path
         return self
@@ -247,7 +266,9 @@ class OptProp:
         if geometries == None:
             self._material_instance.ClearField("geometries")
         else:
-            self._material_instance.geometries.geo_paths[:] = [gr.to_native_link() for gr in geometries]
+            self._material_instance.geometries.geo_paths[:] = [
+                gr.to_native_link() for gr in geometries
+            ]
         return self
 
     def _to_dict(self) -> dict:
@@ -256,19 +277,29 @@ class OptProp:
         # MaterialInstance (= vop guid + sop guids + geometries)
         if self._project.scene_link and self._unique_id is not None:
             scene_data = self._project.scene_link.get()
-            mat_inst = next((x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id), None)
+            mat_inst = next(
+                (x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id), None
+            )
             if mat_inst is not None:
-                out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=mat_inst)
+                out_dict = proto_message_utils._replace_guids(
+                    speos_client=self._project.client, message=mat_inst
+                )
             else:
-                out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._material_instance)
+                out_dict = proto_message_utils._replace_guids(
+                    speos_client=self._project.client, message=self._material_instance
+                )
         else:
-            out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._material_instance)
+            out_dict = proto_message_utils._replace_guids(
+                speos_client=self._project.client, message=self._material_instance
+            )
 
         if "vop" not in out_dict.keys():
             # SensorTemplate
             if self.vop_template_link is None:
                 if self._vop_template is not None:
-                    out_dict["vop"] = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._vop_template)
+                    out_dict["vop"] = proto_message_utils._replace_guids(
+                        speos_client=self._project.client, message=self._vop_template
+                    )
             else:
                 out_dict["vop"] = proto_message_utils._replace_guids(
                     speos_client=self._project.client, message=self.vop_template_link.get()
@@ -278,10 +309,16 @@ class OptProp:
             # SensorTemplate
             if self.sop_template_link is None:
                 if self._sop_template is not None:
-                    out_dict["sops"] = [proto_message_utils._replace_guids(speos_client=self._project.client, message=self._sop_template)]
+                    out_dict["sops"] = [
+                        proto_message_utils._replace_guids(
+                            speos_client=self._project.client, message=self._sop_template
+                        )
+                    ]
             else:
                 out_dict["sops"] = [
-                    proto_message_utils._replace_guids(speos_client=self._project.client, message=self.sop_template_link.get())
+                    proto_message_utils._replace_guids(
+                        speos_client=self._project.client, message=self.sop_template_link.get()
+                    )
                 ]
 
         proto_message_utils._replace_properties(json_dict=out_dict)
@@ -294,7 +331,9 @@ class OptProp:
         # MaterialInstance (= vop guid + sop guids + geometries)
         if self._project.scene_link and self._unique_id is not None:
             scene_data = self._project.scene_link.get()
-            mat_inst = next((x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id), None)
+            mat_inst = next(
+                (x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id), None
+            )
             if mat_inst is None:
                 out_str += "local: "
         else:
@@ -319,19 +358,27 @@ class OptProp:
         # Save or Update the vop template (depending on if it was already saved before)
         if self.vop_template_link is None:
             if self._vop_template is not None:
-                self.vop_template_link = self._project.client.vop_templates().create(message=self._vop_template)
+                self.vop_template_link = self._project.client.vop_templates().create(
+                    message=self._vop_template
+                )
                 self._material_instance.vop_guid = self.vop_template_link.key
         elif self.vop_template_link.get() != self._vop_template:
-            self.vop_template_link.set(data=self._vop_template)  # Only update if vop template has changed
+            self.vop_template_link.set(
+                data=self._vop_template
+            )  # Only update if vop template has changed
 
         # Save or Update the sop template (depending on if it was already saved before)
         if self.sop_template_link is None:
             if self._sop_template is not None:
-                self.sop_template_link = self._project.client.sop_templates().create(message=self._sop_template)
+                self.sop_template_link = self._project.client.sop_templates().create(
+                    message=self._sop_template
+                )
                 self._material_instance.ClearField("sop_guids")
                 self._material_instance.sop_guids.append(self.sop_template_link.key)
         elif self.sop_template_link.get() != self._sop_template:
-            self.sop_template_link.set(data=self._sop_template)  # Only update if sop template has changed
+            self.sop_template_link.set(
+                data=self._sop_template
+            )  # Only update if sop template has changed
 
         # Update the scene with the material instance
         if self._project.scene_link:
@@ -339,14 +386,18 @@ class OptProp:
             scene_data = self._project.scene_link.get()  # retrieve scene data
 
             # Look if an element corresponds to the _unique_id
-            mat_inst = next((x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id), None)
+            mat_inst = next(
+                (x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id), None
+            )
             if mat_inst is not None:
                 if mat_inst != self._material_instance:
                     mat_inst.CopyFrom(self._material_instance)  # if yes, just replace
                 else:
                     update_scene = False
             else:
-                scene_data.materials.append(self._material_instance)  # if no, just add it to the list of material instances
+                scene_data.materials.append(
+                    self._material_instance
+                )  # if no, just add it to the list of material instances
 
             if update_scene:  # Update scene only if instance has changed
                 self._project.scene_link.set(data=scene_data)  # update scene data
@@ -373,7 +424,9 @@ class OptProp:
         if self._project.scene_link is not None:
             scene_data = self._project.scene_link.get()  # retrieve scene data
             # Look if an element corresponds to the _unique_id
-            mat_inst = next((x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id), None)
+            mat_inst = next(
+                (x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id), None
+            )
             if mat_inst is not None:
                 self._material_instance = mat_inst
         return self
@@ -405,7 +458,9 @@ class OptProp:
 
         # Remove the material instance from the scene
         scene_data = self._project.scene_link.get()  # retrieve scene data
-        mat_inst = next((x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id), None)
+        mat_inst = next(
+            (x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id), None
+        )
         if mat_inst is not None:
             scene_data.materials.remove(mat_inst)
             self._project.scene_link.set(data=scene_data)  # update scene data

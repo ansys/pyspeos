@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -20,6 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 """Provides a way to gather Speos features."""
+
 from __future__ import annotations
 
 import os
@@ -76,7 +77,9 @@ class Project:
     #    """Return all feature key as a tree, can be used to list all features- Not yet implemented"""
     #    pass
 
-    def create_optical_property(self, name: str, description: str = "", metadata: Optional[Mapping[str, str]] = None) -> opt_prop.OptProp:
+    def create_optical_property(
+        self, name: str, description: str = "", metadata: Optional[Mapping[str, str]] = None
+    ) -> opt_prop.OptProp:
         """Create a new Optical Property feature.
 
         Parameters
@@ -97,11 +100,15 @@ class Project:
         """
         existing_features = self.find(name=name)
         if len(existing_features) != 0:
-            msg = "Feature {}: {} has a conflict name with an existing feature.".format(opt_prop.OptProp, name)
+            msg = "Feature {}: {} has a conflict name with an existing feature.".format(
+                opt_prop.OptProp, name
+            )
             raise ValueError(msg)
         if metadata is None:
             metadata = {}
-        feature = opt_prop.OptProp(project=self, name=name, description=description, metadata=metadata)
+        feature = opt_prop.OptProp(
+            project=self, name=name, description=description, metadata=metadata
+        )
         self._features.append(feature)
         return feature
 
@@ -141,15 +148,23 @@ class Project:
 
         existing_features = self.find(name=name)
         if len(existing_features) != 0:
-            msg = "Feature {}: {} has a conflict name with an existing feature.".format(feature_type, name)
+            msg = "Feature {}: {} has a conflict name with an existing feature.".format(
+                feature_type, name
+            )
             raise ValueError(msg)
         feature = None
         if feature_type == source.Surface:
-            feature = source.Surface(project=self, name=name, description=description, metadata=metadata)
+            feature = source.Surface(
+                project=self, name=name, description=description, metadata=metadata
+            )
         elif feature_type == source.RayFile:
-            feature = source.RayFile(project=self, name=name, description=description, metadata=metadata)
+            feature = source.RayFile(
+                project=self, name=name, description=description, metadata=metadata
+            )
         elif feature_type == source.Luminaire:
-            feature = source.Luminaire(project=self, name=name, description=description, metadata=metadata)
+            feature = source.Luminaire(
+                project=self, name=name, description=description, metadata=metadata
+            )
         else:
             msg = "Requested feature {} does not exist in supported list {}".format(
                 feature_type, [source.Surface, source.Luminaire, source.RayFile]
@@ -159,7 +174,11 @@ class Project:
         return feature
 
     def create_simulation(
-        self, name: str, description: str = "", feature_type: type = simulation.Direct, metadata: Optional[Mapping[str, str]] = None
+        self,
+        name: str,
+        description: str = "",
+        feature_type: type = simulation.Direct,
+        metadata: Optional[Mapping[str, str]] = None,
     ) -> Union[simulation.Direct, simulation.Interactive, simulation.Inverse]:
         """Create a new Simulation feature.
 
@@ -189,15 +208,23 @@ class Project:
 
         existing_features = self.find(name=name)
         if len(existing_features) != 0:
-            msg = "Feature {}: {} has a conflict name with an existing feature.".format(feature_type, name)
+            msg = "Feature {}: {} has a conflict name with an existing feature.".format(
+                feature_type, name
+            )
             raise ValueError(msg)
         feature = None
         if feature_type == simulation.Direct:
-            feature = simulation.Direct(project=self, name=name, description=description, metadata=metadata)
+            feature = simulation.Direct(
+                project=self, name=name, description=description, metadata=metadata
+            )
         elif feature_type == simulation.Inverse:
-            feature = simulation.Inverse(project=self, name=name, description=description, metadata=metadata)
+            feature = simulation.Inverse(
+                project=self, name=name, description=description, metadata=metadata
+            )
         elif feature_type == simulation.Interactive:
-            feature = simulation.Interactive(project=self, name=name, description=description, metadata=metadata)
+            feature = simulation.Interactive(
+                project=self, name=name, description=description, metadata=metadata
+            )
         else:
             msg = "Requested feature {} does not exist in supported list {}".format(
                 feature_type, [simulation.Direct, simulation.Inverse, simulation.Interactive]
@@ -207,7 +234,11 @@ class Project:
         return feature
 
     def create_sensor(
-        self, name: str, description: str = "", feature_type: type = sensor.Irradiance, metadata: Optional[Mapping[str, str]] = None
+        self,
+        name: str,
+        description: str = "",
+        feature_type: type = sensor.Irradiance,
+        metadata: Optional[Mapping[str, str]] = None,
     ) -> Union[sensor.Camera, sensor.Radiance, sensor.Irradiance]:
         """Create a new Sensor feature.
 
@@ -237,15 +268,23 @@ class Project:
 
         existing_features = self.find(name=name)
         if len(existing_features) != 0:
-            msg = "Feature {}: {} has a conflict name with an existing feature.".format(feature_type, name)
+            msg = "Feature {}: {} has a conflict name with an existing feature.".format(
+                feature_type, name
+            )
             raise ValueError(msg)
         feature = None
         if feature_type == sensor.Irradiance:
-            feature = sensor.Irradiance(project=self, name=name, description=description, metadata=metadata)
+            feature = sensor.Irradiance(
+                project=self, name=name, description=description, metadata=metadata
+            )
         elif feature_type == sensor.Radiance:
-            feature = sensor.Radiance(project=self, name=name, description=description, metadata=metadata)
+            feature = sensor.Radiance(
+                project=self, name=name, description=description, metadata=metadata
+            )
         elif feature_type == sensor.Camera:
-            feature = sensor.Camera(project=self, name=name, description=description, metadata=metadata)
+            feature = sensor.Camera(
+                project=self, name=name, description=description, metadata=metadata
+            )
         else:
             msg = "Requested feature {} does not exist in supported list {}".format(
                 feature_type, [sensor.Irradiance, sensor.Radiance, sensor.Camera]
@@ -254,7 +293,9 @@ class Project:
         self._features.append(feature)
         return feature
 
-    def create_root_part(self, description: str = "", metadata: Optional[Mapping[str, str]] = None) -> part.Part:
+    def create_root_part(
+        self, description: str = "", metadata: Optional[Mapping[str, str]] = None
+    ) -> part.Part:
         """Create the project root part feature. If a root part is already created in the project, it is returned.
 
         Parameters
@@ -329,7 +370,6 @@ class Project:
 
         Examples
         --------
-
         >>> # From name only
         >>> find(name="Camera.1")
         >>> # Specify feature type
@@ -358,7 +398,12 @@ class Project:
         >>> find(name=".*", name_regex=True, feature_type=ansys.speos.script.part.Part)
         """
         orig_feature_type = None
-        if feature_type == part.Part or feature_type == part.Part.SubPart or feature_type == body.Body or feature_type == face.Face:
+        if (
+            feature_type == part.Part
+            or feature_type == part.Part.SubPart
+            or feature_type == body.Body
+            or feature_type == face.Face
+        ):
             if feature_type != part.Part:
                 orig_feature_type = feature_type
                 feature_type = part.Part
@@ -387,7 +432,10 @@ class Project:
                     [
                         x
                         for x in self._features
-                        if (type(x) == feature_type or (type(x._type) == feature_type if hasattr(x, "_type") else False))
+                        if (
+                            type(x) == feature_type
+                            or (type(x._type) == feature_type if hasattr(x, "_type") else False)
+                        )
                         and p.match(x._name)
                     ]
                 )
@@ -396,13 +444,21 @@ class Project:
                     [
                         x
                         for x in self._features
-                        if (type(x) == feature_type or (type(x._type) == feature_type if hasattr(x, "_type") else False))
+                        if (
+                            type(x) == feature_type
+                            or (type(x._type) == feature_type if hasattr(x, "_type") else False)
+                        )
                         and x._name == name
                     ]
                 )
 
         if found_features and idx != -1:
-            tmp = [f.find(name=orig_name[idx + 1 :], name_regex=name_regex, feature_type=orig_feature_type) for f in found_features]
+            tmp = [
+                f.find(
+                    name=orig_name[idx + 1 :], name_regex=name_regex, feature_type=orig_feature_type
+                )
+                for f in found_features
+            ]
 
             found_features.clear()
             for feats in tmp:
@@ -449,19 +505,33 @@ class Project:
             if type(v) is list:
                 for inside_dict in v:
                     if k == "simulations":
-                        sim_feat = self.find(name=inside_dict["name"], feature_type=simulation.Direct)
+                        sim_feat = self.find(
+                            name=inside_dict["name"], feature_type=simulation.Direct
+                        )
                         if len(sim_feat) == 0:
-                            sim_feat = self.find(name=inside_dict["name"], feature_type=simulation.Inverse)
+                            sim_feat = self.find(
+                                name=inside_dict["name"], feature_type=simulation.Inverse
+                            )
                         if len(sim_feat) == 0:
-                            sim_feat = self.find(name=inside_dict["name"], feature_type=simulation.Interactive)
+                            sim_feat = self.find(
+                                name=inside_dict["name"], feature_type=simulation.Interactive
+                            )
                         sim_feat = sim_feat[0]
                         if sim_feat.job_link is None:
-                            inside_dict["simulation_properties"] = proto_message_utils._replace_guids(
-                                speos_client=self.client, message=sim_feat._job, ignore_simple_key="scene_guid"
+                            inside_dict["simulation_properties"] = (
+                                proto_message_utils._replace_guids(
+                                    speos_client=self.client,
+                                    message=sim_feat._job,
+                                    ignore_simple_key="scene_guid",
+                                )
                             )
                         else:
-                            inside_dict["simulation_properties"] = proto_message_utils._replace_guids(
-                                speos_client=self.client, message=sim_feat.job_link.get(), ignore_simple_key="scene_guid"
+                            inside_dict["simulation_properties"] = (
+                                proto_message_utils._replace_guids(
+                                    speos_client=self.client,
+                                    message=sim_feat.job_link.get(),
+                                    ignore_simple_key="scene_guid",
+                                )
                             )
 
                     proto_message_utils._replace_properties(inside_dict)
@@ -502,7 +572,9 @@ class Project:
                 f_data = f_link.get()
                 f_feat = b_feat.create_face(name=f_data.name)
                 f_feat.face_link = f_link
-                f_feat._face = f_data  # instead of f_feat.reset() - this avoid a useless read in server
+                f_feat._face = (
+                    f_data  # instead of f_feat.reset() - this avoid a useless read in server
+                )
 
     def _add_unique_ids(self):
         scene_data = self.scene_link.get()
@@ -564,7 +636,9 @@ class Project:
             sp_feat.part_link = self.client.get_item(key=sp.part_guid)
             part_data = sp_feat.part_link.get()
             sp_feat._part_instance = sp
-            sp_feat._part = part_data  # instead of sp_feat.reset() - this avoid a useless read in server
+            sp_feat._part = (
+                part_data  # instead of sp_feat.reset() - this avoid a useless read in server
+            )
             self._fill_bodies(body_guids=part_data.body_guids, feat_host=sp_feat)
 
         for mat_inst in scene_data.materials:
@@ -574,35 +648,64 @@ class Project:
 
         for src_inst in scene_data.sources:
             if src_inst.HasField("rayfile_properties"):
-                src_feat = source.RayFile(project=self, name=src_inst.name, source_instance=src_inst, default_values=False)
+                src_feat = source.RayFile(
+                    project=self, name=src_inst.name, source_instance=src_inst, default_values=False
+                )
             elif src_inst.HasField("luminaire_properties"):
-                src_feat = source.Luminaire(project=self, name=src_inst.name, source_instance=src_inst, default_values=False)
+                src_feat = source.Luminaire(
+                    project=self, name=src_inst.name, source_instance=src_inst, default_values=False
+                )
             elif src_inst.HasField("surface_properties"):
-                src_feat = source.Surface(project=self, name=src_inst.name, source_instance=src_inst, default_values=False)
+                src_feat = source.Surface(
+                    project=self, name=src_inst.name, source_instance=src_inst, default_values=False
+                )
             self._features.append(src_feat)
 
         for ssr_inst in scene_data.sensors:
             if ssr_inst.HasField("irradiance_properties"):
-                ssr_feat = sensor.Irradiance(project=self, name=ssr_inst.name, sensor_instance=ssr_inst, default_values=False)
+                ssr_feat = sensor.Irradiance(
+                    project=self, name=ssr_inst.name, sensor_instance=ssr_inst, default_values=False
+                )
             elif ssr_inst.HasField("camera_properties"):
-                ssr_feat = sensor.Radiance(project=self, name=ssr_inst.name, sensor_instance=ssr_inst, default_values=False)
+                ssr_feat = sensor.Radiance(
+                    project=self, name=ssr_inst.name, sensor_instance=ssr_inst, default_values=False
+                )
             elif ssr_inst.HasField("radiance_properties"):
-                ssr_feat = sensor.Camera(project=self, name=ssr_inst.name, sensor_instance=ssr_inst, default_values=False)
+                ssr_feat = sensor.Camera(
+                    project=self, name=ssr_inst.name, sensor_instance=ssr_inst, default_values=False
+                )
             self._features.append(ssr_feat)
 
         for sim_inst in scene_data.simulations:
             simulation_template_link = self.client.get_item(key=sim_inst.simulation_guid).get()
             if simulation_template_link.HasField("direct_mc_simulation_template"):
-                sim_feat = simulation.Direct(project=self, name=sim_inst.name, simulation_instance=sim_inst, default_values=False)
+                sim_feat = simulation.Direct(
+                    project=self,
+                    name=sim_inst.name,
+                    simulation_instance=sim_inst,
+                    default_values=False,
+                )
             elif simulation_template_link.HasField("inverse_mc_simulation_template"):
-                sim_feat = simulation.Inverse(project=self, name=sim_inst.name, simulation_instance=sim_inst, default_values=False)
+                sim_feat = simulation.Inverse(
+                    project=self,
+                    name=sim_inst.name,
+                    simulation_instance=sim_inst,
+                    default_values=False,
+                )
             elif simulation_template_link.HasField("interactive_simulation_template"):
-                sim_feat = simulation.Interactive(project=self, name=sim_inst.name, simulation_instance=sim_inst, default_values=False)
+                sim_feat = simulation.Interactive(
+                    project=self,
+                    name=sim_inst.name,
+                    simulation_instance=sim_inst,
+                    default_values=False,
+                )
             self._features.append(sim_feat)
 
-    def __extract_part_mesh_info(self, part_data: core.Part, part_coordinate_info: RepeatedScalarFieldContainer = None) -> pv.PolyData:
+    def __extract_part_mesh_info(
+        self, part_data: core.Part, part_coordinate_info: RepeatedScalarFieldContainer = None
+    ) -> pv.PolyData:
         """
-        extract mesh data info from a part.
+        Extract mesh data info from a part.
 
         Parameters
         ----------
@@ -621,7 +724,7 @@ class Project:
 
         def local2absolute(local_vertice: np.ndarray, coordinates) -> np.ndarray:
             """
-            convert local coordinate to global coordinate.
+            Convert local coordinate to global coordinate.
 
             Parameters
             ----------
@@ -651,7 +754,9 @@ class Project:
                 vertices = np.array(face_item_data.vertices)
                 facets = np.array(face_item_data.facets)
                 vertices = vertices.reshape(-1, 3)
-                vertices = np.array([local2absolute(vertice, part_coordinate) for vertice in vertices])
+                vertices = np.array(
+                    [local2absolute(vertice, part_coordinate) for vertice in vertices]
+                )
                 facets = facets.reshape(-1, 3)
                 temp = np.full(facets.shape[0], 3)
                 temp = np.vstack(temp)
@@ -665,7 +770,7 @@ class Project:
 
     def _create_preview(self, viz_args=None) -> pv.Plotter:
         """
-        create preview pyvista plotter object
+        Create preview pyvista plotter object
 
         Parameters
         ----------
@@ -688,7 +793,9 @@ class Project:
         if len(root_part_data.parts) != 0:
             for part_idx, part_item in enumerate(root_part_data.parts):
                 part_item_data = self.client.get_item(part_item.part_guid).get()
-                poly_data = self.__extract_part_mesh_info(part_data=part_item_data, part_coordinate_info=part_item.axis_system)
+                poly_data = self.__extract_part_mesh_info(
+                    part_data=part_item_data, part_coordinate_info=part_item.axis_system
+                )
                 if poly_data is not None:
                     _preview_mesh = _preview_mesh.append_polydata(poly_data)
 
