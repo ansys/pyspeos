@@ -104,6 +104,7 @@ class Project:
                 opt_prop.OptProp, name
             )
             raise ValueError(msg)
+
         if metadata is None:
             metadata = {}
         feature = opt_prop.OptProp(

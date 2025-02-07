@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -32,16 +32,17 @@ With coverage.
    $ pytest --cov ansys.speos.core
 
 """
+
 import math
 import os
 
+from conftest import test_path
+from google.protobuf.empty_pb2 import Empty
+import helper
+
 import ansys.api.speos.bsdf.v1.spectral_bsdf_pb2 as spectral_bsdf__v1__pb2
 import ansys.api.speos.bsdf.v1.spectral_bsdf_pb2_grpc as spectral_bsdf__v1__pb2_grpc
-from google.protobuf.empty_pb2 import Empty
-
 from ansys.speos.core.speos import Speos
-from conftest import test_path
-import helper
 
 
 def createSpectralBsdf() -> spectral_bsdf__v1__pb2.SpectralBsdfData:
@@ -64,7 +65,9 @@ def createSpectralBsdf() -> spectral_bsdf__v1__pb2.SpectralBsdfData:
             for t in range(nb_theta):
                 IW.reflection.theta_samples.append(t * math.pi * 0.5 / (nb_theta - 1))
                 for p in range(nb_phi):
-                    IW.reflection.bsdf_cos_theta.append(0.5 * math.cos(IW.reflection.theta_samples[t]) / math.pi)
+                    IW.reflection.bsdf_cos_theta.append(
+                        0.5 * math.cos(IW.reflection.theta_samples[t]) / math.pi
+                    )
 
             # IW.transmission
             nb_theta = 10
@@ -75,7 +78,9 @@ def createSpectralBsdf() -> spectral_bsdf__v1__pb2.SpectralBsdfData:
             for t in range(nb_theta):
                 IW.transmission.theta_samples.append(math.pi * 0.5 * (1 + t / (nb_theta - 1)))
                 for p in range(nb_phi):
-                    IW.transmission.bsdf_cos_theta.append(0.5 * abs(math.cos(IW.transmission.theta_samples[t])) / math.pi)
+                    IW.transmission.bsdf_cos_theta.append(
+                        0.5 * abs(math.cos(IW.transmission.theta_samples[t])) / math.pi
+                    )
 
     return bsdf
 
@@ -119,7 +124,9 @@ def compareSpectralBsdf(bsdf1, bsdf2):
         if a != b:
             return False
     for a, b in zip(bsdf1.wavelength_incidence_samples, bsdf2.wavelength_incidence_samples):
-        if not compareDiagram(a.reflection, b.reflection) or not compareDiagram(a.transmission, b.transmission):
+        if not compareDiagram(a.reflection, b.reflection) or not compareDiagram(
+            a.transmission, b.transmission
+        ):
             return False
     return True
 
@@ -198,7 +205,9 @@ def test_grpc_spectral_bsdf(speos: Speos):
     helper.remove_file(cm.output_file_name)
 
     # computing cones
-    indices = spectral_bsdf__v1__pb2.RefractiveIndices(refractive_index_1=1.0, refractive_index_2=1.5)
+    indices = spectral_bsdf__v1__pb2.RefractiveIndices(
+        refractive_index_1=1.0, refractive_index_2=1.5
+    )
     stub.GenerateSpecularInterpolationEnhancementData(indices)
 
     # getting cones - checking indices

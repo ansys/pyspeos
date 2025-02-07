@@ -34,7 +34,9 @@ p = combine_speos(
     speos=speos,
     speos_to_combine=[
         SpeosFileInstance(
-            speos_file=os.path.join(tests_data_path, "Env_Simplified.speos", "Env_Simplified.speos"),
+            speos_file=os.path.join(
+                tests_data_path, "Env_Simplified.speos", "Env_Simplified.speos"
+            ),
             axis_system=[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
         ),
         SpeosFileInstance(
@@ -91,7 +93,9 @@ ssr.commit()
 
 # +
 src = p.create_source(name="Luminaire.1", feature_type=script.source.Luminaire)
-src.set_intensity_file_uri(uri=os.path.join(tests_data_path, "IES_C_DETECTOR.ies")).set_spectrum().set_daylightfluorescent()
+src.set_intensity_file_uri(
+    uri=os.path.join(tests_data_path, "IES_C_DETECTOR.ies")
+).set_spectrum().set_daylightfluorescent()
 src.set_axis_system([0, 10000, 50000, 1, 0, 0, 0, 1, 0, 0, 0, 1])
 src.commit()
 # -

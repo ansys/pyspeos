@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -44,15 +44,21 @@ def dict_to_str(dict: dict) -> str:
     return json.dumps(dict, indent=4)
 
 
-def _replace_guids(speos_client: SpeosClient, message: Message, ignore_simple_key: str = "") -> dict:
+def _replace_guids(
+    speos_client: SpeosClient, message: Message, ignore_simple_key: str = ""
+) -> dict:
     # Transform protobuf message into dictionary
     json_dict = protobuf_message_to_dict(message=message)
     # Add for each element xxx_guid a key xxx with value the corresponding data from database
-    _replace_guid_elt(speos_client=speos_client, json_dict=json_dict, ignore_simple_key=ignore_simple_key)
+    _replace_guid_elt(
+        speos_client=speos_client, json_dict=json_dict, ignore_simple_key=ignore_simple_key
+    )
     return json_dict
 
 
-def _replace_guid_elt(speos_client: SpeosClient, json_dict: dict, ignore_simple_key: str = "") -> None:
+def _replace_guid_elt(
+    speos_client: SpeosClient, json_dict: dict, ignore_simple_key: str = ""
+) -> None:
     new_items = []
     for k, v in json_dict.items():
         # If we are in the case of key "xxx_guid", with a guid non empty and that the key is not to ignore
@@ -61,7 +67,9 @@ def _replace_guid_elt(speos_client: SpeosClient, json_dict: dict, ignore_simple_
             new_v = protobuf_message_to_dict(message=speos_client.get_item(key=v).get())
 
             # This item can potentially have some "xxx_guid" fields to replace
-            _replace_guid_elt(speos_client=speos_client, json_dict=new_v, ignore_simple_key=ignore_simple_key)
+            _replace_guid_elt(
+                speos_client=speos_client, json_dict=new_v, ignore_simple_key=ignore_simple_key
+            )
             # Add the new value under "xxx" key
             new_items.append((k[: k.find("_guid")], new_v))
         # Possibility to have a list of guids : "xxx_guids"
@@ -74,18 +82,24 @@ def _replace_guid_elt(speos_client: SpeosClient, json_dict: dict, ignore_simple_
                 new_v = protobuf_message_to_dict(message=speos_client.get_item(key=iv).get())
 
                 # This item can potentially have some "xxx_guid" fields to replace
-                _replace_guid_elt(speos_client=speos_client, json_dict=new_v, ignore_simple_key=ignore_simple_key)
+                _replace_guid_elt(
+                    speos_client=speos_client, json_dict=new_v, ignore_simple_key=ignore_simple_key
+                )
                 # Add the new value to the "xxxs" list
                 new_value_list.append(new_v)
             new_items.append((new_key_list, new_value_list))
 
         # Call recursevely if the value is a dict or a list with dict as items values
         if type(v) == dict:
-            _replace_guid_elt(speos_client=speos_client, json_dict=v, ignore_simple_key=ignore_simple_key)
+            _replace_guid_elt(
+                speos_client=speos_client, json_dict=v, ignore_simple_key=ignore_simple_key
+            )
         elif type(v) == list:
             for iv in v:
                 if type(iv) == dict:
-                    _replace_guid_elt(speos_client=speos_client, json_dict=iv, ignore_simple_key=ignore_simple_key)
+                    _replace_guid_elt(
+                        speos_client=speos_client, json_dict=iv, ignore_simple_key=ignore_simple_key
+                    )
 
     # To avoid modifying a dict when reading it, all changes were stored in new_items list
     # They are applied now
@@ -131,13 +145,21 @@ def _replace_properties(json_dict: dict) -> None:
     # Look for the "xxx_properties" elements
     for k, v, parent in _value_finder_key_endswith(dict_var=json_dict, key="_properties"):
         replace_props_elt = _ReplacePropsElt()
-        replace_props_elt.key_to_remove = k  # We will later remove this key, as its value were moved to correct place
-        replace_props_elt.dict_to_remove = parent  # Remember the parent to be able to remove the key
+        replace_props_elt.key_to_remove = (
+            k  # We will later remove this key, as its value were moved to correct place
+        )
+        replace_props_elt.dict_to_remove = (
+            parent  # Remember the parent to be able to remove the key
+        )
 
         # Look for the corresponding xxx item that we will complete with properties values
-        for kk, vv in _value_finder_key_startswith(dict_var=json_dict, key=k[: k.find("_properties")]):
+        for kk, vv in _value_finder_key_startswith(
+            dict_var=json_dict, key=k[: k.find("_properties")]
+        ):
             if kk != k and type(vv) is dict:
-                replace_props_elt.dict_to_complete = vv  # Remember the dictionary to complete with properties
+                replace_props_elt.dict_to_complete = (
+                    vv  # Remember the dictionary to complete with properties
+                )
                 for kkk, vvv in v.items():
                     if not kkk.endswith("_properties"):
                         replace_props_elt.new_items[kkk] = vvv  # Store every property key, value
@@ -160,7 +182,9 @@ def _finder_by_key(dict_var: dict, key: str, x_path: str = "") -> List[tuple[str
     # Loop on all dictionary items
     for k, v in dict_var.items():
         if k == key:  # If directly found, append to the out_list
-            out_list.append((x_path + "." + k, v))  # x_path contains ".key" to be able to identify where to find the value returned
+            out_list.append(
+                (x_path + "." + k, v)
+            )  # x_path contains ".key" to be able to identify where to find the value returned
         elif isinstance(v, dict):
             # In case of a dictionary value, then call recursively _finder_by_key to check its keys
             x_path_bckp = x_path
@@ -171,7 +195,9 @@ def _finder_by_key(dict_var: dict, key: str, x_path: str = "") -> List[tuple[str
         elif isinstance(v, list):
             # In case of list, will loop on each list item to look for whished key
             x_path_bckp = x_path
-            x_path += "." + k + "["  # x_path contains .key[idx] to be able to identify where to find the value returned
+            x_path += (
+                "." + k + "["
+            )  # x_path contains .key[idx] to be able to identify where to find the value returned
             i = 0
             for item in v:
                 if isinstance(item, dict):

@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -30,6 +30,7 @@ This module loads the configuration for PySpeos unit tests.
 The configuration can be changed by modifying a file called local_config.json in the same
 directory as this module.
 """
+
 import json
 import logging
 import os
@@ -49,7 +50,11 @@ def speos():
     except OSError:
         pass
 
-    speos = Speos(logging_level=logging.DEBUG, logging_file=log_file_path, port=str(config.get("SpeosServerPort")))
+    speos = Speos(
+        logging_level=logging.DEBUG,
+        logging_file=log_file_path,
+        port=str(config.get("SpeosServerPort")),
+    )
 
     yield speos
 

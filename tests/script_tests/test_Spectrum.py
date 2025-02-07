@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -26,14 +26,14 @@ Test basic using spectrums from script layer.
 
 import os
 
+from conftest import test_path
+
 from ansys.speos.core.speos import Speos
 import ansys.speos.script as script
-from conftest import test_path
 
 
 def test_create_spectrum(speos: Speos):
     """Test creation of spectrum."""
-
     # Default value
     spectrum1 = script.Spectrum(speos_client=speos.client, name="Spectrum.1").commit()
     assert spectrum1.spectrum_link is not None
@@ -57,7 +57,9 @@ def test_create_spectrum(speos: Speos):
     assert spectrum1.spectrum_link.get().sampled.values == [30, 20, 70]
 
     # library
-    spectrum1.set_library(file_uri=os.path.join(test_path, "LG_50M_Colorimetric_short.sv5", "Blue Spectrum.spectrum")).commit()
+    spectrum1.set_library(
+        file_uri=os.path.join(test_path, "LG_50M_Colorimetric_short.sv5", "Blue Spectrum.spectrum")
+    ).commit()
     assert spectrum1.spectrum_link.get().HasField("library")
 
     # predefined
@@ -94,7 +96,6 @@ def test_create_spectrum(speos: Speos):
 
 def test_commit_spectrum(speos: Speos):
     """Test commit of spectrum."""
-
     # Create
     spectrum1 = script.Spectrum(speos_client=speos.client, name="Spectrum.1")
     spectrum1.set_monochromatic(wavelength=777)
@@ -110,7 +111,6 @@ def test_commit_spectrum(speos: Speos):
 
 def test_reset_spectrum(speos: Speos):
     """Test reset of spectrum."""
-
     # Create + commit
     spectrum1 = script.Spectrum(speos_client=speos.client, name="Spectrum.1")
     spectrum1.set_monochromatic(wavelength=777).commit()
@@ -131,7 +131,6 @@ def test_reset_spectrum(speos: Speos):
 
 def test_delete_spectrum(speos: Speos):
     """Test delete of spectrum."""
-
     # Create + commit
     spectrum1 = script.Spectrum(speos_client=speos.client, name="Spectrum.1")
     spectrum1.set_monochromatic(wavelength=777).commit()

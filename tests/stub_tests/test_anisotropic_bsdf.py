@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -32,16 +32,17 @@ With coverage.
    $ pytest --cov ansys.speos.core
 
 """
+
 import math
 import os
 
+from conftest import test_path
+from google.protobuf.empty_pb2 import Empty
+import helper
+
 import ansys.api.speos.bsdf.v1.anisotropic_bsdf_pb2 as anisotropic_bsdf__v1__pb2
 import ansys.api.speos.bsdf.v1.anisotropic_bsdf_pb2_grpc as anisotropic_bsdf__v1__pb2_grpc
-from google.protobuf.empty_pb2 import Empty
-
 from ansys.speos.core.speos import Speos
-from conftest import test_path
-import helper
 
 
 def createAnisotropicBsdf():
@@ -83,7 +84,9 @@ def createAnisotropicBsdf():
             for t in range(nb_theta):
                 incidence_diag.theta_samples.append(t * math.pi * 0.5 / (nb_theta - 1))
                 for p in range(nb_phi):
-                    incidence_diag.bsdf_cos_theta.append(math.cos(incidence_diag.theta_samples[t]) / math.pi)
+                    incidence_diag.bsdf_cos_theta.append(
+                        math.cos(incidence_diag.theta_samples[t]) / math.pi
+                    )
 
     # transmission spectrum
     bsdf.transmission.spectrum_incidence = math.radians(6.0)
@@ -111,7 +114,9 @@ def createAnisotropicBsdf():
             for t in range(nb_theta):
                 incidence_diag.theta_samples.append(math.pi * 0.5 * (1 + t / (nb_theta - 1)))
                 for p in range(nb_phi):
-                    incidence_diag.bsdf_cos_theta.append(abs(math.cos(incidence_diag.theta_samples[t])) / math.pi)
+                    incidence_diag.bsdf_cos_theta.append(
+                        abs(math.cos(incidence_diag.theta_samples[t])) / math.pi
+                    )
     return bsdf
 
 
@@ -243,7 +248,9 @@ def compareAnisotropicBsdf(bsdf1, bsdf2):
                 return False
 
             for t in range(len(incidence_diag1.theta_samples)):
-                if not approx_cmp(incidence_diag1.theta_samples[t], incidence_diag2.theta_samples[t]):
+                if not approx_cmp(
+                    incidence_diag1.theta_samples[t], incidence_diag2.theta_samples[t]
+                ):
                     return False
                 for p in range(len(incidence_diag1.phi_samples)):
                     if not approx_cmp(
@@ -272,10 +279,15 @@ def compareEnhancementData(cones1, cones2):
 
 
 def compareSpecularEnhancementData(data1, data2):
-    if data1.refractive_index_1 != data2.refractive_index_1 or data1.refractive_index_2 != data2.refractive_index_2:
+    if (
+        data1.refractive_index_1 != data2.refractive_index_1
+        or data1.refractive_index_2 != data2.refractive_index_2
+    ):
         return False
 
-    return compareEnhancementData(data1.reflection, data2.reflection) and compareEnhancementData(data1.transmission, data2.transmission)
+    return compareEnhancementData(data1.reflection, data2.reflection) and compareEnhancementData(
+        data1.transmission, data2.transmission
+    )
 
 
 def test_grpc_anisotropic_bsdf(speos: Speos):
@@ -334,7 +346,9 @@ def test_grpc_anisotropic_bsdf(speos: Speos):
     helper.remove_file(cm.output_file_name)
 
     # computing cones
-    indices = anisotropic_bsdf__v1__pb2.RefractiveIndices(refractive_index_1=1.0, refractive_index_2=1.5)
+    indices = anisotropic_bsdf__v1__pb2.RefractiveIndices(
+        refractive_index_1=1.0, refractive_index_2=1.5
+    )
     stub.GenerateSpecularInterpolationEnhancementData(indices)
 
     # getting cones
@@ -365,7 +379,7 @@ def test_grpc_anisotropic_bsdf(speos: Speos):
     # generating retroreflection cones even if there's no retroreflection on this surface
     stub.GenerateRetroReflectionInterpolationEnhancementData(Empty())
 
-    # gettings the retro cones
+    # getting the retro cones
     rc = stub.GetRetroReflectionInterpolationEnhancementData(Empty())
 
     # modifying some data

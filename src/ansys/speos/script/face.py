@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 """Provides a way to interact with feature: Face."""
+
 from __future__ import annotations
 
 from typing import List, Mapping, Optional
@@ -126,9 +127,13 @@ class Face:
         out_dict = ""
 
         if self.face_link is None:
-            out_dict = proto_message_utils._replace_guids(speos_client=self._speos_client, message=self._face)
+            out_dict = proto_message_utils._replace_guids(
+                speos_client=self._speos_client, message=self._face
+            )
         else:
-            out_dict = proto_message_utils._replace_guids(speos_client=self._speos_client, message=self.face_link.get())
+            out_dict = proto_message_utils._replace_guids(
+                speos_client=self._speos_client, message=self.face_link.get()
+            )
 
         return out_dict
 
