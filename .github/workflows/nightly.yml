@@ -24,14 +24,17 @@ jobs:
   testing:
     name: Testing and coverage
     runs-on: ubuntu-latest
-
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          python-version: ${{ matrix.python-version }}
 
       - name: Create Python virtual environment
         run: |
@@ -68,8 +71,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-html-ubuntu
           path: .cov/html
+          name: coverage-html-ubuntu-${{ matrix.python-version }}
           retention-days: 7
 
       - name: Upload coverage to Codecov
@@ -78,6 +81,7 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           files: .cov/xml
+          name: coverage-html-ubuntu-${{ matrix.python-version }}
 
       - name: Stop container
         run: |
