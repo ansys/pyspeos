@@ -434,7 +434,7 @@ class Part:
         project: project.Project,
         name: str,
         description: str = "",
-        metadata: Optional[OpMapping[str, str]] = None,
+        metadata: Optional[Mapping[str, str]] = None,
     ) -> None:
         self._project = project
         self._name = name

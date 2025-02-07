@@ -2087,7 +2087,6 @@ class Irradiance(BaseSensor):
             )
         return self
 
-
     def set_axis_system(self, axis_system: Optional[List[float]] = None) -> Irradiance:
         """Set position of the sensor.
 
