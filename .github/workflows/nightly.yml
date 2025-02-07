@@ -1,11 +1,9 @@
 name: Nightly
 
 on:
-  # TODO: Remove once working
-  pull_request:
-  # workflow_dispatch:
-  # schedule:  # UTC at 0300
-  #   - cron:  '0 3 * * *'
+  workflow_dispatch:
+  schedule:  # UTC at 0300
+    - cron:  '0 3 * * *'
 
 env:
   MAIN_PYTHON_VERSION: '3.10'
