@@ -57,7 +57,7 @@ jobs:
         env:
           ANSYSLMD_LICENSE_FILE: 1055@${{ secrets.LICENSE_SERVER }}
         run: |
-          docker run --detach --name speos-rpc -p 50098:50098 -e LOG_LEVEL=2 -v "${{ github.workspace }}/tests/assets:/app/assets" ghcr.io/ansys-internal/speos-rpc:2025.1.1.26391 /app/SpeosRPC_Server.x
+          docker run --detach --name speos-rpc -p 50098:50098 -e LOG_LEVEL=2 -v "${{ github.workspace }}/tests/assets:/app/assets" --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys-internal/speos-rpc:2025.1.1.26391
 
       - name: Run pytest
         run: |
