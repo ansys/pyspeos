@@ -126,7 +126,7 @@ from typing import TYPE_CHECKING, Optional
 import weakref
 
 if TYPE_CHECKING:
-    from ansys.speos.core.client import SpeosClient  # pragma: no cover
+    from ansys.speos.core.kernel.client import SpeosClient  # pragma: no cover
 
 ## Default configuration
 LOG_LEVEL = logging.DEBUG

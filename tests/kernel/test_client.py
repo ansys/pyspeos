@@ -28,7 +28,7 @@ from conftest import config
 from grpc import insecure_channel
 import pytest
 
-from ansys.speos.core.client import SpeosClient
+from ansys.speos.core.kernel.client import SpeosClient
 
 
 @pytest.fixture(scope="function")
