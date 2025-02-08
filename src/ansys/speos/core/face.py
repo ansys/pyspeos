@@ -29,7 +29,7 @@ from typing import List, Mapping, Optional
 from ansys.speos.core import proto_message_utils
 import ansys.speos.core.body as body
 from ansys.speos.core.kernel.client import SpeosClient
-
+from ansys.speos.core.kernel.face import Face as KernelFace
 
 class Face:
     """Feature : Face.
@@ -73,7 +73,7 @@ class Face:
             metadata = {}
 
         # Create local Face
-        self._face = Face(name=name, description=description, metadata=metadata)
+        self._face = KernelFace(name=name, description=description, metadata=metadata)
 
     def set_vertices(self, values: List[float]) -> Face:
         """Set the face vertices.
