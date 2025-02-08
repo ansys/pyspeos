@@ -447,7 +447,7 @@ class Part:
         # Create local Part
         if metadata is None:
             metadata = {}
-        self._part = Part(name=name, description=description, metadata=metadata)
+        self._part = KernelPart(name=name, description=description, metadata=metadata)
 
     def create_body(
         self, name: str, description: str = "", metadata: Optional[Mapping[str, str]] = None
