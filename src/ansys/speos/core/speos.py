@@ -28,7 +28,7 @@ from typing import TYPE_CHECKING, Optional, Union
 
 from grpc import Channel
 
-from ansys.speos.core.client import SpeosClient
+from ansys.speos.core.kernel.client import SpeosClient
 
 DEFAULT_HOST = "localhost"
 DEFAULT_PORT = "50098"

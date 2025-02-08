@@ -60,5 +60,3 @@ from ansys.speos.core.kernel.sop_template import SOPTemplate, SOPTemplateLink
 from ansys.speos.core.kernel.source_template import SourceTemplate, SourceTemplateLink
 from ansys.speos.core.kernel.spectrum import Spectrum, SpectrumLink
 from ansys.speos.core.kernel.vop_template import VOPTemplate, VOPTemplateLink
-from ansys.speos.core.logger import LOG, Logger
-from ansys.speos.core.speos import Speos, SpeosClient
