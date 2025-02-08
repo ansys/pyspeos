@@ -96,7 +96,7 @@ class Part:
             self._part_instance = KernelPart.PartInstance(name=name, description=description)
 
             # Create local Part
-            self._part = Part(name=name, description=description)
+            self._part = KernelPart(name=name, description=description)
 
             self._geom_features = []
 

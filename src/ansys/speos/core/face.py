@@ -31,6 +31,7 @@ import ansys.speos.core.body as body
 from ansys.speos.core.kernel.client import SpeosClient
 from ansys.speos.core.kernel.face import Face as KernelFace
 
+
 class Face:
     """Feature : Face.
 
