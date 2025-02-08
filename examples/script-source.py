@@ -1,6 +1,6 @@
 # # How to create a source
 
-# This tutorial demonstrates how to create a source in script layer.
+# This tutorial demonstrates how to create a source.
 
 # There are different type of sources available: luminaire source, surface source, ray file source.
 

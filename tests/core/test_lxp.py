@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 """
-Test basic using lxp from script layer.
+Test basic using lxp.
 """
 
 import os

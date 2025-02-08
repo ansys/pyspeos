@@ -19,7 +19,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-"""Provides a way to combine several speos files into one project feature (of script layer)."""
+"""Provides a way to combine several speos files into one project feature."""
 
 import os
 from typing import List, Optional
@@ -85,7 +85,7 @@ def insert_speos(project: Project, speos_to_insert: List[SpeosFileInstance]) -> 
 
 
 def combine_speos(speos: Speos, speos_to_combine: List[SpeosFileInstance]) -> Project:
-    """Creates a project feature (from script layer) by combining several speos files, and place/orient them in the root part.
+    """Creates a project feature by combining several speos files, and place/orient them in the root part.
     This only combine geometry and materials.
 
     Parameters

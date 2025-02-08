@@ -1,6 +1,6 @@
 # # How to create a simulation
 
-# This tutorial demonstrates how to create a simulation in script layer.
+# This tutorial demonstrates how to create a simulation.
 
 # ## What is a simulation?
 

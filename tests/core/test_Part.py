@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 """
-Test basic using part/body/face from script layer.
+Test basic using part/body/face.
 """
 
 from ansys.speos.core import Project, Speos

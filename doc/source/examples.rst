@@ -11,18 +11,18 @@ Examples
 
     This series of tutorials explains basic examples involving Speos objects using Python and PySpeos.
 
-    The series of workflow examples below demonstrate use cases using PySpeos script layer methods.
+    The series of workflow examples below demonstrate use cases using PySpeos core methods.
 
     .. nbgallery::
-        :caption: Workflow layer examples
+        :caption: Workflow examples
 
         examples/workflow-open-result
         examples/workflow-combine-speos
 
-    The series of basic examples below explains how to use different script layer methods.
+    The series of basic examples below explains how to use different PySpeos core methods.
 
     .. nbgallery::
-        :caption: Script layer examples
+        :caption: Core examples
 
         examples/script-project
         examples/script-opt-prop

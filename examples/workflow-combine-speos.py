@@ -1,6 +1,6 @@
 # # Moving car example by using speos files combination
 
-# This tutorial demonstrates how to run moving car workflow use case using script layer.
+# This tutorial demonstrates how to run moving car workflow use case.
 
 # +
 import os
@@ -90,7 +90,7 @@ ssr.commit()
 
 # In this example, a luminaire source is created with an IES file.
 
-# More details on creating/editing source examples can be found in script layer examples.
+# More details on creating/editing source examples can be found in core examples.
 
 # +
 src = p.create_source(name="Luminaire.1", feature_type=Luminaire)
@@ -103,7 +103,7 @@ src.commit()
 
 # ### Create a simulation
 
-# More details on creating/editing simulation examples can be found in script layer examples.
+# More details on creating/editing simulation examples can be found in core examples.
 
 # +
 sim = p.create_simulation(name="Inverse.1", feature_type=Inverse)

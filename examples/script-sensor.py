@@ -1,6 +1,6 @@
 # # How to create a sensor
 
-# This tutorial demonstrates how to create a sensor in script layer.
+# This tutorial demonstrates how to create a sensor.
 
 # There are different type of sensors available: irradiance sensor, radiance sensor, camera sensor.
 
