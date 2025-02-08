@@ -43,8 +43,8 @@ from ansys.speos.core.kernel.simulation_template import SimulationTemplate
 from ansys.speos.core.kernel.sop_template import SOPTemplate
 from ansys.speos.core.kernel.source_template import SourceTemplate
 from ansys.speos.core.kernel.spectrum import Spectrum
-from ansys.speos.core.speos import Speos
 from ansys.speos.core.kernel.vop_template import VOPTemplate
+from ansys.speos.core.speos import Speos
 
 
 def create_basic_scene(speos: Speos) -> SceneLink:

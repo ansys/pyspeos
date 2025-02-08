@@ -25,8 +25,8 @@ import os
 from typing import List, Optional
 
 from ansys.speos.core.kernel.part import Part, PartLink
-from ansys.speos.core.speos import Speos
 from ansys.speos.core.project import Project
+from ansys.speos.core.speos import Speos
 
 
 class SpeosFileInstance:

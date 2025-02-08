@@ -35,15 +35,18 @@ from ansys.speos.core.kernel.body import BodyLink, BodyStub
 from ansys.speos.core.kernel.face import FaceLink, FaceStub
 from ansys.speos.core.kernel.intensity_template import IntensityTemplateLink, IntensityTemplateStub
 from ansys.speos.core.kernel.job import JobLink, JobStub
-from ansys.speos.core.logger import LOG as logger, PySpeosCustomAdapter
 from ansys.speos.core.kernel.part import PartLink, PartStub
 from ansys.speos.core.kernel.scene import SceneLink, SceneStub
 from ansys.speos.core.kernel.sensor_template import SensorTemplateLink, SensorTemplateStub
-from ansys.speos.core.kernel.simulation_template import SimulationTemplateLink, SimulationTemplateStub
+from ansys.speos.core.kernel.simulation_template import (
+    SimulationTemplateLink,
+    SimulationTemplateStub,
+)
 from ansys.speos.core.kernel.sop_template import SOPTemplateLink, SOPTemplateStub
 from ansys.speos.core.kernel.source_template import SourceTemplateLink, SourceTemplateStub
 from ansys.speos.core.kernel.spectrum import SpectrumLink, SpectrumStub
 from ansys.speos.core.kernel.vop_template import VOPTemplateLink, VOPTemplateStub
+from ansys.speos.core.logger import LOG as logger, PySpeosCustomAdapter
 
 DEFAULT_HOST = "localhost"
 DEFAULT_PORT = "50098"

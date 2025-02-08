@@ -31,8 +31,8 @@ from conftest import test_path
 import grpc
 import pytest
 
-from ansys.speos.core.speos import Speos
 from ansys.speos.core.kernel.vop_template import VOPTemplate
+from ansys.speos.core.speos import Speos
 
 
 def test_vop_template(speos: Speos):

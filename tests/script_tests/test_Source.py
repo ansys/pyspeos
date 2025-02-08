@@ -28,8 +28,8 @@ import os
 
 from conftest import test_path
 
-from ansys.speos.core.speos import Speos
 import ansys.speos.core as script
+from ansys.speos.core.speos import Speos
 
 
 def test_create_luminaire_source(speos: Speos):
