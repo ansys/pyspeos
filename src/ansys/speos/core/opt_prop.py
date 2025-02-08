@@ -26,8 +26,10 @@ from __future__ import annotations
 from typing import List, Mapping, Optional
 import uuid
 
-import ansys.speos.core as core
 from ansys.speos.core.geo_ref import GeoRef
+from ansys.speos.core.kernel.scene import Scene
+from ansys.speos.core.kernel.sop_template import SOPTemplate
+from ansys.speos.core.kernel.vop_template import VOPTemplate
 import ansys.speos.core.project as project
 import ansys.speos.core.proto_message_utils as proto_message_utils
 
@@ -69,7 +71,7 @@ class OptProp:
         # Create SOP template
         if metadata is None:
             metadata = {}
-        self._sop_template = core.SOPTemplate(
+        self._sop_template = SOPTemplate(
             name=name + ".SOP", description=description, metadata=metadata
         )
 
@@ -77,7 +79,7 @@ class OptProp:
         self._vop_template = None
 
         # Create material instance
-        self._material_instance = core.Scene.MaterialInstance(
+        self._material_instance = Scene.MaterialInstance(
             name=name, description=description, metadata=metadata
         )
 
@@ -153,7 +155,7 @@ class OptProp:
             Optical property.
         """
         if self._vop_template is None:
-            self._vop_template = core.VOPTemplate(
+            self._vop_template = VOPTemplate(
                 name=self._name + ".VOP",
                 description=self._sop_template.description,
                 metadata=self._sop_template.metadata,
@@ -185,7 +187,7 @@ class OptProp:
             Optical property.
         """
         if self._vop_template is None:
-            self._vop_template = core.VOPTemplate(
+            self._vop_template = VOPTemplate(
                 name=self._name + ".VOP",
                 description=self._sop_template.description,
                 metadata=self._sop_template.metadata,
@@ -220,7 +222,7 @@ class OptProp:
     #    if not axis_system:
     #        axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     #    if self._vop_template is None:
-    #        self._vop_template = core.VOPTemplate(name=self._name + ".VOP", description=self._sop_template.description,
+    #        self._vop_template = VOPTemplate(name=self._name + ".VOP", description=self._sop_template.description,
     #                                              metadata=self._sop_template.metadata)
     #    self._vop_template.non_homogeneous.gradedmaterial_file_uri = path
     #    self._material_instance.non_homogeneous_properties.axis_system[:] = axis_system
@@ -241,7 +243,7 @@ class OptProp:
             Optical property.
         """
         if self._vop_template is None:
-            self._vop_template = core.VOPTemplate(
+            self._vop_template = VOPTemplate(
                 name=self._name + ".VOP",
                 description=self._sop_template.description,
                 metadata=self._sop_template.metadata,

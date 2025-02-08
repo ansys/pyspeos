@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 """
-Test basic using sensor from script layer.
+Test basic using sensor.
 """
 
 import math
@@ -30,16 +30,15 @@ import os
 from conftest import test_path
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2
-import ansys.speos.core as script
-from ansys.speos.core.speos import Speos
+from ansys.speos.core import GeoRef, Project, Speos, sensor
 
 
 def test_create_camera_sensor(speos: Speos):
     """Test creation of camera sensor."""
-    p = script.Project(speos=speos)
+    p = Project(speos=speos)
 
     # Default value
-    sensor1 = p.create_sensor(name="Camera.1", feature_type=script.sensor.Camera)
+    sensor1 = p.create_sensor(name="Camera.1", feature_type=sensor.Camera)
     sensor1.commit()
     assert sensor1.sensor_template_link is not None
     assert sensor1.sensor_template_link.get().HasField("camera_sensor_template")
@@ -427,10 +426,10 @@ def test_create_camera_sensor(speos: Speos):
 
 def test_create_irradiance_sensor(speos: Speos):
     """Test creation of irradiance sensor."""
-    p = script.Project(speos=speos)
+    p = Project(speos=speos)
 
     # Default value
-    sensor1 = p.create_sensor(name="Irradiance.1", feature_type=script.sensor.Irradiance)
+    sensor1 = p.create_sensor(name="Irradiance.1", feature_type=sensor.Irradiance)
     sensor1.commit()
     assert sensor1.sensor_template_link is not None
     assert sensor1.sensor_template_link.get().HasField("irradiance_sensor_template")
@@ -681,14 +680,14 @@ def test_create_irradiance_sensor(speos: Speos):
     # layer_type_face
     sensor1.set_layer_type_face().set_sca_filtering_mode_intersected_one_time().set_layers(
         values=[
-            script.sensor.BaseSensor.FaceLayer(
-                name="Layer.1", geometries=[script.GeoRef.from_native_link("TheBodyB")]
+            sensor.BaseSensor.FaceLayer(
+                name="Layer.1", geometries=[GeoRef.from_native_link("TheBodyB")]
             ),
-            script.sensor.BaseSensor.FaceLayer(
+            sensor.BaseSensor.FaceLayer(
                 name="Layer.2",
                 geometries=[
-                    script.GeoRef.from_native_link("TheBodyC/TheFaceC1"),
-                    script.GeoRef.from_native_link("TheBodyC/TheFaceC2"),
+                    GeoRef.from_native_link("TheBodyC/TheFaceC1"),
+                    GeoRef.from_native_link("TheBodyC/TheFaceC2"),
                 ],
             ),
         ]
@@ -764,8 +763,8 @@ def test_create_irradiance_sensor(speos: Speos):
     # output_face_geometries
     sensor1.set_output_face_geometries(
         geometries=[
-            script.GeoRef.from_native_link(geopath="TheBodyB/TheFaceB1"),
-            script.GeoRef.from_native_link(geopath="TheBodyB/TheFaceB2"),
+            GeoRef.from_native_link(geopath="TheBodyB/TheFaceB1"),
+            GeoRef.from_native_link(geopath="TheBodyB/TheFaceB2"),
         ]
     )
     assert sensor1._sensor_instance.irradiance_properties.output_face_geometries.geo_paths == [
@@ -779,10 +778,10 @@ def test_create_irradiance_sensor(speos: Speos):
 
 def test_create_radiance_sensor(speos: Speos):
     """Test creation of radiance sensor."""
-    p = script.Project(speos=speos)
+    p = Project(speos=speos)
 
     # Default value
-    sensor1 = p.create_sensor(name="Radiance.1", feature_type=script.sensor.Radiance)
+    sensor1 = p.create_sensor(name="Radiance.1", feature_type=sensor.Radiance)
     sensor1.commit()
     assert sensor1.sensor_template_link is not None
     assert sensor1.sensor_template_link.get().HasField("radiance_sensor_template")
@@ -932,14 +931,14 @@ def test_create_radiance_sensor(speos: Speos):
     # layer_type_face
     sensor1.set_layer_type_face().set_sca_filtering_mode_intersected_one_time().set_layers(
         values=[
-            script.sensor.BaseSensor.FaceLayer(
-                name="Layer.1", geometries=[script.GeoRef.from_native_link("TheBodyB")]
+            sensor.BaseSensor.FaceLayer(
+                name="Layer.1", geometries=[GeoRef.from_native_link("TheBodyB")]
             ),
-            script.sensor.BaseSensor.FaceLayer(
+            sensor.BaseSensor.FaceLayer(
                 name="Layer.2",
                 geometries=[
-                    script.GeoRef.from_native_link("TheBodyC/TheFaceC1"),
-                    script.GeoRef.from_native_link("TheBodyC/TheFaceC2"),
+                    GeoRef.from_native_link("TheBodyC/TheFaceC1"),
+                    GeoRef.from_native_link("TheBodyC/TheFaceC2"),
                 ],
             ),
         ]
@@ -1005,10 +1004,10 @@ def test_create_radiance_sensor(speos: Speos):
 
 def test_commit_sensor(speos: Speos):
     """Test commit of sensor."""
-    p = script.Project(speos=speos)
+    p = Project(speos=speos)
 
     # Create
-    sensor1 = p.create_sensor(name="Irradiance.1", feature_type=script.sensor.Irradiance)
+    sensor1 = p.create_sensor(name="Irradiance.1", feature_type=sensor.Irradiance)
     assert sensor1.sensor_template_link is None
     assert len(p.scene_link.get().sensors) == 0
 
@@ -1028,10 +1027,10 @@ def test_commit_sensor(speos: Speos):
 
 def test_reset_sensor(speos: Speos):
     """Test reset of sensor."""
-    p = script.Project(speos=speos)
+    p = Project(speos=speos)
 
     # Create + commit
-    sensor1 = p.create_sensor(name="Sensor.1", feature_type=script.sensor.Irradiance)
+    sensor1 = p.create_sensor(name="Sensor.1", feature_type=sensor.Irradiance)
     sensor1.commit()
     assert sensor1._sensor_template.irradiance_sensor_template.dimensions.x_start == -50  # local
     assert (
@@ -1141,14 +1140,14 @@ def test_reset_sensor(speos: Speos):
 
 def test_irradiance_modify_after_reset(speos: Speos):
     """Test reset of irradiance sensor, and then modify."""
-    p = script.Project(speos=speos)
+    p = Project(speos=speos)
 
     # Create + commit
-    sensor1 = p.create_sensor(name="Sensor.1", feature_type=script.sensor.Irradiance)
+    sensor1 = p.create_sensor(name="Sensor.1", feature_type=sensor.Irradiance)
     sensor1.set_type_spectral()
     sensor1.set_layer_type_sequence()
     sensor1.commit()
-    assert type(sensor1) == script.sensor.Irradiance
+    assert type(sensor1) == sensor.Irradiance
 
     # Ask for reset
     sensor1.reset()
@@ -1219,11 +1218,11 @@ def test_irradiance_modify_after_reset(speos: Speos):
 
 def test_radiance_modify_after_reset(speos: Speos):
     """Test reset of radiance sensor, and then modify."""
-    p = script.Project(speos=speos)
+    p = Project(speos=speos)
 
     # Create + commit
-    sensor1 = p.create_sensor(name="Sensor.1", feature_type=script.sensor.Radiance)
-    assert type(sensor1) == script.sensor.Radiance
+    sensor1 = p.create_sensor(name="Sensor.1", feature_type=sensor.Radiance)
+    assert type(sensor1) == sensor.Radiance
     sensor1.set_type_colorimetric()
     sensor1.set_layer_type_sequence()
     sensor1.commit()
@@ -1297,11 +1296,11 @@ def test_radiance_modify_after_reset(speos: Speos):
 
 def test_camera_modify_after_reset(speos: Speos):
     """Test reset of camera sensor, and then modify."""
-    p = script.Project(speos=speos)
+    p = Project(speos=speos)
 
     # Create + commit
-    sensor1 = p.create_sensor(name="Sensor.1", feature_type=script.sensor.Camera)
-    assert type(sensor1) == script.sensor.Camera
+    sensor1 = p.create_sensor(name="Sensor.1", feature_type=sensor.Camera)
+    assert type(sensor1) == sensor.Camera
     sensor1.set_mode_photometric().set_mode_color().set_balance_mode_user_white()
     sensor1.set_mode_photometric().set_layer_type_source()
     sensor1.commit()
@@ -1373,10 +1372,10 @@ def test_camera_modify_after_reset(speos: Speos):
 
 def test_delete_sensor(speos: Speos):
     """Test delete of sensor."""
-    p = script.Project(speos=speos)
+    p = Project(speos=speos)
 
     # Create + commit
-    sensor1 = p.create_sensor(name="Sensor.1", feature_type=script.sensor.Irradiance)
+    sensor1 = p.create_sensor(name="Sensor.1", feature_type=sensor.Irradiance)
     sensor1.commit()
     assert sensor1.sensor_template_link.get().HasField("irradiance_sensor_template")
     assert sensor1._sensor_template.HasField("irradiance_sensor_template")  # local
@@ -1398,10 +1397,10 @@ def test_delete_sensor(speos: Speos):
 
 def test_get_sensor(speos: Speos, capsys):
     """Test get of a sensor."""
-    p = script.Project(speos=speos)
-    sensor1 = p.create_sensor(name="Sensor.1", feature_type=script.sensor.Irradiance)
-    sensor2 = p.create_sensor(name="Sensor.2", feature_type=script.sensor.Radiance)
-    sensor3 = p.create_sensor(name="Sensor.3", feature_type=script.sensor.Camera)
+    p = Project(speos=speos)
+    sensor1 = p.create_sensor(name="Sensor.1", feature_type=sensor.Irradiance)
+    sensor2 = p.create_sensor(name="Sensor.2", feature_type=sensor.Radiance)
+    sensor3 = p.create_sensor(name="Sensor.3", feature_type=sensor.Camera)
     # test when key exists
     name1 = sensor1.get(key="name")
     assert name1 == "Sensor.1"

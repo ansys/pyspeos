@@ -45,6 +45,7 @@ Then add the import within this module to enable:
 """
 
 from ansys.speos.core.kernel.body import Body, BodyLink
+from ansys.speos.core.kernel.client import SpeosClient
 from ansys.speos.core.kernel.face import Face, FaceLink
 from ansys.speos.core.kernel.intensity_template import IntensityTemplate, IntensityTemplateLink
 from ansys.speos.core.kernel.job import Job, JobLink
@@ -60,4 +61,3 @@ from ansys.speos.core.kernel.sop_template import SOPTemplate, SOPTemplateLink
 from ansys.speos.core.kernel.source_template import SourceTemplate, SourceTemplateLink
 from ansys.speos.core.kernel.spectrum import Spectrum, SpectrumLink
 from ansys.speos.core.kernel.vop_template import VOPTemplate, VOPTemplateLink
-from ansys.speos.core.kernel.client import SpeosClient

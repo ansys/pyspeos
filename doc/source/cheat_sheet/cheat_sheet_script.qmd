@@ -50,9 +50,9 @@ Load a solver file:
 
 ```{python}
 #| eval: false
-import ansys.speos.core as script
+import ansys.speos.core as core
 
-project = script.Project(speos=speos_server, path='path_to.speos')
+project = core.Project(speos=speos_server, path='path_to.speos')
 print(project)
 ```
 
@@ -83,7 +83,7 @@ Preview solver file:
 # method to show mesh stored in solver
 project.preview(viz_args={'opacity': 0.7})
 # method to display Lightpath
-lxp = script.LightPathFinder(speos=speos_server, path='path_to_lpf')
+lxp = core.LightPathFinder(speos=speos_server, path='path_to_lpf')
 lxp.preview(project=project)
 ```
 
@@ -95,7 +95,7 @@ Find methods and it possible uses:
 #| eval: false
 found_items = project.find(name='test')
 # any item with name 'test' are returned as a list
-found_items = project.find(name='.*', name_regex=True, feature_type= script.simulation.Direct)
+found_items = project.find(name='.*', name_regex=True, feature_type= core.simulation.Direct)
 # any direct simulation item are return as a list
 ```
 
@@ -107,7 +107,7 @@ Create surface source:
 
 ```{python}
 #| eval: false
-s_source = project.create_source(name='Surface.1', feature_type=script.source.Surface)
+s_source = project.create_source(name='Surface.1', feature_type=core.source.Surface)
 # Choose one way to set source power
 # for any conflicting property the last set property counts
 s_source.set_flux_from_intensity_file()
@@ -115,7 +115,7 @@ s_source.set_flux_luminous(683)
 s_source.set_flux_radiant(1)
 s_source.set_flux_luminous_intensity(5)
 s_source.set_exitance_constant(
-    [(script.GeoRef.from_native_link(
+    [(core.GeoRef.from_native_link(
         'TheBodyB/TheFaceF'), False)])
 s_int = s_source.set_intensity()
 s_int.set_cos(1,120)
@@ -127,7 +127,7 @@ Create rayfile source:
 
 ```{python}
 #| eval: false
-r_source = project.create_source(name='Rayfile.1', feature_type=script.source.RayFile)
+r_source = project.create_source(name='Rayfile.1', feature_type=core.source.RayFile)
 r_source.set_ray_file_uri('path/ray.ray')
 # Choose one way to set source power
 # for any conflicting property the last set property counts
@@ -136,7 +136,7 @@ r_source.set_flux_luminous(683)
 r_source.set_flux_radiant(1)
 r_source.set_spectrum_from_ray_file()
 r_source.set_exit_geometries(
-    [script.GeoRef.from_native_link(
+    [core.GeoRef.from_native_link(
         'TheBodyB/TheFaceF')])
 r_source.set_axis_system([0,0,0,1,0,0,0,1,0,0,0,1])
 r_source.commit()
@@ -161,7 +161,7 @@ mat1.set_volume_optic(index=1.7, absorption=0.01, constringence=55)
 mat1.set_volume_library('path/mat.material')
 # Geometry
 mat1.set_geometries(
-    [script.GeoRef.from_native_link(
+    [core.GeoRef.from_native_link(
         geopath='TheBodyB')])
 mat1.commit()
 ```
@@ -189,7 +189,7 @@ Create radiance sensor:
 
 ```{python}
 #| eval: false
-r_sensor = project.create_sensor(name='Radiance.1', feature_type=script.sensor.Radiance)
+r_sensor = project.create_sensor(name='Radiance.1', feature_type=core.sensor.Radiance)
 # define size
 dim = r_sensor.set_dimensions()
 dim.set_x_start(-5).set_x_end(5).set_x_sampling(10)
@@ -208,7 +208,7 @@ Create irradiance Sensor:
 
 ```{python}
 #| eval: false
-i_sensor = project.create_sensor(name='Irradiance.1', feature_type=script.sensor.Irradiance)
+i_sensor = project.create_sensor(name='Irradiance.1', feature_type=core.sensor.Irradiance)
 # methods are similar to Radiance Sensor
 i_sensor.commit()
 ```
@@ -217,7 +217,7 @@ Create camera Sensor:
 
 ```{python}
 #| eval: false
-c_sensor = project.create_sensor(name='Camera.1', feature_type=script.sensor.Camera)
+c_sensor = project.create_sensor(name='Camera.1', feature_type=core.sensor.Camera)
 c_sensor.set_distortion_file_uri(
     'distortion_file_path')
 # Choose photometric mode
@@ -238,7 +238,7 @@ Create direct simulation:
 
 ```{python}
 #| eval: false
-direct_sim = project.create_simulation(name='Direct.1', feature_type=script.simulation.Direct)
+direct_sim = project.create_simulation(name='Direct.1', feature_type=core.simulation.Direct)
 # All project geometry will be taken into account
 # General Simulation API
 direct_sim.set_sensor_paths(['Irradiance.1'])
@@ -253,7 +253,7 @@ Create inverse simulation:
 
 ```{python}
 #| eval: false
-inverse_sim= project.create_simulation(name='Inverse.1', feature_type=script.simulation.Inverse)
+inverse_sim= project.create_simulation(name='Inverse.1', feature_type=core.simulation.Inverse)
 # methods similar to direct simulation
 ```
 
@@ -261,7 +261,7 @@ Create interactive simulation:
 
 ```{python}
 #| eval: false
-interactive_sim = project.create_simulation(name='Interactive.1', feature_type=script.simulation.Interactive)
+interactive_sim = project.create_simulation(name='Interactive.1', feature_type=core.simulation.Interactive)
 # methods similar to direct simulation
 ```
 Run Simulation on CPU or GPU:

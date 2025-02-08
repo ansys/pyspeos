@@ -27,9 +27,9 @@ from __future__ import annotations
 import re
 from typing import List, Mapping, Optional, Union
 
-import ansys.speos.core as core
 from ansys.speos.core import proto_message_utils
 import ansys.speos.core.face as face
+from ansys.speos.core.kernel.client import SpeosClient
 import ansys.speos.core.part as part
 
 
@@ -60,7 +60,7 @@ class Body:
 
     def __init__(
         self,
-        speos_client: core.SpeosClient,
+        speos_client: SpeosClient,
         name: str,
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
@@ -76,7 +76,7 @@ class Body:
             metadata = {}
 
         # Create local Body
-        self._body = core.Body(name=name, description=description, metadata=metadata)
+        self._body = Body(name=name, description=description, metadata=metadata)
 
         self._geom_features = []
 

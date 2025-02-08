@@ -21,21 +21,20 @@
 # SOFTWARE.
 
 """
-Test basic using spectrums from script layer.
+Test basic using spectrums.
 """
 
 import os
 
 from conftest import test_path
 
-import ansys.speos.core as script
-from ansys.speos.core.speos import Speos
+from ansys.speos.core import Spectrum, Speos
 
 
 def test_create_spectrum(speos: Speos):
     """Test creation of spectrum."""
     # Default value
-    spectrum1 = script.Spectrum(speos_client=speos.client, name="Spectrum.1").commit()
+    spectrum1 = Spectrum(speos_client=speos.client, name="Spectrum.1").commit()
     assert spectrum1.spectrum_link is not None
     assert spectrum1.spectrum_link.get().HasField("monochromatic")
     assert spectrum1.spectrum_link.get().monochromatic.wavelength == 555
@@ -97,7 +96,7 @@ def test_create_spectrum(speos: Speos):
 def test_commit_spectrum(speos: Speos):
     """Test commit of spectrum."""
     # Create
-    spectrum1 = script.Spectrum(speos_client=speos.client, name="Spectrum.1")
+    spectrum1 = Spectrum(speos_client=speos.client, name="Spectrum.1")
     spectrum1.set_monochromatic(wavelength=777)
     assert spectrum1.spectrum_link is None
 
@@ -112,7 +111,7 @@ def test_commit_spectrum(speos: Speos):
 def test_reset_spectrum(speos: Speos):
     """Test reset of spectrum."""
     # Create + commit
-    spectrum1 = script.Spectrum(speos_client=speos.client, name="Spectrum.1")
+    spectrum1 = Spectrum(speos_client=speos.client, name="Spectrum.1")
     spectrum1.set_monochromatic(wavelength=777).commit()
     assert spectrum1.spectrum_link.get().HasField("monochromatic")
 
@@ -132,7 +131,7 @@ def test_reset_spectrum(speos: Speos):
 def test_delete_spectrum(speos: Speos):
     """Test delete of spectrum."""
     # Create + commit
-    spectrum1 = script.Spectrum(speos_client=speos.client, name="Spectrum.1")
+    spectrum1 = Spectrum(speos_client=speos.client, name="Spectrum.1")
     spectrum1.set_monochromatic(wavelength=777).commit()
     assert spectrum1.spectrum_link.get().HasField("monochromatic")
     assert spectrum1._spectrum.HasField("monochromatic")

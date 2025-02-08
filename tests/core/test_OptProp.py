@@ -21,20 +21,19 @@
 # SOFTWARE.
 
 """
-Test basic using optical properties from script layer.
+Test basic using optical properties.
 """
 
 import os
 
 from conftest import test_path
 
-import ansys.speos.core as script
-from ansys.speos.core.speos import Speos
+from ansys.speos.core import GeoRef, Project, Speos
 
 
 def test_create_optical_property(speos: Speos):
     """Test creation of optical property."""
-    p = script.Project(speos=speos)
+    p = Project(speos=speos)
 
     # Default value
     op1 = p.create_optical_property(name="Material.1")
@@ -95,8 +94,8 @@ def test_create_optical_property(speos: Speos):
     # geometries
     op1.set_geometries(
         geometries=[
-            script.GeoRef.from_native_link("TheBodyB1"),
-            script.GeoRef.from_native_link("TheBodyB2"),
+            GeoRef.from_native_link("TheBodyB1"),
+            GeoRef.from_native_link("TheBodyB2"),
         ]
     )
     assert op1._material_instance.HasField("geometries")
@@ -114,7 +113,7 @@ def test_create_optical_property(speos: Speos):
 
 def test_commit_optical_property(speos: Speos):
     """Test commit of optical property."""
-    p = script.Project(speos=speos)
+    p = Project(speos=speos)
 
     # Create
     op1 = p.create_optical_property(name="Material.1").set_volume_opaque()
@@ -132,7 +131,7 @@ def test_commit_optical_property(speos: Speos):
     assert p.scene_link.get().materials[0] == op1._material_instance
 
     # Change only in local not committed
-    op1.set_geometries(geometries=[script.GeoRef.from_native_link("TheBodyB")])
+    op1.set_geometries(geometries=[GeoRef.from_native_link("TheBodyB")])
     assert p.scene_link.get().materials[0] != op1._material_instance
 
     op1.delete()
@@ -140,13 +139,13 @@ def test_commit_optical_property(speos: Speos):
 
 def test_reset_optical_property(speos: Speos):
     """Test reset of optical property."""
-    p = script.Project(speos=speos)
+    p = Project(speos=speos)
 
     # Create + commit
     op1 = (
         p.create_optical_property(name="Material.1")
         .set_volume_opaque()
-        .set_geometries(geometries=[script.GeoRef.from_native_link("TheBodyB")])
+        .set_geometries(geometries=[GeoRef.from_native_link("TheBodyB")])
         .commit()
     )
     assert op1.vop_template_link is not None
@@ -179,13 +178,13 @@ def test_reset_optical_property(speos: Speos):
 
 def test_delete_optical_property(speos: Speos):
     """Test delete of optical property."""
-    p = script.Project(speos=speos)
+    p = Project(speos=speos)
 
     # Create + commit
     op1 = (
         p.create_optical_property(name="Material.1")
         .set_volume_opaque()
-        .set_geometries(geometries=[script.GeoRef.from_native_link("TheBodyB")])
+        .set_geometries(geometries=[GeoRef.from_native_link("TheBodyB")])
         .commit()
     )
     assert op1.vop_template_link.get().HasField("opaque")

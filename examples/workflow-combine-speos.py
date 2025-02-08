@@ -5,8 +5,11 @@
 # +
 import os
 
-import ansys.speos.core as core
-import ansys.speos.core as script
+from ansys.speos.core import Part, Speos
+from ansys.speos.core.sensor import Camera
+from ansys.speos.core.simulation import Inverse
+from ansys.speos.core.source import Luminaire
+from ansys.speos.core.workflow.combine_speos import SpeosFileInstance, combine_speos
 
 # If using docker container
 tests_data_path = os.path.join("/app", "assets")
@@ -17,7 +20,7 @@ tests_data_path = os.path.join("/app", "assets")
 # ## Create connection with speos rpc server
 
 # +
-speos = core.Speos(host="localhost", port=50098)
+speos = Speos(host="localhost", port=50098)
 # -
 
 # ## Combine several speos files into one project
@@ -28,8 +31,6 @@ speos = core.Speos(host="localhost", port=50098)
 # - A red car
 
 # +
-from ansys.speos.core.workflow.combine_speos import SpeosFileInstance, combine_speos
-
 p = combine_speos(
     speos=speos,
     speos_to_combine=[
@@ -69,7 +70,7 @@ p.preview()
 # ### Create a sensor
 
 # +
-ssr = p.create_sensor(name="Camera.1", feature_type=script.sensor.Camera)
+ssr = p.create_sensor(name="Camera.1", feature_type=Camera)
 ssr.set_distortion_file_uri(
     uri=os.path.join(tests_data_path, "CameraInputFiles", "CameraDistortion_190deg.OPTDistortion")
 ).set_mode_photometric().set_transmittance_file_uri(
@@ -92,7 +93,7 @@ ssr.commit()
 # More details on creating/editing source examples can be found in script layer examples.
 
 # +
-src = p.create_source(name="Luminaire.1", feature_type=script.source.Luminaire)
+src = p.create_source(name="Luminaire.1", feature_type=Luminaire)
 src.set_intensity_file_uri(
     uri=os.path.join(tests_data_path, "IES_C_DETECTOR.ies")
 ).set_spectrum().set_daylightfluorescent()
@@ -105,7 +106,7 @@ src.commit()
 # More details on creating/editing simulation examples can be found in script layer examples.
 
 # +
-sim = p.create_simulation(name="Inverse.1", feature_type=script.simulation.Inverse)
+sim = p.create_simulation(name="Inverse.1", feature_type=Inverse)
 sim.set_sensor_paths(["Camera.1"]).set_source_paths(["Luminaire.1"])
 sim.commit()
 # -
@@ -142,7 +143,7 @@ if os.name == "nt":
 # z_vect_x, z_vect_y, z_vect_z.
 
 # +
-blue_car_sub_part = p.find(name="BlueCar", feature_type=script.Part.SubPart)[0]
+blue_car_sub_part = p.find(name="BlueCar", feature_type=Part.SubPart)[0]
 blue_car_sub_part.set_axis_system([2000, 0.0, 20000, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0, 0.0])
 blue_car_sub_part.commit()
 # -
@@ -165,7 +166,7 @@ if os.name == "nt":
 # Modify the camera, e.g. focal length to 10
 
 # +
-cam1 = p.find(name="Camera.1", feature_type=script.sensor.Camera)[0]
+cam1 = p.find(name="Camera.1", feature_type=Camera)[0]
 cam1.set_focal_length(value=10)
 cam1.commit()
 # -

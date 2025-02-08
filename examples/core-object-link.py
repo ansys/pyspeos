@@ -12,14 +12,15 @@
 # For this tutorial we will use as example the surface optical property (sop)
 
 # +
-import ansys.speos.core as core
+from ansys.speos.core.kernel.sop_template import SOPTemplate
+from ansys.speos.core.speos import Speos
 
 # -
 
 # Create connection with speos rpc server
 
 # +
-speos = core.Speos(host="localhost", port=50098)
+speos = Speos(host="localhost", port=50098)
 # -
 
 # ## Create an ObjectLink
@@ -33,7 +34,7 @@ sop_t_db = speos.client.sop_templates()
 # Create the protobuf message.
 
 # +
-sop_t = core.SOPTemplate()
+sop_t = SOPTemplate()
 sop_t.name = "Mirror_90"
 sop_t.mirror.reflectance = 90.0
 # -
@@ -48,7 +49,7 @@ print(mirror_90_link)
 # Create another ObjectLink from another protobuf message.
 
 # +
-sop_t = core.SOPTemplate()
+sop_t = SOPTemplate()
 sop_t.name = "Mirror_100"
 sop_t.mirror.reflectance = 100.0
 

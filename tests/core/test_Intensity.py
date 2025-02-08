@@ -21,21 +21,20 @@
 # SOFTWARE.
 
 """
-Test basic using intensity from script layer.
+Test basic using intensity.
 """
 
 import os
 
 from conftest import test_path
 
-import ansys.speos.core as script
-from ansys.speos.core.speos import Speos
+from ansys.speos.core import GeoRef, Intensity, Speos
 
 
 def test_create_intensity(speos: Speos):
     """Test creation of intensity."""
     # Default value
-    intensity1 = script.Intensity(speos_client=speos.client, name="Intensity.1").commit()
+    intensity1 = Intensity(speos_client=speos.client, name="Intensity.1").commit()
     assert intensity1.intensity_template_link is not None
     assert intensity1.intensity_template_link.get().HasField("cos")
     assert intensity1.intensity_template_link.get().cos.N == 1
@@ -62,7 +61,7 @@ def test_create_intensity(speos: Speos):
     assert intensity1._intensity_properties.library_properties.HasField("normal_to_uv_map")
 
     intensity1.set_library().set_exit_geometries(
-        [script.GeoRef.from_native_link(geopath="TheBodyB/TheFaceG")]
+        [GeoRef.from_native_link(geopath="TheBodyB/TheFaceG")]
     )
     intensity1.commit()
     assert intensity1._intensity_properties.HasField("library_properties")
@@ -121,7 +120,7 @@ def test_create_intensity(speos: Speos):
 def test_switch_intensity(speos: Speos):
     """Test switch of intensity : from one with properties to one without (properties should be emptied)."""
     # Use intensity library with some default properties
-    intensity1 = script.Intensity(speos_client=speos.client, name="Intensity.1")
+    intensity1 = Intensity(speos_client=speos.client, name="Intensity.1")
     intensity1.set_library().set_intensity_file_uri(
         uri=os.path.join(test_path, "IES_C_DETECTOR.ies")
     )
@@ -138,7 +137,7 @@ def test_switch_intensity(speos: Speos):
 def test_commit_intensity(speos: Speos):
     """Test commit of intensity."""
     # Create
-    intensity1 = script.Intensity(speos_client=speos.client, name="Intensity.1")
+    intensity1 = Intensity(speos_client=speos.client, name="Intensity.1")
     intensity1.set_library().set_intensity_file_uri(
         uri=os.path.join(test_path, "IES_C_DETECTOR.ies")
     ).set_orientation_axis_system()
@@ -155,7 +154,7 @@ def test_commit_intensity(speos: Speos):
 def test_reset_intensity(speos: Speos):
     """Test reset of intensity."""
     # Create + commit
-    intensity1 = script.Intensity(speos_client=speos.client, name="Intensity.1")
+    intensity1 = Intensity(speos_client=speos.client, name="Intensity.1")
     intensity1.set_library().set_intensity_file_uri(
         uri=os.path.join(test_path, "IES_C_DETECTOR.ies")
     )
@@ -178,7 +177,7 @@ def test_reset_intensity(speos: Speos):
 def test_library_modify_after_reset(speos: Speos):
     """Test modify library intensity feature after reset."""
     # Create + commit
-    intensity1 = script.Intensity(speos_client=speos.client, name="Intensity.1")
+    intensity1 = Intensity(speos_client=speos.client, name="Intensity.1")
     intensity1.set_library().set_intensity_file_uri(
         uri=os.path.join(test_path, "IES_C_DETECTOR.ies")
     )
@@ -218,7 +217,7 @@ def test_library_modify_after_reset(speos: Speos):
 def test_gaussian_modify_after_reset(speos: Speos):
     """Test modify gaussian intensity feature after reset."""
     # Create + commit
-    intensity1 = script.Intensity(speos_client=speos.client, name="Intensity.1").commit()
+    intensity1 = Intensity(speos_client=speos.client, name="Intensity.1").commit()
     intensity1.set_gaussian()
     intensity1.commit()
 
@@ -250,7 +249,7 @@ def test_gaussian_modify_after_reset(speos: Speos):
 def test_delete_intensity(speos: Speos):
     """Test delete of intensity."""
     # Create + commit
-    intensity1 = script.Intensity(speos_client=speos.client, name="Intensity.1")
+    intensity1 = Intensity(speos_client=speos.client, name="Intensity.1")
     intensity1.set_library().set_intensity_file_uri(
         uri=os.path.join(test_path, "IES_C_DETECTOR.ies")
     ).set_orientation_axis_system()

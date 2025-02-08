@@ -1,6 +1,6 @@
 # # How to create a part
 
-# This tutorial demonstrates how to create a part in script layer.
+# This tutorial demonstrates how to create a part.
 
 # ## What is a part?
 
@@ -11,8 +11,7 @@
 # +
 import os
 
-import ansys.speos.core as core
-import ansys.speos.core as script
+from ansys.speos.core import Body, Face, Part, Project, Speos
 
 # If using docker container
 tests_data_path = os.path.join("/app", "assets")
@@ -23,7 +22,7 @@ tests_data_path = os.path.join("/app", "assets")
 # ## Create connection with speos rpc server
 
 # +
-speos = core.Speos(host="localhost", port=50098)
+speos = Speos(host="localhost", port=50098)
 # -
 
 # ## New Project
@@ -31,7 +30,7 @@ speos = core.Speos(host="localhost", port=50098)
 # The only way to create an optical property, is to create it from a project.
 
 # +
-p = script.Project(speos=speos)
+p = Project(speos=speos)
 print(p)
 # -
 
@@ -118,28 +117,28 @@ print(root_part)
 # Find the root part
 
 # +
-features = p.find(name="", feature_type=script.Part)
+features = p.find(name="", feature_type=Part)
 print(features[0])
 # -
 
 # Find a specific body in root part
 
 # +
-features = p.find(name="TheBodyB1", feature_type=script.Body)
+features = p.find(name="TheBodyB1", feature_type=Body)
 print(features[0])
 # -
 
 # Find a specific face of a body in root part
 
 # +
-features = p.find(name="TheBodyB1/TheFaceF1", feature_type=script.Face)
+features = p.find(name="TheBodyB1/TheFaceF1", feature_type=Face)
 print(features[0])
 # -
 
 # Find a sub part
 
 # +
-features = p.find(name="TheSubPartSP1", feature_type=script.Part.SubPart)
+features = p.find(name="TheSubPartSP1", feature_type=Part.SubPart)
 print(features[0])
 # -
 
@@ -147,14 +146,14 @@ print(features[0])
 # Find a specific body in sub part
 
 # +
-features = p.find(name="TheSubPartSP1/TheBodySP1_B1", feature_type=script.Body)
+features = p.find(name="TheSubPartSP1/TheBodySP1_B1", feature_type=Body)
 print(features[0])
 # -
 
 # Find a specific face of a body in sub part
 
 # +
-features = p.find(name="TheSubPartSP1/TheBodySP1_B1/TheFaceSP1_B1_F1", feature_type=script.Face)
+features = p.find(name="TheSubPartSP1/TheBodySP1_B1/TheFaceSP1_B1_F1", feature_type=Face)
 print(features[0])
 # -
 
@@ -163,7 +162,7 @@ print(features[0])
 # Find all bodies in root part
 
 # +
-features = p.find(name=".*", name_regex=True, feature_type=script.Body)
+features = p.find(name=".*", name_regex=True, feature_type=Body)
 for feat in features:
     print(feat._name)
 # -
@@ -171,18 +170,18 @@ for feat in features:
 # Find all faces inside body called "TheBodyB1"
 
 # +
-features = p.find(name="TheBodyB1/.*", name_regex=True, feature_type=script.Face)
+features = p.find(name="TheBodyB1/.*", name_regex=True, feature_type=Face)
 for feat in features:
     print(feat._name)
 # -
 
 
-# If you want to retrieve several kind of geometry features at a certain level, give feature_type=script.Part
+# If you want to retrieve several kind of geometry features at a certain level, give feature_type=Part
 
 # all the geometry features at root part level:
 
 # +
-features = p.find(name=".*", name_regex=True, feature_type=script.Part)
+features = p.find(name=".*", name_regex=True, feature_type=Part)
 for feat in features:
     print(str(type(feat)) + " : name=" + feat._name)
 # -
@@ -194,14 +193,14 @@ for feat in features:
 
 
 # +
-features = p.find(name=".*/.*", name_regex=True, feature_type=script.Part)
+features = p.find(name=".*/.*", name_regex=True, feature_type=Part)
 for feat in features:
     print(str(type(feat)) + " : name=" + feat._name)
 # -
 
 # all the geometry features at the third level:
 # e.g. TheSubPartSP1's all bodies' faces
-features = p.find(name=".*/.*/.*", name_regex=True, feature_type=script.Part)
+features = p.find(name=".*/.*/.*", name_regex=True, feature_type=Part)
 for feat in features:
     print(str(type(feat)) + " : name=" + feat._name)
 # -

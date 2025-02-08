@@ -5,8 +5,8 @@
 # +
 import os
 
-import ansys.speos.core as script
-from ansys.speos.core import Speos
+from ansys.speos.core import LightPathFinder, Project, Speos
+from ansys.speos.core.simulation import Interactive
 
 # If using docker container
 tests_data_path = os.path.join("/app", "assets")
@@ -31,9 +31,7 @@ speos = Speos(host="localhost", port=50098)
 # It can be found there is volume conflict in this project.
 
 # +
-p = script.Project(
-    speos=speos, path=os.path.join(tests_data_path, "error_data.speos", "error_data.speos")
-)
+p = Project(speos=speos, path=os.path.join(tests_data_path, "error_data.speos", "error_data.speos"))
 p.preview(viz_args={"opacity": 0.7})
 # -
 
@@ -47,6 +45,7 @@ sim.compute_CPU()
 # If looking to the simulation report, we will find that we have 40% simulation error
 
 # +
+from ansys.speos.core.project import Project
 import ansys.speos.core.workflow.open_result as ORF
 
 # methods from workflow class provided a way to find the correct result file.
@@ -59,7 +58,7 @@ data = ORF._find_correct_result(sim, "Direct.1.html")
 # We will define an interactive simulation to have a look at the rays in error
 
 # +
-interactive_sim = p.create_simulation("error", feature_type=script.simulation.Interactive)
+interactive_sim = p.create_simulation("error", feature_type=Interactive)
 interactive_sim.set_light_expert(True)
 interactive_sim.set_sensor_paths(["Irradiance.1:70"])
 interactive_sim.set_source_paths(["Surface.1:4830"])
@@ -75,7 +74,7 @@ interactive_sim.commit()
 # +
 results = interactive_sim.compute_CPU()
 path = ORF._find_correct_result(interactive_sim, "error.lpf", download_if_distant=False)
-lxp = script.LightPathFinder(speos, path)
+lxp = LightPathFinder(speos, path)
 lxp.preview(project=p)
 # -
 

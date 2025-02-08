@@ -7,8 +7,8 @@
 # +
 import os
 
-import ansys.speos.core as core
-import ansys.speos.core as script
+from ansys.speos.core import GeoRef, Project, Speos
+from ansys.speos.core.source import Luminaire, RayFile, Surface
 
 # If using docker container
 tests_data_path = os.path.join("/app", "assets")
@@ -19,7 +19,7 @@ tests_data_path = os.path.join("/app", "assets")
 # ## Create connection with speos rpc server
 
 # +
-speos = core.Speos(host="localhost", port=50098)
+speos = Speos(host="localhost", port=50098)
 # -
 
 # ## Create a new project
@@ -27,7 +27,7 @@ speos = core.Speos(host="localhost", port=50098)
 # The only way to create a source, is to create it from a project.
 
 # +
-p = script.Project(speos=speos)
+p = Project(speos=speos)
 print(p)
 # -
 
@@ -40,9 +40,7 @@ print(p)
 # +
 intensity_file_path = os.path.join(tests_data_path, "IES_C_DETECTOR.ies")
 
-source1 = p.create_source(
-    name="Luminaire.1", feature_type=script.source.Luminaire
-)  # type luminaire
+source1 = p.create_source(name="Luminaire.1", feature_type=Luminaire)  # type luminaire
 source1.set_intensity_file_uri(uri=intensity_file_path)
 print(source1)
 # -
@@ -63,7 +61,7 @@ print(source1)
 # +
 intensity_file_path = os.path.join(tests_data_path, "IES_C_DETECTOR.ies")
 
-source2 = p.create_source(name="Luminaire.2", feature_type=script.source.Luminaire)
+source2 = p.create_source(name="Luminaire.2", feature_type=Luminaire)
 source2.set_intensity_file_uri(uri=intensity_file_path)
 source2.set_flux_radiant()  # select flux radiant with default value
 # choose the source location [Origin, Xvector, Yvector, Zvector]
@@ -136,7 +134,7 @@ source1.delete()
 # +
 ray_file_path = os.path.join(tests_data_path, "Rays.ray")
 
-source3 = p.create_source(name="Ray-file.1", feature_type=script.source.RayFile)  # type ray file
+source3 = p.create_source(name="Ray-file.1", feature_type=RayFile)  # type ray file
 source3.set_ray_file_uri(uri=ray_file_path)
 source3.commit()
 print(source3)
@@ -155,11 +153,11 @@ source3.delete()
 # ### surface source
 
 # +
-source4 = p.create_source(name="Surface.1", feature_type=script.source.Surface)
+source4 = p.create_source(name="Surface.1", feature_type=Surface)
 source4.set_exitance_constant(
     geometries=[
-        (script.GeoRef.from_native_link("TheBodyB/TheFaceF"), False),
-        (script.GeoRef.from_native_link("TheBodyB/TheFaceG"), True),
+        (GeoRef.from_native_link("TheBodyB/TheFaceF"), False),
+        (GeoRef.from_native_link("TheBodyB/TheFaceG"), True),
     ]
 )
 source4.commit()

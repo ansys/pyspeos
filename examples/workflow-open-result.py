@@ -5,8 +5,8 @@
 # +
 import os
 
-import ansys.speos.core as script
-from ansys.speos.core import Speos
+from ansys.speos.core import Project, Speos
+from ansys.speos.core.simulation import Direct
 
 # If using docker container
 tests_data_path = os.path.join("/app", "assets")
@@ -23,7 +23,7 @@ speos = Speos(host="localhost", port=50098)
 # ## Create project from speos file
 
 # +
-p = script.Project(
+p = Project(
     speos=speos,
     path=os.path.join(
         tests_data_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
@@ -37,7 +37,7 @@ print(p)
 # Use find method from project class to retrieve the simulation feature.
 
 # +
-sim = p.find(name=".*", name_regex=True, feature_type=script.simulation.Direct)[0]
+sim = p.find(name=".*", name_regex=True, feature_type=Direct)[0]
 # -
 
 # ## Run simulation

@@ -26,8 +26,7 @@ import os
 
 from conftest import test_path
 
-import ansys.speos.core as script
-from ansys.speos.core.speos import Speos
+from ansys.speos.core import OptProp, Part, Project, Speos
 from ansys.speos.core.workflow.combine_speos import SpeosFileInstance, combine_speos, insert_speos
 
 
@@ -59,24 +58,24 @@ def test_combine_speos(speos: Speos):
     assert len(p.scene_link.get().simulations) == 0
 
     # Check that the root part contains one part per speos to combine
-    root_part = p.find(name="", feature_type=script.Part)[0]
-    assert isinstance(root_part, script.Part)
+    root_part = p.find(name="", feature_type=Part)[0]
+    assert isinstance(root_part, Part)
     rp_data = root_part.part_link.get()
     assert len(rp_data.parts) == 3
 
     # Check that materials geo_paths are well updated by using subparts
     mat_es1 = p.find(name="Env_Simplified.Material.1")[0]
-    assert isinstance(mat_es1, script.OptProp)
+    assert isinstance(mat_es1, OptProp)
     assert len(mat_es1._material_instance.geometries.geo_paths) > 0
     assert mat_es1._material_instance.geometries.geo_paths[0].startswith("Env_Simplified/")
 
     mat_bc1 = p.find(name="BlueCar.Material.1")[0]
-    assert isinstance(mat_bc1, script.OptProp)
+    assert isinstance(mat_bc1, OptProp)
     assert len(mat_bc1._material_instance.geometries.geo_paths) > 0
     assert mat_bc1._material_instance.geometries.geo_paths[0].startswith("BlueCar/")
 
     mat_rc1 = p.find(name="RedCar.Material.1")[0]
-    assert isinstance(mat_rc1, script.OptProp)
+    assert isinstance(mat_rc1, OptProp)
     assert len(mat_rc1._material_instance.geometries.geo_paths) > 0
     assert mat_rc1._material_instance.geometries.geo_paths[0].startswith("RedCar/")
 
@@ -103,7 +102,7 @@ def test_modify_parts_after_combine(speos: Speos):
     )
 
     # Look for a specific sub part
-    blue_car_sub_part = p.find(name="BlueCar", feature_type=script.Part.SubPart)[0]
+    blue_car_sub_part = p.find(name="BlueCar", feature_type=Part.SubPart)[0]
     blue_car_sub_part.set_axis_system(
         [2000, 0.0, 20000, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
     )
@@ -130,7 +129,7 @@ def test_modify_parts_after_combine(speos: Speos):
 def test_insert_speos(speos: Speos):
     """Test inserting several speos files in an existing project."""
     # Create a project from a speos file
-    p = script.Project(
+    p = Project(
         speos=speos, path=os.path.join(test_path, "Env_Simplified.speos", "Env_Simplified.speos")
     )
 
@@ -139,7 +138,7 @@ def test_insert_speos(speos: Speos):
     assert len(p.scene_link.get().sensors) == 1
     assert len(p.scene_link.get().sources) == 0
     assert len(p.scene_link.get().simulations) == 1
-    assert len(p.find(name=".*", name_regex=True, feature_type=script.opt_prop.OptProp)) == 7
+    assert len(p.find(name=".*", name_regex=True, feature_type=OptProp)) == 7
 
     # Insert several speos files into the project - only geometries + materials are retrieved
     insert_speos(
@@ -160,21 +159,21 @@ def test_insert_speos(speos: Speos):
     assert len(p.scene_link.get().sensors) == 1
     assert len(p.scene_link.get().sources) == 0
     assert len(p.scene_link.get().simulations) == 1
-    assert len(p.find(name=".*", name_regex=True, feature_type=script.opt_prop.OptProp)) == 12
+    assert len(p.find(name=".*", name_regex=True, feature_type=OptProp)) == 12
 
     # Check that the root part contains one part per speos to insert
-    root_part = p.find(name="", feature_type=script.Part)[0]
-    assert isinstance(root_part, script.Part)
+    root_part = p.find(name="", feature_type=Part)[0]
+    assert isinstance(root_part, Part)
     rp_data = root_part.part_link.get()
     assert len(rp_data.parts) == 2
 
     # Check that materials geo_paths are well updated by using subparts
     mat_bc1 = p.find(name="BlueCar.Material.1")[0]
-    assert isinstance(mat_bc1, script.OptProp)
+    assert isinstance(mat_bc1, OptProp)
     assert len(mat_bc1._material_instance.geometries.geo_paths) > 0
     assert mat_bc1._material_instance.geometries.geo_paths[0].startswith("BlueCar/")
 
     mat_rc1 = p.find(name="RedCar.Material.1")[0]
-    assert isinstance(mat_rc1, script.OptProp)
+    assert isinstance(mat_rc1, OptProp)
     assert len(mat_rc1._material_instance.geometries.geo_paths) > 0
     assert mat_rc1._material_instance.geometries.geo_paths[0].startswith("RedCar/")

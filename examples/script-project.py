@@ -1,6 +1,6 @@
 # # How to create a project
 
-# This tutorial demonstrates how to create a project in script layer.
+# This tutorial demonstrates how to create a project.
 
 # ## What is a project?
 
@@ -11,8 +11,10 @@
 # +
 import os
 
-import ansys.speos.core as core
-import ansys.speos.core as script
+from ansys.speos.core import Project, Speos
+from ansys.speos.core.sensor import Irradiance
+from ansys.speos.core.simulation import Direct
+from ansys.speos.core.source import Surface
 
 # If using docker container
 tests_data_path = os.path.join("/app", "assets")
@@ -23,22 +25,22 @@ tests_data_path = os.path.join("/app", "assets")
 # ## Create connection with speos rpc server
 
 # +
-speos = core.Speos(host="localhost", port=50098)
+speos = Speos(host="localhost", port=50098)
 # -
 
 # ## New empty project
 
-# An empty project can be created by only passing speos rpc server to the script.Project class.
+# An empty project can be created by only passing speos rpc server to the Project class.
 
 # +
-p = script.Project(speos=speos)
+p = Project(speos=speos)
 print(p)
 # -
 
 # create feature - e.g. source
 
 # +
-source1 = p.create_source(name="Source.1", feature_type=script.source.Surface)
+source1 = p.create_source(name="Source.1", feature_type=Surface)
 source1.commit()
 # -
 
@@ -92,12 +94,12 @@ print(features[0])
 # Here a wrong type is given: no source is called Sensor.1 in the project
 
 # +
-features = p.find(name="Sensor.1", feature_type=script.source.Surface)
+features = p.find(name="Sensor.1", feature_type=Surface)
 print(features)
 # -
 
 # +
-features = p.find(name="Sensor.1", feature_type=script.sensor.Irradiance)
+features = p.find(name="Sensor.1", feature_type=Irradiance)
 print(features[0])
 # -
 
@@ -138,10 +140,10 @@ print(p.find(name="Sensor.1"))
 
 # ## Create project from pre-defined speos project
 
-# Via passing the .speos/.sv5 file path to the script.Project class.
+# Via passing the .speos/.sv5 file path to the Project class.
 
 # +
-p2 = script.Project(
+p2 = Project(
     speos=speos,
     path=os.path.join(
         tests_data_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
@@ -171,7 +173,7 @@ for it in p2.find_key(key="surface"):
 # e.g. surface source
 
 # +
-features = p2.find(name=".*", name_regex=True, feature_type=script.source.Surface)
+features = p2.find(name=".*", name_regex=True, feature_type=Surface)
 for feat in features:
     print(str(type(feat)) + " : name=" + feat._name)
 src = features[1]
@@ -188,7 +190,7 @@ src.commit()
 # Retrieve a simulation feature:
 
 # +
-features = p2.find(name=".*", name_regex=True, feature_type=script.simulation.Direct)
+features = p2.find(name=".*", name_regex=True, feature_type=Direct)
 sim_feat = features[0]
 print(sim_feat)
 # -

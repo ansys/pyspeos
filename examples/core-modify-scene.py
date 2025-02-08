@@ -25,7 +25,10 @@
 import os
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2
-import ansys.speos.core as core
+from ansys.speos.core import Speos
+from ansys.speos.core.kernel import SensorTemplateLink
+from ansys.speos.core.kernel.scene import Scene
+from ansys.speos.core.kernel.sensor_template import SensorTemplate
 
 # If using docker container
 tests_data_path = os.path.join("/app", "assets")
@@ -36,7 +39,7 @@ tests_data_path = os.path.join("/app", "assets")
 # Create connection with speos rpc server
 
 # +
-speos = core.Speos(host="localhost", port=50098)
+speos = Speos(host="localhost", port=50098)
 # -
 
 # Create an empty scene and load speos file to fill it.
@@ -110,7 +113,7 @@ new_distortion_file = os.path.join(
 
 # Retrieve SensorTemplateLink corresponding to camera_i_0.sensor_guid
 camera_t_0 = speos.client.get_item(camera_i_0.sensor_guid)
-assert isinstance(camera_t_0, core.SensorTemplateLink)
+assert isinstance(camera_t_0, SensorTemplateLink)
 
 # get() = retrieve datamodel corresponding to camera_t_0 from database
 camera_t_0_data = camera_t_0.get()
@@ -134,7 +137,7 @@ print(camera_t_0)  # Print ObjectLink to see its datamodel in database
 sensor_t_db = speos.client.sensor_templates()  # Retrieve access to sensor templates db
 
 # Create protobuf message SensorTemplate
-sensor_t_data = core.SensorTemplate(name="CameraFromScratch")
+sensor_t_data = SensorTemplate(name="CameraFromScratch")
 sensor_t_data.camera_sensor_template.sensor_mode_photometric.acquisition_integration = 0.01
 sensor_t_data.camera_sensor_template.sensor_mode_photometric.acquisition_lag_time = 0
 sensor_t_data.camera_sensor_template.sensor_mode_photometric.transmittance_file_uri = os.path.join(
@@ -176,7 +179,7 @@ print(sensor_t_new)
 # ### Create a camera instance
 
 # +
-camera_i_2 = core.Scene.SensorInstance(name=sensor_t_new.get().name + ".1")
+camera_i_2 = Scene.SensorInstance(name=sensor_t_new.get().name + ".1")
 camera_i_2.sensor_guid = sensor_t_new.key  # An instance has to reference a template - here we use the SensorTemplateLink's key that we got just above.
 camera_i_2.camera_properties.axis_system.extend(
     [50, 50, 50, 1, 0, 0, 0, 1, 0, 0, 0, 1]

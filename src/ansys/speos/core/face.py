@@ -26,9 +26,9 @@ from __future__ import annotations
 
 from typing import List, Mapping, Optional
 
-import ansys.speos.core as core
 from ansys.speos.core import proto_message_utils
 import ansys.speos.core.body as body
+from ansys.speos.core.kernel.client import SpeosClient
 
 
 class Face:
@@ -58,7 +58,7 @@ class Face:
 
     def __init__(
         self,
-        speos_client: core.SpeosClient,
+        speos_client: SpeosClient,
         name: str,
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
@@ -73,7 +73,7 @@ class Face:
             metadata = {}
 
         # Create local Face
-        self._face = core.Face(name=name, description=description, metadata=metadata)
+        self._face = Face(name=name, description=description, metadata=metadata)
 
     def set_vertices(self, values: List[float]) -> Face:
         """Set the face vertices.

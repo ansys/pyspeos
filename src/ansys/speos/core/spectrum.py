@@ -26,7 +26,8 @@ from __future__ import annotations
 
 from typing import List, Mapping, Optional
 
-import ansys.speos.core as core
+from ansys.speos.core.kernel.client import SpeosClient
+from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_dict
 from ansys.speos.core.proto_message_utils import dict_to_str
 
 
@@ -57,7 +58,7 @@ class Spectrum:
 
     def __init__(
         self,
-        speos_client: core.SpeosClient,
+        speos_client: SpeosClient,
         name: str,
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
@@ -72,7 +73,7 @@ class Spectrum:
 
         if key == "":
             # Create Spectrum
-            self._spectrum = core.Spectrum(name=name, description=description, metadata=metadata)
+            self._spectrum = Spectrum(name=name, description=description, metadata=metadata)
 
             # Default value
             self.set_monochromatic()  # By default will be monochromatic
@@ -229,9 +230,9 @@ class Spectrum:
 
     def _to_dict(self) -> dict:
         if self.spectrum_link is None:
-            return core.protobuf_message_to_dict(self._spectrum)
+            return protobuf_message_to_dict(self._spectrum)
         else:
-            return core.protobuf_message_to_dict(message=self.spectrum_link.get())
+            return protobuf_message_to_dict(message=self.spectrum_link.get())
 
     def __str__(self) -> str:
         """Return the string representation of the spectrum."""

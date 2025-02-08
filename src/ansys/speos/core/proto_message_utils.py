@@ -25,7 +25,8 @@ from typing import Iterator, List
 
 from google.protobuf.message import Message
 
-from ansys.speos.core.kernel import protobuf_message_to_dict, SpeosClient
+from ansys.speos.core.kernel import SpeosClient, protobuf_message_to_dict
+
 
 def dict_to_str(dict: dict) -> str:
     """Transform a dictionary into a string.

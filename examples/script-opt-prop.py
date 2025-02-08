@@ -1,6 +1,6 @@
 # # How to create an optical property
 
-# This tutorial demonstrates how to create an optical property in script layer.
+# This tutorial demonstrates how to create an optical property.
 
 # ## What is an optical property?
 
@@ -12,8 +12,7 @@
 # +
 import os
 
-import ansys.speos.core as core
-import ansys.speos.core as script
+from ansys.speos.core import GeoRef, Project, Speos
 
 # If using docker container
 tests_data_path = os.path.join("/app", "assets")
@@ -24,7 +23,7 @@ tests_data_path = os.path.join("/app", "assets")
 # ## Create connection with speos rpc server
 
 # +
-speos = core.Speos(host="localhost", port=50098)
+speos = Speos(host="localhost", port=50098)
 # -
 
 # ## New Project
@@ -32,7 +31,7 @@ speos = core.Speos(host="localhost", port=50098)
 # The only way to create an optical property is to create it from a project.
 
 # +
-p = script.Project(speos=speos)
+p = Project(speos=speos)
 print(p)
 # -
 
@@ -49,8 +48,8 @@ op1.set_volume_opaque()  # VOP : opaque
 # This optical property will be applied to two bodies named : "TheBodyB" and "TheBodyC".
 op1.set_geometries(
     geometries=[
-        script.GeoRef.from_native_link(geopath="TheBodyB"),
-        script.GeoRef.from_native_link(geopath="TheBodyC"),
+        GeoRef.from_native_link(geopath="TheBodyB"),
+        GeoRef.from_native_link(geopath="TheBodyC"),
     ]
 )
 print(op1)
@@ -79,8 +78,8 @@ op2.set_volume_library(
 # This optical property will be applied to two bodies named : "TheBodyD" and "TheBodyE".
 op2.set_geometries(
     geometries=[
-        script.GeoRef.from_native_link(geopath="TheBodyD"),
-        script.GeoRef.from_native_link(geopath="TheBodyE"),
+        GeoRef.from_native_link(geopath="TheBodyD"),
+        GeoRef.from_native_link(geopath="TheBodyE"),
     ]
 )
 op2.commit()
@@ -97,7 +96,7 @@ print(op2)
 op3 = p.create_optical_property(name="Material.FOP")
 op3.set_surface_mirror(reflectance=90)  # SOP : mirror
 # This optical property will be applied a face from TheBodyD named : "TheFaceF".
-op3.set_geometries(geometries=[script.GeoRef.from_native_link(geopath="TheBodyD/TheFaceF")])
+op3.set_geometries(geometries=[GeoRef.from_native_link(geopath="TheBodyD/TheFaceF")])
 op3.commit()
 print(op3)
 # -

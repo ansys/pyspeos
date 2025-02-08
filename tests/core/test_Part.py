@@ -24,14 +24,13 @@
 Test basic using part/body/face from script layer.
 """
 
-import ansys.speos.core as script
-from ansys.speos.core.speos import Speos
+from ansys.speos.core import Project, Speos
 
 
 def test_create_root_part(speos: Speos):
     """Test create root part in project."""
     # Create an empty project
-    p = script.Project(speos=speos)
+    p = Project(speos=speos)
     assert len(p._features) == 0
 
     # Add empty root part
@@ -46,7 +45,7 @@ def test_create_root_part(speos: Speos):
 def test_create_body(speos: Speos):
     """Test create bodies in root part."""
     # Create an empty project with a root part
-    p = script.Project(speos=speos)
+    p = Project(speos=speos)
     root_part = p.create_root_part().commit()
     assert len(root_part._geom_features) == 0
     assert len(root_part.part_link.get().body_guids) == 0
@@ -75,7 +74,7 @@ def test_create_body(speos: Speos):
 def test_create_face(speos: Speos):
     """Test create faces in body."""
     # Create an empty project with a root part containing a body
-    p = script.Project(speos=speos)
+    p = Project(speos=speos)
     root_part = p.create_root_part()
     body1 = root_part.create_body(name="Body.1")
     root_part.commit()
@@ -123,7 +122,7 @@ def test_create_face(speos: Speos):
 def test_create_subpart(speos: Speos):
     """Test create sub part in root part."""
     # Create an empty project with a root part
-    p = script.Project(speos=speos)
+    p = Project(speos=speos)
     root_part = p.create_root_part().commit()
     assert len(root_part._geom_features) == 0
     assert len(root_part.part_link.get().parts) == 0
@@ -168,7 +167,7 @@ def test_create_subpart(speos: Speos):
 def test_create_subpart_body(speos: Speos):
     """Test create body in sub part."""
     # Create an empty project with a root part and sub part
-    p = script.Project(speos=speos)
+    p = Project(speos=speos)
     root_part = p.create_root_part().commit()
     sp1 = (
         root_part.create_sub_part(name="SubPart.1")
@@ -202,7 +201,7 @@ def test_create_subpart_body(speos: Speos):
 def test_create_subpart_subpart(speos: Speos):
     """Test create sub part in sub part."""
     # Create an empty project with a root part and sub part
-    p = script.Project(speos=speos)
+    p = Project(speos=speos)
     root_part = p.create_root_part().commit()
     sp1 = (
         root_part.create_sub_part(name="SubPart.1")
@@ -251,7 +250,7 @@ def test_create_subpart_subpart(speos: Speos):
 
 def test_commit_part(speos: Speos):
     """Test commit of part."""
-    p = script.Project(speos=speos)
+    p = Project(speos=speos)
 
     # Create
     root_part = p.create_root_part()
@@ -285,7 +284,7 @@ def test_commit_part(speos: Speos):
 
 def test_reset_part(speos: Speos):
     """Test reset of part."""
-    p = script.Project(speos=speos)
+    p = Project(speos=speos)
 
     # Create + commit
     root_part = p.create_root_part()
@@ -312,7 +311,7 @@ def test_reset_part(speos: Speos):
 
 def test_delete_part(speos: Speos):
     """Test delete of part."""
-    p = script.Project(speos=speos)
+    p = Project(speos=speos)
 
     # Create + commit
     root_part = p.create_root_part()

@@ -32,15 +32,18 @@ from google.protobuf.internal.containers import RepeatedScalarFieldContainer
 import numpy as np
 import pyvista as pv
 
-import ansys.speos.core as core
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
+from ansys.speos.core.kernel.body import BodyLink
+from ansys.speos.core.kernel.face import FaceLink
+from ansys.speos.core.kernel.scene import Scene
 import ansys.speos.core.opt_prop as opt_prop
 import ansys.speos.core.part as part
 import ansys.speos.core.proto_message_utils as proto_message_utils
 import ansys.speos.core.sensor as sensor
 import ansys.speos.core.simulation as simulation
 import ansys.speos.core.source as source
+from ansys.speos.core.speos import Speos
 
 
 class Project:
@@ -63,7 +66,7 @@ class Project:
         Link object for the scene in database.
     """
 
-    def __init__(self, speos: core.Speos, path: str = ""):
+    def __init__(self, speos: Speos, path: str = ""):
         self.client = speos.client
         """Speos instance client."""
         self.scene_link = speos.client.scenes().create()
@@ -486,7 +489,7 @@ class Project:
         """
         # Erase the scene
         if self.scene_link is not None:
-            self.scene_link.set(data=core.Scene())
+            self.scene_link.set(data=Scene())
 
         # Delete each feature that was created
         for f in self._features:
@@ -563,12 +566,12 @@ class Project:
 
     def _fill_bodies(self, body_guids: List[str], feat_host: Union[part.Part, part.Part.SubPart]):
         """Fill part of sub part features from a list of body guids."""
-        for b_link in self.client.get_items(keys=body_guids, item_type=core.BodyLink):
+        for b_link in self.client.get_items(keys=body_guids, item_type=BodyLink):
             b_data = b_link.get()
             b_feat = feat_host.create_body(name=b_data.name)
             b_feat.body_link = b_link
             b_feat._body = b_data  # instead of b_feat.reset() - this avoid a useless read in server
-            f_links = self.client.get_items(keys=b_data.face_guids, item_type=core.FaceLink)
+            f_links = self.client.get_items(keys=b_data.face_guids, item_type=FaceLink)
             for f_link in f_links:
                 f_data = f_link.get()
                 f_feat = b_feat.create_face(name=f_data.name)
@@ -703,7 +706,7 @@ class Project:
             self._features.append(sim_feat)
 
     def __extract_part_mesh_info(
-        self, part_data: core.Part, part_coordinate_info: RepeatedScalarFieldContainer = None
+        self, part_data: part.Part, part_coordinate_info: RepeatedScalarFieldContainer = None
     ) -> pv.PolyData:
         """
         Extract mesh data info from a part.

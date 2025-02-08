@@ -21,24 +21,23 @@
 # SOFTWARE.
 
 """
-Test basic using proto_message_utils from script layer.
+Test basic using proto_message_utils.
 """
 
 import os
 
 from conftest import test_path
 
-import ansys.speos.core as script
-from ansys.speos.core import proto_message_utils, scene
+from ansys.speos.core import OptProp, Project, Speos, proto_message_utils, source
+from ansys.speos.core.kernel import scene
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_dict
-from ansys.speos.core.speos import Speos
 
 
 def test_replace_guid_elt(speos: Speos):
     """Test _replace_guid_elt."""
     # Example with surface source : spectrum guid + intensity guid
-    p = script.Project(speos=speos)
-    src_feat = script.source.Surface(project=p, name="Surface.1")
+    p = Project(speos=speos)
+    src_feat = source.Surface(project=p, name="Surface.1")
     src_feat.commit()
 
     # Retrieve source template message and transform it into dict
@@ -73,8 +72,8 @@ def test_replace_guid_elt(speos: Speos):
 def test_replace_guid_elt_ignore_simple_key(speos: Speos):
     """Test _replace_guid_elt with parameter ignore_simple_key."""
     # Example with surface source : spectrum guid + intensity guid
-    p = script.Project(speos=speos)
-    src_feat = script.source.Surface(project=p, name="Surface.1")
+    p = Project(speos=speos)
+    src_feat = source.Surface(project=p, name="Surface.1")
     src_feat.commit()
 
     # Retrieve source template message and transform it into dict
@@ -95,8 +94,8 @@ def test_replace_guid_elt_ignore_simple_key(speos: Speos):
 def test_replace_guid_elt_list(speos: Speos):
     """Test _replace_guid_elt in a specific case : list of guids like sop_guids."""
     # Example with material : vop guid + sop guids
-    p = script.Project(speos=speos)
-    mat_feat = script.OptProp(project=p, name="Material.1")
+    p = Project(speos=speos)
+    mat_feat = OptProp(project=p, name="Material.1")
     mat_feat.set_volume_opaque()
     mat_feat.set_surface_mirror()
     mat_feat.commit()
@@ -207,8 +206,8 @@ def test_replace_guid_elt_complex(speos: Speos):
 
 def test_value_finder_key_startswith(speos: Speos):
     """Test _value_finder_key_startswith."""
-    p = script.Project(speos=speos)
-    src_feat = script.source.Surface(project=p, name="Surface.1")
+    p = Project(speos=speos)
+    src_feat = source.Surface(project=p, name="Surface.1")
     src_feat.commit()
 
     # Retrieve source instance message and transform it into dict
@@ -224,8 +223,8 @@ def test_value_finder_key_startswith(speos: Speos):
 
 def test__value_finder_key_endswith(speos: Speos):
     """Test _value_finder_key_endswith."""
-    p = script.Project(speos=speos)
-    src_feat = script.source.Surface(project=p, name="Surface.1")
+    p = Project(speos=speos)
+    src_feat = source.Surface(project=p, name="Surface.1")
     src_feat.commit()
 
     # Retrieve source instance message and transform it into dict
@@ -241,8 +240,8 @@ def test__value_finder_key_endswith(speos: Speos):
 
 def test_replace_properties(speos: Speos):
     """Test _replace_properties."""
-    p = script.Project(speos=speos)
-    src_feat = script.source.Surface(project=p, name="Surface.1")
+    p = Project(speos=speos)
+    src_feat = source.Surface(project=p, name="Surface.1")
     src_feat.set_intensity().set_gaussian().set_axis_system([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     src_feat.commit()
 
@@ -274,7 +273,7 @@ def test_replace_properties(speos: Speos):
 
 def test_finder_by_key(speos: Speos):
     """Test _finder_by_key."""
-    p = script.Project(
+    p = Project(
         speos=speos,
         path=os.path.join(
             test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
@@ -318,7 +317,7 @@ def test_finder_by_key(speos: Speos):
 
 
 def test_flatten_dict(speos: Speos):
-    p = script.Project(
+    p = Project(
         speos=speos,
         path=os.path.join(
             test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"

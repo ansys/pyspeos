@@ -9,8 +9,8 @@
 # +
 import os
 
-import ansys.speos.core as core
-import ansys.speos.core as script
+from ansys.speos.core import GeoRef, Project, Speos
+from ansys.speos.core.simulation import Interactive, Inverse
 
 # If using docker container
 tests_data_path = os.path.join("/app", "assets")
@@ -21,7 +21,7 @@ tests_data_path = os.path.join("/app", "assets")
 # ## Create connection with speos rpc server
 
 # +
-speos = core.Speos(host="localhost", port=50098)
+speos = Speos(host="localhost", port=50098)
 # -
 
 # ## Create Project
@@ -31,7 +31,7 @@ speos = core.Speos(host="localhost", port=50098)
 # The only way to create a simulation is to create it from a project.
 
 # +
-p = script.Project(speos=speos)
+p = Project(speos=speos)
 print(p)
 # -
 
@@ -55,7 +55,7 @@ root_part.commit()
 opt_prop = p.create_optical_property("Material.1")
 opt_prop.set_volume_opaque().set_surface_mirror()  # vop as opaque and sop as mirror
 # Choose the geometry for this optical property : Body.1
-opt_prop.set_geometries(geometries=[script.GeoRef.from_native_link(geopath="Body.1")])
+opt_prop.set_geometries(geometries=[GeoRef.from_native_link(geopath="Body.1")])
 opt_prop.commit()
 # -
 
@@ -71,9 +71,7 @@ sensor1.commit()
 
 # +
 source1 = p.create_source(name="Surface.1")
-source1.set_exitance_constant(
-    geometries=[(script.GeoRef.from_native_link(geopath="Body.1/Face.1"), True)]
-)
+source1.set_exitance_constant(geometries=[(GeoRef.from_native_link(geopath="Body.1/Face.1"), True)])
 source1.set_spectrum().set_blackbody()  # blackbody so that the source can be used both in direct and inverse simulation
 source1.commit()
 # -
@@ -150,7 +148,7 @@ print(simulation1)
 # ### Inverse simulation
 
 # +
-simulation3 = p.create_simulation(name="Simulation.3", feature_type=script.simulation.Inverse)
+simulation3 = p.create_simulation(name="Simulation.3", feature_type=Inverse)
 simulation3.set_sensor_paths(sensor_paths=["Irradiance.1"]).set_source_paths(
     source_paths=["Surface.1"]
 ).commit()
@@ -160,7 +158,7 @@ print(simulation3)
 # ### Interactive simulation
 
 # +
-simulation4 = p.create_simulation(name="Simulation.4", feature_type=script.simulation.Interactive)
+simulation4 = p.create_simulation(name="Simulation.4", feature_type=Interactive)
 simulation4.set_source_paths(source_paths=["Surface.1"]).commit()
 print(simulation4)
 # -

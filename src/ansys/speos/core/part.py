@@ -28,10 +28,11 @@ import re
 from typing import List, Mapping, Optional, Union
 import uuid
 
-import ansys.speos.core as core
 from ansys.speos.core import proto_message_utils
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
+from ansys.speos.core.kernel.client import SpeosClient
+from ansys.speos.core.kernel.part import Part as KernelPart
 import ansys.speos.core.project as project
 
 
@@ -81,7 +82,7 @@ class Part:
 
         def __init__(
             self,
-            speos_client: core.SpeosClient,
+            speos_client: SpeosClient,
             name: str,
             description: str = "",
             parent_part: Optional[Part] = None,
@@ -92,10 +93,10 @@ class Part:
             self.part_link = None
             """Link object for the part in database."""
             self._unique_id = None
-            self._part_instance = core.Part.PartInstance(name=name, description=description)
+            self._part_instance = KernelPart.PartInstance(name=name, description=description)
 
             # Create local Part
-            self._part = core.Part(name=name, description=description)
+            self._part = Part(name=name, description=description)
 
             self._geom_features = []
 
@@ -446,7 +447,7 @@ class Part:
         # Create local Part
         if metadata is None:
             metadata = {}
-        self._part = core.Part(name=name, description=description, metadata=metadata)
+        self._part = Part(name=name, description=description, metadata=metadata)
 
     def create_body(
         self, name: str, description: str = "", metadata: Optional[Mapping[str, str]] = None

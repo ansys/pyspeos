@@ -1,12 +1,13 @@
 # # Prism example
 
-# This tutorial demonstrates how to run a prism use case using script layer.
+# This tutorial demonstrates how to run a prism use case.
 
 # +
 import os
 
-import ansys.speos.core as core
-import ansys.speos.core as script
+from ansys.speos.core import Project, Speos
+from ansys.speos.core.sensor import Irradiance
+from ansys.speos.core.simulation import Direct
 
 # If using docker container
 tests_data_path = os.path.join("/app", "assets")
@@ -17,7 +18,7 @@ tests_data_path = os.path.join("/app", "assets")
 # ## Create connection with speos rpc server
 
 # +
-speos = core.Speos(host="localhost", port=50098)
+speos = Speos(host="localhost", port=50098)
 # -
 
 
@@ -26,7 +27,7 @@ speos = core.Speos(host="localhost", port=50098)
 # Load a project from .speos file.
 
 # +
-p = script.Project(speos=speos, path=os.path.join(tests_data_path, "Prism.speos", "Prism.speos"))
+p = Project(speos=speos, path=os.path.join(tests_data_path, "Prism.speos", "Prism.speos"))
 print(p)
 # -
 
@@ -41,7 +42,7 @@ p.preview()
 # Run the simulation
 
 # +
-sim_features = p.find(name="Prism", feature_type=script.simulation.Direct)
+sim_features = p.find(name="Prism", feature_type=Direct)
 sim = sim_features[0]
 sim.compute_CPU()
 # -
@@ -62,7 +63,7 @@ if os.name == "nt":
 # Modify the sensor setting, e.g. set the spectral type, etc.
 
 # +
-irr_features = p.find(name=".*", name_regex=True, feature_type=script.sensor.Irradiance)
+irr_features = p.find(name=".*", name_regex=True, feature_type=Irradiance)
 irr = irr_features[0]
 irr.set_type_spectral().set_wavelengths_range().set_start(500).set_end(600).set_sampling(11)
 irr.commit()

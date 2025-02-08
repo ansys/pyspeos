@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 """
-Test basic using simulation from script layer.
+Test basic using simulation.
 """
 
 import os
@@ -29,17 +29,16 @@ import os
 from conftest import test_path
 
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
-import ansys.speos.core as script
-from ansys.speos.core.speos import Speos
+from ansys.speos.core import GeoRef, Project, Speos, sensor, simulation, source
 
 
 def test_create_direct(speos: Speos):
     """Test creation of Direct Simulation."""
-    p = script.Project(speos=speos)
+    p = Project(speos=speos)
 
     # Default value
     sim1 = p.create_simulation(name="Direct.1")
-    sim1 = script.simulation.Direct(project=p, name="Direct.1")
+    sim1 = simulation.Direct(project=p, name="Direct.1")
     # sim1.set_direct()  # do not commit to avoid issues about No sensor in simulation
     assert sim1._simulation_template.HasField("direct_mc_simulation_template")
     assert sim1._simulation_template.direct_mc_simulation_template.geom_distance_tolerance == 0.01
@@ -132,9 +131,9 @@ def test_create_direct(speos: Speos):
     # geometries
     # sim1.set_geometries(
     #    geometries=[
-    #        script.GeoRef.from_native_link(geopath="mybody1"),
-    #        script.GeoRef.from_native_link(geopath="mybody2"),
-    #        script.GeoRef.from_native_link(geopath="mybody3"),
+    #        GeoRef.from_native_link(geopath="mybody1"),
+    #        GeoRef.from_native_link(geopath="mybody2"),
+    #        GeoRef.from_native_link(geopath="mybody3"),
     #    ]
     # )
     # assert sim1._simulation_instance.geometries.geo_paths == ["mybody1", "mybody2", "mybody3"]
@@ -144,11 +143,11 @@ def test_create_direct(speos: Speos):
 
 def test_create_inverse(speos: Speos):
     """Test creation of Inverse Simulation."""
-    p = script.Project(speos=speos)
+    p = Project(speos=speos)
 
     # Default value
     sim1 = p.create_simulation(name="Inverse.1")
-    sim1 = script.simulation.Inverse(project=p, name="Inverse.1")
+    sim1 = simulation.Inverse(project=p, name="Inverse.1")
     # sim1.set_inverse()  # do not commit to avoid issues about No sensor in simulation
     assert sim1._simulation_template.HasField("inverse_mc_simulation_template")
     assert sim1._simulation_template.inverse_mc_simulation_template.geom_distance_tolerance == 0.01
@@ -272,9 +271,9 @@ def test_create_inverse(speos: Speos):
     # geometries
     # sim1.set_geometries(
     #    geometries=[
-    #        script.GeoRef.from_native_link(geopath="mybody1"),
-    #        script.GeoRef.from_native_link(geopath="mybody2"),
-    #        script.GeoRef.from_native_link(geopath="mybody3"),
+    #        GeoRef.from_native_link(geopath="mybody1"),
+    #        GeoRef.from_native_link(geopath="mybody2"),
+    #        GeoRef.from_native_link(geopath="mybody3"),
     #    ]
     # )
     # assert sim1._simulation_instance.geometries.geo_paths == ["mybody1", "mybody2", "mybody3"]
@@ -284,11 +283,11 @@ def test_create_inverse(speos: Speos):
 
 def test_create_interactive(speos: Speos):
     """Test creation of Interactive Simulation."""
-    p = script.Project(speos=speos)
+    p = Project(speos=speos)
 
     # Default value
     sim1 = p.create_simulation(name="Interactive.1")
-    sim1 = script.simulation.Interactive(project=p, name="Interactive.1")
+    sim1 = simulation.Interactive(project=p, name="Interactive.1")
     # sim1.set_interactive()  # do not commit to avoid issues about No sensor in simulation
     assert sim1._simulation_template.HasField("interactive_simulation_template")
     assert sim1._simulation_template.interactive_simulation_template.geom_distance_tolerance == 0.01
@@ -347,8 +346,8 @@ def test_create_interactive(speos: Speos):
     # rays_number_per_sources
     sim1.set_rays_number_per_sources(
         values=[
-            script.simulation.Interactive.RaysNumberPerSource(source_path="Source.1", rays_nb=50),
-            script.simulation.Interactive.RaysNumberPerSource(source_path="Source.2", rays_nb=150),
+            simulation.Interactive.RaysNumberPerSource(source_path="Source.1", rays_nb=50),
+            simulation.Interactive.RaysNumberPerSource(source_path="Source.2", rays_nb=150),
         ]
     )
     assert len(sim1._job.interactive_simulation_properties.rays_number_per_sources) == 2
@@ -385,9 +384,9 @@ def test_create_interactive(speos: Speos):
     # geometries
     # sim1.set_geometries(
     #    geometries=[
-    #        script.GeoRef.from_native_link(geopath="mybody1"),
-    #        script.GeoRef.from_native_link(geopath="mybody2"),
-    #        script.GeoRef.from_native_link(geopath="mybody3"),
+    #        GeoRef.from_native_link(geopath="mybody1"),
+    #        GeoRef.from_native_link(geopath="mybody2"),
+    #        GeoRef.from_native_link(geopath="mybody3"),
     #    ]
     # )
     # assert sim1._simulation_instance.geometries.geo_paths == ["mybody1", "mybody2", "mybody3"]
@@ -397,7 +396,7 @@ def test_create_interactive(speos: Speos):
 
 def test_commit(speos: Speos):
     """Test commit of simulation."""
-    p = script.Project(speos=speos)
+    p = Project(speos=speos)
 
     # Prerequisites: a source and a sensor are needed (bug also a rootpart and optical property)
     root_part = p.create_root_part()
@@ -408,23 +407,23 @@ def test_commit(speos: Speos):
 
     opt_prop = p.create_optical_property(name="Material.1")
     opt_prop.set_volume_none().set_surface_mirror()
-    opt_prop.set_geometries(geometries=[script.GeoRef.from_native_link(geopath="Body.1")])
+    opt_prop.set_geometries(geometries=[GeoRef.from_native_link(geopath="Body.1")])
     opt_prop.commit()
 
-    ssr = p.create_sensor(name="Irradiance.1", feature_type=script.sensor.Irradiance)
+    ssr = p.create_sensor(name="Irradiance.1", feature_type=sensor.Irradiance)
     ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     ssr.commit()
 
-    ssr2 = p.create_sensor(name="Irradiance.2", feature_type=script.sensor.Irradiance)
+    ssr2 = p.create_sensor(name="Irradiance.2", feature_type=sensor.Irradiance)
     ssr2.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     ssr2.commit()
 
-    src = p.create_source(name="Luminaire.1", feature_type=script.source.Luminaire)
+    src = p.create_source(name="Luminaire.1", feature_type=source.Luminaire)
     src.set_intensity_file_uri(uri=os.path.join(test_path, "IES_C_DETECTOR.ies"))
     src.commit()
 
     # Create
-    sim1 = script.simulation.Direct(project=p, name="Direct.1")
+    sim1 = simulation.Direct(project=p, name="Direct.1")
     sim1.set_sensor_paths(sensor_paths=[ssr._name]).set_source_paths(source_paths=[src._name])
     assert sim1.simulation_template_link is None
     assert len(p.scene_link.get().simulations) == 0
@@ -451,7 +450,7 @@ def test_commit(speos: Speos):
 
 def test_reset(speos: Speos):
     """Test reset of simulation."""
-    p = script.Project(speos=speos)
+    p = Project(speos=speos)
 
     # Prerequisites: a source and a sensor are needed (bug also a rootpart and optical property)
     root_part = p.create_root_part()
@@ -462,24 +461,24 @@ def test_reset(speos: Speos):
 
     opt_prop = p.create_optical_property(name="Material.1")
     opt_prop.set_volume_none().set_surface_mirror()
-    opt_prop.set_geometries(geometries=[script.GeoRef.from_native_link(geopath="Body.1")])
+    opt_prop.set_geometries(geometries=[GeoRef.from_native_link(geopath="Body.1")])
     opt_prop.commit()
 
-    ssr = p.create_sensor(name="Irradiance.1", feature_type=script.sensor.Irradiance)
+    ssr = p.create_sensor(name="Irradiance.1", feature_type=sensor.Irradiance)
     ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     ssr.commit()
 
-    ssr2 = p.create_sensor(name="Irradiance.2", feature_type=script.sensor.Irradiance)
+    ssr2 = p.create_sensor(name="Irradiance.2", feature_type=sensor.Irradiance)
     ssr2.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     ssr2.commit()
 
-    src = p.create_source(name="Luminaire.1", feature_type=script.source.Luminaire)
+    src = p.create_source(name="Luminaire.1", feature_type=source.Luminaire)
     src.set_intensity_file_uri(uri=os.path.join(test_path, "IES_C_DETECTOR.ies"))
     src.commit()
 
     # Create + commit
 
-    sim1 = script.simulation.Direct(project=p, name="Direct.1")
+    sim1 = simulation.Direct(project=p, name="Direct.1")
     sim1.set_sensor_paths(sensor_paths=[ssr._name]).set_source_paths(
         source_paths=[src._name]
     ).commit()
@@ -505,7 +504,7 @@ def test_reset(speos: Speos):
 
 def test_direct_modify_after_reset(speos: Speos):
     """Test reset of direct simulation, and then modify."""
-    p = script.Project(speos=speos)
+    p = Project(speos=speos)
 
     # Prerequisites: a source and a sensor are needed (bug also a rootpart and optical property)
     root_part = p.create_root_part()
@@ -516,23 +515,23 @@ def test_direct_modify_after_reset(speos: Speos):
 
     opt_prop = p.create_optical_property(name="Material.1")
     opt_prop.set_volume_none().set_surface_mirror()
-    opt_prop.set_geometries(geometries=[script.GeoRef.from_native_link(geopath="Body.1")])
+    opt_prop.set_geometries(geometries=[GeoRef.from_native_link(geopath="Body.1")])
     opt_prop.commit()
 
-    ssr = p.create_sensor(name="Irradiance.1", feature_type=script.sensor.Irradiance)
+    ssr = p.create_sensor(name="Irradiance.1", feature_type=sensor.Irradiance)
     ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     ssr.commit()
 
-    ssr2 = p.create_sensor(name="Irradiance.2", feature_type=script.sensor.Irradiance)
+    ssr2 = p.create_sensor(name="Irradiance.2", feature_type=sensor.Irradiance)
     ssr2.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     ssr2.commit()
 
-    src = p.create_source(name="Luminaire.1", feature_type=script.source.Luminaire)
+    src = p.create_source(name="Luminaire.1", feature_type=source.Luminaire)
     src.set_intensity_file_uri(uri=os.path.join(test_path, "IES_C_DETECTOR.ies"))
     src.commit()
 
     # Create + commit
-    sim1 = p.create_simulation(name="Direct.1", feature_type=script.simulation.Direct)
+    sim1 = p.create_simulation(name="Direct.1", feature_type=simulation.Direct)
     sim1.set_sensor_paths(sensor_paths=[ssr._name]).set_source_paths(
         source_paths=[src._name]
     ).commit()
@@ -561,7 +560,7 @@ def test_direct_modify_after_reset(speos: Speos):
 
 def test_inverse_modify_after_reset(speos: Speos):
     """Test reset of inverse simulation, and then modify."""
-    p = script.Project(speos=speos)
+    p = Project(speos=speos)
 
     # Prerequisites: a source and a sensor are needed (bug also a rootpart and optical property)
     root_part = p.create_root_part()
@@ -572,23 +571,23 @@ def test_inverse_modify_after_reset(speos: Speos):
 
     opt_prop = p.create_optical_property(name="Material.1")
     opt_prop.set_volume_none().set_surface_mirror()
-    opt_prop.set_geometries(geometries=[script.GeoRef.from_native_link(geopath="Body.1")])
+    opt_prop.set_geometries(geometries=[GeoRef.from_native_link(geopath="Body.1")])
     opt_prop.commit()
 
-    ssr = p.create_sensor(name="Irradiance.1", feature_type=script.sensor.Irradiance)
+    ssr = p.create_sensor(name="Irradiance.1", feature_type=sensor.Irradiance)
     ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]).set_type_colorimetric()
     ssr.commit()
 
-    ssr2 = p.create_sensor(name="Irradiance.2", feature_type=script.sensor.Irradiance)
+    ssr2 = p.create_sensor(name="Irradiance.2", feature_type=sensor.Irradiance)
     ssr2.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]).set_type_colorimetric()
     ssr2.commit()
 
-    src = p.create_source(name="Luminaire.1", feature_type=script.source.Luminaire)
+    src = p.create_source(name="Luminaire.1", feature_type=source.Luminaire)
     src.set_intensity_file_uri(uri=os.path.join(test_path, "IES_C_DETECTOR.ies"))
     src.commit()
 
     # Create + commit
-    sim1 = p.create_simulation(name="Inverse.1", feature_type=script.simulation.Inverse)
+    sim1 = p.create_simulation(name="Inverse.1", feature_type=simulation.Inverse)
     sim1.set_sensor_paths(sensor_paths=[ssr._name]).set_source_paths(
         source_paths=[src._name]
     ).commit()
@@ -623,7 +622,7 @@ def test_inverse_modify_after_reset(speos: Speos):
 
 def test_interactive_modify_after_reset(speos: Speos):
     """Test reset of interactive simulation, and then modify."""
-    p = script.Project(speos=speos)
+    p = Project(speos=speos)
 
     # Prerequisites: a source and a sensor are needed (bug also a rootpart and optical property)
     root_part = p.create_root_part()
@@ -634,23 +633,23 @@ def test_interactive_modify_after_reset(speos: Speos):
 
     opt_prop = p.create_optical_property(name="Material.1")
     opt_prop.set_volume_none().set_surface_mirror()
-    opt_prop.set_geometries(geometries=[script.GeoRef.from_native_link(geopath="Body.1")])
+    opt_prop.set_geometries(geometries=[GeoRef.from_native_link(geopath="Body.1")])
     opt_prop.commit()
 
-    ssr = p.create_sensor(name="Irradiance.1", feature_type=script.sensor.Irradiance)
+    ssr = p.create_sensor(name="Irradiance.1", feature_type=sensor.Irradiance)
     ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]).set_type_colorimetric()
     ssr.commit()
 
-    ssr2 = p.create_sensor(name="Irradiance.2", feature_type=script.sensor.Irradiance)
+    ssr2 = p.create_sensor(name="Irradiance.2", feature_type=sensor.Irradiance)
     ssr2.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]).set_type_colorimetric()
     ssr2.commit()
 
-    src = p.create_source(name="Luminaire.1", feature_type=script.source.Luminaire)
+    src = p.create_source(name="Luminaire.1", feature_type=source.Luminaire)
     src.set_intensity_file_uri(uri=os.path.join(test_path, "IES_C_DETECTOR.ies"))
     src.commit()
 
     # Create + commit
-    sim1 = p.create_simulation(name="Interactive.1", feature_type=script.simulation.Interactive)
+    sim1 = p.create_simulation(name="Interactive.1", feature_type=simulation.Interactive)
     sim1.set_sensor_paths(sensor_paths=[ssr._name]).set_source_paths(
         source_paths=[src._name]
     ).commit()
@@ -679,7 +678,7 @@ def test_interactive_modify_after_reset(speos: Speos):
 
 def test_delete(speos: Speos):
     """Test delete of simulation."""
-    p = script.Project(speos=speos)
+    p = Project(speos=speos)
 
     # Prerequisites: a source and a sensor are needed (bug also a rootpart and optical property)
     root_part = p.create_root_part()
@@ -690,19 +689,19 @@ def test_delete(speos: Speos):
 
     opt_prop = p.create_optical_property(name="Material.1")
     opt_prop.set_volume_none().set_surface_mirror()
-    opt_prop.set_geometries(geometries=[script.GeoRef.from_native_link(geopath="Body.1")])
+    opt_prop.set_geometries(geometries=[GeoRef.from_native_link(geopath="Body.1")])
     opt_prop.commit()
 
-    ssr = p.create_sensor(name="Irradiance.1", feature_type=script.sensor.Irradiance)
+    ssr = p.create_sensor(name="Irradiance.1", feature_type=sensor.Irradiance)
     ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     ssr.commit()
 
-    src = p.create_source(name="Luminaire.1", feature_type=script.source.Luminaire)
+    src = p.create_source(name="Luminaire.1", feature_type=source.Luminaire)
     src.set_intensity_file_uri(uri=os.path.join(test_path, "IES_C_DETECTOR.ies"))
     src.commit()
 
     # Create + commit
-    sim1 = script.simulation.Direct(project=p, name="Direct.1")
+    sim1 = simulation.Direct(project=p, name="Direct.1")
     sim1.set_sensor_paths(sensor_paths=[ssr._name]).set_source_paths(
         source_paths=[src._name]
     ).commit()
@@ -728,10 +727,10 @@ def test_delete(speos: Speos):
 
 def test_get_simulation(speos: Speos, capsys):
     """Test get of a simulation."""
-    p = script.Project(speos=speos)
-    Sim1 = p.create_simulation(name="Sim.1", feature_type=script.simulation.Direct)
-    Sim2 = p.create_simulation(name="Sim.2", feature_type=script.simulation.Interactive)
-    Sim3 = p.create_simulation(name="Sim.3", feature_type=script.simulation.Inverse)
+    p = Project(speos=speos)
+    Sim1 = p.create_simulation(name="Sim.1", feature_type=simulation.Direct)
+    Sim2 = p.create_simulation(name="Sim.2", feature_type=simulation.Interactive)
+    Sim3 = p.create_simulation(name="Sim.3", feature_type=simulation.Inverse)
     # test when key exists
     name1 = Sim1.get(key="name")
     assert name1 == "Sim.1"

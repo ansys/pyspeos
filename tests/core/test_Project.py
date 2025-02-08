@@ -21,21 +21,21 @@
 # SOFTWARE.
 
 """
-Test basic using project from script layer.
+Test basic using project.
 """
 
 import os
 
 from conftest import test_path
 
-import ansys.speos.core as script
-from ansys.speos.core.speos import Speos
+from ansys.speos.core import Body, Face, Part, Project, Speos, sensor, simulation, source
+from ansys.speos.core.opt_prop import OptProp
 
 
 def test_find_feature(speos: Speos):
     """Test find a feature in project."""
     # Create an empty project
-    p = script.Project(speos=speos)
+    p = Project(speos=speos)
     assert len(p._features) == 0
 
     # Create a surface source in the project
@@ -45,20 +45,20 @@ def test_find_feature(speos: Speos):
     assert len(p.scene_link.get().sources) == 1
 
     # Create an irradiance sensor in the project
-    sensor1 = p.create_sensor(name="Sensor.1", feature_type=script.sensor.Irradiance)
+    sensor1 = p.create_sensor(name="Sensor.1", feature_type=sensor.Irradiance)
     sensor1.commit()
     assert len(p._features) == 2
     assert len(p.scene_link.get().sensors) == 1
 
     # Create an radiance sensor in the project
     # TODO: enhance the initialize method
-    sensor2 = p.create_sensor(name="Sensor.2", feature_type=script.sensor.Radiance)
+    sensor2 = p.create_sensor(name="Sensor.2", feature_type=sensor.Radiance)
     sensor2.commit()
     assert len(p._features) == 3
     assert len(p.scene_link.get().sensors) == 2
 
     # Create an radiance sensor in the project
-    sensor3 = p.create_sensor(name="Sensor.3", feature_type=script.sensor.Radiance)
+    sensor3 = p.create_sensor(name="Sensor.3", feature_type=sensor.Radiance)
     sensor3.set_layer_type_face()
     sensor3.commit()
     assert len(p._features) == 4
@@ -90,25 +90,25 @@ def test_find_feature(speos: Speos):
     # With type filtering
 
     # Wrong combination name-type
-    features = p.find(name="Sensor.3", feature_type=script.source.Surface)
+    features = p.find(name="Sensor.3", feature_type=source.Surface)
     assert features == []
 
     # Good combination name-type
-    features = p.find(name="Sensor.3", feature_type=script.sensor.Radiance)
+    features = p.find(name="Sensor.3", feature_type=sensor.Radiance)
     assert len(features) == 1
     assert features[0] == sensor3
 
     # Wrong combination name-type specialized
-    features = p.find(name="Sensor.3", feature_type=script.sensor.Irradiance)
+    features = p.find(name="Sensor.3", feature_type=sensor.Irradiance)
     assert features == []
 
     # Good combination name-type specialized
-    features = p.find(name="Sensor.3", feature_type=script.sensor.Radiance)
+    features = p.find(name="Sensor.3", feature_type=sensor.Radiance)
     assert len(features) == 1
     assert features[0] == sensor3
 
     # Good combination name-type specialized + regex
-    features = p.find(name=r".*sor\.3", name_regex=True, feature_type=script.sensor.Radiance)
+    features = p.find(name=r".*sor\.3", name_regex=True, feature_type=sensor.Radiance)
     assert len(features) == 1
     assert features[0] == sensor3
 
@@ -116,7 +116,7 @@ def test_find_feature(speos: Speos):
 def test_find_feature_geom(speos: Speos):
     """Test find a geometry feature in project loaded from speos file."""
     # Create a project from a file
-    p = script.Project(
+    p = Project(
         speos=speos,
         path=os.path.join(
             test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
@@ -124,21 +124,19 @@ def test_find_feature_geom(speos: Speos):
     )
 
     # Find root part
-    feats = p.find(name="", feature_type=script.Part)
+    feats = p.find(name="", feature_type=Part)
     assert len(feats) == 1
 
     # Retrieve body with regex
-    feats = p.find(name="Solid Body in SOURCE2.*", name_regex=True, feature_type=script.Part)
+    feats = p.find(name="Solid Body in SOURCE2.*", name_regex=True, feature_type=Part)
     assert len(feats) == 1
 
     # Retrieve face
-    feats = p.find(
-        name="Solid Body in GUIDE:1379760262/Face in GUIDE:166", feature_type=script.Part
-    )
+    feats = p.find(name="Solid Body in GUIDE:1379760262/Face in GUIDE:166", feature_type=Part)
     assert len(feats) == 1
 
     # Retrieve face with regex (regex at body and at face level)
-    feats = p.find(name="Solid Body in GUIDE:.*/.*166", name_regex=True, feature_type=script.Part)
+    feats = p.find(name="Solid Body in GUIDE:.*/.*166", name_regex=True, feature_type=Part)
     assert len(feats) == 1
 
     # RootPart
@@ -162,7 +160,7 @@ def test_find_feature_geom(speos: Speos):
     # |  |  |- Face.21
     # |  |  |- Face.22
     # |  |  |- Face.23
-    p2 = script.Project(speos=speos)
+    p2 = Project(speos=speos)
     root_part = p2.create_root_part()
     body_01 = root_part.create_body(name="Body.01")
     face_011 = body_01.create_face(name="Face.011")
@@ -186,57 +184,57 @@ def test_find_feature_geom(speos: Speos):
     face_23 = body_2.create_face(name="Face.23")
 
     # Look at first level : 2 Bodies and 2 SubParts
-    found_feats = p2.find(name=".*", name_regex=True, feature_type=script.Part)
+    found_feats = p2.find(name=".*", name_regex=True, feature_type=Part)
     assert len(found_feats) == 4
     assert found_feats[2] == sub_part_1
 
-    found_feats = p2.find(name=".*", name_regex=True, feature_type=script.Body)
+    found_feats = p2.find(name=".*", name_regex=True, feature_type=Body)
     assert len(found_feats) == 2  # 2 Bodies
     assert found_feats[0] == body_01
 
-    found_feats = p2.find(name=".*", name_regex=True, feature_type=script.Part.SubPart)
+    found_feats = p2.find(name=".*", name_regex=True, feature_type=Part.SubPart)
     assert len(found_feats) == 2  # 2 SubParts
     assert found_feats[1] == sub_part_2
 
-    found_feats = p2.find(name=".*", name_regex=True, feature_type=script.Face)
+    found_feats = p2.find(name=".*", name_regex=True, feature_type=Face)
     assert len(found_feats) == 0  # 0 Face
 
     # Look at second level : 5 Faces, 2 Bodies, 1 SubPart
-    found_feats = p2.find(name=".*/.*", name_regex=True, feature_type=script.Part)
+    found_feats = p2.find(name=".*/.*", name_regex=True, feature_type=Part)
     assert len(found_feats) == 8
     assert found_feats[7] == body_2
 
-    found_feats = p2.find(name=".*/.*", name_regex=True, feature_type=script.Face)
+    found_feats = p2.find(name=".*/.*", name_regex=True, feature_type=Face)
     assert len(found_feats) == 5  # 5 Faces
     assert found_feats[3] == face_022
 
-    found_feats = p2.find(name=".*/.*", name_regex=True, feature_type=script.Body)
+    found_feats = p2.find(name=".*/.*", name_regex=True, feature_type=Body)
     assert len(found_feats) == 2  # 2 Bodies
     assert found_feats[0] == body_1
 
-    found_feats = p2.find(name=".*/.*", name_regex=True, feature_type=script.Part.SubPart)
+    found_feats = p2.find(name=".*/.*", name_regex=True, feature_type=Part.SubPart)
     assert len(found_feats) == 1  # 1 SubPart
     assert found_feats[0] == sub_part_11
 
     # Look at third level : 5 Faces, 1 Body
-    found_feats = p2.find(name=".*/.*/.*", name_regex=True, feature_type=script.Part)
+    found_feats = p2.find(name=".*/.*/.*", name_regex=True, feature_type=Part)
     assert len(found_feats) == 6
     assert found_feats[4] == face_22
 
-    found_feats = p2.find(name=".*/.*/.*", name_regex=True, feature_type=script.Face)
+    found_feats = p2.find(name=".*/.*/.*", name_regex=True, feature_type=Face)
     assert len(found_feats) == 5  # 5 Faces
     assert found_feats[2] == face_21
 
-    found_feats = p2.find(name=".*/.*/.*", name_regex=True, feature_type=script.Body)
+    found_feats = p2.find(name=".*/.*/.*", name_regex=True, feature_type=Body)
     assert len(found_feats) == 1  # 1 Body
     assert found_feats[0] == body_11
 
     # Look at fourth level : 2 Faces
-    found_feats = p2.find(name=".*/.*/.*/.*", name_regex=True, feature_type=script.Part)
+    found_feats = p2.find(name=".*/.*/.*/.*", name_regex=True, feature_type=Part)
     assert len(found_feats) == 2
     assert found_feats[0] == face_111
 
-    found_feats = p2.find(name=".*/.*/.*/.*", name_regex=True, feature_type=script.Face)
+    found_feats = p2.find(name=".*/.*/.*/.*", name_regex=True, feature_type=Face)
     assert len(found_feats) == 2
     assert found_feats[1] == face_112
 
@@ -244,7 +242,7 @@ def test_find_feature_geom(speos: Speos):
 def test_find_after_load(speos: Speos):
     """Test find feature in project loaded from speos file."""
     # Create a project from a file
-    p = script.Project(
+    p = Project(
         speos=speos,
         path=os.path.join(
             test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
@@ -252,18 +250,18 @@ def test_find_after_load(speos: Speos):
     )
 
     # Retrieve all surface sources
-    src_feats = p.find(name=".*", name_regex=True, feature_type=script.source.Surface)
+    src_feats = p.find(name=".*", name_regex=True, feature_type=source.Surface)
     assert len(src_feats) == 2
     assert src_feats[0]._name == "Dom Source 2 (0) in SOURCE2"
     assert src_feats[1]._name == "Surface Source (0) in SOURCE1"
 
     # Retrieve all irradiance sensors
-    ssr_feats = p.find(name=".*", name_regex=True, feature_type=script.sensor.Irradiance)
+    ssr_feats = p.find(name=".*", name_regex=True, feature_type=sensor.Irradiance)
     assert len(ssr_feats) == 1
     assert ssr_feats[0]._name == "Dom Irradiance Sensor (0)"
 
     # Retrieve all direct simulations
-    sim_feats = p.find(name=".*", name_regex=True, feature_type=script.simulation.Direct)
+    sim_feats = p.find(name=".*", name_regex=True, feature_type=simulation.Direct)
     assert len(sim_feats) == 1
     assert sim_feats[0]._name == "ASSEMBLY1.DS (0)"
 
@@ -271,7 +269,7 @@ def test_find_after_load(speos: Speos):
 def test_create_root_part_after_load(speos: Speos):
     """Test create_root_part feature in project loaded from speos file."""
     # Create a project from a file
-    p = script.Project(
+    p = Project(
         speos=speos,
         path=os.path.join(
             test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
@@ -279,8 +277,8 @@ def test_create_root_part_after_load(speos: Speos):
     )
 
     # Retrieve existing root part feature
-    # assert p.find(name="", feature_type=script.Part) is p.create_root_part()
-    rp = p.find(name="", feature_type=script.Part)[0]
+    # assert p.find(name="", feature_type=Part) is p.create_root_part()
+    rp = p.find(name="", feature_type=Part)[0]
 
     # Try to create root part (but it is already existing) -> the existing root part is returned
     rp2 = p.create_root_part()
@@ -292,17 +290,17 @@ def test_create_root_part_after_load(speos: Speos):
 def test_delete(speos: Speos):
     """Test delete a project."""
     # Create an empty project
-    p = script.Project(speos=speos)
+    p = Project(speos=speos)
     assert len(p._features) == 0
 
     # Create a surface source in the project
-    source1 = p.create_source(name="Source.1", feature_type=script.source.Surface)
+    source1 = p.create_source(name="Source.1", feature_type=source.Surface)
     assert len(p._features) == 1
     source1.commit()
     assert len(p.scene_link.get().sources) == 1
 
     # Create an irradiance sensor in the project
-    sensor1 = p.create_sensor(name="Sensor.1", feature_type=script.sensor.Irradiance)
+    sensor1 = p.create_sensor(name="Sensor.1", feature_type=sensor.Irradiance)
     sensor1.commit()
     assert len(p._features) == 2
     assert len(p.scene_link.get().sensors) == 1
@@ -315,7 +313,7 @@ def test_delete(speos: Speos):
 def test_from_file(speos: Speos):
     """Test create a project from file."""
     # Create a project from a file
-    p = script.Project(
+    p = Project(
         speos=speos,
         path=os.path.join(
             test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
@@ -330,12 +328,12 @@ def test_from_file(speos: Speos):
 
     feat_sims = p.find(name=p.scene_link.get().simulations[0].name)
     assert len(feat_sims) == 1
-    assert type(feat_sims[0]) is script.simulation.Direct
+    assert type(feat_sims[0]) is simulation.Direct
 
     # Check that feature can be retrieved
     feat_ops = p.find(name=p.scene_link.get().materials[2].name)
     assert len(feat_ops) == 1
-    assert type(feat_ops[0]) is script.OptProp
+    assert type(feat_ops[0]) is OptProp
 
     # And that the feature retrieved has a real impact on the project
     feat_ops[0].set_surface_mirror(reflectance=60).commit()
@@ -359,7 +357,7 @@ def test_from_file(speos: Speos):
     # Retrieve another feature
     feat_ssrs = p.find(name=p.scene_link.get().sensors[0].name)
     assert len(feat_ssrs) == 1
-    assert type(feat_ssrs[0]) is script.sensor.Irradiance
+    assert type(feat_ssrs[0]) is sensor.Irradiance
 
     # And that we can modify it (and that other values are not overridden by default values)
     feat_ssrs[0].set_type_colorimetric().set_wavelengths_range().set_end(value=800)
@@ -381,7 +379,7 @@ def test_from_file(speos: Speos):
 def test_find_geom(speos: Speos):
     """Test find geometry feature in a project."""
     # Create a project from a file
-    p = script.Project(
+    p = Project(
         speos=speos,
         path=os.path.join(
             test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
@@ -393,37 +391,37 @@ def test_find_geom(speos: Speos):
 
     # Check that RootPart feature can be retrieved
     part_data = speos.client.get_item(p.scene_link.get().part_guid).get()
-    feat_rps = p.find(name="", feature_type=script.Part)
+    feat_rps = p.find(name="", feature_type=Part)
     assert len(feat_rps) == 1
-    assert type(feat_rps[0]) is script.Part
+    assert type(feat_rps[0]) is Part
 
     # Check that body can be retrieved
     assert len(part_data.body_guids) == 3
     body1_data = speos.client.get_item(part_data.body_guids[1]).get()
-    feat_bodies = p.find(name=body1_data.name, feature_type=script.Part)
+    feat_bodies = p.find(name=body1_data.name, feature_type=Part)
     assert len(feat_bodies) == 1
-    assert type(feat_bodies[0]) is script.Body
+    assert type(feat_bodies[0]) is Body
 
     # Check that face can be retrieved
     assert len(body1_data.face_guids) > 4
     face2_data = speos.client.get_item(body1_data.face_guids[2]).get()
-    feat_faces = p.find(name=body1_data.name + "/" + face2_data.name, feature_type=script.Part)
+    feat_faces = p.find(name=body1_data.name + "/" + face2_data.name, feature_type=Part)
     assert len(feat_faces) == 1
-    assert type(feat_faces[0]) is script.Face
+    assert type(feat_faces[0]) is Face
 
     # Retrieve several features
 
     # All bodies
-    all_bodies = p.find(name=".*", name_regex=True, feature_type=script.Part)
+    all_bodies = p.find(name=".*", name_regex=True, feature_type=Part)
     assert len(all_bodies) == 3
     assert all_bodies[0]._name == "Solid Body in SOURCE2:2920204960"
     assert all_bodies[1]._name == "Solid Body in SOURCE1:2494956811"
     assert all_bodies[2]._name == "Solid Body in GUIDE:1379760262"
 
     # All faces of all bodies
-    all_faces = p.find(name=".*/.*", name_regex=True, feature_type=script.Part)
+    all_faces = p.find(name=".*/.*", name_regex=True, feature_type=Part)
     assert len(all_faces) == 23
 
     # All faces of specific body
-    all_faces = p.find(name="Solid Body in GUIDE.*/.*", name_regex=True, feature_type=script.Part)
+    all_faces = p.find(name="Solid Body in GUIDE.*/.*", name_regex=True, feature_type=Part)
     assert len(all_faces) == 11
