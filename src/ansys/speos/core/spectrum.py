@@ -28,9 +28,9 @@ from typing import List, Mapping, Optional
 
 from ansys.speos.core.kernel.client import SpeosClient
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_dict
+from ansys.speos.core.kernel.spectrum import Spectrum as KernelSpectrum
 from ansys.speos.core.proto_message_utils import dict_to_str
 
-from ansys.speos.core.kernel.spectrum import Spectrum as KernelSpectrum
 
 class Spectrum:
     """Speos feature : Spectrum.
