@@ -25,7 +25,7 @@
 from typing import List
 
 from ansys.api.speos.vop.v1 import vop_pb2 as messages, vop_pb2_grpc as service
-from ansys.speos.core.crud import CrudItem, CrudStub
+from ansys.speos.core.kernel.crud import CrudItem, CrudStub
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 
 VOPTemplate = messages.VOPTemplate

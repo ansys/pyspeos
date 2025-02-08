@@ -58,7 +58,7 @@ class CrudItem:
 
     Parameters
     ----------
-    db : ansys.speos.core.crud.CrudStub
+    db : ansys.speos.core.kernel.crud.CrudStub
         Database to link to.
     key : str
         Key (also named guid) of the item in the database.

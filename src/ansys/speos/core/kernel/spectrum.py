@@ -25,7 +25,7 @@
 from typing import List
 
 from ansys.api.speos.spectrum.v1 import spectrum_pb2 as messages, spectrum_pb2_grpc as service
-from ansys.speos.core.crud import CrudItem, CrudStub
+from ansys.speos.core.kernel.crud import CrudItem, CrudStub
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 
 Spectrum = messages.Spectrum

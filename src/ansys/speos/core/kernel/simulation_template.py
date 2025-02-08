@@ -28,7 +28,7 @@ from ansys.api.speos.simulation.v1 import (
     simulation_template_pb2 as messages,
     simulation_template_pb2_grpc as service,
 )
-from ansys.speos.core.crud import CrudItem, CrudStub
+from ansys.speos.core.kernel.crud import CrudItem, CrudStub
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 
 SimulationTemplate = messages.SimulationTemplate

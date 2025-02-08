@@ -56,4 +56,4 @@ import ansys.speos.core.sensor as sensor
 import ansys.speos.core.simulation as simulation
 import ansys.speos.core.source as source
 from ansys.speos.core.spectrum import Spectrum
-from ansys.speos.core.speos import Speos, SpeosClient
+from ansys.speos.core.speos import Speos
