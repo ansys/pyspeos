@@ -32,9 +32,9 @@ import grpc
 import pytest
 
 from ansys.api.speos.common.v1 import data_pb2
-from ansys.speos.core.intensity_template import IntensityTemplate
-from ansys.speos.core.source_template import SourceTemplate
-from ansys.speos.core.spectrum import Spectrum
+from ansys.speos.core.kernel.intensity_template import IntensityTemplate
+from ansys.speos.core.kernel.source_template import SourceTemplate
+from ansys.speos.core.kernel.spectrum import Spectrum
 from ansys.speos.core.speos import Speos
 
 

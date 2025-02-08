@@ -29,7 +29,7 @@ import os
 from conftest import test_path
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2, common_pb2, irradiance_sensor_pb2
-from ansys.speos.core.sensor_template import SensorTemplate
+from ansys.speos.core.kernel.sensor_template import SensorTemplate
 from ansys.speos.core.speos import Speos
 
 

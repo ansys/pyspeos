@@ -27,7 +27,7 @@ from typing import Iterator, List
 from ansys.api.speos.results.v1.ray_path_pb2 import RayPath
 from ansys.api.speos.scene.v2 import scene_pb2 as messages, scene_pb2_grpc as service
 from ansys.speos.core.crud import CrudItem, CrudStub
-from ansys.speos.core.proto_message_utils import protobuf_message_to_str
+from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 
 Scene = messages.Scene
 """Scene protobuf class : ansys.api.speos.scene.v2.scene_pb2.Scene"""
@@ -45,15 +45,15 @@ class SceneLink(CrudItem):
 
     Parameters
     ----------
-    db : ansys.speos.core.scene.SceneStub
+    db : ansys.speos.core.kernel.scene.SceneStub
         Database to link to.
     key : str
         Key of the scene in the database.
 
     Examples
     --------
-    >>> from ansys.speos.core.speos import Speos
-    >>> from ansys.speos.core.scene import Scene
+    >>> from ansys.speos.core.kernel.speos import Speos
+    >>> from ansys.speos.core.kernel.scene import Scene
     >>> speos = Speos(host="localhost", port=50098)
     >>> sce_db = speos.client.scenes()
     >>> sce_link = sce_db.create(message=Scene(name="Empty_Scene"))
@@ -144,7 +144,7 @@ class SceneStub(CrudStub):
     The best way to get a SceneStub is to retrieve it from SpeosClient via scenes() method.
     Like in the following example:
 
-    >>> from ansys.speos.core.speos import Speos
+    >>> from ansys.speos.core.kernel.speos import Speos
     >>> speos = Speos(host="localhost", port=50098)
     >>> sce_db = speos.client.scenes()
 
@@ -164,7 +164,7 @@ class SceneStub(CrudStub):
 
         Returns
         -------
-        ansys.speos.core.scene.SceneLink
+        ansys.speos.core.kernel.scene.SceneLink
             Link object created.
         """
         resp = CrudStub.create(self, messages.Create_Request(scene=message))
@@ -175,7 +175,7 @@ class SceneStub(CrudStub):
 
         Parameters
         ----------
-        ref : ansys.speos.core.scene.SceneLink
+        ref : ansys.speos.core.kernel.scene.SceneLink
             Link object to read.
 
         Returns
@@ -193,7 +193,7 @@ class SceneStub(CrudStub):
 
         Parameters
         ----------
-        ref : ansys.speos.core.scene.SceneLink
+        ref : ansys.speos.core.kernel.scene.SceneLink
             Link object to update.
         data : scene.Scene
             New datamodel for the entry.
@@ -207,7 +207,7 @@ class SceneStub(CrudStub):
 
         Parameters
         ----------
-        ref : ansys.speos.core.scene.SceneLink
+        ref : ansys.speos.core.kernel.scene.SceneLink
             Link object to delete.
         """
         if not ref.stub == self:
@@ -219,7 +219,7 @@ class SceneStub(CrudStub):
 
         Returns
         -------
-        List[ansys.speos.core.scene.SceneLink]
+        List[ansys.speos.core.kernel.scene.SceneLink]
             Link objects.
         """
         guids = CrudStub.list(self, messages.List_Request()).guids

@@ -24,35 +24,35 @@
 
 from typing import List
 
-from ansys.api.speos.vop.v1 import vop_pb2 as messages, vop_pb2_grpc as service
+from ansys.api.speos.spectrum.v1 import spectrum_pb2 as messages, spectrum_pb2_grpc as service
 from ansys.speos.core.crud import CrudItem, CrudStub
-from ansys.speos.core.proto_message_utils import protobuf_message_to_str
+from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 
-VOPTemplate = messages.VOPTemplate
-"""VOPTemplate protobuf class : ansys.api.speos.vop.v1.vop_pb2.VOPTemplate"""
-VOPTemplate.__str__ = lambda self: protobuf_message_to_str(self)
+Spectrum = messages.Spectrum
+"""Spectrum protobuf class : ansys.api.speos.spectrum.v1.spectrum_pb2.Spectrum"""
+Spectrum.__str__ = lambda self: protobuf_message_to_str(self)
 
 
-class VOPTemplateLink(CrudItem):
+class SpectrumLink(CrudItem):
     """
-    Link object for a Volume Optical Property (VOP) template in database.
+    Link object for a spectrum in database.
 
     Parameters
     ----------
-    db : ansys.speos.core.vop_template.VOPTemplateStub
+    db : ansys.speos.core.kernel.spectrum.SpectrumStub
         Database to link to.
     key : str
-        Key of the vop template in the database.
+        Key of the spectrum in the database.
 
     Examples
     --------
-    >>> from ansys.speos.core.speos import Speos
-    >>> from ansys.speos.core.vop_template import VOPTemplate
+    >>> from ansys.speos.core.kernel.speos import Speos
+    >>> from ansys.speos.core.kernel.spectrum import Spectrum
     >>> speos = Speos(host="localhost", port=50098)
-    >>> vop_t_db = speos.client.vop_templates()
-    >>> vop_t_message = VOPTemplate(name="Opaque")
-    >>> vop_t_message.opaque.SetInParent()
-    >>> vop_t_link = vop_t_db.create(message=vop_t_message)
+    >>> spe_db = speos.client.spectrums()
+    >>> spe_message = Spectrum(name="Monochromatic_600")
+    >>> spe_message.monochromatic.wavelength = 600
+    >>> spe_link = spe_db.create(message=spe_message)
 
     """
 
@@ -60,26 +60,26 @@ class VOPTemplateLink(CrudItem):
         super().__init__(db, key)
 
     def __str__(self) -> str:
-        """Return the string representation of the vop template."""
+        """Return the string representation of the spectrum."""
         return str(self.get())
 
-    def get(self) -> VOPTemplate:
+    def get(self) -> Spectrum:
         """Get the datamodel from database.
 
         Returns
         -------
-        vop_template.VOPTemplate
-            VOPTemplate datamodel.
+        spectrum.Spectrum
+            Spectrum datamodel.
         """
         return self._stub.read(self)
 
-    def set(self, data: VOPTemplate) -> None:
+    def set(self, data: Spectrum) -> None:
         """Change datamodel in database.
 
         Parameters
         ----------
-        data : vop_template.VOPTemplate
-            New VOPTemplate datamodel.
+        data : spectrum.Spectrum
+            New spectrum datamodel.
         """
         self._stub.update(self, data)
 
@@ -88,9 +88,9 @@ class VOPTemplateLink(CrudItem):
         self._stub.delete(self)
 
 
-class VOPTemplateStub(CrudStub):
+class SpectrumStub(CrudStub):
     """
-    Database interactions for Volume Optical Properties templates.
+    Database interactions for spectrums.
 
     Parameters
     ----------
@@ -99,85 +99,85 @@ class VOPTemplateStub(CrudStub):
 
     Examples
     --------
-    The best way to get a VOPTemplateStub is to retrieve it from SpeosClient via vop_templates() method.
+    The best way to get a SpectrumStub is to retrieve it from SpeosClient via spectrums() method.
     Like in the following example:
 
-    >>> from ansys.speos.core.speos import Speos
+    >>> from ansys.speos.core.kernel.speos import Speos
     >>> speos = Speos(host="localhost", port=50098)
-    >>> vop_t_db = speos.client.vop_templates()
+    >>> spe_db = speos.client.spectrums()
 
     """
 
     def __init__(self, channel):
-        super().__init__(stub=service.VOPTemplatesManagerStub(channel=channel))
+        super().__init__(stub=service.SpectrumsManagerStub(channel=channel))
 
-    def create(self, message: VOPTemplate) -> VOPTemplateLink:
+    def create(self, message: Spectrum) -> SpectrumLink:
         """Create a new entry.
 
         Parameters
         ----------
-        message : vop_template.VOPTemplate
+        message : spectrum.Spectrum
             Datamodel for the new entry.
 
         Returns
         -------
-        ansys.speos.core.vop_template.VOPTemplateLink
+        ansys.speos.core.kernel.spectrum.SpectrumLink
             Link object created.
         """
-        resp = CrudStub.create(self, messages.Create_Request(vop_template=message))
-        return VOPTemplateLink(self, resp.guid)
+        resp = CrudStub.create(self, messages.Create_Request(spectrum=message))
+        return SpectrumLink(self, resp.guid)
 
-    def read(self, ref: VOPTemplateLink) -> VOPTemplate:
+    def read(self, ref: SpectrumLink) -> Spectrum:
         """Get an existing entry.
 
         Parameters
         ----------
-        ref : ansys.speos.core.vop_template.VOPTemplateLink
+        ref : ansys.speos.core.kernel.spectrum.SpectrumLink
             Link object to read.
 
         Returns
         -------
-        vop_template.VOPTemplate
+        spectrum.Spectrum
             Datamodel of the entry.
         """
         if not ref.stub == self:
-            raise ValueError("VOPTemplateLink is not on current database")
+            raise ValueError("SpectrumLink is not on current database")
         resp = CrudStub.read(self, messages.Read_Request(guid=ref.key))
-        return resp.vop_template
+        return resp.spectrum
 
-    def update(self, ref: VOPTemplateLink, data: VOPTemplate):
+    def update(self, ref: SpectrumLink, data: Spectrum):
         """Change an existing entry.
 
         Parameters
         ----------
-        ref : ansys.speos.core.vop_template.VOPTemplateLink
+        ref : ansys.speos.core.kernel.spectrum.SpectrumLink
             Link object to update.
-        data : vop_template.VOPTemplate
+        data : spectrum.Spectrum
             New datamodel for the entry.
         """
         if not ref.stub == self:
-            raise ValueError("VOPTemplateLink is not on current database")
-        CrudStub.update(self, messages.Update_Request(guid=ref.key, vop_template=data))
+            raise ValueError("SpectrumLink is not on current database")
+        CrudStub.update(self, messages.Update_Request(guid=ref.key, spectrum=data))
 
-    def delete(self, ref: VOPTemplateLink) -> None:
+    def delete(self, ref: SpectrumLink) -> None:
         """Remove an existing entry.
 
         Parameters
         ----------
-        ref : ansys.speos.core.vop_template.VOPTemplateLink
+        ref : ansys.speos.core.kernel.spectrum.SpectrumLink
             Link object to delete.
         """
         if not ref.stub == self:
-            raise ValueError("VOPTemplateLink is not on current database")
+            raise ValueError("SpectrumLink is not on current database")
         CrudStub.delete(self, messages.Delete_Request(guid=ref.key))
 
-    def list(self) -> List[VOPTemplateLink]:
+    def list(self) -> List[SpectrumLink]:
         """List existing entries.
 
         Returns
         -------
-        List[ansys.speos.core.vop_template.VOPTemplateLink]
+        List[ansys.speos.core.kernel.spectrum.SpectrumLink]
             Link objects.
         """
         guids = CrudStub.list(self, messages.List_Request()).guids
-        return list(map(lambda x: VOPTemplateLink(self, x), guids))
+        return list(map(lambda x: SpectrumLink(self, x), guids))

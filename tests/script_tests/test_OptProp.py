@@ -29,7 +29,7 @@ import os
 from conftest import test_path
 
 from ansys.speos.core.speos import Speos
-import ansys.speos.script as script
+import ansys.speos.core as script
 
 
 def test_create_optical_property(speos: Speos):

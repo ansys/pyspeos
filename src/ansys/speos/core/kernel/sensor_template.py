@@ -26,7 +26,7 @@ from typing import List
 
 from ansys.api.speos.sensor.v1 import sensor_pb2 as messages, sensor_pb2_grpc as service
 from ansys.speos.core.crud import CrudItem, CrudStub
-from ansys.speos.core.proto_message_utils import protobuf_message_to_str
+from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 
 SensorTemplate = messages.SensorTemplate
 """SensorTemplate protobuf class : ansys.api.speos.sensor.v1.sensor_pb2.SensorTemplate"""
@@ -39,15 +39,15 @@ class SensorTemplateLink(CrudItem):
 
     Parameters
     ----------
-    db : ansys.speos.core.sensor_template.SensorTemplateStub
+    db : ansys.speos.core.kernel.sensor_template.SensorTemplateStub
         Database to link to.
     key : str
         Key of the sensor template in the database.
 
     Examples
     --------
-    >>> from ansys.speos.core.speos import Speos
-    >>> from ansys.speos.core.sensor_template import SensorTemplate
+    >>> from ansys.speos.core.kernel.speos import Speos
+    >>> from ansys.speos.core.kernel.sensor_template import SensorTemplate
     >>> speos = Speos(host="localhost", port=50098)
     >>> ssr_t_db = speos.client.sensor_templates()
     >>> ssr_t_message = SensorTemplate(name="Irradiance")
@@ -109,7 +109,7 @@ class SensorTemplateStub(CrudStub):
     The best way to get a SensorTemplateStub is to retrieve it from SpeosClient via sensor_templates() method.
     Like in the following example:
 
-    >>> from ansys.speos.core.speos import Speos
+    >>> from ansys.speos.core.kernel.speos import Speos
     >>> speos = Speos(host="localhost", port=50098)
     >>> ssr_t_db = speos.client.sensor_templates()
 
@@ -128,7 +128,7 @@ class SensorTemplateStub(CrudStub):
 
         Returns
         -------
-        ansys.speos.core.sensor_template.SensorTemplateLink
+        ansys.speos.core.kernel.sensor_template.SensorTemplateLink
             Link object created.
         """
         resp = CrudStub.create(self, messages.Create_Request(sensor_template=message))
@@ -139,7 +139,7 @@ class SensorTemplateStub(CrudStub):
 
         Parameters
         ----------
-        ref : ansys.speos.core.sensor_template.SensorTemplateLink
+        ref : ansys.speos.core.kernel.sensor_template.SensorTemplateLink
             Link object to read.
 
         Returns
@@ -157,7 +157,7 @@ class SensorTemplateStub(CrudStub):
 
         Parameters
         ----------
-        ref : ansys.speos.core.sensor_template.SensorTemplateLink
+        ref : ansys.speos.core.kernel.sensor_template.SensorTemplateLink
             Link object to update.
 
         data : sensor_template.SensorTemplate
@@ -172,7 +172,7 @@ class SensorTemplateStub(CrudStub):
 
         Parameters
         ----------
-        ref : ansys.speos.core.sensor_template.SensorTemplateLink
+        ref : ansys.speos.core.kernel.sensor_template.SensorTemplateLink
             Link object to delete.
         """
         if not ref.stub == self:
@@ -184,7 +184,7 @@ class SensorTemplateStub(CrudStub):
 
         Returns
         -------
-        List[ansys.speos.core.sensor_template.SensorTemplateLink]
+        List[ansys.speos.core.kernel.sensor_template.SensorTemplateLink]
             Link objects.
         """
         guids = CrudStub.list(self, messages.List_Request()).guids

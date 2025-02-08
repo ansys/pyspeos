@@ -147,7 +147,7 @@ force-sort-within-sections = true
 known-first-party = ["ansys.speos.core"]
 
 [tool.coverage.run]
-source = ["ansys.speos.core", "ansys.speos.script", "ansys.speos.workflow"]
+source = ["ansys.speos.core"]
 
 [tool.coverage.report]
 show_missing = true

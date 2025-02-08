@@ -27,8 +27,8 @@ from __future__ import annotations
 from typing import List, Mapping, Optional
 
 import ansys.speos.core as core
-from ansys.speos.script.geo_ref import GeoRef
-from ansys.speos.script.proto_message_utils import dict_to_str
+from ansys.speos.core.geo_ref import GeoRef
+from ansys.speos.core.proto_message_utils import dict_to_str
 
 
 class Intensity:
@@ -55,7 +55,7 @@ class Intensity:
 
     Attributes
     ----------
-    intensity_template_link : ansys.speos.core.intensity_template.IntensityTemplateLink
+    intensity_template_link : ansys.speos.core.kernel.intensity_template.IntensityTemplateLink
         Link object for the intensity template in database.
     """
 
@@ -96,7 +96,7 @@ class Intensity:
 
             Returns
             -------
-            ansys.speos.script.intensity.Intensity.Library
+            ansys.speos.core.intensity.Intensity.Library
                 Intensity feature of type library.
             """
             self._library.intensity_file_uri = uri
@@ -115,7 +115,7 @@ class Intensity:
 
             Returns
             -------
-            ansys.speos.script.intensity.Intensity.Library
+            ansys.speos.core.intensity.Intensity.Library
                 Library intensity.
             """
             if not axis_system:
@@ -128,7 +128,7 @@ class Intensity:
 
             Returns
             -------
-            ansys.speos.script.intensity.Intensity.Library
+            ansys.speos.core.intensity.Intensity.Library
                 Library intensity.
             """
             self._library_props.normal_to_surface.SetInParent()
@@ -139,7 +139,7 @@ class Intensity:
 
             Returns
             -------
-            ansys.speos.script.intensity.Intensity.Library
+            ansys.speos.core.intensity.Intensity.Library
                 Library intensity.
             """
             self._library_props.normal_to_uv_map.SetInParent()
@@ -152,13 +152,13 @@ class Intensity:
 
             Parameters
             ----------
-            exit_geometries : Optional[List[ansys.speos.script.geo_ref.GeoRef]]
+            exit_geometries : Optional[List[ansys.speos.core.geo_ref.GeoRef]]
                 Exit geometries list.
                 By default, ``[]``.
 
             Returns
             -------
-            ansys.speos.script.intensity.Intensity.Library
+            ansys.speos.core.intensity.Intensity.Library
                 Library intensity.
             """
             if not exit_geometries:
@@ -208,7 +208,7 @@ class Intensity:
 
             Returns
             -------
-            ansys.speos.script.intensity.Intensity.Gaussian
+            ansys.speos.core.intensity.Intensity.Gaussian
                 Gaussian intensity.
             """
             self._gaussian.FWHM_angle_x = value
@@ -225,7 +225,7 @@ class Intensity:
 
             Returns
             -------
-            ansys.speos.script.intensity.Intensity.Gaussian
+            ansys.speos.core.intensity.Intensity.Gaussian
                 Gaussian intensity.
             """
             self._gaussian.FWHM_angle_y = value
@@ -242,7 +242,7 @@ class Intensity:
 
             Returns
             -------
-            ansys.speos.script.intensity.Intensity.Gaussian
+            ansys.speos.core.intensity.Intensity.Gaussian
                 Gaussian intensity.
             """
             self._gaussian.total_angle = value
@@ -259,7 +259,7 @@ class Intensity:
 
             Returns
             -------
-            ansys.speos.script.intensity.Intensity.Gaussian
+            ansys.speos.core.intensity.Intensity.Gaussian
                 Gaussian intensity.
             """
             self._gaussian_props.Clear()
@@ -313,7 +313,7 @@ class Intensity:
 
         Returns
         -------
-        ansys.speos.script.intensity.Intensity.Library
+        ansys.speos.core.intensity.Intensity.Library
             Library intensity.
         """
         if self._type is None and self._intensity_template.HasField("library"):
@@ -352,7 +352,7 @@ class Intensity:
 
         Returns
         -------
-        ansys.speos.script.intensity.Intensity
+        ansys.speos.core.intensity.Intensity
             Intensity feature.
         """
         self._type = None
@@ -366,7 +366,7 @@ class Intensity:
 
         Returns
         -------
-        ansys.speos.script.intensity.Intensity.Gaussian
+        ansys.speos.core.intensity.Intensity.Gaussian
             Gaussian intensity.
         """
         if self._type is None and self._intensity_template.HasField("gaussian"):
@@ -397,7 +397,7 @@ class Intensity:
 
         Returns
         -------
-        Example: None for lambertian or ansys.speos.script.intensity.Intensity.Library
+        Example: None for lambertian or ansys.speos.core.intensity.Intensity.Library
 
         """
         return type(self._type)
@@ -429,7 +429,7 @@ class Intensity:
 
         Returns
         -------
-        ansys.speos.script.intensity.Intensity
+        ansys.speos.core.intensity.Intensity
             Intensity feature.
         """
         if self.intensity_template_link is None:
@@ -448,7 +448,7 @@ class Intensity:
 
         Returns
         -------
-        ansys.speos.script.intensity.Intensity
+        ansys.speos.core.intensity.Intensity
             Intensity feature.
         """
         if self.intensity_template_link is not None:
@@ -461,7 +461,7 @@ class Intensity:
 
         Returns
         -------
-        ansys.speos.script.intensity.Intensity
+        ansys.speos.core.intensity.Intensity
             Intensity feature.
         """
         if self.intensity_template_link is not None:

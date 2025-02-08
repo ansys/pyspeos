@@ -20,217 +20,192 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
+"""Provides a way to interact with feature: Face."""
 
-from typing import Iterator, List
+from __future__ import annotations
 
-from ansys.api.speos.part.v1 import face_pb2 as messages, face_pb2_grpc as service
-from ansys.speos.core.crud import CrudItem, CrudStub
-from ansys.speos.core.proto_message_utils import protobuf_message_to_str
+from typing import List, Mapping, Optional
 
-Face = messages.Face
-"""Face protobuf class : ansys.api.speos.part.v1.face_pb2.Face"""
-Face.__str__ = lambda self: protobuf_message_to_str(self)
+import ansys.speos.core as core
+from ansys.speos.core import proto_message_utils
+import ansys.speos.core.body as body
 
 
-class FaceLink(CrudItem):
-    """Link object for job in database.
+class Face:
+    """Feature : Face.
 
     Parameters
     ----------
-    db : ansys.speos.core.face.FaceStub
-        Database to link to.
-    key : str
-        Key of the face in the database.
+    speos_client : ansys.speos.core.client.SpeosClient
+        The Speos instance client.
+    name : str
+        Name of the feature.
+    description : str
+        Description of the feature.
+        By default, ``""``.
+    metadata : Optional[Mapping[str, str]]
+        Metadata of the feature.
+        By default, ``{}``.
+    parent_body : ansys.speos.core.body.Body, optional
+        Feature containing this face.
+        By default, ``None``.
+
+    Attributes
+    ----------
+    face_link : ansys.speos.core.kernel.face.FaceLink
+        Link object for the face in database.
     """
 
-    def __init__(self, db, key: str):
-        super().__init__(db, key)
+    def __init__(
+        self,
+        speos_client: core.SpeosClient,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        parent_body: Optional[body.Body] = None,
+    ) -> None:
+        self._speos_client = speos_client
+        self._parent_body = parent_body
+        self._name = name
+        self.face_link = None
+        """Link object for the face in database."""
+        if metadata is None:
+            metadata = {}
+
+        # Create local Face
+        self._face = core.Face(name=name, description=description, metadata=metadata)
+
+    def set_vertices(self, values: List[float]) -> Face:
+        """Set the face vertices.
+
+        Parameters
+        ----------
+        values : List[float]
+            Coordinates of all points [p1x p1y p1z p2x p2y p2z ...].
+
+        Returns
+        -------
+        ansys.speos.core.face.Face
+            Face feature.
+        """
+        self._face.vertices[:] = values
+        return self
+
+    def set_facets(self, values: List[int]) -> Face:
+        """Set the facets.
+
+        Parameters
+        ----------
+        values : List[int]
+            Indexes of points for all triangles (t1_1 t1_2 t1_3 t2_1 t2_2 t2_3 ...)
+
+        Returns
+        -------
+        ansys.speos.core.face.Face
+            Face feature.
+        """
+        self._face.facets[:] = values
+        return self
+
+    def set_normals(self, values: List[float]) -> Face:
+        """Set the face normals.
+
+        Parameters
+        ----------
+        values : List[float]
+            Normal vectors for all points [n1x n1y n1z n2x n2y n2z ...]
+
+        Returns
+        -------
+        ansys.speos.core.face.Face
+            Face feature.
+        """
+        self._face.normals[:] = values
+        return self
+
+    def _to_dict(self) -> dict:
+        out_dict = ""
+
+        if self.face_link is None:
+            out_dict = proto_message_utils._replace_guids(
+                speos_client=self._speos_client, message=self._face
+            )
+        else:
+            out_dict = proto_message_utils._replace_guids(
+                speos_client=self._speos_client, message=self.face_link.get()
+            )
+
+        return out_dict
 
     def __str__(self) -> str:
         """Return the string representation of the face."""
-        return str(self.get())
+        out_str = ""
 
-    def get(self) -> Face:
-        """Get the datamodel from database.
+        if self.face_link is None:
+            out_str += "local: "
 
-        Returns
-        -------
-        face.Face
-            Face datamodel.
-        """
-        return self._stub.read(self)
+        out_str += proto_message_utils.dict_to_str(dict=self._to_dict())
+        return out_str
 
-    def set(self, data: Face) -> None:
-        """Change datamodel in database.
-
-        Parameters
-        ----------
-        data : face.Face
-            New Face datamodel.
-        """
-        self._stub.update(self, data)
-
-    def delete(self) -> None:
-        """Remove datamodel from database."""
-        self._stub.delete(self)
-
-
-class FaceStub(CrudStub):
-    """
-    Database interactions for face.
-
-    Parameters
-    ----------
-    channel : grpc.Channel
-        Channel to use for the stub.
-
-    Examples
-    --------
-    The best way to get a FaceStub is to retrieve it from SpeosClient via faces() method.
-    Like in the following example:
-
-    >>> from ansys.speos.core.speos import Speos
-    >>> speos = Speos(host="localhost", port=50098)
-    >>> face_db = speos.client.faces()
-
-    """
-
-    def __init__(self, channel):
-        super().__init__(stub=service.FacesManagerStub(channel=channel))
-        self._actions_stub = service.FaceActionsStub(channel=channel)
-
-    def create(self, message: Face) -> FaceLink:
-        """Create a new entry.
-
-        Parameters
-        ----------
-        message : face.Face
-            Datamodel for the new entry.
+    def commit(self) -> Face:
+        """Save feature: send the local data to the speos server database.
 
         Returns
         -------
-        ansys.speos.core.face.FaceLink
-            Link object created.
+        ansys.speos.core.face.Face
+            Face feature.
         """
-        resp = CrudStub.create(self, messages.Create_Request(face=Face(name="tmp")))
+        # Save or Update the face (depending on if it was already saved before)
+        if self.face_link is None:
+            self.face_link = self._speos_client.faces().create(message=self._face)
+        elif self.face_link.get() != self._face:
+            self.face_link.set(data=self._face)  # Only Update if data has changed
 
-        chunk_iterator = FaceStub._face_to_chunks(
-            guid=resp.guid, message=message, nb_items=128 * 1024
-        )
-        self._actions_stub.Upload(chunk_iterator)
+        # Update the parent body
+        if self._parent_body is not None:
+            if self.face_link.key not in self._parent_body._body.face_guids:
+                self._parent_body._body.face_guids.append(self.face_link.key)
+                if self._parent_body.body_link is not None:
+                    self._parent_body.body_link.set(data=self._parent_body._body)
 
-        return FaceLink(self, resp.guid)
+        return self
 
-    def read(self, ref: FaceLink) -> Face:
-        """Get an existing entry.
-
-        Parameters
-        ----------
-        ref : ansys.speos.core.face.FaceLink
-            Link object to read.
+    def reset(self) -> Face:
+        """Reset feature: override local data by the one from the speos server database.
 
         Returns
         -------
-        face.Face
-            Datamodel of the entry.
+        ansys.speos.core.face.Face
+            Face feature.
         """
-        if not ref.stub == self:
-            raise ValueError("FaceLink is not on current database")
-        chunks = self._actions_stub.Download(request=messages.Download_Request(guid=ref.key))
-        return FaceStub._chunks_to_face(chunks)
+        # Reset face
+        if self.face_link is not None:
+            self._face = self.face_link.get()
 
-    def update(self, ref: FaceLink, data: Face) -> None:
-        """Change an existing entry.
+        return self
 
-        Parameters
-        ----------
-        ref : ansys.speos.core.face.FaceLink
-            Link object to update.
-
-        data : face.Face
-            New datamodel for the entry.
-        """
-        if not ref.stub == self:
-            raise ValueError("FaceLink is not on current database")
-
-        CrudStub.update(self, messages.Update_Request(guid=ref.key, face=Face(name="tmp")))
-        chunk_iterator = FaceStub._face_to_chunks(guid=ref.key, message=data, nb_items=128 * 1024)
-        self._actions_stub.Upload(chunk_iterator)
-
-    def delete(self, ref: FaceLink) -> None:
-        """Remove an existing entry.
-
-        Parameters
-        ----------
-        ref : ansys.speos.core.face.FaceLink
-            Link object to delete.
-        """
-        if not ref.stub == self:
-            raise ValueError("FaceLink is not on current database")
-        CrudStub.delete(self, messages.Delete_Request(guid=ref.key))
-
-    def list(self) -> List[FaceLink]:
-        """List existing entries.
+    def delete(self) -> Face:
+        """Delete feature: delete data from the speos server database.
+        The local data are still available
 
         Returns
         -------
-        List[ansys.speos.core.face.FaceLink]
-            Link objects.
+        ansys.speos.core.face.Face
+            Face feature.
         """
-        guids = CrudStub.list(self, messages.List_Request()).guids
-        return list(map(lambda x: FaceLink(self, x), guids))
+        if self.face_link is not None:
+            # Update the parent body
+            if self._parent_body is not None:
+                if self.face_link.key in self._parent_body._body.face_guids:
+                    self._parent_body._body.face_guids.remove(self.face_link.key)
+                    if self._parent_body.body_link is not None:
+                        self._parent_body.body_link.set(data=self._parent_body._body)
 
-    @staticmethod
-    def _face_to_chunks(guid: str, message: Face, nb_items: int) -> Iterator[messages.Chunk]:
-        for j in range(4):
-            if j == 0:
-                chunk_face_header = messages.Chunk(
-                    face_header=messages.Chunk.FaceHeader(
-                        guid=guid,
-                        name=message.name,
-                        description=message.description,
-                        metadata=message.metadata,
-                        sizes=[
-                            len(message.vertices),
-                            len(message.facets),
-                            len(message.texture_coordinates_channels),
-                        ],
-                    )
-                )
-                yield chunk_face_header
-            elif j == 1:
-                for i in range(0, len(message.vertices), nb_items):
-                    chunk_vertices = messages.Chunk(
-                        vertices=messages.Chunk.Vertices(data=message.vertices[i : i + nb_items])
-                    )
-                    yield chunk_vertices
-            elif j == 2:
-                for i in range(0, len(message.facets), nb_items):
-                    chunk_facets = messages.Chunk(
-                        facets=messages.Chunk.Facets(data=message.facets[i : i + nb_items])
-                    )
-                    yield chunk_facets
-            elif j == 3:
-                for i in range(0, len(message.normals), nb_items):
-                    chunk_normals = messages.Chunk(
-                        normals=messages.Chunk.Normals(data=message.normals[i : i + nb_items])
-                    )
-                    yield chunk_normals
+            # Delete the face
+            self.face_link.delete()
+            self.face_link = None
 
-    @staticmethod
-    def _chunks_to_face(chunks: messages.Chunk) -> Face:
-        out_face = Face()
-        for chunk in chunks:
-            if chunk.HasField("face_header"):
-                out_face.name = chunk.face_header.name
-                out_face.description = chunk.face_header.description
-                out_face.metadata.update(chunk.face_header.metadata)
-            if chunk.HasField("vertices"):
-                out_face.vertices.extend(chunk.vertices.data)
-            if chunk.HasField("facets"):
-                out_face.facets.extend(chunk.facets.data)
-            if chunk.HasField("normals"):
-                out_face.normals.extend(chunk.normals.data)
+            if self in self._parent_body._geom_features:
+                self._parent_body._geom_features.remove(self)
 
-        return out_face
+        return self

@@ -28,7 +28,7 @@ import os
 
 from conftest import test_path
 
-from ansys.speos.core.spectrum import Spectrum
+from ansys.speos.core.kernel.spectrum import Spectrum
 from ansys.speos.core.speos import Speos
 
 

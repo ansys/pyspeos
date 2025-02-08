@@ -35,7 +35,7 @@ import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 from numpy import ndarray
 
-from ansys.speos.script.simulation import Direct, Interactive, Inverse
+from ansys.speos.core.simulation import Direct, Interactive, Inverse
 
 
 def _find_correct_result(
@@ -90,7 +90,7 @@ if os.name == "nt":
 
         Parameters
         ----------
-        simulation_feature : ansys.speos.script.simulation.Simulation
+        simulation_feature : ansys.speos.core.simulation.Simulation
             The simulation feature.
         result_name : str
             The result name to open as an image.
@@ -118,7 +118,7 @@ if os.name == "nt":
 
         Parameters
         ----------
-        simulation_feature : ansys.speos.script.simulation.Simulation
+        simulation_feature : ansys.speos.core.simulation.Simulation
             The simulation feature.
         result_name : str
             The result name to open in a viewer.

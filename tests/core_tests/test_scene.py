@@ -33,18 +33,18 @@ import numpy as np
 
 from ansys.api.speos.sensor.v1 import common_pb2, irradiance_sensor_pb2
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
-from ansys.speos.core.body import Body
-from ansys.speos.core.face import Face, FaceStub
-from ansys.speos.core.intensity_template import IntensityTemplate
-from ansys.speos.core.part import Part
-from ansys.speos.core.scene import Scene, SceneLink
-from ansys.speos.core.sensor_template import SensorTemplate
-from ansys.speos.core.simulation_template import SimulationTemplate
-from ansys.speos.core.sop_template import SOPTemplate
-from ansys.speos.core.source_template import SourceTemplate
-from ansys.speos.core.spectrum import Spectrum
+from ansys.speos.core.kernel.body import Body
+from ansys.speos.core.kernel.face import Face, FaceStub
+from ansys.speos.core.kernel.intensity_template import IntensityTemplate
+from ansys.speos.core.kernel.part import Part
+from ansys.speos.core.kernel.scene import Scene, SceneLink
+from ansys.speos.core.kernel.sensor_template import SensorTemplate
+from ansys.speos.core.kernel.simulation_template import SimulationTemplate
+from ansys.speos.core.kernel.sop_template import SOPTemplate
+from ansys.speos.core.kernel.source_template import SourceTemplate
+from ansys.speos.core.kernel.spectrum import Spectrum
 from ansys.speos.core.speos import Speos
-from ansys.speos.core.vop_template import VOPTemplate
+from ansys.speos.core.kernel.vop_template import VOPTemplate
 
 
 def create_basic_scene(speos: Speos) -> SceneLink:

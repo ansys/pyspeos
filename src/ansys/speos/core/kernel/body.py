@@ -24,62 +24,50 @@
 
 from typing import List
 
-from ansys.api.speos.sop.v1 import sop_pb2 as messages, sop_pb2_grpc as service
-from ansys.speos.core.crud import CrudItem, CrudStub
-from ansys.speos.core.proto_message_utils import protobuf_message_to_str
+from ansys.api.speos.part.v1 import body_pb2 as messages, body_pb2_grpc as service
+from ansys.speos.core.kernel.crud import CrudItem, CrudStub
+from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 
-SOPTemplate = messages.SOPTemplate
-"""SOPTemplate protobuf class : ansys.api.speos.sop.v1.sop_pb2.SOPTemplate"""
-SOPTemplate.__str__ = lambda self: protobuf_message_to_str(self)
+Body = messages.Body
+"""Body protobuf class : ansys.api.speos.part.v1.body_pb2.Body"""
+Body.__str__ = lambda self: protobuf_message_to_str(self)
 
 
-class SOPTemplateLink(CrudItem):
-    """
-    Link object for Surface Optical Properties template in database.
+class BodyLink(CrudItem):
+    """Link object for a body in database.
 
     Parameters
     ----------
-    db : ansys.speos.core.sop_template.SOPTemplateStub
+    db : ansys.speos.core.kernel.body.BodyStub
         Database to link to.
     key : str
-        Key of the sop_template in the database.
-
-    Examples
-    --------
-    >>> from ansys.speos.core.speos import Speos
-    >>> from ansys.speos.core.sop_template import SOPTemplate
-    >>> speos = Speos(host="localhost", port=50098)
-    >>> sop_t_db = speos.client.sop_templates()
-    >>> sop_t_message = SOPTemplate(name="Mirror_50")
-    >>> sop_t_message.mirror.reflectance = 50
-    >>> sop_t_link = sop_t_db.create(message=sop_t_message)
-
+        Key of the body in the database.
     """
 
     def __init__(self, db, key: str):
         super().__init__(db, key)
 
     def __str__(self) -> str:
-        """Return the string representation of the sop_template."""
+        """Return the string representation of the body."""
         return str(self.get())
 
-    def get(self) -> SOPTemplate:
+    def get(self) -> Body:
         """Get the datamodel from database.
 
         Returns
         -------
-        sop_template.SOPTemplate
-            SOPTemplate datamodel.
+        body.Body
+            Body datamodel.
         """
         return self._stub.read(self)
 
-    def set(self, data: SOPTemplate) -> None:
+    def set(self, data: Body) -> None:
         """Change datamodel in database.
 
         Parameters
         ----------
-        data : sop_template.SOPTemplate
-            New SOPTemplate datamodel.
+        data : body.Body
+            New body datamodel.
         """
         self._stub.update(self, data)
 
@@ -88,9 +76,9 @@ class SOPTemplateLink(CrudItem):
         self._stub.delete(self)
 
 
-class SOPTemplateStub(CrudStub):
+class BodyStub(CrudStub):
     """
-    Database interactions for Surface Optical Properties templates.
+    Database interactions for body.
 
     Parameters
     ----------
@@ -99,85 +87,86 @@ class SOPTemplateStub(CrudStub):
 
     Examples
     --------
-    The best way to get a SOPTemplateStub is to retrieve it from SpeosClient via sop_templates() method.
+    The best way to get a BodyStub is to retrieve it from SpeosClient via bodies() method.
     Like in the following example:
 
-    >>> from ansys.speos.core.speos import Speos
+    >>> from ansys.speos.core.kernel.speos import Speos
     >>> speos = Speos(host="localhost", port=50098)
-    >>> sop_t_db = speos.client.sop_templates()
+    >>> body_db = speos.client.bodies()
 
     """
 
     def __init__(self, channel):
-        super().__init__(stub=service.SOPTemplatesManagerStub(channel=channel))
+        super().__init__(stub=service.BodiesManagerStub(channel=channel))
 
-    def create(self, message: SOPTemplate) -> SOPTemplateLink:
+    def create(self, message: Body) -> BodyLink:
         """Create a new entry.
 
         Parameters
         ----------
-        message : sop_template.SOPTemplate
+        message : body.Body
             Datamodel for the new entry.
 
         Returns
         -------
-        ansys.speos.core.sop_template.SOPTemplateLink
+        ansys.speos.core.kernel.body.BodyLink
             Link object created.
         """
-        resp = CrudStub.create(self, messages.Create_Request(sop_template=message))
-        return SOPTemplateLink(self, resp.guid)
+        resp = CrudStub.create(self, messages.Create_Request(body=message))
+        return BodyLink(self, resp.guid)
 
-    def read(self, ref: SOPTemplateLink) -> SOPTemplate:
+    def read(self, ref: BodyLink) -> Body:
         """Get an existing entry.
 
         Parameters
         ----------
-        ref : ansys.speos.core.sop_template.SOPTemplateLink
+        ref : ansys.speos.core.kernel.body.BodyLink
             Link object to read.
 
         Returns
         -------
-        sop_template.SOPTemplate
+        body.Body
             Datamodel of the entry.
         """
         if not ref.stub == self:
-            raise ValueError("SOPTemplateLink is not on current database")
+            raise ValueError("BodyLink is not on current database")
         resp = CrudStub.read(self, messages.Read_Request(guid=ref.key))
-        return resp.sop_template
+        return resp.body
 
-    def update(self, ref: SOPTemplateLink, data: SOPTemplate):
+    def update(self, ref: BodyLink, data: Body) -> None:
         """Change an existing entry.
 
         Parameters
         ----------
-        ref : ansys.speos.core.sop_template.SOPTemplateLink
+        ref : ansys.speos.core.kernel.body.BodyLink
             Link object to update.
-        data : sop_template.SOPTemplate
+
+        data : body.Body
             New datamodel for the entry.
         """
         if not ref.stub == self:
-            raise ValueError("SOPTemplateLink is not on current database")
-        CrudStub.update(self, messages.Update_Request(guid=ref.key, sop_template=data))
+            raise ValueError("BodyLink is not on current database")
+        CrudStub.update(self, messages.Update_Request(guid=ref.key, body=data))
 
-    def delete(self, ref: SOPTemplateLink) -> None:
+    def delete(self, ref: BodyLink) -> None:
         """Remove an existing entry.
 
         Parameters
         ----------
-        ref : ansys.speos.core.sop_template.SOPTemplateLink
+        ref : ansys.speos.core.kernel.body.BodyLink
             Link object to delete.
         """
         if not ref.stub == self:
-            raise ValueError("SOPTemplateLink is not on current database")
+            raise ValueError("BodyLink is not on current database")
         CrudStub.delete(self, messages.Delete_Request(guid=ref.key))
 
-    def list(self) -> List[SOPTemplateLink]:
+    def list(self) -> List[BodyLink]:
         """List existing entries.
 
         Returns
         -------
-        List[ansys.speos.core.sop_template.SOPTemplateLink]
+        List[ansys.speos.core.kernel.body.BodyLink]
             Link objects.
         """
         guids = CrudStub.list(self, messages.List_Request()).guids
-        return list(map(lambda x: SOPTemplateLink(self, x), guids))
+        return list(map(lambda x: BodyLink(self, x), guids))

@@ -30,8 +30,8 @@ from helper import clean_all_dbs, run_job_and_check_state
 from test_scene import create_basic_scene
 
 from ansys.speos.core import LOG  # Global logger
-from ansys.speos.core.job import Job, messages as job_messages
-from ansys.speos.core.proto_message_utils import protobuf_message_to_str
+from ansys.speos.core.kernel.job import Job, messages as job_messages
+from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 from ansys.speos.core.speos import Speos
 
 

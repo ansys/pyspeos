@@ -31,7 +31,7 @@ from conftest import test_path
 import grpc
 import pytest
 
-from ansys.speos.core.sop_template import SOPTemplate
+from ansys.speos.core.kernel.sop_template import SOPTemplate
 from ansys.speos.core.speos import Speos
 
 

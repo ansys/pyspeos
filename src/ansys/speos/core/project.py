@@ -33,14 +33,14 @@ import numpy as np
 import pyvista as pv
 
 import ansys.speos.core as core
-import ansys.speos.script.body as body
-import ansys.speos.script.face as face
-import ansys.speos.script.opt_prop as opt_prop
-import ansys.speos.script.part as part
-import ansys.speos.script.proto_message_utils as proto_message_utils
-import ansys.speos.script.sensor as sensor
-import ansys.speos.script.simulation as simulation
-import ansys.speos.script.source as source
+import ansys.speos.core.body as body
+import ansys.speos.core.face as face
+import ansys.speos.core.opt_prop as opt_prop
+import ansys.speos.core.part as part
+import ansys.speos.core.proto_message_utils as proto_message_utils
+import ansys.speos.core.sensor as sensor
+import ansys.speos.core.simulation as simulation
+import ansys.speos.core.source as source
 
 
 class Project:
@@ -51,7 +51,7 @@ class Project:
 
     Parameters
     ----------
-    speos : ansys.speos.core.speos.Speos
+    speos : ansys.speos.core.kernel.speos.Speos
         Speos session (connected to gRPC server).
     path : str
         The project will be loaded from this speos file.
@@ -59,7 +59,7 @@ class Project:
 
     Attributes
     ----------
-    scene_link : ansys.speos.core.scene.SceneLink
+    scene_link : ansys.speos.core.kernel.scene.SceneLink
         Link object for the scene in database.
     """
 
@@ -95,7 +95,7 @@ class Project:
 
         Returns
         -------
-        ansys.speos.script.opt_prop.OptProp
+        ansys.speos.core.opt_prop.OptProp
             OptProp feature.
         """
         existing_features = self.find(name=name)
@@ -131,17 +131,17 @@ class Project:
             By default, ``""``.
         feature_type: type
             Source type to be created.
-            By default, ``ansys.speos.script.source.Surface``.
+            By default, ``ansys.speos.core.source.Surface``.
             Allowed types:
-            Union[ansys.speos.script.source.Surface, ansys.speos.script.source.RayFile, \
-            ansys.speos.script.source.Luminaire].
+            Union[ansys.speos.core.source.Surface, ansys.speos.core.source.RayFile, \
+            ansys.speos.core.source.Luminaire].
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
 
         Returns
         -------
-        Union[ansys.speos.script.source.Surface, ansys.speos.script.source.RayFile, ansys.speos.script.source.Luminaire]
+        Union[ansys.speos.core.source.Surface, ansys.speos.core.source.RayFile, ansys.speos.core.source.Luminaire]
             Source class instance.
         """
         if metadata is None:
@@ -192,16 +192,16 @@ class Project:
             By default, ``""``.
         feature_type: type
             Simulation type to be created.
-            By default, ``ansys.speos.script.simulation.Direct``.
-            Allowed types: Union[ansys.speos.script.simulation.Direct, ansys.speos.script.simulation.Interactive, \
-            ansys.speos.script.simulation.Inverse].
+            By default, ``ansys.speos.core.simulation.Direct``.
+            Allowed types: Union[ansys.speos.core.simulation.Direct, ansys.speos.core.simulation.Interactive, \
+            ansys.speos.core.simulation.Inverse].
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
 
         Returns
         -------
-        Union[ansys.speos.script.simulation.Direct, ansys.speos.script.simulation.Interactive, ansys.speos.script.simulation.Inverse]
+        Union[ansys.speos.core.simulation.Direct, ansys.speos.core.simulation.Interactive, ansys.speos.core.simulation.Inverse]
             Simulation class instance
         """
         if metadata is None:
@@ -252,16 +252,16 @@ class Project:
             By default, ``""``.
         feature_type: type
             Sensor type to be created.
-            By default, ``ansys.speos.script.sensor.Irradiance``.
-            Allowed types: Union[ansys.speos.script.sensor.Camera, ansys.speos.script.sensor.Radiance, \
-            ansys.speos.script.sensor.Irradiance]
+            By default, ``ansys.speos.core.sensor.Irradiance``.
+            Allowed types: Union[ansys.speos.core.sensor.Camera, ansys.speos.core.sensor.Radiance, \
+            ansys.speos.core.sensor.Irradiance]
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
 
         Returns
         -------
-        Union[ansys.speos.script.sensor.Camera, ansys.speos.script.sensor.Radiance, ansys.speos.script.sensor.Irradiance]
+        Union[ansys.speos.core.sensor.Camera, ansys.speos.core.sensor.Radiance, ansys.speos.core.sensor.Irradiance]
             Sensor class instance.
         """
         if metadata is None:
@@ -310,7 +310,7 @@ class Project:
 
         Returns
         -------
-        ansys.speos.script.part.Part
+        ansys.speos.core.part.Part
             Part feature.
         """
         if metadata is None:
@@ -361,12 +361,12 @@ class Project:
 
         Returns
         -------
-        List[Union[ansys.speos.script.opt_prop.OptProp, ansys.speos.script.source.Surface, \
-        ansys.speos.script.source.RayFile, ansys.speos.script.source.Luminaire, ansys.speos.script.sensor.Camera, \
-        ansys.speos.script.sensor.Radiance, ansys.speos.script.sensor.Irradiance, \
-        ansys.speos.script.simulation.Direct, ansys.speos.script.simulation.Interactive, \
-        ansys.speos.script.simulation.Inverse, ansys.speos.script.part.Part, ansys.speos.script.body.Body, \
-        ansys.speos.script.face.Face, ansys.speos.script.part.Part.SubPart]]
+        List[Union[ansys.speos.core.opt_prop.OptProp, ansys.speos.core.source.Surface, \
+        ansys.speos.core.source.RayFile, ansys.speos.core.source.Luminaire, ansys.speos.core.sensor.Camera, \
+        ansys.speos.core.sensor.Radiance, ansys.speos.core.sensor.Irradiance, \
+        ansys.speos.core.simulation.Direct, ansys.speos.core.simulation.Interactive, \
+        ansys.speos.core.simulation.Inverse, ansys.speos.core.part.Part, ansys.speos.core.body.Body, \
+        ansys.speos.core.face.Face, ansys.speos.core.part.Part.SubPart]]
             Found features.
 
         Examples
@@ -374,29 +374,29 @@ class Project:
         >>> # From name only
         >>> find(name="Camera.1")
         >>> # Specify feature type
-        >>> find(name="Camera.1", feature_type=ansys.speos.script.sensor.Camera)
+        >>> find(name="Camera.1", feature_type=ansys.speos.core.sensor.Camera)
         >>> # Using regex
-        >>> find(name="Camera.*", name_regex=True, feature_type=ansys.speos.script.sensor.Camera)
+        >>> find(name="Camera.*", name_regex=True, feature_type=ansys.speos.core.sensor.Camera)
 
         Here some examples when looking for a geometry feature:
         (always precise feature_type)
 
         >>> # Root part
-        >>> find(name="", feature_type=ansys.speos.script.part.Part)
+        >>> find(name="", feature_type=ansys.speos.core.part.Part)
         >>> # Body in root part
-        >>> find(name="BodyName", feature_type=ansys.speos.script.body.Body)
+        >>> find(name="BodyName", feature_type=ansys.speos.core.body.Body)
         >>> # Face from body in root part
-        >>> find(name="BodyName/FaceName", feature_type=ansys.speos.script.face.Face)
+        >>> find(name="BodyName/FaceName", feature_type=ansys.speos.core.face.Face)
         >>> # Sub part in root part
-        >>> find(name="SubPartName", feature_type=ansys.speos.script.part.Part.SubPart)
+        >>> find(name="SubPartName", feature_type=ansys.speos.core.part.Part.SubPart)
         >>> # Face in a body from sub part in root part :
-        >>> find(name="SubPartName/BodyName/FaceName", feature_type=ansys.speos.script.face.Face)
+        >>> find(name="SubPartName/BodyName/FaceName", feature_type=ansys.speos.core.face.Face)
         >>> # Regex can be use at each level separated by "/"
-        >>> find(name="Body.*/Face.*", name_regex=True, feature_type=ansys.speos.script.face.Face)
+        >>> find(name="Body.*/Face.*", name_regex=True, feature_type=ansys.speos.core.face.Face)
         >>> # All faces of a specific body
-        >>> find(name="BodyName/.*", name_regex=True, feature_type=ansys.speos.script.face.Face)
+        >>> find(name="BodyName/.*", name_regex=True, feature_type=ansys.speos.core.face.Face)
         >>> # All geometry features at first level (whatever their type: body, face, sub part)
-        >>> find(name=".*", name_regex=True, feature_type=ansys.speos.script.part.Part)
+        >>> find(name=".*", name_regex=True, feature_type=ansys.speos.core.part.Part)
         """
         orig_feature_type = None
         if (
@@ -481,7 +481,7 @@ class Project:
 
         Returns
         -------
-        ansys.speos.script.project.Project
+        ansys.speos.core.project.Project
             Project feature.
         """
         # Erase the scene

@@ -86,14 +86,14 @@ To log using this logger, call the desired method as a normal logger with:
 .. code:: pycon
 
     >>> import logging
-    >>> from ansys.speos.core.logger import Logger
+    >>> from ansys.speos.core.kernel.logger import Logger
     >>> LOG = Logger(level=logging.DEBUG, to_file=False, to_stdout=True)
     >>> LOG.debug("This is LOG debug message.")
     DEBUG -  -  <ipython-input-24-80df150fe31f> - <module> - This is LOG debug message.
 
 Instance Logger
 ~~~~~~~~~~~~~~~
-Every time an instance of :class:`speos <ansys.speos.core.speos.speos>`
+Every time an instance of :class:`speos <ansys.speos.core.kernel.speos.speos>`
 is created, a logger is created and stored in ``LOG._instances``. This field is a
 dictionary where the key is the name of the created logger.
 These instance loggers inherit the ``pyspeos_global`` output handlers and

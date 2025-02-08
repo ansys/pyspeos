@@ -28,10 +28,10 @@ from typing import List, Mapping, Optional, Union
 import uuid
 
 from ansys.speos import core as core
-from ansys.speos.script import project as project, proto_message_utils as proto_message_utils
-from ansys.speos.script.geo_ref import GeoRef
-from ansys.speos.script.intensity import Intensity
-from ansys.speos.script.spectrum import Spectrum
+from ansys.speos.core import project as project, proto_message_utils as proto_message_utils
+from ansys.speos.core.geo_ref import GeoRef
+from ansys.speos.core.intensity import Intensity
+from ansys.speos.core.spectrum import Spectrum
 
 
 class BaseSource:
@@ -40,7 +40,7 @@ class BaseSource:
 
     Parameters
     ----------
-    project : ansys.speos.script.project.Project
+    project : ansys.speos.core.project.Project
         Project in which source shall be created.
     name : str
         Name of the source.
@@ -225,7 +225,7 @@ class BaseSource:
 
         Returns
         -------
-        ansys.speos.script.source.BaseSource
+        ansys.speos.core.source.BaseSource
             Source feature.
         """
         # The _unique_id will help to find correct item in the scene.sources (the list of SourceInstance)
@@ -273,7 +273,7 @@ class BaseSource:
 
         Returns
         -------
-        ansys.speos.script.source.BaseSource
+        ansys.speos.core.source.BaseSource
             Source feature.
         """
         # Reset source template
@@ -297,7 +297,7 @@ class BaseSource:
 
         Returns
         -------
-        ansys.speos.script.source.BaseSource
+        ansys.speos.core.source.BaseSource
             Source feature.
         """
         # This allows to clean-managed object contained in _luminaire, _rayfile, etc.. Like Spectrum, IntensityTemplate
@@ -335,7 +335,7 @@ class BaseSource:
 
         Returns
         -------
-        ansys.speos.script.source.BaseSource
+        ansys.speos.core.source.BaseSource
             Source feature.
         """
         self._spectrum._commit()
@@ -347,7 +347,7 @@ class BaseSource:
 
         Returns
         -------
-        ansys.speos.script.source.BaseSource
+        ansys.speos.core.source.BaseSource
             Source feature.
         """
         self._spectrum._reset()
@@ -360,7 +360,7 @@ class BaseSource:
 
         Returns
         -------
-        ansys.speos.script.source.BaseSource
+        ansys.speos.core.source.BaseSource
             Source feature.
         """
         self._spectrum._delete()
@@ -374,7 +374,7 @@ class Luminaire(BaseSource):
 
     Parameters
     ----------
-    project : ansys.speos.script.project.Project
+    project : ansys.speos.core.project.Project
         Project that will own the feature.
     name : str
         Name of the feature.
@@ -425,7 +425,7 @@ class Luminaire(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.Luminaire
+        ansys.speos.core.source.Luminaire
             Luminaire source.
         """
         self._source_template.luminaire.flux_from_intensity_file.SetInParent()
@@ -442,7 +442,7 @@ class Luminaire(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.Luminaire
+        ansys.speos.core.source.Luminaire
             Luminaire source.
         """
         self._source_template.luminaire.luminous_flux.luminous_value = value
@@ -459,7 +459,7 @@ class Luminaire(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.Luminaire
+        ansys.speos.core.source.Luminaire
             Luminaire source.
         """
         self._source_template.luminaire.radiant_flux.radiant_value = value
@@ -475,7 +475,7 @@ class Luminaire(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.Luminaire
+        ansys.speos.core.source.Luminaire
             Luminaire source.
         """
         self._source_template.luminaire.intensity_file_uri = uri
@@ -486,7 +486,7 @@ class Luminaire(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.spectrum.Spectrum
+        ansys.speos.core.spectrum.Spectrum
             Spectrum.
         """
         if self._spectrum._message_to_complete is not self._source_template.luminaire:
@@ -505,7 +505,7 @@ class Luminaire(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.Luminaire
+        ansys.speos.core.source.Luminaire
             Luminaire source.
         """
         if axis_system is None:
@@ -520,7 +520,7 @@ class RayFile(BaseSource):
 
     Parameters
     ----------
-    project : ansys.speos.script.project.Project
+    project : ansys.speos.core.project.Project
         Project that will own the feature.
     name : str
         Name of the feature.
@@ -584,7 +584,7 @@ class RayFile(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.RayFile
+        ansys.speos.core.source.RayFile
             RayFile source.
         """
         self._source_template.rayfile.ray_file_uri = uri
@@ -595,7 +595,7 @@ class RayFile(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.RayFile
+        ansys.speos.core.source.RayFile
             RayFile source.
         """
         self._source_template.rayfile.flux_from_ray_file.SetInParent()
@@ -612,7 +612,7 @@ class RayFile(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.RayFile
+        ansys.speos.core.source.RayFile
             RayFile source.
         """
         self._source_template.rayfile.luminous_flux.luminous_value = value
@@ -629,7 +629,7 @@ class RayFile(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.RayFile
+        ansys.speos.core.source.RayFile
             RayFile source.
         """
         self._source_template.rayfile.radiant_flux.radiant_value = value
@@ -640,7 +640,7 @@ class RayFile(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.RayFile
+        ansys.speos.core.source.RayFile
             RayFile source.
         """
         self._source_template.rayfile.spectrum_from_ray_file.SetInParent()
@@ -652,7 +652,7 @@ class RayFile(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.spectrum.Spectrum
+        ansys.speos.core.spectrum.Spectrum
             Spectrum.
         """
         if self._source_template.rayfile.HasField("spectrum_from_ray_file"):
@@ -679,7 +679,7 @@ class RayFile(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.RayFile
+        ansys.speos.core.source.RayFile
             RayFile Source.
         """
         if axis_system is None:
@@ -692,13 +692,13 @@ class RayFile(BaseSource):
 
         Parameters
         ----------
-        exit_geometries : List[ansys.speos.script.geo_ref.GeoRef]
+        exit_geometries : List[ansys.speos.core.geo_ref.GeoRef]
             Exit Geometries that will use this rayfile source.
             By default, ``[]``.
 
         Returns
         -------
-        ansys.speos.script.source.RayFile
+        ansys.speos.core.source.RayFile
             RayFile Source.
         """
         if not exit_geometries:
@@ -776,7 +776,7 @@ class Surface(BaseSource):
 
             Returns
             -------
-            ansys.speos.script.source.Surface.ExitanceVariable
+            ansys.speos.core.source.Surface.ExitanceVariable
                 ExitanceVariable of surface source.
             """
             self._exitance_variable.exitance_xmp_file_uri = uri
@@ -795,7 +795,7 @@ class Surface(BaseSource):
 
             Returns
             -------
-            ansys.speos.script.source.Surface.ExitanceVariable
+            ansys.speos.core.source.Surface.ExitanceVariable
                 ExitanceVariable of surface Source.
             """
             if axis_plane is None:
@@ -855,7 +855,7 @@ class Surface(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.Surface
+        ansys.speos.core.source.Surface
             Surface source.
         """
         self._source_template.surface.flux_from_intensity_file.SetInParent()
@@ -872,7 +872,7 @@ class Surface(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.Surface
+        ansys.speos.core.source.Surface
             Surface source.
         """
         self._source_template.surface.luminous_flux.luminous_value = value
@@ -889,7 +889,7 @@ class Surface(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.Surface
+        ansys.speos.core.source.Surface
             Surface source.
         """
         self._source_template.surface.radiant_flux.radiant_value = value
@@ -906,7 +906,7 @@ class Surface(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.Surface
+        ansys.speos.core.source.Surface
             Surface source.
         """
         self._source_template.surface.luminous_intensity_flux.luminous_intensity_value = value
@@ -917,7 +917,7 @@ class Surface(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.intensity.Intensity
+        ansys.speos.core.intensity.Intensity
             Intensity.
         """
         if (
@@ -936,12 +936,12 @@ class Surface(BaseSource):
 
         Parameters
         ----------
-        geometries : List[tuple[ansys.speos.script.geo_ref.GeoRef, bool]]
+        geometries : List[tuple[ansys.speos.core.geo_ref.GeoRef, bool]]
             List of (face, reverseNormal).
 
         Returns
         -------
-        ansys.speos.script.source.Surface
+        ansys.speos.core.source.Surface
             Surface source.
         """
         self._exitance_type = None
@@ -965,7 +965,7 @@ class Surface(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.Surface.ExitanceVariable
+        ansys.speos.core.source.Surface.ExitanceVariable
             ExitanceVariable of surface source.
         """
         if self._exitance_type is None and self._source_template.surface.HasField(
@@ -1001,7 +1001,7 @@ class Surface(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.Surface
+        ansys.speos.core.source.Surface
             Surface source.
         """
         self._source_template.surface.spectrum_from_xmp_file.SetInParent()
@@ -1013,7 +1013,7 @@ class Surface(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.spectrum.Spectrum
+        ansys.speos.core.spectrum.Spectrum
             Spectrum.
         """
         if self._source_template.surface.HasField("spectrum_from_xmp_file"):
@@ -1034,7 +1034,7 @@ class Surface(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.Surface
+        ansys.speos.core.source.Surface
             Source feature.
         """
         # intensity
@@ -1050,7 +1050,7 @@ class Surface(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.Surface
+        ansys.speos.core.source.Surface
             Source feature.
         """
         self._intensity.reset()
@@ -1064,7 +1064,7 @@ class Surface(BaseSource):
 
         Returns
         -------
-        ansys.speos.script.source.Surface
+        ansys.speos.core.source.Surface
             Source feature.
         """
         # Currently we don't perform delete in cascade, so deleting a surface source does not delete the intensity template used

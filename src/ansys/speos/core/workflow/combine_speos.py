@@ -24,9 +24,9 @@
 import os
 from typing import List, Optional
 
-from ansys.speos.core.part import Part, PartLink
+from ansys.speos.core.kernel.part import Part, PartLink
 from ansys.speos.core.speos import Speos
-from ansys.speos.script.project import Project
+from ansys.speos.core.project import Project
 
 
 class SpeosFileInstance:
@@ -67,9 +67,9 @@ def insert_speos(project: Project, speos_to_insert: List[SpeosFileInstance]) -> 
 
     Parameters
     ----------
-    project : ansys.speos.script.project.Project
+    project : ansys.speos.core.project.Project
         Project feature to be completed with geometry and materials data.
-    speos_to_combine : List[ansys.speos.workflow.combine_speos.SpeosFileInstance]
+    speos_to_combine : List[ansys.speos.core.workflow.combine_speos.SpeosFileInstance]
         List of speos + location/orientation to insert into the project
     """
     # Part link : either create it empty if none is present in the project's scene
@@ -90,14 +90,14 @@ def combine_speos(speos: Speos, speos_to_combine: List[SpeosFileInstance]) -> Pr
 
     Parameters
     ----------
-    speos : ansys.speos.core.speos.Speos
+    speos : ansys.speos.core.kernel.speos.Speos
         Speos session (connected to gRPC server).
-    speos_to_combine : List[ansys.speos.workflow.combine_speos.SpeosFileInstance]
+    speos_to_combine : List[ansys.speos.core.workflow.combine_speos.SpeosFileInstance]
         List of speos + location/orientation to combine into a single project
 
     Returns
     -------
-    ansys.speos.script.project.Project
+    ansys.speos.core.project.Project
         Project feature created by combining the input list.
     """
     # Create an empty project and an empty part link

@@ -33,7 +33,7 @@ import pyvista as pv
 import ansys.api.speos.lpf.v2.lpf_file_reader_pb2 as lpf_file_reader__v2__pb2
 import ansys.api.speos.lpf.v2.lpf_file_reader_pb2_grpc as lpf_file_reader__v2__pb2_grpc
 import ansys.speos.core
-from ansys.speos.script.project import Project
+from ansys.speos.core.project import Project
 
 ERROR_IDS = [7, 8, 9, 10, 11, 12, 13, 14, 15]
 """Intersection types indicating an error state."""
@@ -229,14 +229,14 @@ class LightPathFinder:
 
     Parameters
     ----------
-    speos : ansys.speos.core.speos.Speos
+    speos : ansys.speos.core.kernel.speos.Speos
         Speos Session (connected to Speos gRPC server)
     path : str
         path to lpf file to be opened
 
     """
 
-    def __init__(self, speos: ansys.speos.core.Speos, path: str):
+    def __init__(self, speos: ansys.speos.core.kernel.speos, path: str):
         self.client = speos.client
         """Speos instance client"""
         self._stub = lpf_file_reader__v2__pb2_grpc.LpfFileReader_MonoStub(self.client.channel)
@@ -343,7 +343,7 @@ class LightPathFinder:
 
         Returns
         -------
-        ansys.speos.script.lxp.LightPathFinder
+        ansys.speos.core.lxp.LightPathFinder
             LightPathfinder Instance
         """
         if new:
@@ -371,7 +371,7 @@ class LightPathFinder:
 
         Returns
         -------
-        ansys.speos.script.lxp.LightPathFinder
+        ansys.speos.core.lxp.LightPathFinder
             LightPathfinder Instance
         """
         if new:
@@ -392,7 +392,7 @@ class LightPathFinder:
 
         Returns
         -------
-        ansys.speos.script.lxp.LightPathFinder
+        ansys.speos.core.lxp.LightPathFinder
             LightPathfinder Instance
         """
         self.__filter_by_last_intersection_types(options=ERROR_IDS)
@@ -403,7 +403,7 @@ class LightPathFinder:
 
         Returns
         -------
-        ansys.speos.script.lxp.LightPathFinder
+        ansys.speos.core.lxp.LightPathFinder
             LightPathfinder Instance
         """
         self.__filter_by_last_intersection_types(options=NO_ERROR_IDS)
@@ -456,12 +456,12 @@ class LightPathFinder:
             length of last ray
         ray_filter : bool
             boolean to decide if filtered rays or all rays should be shown
-        project : ansys.speos.script.project.Project
+        project : ansys.speos.core.project.Project
             Speos Project/Geometry to be added to pyvista visualisation
 
         Returns
         -------
-        ansys.speos.script.lxp.LightPathFinder
+        ansys.speos.core.lxp.LightPathFinder
             LightPathfinder Instance
         """
         if ray_filter:

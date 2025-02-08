@@ -31,19 +31,19 @@ import grpc
 from grpc._channel import _InactiveRpcError
 
 from ansys.api.speos.part.v1 import body_pb2, face_pb2, part_pb2
-from ansys.speos.core.body import BodyLink, BodyStub
-from ansys.speos.core.face import FaceLink, FaceStub
-from ansys.speos.core.intensity_template import IntensityTemplateLink, IntensityTemplateStub
-from ansys.speos.core.job import JobLink, JobStub
+from ansys.speos.core.kernel.body import BodyLink, BodyStub
+from ansys.speos.core.kernel.face import FaceLink, FaceStub
+from ansys.speos.core.kernel.intensity_template import IntensityTemplateLink, IntensityTemplateStub
+from ansys.speos.core.kernel.job import JobLink, JobStub
 from ansys.speos.core.logger import LOG as logger, PySpeosCustomAdapter
-from ansys.speos.core.part import PartLink, PartStub
-from ansys.speos.core.scene import SceneLink, SceneStub
-from ansys.speos.core.sensor_template import SensorTemplateLink, SensorTemplateStub
-from ansys.speos.core.simulation_template import SimulationTemplateLink, SimulationTemplateStub
-from ansys.speos.core.sop_template import SOPTemplateLink, SOPTemplateStub
-from ansys.speos.core.source_template import SourceTemplateLink, SourceTemplateStub
-from ansys.speos.core.spectrum import SpectrumLink, SpectrumStub
-from ansys.speos.core.vop_template import VOPTemplateLink, VOPTemplateStub
+from ansys.speos.core.kernel.part import PartLink, PartStub
+from ansys.speos.core.kernel.scene import SceneLink, SceneStub
+from ansys.speos.core.kernel.sensor_template import SensorTemplateLink, SensorTemplateStub
+from ansys.speos.core.kernel.simulation_template import SimulationTemplateLink, SimulationTemplateStub
+from ansys.speos.core.kernel.sop_template import SOPTemplateLink, SOPTemplateStub
+from ansys.speos.core.kernel.source_template import SourceTemplateLink, SourceTemplateStub
+from ansys.speos.core.kernel.spectrum import SpectrumLink, SpectrumStub
+from ansys.speos.core.kernel.vop_template import VOPTemplateLink, VOPTemplateStub
 
 DEFAULT_HOST = "localhost"
 DEFAULT_PORT = "50098"
@@ -320,18 +320,18 @@ class SpeosClient:
 
         Returns
         -------
-        Union[ansys.speos.core.sop_template.SOPTemplateLink, \
-ansys.speos.core.vop_template.VOPTemplateLink, \
-ansys.speos.core.spectrum.SpectrumLink, \
-ansys.speos.core.intensity_template.IntensityTemplateLink, \
-ansys.speos.core.source_template.SourceTemplateLink, \
-ansys.speos.core.sensor_template.SensorTemplateLink, \
-ansys.speos.core.simulation_template.SimulationTemplateLink, \
-ansys.speos.core.scene.SceneLink, \
-ansys.speos.core.job.JobLink, \
-ansys.speos.core.part.PartLink, \
-ansys.speos.core.body.BodyLink, \
-ansys.speos.core.face.FaceLink, \
+        Union[ansys.speos.core.kernel.sop_template.SOPTemplateLink, \
+ansys.speos.core.kernel.vop_template.VOPTemplateLink, \
+ansys.speos.core.kernel.spectrum.SpectrumLink, \
+ansys.speos.core.kernel.intensity_template.IntensityTemplateLink, \
+ansys.speos.core.kernel.source_template.SourceTemplateLink, \
+ansys.speos.core.kernel.sensor_template.SensorTemplateLink, \
+ansys.speos.core.kernel.simulation_template.SimulationTemplateLink, \
+ansys.speos.core.kernel.scene.SceneLink, \
+ansys.speos.core.kernel.job.JobLink, \
+ansys.speos.core.kernel.part.PartLink, \
+ansys.speos.core.kernel.body.BodyLink, \
+ansys.speos.core.kernel.face.FaceLink, \
 None]
             Link object corresponding to the key - None if no objects corresponds to the key.
         """
@@ -402,18 +402,18 @@ None]
 
         Returns
         -------
-        Union[List[ansys.speos.core.sop_template.SOPTemplateLink], \
-List[ansys.speos.core.vop_template.VOPTemplateLink], \
-List[ansys.speos.core.spectrum.SpectrumLink], \
-List[ansys.speos.core.intensity_template.IntensityTemplateLink], \
-List[ansys.speos.core.source_template.SourceTemplateLink], \
-List[ansys.speos.core.sensor_template.SensorTemplateLink], \
-List[ansys.speos.core.simulation_template.SimulationTemplateLink], \
-List[ansys.speos.core.scene.SceneLink], \
-List[ansys.speos.core.job.JobLink], \
-List[ansys.speos.core.part.PartLink], \
-List[ansys.speos.core.body.BodyLink], \
-List[ansys.speos.core.face.FaceLink]]
+        Union[List[ansys.speos.core.kernel.sop_template.SOPTemplateLink], \
+List[ansys.speos.core.kernel.vop_template.VOPTemplateLink], \
+List[ansys.speos.core.kernel.spectrum.SpectrumLink], \
+List[ansys.speos.core.kernel.intensity_template.IntensityTemplateLink], \
+List[ansys.speos.core.kernel.source_template.SourceTemplateLink], \
+List[ansys.speos.core.kernel.sensor_template.SensorTemplateLink], \
+List[ansys.speos.core.kernel.simulation_template.SimulationTemplateLink], \
+List[ansys.speos.core.kernel.scene.SceneLink], \
+List[ansys.speos.core.kernel.job.JobLink], \
+List[ansys.speos.core.kernel.part.PartLink], \
+List[ansys.speos.core.kernel.body.BodyLink], \
+List[ansys.speos.core.kernel.face.FaceLink]]
             List of Link objects corresponding to the keys - Empty if no objects corresponds to the keys.
         """
         if self._closed:

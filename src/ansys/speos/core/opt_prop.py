@@ -27,9 +27,9 @@ from typing import List, Mapping, Optional
 import uuid
 
 import ansys.speos.core as core
-from ansys.speos.script.geo_ref import GeoRef
-import ansys.speos.script.project as project
-import ansys.speos.script.proto_message_utils as proto_message_utils
+from ansys.speos.core.geo_ref import GeoRef
+import ansys.speos.core.project as project
+import ansys.speos.core.proto_message_utils as proto_message_utils
 
 
 class OptProp:
@@ -96,7 +96,7 @@ class OptProp:
 
         Returns
         -------
-        ansys.speos.script.opt_prop.OptProp
+        ansys.speos.core.opt_prop.OptProp
             Optical property.
         """
         self._sop_template.mirror.reflectance = reflectance
@@ -108,7 +108,7 @@ class OptProp:
 
         Returns
         -------
-        ansys.speos.script.opt_prop.OptProp
+        ansys.speos.core.opt_prop.OptProp
             Optical property.
         """
         self._sop_template.optical_polished.SetInParent()
@@ -125,7 +125,7 @@ class OptProp:
 
         Returns
         -------
-        ansys.speos.script.opt_prop.OptProp
+        ansys.speos.core.opt_prop.OptProp
             Optical property.
         """
         self._sop_template.library.sop_file_uri = path
@@ -137,7 +137,7 @@ class OptProp:
 
         Returns
         -------
-        ansys.speos.script.opt_prop.OptProp
+        ansys.speos.core.opt_prop.OptProp
             Optical property.
         """
         self._vop_template = None
@@ -149,7 +149,7 @@ class OptProp:
 
         Returns
         -------
-        ansys.speos.script.opt_prop.OptProp
+        ansys.speos.core.opt_prop.OptProp
             Optical property.
         """
         if self._vop_template is None:
@@ -181,7 +181,7 @@ class OptProp:
 
         Returns
         -------
-        ansys.speos.script.opt_prop.OptProp
+        ansys.speos.core.opt_prop.OptProp
             Optical property.
         """
         if self._vop_template is None:
@@ -214,7 +214,7 @@ class OptProp:
     #
     #    Returns
     #    -------
-    #    ansys.speos.script.opt_prop.OptProp
+    #    ansys.speos.core.opt_prop.OptProp
     #        Optical property.
     #    """
     #    if not axis_system:
@@ -237,7 +237,7 @@ class OptProp:
 
         Returns
         -------
-        ansys.speos.script.opt_prop.OptProp
+        ansys.speos.core.opt_prop.OptProp
             Optical property.
         """
         if self._vop_template is None:
@@ -254,13 +254,13 @@ class OptProp:
 
         Parameters
         ----------
-        geometries : List[ansys.speos.script.geo_ref.GeoRef], optional
+        geometries : List[ansys.speos.core.geo_ref.GeoRef], optional
             List of geometries. Giving an empty list means "All geometries"
             By default, ``None``, means "no geometry".
 
         Returns
         -------
-        ansys.speos.script.opt_prop.OptProp
+        ansys.speos.core.opt_prop.OptProp
             Optical property.
         """
         if geometries == None:
@@ -347,7 +347,7 @@ class OptProp:
 
         Returns
         -------
-        ansys.speos.script.opt_prop.OptProp
+        ansys.speos.core.opt_prop.OptProp
             Optical Property feature.
         """
         # The _unique_id will help to find correct item in the scene.materials (the list of MaterialInstance)
@@ -409,7 +409,7 @@ class OptProp:
 
         Returns
         -------
-        ansys.speos.script.opt_prop.OptProp
+        ansys.speos.core.opt_prop.OptProp
             OptProp feature.
         """
         # Reset vop template
@@ -437,7 +437,7 @@ class OptProp:
 
         Returns
         -------
-        ansys.speos.script.opt_prop.OptProp
+        ansys.speos.core.opt_prop.OptProp
             OptProp feature.
         """
         # Delete the vop template

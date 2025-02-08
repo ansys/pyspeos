@@ -6,7 +6,7 @@
 import os
 
 import ansys.speos.core as core
-import ansys.speos.script as script
+import ansys.speos.core as script
 
 # If using docker container
 tests_data_path = os.path.join("/app", "assets")
@@ -28,7 +28,7 @@ speos = core.Speos(host="localhost", port=50098)
 # - A red car
 
 # +
-from ansys.speos.workflow.combine_speos import SpeosFileInstance, combine_speos
+from ansys.speos.core.workflow.combine_speos import SpeosFileInstance, combine_speos
 
 p = combine_speos(
     speos=speos,
@@ -125,7 +125,7 @@ sim.compute_CPU()  # run simulation in CPU
 
 # +
 if os.name == "nt":
-    from ansys.speos.workflow.open_result import open_result_image
+    from ansys.speos.core.workflow.open_result import open_result_image
 
     open_result_image(simulation_feature=sim, result_name="Camera.1.png")
 # -

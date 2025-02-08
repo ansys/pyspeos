@@ -6,7 +6,7 @@
 import os
 
 from ansys.speos.core import Speos
-import ansys.speos.script as script
+import ansys.speos.core as script
 
 # If using docker container
 tests_data_path = os.path.join("/app", "assets")
@@ -57,7 +57,7 @@ print(results)
 
 # +
 if os.name == "nt":
-    from ansys.speos.workflow.open_result import open_result_image
+    from ansys.speos.core.workflow.open_result import open_result_image
 
     open_result_image(
         simulation_feature=sim, result_name="ASSEMBLY1.DS (0).Dom Irradiance Sensor (0).xmp"
@@ -72,7 +72,7 @@ if os.name == "nt":
 
 # +
 if os.name == "nt":
-    from ansys.speos.workflow.open_result import open_result_in_viewer
+    from ansys.speos.core.workflow.open_result import open_result_in_viewer
 
     open_result_in_viewer(
         simulation_feature=sim, result_name="ASSEMBLY1.DS (0).Dom Irradiance Sensor (0).xmp"

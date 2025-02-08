@@ -10,7 +10,7 @@
 import os
 
 import ansys.speos.core as core
-import ansys.speos.script as script
+import ansys.speos.core as script
 
 # If using docker container
 tests_data_path = os.path.join("/app", "assets")

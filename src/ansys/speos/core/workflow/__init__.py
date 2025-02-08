@@ -21,7 +21,7 @@
 # SOFTWARE.
 import os
 
-from ansys.speos.workflow.combine_speos import SpeosFileInstance, combine_speos, insert_speos
+from ansys.speos.core.workflow.combine_speos import SpeosFileInstance, combine_speos, insert_speos
 
 if os.name == "nt":
-    from ansys.speos.workflow.open_result import open_result_image, open_result_in_viewer
+    from ansys.speos.core.workflow.open_result import open_result_image, open_result_in_viewer

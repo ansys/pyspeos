@@ -47,7 +47,7 @@ def launch_speos(version: str = None) -> Speos:
 
     Returns
     -------
-    ansys.speos.core.speos.Speos
+    ansys.speos.core.kernel.speos.Speos
         An instance of the Speos Service.
     """
     if not _HAS_PIM:  # pragma: no cover
@@ -76,7 +76,7 @@ def launch_remote_speos(
 
     Returns
     -------
-    ansys.speos.core.speos.Speos
+    ansys.speos.core.kernel.speos.Speos
         An instance of the Speos Service.
     """
     if not _HAS_PIM:  # pragma: no cover

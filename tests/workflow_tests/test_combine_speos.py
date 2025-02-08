@@ -27,8 +27,8 @@ import os
 from conftest import test_path
 
 from ansys.speos.core.speos import Speos
-import ansys.speos.script as script
-from ansys.speos.workflow.combine_speos import SpeosFileInstance, combine_speos, insert_speos
+import ansys.speos.core as script
+from ansys.speos.core.workflow.combine_speos import SpeosFileInstance, combine_speos, insert_speos
 
 
 def test_combine_speos(speos: Speos):

@@ -27,7 +27,7 @@ from typing import Iterator, List
 from ansys.api.speos.job.v2 import job_pb2 as messages, job_pb2_grpc as service
 from ansys.api.speos.results.v1.ray_path_pb2 import RayPath
 from ansys.speos.core.crud import CrudItem, CrudStub
-from ansys.speos.core.proto_message_utils import protobuf_message_to_str
+from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 
 Job = messages.Job
 """Job protobuf class : ansys.api.speos.job.v2.job_pb2.Job"""
@@ -39,7 +39,7 @@ class JobLink(CrudItem):
 
     Parameters
     ----------
-    db : ansys.speos.core.job.JobStub
+    db : ansys.speos.core.kernel.job.JobStub
         Database to link to.
     key : str
         Key of the job in the database.
@@ -160,7 +160,7 @@ class JobStub(CrudStub):
     The best way to get a JobStub is to retrieve it from SpeosClient via jobs() method.
     Like in the following example:
 
-    >>> from ansys.speos.core.speos import Speos
+    >>> from ansys.speos.core.kernel.speos import Speos
     >>> speos = Speos(host="localhost", port=50098)
     >>> job_db = speos.client.jobs()
 
@@ -180,7 +180,7 @@ class JobStub(CrudStub):
 
         Returns
         -------
-        ansys.speos.core.job.JobLink
+        ansys.speos.core.kernel.job.JobLink
             Link object created.
         """
         resp = CrudStub.create(self, messages.Create_Request(job=message))
@@ -191,7 +191,7 @@ class JobStub(CrudStub):
 
         Parameters
         ----------
-        ref : ansys.speos.core.job.JobLink
+        ref : ansys.speos.core.kernel.job.JobLink
             Link object to read.
 
         Returns
@@ -209,7 +209,7 @@ class JobStub(CrudStub):
 
         Parameters
         ----------
-        ref : ansys.speos.core.job.JobLink
+        ref : ansys.speos.core.kernel.job.JobLink
             Link object to update.
 
         data : job.Job
@@ -224,7 +224,7 @@ class JobStub(CrudStub):
 
         Parameters
         ----------
-        ref : ansys.speos.core.job.JobLink
+        ref : ansys.speos.core.kernel.job.JobLink
             Link object to delete.
         """
         if not ref.stub == self:
@@ -236,7 +236,7 @@ class JobStub(CrudStub):
 
         Returns
         -------
-        List[ansys.speos.core.job.JobLink]
+        List[ansys.speos.core.kernel.job.JobLink]
             Link objects.
         """
         guids = CrudStub.list(self, messages.List_Request()).guids

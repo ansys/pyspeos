@@ -25,7 +25,7 @@ Test basic using part/body/face from script layer.
 """
 
 from ansys.speos.core.speos import Speos
-import ansys.speos.script as script
+import ansys.speos.core as script
 
 
 def test_create_root_part(speos: Speos):

@@ -26,9 +26,9 @@ Test basic geometry database connection.
 
 from test_scene import create_face_rectangle
 
-from ansys.speos.core.body import Body, BodyLink
-from ansys.speos.core.face import Face, FaceLink
-from ansys.speos.core.part import Part
+from ansys.speos.core.kernel.body import Body, BodyLink
+from ansys.speos.core.kernel.face import Face, FaceLink
+from ansys.speos.core.kernel.part import Part
 from ansys.speos.core.speos import Speos
 
 

@@ -29,7 +29,7 @@ import os
 from conftest import test_path
 
 from ansys.speos.core.speos import Speos
-import ansys.speos.script.lxp as lxp
+import ansys.speos.core.lxp as lxp
 
 
 def test_light_path_finder_direct(speos: Speos):

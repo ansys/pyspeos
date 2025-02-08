@@ -26,7 +26,7 @@ from typing import List
 
 from ansys.api.speos.intensity.v1 import intensity_pb2 as messages, intensity_pb2_grpc as service
 from ansys.speos.core.crud import CrudItem, CrudStub
-from ansys.speos.core.proto_message_utils import protobuf_message_to_str
+from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 
 IntensityTemplate = messages.IntensityTemplate
 """IntensityTemplate protobuf class : ansys.api.speos.intensity.v1.intensity_pb2.IntensityTemplate"""
@@ -39,15 +39,15 @@ class IntensityTemplateLink(CrudItem):
 
     Parameters
     ----------
-    db : ansys.speos.core.intensity_template.IntensityTemplateStub
+    db : ansys.speos.core.kernel.intensity_template.IntensityTemplateStub
         Database to link to.
     key : str
         Key of the body in the database.
 
     Examples
     --------
-    >>> from ansys.speos.core.speos import Speos
-    >>> from ansys.speos.core.intensity_template import IntensityTemplate
+    >>> from ansys.speos.core.kernel.speos import Speos
+    >>> from ansys.speos.core.kernel.intensity_template import IntensityTemplate
     >>> speos = Speos(host="localhost", port=50098)
     >>> int_t_db = speos.client.intensity_templates()
     >>> int_t_message = IntensityTemplate(name="Cos_3_170")
@@ -118,7 +118,7 @@ class IntensityTemplateStub(CrudStub):
     The best way to get a IntensityTemplateStub is to retrieve it from SpeosClient via intensity_templates() method.
     Like in the following example:
 
-    >>> from ansys.speos.core.speos import Speos
+    >>> from ansys.speos.core.kernel.speos import Speos
     >>> speos = Speos(host="localhost", port=50098)
     >>> int_t_db = speos.client.intensity_templates()
 
@@ -138,7 +138,7 @@ class IntensityTemplateStub(CrudStub):
 
         Returns
         -------
-        ansys.speos.core.intensity_template.IntensityTemplateLink
+        ansys.speos.core.kernel.intensity_template.IntensityTemplateLink
             Link object created.
         """
         resp = CrudStub.create(self, messages.Create_Request(intensity_template=message))
@@ -149,7 +149,7 @@ class IntensityTemplateStub(CrudStub):
 
         Parameters
         ----------
-        ref : ansys.speos.core.intensity_template.IntensityTemplateLink
+        ref : ansys.speos.core.kernel.intensity_template.IntensityTemplateLink
             Link object to read.
 
         Returns
@@ -167,7 +167,7 @@ class IntensityTemplateStub(CrudStub):
 
         Parameters
         ----------
-        ref : ansys.speos.core.intensity_template.IntensityTemplateLink
+        ref : ansys.speos.core.kernel.intensity_template.IntensityTemplateLink
             Link object to update.
 
         data : intensity_template.IntensityTemplate
@@ -182,7 +182,7 @@ class IntensityTemplateStub(CrudStub):
 
         Parameters
         ----------
-        ref : ansys.speos.core.intensity_template.IntensityTemplateLink
+        ref : ansys.speos.core.kernel.intensity_template.IntensityTemplateLink
             Link object to delete.
         """
         if not ref.stub == self:
@@ -194,7 +194,7 @@ class IntensityTemplateStub(CrudStub):
 
         Returns
         -------
-        List[ansys.speos.core.intensity_template.IntensityTemplateLink]
+        List[ansys.speos.core.kernel.intensity_template.IntensityTemplateLink]
             Link objects.
         """
         guids = CrudStub.list(self, messages.List_Request()).guids

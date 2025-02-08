@@ -24,51 +24,62 @@
 
 from typing import List
 
-from ansys.api.speos.source.v1 import source_pb2 as messages, source_pb2_grpc as service
+from ansys.api.speos.sop.v1 import sop_pb2 as messages, sop_pb2_grpc as service
 from ansys.speos.core.crud import CrudItem, CrudStub
-from ansys.speos.core.proto_message_utils import protobuf_message_to_str
+from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 
-SourceTemplate = messages.SourceTemplate
-"""SourceTemplate protobuf class : ansys.api.speos.source.v1.source_pb2.SourceTemplate"""
-SourceTemplate.__str__ = lambda self: protobuf_message_to_str(self)
+SOPTemplate = messages.SOPTemplate
+"""SOPTemplate protobuf class : ansys.api.speos.sop.v1.sop_pb2.SOPTemplate"""
+SOPTemplate.__str__ = lambda self: protobuf_message_to_str(self)
 
 
-class SourceTemplateLink(CrudItem):
-    """Link object for a source template in database.
+class SOPTemplateLink(CrudItem):
+    """
+    Link object for Surface Optical Properties template in database.
 
     Parameters
     ----------
-    db : ansys.speos.core.source_template.SourceTemplateStub
+    db : ansys.speos.core.kernel.sop_template.SOPTemplateStub
         Database to link to.
     key : str
-        Key of the source template in the database.
+        Key of the sop_template in the database.
+
+    Examples
+    --------
+    >>> from ansys.speos.core.kernel.speos import Speos
+    >>> from ansys.speos.core.kernel.sop_template import SOPTemplate
+    >>> speos = Speos(host="localhost", port=50098)
+    >>> sop_t_db = speos.client.sop_templates()
+    >>> sop_t_message = SOPTemplate(name="Mirror_50")
+    >>> sop_t_message.mirror.reflectance = 50
+    >>> sop_t_link = sop_t_db.create(message=sop_t_message)
+
     """
 
     def __init__(self, db, key: str):
         super().__init__(db, key)
-        self._actions_stub = db._actions_stub
 
     def __str__(self) -> str:
-        """Return the string representation of the source template."""
+        """Return the string representation of the sop_template."""
         return str(self.get())
 
-    def get(self) -> SourceTemplate:
+    def get(self) -> SOPTemplate:
         """Get the datamodel from database.
 
         Returns
         -------
-        source_template.SourceTemplate
-            Source template datamodel.
+        sop_template.SOPTemplate
+            SOPTemplate datamodel.
         """
         return self._stub.read(self)
 
-    def set(self, data: SourceTemplate) -> None:
+    def set(self, data: SOPTemplate) -> None:
         """Change datamodel in database.
 
         Parameters
         ----------
-        data : source_template.SourceTemplate
-            New source template datamodel.
+        data : sop_template.SOPTemplate
+            New SOPTemplate datamodel.
         """
         self._stub.update(self, data)
 
@@ -76,22 +87,10 @@ class SourceTemplateLink(CrudItem):
         """Remove datamodel from database."""
         self._stub.delete(self)
 
-    # Actions
-    def get_ray_file_info(self) -> messages.GetRayFileInfo_Response:
-        """
-        Retrieve information about ray file source.
 
-        Returns
-        -------
-        ansys.api.speos.source.v1.source_pb2.GetRayFileInfo_Response
-            Information about ray file source, like flux value.
-        """
-        return self._actions_stub.GetRayFileInfo(messages.GetRayFileInfo_Request(guid=self.key))
-
-
-class SourceTemplateStub(CrudStub):
+class SOPTemplateStub(CrudStub):
     """
-    Database interactions for source templates.
+    Database interactions for Surface Optical Properties templates.
 
     Parameters
     ----------
@@ -100,86 +99,85 @@ class SourceTemplateStub(CrudStub):
 
     Examples
     --------
-    The best way to get a SourceTemplateStub is to retrieve it from SpeosClient via source_templates() method.
+    The best way to get a SOPTemplateStub is to retrieve it from SpeosClient via sop_templates() method.
     Like in the following example:
 
-    >>> from ansys.speos.core.speos import Speos
+    >>> from ansys.speos.core.kernel.speos import Speos
     >>> speos = Speos(host="localhost", port=50098)
-    >>> src_t_db = speos.client.source_templates()
+    >>> sop_t_db = speos.client.sop_templates()
 
     """
 
     def __init__(self, channel):
-        super().__init__(stub=service.SourceTemplatesManagerStub(channel=channel))
-        self._actions_stub = service.SourceTemplateActionsStub(channel=channel)
+        super().__init__(stub=service.SOPTemplatesManagerStub(channel=channel))
 
-    def create(self, message: SourceTemplate) -> SourceTemplateLink:
+    def create(self, message: SOPTemplate) -> SOPTemplateLink:
         """Create a new entry.
 
         Parameters
         ----------
-        message : source_template.SourceTemplate
+        message : sop_template.SOPTemplate
             Datamodel for the new entry.
 
         Returns
         -------
-        ansys.speos.core.source_template.SourceTemplateLink
+        ansys.speos.core.kernel.sop_template.SOPTemplateLink
             Link object created.
         """
-        resp = CrudStub.create(self, messages.Create_Request(source_template=message))
-        return SourceTemplateLink(self, resp.guid)
+        resp = CrudStub.create(self, messages.Create_Request(sop_template=message))
+        return SOPTemplateLink(self, resp.guid)
 
-    def read(self, ref: SourceTemplateLink) -> SourceTemplate:
+    def read(self, ref: SOPTemplateLink) -> SOPTemplate:
         """Get an existing entry.
 
         Parameters
         ----------
-        ref : ansys.speos.core.source_template.SourceTemplateLink
+        ref : ansys.speos.core.kernel.sop_template.SOPTemplateLink
             Link object to read.
 
         Returns
         -------
-        source_template.SourceTemplate
+        sop_template.SOPTemplate
             Datamodel of the entry.
         """
         if not ref.stub == self:
-            raise ValueError("SourceTemplateLink is not on current database")
+            raise ValueError("SOPTemplateLink is not on current database")
         resp = CrudStub.read(self, messages.Read_Request(guid=ref.key))
-        return resp.source_template
+        return resp.sop_template
 
-    def update(self, ref: SourceTemplateLink, data: SourceTemplate):
+    def update(self, ref: SOPTemplateLink, data: SOPTemplate):
         """Change an existing entry.
 
         Parameters
         ----------
-        ref : ansys.speos.core.source_template.SourceTemplateLink
+        ref : ansys.speos.core.kernel.sop_template.SOPTemplateLink
             Link object to update.
-        data : source_template.SourceTemplate
+        data : sop_template.SOPTemplate
             New datamodel for the entry.
         """
         if not ref.stub == self:
-            raise ValueError("SourceTemplateLink is not on current database")
-        CrudStub.update(self, messages.Update_Request(guid=ref.key, source_template=data))
+            raise ValueError("SOPTemplateLink is not on current database")
+        CrudStub.update(self, messages.Update_Request(guid=ref.key, sop_template=data))
 
-    def delete(self, ref: SourceTemplateLink) -> None:
+    def delete(self, ref: SOPTemplateLink) -> None:
         """Remove an existing entry.
 
         Parameters
         ----------
-        ref : ansys.speos.core.source_template.SourceTemplateLink
+        ref : ansys.speos.core.kernel.sop_template.SOPTemplateLink
             Link object to delete.
         """
         if not ref.stub == self:
-            raise ValueError("SourceTemplateLink is not on current database")
+            raise ValueError("SOPTemplateLink is not on current database")
         CrudStub.delete(self, messages.Delete_Request(guid=ref.key))
 
-    def list(self) -> List[SourceTemplateLink]:
+    def list(self) -> List[SOPTemplateLink]:
         """List existing entries.
 
         Returns
         -------
-        List[ansys.speos.core.source_template.SourceTemplateLink]
+        List[ansys.speos.core.kernel.sop_template.SOPTemplateLink]
             Link objects.
         """
         guids = CrudStub.list(self, messages.List_Request()).guids
-        return list(map(lambda x: SourceTemplateLink(self, x), guids))
+        return list(map(lambda x: SOPTemplateLink(self, x), guids))

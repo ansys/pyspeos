@@ -29,7 +29,7 @@ from ansys.api.speos.simulation.v1 import (
     simulation_template_pb2_grpc as service,
 )
 from ansys.speos.core.crud import CrudItem, CrudStub
-from ansys.speos.core.proto_message_utils import protobuf_message_to_str
+from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 
 SimulationTemplate = messages.SimulationTemplate
 """SimulationTemplate protobuf class : ansys.api.speos.simulation.v1.simulation_template_pb2.SimulationTemplate"""
@@ -42,16 +42,16 @@ class SimulationTemplateLink(CrudItem):
 
     Parameters
     ----------
-    db : ansys.speos.core.simulation_template.SimulationTemplateStub
+    db : ansys.speos.core.kernel.simulation_template.SimulationTemplateStub
         Database to link to.
     key : str
         Key of the simulation_template in the database.
 
     Examples
     --------
-    >>> from ansys.speos.core.speos import Speos
+    >>> from ansys.speos.core.kernel.speos import Speos
     >>> from ansys.api.speos.simulation.v1 import simulation_template_pb2
-    >>> from ansys.speos.core.simulation_template import SimulationTemplate
+    >>> from ansys.speos.core.kernel.simulation_template import SimulationTemplate
     >>> speos = Speos(host="localhost", port=50098)
     >>> sim_t_db = speos.client.simulation_templates()
     >>> sim_t_message = SimulationTemplate(name="Direct")
@@ -112,7 +112,7 @@ class SimulationTemplateStub(CrudStub):
     The best way to get a SimulationTemplateStub is to retrieve it from SpeosClient via simulation_templates() method.
     Like in the following example:
 
-    >>> from ansys.speos.core.speos import Speos
+    >>> from ansys.speos.core.kernel.speos import Speos
     >>> speos = Speos(host="localhost", port=50098)
     >>> sim_t_db = speos.client.simulation_templates()
 
@@ -131,7 +131,7 @@ class SimulationTemplateStub(CrudStub):
 
         Returns
         -------
-        ansys.speos.core.simulation_template.SimulationTemplateLink
+        ansys.speos.core.kernel.simulation_template.SimulationTemplateLink
             Link object created.
         """
         resp = CrudStub.create(self, messages.Create_Request(simulation_template=message))
@@ -142,7 +142,7 @@ class SimulationTemplateStub(CrudStub):
 
         Parameters
         ----------
-        ref : ansys.speos.core.simulation_template.SimulationTemplateLink
+        ref : ansys.speos.core.kernel.simulation_template.SimulationTemplateLink
             Link object to read.
 
         Returns
@@ -160,7 +160,7 @@ class SimulationTemplateStub(CrudStub):
 
         Parameters
         ----------
-        ref : ansys.speos.core.simulation_template.SimulationTemplateLink
+        ref : ansys.speos.core.kernel.simulation_template.SimulationTemplateLink
             Link object to update.
 
         data : simulation_template.SimulationTemplate
@@ -175,7 +175,7 @@ class SimulationTemplateStub(CrudStub):
 
         Parameters
         ----------
-        ref : ansys.speos.core.simulation_template.SimulationTemplateLink
+        ref : ansys.speos.core.kernel.simulation_template.SimulationTemplateLink
             Link object to delete.
         """
         if not ref.stub == self:
@@ -187,7 +187,7 @@ class SimulationTemplateStub(CrudStub):
 
         Returns
         -------
-        List[ansys.speos.core.simulation_template.SimulationTemplateLink]
+        List[ansys.speos.core.kernel.simulation_template.SimulationTemplateLink]
             Link objects.
         """
         guids = CrudStub.list(self, messages.List_Request()).guids

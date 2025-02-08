@@ -29,10 +29,10 @@ import os
 from conftest import test_path
 
 from ansys.speos.core import scene
-from ansys.speos.core.proto_message_utils import protobuf_message_to_dict
+from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_dict
 from ansys.speos.core.speos import Speos
-import ansys.speos.script as script
-from ansys.speos.script import proto_message_utils
+import ansys.speos.core as script
+from ansys.speos.core import proto_message_utils
 
 
 def test_replace_guid_elt(speos: Speos):

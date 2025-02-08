@@ -38,20 +38,24 @@ Then add the import within this module to enable:
    >>> library.add(1, 2)
 
 .. note::
+
    It's best to import the version here as well so it can be
    referenced at the library level.
 
 """
 
-from ansys.speos.script.body import Body
-from ansys.speos.script.face import Face
-from ansys.speos.script.geo_ref import GeoRef
-from ansys.speos.script.intensity import Intensity
-from ansys.speos.script.lxp import LightPathFinder, RayPath
-from ansys.speos.script.opt_prop import OptProp
-from ansys.speos.script.part import Part
-from ansys.speos.script.project import Project
-import ansys.speos.script.sensor as sensor
-import ansys.speos.script.simulation as simulation
-import ansys.speos.script.source as source
-from ansys.speos.script.spectrum import Spectrum
+from ansys.speos.core.kernel.body import Body, BodyLink
+from ansys.speos.core.kernel.face import Face, FaceLink
+from ansys.speos.core.kernel.intensity_template import IntensityTemplate, IntensityTemplateLink
+from ansys.speos.core.kernel.job import Job, JobLink
+from ansys.speos.core.logger import LOG, Logger
+from ansys.speos.core.kernel.part import Part, PartLink
+from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_dict, protobuf_message_to_str
+from ansys.speos.core.kernel.scene import Scene, SceneLink
+from ansys.speos.core.kernel.sensor_template import SensorTemplate, SensorTemplateLink
+from ansys.speos.core.kernel.simulation_template import SimulationTemplate, SimulationTemplateLink
+from ansys.speos.core.kernel.sop_template import SOPTemplate, SOPTemplateLink
+from ansys.speos.core.kernel.source_template import SourceTemplate, SourceTemplateLink
+from ansys.speos.core.kernel.spectrum import Spectrum, SpectrumLink
+from ansys.speos.core.speos import Speos, SpeosClient
+from ansys.speos.core.kernel.vop_template import VOPTemplate, VOPTemplateLink

@@ -20,153 +20,222 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
+"""Provides a way to interact with feature: Body."""
 
-from typing import List
+from __future__ import annotations
 
-from ansys.api.speos.part.v1 import body_pb2 as messages, body_pb2_grpc as service
-from ansys.speos.core.crud import CrudItem, CrudStub
-from ansys.speos.core.proto_message_utils import protobuf_message_to_str
+import re
+from typing import List, Mapping, Optional, Union
 
-Body = messages.Body
-"""Body protobuf class : ansys.api.speos.part.v1.body_pb2.Body"""
-Body.__str__ = lambda self: protobuf_message_to_str(self)
+import ansys.speos.core as core
+from ansys.speos.core import proto_message_utils
+import ansys.speos.core.face as face
+import ansys.speos.core.part as part
 
 
-class BodyLink(CrudItem):
-    """Link object for a body in database.
+class Body:
+    """Feature : Body.
 
     Parameters
     ----------
-    db : ansys.speos.core.body.BodyStub
-        Database to link to.
-    key : str
-        Key of the body in the database.
+    speos_client : ansys.speos.core.client.SpeosClient
+        The Speos instance client.
+    name : str
+        Name of the feature.
+    description : str
+        Description of the feature.
+        By default, ``""``.
+    metadata : Mapping[str, str]
+        Metadata of the feature.
+        By default, ``{}``.
+    parent_part : Union[ansys.speos.core.part.Part, ansys.speos.core.part.Part.SubPart], optional
+        Feature containing this sub part.
+        By default, ``None``.
+
+    Attributes
+    ----------
+    body_link : ansys.speos.core.kernel.body.BodyLink
+        Link object for the body in database.
     """
 
-    def __init__(self, db, key: str):
-        super().__init__(db, key)
+    def __init__(
+        self,
+        speos_client: core.SpeosClient,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        parent_part: Optional[Union[part.Part, part.Part.SubPart]] = None,
+    ) -> None:
+        self._speos_client = speos_client
+        self._parent_part = parent_part
+        self._name = name
+        self.body_link = None
+        """Link object for the body in database."""
+
+        if metadata is None:
+            metadata = {}
+
+        # Create local Body
+        self._body = core.Body(name=name, description=description, metadata=metadata)
+
+        self._geom_features = []
+
+    def create_face(
+        self, name: str, description: str = "", metadata: Optional[Mapping[str, str]] = None
+    ) -> face.Face:
+        """Create a face in this element.
+
+        Parameters
+        ----------
+        name : str
+            Name of the feature.
+        description : str
+            Description of the feature.
+            By default, ``""``.
+        metadata : Optional[Mapping[str, str]]
+            Metadata of the feature.
+            By default, ``{}``.
+
+        Returns
+        -------
+        ansys.speos.core.face.Face
+            Face feature.
+        """
+        if metadata is None:
+            metadata = {}
+
+        face_feat = face.Face(
+            speos_client=self._speos_client,
+            name=name,
+            description=description,
+            metadata=metadata,
+            parent_body=self,
+        )
+        self._geom_features.append(face_feat)
+        return face_feat
+
+    def _to_dict(self) -> dict:
+        out_dict = ""
+
+        if self.body_link is None:
+            out_dict = proto_message_utils._replace_guids(
+                speos_client=self._speos_client, message=self._body
+            )
+        else:
+            out_dict = proto_message_utils._replace_guids(
+                speos_client=self._speos_client, message=self.body_link.get()
+            )
+
+        return out_dict
 
     def __str__(self) -> str:
         """Return the string representation of the body."""
-        return str(self.get())
+        out_str = ""
 
-    def get(self) -> Body:
-        """Get the datamodel from database.
+        if self.body_link is None:
+            out_str += "local: "
 
-        Returns
-        -------
-        body.Body
-            Body datamodel.
-        """
-        return self._stub.read(self)
+        out_str += proto_message_utils.dict_to_str(dict=self._to_dict())
+        return out_str
 
-    def set(self, data: Body) -> None:
-        """Change datamodel in database.
-
-        Parameters
-        ----------
-        data : body.Body
-            New body datamodel.
-        """
-        self._stub.update(self, data)
-
-    def delete(self) -> None:
-        """Remove datamodel from database."""
-        self._stub.delete(self)
-
-
-class BodyStub(CrudStub):
-    """
-    Database interactions for body.
-
-    Parameters
-    ----------
-    channel : grpc.Channel
-        Channel to use for the stub.
-
-    Examples
-    --------
-    The best way to get a BodyStub is to retrieve it from SpeosClient via bodies() method.
-    Like in the following example:
-
-    >>> from ansys.speos.core.speos import Speos
-    >>> speos = Speos(host="localhost", port=50098)
-    >>> body_db = speos.client.bodies()
-
-    """
-
-    def __init__(self, channel):
-        super().__init__(stub=service.BodiesManagerStub(channel=channel))
-
-    def create(self, message: Body) -> BodyLink:
-        """Create a new entry.
-
-        Parameters
-        ----------
-        message : body.Body
-            Datamodel for the new entry.
+    def commit(self) -> Body:
+        """Save feature: send the local data to the speos server database.
 
         Returns
         -------
-        ansys.speos.core.body.BodyLink
-            Link object created.
+        ansys.speos.core.body.Body
+            Body feature.
         """
-        resp = CrudStub.create(self, messages.Create_Request(body=message))
-        return BodyLink(self, resp.guid)
+        # Commit faces contained in this body
+        for g in self._geom_features:
+            g.commit()
 
-    def read(self, ref: BodyLink) -> Body:
-        """Get an existing entry.
+        # Save or Update the body (depending on if it was already saved before)
+        if self.body_link is None:
+            self.body_link = self._speos_client.bodies().create(message=self._body)
+        elif self.body_link.get() != self._body:
+            self.body_link.set(data=self._body)  # Only Update if data has changed
 
-        Parameters
-        ----------
-        ref : ansys.speos.core.body.BodyLink
-            Link object to read.
+        # Update the parent part
+        if self._parent_part is not None:
+            if self.body_link.key not in self._parent_part._part.body_guids:
+                self._parent_part._part.body_guids.append(self.body_link.key)
+                if self._parent_part.part_link is not None:
+                    self._parent_part.part_link.set(data=self._parent_part._part)
+
+        return self
+
+    def reset(self) -> Body:
+        """Reset feature: override local data by the one from the speos server database.
 
         Returns
         -------
-        body.Body
-            Datamodel of the entry.
+        ansys.speos.core.body.Body
+            Body feature.
         """
-        if not ref.stub == self:
-            raise ValueError("BodyLink is not on current database")
-        resp = CrudStub.read(self, messages.Read_Request(guid=ref.key))
-        return resp.body
+        # Reset body
+        if self.body_link is not None:
+            self._body = self.body_link.get()
 
-    def update(self, ref: BodyLink, data: Body) -> None:
-        """Change an existing entry.
+        return self
 
-        Parameters
-        ----------
-        ref : ansys.speos.core.body.BodyLink
-            Link object to update.
-
-        data : body.Body
-            New datamodel for the entry.
-        """
-        if not ref.stub == self:
-            raise ValueError("BodyLink is not on current database")
-        CrudStub.update(self, messages.Update_Request(guid=ref.key, body=data))
-
-    def delete(self, ref: BodyLink) -> None:
-        """Remove an existing entry.
-
-        Parameters
-        ----------
-        ref : ansys.speos.core.body.BodyLink
-            Link object to delete.
-        """
-        if not ref.stub == self:
-            raise ValueError("BodyLink is not on current database")
-        CrudStub.delete(self, messages.Delete_Request(guid=ref.key))
-
-    def list(self) -> List[BodyLink]:
-        """List existing entries.
+    def delete(self) -> Body:
+        """Delete feature: delete data from the speos server database.
 
         Returns
         -------
-        List[ansys.speos.core.body.BodyLink]
-            Link objects.
+        ansys.speos.core.body.Body
+            Body feature.
         """
-        guids = CrudStub.list(self, messages.List_Request()).guids
-        return list(map(lambda x: BodyLink(self, x), guids))
+        # Retrieve all features to delete them
+        while len(self._geom_features) > 0:
+            self._geom_features[0].delete()
+
+        if self.body_link is not None:
+            # Update the parent part
+            if self._parent_part is not None:
+                if self.body_link.key in self._parent_part._part.body_guids:
+                    self._parent_part._part.body_guids.remove(self.body_link.key)
+                    if self._parent_part.part_link is not None:
+                        self._parent_part.part_link.set(data=self._parent_part._part)
+
+            # Delete the body
+            self.body_link.delete()
+            self.body_link = None
+
+        if self in self._parent_part._geom_features:
+            self._parent_part._geom_features.remove(self)
+
+        return self
+
+    def find(
+        self, name: str, name_regex: bool = False, feature_type: Optional[type] = None
+    ) -> List[face.Face]:
+        """Find feature(s). In a body, only faces features can be found.
+
+        Parameters
+        ----------
+        name : str
+            Name of the feature.
+            Example "FaceName"
+        name_regex : bool
+            Allows to use regex for name parameter.
+            By default, ``False``, means that regex is not used for name parameter.
+        feature_type : type
+            Type of the wanted feature (example: ansys.speos.core.face.Face).
+            By default, ``None``, means that all features will be considered.
+
+        Returns
+        -------
+        List[ansys.speos.core.face.Face]
+            Found features.
+        """
+        found_features = []
+        if feature_type == face.Face or feature_type is None:
+            if name_regex:
+                p = re.compile(name)
+                found_features.extend([x for x in self._geom_features if p.match(x._name)])
+            else:
+                found_features.extend([x for x in self._geom_features if x._name == name])
+
+        return found_features
