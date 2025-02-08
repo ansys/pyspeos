@@ -31,6 +31,7 @@ from ansys.speos.core import proto_message_utils
 import ansys.speos.core.face as face
 from ansys.speos.core.kernel.client import SpeosClient
 import ansys.speos.core.part as part
+from ansys.speos.core.kernel.body import Body as KernelBody
 
 
 class Body:
@@ -76,7 +77,7 @@ class Body:
             metadata = {}
 
         # Create local Body
-        self._body = Body(name=name, description=description, metadata=metadata)
+        self._body = KernelBody(name=name, description=description, metadata=metadata)
 
         self._geom_features = []
 
