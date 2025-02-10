@@ -23,6 +23,7 @@
 
 from __future__ import annotations
 
+from difflib import SequenceMatcher
 from typing import List, Mapping, Optional
 import uuid
 
@@ -324,6 +325,27 @@ class OptProp:
         proto_message_utils._replace_properties(json_dict=out_dict)
 
         return out_dict
+
+    def get(self, key: str = "") -> str | dict:
+        """Get dictionary corresponding to the project - read only.
+
+        Parameters
+        ----------
+        key: str
+
+        Returns
+        -------
+        str | dict
+        """
+        if key == "":
+            return self._to_dict()
+        info = proto_message_utils._value_finder_key_startswith(dict_var=self._to_dict(), key=key)
+        content = list(info)
+        if len(content) != 0:
+            content.sort(key=lambda x: SequenceMatcher(None, x[0], key).ratio(), reverse=True)
+            return content[0][1]
+        info = proto_message_utils._flatten_dict(dict_var=self._to_dict())
+        print("Used key: {} not found in key list: {}.".format(key, info.keys()))
 
     def __str__(self):
         """Return the string representation of the optical property."""
