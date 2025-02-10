@@ -128,13 +128,25 @@ print("geometries linked to op1: {}".format(op1.get(key="geo_paths")))
 print("op1 surface optical properties info: {}".format(op1.get(key="sops")))
 print("op1 volume optical property info: {}".format(op1.get(key="vop")))
 # user can use get with vop type as key word to check volume property type
-print("op1 {} opaque type volume optical property".format("is" if op1.get(key="opaque") is not None else "is not"))
+print(
+    "op1 {} opaque type volume optical property".format(
+        "is" if op1.get(key="opaque") is not None else "is not"
+    )
+)
 
 print(op2)
 print("op2 name: {}".format(op2.get(key="name")))
-print("op2 {} optical polished type surface property".format(("is" if "optical_polished" in op2.get(key="sops")[0] else "is not")))
+print(
+    "op2 {} optical polished type surface property".format(
+        ("is" if "optical_polished" in op2.get(key="sops")[0] else "is not")
+    )
+)
 # an alternative way to check the type of optical property
-print("op2 {} library type volume optical property".format("is" if "library" in op2.get(key="vop") is not None else "is not"))
+print(
+    "op2 {} library type volume optical property".format(
+        "is" if "library" in op2.get(key="vop") is not None else "is not"
+    )
+)
 
 print(op3)
 print("op3 name: {}".format(op3.get(key="name")))

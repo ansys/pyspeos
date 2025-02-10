@@ -337,7 +337,6 @@ class OptProp:
         -------
         str | dict
         """
-
         if key == "":
             return self._to_dict()
         info = proto_message_utils._value_finder_key_startswith(dict_var=self._to_dict(), key=key)
