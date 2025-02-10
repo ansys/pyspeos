@@ -33,17 +33,17 @@ import numpy as np
 
 from ansys.api.speos.sensor.v1 import common_pb2, irradiance_sensor_pb2
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
-from ansys.speos.core.kernel.body import Body
-from ansys.speos.core.kernel.face import Face, FaceStub
-from ansys.speos.core.kernel.intensity_template import IntensityTemplate
-from ansys.speos.core.kernel.part import Part
-from ansys.speos.core.kernel.scene import Scene, SceneLink
-from ansys.speos.core.kernel.sensor_template import SensorTemplate
-from ansys.speos.core.kernel.simulation_template import SimulationTemplate
-from ansys.speos.core.kernel.sop_template import SOPTemplate
-from ansys.speos.core.kernel.source_template import SourceTemplate
-from ansys.speos.core.kernel.spectrum import Spectrum
-from ansys.speos.core.kernel.vop_template import VOPTemplate
+from ansys.speos.core.kernel.body import ProtoBody
+from ansys.speos.core.kernel.face import ProtoFace, FaceStub
+from ansys.speos.core.kernel.intensity_template import ProtoIntensityTemplate
+from ansys.speos.core.kernel.part import ProtoPart
+from ansys.speos.core.kernel.scene import ProtoScene, SceneLink
+from ansys.speos.core.kernel.sensor_template import ProtoSensorTemplate
+from ansys.speos.core.kernel.simulation_template import ProtoSimulationTemplate
+from ansys.speos.core.kernel.sop_template import ProtoSOPTemplate
+from ansys.speos.core.kernel.source_template import ProtoSourceTemplate
+from ansys.speos.core.kernel.spectrum import ProtoSpectrum
+from ansys.speos.core.kernel.vop_template import ProtoVOPTemplate
 from ansys.speos.core.speos import Speos
 
 
@@ -55,13 +55,13 @@ def create_basic_scene(speos: Speos) -> SceneLink:
 
     # Create part with two bodies
     main_part = speos.client.parts().create(
-        Part(
+        ProtoPart(
             name="main_part",
             description="main_part for scene_0",
             body_guids=[
                 speos.client.bodies()
                 .create(
-                    message=Body(
+                    message=ProtoBody(
                         name="BodySource:1",
                         description="Body used as support for source",
                         face_guids=[
@@ -92,28 +92,28 @@ def create_basic_scene(speos: Speos) -> SceneLink:
 
     # Create blackbody and monochromatic spectrums
     spec_bb_3500 = speos.client.spectrums().create(
-        message=Spectrum(
+        message=ProtoSpectrum(
             name="blackbody_3500",
             description="blackbody spectrum - T 3500K",
-            blackbody=Spectrum.BlackBody(temperature=3500),
+            blackbody=ProtoSpectrum.BlackBody(temperature=3500),
         )
     )
     # Create lambertian intensity template
     intens_t_lamb_180 = speos.client.intensity_templates().create(
-        message=IntensityTemplate(
+        message=ProtoIntensityTemplate(
             name="lambertian_180",
             description="lambertian intensity template 180",
-            cos=IntensityTemplate.Cos(N=1.0, total_angle=180.0),
+            cos=ProtoIntensityTemplate.Cos(N=1.0, total_angle=180.0),
         )
     )
 
     # Create a luminaire source template with flux from intensity file
     src_t_luminaire = speos.client.source_templates().create(
-        message=SourceTemplate(
+        message=ProtoSourceTemplate(
             name="luminaire_AA",
             description="Luminaire source template",
-            luminaire=SourceTemplate.Luminaire(
-                flux_from_intensity_file=SourceTemplate.FromIntensityFile(),
+            luminaire=ProtoSourceTemplate.Luminaire(
+                flux_from_intensity_file=ProtoSourceTemplate.FromIntensityFile(),
                 intensity_file_uri=os.path.join(test_path, "IES_C_DETECTOR.ies"),
                 spectrum_guid=spec_bb_3500.key,
             ),
@@ -122,13 +122,13 @@ def create_basic_scene(speos: Speos) -> SceneLink:
 
     # Create surface source template
     src_t_surface_bb = speos.client.source_templates().create(
-        message=SourceTemplate(
+        message=ProtoSourceTemplate(
             name="surface_with_monochromatic",
             description="Surface source template with blackbody spectrum",
-            surface=SourceTemplate.Surface(
-                luminous_flux=SourceTemplate.Luminous(luminous_value=683),
+            surface=ProtoSourceTemplate.Surface(
+                luminous_flux=ProtoSourceTemplate.Luminous(luminous_value=683),
                 intensity_guid=intens_t_lamb_180.key,
-                exitance_constant=SourceTemplate.Surface.ExitanceConstant(),
+                exitance_constant=ProtoSourceTemplate.Surface.ExitanceConstant(),
                 spectrum_guid=spec_bb_3500.key,
             ),
         )
@@ -136,7 +136,7 @@ def create_basic_scene(speos: Speos) -> SceneLink:
 
     # Create two irradiance sensor templates: photometric, colorimetric
     ssr_t_irr_photo = speos.client.sensor_templates().create(
-        message=SensorTemplate(
+        message=ProtoSensorTemplate(
             name="irradiance_photometric",
             description="Irradiance sensor template photometric",
             irradiance_sensor_template=irradiance_sensor_pb2.IrradianceSensorTemplate(
@@ -154,7 +154,7 @@ def create_basic_scene(speos: Speos) -> SceneLink:
         )
     )
     ssr_t_irr_colo = speos.client.sensor_templates().create(
-        message=SensorTemplate(
+        message=ProtoSensorTemplate(
             name="irradiance_colorimetric",
             description="Irradiance sensor template colorimetric",
             irradiance_sensor_template=irradiance_sensor_pb2.IrradianceSensorTemplate(
@@ -176,15 +176,15 @@ def create_basic_scene(speos: Speos) -> SceneLink:
         )
     )
 
-    irr_sensor_props = Scene.SensorInstance.IrradianceProperties(
+    irr_sensor_props = ProtoScene.SensorInstance.IrradianceProperties(
         axis_system=[0, 0, 1000, -1, 0, 0, 0, 1, 0, 0, 0, -1],
-        ray_file_type=Scene.SensorInstance.EnumRayFileType.RayFileNone,
-        layer_type_source=Scene.SensorInstance.LayerTypeSource(),
+        ray_file_type=ProtoScene.SensorInstance.EnumRayFileType.RayFileNone,
+        layer_type_source=ProtoScene.SensorInstance.LayerTypeSource(),
     )
 
     # Create simu templates with default params
     direct_t = speos.client.simulation_templates().create(
-        message=SimulationTemplate(
+        message=ProtoSimulationTemplate(
             name="direct_simu",
             description="Direct simulation template with default parameters",
             direct_mc_simulation_template=simulation_template_pb2.DirectMCSimulationTemplate(
@@ -197,7 +197,7 @@ def create_basic_scene(speos: Speos) -> SceneLink:
         )
     )
     inverse_t = speos.client.simulation_templates().create(
-        message=SimulationTemplate(
+        message=ProtoSimulationTemplate(
             name="inverse_simu",
             description="Inverse simulation template with default parameters",
             inverse_mc_simulation_template=simulation_template_pb2.InverseMCSimulationTemplate(
@@ -213,10 +213,10 @@ def create_basic_scene(speos: Speos) -> SceneLink:
         )
     )
     interactive_t = speos.client.simulation_templates().create(
-        message=SimulationTemplate(
+        message=ProtoSimulationTemplate(
             name="interactive_simu",
             description="Interactive simulation template with default parameters",
-            interactive_simulation_template=SimulationTemplate.Interactive(
+            interactive_simulation_template=ProtoSimulationTemplate.Interactive(
                 geom_distance_tolerance=0.01,
                 max_impact=100,
                 weight=simulation_template_pb2.Weight(minimum_energy_percentage=0.005),
@@ -227,96 +227,96 @@ def create_basic_scene(speos: Speos) -> SceneLink:
 
     # Create a sop template that can be used in different materials
     mirror_100_t = speos.client.sop_templates().create(
-        message=SOPTemplate(
+        message=ProtoSOPTemplate(
             name="mirror_100",
             description="mirror sop template - reflectance 100",
-            mirror=SOPTemplate.Mirror(reflectance=100),
+            mirror=ProtoSOPTemplate.Mirror(reflectance=100),
         )
     )
 
     # Create a vop template
     opaque_t = speos.client.vop_templates().create(
-        message=VOPTemplate(
-            name="opaque", description="opaque vop template", opaque=VOPTemplate.Opaque()
+        message=ProtoVOPTemplate(
+            name="opaque", description="opaque vop template", opaque=ProtoVOPTemplate.Opaque()
         )
     )
 
     # Create scene
     scene = scene_db.create(
-        message=Scene(
+        message=ProtoScene(
             name="scene_0",
             description="scene from scratch",
             part_guid=main_part.key,
             materials=[
-                Scene.MaterialInstance(
+                ProtoScene.MaterialInstance(
                     name="Material.1",
                     vop_guid=opaque_t.key,
                     sop_guids=[mirror_100_t.key],
-                    geometries=Scene.GeoPaths(geo_paths=["Body0:1"]),
+                    geometries=ProtoScene.GeoPaths(geo_paths=["Body0:1"]),
                 ),
-                Scene.MaterialInstance(
+                ProtoScene.MaterialInstance(
                     name="FOP.1",
                     sop_guids=[mirror_100_t.key],
-                    geometries=Scene.GeoPaths(geo_paths=["BodySource:1/FaceSource:1"]),
+                    geometries=ProtoScene.GeoPaths(geo_paths=["BodySource:1/FaceSource:1"]),
                 ),
             ],
             sources=[
-                Scene.SourceInstance(
+                ProtoScene.SourceInstance(
                     name="luminaire_AA.1",
                     source_guid=src_t_luminaire.key,
-                    luminaire_properties=Scene.SourceInstance.LuminaireProperties(
+                    luminaire_properties=ProtoScene.SourceInstance.LuminaireProperties(
                         axis_system=[50, 50, 50, 1, 0, 0, 0, 1, 0, 0, 0, 1]
                     ),
                 ),
-                Scene.SourceInstance(
+                ProtoScene.SourceInstance(
                     name="luminaire_AA.2",
                     source_guid=src_t_luminaire.key,
-                    luminaire_properties=Scene.SourceInstance.LuminaireProperties(
+                    luminaire_properties=ProtoScene.SourceInstance.LuminaireProperties(
                         axis_system=[0, 0, 500, 1, 0, 0, 0, 1, 0, 0, 0, 1]
                     ),
                 ),
-                Scene.SourceInstance(
+                ProtoScene.SourceInstance(
                     name="surface_with_blackbody.1",
                     source_guid=src_t_surface_bb.key,
-                    surface_properties=Scene.SourceInstance.SurfaceProperties(
-                        exitance_constant_properties=Scene.SourceInstance.SurfaceProperties.ExitanceConstantProperties(
-                            geo_paths=[Scene.GeoPath(geo_path="BodySource:1", reverse_normal=False)]
+                    surface_properties=ProtoScene.SourceInstance.SurfaceProperties(
+                        exitance_constant_properties=ProtoScene.SourceInstance.SurfaceProperties.ExitanceConstantProperties(
+                            geo_paths=[ProtoScene.GeoPath(geo_path="BodySource:1", reverse_normal=False)]
                         )
                     ),
                 ),
             ],
             sensors=[
-                Scene.SensorInstance(
+                ProtoScene.SensorInstance(
                     name="irradiance_photometric.1",
                     sensor_guid=ssr_t_irr_photo.key,
                     irradiance_properties=irr_sensor_props,
                 ),
-                Scene.SensorInstance(
+                ProtoScene.SensorInstance(
                     name="irradiance_colorimetric.1",
                     sensor_guid=ssr_t_irr_colo.key,
                     irradiance_properties=irr_sensor_props,
                 ),
             ],
             simulations=[
-                Scene.SimulationInstance(
+                ProtoScene.SimulationInstance(
                     name="direct_simu.1",
                     simulation_guid=direct_t.key,
                     source_paths=["luminaire_AA.1", "luminaire_AA.2", "surface_with_blackbody.1"],
                     sensor_paths=["irradiance_photometric.1", "irradiance_colorimetric.1"],
                 ),
-                Scene.SimulationInstance(
+                ProtoScene.SimulationInstance(
                     name="direct_simu.2",
                     simulation_guid=direct_t.key,
                     source_paths=["surface_with_blackbody.1"],
                     sensor_paths=["irradiance_photometric.1", "irradiance_colorimetric.1"],
                 ),
-                Scene.SimulationInstance(
+                ProtoScene.SimulationInstance(
                     name="inverse_simu.1",
                     simulation_guid=inverse_t.key,
                     source_paths=["surface_with_blackbody.1"],
                     sensor_paths=["irradiance_colorimetric.1"],
                 ),
-                Scene.SimulationInstance(
+                ProtoScene.SimulationInstance(
                     name="interactive_simu.1",
                     simulation_guid=interactive_t.key,
                     source_paths=["luminaire_AA.1", "luminaire_AA.2", "surface_with_blackbody.1"],
@@ -335,13 +335,13 @@ def create_face_rectangle(
     x_size: float = 200,
     y_size: float = 100,
     metadata: Optional[Mapping[str, str]] = None,
-) -> Face:
+) -> ProtoFace:
     if base is None:
         base = [0, 0, 0, 1, 0, 0, 0, 1, 0]
     if metadata is None:
         metadata = {}
 
-    face = Face(name=name, description=description, metadata=metadata)
+    face = ProtoFace(name=name, description=description, metadata=metadata)
 
     face.vertices.extend(
         base[:3] - np.multiply(0.5 * x_size, base[3:6]) - np.multiply(0.5 * y_size, base[6:9])
@@ -375,13 +375,13 @@ def create_body_box(
     z_size: float = 100,
     idx_face: int = 0,
     metadata: Optional[Mapping[str, str]] = None,
-) -> Body:
+) -> ProtoBody:
     if base is None:
         base = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     if metadata is None:
         metadata = {}
 
-    body = Body(name=name, description=description, metadata=metadata)
+    body = ProtoBody(name=name, description=description, metadata=metadata)
 
     base0 = []
     base0.extend(base[:3] - np.multiply(0.5 * z_size, base[9:]))  # origin
@@ -502,12 +502,12 @@ def test_scene_actions_load_modify(speos: Speos):
 
     # Adding a sensor
     scene_dm.sensors.append(
-        Scene.SensorInstance(
+        ProtoScene.SensorInstance(
             name="Irradiance.1",
             sensor_guid=scene_dm.sensors[0].sensor_guid,
-            irradiance_properties=Scene.SensorInstance.IrradianceProperties(
+            irradiance_properties=ProtoScene.SensorInstance.IrradianceProperties(
                 axis_system=[-42, 2, 5, 0, 1, 0, 0, 0, -1, -1, 0, 0],
-                layer_type_incidence_angle=Scene.SensorInstance.LayerTypeIncidenceAngle(sampling=9),
+                layer_type_incidence_angle=ProtoScene.SensorInstance.LayerTypeIncidenceAngle(sampling=9),
             ),
         )
     )
@@ -523,16 +523,16 @@ def test_scene_actions_get_source_ray_paths(speos: Speos):
     assert speos.client.healthy is True
 
     # Creation of a basic scene with a luminaire source
-    main_part = speos.client.parts().create(message=Part(name="MainPart", body_guids=[]))
+    main_part = speos.client.parts().create(message=ProtoPart(name="MainPart", body_guids=[]))
 
     blackbody_2856 = speos.client.spectrums().create(
-        message=Spectrum(name="Blackbody_2856", blackbody=Spectrum.BlackBody(temperature=2856))
+        message=ProtoSpectrum(name="Blackbody_2856", blackbody=ProtoSpectrum.BlackBody(temperature=2856))
     )
     luminaire_t = speos.client.source_templates().create(
-        message=SourceTemplate(
+        message=ProtoSourceTemplate(
             name="Luminaire",
-            luminaire=SourceTemplate.Luminaire(
-                flux_from_intensity_file=SourceTemplate.FromIntensityFile(),
+            luminaire=ProtoSourceTemplate.Luminaire(
+                flux_from_intensity_file=ProtoSourceTemplate.FromIntensityFile(),
                 intensity_file_uri=os.path.join(test_path, "IES_C_DETECTOR.ies"),
                 spectrum_guid=blackbody_2856.key,
             ),
@@ -540,15 +540,15 @@ def test_scene_actions_get_source_ray_paths(speos: Speos):
     )
 
     scene = speos.client.scenes().create(
-        message=Scene(
+        message=ProtoScene(
             name="Scene with sources",
             part_guid=main_part.key,
             materials=[],
             sources=[
-                Scene.SourceInstance(
+                ProtoScene.SourceInstance(
                     name="Luminaire.1",
                     source_guid=luminaire_t.key,
-                    luminaire_properties=Scene.SourceInstance.LuminaireProperties(
+                    luminaire_properties=ProtoScene.SourceInstance.LuminaireProperties(
                         axis_system=[0, 0, 20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
                     ),
                 )

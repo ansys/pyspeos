@@ -36,8 +36,8 @@ import ansys.speos.core.body as body
 import ansys.speos.core.face as face
 from ansys.speos.core.kernel.body import BodyLink
 from ansys.speos.core.kernel.face import FaceLink
-from ansys.speos.core.kernel.scene import Scene
-from ansys.speos.core.kernel.part import Part
+from ansys.speos.core.kernel.scene import ProtoScene
+from ansys.speos.core.kernel.part import ProtoPart
 import ansys.speos.core.opt_prop as opt_prop
 import ansys.speos.core.part as part
 import ansys.speos.core.proto_message_utils as proto_message_utils
@@ -490,7 +490,7 @@ class Project:
         """
         # Erase the scene
         if self.scene_link is not None:
-            self.scene_link.set(data=Scene())
+            self.scene_link.set(data=ProtoScene())
 
         # Delete each feature that was created
         for f in self._features:
@@ -707,7 +707,7 @@ class Project:
             self._features.append(sim_feat)
 
     def __extract_part_mesh_info(
-        self, part_data: Part, part_coordinate_info: RepeatedScalarFieldContainer = None
+        self, part_data: ProtoPart, part_coordinate_info: RepeatedScalarFieldContainer = None
     ) -> pv.PolyData:
         """
         Extract mesh data info from a part.

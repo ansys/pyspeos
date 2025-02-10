@@ -29,7 +29,7 @@ import os
 from conftest import test_path
 
 from ansys.api.speos.common.v1 import data_pb2
-from ansys.speos.core.kernel.intensity_template import IntensityTemplate
+from ansys.speos.core.kernel.intensity_template import ProtoIntensityTemplate
 from ansys.speos.core.speos import Speos
 
 
@@ -43,10 +43,10 @@ def test_intensity_template(speos: Speos):
 
     # Library
     intens_t_lib = intens_t_db.create(
-        message=IntensityTemplate(
+        message=ProtoIntensityTemplate(
             name="library_0",
             description="library intensity template",
-            library=IntensityTemplate.Library(
+            library=ProtoIntensityTemplate.Library(
                 intensity_file_uri=os.path.join(test_path, "IES_C_DETECTOR.ies")
             ),
         )
@@ -56,30 +56,30 @@ def test_intensity_template(speos: Speos):
     # Lambertian (cos with N = 1.0)
 
     intens_t_lamb = intens_t_db.create(
-        message=IntensityTemplate(
+        message=ProtoIntensityTemplate(
             name="lambertian_0",
             description="lambertian intensity template",
-            cos=IntensityTemplate.Cos(N=1.0, total_angle=180.0),
+            cos=ProtoIntensityTemplate.Cos(N=1.0, total_angle=180.0),
         )
     )
     assert intens_t_lamb.key != ""
 
     # Cos
     intens_t_cos = intens_t_db.create(
-        message=IntensityTemplate(
+        message=ProtoIntensityTemplate(
             name="cos_0",
             description="cos intensity template",
-            cos=IntensityTemplate.Cos(N=3.0, total_angle=180.0),
+            cos=ProtoIntensityTemplate.Cos(N=3.0, total_angle=180.0),
         )
     )
     assert intens_t_cos.key != ""
 
     # Symmetric gaussian
     intens_t_sym_gauss = intens_t_db.create(
-        message=IntensityTemplate(
+        message=ProtoIntensityTemplate(
             name="symmetric_gaussian_0",
             description="symmetric gaussian intensity template",
-            gaussian=IntensityTemplate.Gaussian(
+            gaussian=ProtoIntensityTemplate.Gaussian(
                 FWHM_angle_x=30.0, FWHM_angle_y=30.0, total_angle=180.0
             ),
         )
@@ -88,10 +88,10 @@ def test_intensity_template(speos: Speos):
 
     # Asymmetric gaussian
     intens_t_asym_gauss = intens_t_db.create(
-        message=IntensityTemplate(
+        message=ProtoIntensityTemplate(
             name="asymmetric_gaussian_0",
             description="asymmetric gaussian intensity template",
-            gaussian=IntensityTemplate.Gaussian(
+            gaussian=ProtoIntensityTemplate.Gaussian(
                 FWHM_angle_x=30.0, FWHM_angle_y=20.0, total_angle=180.0
             ),
         )
@@ -114,10 +114,10 @@ def test_action_get_library_type_info(speos: Speos):
 
     # Library
     intens_t_lib = intens_t_db.create(
-        message=IntensityTemplate(
+        message=ProtoIntensityTemplate(
             name="library_0",
             description="library intensity template",
-            library=IntensityTemplate.Library(
+            library=ProtoIntensityTemplate.Library(
                 intensity_file_uri=os.path.join(test_path, "IES_C_DETECTOR.ies")
             ),
         )

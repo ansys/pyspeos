@@ -31,9 +31,9 @@ from ansys.api.speos.simulation.v1 import (
 from ansys.speos.core.kernel.crud import CrudItem, CrudStub
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 
-SimulationTemplate = messages.SimulationTemplate
+ProtoSimulationTemplate = messages.SimulationTemplate
 """SimulationTemplate protobuf class : ansys.api.speos.simulation.v1.simulation_template_pb2.SimulationTemplate"""
-SimulationTemplate.__str__ = lambda self: protobuf_message_to_str(self)
+ProtoSimulationTemplate.__str__ = lambda self: protobuf_message_to_str(self)
 
 
 class SimulationTemplateLink(CrudItem):
@@ -73,7 +73,7 @@ class SimulationTemplateLink(CrudItem):
         """Return the string representation of the simulation_template."""
         return str(self.get())
 
-    def get(self) -> SimulationTemplate:
+    def get(self) -> ProtoSimulationTemplate:
         """Get the datamodel from database.
 
         Returns
@@ -83,7 +83,7 @@ class SimulationTemplateLink(CrudItem):
         """
         return self._stub.read(self)
 
-    def set(self, data: SimulationTemplate) -> None:
+    def set(self, data: ProtoSimulationTemplate) -> None:
         """Change datamodel in database.
 
         Parameters
@@ -121,7 +121,7 @@ class SimulationTemplateStub(CrudStub):
     def __init__(self, channel):
         super().__init__(stub=service.SimulationTemplatesManagerStub(channel=channel))
 
-    def create(self, message: SimulationTemplate) -> SimulationTemplateLink:
+    def create(self, message: ProtoSimulationTemplate) -> SimulationTemplateLink:
         """Create a new entry.
 
         Parameters
@@ -137,7 +137,7 @@ class SimulationTemplateStub(CrudStub):
         resp = CrudStub.create(self, messages.Create_Request(simulation_template=message))
         return SimulationTemplateLink(self, resp.guid)
 
-    def read(self, ref: SimulationTemplateLink) -> SimulationTemplate:
+    def read(self, ref: SimulationTemplateLink) -> ProtoSimulationTemplate:
         """Get an existing entry.
 
         Parameters
@@ -155,7 +155,7 @@ class SimulationTemplateStub(CrudStub):
         resp = CrudStub.read(self, messages.Read_Request(guid=ref.key))
         return resp.simulation_template
 
-    def update(self, ref: SimulationTemplateLink, data: SimulationTemplate):
+    def update(self, ref: SimulationTemplateLink, data: ProtoSimulationTemplate):
         """Change an existing entry.
 
         Parameters

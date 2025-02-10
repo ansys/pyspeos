@@ -32,9 +32,9 @@ import grpc
 import pytest
 
 from ansys.api.speos.common.v1 import data_pb2
-from ansys.speos.core.kernel.intensity_template import IntensityTemplate
-from ansys.speos.core.kernel.source_template import SourceTemplate
-from ansys.speos.core.kernel.spectrum import Spectrum
+from ansys.speos.core.kernel.intensity_template import ProtoIntensityTemplate
+from ansys.speos.core.kernel.source_template import ProtoSourceTemplate
+from ansys.speos.core.kernel.spectrum import ProtoSpectrum
 from ansys.speos.core.speos import Speos
 
 
@@ -53,29 +53,29 @@ def test_source_template(speos: Speos):
 
     # This spectrum will be used by both src_t_luminaire and src_t_surface
     spec_bb_2500 = spec_db.create(
-        Spectrum(
+        ProtoSpectrum(
             name="blackbody_2500",
             description="blackbody spectrum - T 2500K",
-            blackbody=Spectrum.BlackBody(temperature=2500.0),
+            blackbody=ProtoSpectrum.BlackBody(temperature=2500.0),
         )
     )
 
     # This intensity template will be used in several luminaire source template
     intens_t_lamb = intens_t_db.create(
-        message=IntensityTemplate(
+        message=ProtoIntensityTemplate(
             name="lambertian_180",
             description="lambertian intensity template 180",
-            cos=IntensityTemplate.Cos(N=1.0, total_angle=180.0),
+            cos=ProtoIntensityTemplate.Cos(N=1.0, total_angle=180.0),
         )
     )
 
     # Luminaire source template with flux from intensity file
     src_t_luminaire = source_t_db.create(
-        message=SourceTemplate(
+        message=ProtoSourceTemplate(
             name="luminaire_0",
             description="Luminaire source template",
-            luminaire=SourceTemplate.Luminaire(
-                flux_from_intensity_file=SourceTemplate.FromIntensityFile(),
+            luminaire=ProtoSourceTemplate.Luminaire(
+                flux_from_intensity_file=ProtoSourceTemplate.FromIntensityFile(),
                 intensity_file_uri=os.path.join(test_path, "IES_C_DETECTOR.ies"),
                 spectrum_guid=spec_bb_2500.key,
             ),
@@ -85,13 +85,13 @@ def test_source_template(speos: Speos):
 
     # Surface with luminous flux, exitance constant
     src_t_surface = source_t_db.create(
-        message=SourceTemplate(
+        message=ProtoSourceTemplate(
             name="surface_0",
             description="Surface source template",
-            surface=SourceTemplate.Surface(
-                luminous_flux=SourceTemplate.Luminous(luminous_value=683.0),
+            surface=ProtoSourceTemplate.Surface(
+                luminous_flux=ProtoSourceTemplate.Luminous(luminous_value=683.0),
                 intensity_guid=intens_t_lamb.key,
-                exitance_constant=SourceTemplate.Surface.ExitanceConstant(),
+                exitance_constant=ProtoSourceTemplate.Surface.ExitanceConstant(),
                 spectrum_guid=spec_bb_2500.key,
             ),
         )
@@ -103,13 +103,13 @@ def test_source_template(speos: Speos):
     # no intensity file provided (instead lambertian intensity template)
     with pytest.raises(grpc.RpcError) as exc_info:
         source_t_db.create(
-            message=SourceTemplate(
+            message=ProtoSourceTemplate(
                 name="surface_err0",
                 description="Surface source template in error",
-                surface=SourceTemplate.Surface(
-                    flux_from_intensity_file=SourceTemplate.FromIntensityFile(),
+                surface=ProtoSourceTemplate.Surface(
+                    flux_from_intensity_file=ProtoSourceTemplate.FromIntensityFile(),
                     intensity_guid=intens_t_lamb.key,
-                    exitance_constant=SourceTemplate.Surface.ExitanceConstant(),
+                    exitance_constant=ProtoSourceTemplate.Surface.ExitanceConstant(),
                     spectrum_guid=spec_bb_2500.key,
                 ),
             )
@@ -121,14 +121,14 @@ def test_source_template(speos: Speos):
     # Surface source template with spectrum from xmp file AND no xmp file provided
     with pytest.raises(grpc.RpcError) as exc_info:
         source_t_db.create(
-            message=SourceTemplate(
+            message=ProtoSourceTemplate(
                 name="surface_err1",
                 description="Surface source template in error",
-                surface=SourceTemplate.Surface(
-                    luminous_flux=SourceTemplate.Luminous(luminous_value=683.0),
+                surface=ProtoSourceTemplate.Surface(
+                    luminous_flux=ProtoSourceTemplate.Luminous(luminous_value=683.0),
                     intensity_guid=intens_t_lamb.key,
-                    exitance_constant=SourceTemplate.Surface.ExitanceConstant(),
-                    spectrum_from_xmp_file=SourceTemplate.Surface.SpectrumFromXMPFile(),
+                    exitance_constant=ProtoSourceTemplate.Surface.ExitanceConstant(),
+                    spectrum_from_xmp_file=ProtoSourceTemplate.Surface.SpectrumFromXMPFile(),
                 ),
             )
         )
@@ -150,12 +150,12 @@ def test_action_get_ray_file_info(speos: Speos):
 
     # Create a source template link - a Ray-File source
     src_t_rayfile = source_t_db.create(
-        message=SourceTemplate(
+        message=ProtoSourceTemplate(
             name="Ray-File",
-            rayfile=SourceTemplate.RayFile(
+            rayfile=ProtoSourceTemplate.RayFile(
                 ray_file_uri=os.path.join(test_path, "Rays.ray"),
-                flux_from_ray_file=SourceTemplate.FromRayFile(),
-                spectrum_from_ray_file=SourceTemplate.RayFile.SpectrumFromRayFile(),
+                flux_from_ray_file=ProtoSourceTemplate.FromRayFile(),
+                spectrum_from_ray_file=ProtoSourceTemplate.RayFile.SpectrumFromRayFile(),
             ),
         )
     )

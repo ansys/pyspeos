@@ -29,8 +29,8 @@ import uuid
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2, common_pb2
 from ansys.speos.core.geo_ref import GeoRef
-from ansys.speos.core.kernel.scene import Scene
-from ansys.speos.core.kernel.sensor_template import SensorTemplate
+from ansys.speos.core.kernel.scene import ProtoScene
+from ansys.speos.core.kernel.sensor_template import ProtoSensorTemplate
 import ansys.speos.core.project as project
 import ansys.speos.core.proto_message_utils as proto_message_utils
 
@@ -70,7 +70,7 @@ class BaseSensor:
         name: str,
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
-        sensor_instance: Optional[Scene.SensorInstance] = None,
+        sensor_instance: Optional[ProtoScene.SensorInstance] = None,
     ) -> None:
         self._project = project
         self._name = name
@@ -82,12 +82,12 @@ class BaseSensor:
 
         if sensor_instance is None:
             # Create local SensorTemplate
-            self._sensor_template = SensorTemplate(
+            self._sensor_template = ProtoSensorTemplate(
                 name=name, description=description, metadata=metadata
             )
 
             # Create local SensorInstance
-            self._sensor_instance = Scene.SensorInstance(
+            self._sensor_instance = ProtoScene.SensorInstance(
                 name=name, description=description, metadata=metadata
             )
         else:
@@ -474,7 +474,7 @@ class BaseSensor:
 
         def __init__(
             self,
-            layer_type_face: Scene.SensorInstance.LayerTypeFace,
+            layer_type_face: ProtoScene.SensorInstance.LayerTypeFace,
             default_values: bool = True,
             stable_ctr: bool = False,
         ) -> None:
@@ -528,9 +528,9 @@ class BaseSensor:
                 LayerTypeFace.
             """
             my_list = [
-                Scene.SensorInstance.LayerTypeFace.Layer(
+                ProtoScene.SensorInstance.LayerTypeFace.Layer(
                     name=layer.name,
-                    geometries=Scene.GeoPaths(
+                    geometries=ProtoScene.GeoPaths(
                         geo_paths=[gr.to_native_link() for gr in layer.geometries]
                     ),
                 )
@@ -561,7 +561,7 @@ class BaseSensor:
 
         def __init__(
             self,
-            layer_type_sequence: Scene.SensorInstance.LayerTypeSequence,
+            layer_type_sequence: ProtoScene.SensorInstance.LayerTypeSequence,
             default_values: bool = True,
             stable_ctr: bool = False,
         ) -> None:
@@ -639,7 +639,7 @@ class BaseSensor:
 
         def __init__(
             self,
-            layer_type_incidence_angle: Scene.SensorInstance.LayerTypeIncidenceAngle,
+            layer_type_incidence_angle: ProtoScene.SensorInstance.LayerTypeIncidenceAngle,
             default_values: bool = True,
             stable_ctr: bool = False,
         ) -> None:
@@ -1256,7 +1256,7 @@ class Camera(BaseSensor):
         def __init__(
             self,
             mode_photometric: camera_sensor_pb2.SensorCameraModePhotometric,
-            camera_props: Scene.SensorInstance.CameraProperties,
+            camera_props: ProtoScene.SensorInstance.CameraProperties,
             default_values: bool = True,
             stable_ctr: bool = False,
         ) -> None:
@@ -1499,7 +1499,7 @@ class Camera(BaseSensor):
         name: str,
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
-        sensor_instance: Optional[Scene.SensorInstance] = None,
+        sensor_instance: Optional[ProtoScene.SensorInstance] = None,
         default_values: bool = True,
     ) -> None:
         if metadata is None:
@@ -1771,7 +1771,7 @@ class Irradiance(BaseSensor):
         name: str,
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
-        sensor_instance: Optional[Scene.SensorInstance] = None,
+        sensor_instance: Optional[ProtoScene.SensorInstance] = None,
         default_values: bool = True,
     ) -> None:
         if metadata is None:
@@ -2116,7 +2116,7 @@ class Irradiance(BaseSensor):
             Irradiance sensor.
         """
         self._sensor_instance.irradiance_properties.ray_file_type = (
-            Scene.SensorInstance.EnumRayFileType.RayFileNone
+            ProtoScene.SensorInstance.EnumRayFileType.RayFileNone
         )
         return self
 
@@ -2129,7 +2129,7 @@ class Irradiance(BaseSensor):
             Irradiance sensor.
         """
         self._sensor_instance.irradiance_properties.ray_file_type = (
-            Scene.SensorInstance.EnumRayFileType.RayFileClassic
+            ProtoScene.SensorInstance.EnumRayFileType.RayFileClassic
         )
         return self
 
@@ -2142,7 +2142,7 @@ class Irradiance(BaseSensor):
             Irradiance sensor.
         """
         self._sensor_instance.irradiance_properties.ray_file_type = (
-            Scene.SensorInstance.EnumRayFileType.RayFilePolarization
+            ProtoScene.SensorInstance.EnumRayFileType.RayFilePolarization
         )
         return self
 
@@ -2155,7 +2155,7 @@ class Irradiance(BaseSensor):
             Irradiance sensor.
         """
         self._sensor_instance.irradiance_properties.ray_file_type = (
-            Scene.SensorInstance.EnumRayFileType.RayFileTM25
+            ProtoScene.SensorInstance.EnumRayFileType.RayFileTM25
         )
         return self
 
@@ -2168,7 +2168,7 @@ class Irradiance(BaseSensor):
             Irradiance sensor.
         """
         self._sensor_instance.irradiance_properties.ray_file_type = (
-            Scene.SensorInstance.EnumRayFileType.RayFileTM25NoPolarization
+            ProtoScene.SensorInstance.EnumRayFileType.RayFileTM25NoPolarization
         )
         return self
 
@@ -2369,7 +2369,7 @@ class Radiance(BaseSensor):
         name: str,
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
-        sensor_instance: Optional[Scene.SensorInstance] = None,
+        sensor_instance: Optional[ProtoScene.SensorInstance] = None,
         default_values: bool = True,
     ) -> None:
         if metadata is None:

@@ -25,7 +25,7 @@ Test basic sop template database connection.
 """
 
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
-from ansys.speos.core.kernel.simulation_template import SimulationTemplate
+from ansys.speos.core.kernel.simulation_template import ProtoSimulationTemplate
 from ansys.speos.core.speos import Speos
 
 
@@ -40,7 +40,7 @@ def test_simulation_template(speos: Speos):
     # Direct
 
     direct_t = sim_t_db.create(
-        message=SimulationTemplate(
+        message=ProtoSimulationTemplate(
             name="direct_0",
             description="Direct simulation template",
             direct_mc_simulation_template=simulation_template_pb2.DirectMCSimulationTemplate(
@@ -56,7 +56,7 @@ def test_simulation_template(speos: Speos):
 
     # Inverse
     inverse_t = sim_t_db.create(
-        message=SimulationTemplate(
+        message=ProtoSimulationTemplate(
             name="inverse_0",
             description="Inverse simulation template",
             inverse_mc_simulation_template=simulation_template_pb2.InverseMCSimulationTemplate(
@@ -75,10 +75,10 @@ def test_simulation_template(speos: Speos):
 
     # Interactive
     interactive_t = sim_t_db.create(
-        message=SimulationTemplate(
+        message=ProtoSimulationTemplate(
             name="interactive_0",
             description="Interactive simulation template",
-            interactive_simulation_template=SimulationTemplate.Interactive(
+            interactive_simulation_template=ProtoSimulationTemplate.Interactive(
                 geom_distance_tolerance=0.01,
                 max_impact=100,
                 weight=simulation_template_pb2.Weight(minimum_energy_percentage=0.005),

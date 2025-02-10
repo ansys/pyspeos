@@ -28,9 +28,9 @@ from ansys.api.speos.source.v1 import source_pb2 as messages, source_pb2_grpc as
 from ansys.speos.core.kernel.crud import CrudItem, CrudStub
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 
-SourceTemplate = messages.SourceTemplate
+ProtoSourceTemplate = messages.SourceTemplate
 """SourceTemplate protobuf class : ansys.api.speos.source.v1.source_pb2.SourceTemplate"""
-SourceTemplate.__str__ = lambda self: protobuf_message_to_str(self)
+ProtoSourceTemplate.__str__ = lambda self: protobuf_message_to_str(self)
 
 
 class SourceTemplateLink(CrudItem):
@@ -52,7 +52,7 @@ class SourceTemplateLink(CrudItem):
         """Return the string representation of the source template."""
         return str(self.get())
 
-    def get(self) -> SourceTemplate:
+    def get(self) -> ProtoSourceTemplate:
         """Get the datamodel from database.
 
         Returns
@@ -62,7 +62,7 @@ class SourceTemplateLink(CrudItem):
         """
         return self._stub.read(self)
 
-    def set(self, data: SourceTemplate) -> None:
+    def set(self, data: ProtoSourceTemplate) -> None:
         """Change datamodel in database.
 
         Parameters
@@ -113,7 +113,7 @@ class SourceTemplateStub(CrudStub):
         super().__init__(stub=service.SourceTemplatesManagerStub(channel=channel))
         self._actions_stub = service.SourceTemplateActionsStub(channel=channel)
 
-    def create(self, message: SourceTemplate) -> SourceTemplateLink:
+    def create(self, message: ProtoSourceTemplate) -> SourceTemplateLink:
         """Create a new entry.
 
         Parameters
@@ -129,7 +129,7 @@ class SourceTemplateStub(CrudStub):
         resp = CrudStub.create(self, messages.Create_Request(source_template=message))
         return SourceTemplateLink(self, resp.guid)
 
-    def read(self, ref: SourceTemplateLink) -> SourceTemplate:
+    def read(self, ref: SourceTemplateLink) -> ProtoSourceTemplate:
         """Get an existing entry.
 
         Parameters
@@ -147,7 +147,7 @@ class SourceTemplateStub(CrudStub):
         resp = CrudStub.read(self, messages.Read_Request(guid=ref.key))
         return resp.source_template
 
-    def update(self, ref: SourceTemplateLink, data: SourceTemplate):
+    def update(self, ref: SourceTemplateLink, data: ProtoSourceTemplate):
         """Change an existing entry.
 
         Parameters

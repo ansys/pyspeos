@@ -28,9 +28,9 @@ from ansys.api.speos.sensor.v1 import sensor_pb2 as messages, sensor_pb2_grpc as
 from ansys.speos.core.kernel.crud import CrudItem, CrudStub
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 
-SensorTemplate = messages.SensorTemplate
+ProtoSensorTemplate = messages.SensorTemplate
 """SensorTemplate protobuf class : ansys.api.speos.sensor.v1.sensor_pb2.SensorTemplate"""
-SensorTemplate.__str__ = lambda self: protobuf_message_to_str(self)
+ProtoSensorTemplate.__str__ = lambda self: protobuf_message_to_str(self)
 
 
 class SensorTemplateLink(CrudItem):
@@ -70,7 +70,7 @@ class SensorTemplateLink(CrudItem):
         """Return the string representation of the sensor template."""
         return str(self.get())
 
-    def get(self) -> SensorTemplate:
+    def get(self) -> ProtoSensorTemplate:
         """Get the datamodel from database.
 
         Returns
@@ -80,7 +80,7 @@ class SensorTemplateLink(CrudItem):
         """
         return self._stub.read(self)
 
-    def set(self, data: SensorTemplate) -> None:
+    def set(self, data: ProtoSensorTemplate) -> None:
         """Change datamodel in database.
 
         Parameters
@@ -118,7 +118,7 @@ class SensorTemplateStub(CrudStub):
     def __init__(self, channel):
         super().__init__(stub=service.SensorTemplatesManagerStub(channel=channel))
 
-    def create(self, message: SensorTemplate) -> SensorTemplateLink:
+    def create(self, message: ProtoSensorTemplate) -> SensorTemplateLink:
         """Create a new entry.
 
         Parameters
@@ -134,7 +134,7 @@ class SensorTemplateStub(CrudStub):
         resp = CrudStub.create(self, messages.Create_Request(sensor_template=message))
         return SensorTemplateLink(self, resp.guid)
 
-    def read(self, ref: SensorTemplateLink) -> SensorTemplate:
+    def read(self, ref: SensorTemplateLink) -> ProtoSensorTemplate:
         """Get an existing entry.
 
         Parameters
@@ -152,7 +152,7 @@ class SensorTemplateStub(CrudStub):
         resp = CrudStub.read(self, messages.Read_Request(guid=ref.key))
         return resp.sensor_template
 
-    def update(self, ref: SensorTemplateLink, data: SensorTemplate):
+    def update(self, ref: SensorTemplateLink, data: ProtoSensorTemplate):
         """Change an existing entry.
 
         Parameters

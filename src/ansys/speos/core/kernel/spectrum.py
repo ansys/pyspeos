@@ -28,9 +28,9 @@ from ansys.api.speos.spectrum.v1 import spectrum_pb2 as messages, spectrum_pb2_g
 from ansys.speos.core.kernel.crud import CrudItem, CrudStub
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 
-Spectrum = messages.Spectrum
+ProtoSpectrum = messages.Spectrum
 """Spectrum protobuf class : ansys.api.speos.spectrum.v1.spectrum_pb2.Spectrum"""
-Spectrum.__str__ = lambda self: protobuf_message_to_str(self)
+ProtoSpectrum.__str__ = lambda self: protobuf_message_to_str(self)
 
 
 class SpectrumLink(CrudItem):
@@ -63,7 +63,7 @@ class SpectrumLink(CrudItem):
         """Return the string representation of the spectrum."""
         return str(self.get())
 
-    def get(self) -> Spectrum:
+    def get(self) -> ProtoSpectrum:
         """Get the datamodel from database.
 
         Returns
@@ -73,7 +73,7 @@ class SpectrumLink(CrudItem):
         """
         return self._stub.read(self)
 
-    def set(self, data: Spectrum) -> None:
+    def set(self, data: ProtoSpectrum) -> None:
         """Change datamodel in database.
 
         Parameters
@@ -111,7 +111,7 @@ class SpectrumStub(CrudStub):
     def __init__(self, channel):
         super().__init__(stub=service.SpectrumsManagerStub(channel=channel))
 
-    def create(self, message: Spectrum) -> SpectrumLink:
+    def create(self, message: ProtoSpectrum) -> SpectrumLink:
         """Create a new entry.
 
         Parameters
@@ -127,7 +127,7 @@ class SpectrumStub(CrudStub):
         resp = CrudStub.create(self, messages.Create_Request(spectrum=message))
         return SpectrumLink(self, resp.guid)
 
-    def read(self, ref: SpectrumLink) -> Spectrum:
+    def read(self, ref: SpectrumLink) -> ProtoSpectrum:
         """Get an existing entry.
 
         Parameters
@@ -145,7 +145,7 @@ class SpectrumStub(CrudStub):
         resp = CrudStub.read(self, messages.Read_Request(guid=ref.key))
         return resp.spectrum
 
-    def update(self, ref: SpectrumLink, data: Spectrum):
+    def update(self, ref: SpectrumLink, data: ProtoSpectrum):
         """Change an existing entry.
 
         Parameters

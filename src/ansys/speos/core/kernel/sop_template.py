@@ -28,9 +28,9 @@ from ansys.api.speos.sop.v1 import sop_pb2 as messages, sop_pb2_grpc as service
 from ansys.speos.core.kernel.crud import CrudItem, CrudStub
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 
-SOPTemplate = messages.SOPTemplate
+ProtoSOPTemplate = messages.SOPTemplate
 """SOPTemplate protobuf class : ansys.api.speos.sop.v1.sop_pb2.SOPTemplate"""
-SOPTemplate.__str__ = lambda self: protobuf_message_to_str(self)
+ProtoSOPTemplate.__str__ = lambda self: protobuf_message_to_str(self)
 
 
 class SOPTemplateLink(CrudItem):
@@ -63,7 +63,7 @@ class SOPTemplateLink(CrudItem):
         """Return the string representation of the sop_template."""
         return str(self.get())
 
-    def get(self) -> SOPTemplate:
+    def get(self) -> ProtoSOPTemplate:
         """Get the datamodel from database.
 
         Returns
@@ -73,7 +73,7 @@ class SOPTemplateLink(CrudItem):
         """
         return self._stub.read(self)
 
-    def set(self, data: SOPTemplate) -> None:
+    def set(self, data: ProtoSOPTemplate) -> None:
         """Change datamodel in database.
 
         Parameters
@@ -111,7 +111,7 @@ class SOPTemplateStub(CrudStub):
     def __init__(self, channel):
         super().__init__(stub=service.SOPTemplatesManagerStub(channel=channel))
 
-    def create(self, message: SOPTemplate) -> SOPTemplateLink:
+    def create(self, message: ProtoSOPTemplate) -> SOPTemplateLink:
         """Create a new entry.
 
         Parameters
@@ -127,7 +127,7 @@ class SOPTemplateStub(CrudStub):
         resp = CrudStub.create(self, messages.Create_Request(sop_template=message))
         return SOPTemplateLink(self, resp.guid)
 
-    def read(self, ref: SOPTemplateLink) -> SOPTemplate:
+    def read(self, ref: SOPTemplateLink) -> ProtoSOPTemplate:
         """Get an existing entry.
 
         Parameters
@@ -145,7 +145,7 @@ class SOPTemplateStub(CrudStub):
         resp = CrudStub.read(self, messages.Read_Request(guid=ref.key))
         return resp.sop_template
 
-    def update(self, ref: SOPTemplateLink, data: SOPTemplate):
+    def update(self, ref: SOPTemplateLink, data: ProtoSOPTemplate):
         """Change an existing entry.
 
         Parameters

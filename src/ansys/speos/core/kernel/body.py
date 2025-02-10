@@ -28,9 +28,9 @@ from ansys.api.speos.part.v1 import body_pb2 as messages, body_pb2_grpc as servi
 from ansys.speos.core.kernel.crud import CrudItem, CrudStub
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 
-Body = messages.Body
+ProtoBody = messages.Body
 """Body protobuf class : ansys.api.speos.part.v1.body_pb2.Body"""
-Body.__str__ = lambda self: protobuf_message_to_str(self)
+ProtoBody.__str__ = lambda self: protobuf_message_to_str(self)
 
 
 class BodyLink(CrudItem):
@@ -51,7 +51,7 @@ class BodyLink(CrudItem):
         """Return the string representation of the body."""
         return str(self.get())
 
-    def get(self) -> Body:
+    def get(self) -> ProtoBody:
         """Get the datamodel from database.
 
         Returns
@@ -61,7 +61,7 @@ class BodyLink(CrudItem):
         """
         return self._stub.read(self)
 
-    def set(self, data: Body) -> None:
+    def set(self, data: ProtoBody) -> None:
         """Change datamodel in database.
 
         Parameters
@@ -99,7 +99,7 @@ class BodyStub(CrudStub):
     def __init__(self, channel):
         super().__init__(stub=service.BodiesManagerStub(channel=channel))
 
-    def create(self, message: Body) -> BodyLink:
+    def create(self, message: ProtoBody) -> BodyLink:
         """Create a new entry.
 
         Parameters
@@ -115,7 +115,7 @@ class BodyStub(CrudStub):
         resp = CrudStub.create(self, messages.Create_Request(body=message))
         return BodyLink(self, resp.guid)
 
-    def read(self, ref: BodyLink) -> Body:
+    def read(self, ref: BodyLink) -> ProtoBody:
         """Get an existing entry.
 
         Parameters
@@ -133,7 +133,7 @@ class BodyStub(CrudStub):
         resp = CrudStub.read(self, messages.Read_Request(guid=ref.key))
         return resp.body
 
-    def update(self, ref: BodyLink, data: Body) -> None:
+    def update(self, ref: BodyLink, data: ProtoBody) -> None:
         """Change an existing entry.
 
         Parameters

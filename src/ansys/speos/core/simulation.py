@@ -32,10 +32,10 @@ from ansys.api.speos.job.v2 import job_pb2
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
 
 # from ansys.speos.core.geo_ref import GeoRef
-from ansys.speos.core.kernel.job import Job
+from ansys.speos.core.kernel.job import ProtoJob
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
-from ansys.speos.core.kernel.scene import Scene
-from ansys.speos.core.kernel.simulation_template import SimulationTemplate
+from ansys.speos.core.kernel.scene import ProtoScene
+from ansys.speos.core.kernel.simulation_template import ProtoSimulationTemplate
 from ansys.speos.core.logger import LOG
 import ansys.speos.core.project as project
 import ansys.speos.core.proto_message_utils as proto_message_utils
@@ -119,7 +119,7 @@ class BaseSimulation:
         name: str,
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
-        simulation_instance: Optional[Scene.SimulationInstance] = None,
+        simulation_instance: Optional[ProtoScene.SimulationInstance] = None,
     ) -> None:
         self._project = project
         self._name = name
@@ -138,12 +138,12 @@ class BaseSimulation:
 
         if simulation_instance is None:
             # Create local SimulationTemplate
-            self._simulation_template = SimulationTemplate(
+            self._simulation_template = ProtoSimulationTemplate(
                 name=name, description=description, metadata=metadata
             )
 
             # Create local SimulationInstance
-            self._simulation_instance = Scene.SimulationInstance(
+            self._simulation_instance = ProtoScene.SimulationInstance(
                 name=name, description=description, metadata=metadata
             )
         else:
@@ -154,7 +154,7 @@ class BaseSimulation:
             self.reset()
 
         # Create local Job
-        self._job = Job(
+        self._job = ProtoJob(
             name=self._name,
             description=description,
             metadata=metadata,
@@ -223,7 +223,7 @@ class BaseSimulation:
         List[ansys.api.speos.job.v2.job_pb2.Result]
             List of simulation results.
         """
-        self._job.job_type = Job.Type.CPU
+        self._job.job_type = ProtoJob.Type.CPU
         self.result_list = self._run_job()
         return self.result_list
 
@@ -235,14 +235,14 @@ class BaseSimulation:
         List[ansys.api.speos.job.v2.job_pb2.Result]
             List of simulation results.
         """
-        self._job.job_type = Job.Type.GPU
+        self._job.job_type = ProtoJob.Type.GPU
         self.result_list = self._run_job()
         return self.result_list
 
     def _run_job(self) -> List[job_pb2.Result]:
         if self.job_link is not None:
             job_state_res = self.job_link.get_state()
-            if job_state_res.state != Job.State.QUEUED:
+            if job_state_res.state != ProtoJob.State.QUEUED:
                 self.job_link.delete()
                 self.job_link = None
 
@@ -258,14 +258,14 @@ class BaseSimulation:
 
         job_state_res = self.job_link.get_state()
         while (
-            job_state_res.state != Job.State.FINISHED
-            and job_state_res.state != Job.State.STOPPED
-            and job_state_res.state != Job.State.IN_ERROR
+            job_state_res.state != ProtoJob.State.FINISHED
+            and job_state_res.state != ProtoJob.State.STOPPED
+            and job_state_res.state != ProtoJob.State.IN_ERROR
         ):
             time.sleep(5)
 
             job_state_res = self.job_link.get_state()
-            if job_state_res.state == Job.State.IN_ERROR:
+            if job_state_res.state == ProtoJob.State.IN_ERROR:
                 LOG.error(protobuf_message_to_str(self.job_link.get_error()))
 
         return self.job_link.get_results().results
@@ -519,7 +519,7 @@ class Direct(BaseSimulation):
         name: str,
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
-        simulation_instance: Optional[Scene.SimulationInstance] = None,
+        simulation_instance: Optional[ProtoScene.SimulationInstance] = None,
         default_values: bool = True,
     ) -> None:
         if metadata is None:
@@ -784,7 +784,7 @@ class Inverse(BaseSimulation):
         name: str,
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
-        simulation_instance: Optional[Scene.SimulationInstance] = None,
+        simulation_instance: Optional[ProtoScene.SimulationInstance] = None,
         default_values: bool = True,
     ) -> None:
         if metadata is None:
@@ -1120,7 +1120,7 @@ class Interactive(BaseSimulation):
         name: str,
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
-        simulation_instance: Optional[Scene.SimulationInstance] = None,
+        simulation_instance: Optional[ProtoScene.SimulationInstance] = None,
         default_values: bool = True,
     ) -> None:
         if metadata is None:
@@ -1264,7 +1264,7 @@ class Interactive(BaseSimulation):
             Interactive simulation
         """
         my_list = [
-            Job.InteractiveSimulationProperties.RaysNumberPerSource(
+            ProtoJob.InteractiveSimulationProperties.RaysNumberPerSource(
                 source_path=rays_nb_per_source.source_path, rays_nb=rays_nb_per_source.rays_nb
             )
             for rays_nb_per_source in values

@@ -29,9 +29,9 @@ from ansys.api.speos.results.v1.ray_path_pb2 import RayPath
 from ansys.speos.core.kernel.crud import CrudItem, CrudStub
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 
-Job = messages.Job
+ProtoJob = messages.Job
 """Job protobuf class : ansys.api.speos.job.v2.job_pb2.Job"""
-Job.__str__ = lambda self: protobuf_message_to_str(self)
+ProtoJob.__str__ = lambda self: protobuf_message_to_str(self)
 
 
 class JobLink(CrudItem):
@@ -53,7 +53,7 @@ class JobLink(CrudItem):
         """Return the string representation of the Job."""
         return str(self.get())
 
-    def get(self) -> Job:
+    def get(self) -> ProtoJob:
         """Get the datamodel from database.
 
         Returns
@@ -63,7 +63,7 @@ class JobLink(CrudItem):
         """
         return self._stub.read(self)
 
-    def set(self, data: Job) -> None:
+    def set(self, data: ProtoJob) -> None:
         """Change datamodel in database.
 
         Parameters
@@ -170,7 +170,7 @@ class JobStub(CrudStub):
         super().__init__(stub=service.JobsManagerStub(channel=channel))
         self._actions_stub = service.JobActionsStub(channel=channel)
 
-    def create(self, message: Job) -> JobLink:
+    def create(self, message: ProtoJob) -> JobLink:
         """Create a new entry.
 
         Parameters
@@ -186,7 +186,7 @@ class JobStub(CrudStub):
         resp = CrudStub.create(self, messages.Create_Request(job=message))
         return JobLink(self, resp.guid)
 
-    def read(self, ref: JobLink) -> Job:
+    def read(self, ref: JobLink) -> ProtoJob:
         """Get an existing entry.
 
         Parameters
@@ -204,7 +204,7 @@ class JobStub(CrudStub):
         resp = CrudStub.read(self, messages.Read_Request(guid=ref.key))
         return resp.job
 
-    def update(self, ref: JobLink, data: Job):
+    def update(self, ref: JobLink, data: ProtoJob):
         """Change an existing entry.
 
         Parameters

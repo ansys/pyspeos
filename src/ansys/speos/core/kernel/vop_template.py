@@ -28,9 +28,9 @@ from ansys.api.speos.vop.v1 import vop_pb2 as messages, vop_pb2_grpc as service
 from ansys.speos.core.kernel.crud import CrudItem, CrudStub
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 
-VOPTemplate = messages.VOPTemplate
+ProtoVOPTemplate = messages.VOPTemplate
 """VOPTemplate protobuf class : ansys.api.speos.vop.v1.vop_pb2.VOPTemplate"""
-VOPTemplate.__str__ = lambda self: protobuf_message_to_str(self)
+ProtoVOPTemplate.__str__ = lambda self: protobuf_message_to_str(self)
 
 
 class VOPTemplateLink(CrudItem):
@@ -63,7 +63,7 @@ class VOPTemplateLink(CrudItem):
         """Return the string representation of the vop template."""
         return str(self.get())
 
-    def get(self) -> VOPTemplate:
+    def get(self) -> ProtoVOPTemplate:
         """Get the datamodel from database.
 
         Returns
@@ -73,7 +73,7 @@ class VOPTemplateLink(CrudItem):
         """
         return self._stub.read(self)
 
-    def set(self, data: VOPTemplate) -> None:
+    def set(self, data: ProtoVOPTemplate) -> None:
         """Change datamodel in database.
 
         Parameters
@@ -111,7 +111,7 @@ class VOPTemplateStub(CrudStub):
     def __init__(self, channel):
         super().__init__(stub=service.VOPTemplatesManagerStub(channel=channel))
 
-    def create(self, message: VOPTemplate) -> VOPTemplateLink:
+    def create(self, message: ProtoVOPTemplate) -> VOPTemplateLink:
         """Create a new entry.
 
         Parameters
@@ -127,7 +127,7 @@ class VOPTemplateStub(CrudStub):
         resp = CrudStub.create(self, messages.Create_Request(vop_template=message))
         return VOPTemplateLink(self, resp.guid)
 
-    def read(self, ref: VOPTemplateLink) -> VOPTemplate:
+    def read(self, ref: VOPTemplateLink) -> ProtoVOPTemplate:
         """Get an existing entry.
 
         Parameters
@@ -145,7 +145,7 @@ class VOPTemplateStub(CrudStub):
         resp = CrudStub.read(self, messages.Read_Request(guid=ref.key))
         return resp.vop_template
 
-    def update(self, ref: VOPTemplateLink, data: VOPTemplate):
+    def update(self, ref: VOPTemplateLink, data: ProtoVOPTemplate):
         """Change an existing entry.
 
         Parameters

@@ -28,9 +28,9 @@ from typing import List, Mapping, Optional
 
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.client import SpeosClient
-from ansys.speos.core.kernel.intensity_template import IntensityTemplate
+from ansys.speos.core.kernel.intensity_template import ProtoIntensityTemplate
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_dict
-from ansys.speos.core.kernel.scene import Scene
+from ansys.speos.core.kernel.scene import ProtoScene
 from ansys.speos.core.proto_message_utils import dict_to_str
 
 
@@ -78,8 +78,8 @@ class Intensity:
 
         def __init__(
             self,
-            library: IntensityTemplate.Library,
-            library_props: Scene.SourceInstance.IntensityProperties.LibraryProperties,
+            library: ProtoIntensityTemplate.Library,
+            library_props: ProtoScene.SourceInstance.IntensityProperties.LibraryProperties,
             default_values: bool = True,
         ) -> None:
             self._library = library
@@ -189,8 +189,8 @@ class Intensity:
 
         def __init__(
             self,
-            gaussian: IntensityTemplate.Gaussian,
-            gaussian_props: Scene.SourceInstance.IntensityProperties.GaussianProperties,
+            gaussian: ProtoIntensityTemplate.Gaussian,
+            gaussian_props: ProtoScene.SourceInstance.IntensityProperties.GaussianProperties,
             default_values: bool = True,
         ) -> None:
             self._gaussian = gaussian
@@ -278,7 +278,7 @@ class Intensity:
         name: str,
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
-        intensity_props_to_complete: Optional[Scene.SourceInstance.IntensityProperties] = None,
+        intensity_props_to_complete: Optional[ProtoScene.SourceInstance.IntensityProperties] = None,
         key: str = "",
     ) -> None:
         self._client = speos_client
@@ -292,7 +292,7 @@ class Intensity:
         self._type = None
 
         # Create IntensityProperties
-        self._intensity_properties = Scene.SourceInstance.IntensityProperties()
+        self._intensity_properties = ProtoScene.SourceInstance.IntensityProperties()
         self._light_print = False
         if intensity_props_to_complete is not None:
             self._intensity_properties = intensity_props_to_complete
@@ -300,7 +300,7 @@ class Intensity:
 
         if key == "":
             # Create IntensityTemplate
-            self._intensity_template = IntensityTemplate(
+            self._intensity_template = ProtoIntensityTemplate(
                 name=name, description=description, metadata=metadata
             )
 

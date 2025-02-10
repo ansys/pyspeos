@@ -29,7 +29,7 @@ import os
 from conftest import test_path
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2, common_pb2, irradiance_sensor_pb2
-from ansys.speos.core.kernel.sensor_template import SensorTemplate
+from ansys.speos.core.kernel.sensor_template import ProtoSensorTemplate
 from ansys.speos.core.speos import Speos
 
 
@@ -51,7 +51,7 @@ def test_sensor_template(speos: Speos):
 
     # Camera sensor template mode monochrome
     camera_t0 = sensor_t_db.create(
-        message=SensorTemplate(
+        message=ProtoSensorTemplate(
             name="camera_monochrome",
             description="Camera sensor template mode monochrome",
             camera_sensor_template=camera_sensor_pb2.CameraSensorTemplate(
@@ -83,7 +83,7 @@ def test_sensor_template(speos: Speos):
 
     # Camera sensor template mode color with balance mode none
     camera_t1 = sensor_t_db.create(
-        message=SensorTemplate(
+        message=ProtoSensorTemplate(
             name="camera_color",
             description="Camera sensor template mode color with balance mode none",
             camera_sensor_template=camera_sensor_pb2.CameraSensorTemplate(
@@ -118,7 +118,7 @@ def test_sensor_template(speos: Speos):
 
     # Camera sensor template mode color with balance mode greyworld
     camera_t2 = sensor_t_db.create(
-        message=SensorTemplate(
+        message=ProtoSensorTemplate(
             name="camera_color_greyworld",
             description="Camera sensor template mode color with balance mode greyworld",
             camera_sensor_template=camera_sensor_pb2.CameraSensorTemplate(
@@ -153,7 +153,7 @@ def test_sensor_template(speos: Speos):
 
     # Camera sensor template mode color with balance mode userwhite
     camera_t3 = sensor_t_db.create(
-        message=SensorTemplate(
+        message=ProtoSensorTemplate(
             name="camera_color_userwhite",
             description="Camera sensor template mode color with balance mode userwhite",
             camera_sensor_template=camera_sensor_pb2.CameraSensorTemplate(
@@ -190,7 +190,7 @@ def test_sensor_template(speos: Speos):
 
     # Irradiance sensor template photometric
     irradiance_t0 = sensor_t_db.create(
-        message=SensorTemplate(
+        message=ProtoSensorTemplate(
             name="irradiance_photometric",
             description="Irradiance sensor template photometric",
             irradiance_sensor_template=irradiance_sensor_pb2.IrradianceSensorTemplate(
@@ -211,7 +211,7 @@ def test_sensor_template(speos: Speos):
 
     # Irradiance sensor template colorimetric -> wavelengths_range is needed
     irradiance_t1 = sensor_t_db.create(
-        message=SensorTemplate(
+        message=ProtoSensorTemplate(
             name="irradiance_colorimetric",
             description="Irradiance sensor template colorimetric",
             irradiance_sensor_template=irradiance_sensor_pb2.IrradianceSensorTemplate(

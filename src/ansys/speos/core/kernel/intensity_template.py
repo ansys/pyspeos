@@ -28,9 +28,9 @@ from ansys.api.speos.intensity.v1 import intensity_pb2 as messages, intensity_pb
 from ansys.speos.core.kernel.crud import CrudItem, CrudStub
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 
-IntensityTemplate = messages.IntensityTemplate
+ProtoIntensityTemplate = messages.IntensityTemplate
 """IntensityTemplate protobuf class : ansys.api.speos.intensity.v1.intensity_pb2.IntensityTemplate"""
-IntensityTemplate.__str__ = lambda self: protobuf_message_to_str(self)
+ProtoIntensityTemplate.__str__ = lambda self: protobuf_message_to_str(self)
 
 
 class IntensityTemplateLink(CrudItem):
@@ -65,7 +65,7 @@ class IntensityTemplateLink(CrudItem):
         """Return the string representation of the intensity_template."""
         return str(self.get())
 
-    def get(self) -> IntensityTemplate:
+    def get(self) -> ProtoIntensityTemplate:
         """Get the datamodel from database.
 
         Returns
@@ -75,7 +75,7 @@ class IntensityTemplateLink(CrudItem):
         """
         return self._stub.read(self)
 
-    def set(self, data: IntensityTemplate) -> None:
+    def set(self, data: ProtoIntensityTemplate) -> None:
         """Change datamodel in database.
 
         Parameters
@@ -128,7 +128,7 @@ class IntensityTemplateStub(CrudStub):
         super().__init__(stub=service.IntensityTemplatesManagerStub(channel=channel))
         self._actions_stub = service.IntensityTemplateActionsStub(channel=channel)
 
-    def create(self, message: IntensityTemplate) -> IntensityTemplateLink:
+    def create(self, message: ProtoIntensityTemplate) -> IntensityTemplateLink:
         """Create a new entry.
 
         Parameters
@@ -144,7 +144,7 @@ class IntensityTemplateStub(CrudStub):
         resp = CrudStub.create(self, messages.Create_Request(intensity_template=message))
         return IntensityTemplateLink(self, resp.guid)
 
-    def read(self, ref: IntensityTemplateLink) -> IntensityTemplate:
+    def read(self, ref: IntensityTemplateLink) -> ProtoIntensityTemplate:
         """Get an existing entry.
 
         Parameters
@@ -162,7 +162,7 @@ class IntensityTemplateStub(CrudStub):
         resp = CrudStub.read(self, messages.Read_Request(guid=ref.key))
         return resp.intensity_template
 
-    def update(self, ref: IntensityTemplateLink, data: IntensityTemplate):
+    def update(self, ref: IntensityTemplateLink, data: ProtoIntensityTemplate):
         """Change an existing entry.
 
         Parameters

@@ -31,8 +31,8 @@ from ansys.speos.core import project as project, proto_message_utils as proto_me
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.intensity import Intensity
 from ansys.speos.core.kernel.client import SpeosClient
-from ansys.speos.core.kernel.scene import Scene
-from ansys.speos.core.kernel.source_template import SourceTemplate
+from ansys.speos.core.kernel.scene import ProtoScene
+from ansys.speos.core.kernel.source_template import ProtoSourceTemplate
 from ansys.speos.core.spectrum import Spectrum
 
 
@@ -67,7 +67,7 @@ class BaseSource:
         name: str,
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
-        source_instance: Optional[Scene.SourceInstance] = None,
+        source_instance: Optional[ProtoScene.SourceInstance] = None,
     ) -> None:
         self._project = project
         self._name = name
@@ -80,12 +80,12 @@ class BaseSource:
 
         if source_instance is None:
             # Create local SourceTemplate
-            self._source_template = SourceTemplate(
+            self._source_template = ProtoSourceTemplate(
                 name=name, description=description, metadata=metadata
             )
 
             # Create local SourceInstance
-            self._source_instance = Scene.SourceInstance(
+            self._source_instance = ProtoScene.SourceInstance(
                 name=name, description=description, metadata=metadata
             )
         else:
@@ -101,9 +101,9 @@ class BaseSource:
             speos_client: SpeosClient,
             name: str,
             message_to_complete: Union[
-                SourceTemplate.RayFile,
-                SourceTemplate.Surface,
-                SourceTemplate.Luminaire,
+                ProtoSourceTemplate.RayFile,
+                ProtoSourceTemplate.Surface,
+                ProtoSourceTemplate.Luminaire,
             ],
             spectrum_guid: str = "",
         ) -> None:
@@ -396,7 +396,7 @@ class Luminaire(BaseSource):
         name: str,
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
-        source_instance: Optional[Scene.SourceInstance] = None,
+        source_instance: Optional[ProtoScene.SourceInstance] = None,
         default_values: bool = True,
     ) -> None:
         if metadata is None:
@@ -542,7 +542,7 @@ class RayFile(BaseSource):
         name: str,
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
-        source_instance: Optional[Scene.SourceInstance] = None,
+        source_instance: Optional[ProtoScene.SourceInstance] = None,
         default_values: bool = True,
     ) -> None:
         if metadata is None:
@@ -753,8 +753,8 @@ class Surface(BaseSource):
 
         def __init__(
             self,
-            exitance_variable: SourceTemplate.Surface.ExitanceVariable,
-            exitance_variable_props: Scene.SourceInstance.SurfaceProperties.ExitanceVariableProperties,
+            exitance_variable: ProtoSourceTemplate.Surface.ExitanceVariable,
+            exitance_variable_props: ProtoScene.SourceInstance.SurfaceProperties.ExitanceVariableProperties,
             default_values: bool = True,
             stable_ctr: bool = False,
         ) -> None:
@@ -811,7 +811,7 @@ class Surface(BaseSource):
         name: str,
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
-        source_instance: Optional[Scene.SourceInstance] = None,
+        source_instance: Optional[ProtoScene.SourceInstance] = None,
         default_values: bool = True,
     ) -> None:
         if metadata is None:
@@ -954,7 +954,7 @@ class Surface(BaseSource):
         )
         if geometries != []:
             my_list = [
-                Scene.GeoPath(geo_path=gr.to_native_link(), reverse_normal=reverse_normal)
+                ProtoScene.GeoPath(geo_path=gr.to_native_link(), reverse_normal=reverse_normal)
                 for (gr, reverse_normal) in geometries
             ]
             self._source_instance.surface_properties.exitance_constant_properties.geo_paths.extend(

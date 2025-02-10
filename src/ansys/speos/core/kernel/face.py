@@ -28,9 +28,9 @@ from ansys.api.speos.part.v1 import face_pb2 as messages, face_pb2_grpc as servi
 from ansys.speos.core.kernel.crud import CrudItem, CrudStub
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 
-Face = messages.Face
+ProtoFace = messages.Face
 """Face protobuf class : ansys.api.speos.part.v1.face_pb2.Face"""
-Face.__str__ = lambda self: protobuf_message_to_str(self)
+ProtoFace.__str__ = lambda self: protobuf_message_to_str(self)
 
 
 class FaceLink(CrudItem):
@@ -51,7 +51,7 @@ class FaceLink(CrudItem):
         """Return the string representation of the face."""
         return str(self.get())
 
-    def get(self) -> Face:
+    def get(self) -> ProtoFace:
         """Get the datamodel from database.
 
         Returns
@@ -61,7 +61,7 @@ class FaceLink(CrudItem):
         """
         return self._stub.read(self)
 
-    def set(self, data: Face) -> None:
+    def set(self, data: ProtoFace) -> None:
         """Change datamodel in database.
 
         Parameters
@@ -100,7 +100,7 @@ class FaceStub(CrudStub):
         super().__init__(stub=service.FacesManagerStub(channel=channel))
         self._actions_stub = service.FaceActionsStub(channel=channel)
 
-    def create(self, message: Face) -> FaceLink:
+    def create(self, message: ProtoFace) -> FaceLink:
         """Create a new entry.
 
         Parameters
@@ -113,7 +113,7 @@ class FaceStub(CrudStub):
         ansys.speos.core.kernel.face.FaceLink
             Link object created.
         """
-        resp = CrudStub.create(self, messages.Create_Request(face=Face(name="tmp")))
+        resp = CrudStub.create(self, messages.Create_Request(face=ProtoFace(name="tmp")))
 
         chunk_iterator = FaceStub._face_to_chunks(
             guid=resp.guid, message=message, nb_items=128 * 1024
@@ -122,7 +122,7 @@ class FaceStub(CrudStub):
 
         return FaceLink(self, resp.guid)
 
-    def read(self, ref: FaceLink) -> Face:
+    def read(self, ref: FaceLink) -> ProtoFace:
         """Get an existing entry.
 
         Parameters
@@ -140,7 +140,7 @@ class FaceStub(CrudStub):
         chunks = self._actions_stub.Download(request=messages.Download_Request(guid=ref.key))
         return FaceStub._chunks_to_face(chunks)
 
-    def update(self, ref: FaceLink, data: Face) -> None:
+    def update(self, ref: FaceLink, data: ProtoFace) -> None:
         """Change an existing entry.
 
         Parameters
@@ -154,7 +154,7 @@ class FaceStub(CrudStub):
         if not ref.stub == self:
             raise ValueError("FaceLink is not on current database")
 
-        CrudStub.update(self, messages.Update_Request(guid=ref.key, face=Face(name="tmp")))
+        CrudStub.update(self, messages.Update_Request(guid=ref.key, face=ProtoFace(name="tmp")))
         chunk_iterator = FaceStub._face_to_chunks(guid=ref.key, message=data, nb_items=128 * 1024)
         self._actions_stub.Upload(chunk_iterator)
 
@@ -182,7 +182,7 @@ class FaceStub(CrudStub):
         return list(map(lambda x: FaceLink(self, x), guids))
 
     @staticmethod
-    def _face_to_chunks(guid: str, message: Face, nb_items: int) -> Iterator[messages.Chunk]:
+    def _face_to_chunks(guid: str, message: ProtoFace, nb_items: int) -> Iterator[messages.Chunk]:
         for j in range(4):
             if j == 0:
                 chunk_face_header = messages.Chunk(
@@ -219,8 +219,8 @@ class FaceStub(CrudStub):
                     yield chunk_normals
 
     @staticmethod
-    def _chunks_to_face(chunks: messages.Chunk) -> Face:
-        out_face = Face()
+    def _chunks_to_face(chunks: messages.Chunk) -> ProtoFace:
+        out_face = ProtoFace()
         for chunk in chunks:
             if chunk.HasField("face_header"):
                 out_face.name = chunk.face_header.name

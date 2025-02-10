@@ -29,7 +29,7 @@ from typing import List, Mapping, Optional, Union
 
 from ansys.speos.core import proto_message_utils
 import ansys.speos.core.face as face
-from ansys.speos.core.kernel.body import Body as KernelBody
+from ansys.speos.core.kernel.body import ProtoBody
 from ansys.speos.core.kernel.client import SpeosClient
 import ansys.speos.core.part as part
 
@@ -77,7 +77,7 @@ class Body:
             metadata = {}
 
         # Create local Body
-        self._body = KernelBody(name=name, description=description, metadata=metadata)
+        self._body = ProtoBody(name=name, description=description, metadata=metadata)
 
         self._geom_features = []
 

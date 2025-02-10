@@ -28,9 +28,9 @@ from ansys.api.speos.part.v1 import part_pb2 as messages, part_pb2_grpc as servi
 from ansys.speos.core.kernel.crud import CrudItem, CrudStub
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 
-Part = messages.Part
+ProtoPart = messages.Part
 """Part protobuf class : ansys.api.speos.part.v1.part_pb2.Part"""
-Part.__str__ = lambda self: protobuf_message_to_str(self)
+ProtoPart.__str__ = lambda self: protobuf_message_to_str(self)
 
 
 class PartLink(CrudItem):
@@ -51,7 +51,7 @@ class PartLink(CrudItem):
         """Return the string representation of the part."""
         return str(self.get())
 
-    def get(self) -> Part:
+    def get(self) -> ProtoPart:
         """Get the datamodel from database.
 
         Returns
@@ -61,7 +61,7 @@ class PartLink(CrudItem):
         """
         return self._stub.read(self)
 
-    def set(self, data: Part) -> None:
+    def set(self, data: ProtoPart) -> None:
         """Change datamodel in database.
 
         Parameters
@@ -99,7 +99,7 @@ class PartStub(CrudStub):
     def __init__(self, channel):
         super().__init__(stub=service.PartsManagerStub(channel=channel))
 
-    def create(self, message: Part) -> PartLink:
+    def create(self, message: ProtoPart) -> PartLink:
         """Create a new entry.
 
         Parameters
@@ -115,7 +115,7 @@ class PartStub(CrudStub):
         resp = CrudStub.create(self, messages.Create_Request(part=message))
         return PartLink(self, resp.guid)
 
-    def read(self, ref: PartLink) -> Part:
+    def read(self, ref: PartLink) -> ProtoPart:
         """Get an existing entry.
 
         Parameters
@@ -133,7 +133,7 @@ class PartStub(CrudStub):
         resp = CrudStub.read(self, messages.Read_Request(guid=ref.key))
         return resp.part
 
-    def update(self, ref: PartLink, data: Part):
+    def update(self, ref: PartLink, data: ProtoPart):
         """Change an existing entry.
 
         Parameters

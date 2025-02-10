@@ -29,14 +29,14 @@ from ansys.api.speos.scene.v2 import scene_pb2 as messages, scene_pb2_grpc as se
 from ansys.speos.core.kernel.crud import CrudItem, CrudStub
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 
-Scene = messages.Scene
+ProtoScene = messages.Scene
 """Scene protobuf class : ansys.api.speos.scene.v2.scene_pb2.Scene"""
-Scene.__str__ = lambda self: protobuf_message_to_str(self)
-Scene.MaterialInstance.__str__ = lambda self: protobuf_message_to_str(self)
-Scene.SceneInstance.__str__ = lambda self: protobuf_message_to_str(self)
-Scene.SourceInstance.__str__ = lambda self: protobuf_message_to_str(self)
-Scene.SensorInstance.__str__ = lambda self: protobuf_message_to_str(self)
-Scene.SimulationInstance.__str__ = lambda self: protobuf_message_to_str(self)
+ProtoScene.__str__ = lambda self: protobuf_message_to_str(self)
+ProtoScene.MaterialInstance.__str__ = lambda self: protobuf_message_to_str(self)
+ProtoScene.SceneInstance.__str__ = lambda self: protobuf_message_to_str(self)
+ProtoScene.SourceInstance.__str__ = lambda self: protobuf_message_to_str(self)
+ProtoScene.SensorInstance.__str__ = lambda self: protobuf_message_to_str(self)
+ProtoScene.SimulationInstance.__str__ = lambda self: protobuf_message_to_str(self)
 
 
 class SceneLink(CrudItem):
@@ -68,7 +68,7 @@ class SceneLink(CrudItem):
         """Return the string representation of the scene."""
         return str(self.get())
 
-    def get(self) -> Scene:
+    def get(self) -> ProtoScene:
         """Get the datamodel from database.
 
         Returns
@@ -78,7 +78,7 @@ class SceneLink(CrudItem):
         """
         return self._stub.read(self)
 
-    def set(self, data: Scene) -> None:
+    def set(self, data: ProtoScene) -> None:
         """Change datamodel in database.
 
         Parameters
@@ -154,12 +154,12 @@ class SceneStub(CrudStub):
         super().__init__(stub=service.ScenesManagerStub(channel=channel))
         self._actions_stub = service.SceneActionsStub(channel=channel)
 
-    def create(self, message: Scene = Scene()) -> SceneLink:
+    def create(self, message: ProtoScene = None) -> SceneLink:
         """Create a new entry.
 
         Parameters
         ----------
-        message : scene.Scene
+        message : scene.Scene, optional.
             Datamodel for the new entry.
 
         Returns
@@ -167,10 +167,12 @@ class SceneStub(CrudStub):
         ansys.speos.core.kernel.scene.SceneLink
             Link object created.
         """
+        if message is None:
+            message = ProtoScene()
         resp = CrudStub.create(self, messages.Create_Request(scene=message))
         return SceneLink(self, resp.guid)
 
-    def read(self, ref: SceneLink) -> Scene:
+    def read(self, ref: SceneLink) -> ProtoScene:
         """Get an existing entry.
 
         Parameters
@@ -188,7 +190,7 @@ class SceneStub(CrudStub):
         resp = CrudStub.read(self, messages.Read_Request(guid=ref.key))
         return resp.scene
 
-    def update(self, ref: SceneLink, data: Scene):
+    def update(self, ref: SceneLink, data: ProtoScene):
         """Change an existing entry.
 
         Parameters

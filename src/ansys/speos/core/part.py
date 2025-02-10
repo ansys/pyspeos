@@ -32,7 +32,7 @@ from ansys.speos.core import proto_message_utils
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
 from ansys.speos.core.kernel.client import SpeosClient
-from ansys.speos.core.kernel.part import Part as KernelPart
+from ansys.speos.core.kernel.part import ProtoPart
 import ansys.speos.core.project as project
 
 
@@ -93,10 +93,10 @@ class Part:
             self.part_link = None
             """Link object for the part in database."""
             self._unique_id = None
-            self._part_instance = KernelPart.PartInstance(name=name, description=description)
+            self._part_instance = ProtoPart.PartInstance(name=name, description=description)
 
             # Create local Part
-            self._part = KernelPart(name=name, description=description)
+            self._part = ProtoPart(name=name, description=description)
 
             self._geom_features = []
 
@@ -447,7 +447,7 @@ class Part:
         # Create local Part
         if metadata is None:
             metadata = {}
-        self._part = KernelPart(name=name, description=description, metadata=metadata)
+        self._part = ProtoPart(name=name, description=description, metadata=metadata)
 
     def create_body(
         self, name: str, description: str = "", metadata: Optional[Mapping[str, str]] = None
