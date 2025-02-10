@@ -45,11 +45,10 @@ sim.compute_CPU()
 # If looking to the simulation report, we will find that we have 40% simulation error
 
 # +
-from ansys.speos.core.project import Project
 import ansys.speos.core.workflow.open_result as ORF
 
-# methods from workflow class provided a way to find the correct result file.
-# detailed information can be found in the workflow_open_result example.
+# Methods from workflow class provide a way to find the correct result file.
+# Detailed information can be found in the workflow_open_result example.
 data = ORF._find_correct_result(sim, "Direct.1.html")
 # -
 
