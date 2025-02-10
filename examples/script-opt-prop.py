@@ -119,6 +119,39 @@ print(op4)
 print(op1)
 # -
 
+# The get methods allows you to get some properties of your feature
+
+# +
+print("op1 name: {}".format(op1.get(key="name")))
+print("geometries linked to op1: {}".format(op1.get(key="geo_paths")))
+print("op1 surface optical properties info: {}".format(op1.get(key="sops")))
+print("op1 volume optical property info: {}".format(op1.get(key="vop")))
+# user can use get with vop type as key word to check volume property type
+print(
+    "op1 {} opaque type volume optical property".format(
+        "is" if op1.get(key="opaque") is not None else "is not"
+    )
+)
+
+print(op2)
+print("op2 name: {}".format(op2.get(key="name")))
+print(
+    "op2 {} optical polished type surface property".format(
+        ("is" if "optical_polished" in op2.get(key="sops")[0] else "is not")
+    )
+)
+# an alternative way to check the type of optical property
+print(
+    "op2 {} library type volume optical property".format(
+        "is" if "library" in op2.get(key="vop") is not None else "is not"
+    )
+)
+
+print(op3)
+print("op3 name: {}".format(op3.get(key="name")))
+print("op3 has reflectance value of {}".format(op3.get(key="sops")[0]["mirror"]["reflectance"]))
+# -
+
 # ### Project Information
 # Committed feature information will appear inside a project information.
 
@@ -133,8 +166,10 @@ print(p)
 # If you don't, you will still only watch what is committed on the server.
 
 # +
+print("op1 surface type before update: {}".format(op1.get(key="sops")[0]))
 op1.set_volume_optic().set_surface_opticalpolished().commit()
 print(op1)
+print("op1 surface type after update: {}".format(op1.get(key="sops")[0]))
 # -
 
 # ## Reset
