@@ -28,9 +28,9 @@ from typing import List, Mapping, Optional
 import uuid
 
 from ansys.speos.core.geo_ref import GeoRef
-from ansys.speos.core.kernel.scene import Scene
-from ansys.speos.core.kernel.sop_template import SOPTemplate
-from ansys.speos.core.kernel.vop_template import VOPTemplate
+from ansys.speos.core.kernel.scene import ProtoScene
+from ansys.speos.core.kernel.sop_template import ProtoSOPTemplate
+from ansys.speos.core.kernel.vop_template import ProtoVOPTemplate
 import ansys.speos.core.project as project
 import ansys.speos.core.proto_message_utils as proto_message_utils
 
@@ -72,7 +72,7 @@ class OptProp:
         # Create SOP template
         if metadata is None:
             metadata = {}
-        self._sop_template = SOPTemplate(
+        self._sop_template = ProtoSOPTemplate(
             name=name + ".SOP", description=description, metadata=metadata
         )
 
@@ -80,7 +80,7 @@ class OptProp:
         self._vop_template = None
 
         # Create material instance
-        self._material_instance = Scene.MaterialInstance(
+        self._material_instance = ProtoScene.MaterialInstance(
             name=name, description=description, metadata=metadata
         )
 
@@ -156,7 +156,7 @@ class OptProp:
             Optical property.
         """
         if self._vop_template is None:
-            self._vop_template = VOPTemplate(
+            self._vop_template = ProtoVOPTemplate(
                 name=self._name + ".VOP",
                 description=self._sop_template.description,
                 metadata=self._sop_template.metadata,
@@ -188,7 +188,7 @@ class OptProp:
             Optical property.
         """
         if self._vop_template is None:
-            self._vop_template = VOPTemplate(
+            self._vop_template = ProtoVOPTemplate(
                 name=self._name + ".VOP",
                 description=self._sop_template.description,
                 metadata=self._sop_template.metadata,
@@ -244,7 +244,7 @@ class OptProp:
             Optical property.
         """
         if self._vop_template is None:
-            self._vop_template = VOPTemplate(
+            self._vop_template = ProtoVOPTemplate(
                 name=self._name + ".VOP",
                 description=self._sop_template.description,
                 metadata=self._sop_template.metadata,

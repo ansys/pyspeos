@@ -24,7 +24,7 @@
 import os
 from typing import List, Optional
 
-from ansys.speos.core.kernel.part import Part, PartLink
+from ansys.speos.core.kernel.part import PartLink, ProtoPart
 from ansys.speos.core.project import Project
 from ansys.speos.core.speos import Speos
 
@@ -76,7 +76,7 @@ def insert_speos(project: Project, speos_to_insert: List[SpeosFileInstance]) -> 
     # or just retrieve it from project's scene
     part_link = None
     if project.scene_link.get().part_guid == "":
-        part_link = project.client.parts().create(message=Part())
+        part_link = project.client.parts().create(message=ProtoPart())
     else:
         part_link = project.client.get_item(project.scene_link.get().part_guid)
 
@@ -102,7 +102,7 @@ def combine_speos(speos: Speos, speos_to_combine: List[SpeosFileInstance]) -> Pr
     """
     # Create an empty project and an empty part link
     p = Project(speos=speos)
-    part_link = speos.client.parts().create(message=Part())
+    part_link = speos.client.parts().create(message=ProtoPart())
 
     # Combine all speos_to_combine into the project
     _combine(project=p, part_link=part_link, speos_to_combine=speos_to_combine)
@@ -119,7 +119,7 @@ def _combine(project: Project, part_link: PartLink, speos_to_combine: List[Speos
         scene_tmp.load_file(file_uri=spc.speos_file)
         scene_tmp_data = scene_tmp.get()
 
-        part_inst = Part.PartInstance(name=spc.name)
+        part_inst = ProtoPart.PartInstance(name=spc.name)
         part_inst.axis_system[:] = spc.axis_system
         part_inst.part_guid = scene_tmp_data.part_guid
         part_data.parts.append(part_inst)

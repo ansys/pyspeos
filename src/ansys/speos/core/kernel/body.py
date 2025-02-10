@@ -90,7 +90,7 @@ class BodyStub(CrudStub):
     The best way to get a BodyStub is to retrieve it from SpeosClient via bodies() method.
     Like in the following example:
 
-    >>> from ansys.speos.core.kernel.speos import Speos
+    >>> from ansys.speos.core.speos import Speos
     >>> speos = Speos(host="localhost", port=50098)
     >>> body_db = speos.client.bodies()
 

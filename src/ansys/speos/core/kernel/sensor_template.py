@@ -47,10 +47,10 @@ class SensorTemplateLink(CrudItem):
     Examples
     --------
     >>> from ansys.speos.core.speos import Speos
-    >>> from ansys.speos.core.kernel.sensor_template import SensorTemplate
+    >>> from ansys.speos.core.kernel.sensor_template import ProtoSensorTemplate
     >>> speos = Speos(host="localhost", port=50098)
     >>> ssr_t_db = speos.client.sensor_templates()
-    >>> ssr_t_message = SensorTemplate(name="Irradiance")
+    >>> ssr_t_message = ProtoSensorTemplate(name="Irradiance")
     >>> ssr_t_message.irradiance_sensor_template.sensor_type_photometric.SetInParent()
     >>> ssr_t_message.irradiance_sensor_template.illuminance_type_planar.SetInParent()
     >>> ssr_t_message.irradiance_sensor_template.dimensions.x_start = -50

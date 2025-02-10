@@ -7,7 +7,7 @@
 import os
 import time
 
-from ansys.speos.core.kernel.job import Job
+from ansys.speos.core.kernel.job import ProtoJob
 from ansys.speos.core.speos import Speos
 
 # If using docker container
@@ -53,12 +53,12 @@ print(my_scene)
 
 # +
 # First create the protobuf message
-job_message = Job(name="my_job")
+job_message = ProtoJob(name="my_job")
 job_message.scene_guid = my_scene.key  # The job needs a scene guid
 job_message.simulation_path = (
     my_scene.get().simulations[0].name
 )  # And needs to know which simulation in the scene is involved.
-job_message.job_type = Job.Type.CPU  # Choose type of job, can also be GPU.
+job_message.job_type = ProtoJob.Type.CPU  # Choose type of job, can also be GPU.
 job_message.direct_mc_simulation_properties.automatic_save_frequency = 1800
 job_message.direct_mc_simulation_properties.stop_condition_rays_number = (
     200000  # Stop condition, here 200000 rays will be sent.
@@ -85,9 +85,9 @@ job_link.get_state()
 # +
 job_state_res = job_link.get_state()
 while (
-    job_state_res.state != Job.State.FINISHED
-    and job_state_res.state != Job.State.STOPPED
-    and job_state_res.state != Job.State.IN_ERROR
+    job_state_res.state != ProtoJob.State.FINISHED
+    and job_state_res.state != ProtoJob.State.STOPPED
+    and job_state_res.state != ProtoJob.State.IN_ERROR
 ):
     time.sleep(2)
 

@@ -27,8 +27,8 @@ import os
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2
 from ansys.speos.core import Speos
 from ansys.speos.core.kernel import SensorTemplateLink
-from ansys.speos.core.kernel.scene import Scene
-from ansys.speos.core.kernel.sensor_template import SensorTemplate
+from ansys.speos.core.kernel.scene import ProtoScene
+from ansys.speos.core.kernel.sensor_template import ProtoSensorTemplate
 
 # If using docker container
 tests_data_path = os.path.join("/app", "assets")
@@ -137,7 +137,7 @@ print(camera_t_0)  # Print ObjectLink to see its datamodel in database
 sensor_t_db = speos.client.sensor_templates()  # Retrieve access to sensor templates db
 
 # Create protobuf message SensorTemplate
-sensor_t_data = SensorTemplate(name="CameraFromScratch")
+sensor_t_data = ProtoSensorTemplate(name="CameraFromScratch")
 sensor_t_data.camera_sensor_template.sensor_mode_photometric.acquisition_integration = 0.01
 sensor_t_data.camera_sensor_template.sensor_mode_photometric.acquisition_lag_time = 0
 sensor_t_data.camera_sensor_template.sensor_mode_photometric.transmittance_file_uri = os.path.join(
@@ -179,7 +179,7 @@ print(sensor_t_new)
 # ### Create a camera instance
 
 # +
-camera_i_2 = Scene.SensorInstance(name=sensor_t_new.get().name + ".1")
+camera_i_2 = ProtoScene.SensorInstance(name=sensor_t_new.get().name + ".1")
 camera_i_2.sensor_guid = sensor_t_new.key  # An instance has to reference a template - here we use the SensorTemplateLink's key that we got just above.
 camera_i_2.camera_properties.axis_system.extend(
     [50, 50, 50, 1, 0, 0, 0, 1, 0, 0, 0, 1]

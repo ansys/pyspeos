@@ -47,10 +47,10 @@ class VOPTemplateLink(CrudItem):
     Examples
     --------
     >>> from ansys.speos.core.speos import Speos
-    >>> from ansys.speos.core.kernel.vop_template import VOPTemplate
+    >>> from ansys.speos.core.kernel.vop_template import ProtoVOPTemplate
     >>> speos = Speos(host="localhost", port=50098)
     >>> vop_t_db = speos.client.vop_templates()
-    >>> vop_t_message = VOPTemplate(name="Opaque")
+    >>> vop_t_message = ProtoVOPTemplate(name="Opaque")
     >>> vop_t_message.opaque.SetInParent()
     >>> vop_t_link = vop_t_db.create(message=vop_t_message)
 
