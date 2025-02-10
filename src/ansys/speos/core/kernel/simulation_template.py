@@ -49,7 +49,7 @@ class SimulationTemplateLink(CrudItem):
 
     Examples
     --------
-    >>> from ansys.speos.core.kernel.speos import Speos
+    >>> from ansys.speos.core.speos import Speos
     >>> from ansys.api.speos.simulation.v1 import simulation_template_pb2
     >>> from ansys.speos.core.kernel.simulation_template import SimulationTemplate
     >>> speos = Speos(host="localhost", port=50098)
@@ -112,7 +112,7 @@ class SimulationTemplateStub(CrudStub):
     The best way to get a SimulationTemplateStub is to retrieve it from SpeosClient via simulation_templates() method.
     Like in the following example:
 
-    >>> from ansys.speos.core.kernel.speos import Speos
+    >>> from ansys.speos.core.speos import Speos
     >>> speos = Speos(host="localhost", port=50098)
     >>> sim_t_db = speos.client.simulation_templates()
 

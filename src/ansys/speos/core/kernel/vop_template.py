@@ -46,7 +46,7 @@ class VOPTemplateLink(CrudItem):
 
     Examples
     --------
-    >>> from ansys.speos.core.kernel.speos import Speos
+    >>> from ansys.speos.core.speos import Speos
     >>> from ansys.speos.core.kernel.vop_template import VOPTemplate
     >>> speos = Speos(host="localhost", port=50098)
     >>> vop_t_db = speos.client.vop_templates()
@@ -102,7 +102,7 @@ class VOPTemplateStub(CrudStub):
     The best way to get a VOPTemplateStub is to retrieve it from SpeosClient via vop_templates() method.
     Like in the following example:
 
-    >>> from ansys.speos.core.kernel.speos import Speos
+    >>> from ansys.speos.core.speos import Speos
     >>> speos = Speos(host="localhost", port=50098)
     >>> vop_t_db = speos.client.vop_templates()
 

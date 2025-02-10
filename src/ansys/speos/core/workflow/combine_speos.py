@@ -90,7 +90,7 @@ def combine_speos(speos: Speos, speos_to_combine: List[SpeosFileInstance]) -> Pr
 
     Parameters
     ----------
-    speos : ansys.speos.core.kernel.speos.Speos
+    speos : ansys.speos.core.speos.Speos
         Speos session (connected to gRPC server).
     speos_to_combine : List[ansys.speos.core.workflow.combine_speos.SpeosFileInstance]
         List of speos + location/orientation to combine into a single project

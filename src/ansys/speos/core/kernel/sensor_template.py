@@ -46,7 +46,7 @@ class SensorTemplateLink(CrudItem):
 
     Examples
     --------
-    >>> from ansys.speos.core.kernel.speos import Speos
+    >>> from ansys.speos.core.speos import Speos
     >>> from ansys.speos.core.kernel.sensor_template import SensorTemplate
     >>> speos = Speos(host="localhost", port=50098)
     >>> ssr_t_db = speos.client.sensor_templates()
@@ -109,7 +109,7 @@ class SensorTemplateStub(CrudStub):
     The best way to get a SensorTemplateStub is to retrieve it from SpeosClient via sensor_templates() method.
     Like in the following example:
 
-    >>> from ansys.speos.core.kernel.speos import Speos
+    >>> from ansys.speos.core.speos import Speos
     >>> speos = Speos(host="localhost", port=50098)
     >>> ssr_t_db = speos.client.sensor_templates()
 

@@ -60,7 +60,7 @@ All sources are located in `<src/>`_ folder.
 
 .. code:: python
 
-   from ansys.speos.core.kernel.speos import Speos
+   from ansys.speos.core.speos import Speos
 
    speos = Speos(host="localhost", port=50098)
 

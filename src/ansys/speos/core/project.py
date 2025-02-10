@@ -37,6 +37,7 @@ import ansys.speos.core.face as face
 from ansys.speos.core.kernel.body import BodyLink
 from ansys.speos.core.kernel.face import FaceLink
 from ansys.speos.core.kernel.scene import Scene
+from ansys.speos.core.kernel.part import Part
 import ansys.speos.core.opt_prop as opt_prop
 import ansys.speos.core.part as part
 import ansys.speos.core.proto_message_utils as proto_message_utils
@@ -54,7 +55,7 @@ class Project:
 
     Parameters
     ----------
-    speos : ansys.speos.core.kernel.speos.Speos
+    speos : ansys.speos.core.speos.Speos
         Speos session (connected to gRPC server).
     path : str
         The project will be loaded from this speos file.
@@ -706,7 +707,7 @@ class Project:
             self._features.append(sim_feat)
 
     def __extract_part_mesh_info(
-        self, part_data: part.Part, part_coordinate_info: RepeatedScalarFieldContainer = None
+        self, part_data: Part, part_coordinate_info: RepeatedScalarFieldContainer = None
     ) -> pv.PolyData:
         """
         Extract mesh data info from a part.

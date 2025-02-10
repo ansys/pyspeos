@@ -24,24 +24,24 @@ Examples
     .. nbgallery::
         :caption: Core examples
 
-        examples/script-project
-        examples/script-opt-prop
-        examples/script-source
-        examples/script-sensor
-        examples/script-part
-        examples/script-simulation
-        examples/script-lpf-preview
-        examples/script-prism-example
+        examples/core-project
+        examples/core-opt-prop
+        examples/core-source
+        examples/core-sensor
+        examples/core-part
+        examples/core-simulation
+        examples/core-lpf-preview
+        examples/core-prism-example
 
 
-    The series of basic examples below explains how to use different core layer methods.
+    The series of basic examples below explains how to use different kernel methods.
 
     .. nbgallery::
-        :caption: Core layer examples
+        :caption: Kernel examples
 
-        examples/core-object-link
-        examples/core-scene-job
-        examples/core-modify-scene
+        examples/kernel-object-link
+        examples/kernel-scene-job
+        examples/kernel-modify-scene
 
     {% else %}
 

@@ -52,7 +52,7 @@ class SceneLink(CrudItem):
 
     Examples
     --------
-    >>> from ansys.speos.core.kernel.speos import Speos
+    >>> from ansys.speos.core.speos import Speos
     >>> from ansys.speos.core.kernel.scene import Scene
     >>> speos = Speos(host="localhost", port=50098)
     >>> sce_db = speos.client.scenes()
@@ -144,7 +144,7 @@ class SceneStub(CrudStub):
     The best way to get a SceneStub is to retrieve it from SpeosClient via scenes() method.
     Like in the following example:
 
-    >>> from ansys.speos.core.kernel.speos import Speos
+    >>> from ansys.speos.core.speos import Speos
     >>> speos = Speos(host="localhost", port=50098)
     >>> sce_db = speos.client.scenes()
 

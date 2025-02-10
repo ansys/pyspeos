@@ -46,7 +46,7 @@ class SpectrumLink(CrudItem):
 
     Examples
     --------
-    >>> from ansys.speos.core.kernel.speos import Speos
+    >>> from ansys.speos.core.speos import Speos
     >>> from ansys.speos.core.kernel.spectrum import Spectrum
     >>> speos = Speos(host="localhost", port=50098)
     >>> spe_db = speos.client.spectrums()
@@ -102,7 +102,7 @@ class SpectrumStub(CrudStub):
     The best way to get a SpectrumStub is to retrieve it from SpeosClient via spectrums() method.
     Like in the following example:
 
-    >>> from ansys.speos.core.kernel.speos import Speos
+    >>> from ansys.speos.core.speos import Speos
     >>> speos = Speos(host="localhost", port=50098)
     >>> spe_db = speos.client.spectrums()
 

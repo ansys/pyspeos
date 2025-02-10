@@ -1,5 +1,5 @@
 ---
-title: 'PySpeos script-layer cheat-sheet'
+title: 'PySpeos core cheat-sheet'
 format: cheat_sheet-pdf
 params:
   version: main

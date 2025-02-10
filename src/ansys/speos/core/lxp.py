@@ -32,8 +32,7 @@ import pyvista as pv
 
 import ansys.api.speos.lpf.v2.lpf_file_reader_pb2 as lpf_file_reader__v2__pb2
 import ansys.api.speos.lpf.v2.lpf_file_reader_pb2_grpc as lpf_file_reader__v2__pb2_grpc
-import ansys.speos.core
-from ansys.speos.core.project import Project
+from ansys.speos.core.project import Project, Speos
 
 ERROR_IDS = [7, 8, 9, 10, 11, 12, 13, 14, 15]
 """Intersection types indicating an error state."""
@@ -229,14 +228,14 @@ class LightPathFinder:
 
     Parameters
     ----------
-    speos : ansys.speos.core.kernel.speos.Speos
+    speos : Speos
         Speos Session (connected to Speos gRPC server)
     path : str
         path to lpf file to be opened
 
     """
 
-    def __init__(self, speos: ansys.speos.core.kernel.speos, path: str):
+    def __init__(self, speos: Speos, path: str):
         self.client = speos.client
         """Speos instance client"""
         self._stub = lpf_file_reader__v2__pb2_grpc.LpfFileReader_MonoStub(self.client.channel)

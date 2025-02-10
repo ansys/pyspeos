@@ -12,7 +12,7 @@
 # ### Template
 
 # The template objects are handled by a manager.
-# It was explained how to interact with them in the core-object-link example ("How to use an ObjectLink").
+# It was explained how to interact with them in the kernel-object-link example ("How to use an ObjectLink").
 # The interesting thing about the template notion is that the same template can be used several times with different properties.
 
 # ### Instance

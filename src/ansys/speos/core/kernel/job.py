@@ -160,7 +160,7 @@ class JobStub(CrudStub):
     The best way to get a JobStub is to retrieve it from SpeosClient via jobs() method.
     Like in the following example:
 
-    >>> from ansys.speos.core.kernel.speos import Speos
+    >>> from ansys.speos.core.speos import Speos
     >>> speos = Speos(host="localhost", port=50098)
     >>> job_db = speos.client.jobs()
 

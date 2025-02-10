@@ -90,7 +90,7 @@ class PartStub(CrudStub):
     The best way to get a PartStub is to retrieve it from SpeosClient via parts() method.
     Like in the following example:
 
-    >>> from ansys.speos.core.kernel.speos import Speos
+    >>> from ansys.speos.core.speos import Speos
     >>> speos = Speos(host="localhost", port=50098)
     >>> part_db = speos.client.parts()
 
