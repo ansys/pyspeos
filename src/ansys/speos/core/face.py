@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -21,11 +21,10 @@
 # SOFTWARE.
 
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
+
 from typing import Iterator, List
 
-from ansys.api.speos.part.v1 import face_pb2 as messages
-from ansys.api.speos.part.v1 import face_pb2_grpc as service
-
+from ansys.api.speos.part.v1 import face_pb2 as messages, face_pb2_grpc as service
 from ansys.speos.core.crud import CrudItem, CrudStub
 from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 
@@ -116,7 +115,9 @@ class FaceStub(CrudStub):
         """
         resp = CrudStub.create(self, messages.Create_Request(face=Face(name="tmp")))
 
-        chunk_iterator = FaceStub._face_to_chunks(guid=resp.guid, message=message, nb_items=128 * 1024)
+        chunk_iterator = FaceStub._face_to_chunks(
+            guid=resp.guid, message=message, nb_items=128 * 1024
+        )
         self._actions_stub.Upload(chunk_iterator)
 
         return FaceLink(self, resp.guid)
@@ -190,21 +191,31 @@ class FaceStub(CrudStub):
                         name=message.name,
                         description=message.description,
                         metadata=message.metadata,
-                        sizes=[len(message.vertices), len(message.facets), len(message.texture_coordinates_channels)],
+                        sizes=[
+                            len(message.vertices),
+                            len(message.facets),
+                            len(message.texture_coordinates_channels),
+                        ],
                     )
                 )
                 yield chunk_face_header
             elif j == 1:
                 for i in range(0, len(message.vertices), nb_items):
-                    chunk_vertices = messages.Chunk(vertices=messages.Chunk.Vertices(data=message.vertices[i : i + nb_items]))
+                    chunk_vertices = messages.Chunk(
+                        vertices=messages.Chunk.Vertices(data=message.vertices[i : i + nb_items])
+                    )
                     yield chunk_vertices
             elif j == 2:
                 for i in range(0, len(message.facets), nb_items):
-                    chunk_facets = messages.Chunk(facets=messages.Chunk.Facets(data=message.facets[i : i + nb_items]))
+                    chunk_facets = messages.Chunk(
+                        facets=messages.Chunk.Facets(data=message.facets[i : i + nb_items])
+                    )
                     yield chunk_facets
             elif j == 3:
                 for i in range(0, len(message.normals), nb_items):
-                    chunk_normals = messages.Chunk(normals=messages.Chunk.Normals(data=message.normals[i : i + nb_items]))
+                    chunk_normals = messages.Chunk(
+                        normals=messages.Chunk.Normals(data=message.normals[i : i + nb_items])
+                    )
                     yield chunk_normals
 
     @staticmethod

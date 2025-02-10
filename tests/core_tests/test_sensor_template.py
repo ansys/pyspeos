@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -23,13 +23,14 @@
 """
 Test source template.
 """
+
 import os
 
-from ansys.api.speos.sensor.v1 import camera_sensor_pb2, common_pb2, irradiance_sensor_pb2
+from conftest import test_path
 
+from ansys.api.speos.sensor.v1 import camera_sensor_pb2, common_pb2, irradiance_sensor_pb2
 from ansys.speos.core.sensor_template import SensorTemplate
 from ansys.speos.core.speos import Speos
-from conftest import test_path
 
 
 def test_sensor_template(speos: Speos):
@@ -37,7 +38,9 @@ def test_sensor_template(speos: Speos):
     assert speos.client.healthy is True
 
     # Get DB
-    sensor_t_db = speos.client.sensor_templates()  # Create sensor_templates stub from client channel
+    sensor_t_db = (
+        speos.client.sensor_templates()
+    )  # Create sensor_templates stub from client channel
 
     camera_input_files_path = os.path.join(test_path, "CameraInputFiles")
     red_spectrum = os.path.join(camera_input_files_path, "CameraSensitivityRed.spectrum")
@@ -58,8 +61,12 @@ def test_sensor_template(speos: Speos):
                     transmittance_file_uri=transmittance,
                     gamma_correction=2.2,
                     png_bits=camera_sensor_pb2.PNG_16,
-                    color_mode_monochromatic=camera_sensor_pb2.SensorCameraColorModeMonochromatic(spectrum_file_uri=green_spectrum),
-                    wavelengths_range=common_pb2.WavelengthsRange(w_start=400, w_end=800, w_sampling=10),
+                    color_mode_monochromatic=camera_sensor_pb2.SensorCameraColorModeMonochromatic(
+                        spectrum_file_uri=green_spectrum
+                    ),
+                    wavelengths_range=common_pb2.WavelengthsRange(
+                        w_start=400, w_end=800, w_sampling=10
+                    ),
                 ),
                 focal_length=4,
                 imager_distance=10,
@@ -92,7 +99,9 @@ def test_sensor_template(speos: Speos):
                         blue_spectrum_file_uri=blue_spectrum,
                         balance_mode_none=camera_sensor_pb2.SensorCameraBalanceModeNone(),
                     ),
-                    wavelengths_range=common_pb2.WavelengthsRange(w_start=400, w_end=800, w_sampling=10),
+                    wavelengths_range=common_pb2.WavelengthsRange(
+                        w_start=400, w_end=800, w_sampling=10
+                    ),
                 ),
                 focal_length=4,
                 imager_distance=10,
@@ -125,7 +134,9 @@ def test_sensor_template(speos: Speos):
                         blue_spectrum_file_uri=blue_spectrum,
                         balance_mode_greyworld=camera_sensor_pb2.SensorCameraBalanceModeGreyworld(),
                     ),
-                    wavelengths_range=common_pb2.WavelengthsRange(w_start=400, w_end=800, w_sampling=10),
+                    wavelengths_range=common_pb2.WavelengthsRange(
+                        w_start=400, w_end=800, w_sampling=10
+                    ),
                 ),
                 focal_length=4,
                 imager_distance=10,
@@ -156,9 +167,13 @@ def test_sensor_template(speos: Speos):
                         red_spectrum_file_uri=red_spectrum,
                         green_spectrum_file_uri=green_spectrum,
                         blue_spectrum_file_uri=blue_spectrum,
-                        balance_mode_userwhite=camera_sensor_pb2.SensorCameraBalanceModeUserwhite(red_gain=1, green_gain=1, blue_gain=1),
+                        balance_mode_userwhite=camera_sensor_pb2.SensorCameraBalanceModeUserwhite(
+                            red_gain=1, green_gain=1, blue_gain=1
+                        ),
                     ),
-                    wavelengths_range=common_pb2.WavelengthsRange(w_start=400, w_end=800, w_sampling=10),
+                    wavelengths_range=common_pb2.WavelengthsRange(
+                        w_start=400, w_end=800, w_sampling=10
+                    ),
                 ),
                 focal_length=4,
                 imager_distance=10,
@@ -182,7 +197,12 @@ def test_sensor_template(speos: Speos):
                 sensor_type_photometric=common_pb2.SensorTypePhotometric(),
                 illuminance_type_planar=common_pb2.IlluminanceTypePlanar(),
                 dimensions=common_pb2.SensorDimensions(
-                    x_start=-50.0, x_end=50.0, x_sampling=100, y_start=-50.0, y_end=50.0, y_sampling=100
+                    x_start=-50.0,
+                    x_end=50.0,
+                    x_sampling=100,
+                    y_start=-50.0,
+                    y_end=50.0,
+                    y_sampling=100,
                 ),
             ),
         )
@@ -196,11 +216,18 @@ def test_sensor_template(speos: Speos):
             description="Irradiance sensor template colorimetric",
             irradiance_sensor_template=irradiance_sensor_pb2.IrradianceSensorTemplate(
                 sensor_type_colorimetric=common_pb2.SensorTypeColorimetric(
-                    wavelengths_range=common_pb2.WavelengthsRange(w_start=400, w_end=800, w_sampling=10)
+                    wavelengths_range=common_pb2.WavelengthsRange(
+                        w_start=400, w_end=800, w_sampling=10
+                    )
                 ),
                 illuminance_type_planar=common_pb2.IlluminanceTypePlanar(),
                 dimensions=common_pb2.SensorDimensions(
-                    x_start=-50.0, x_end=50.0, x_sampling=100, y_start=-50.0, y_end=50.0, y_sampling=100
+                    x_start=-50.0,
+                    x_end=50.0,
+                    x_sampling=100,
+                    y_start=-50.0,
+                    y_end=50.0,
+                    y_sampling=100,
                 ),
             ),
         )

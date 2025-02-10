@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -38,6 +38,7 @@ Then add the import within this module to enable:
    >>> library.add(1, 2)
 
 .. note::
+
    It's best to import the version here as well so it can be
    referenced at the library level.
 

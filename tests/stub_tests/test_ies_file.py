@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -29,14 +29,15 @@ With coverage.
 .. code::
    $ pytest --cov ansys.speos.core
 """
+
 import logging
 import os
 
-from ansys.api.speos.intensity_distributions.v1 import ies_pb2, ies_pb2_grpc
-
-from ansys.speos.core.speos import Speos
 from conftest import test_path
 import helper
+
+from ansys.api.speos.intensity_distributions.v1 import ies_pb2, ies_pb2_grpc
+from ansys.speos.core.speos import Speos
 
 
 def createIesIntensity():
@@ -127,7 +128,10 @@ def compareIesIntensities(ies1, ies2):
         if ies1.horizontal_angle[i] != ies2.horizontal_angle[i]:
             return False
         for j in range(int(ies1.nb_vertical_angle)):
-            if ies1.candela_value[i * ies1.nb_vertical_angle + j] != ies2.candela_value[i * ies1.nb_vertical_angle + j]:
+            if (
+                ies1.candela_value[i * ies1.nb_vertical_angle + j]
+                != ies2.candela_value[i * ies1.nb_vertical_angle + j]
+            ):
                 return False
     for i in range(int(ies1.tilt_nb_pair_angle)):
         if ies1.tilt_angle[i] != ies2.tilt_angle[i]:

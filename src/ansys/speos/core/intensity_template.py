@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -21,11 +21,10 @@
 # SOFTWARE.
 
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
+
 from typing import List
 
-from ansys.api.speos.intensity.v1 import intensity_pb2 as messages
-from ansys.api.speos.intensity.v1 import intensity_pb2_grpc as service
-
+from ansys.api.speos.intensity.v1 import intensity_pb2 as messages, intensity_pb2_grpc as service
 from ansys.speos.core.crud import CrudItem, CrudStub
 from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 
@@ -47,7 +46,6 @@ class IntensityTemplateLink(CrudItem):
 
     Examples
     --------
-
     >>> from ansys.speos.core.speos import Speos
     >>> from ansys.speos.core.intensity_template import IntensityTemplate
     >>> speos = Speos(host="localhost", port=50098)
@@ -101,7 +99,9 @@ class IntensityTemplateLink(CrudItem):
         ansys.api.speos.intensity.v1.intensity_pb2.GetLibraryTypeInfo_Response
             Information about intensity template, like flux value.
         """
-        return self._actions_stub.GetLibraryTypeInfo(messages.GetLibraryTypeInfo_Request(guid=self.key))
+        return self._actions_stub.GetLibraryTypeInfo(
+            messages.GetLibraryTypeInfo_Request(guid=self.key)
+        )
 
 
 class IntensityTemplateStub(CrudStub):

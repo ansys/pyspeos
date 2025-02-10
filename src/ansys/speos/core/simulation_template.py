@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -21,11 +21,13 @@
 # SOFTWARE.
 
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
+
 from typing import List
 
-from ansys.api.speos.simulation.v1 import simulation_template_pb2 as messages
-from ansys.api.speos.simulation.v1 import simulation_template_pb2_grpc as service
-
+from ansys.api.speos.simulation.v1 import (
+    simulation_template_pb2 as messages,
+    simulation_template_pb2_grpc as service,
+)
 from ansys.speos.core.crud import CrudItem, CrudStub
 from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 
@@ -38,7 +40,6 @@ class SimulationTemplateLink(CrudItem):
     """
     Link object for simulation template in database.
 
-
     Parameters
     ----------
     db : ansys.speos.core.simulation_template.SimulationTemplateStub
@@ -48,7 +49,6 @@ class SimulationTemplateLink(CrudItem):
 
     Examples
     --------
-
     >>> from ansys.speos.core.speos import Speos
     >>> from ansys.api.speos.simulation.v1 import simulation_template_pb2
     >>> from ansys.speos.core.simulation_template import SimulationTemplate
@@ -58,7 +58,9 @@ class SimulationTemplateLink(CrudItem):
     >>> sim_t_message.direct_mc_simulation_template.geom_distance_tolerance = 0.01
     >>> sim_t_message.direct_mc_simulation_template.max_impact = 100
     >>> sim_t_message.direct_mc_simulation_template.weight.minimum_energy_percentage = 0.005
-    >>> sim_t_message.direct_mc_simulation_template.colorimetric_standard = simulation_template_pb2.CIE_1931
+    >>> sim_t_message.direct_mc_simulation_template.colorimetric_standard = (
+    ...     simulation_template_pb2.CIE_1931
+    ... )
     >>> sim_t_message.direct_mc_simulation_template.dispersion = True
     >>> sim_t_link = sim_t_db.create(message=sim_t_message)
 

@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -20,8 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 """Provides a way to combine several speos files into one project feature (of script layer)."""
+
 import os
-from typing import List
+from typing import List, Optional
 
 from ansys.speos.core.part import Part, PartLink
 from ansys.speos.core.speos import Speos
@@ -35,7 +36,7 @@ class SpeosFileInstance:
     ----------
     speos_file : str
         Speos file to be loaded.
-    axis_system : List[float]
+    axis_system : Optional[List[float]]
         Location and orientation wished for speos file, [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
         By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
     name : str
@@ -43,9 +44,13 @@ class SpeosFileInstance:
         By default, ``""``, empty means that the name from speos_file basename without extension will be taken.
     """
 
-    def __init__(self, speos_file: str, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1], name: str = "") -> None:
+    def __init__(
+        self, speos_file: str, axis_system: Optional[List[float]] = None, name: str = ""
+    ) -> None:
         self.speos_file = speos_file
         """Speos file."""
+        if axis_system is None:
+            axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
         self.axis_system = axis_system
         """Location/Orientation wished for speos file."""
         self.name = name

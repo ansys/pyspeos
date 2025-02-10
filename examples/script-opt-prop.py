@@ -47,7 +47,12 @@ op1 = p.create_optical_property(name="Material.1")
 op1.set_surface_mirror(reflectance=80)  # SOP : mirror
 op1.set_volume_opaque()  # VOP : opaque
 # This optical property will be applied to two bodies named : "TheBodyB" and "TheBodyC".
-op1.set_geometries(geometries=[script.GeoRef.from_native_link(geopath="TheBodyB"), script.GeoRef.from_native_link(geopath="TheBodyC")])
+op1.set_geometries(
+    geometries=[
+        script.GeoRef.from_native_link(geopath="TheBodyB"),
+        script.GeoRef.from_native_link(geopath="TheBodyC"),
+    ]
+)
 print(op1)
 # -
 
@@ -68,9 +73,16 @@ print(op1)
 # +
 op2 = p.create_optical_property(name="Material.2")
 op2.set_surface_opticalpolished()  # SOP : optical polished
-op2.set_volume_library(path=os.path.join(tests_data_path, "AIR.material"))  # VOP : selected library via a file .material
+op2.set_volume_library(
+    path=os.path.join(tests_data_path, "AIR.material")
+)  # VOP : selected library via a file .material
 # This optical property will be applied to two bodies named : "TheBodyD" and "TheBodyE".
-op2.set_geometries(geometries=[script.GeoRef.from_native_link(geopath="TheBodyD"), script.GeoRef.from_native_link(geopath="TheBodyE")])
+op2.set_geometries(
+    geometries=[
+        script.GeoRef.from_native_link(geopath="TheBodyD"),
+        script.GeoRef.from_native_link(geopath="TheBodyE"),
+    ]
+)
 op2.commit()
 print(op2)
 # -

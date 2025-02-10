@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 """Provides a way to interact with feature: Face."""
+
 from __future__ import annotations
 
 from typing import List, Mapping, Optional
@@ -42,7 +43,7 @@ class Face:
     description : str
         Description of the feature.
         By default, ``""``.
-    metadata : Mapping[str, str]
+    metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
     parent_body : ansys.speos.script.body.Body, optional
@@ -60,7 +61,7 @@ class Face:
         speos_client: core.SpeosClient,
         name: str,
         description: str = "",
-        metadata: Mapping[str, str] = {},
+        metadata: Optional[Mapping[str, str]] = None,
         parent_body: Optional[body.Body] = None,
     ) -> None:
         self._speos_client = speos_client
@@ -68,6 +69,8 @@ class Face:
         self._name = name
         self.face_link = None
         """Link object for the face in database."""
+        if metadata is None:
+            metadata = {}
 
         # Create local Face
         self._face = core.Face(name=name, description=description, metadata=metadata)
@@ -124,9 +127,13 @@ class Face:
         out_dict = ""
 
         if self.face_link is None:
-            out_dict = proto_message_utils._replace_guids(speos_client=self._speos_client, message=self._face)
+            out_dict = proto_message_utils._replace_guids(
+                speos_client=self._speos_client, message=self._face
+            )
         else:
-            out_dict = proto_message_utils._replace_guids(speos_client=self._speos_client, message=self.face_link.get())
+            out_dict = proto_message_utils._replace_guids(
+                speos_client=self._speos_client, message=self.face_link.get()
+            )
 
         return out_dict
 

@@ -43,9 +43,9 @@ print(p)
 
 # +
 root_part = p.create_root_part()
-root_part.create_body(name="Body.1").create_face(name="Face.1").set_vertices([0, 1, 2, 0, 2, 2, 1, 2, 2]).set_facets([0, 1, 2]).set_normals(
-    [0, 0, 1, 0, 0, 1, 0, 0, 1]
-)
+root_part.create_body(name="Body.1").create_face(name="Face.1").set_vertices(
+    [0, 1, 2, 0, 2, 2, 1, 2, 2]
+).set_facets([0, 1, 2]).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
 root_part.commit()
 # -
 
@@ -71,7 +71,9 @@ sensor1.commit()
 
 # +
 source1 = p.create_source(name="Surface.1")
-source1.set_exitance_constant(geometries=[(script.GeoRef.from_native_link(geopath="Body.1/Face.1"), True)])
+source1.set_exitance_constant(
+    geometries=[(script.GeoRef.from_native_link(geopath="Body.1/Face.1"), True)]
+)
 source1.set_spectrum().set_blackbody()  # blackbody so that the source can be used both in direct and inverse simulation
 source1.commit()
 # -
@@ -99,7 +101,9 @@ simulation2_direct = p.create_simulation(name="Simulation.2")
 
 simulation2_direct.set_ambient_material_file_uri(
     uri=os.path.join(tests_data_path, "AIR.material")
-).set_colorimetric_standard_CIE_1964().set_weight_none().set_geom_distance_tolerance(0.01).set_max_impact(200).set_dispersion(False)
+).set_colorimetric_standard_CIE_1964().set_weight_none().set_geom_distance_tolerance(
+    0.01
+).set_max_impact(200).set_dispersion(False)
 simulation2_direct.set_sensor_paths(["Irradiance.1"]).set_source_paths(["Surface.1"]).commit()
 print(simulation2_direct)
 # -
@@ -147,7 +151,9 @@ print(simulation1)
 
 # +
 simulation3 = p.create_simulation(name="Simulation.3", feature_type=script.simulation.Inverse)
-simulation3.set_sensor_paths(sensor_paths=["Irradiance.1"]).set_source_paths(source_paths=["Surface.1"]).commit()
+simulation3.set_sensor_paths(sensor_paths=["Irradiance.1"]).set_source_paths(
+    source_paths=["Surface.1"]
+).commit()
 print(simulation3)
 # -
 

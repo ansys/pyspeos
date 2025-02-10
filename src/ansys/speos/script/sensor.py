@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 """Provides a way to interact with Speos feature: Sensor."""
+
 from __future__ import annotations
 
 from difflib import SequenceMatcher
@@ -28,7 +29,6 @@ from typing import List, Mapping, Optional, Union
 import uuid
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2, common_pb2
-
 from ansys.speos import core as core
 from ansys.speos.script.geo_ref import GeoRef
 import ansys.speos.script.project as project
@@ -69,7 +69,7 @@ class BaseSensor:
         project: project.Project,
         name: str,
         description: str = "",
-        metadata: Mapping[str, str] = {},
+        metadata: Optional[Mapping[str, str]] = None,
         sensor_instance: Optional[core.Scene.SensorInstance] = None,
     ) -> None:
         self._project = project
@@ -77,16 +77,24 @@ class BaseSensor:
         self._unique_id = None
         self.sensor_template_link = None
         """Link object for the sensor template in database."""
+        if metadata is None:
+            metadata = {}
 
         if sensor_instance is None:
             # Create local SensorTemplate
-            self._sensor_template = core.SensorTemplate(name=name, description=description, metadata=metadata)
+            self._sensor_template = core.SensorTemplate(
+                name=name, description=description, metadata=metadata
+            )
 
             # Create local SensorInstance
-            self._sensor_instance = core.Scene.SensorInstance(name=name, description=description, metadata=metadata)
+            self._sensor_instance = core.Scene.SensorInstance(
+                name=name, description=description, metadata=metadata
+            )
         else:
             self._unique_id = sensor_instance.metadata["UniqueId"]
-            self.sensor_template_link = self._project.client.get_item(key=sensor_instance.sensor_guid)
+            self.sensor_template_link = self._project.client.get_item(
+                key=sensor_instance.sensor_guid
+            )
             # reset will fill _sensor_instance and _sensor_template from respectively project (using _unique_id) and sensor_template_link
             self.reset()
 
@@ -109,7 +117,12 @@ class BaseSensor:
 
         """
 
-        def __init__(self, wavelengths_range: common_pb2.WavelengthsRange, default_values: bool = True, stable_ctr: bool = False) -> None:
+        def __init__(
+            self,
+            wavelengths_range: common_pb2.WavelengthsRange,
+            default_values: bool = True,
+            stable_ctr: bool = False,
+        ) -> None:
             if not stable_ctr:
                 msg = "WavelengthsRange class instantiated outside of class scope"
                 raise RuntimeError(msg)
@@ -150,7 +163,6 @@ class BaseSensor:
             ansys.speos.script.sensor.BaseSensor.WavelengthsRange
                 WavelengthsRange.
             """
-
             self._wavelengths_range.w_end = value
             return self
 
@@ -189,7 +201,12 @@ class BaseSensor:
         **Do not instantiate this class yourself**, use set_dimensions method available in sensor classes.
         """
 
-        def __init__(self, sensor_dimensions: common_pb2.SensorDimensions, default_values: bool = True, stable_ctr: bool = False) -> None:
+        def __init__(
+            self,
+            sensor_dimensions: common_pb2.SensorDimensions,
+            default_values: bool = True,
+            stable_ctr: bool = False,
+        ) -> None:
             if not stable_ctr:
                 msg = "Dimension class instantiated outside of class scope"
                 raise RuntimeError(msg)
@@ -321,7 +338,10 @@ class BaseSensor:
         """
 
         def __init__(
-            self, sensor_type_colorimetric: common_pb2.SensorTypeColorimetric, default_values: bool = True, stable_ctr: bool = False
+            self,
+            sensor_type_colorimetric: common_pb2.SensorTypeColorimetric,
+            default_values: bool = True,
+            stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
                 msg = "Colorimetric class instantiated outside of class scope"
@@ -330,7 +350,9 @@ class BaseSensor:
 
             # Attribute to keep track of wavelength range object
             self._wavelengths_range = BaseSensor.WavelengthsRange(
-                wavelengths_range=self._sensor_type_colorimetric.wavelengths_range, default_values=default_values, stable_ctr=stable_ctr
+                wavelengths_range=self._sensor_type_colorimetric.wavelengths_range,
+                default_values=default_values,
+                stable_ctr=stable_ctr,
             )
 
             if default_values:
@@ -345,9 +367,14 @@ class BaseSensor:
             ansys.speos.script.sensor.BaseSensor.WavelengthsRange
                 Wavelengths range.
             """
-            if not self._wavelengths_range._wavelengths_range is self._sensor_type_colorimetric.wavelengths_range:
+            if (
+                self._wavelengths_range._wavelengths_range
+                is not self._sensor_type_colorimetric.wavelengths_range
+            ):
                 # Happens in case of feature reset (to be sure to always modify correct data)
-                self._wavelengths_range._wavelengths_range = self._sensor_type_colorimetric.wavelengths_range
+                self._wavelengths_range._wavelengths_range = (
+                    self._sensor_type_colorimetric.wavelengths_range
+                )
             return self._wavelengths_range
 
     class Spectral:
@@ -370,7 +397,10 @@ class BaseSensor:
         """
 
         def __init__(
-            self, sensor_type_spectral: common_pb2.SensorTypeSpectral, default_values: bool = True, stable_ctr: bool = False
+            self,
+            sensor_type_spectral: common_pb2.SensorTypeSpectral,
+            default_values: bool = True,
+            stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
                 msg = "Spectral class instantiated outside of class scope"
@@ -379,7 +409,9 @@ class BaseSensor:
 
             # Attribute to keep track of wavelength range object
             self._wavelengths_range = BaseSensor.WavelengthsRange(
-                wavelengths_range=self._sensor_type_spectral.wavelengths_range, default_values=default_values, stable_ctr=stable_ctr
+                wavelengths_range=self._sensor_type_spectral.wavelengths_range,
+                default_values=default_values,
+                stable_ctr=stable_ctr,
             )
 
             if default_values:
@@ -394,8 +426,13 @@ class BaseSensor:
             ansys.speos.script.sensor.BaseSensor.WavelengthsRange
                 Wavelengths range.
             """
-            if not self._wavelengths_range._wavelengths_range is self._sensor_type_spectral.wavelengths_range:
-                self._wavelengths_range._wavelengths_range = self._sensor_type_spectral.wavelengths_range
+            if (
+                self._wavelengths_range._wavelengths_range
+                is not self._sensor_type_spectral.wavelengths_range
+            ):
+                self._wavelengths_range._wavelengths_range = (
+                    self._sensor_type_spectral.wavelengths_range
+                )
             return self._wavelengths_range
 
     class FaceLayer:
@@ -436,7 +473,10 @@ class BaseSensor:
         """
 
         def __init__(
-            self, layer_type_face: core.Scene.SensorInstance.LayerTypeFace, default_values: bool = True, stable_ctr: bool = False
+            self,
+            layer_type_face: core.Scene.SensorInstance.LayerTypeFace,
+            default_values: bool = True,
+            stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
                 msg = "LayerTypeFace class instantiated outside of class scope"
@@ -456,7 +496,9 @@ class BaseSensor:
             ansys.speos.script.sensor.BaseSensor.LayerTypeFace
                 LayerTypeFace.
             """
-            self._layer_type_face.sca_filtering_mode = self._layer_type_face.EnumSCAFilteringType.IntersectedOneTime
+            self._layer_type_face.sca_filtering_mode = (
+                self._layer_type_face.EnumSCAFilteringType.IntersectedOneTime
+            )
             return self
 
         def set_sca_filtering_mode_last_impact(self) -> BaseSensor.LayerTypeFace:
@@ -467,7 +509,9 @@ class BaseSensor:
             ansys.speos.script.sensor.BaseSensor.LayerTypeFace
                 LayerTypeFace.
             """
-            self._layer_type_face.sca_filtering_mode = self._layer_type_face.EnumSCAFilteringType.LastImpact
+            self._layer_type_face.sca_filtering_mode = (
+                self._layer_type_face.EnumSCAFilteringType.LastImpact
+            )
             return self
 
         def set_layers(self, values: List[BaseSensor.FaceLayer]) -> BaseSensor.LayerTypeFace:
@@ -485,7 +529,10 @@ class BaseSensor:
             """
             my_list = [
                 core.Scene.SensorInstance.LayerTypeFace.Layer(
-                    name=layer.name, geometries=core.Scene.GeoPaths(geo_paths=[gr.to_native_link() for gr in layer.geometries])
+                    name=layer.name,
+                    geometries=core.Scene.GeoPaths(
+                        geo_paths=[gr.to_native_link() for gr in layer.geometries]
+                    ),
                 )
                 for layer in values
             ]
@@ -513,7 +560,10 @@ class BaseSensor:
         """
 
         def __init__(
-            self, layer_type_sequence: core.Scene.SensorInstance.LayerTypeSequence, default_values: bool = True, stable_ctr: bool = False
+            self,
+            layer_type_sequence: core.Scene.SensorInstance.LayerTypeSequence,
+            default_values: bool = True,
+            stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
                 msg = "LayerTypeSequence class instantiated outside of class scope"
@@ -550,7 +600,9 @@ class BaseSensor:
             ansys.speos.script.sensor.BaseSensor.LayerTypeSequence
                 LayerTypeSequence.
             """
-            self._layer_type_sequence.define_sequence_per = self._layer_type_sequence.EnumSequenceType.Geometries
+            self._layer_type_sequence.define_sequence_per = (
+                self._layer_type_sequence.EnumSequenceType.Geometries
+            )
             return self
 
         def set_define_sequence_per_faces(self) -> BaseSensor.LayerTypeSequence:
@@ -561,7 +613,9 @@ class BaseSensor:
             ansys.speos.script.sensor.BaseSensor.LayerTypeSequence
                 LayerTypeSequence.
             """
-            self._layer_type_sequence.define_sequence_per = self._layer_type_sequence.EnumSequenceType.Faces
+            self._layer_type_sequence.define_sequence_per = (
+                self._layer_type_sequence.EnumSequenceType.Faces
+            )
             return self
 
     class LayerTypeIncidenceAngle:
@@ -622,18 +676,28 @@ class BaseSensor:
         # SensorInstance (= sensor guid + sensor properties)
         if self._project.scene_link and self._unique_id is not None:
             scene_data = self._project.scene_link.get()
-            ssr_inst = next((x for x in scene_data.sensors if x.metadata["UniqueId"] == self._unique_id), None)
+            ssr_inst = next(
+                (x for x in scene_data.sensors if x.metadata["UniqueId"] == self._unique_id), None
+            )
             if ssr_inst is not None:
-                out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=ssr_inst)
+                out_dict = proto_message_utils._replace_guids(
+                    speos_client=self._project.client, message=ssr_inst
+                )
             else:
-                out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._sensor_instance)
+                out_dict = proto_message_utils._replace_guids(
+                    speos_client=self._project.client, message=self._sensor_instance
+                )
         else:
-            out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._sensor_instance)
+            out_dict = proto_message_utils._replace_guids(
+                speos_client=self._project.client, message=self._sensor_instance
+            )
 
         if "sensor" not in out_dict.keys():
             # SensorTemplate
             if self.sensor_template_link is None:
-                out_dict["sensor"] = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._sensor_template)
+                out_dict["sensor"] = proto_message_utils._replace_guids(
+                    speos_client=self._project.client, message=self._sensor_template
+                )
             else:
                 out_dict["sensor"] = proto_message_utils._replace_guids(
                     speos_client=self._project.client, message=self.sensor_template_link.get()
@@ -654,7 +718,6 @@ class BaseSensor:
         -------
         str | dict
         """
-
         if key == "":
             return self._to_dict()
         info = proto_message_utils._value_finder_key_startswith(dict_var=self._to_dict(), key=key)
@@ -671,7 +734,9 @@ class BaseSensor:
         # SensorInstance (= sensor guid + sensor properties)
         if self._project.scene_link and self._unique_id is not None:
             scene_data = self._project.scene_link.get()
-            ssr_inst = next((x for x in scene_data.sensors if x.metadata["UniqueId"] == self._unique_id), None)
+            ssr_inst = next(
+                (x for x in scene_data.sensors if x.metadata["UniqueId"] == self._unique_id), None
+            )
             if ssr_inst is None:
                 out_str += "local: "
         else:
@@ -696,10 +761,14 @@ class BaseSensor:
 
         # Save or Update the sensor template (depending on if it was already saved before)
         if self.sensor_template_link is None:
-            self.sensor_template_link = self._project.client.sensor_templates().create(message=self._sensor_template)
+            self.sensor_template_link = self._project.client.sensor_templates().create(
+                message=self._sensor_template
+            )
             self._sensor_instance.sensor_guid = self.sensor_template_link.key
         elif self.sensor_template_link.get() != self._sensor_template:
-            self.sensor_template_link.set(data=self._sensor_template)  # Only update if the template has changed
+            self.sensor_template_link.set(
+                data=self._sensor_template
+            )  # Only update if the template has changed
 
         # Update the scene with the sensor instance
         if self._project.scene_link:
@@ -707,14 +776,18 @@ class BaseSensor:
             scene_data = self._project.scene_link.get()  # retrieve scene data
 
             # Look if an element corresponds to the _unique_id
-            ssr_inst = next((x for x in scene_data.sensors if x.metadata["UniqueId"] == self._unique_id), None)
+            ssr_inst = next(
+                (x for x in scene_data.sensors if x.metadata["UniqueId"] == self._unique_id), None
+            )
             if ssr_inst is not None:
                 if ssr_inst != self._sensor_instance:
                     ssr_inst.CopyFrom(self._sensor_instance)  # if yes, just replace
                 else:
                     update_scene = False
             else:
-                scene_data.sensors.append(self._sensor_instance)  # if no, just add it to the list of sensor instances
+                scene_data.sensors.append(
+                    self._sensor_instance
+                )  # if no, just add it to the list of sensor instances
 
             if update_scene:  # Update scene only if instance has changed
                 self._project.scene_link.set(data=scene_data)  # update scene data
@@ -737,7 +810,9 @@ class BaseSensor:
         if self._project.scene_link is not None:
             scene_data = self._project.scene_link.get()  # retrieve scene data
             # Look if an element corresponds to the _unique_id
-            ssr_inst = next((x for x in scene_data.sensors if x.metadata["UniqueId"] == self._unique_id), None)
+            ssr_inst = next(
+                (x for x in scene_data.sensors if x.metadata["UniqueId"] == self._unique_id), None
+            )
             if ssr_inst is not None:
                 self._sensor_instance = ssr_inst
         return self
@@ -761,7 +836,9 @@ class BaseSensor:
 
         # Remove the sensor from the scene
         scene_data = self._project.scene_link.get()  # retrieve scene data
-        ssr_inst = next((x for x in scene_data.sensors if x.metadata["UniqueId"] == self._unique_id), None)
+        ssr_inst = next(
+            (x for x in scene_data.sensors if x.metadata["UniqueId"] == self._unique_id), None
+        )
         if ssr_inst is not None:
             scene_data.sensors.remove(ssr_inst)
             self._project.scene_link.set(data=scene_data)  # update scene data
@@ -786,7 +863,7 @@ class Camera(BaseSensor):
     description : str
         Description of the feature.
         By default, ``""``.
-    metadata : Mapping[str, str]
+    metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
     sensor_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance, optional
@@ -872,7 +949,9 @@ class Camera(BaseSensor):
                         # Default values
                         self.set_red_gain().set_green_gain().set_blue_gain()
 
-                def set_red_gain(self, value: float = 1) -> Camera.Photometric.Color.BalanceModeUserWhite:
+                def set_red_gain(
+                    self, value: float = 1
+                ) -> Camera.Photometric.Color.BalanceModeUserWhite:
                     """Set red gain.
 
                     Parameters
@@ -889,7 +968,9 @@ class Camera(BaseSensor):
                     self._balance_mode_user_white.red_gain = value
                     return self
 
-                def set_green_gain(self, value: float = 1) -> Camera.Photometric.Color.BalanceModeUserWhite:
+                def set_green_gain(
+                    self, value: float = 1
+                ) -> Camera.Photometric.Color.BalanceModeUserWhite:
                     """Set green gain.
 
                     Parameters
@@ -906,7 +987,9 @@ class Camera(BaseSensor):
                     self._balance_mode_user_white.green_gain = value
                     return self
 
-                def set_blue_gain(self, value: float = 1) -> Camera.Photometric.Color.BalanceModeUserWhite:
+                def set_blue_gain(
+                    self, value: float = 1
+                ) -> Camera.Photometric.Color.BalanceModeUserWhite:
                     """Set blue gain.
 
                     Parameters
@@ -949,7 +1032,9 @@ class Camera(BaseSensor):
                     stable_ctr: bool = False,
                 ) -> None:
                     if not stable_ctr:
-                        msg = "BalanceModeDisplayPrimaries class instantiated outside of class scope"
+                        msg = (
+                            "BalanceModeDisplayPrimaries class instantiated outside of class scope"
+                        )
                         raise RuntimeError(msg)
 
                     self._balance_mode_display = balance_mode_display
@@ -958,7 +1043,9 @@ class Camera(BaseSensor):
                         # Default values
                         self._balance_mode_display.SetInParent()
 
-                def set_red_display_file_uri(self, uri: str) -> Camera.Photometric.Color.BalanceModeDisplayPrimaries:
+                def set_red_display_file_uri(
+                    self, uri: str
+                ) -> Camera.Photometric.Color.BalanceModeDisplayPrimaries:
                     """Set the red display file.
 
                     Parameters
@@ -974,7 +1061,9 @@ class Camera(BaseSensor):
                     self._balance_mode_display.red_display_file_uri = uri
                     return self
 
-                def set_green_display_file_uri(self, uri: str) -> Camera.Photometric.Color.BalanceModeDisplayPrimaries:
+                def set_green_display_file_uri(
+                    self, uri: str
+                ) -> Camera.Photometric.Color.BalanceModeDisplayPrimaries:
                     """Set the green display file.
 
                     Parameters
@@ -990,7 +1079,9 @@ class Camera(BaseSensor):
                     self._balance_mode_display.green_display_file_uri = uri
                     return self
 
-                def set_blue_display_file_uri(self, uri: str) -> Camera.Photometric.Color.BalanceModeDisplayPrimaries:
+                def set_blue_display_file_uri(
+                    self, uri: str
+                ) -> Camera.Photometric.Color.BalanceModeDisplayPrimaries:
                     """Set the blue display file.
 
                     Parameters
@@ -1007,7 +1098,10 @@ class Camera(BaseSensor):
                     return self
 
             def __init__(
-                self, mode_color: camera_sensor_pb2.SensorCameraColorModeColor, default_values: bool = True, stable_ctr: bool = False
+                self,
+                mode_color: camera_sensor_pb2.SensorCameraColorModeColor,
+                default_values: bool = True,
+                stable_ctr: bool = False,
             ) -> None:
                 if not stable_ctr:
                     msg = "Color class instantiated outside of class scope"
@@ -1111,19 +1205,27 @@ class Camera(BaseSensor):
                 if self._mode is None and self._mode_color.HasField("balance_mode_userwhite"):
                     # Happens in case of project created via load of speos file
                     self._mode = Camera.Photometric.Color.BalanceModeUserWhite(
-                        balance_mode_user_white=self._mode_color.balance_mode_userwhite, default_values=False, stable_ctr=True
+                        balance_mode_user_white=self._mode_color.balance_mode_userwhite,
+                        default_values=False,
+                        stable_ctr=True,
                     )
                 elif type(self._mode) != Camera.Photometric.Color.BalanceModeUserWhite:
                     # if the _mode is not BalanceModeUserWhite then we create a new type.
                     self._mode = Camera.Photometric.Color.BalanceModeUserWhite(
-                        balance_mode_user_white=self._mode_color.balance_mode_userwhite, stable_ctr=True
+                        balance_mode_user_white=self._mode_color.balance_mode_userwhite,
+                        stable_ctr=True,
                     )
-                elif not self._mode._balance_mode_user_white is self._mode_color.balance_mode_userwhite:
+                elif (
+                    self._mode._balance_mode_user_white
+                    is not self._mode_color.balance_mode_userwhite
+                ):
                     # Happens in case of feature reset (to be sure to always modify correct data)
                     self._mode._balance_mode_user_white = self._mode_color.balance_mode_userwhite
                 return self._mode
 
-            def set_balance_mode_display_primaries(self) -> Camera.Photometric.Color.BalanceModeDisplayPrimaries:
+            def set_balance_mode_display_primaries(
+                self,
+            ) -> Camera.Photometric.Color.BalanceModeDisplayPrimaries:
                 """Set the balance mode as display primaries.
                 Spectral results are converted in a three-channel result.
                 Then a post-treatment is realized to take the distortion induced by the display devices into account.
@@ -1137,14 +1239,16 @@ class Camera(BaseSensor):
                 if self._mode is None and self._mode_color.HasField("balance_mode_display"):
                     # Happens in case of project created via load of speos file
                     self._mode = Camera.Photometric.Color.BalanceModeDisplayPrimaries(
-                        balance_mode_display=self._mode_color.balance_mode_display, default_values=False, stable_ctr=True
+                        balance_mode_display=self._mode_color.balance_mode_display,
+                        default_values=False,
+                        stable_ctr=True,
                     )
                 elif type(self._mode) != Camera.Photometric.Color.BalanceModeDisplayPrimaries:
                     # if the _mode is not BalanceModeDisplayPrimaries then we create a new type.
                     self._mode = Camera.Photometric.Color.BalanceModeDisplayPrimaries(
                         balance_mode_display=self._mode_color.balance_mode_display, stable_ctr=True
                     )
-                elif not self._mode._balance_mode_display is self._mode_color.balance_mode_display:
+                elif self._mode._balance_mode_display is not self._mode_color.balance_mode_display:
                     # Happens in case of feature reset (to be sure to always modify correct data)
                     self._mode._balance_mode_display = self._mode_color.balance_mode_display
                 return self._mode
@@ -1297,9 +1401,14 @@ class Camera(BaseSensor):
             ansys.speos.script.sensor.BaseSensor.WavelengthsRange
                 Wavelengths range.
             """
-            if not self._wavelengths_range._wavelengths_range is self._mode_photometric.wavelengths_range:
+            if (
+                self._wavelengths_range._wavelengths_range
+                is not self._mode_photometric.wavelengths_range
+            ):
                 # Happens in case of feature reset (to be sure to always modify correct data)
-                self._wavelengths_range._wavelengths_range = self._mode_photometric.wavelengths_range
+                self._wavelengths_range._wavelengths_range = (
+                    self._mode_photometric.wavelengths_range
+                )
             return self._wavelengths_range
 
         def set_mode_monochromatic(self, spectrum_file_uri: str) -> Camera.Photometric:
@@ -1332,12 +1441,16 @@ class Camera(BaseSensor):
             if self._mode is None and self._mode_photometric.HasField("color_mode_color"):
                 # Happens in case of project created via load of speos file
                 self._mode = Camera.Photometric.Color(
-                    mode_color=self._mode_photometric.color_mode_color, default_values=False, stable_ctr=True
+                    mode_color=self._mode_photometric.color_mode_color,
+                    default_values=False,
+                    stable_ctr=True,
                 )
             elif type(self._mode) != Camera.Photometric.Color:
                 # if the _mode is not Color then we create a new type.
-                self._mode = Camera.Photometric.Color(mode_color=self._mode_photometric.color_mode_color, stable_ctr=True)
-            elif not self._mode._mode_color is self._mode_photometric.color_mode_color:
+                self._mode = Camera.Photometric.Color(
+                    mode_color=self._mode_photometric.color_mode_color, stable_ctr=True
+                )
+            elif self._mode._mode_color is not self._mode_photometric.color_mode_color:
                 # Happens in case of feature reset (to be sure to always modify correct data)
                 self._mode._mode_color = self._mode_photometric.color_mode_color
             return self._mode
@@ -1385,11 +1498,20 @@ class Camera(BaseSensor):
         project: project.Project,
         name: str,
         description: str = "",
-        metadata: Mapping[str, str] = {},
+        metadata: Optional[Mapping[str, str]] = None,
         sensor_instance: Optional[core.Scene.SensorInstance] = None,
         default_values: bool = True,
     ) -> None:
-        super().__init__(project=project, name=name, description=description, metadata=metadata, sensor_instance=sensor_instance)
+        if metadata is None:
+            metadata = {}
+
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            sensor_instance=sensor_instance,
+        )
 
         # Attribute gathering more complex camera mode
         self._type = None
@@ -1570,7 +1692,9 @@ class Camera(BaseSensor):
         ansys.speos.script.sensor.Camera.Photometric
             Photometric Camera Sensor feature
         """
-        if self._type is None and self._sensor_template.camera_sensor_template.HasField("sensor_mode_photometric"):
+        if self._type is None and self._sensor_template.camera_sensor_template.HasField(
+            "sensor_mode_photometric"
+        ):
             # Happens in case of project created via load of speos file
             self._type = Camera.Photometric(
                 mode_photometric=self._sensor_template.camera_sensor_template.sensor_mode_photometric,
@@ -1585,17 +1709,22 @@ class Camera(BaseSensor):
                 camera_props=self._sensor_instance.camera_properties,
                 stable_ctr=True,
             )
-        elif not self._type._mode_photometric is self._sensor_template.camera_sensor_template.sensor_mode_photometric:
+        elif (
+            self._type._mode_photometric
+            is not self._sensor_template.camera_sensor_template.sensor_mode_photometric
+        ):
             # Happens in case of feature reset (to be sure to always modify correct data)
-            self._type._mode_photometric = self._sensor_template.camera_sensor_template.sensor_mode_photometric
+            self._type._mode_photometric = (
+                self._sensor_template.camera_sensor_template.sensor_mode_photometric
+            )
         return self._type
 
-    def set_axis_system(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> Camera:
+    def set_axis_system(self, axis_system: Optional[List[float]] = None) -> Camera:
         """Set the position of the sensor.
 
         Parameters
         ----------
-        axis_system : List[float]
+        axis_system : Optional[List[float]]
             Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
@@ -1604,6 +1733,8 @@ class Camera(BaseSensor):
         ansys.speos.script.sensor.Camera
             Camera Sensor feature
         """
+        if axis_system is None:
+            axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
         self._sensor_instance.camera_properties.axis_system[:] = axis_system
         return self
 
@@ -1623,7 +1754,7 @@ class Irradiance(BaseSensor):
     description : str
         Description of the feature.
         By default, ``""``.
-    metadata : Mapping[str, str]
+    metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
     sensor_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance, optional
@@ -1639,11 +1770,20 @@ class Irradiance(BaseSensor):
         project: project.Project,
         name: str,
         description: str = "",
-        metadata: Mapping[str, str] = {},
+        metadata: Optional[Mapping[str, str]] = None,
         sensor_instance: Optional[core.Scene.SensorInstance] = None,
         default_values: bool = True,
     ) -> None:
-        super().__init__(project=project, name=name, description=description, metadata=metadata, sensor_instance=sensor_instance)
+        if metadata is None:
+            metadata = {}
+
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            sensor_instance=sensor_instance,
+        )
 
         # Attribute gathering more complex irradiance type
         self._type = None
@@ -1653,7 +1793,9 @@ class Irradiance(BaseSensor):
 
         # Attribute to keep track of sensor dimensions object
         self._sensor_dimensions = self.Dimensions(
-            sensor_dimensions=self._sensor_template.irradiance_sensor_template.dimensions, default_values=default_values, stable_ctr=True
+            sensor_dimensions=self._sensor_template.irradiance_sensor_template.dimensions,
+            default_values=default_values,
+            stable_ctr=True,
         )
 
         if default_values:
@@ -1726,7 +1868,13 @@ class Irradiance(BaseSensor):
     @property
     def layer(
         self,
-    ) -> Union[None, Irradiance, BaseSensor.LayerTypeFace, BaseSensor.LayerTypeSequence, BaseSensor.LayerTypeIncidenceAngle]:
+    ) -> Union[
+        None,
+        Irradiance,
+        BaseSensor.LayerTypeFace,
+        BaseSensor.LayerTypeSequence,
+        BaseSensor.LayerTypeIncidenceAngle,
+    ]:
         """
         Property containing all options in regard to the layer separation properties
 
@@ -1752,9 +1900,14 @@ class Irradiance(BaseSensor):
         ansys.speos.script.sensor.BaseSensor.Dimensions
             Dimension class
         """
-        if not self._sensor_dimensions._sensor_dimensions is self._sensor_template.irradiance_sensor_template.dimensions:
+        if (
+            self._sensor_dimensions._sensor_dimensions
+            is not self._sensor_template.irradiance_sensor_template.dimensions
+        ):
             # Happens in case of feature reset (to be sure to always modify correct data)
-            self._sensor_dimensions._sensor_dimensions = self._sensor_template.irradiance_sensor_template.dimensions
+            self._sensor_dimensions._sensor_dimensions = (
+                self._sensor_template.irradiance_sensor_template.dimensions
+            )
         return self._sensor_dimensions
 
     def set_type_photometric(self) -> Irradiance:
@@ -1779,7 +1932,9 @@ class Irradiance(BaseSensor):
         ansys.speos.script.sensor.BaseSensor.Colorimetric
             Colorimetric type.
         """
-        if self._type is None and self._sensor_template.irradiance_sensor_template.HasField("sensor_type_colorimetric"):
+        if self._type is None and self._sensor_template.irradiance_sensor_template.HasField(
+            "sensor_type_colorimetric"
+        ):
             # Happens in case of project created via load of speos file
             self._type = BaseSensor.Colorimetric(
                 sensor_type_colorimetric=self._sensor_template.irradiance_sensor_template.sensor_type_colorimetric,
@@ -1789,11 +1944,17 @@ class Irradiance(BaseSensor):
         elif type(self._type) != BaseSensor.Colorimetric:
             # if the _type is not Colorimetric then we create a new type.
             self._type = BaseSensor.Colorimetric(
-                sensor_type_colorimetric=self._sensor_template.irradiance_sensor_template.sensor_type_colorimetric, stable_ctr=True
+                sensor_type_colorimetric=self._sensor_template.irradiance_sensor_template.sensor_type_colorimetric,
+                stable_ctr=True,
             )
-        elif not self._type._sensor_type_colorimetric is self._sensor_template.irradiance_sensor_template.sensor_type_colorimetric:
+        elif (
+            self._type._sensor_type_colorimetric
+            is not self._sensor_template.irradiance_sensor_template.sensor_type_colorimetric
+        ):
             # Happens in case of feature reset (to be sure to always modify correct data)
-            self._type._sensor_type_colorimetric = self._sensor_template.irradiance_sensor_template.sensor_type_colorimetric
+            self._type._sensor_type_colorimetric = (
+                self._sensor_template.irradiance_sensor_template.sensor_type_colorimetric
+            )
         return self._type
 
     def set_type_radiometric(self) -> Irradiance:
@@ -1818,7 +1979,9 @@ class Irradiance(BaseSensor):
         ansys.speos.script.sensor.BaseSensor.Spectral
             Spectral type.
         """
-        if self._type is None and self._sensor_template.irradiance_sensor_template.HasField("sensor_type_spectral"):
+        if self._type is None and self._sensor_template.irradiance_sensor_template.HasField(
+            "sensor_type_spectral"
+        ):
             # Happens in case of project created via load of speos file
             self._type = BaseSensor.Spectral(
                 sensor_type_spectral=self._sensor_template.irradiance_sensor_template.sensor_type_spectral,
@@ -1828,14 +1991,22 @@ class Irradiance(BaseSensor):
         elif type(self._type) != BaseSensor.Spectral:
             # if the _type is not Spectral then we create a new type.
             self._type = BaseSensor.Spectral(
-                sensor_type_spectral=self._sensor_template.irradiance_sensor_template.sensor_type_spectral, stable_ctr=True
+                sensor_type_spectral=self._sensor_template.irradiance_sensor_template.sensor_type_spectral,
+                stable_ctr=True,
             )
-        elif not self._type._sensor_type_spectral is self._sensor_template.irradiance_sensor_template.sensor_type_spectral:
+        elif (
+            self._type._sensor_type_spectral
+            is not self._sensor_template.irradiance_sensor_template.sensor_type_spectral
+        ):
             # Happens in case of feature reset (to be sure to always modify correct data)
-            self._type._sensor_type_spectral = self._sensor_template.irradiance_sensor_template.sensor_type_spectral
+            self._type._sensor_type_spectral = (
+                self._sensor_template.irradiance_sensor_template.sensor_type_spectral
+            )
         return self._type
 
-    def set_illuminance_type_planar(self, integration_direction: Optional[List[float]] = None) -> Irradiance:
+    def set_illuminance_type_planar(
+        self, integration_direction: Optional[List[float]] = None
+    ) -> Irradiance:
         """Set illuminance type planar.
         The integration is made orthogonally with the sensor plane.
 
@@ -1851,10 +2022,12 @@ class Irradiance(BaseSensor):
             Irradiance sensor.
         """
         self._sensor_template.irradiance_sensor_template.illuminance_type_planar.SetInParent()
-        if integration_direction is None or integration_direction == []:
+        if not integration_direction:
             self._sensor_instance.irradiance_properties.ClearField("integration_direction")
         else:
-            self._sensor_instance.irradiance_properties.integration_direction[:] = integration_direction
+            self._sensor_instance.irradiance_properties.integration_direction[:] = (
+                integration_direction
+            )
         return self
 
     def set_illuminance_type_radial(self) -> Irradiance:
@@ -1890,7 +2063,9 @@ class Irradiance(BaseSensor):
         self._sensor_template.irradiance_sensor_template.illuminance_type_cylindrical.SetInParent()
         return self
 
-    def set_illuminance_type_semi_cylindrical(self, integration_direction: Optional[List[float]] = None) -> Irradiance:
+    def set_illuminance_type_semi_cylindrical(
+        self, integration_direction: Optional[List[float]] = None
+    ) -> Irradiance:
         """Set illuminance type semi cylindrical.
 
         Parameters
@@ -1905,18 +2080,20 @@ class Irradiance(BaseSensor):
             Irradiance sensor.
         """
         self._sensor_template.irradiance_sensor_template.illuminance_type_semi_cylindrical.SetInParent()
-        if integration_direction is None or integration_direction == []:
+        if not integration_direction:
             self._sensor_instance.irradiance_properties.ClearField("integration_direction")
         else:
-            self._sensor_instance.irradiance_properties.integration_direction[:] = integration_direction
+            self._sensor_instance.irradiance_properties.integration_direction[:] = (
+                integration_direction
+            )
         return self
 
-    def set_axis_system(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> Irradiance:
+    def set_axis_system(self, axis_system: Optional[List[float]] = None) -> Irradiance:
         """Set position of the sensor.
 
         Parameters
         ----------
-        axis_system : List[float]
+        axis_system : Optional[List[float]]
             Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
@@ -1925,6 +2102,8 @@ class Irradiance(BaseSensor):
         ansys.speos.script.sensor.Irradiance
             Irradiance sensor.
         """
+        if axis_system is None:
+            axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
         self._sensor_instance.irradiance_properties.axis_system[:] = axis_system
         return self
 
@@ -1936,7 +2115,9 @@ class Irradiance(BaseSensor):
         ansys.speos.script.sensor.Irradiance
             Irradiance sensor.
         """
-        self._sensor_instance.irradiance_properties.ray_file_type = core.Scene.SensorInstance.EnumRayFileType.RayFileNone
+        self._sensor_instance.irradiance_properties.ray_file_type = (
+            core.Scene.SensorInstance.EnumRayFileType.RayFileNone
+        )
         return self
 
     def set_ray_file_type_classic(self) -> Irradiance:
@@ -1947,7 +2128,9 @@ class Irradiance(BaseSensor):
         ansys.speos.script.sensor.Irradiance
             Irradiance sensor.
         """
-        self._sensor_instance.irradiance_properties.ray_file_type = core.Scene.SensorInstance.EnumRayFileType.RayFileClassic
+        self._sensor_instance.irradiance_properties.ray_file_type = (
+            core.Scene.SensorInstance.EnumRayFileType.RayFileClassic
+        )
         return self
 
     def set_ray_file_type_polarization(self) -> Irradiance:
@@ -1958,7 +2141,9 @@ class Irradiance(BaseSensor):
         ansys.speos.script.sensor.Irradiance
             Irradiance sensor.
         """
-        self._sensor_instance.irradiance_properties.ray_file_type = core.Scene.SensorInstance.EnumRayFileType.RayFilePolarization
+        self._sensor_instance.irradiance_properties.ray_file_type = (
+            core.Scene.SensorInstance.EnumRayFileType.RayFilePolarization
+        )
         return self
 
     def set_ray_file_type_tm25(self) -> Irradiance:
@@ -1969,7 +2154,9 @@ class Irradiance(BaseSensor):
         ansys.speos.script.sensor.Irradiance
             Irradiance sensor.
         """
-        self._sensor_instance.irradiance_properties.ray_file_type = core.Scene.SensorInstance.EnumRayFileType.RayFileTM25
+        self._sensor_instance.irradiance_properties.ray_file_type = (
+            core.Scene.SensorInstance.EnumRayFileType.RayFileTM25
+        )
         return self
 
     def set_ray_file_type_tm25_no_polarization(self) -> Irradiance:
@@ -1980,12 +2167,14 @@ class Irradiance(BaseSensor):
         ansys.speos.script.sensor.Irradiance
             Irradiance sensor.
         """
-        self._sensor_instance.irradiance_properties.ray_file_type = core.Scene.SensorInstance.EnumRayFileType.RayFileTM25NoPolarization
+        self._sensor_instance.irradiance_properties.ray_file_type = (
+            core.Scene.SensorInstance.EnumRayFileType.RayFileTM25NoPolarization
+        )
         return self
 
     def set_layer_type_none(self) -> Irradiance:
         """
-        defines layer separation type as None.
+        Defines layer separation type as None.
 
         Returns
         -------
@@ -2020,19 +2209,29 @@ class Irradiance(BaseSensor):
         ansys.speos.script.sensor.BaseSensor.LayerTypeFace
             LayerTypeFace property instance
         """
-        if self._layer_type is None and self._sensor_instance.irradiance_properties.HasField("layer_type_face"):
+        if self._layer_type is None and self._sensor_instance.irradiance_properties.HasField(
+            "layer_type_face"
+        ):
             # Happens in case of project created via load of speos file
             self._layer_type = BaseSensor.LayerTypeFace(
-                layer_type_face=self._sensor_instance.irradiance_properties.layer_type_face, default_values=False, stable_ctr=True
+                layer_type_face=self._sensor_instance.irradiance_properties.layer_type_face,
+                default_values=False,
+                stable_ctr=True,
             )
         elif type(self._layer_type) != BaseSensor.LayerTypeFace:
             # if the _layer_type is not LayerTypeFace then we create a new type.
             self._layer_type = BaseSensor.LayerTypeFace(
-                layer_type_face=self._sensor_instance.irradiance_properties.layer_type_face, stable_ctr=True
+                layer_type_face=self._sensor_instance.irradiance_properties.layer_type_face,
+                stable_ctr=True,
             )
-        elif not self._layer_type._layer_type_face is self._sensor_instance.irradiance_properties.layer_type_face:
+        elif (
+            self._layer_type._layer_type_face
+            is not self._sensor_instance.irradiance_properties.layer_type_face
+        ):
             # Happens in case of feature reset (to be sure to always modify correct data)
-            self._layer_type._layer_type_face = self._sensor_instance.irradiance_properties.layer_type_face
+            self._layer_type._layer_type_face = (
+                self._sensor_instance.irradiance_properties.layer_type_face
+            )
         return self._layer_type
 
     def set_layer_type_sequence(self) -> BaseSensor.LayerTypeSequence:
@@ -2044,19 +2243,29 @@ class Irradiance(BaseSensor):
         ansys.speos.script.sensor.BaseSensor.LayerTypeSequence
             LayerTypeSequence property instance
         """
-        if self._layer_type is None and self._sensor_instance.irradiance_properties.HasField("layer_type_sequence"):
+        if self._layer_type is None and self._sensor_instance.irradiance_properties.HasField(
+            "layer_type_sequence"
+        ):
             # Happens in case of project created via load of speos file
             self._layer_type = BaseSensor.LayerTypeSequence(
-                layer_type_sequence=self._sensor_instance.irradiance_properties.layer_type_sequence, default_values=False, stable_ctr=True
+                layer_type_sequence=self._sensor_instance.irradiance_properties.layer_type_sequence,
+                default_values=False,
+                stable_ctr=True,
             )
         elif type(self._layer_type) != BaseSensor.LayerTypeSequence:
             # if the _type is not LayerTypeSequence then we create a new type.
             self._layer_type = BaseSensor.LayerTypeSequence(
-                layer_type_sequence=self._sensor_instance.irradiance_properties.layer_type_sequence, stable_ctr=True
+                layer_type_sequence=self._sensor_instance.irradiance_properties.layer_type_sequence,
+                stable_ctr=True,
             )
-        elif not self._layer_type._layer_type_sequence is self._sensor_instance.irradiance_properties.layer_type_sequence:
+        elif (
+            self._layer_type._layer_type_sequence
+            is not self._sensor_instance.irradiance_properties.layer_type_sequence
+        ):
             # Happens in case of feature reset (to be sure to always modify correct data)
-            self._layer_type._layer_type_sequence = self._sensor_instance.irradiance_properties.layer_type_sequence
+            self._layer_type._layer_type_sequence = (
+                self._sensor_instance.irradiance_properties.layer_type_sequence
+            )
         return self._layer_type
 
     def set_layer_type_polarization(self) -> Irradiance:
@@ -2068,7 +2277,6 @@ class Irradiance(BaseSensor):
         ansys.speos.script.sensor.Irradiance
             Irradiance class instance
         """
-
         self._sensor_instance.irradiance_properties.layer_type_polarization.SetInParent()
         self._layer_type = None
         return self
@@ -2082,7 +2290,9 @@ class Irradiance(BaseSensor):
         ansys.speos.script.sensor.BaseSensor.LayerTypeIncidenceAngle
             LayerTypeIncidenceAngle property instance
         """
-        if self._layer_type is None and self._sensor_instance.irradiance_properties.HasField("layer_type_incidence_angle"):
+        if self._layer_type is None and self._sensor_instance.irradiance_properties.HasField(
+            "layer_type_incidence_angle"
+        ):
             # Happens in case of project created via load of speos file
             self._layer_type = BaseSensor.LayerTypeIncidenceAngle(
                 layer_type_incidence_angle=self._sensor_instance.irradiance_properties.layer_type_incidence_angle,
@@ -2092,14 +2302,20 @@ class Irradiance(BaseSensor):
         elif type(self._layer_type) != BaseSensor.LayerTypeIncidenceAngle:
             # if the _layer_type is not LayerTypeIncidenceAngle then we create a new type.
             self._layer_type = BaseSensor.LayerTypeIncidenceAngle(
-                layer_type_incidence_angle=self._sensor_instance.irradiance_properties.layer_type_incidence_angle, stable_ctr=True
+                layer_type_incidence_angle=self._sensor_instance.irradiance_properties.layer_type_incidence_angle,
+                stable_ctr=True,
             )
-        elif not self._layer_type._layer_type_incidence_angle is self._sensor_instance.irradiance_properties.layer_type_incidence_angle:
+        elif (
+            self._layer_type._layer_type_incidence_angle
+            is not self._sensor_instance.irradiance_properties.layer_type_incidence_angle
+        ):
             # Happens in case of feature reset (to be sure to always modify correct data)
-            self._layer_type._layer_type_incidence_angle = self._sensor_instance.irradiance_properties.layer_type_incidence_angle
+            self._layer_type._layer_type_incidence_angle = (
+                self._sensor_instance.irradiance_properties.layer_type_incidence_angle
+            )
         return self._layer_type
 
-    def set_output_face_geometries(self, geometries: List[GeoRef] = []) -> Irradiance:
+    def set_output_face_geometries(self, geometries: Optional[List[GeoRef]] = None) -> Irradiance:
         """Select output faces for inverse simulation optimization.
 
         Parameters
@@ -2113,10 +2329,12 @@ class Irradiance(BaseSensor):
         ansys.speos.script.sensor.Irradiance
             Irradiance sensor.
         """
-        if geometries == []:
+        if not geometries:
             self._sensor_instance.irradiance_properties.ClearField("output_face_geometries")
         else:
-            self._sensor_instance.irradiance_properties.output_face_geometries.geo_paths[:] = [gr.to_native_link() for gr in geometries]
+            self._sensor_instance.irradiance_properties.output_face_geometries.geo_paths[:] = [
+                gr.to_native_link() for gr in geometries
+            ]
         return self
 
 
@@ -2134,7 +2352,7 @@ class Radiance(BaseSensor):
     description : str
         Description of the feature.
         By default, ``""``.
-    metadata : Mapping[str, str]
+    metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
     sensor_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance, optional
@@ -2150,11 +2368,20 @@ class Radiance(BaseSensor):
         project: project.Project,
         name: str,
         description: str = "",
-        metadata: Mapping[str, str] = {},
+        metadata: Optional[Mapping[str, str]] = None,
         sensor_instance: Optional[core.Scene.SensorInstance] = None,
         default_values: bool = True,
     ) -> None:
-        super().__init__(project=project, name=name, description=description, metadata=metadata, sensor_instance=sensor_instance)
+        if metadata is None:
+            metadata = {}
+
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            sensor_instance=sensor_instance,
+        )
 
         # Attribute gathering more complex radiance type
         self._type = None
@@ -2164,7 +2391,9 @@ class Radiance(BaseSensor):
 
         # Attribute to keep track of sensor dimensions object
         self._sensor_dimensions = self.Dimensions(
-            sensor_dimensions=self._sensor_template.radiance_sensor_template.dimensions, default_values=default_values, stable_ctr=True
+            sensor_dimensions=self._sensor_template.radiance_sensor_template.dimensions,
+            default_values=default_values,
+            stable_ctr=True,
         )
 
         if default_values:
@@ -2255,9 +2484,14 @@ class Radiance(BaseSensor):
         ansys.speos.script.sensor.BaseSensor.Dimensions
             Dimension class
         """
-        if not self._sensor_dimensions._sensor_dimensions is self._sensor_template.radiance_sensor_template.dimensions:
+        if (
+            self._sensor_dimensions._sensor_dimensions
+            is not self._sensor_template.radiance_sensor_template.dimensions
+        ):
             # Happens in case of feature reset (to be sure to always modify correct data)
-            self._sensor_dimensions._sensor_dimensions = self._sensor_template.radiance_sensor_template.dimensions
+            self._sensor_dimensions._sensor_dimensions = (
+                self._sensor_template.radiance_sensor_template.dimensions
+            )
         return self._sensor_dimensions
 
     def set_type_photometric(self) -> Radiance:
@@ -2282,7 +2516,9 @@ class Radiance(BaseSensor):
         ansys.speos.script.sensor.BaseSensor.Colorimetric
             Colorimetric type.
         """
-        if self._type is None and self._sensor_template.radiance_sensor_template.HasField("sensor_type_colorimetric"):
+        if self._type is None and self._sensor_template.radiance_sensor_template.HasField(
+            "sensor_type_colorimetric"
+        ):
             # Happens in case of project created via load of speos file
             self._type = BaseSensor.Colorimetric(
                 sensor_type_colorimetric=self._sensor_template.radiance_sensor_template.sensor_type_colorimetric,
@@ -2292,11 +2528,17 @@ class Radiance(BaseSensor):
         elif type(self._type) != BaseSensor.Colorimetric:
             # if the _type is not Colorimetric then we create a new type.
             self._type = BaseSensor.Colorimetric(
-                sensor_type_colorimetric=self._sensor_template.radiance_sensor_template.sensor_type_colorimetric, stable_ctr=True
+                sensor_type_colorimetric=self._sensor_template.radiance_sensor_template.sensor_type_colorimetric,
+                stable_ctr=True,
             )
-        elif not self._type._sensor_type_colorimetric is self._sensor_template.radiance_sensor_template.sensor_type_colorimetric:
+        elif (
+            self._type._sensor_type_colorimetric
+            is not self._sensor_template.radiance_sensor_template.sensor_type_colorimetric
+        ):
             # Happens in case of feature reset (to be sure to always modify correct data)
-            self._type._sensor_type_colorimetric = self._sensor_template.radiance_sensor_template.sensor_type_colorimetric
+            self._type._sensor_type_colorimetric = (
+                self._sensor_template.radiance_sensor_template.sensor_type_colorimetric
+            )
         return self._type
 
     def set_type_radiometric(self) -> Radiance:
@@ -2321,7 +2563,9 @@ class Radiance(BaseSensor):
         ansys.speos.script.sensor.BaseSensor.Spectral
             Spectral type.
         """
-        if self._type is None and self._sensor_template.radiance_sensor_template.HasField("sensor_type_spectral"):
+        if self._type is None and self._sensor_template.radiance_sensor_template.HasField(
+            "sensor_type_spectral"
+        ):
             # Happens in case of project created via load of speos file
             self._type = BaseSensor.Spectral(
                 sensor_type_spectral=self._sensor_template.radiance_sensor_template.sensor_type_spectral,
@@ -2331,11 +2575,17 @@ class Radiance(BaseSensor):
         elif type(self._type) != BaseSensor.Spectral:
             # if the _type is not Spectral then we create a new type.
             self._type = BaseSensor.Spectral(
-                sensor_type_spectral=self._sensor_template.radiance_sensor_template.sensor_type_spectral, stable_ctr=True
+                sensor_type_spectral=self._sensor_template.radiance_sensor_template.sensor_type_spectral,
+                stable_ctr=True,
             )
-        elif not self._type._sensor_type_spectral is self._sensor_template.radiance_sensor_template.sensor_type_spectral:
+        elif (
+            self._type._sensor_type_spectral
+            is not self._sensor_template.radiance_sensor_template.sensor_type_spectral
+        ):
             # Happens in case of feature reset (to be sure to always modify correct data)
-            self._type._sensor_type_spectral = self._sensor_template.radiance_sensor_template.sensor_type_spectral
+            self._type._sensor_type_spectral = (
+                self._sensor_template.radiance_sensor_template.sensor_type_spectral
+            )
         return self._type
 
     def set_focal(self, value: float = 250) -> Radiance:
@@ -2372,12 +2622,12 @@ class Radiance(BaseSensor):
         self._sensor_template.radiance_sensor_template.integration_angle = value
         return self
 
-    def set_axis_system(self, axis_system: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]) -> Radiance:
+    def set_axis_system(self, axis_system: Optional[List[float]] = None) -> Radiance:
         """Set position of the sensor.
 
         Parameters
         ----------
-        axis_system : List[float]
+        axis_system : Optional[List[float]]
             Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
@@ -2386,6 +2636,8 @@ class Radiance(BaseSensor):
         ansys.speos.script.sensor.Radiance
             Radiance sensor.
         """
+        if axis_system is None:
+            axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
         self._sensor_instance.radiance_properties.axis_system[:] = axis_system
         return self
 
@@ -2404,7 +2656,7 @@ class Radiance(BaseSensor):
         ansys.speos.script.sensor.Radiance
             Radiance sensor.
         """
-        if value is None or value == []:
+        if not value:
             self._sensor_instance.radiance_properties.ClearField("observer_point")
         else:
             self._sensor_instance.radiance_properties.observer_point[:] = value
@@ -2412,7 +2664,8 @@ class Radiance(BaseSensor):
 
     def set_layer_type_none(self) -> Radiance:
         """
-        defines layer separation type as None
+        Defines layer separation type as None
+
         Parameters
         ----------
 
@@ -2449,19 +2702,29 @@ class Radiance(BaseSensor):
         ansys.speos.script.sensor.BaseSensor.LayerTypeFace
             LayerTypeFace property instance
         """
-        if self._layer_type is None and self._sensor_instance.radiance_properties.HasField("layer_type_face"):
+        if self._layer_type is None and self._sensor_instance.radiance_properties.HasField(
+            "layer_type_face"
+        ):
             # Happens in case of project created via load of speos file
             self._layer_type = BaseSensor.LayerTypeFace(
-                layer_type_face=self._sensor_instance.radiance_properties.layer_type_face, default_values=False, stable_ctr=True
+                layer_type_face=self._sensor_instance.radiance_properties.layer_type_face,
+                default_values=False,
+                stable_ctr=True,
             )
         elif type(self._layer_type) != BaseSensor.LayerTypeFace:
             # if the _layer_type is not LayerTypeFace then we create a new type.
             self._layer_type = BaseSensor.LayerTypeFace(
-                layer_type_face=self._sensor_instance.radiance_properties.layer_type_face, stable_ctr=True
+                layer_type_face=self._sensor_instance.radiance_properties.layer_type_face,
+                stable_ctr=True,
             )
-        elif not self._layer_type._layer_type_face is self._sensor_instance.radiance_properties.layer_type_face:
+        elif (
+            self._layer_type._layer_type_face
+            is not self._sensor_instance.radiance_properties.layer_type_face
+        ):
             # Happens in case of feature reset (to be sure to always modify correct data)
-            self._layer_type._layer_type_face = self._sensor_instance.radiance_properties.layer_type_face
+            self._layer_type._layer_type_face = (
+                self._sensor_instance.radiance_properties.layer_type_face
+            )
         return self._layer_type
 
     def set_layer_type_sequence(self) -> BaseSensor.LayerTypeSequence:
@@ -2473,17 +2736,27 @@ class Radiance(BaseSensor):
         ansys.speos.script.sensor.BaseSensor.LayerTypeSequence
             LayerTypeSequence property instance
         """
-        if self._layer_type is None and self._sensor_instance.radiance_properties.HasField("layer_type_sequence"):
+        if self._layer_type is None and self._sensor_instance.radiance_properties.HasField(
+            "layer_type_sequence"
+        ):
             # Happens in case of project created via load of speos file
             self._layer_type = BaseSensor.LayerTypeSequence(
-                layer_type_sequence=self._sensor_instance.radiance_properties.layer_type_sequence, default_values=False, stable_ctr=True
+                layer_type_sequence=self._sensor_instance.radiance_properties.layer_type_sequence,
+                default_values=False,
+                stable_ctr=True,
             )
         elif type(self._layer_type) != BaseSensor.LayerTypeSequence:
             # if the _layer_type is not LayerTypeSequence then we create a new type.
             self._layer_type = BaseSensor.LayerTypeSequence(
-                layer_type_sequence=self._sensor_instance.radiance_properties.layer_type_sequence, stable_ctr=True
+                layer_type_sequence=self._sensor_instance.radiance_properties.layer_type_sequence,
+                stable_ctr=True,
             )
-        elif not self._layer_type._layer_type_sequence is self._sensor_instance.radiance_properties.layer_type_sequence:
+        elif (
+            self._layer_type._layer_type_sequence
+            is not self._sensor_instance.radiance_properties.layer_type_sequence
+        ):
             # Happens in case of feature reset (to be sure to always modify correct data)
-            self._layer_type._layer_type_sequence = self._sensor_instance.radiance_properties.layer_type_sequence
+            self._layer_type._layer_type_sequence = (
+                self._sensor_instance.radiance_properties.layer_type_sequence
+            )
         return self._layer_type

@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -23,13 +23,16 @@
 """
 Test scene.
 """
+
 import os
-from typing import List, Mapping
+from typing import List, Mapping, Optional
+
+from conftest import test_path
+from helper import clean_all_dbs
+import numpy as np
 
 from ansys.api.speos.sensor.v1 import common_pb2, irradiance_sensor_pb2
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
-import numpy as np
-
 from ansys.speos.core.body import Body
 from ansys.speos.core.face import Face, FaceStub
 from ansys.speos.core.intensity_template import IntensityTemplate
@@ -42,8 +45,6 @@ from ansys.speos.core.source_template import SourceTemplate
 from ansys.speos.core.spectrum import Spectrum
 from ansys.speos.core.speos import Speos
 from ansys.speos.core.vop_template import VOPTemplate
-from conftest import test_path
-from helper import clean_all_dbs
 
 
 def create_basic_scene(speos: Speos) -> SceneLink:
@@ -64,7 +65,13 @@ def create_basic_scene(speos: Speos) -> SceneLink:
                         name="BodySource:1",
                         description="Body used as support for source",
                         face_guids=[
-                            speos.client.faces().create(message=create_face_rectangle(name="FaceSource:1", x_size=100, y_size=100)).key
+                            speos.client.faces()
+                            .create(
+                                message=create_face_rectangle(
+                                    name="FaceSource:1", x_size=100, y_size=100
+                                )
+                            )
+                            .key
                         ],
                     )
                 )
@@ -85,12 +92,18 @@ def create_basic_scene(speos: Speos) -> SceneLink:
 
     # Create blackbody and monochromatic spectrums
     spec_bb_3500 = speos.client.spectrums().create(
-        message=Spectrum(name="blackbody_3500", description="blackbody spectrum - T 3500K", blackbody=Spectrum.BlackBody(temperature=3500))
+        message=Spectrum(
+            name="blackbody_3500",
+            description="blackbody spectrum - T 3500K",
+            blackbody=Spectrum.BlackBody(temperature=3500),
+        )
     )
     # Create lambertian intensity template
     intens_t_lamb_180 = speos.client.intensity_templates().create(
         message=IntensityTemplate(
-            name="lambertian_180", description="lambertian intensity template 180", cos=IntensityTemplate.Cos(N=1.0, total_angle=180.0)
+            name="lambertian_180",
+            description="lambertian intensity template 180",
+            cos=IntensityTemplate.Cos(N=1.0, total_angle=180.0),
         )
     )
 
@@ -130,7 +143,12 @@ def create_basic_scene(speos: Speos) -> SceneLink:
                 sensor_type_photometric=common_pb2.SensorTypePhotometric(),
                 illuminance_type_planar=common_pb2.IlluminanceTypePlanar(),
                 dimensions=common_pb2.SensorDimensions(
-                    x_start=-1000.0, x_end=1000.0, x_sampling=200, y_start=-1000.0, y_end=1000.0, y_sampling=200
+                    x_start=-1000.0,
+                    x_end=1000.0,
+                    x_sampling=200,
+                    y_start=-1000.0,
+                    y_end=1000.0,
+                    y_sampling=200,
                 ),
             ),
         )
@@ -141,11 +159,18 @@ def create_basic_scene(speos: Speos) -> SceneLink:
             description="Irradiance sensor template colorimetric",
             irradiance_sensor_template=irradiance_sensor_pb2.IrradianceSensorTemplate(
                 sensor_type_colorimetric=common_pb2.SensorTypeColorimetric(
-                    wavelengths_range=common_pb2.WavelengthsRange(w_start=300, w_end=700, w_sampling=13)
+                    wavelengths_range=common_pb2.WavelengthsRange(
+                        w_start=300, w_end=700, w_sampling=13
+                    )
                 ),
                 illuminance_type_planar=common_pb2.IlluminanceTypePlanar(),
                 dimensions=common_pb2.SensorDimensions(
-                    x_start=-1000.0, x_end=1000.0, x_sampling=200, y_start=-1000.0, y_end=1000.0, y_sampling=200
+                    x_start=-1000.0,
+                    x_end=1000.0,
+                    x_sampling=200,
+                    y_start=-1000.0,
+                    y_end=1000.0,
+                    y_sampling=200,
                 ),
             ),
         )
@@ -203,13 +228,17 @@ def create_basic_scene(speos: Speos) -> SceneLink:
     # Create a sop template that can be used in different materials
     mirror_100_t = speos.client.sop_templates().create(
         message=SOPTemplate(
-            name="mirror_100", description="mirror sop template - reflectance 100", mirror=SOPTemplate.Mirror(reflectance=100)
+            name="mirror_100",
+            description="mirror sop template - reflectance 100",
+            mirror=SOPTemplate.Mirror(reflectance=100),
         )
     )
 
     # Create a vop template
     opaque_t = speos.client.vop_templates().create(
-        message=VOPTemplate(name="opaque", description="opaque vop template", opaque=VOPTemplate.Opaque())
+        message=VOPTemplate(
+            name="opaque", description="opaque vop template", opaque=VOPTemplate.Opaque()
+        )
     )
 
     # Create scene
@@ -220,22 +249,31 @@ def create_basic_scene(speos: Speos) -> SceneLink:
             part_guid=main_part.key,
             materials=[
                 Scene.MaterialInstance(
-                    name="Material.1", vop_guid=opaque_t.key, sop_guids=[mirror_100_t.key], geometries=Scene.GeoPaths(geo_paths=["Body0:1"])
+                    name="Material.1",
+                    vop_guid=opaque_t.key,
+                    sop_guids=[mirror_100_t.key],
+                    geometries=Scene.GeoPaths(geo_paths=["Body0:1"]),
                 ),
                 Scene.MaterialInstance(
-                    name="FOP.1", sop_guids=[mirror_100_t.key], geometries=Scene.GeoPaths(geo_paths=["BodySource:1/FaceSource:1"])
+                    name="FOP.1",
+                    sop_guids=[mirror_100_t.key],
+                    geometries=Scene.GeoPaths(geo_paths=["BodySource:1/FaceSource:1"]),
                 ),
             ],
             sources=[
                 Scene.SourceInstance(
                     name="luminaire_AA.1",
                     source_guid=src_t_luminaire.key,
-                    luminaire_properties=Scene.SourceInstance.LuminaireProperties(axis_system=[50, 50, 50, 1, 0, 0, 0, 1, 0, 0, 0, 1]),
+                    luminaire_properties=Scene.SourceInstance.LuminaireProperties(
+                        axis_system=[50, 50, 50, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+                    ),
                 ),
                 Scene.SourceInstance(
                     name="luminaire_AA.2",
                     source_guid=src_t_luminaire.key,
-                    luminaire_properties=Scene.SourceInstance.LuminaireProperties(axis_system=[0, 0, 500, 1, 0, 0, 0, 1, 0, 0, 0, 1]),
+                    luminaire_properties=Scene.SourceInstance.LuminaireProperties(
+                        axis_system=[0, 0, 500, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+                    ),
                 ),
                 Scene.SourceInstance(
                     name="surface_with_blackbody.1",
@@ -249,10 +287,14 @@ def create_basic_scene(speos: Speos) -> SceneLink:
             ],
             sensors=[
                 Scene.SensorInstance(
-                    name="irradiance_photometric.1", sensor_guid=ssr_t_irr_photo.key, irradiance_properties=irr_sensor_props
+                    name="irradiance_photometric.1",
+                    sensor_guid=ssr_t_irr_photo.key,
+                    irradiance_properties=irr_sensor_props,
                 ),
                 Scene.SensorInstance(
-                    name="irradiance_colorimetric.1", sensor_guid=ssr_t_irr_colo.key, irradiance_properties=irr_sensor_props
+                    name="irradiance_colorimetric.1",
+                    sensor_guid=ssr_t_irr_colo.key,
+                    irradiance_properties=irr_sensor_props,
                 ),
             ],
             simulations=[
@@ -289,17 +331,30 @@ def create_basic_scene(speos: Speos) -> SceneLink:
 def create_face_rectangle(
     name: str,
     description: str = "",
-    base: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0],
+    base: Optional[List[float]] = None,
     x_size: float = 200,
     y_size: float = 100,
-    metadata: Mapping[str, str] = {},
+    metadata: Optional[Mapping[str, str]] = None,
 ) -> Face:
+    if base is None:
+        base = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    if metadata is None:
+        metadata = {}
+
     face = Face(name=name, description=description, metadata=metadata)
 
-    face.vertices.extend(base[:3] - np.multiply(0.5 * x_size, base[3:6]) - np.multiply(0.5 * y_size, base[6:9]))
-    face.vertices.extend(base[:3] + np.multiply(0.5 * x_size, base[3:6]) - np.multiply(0.5 * y_size, base[6:9]))
-    face.vertices.extend(base[:3] + np.multiply(0.5 * x_size, base[3:6]) + np.multiply(0.5 * y_size, base[6:9]))
-    face.vertices.extend(base[:3] - np.multiply(0.5 * x_size, base[3:6]) + np.multiply(0.5 * y_size, base[6:9]))
+    face.vertices.extend(
+        base[:3] - np.multiply(0.5 * x_size, base[3:6]) - np.multiply(0.5 * y_size, base[6:9])
+    )
+    face.vertices.extend(
+        base[:3] + np.multiply(0.5 * x_size, base[3:6]) - np.multiply(0.5 * y_size, base[6:9])
+    )
+    face.vertices.extend(
+        base[:3] + np.multiply(0.5 * x_size, base[3:6]) + np.multiply(0.5 * y_size, base[6:9])
+    )
+    face.vertices.extend(
+        base[:3] - np.multiply(0.5 * x_size, base[3:6]) + np.multiply(0.5 * y_size, base[6:9])
+    )
 
     normal = np.cross(base[3:6], base[6:9])
     for i in range(4):
@@ -314,50 +369,79 @@ def create_body_box(
     name: str,
     face_stub: FaceStub,
     description: str = "",
-    base: List[float] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+    base: Optional[List[float]] = None,
     x_size: float = 200,
     y_size: float = 200,
     z_size: float = 100,
     idx_face: int = 0,
-    metadata: Mapping[str, str] = {},
+    metadata: Optional[Mapping[str, str]] = None,
 ) -> Body:
+    if base is None:
+        base = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    if metadata is None:
+        metadata = {}
+
     body = Body(name=name, description=description, metadata=metadata)
 
     base0 = []
     base0.extend(base[:3] - np.multiply(0.5 * z_size, base[9:]))  # origin
     base0.extend(np.multiply(-1, base[3:6]))  # x_vect
     base0.extend(base[6:9])  # y_vect
-    face0 = face_stub.create(message=create_face_rectangle(name="Face:" + str(idx_face), base=base0, x_size=x_size, y_size=y_size))
+    face0 = face_stub.create(
+        message=create_face_rectangle(
+            name="Face:" + str(idx_face), base=base0, x_size=x_size, y_size=y_size
+        )
+    )
 
     base1 = []
     base1.extend(base[:3] + np.multiply(0.5 * z_size, base[9:]))
     base1.extend(base[3:6])
     base1.extend(base[6:9])
-    face1 = face_stub.create(message=create_face_rectangle(name="Face:" + str(idx_face + 1), base=base1, x_size=x_size, y_size=y_size))
+    face1 = face_stub.create(
+        message=create_face_rectangle(
+            name="Face:" + str(idx_face + 1), base=base1, x_size=x_size, y_size=y_size
+        )
+    )
 
     base2 = []
     base2.extend(base[:3] - np.multiply(0.5 * x_size, base[3:6]))
     base2.extend(base[9:])
     base2.extend(base[6:9])
-    face2 = face_stub.create(message=create_face_rectangle(name="Face:" + str(idx_face + 2), base=base2, x_size=z_size, y_size=y_size))
+    face2 = face_stub.create(
+        message=create_face_rectangle(
+            name="Face:" + str(idx_face + 2), base=base2, x_size=z_size, y_size=y_size
+        )
+    )
 
     base3 = []
     base3.extend(base[:3] + np.multiply(0.5 * x_size, base[3:6]))
     base3.extend(np.multiply(-1, base[9:]))
     base3.extend(base[6:9])
-    face3 = face_stub.create(message=create_face_rectangle(name="Face:" + str(idx_face + 3), base=base3, x_size=z_size, y_size=y_size))
+    face3 = face_stub.create(
+        message=create_face_rectangle(
+            name="Face:" + str(idx_face + 3), base=base3, x_size=z_size, y_size=y_size
+        )
+    )
 
     base4 = []
     base4.extend(base[:3] - np.multiply(0.5 * y_size, base[6:9]))
     base4.extend(base[3:6])
     base4.extend(base[9:])
-    face4 = face_stub.create(message=create_face_rectangle(name="Face:" + str(idx_face + 4), base=base4, x_size=x_size, y_size=z_size))
+    face4 = face_stub.create(
+        message=create_face_rectangle(
+            name="Face:" + str(idx_face + 4), base=base4, x_size=x_size, y_size=z_size
+        )
+    )
 
     base5 = []
     base5.extend(base[:3] + np.multiply(0.5 * y_size, base[6:9]))
     base5.extend(base[3:6])
     base5.extend(np.multiply(-1, base[9:]))
-    face5 = face_stub.create(message=create_face_rectangle(name="Face:" + str(idx_face + 5), base=base5, x_size=x_size, y_size=z_size))
+    face5 = face_stub.create(
+        message=create_face_rectangle(
+            name="Face:" + str(idx_face + 5), base=base5, x_size=x_size, y_size=z_size
+        )
+    )
 
     body.face_guids.extend([face0.key, face1.key, face2.key, face3.key, face4.key, face5.key])
     return body
@@ -376,7 +460,9 @@ def test_scene(speos: Speos):
 def test_scene_actions_load(speos: Speos):
     """Test the scene action: load file."""
     assert speos.client.healthy is True
-    speos_file_path = os.path.join(test_path, os.path.join("LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"))
+    speos_file_path = os.path.join(
+        test_path, os.path.join("LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5")
+    )
 
     # Create empty scene + load_file
     scene = speos.client.scenes().create()
@@ -393,7 +479,9 @@ def test_scene_actions_load(speos: Speos):
 def test_scene_actions_load_modify(speos: Speos):
     """Test the scene action: load file and modify sensors."""
     assert speos.client.healthy is True
-    speos_file_path = os.path.join(test_path, os.path.join("LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"))
+    speos_file_path = os.path.join(
+        test_path, os.path.join("LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5")
+    )
 
     # Create empty scene + load_file
     scene = speos.client.scenes().create()
@@ -460,7 +548,9 @@ def test_scene_actions_get_source_ray_paths(speos: Speos):
                 Scene.SourceInstance(
                     name="Luminaire.1",
                     source_guid=luminaire_t.key,
-                    luminaire_properties=Scene.SourceInstance.LuminaireProperties(axis_system=[0, 0, 20, 1, 0, 0, 0, 1, 0, 0, 0, 1]),
+                    luminaire_properties=Scene.SourceInstance.LuminaireProperties(
+                        axis_system=[0, 0, 20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+                    ),
                 )
             ],
             sensors=[],

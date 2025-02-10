@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -23,6 +23,7 @@
 """
 Test basic geometry database connection.
 """
+
 from test_scene import create_face_rectangle
 
 from ansys.speos.core.body import Body, BodyLink
@@ -126,7 +127,11 @@ def test_face(speos: Speos):
     # rectangle
     rectangle0 = face_db.create(
         message=create_face_rectangle(
-            name="rectangle_0", description="rectangle face", base=[100, 50, 0, 1, 0, 0, 0, 1, 0], x_size=200, y_size=100
+            name="rectangle_0",
+            description="rectangle face",
+            base=[100, 50, 0, 1, 0, 0, 0, 1, 0],
+            x_size=200,
+            y_size=100,
         )
     )
     assert rectangle0.key != ""
@@ -136,7 +141,9 @@ def test_face(speos: Speos):
     assert rectangle0.get().vertices[9:12] == [0, 100, 0]
 
     # default rectangle
-    rectangle1 = face_db.create(message=create_face_rectangle(name="rectangle_1", description="rectangle face - default"))
+    rectangle1 = face_db.create(
+        message=create_face_rectangle(name="rectangle_1", description="rectangle face - default")
+    )
     assert rectangle1.key != ""
     assert rectangle1.get().vertices[0:3] == [-100, -50, 0]
     assert rectangle1.get().vertices[3:6] == [100, -50, 0]
@@ -162,7 +169,9 @@ def test_body(speos: Speos):
             face_guids=[
                 face_db.create(
                     message=create_face_rectangle(
-                        name="face_0", description="face_0 for body_0", metadata={"key_0": "val_0", "key_1": "val_1"}
+                        name="face_0",
+                        description="face_0 for body_0",
+                        metadata={"key_0": "val_0", "key_1": "val_1"},
                     )
                 ).key
             ],
@@ -199,7 +208,9 @@ def test_part(speos: Speos):
                         face_guids=[
                             face_db.create(
                                 message=create_face_rectangle(
-                                    name="face_0", description="face_0 for body_0", metadata={"key_0": "val_0", "key_1": "val_1"}
+                                    name="face_0",
+                                    description="face_0 for body_0",
+                                    metadata={"key_0": "val_0", "key_1": "val_1"},
                                 )
                             ).key
                         ],

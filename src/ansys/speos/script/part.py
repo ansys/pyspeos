@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 """Provides a way to interact with feature: Part."""
+
 from __future__ import annotations
 
 import re
@@ -46,7 +47,7 @@ class Part:
     description : str
         Description of the feature.
         By default, ``""``.
-    metadata : Mapping[str, str]
+    metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
 
@@ -78,7 +79,13 @@ class Part:
             Link object for the part in database.
         """
 
-        def __init__(self, speos_client: core.SpeosClient, name: str, description: str = "", parent_part: Optional[Part] = None) -> None:
+        def __init__(
+            self,
+            speos_client: core.SpeosClient,
+            name: str,
+            description: str = "",
+            parent_part: Optional[Part] = None,
+        ) -> None:
             self._speos_client = speos_client
             self._parent_part = parent_part
             self._name = name
@@ -92,7 +99,9 @@ class Part:
 
             self._geom_features = []
 
-        def create_body(self, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> body.Body:
+        def create_body(
+            self, name: str, description: str = "", metadata: Optional[Mapping[str, str]] = None
+        ) -> body.Body:
             """Create a body in this element.
 
             Parameters
@@ -102,7 +111,7 @@ class Part:
             description : str
                 Description of the feature.
                 By default, ``""``.
-            metadata : Mapping[str, str]
+            metadata : Optional[Mapping[str, str]]
                 Metadata of the feature.
                 By default, ``{}``.
 
@@ -111,7 +120,16 @@ class Part:
             ansys.speos.script.body.Body
                 Body feature.
             """
-            body_feat = body.Body(speos_client=self._speos_client, name=name, description=description, metadata=metadata, parent_part=self)
+            if metadata is None:
+                metadata = {}
+
+            body_feat = body.Body(
+                speos_client=self._speos_client,
+                name=name,
+                description=description,
+                metadata=metadata,
+                parent_part=self,
+            )
             self._geom_features.append(body_feat)
             return body_feat
 
@@ -131,7 +149,12 @@ class Part:
             ansys.speos.script.part.Part.SubPart
                 SubPart feature.
             """
-            sub_part_feat = Part.SubPart(speos_client=self._speos_client, name=name, description=description, parent_part=self)
+            sub_part_feat = Part.SubPart(
+                speos_client=self._speos_client,
+                name=name,
+                description=description,
+                parent_part=self,
+            )
             self._geom_features.append(sub_part_feat)
             return sub_part_feat
 
@@ -157,20 +180,37 @@ class Part:
             # Part Instance
             if self._parent_part is not None and self._parent_part.part_link is not None:
                 parent_part_data = self._parent_part.part_link.get()
-                part_inst = next((x for x in parent_part_data.parts if x.description == "UniqueId_" + self._unique_id), None)
+                part_inst = next(
+                    (
+                        x
+                        for x in parent_part_data.parts
+                        if x.description == "UniqueId_" + self._unique_id
+                    ),
+                    None,
+                )
                 if part_inst is not None:
-                    out_dict = proto_message_utils._replace_guids(speos_client=self._speos_client, message=part_inst)
+                    out_dict = proto_message_utils._replace_guids(
+                        speos_client=self._speos_client, message=part_inst
+                    )
                 else:
-                    out_dict = proto_message_utils._replace_guids(speos_client=self._speos_client, message=self._part_instance)
+                    out_dict = proto_message_utils._replace_guids(
+                        speos_client=self._speos_client, message=self._part_instance
+                    )
             else:
-                out_dict = proto_message_utils._replace_guids(speos_client=self._speos_client, message=self._part_instance)
+                out_dict = proto_message_utils._replace_guids(
+                    speos_client=self._speos_client, message=self._part_instance
+                )
 
             if "part" not in out_dict.keys():
                 # Part
                 if self.part_link is None:
-                    out_dict["part"] = proto_message_utils._replace_guids(speos_client=self._speos_client, message=self._part)
+                    out_dict["part"] = proto_message_utils._replace_guids(
+                        speos_client=self._speos_client, message=self._part
+                    )
                 else:
-                    out_dict["part"] = proto_message_utils._replace_guids(speos_client=self._speos_client, message=self.part_link.get())
+                    out_dict["part"] = proto_message_utils._replace_guids(
+                        speos_client=self._speos_client, message=self.part_link.get()
+                    )
 
             return out_dict
 
@@ -180,7 +220,14 @@ class Part:
 
             if self._parent_part is not None and self._parent_part.part_link is not None:
                 parent_part_data = self._parent_part.part_link.get()
-                part_inst = next((x for x in parent_part_data.parts if x.description == "UniqueId_" + self._unique_id), None)
+                part_inst = next(
+                    (
+                        x
+                        for x in parent_part_data.parts
+                        if x.description == "UniqueId_" + self._unique_id
+                    ),
+                    None,
+                )
                 if part_inst is None:
                     out_str += "local: "
             else:
@@ -218,17 +265,28 @@ class Part:
                 update_part = True
                 parent_part_data = self._parent_part.part_link.get()
 
-                part_inst = next((x for x in parent_part_data.parts if x.description == "UniqueId_" + self._unique_id), None)
+                part_inst = next(
+                    (
+                        x
+                        for x in parent_part_data.parts
+                        if x.description == "UniqueId_" + self._unique_id
+                    ),
+                    None,
+                )
                 if part_inst is not None:
                     if part_inst != self._part_instance:
                         part_inst.CopyFrom(self._part_instance)  # if yes, just replace
                     else:
                         update_part = False
                 else:
-                    self._parent_part._part.parts.append(self._part_instance)  # if no, just add it to the list of part instances
+                    self._parent_part._part.parts.append(
+                        self._part_instance
+                    )  # if no, just add it to the list of part instances
 
                 if self._parent_part.part_link is not None and update_part:
-                    self._parent_part.part_link.set(data=self._parent_part._part)  # update parent part
+                    self._parent_part.part_link.set(
+                        data=self._parent_part._part
+                    )  # update parent part
 
             return self
 
@@ -249,7 +307,14 @@ class Part:
                 parent_part_data = self._parent_part.part_link.get()  # retrieve server data
                 # Look if an element corresponds to the _unique_id
                 if self._unique_id is not None:
-                    part_inst = next((x for x in parent_part_data.parts if x.description == "UniqueId_" + self._unique_id), None)
+                    part_inst = next(
+                        (
+                            x
+                            for x in parent_part_data.parts
+                            if x.description == "UniqueId_" + self._unique_id
+                        ),
+                        None,
+                    )
                     if part_inst is not None:
                         self._part_instance = part_inst
 
@@ -270,11 +335,20 @@ class Part:
             # Remove the part instance from the parent part
             if self._parent_part is not None and self._parent_part.part_link is not None:
                 parent_part_data = self._parent_part.part_link.get()
-                part_inst = next((x for x in parent_part_data.parts if x.description == "UniqueId_" + self._unique_id), None)
+                part_inst = next(
+                    (
+                        x
+                        for x in parent_part_data.parts
+                        if x.description == "UniqueId_" + self._unique_id
+                    ),
+                    None,
+                )
                 if part_inst is not None:
                     self._parent_part._part.parts.remove(part_inst)
                     if self._parent_part.part_link is not None:
-                        self._parent_part.part_link.set(data=self._parent_part._part)  # update parent part
+                        self._parent_part.part_link.set(
+                            data=self._parent_part._part
+                        )  # update parent part
 
             # Reset the _unique_id
             self._unique_id = None
@@ -319,9 +393,21 @@ class Part:
             if idx == -1 and feature_type is not None:
                 if name_regex:
                     p = re.compile(name)
-                    found_features.extend([x for x in self._geom_features if p.match(x._name) and type(x) == feature_type])
+                    found_features.extend(
+                        [
+                            x
+                            for x in self._geom_features
+                            if p.match(x._name) and type(x) == feature_type
+                        ]
+                    )
                 else:
-                    found_features.extend([x for x in self._geom_features if x._name == name and type(x) == feature_type])
+                    found_features.extend(
+                        [
+                            x
+                            for x in self._geom_features
+                            if x._name == name and type(x) == feature_type
+                        ]
+                    )
             else:
                 if name_regex:
                     p = re.compile(name)
@@ -329,8 +415,13 @@ class Part:
                 else:
                     found_features.extend([x for x in self._geom_features if x._name == name])
 
-            if found_features != [] and idx != -1:
-                tmp = [f.find(name=orig_name[idx + 1 :], name_regex=name_regex, feature_type=feature_type) for f in found_features]
+            if found_features and idx != -1:
+                tmp = [
+                    f.find(
+                        name=orig_name[idx + 1 :], name_regex=name_regex, feature_type=feature_type
+                    )
+                    for f in found_features
+                ]
 
                 found_features.clear()
                 for feats in tmp:
@@ -338,7 +429,13 @@ class Part:
 
             return found_features
 
-    def __init__(self, project: project.Project, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> None:
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+    ) -> None:
         self._project = project
         self._name = name
         self.part_link = None
@@ -347,9 +444,13 @@ class Part:
         self._geom_features = []
 
         # Create local Part
+        if metadata is None:
+            metadata = {}
         self._part = core.Part(name=name, description=description, metadata=metadata)
 
-    def create_body(self, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> body.Body:
+    def create_body(
+        self, name: str, description: str = "", metadata: Optional[Mapping[str, str]] = None
+    ) -> body.Body:
         """Create a body in this element.
 
         Parameters
@@ -368,7 +469,16 @@ class Part:
         ansys.speos.script.body.Body
             Body feature.
         """
-        body_feat = body.Body(speos_client=self._project.client, name=name, description=description, metadata=metadata, parent_part=self)
+        if metadata is None:
+            metadata = {}
+
+        body_feat = body.Body(
+            speos_client=self._project.client,
+            name=name,
+            description=description,
+            metadata=metadata,
+            parent_part=self,
+        )
         self._geom_features.append(body_feat)
         return body_feat
 
@@ -388,7 +498,9 @@ class Part:
         ansys.speos.script.part.Part.SubPart
             SubPart feature.
         """
-        sub_part_feat = Part.SubPart(speos_client=self._project.client, name=name, description=description, parent_part=self)
+        sub_part_feat = Part.SubPart(
+            speos_client=self._project.client, name=name, description=description, parent_part=self
+        )
         self._geom_features.append(sub_part_feat)
         return sub_part_feat
 
@@ -396,9 +508,13 @@ class Part:
         out_dict = ""
 
         if self.part_link is None:
-            out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=self._part)
+            out_dict = proto_message_utils._replace_guids(
+                speos_client=self._project.client, message=self._part
+            )
         else:
-            out_dict = proto_message_utils._replace_guids(speos_client=self._project.client, message=self.part_link.get())
+            out_dict = proto_message_utils._replace_guids(
+                speos_client=self._project.client, message=self.part_link.get()
+            )
 
         return out_dict
 
@@ -420,7 +536,6 @@ class Part:
         ansys.speos.script.part.Part
             Part feature.
         """
-
         # Save or Update the part (depending on if it was already saved before)
         if self.part_link is None:
             self.part_link = self._project.client.parts().create(message=self._part)
@@ -462,7 +577,6 @@ class Part:
         ansys.speos.script.part.Part
             Part feature.
         """
-
         # Retrieve all features to delete them
         while len(self._geom_features) > 0:
             self._geom_features[0].delete()
@@ -512,9 +626,13 @@ class Part:
         if idx == -1 and feature_type is not None:
             if name_regex:
                 p = re.compile(name)
-                found_features.extend([x for x in self._geom_features if p.match(x._name) and type(x) == feature_type])
+                found_features.extend(
+                    [x for x in self._geom_features if p.match(x._name) and type(x) == feature_type]
+                )
             else:
-                found_features.extend([x for x in self._geom_features if x._name == name and type(x) == feature_type])
+                found_features.extend(
+                    [x for x in self._geom_features if x._name == name and type(x) == feature_type]
+                )
         else:
             if name_regex:
                 p = re.compile(name)
@@ -522,8 +640,11 @@ class Part:
             else:
                 found_features.extend([x for x in self._geom_features if x._name == name])
 
-        if found_features != [] and idx != -1:
-            tmp = [f.find(name=orig_name[idx + 1 :], name_regex=name_regex, feature_type=feature_type) for f in found_features]
+        if found_features and idx != -1:
+            tmp = [
+                f.find(name=orig_name[idx + 1 :], name_regex=name_regex, feature_type=feature_type)
+                for f in found_features
+            ]
 
             found_features.clear()
             for feats in tmp:

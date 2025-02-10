@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 """Provides a way to interact with feature: Body."""
+
 from __future__ import annotations
 
 import re
@@ -62,7 +63,7 @@ class Body:
         speos_client: core.SpeosClient,
         name: str,
         description: str = "",
-        metadata: Mapping[str, str] = {},
+        metadata: Optional[Mapping[str, str]] = None,
         parent_part: Optional[Union[part.Part, part.Part.SubPart]] = None,
     ) -> None:
         self._speos_client = speos_client
@@ -71,12 +72,17 @@ class Body:
         self.body_link = None
         """Link object for the body in database."""
 
+        if metadata is None:
+            metadata = {}
+
         # Create local Body
         self._body = core.Body(name=name, description=description, metadata=metadata)
 
         self._geom_features = []
 
-    def create_face(self, name: str, description: str = "", metadata: Mapping[str, str] = {}) -> face.Face:
+    def create_face(
+        self, name: str, description: str = "", metadata: Optional[Mapping[str, str]] = None
+    ) -> face.Face:
         """Create a face in this element.
 
         Parameters
@@ -86,7 +92,7 @@ class Body:
         description : str
             Description of the feature.
             By default, ``""``.
-        metadata : Mapping[str, str]
+        metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
 
@@ -95,7 +101,16 @@ class Body:
         ansys.speos.script.face.Face
             Face feature.
         """
-        face_feat = face.Face(speos_client=self._speos_client, name=name, description=description, metadata=metadata, parent_body=self)
+        if metadata is None:
+            metadata = {}
+
+        face_feat = face.Face(
+            speos_client=self._speos_client,
+            name=name,
+            description=description,
+            metadata=metadata,
+            parent_body=self,
+        )
         self._geom_features.append(face_feat)
         return face_feat
 
@@ -103,9 +118,13 @@ class Body:
         out_dict = ""
 
         if self.body_link is None:
-            out_dict = proto_message_utils._replace_guids(speos_client=self._speos_client, message=self._body)
+            out_dict = proto_message_utils._replace_guids(
+                speos_client=self._speos_client, message=self._body
+            )
         else:
-            out_dict = proto_message_utils._replace_guids(speos_client=self._speos_client, message=self.body_link.get())
+            out_dict = proto_message_utils._replace_guids(
+                speos_client=self._speos_client, message=self.body_link.get()
+            )
 
         return out_dict
 
@@ -189,7 +208,9 @@ class Body:
 
         return self
 
-    def find(self, name: str, name_regex: bool = False, feature_type: Optional[type] = None) -> List[face.Face]:
+    def find(
+        self, name: str, name_regex: bool = False, feature_type: Optional[type] = None
+    ) -> List[face.Face]:
         """Find feature(s). In a body, only faces features can be found.
 
         Parameters

@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -21,12 +21,11 @@
 # SOFTWARE.
 
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
+
 from typing import Iterator, List
 
-from ansys.api.speos.job.v2 import job_pb2 as messages
-from ansys.api.speos.job.v2 import job_pb2_grpc as service
+from ansys.api.speos.job.v2 import job_pb2 as messages, job_pb2_grpc as service
 from ansys.api.speos.results.v1.ray_path_pb2 import RayPath
-
 from ansys.speos.core.crud import CrudItem, CrudStub
 from ansys.speos.core.proto_message_utils import protobuf_message_to_str
 
@@ -129,7 +128,9 @@ class JobLink(CrudItem):
         ansys.api.speos.job.v2.job_pb2.GetProgressStatus_Response
             Progress status of the job.
         """
-        return self._actions_stub.GetProgressStatus(messages.GetProgressStatus_Request(guid=self.key))
+        return self._actions_stub.GetProgressStatus(
+            messages.GetProgressStatus_Request(guid=self.key)
+        )
 
     def get_ray_paths(self) -> Iterator[RayPath]:
         """

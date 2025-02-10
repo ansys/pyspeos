@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -20,7 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-""""Testing of log module."""
+""" "Testing of log module."""
+
 import logging as deflogging  # Default logging
 import re
 from typing import Callable
@@ -46,7 +47,6 @@ def test_stdout_reading(capfd: pytest.CaptureFixture):
     capfd : pytest.CaptureFixture
         Fixture for capturing console stdout and stderr.
     """
-
     print("This is a test")
 
     out, _ = capfd.readouterr()
@@ -62,7 +62,6 @@ def test_only_logger(caplog: pytest.LogCaptureFixture):
     caplog : pytest.LogCaptureFixture
         Fixture for capturing logs.
     """
-
     log_a = deflogging.getLogger("test")
     log_a.setLevel("DEBUG")
 
@@ -71,16 +70,15 @@ def test_only_logger(caplog: pytest.LogCaptureFixture):
 
 
 def test_global_logger_exist():
-    """Test for checking the accurrate naming of the general Logger instance."""
-
+    """Test for checking the accurate naming of the general Logger instance."""
     assert isinstance(LOG.logger, deflogging.Logger)
     assert LOG.logger.name == "pyspeos_global"
 
 
 def test_global_logger_has_handlers():
     """Test for checking that the general Logger has file_handlers and
-    sdtout file_handlers implemented."""
-
+    sdtout file_handlers implemented.
+    """
     assert hasattr(LOG, "file_handler")
     assert hasattr(LOG, "std_out_handler")
     assert LOG.logger.hasHandlers
@@ -112,7 +110,8 @@ def test_global_logger_logging(caplog: pytest.LogCaptureFixture):
 
 def test_global_logger_level_mode():
     """Checking that the Logger levels are stored as integer values and
-    that the default value (unless changed) is ERROR."""
+    that the default value (unless changed) is ERROR.
+    """
     assert isinstance(LOG.logger.level, int)
     assert LOG.logger.level == logger.ERROR
 
@@ -160,7 +159,6 @@ def test_global_logger_debug_levels(level: int, caplog: pytest.LogCaptureFixture
     caplog : pytest.LogCaptureFixture
         Fixture for capturing logs.
     """
-
     with caplog.at_level(level, LOG.logger.name):  # changing root logger level:
         for each_log_name, each_log_number in LOG_LEVELS.items():
             msg = f"This is a message of type {each_log_name}."
@@ -221,27 +219,27 @@ def test_global_methods(caplog: pytest.LogCaptureFixture):
     LOG.logger.setLevel("DEBUG")
     LOG.std_out_handler.setLevel("DEBUG")
 
-    msg = f"This is a debug message"
+    msg = "This is a debug message"
     LOG.debug(msg)
     assert msg in caplog.text
 
-    msg = f"This is an info message"
+    msg = "This is an info message"
     LOG.info(msg)
     assert msg in caplog.text
 
-    msg = f"This is a warning message"
+    msg = "This is a warning message"
     LOG.warning(msg)
     assert msg in caplog.text
 
-    msg = f"This is an error message"
+    msg = "This is an error message"
     LOG.error(msg)
     assert msg in caplog.text
 
-    msg = f"This is a critical message"
+    msg = "This is a critical message"
     LOG.critical(msg)
     assert msg in caplog.text
 
-    msg = f'This is a 30 message using "log"'
+    msg = 'This is a 30 message using "log"'
     LOG.log(30, msg)
     assert msg in caplog.text
 
