@@ -26,9 +26,9 @@ Test basic geometry database connection.
 
 from test_scene import create_face_rectangle
 
-from ansys.speos.core.kernel.body import Body, BodyLink
-from ansys.speos.core.kernel.face import Face, FaceLink
-from ansys.speos.core.kernel.part import Part
+from ansys.speos.core.kernel.body import BodyLink, ProtoBody
+from ansys.speos.core.kernel.face import FaceLink, ProtoFace
+from ansys.speos.core.kernel.part import ProtoPart
 from ansys.speos.core.speos import Speos
 
 
@@ -44,7 +44,7 @@ def test_create_big_face(speos: Speos):
 
     # Create face
     face_link = face_db.create(
-        message=Face(
+        message=ProtoFace(
             name="Face.1",
             description="Face one",
             vertices=vertices,
@@ -83,7 +83,7 @@ def test_update_big_face(speos: Speos):
 
     # Create face
     face_link = face_db.create(
-        message=Face(
+        message=ProtoFace(
             name="Face.1",
             description="Face one",
             vertices=vertices,
@@ -96,7 +96,7 @@ def test_update_big_face(speos: Speos):
 
     # Update
     face_link.set(
-        data=Face(
+        data=ProtoFace(
             name="Face.2",
             description="Face two",
             vertices=vertices_2,
@@ -163,7 +163,7 @@ def test_body(speos: Speos):
 
     # Body by referencing directly FaceLinks
     body0 = body_db.create(
-        message=Body(
+        message=ProtoBody(
             name="body_0",
             description="body from data containing one face",
             face_guids=[
@@ -197,12 +197,12 @@ def test_part(speos: Speos):
 
     # Part by referencing directly BodyLinks
     part1 = part_db.create(
-        message=Part(
+        message=ProtoPart(
             name="part_0",
             description="part with one box as body",
             body_guids=[
                 body_db.create(
-                    Body(
+                    ProtoBody(
                         name="body_0",
                         description="body from data containing one face",
                         face_guids=[

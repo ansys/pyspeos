@@ -31,7 +31,7 @@ from conftest import test_path
 import grpc
 import pytest
 
-from ansys.speos.core.kernel.sop_template import SOPTemplate
+from ansys.speos.core.kernel.sop_template import ProtoSOPTemplate
 from ansys.speos.core.speos import Speos
 
 
@@ -43,30 +43,30 @@ def test_sop_template(speos: Speos):
 
     # Mirror
     sop_t_mirror = sop_t_db.create(
-        message=SOPTemplate(
+        message=ProtoSOPTemplate(
             name="mirror_0",
             description="Mirror sop template",
-            mirror=SOPTemplate.Mirror(reflectance=100.0),
+            mirror=ProtoSOPTemplate.Mirror(reflectance=100.0),
         )
     )
     assert sop_t_mirror.key != ""
 
     # OpticalPolished
     sop_t_optical_polished = sop_t_db.create(
-        message=SOPTemplate(
+        message=ProtoSOPTemplate(
             name="optical_polished_0",
             description="Optical polished sop template",
-            optical_polished=SOPTemplate.OpticalPolished(),
+            optical_polished=ProtoSOPTemplate.OpticalPolished(),
         )
     )
     assert sop_t_optical_polished.key != ""
 
     # Library
     sop_t_lib = sop_t_db.create(
-        message=SOPTemplate(
+        message=ProtoSOPTemplate(
             name="library_0",
             description="library sop template",
-            library=SOPTemplate.Library(
+            library=ProtoSOPTemplate.Library(
                 sop_file_uri=os.path.join(test_path, "Gaussian Fresnel 10 deg.anisotropicbsdf")
             ),
         )
@@ -77,10 +77,10 @@ def test_sop_template(speos: Speos):
 
     with pytest.raises(grpc.RpcError) as exc_info:
         sop_t_db.create(
-            message=SOPTemplate(
+            message=ProtoSOPTemplate(
                 name="mirror_0",
                 description="Mirror sop template",
-                mirror=SOPTemplate.Mirror(reflectance=150.0),
+                mirror=ProtoSOPTemplate.Mirror(reflectance=150.0),
             )
         )
     error_details = json.loads(exc_info.value.details())

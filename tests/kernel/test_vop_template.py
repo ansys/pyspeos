@@ -31,7 +31,7 @@ from conftest import test_path
 import grpc
 import pytest
 
-from ansys.speos.core.kernel.vop_template import VOPTemplate
+from ansys.speos.core.kernel.vop_template import ProtoVOPTemplate
 from ansys.speos.core.speos import Speos
 
 
@@ -43,46 +43,50 @@ def test_vop_template(speos: Speos):
 
     # Opaque
     vop_t_opaque = vop_t_db.create(
-        VOPTemplate(name="opaque_0", description="Opaque vop template", opaque=VOPTemplate.Opaque())
+        ProtoVOPTemplate(
+            name="opaque_0", description="Opaque vop template", opaque=ProtoVOPTemplate.Opaque()
+        )
     )
     assert vop_t_opaque.key != ""
 
     # Optic without constringence
     vop_t_optic0 = vop_t_db.create(
-        VOPTemplate(
+        ProtoVOPTemplate(
             name="optic_0",
             description="Optic vop template without constringence",
-            optic=VOPTemplate.Optic(index=1.5, absorption=0.0),
+            optic=ProtoVOPTemplate.Optic(index=1.5, absorption=0.0),
         )
     )
     assert vop_t_optic0.key != ""
 
     # Optic with constringence
     vop_t_optic1 = vop_t_db.create(
-        VOPTemplate(
+        ProtoVOPTemplate(
             name="optic_1",
             description="Optic vop template with constringence",
-            optic=VOPTemplate.Optic(index=1.5, absorption=0.0, constringence=60.0),
+            optic=ProtoVOPTemplate.Optic(index=1.5, absorption=0.0, constringence=60.0),
         )
     )
     assert vop_t_optic1.key != ""
 
     # Library
     vop_t_lib = vop_t_db.create(
-        VOPTemplate(
+        ProtoVOPTemplate(
             name="library_0",
             description="Library vop template",
-            library=VOPTemplate.Library(material_file_uri=os.path.join(test_path, "AIR.material")),
+            library=ProtoVOPTemplate.Library(
+                material_file_uri=os.path.join(test_path, "AIR.material")
+            ),
         )
     )
     assert vop_t_lib.key != ""
 
     # NonHomogeneous
     vop_t_non_hom = vop_t_db.create(
-        VOPTemplate(
+        ProtoVOPTemplate(
             name="non_homogeneous_0",
             description="Non Homogeneous vop template",
-            non_homogeneous=VOPTemplate.NonHomogeneous(
+            non_homogeneous=ProtoVOPTemplate.NonHomogeneous(
                 gradedmaterial_file_uri=os.path.join(
                     test_path, "Index_1.5_Gradient_0.499_Abs_0.gradedmaterial"
                 )
@@ -94,10 +98,10 @@ def test_vop_template(speos: Speos):
     # Example of wrong vop template creation : negative absorption
     with pytest.raises(grpc.RpcError) as exc_info:
         vop_t_db.create(
-            VOPTemplate(
+            ProtoVOPTemplate(
                 name="optic_2",
                 description="Optic vop template with negative absorption",
-                optic=VOPTemplate.Optic(index=1.5, absorption=-50.0),
+                optic=ProtoVOPTemplate.Optic(index=1.5, absorption=-50.0),
             )
         )
     error_details = json.loads(exc_info.value.details())
@@ -106,10 +110,10 @@ def test_vop_template(speos: Speos):
     # constringence < 20
     with pytest.raises(grpc.RpcError) as exc_info:
         vop_t_db.create(
-            VOPTemplate(
+            ProtoVOPTemplate(
                 name="optic_3",
                 description="Optic vop template with constringence < 20",
-                optic=VOPTemplate.Optic(index=1.5, absorption=0.0, constringence=10.0),
+                optic=ProtoVOPTemplate.Optic(index=1.5, absorption=0.0, constringence=10.0),
             )
         )
     error_details = json.loads(exc_info.value.details())

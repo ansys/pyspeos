@@ -28,7 +28,7 @@ import os
 
 from conftest import test_path
 
-from ansys.speos.core.kernel.spectrum import Spectrum
+from ansys.speos.core.kernel.spectrum import ProtoSpectrum
 from ansys.speos.core.speos import Speos
 
 
@@ -39,7 +39,7 @@ def test_client_spectrum_init(speos: Speos):
     spec_db = speos.client.spectrums()  # Create spectrum stub from client channel
 
     # Create SpectrumLink:
-    s_ph_data = Spectrum()
+    s_ph_data = ProtoSpectrum()
     s_ph_data.name = "predefined_halogen_0"
     s_ph_data.description = "Predefined spectrum"
     s_ph_data.predefined.halogen.SetInParent()
@@ -49,10 +49,10 @@ def test_client_spectrum_init(speos: Speos):
 
     # Create SpectrumLink
     s_bb_5321 = spec_db.create(
-        message=Spectrum(
+        message=ProtoSpectrum(
             name="blackbody_0",
             description="Blackbody spectrum",
-            blackbody=Spectrum.BlackBody(temperature=5321.0),
+            blackbody=ProtoSpectrum.BlackBody(temperature=5321.0),
         )
     )  # the spectrum created is stored in DB
     # Get data
@@ -70,10 +70,10 @@ def test_client_spectrum_init(speos: Speos):
 
     # Create SpectrumLink
     s_m_659 = spec_db.create(
-        Spectrum(
+        ProtoSpectrum(
             name="monochr_0",
             description="Monochromatic spectrum",
-            monochromatic=Spectrum.Monochromatic(wavelength=659.0),
+            monochromatic=ProtoSpectrum.Monochromatic(wavelength=659.0),
         )
     )
     # Duplicate = same data but different keys
@@ -95,30 +95,32 @@ def test_spectrum(speos: Speos):
 
     # Monochromatic
     spec_mono = spec_db.create(
-        Spectrum(
+        ProtoSpectrum(
             name="monochr_1",
             description="Monochromatic spectrum",
-            monochromatic=Spectrum.Monochromatic(wavelength=659.0),
+            monochromatic=ProtoSpectrum.Monochromatic(wavelength=659.0),
         )
     )
     assert spec_mono.key != ""
 
     # Blackbody
     spec_blackbody = spec_db.create(
-        message=Spectrum(
+        message=ProtoSpectrum(
             name="blackbody_1",
             description="Blackbody spectrum",
-            blackbody=Spectrum.BlackBody(temperature=5321.0),
+            blackbody=ProtoSpectrum.BlackBody(temperature=5321.0),
         )
     )
     assert spec_blackbody.key != ""
 
     # Sampled
     s_sampled = spec_db.create(
-        message=Spectrum(
+        message=ProtoSpectrum(
             name="sampled_1",
             description="Sampled spectrum",
-            sampled=Spectrum.Sampled(wavelengths=[500.0, 550.0, 600.0], values=[20.5, 100.0, 15.6]),
+            sampled=ProtoSpectrum.Sampled(
+                wavelengths=[500.0, 550.0, 600.0], values=[20.5, 100.0, 15.6]
+            ),
         )
     )
     assert s_sampled.key != ""
@@ -128,20 +130,20 @@ def test_spectrum(speos: Speos):
         test_path, os.path.join("CameraInputFiles", "CameraSensitivityBlue.spectrum")
     )
     s_lib = spec_db.create(
-        message=Spectrum(
+        message=ProtoSpectrum(
             name="library_1",
             description="Library spectrum",
-            library=Spectrum.Library(file_uri=spectrum_path),
+            library=ProtoSpectrum.Library(file_uri=spectrum_path),
         )
     )
     assert s_lib.key != ""
 
     # Predefined
     s_predefined_incandescent = spec_db.create(
-        Spectrum(
+        ProtoSpectrum(
             name="predefined_1",
             description="Predefined incandescent spectrum",
-            predefined=Spectrum.Predefined(incandescent=Spectrum.Incandescent()),
+            predefined=ProtoSpectrum.Predefined(incandescent=ProtoSpectrum.Incandescent()),
         )
     )
     assert s_predefined_incandescent.key != ""
