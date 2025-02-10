@@ -19,6 +19,9 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+
+"""This module defines processes used in workflows."""
+
 import os
 
 from ansys.speos.core.workflow.combine_speos import SpeosFileInstance, combine_speos, insert_speos

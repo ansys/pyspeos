@@ -20,28 +20,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""This init file allows python to treat directories containing it as modules.
+"""PySpeos is a Python library that gathers functionalities and tools based on Speos software remote API."""
 
-Import any methods you want exposed at your library level here.
+try:
+    import importlib.metadata as importlib_metadata
+except ModuleNotFoundError:  # pragma: no cover
+    import importlib_metadata
 
-For example, if you want to avoid this behavior:
+# Version
+__version__ = importlib_metadata.version("ansys-speos-core")
 
-.. code::
-
-   >>> from ansys.product.library.module import add
-
-Then add the import within this module to enable:
-
-.. code::
-
-   >>> from ansys.product import library
-   >>> library.add(1, 2)
-
-.. note::
-   It's best to import the version here as well so it can be
-   referenced at the library level.
-
-"""
 
 from ansys.speos.core.body import Body
 from ansys.speos.core.face import Face
