@@ -5,13 +5,6 @@ on:
   schedule:  # UTC at 0300
     - cron:  '0 3 * * *'
 
-env:
-  MAIN_PYTHON_VERSION: '3.10'
-  DOCUMENTATION_CNAME: 'speos.docs.pyansys.com'
-  PACKAGE_NAMESPACE: 'ansys.speos.core'
-  PACKAGE_NAME: 'ansys-speos-core'
-  PIP_EXTRA_INDEX_URL: 'https://${{ secrets.PYANSYS_PYPI_PRIVATE_PAT }}@pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/simple/'
-  BUILD_CHEATSHEET: 'true'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
