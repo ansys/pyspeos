@@ -210,11 +210,11 @@ def test_delete_optical_property(speos: Speos):
 
 def test_get_optical_property(speos: Speos, capsys):
     """Test get of an optical property."""
-    p = script.Project(speos=speos)
+    p = Project(speos=speos)
     op1 = (
         p.create_optical_property(name="Material.1")
         .set_volume_opaque()
-        .set_geometries(geometries=[script.GeoRef.from_native_link("TheBodyA")])
+        .set_geometries(geometries=[GeoRef.from_native_link("TheBodyA")])
         .commit()
     )
 
@@ -238,7 +238,7 @@ def test_get_optical_property(speos: Speos, capsys):
         p.create_optical_property(name="OpticalProperty2")
         .set_volume_optic(index=1.7, absorption=0.01, constringence=55)
         .set_surface_opticalpolished()
-        .set_geometries(geometries=[script.GeoRef.from_native_link("TheBodyB")])
+        .set_geometries(geometries=[GeoRef.from_native_link("TheBodyB")])
         .commit()
     )
 

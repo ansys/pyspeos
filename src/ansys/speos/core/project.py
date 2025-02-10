@@ -36,8 +36,8 @@ import ansys.speos.core.body as body
 import ansys.speos.core.face as face
 from ansys.speos.core.kernel.body import BodyLink
 from ansys.speos.core.kernel.face import FaceLink
-from ansys.speos.core.kernel.scene import ProtoScene
 from ansys.speos.core.kernel.part import ProtoPart
+from ansys.speos.core.kernel.scene import ProtoScene
 import ansys.speos.core.opt_prop as opt_prop
 import ansys.speos.core.part as part
 import ansys.speos.core.proto_message_utils as proto_message_utils

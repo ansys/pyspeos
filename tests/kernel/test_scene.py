@@ -34,7 +34,7 @@ import numpy as np
 from ansys.api.speos.sensor.v1 import common_pb2, irradiance_sensor_pb2
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
 from ansys.speos.core.kernel.body import ProtoBody
-from ansys.speos.core.kernel.face import ProtoFace, FaceStub
+from ansys.speos.core.kernel.face import FaceStub, ProtoFace
 from ansys.speos.core.kernel.intensity_template import ProtoIntensityTemplate
 from ansys.speos.core.kernel.part import ProtoPart
 from ansys.speos.core.kernel.scene import ProtoScene, SceneLink
@@ -280,7 +280,9 @@ def create_basic_scene(speos: Speos) -> SceneLink:
                     source_guid=src_t_surface_bb.key,
                     surface_properties=ProtoScene.SourceInstance.SurfaceProperties(
                         exitance_constant_properties=ProtoScene.SourceInstance.SurfaceProperties.ExitanceConstantProperties(
-                            geo_paths=[ProtoScene.GeoPath(geo_path="BodySource:1", reverse_normal=False)]
+                            geo_paths=[
+                                ProtoScene.GeoPath(geo_path="BodySource:1", reverse_normal=False)
+                            ]
                         )
                     ),
                 ),
@@ -507,7 +509,9 @@ def test_scene_actions_load_modify(speos: Speos):
             sensor_guid=scene_dm.sensors[0].sensor_guid,
             irradiance_properties=ProtoScene.SensorInstance.IrradianceProperties(
                 axis_system=[-42, 2, 5, 0, 1, 0, 0, 0, -1, -1, 0, 0],
-                layer_type_incidence_angle=ProtoScene.SensorInstance.LayerTypeIncidenceAngle(sampling=9),
+                layer_type_incidence_angle=ProtoScene.SensorInstance.LayerTypeIncidenceAngle(
+                    sampling=9
+                ),
             ),
         )
     )
@@ -526,7 +530,9 @@ def test_scene_actions_get_source_ray_paths(speos: Speos):
     main_part = speos.client.parts().create(message=ProtoPart(name="MainPart", body_guids=[]))
 
     blackbody_2856 = speos.client.spectrums().create(
-        message=ProtoSpectrum(name="Blackbody_2856", blackbody=ProtoSpectrum.BlackBody(temperature=2856))
+        message=ProtoSpectrum(
+            name="Blackbody_2856", blackbody=ProtoSpectrum.BlackBody(temperature=2856)
+        )
     )
     luminaire_t = speos.client.source_templates().create(
         message=ProtoSourceTemplate(
