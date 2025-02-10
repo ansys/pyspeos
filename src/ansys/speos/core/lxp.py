@@ -228,7 +228,7 @@ class LightPathFinder:
 
     Parameters
     ----------
-    speos : Speos
+    speos : ansys.speos.core.speos.Speos
         Speos Session (connected to Speos gRPC server)
     path : str
         path to lpf file to be opened

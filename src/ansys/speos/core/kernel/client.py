@@ -105,7 +105,7 @@ class SpeosClient:
     remote_instance : ansys.platform.instancemanagement.Instance
         The corresponding remote instance when the Speos Service
         is launched through PyPIM. This instance will be deleted when calling
-        :func:`SpeosClient.close <ansys.speos.core.client.SpeosClient.close >`.
+        :func:`SpeosClient.close <ansys.speos.core.kernel.client.SpeosClient.close >`.
     timeout : Real, optional
         Timeout in seconds to achieve the connection.
         By default, 60 seconds.

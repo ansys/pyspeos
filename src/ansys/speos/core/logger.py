@@ -505,7 +505,7 @@ class Logger:
         ----------
         name : str
             Name for the new instance logger.
-        client_instance : SpeosClient
+        client_instance : ansys.speos.core.kernel.client.SpeosClient
             speos SpeosClient object, which should contain the ``get_name`` method.
         level : int, optional
             Level of logging. The default is ``None``.

@@ -721,7 +721,7 @@ class Surface(BaseSource):
 
     Parameters
     ----------
-    speos_client : ansys.speos.core.client.SpeosClient
+    speos_client : ansys.speos.core.kernel.client.SpeosClient
         The Speos instance client.
     name : str
         Name of the source feature.

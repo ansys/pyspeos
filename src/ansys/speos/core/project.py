@@ -714,7 +714,7 @@ class Project:
 
         Parameters
         ----------
-        speos_client : ansys.speos.core.client.SpeosClient
+        speos_client : ansys.speos.core.kernel.client.SpeosClient
             The Speos instance client.
         part_data: ansys.api.speos.part.v1.part_pb2.Part
             Part from scene.
