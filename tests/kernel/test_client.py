@@ -20,28 +20,37 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""PySpeos is a Python library that gathers functionalities and tools based on Speos solver remote API."""
+"""
+Test basic client connection.
+"""
 
-try:
-    import importlib.metadata as importlib_metadata
-except ModuleNotFoundError:  # pragma: no cover
-    import importlib_metadata
+from conftest import config
+from grpc import insecure_channel
+import pytest
 
-# Version
-__version__ = importlib_metadata.version("ansys-speos-core")
+from ansys.speos.core.kernel.client import SpeosClient
 
 
-from ansys.speos.core.body import Body
-from ansys.speos.core.face import Face
-from ansys.speos.core.geo_ref import GeoRef
-from ansys.speos.core.intensity import Intensity
-from ansys.speos.core.logger import LOG, Logger
-from ansys.speos.core.lxp import LightPathFinder, RayPath
-from ansys.speos.core.opt_prop import OptProp
-from ansys.speos.core.part import Part
-from ansys.speos.core.project import Project
-import ansys.speos.core.sensor as sensor
-import ansys.speos.core.simulation as simulation
-import ansys.speos.core.source as source
-from ansys.speos.core.spectrum import Spectrum
-from ansys.speos.core.speos import Speos
+@pytest.fixture(scope="function")
+def client(speos):
+    # this uses DEFAULT_HOST and DEFAULT_PORT which are set by environment
+    # variables in the workflow
+    return SpeosClient(port=str(config.get("SpeosServerPort")))
+
+
+def test_client_init(client: SpeosClient):
+    """Test the instantiation of a client from the default constructor."""
+    assert client.healthy is True
+
+
+def test_client_through_channel():
+    """Test the instantiation of a client from a gRPC channel."""
+    target = "dns:///localhost:" + str(config.get("SpeosServerPort"))
+    channel = insecure_channel(target)
+    client = SpeosClient(channel=channel)
+    client_repr = repr(client)
+    assert "Target" in client_repr
+    assert "Connection" in client_repr
+    assert client.healthy is True
+    assert client.target() == target
+    assert client.channel

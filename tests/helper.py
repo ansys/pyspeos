@@ -36,8 +36,8 @@ import time
 from conftest import config
 
 from ansys.speos.core import LOG  # Global logger
-from ansys.speos.core.job import JobLink, messages as job_messages
-from ansys.speos.core.proto_message_utils import protobuf_message_to_str
+from ansys.speos.core.kernel.job import JobLink, messages as job_messages
+from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 from ansys.speos.core.speos import SpeosClient
 
 
