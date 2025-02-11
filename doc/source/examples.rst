@@ -16,32 +16,32 @@ Examples
     .. nbgallery::
         :caption: Workflow examples
 
-        examples/workflow-open-result
-        examples/workflow-combine-speos
+        examples/workflow/open-result
+        examples/workflow/combine-speos
 
     The series of basic examples below explains how to use different PySpeos core methods.
 
     .. nbgallery::
         :caption: Core examples
 
-        examples/core-project
-        examples/core-opt-prop
-        examples/core-source
-        examples/core-sensor
-        examples/core-part
-        examples/core-simulation
-        examples/core-lpf-preview
-        examples/core-prism-example
+        examples/core/project
+        examples/core/opt-prop
+        examples/core/source
+        examples/core/sensor
+        examples/core/part
+        examples/core/simulation
+        examples/core/lpf-preview
+        examples/core/prism-example
 
 
-    The series of basic examples below explains how to use different kernel methods.
+    The series of basic examples below explains how to use different PySpeos kernel methods.
 
     .. nbgallery::
         :caption: Kernel examples
 
-        examples/kernel-object-link
-        examples/kernel-scene-job
-        examples/kernel-modify-scene
+        examples/kernel/object-link
+        examples/kernel/scene-job
+        examples/kernel/modify-scene
 
     {% else %}
 
