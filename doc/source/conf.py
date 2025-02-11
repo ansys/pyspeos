@@ -125,19 +125,19 @@ if BUILD_EXAMPLES:
         ".py": ["jupytext.reads", {"fmt": ""}],
     }
     nbsphinx_thumbnails = {
-        "examples/script-opt-prop": "_static/thumbnails/property_520x520.png",
-        "examples/script-source": "_static/thumbnails/source_520x520.png",
-        "examples/script-sensor": "_static/thumbnails/sensor_520x520.png",
-        "examples/script-part": "_static/thumbnails/part_520x520.png",
-        "examples/script-simulation": "_static/thumbnails/simulation_520x520.png",
-        "examples/script-project": "_static/thumbnails/how_to_create_a_project.PNG",
-        "examples/script-lpf-preview": "_static/thumbnails/script_lpf_preview.PNG",
-        "examples/script-prism-example": "_static/thumbnails/prism_example_using_script_layer.PNG",
-        "examples/core-object-link": "_static/thumbnails/pySpeos_520x520.png",
-        "examples/core-scene-job": "_static/thumbnails/pySpeos_520x520.png",
-        "examples/core-modify-scene": "_static/thumbnails/pySpeos_520x520.png",
-        "examples/workflow-open-result": "_static/thumbnails/how_to_open_result_using_workflow_method.png",
-        "examples/workflow-combine-speos": "_static/thumbnails/moving_car_workflow_example_using_script_layer.PNG",
+        "examples/core/opt-prop": "_static/thumbnails/property_520x520.png",
+        "examples/core/source": "_static/thumbnails/source_520x520.png",
+        "examples/core/sensor": "_static/thumbnails/sensor_520x520.png",
+        "examples/core/part": "_static/thumbnails/part_520x520.png",
+        "examples/core/simulation": "_static/thumbnails/simulation_520x520.png",
+        "examples/core/project": "_static/thumbnails/how_to_create_a_project.PNG",
+        "examples/core/lpf-preview": "_static/thumbnails/script_lpf_preview.PNG",
+        "examples/core/prism-example": "_static/thumbnails/prism_example_using_script_layer.PNG",
+        "examples/kernel/object-link": "_static/thumbnails/pySpeos_520x520.png",
+        "examples/kernel/scene-job": "_static/thumbnails/pySpeos_520x520.png",
+        "examples/kernel/modify-scene": "_static/thumbnails/pySpeos_520x520.png",
+        "examples/workflow/open-result": "_static/thumbnails/how_to_open_result_using_workflow_method.png",
+        "examples/workflow/combine-speos": "_static/thumbnails/moving_car_workflow_example_using_script_layer.PNG",
     }
     nbsphinx_prompt_width = ""
     nbsphinx_prolog = """
@@ -196,13 +196,15 @@ def copy_examples_to_output_dir(app: sphinx.application.Sphinx, exception: Excep
     # https://github.com/ansys-internal/pystk/issues/415
     OUTPUT_EXAMPLES = pathlib.Path(app.outdir) / "examples"
     OUTPUT_IMAGES = OUTPUT_EXAMPLES / "img"
-    for directory in [OUTPUT_EXAMPLES, OUTPUT_IMAGES]:
+    OUTPUT_CORE = OUTPUT_EXAMPLES / "core"
+    OUTPUT_KERNEL = OUTPUT_EXAMPLES / "kernel"
+    OUTPUT_WORKFLOW = OUTPUT_EXAMPLES / "workflow"
+    for directory in [OUTPUT_EXAMPLES, OUTPUT_IMAGES, OUTPUT_CORE, OUTPUT_KERNEL, OUTPUT_WORKFLOW]:
         if not directory.exists():
             directory.mkdir(parents=True, exist_ok=True)
 
     SOURCE_EXAMPLES = pathlib.Path(app.srcdir) / "examples"
     EXAMPLES_DIRECTORY = SOURCE_EXAMPLES.parent.parent.parent / "examples"
-    IMAGES_DIRECTORY = EXAMPLES_DIRECTORY / "img"
 
     # Copyt the examples
     examples = list(EXAMPLES_DIRECTORY.glob("*.py"))
@@ -212,9 +214,9 @@ def copy_examples_to_output_dir(app: sphinx.application.Sphinx, exception: Excep
         "green",
         len(examples),
         verbosity=1,
-        stringify_func=(lambda x: x.name),
+        stringify_func=(lambda file: file.name),
     ):
-        destination_file = OUTPUT_EXAMPLES / file.name
+        destination_file = OUTPUT_EXAMPLES / file.parent.name / file.name
         destination_file.write_text(file.read_text(encoding="utf-8"), encoding="utf-8")
 
 
@@ -230,15 +232,23 @@ def copy_examples_files_to_source_dir(app: sphinx.application.Sphinx):
     """
     SOURCE_EXAMPLES = pathlib.Path(app.srcdir) / "examples"
     SOURCE_IMAGES = SOURCE_EXAMPLES / "img"
-    for directory in [SOURCE_EXAMPLES, SOURCE_IMAGES]:
+    CORE_EXAMPLES = SOURCE_EXAMPLES / "core"
+    KERNEL_EXAMPLES = SOURCE_EXAMPLES / "kernel"
+    WORKFLOW_EXAMPLES = SOURCE_EXAMPLES / "workflow"
+    for directory in [
+        SOURCE_EXAMPLES,
+        SOURCE_IMAGES,
+        CORE_EXAMPLES,
+        KERNEL_EXAMPLES,
+        WORKFLOW_EXAMPLES,
+    ]:
         if not directory.exists():
             directory.mkdir(parents=True, exist_ok=True)
 
     EXAMPLES_DIRECTORY = SOURCE_EXAMPLES.parent.parent.parent / "examples"
-    IMAGES_DIRECTORY = EXAMPLES_DIRECTORY / "img"
 
     # Copy the the examples
-    examples = list(EXAMPLES_DIRECTORY.glob("*.py"))
+    examples = list(EXAMPLES_DIRECTORY.glob("**/*.py"))
     for file in status_iterator(
         examples,
         "Copying example to doc/source/examples/",
@@ -247,7 +257,7 @@ def copy_examples_files_to_source_dir(app: sphinx.application.Sphinx):
         verbosity=1,
         stringify_func=(lambda file: file.name),
     ):
-        destination_file = SOURCE_EXAMPLES / file.name
+        destination_file = SOURCE_EXAMPLES / file.parent.name / file.name
         destination_file.write_text(file.read_text(encoding="utf-8"), encoding="utf-8")
 
 

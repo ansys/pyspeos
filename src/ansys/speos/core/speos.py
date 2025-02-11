@@ -28,7 +28,7 @@ from typing import TYPE_CHECKING, Optional, Union
 
 from grpc import Channel
 
-from ansys.speos.core.client import SpeosClient
+from ansys.speos.core.kernel.client import SpeosClient
 
 DEFAULT_HOST = "localhost"
 DEFAULT_PORT = "50098"
@@ -56,7 +56,7 @@ class Speos:
     remote_instance : ansys.platform.instancemanagement.Instance
         The corresponding remote instance when the Speos Service
         is launched through PyPIM. This instance will be deleted when calling
-        :func:`SpeosClient.close <ansys.speos.core.client.SpeosClient.close >`.
+        :func:`SpeosClient.close <ansys.speos.core.kernel.client.SpeosClient.close >`.
     timeout : Real, optional
         Timeout in seconds to achieve the connection.
         By default, 60 seconds.

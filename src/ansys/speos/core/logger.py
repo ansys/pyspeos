@@ -93,7 +93,7 @@ To log using this logger, call the desired method as a normal logger with:
 
 Instance Logger
 ~~~~~~~~~~~~~~~
-Every time an instance of :class:`speos <ansys.speos.core.speos.speos>`
+Every time an instance of :class:`ansys.speos.core.speos.Speos`
 is created, a logger is created and stored in ``LOG._instances``. This field is a
 dictionary where the key is the name of the created logger.
 These instance loggers inherit the ``pyspeos_global`` output handlers and
@@ -126,7 +126,7 @@ from typing import TYPE_CHECKING, Optional
 import weakref
 
 if TYPE_CHECKING:
-    from ansys.speos.core.client import SpeosClient  # pragma: no cover
+    from ansys.speos.core.kernel.client import SpeosClient  # pragma: no cover
 
 ## Default configuration
 LOG_LEVEL = logging.DEBUG
@@ -505,7 +505,7 @@ class Logger:
         ----------
         name : str
             Name for the new instance logger.
-        client_instance : SpeosClient
+        client_instance : ansys.speos.core.kernel.client.SpeosClient
             speos SpeosClient object, which should contain the ``get_name`` method.
         level : int, optional
             Level of logging. The default is ``None``.
