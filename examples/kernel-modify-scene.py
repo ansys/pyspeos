@@ -113,7 +113,6 @@ new_distortion_file = os.path.join(
 
 # Retrieve SensorTemplateLink corresponding to camera_i_0.sensor_guid
 camera_t_0 = speos.client.get_item(camera_i_0.sensor_guid)
-assert isinstance(camera_t_0, SensorTemplateLink)
 
 # get() = retrieve datamodel corresponding to camera_t_0 from database
 camera_t_0_data = camera_t_0.get()
