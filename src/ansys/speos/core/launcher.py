@@ -21,10 +21,14 @@
 # SOFTWARE.
 
 import os
+import subprocess
+
+from path import Path
 
 from ansys.speos.core import LOG as logger
-from ansys.speos.core.speos import Speos
+from ansys.speos.core.speos import DEFAULT_PORT, Speos
 
+LATEST_VERSION = "251"
 MAX_MESSAGE_LENGTH = int(os.environ.get("SPEOS_MAX_MESSAGE_LENGTH", 256 * 1024**2))
 
 try:
@@ -89,3 +93,69 @@ def launch_remote_speos(
     instance.wait_for_ready()
     channel = instance.build_grpc_channel()
     return Speos(channel=channel, remote_instance=instance)
+
+
+def launch_local_speos_rpc_server(
+    version: str = None,
+    port: str = DEFAULT_PORT,
+    message_size: int = MAX_MESSAGE_LENGTH,
+    logfile_loc: str = None,
+    log_level: int = 20,
+) -> Speos:
+    """
+    Launch speos locally
+
+    Parameters
+    ----------
+    version
+    port
+    message_size
+    logfile_loc
+    log_level
+
+    Returns
+    -------
+
+    """
+    if not version:
+        version = LATEST_VERSION
+    ansys_loc = os.environ.get("AWP_ROOT{}".format(version))
+    if not ansys_loc:
+        raise FileNotFoundError("Ansys version {} installation is not found".format(version))
+
+    if os.name == "nt":
+        speos_exec = os.path.join(ansys_loc, "Optical Products", "Speos_RPC", "SpeosRPC_Server.exe")
+    else:
+        speos_exec = os.path.join(ansys_loc, "OpticalProducts", "Speos_RPC", "SpeosRPC_Server.x")
+
+    if not logfile_loc:
+        logfile_loc = os.path.join(os.environ.get("temp"), ".ansys", "speos_rpc.log")
+        if not os.path.exists(os.path.dirname(logfile_loc)):
+            Path.mkdir(os.path.dirname(logfile_loc))
+    command = [
+        speos_exec,
+        "-p{}".format(port),
+        "-m{}".format(message_size),
+        "-l{}".format(logfile_loc),
+    ]
+    stdout_file = os.path.join(os.path.dirname(logfile_loc), "speos_out.txt")
+    stderr_file = os.path.join(os.path.dirname(logfile_loc), "speos_err.txt")
+
+    with open(stdout_file, "wb") as out, open(stderr_file, "wb") as err:
+        subprocess.Popen(command, stdout=out, stderr=err)
+
+    return Speos(host="localhost", port=port, logging_level=log_level, logging_file=logfile_loc)
+
+
+def close_local_speos_rpc_server(version: str = None, port: str = DEFAULT_PORT):
+    if not version:
+        version = LATEST_VERSION
+    ansys_loc = os.environ.get("AWP_ROOT{}".format(version))
+    if os.name == "nt":
+        speos_exec = os.path.join(ansys_loc, "Optical Products", "Speos_RPC", "SpeosRPC_Server.exe")
+    else:
+        speos_exec = os.path.join(ansys_loc, "OpticalProducts", "Speos_RPC", "SpeosRPC_Server.x")
+    command = [speos_exec, "-s{}".format(port)]
+
+    p = subprocess.Popen(command)
+    p.wait()
