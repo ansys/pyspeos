@@ -126,7 +126,7 @@ def launch_local_speos_rpc_server(
     if os.name == "nt":
         speos_exec = os.path.join(ansys_loc, "Optical Products", "Speos_RPC", "SpeosRPC_Server.exe")
     else:
-        speos_exec = os.path.join(ansys_loc, "OpticalProducts", "Speos_RPC", "SpeosRPC_Server.x")
+        speos_exec = os.path.join(ansys_loc, "OpticalProducts", "SPEOS_RPC", "SpeosRPC_Server.x")
 
     if not logfile_loc:
         if os.environ.get("temp"):
