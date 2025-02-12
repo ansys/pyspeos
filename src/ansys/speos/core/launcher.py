@@ -124,7 +124,7 @@ def launch_local_speos_rpc_server(
         raise FileNotFoundError("Ansys version {} installation is not found".format(version))
 
     if os.name == "nt":
-        speos_exec = os.path.join(ansys_loc, "Optical Products", "Speos_RPC", "SpeosRPC_Server.exe")
+        speos_exec = os.path.join(ansys_loc, "Optical Products", "SPEOS_RPC", "SpeosRPC_Server.exe")
     else:
         speos_exec = os.path.join(ansys_loc, "OpticalProducts", "SPEOS_RPC", "SpeosRPC_Server.x")
 
@@ -155,9 +155,9 @@ def close_local_speos_rpc_server(version: str = None, port: str = DEFAULT_PORT):
         version = LATEST_VERSION
     ansys_loc = os.environ.get("AWP_ROOT{}".format(version))
     if os.name == "nt":
-        speos_exec = os.path.join(ansys_loc, "Optical Products", "Speos_RPC", "SpeosRPC_Server.exe")
+        speos_exec = os.path.join(ansys_loc, "Optical Products", "SPEOS_RPC", "SpeosRPC_Server.exe")
     else:
-        speos_exec = os.path.join(ansys_loc, "OpticalProducts", "Speos_RPC", "SpeosRPC_Server.x")
+        speos_exec = os.path.join(ansys_loc, "OpticalProducts", "SPEOS_RPC", "SpeosRPC_Server.x")
     command = [speos_exec, "-s{}".format(port)]
 
     p = subprocess.Popen(command)
