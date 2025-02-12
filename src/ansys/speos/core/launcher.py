@@ -129,9 +129,12 @@ def launch_local_speos_rpc_server(
         speos_exec = os.path.join(ansys_loc, "OpticalProducts", "Speos_RPC", "SpeosRPC_Server.x")
 
     if not logfile_loc:
-        logfile_loc = os.path.join(os.environ.get("temp"), ".ansys", "speos_rpc.log")
+        if os.environ.get("temp"):
+            logfile_loc = os.path.join(str(Path.cwd()), ".ansys", "speos_rpc.log")
+        else:
+            logfile_loc = os.path.join(os.environ.get("temp"), ".ansys", "speos_rpc.log")
         if not os.path.exists(os.path.dirname(logfile_loc)):
-            Path.mkdir(os.path.dirname(logfile_loc))
+            Path.mkdir(Path(os.path.dirname(logfile_loc)))
     command = [
         speos_exec,
         "-p{}".format(port),
