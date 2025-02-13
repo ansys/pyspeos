@@ -28,11 +28,7 @@ from typing import TYPE_CHECKING, Optional, Union
 
 from grpc import Channel
 
-from ansys.speos.core.kernel.client import SpeosClient
-
-DEFAULT_HOST = "localhost"
-DEFAULT_PORT = "50098"
-
+from ansys.speos.core.kernel.client import DEFAULT_HOST, DEFAULT_PORT, LATEST_VERSION, SpeosClient
 
 if TYPE_CHECKING:  # pragma: no cover
     from ansys.platform.instancemanagement import Instance
@@ -71,6 +67,7 @@ class Speos:
         self,
         host: str = DEFAULT_HOST,
         port: Union[str, int] = DEFAULT_PORT,
+        version: str = LATEST_VERSION,
         channel: Optional[Channel] = None,
         remote_instance: Optional["Instance"] = None,
         timeout: Optional[int] = 60,
@@ -80,6 +77,7 @@ class Speos:
         self._client = SpeosClient(
             host=host,
             port=port,
+            version=version,
             channel=channel,
             remote_instance=remote_instance,
             timeout=timeout,
@@ -91,3 +89,23 @@ class Speos:
     def client(self) -> SpeosClient:
         """The ``Speos`` instance client."""
         return self._client
+
+    def close(self, try_kill_server=False) -> bool:
+        """Close the channel. and deletes all Speos objects from memory
+
+        Parameters
+        ----------
+        try_kill_server : bool
+            Decides if the Speos RPC server instance should be closed only works if it is a local instance
+
+        Returns
+        -------
+        bool
+            Information if the server instance was terminated.
+
+        Notes
+        -----
+        If an instance of the Speos Service was started using
+        PyPIM, this instance will be deleted.
+        """
+        return self.client.close(try_kill_instance=try_kill_server)

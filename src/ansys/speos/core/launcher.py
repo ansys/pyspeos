@@ -26,9 +26,10 @@ import subprocess
 from path import Path
 
 from ansys.speos.core import LOG as logger
-from ansys.speos.core.speos import DEFAULT_PORT, Speos
+from ansys.speos.core.kernel.client import DEFAULT_PORT, LATEST_VERSION
+from ansys.speos.core.speos import Speos
+from ansys.tools.path import get_available_ansys_installations
 
-LATEST_VERSION = "251"
 MAX_MESSAGE_LENGTH = int(os.environ.get("SPEOS_MAX_MESSAGE_LENGTH", 256 * 1024**2))
 
 try:
@@ -119,15 +120,24 @@ def launch_local_speos_rpc_server(
     """
     if not version:
         version = LATEST_VERSION
-    ansys_loc = os.environ.get("AWP_ROOT{}".format(version))
+    versions = get_available_ansys_installations()
+    ansys_loc = versions.get(int(version))
     if not ansys_loc:
-        raise FileNotFoundError("Ansys version {} installation is not found".format(version))
+        ansys_loc = os.environ.get("AWP_ROOT{}".format(version))
+    if not ansys_loc:
+        msg = (
+            "Ansys installation directory is not found."
+            " Please define AWP_ROOT{} environment variable"
+        ).format(version)
+        FileNotFoundError(msg)
 
     if os.name == "nt":
         speos_exec = os.path.join(ansys_loc, "Optical Products", "SPEOS_RPC", "SpeosRPC_Server.exe")
     else:
         speos_exec = os.path.join(ansys_loc, "OpticalProducts", "SPEOS_RPC", "SpeosRPC_Server.x")
-
+    if not os.path.isfile(speos_exec):
+        msg = "Ansys Speos RPC server version {} is not installed.".format(version)
+        raise FileNotFoundError(msg)
     if not logfile_loc:
         if os.environ.get("temp"):
             logfile_loc = os.path.join(os.environ.get("temp"), ".ansys", "speos_rpc.log")
@@ -148,17 +158,3 @@ def launch_local_speos_rpc_server(
         subprocess.Popen(command, stdout=out, stderr=err)
 
     return Speos(host="localhost", port=port, logging_level=log_level, logging_file=logfile_loc)
-
-
-def close_local_speos_rpc_server(version: str = None, port: str = DEFAULT_PORT):
-    if not version:
-        version = LATEST_VERSION
-    ansys_loc = os.environ.get("AWP_ROOT{}".format(version))
-    if os.name == "nt":
-        speos_exec = os.path.join(ansys_loc, "Optical Products", "SPEOS_RPC", "SpeosRPC_Server.exe")
-    else:
-        speos_exec = os.path.join(ansys_loc, "OpticalProducts", "SPEOS_RPC", "SpeosRPC_Server.x")
-    command = [speos_exec, "-s{}".format(port)]
-
-    p = subprocess.Popen(command)
-    p.wait()

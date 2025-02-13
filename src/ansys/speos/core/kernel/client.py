@@ -23,7 +23,9 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
 
 import logging
+import os
 from pathlib import Path
+import subprocess
 import time
 from typing import TYPE_CHECKING, List, Optional, Union
 
@@ -47,10 +49,11 @@ from ansys.speos.core.kernel.source_template import SourceTemplateLink, SourceTe
 from ansys.speos.core.kernel.spectrum import SpectrumLink, SpectrumStub
 from ansys.speos.core.kernel.vop_template import VOPTemplateLink, VOPTemplateStub
 from ansys.speos.core.logger import LOG as logger, PySpeosCustomAdapter
+from ansys.tools.path import get_available_ansys_installations
 
 DEFAULT_HOST = "localhost"
 DEFAULT_PORT = "50098"
-
+LATEST_VERSION = "251"
 
 if TYPE_CHECKING:  # pragma: no cover
     from ansys.platform.instancemanagement import Instance
@@ -120,6 +123,7 @@ class SpeosClient:
         self,
         host: Optional[str] = DEFAULT_HOST,
         port: Union[str, int] = DEFAULT_PORT,
+        version: str = LATEST_VERSION,
         channel: Optional[grpc.Channel] = None,
         remote_instance: Optional["Instance"] = None,
         timeout: Optional[int] = 60,
@@ -129,11 +133,17 @@ class SpeosClient:
         """Initialize the ``SpeosClient`` object."""
         self._closed = False
         self._remote_instance = remote_instance
+        if not version:
+            self._version = LATEST_VERSION
+        else:
+            self._version = version
         if channel:
             # Used for PyPIM when directly providing a channel
             self._channel = channel
             self._target = str(channel)
         else:
+            self._host = host
+            self._port = port
             self._target = f"{host}:{port}"
             self._channel = grpc.insecure_channel(self._target)
         # do not finish initialization until channel is healthy
@@ -464,8 +474,18 @@ List[ansys.speos.core.kernel.face.FaceLink]]
             lines.append("  Connection: Unhealthy")  # pragma: no cover
         return "\n".join(lines)
 
-    def close(self):
+    def close(self, try_kill_instance=False):
         """Close the channel.
+
+        Parameters
+        ----------
+        try_kill_instance : bool
+            Decides if the Speos RPC server instance should be closed only works if it is a local instance
+
+        Returns
+        -------
+        bool
+            Information if the server instance was terminated.
 
         Notes
         -----
@@ -474,6 +494,11 @@ List[ansys.speos.core.kernel.face.FaceLink]]
         """
         if self._remote_instance:
             self._remote_instance.delete()
+        elif self._host in ["localhost", "0.0.0.0", "127.0.0.1"] and try_kill_instance:
+            self.__close_local_speos_rpc_server()
+
+        ret_val = not self.healthy
+
         self._closed = True
         self._channel.close()
         self._faceDB = None
@@ -488,3 +513,30 @@ List[ansys.speos.core.kernel.face.FaceLink]]
         self._simulationTemplateDB = None
         self._sceneDB = None
         self._jobDB = None
+        return ret_val
+
+    def __close_local_speos_rpc_server(self):
+        versions = get_available_ansys_installations()
+        ansys_loc = versions.get(int(self._version))
+        if not ansys_loc:
+            ansys_loc = os.environ.get("AWP_ROOT{}".format(self._version))
+        if not ansys_loc:
+            msg = (
+                "Ansys installation directory is not found."
+                " Please define AWP_ROOT{} environment variable"
+            ).format(self._version)
+            FileNotFoundError(msg)
+
+        if os.name == "nt":
+            speos_exec = os.path.join(
+                ansys_loc, "Optical Products", "SPEOS_RPC", "SpeosRPC_Server.exe"
+            )
+        else:
+            speos_exec = os.path.join(
+                ansys_loc, "OpticalProducts", "SPEOS_RPC", "SpeosRPC_Server.x"
+            )
+
+        command = [speos_exec, "-s{}".format(self._port)]
+
+        p = subprocess.Popen(command)
+        p.wait()
