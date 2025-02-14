@@ -32,6 +32,9 @@ Docker for Speos service
 This method allows you to start the Speos service based on predefined environment variables and properties.
 Afterwards, see the next section to understand how to connect to this service instance from PySpeos.
 
+The following snippet shows how to run Speos service 2025.1.
+To use another product version, please modify the image label from `251` to the corresponding product version.
+
 .. tab-set::
 
     .. tab-item:: Linux/Mac
@@ -39,21 +42,21 @@ Afterwards, see the next section to understand how to connect to this service in
         .. code-block:: bash
 
             export LICENSE_SERVER="1055@XXX.XXX.XXX.XXX"
-            docker run --detach --name speos-rpc -p 50098:50098 -e ANSYSLMD_LICENSE_FILE=$LICENSE_SERVER --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:2025.1.1.26391
+            docker run --detach --name speos-rpc -p 50098:50098 -e ANSYSLMD_LICENSE_FILE=$LICENSE_SERVER --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:251
 
     .. tab-item:: Powershell
 
         .. code-block:: pwsh
 
             $env:LICENSE_SERVER="1055@XXX.XXX.XXX.XXX"
-            docker run --detach --name speos-rpc -p 50098:50098 -e ANSYSLMD_LICENSE_FILE=$env:LICENSE_SERVER --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:2025.1.1.26391
+            docker run --detach --name speos-rpc -p 50098:50098 -e ANSYSLMD_LICENSE_FILE=$env:LICENSE_SERVER --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:251
 
     .. tab-item:: Windows CMD
 
         .. code-block:: bash
 
             set LICENSE_SERVER="1055@XXX.XXX.XXX.XXX"
-            docker run --detach --name speos-rpc -p 50098:50098 -e ANSYSLMD_LICENSE_FILE=%LICENSE_SERVER% --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:2025.1.1.26391
+            docker run --detach --name speos-rpc -p 50098:50098 -e ANSYSLMD_LICENSE_FILE=%LICENSE_SERVER% --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:251
 
 Connect to the Speos service
 ----------------------------

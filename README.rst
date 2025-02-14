@@ -112,7 +112,7 @@ Save the token to a file with this command:
       echo XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX > GH_TOKEN.txt
 
 Since the Docker image contains no license server, you will need to enter your license server IP address in the `LICENSE_SERVER` environment variable.
-Then, you can launch SpeosRPC server with:
+Then, to launch SpeosRPC server with product version 2025.1, you can run:
 
 .. code:: bash
 
@@ -120,8 +120,12 @@ Then, you can launch SpeosRPC server with:
    export LICENSE_SERVER=1055@XXX.XXX.XXX.XXX
 
    cat GH_TOKEN.txt | docker login ghcr.io -u "$GH_USERNAME" --password-stdin
-   docker pull ghcr.io/ansys/pyspeos-rpc:2025.1.1.26391
-   docker run --detach --name speos-rpc -p 50098:50098 -e ANSYSLMD_LICENSE_FILE=$LICENSE_SERVER --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:2025.1.1.26391
+   docker pull ghcr.io/ansys/pyspeos-rpc:251
+   docker run --detach --name speos-rpc -p 50098:50098 -e ANSYSLMD_LICENSE_FILE=$LICENSE_SERVER --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:251
+
+.. note::
+
+   To use the latest image in development, you can use `ghcr.io/ansys/speos-rpc:dev`.
 
 On the other hand, the SpeosRPC server can be started locally.
 
