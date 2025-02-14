@@ -7,7 +7,7 @@ If a remote server is running Ansys Release 2025 R1 or later and is also running
 Instance Manager), you can use PIM to start a SpeosRPC Server Session that PySpeos
 can connect to.
 
-An example of usage of the remote service can be accessed via AnsysLAB.
+A usage example of the remote service can be accessed via AnsysLAB.
 
 .. warning::
 
@@ -29,7 +29,7 @@ To launch a remote Speos service:
     speos = launcher.launch_speos("251")
 
 The preceding commands launch a remote Speos service (version 2025 R1).
-You receive a ``Speos`` object back that you then use as a Speos session.
+You receive a ``Speos`` object in return that you then use as a Speos session.
 
 
 End the session
@@ -41,7 +41,7 @@ The session can be ended via the object ``SpeosClient`` like this:
 
     speos.client.close()
 
-This closes the channel to the Speos service and also shut down the remote Speos service.
+This closes the channel to the Speos service and also shuts down the remote Speos service.
 
 .. button-ref:: ../index
     :ref-type: doc

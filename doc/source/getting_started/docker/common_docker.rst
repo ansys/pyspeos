@@ -6,10 +6,10 @@ Manually launch the Speos service.
 Environment variables
 ^^^^^^^^^^^^^^^^^^^^^
 
-The Speos service requires this mandatory environment variable for its use:
+The Speos service requires this mandatory environment variable to function properly:
 
-* ``ANSYSLMD_LICENSE_FILE``: License server (port and IP address or DNS) that the Speos service is to
-  connect to. For example, ``1055@127.0.0.1``.
+* ``ANSYSLMD_LICENSE_FILE``: License server (port and IP address or DNS) the Speos service connects to.
+  For example, ``1055@127.0.0.1``.
 
 You can also specify other optional environment variables:
 
@@ -18,9 +18,9 @@ You can also specify other optional environment variables:
 
 Here are some terms to keep in mind:
 
-* **host**: Machine that hosts the Speos service. It is typically on ``localhost``, but if
-  you are deploying the service on a remote machine, you must pass in this host machine's
-  IP address when connecting. By default, PySpeos assumes it is on ``localhost``.
+* **host**: Machine that hosts the Speos service. It is typically on ``localhost``.
+  But if you are deploying the service on a remote machine, then the machine's IP address is expected.
+  By default, PySpeos assumes it is on ``localhost``.
 
 * **port**: Port that exposes the Speos service on the host machine. Its
   value is assumed to be ``50098``, but users can deploy the service on preferred ports.
