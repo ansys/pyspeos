@@ -50,7 +50,21 @@ The schema shows different ways to use Speos capabilities:
 * via CADs / Labs / Viewers GUI
 * via SpeosRPC Server APIs
 
-Schema Here
+.. mermaid::
+   :caption: How to use Speos capabilities.
+   :alt: How to use Speos capabilities.
+   :align: center
+
+   flowchart LR
+
+    SpeosSolver["Speos Solver"]
+    SpeosRPCServer["SpeosRPC Server"]
+    StandardUsers["CADs / Labs / Viewers"]
+    StandardUsers --> |uses|SpeosSolver
+    SpeosRPCServer --> |uses|SpeosSolver
+    User --> |calls APIs from|SpeosRPCServer
+    User --> |uses UI|StandardUsers
+
 
 Speos Solver
 ------------

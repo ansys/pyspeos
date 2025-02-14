@@ -63,6 +63,7 @@ extensions = [
     "ansys_sphinx_theme.extension.autoapi",
     "nbsphinx",
     "myst_parser",
+    "sphinxcontrib.mermaid",
 ]
 
 # Intersphinx mapping

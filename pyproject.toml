@@ -55,6 +55,7 @@ doc = [
     "sphinx-autoapi==3.5.0",
     "sphinx_design==0.6.1",
     "sphinx-jinja==2.0.2",
+    "sphinxcontrib-mermaid==1.0.0",
     "myst-parser==4.0.1",
     "nbsphinx==0.9.6",
     "jupytext==1.16.7",
