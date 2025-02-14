@@ -496,8 +496,9 @@ List[ansys.speos.core.kernel.face.FaceLink]]
             self._remote_instance.delete()
         elif self._host in ["localhost", "0.0.0.0", "127.0.0.1"] and try_kill_instance:
             self.__close_local_speos_rpc_server()
-
-        ret_val = not self.healthy
+        if not self._closed:
+            time.sleep(5)  # takes some seconds to close rpc server
+        ret_val = self.healthy
 
         self._closed = True
         self._channel.close()

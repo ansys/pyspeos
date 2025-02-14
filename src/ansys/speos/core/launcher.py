@@ -21,9 +21,8 @@
 # SOFTWARE.
 
 import os
+from pathlib import Path
 import subprocess
-
-from path import Path
 
 from ansys.speos.core import LOG as logger
 from ansys.speos.core.kernel.client import DEFAULT_PORT, LATEST_VERSION
