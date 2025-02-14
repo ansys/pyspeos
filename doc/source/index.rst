@@ -16,6 +16,13 @@ PySpeos documentation |version|
         PySpeos image, and launch and connect to the Speos
         service.
 
+    .. grid-item-card:: User guide :fa:`book-open-reader`
+        :padding: 2 2 2 2
+        :link: user_guide/index
+        :link-type: doc
+
+        Understand key concepts.
+
     .. grid-item-card:: API reference :fa:`book-bookmark`
         :padding: 2 2 2 2
         :link: api/index
@@ -37,5 +44,6 @@ PySpeos documentation |version|
    :maxdepth: 3
 
    getting_started/index
+   user_guide/index
    api/index
    examples
