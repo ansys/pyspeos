@@ -47,7 +47,7 @@ Schema
 
 The schema shows different ways to use Speos capabilities:
 
-* via CADs / Labs / Viewers GUIs
+* via CADs / Labs / Viewers GUI
 * via SpeosRPC Server APIs
 
 Schema Here
