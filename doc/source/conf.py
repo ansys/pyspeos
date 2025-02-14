@@ -17,7 +17,7 @@ LaTeXBuilder.supported_image_types = ["image/png", "image/pdf", "image/svg+xml"]
 os.environ["DOCUMENTATION_BUILDING"] = "true"
 
 # Project information
-project = "ansys-pyspeos"
+project = "ansys-speos-core"
 copyright = f"(c) {datetime.now().year} ANSYS, Inc. All rights reserved"
 author = "Ansys Inc."
 release = version = __version__
