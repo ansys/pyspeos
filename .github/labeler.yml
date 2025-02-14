@@ -1,12 +1,10 @@
 documentation:
 - changed-files:
-  - any-glob-to-any-file: 'docs/source/**/*'
+  - any-glob-to-any-file: 'doc/source/**/*'
 maintenance:
 - changed-files:
   - any-glob-to-any-file: '.github/**/*'
-  - any-glob-to-any-file: '.flake8'
   - any-glob-to-any-file: 'pyproject.toml'
-  - any-glob-to-any-file: 'ignore_words.txt'
 testing:
 - changed-files:
   - any-glob-to-any-file:  'tests/*'
