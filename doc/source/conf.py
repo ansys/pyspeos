@@ -39,6 +39,7 @@ html_theme_options = {
     "check_switcher": False,
     "ansys_sphinx_theme_autoapi": {
         "project": project,
+        "own_page_level": "module",
     },
     "cheatsheet": {
         "file": "cheat_sheet/cheat_sheet_script.qmd",
@@ -63,7 +64,6 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx_design",
     "sphinx_jinja",
-    "sphinx.ext.autodoc",
     "ansys_sphinx_theme.extension.autoapi",
     "nbsphinx",
     "myst_parser",
