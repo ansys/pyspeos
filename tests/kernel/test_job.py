@@ -27,7 +27,7 @@ Test job.
 import time
 
 from helper import clean_all_dbs, run_job_and_check_state
-from test_scene import create_basic_scene
+from tests.kernel.test_scene import create_basic_scene
 
 from ansys.speos.core import LOG  # Global logger
 from ansys.speos.core.kernel.job import ProtoJob, messages as job_messages

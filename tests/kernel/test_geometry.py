@@ -24,7 +24,7 @@
 Test basic geometry database connection.
 """
 
-from test_scene import create_face_rectangle
+from tests.kernel.test_scene import create_face_rectangle
 
 from ansys.speos.core.kernel.body import BodyLink, ProtoBody
 from ansys.speos.core.kernel.face import FaceLink, ProtoFace
