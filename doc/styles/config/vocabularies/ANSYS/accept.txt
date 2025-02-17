@@ -6,4 +6,5 @@ Lumerical
 (?i)pyansys
 (?i)pyspeos
 Speos
+\.speos
 Zemax
