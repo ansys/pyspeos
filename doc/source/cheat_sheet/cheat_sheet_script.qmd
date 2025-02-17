@@ -7,10 +7,10 @@ footer: PySpeos
 footerlinks:
   - urls: 'https://speos.docs.pyansys.com'
     text: Documentation
+  - urls: 'https://speos.docs.pyansys.com/version/dev/overview/index.html'
+    text: Overview
   - urls: 'https://speos.docs.pyansys.com/version/dev/getting_started/index.html'
     text: Getting started
-  - urls: 'https://speos.docs.pyansys.com/version/dev/user_guide/index.html'
-    text: User guide
   - urls: 'https://speos.docs.pyansys.com/version/dev/examples.html'
     text: Examples
   - urls: 'https://speos.docs.pyansys.com/version/dev/api/index.html'

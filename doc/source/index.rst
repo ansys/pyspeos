@@ -6,6 +6,12 @@ PySpeos documentation |version|
 
 .. grid:: 2
 
+    .. grid-item-card:: Overview :fa:`book-open-reader`
+        :padding: 2 2 2 2
+        :link: overview/index
+        :link-type: doc
+
+        Overview of the PyAnsys Speos library.
 
     .. grid-item-card:: Getting started :fa:`person-running`
         :padding: 2 2 2 2
@@ -15,13 +21,6 @@ PySpeos documentation |version|
         Learn how to run the Linux Docker container, install the
         PySpeos image, and launch and connect to the Speos
         service.
-
-    .. grid-item-card:: User guide :fa:`book-open-reader`
-        :padding: 2 2 2 2
-        :link: user_guide/index
-        :link-type: doc
-
-        Understand key concepts.
 
     .. grid-item-card:: API reference :fa:`book-bookmark`
         :padding: 2 2 2 2
@@ -43,7 +42,7 @@ PySpeos documentation |version|
    :hidden:
    :maxdepth: 3
 
+   overview/index
    getting_started/index
-   user_guide/index
    api/index
    examples
