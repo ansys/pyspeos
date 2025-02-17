@@ -27,8 +27,8 @@ Test scene.
 import os
 from typing import List, Mapping, Optional
 
-from conftest import test_path
-from helper import clean_all_dbs
+from tests.conftest import test_path
+from tests.helper import clean_all_dbs
 import numpy as np
 
 from ansys.api.speos.sensor.v1 import common_pb2, irradiance_sensor_pb2

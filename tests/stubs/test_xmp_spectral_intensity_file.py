@@ -33,8 +33,8 @@ With coverage.
 import logging
 import os
 
-from conftest import test_path
-import helper
+from tests.conftest import test_path
+import tests.helper as helper
 
 from ansys.api.speos.intensity_distributions.v1 import (
     base_map_template_pb2,

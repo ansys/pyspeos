@@ -27,7 +27,7 @@ Test basic using sensor.
 import math
 import os
 
-from conftest import test_path
+from tests.conftest import test_path
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2
 from ansys.speos.core import GeoRef, Project, Speos, sensor

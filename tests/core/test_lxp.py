@@ -26,7 +26,7 @@ Test basic using lxp.
 
 import os
 
-from conftest import test_path
+from tests.conftest import test_path
 
 import ansys.speos.core.lxp as lxp
 from ansys.speos.core.speos import Speos

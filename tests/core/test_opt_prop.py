@@ -26,7 +26,7 @@ Test basic using optical properties.
 
 import os
 
-from conftest import test_path
+from tests.conftest import test_path
 
 from ansys.speos.core import GeoRef, Project, Speos
 

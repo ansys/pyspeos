@@ -26,7 +26,7 @@ Test basic using spectrums.
 
 import os
 
-from conftest import test_path
+from tests.conftest import test_path
 
 from ansys.speos.core import Spectrum, Speos
 

@@ -26,7 +26,7 @@ Test basic using intensity.
 
 import os
 
-from conftest import test_path
+from tests.conftest import test_path
 
 from ansys.speos.core import GeoRef, Intensity, Speos
 

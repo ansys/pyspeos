@@ -27,7 +27,7 @@ Test basic sop template database connection.
 import json
 import os
 
-from conftest import test_path
+from tests.conftest import test_path
 import grpc
 import pytest
 

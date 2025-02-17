@@ -33,7 +33,7 @@ import os
 import subprocess
 import time
 
-from conftest import config
+from tests.conftest import config
 
 from ansys.speos.core import LOG  # Global logger
 from ansys.speos.core.kernel.job import JobLink, messages as job_messages

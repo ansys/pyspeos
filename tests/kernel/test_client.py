@@ -24,7 +24,7 @@
 Test basic client connection.
 """
 
-from conftest import config
+from tests.conftest import config
 from grpc import insecure_channel
 import pytest
 

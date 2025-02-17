@@ -26,7 +26,7 @@ Test basic intensity template database connection.
 
 import os
 
-from conftest import test_path
+from tests.conftest import test_path
 
 from ansys.api.speos.common.v1 import data_pb2
 from ansys.speos.core.kernel.intensity_template import ProtoIntensityTemplate

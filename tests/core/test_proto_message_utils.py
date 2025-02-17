@@ -26,7 +26,7 @@ Test basic using proto_message_utils.
 
 import os
 
-from conftest import test_path
+from tests.conftest import test_path
 
 from ansys.speos.core import OptProp, Project, Speos, proto_message_utils, source
 from ansys.speos.core.kernel import scene

@@ -26,7 +26,7 @@ Test basic using project.
 
 import os
 
-from conftest import test_path
+from tests.conftest import test_path
 
 from ansys.speos.core import Body, Face, Part, Project, Speos, sensor, simulation, source
 from ansys.speos.core.opt_prop import OptProp

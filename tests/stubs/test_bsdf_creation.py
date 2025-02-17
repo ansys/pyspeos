@@ -36,8 +36,8 @@ With coverage.
 import math
 import os
 
-from conftest import test_path
-import helper
+from tests.conftest import test_path
+import tests.helper as helper
 
 import ansys.api.speos.bsdf.v1.bsdf_creation_pb2 as bsdf_creation__v1__pb2
 import ansys.api.speos.bsdf.v1.bsdf_creation_pb2_grpc as bsdf_creation__v1__pb2_grpc

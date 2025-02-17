@@ -36,9 +36,9 @@ With coverage.
 import math
 import os
 
-from conftest import test_path
+from tests.conftest import test_path
 from google.protobuf.empty_pb2 import Empty
-import helper
+import tests.helper as helper
 
 import ansys.api.speos.bsdf.v1.spectral_bsdf_pb2 as spectral_bsdf__v1__pb2
 import ansys.api.speos.bsdf.v1.spectral_bsdf_pb2_grpc as spectral_bsdf__v1__pb2_grpc
