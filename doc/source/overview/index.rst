@@ -96,14 +96,14 @@ It is the entry point of PySpeos.
 
 It is designed to be representative of a classic Speos UI usage.
 
-As an example, user will be able to create a project (from scratch or from .speos file), add/modify/delete sources, sensors, simulations, materials, geometries.
+As an example, user will be able to create a project (from scratch or from SPEOS file), add/modify/delete sources, sensors, simulations, materials, geometries.
 
 Workflow
 --------
 
 This layer is meant to gather user workflows.
 
-As an example, user can access a workflow to combine several .speos file into a single project.
+As an example, user can access a workflow to combine several SPEOS files into a single project.
 
 The aim of this layer is to provide workflow that combines several actions into a simple usage.
 
