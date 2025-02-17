@@ -5,6 +5,5 @@ exitance
 Lumerical
 (?i)pyansys
 (?i)pyspeos
-Speos
-\.speos
+(?i)Speos
 Zemax
