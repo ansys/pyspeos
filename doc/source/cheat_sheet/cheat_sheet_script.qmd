@@ -130,7 +130,7 @@ s_source.commit()
 Create rayfile source:
 
 ```{python}
-#| eval:
+#| eval: false
 from ansys.speos.core.source import SourceRayFile
 
 r_source = project.create_source(name='Rayfile.1', feature_type=SurfaceRayFile)
