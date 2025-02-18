@@ -60,3 +60,25 @@ class GeoRef:
             Geometry path.
         """
         return self.metadata["GeoPath"]
+
+    def has_native_link(self) -> bool:
+        """
+        Convert to a native link.
+
+        Returns
+        -------
+        str
+            Geometry path.
+        """
+        return "GeoPath" in self.metadata.keys()
+
+    def join_native_link(self, geo_ref: GeoRef) -> GeoRef:
+        """
+        Concatenate two GeoRef.
+
+        Returns
+        -------
+        GeoRef
+            self.GeoRef/geo_ref.
+        """
+        return GeoRef.from_native_link(self.to_native_link() + "/" + geo_ref.to_native_link())
