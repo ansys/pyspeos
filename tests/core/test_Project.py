@@ -337,17 +337,8 @@ def test_from_file(speos: Speos):
 
     # And that the feature retrieved has a real impact on the project
     feat_ops[0].set_surface_mirror(reflectance=60).commit()
-    assert (
-        speos.client[p.scene_link.get().materials[2].sop_guids[0]]
-        .get()
-        .HasField("mirror")
-    )
-    assert (
-        speos.client[p.scene_link.get().materials[2].sop_guids[0]]
-        .get()
-        .mirror.reflectance
-        == 60
-    )
+    assert speos.client[p.scene_link.get().materials[2].sop_guids[0]].get().HasField("mirror")
+    assert speos.client[p.scene_link.get().materials[2].sop_guids[0]].get().mirror.reflectance == 60
 
     # Check that ambient mat has no sop
     feat_op_ambients = p.find(name=p.scene_link.get().materials[-1].name)

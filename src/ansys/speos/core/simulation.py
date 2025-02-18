@@ -149,7 +149,9 @@ class BaseSimulation:
             )
         else:
             self._unique_id = simulation_instance.metadata["UniqueId"]
-            self.simulation_template_link = self._project.client[simulation_instance.simulation_guid]
+            self.simulation_template_link = self._project.client[
+                simulation_instance.simulation_guid
+            ]
             self.reset()
 
         # Create local Job
