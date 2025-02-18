@@ -40,6 +40,7 @@ html_theme_options = {
     "ansys_sphinx_theme_autoapi": {
         "project": project,
         "directory": "src/ansys/core",
+        "add_toctree_entry": True,
         "own_page_level": "class",
         "package_depth": 5,
     },
