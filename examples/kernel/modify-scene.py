@@ -66,7 +66,7 @@ print(my_scene)
 # +
 for sensor_i in my_scene.get().sensors:
     print(sensor_i)  # Print instance data model
-    print(speos.client.get_item(key=sensor_i.sensor_guid))  # Print template data model
+    print(speos.client[sensor_i.sensor_guid])  # Print template data model
     print("\n")
 # -
 
@@ -76,7 +76,7 @@ for sensor_i in my_scene.get().sensors:
 for sensor_i in my_scene.get().sensors:
     if sensor_i.HasField("camera_properties"):
         print(sensor_i)  # Print instance data model
-        print(speos.client.get_item(key=sensor_i.sensor_guid))  # Print template data model
+        print(speos.client[sensor_i.sensor_guid])  # Print template data model
         print("\n")
 # -
 
@@ -112,7 +112,7 @@ new_distortion_file = os.path.join(
 )
 
 # Retrieve SensorTemplateLink corresponding to camera_i_0.sensor_guid
-camera_t_0 = speos.client.get_item(camera_i_0.sensor_guid)
+camera_t_0 = speos.client[camera_i_0.sensor_guid]
 
 # get() = retrieve datamodel corresponding to camera_t_0 from database
 camera_t_0_data = camera_t_0.get()
