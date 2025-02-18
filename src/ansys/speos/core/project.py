@@ -41,9 +41,9 @@ from ansys.speos.core.kernel.scene import ProtoScene
 import ansys.speos.core.opt_prop as opt_prop
 import ansys.speos.core.part as part
 import ansys.speos.core.proto_message_utils as proto_message_utils
-import ansys.speos.core.sensor as sensor
-import ansys.speos.core.simulation as simulation
-import ansys.speos.core.source as source
+from ansys.speos.core.sensor import SensorCamera, SensorIrradiance, SensorRadiance
+from ansys.speos.core.simulation import SimulationDirect, SimulationInteractive, SimulationInverse
+from ansys.speos.core.source import SourceLuminaire, SourceRayFile, SourceSurface
 from ansys.speos.core.speos import Speos
 
 
@@ -121,9 +121,9 @@ class Project:
         self,
         name: str,
         description: str = "",
-        feature_type: type = source.SourceSurface,
+        feature_type: type = SourceSurface,
         metadata: Optional[Mapping[str, str]] = None,
-    ) -> Union[source.SourceSurface, source.SourceRayFile, source.SourceLuminaire]:
+    ) -> Union[SourceSurface, SourceRayFile, SourceLuminaire]:
         """Create a new Source feature.
 
         Parameters
@@ -158,21 +158,21 @@ class Project:
             )
             raise ValueError(msg)
         feature = None
-        if feature_type == source.SourceSurface:
-            feature = source.SourceSurface(
+        if feature_type == SourceSurface:
+            feature = SourceSurface(
                 project=self, name=name, description=description, metadata=metadata
             )
-        elif feature_type == source.SourceRayFile:
-            feature = source.SourceRayFile(
+        elif feature_type == SourceRayFile:
+            feature = SourceRayFile(
                 project=self, name=name, description=description, metadata=metadata
             )
-        elif feature_type == source.SourceLuminaire:
-            feature = source.SourceLuminaire(
+        elif feature_type == SourceLuminaire:
+            feature = SourceLuminaire(
                 project=self, name=name, description=description, metadata=metadata
             )
         else:
             msg = "Requested feature {} does not exist in supported list {}".format(
-                feature_type, [source.SourceSurface, source.SourceLuminaire, source.SourceRayFile]
+                feature_type, [SourceSurface, SourceLuminaire, SourceRayFile]
             )
             raise TypeError(msg)
         self._features.append(feature)
@@ -182,11 +182,9 @@ class Project:
         self,
         name: str,
         description: str = "",
-        feature_type: type = simulation.SimulationDirect,
+        feature_type: type = SimulationDirect,
         metadata: Optional[Mapping[str, str]] = None,
-    ) -> Union[
-        simulation.SimulationDirect, simulation.SimulationInteractive, simulation.SimulationInverse
-    ]:
+    ) -> Union[SimulationDirect, SimulationInteractive, SimulationInverse]:
         """Create a new Simulation feature.
 
         Parameters
@@ -220,25 +218,25 @@ class Project:
             )
             raise ValueError(msg)
         feature = None
-        if feature_type == simulation.SimulationDirect:
-            feature = simulation.SimulationDirect(
+        if feature_type == SimulationDirect:
+            feature = SimulationDirect(
                 project=self, name=name, description=description, metadata=metadata
             )
-        elif feature_type == simulation.SimulationInverse:
-            feature = simulation.SimulationInverse(
+        elif feature_type == SimulationInverse:
+            feature = SimulationInverse(
                 project=self, name=name, description=description, metadata=metadata
             )
-        elif feature_type == simulation.SimulationInteractive:
-            feature = simulation.SimulationInteractive(
+        elif feature_type == SimulationInteractive:
+            feature = SimulationInteractive(
                 project=self, name=name, description=description, metadata=metadata
             )
         else:
             msg = "Requested feature {} does not exist in supported list {}".format(
                 feature_type,
                 [
-                    simulation.SimulationDirect,
-                    simulation.SimulationInverse,
-                    simulation.SimulationInteractive,
+                    SimulationDirect,
+                    SimulationInverse,
+                    SimulationInteractive,
                 ],
             )
             raise TypeError(msg)
@@ -249,9 +247,9 @@ class Project:
         self,
         name: str,
         description: str = "",
-        feature_type: type = sensor.SensorIrradiance,
+        feature_type: type = SensorIrradiance,
         metadata: Optional[Mapping[str, str]] = None,
-    ) -> Union[sensor.SensorCamera, sensor.SensorRadiance, sensor.SensorIrradiance]:
+    ) -> Union[SensorCamera, SensorRadiance, SensorIrradiance]:
         """Create a new Sensor feature.
 
         Parameters
@@ -285,21 +283,21 @@ class Project:
             )
             raise ValueError(msg)
         feature = None
-        if feature_type == sensor.SensorIrradiance:
-            feature = sensor.SensorIrradiance(
+        if feature_type == SensorIrradiance:
+            feature = SensorIrradiance(
                 project=self, name=name, description=description, metadata=metadata
             )
-        elif feature_type == sensor.SensorRadiance:
-            feature = sensor.SensorRadiance(
+        elif feature_type == SensorRadiance:
+            feature = SensorRadiance(
                 project=self, name=name, description=description, metadata=metadata
             )
-        elif feature_type == sensor.SensorCamera:
-            feature = sensor.SensorCamera(
+        elif feature_type == SensorCamera:
+            feature = SensorCamera(
                 project=self, name=name, description=description, metadata=metadata
             )
         else:
             msg = "Requested feature {} does not exist in supported list {}".format(
-                feature_type, [sensor.SensorIrradiance, sensor.SensorRadiance, sensor.SensorCamera]
+                feature_type, [SensorIrradiance, SensorRadiance, SensorCamera]
             )
             raise TypeError(msg)
         self._features.append(feature)
@@ -341,15 +339,15 @@ class Project:
     ) -> List[
         Union[
             opt_prop.OptProp,
-            source.SourceSurface,
-            source.SourceLuminaire,
-            source.SourceRayFile,
-            sensor.SensorIrradiance,
-            sensor.SensorRadiance,
-            sensor.SensorCamera,
-            simulation.SimulationDirect,
-            simulation.SimulationInverse,
-            simulation.SimulationInteractive,
+            SourceSurface,
+            SourceLuminaire,
+            SourceRayFile,
+            SensorIrradiance,
+            SensorRadiance,
+            SensorCamera,
+            SimulationDirect,
+            SimulationInverse,
+            SimulationInteractive,
             part.Part,
             body.Body,
             face.Face,
@@ -518,16 +516,16 @@ class Project:
                 for inside_dict in v:
                     if k == "simulations":
                         sim_feat = self.find(
-                            name=inside_dict["name"], feature_type=simulation.SimulationDirect
+                            name=inside_dict["name"], feature_type=SimulationDirect
                         )
                         if len(sim_feat) == 0:
                             sim_feat = self.find(
-                                name=inside_dict["name"], feature_type=simulation.SimulationInverse
+                                name=inside_dict["name"], feature_type=SimulationInverse
                             )
                         if len(sim_feat) == 0:
                             sim_feat = self.find(
                                 name=inside_dict["name"],
-                                feature_type=simulation.SimulationInteractive,
+                                feature_type=SimulationInteractive,
                             )
                         sim_feat = sim_feat[0]
                         if sim_feat.job_link is None:
@@ -661,30 +659,30 @@ class Project:
 
         for src_inst in scene_data.sources:
             if src_inst.HasField("rayfile_properties"):
-                src_feat = source.SourceRayFile(
+                src_feat = SourceRayFile(
                     project=self, name=src_inst.name, source_instance=src_inst, default_values=False
                 )
             elif src_inst.HasField("luminaire_properties"):
-                src_feat = source.SourceLuminaire(
+                src_feat = SourceLuminaire(
                     project=self, name=src_inst.name, source_instance=src_inst, default_values=False
                 )
             elif src_inst.HasField("surface_properties"):
-                src_feat = source.SourceSurface(
+                src_feat = SourceSurface(
                     project=self, name=src_inst.name, source_instance=src_inst, default_values=False
                 )
             self._features.append(src_feat)
 
         for ssr_inst in scene_data.sensors:
             if ssr_inst.HasField("irradiance_properties"):
-                ssr_feat = sensor.SensorIrradiance(
+                ssr_feat = SensorIrradiance(
                     project=self, name=ssr_inst.name, sensor_instance=ssr_inst, default_values=False
                 )
             elif ssr_inst.HasField("camera_properties"):
-                ssr_feat = sensor.SensorRadiance(
+                ssr_feat = SensorRadiance(
                     project=self, name=ssr_inst.name, sensor_instance=ssr_inst, default_values=False
                 )
             elif ssr_inst.HasField("radiance_properties"):
-                ssr_feat = sensor.SensorCamera(
+                ssr_feat = SensorCamera(
                     project=self, name=ssr_inst.name, sensor_instance=ssr_inst, default_values=False
                 )
             self._features.append(ssr_feat)
@@ -692,21 +690,21 @@ class Project:
         for sim_inst in scene_data.simulations:
             simulation_template_link = self.client.get_item(key=sim_inst.simulation_guid).get()
             if simulation_template_link.HasField("direct_mc_simulation_template"):
-                sim_feat = simulation.SimulationDirect(
+                sim_feat = SimulationDirect(
                     project=self,
                     name=sim_inst.name,
                     simulation_instance=sim_inst,
                     default_values=False,
                 )
             elif simulation_template_link.HasField("inverse_mc_simulation_template"):
-                sim_feat = simulation.SimulationInverse(
+                sim_feat = SimulationInverse(
                     project=self,
                     name=sim_inst.name,
                     simulation_instance=sim_inst,
                     default_values=False,
                 )
             elif simulation_template_link.HasField("interactive_simulation_template"):
-                sim_feat = simulation.SimulationInteractive(
+                sim_feat = SimulationInteractive(
                     project=self,
                     name=sim_inst.name,
                     simulation_instance=sim_inst,
