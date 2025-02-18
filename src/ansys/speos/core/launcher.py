@@ -96,19 +96,21 @@ def launch_remote_speos(
 
 
 def launch_local_speos_rpc_server(
-    version: str = None,
+    version: str = LATEST_VERSION,
     port: str = DEFAULT_PORT,
     message_size: int = MAX_MESSAGE_LENGTH,
     logfile_loc: str = None,
     log_level: int = 20,
 ) -> Speos:
     """
-    Launch speos locally
+    Launch Speos RPC server locally
 
     Parameters
     ----------
-    version
-    port
+    version : str
+        The Speos server version to run, in the 3 digits format, such as "242".
+        If unspecified, the version will be chosen as ansys.speos.core.kernel.client,LATEST_VERSION.
+    port : str
     message_size
     logfile_loc
     log_level
@@ -117,8 +119,6 @@ def launch_local_speos_rpc_server(
     -------
 
     """
-    if not version:
-        version = LATEST_VERSION
     versions = get_available_ansys_installations()
     ansys_loc = versions.get(int(version))
     if not ansys_loc:
