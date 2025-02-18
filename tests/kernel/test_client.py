@@ -24,11 +24,11 @@
 Test basic client connection.
 """
 
-from tests.conftest import config
 from grpc import insecure_channel
 import pytest
 
 from ansys.speos.core.kernel.client import SpeosClient
+from tests.conftest import config
 
 
 @pytest.fixture(scope="function")

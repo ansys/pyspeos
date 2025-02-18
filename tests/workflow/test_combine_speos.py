@@ -24,10 +24,9 @@
 
 import os
 
-from tests.conftest import test_path
-
 from ansys.speos.core import OptProp, Part, Project, Speos
 from ansys.speos.core.workflow.combine_speos import SpeosFileInstance, combine_speos, insert_speos
+from tests.conftest import test_path
 
 
 def test_combine_speos(speos: Speos):

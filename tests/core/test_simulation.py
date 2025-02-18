@@ -26,10 +26,9 @@ Test basic using simulation.
 
 import os
 
-from tests.conftest import test_path
-
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
 from ansys.speos.core import GeoRef, Project, Speos, sensor, simulation, source
+from tests.conftest import test_path
 
 
 def test_create_direct(speos: Speos):

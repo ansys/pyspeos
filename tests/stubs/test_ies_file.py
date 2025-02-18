@@ -33,11 +33,10 @@ With coverage.
 import logging
 import os
 
-from tests.conftest import test_path
-import tests.helper as helper
-
 from ansys.api.speos.intensity_distributions.v1 import ies_pb2, ies_pb2_grpc
 from ansys.speos.core.speos import Speos
+from tests.conftest import test_path
+import tests.helper as helper
 
 
 def createIesIntensity():

@@ -26,10 +26,9 @@ Test basic spectrum database connection.
 
 import os
 
-from tests.conftest import test_path
-
 from ansys.speos.core.kernel.spectrum import ProtoSpectrum
 from ansys.speos.core.speos import Speos
+from tests.conftest import test_path
 
 
 def test_client_spectrum_init(speos: Speos):

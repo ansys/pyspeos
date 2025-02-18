@@ -26,10 +26,9 @@ Test basic using lxp.
 
 import os
 
-from tests.conftest import test_path
-
 import ansys.speos.core.lxp as lxp
 from ansys.speos.core.speos import Speos
+from tests.conftest import test_path
 
 
 def test_light_path_finder_direct(speos: Speos):

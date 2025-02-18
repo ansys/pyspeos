@@ -27,12 +27,12 @@ Test basic sop template database connection.
 import json
 import os
 
-from tests.conftest import test_path
 import grpc
 import pytest
 
 from ansys.speos.core.kernel.sop_template import ProtoSOPTemplate
 from ansys.speos.core.speos import Speos
+from tests.conftest import test_path
 
 
 def test_sop_template(speos: Speos):

@@ -26,11 +26,10 @@ Test basic using proto_message_utils.
 
 import os
 
-from tests.conftest import test_path
-
 from ansys.speos.core import OptProp, Project, Speos, proto_message_utils, source
 from ansys.speos.core.kernel import scene
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_dict
+from tests.conftest import test_path
 
 
 def test_replace_guid_elt(speos: Speos):
