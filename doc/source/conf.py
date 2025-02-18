@@ -39,6 +39,7 @@ html_theme_options = {
     "check_switcher": False,
     "ansys_sphinx_theme_autoapi": {
         "project": project,
+        "directory": "src/ansys/core",
         "own_page_level": "class",
         "package_depth": 5,
     },
