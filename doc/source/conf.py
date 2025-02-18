@@ -40,6 +40,7 @@ html_theme_options = {
     "ansys_sphinx_theme_autoapi": {
         "project": project,
         "own_page_level": "class",
+        "package_depth": 3,
     },
 }
 BUILD_CHEATSHEET = os.environ.get("BUILD_CHEATSHEET", "false").lower() == "true"
