@@ -482,7 +482,7 @@ class BaseSimulation:
         self.reset()
 
 
-class Direct(BaseSimulation):
+class SimulationDirect(BaseSimulation):
     """
     Type of Simulation: Direct.
     By default,
@@ -546,7 +546,7 @@ class Direct(BaseSimulation):
             # Default job properties
             self.set_stop_condition_rays_number().set_stop_condition_duration().set_automatic_save_frequency()
 
-    def set_geom_distance_tolerance(self, value: float = 0.01) -> Direct:
+    def set_geom_distance_tolerance(self, value: float = 0.01) -> SimulationDirect:
         """Set the geometry distance tolerance.
 
         Parameters
@@ -557,13 +557,13 @@ class Direct(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.core.simulation.Direct
+        ansys.speos.core.simulation.SimulationDirect
             Direct simulation
         """
         self._simulation_template.direct_mc_simulation_template.geom_distance_tolerance = value
         return self
 
-    def set_max_impact(self, value: int = 100) -> Direct:
+    def set_max_impact(self, value: int = 100) -> SimulationDirect:
         """Defines a value to determine the maximum number of ray impacts during propagation.
         When a ray has interacted N times with the geometry, the propagation of the ray stops.
 
@@ -575,7 +575,7 @@ class Direct(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.core.simulation.Direct
+        ansys.speos.core.simulation.SimulationDirect
             Direct simulation
         """
         self._simulation_template.direct_mc_simulation_template.max_impact = value
@@ -593,24 +593,24 @@ class Direct(BaseSimulation):
             self._simulation_template.direct_mc_simulation_template.weight, stable_ctr=True
         )
 
-    def set_weight_none(self) -> Direct:
+    def set_weight_none(self) -> SimulationDirect:
         """Deactivate weight.
 
         Returns
         -------
-        ansys.speos.core.simulation.Direct
+        ansys.speos.core.simulation.SimulationDirect
             Direct simulation
         """
         self._simulation_template.direct_mc_simulation_template.ClearField("weight")
         return self
 
-    def set_colorimetric_standard_CIE_1931(self) -> Direct:
+    def set_colorimetric_standard_CIE_1931(self) -> SimulationDirect:
         """Set the colorimetric standard to CIE 1931.
         2 degrees CIE Standard Colorimetric Observer Data.
 
         Returns
         -------
-        ansys.speos.core.simulation.Direct
+        ansys.speos.core.simulation.SimulationDirect
             Direct simulation
         """
         self._simulation_template.direct_mc_simulation_template.colorimetric_standard = (
@@ -618,13 +618,13 @@ class Direct(BaseSimulation):
         )
         return self
 
-    def set_colorimetric_standard_CIE_1964(self) -> Direct:
+    def set_colorimetric_standard_CIE_1964(self) -> SimulationDirect:
         """Set the colorimetric standard to CIE 1964.
         10 degrees CIE Standard Colorimetric Observer Data.
 
         Returns
         -------
-        ansys.speos.core.simulation.Direct
+        ansys.speos.core.simulation.SimulationDirect
             Direct simulation
         """
         self._simulation_template.direct_mc_simulation_template.colorimetric_standard = (
@@ -632,7 +632,7 @@ class Direct(BaseSimulation):
         )
         return self
 
-    def set_dispersion(self, value: bool = True) -> Direct:
+    def set_dispersion(self, value: bool = True) -> SimulationDirect:
         """Activate/Deactivate the dispersion calculation.
 
         Parameters
@@ -643,7 +643,7 @@ class Direct(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.core.simulation.Direct
+        ansys.speos.core.simulation.SimulationDirect
             Direct simulation
         """
         self._simulation_template.direct_mc_simulation_template.dispersion = value
@@ -668,7 +668,7 @@ class Direct(BaseSimulation):
     #    self._simulation_template.direct_mc_simulation_template.fast_transmission_gathering = value
     #    return self
 
-    def set_ambient_material_file_uri(self, uri: str = "") -> Direct:
+    def set_ambient_material_file_uri(self, uri: str = "") -> SimulationDirect:
         """To define the environment in which the light will propagate (water, fog, smoke etc.).
 
         Parameters
@@ -679,13 +679,13 @@ class Direct(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.core.simulation.Direct
+        ansys.speos.core.simulation.SimulationDirect
             Direct simulation
         """
         self._simulation_template.direct_mc_simulation_template.ambient_material_uri = uri
         return self
 
-    def set_stop_condition_rays_number(self, value: Optional[int] = 200000) -> Direct:
+    def set_stop_condition_rays_number(self, value: Optional[int] = 200000) -> SimulationDirect:
         """To stop the simulation after a certain number of rays were sent. Set None as value to have no condition about rays number.
 
         Parameters
@@ -696,7 +696,7 @@ class Direct(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.core.simulation.Direct
+        ansys.speos.core.simulation.SimulationDirect
             Direct simulation
         """
         if value is None:
@@ -705,7 +705,7 @@ class Direct(BaseSimulation):
             self._job.direct_mc_simulation_properties.stop_condition_rays_number = value
         return self
 
-    def set_stop_condition_duration(self, value: Optional[int] = None) -> Direct:
+    def set_stop_condition_duration(self, value: Optional[int] = None) -> SimulationDirect:
         """To stop the simulation after a certain duration. Set None as value to have no condition about duration.
 
         Parameters
@@ -716,7 +716,7 @@ class Direct(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.core.simulation.Direct
+        ansys.speos.core.simulation.SimulationDirect
             Direct simulation
         """
         if value is None:
@@ -725,7 +725,7 @@ class Direct(BaseSimulation):
             self._job.direct_mc_simulation_properties.stop_condition_duration = value
         return self
 
-    def set_automatic_save_frequency(self, value: int = 1800) -> Direct:
+    def set_automatic_save_frequency(self, value: int = 1800) -> SimulationDirect:
         """Define a backup interval (s).
         This option is useful when computing long simulations.
         But a reduced number of save operations naturally increases the simulation performance.
@@ -738,14 +738,14 @@ class Direct(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.core.simulation.Direct
+        ansys.speos.core.simulation.SimulationDirect
             Direct simulation
         """
         self._job.direct_mc_simulation_properties.automatic_save_frequency = value
         return self
 
 
-class Inverse(BaseSimulation):
+class SimulationInverse(BaseSimulation):
     """Type of simulation : Inverse.
     By default,
     geometry distance tolerance is set to 0.01,
@@ -814,7 +814,7 @@ class Inverse(BaseSimulation):
             # Default job properties
             self.set_stop_condition_duration().set_stop_condition_passes_number().set_automatic_save_frequency()
 
-    def set_geom_distance_tolerance(self, value: float = 0.01) -> Inverse:
+    def set_geom_distance_tolerance(self, value: float = 0.01) -> SimulationInverse:
         """Set the geometry distance tolerance.
 
         Parameters
@@ -825,13 +825,13 @@ class Inverse(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.core.simulation.Inverse
+        ansys.speos.core.simulation.SimulationInverse
             Inverse simulation
         """
         self._simulation_template.inverse_mc_simulation_template.geom_distance_tolerance = value
         return self
 
-    def set_max_impact(self, value: int = 100) -> Inverse:
+    def set_max_impact(self, value: int = 100) -> SimulationInverse:
         """Defines a value to determine the maximum number of ray impacts during propagation.
         When a ray has interacted N times with the geometry, the propagation of the ray stops.
 
@@ -843,7 +843,7 @@ class Inverse(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.core.simulation.Inverse
+        ansys.speos.core.simulation.SimulationInverse
             Inverse simulation
         """
         self._simulation_template.inverse_mc_simulation_template.max_impact = value
@@ -861,24 +861,24 @@ class Inverse(BaseSimulation):
             self._simulation_template.inverse_mc_simulation_template.weight, stable_ctr=True
         )
 
-    def set_weight_none(self) -> Inverse:
+    def set_weight_none(self) -> SimulationInverse:
         """Deactivate weight.
 
         Returns
         -------
-        ansys.speos.core.simulation.Inverse
+        ansys.speos.core.simulation.SimulationInverse
             Inverse simulation
         """
         self._simulation_template.inverse_mc_simulation_template.ClearField("weight")
         return self
 
-    def set_colorimetric_standard_CIE_1931(self) -> Inverse:
+    def set_colorimetric_standard_CIE_1931(self) -> SimulationInverse:
         """Set the colorimetric standard to CIE 1931.
         2 degrees CIE Standard Colorimetric Observer Data.
 
         Returns
         -------
-        ansys.speos.core.simulation.Inverse
+        ansys.speos.core.simulation.SimulationInverse
             Inverse simulation
         """
         self._simulation_template.inverse_mc_simulation_template.colorimetric_standard = (
@@ -886,13 +886,13 @@ class Inverse(BaseSimulation):
         )
         return self
 
-    def set_colorimetric_standard_CIE_1964(self) -> Inverse:
+    def set_colorimetric_standard_CIE_1964(self) -> SimulationInverse:
         """Set the colorimetric standard to CIE 1964.
         10 degrees CIE Standard Colorimetric Observer Data.
 
         Returns
         -------
-        ansys.speos.core.simulation.Inverse
+        ansys.speos.core.simulation.SimulationInverse
             Inverse simulation
         """
         self._simulation_template.inverse_mc_simulation_template.colorimetric_standard = (
@@ -900,7 +900,7 @@ class Inverse(BaseSimulation):
         )
         return self
 
-    def set_dispersion(self, value: bool = False) -> Inverse:
+    def set_dispersion(self, value: bool = False) -> SimulationInverse:
         """Activate/Deactivate the dispersion calculation.
 
         Parameters
@@ -911,13 +911,13 @@ class Inverse(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.core.simulation.Inverse
+        ansys.speos.core.simulation.SimulationInverse
             Inverse simulation
         """
         self._simulation_template.inverse_mc_simulation_template.dispersion = value
         return self
 
-    def set_splitting(self, value: bool = False) -> Inverse:
+    def set_splitting(self, value: bool = False) -> SimulationInverse:
         """Activate/Deactivate the splitting.
         To split each propagated ray into several paths at their first impact after leaving the observer point.
 
@@ -929,13 +929,13 @@ class Inverse(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.core.simulation.Inverse
+        ansys.speos.core.simulation.SimulationInverse
             Inverse simulation
         """
         self._simulation_template.inverse_mc_simulation_template.splitting = value
         return self
 
-    def set_number_of_gathering_rays_per_source(self, value: int = 1) -> Inverse:
+    def set_number_of_gathering_rays_per_source(self, value: int = 1) -> SimulationInverse:
         """Set the number of gathering rays per source.
 
         Parameters
@@ -946,13 +946,13 @@ class Inverse(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.core.simulation.Inverse
+        ansys.speos.core.simulation.SimulationInverse
             Inverse simulation
         """
         self._simulation_template.inverse_mc_simulation_template.number_of_gathering_rays_per_source = value
         return self
 
-    def set_maximum_gathering_error(self, value: int = 0) -> Inverse:
+    def set_maximum_gathering_error(self, value: int = 0) -> SimulationInverse:
         """Set the maximum gathering error.
 
         Parameters
@@ -963,7 +963,7 @@ class Inverse(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.core.simulation.Inverse
+        ansys.speos.core.simulation.SimulationInverse
             Inverse simulation
         """
         self._simulation_template.inverse_mc_simulation_template.maximum_gathering_error = value
@@ -988,7 +988,7 @@ class Inverse(BaseSimulation):
     #    self._simulation_template.inverse_mc_simulation_template.fast_transmission_gathering = value
     #    return self
 
-    def set_ambient_material_file_uri(self, uri: str = "") -> Inverse:
+    def set_ambient_material_file_uri(self, uri: str = "") -> SimulationInverse:
         """To define the environment in which the light will propagate (water, fog, smoke etc.).
 
         Parameters
@@ -999,13 +999,13 @@ class Inverse(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.core.simulation.Inverse
+        ansys.speos.core.simulation.SimulationInverse
             Inverse simulation
         """
         self._simulation_template.inverse_mc_simulation_template.ambient_material_uri = uri
         return self
 
-    def set_stop_condition_passes_number(self, value: Optional[int] = 5) -> Inverse:
+    def set_stop_condition_passes_number(self, value: Optional[int] = 5) -> SimulationInverse:
         """To stop the simulation after a certain number of passes. Set None as value to have no condition about passes.
 
         Parameters
@@ -1016,7 +1016,7 @@ class Inverse(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.core.simulation.Inverse
+        ansys.speos.core.simulation.SimulationInverse
             Inverse simulation
         """
         if value is None:
@@ -1027,7 +1027,7 @@ class Inverse(BaseSimulation):
             self._job.inverse_mc_simulation_properties.optimized_propagation_none.stop_condition_passes_number = value
         return self
 
-    def set_stop_condition_duration(self, value: Optional[int] = None) -> Inverse:
+    def set_stop_condition_duration(self, value: Optional[int] = None) -> SimulationInverse:
         """To stop the simulation after a certain duration. Set None as value to have no condition about duration.
 
         Parameters
@@ -1038,7 +1038,7 @@ class Inverse(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.core.simulation.Inverse
+        ansys.speos.core.simulation.SimulationInverse
             Inverse simulation
         """
         if value is None:
@@ -1047,7 +1047,7 @@ class Inverse(BaseSimulation):
             self._job.inverse_mc_simulation_properties.stop_condition_duration = value
         return self
 
-    def set_automatic_save_frequency(self, value: int = 1800) -> Inverse:
+    def set_automatic_save_frequency(self, value: int = 1800) -> SimulationInverse:
         """Define a backup interval (s).
         This option is useful when computing long simulations.
         But a reduced number of save operations naturally increases the simulation performance.
@@ -1060,14 +1060,14 @@ class Inverse(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.core.simulation.Inverse
+        ansys.speos.core.simulation.SimulationInverse
             Inverse simulation
         """
         self._job.inverse_mc_simulation_properties.automatic_save_frequency = value
         return self
 
 
-class Interactive(BaseSimulation):
+class SimulationInteractive(BaseSimulation):
     """Type of simulation : Interactive.
     By default,
     geometry distance tolerance is set to 0.01,
@@ -1145,7 +1145,7 @@ class Interactive(BaseSimulation):
             # Default job parameters
             self.set_light_expert().set_impact_report()
 
-    def set_geom_distance_tolerance(self, value: float = 0.01) -> Interactive:
+    def set_geom_distance_tolerance(self, value: float = 0.01) -> SimulationInteractive:
         """Set the geometry distance tolerance.
 
         Parameters
@@ -1156,13 +1156,13 @@ class Interactive(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.core.simulation.Interactive
+        ansys.speos.core.simulation.SimulationInteractive
             Interactive simulation
         """
         self._simulation_template.interactive_simulation_template.geom_distance_tolerance = value
         return self
 
-    def set_max_impact(self, value: int = 100) -> Interactive:
+    def set_max_impact(self, value: int = 100) -> SimulationInteractive:
         """Defines a value to determine the maximum number of ray impacts during propagation.
         When a ray has interacted N times with the geometry, the propagation of the ray stops.
 
@@ -1174,7 +1174,7 @@ class Interactive(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.core.simulation.Interactive
+        ansys.speos.core.simulation.SimulationInteractive
             Interactive simulation
         """
         self._simulation_template.interactive_simulation_template.max_impact = value
@@ -1192,24 +1192,24 @@ class Interactive(BaseSimulation):
             self._simulation_template.interactive_simulation_template.weight, stable_ctr=True
         )
 
-    def set_weight_none(self) -> Interactive:
+    def set_weight_none(self) -> SimulationInteractive:
         """Deactivate weight.
 
         Returns
         -------
-        ansys.speos.core.simulation.Interactive
+        ansys.speos.core.simulation.SimulationInteractive
             Interactive simulation
         """
         self._simulation_template.interactive_simulation_template.ClearField("weight")
         return self
 
-    def set_colorimetric_standard_CIE_1931(self) -> Interactive:
+    def set_colorimetric_standard_CIE_1931(self) -> SimulationInteractive:
         """Set the colorimetric standard to CIE 1931.
         2 degrees CIE Standard Colorimetric Observer Data.
 
         Returns
         -------
-        ansys.speos.core.simulation.Interactive
+        ansys.speos.core.simulation.SimulationInteractive
             Interactive simulation
         """
         self._simulation_template.interactive_simulation_template.colorimetric_standard = (
@@ -1217,13 +1217,13 @@ class Interactive(BaseSimulation):
         )
         return self
 
-    def set_colorimetric_standard_CIE_1964(self) -> Interactive:
+    def set_colorimetric_standard_CIE_1964(self) -> SimulationInteractive:
         """Set the colorimetric standard to CIE 1964.
         10 degrees CIE Standard Colorimetric Observer Data.
 
         Returns
         -------
-        ansys.speos.core.simulation.Interactive
+        ansys.speos.core.simulation.SimulationInteractive
             Interactive simulation
         """
         self._simulation_template.interactive_simulation_template.colorimetric_standard = (
@@ -1231,7 +1231,7 @@ class Interactive(BaseSimulation):
         )
         return self
 
-    def set_ambient_material_file_uri(self, uri: str = "") -> Interactive:
+    def set_ambient_material_file_uri(self, uri: str = "") -> SimulationInteractive:
         """To define the environment in which the light will propagate (water, fog, smoke etc.).
 
         Parameters
@@ -1242,26 +1242,26 @@ class Interactive(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.core.simulation.Interactive
+        ansys.speos.core.simulation.SimulationInteractive
             Interactive simulation
         """
         self._simulation_template.interactive_simulation_template.ambient_material_uri = uri
         return self
 
     def set_rays_number_per_sources(
-        self, values: List[Interactive.RaysNumberPerSource]
-    ) -> Interactive:
+        self, values: List[SimulationInteractive.RaysNumberPerSource]
+    ) -> SimulationInteractive:
         """Select the number of rays emitted for each source. If a source is present in the simulation but not referenced here,
         it will send by default 100 rays.
 
         Parameters
         ----------
-        values : List[ansys.speos.core.simulation.Interactive.RaysNumberPerSource]
+        values : List[ansys.speos.core.simulation.SimulationInteractive.RaysNumberPerSource]
             List of rays number emitted by source.
 
         Returns
         -------
-        ansys.speos.core.simulation.Interactive
+        ansys.speos.core.simulation.SimulationInteractive
             Interactive simulation
         """
         my_list = [
@@ -1274,7 +1274,7 @@ class Interactive(BaseSimulation):
         self._job.interactive_simulation_properties.rays_number_per_sources.extend(my_list)
         return self
 
-    def set_light_expert(self, value: bool = False) -> Interactive:
+    def set_light_expert(self, value: bool = False) -> SimulationInteractive:
         """Activate/Deactivate the generation of light expert file.
 
         Parameters
@@ -1285,13 +1285,13 @@ class Interactive(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.core.simulation.Interactive
+        ansys.speos.core.simulation.SimulationInteractive
             Interactive simulation
         """
         self._job.interactive_simulation_properties.light_expert = value
         return self
 
-    def set_impact_report(self, value: bool = False) -> Interactive:
+    def set_impact_report(self, value: bool = False) -> SimulationInteractive:
         """Activate/Deactivate the details like number of impacts, position and surface state to the HTML simulation report.
 
         Parameters
@@ -1302,7 +1302,7 @@ class Interactive(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.core.simulation.Interactive
+        ansys.speos.core.simulation.SimulationInteractive
             Interactive simulation
         """
         self._job.interactive_simulation_properties.impact_report = value

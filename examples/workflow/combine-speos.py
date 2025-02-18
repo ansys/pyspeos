@@ -6,9 +6,9 @@
 import os
 
 from ansys.speos.core import Part, Speos
-from ansys.speos.core.sensor import Camera
-from ansys.speos.core.simulation import Inverse
-from ansys.speos.core.source import Luminaire
+from ansys.speos.core.sensor import SensorCamera
+from ansys.speos.core.simulation import SimulationInverse
+from ansys.speos.core.source import SourceLuminaire
 from ansys.speos.core.workflow.combine_speos import SpeosFileInstance, combine_speos
 
 # If using docker container
@@ -70,7 +70,7 @@ p.preview()
 # ### Create a sensor
 
 # +
-ssr = p.create_sensor(name="Camera.1", feature_type=Camera)
+ssr = p.create_sensor(name="Camera.1", feature_type=SensorCamera)
 ssr.set_distortion_file_uri(
     uri=os.path.join(tests_data_path, "CameraInputFiles", "CameraDistortion_190deg.OPTDistortion")
 ).set_mode_photometric().set_transmittance_file_uri(
@@ -93,7 +93,7 @@ ssr.commit()
 # More details on creating/editing source examples can be found in core examples.
 
 # +
-src = p.create_source(name="Luminaire.1", feature_type=Luminaire)
+src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
 src.set_intensity_file_uri(
     uri=os.path.join(tests_data_path, "IES_C_DETECTOR.ies")
 ).set_spectrum().set_daylightfluorescent()
@@ -106,7 +106,7 @@ src.commit()
 # More details on creating/editing simulation examples can be found in core examples.
 
 # +
-sim = p.create_simulation(name="Inverse.1", feature_type=Inverse)
+sim = p.create_simulation(name="Inverse.1", feature_type=SimulationInverse)
 sim.set_sensor_paths(["Camera.1"]).set_source_paths(["Luminaire.1"])
 sim.commit()
 # -
@@ -166,7 +166,7 @@ if os.name == "nt":
 # Modify the camera, e.g. focal length to 10
 
 # +
-cam1 = p.find(name="Camera.1", feature_type=Camera)[0]
+cam1 = p.find(name="Camera.1", feature_type=SensorCamera)[0]
 cam1.set_focal_length(value=10)
 cam1.commit()
 # -

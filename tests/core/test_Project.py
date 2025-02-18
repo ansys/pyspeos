@@ -45,20 +45,20 @@ def test_find_feature(speos: Speos):
     assert len(p.scene_link.get().sources) == 1
 
     # Create an irradiance sensor in the project
-    sensor1 = p.create_sensor(name="Sensor.1", feature_type=sensor.Irradiance)
+    sensor1 = p.create_sensor(name="Sensor.1", feature_type=sensor.SensorIrradiance)
     sensor1.commit()
     assert len(p._features) == 2
     assert len(p.scene_link.get().sensors) == 1
 
     # Create an radiance sensor in the project
     # TODO: enhance the initialize method
-    sensor2 = p.create_sensor(name="Sensor.2", feature_type=sensor.Radiance)
+    sensor2 = p.create_sensor(name="Sensor.2", feature_type=sensor.SensorRadiance)
     sensor2.commit()
     assert len(p._features) == 3
     assert len(p.scene_link.get().sensors) == 2
 
     # Create an radiance sensor in the project
-    sensor3 = p.create_sensor(name="Sensor.3", feature_type=sensor.Radiance)
+    sensor3 = p.create_sensor(name="Sensor.3", feature_type=sensor.SensorRadiance)
     sensor3.set_layer_type_face()
     sensor3.commit()
     assert len(p._features) == 4
@@ -90,25 +90,25 @@ def test_find_feature(speos: Speos):
     # With type filtering
 
     # Wrong combination name-type
-    features = p.find(name="Sensor.3", feature_type=source.Surface)
+    features = p.find(name="Sensor.3", feature_type=source.SourceSurface)
     assert features == []
 
     # Good combination name-type
-    features = p.find(name="Sensor.3", feature_type=sensor.Radiance)
+    features = p.find(name="Sensor.3", feature_type=sensor.SensorRadiance)
     assert len(features) == 1
     assert features[0] == sensor3
 
     # Wrong combination name-type specialized
-    features = p.find(name="Sensor.3", feature_type=sensor.Irradiance)
+    features = p.find(name="Sensor.3", feature_type=sensor.SensorIrradiance)
     assert features == []
 
     # Good combination name-type specialized
-    features = p.find(name="Sensor.3", feature_type=sensor.Radiance)
+    features = p.find(name="Sensor.3", feature_type=sensor.SensorRadiance)
     assert len(features) == 1
     assert features[0] == sensor3
 
     # Good combination name-type specialized + regex
-    features = p.find(name=r".*sor\.3", name_regex=True, feature_type=sensor.Radiance)
+    features = p.find(name=r".*sor\.3", name_regex=True, feature_type=sensor.SensorRadiance)
     assert len(features) == 1
     assert features[0] == sensor3
 
@@ -250,18 +250,18 @@ def test_find_after_load(speos: Speos):
     )
 
     # Retrieve all surface sources
-    src_feats = p.find(name=".*", name_regex=True, feature_type=source.Surface)
+    src_feats = p.find(name=".*", name_regex=True, feature_type=source.SourceSurface)
     assert len(src_feats) == 2
     assert src_feats[0]._name == "Dom Source 2 (0) in SOURCE2"
     assert src_feats[1]._name == "Surface Source (0) in SOURCE1"
 
     # Retrieve all irradiance sensors
-    ssr_feats = p.find(name=".*", name_regex=True, feature_type=sensor.Irradiance)
+    ssr_feats = p.find(name=".*", name_regex=True, feature_type=sensor.SensorIrradiance)
     assert len(ssr_feats) == 1
     assert ssr_feats[0]._name == "Dom Irradiance Sensor (0)"
 
     # Retrieve all direct simulations
-    sim_feats = p.find(name=".*", name_regex=True, feature_type=simulation.Direct)
+    sim_feats = p.find(name=".*", name_regex=True, feature_type=simulation.SimulationDirect)
     assert len(sim_feats) == 1
     assert sim_feats[0]._name == "ASSEMBLY1.DS (0)"
 
@@ -294,13 +294,13 @@ def test_delete(speos: Speos):
     assert len(p._features) == 0
 
     # Create a surface source in the project
-    source1 = p.create_source(name="Source.1", feature_type=source.Surface)
+    source1 = p.create_source(name="Source.1", feature_type=source.SourceSurface)
     assert len(p._features) == 1
     source1.commit()
     assert len(p.scene_link.get().sources) == 1
 
     # Create an irradiance sensor in the project
-    sensor1 = p.create_sensor(name="Sensor.1", feature_type=sensor.Irradiance)
+    sensor1 = p.create_sensor(name="Sensor.1", feature_type=sensor.SensorIrradiance)
     sensor1.commit()
     assert len(p._features) == 2
     assert len(p.scene_link.get().sensors) == 1
@@ -328,7 +328,7 @@ def test_from_file(speos: Speos):
 
     feat_sims = p.find(name=p.scene_link.get().simulations[0].name)
     assert len(feat_sims) == 1
-    assert type(feat_sims[0]) is simulation.Direct
+    assert type(feat_sims[0]) is simulation.SimulationDirect
 
     # Check that feature can be retrieved
     feat_ops = p.find(name=p.scene_link.get().materials[2].name)
@@ -357,7 +357,7 @@ def test_from_file(speos: Speos):
     # Retrieve another feature
     feat_ssrs = p.find(name=p.scene_link.get().sensors[0].name)
     assert len(feat_ssrs) == 1
-    assert type(feat_ssrs[0]) is sensor.Irradiance
+    assert type(feat_ssrs[0]) is sensor.SensorIrradiance
 
     # And that we can modify it (and that other values are not overridden by default values)
     feat_ssrs[0].set_type_colorimetric().set_wavelengths_range().set_end(value=800)
