@@ -19,12 +19,5 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-"""PySpeos is a Python library that gathers functionalities and tools based on Speos software remote API."""
 
-try:
-    import importlib.metadata as importlib_metadata
-except ModuleNotFoundError:  # pragma: no cover
-    import importlib_metadata
-
-# Version
-__version__ = importlib_metadata.version("ansys-speos-core")
+"""Tests related to the stubs."""

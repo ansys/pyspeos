@@ -26,10 +26,9 @@ Test basic using
 
 import os
 
-from conftest import test_path
-
 from ansys.speos.core import GeoRef, Project, Speos
 from ansys.speos.core.source import Luminaire, RayFile, Surface
+from tests.conftest import test_path
 
 
 def test_create_luminaire_source(speos: Speos):
