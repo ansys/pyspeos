@@ -29,6 +29,7 @@ from ansys.speos.core.kernel.client import DEFAULT_PORT, LATEST_VERSION
 from ansys.speos.core.speos import Speos
 from ansys.tools.path import get_available_ansys_installations
 
+"""Maximum message length value accepted by the Speos RPC server"""
 MAX_MESSAGE_LENGTH = int(os.environ.get("SPEOS_MAX_MESSAGE_LENGTH", 256 * 1024**2))
 
 try:
@@ -109,11 +110,19 @@ def launch_local_speos_rpc_server(
     ----------
     version : str
         The Speos server version to run, in the 3 digits format, such as "242".
-        If unspecified, the version will be chosen as ansys.speos.core.kernel.client,LATEST_VERSION.
-    port : str
-    message_size
-    logfile_loc
-    log_level
+        If unspecified, the version will be chosen as ``ansys.speos.core.kernel.client.LATEST_VERSION``.
+    port : Union[str, int], optional
+        Port number where the server is running.
+        By default, ``ansys.speos.core.kernel.client.DEFAULT_PORT``.
+    message_size : int
+        Maximum message length value accepted by the Speos RPC server,
+        By default, value stored in environment variable SPEOS_MAX_MESSAGE_LENGTH or 268 435 456.
+    logfile_loc : str
+        location for the logfile to be created in.
+    log_level : int
+        The logging level to be applied to the server, integer values can be taken from logging module,
+        By default, ``logging.WARNING`` = 20.
+
 
     Returns
     -------

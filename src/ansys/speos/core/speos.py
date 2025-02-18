@@ -42,10 +42,13 @@ class Speos:
     ----------
     host : str, optional
         Host where the server is running.
-        By default, ``DEFAULT_HOST``.
+        By default, ``ansys.speos.core.kernel.client.DEFAULT_HOST``.
     port : Union[str, int], optional
         Port number where the server is running.
-        By default, ``DEFAULT_PORT``.
+        By default, ``ansys.speos.core.kernel.client.DEFAULT_PORT``.
+    version : str
+        The Speos server version to run, in the 3 digits format, such as "242".
+        If unspecified, the version will be chosen as ``ansys.speos.core.kernel.client,LATEST_VERSION``.
     channel : ~grpc.Channel, optional
         gRPC channel for server communication.
         By default, ``None``.
