@@ -39,10 +39,6 @@ html_theme_options = {
     "check_switcher": False,
     "ansys_sphinx_theme_autoapi": {
         "project": project,
-        "directory": "src/ansys/core",
-        "add_toctree_entry": True,
-        "own_page_level": "class",
-        "package_depth": 5,
     },
 }
 BUILD_CHEATSHEET = os.environ.get("BUILD_CHEATSHEET", "false").lower() == "true"
@@ -60,7 +56,6 @@ extensions = [
     "numpydoc",
     "sphinx.ext.intersphinx",
     "sphinx_copybutton",
-    "sphinx.ext.autodoc",
     "sphinx_design",
     "sphinx_jinja",
     "ansys_sphinx_theme.extension.autoapi",
