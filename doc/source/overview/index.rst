@@ -87,6 +87,8 @@ PySpeos is composed of several code layers, each of them having a different leve
 * workflow
 * kernel
 
+Examples of usage for each layer are available in the :ref:`Examples section <ref_examples>`.
+
 We recommend all new users to avoid using kernel layer at a first usage.
 
 Core
