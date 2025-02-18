@@ -117,4 +117,4 @@ This is also the one that is closer to the Speos gRPC APIs. It can be seen as a 
 For example it is important to understand the notion about Template and Instances, that can be found in the SpeosRPC server documentation available on the `Developer portal, Speos section <https://developer.ansys.com/docs/speos>`_.
 
 .. warning::
-    Kernel layer is recommended for experimented users only.
+    Kernel layer is recommended for experienced users only.
