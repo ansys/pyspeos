@@ -29,8 +29,10 @@ from ansys.speos.core.kernel.client import DEFAULT_PORT, LATEST_VERSION
 from ansys.speos.core.speos import Speos
 from ansys.tools.path import get_available_ansys_installations
 
-"""Maximum message length value accepted by the Speos RPC server"""
 MAX_MESSAGE_LENGTH = int(os.environ.get("SPEOS_MAX_MESSAGE_LENGTH", 256 * 1024**2))
+"""Maximum message length value accepted by the Speos RPC server,
+By default, value stored in environment variable SPEOS_MAX_MESSAGE_LENGTH or 268 435 456.
+"""
 
 try:
     import ansys.platform.instancemanagement as pypim

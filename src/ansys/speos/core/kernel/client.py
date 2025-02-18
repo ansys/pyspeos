@@ -52,8 +52,11 @@ from ansys.speos.core.logger import LOG as logger, PySpeosCustomAdapter
 from ansys.tools.path import get_available_ansys_installations
 
 DEFAULT_HOST = "localhost"
+"""Default host used by Speos RPC server and client """
 DEFAULT_PORT = "50098"
+"""Default port used by Speos RPC server and client """
 LATEST_VERSION = "251"
+"""Latest supported Speos version of the current PySpeos Package"""
 
 if TYPE_CHECKING:  # pragma: no cover
     from ansys.platform.instancemanagement import Instance
