@@ -7,3 +7,5 @@ Lumerical
 (?i)pyspeos
 (?i)Speos
 Zemax
+SpeosRPC
+Server
