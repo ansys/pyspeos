@@ -105,7 +105,7 @@ Workflow
 
 The Workflow layer offers a list of user workflows combining several actions into simple usage.
 
-For instance, users will be able to access a workflow that combines several Speos files into a single project. Another workflow allows users to display a simulation result (on windows environment only).
+For instance, users can access a workflow that combines several Speos files into a single project. Another workflow allows users to display a simulation result (on windows environment only).
 
 Kernel
 ------
