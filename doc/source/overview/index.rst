@@ -94,29 +94,27 @@ We recommend all new users to avoid using kernel layer at a first usage.
 Core
 ----
 
-It is the entry point of PySpeos.
+The Core layer is the entry point of PySpeos.
 
 It is designed to be representative of a classic Speos UI usage.
 
-As an example, user will be able to create a project (from scratch or from SPEOS file), add/modify/delete sources, sensors, simulations, materials, geometries.
+For instance, users will be able to create a project (from scratch or from SPEOS file), add/modify/delete sources, sensors, simulations, materials, geometries, and compute simulations.
 
 Workflow
 --------
 
-This layer is meant to gather user workflows.
+The Workflow layer offers a list of user workflows combining several actions into simple usage.
 
-As an example, user can access a workflow to combine several SPEOS files into a single project.
-
-The aim of this layer is to provide workflow that combines several actions into a simple usage.
+For instance, users will be able to access a workflow that combines several Speos files into a single project. Another workflow allows users to display a simulation result (on windows environment only).
 
 Kernel
 ------
 
-This layer is the one that offers more flexibility and capabilities.
+The Kernel layer offers more flexibility and capabilities than Core and Workflow.
 
-This is also the one that is closer to the Speos gRPC APIs. It can be seen as a low level wrapper.
+It is designed to be a low level wrapper, and is close to the Speos gRPC APIs.
 
-For example it is important to understand the notion about Template and Instances, that can be found in the SpeosRPC server documentation available on the `Developer portal, Speos section <https://developer.ansys.com/docs/speos>`_.
+With the Kernel layer, users need to understand the notion about Template and Instances. Refer to the SpeosRPC server documentation on the `Developer portal, Speos section <https://developer.ansys.com/docs/speos>`_ to get a full understanding.
 
 .. warning::
-    Kernel layer is recommended for experienced users only.
+    The Kernel layer is recommended for experienced users only.
