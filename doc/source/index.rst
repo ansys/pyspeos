@@ -11,7 +11,7 @@ PySpeos documentation |version|
         :link: overview/index
         :link-type: doc
 
-        Overview of the PyAnsys Speos library.
+        Overview of the PySpeos library.
 
     .. grid-item-card:: Getting started :fa:`person-running`
         :padding: 2 2 2 2
