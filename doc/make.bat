@@ -9,7 +9,7 @@ if "%SPHINXBUILD%" == "" (
 )
 set SOURCEDIR=source
 set BUILDDIR=_build
-set APIDIR=api
+set APIDIR=source\api
 set SPHINXOPTS=-j auto --keep-going
 
 if "%1" == "" goto help
@@ -43,7 +43,7 @@ pdflatex "%%f" --interaction=nonstopmode)
 
 :clean
 rmdir /s /q %BUILDDIR% > /NUL 2>&1
-for /d /r %SOURCEDIR% %%d in (%APIDIR) do @if exist "%%d" rmdir /s /q "%%d"
+rmdir /s /q %APIDIR% > /NUL 2>&1
 goto end
 
 :end
