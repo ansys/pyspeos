@@ -27,12 +27,12 @@ Test basic vop template database connection.
 import json
 import os
 
-from conftest import test_path
 import grpc
 import pytest
 
 from ansys.speos.core.kernel.vop_template import ProtoVOPTemplate
 from ansys.speos.core.speos import Speos
+from tests.conftest import test_path
 
 
 def test_vop_template(speos: Speos):

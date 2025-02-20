@@ -27,8 +27,6 @@ Test scene.
 import os
 from typing import List, Mapping, Optional
 
-from conftest import test_path
-from helper import clean_all_dbs
 import numpy as np
 
 from ansys.api.speos.sensor.v1 import common_pb2, irradiance_sensor_pb2
@@ -45,6 +43,8 @@ from ansys.speos.core.kernel.source_template import ProtoSourceTemplate
 from ansys.speos.core.kernel.spectrum import ProtoSpectrum
 from ansys.speos.core.kernel.vop_template import ProtoVOPTemplate
 from ansys.speos.core.speos import Speos
+from tests.conftest import test_path
+from tests.helper import clean_all_dbs
 
 
 def create_basic_scene(speos: Speos) -> SceneLink:

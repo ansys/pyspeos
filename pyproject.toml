@@ -74,7 +74,7 @@ Releases = "https://github.com/ansys/pyspeos/releases"
 Changelog = "https://github.com/ansys/pyspeos/blob/main/doc/source/changelog.rst"
 
 [tool.flit.module]
-name = "ansys.speos"
+name = "ansys.speos.core"
 
 [tool.ruff]
 line-length = 100

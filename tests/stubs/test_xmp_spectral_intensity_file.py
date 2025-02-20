@@ -33,9 +33,6 @@ With coverage.
 import logging
 import os
 
-from conftest import test_path
-import helper
-
 from ansys.api.speos.intensity_distributions.v1 import (
     base_map_template_pb2,
     spectral_map_template_pb2,
@@ -43,6 +40,8 @@ from ansys.api.speos.intensity_distributions.v1 import (
     xmp_pb2_grpc,
 )
 from ansys.speos.core.speos import Speos
+from tests.conftest import test_path
+import tests.helper as helper
 
 
 def createXmpIntensity():
