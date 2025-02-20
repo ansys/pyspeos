@@ -39,7 +39,7 @@ html_theme_options = {
     "check_switcher": False,
     "ansys_sphinx_theme_autoapi": {
         "project": project,
-        "templates": "_templates/autoapi",
+        "own_page_level": "module",
     },
     "cheatsheet": {
         "file": "cheat_sheet/cheat_sheet_script.qmd",
