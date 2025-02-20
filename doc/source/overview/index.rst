@@ -36,7 +36,7 @@ This offers the possibility to manage Speos capabilities with more liberty:
 gRPC usage advantages
 =====================
 
-There are several advantages of using gRPC.
+There are several advantages to using gRPC.
 
 * Language independency between client and server. This means that the user has a large choice of languages to write the API calls. The user does not have to write the same language as the server.
 * OS independency between client and server. The client does not have to run on the same OS as the server. The SpeosRPC server is provided for Linux and Windows.
