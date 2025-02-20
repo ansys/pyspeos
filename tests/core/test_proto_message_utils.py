@@ -26,9 +26,10 @@ Test basic using proto_message_utils.
 
 import os
 
-from ansys.speos.core import OptProp, Project, Speos, proto_message_utils, source
+from ansys.speos.core import OptProp, Project, Speos, proto_message_utils
 from ansys.speos.core.kernel import scene
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_dict
+from ansys.speos.core.source import SourceSurface
 from tests.conftest import test_path
 
 
@@ -36,7 +37,7 @@ def test_replace_guid_elt(speos: Speos):
     """Test _replace_guid_elt."""
     # Example with surface source : spectrum guid + intensity guid
     p = Project(speos=speos)
-    src_feat = source.SourceSurface(project=p, name="Surface.1")
+    src_feat = SourceSurface(project=p, name="Surface.1")
     src_feat.commit()
 
     # Retrieve source template message and transform it into dict
@@ -72,7 +73,7 @@ def test_replace_guid_elt_ignore_simple_key(speos: Speos):
     """Test _replace_guid_elt with parameter ignore_simple_key."""
     # Example with surface source : spectrum guid + intensity guid
     p = Project(speos=speos)
-    src_feat = source.SourceSurface(project=p, name="Surface.1")
+    src_feat = SourceSurface(project=p, name="Surface.1")
     src_feat.commit()
 
     # Retrieve source template message and transform it into dict
@@ -206,7 +207,7 @@ def test_replace_guid_elt_complex(speos: Speos):
 def test_value_finder_key_startswith(speos: Speos):
     """Test _value_finder_key_startswith."""
     p = Project(speos=speos)
-    src_feat = source.SourceSurface(project=p, name="Surface.1")
+    src_feat = SourceSurface(project=p, name="Surface.1")
     src_feat.commit()
 
     # Retrieve source instance message and transform it into dict
@@ -223,7 +224,7 @@ def test_value_finder_key_startswith(speos: Speos):
 def test__value_finder_key_endswith(speos: Speos):
     """Test _value_finder_key_endswith."""
     p = Project(speos=speos)
-    src_feat = source.SourceSurface(project=p, name="Surface.1")
+    src_feat = SourceSurface(project=p, name="Surface.1")
     src_feat.commit()
 
     # Retrieve source instance message and transform it into dict
@@ -240,7 +241,7 @@ def test__value_finder_key_endswith(speos: Speos):
 def test_replace_properties(speos: Speos):
     """Test _replace_properties."""
     p = Project(speos=speos)
-    src_feat = source.SourceSurface(project=p, name="Surface.1")
+    src_feat = SourceSurface(project=p, name="Surface.1")
     src_feat.set_intensity().set_gaussian().set_axis_system([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     src_feat.commit()
 
