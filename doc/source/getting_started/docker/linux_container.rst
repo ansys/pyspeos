@@ -18,7 +18,7 @@ You can choose one of the following possibilities:
   In this case, you can interact with docker by command line.
 
 * Install `Docker Desktop <https://docs.docker.com/desktop/install/windows-install/>`_. (for all environments).
-  In this case you, can have a GUI and can also interact with docker by command line.
+  In this case, you can have a GUI and can also interact with docker by command line.
 
 
 Install the Speos service image
