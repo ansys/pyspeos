@@ -78,7 +78,7 @@ def insert_speos(project: Project, speos_to_insert: List[SpeosFileInstance]) -> 
     if project.scene_link.get().part_guid == "":
         part_link = project.client.parts().create(message=ProtoPart())
     else:
-        part_link = project.client.get_item(project.scene_link.get().part_guid)
+        part_link = project.client[project.scene_link.get().part_guid]
 
     # Combine all speos_to_insert into the project
     _combine(project=project, part_link=part_link, speos_to_combine=speos_to_insert)

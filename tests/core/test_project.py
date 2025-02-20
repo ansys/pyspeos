@@ -336,17 +336,8 @@ def test_from_file(speos: Speos):
 
     # And that the feature retrieved has a real impact on the project
     feat_ops[0].set_surface_mirror(reflectance=60).commit()
-    assert (
-        speos.client.get_item(key=p.scene_link.get().materials[2].sop_guids[0])
-        .get()
-        .HasField("mirror")
-    )
-    assert (
-        speos.client.get_item(key=p.scene_link.get().materials[2].sop_guids[0])
-        .get()
-        .mirror.reflectance
-        == 60
-    )
+    assert speos.client[p.scene_link.get().materials[2].sop_guids[0]].get().HasField("mirror")
+    assert speos.client[p.scene_link.get().materials[2].sop_guids[0]].get().mirror.reflectance == 60
 
     # Check that ambient mat has no sop
     feat_op_ambients = p.find(name=p.scene_link.get().materials[-1].name)
@@ -361,7 +352,7 @@ def test_from_file(speos: Speos):
     # And that we can modify it (and that other values are not overridden by default values)
     feat_ssrs[0].set_type_colorimetric().set_wavelengths_range().set_end(value=800)
     feat_ssrs[0].commit()
-    ssr_link = speos.client.get_item(key=p.scene_link.get().sensors[0].sensor_guid)
+    ssr_link = speos.client[p.scene_link.get().sensors[0].sensor_guid]
     ssr_data = ssr_link.get()
     assert ssr_data.HasField("irradiance_sensor_template")
     assert ssr_data.irradiance_sensor_template.HasField("sensor_type_colorimetric")
@@ -389,21 +380,21 @@ def test_find_geom(speos: Speos):
     assert p.scene_link.get().part_guid != ""
 
     # Check that RootPart feature can be retrieved
-    part_data = speos.client.get_item(p.scene_link.get().part_guid).get()
+    part_data = speos.client[p.scene_link.get().part_guid].get()
     feat_rps = p.find(name="", feature_type=Part)
     assert len(feat_rps) == 1
     assert type(feat_rps[0]) is Part
 
     # Check that body can be retrieved
     assert len(part_data.body_guids) == 3
-    body1_data = speos.client.get_item(part_data.body_guids[1]).get()
+    body1_data = speos.client[part_data.body_guids[1]].get()
     feat_bodies = p.find(name=body1_data.name, feature_type=Part)
     assert len(feat_bodies) == 1
     assert type(feat_bodies[0]) is Body
 
     # Check that face can be retrieved
     assert len(body1_data.face_guids) > 4
-    face2_data = speos.client.get_item(body1_data.face_guids[2]).get()
+    face2_data = speos.client[body1_data.face_guids[2]].get()
     feat_faces = p.find(name=body1_data.name + "/" + face2_data.name, feature_type=Part)
     assert len(feat_faces) == 1
     assert type(feat_faces[0]) is Face

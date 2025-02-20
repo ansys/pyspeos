@@ -93,9 +93,7 @@ class BaseSensor:
             )
         else:
             self._unique_id = sensor_instance.metadata["UniqueId"]
-            self.sensor_template_link = self._project.client.get_item(
-                key=sensor_instance.sensor_guid
-            )
+            self.sensor_template_link = self._project.client[sensor_instance.sensor_guid]
             # reset will fill _sensor_instance and _sensor_template from respectively project (using _unique_id) and sensor_template_link
             self.reset()
 
