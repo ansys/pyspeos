@@ -36,13 +36,13 @@ With coverage.
 import math
 import os
 
-from conftest import test_path
 from google.protobuf.empty_pb2 import Empty
-import helper
 
 import ansys.api.speos.bsdf.v1.anisotropic_bsdf_pb2 as anisotropic_bsdf__v1__pb2
 import ansys.api.speos.bsdf.v1.anisotropic_bsdf_pb2_grpc as anisotropic_bsdf__v1__pb2_grpc
 from ansys.speos.core.speos import Speos
+from tests.conftest import test_path
+import tests.helper as helper
 
 
 def createAnisotropicBsdf():
