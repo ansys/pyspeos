@@ -4,7 +4,7 @@
 Overview
 ========
 
-This section provides an overview of the PyAnsys Speos library,
+This section provides an overview of the PySpeos library,
 explaining its key concepts.
 
 PyAnsys Speos overview
