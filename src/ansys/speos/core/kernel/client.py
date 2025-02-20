@@ -297,7 +297,7 @@ class SpeosClient:
             self._jobDB = JobStub(self._channel)
         return self._jobDB
 
-    def get_item(
+    def __getitem__(
         self, key: str
     ) -> Union[
         SOPTemplateLink,

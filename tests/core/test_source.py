@@ -69,7 +69,7 @@ def test_create_luminaire_source(speos: Speos):
     # spectrum
     source1.set_spectrum().set_halogen()
     source1.commit()
-    spectrum = speos.client.get_item(key=source1.source_template_link.get().luminaire.spectrum_guid)
+    spectrum = speos.client[source1.source_template_link.get().luminaire.spectrum_guid]
     assert spectrum.get().HasField("predefined")
     assert spectrum.get().predefined.HasField("halogen")
 
@@ -144,11 +144,11 @@ def test_create_surface_source(speos: Speos):
     assert source1.source_template_link.get().surface.HasField("luminous_flux")
     assert source1.source_template_link.get().surface.luminous_flux.luminous_value == 683
     assert source1.source_template_link.get().surface.HasField("spectrum_guid")
-    spectrum = speos.client.get_item(key=source1.source_template_link.get().surface.spectrum_guid)
+    spectrum = speos.client[source1.source_template_link.get().surface.spectrum_guid]
     assert spectrum.get().name == "Surface.1.Spectrum"
     assert spectrum.get().HasField("monochromatic")
     assert source1.source_template_link.get().surface.intensity_guid != ""
-    intensity = speos.client.get_item(key=source1.source_template_link.get().surface.intensity_guid)
+    intensity = speos.client[source1.source_template_link.get().surface.intensity_guid]
     assert intensity.get().HasField("cos")
 
     # set intensity as library to be able to use flux_from_intensity_file
@@ -158,7 +158,7 @@ def test_create_surface_source(speos: Speos):
     source1.set_flux_from_intensity_file()
     source1.commit()
     assert source1.source_template_link.get().surface.HasField("flux_from_intensity_file")
-    intensity = speos.client.get_item(key=source1.source_template_link.get().surface.intensity_guid)
+    intensity = speos.client[source1.source_template_link.get().surface.intensity_guid]
     assert intensity.get().HasField("library")
     assert source1._source_instance.HasField("surface_properties")
     assert source1._source_instance.surface_properties.HasField("intensity_properties")
@@ -336,7 +336,7 @@ def test_create_rayfile_source(speos: Speos):
     source1.set_spectrum().set_blackbody()
     source1.commit()
     assert source1.source_template_link.get().rayfile.spectrum_guid != ""
-    spectrum = speos.client.get_item(key=source1.source_template_link.get().rayfile.spectrum_guid)
+    spectrum = speos.client[source1.source_template_link.get().rayfile.spectrum_guid]
     assert spectrum.get().name == "Ray-file.1.Spectrum"
     assert spectrum.get().HasField("blackbody")
 
