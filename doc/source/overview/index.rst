@@ -98,7 +98,7 @@ The Core layer is the entry point of PySpeos.
 
 It is designed to be representative of a classic Speos UI usage.
 
-For instance, users will be able to create a project (from scratch or from SPEOS file), add/modify/delete sources, sensors, simulations, materials, geometries, and compute simulations.
+For instance, users can create a project (from scratch or from SPEOS file), add/modify/delete sources, sensors, simulations, materials, geometries, and compute simulations.
 
 Workflow
 --------
