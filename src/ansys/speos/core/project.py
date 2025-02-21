@@ -584,7 +584,7 @@ class Project:
     def _add_unique_ids(self):
         scene_data = self.scene_link.get()
 
-        root_part_link = self.client.get_item(key=scene_data.part_guid)
+        root_part_link = self.client[scene_data.part_guid]
         root_part = root_part_link.get()
         update_rp = False
         for sub_part in root_part.parts:
@@ -618,7 +618,7 @@ class Project:
 
         scene_data = self.scene_link.get()
 
-        root_part_link = self.client.get_item(key=scene_data.part_guid)
+        root_part_link = self.client[scene_data.part_guid]
         root_part_data = root_part_link.get()
         root_part_feats = self.find(name="", feature_type=part.Part)
         root_part_feat = None
@@ -638,7 +638,7 @@ class Project:
             if sp.description.startswith("UniqueId_"):
                 idx = sp.description.find("_")
                 sp_feat._unique_id = sp.description[idx + 1 :]
-            sp_feat.part_link = self.client.get_item(key=sp.part_guid)
+            sp_feat.part_link = self.client[sp.part_guid]
             part_data = sp_feat.part_link.get()
             sp_feat._part_instance = sp
             sp_feat._part = (
@@ -682,7 +682,7 @@ class Project:
             self._features.append(ssr_feat)
 
         for sim_inst in scene_data.simulations:
-            simulation_template_link = self.client.get_item(key=sim_inst.simulation_guid).get()
+            simulation_template_link = self.client[sim_inst.simulation_guid].get()
             if simulation_template_link.HasField("direct_mc_simulation_template"):
                 sim_feat = simulation.Direct(
                     project=self,
@@ -753,9 +753,9 @@ class Project:
             part_coordinate = part_coordinate_info
         part_mesh_info = None
         for body_idx, body_guid in enumerate(part_data.body_guids):
-            body_item_data = self.client.get_item(body_guid).get()
+            body_item_data = self.client[body_guid].get()
             for face_idx, face_guid in enumerate(body_item_data.face_guids):
-                face_item_data = self.client.get_item(face_guid).get()
+                face_item_data = self.client[face_guid].get()
                 vertices = np.array(face_item_data.vertices)
                 facets = np.array(face_item_data.facets)
                 vertices = vertices.reshape(-1, 3)
@@ -792,12 +792,12 @@ class Project:
             viz_args = {}
         _preview_mesh = pv.PolyData()
         # Retrieve root part
-        root_part_data = self.client.get_item(self.scene_link.get().part_guid).get()
+        root_part_data = self.client[self.scene_link.get().part_guid].get()
 
         # Loop on all sub parts to retrieve their mesh
         if len(root_part_data.parts) != 0:
             for part_idx, part_item in enumerate(root_part_data.parts):
-                part_item_data = self.client.get_item(part_item.part_guid).get()
+                part_item_data = self.client[part_item.part_guid].get()
                 poly_data = self.__extract_part_mesh_info(
                     part_data=part_item_data, part_coordinate_info=part_item.axis_system
                 )

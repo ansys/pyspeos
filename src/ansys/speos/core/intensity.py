@@ -308,7 +308,7 @@ class Intensity:
             self.set_cos(N=1)  # By default will be lambertian (cos with N =1)
         else:
             # Retrieve IntensityTemplate
-            self.intensity_template_link = speos_client.get_item(key=key)
+            self.intensity_template_link = speos_client[key]
             self._intensity_template = self.intensity_template_link.get()
 
     def set_library(self) -> Intensity.Library:

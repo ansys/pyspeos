@@ -64,7 +64,7 @@ def _replace_guid_elt(
         # If we are in the case of key "xxx_guid", with a guid non empty and that the key is not to ignore
         if k.endswith("_guid") and v != "" and k != ignore_simple_key:
             # Retrieve the item from db and transform it to dictionary
-            new_v = protobuf_message_to_dict(message=speos_client.get_item(key=v).get())
+            new_v = protobuf_message_to_dict(message=speos_client[v].get())
 
             # This item can potentially have some "xxx_guid" fields to replace
             _replace_guid_elt(
@@ -79,7 +79,7 @@ def _replace_guid_elt(
             new_value_list = []
             for iv in v:
                 # Retrieve the item from db and transform it to dictionary
-                new_v = protobuf_message_to_dict(message=speos_client.get_item(key=iv).get())
+                new_v = protobuf_message_to_dict(message=speos_client[iv].get())
 
                 # This item can potentially have some "xxx_guid" fields to replace
                 _replace_guid_elt(
