@@ -10,9 +10,9 @@ explaining its key concepts.
 PySpeos overview
 ======================
 
-PySpeos is a Python client to communicate with the Ansys SpeosRPC Server.
+PySpeos is a Python client to communicate with the Ansys SpeosRPC server.
 
-The SpeosRPC Server is based on gRPC and provides APIs to interact with Speos Solver.
+The SpeosRPC server is based on gRPC and provides APIs to interact with Speos Solver.
 
 .. warning::
 
@@ -22,7 +22,7 @@ The SpeosRPC Server is based on gRPC and provides APIs to interact with Speos So
 
    The server is under development, so all Speos features are not available yet.
 
-Why SpeosRPC Server?
+Why SpeosRPC server?
 ====================
 
 This allows the user to use the Speos capabilities without starting any CAD.
@@ -48,7 +48,7 @@ Schema
 The schema shows different ways to use Speos capabilities:
 
 * via CADs / Labs / Viewers GUI
-* via SpeosRPC Server APIs
+* via SpeosRPC server APIs
 
 .. mermaid::
    :caption: How to use Speos capabilities.
@@ -60,7 +60,7 @@ The schema shows different ways to use Speos capabilities:
    flowchart LR
 
     SpeosSolver["Speos Solver"]
-    SpeosRPCServer["SpeosRPC Server"]
+    SpeosRPCServer["SpeosRPC server"]
     StandardUsers["CADs / Labs / Viewers"]
     StandardUsers --> |uses|SpeosSolver
     SpeosRPCServer --> |uses|SpeosSolver
@@ -73,10 +73,10 @@ Speos Solver
 
 The Speos Solver represents the intelligence that is used to handle the light simulation.
 
-SpeosRPC Server
+SpeosRPC server
 ---------------
 
-The SpeosRPC Server allows to translate the provided gRPC API calls into features understood by the Speos Solver.
+The SpeosRPC server allows to translate the provided gRPC API calls into features understood by the Speos Solver.
 
 PySpeos layering
 ================

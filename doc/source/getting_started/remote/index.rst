@@ -4,7 +4,7 @@ Launch a remote service
 =======================
 
 If a remote server is running Ansys Release 2025 R1 or later and is also running PIM (Product
-Instance Manager), you can use PIM to start a SpeosRPC Server Session that PySpeos
+Instance Manager), you can use PIM to start a SpeosRPC server Session that PySpeos
 can connect to.
 
 A usage example of the remote service can be accessed via AnsysLAB.
