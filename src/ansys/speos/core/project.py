@@ -135,7 +135,7 @@ class Project:
             By default, ``""``.
         feature_type: type
             Source type to be created.
-            By default, ``ansys.speos.core.source.Surface``.
+            By default, ``ansys.speos.core.source.SourceSurface``.
             Allowed types:
             Union[ansys.speos.core.source.SourceSurface, ansys.speos.core.source.SourceRayFile, \
             ansys.speos.core.source.SourceLuminaire].
@@ -196,7 +196,7 @@ class Project:
             By default, ``""``.
         feature_type: type
             Simulation type to be created.
-            By default, ``ansys.speos.core.simulation.Direct``.
+            By default, ``ansys.speos.core.simulation.SimulationDirect``.
             Allowed types: Union[ansys.speos.core.simulation.SimulationDirect, \
             ansys.speos.core.simulation.SimulationInteractive, ansys.speos.core.simulation.SimulationInverse].
         metadata : Optional[Mapping[str, str]]
@@ -261,7 +261,7 @@ class Project:
             By default, ``""``.
         feature_type: type
             Sensor type to be created.
-            By default, ``ansys.speos.core.sensor.Irradiance``.
+            By default, ``ansys.speos.core.sensor.SensorIrradiance``.
             Allowed types: Union[ansys.speos.core.sensor.SensorCamera, ansys.speos.core.sensor.SensorRadiance, \
             ansys.speos.core.sensor.SensorIrradiance].
         metadata : Optional[Mapping[str, str]]
@@ -270,7 +270,6 @@ class Project:
 
         Returns
         -------
-        Union[ansys.speos.core.sensor.SensorCamera, ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance]
             Sensor class instance.
         """
         if metadata is None:
