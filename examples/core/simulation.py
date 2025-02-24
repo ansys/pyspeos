@@ -10,7 +10,7 @@
 import os
 
 from ansys.speos.core import GeoRef, Project, Speos
-from ansys.speos.core.simulation import Interactive, Inverse
+from ansys.speos.core.simulation import SimulationInteractive, SimulationInverse
 
 # If using docker container
 tests_data_path = os.path.join("/app", "assets")
@@ -148,7 +148,7 @@ print(simulation1)
 # ### Inverse simulation
 
 # +
-simulation3 = p.create_simulation(name="Simulation.3", feature_type=Inverse)
+simulation3 = p.create_simulation(name="Simulation.3", feature_type=SimulationInverse)
 simulation3.set_sensor_paths(sensor_paths=["Irradiance.1"]).set_source_paths(
     source_paths=["Surface.1"]
 ).commit()
@@ -158,7 +158,7 @@ print(simulation3)
 # ### Interactive simulation
 
 # +
-simulation4 = p.create_simulation(name="Simulation.4", feature_type=Interactive)
+simulation4 = p.create_simulation(name="Simulation.4", feature_type=SimulationInteractive)
 simulation4.set_source_paths(source_paths=["Surface.1"]).commit()
 print(simulation4)
 # -

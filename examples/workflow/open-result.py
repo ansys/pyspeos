@@ -6,7 +6,7 @@
 import os
 
 from ansys.speos.core import Project, Speos
-from ansys.speos.core.simulation import Direct
+from ansys.speos.core.simulation import SimulationDirect
 
 # If using docker container
 tests_data_path = os.path.join("/app", "assets")
@@ -37,7 +37,7 @@ print(p)
 # Use find method from project class to retrieve the simulation feature.
 
 # +
-sim = p.find(name=".*", name_regex=True, feature_type=Direct)[0]
+sim = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
 # -
 
 # ## Run simulation
