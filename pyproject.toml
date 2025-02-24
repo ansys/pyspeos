@@ -98,14 +98,14 @@ select = [
     "TD",   # flake8-todos, https://docs.astral.sh/ruff/rules/#flake8-todos-td
 ]
 ignore = [
-    "PTH107", # TODO: Use Path.unlink
-    "PTH110",
-    "PTH113", # TODO: Use Path.is_file
-    "PTH119",
-    "PTH120",
-    "PTH122",
-    "PTH123", # TODO: Use Path.open
-    "PTH118", # TODO: Use pathlib instead of os.path
+#    "PTH107", # TODO: Use Path.unlink
+#    "PTH110",
+#    "PTH113", # TODO: Use Path.is_file
+#    "PTH119",
+#    "PTH120",
+#    "PTH122",
+#    "PTH123", # TODO: Use Path.open
+#    "PTH118", # TODO: Use pathlib instead of os.path
     "D100",
     "D101",
     "D102",
