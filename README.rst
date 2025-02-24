@@ -28,7 +28,7 @@ Installation can be done using the published `package`_ or the repository `sourc
 
 Package
 ~~~~~~~
-.. warning:: Release is in process it might take some time till available. Until then, please use `Sources`_.
+.. warning:: Release is in progress. It might take some time before it becomes available. Until then, please use `Sources`_.
 
 This repository is deployed as the Python packages `ansys-speos-core <https://pypi.org/project/ansys-speos-core>`_.
 As usual, installation is done by running:

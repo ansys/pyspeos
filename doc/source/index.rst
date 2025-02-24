@@ -6,6 +6,12 @@ PySpeos documentation |version|
 
 .. grid:: 2
 
+    .. grid-item-card:: Overview :fa:`book-open-reader`
+        :padding: 2 2 2 2
+        :link: overview/index
+        :link-type: doc
+
+        Overview of the PySpeos library.
 
     .. grid-item-card:: Getting started :fa:`person-running`
         :padding: 2 2 2 2
@@ -36,6 +42,7 @@ PySpeos documentation |version|
    :hidden:
    :maxdepth: 3
 
+   overview/index
    getting_started/index
    api/index
    examples
