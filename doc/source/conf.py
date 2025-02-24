@@ -17,7 +17,7 @@ LaTeXBuilder.supported_image_types = ["image/png", "image/pdf", "image/svg+xml"]
 os.environ["DOCUMENTATION_BUILDING"] = "true"
 
 # Project information
-project = "ansys-pyspeos"
+project = "ansys-speos-core"
 copyright = f"(c) {datetime.now().year} ANSYS, Inc. All rights reserved"
 author = "Ansys Inc."
 release = version = __version__
@@ -41,10 +41,6 @@ html_theme_options = {
         "project": project,
         "own_page_level": "module",
     },
-    "cheatsheet": {
-        "file": "cheat_sheet/cheat_sheet_script.qmd",
-        "title": "PySpeos Cheat Sheet",
-    },
 }
 BUILD_CHEATSHEET = os.environ.get("BUILD_CHEATSHEET", "false").lower() == "true"
 if BUILD_CHEATSHEET:
@@ -67,6 +63,7 @@ extensions = [
     "ansys_sphinx_theme.extension.autoapi",
     "nbsphinx",
     "myst_parser",
+    "sphinxcontrib.mermaid",
 ]
 
 # Intersphinx mapping

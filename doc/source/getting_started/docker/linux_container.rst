@@ -15,10 +15,10 @@ To run the Linux Docker container for the Speos service, you need to install Doc
 You can choose one of the following possibilities:
 
 * Install `Docker Engine <https://docs.docker.com/engine/install/>`_ (only for Linux environment).
-  In this case you can interact with docker by command line.
+  In this case, you can interact with docker by command line.
 
 * Install `Docker Desktop <https://docs.docker.com/desktop/install/windows-install/>`_. (for all environments).
-  In this case you can have a GUI and can also interact with docker by command line.
+  In this case, you can have a GUI and can also interact with docker by command line.
 
 
 Install the Speos service image
@@ -44,7 +44,7 @@ container for the Speos service and install this image.
 
        echo XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX > GH_TOKEN.txt
 
-#. Authorize Docker to access the repository and run the commands for your OS. To see these commands, click the tab for your OS.
+#. Authorize Docker to access the repository and run the commands for your OS. To see these commands, click the tab corresponding to your OS.
 
    .. tab-set::
 
