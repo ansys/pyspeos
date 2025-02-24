@@ -6,8 +6,8 @@
 import os
 
 from ansys.speos.core import Project, Speos
-from ansys.speos.core.sensor import Irradiance
-from ansys.speos.core.simulation import Direct
+from ansys.speos.core.sensor import SensorIrradiance
+from ansys.speos.core.simulation import SimulationDirect
 
 # If using docker container
 tests_data_path = os.path.join("/app", "assets")
@@ -42,7 +42,7 @@ p.preview()
 # Run the simulation
 
 # +
-sim_features = p.find(name="Prism", feature_type=Direct)
+sim_features = p.find(name="Prism", feature_type=SimulationDirect)
 sim = sim_features[0]
 sim.compute_CPU()
 # -
@@ -63,7 +63,7 @@ if os.name == "nt":
 # Modify the sensor setting, e.g. set the spectral type, etc.
 
 # +
-irr_features = p.find(name=".*", name_regex=True, feature_type=Irradiance)
+irr_features = p.find(name=".*", name_regex=True, feature_type=SensorIrradiance)
 irr = irr_features[0]
 irr.set_type_spectral().set_wavelengths_range().set_start(500).set_end(600).set_sampling(11)
 irr.commit()

@@ -8,7 +8,7 @@
 import os
 
 from ansys.speos.core import Project, Speos
-from ansys.speos.core.sensor import Camera, Irradiance, Radiance
+from ansys.speos.core.sensor import SensorCamera, SensorIrradiance, SensorRadiance
 
 # If using docker container
 tests_data_path = os.path.join("/app", "assets")
@@ -54,7 +54,7 @@ red_spectrum_path = os.path.join(
     tests_data_path, "CameraInputFiles", "CameraSensitivityRed.spectrum"
 )
 
-sensor1 = p.create_sensor(name="Camera.1", feature_type=Camera)
+sensor1 = p.create_sensor(name="Camera.1", feature_type=SensorCamera)
 sensor1.set_distortion_file_uri(uri=distortion_file_path)
 # Choose photometric mode
 sensor1.set_mode_photometric().set_transmittance_file_uri(uri=transmittance_file_path)
@@ -100,7 +100,7 @@ red_spectrum_path = os.path.join(
     tests_data_path, "CameraInputFiles", "CameraSensitivityRed.spectrum"
 )
 
-sensor2 = p.create_sensor(name="Camera.2", feature_type=Camera)
+sensor2 = p.create_sensor(name="Camera.2", feature_type=SensorCamera)
 sensor2.set_distortion_file_uri(uri=distortion_file_path)
 sensor2.set_mode_photometric().set_transmittance_file_uri(uri=transmittance_file_path)
 sensor2.set_mode_photometric().set_layer_type_source()
@@ -178,7 +178,7 @@ sensor1.delete()
 # ### Irradiance sensor
 
 # +
-sensor3 = p.create_sensor(name="Irradiance.1", feature_type=Irradiance)
+sensor3 = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
 sensor3.commit()
 print(sensor3)
 # -
@@ -197,7 +197,7 @@ sensor3.delete()
 # ### radiance sensor
 
 # +
-sensor4 = p.create_sensor(name="Radiance.1", feature_type=Radiance)
+sensor4 = p.create_sensor(name="Radiance.1", feature_type=SensorRadiance)
 sensor4.commit()
 print(sensor4)
 # -

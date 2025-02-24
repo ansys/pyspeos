@@ -6,7 +6,7 @@
 import os
 
 from ansys.speos.core import LightPathFinder, Project, Speos
-from ansys.speos.core.simulation import Interactive
+from ansys.speos.core.simulation import SimulationInteractive
 
 # If using docker container
 tests_data_path = os.path.join("/app", "assets")
@@ -57,7 +57,7 @@ data = ORF._find_correct_result(sim, "Direct.1.html")
 # We will define an interactive simulation to have a look at the rays in error
 
 # +
-interactive_sim = p.create_simulation("error", feature_type=Interactive)
+interactive_sim = p.create_simulation("error", feature_type=SimulationInteractive)
 interactive_sim.set_light_expert(True)
 interactive_sim.set_sensor_paths(["Irradiance.1:70"])
 interactive_sim.set_source_paths(["Surface.1:4830"])

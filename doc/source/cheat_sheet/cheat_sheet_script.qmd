@@ -95,9 +95,11 @@ Find methods and it possible uses:
 
 ```{python}
 #| eval: false
+from ansys.speos.core.simulation import SimulationDirect
+
 found_items = project.find(name='test')
 # any item with name 'test' are returned as a list
-found_items = project.find(name='.*', name_regex=True, feature_type= core.simulation.Direct)
+found_items = project.find(name='.*', name_regex=True, feature_type=SimulationDirect)
 # any direct simulation item are return as a list
 ```
 
@@ -109,7 +111,9 @@ Create surface source:
 
 ```{python}
 #| eval: false
-s_source = project.create_source(name='Surface.1', feature_type=core.source.Surface)
+from ansys.speos.core.source import SourceSurface
+
+s_source = project.create_source(name='Surface.1', feature_type=SourceSurface)
 # Choose one way to set source power
 # for any conflicting property the last set property counts
 s_source.set_flux_from_intensity_file()
@@ -129,7 +133,9 @@ Create rayfile source:
 
 ```{python}
 #| eval: false
-r_source = project.create_source(name='Rayfile.1', feature_type=core.source.RayFile)
+from ansys.speos.core.source import SourceRayFile
+
+r_source = project.create_source(name='Rayfile.1', feature_type=SurfaceRayFile)
 r_source.set_ray_file_uri('path/ray.ray')
 # Choose one way to set source power
 # for any conflicting property the last set property counts
@@ -191,7 +197,9 @@ Create radiance sensor:
 
 ```{python}
 #| eval: false
-r_sensor = project.create_sensor(name='Radiance.1', feature_type=core.sensor.Radiance)
+from ansys.speos.core.sensor import SensorRadiance
+
+r_sensor = project.create_sensor(name='Radiance.1', feature_type=SensorRadiance)
 # define size
 dim = r_sensor.set_dimensions()
 dim.set_x_start(-5).set_x_end(5).set_x_sampling(10)
@@ -210,7 +218,9 @@ Create irradiance Sensor:
 
 ```{python}
 #| eval: false
-i_sensor = project.create_sensor(name='Irradiance.1', feature_type=core.sensor.Irradiance)
+from ansys.speos.core.sensor import SensorIrradiance
+
+i_sensor = project.create_sensor(name='Irradiance.1', feature_type=SensorIrradiance)
 # methods are similar to Radiance Sensor
 i_sensor.commit()
 ```
@@ -219,7 +229,9 @@ Create camera Sensor:
 
 ```{python}
 #| eval: false
-c_sensor = project.create_sensor(name='Camera.1', feature_type=core.sensor.Camera)
+from ansys.speos.core.sensor import SensorCamera
+
+c_sensor = project.create_sensor(name='Camera.1', feature_type=SensorCamera)
 c_sensor.set_distortion_file_uri(
     'distortion_file_path')
 # Choose photometric mode
@@ -240,7 +252,9 @@ Create direct simulation:
 
 ```{python}
 #| eval: false
-direct_sim = project.create_simulation(name='Direct.1', feature_type=core.simulation.Direct)
+from ansys.speos.core.simulation import SimulationDirect
+
+direct_sim = project.create_simulation(name='Direct.1', feature_type=SimulationDirect)
 # All project geometry will be taken into account
 # General Simulation API
 direct_sim.set_sensor_paths(['Irradiance.1'])
@@ -255,7 +269,9 @@ Create inverse simulation:
 
 ```{python}
 #| eval: false
-inverse_sim= project.create_simulation(name='Inverse.1', feature_type=core.simulation.Inverse)
+from ansys.speos.core.simulation import SimulationInverse
+
+inverse_sim= project.create_simulation(name='Inverse.1', feature_type=SimulationInverse)
 # methods similar to direct simulation
 ```
 
@@ -263,7 +279,9 @@ Create interactive simulation:
 
 ```{python}
 #| eval: false
-interactive_sim = project.create_simulation(name='Interactive.1', feature_type=core.simulation.Interactive)
+from ansys.speos.core.simulation import SimulationInteractive
+
+interactive_sim = project.create_simulation(name='Interactive.1', feature_type=SimulationInteractive)
 # methods similar to direct simulation
 ```
 Run Simulation on CPU or GPU:
