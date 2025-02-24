@@ -270,6 +270,7 @@ class Project:
 
         Returns
         -------
+        Union[ansys.speos.core.sensor.SensorCamera, ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance]
             Sensor class instance.
         """
         if metadata is None:
