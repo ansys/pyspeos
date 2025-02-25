@@ -222,7 +222,7 @@ def test_lpf_file_reader_multi_v2(speos: Speos):
 
 def test_lpf_file_reader_mono_v2_DirectSimu_with_file_transfer(speos: Speos):
     # local file upload to the server
-    path = str(Path(test_path).joinpath("basic_DirectSimu.lpf"))
+    path = str(Path(local_test_path).joinpath("basic_DirectSimu.lpf"))
     file_transfer_stub = file_transfer__v1__pb2_grpc.FileTransferServiceStub(speos.client.channel)
     upload_response = file_transfer_helper__v1.upload_file(file_transfer_stub, path)
 
