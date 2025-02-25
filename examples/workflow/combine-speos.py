@@ -4,6 +4,7 @@
 
 # +
 import os
+from pathlib import Path
 
 from ansys.speos.core import Part, Speos
 from ansys.speos.core.sensor import SensorCamera
@@ -12,7 +13,7 @@ from ansys.speos.core.source import SourceLuminaire
 from ansys.speos.core.workflow.combine_speos import SpeosFileInstance, combine_speos
 
 # If using docker container
-tests_data_path = os.path.join("/app", "assets")
+tests_data_path = Path().joinpath("/app", "assets")
 # If using local server
 # tests_data_path = os.path.join(os.path.abspath(""), os.path.pardir, os.path.pardir, os.path.pardir, "tests", "assets")
 # -
@@ -35,17 +36,17 @@ p = combine_speos(
     speos=speos,
     speos_to_combine=[
         SpeosFileInstance(
-            speos_file=os.path.join(
-                tests_data_path, "Env_Simplified.speos", "Env_Simplified.speos"
+            speos_file=str(
+                tests_data_path.joinpath("Env_Simplified.speos", "Env_Simplified.speos")
             ),
             axis_system=[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
         ),
         SpeosFileInstance(
-            speos_file=os.path.join(tests_data_path, "BlueCar.speos", "BlueCar.speos"),
+            speos_file=str(tests_data_path.joinpath("BlueCar.speos", "BlueCar.speos")),
             axis_system=[2000, 0, 35000, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0, 0.0],
         ),
         SpeosFileInstance(
-            speos_file=os.path.join(tests_data_path, "RedCar.speos", "RedCar.speos"),
+            speos_file=str(tests_data_path.joinpath("RedCar.speos", "RedCar.speos")),
             axis_system=[-4000, 0, 48000, 1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0],
         ),
     ],
@@ -72,15 +73,15 @@ p.preview()
 # +
 ssr = p.create_sensor(name="Camera.1", feature_type=SensorCamera)
 ssr.set_distortion_file_uri(
-    uri=os.path.join(tests_data_path, "CameraInputFiles", "CameraDistortion_190deg.OPTDistortion")
+    uri=str(tests_data_path.joinpath("CameraInputFiles", "CameraDistortion_190deg.OPTDistortion"))
 ).set_mode_photometric().set_transmittance_file_uri(
-    uri=os.path.join(tests_data_path, "CameraInputFiles", "CameraTransmittance.spectrum")
+    uri=str(tests_data_path.joinpath("CameraInputFiles", "CameraTransmittance.spectrum"))
 ).set_mode_color().set_red_spectrum_file_uri(
-    uri=os.path.join(tests_data_path, "CameraInputFiles", "CameraSensitivityRed.spectrum")
+    uri=str(tests_data_path.joinpath("CameraInputFiles", "CameraSensitivityRed.spectrum"))
 ).set_blue_spectrum_file_uri(
-    uri=os.path.join(tests_data_path, "CameraInputFiles", "CameraSensitivityBlue.spectrum")
+    uri=str(tests_data_path.joinpath("CameraInputFiles", "CameraSensitivityBlue.spectrum"))
 ).set_green_spectrum_file_uri(
-    uri=os.path.join(tests_data_path, "CameraInputFiles", "CameraSensitivityGreen.spectrum")
+    uri=str(tests_data_path.joinpath("CameraInputFiles", "CameraSensitivityGreen.spectrum"))
 )
 ssr.set_axis_system([-2000, 1500, 11000, -1, 0, 0, 0, 1, 0, 0, 0, -1])
 ssr.commit()
@@ -95,7 +96,7 @@ ssr.commit()
 # +
 src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
 src.set_intensity_file_uri(
-    uri=os.path.join(tests_data_path, "IES_C_DETECTOR.ies")
+    uri=str(tests_data_path.joinpath("IES_C_DETECTOR.ies"))
 ).set_spectrum().set_daylightfluorescent()
 src.set_axis_system([0, 10000, 50000, 1, 0, 0, 0, 1, 0, 0, 0, 1])
 src.commit()

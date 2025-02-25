@@ -6,12 +6,13 @@
 
 # +
 import os
+from pathlib import Path
 
 from ansys.speos.core import Project, Speos
 from ansys.speos.core.sensor import SensorCamera, SensorIrradiance, SensorRadiance
 
 # If using docker container
-tests_data_path = os.path.join("/app", "assets")
+tests_data_path = Path().joinpath("/app", "assets")
 # If using local server
 # tests_data_path = os.path.join(os.path.abspath(""), os.path.pardir, os.path.pardir, "tests", "assets")
 # -
@@ -38,20 +39,20 @@ print(p)
 # The mention "local: " is added when printing the sensor
 
 # +
-distortion_file_path = os.path.join(
-    tests_data_path, "CameraInputFiles", "CameraDistortion_130deg.OPTDistortion"
+distortion_file_path = str(
+    tests_data_path.joinpath("CameraInputFiles", "CameraDistortion_130deg.OPTDistortion")
 )
-transmittance_file_path = os.path.join(
-    tests_data_path, "CameraInputFiles", "CameraTransmittance.spectrum"
+transmittance_file_path = str(
+    tests_data_path.joinpath("CameraInputFiles", "CameraTransmittance.spectrum")
 )
-blue_spectrum_path = os.path.join(
-    tests_data_path, "CameraInputFiles", "CameraSensitivityBlue.spectrum"
+blue_spectrum_path = str(
+    tests_data_path.joinpath("CameraInputFiles", "CameraSensitivityBlue.spectrum")
 )
-green_spectrum_path = os.path.join(
-    tests_data_path, "CameraInputFiles", "CameraSensitivityGreen.spectrum"
+green_spectrum_path = str(
+    tests_data_path.joinpath("CameraInputFiles", "CameraSensitivityGreen.spectrum")
 )
-red_spectrum_path = os.path.join(
-    tests_data_path, "CameraInputFiles", "CameraSensitivityRed.spectrum"
+red_spectrum_path = str(
+    tests_data_path.joinpath("CameraInputFiles", "CameraSensitivityRed.spectrum")
 )
 
 sensor1 = p.create_sensor(name="Camera.1", feature_type=SensorCamera)
@@ -84,20 +85,20 @@ print(sensor1)
 # it is possible to do so as below.
 
 # +
-distortion_file_path = os.path.join(
-    tests_data_path, "CameraInputFiles", "CameraDistortion_130deg.OPTDistortion"
+distortion_file_path = str(
+    tests_data_path.joinpath("CameraInputFiles", "CameraDistortion_130deg.OPTDistortion")
 )
-transmittance_file_path = os.path.join(
-    tests_data_path, "CameraInputFiles", "CameraTransmittance.spectrum"
+transmittance_file_path = str(
+    tests_data_path.joinpath("CameraInputFiles", "CameraTransmittance.spectrum")
 )
-blue_spectrum_path = os.path.join(
-    tests_data_path, "CameraInputFiles", "CameraSensitivityBlue.spectrum"
+blue_spectrum_path = str(
+    tests_data_path.joinpath("CameraInputFiles", "CameraSensitivityBlue.spectrum")
 )
-green_spectrum_path = os.path.join(
-    tests_data_path, "CameraInputFiles", "CameraSensitivityGreen.spectrum"
+green_spectrum_path = str(
+    tests_data_path.joinpath("CameraInputFiles", "CameraSensitivityGreen.spectrum")
 )
-red_spectrum_path = os.path.join(
-    tests_data_path, "CameraInputFiles", "CameraSensitivityRed.spectrum"
+red_spectrum_path = str(
+    tests_data_path.joinpath("CameraInputFiles", "CameraSensitivityRed.spectrum")
 )
 
 sensor2 = p.create_sensor(name="Camera.2", feature_type=SensorCamera)

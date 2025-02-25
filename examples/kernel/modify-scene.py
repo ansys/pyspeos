@@ -23,6 +23,7 @@
 
 # +
 import os
+from pathlib import Path
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2
 from ansys.speos.core import Speos
@@ -31,7 +32,7 @@ from ansys.speos.core.kernel.scene import ProtoScene
 from ansys.speos.core.kernel.sensor_template import ProtoSensorTemplate
 
 # If using docker container
-tests_data_path = os.path.join("/app", "assets")
+tests_data_path = Path().joinpath("/app", "assets")
 # If using local server
 # tests_data_path = os.path.join(os.path.abspath(""), os.path.pardir, os.path.pardir, "tests", "assets")
 # -
@@ -47,8 +48,8 @@ speos = Speos(host="localhost", port=50098)
 # +
 my_scene = speos.client.scenes().create()
 
-speos_file = os.path.join(
-    tests_data_path, "Inverse_SeveralSensors.speos", "Inverse_SeveralSensors.speos"
+speos_file = str(
+    tests_data_path.joinpath("Inverse_SeveralSensors.speos", "Inverse_SeveralSensors.speos")
 )
 my_scene.load_file(file_uri=speos_file)
 # -
@@ -107,8 +108,8 @@ print(my_scene.get().sensors[0])  # Do another get() to check new value on datab
 # ### Modify a camera template
 
 # +
-new_distortion_file = os.path.join(
-    tests_data_path, os.path.join("CameraInputFiles", "CameraDistortion_150deg.OPTDistortion")
+new_distortion_file = str(
+    tests_data_path.joinpath("CameraInputFiles", "CameraDistortion_150deg.OPTDistortion")
 )
 
 # Retrieve SensorTemplateLink corresponding to camera_i_0.sensor_guid
@@ -139,21 +140,21 @@ sensor_t_db = speos.client.sensor_templates()  # Retrieve access to sensor templ
 sensor_t_data = ProtoSensorTemplate(name="CameraFromScratch")
 sensor_t_data.camera_sensor_template.sensor_mode_photometric.acquisition_integration = 0.01
 sensor_t_data.camera_sensor_template.sensor_mode_photometric.acquisition_lag_time = 0
-sensor_t_data.camera_sensor_template.sensor_mode_photometric.transmittance_file_uri = os.path.join(
-    tests_data_path, os.path.join("CameraInputFiles", "CameraTransmittance.spectrum")
+sensor_t_data.camera_sensor_template.sensor_mode_photometric.transmittance_file_uri = str(
+    tests_data_path.joinpath("CameraInputFiles", "CameraTransmittance.spectrum")
 )
 sensor_t_data.camera_sensor_template.sensor_mode_photometric.gamma_correction = 2.2
 sensor_t_data.camera_sensor_template.sensor_mode_photometric.png_bits = (
     camera_sensor_pb2.EnumSensorCameraPNGBits.PNG_16
 )
-sensor_t_data.camera_sensor_template.sensor_mode_photometric.color_mode_color.red_spectrum_file_uri = os.path.join(
-    tests_data_path, os.path.join("CameraInputFiles", "CameraSensitivityRed.spectrum")
+sensor_t_data.camera_sensor_template.sensor_mode_photometric.color_mode_color.red_spectrum_file_uri = str(
+    tests_data_path.joinpath("CameraInputFiles", "CameraSensitivityRed.spectrum")
 )
-sensor_t_data.camera_sensor_template.sensor_mode_photometric.color_mode_color.green_spectrum_file_uri = os.path.join(
-    tests_data_path, os.path.join("CameraInputFiles", "CameraSensitivityGreen.spectrum")
+sensor_t_data.camera_sensor_template.sensor_mode_photometric.color_mode_color.green_spectrum_file_uri = str(
+    tests_data_path.joinpath("CameraInputFiles", "CameraSensitivityGreen.spectrum")
 )
-sensor_t_data.camera_sensor_template.sensor_mode_photometric.color_mode_color.blue_spectrum_file_uri = os.path.join(
-    tests_data_path, os.path.join("CameraInputFiles", "CameraSensitivityBlue.spectrum")
+sensor_t_data.camera_sensor_template.sensor_mode_photometric.color_mode_color.blue_spectrum_file_uri = str(
+    tests_data_path.joinpath("CameraInputFiles", "CameraSensitivityBlue.spectrum")
 )
 sensor_t_data.camera_sensor_template.sensor_mode_photometric.color_mode_color.balance_mode_none.SetInParent()
 sensor_t_data.camera_sensor_template.sensor_mode_photometric.wavelengths_range.w_start = 400
@@ -162,8 +163,8 @@ sensor_t_data.camera_sensor_template.sensor_mode_photometric.wavelengths_range.w
 sensor_t_data.camera_sensor_template.focal_length = 5
 sensor_t_data.camera_sensor_template.imager_distance = 10
 sensor_t_data.camera_sensor_template.f_number = 20
-sensor_t_data.camera_sensor_template.distortion_file_uri = os.path.join(
-    tests_data_path, os.path.join("CameraInputFiles", "CameraDistortion_130deg.OPTDistortion")
+sensor_t_data.camera_sensor_template.distortion_file_uri = str(
+    tests_data_path.joinpath("CameraInputFiles", "CameraDistortion_130deg.OPTDistortion")
 )
 sensor_t_data.camera_sensor_template.horz_pixel = 640
 sensor_t_data.camera_sensor_template.vert_pixel = 480

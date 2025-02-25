@@ -25,6 +25,7 @@ Test basic using project.
 """
 
 import os
+from pathlib import Path
 
 from ansys.speos.core import Body, Face, Part, Project, Speos
 from ansys.speos.core.opt_prop import OptProp
@@ -120,8 +121,10 @@ def test_find_feature_geom(speos: Speos):
     # Create a project from a file
     p = Project(
         speos=speos,
-        path=os.path.join(
-            test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
+        path=str(
+            Path(test_path).joinpath(
+                "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
+            )
         ),
     )
 
@@ -246,8 +249,10 @@ def test_find_after_load(speos: Speos):
     # Create a project from a file
     p = Project(
         speos=speos,
-        path=os.path.join(
-            test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
+        path=str(
+            Path(test_path).joinpath(
+                "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
+            )
         ),
     )
 
@@ -273,8 +278,10 @@ def test_create_root_part_after_load(speos: Speos):
     # Create a project from a file
     p = Project(
         speos=speos,
-        path=os.path.join(
-            test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
+        path=str(
+            Path(test_path).joinpath(
+                "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
+            )
         ),
     )
 
@@ -317,8 +324,10 @@ def test_from_file(speos: Speos):
     # Create a project from a file
     p = Project(
         speos=speos,
-        path=os.path.join(
-            test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
+        path=str(
+            Path(test_path).joinpath(
+                "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
+            )
         ),
     )
 
@@ -374,8 +383,10 @@ def test_find_geom(speos: Speos):
     # Create a project from a file
     p = Project(
         speos=speos,
-        path=os.path.join(
-            test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
+        path=str(
+            Path(test_path).joinpath(
+                "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
+            )
         ),
     )
 

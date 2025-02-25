@@ -11,11 +11,12 @@
 
 # +
 import os
+from pathlib import Path
 
 from ansys.speos.core import GeoRef, Project, Speos
 
 # If using docker container
-tests_data_path = os.path.join("/app", "assets")
+tests_data_path = Path().joinpath("/app", "assets")
 # If using local server
 # tests_data_path = os.path.join(os.path.abspath(""), os.path.pardir, os.path.pardir, "tests", "assets")
 # -
@@ -73,7 +74,7 @@ print(op1)
 op2 = p.create_optical_property(name="Material.2")
 op2.set_surface_opticalpolished()  # SOP : optical polished
 op2.set_volume_library(
-    path=os.path.join(tests_data_path, "AIR.material")
+    path=str(tests_data_path.joinpath("AIR.material"))
 )  # VOP : selected library via a file .material
 # This optical property will be applied to two bodies named : "TheBodyD" and "TheBodyE".
 op2.set_geometries(

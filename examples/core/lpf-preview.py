@@ -4,12 +4,13 @@
 
 # +
 import os
+from pathlib import Path
 
 from ansys.speos.core import LightPathFinder, Project, Speos
 from ansys.speos.core.simulation import SimulationInteractive
 
 # If using docker container
-tests_data_path = os.path.join("/app", "assets")
+tests_data_path = Path().joinpath("/app", "assets")
 # If using local server
 # tests_data_path = os.path.join(os.path.abspath(""), os.path.pardir, os.path.pardir, "tests", "assets")
 # -
@@ -31,7 +32,7 @@ speos = Speos(host="localhost", port=50098)
 # It can be found there is volume conflict in this project.
 
 # +
-p = Project(speos=speos, path=os.path.join(tests_data_path, "error_data.speos", "error_data.speos"))
+p = Project(speos=speos, path=str(tests_data_path.joinpath("error_data.speos", "error_data.speos")))
 p.preview(viz_args={"opacity": 0.7})
 # -
 

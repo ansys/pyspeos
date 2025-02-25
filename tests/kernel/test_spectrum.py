@@ -25,6 +25,7 @@ Test basic spectrum database connection.
 """
 
 import os
+from pathlib import Path
 
 from ansys.speos.core.kernel.spectrum import ProtoSpectrum
 from ansys.speos.core.speos import Speos
@@ -125,8 +126,8 @@ def test_spectrum(speos: Speos):
     assert s_sampled.key != ""
 
     # Library
-    spectrum_path = os.path.join(
-        test_path, os.path.join("CameraInputFiles", "CameraSensitivityBlue.spectrum")
+    spectrum_path = str(
+        Path(test_path).joinpath("CameraInputFiles", "CameraSensitivityBlue.spectrum")
     )
     s_lib = spec_db.create(
         message=ProtoSpectrum(

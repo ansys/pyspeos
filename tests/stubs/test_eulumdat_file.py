@@ -32,6 +32,7 @@ With coverage.
 
 import logging
 import os
+from pathlib import Path
 
 from ansys.api.speos.intensity_distributions.v1 import eulumdat_pb2, eulumdat_pb2_grpc
 from ansys.speos.core.speos import Speos
@@ -228,9 +229,9 @@ def compareEulumdatIntensities(eulumdat1, eulumdat2):
 def test_grpc_eulumdat_intensity(speos: Speos):
     stub = eulumdat_pb2_grpc.EulumdatIntensityServiceStub(speos.client.channel)
     save_name = eulumdat_pb2.Save_Request()
-    save_name.file_uri = os.path.join(test_path, "eulumdat_tmp00.ldt")
+    save_name.file_uri = str(Path(test_path).joinpath("eulumdat_tmp00.ldt"))
     load_name = eulumdat_pb2.Load_Request()
-    load_name.file_uri = os.path.join(test_path, "eulumdat_tmp00.ldt")
+    load_name.file_uri = str(Path(test_path).joinpath("eulumdat_tmp00.ldt"))
 
     logging.debug("Creating eulumdat intensity protocol buffer")
     eulumdat = createEulumdatIntensity()

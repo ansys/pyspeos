@@ -10,6 +10,7 @@
 
 # +
 import os
+from pathlib import Path
 
 from ansys.speos.core import Project, Speos
 from ansys.speos.core.sensor import SensorIrradiance
@@ -17,7 +18,7 @@ from ansys.speos.core.simulation import SimulationDirect
 from ansys.speos.core.source import SourceSurface
 
 # If using docker container
-tests_data_path = os.path.join("/app", "assets")
+tests_data_path = Path().joinpath("/app", "assets")
 # If using local server
 # tests_data_path = os.path.join(os.path.abspath(""), os.path.pardir, os.path.pardir, "tests", "assets")
 # -
@@ -145,8 +146,8 @@ print(p.find(name="Sensor.1"))
 # +
 p2 = Project(
     speos=speos,
-    path=os.path.join(
-        tests_data_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
+    path=str(
+        tests_data_path.joinpath("LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5")
     ),
 )
 print(p2)
