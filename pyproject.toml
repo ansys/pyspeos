@@ -105,7 +105,7 @@ ignore = [
 #    "PTH120",
 #    "PTH122",
 #    "PTH123", # TODO: Use Path.open
-#    "PTH118", # TODO: Use pathlib instead of os.path
+    "PTH118", # TODO: Use pathlib instead of os.path
     "D100",
     "D101",
     "D102",
