@@ -14,7 +14,7 @@ from ansys.speos.core import GeoRef, Project, Speos
 from ansys.speos.core.simulation import SimulationInteractive, SimulationInverse
 
 # If using docker container
-tests_data_path = Path().joinpath("/app", "assets")
+tests_data_path = Path("/app") / "assets"
 # If using local server
 # tests_data_path = os.path.join(os.path.abspath(""), os.path.pardir, os.path.pardir, "tests", "assets")
 # -
