@@ -37,6 +37,12 @@ PySpeos documentation |version|
 
         Learn how to use PySpeos with examples that demonstrate its capabilities.
 
+    .. grid-item-card:: Contribute :fa:`people-group`
+        :link: contributing
+        :link-type: doc
+
+        Learn how to contribute to the PySpeos codebase
+        or documentation.
 
 .. toctree::
    :hidden:
@@ -46,3 +52,5 @@ PySpeos documentation |version|
    getting_started/index
    api/index
    examples
+   contributing
+   changelog
