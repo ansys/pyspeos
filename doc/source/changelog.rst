@@ -9,6 +9,15 @@ This document contains the release notes for the PySpeos project.
 
 .. towncrier release notes start
 
+`0.1.1 <https://github.com/ansys/pyspeos/releases/tag/v0.1.1>`_ - 2025-02-25
+============================================================================
+
+Maintenance
+^^^^^^^^^^^
+
+- update CHANGELOG for v0.1.0 `#471 <https://github.com/ansys/pyspeos/pull/471>`_
+- bump dev version into v0.2.dev0 `#472 <https://github.com/ansys/pyspeos/pull/472>`_
+
 `0.1.0 <https://github.com/ansys/pyspeos/releases/tag/v0.1.0>`_ - 2025-02-24
 ============================================================================
 
