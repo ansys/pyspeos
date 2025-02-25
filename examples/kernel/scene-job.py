@@ -12,7 +12,7 @@ from ansys.speos.core.kernel.job import ProtoJob
 from ansys.speos.core.speos import Speos
 
 # If using docker container
-tests_data_path = Path().joinpath("/app", "assets")
+tests_data_path = Path("/app") / "assets"
 # If using local server
 # tests_data_path = os.path.join(os.path.abspath(""), os.path.pardir, os.path.pardir, "tests", "assets")
 # -
@@ -35,7 +35,7 @@ my_scene = speos.client.scenes().create()
 
 # +
 speos_file = str(
-    tests_data_path.joinpath("LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5")
+    tests_data_path / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
 )
 my_scene.load_file(file_uri=speos_file)
 # -

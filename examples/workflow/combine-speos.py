@@ -13,7 +13,7 @@ from ansys.speos.core.source import SourceLuminaire
 from ansys.speos.core.workflow.combine_speos import SpeosFileInstance, combine_speos
 
 # If using docker container
-tests_data_path = Path().joinpath("/app", "assets")
+tests_data_path = Path("/app") / "assets"
 # If using local server
 # tests_data_path = os.path.join(os.path.abspath(""), os.path.pardir, os.path.pardir, os.path.pardir, "tests", "assets")
 # -
@@ -37,16 +37,16 @@ p = combine_speos(
     speos_to_combine=[
         SpeosFileInstance(
             speos_file=str(
-                tests_data_path.joinpath("Env_Simplified.speos", "Env_Simplified.speos")
+                tests_data_path / "Env_Simplified.speos" / "Env_Simplified.speos"
             ),
             axis_system=[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
         ),
         SpeosFileInstance(
-            speos_file=str(tests_data_path.joinpath("BlueCar.speos", "BlueCar.speos")),
+            speos_file=str(tests_data_path / "BlueCar.speos" / "BlueCar.speos"),
             axis_system=[2000, 0, 35000, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0, 0.0],
         ),
         SpeosFileInstance(
-            speos_file=str(tests_data_path.joinpath("RedCar.speos", "RedCar.speos")),
+            speos_file=str(tests_data_path / "RedCar.speos" / "RedCar.speos"),
             axis_system=[-4000, 0, 48000, 1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0],
         ),
     ],
