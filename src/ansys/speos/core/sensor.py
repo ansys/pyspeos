@@ -848,7 +848,7 @@ class BaseSensor:
         return self
 
 
-class Camera(BaseSensor):
+class SensorCamera(BaseSensor):
     """Sensor feature: Camera.
     By default, regarding inherent characteristics, a camera with mode photometric is chosen.
     By default, regarding properties, an axis system is selected to position the sensor, and no layer separation is chosen.
@@ -950,7 +950,7 @@ class Camera(BaseSensor):
 
                 def set_red_gain(
                     self, value: float = 1
-                ) -> Camera.Photometric.Color.BalanceModeUserWhite:
+                ) -> SensorCamera.Photometric.Color.BalanceModeUserWhite:
                     """Set red gain.
 
                     Parameters
@@ -961,7 +961,7 @@ class Camera(BaseSensor):
 
                     Returns
                     -------
-                    ansys.speos.core.sensor.Camera.Photometric.Color.BalanceModeUserWhite
+                    ansys.speos.core.sensor.SensorCamera.Photometric.Color.BalanceModeUserWhite
                         BalanceModeUserWhite.
                     """
                     self._balance_mode_user_white.red_gain = value
@@ -969,7 +969,7 @@ class Camera(BaseSensor):
 
                 def set_green_gain(
                     self, value: float = 1
-                ) -> Camera.Photometric.Color.BalanceModeUserWhite:
+                ) -> SensorCamera.Photometric.Color.BalanceModeUserWhite:
                     """Set green gain.
 
                     Parameters
@@ -980,7 +980,7 @@ class Camera(BaseSensor):
 
                     Returns
                     -------
-                    ansys.speos.core.sensor.Camera.Photometric.Color.BalanceModeUserWhite
+                    ansys.speos.core.sensor.SensorCamera.Photometric.Color.BalanceModeUserWhite
                         BalanceModeUserWhite.
                     """
                     self._balance_mode_user_white.green_gain = value
@@ -988,7 +988,7 @@ class Camera(BaseSensor):
 
                 def set_blue_gain(
                     self, value: float = 1
-                ) -> Camera.Photometric.Color.BalanceModeUserWhite:
+                ) -> SensorCamera.Photometric.Color.BalanceModeUserWhite:
                     """Set blue gain.
 
                     Parameters
@@ -999,7 +999,7 @@ class Camera(BaseSensor):
 
                     Returns
                     -------
-                    ansys.speos.core.sensor.Camera.Photometric.Color.BalanceModeUserWhite
+                    ansys.speos.core.sensor.SensorCamera.Photometric.Color.BalanceModeUserWhite
                         BalanceModeUserWhite.
                     """
                     self._balance_mode_user_white.blue_gain = value
@@ -1044,7 +1044,7 @@ class Camera(BaseSensor):
 
                 def set_red_display_file_uri(
                     self, uri: str
-                ) -> Camera.Photometric.Color.BalanceModeDisplayPrimaries:
+                ) -> SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries:
                     """Set the red display file.
 
                     Parameters
@@ -1054,7 +1054,7 @@ class Camera(BaseSensor):
 
                     Returns
                     -------
-                    ansys.speos.core.sensor.Camera.Photometric.Color.BalanceModeDisplayPrimaries
+                    ansys.speos.core.sensor.SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries
                         BalanceModeDisplayPrimaries.
                     """
                     self._balance_mode_display.red_display_file_uri = uri
@@ -1062,7 +1062,7 @@ class Camera(BaseSensor):
 
                 def set_green_display_file_uri(
                     self, uri: str
-                ) -> Camera.Photometric.Color.BalanceModeDisplayPrimaries:
+                ) -> SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries:
                     """Set the green display file.
 
                     Parameters
@@ -1072,7 +1072,7 @@ class Camera(BaseSensor):
 
                     Returns
                     -------
-                    ansys.speos.core.sensor.Camera.Photometric.Color.BalanceModeDisplayPrimaries
+                    ansys.speos.core.sensor.SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries
                         BalanceModeDisplayPrimaries.
                     """
                     self._balance_mode_display.green_display_file_uri = uri
@@ -1080,7 +1080,7 @@ class Camera(BaseSensor):
 
                 def set_blue_display_file_uri(
                     self, uri: str
-                ) -> Camera.Photometric.Color.BalanceModeDisplayPrimaries:
+                ) -> SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries:
                     """Set the blue display file.
 
                     Parameters
@@ -1090,7 +1090,7 @@ class Camera(BaseSensor):
 
                     Returns
                     -------
-                    ansys.speos.core.sensor.Camera.Photometric.Color.BalanceModeDisplayPrimaries
+                    ansys.speos.core.sensor.SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries
                         BalanceModeDisplayPrimaries.
                     """
                     self._balance_mode_display.blue_display_file_uri = uri
@@ -1114,7 +1114,7 @@ class Camera(BaseSensor):
                     # Default values
                     self.set_balance_mode_none()
 
-            def set_red_spectrum_file_uri(self, uri: str) -> Camera.Photometric.Color:
+            def set_red_spectrum_file_uri(self, uri: str) -> SensorCamera.Photometric.Color:
                 """Set the red spectrum.
 
                 Parameters
@@ -1124,13 +1124,13 @@ class Camera(BaseSensor):
 
                 Returns
                 -------
-                ansys.speos.core.sensor.Camera.Photometric.Color
+                ansys.speos.core.sensor.SensorCamera.Photometric.Color
                     Color mode.
                 """
                 self._mode_color.red_spectrum_file_uri = uri
                 return self
 
-            def set_green_spectrum_file_uri(self, uri: str) -> Camera.Photometric.Color:
+            def set_green_spectrum_file_uri(self, uri: str) -> SensorCamera.Photometric.Color:
                 """Set the green spectrum.
 
                 Parameters
@@ -1140,13 +1140,13 @@ class Camera(BaseSensor):
 
                 Returns
                 -------
-                ansys.speos.core.sensor.Camera.Photometric.Color
+                ansys.speos.core.sensor.SensorCamera.Photometric.Color
                     Color mode.
                 """
                 self._mode_color.green_spectrum_file_uri = uri
                 return self
 
-            def set_blue_spectrum_file_uri(self, uri: str) -> Camera.Photometric.Color:
+            def set_blue_spectrum_file_uri(self, uri: str) -> SensorCamera.Photometric.Color:
                 """Set the blue spectrum.
 
                 Parameters
@@ -1156,13 +1156,13 @@ class Camera(BaseSensor):
 
                 Returns
                 -------
-                ansys.speos.core.sensor.Camera.Photometric.Color
+                ansys.speos.core.sensor.SensorCamera.Photometric.Color
                     Color mode.
                 """
                 self._mode_color.blue_spectrum_file_uri = uri
                 return self
 
-            def set_balance_mode_none(self) -> Camera.Photometric.Color:
+            def set_balance_mode_none(self) -> SensorCamera.Photometric.Color:
                 """Set the balance mode as none.
                 The spectral transmittance of the optical system and the spectral sensitivity for each channel are applied
                 to the detected spectral image before the conversion in a three-channel result.
@@ -1170,14 +1170,14 @@ class Camera(BaseSensor):
 
                 Returns
                 -------
-                ansys.speos.core.sensor.Camera.Photometric.Color
+                ansys.speos.core.sensor.SensorCamera.Photometric.Color
                     Color mode.
                 """
                 self._mode = None
                 self._mode_color.balance_mode_none.SetInParent()
                 return self
 
-            def set_balance_mode_grey_world(self) -> Camera.Photometric.Color:
+            def set_balance_mode_grey_world(self) -> SensorCamera.Photometric.Color:
                 """Set the balance mode as grey world.
                 The grey world assumption states that the content of the image is grey on average.
                 This method converts spectral results in a three-channel result with the basic conversion.
@@ -1185,32 +1185,34 @@ class Camera(BaseSensor):
 
                 Returns
                 -------
-                ansys.speos.core.sensor.Camera.Photometric.Color
+                ansys.speos.core.sensor.SensorCamera.Photometric.Color
                     Color mode.
                 """
                 self._mode = None
                 self._mode_color.balance_mode_greyworld.SetInParent()
                 return self
 
-            def set_balance_mode_user_white(self) -> Camera.Photometric.Color.BalanceModeUserWhite:
+            def set_balance_mode_user_white(
+                self,
+            ) -> SensorCamera.Photometric.Color.BalanceModeUserWhite:
                 """Set the balance mode as user white.
                 In addition to the basic treatment, it allows to apply specific coefficients to the red, green, blue images.
 
                 Returns
                 -------
-                ansys.speos.core.sensor.Camera.Photometric.Color.BalanceModeUserWhite
+                ansys.speos.core.sensor.SensorCamera.Photometric.Color.BalanceModeUserWhite
                     Balance UserWhite mode.
                 """
                 if self._mode is None and self._mode_color.HasField("balance_mode_userwhite"):
                     # Happens in case of project created via load of speos file
-                    self._mode = Camera.Photometric.Color.BalanceModeUserWhite(
+                    self._mode = SensorCamera.Photometric.Color.BalanceModeUserWhite(
                         balance_mode_user_white=self._mode_color.balance_mode_userwhite,
                         default_values=False,
                         stable_ctr=True,
                     )
-                elif type(self._mode) != Camera.Photometric.Color.BalanceModeUserWhite:
+                elif type(self._mode) != SensorCamera.Photometric.Color.BalanceModeUserWhite:
                     # if the _mode is not BalanceModeUserWhite then we create a new type.
-                    self._mode = Camera.Photometric.Color.BalanceModeUserWhite(
+                    self._mode = SensorCamera.Photometric.Color.BalanceModeUserWhite(
                         balance_mode_user_white=self._mode_color.balance_mode_userwhite,
                         stable_ctr=True,
                     )
@@ -1224,7 +1226,7 @@ class Camera(BaseSensor):
 
             def set_balance_mode_display_primaries(
                 self,
-            ) -> Camera.Photometric.Color.BalanceModeDisplayPrimaries:
+            ) -> SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries:
                 """Set the balance mode as display primaries.
                 Spectral results are converted in a three-channel result.
                 Then a post-treatment is realized to take the distortion induced by the display devices into account.
@@ -1232,19 +1234,19 @@ class Camera(BaseSensor):
 
                 Returns
                 -------
-                ansys.speos.core.sensor.Camera.Photometric.Color.BalanceModeDisplayPrimaries
+                ansys.speos.core.sensor.SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries
                     Balance DisplayPrimaries mode.
                 """
                 if self._mode is None and self._mode_color.HasField("balance_mode_display"):
                     # Happens in case of project created via load of speos file
-                    self._mode = Camera.Photometric.Color.BalanceModeDisplayPrimaries(
+                    self._mode = SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries(
                         balance_mode_display=self._mode_color.balance_mode_display,
                         default_values=False,
                         stable_ctr=True,
                     )
-                elif type(self._mode) != Camera.Photometric.Color.BalanceModeDisplayPrimaries:
+                elif type(self._mode) != SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries:
                     # if the _mode is not BalanceModeDisplayPrimaries then we create a new type.
-                    self._mode = Camera.Photometric.Color.BalanceModeDisplayPrimaries(
+                    self._mode = SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries(
                         balance_mode_display=self._mode_color.balance_mode_display, stable_ctr=True
                     )
                 elif self._mode._balance_mode_display is not self._mode_color.balance_mode_display:
@@ -1269,7 +1271,7 @@ class Camera(BaseSensor):
             self._mode = None
 
             # Attribute to keep track of wavelength range object
-            self._wavelengths_range = Camera.WavelengthsRange(
+            self._wavelengths_range = SensorCamera.WavelengthsRange(
                 wavelengths_range=self._mode_photometric.wavelengths_range, stable_ctr=stable_ctr
             )
 
@@ -1280,7 +1282,7 @@ class Camera(BaseSensor):
                 # Default values properties
                 self.set_layer_type_none()
 
-        def set_acquisition_integration(self, value: float = 0.01) -> Camera.Photometric:
+        def set_acquisition_integration(self, value: float = 0.01) -> SensorCamera.Photometric:
             """Set the acquisition integration value.
 
             Parameters
@@ -1291,13 +1293,13 @@ class Camera(BaseSensor):
 
             Returns
             -------
-            ansys.speos.core.sensor.Camera.Photometric
+            ansys.speos.core.sensor.SensorCamera.Photometric
                 Photometric mode.
             """
             self._mode_photometric.acquisition_integration = value
             return self
 
-        def set_acquisition_lag_time(self, value: float = 0.0) -> Camera.Photometric:
+        def set_acquisition_lag_time(self, value: float = 0.0) -> SensorCamera.Photometric:
             """Set the acquisition lag time value.
 
             Parameters
@@ -1308,13 +1310,13 @@ class Camera(BaseSensor):
 
             Returns
             -------
-            ansys.speos.core.sensor.Camera.Photometric
+            ansys.speos.core.sensor.SensorCamera.Photometric
                 Photometric mode.
             """
             self._mode_photometric.acquisition_lag_time = value
             return self
 
-        def set_transmittance_file_uri(self, uri: str) -> Camera.Photometric:
+        def set_transmittance_file_uri(self, uri: str) -> SensorCamera.Photometric:
             """Set the transmittance file.
 
             Parameters
@@ -1325,13 +1327,13 @@ class Camera(BaseSensor):
 
             Returns
             -------
-            ansys.speos.core.sensor.Camera.Photometric
+            ansys.speos.core.sensor.SensorCamera.Photometric
                 Photometric mode.
             """
             self._mode_photometric.transmittance_file_uri = uri
             return self
 
-        def set_gamma_correction(self, value: float = 2.2) -> Camera.Photometric:
+        def set_gamma_correction(self, value: float = 2.2) -> SensorCamera.Photometric:
             """Set the gamma correction.
 
             Parameters
@@ -1342,51 +1344,51 @@ class Camera(BaseSensor):
 
             Returns
             -------
-            ansys.speos.core.sensor.Camera.Photometric
+            ansys.speos.core.sensor.SensorCamera.Photometric
                 Photometric mode.
             """
             self._mode_photometric.gamma_correction = value
             return self
 
-        def set_png_bits_08(self) -> Camera.Photometric:
+        def set_png_bits_08(self) -> SensorCamera.Photometric:
             """Choose 08-bits for png.
 
             Returns
             -------
-            ansys.speos.core.sensor.Camera.Photometric
+            ansys.speos.core.sensor.SensorCamera.Photometric
                 Photometric mode.
             """
             self._mode_photometric.png_bits = camera_sensor_pb2.EnumSensorCameraPNGBits.PNG_08
             return self
 
-        def set_png_bits_10(self) -> Camera.Photometric:
+        def set_png_bits_10(self) -> SensorCamera.Photometric:
             """Choose 10-bits for png.
 
             Returns
             -------
-            ansys.speos.core.sensor.Camera.Photometric
+            ansys.speos.core.sensor.SensorCamera.Photometric
                 Photometric mode.
             """
             self._mode_photometric.png_bits = camera_sensor_pb2.EnumSensorCameraPNGBits.PNG_10
             return self
 
-        def set_png_bits_12(self) -> Camera.Photometric:
+        def set_png_bits_12(self) -> SensorCamera.Photometric:
             """Choose 12-bits for png.
 
             Returns
             -------
-            ansys.speos.core.sensor.Camera.Photometric
+            ansys.speos.core.sensor.SensorCamera.Photometric
                 Photometric mode.
             """
             self._mode_photometric.png_bits = camera_sensor_pb2.EnumSensorCameraPNGBits.PNG_12
             return self
 
-        def set_png_bits_16(self) -> Camera.Photometric:
+        def set_png_bits_16(self) -> SensorCamera.Photometric:
             """Choose 16-bits for png.
 
             Returns
             -------
-            ansys.speos.core.sensor.Camera.Photometric
+            ansys.speos.core.sensor.SensorCamera.Photometric
                 Photometric mode.
             """
             self._mode_photometric.png_bits = camera_sensor_pb2.EnumSensorCameraPNGBits.PNG_16
@@ -1410,7 +1412,7 @@ class Camera(BaseSensor):
                 )
             return self._wavelengths_range
 
-        def set_mode_monochromatic(self, spectrum_file_uri: str) -> Camera.Photometric:
+        def set_mode_monochromatic(self, spectrum_file_uri: str) -> SensorCamera.Photometric:
             """Set the monochromatic mode.
             Results will be available in grey scale.
 
@@ -1421,32 +1423,32 @@ class Camera(BaseSensor):
 
             Returns
             -------
-            ansys.speos.core.sensor.Camera.Photometric
+            ansys.speos.core.sensor.SensorCamera.Photometric
                 Photometric mode.
             """
             self._mode = None
             self._mode_photometric.color_mode_monochromatic.spectrum_file_uri = spectrum_file_uri
             return self
 
-        def set_mode_color(self) -> Camera.Photometric.Color:
+        def set_mode_color(self) -> SensorCamera.Photometric.Color:
             """Set the color mode.
             Results will be available in color.
 
             Returns
             -------
-            ansys.speos.core.sensor.Camera.Photometric.Color
+            ansys.speos.core.sensor.SensorCamera.Photometric.Color
                 Color mode.
             """
             if self._mode is None and self._mode_photometric.HasField("color_mode_color"):
                 # Happens in case of project created via load of speos file
-                self._mode = Camera.Photometric.Color(
+                self._mode = SensorCamera.Photometric.Color(
                     mode_color=self._mode_photometric.color_mode_color,
                     default_values=False,
                     stable_ctr=True,
                 )
-            elif type(self._mode) != Camera.Photometric.Color:
+            elif type(self._mode) != SensorCamera.Photometric.Color:
                 # if the _mode is not Color then we create a new type.
-                self._mode = Camera.Photometric.Color(
+                self._mode = SensorCamera.Photometric.Color(
                     mode_color=self._mode_photometric.color_mode_color, stable_ctr=True
                 )
             elif self._mode._mode_color is not self._mode_photometric.color_mode_color:
@@ -1454,7 +1456,7 @@ class Camera(BaseSensor):
                 self._mode._mode_color = self._mode_photometric.color_mode_color
             return self._mode
 
-        def set_trajectory_file_uri(self, uri: str) -> Camera.Photometric:
+        def set_trajectory_file_uri(self, uri: str) -> SensorCamera.Photometric:
             """Set the trajectory file.
 
             Parameters
@@ -1464,29 +1466,29 @@ class Camera(BaseSensor):
 
             Returns
             -------
-            ansys.speos.core.sensor.Camera.Photometric
+            ansys.speos.core.sensor.SensorCamera.Photometric
                 Photometric mode.
             """
             self._camera_props.trajectory_file_uri = uri
             return self
 
-        def set_layer_type_none(self) -> Camera.Photometric:
+        def set_layer_type_none(self) -> SensorCamera.Photometric:
             """Set no layer separation: includes the simulation's results in one layer.
 
             Returns
             -------
-            ansys.speos.core.sensor.Camera.Photometric
+            ansys.speos.core.sensor.SensorCamera.Photometric
                 Photometric mode.
             """
             self._camera_props.layer_type_none.SetInParent()
             return self
 
-        def set_layer_type_source(self) -> Camera.Photometric:
+        def set_layer_type_source(self) -> SensorCamera.Photometric:
             """Set layer separation by source: includes one layer per active source in the result.
 
             Returns
             -------
-            ansys.speos.core.sensor.Camera.Photometric
+            ansys.speos.core.sensor.SensorCamera.Photometric
                 Photometric mode.
             """
             self._camera_props.layer_type_source.SetInParent()
@@ -1522,19 +1524,19 @@ class Camera(BaseSensor):
             self.set_axis_system()
 
     @property
-    def photometric(self) -> Union[Camera.Photometric, None]:
+    def photometric(self) -> Union[SensorCamera.Photometric, None]:
         """
         Property containing the instance of Camera.Photometric used to build the sensor
 
         Returns
         -------
-        Union[ansys.speos.core.sensor.Camera.Photometric, None]
+        Union[ansys.speos.core.sensor.SensorCamera.Photometric, None]
             Photometric class instance if it exists
 
         """
         return self._type
 
-    def set_focal_length(self, value: float = 5.0) -> Camera:
+    def set_focal_length(self, value: float = 5.0) -> SensorCamera:
         """Set the focal length.
 
         Parameters
@@ -1545,13 +1547,13 @@ class Camera(BaseSensor):
 
         Returns
         -------
-        ansys.speos.core.sensor.Camera
+        ansys.speos.core.sensor.SensorCamera
             Camera feature
         """
         self._sensor_template.camera_sensor_template.focal_length = value
         return self
 
-    def set_imager_distance(self, value: float = 10) -> Camera:
+    def set_imager_distance(self, value: float = 10) -> SensorCamera:
         """Set the imager distance.
 
         Parameters
@@ -1562,13 +1564,13 @@ class Camera(BaseSensor):
 
         Returns
         -------
-        ansys.speos.core.sensor.Camera
+        ansys.speos.core.sensor.SensorCamera
             Camera feature
         """
         self._sensor_template.camera_sensor_template.imager_distance = value
         return self
 
-    def set_f_number(self, value: float = 20) -> Camera:
+    def set_f_number(self, value: float = 20) -> SensorCamera:
         """Set the f number.
 
         Parameters
@@ -1579,13 +1581,13 @@ class Camera(BaseSensor):
 
         Returns
         -------
-        ansys.speos.core.sensor.Camera
+        ansys.speos.core.sensor.SensorCamera
             Camera feature
         """
         self._sensor_template.camera_sensor_template.f_number = value
         return self
 
-    def set_distortion_file_uri(self, uri: str) -> Camera:
+    def set_distortion_file_uri(self, uri: str) -> SensorCamera:
         """Set the distortion file.
 
         Parameters
@@ -1595,13 +1597,13 @@ class Camera(BaseSensor):
 
         Returns
         -------
-        ansys.speos.core.sensor.Camera
+        ansys.speos.core.sensor.SensorCamera
             Camera feature
         """
         self._sensor_template.camera_sensor_template.distortion_file_uri = uri
         return self
 
-    def set_horz_pixel(self, value: int = 640) -> Camera:
+    def set_horz_pixel(self, value: int = 640) -> SensorCamera:
         """Set the horizontal pixels number corresponding to the camera resolution.
 
         Parameters
@@ -1612,13 +1614,13 @@ class Camera(BaseSensor):
 
         Returns
         -------
-        ansys.speos.core.sensor.Camera
+        ansys.speos.core.sensor.SensorCamera
             Camera feature
         """
         self._sensor_template.camera_sensor_template.horz_pixel = value
         return self
 
-    def set_vert_pixel(self, value: int = 480) -> Camera:
+    def set_vert_pixel(self, value: int = 480) -> SensorCamera:
         """Set the vertical pixels number corresponding to the camera resolution.
 
         Parameters
@@ -1629,13 +1631,13 @@ class Camera(BaseSensor):
 
         Returns
         -------
-        ansys.speos.core.sensor.Camera
+        ansys.speos.core.sensor.SensorCamera
             Camera feature
         """
         self._sensor_template.camera_sensor_template.vert_pixel = value
         return self
 
-    def set_width(self, value: float = 5.0) -> Camera:
+    def set_width(self, value: float = 5.0) -> SensorCamera:
         """Set the width of the sensor.
 
         Parameters
@@ -1646,13 +1648,13 @@ class Camera(BaseSensor):
 
         Returns
         -------
-        ansys.speos.core.sensor.Camera
+        ansys.speos.core.sensor.SensorCamera
             Camera feature
         """
         self._sensor_template.camera_sensor_template.width = value
         return self
 
-    def set_height(self, value: float = 5.0) -> Camera:
+    def set_height(self, value: float = 5.0) -> SensorCamera:
         """Set the height of the sensor.
 
         Parameters
@@ -1663,47 +1665,47 @@ class Camera(BaseSensor):
 
         Returns
         -------
-        ansys.speos.core.sensor.Camera
+        ansys.speos.core.sensor.SensorCamera
             Camera feature
         """
         self._sensor_template.camera_sensor_template.height = value
         return self
 
-    def set_mode_geometric(self) -> Camera:
+    def set_mode_geometric(self) -> SensorCamera:
         """Set mode geometric for the camera sensor.
         This is a simplified version of the Camera Sensor.
 
         Returns
         -------
-        ansys.speos.core.sensor.Camera
+        ansys.speos.core.sensor.SensorCamera
             Geometric Camera feature
         """
         self._type = None
         self._sensor_template.camera_sensor_template.sensor_mode_geometric.SetInParent()
         return self
 
-    def set_mode_photometric(self) -> Camera.Photometric:
+    def set_mode_photometric(self) -> SensorCamera.Photometric:
         """Set mode photometric for the camera sensor.
         This allows setting every Camera Sensor parameter, including the photometric definition parameters.
 
         Returns
         -------
-        ansys.speos.core.sensor.Camera.Photometric
+        ansys.speos.core.sensor.SensorCamera.Photometric
             Photometric Camera Sensor feature
         """
         if self._type is None and self._sensor_template.camera_sensor_template.HasField(
             "sensor_mode_photometric"
         ):
             # Happens in case of project created via load of speos file
-            self._type = Camera.Photometric(
+            self._type = SensorCamera.Photometric(
                 mode_photometric=self._sensor_template.camera_sensor_template.sensor_mode_photometric,
                 camera_props=self._sensor_instance.camera_properties,
                 default_values=False,
                 stable_ctr=True,
             )
-        elif type(self._type) != Camera.Photometric:
+        elif type(self._type) != SensorCamera.Photometric:
             # if the _type is not Photometric then we create a new type.
-            self._type = Camera.Photometric(
+            self._type = SensorCamera.Photometric(
                 mode_photometric=self._sensor_template.camera_sensor_template.sensor_mode_photometric,
                 camera_props=self._sensor_instance.camera_properties,
                 stable_ctr=True,
@@ -1718,7 +1720,7 @@ class Camera(BaseSensor):
             )
         return self._type
 
-    def set_axis_system(self, axis_system: Optional[List[float]] = None) -> Camera:
+    def set_axis_system(self, axis_system: Optional[List[float]] = None) -> SensorCamera:
         """Set the position of the sensor.
 
         Parameters
@@ -1729,7 +1731,7 @@ class Camera(BaseSensor):
 
         Returns
         -------
-        ansys.speos.core.sensor.Camera
+        ansys.speos.core.sensor.SensorCamera
             Camera Sensor feature
         """
         if axis_system is None:
@@ -1738,7 +1740,7 @@ class Camera(BaseSensor):
         return self
 
 
-class Irradiance(BaseSensor):
+class SensorIrradiance(BaseSensor):
     """Sensor feature: Irradiance.
     By default, regarding inherent characteristics, an irradiance sensor of type photometric and illuminance type planar is chosen.
     By default, regarding properties, an axis system is selected to position the sensor, no layer separation and no ray file generation
@@ -1869,7 +1871,7 @@ class Irradiance(BaseSensor):
         self,
     ) -> Union[
         None,
-        Irradiance,
+        SensorIrradiance,
         BaseSensor.LayerTypeFace,
         BaseSensor.LayerTypeSequence,
         BaseSensor.LayerTypeIncidenceAngle,
@@ -1909,13 +1911,13 @@ class Irradiance(BaseSensor):
             )
         return self._sensor_dimensions
 
-    def set_type_photometric(self) -> Irradiance:
+    def set_type_photometric(self) -> SensorIrradiance:
         """Set type photometric.
         The sensor considers the visible spectrum and gets the results in lm/m2 or lx.
 
         Returns
         -------
-        ansys.speos.core.sensor.Irradiance
+        ansys.speos.core.sensor.SensorIrradiance
             Irradiance sensor
         """
         self._sensor_template.irradiance_sensor_template.sensor_type_photometric.SetInParent()
@@ -1956,13 +1958,13 @@ class Irradiance(BaseSensor):
             )
         return self._type
 
-    def set_type_radiometric(self) -> Irradiance:
+    def set_type_radiometric(self) -> SensorIrradiance:
         """Set type radiometric.
         The sensor considers the entire spectrum and gets the results in W/m2.
 
         Returns
         -------
-        ansys.speos.core.sensor.Irradiance
+        ansys.speos.core.sensor.SensorIrradiance
             Irradiance sensor.
         """
         self._sensor_template.irradiance_sensor_template.sensor_type_radiometric.SetInParent()
@@ -2005,7 +2007,7 @@ class Irradiance(BaseSensor):
 
     def set_illuminance_type_planar(
         self, integration_direction: Optional[List[float]] = None
-    ) -> Irradiance:
+    ) -> SensorIrradiance:
         """Set illuminance type planar.
         The integration is made orthogonally with the sensor plane.
 
@@ -2017,7 +2019,7 @@ class Irradiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.core.sensor.Irradiance
+        ansys.speos.core.sensor.SensorIrradiance
             Irradiance sensor.
         """
         self._sensor_template.irradiance_sensor_template.illuminance_type_planar.SetInParent()
@@ -2029,34 +2031,34 @@ class Irradiance(BaseSensor):
             )
         return self
 
-    def set_illuminance_type_radial(self) -> Irradiance:
+    def set_illuminance_type_radial(self) -> SensorIrradiance:
         """Set illuminance type radial.
 
         Returns
         -------
-        ansys.speos.core.sensor.Irradiance
+        ansys.speos.core.sensor.SensorIrradiance
             Irradiance sensor.
         """
         self._sensor_template.irradiance_sensor_template.illuminance_type_radial.SetInParent()
         return self
 
-    def set_illuminance_type_hemispherical(self) -> Irradiance:
+    def set_illuminance_type_hemispherical(self) -> SensorIrradiance:
         """Set illuminance type hemispherical.
 
         Returns
         -------
-        ansys.speos.core.sensor.Irradiance
+        ansys.speos.core.sensor.SensorIrradiance
             Irradiance sensor.
         """
         self._sensor_template.irradiance_sensor_template.illuminance_type_hemispherical.SetInParent()
         return self
 
-    def set_illuminance_type_cylindrical(self) -> Irradiance:
+    def set_illuminance_type_cylindrical(self) -> SensorIrradiance:
         """Set illuminance type cylindrical.
 
         Returns
         -------
-        ansys.speos.core.sensor.Irradiance
+        ansys.speos.core.sensor.SensorIrradiance
             Irradiance sensor.
         """
         self._sensor_template.irradiance_sensor_template.illuminance_type_cylindrical.SetInParent()
@@ -2064,7 +2066,7 @@ class Irradiance(BaseSensor):
 
     def set_illuminance_type_semi_cylindrical(
         self, integration_direction: Optional[List[float]] = None
-    ) -> Irradiance:
+    ) -> SensorIrradiance:
         """Set illuminance type semi cylindrical.
 
         Parameters
@@ -2075,7 +2077,7 @@ class Irradiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.core.sensor.Irradiance
+        ansys.speos.core.sensor.SensorIrradiance
             Irradiance sensor.
         """
         self._sensor_template.irradiance_sensor_template.illuminance_type_semi_cylindrical.SetInParent()
@@ -2087,7 +2089,7 @@ class Irradiance(BaseSensor):
             )
         return self
 
-    def set_axis_system(self, axis_system: Optional[List[float]] = None) -> Irradiance:
+    def set_axis_system(self, axis_system: Optional[List[float]] = None) -> SensorIrradiance:
         """Set position of the sensor.
 
         Parameters
@@ -2098,7 +2100,7 @@ class Irradiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.core.sensor.Irradiance
+        ansys.speos.core.sensor.SensorIrradiance
             Irradiance sensor.
         """
         if axis_system is None:
@@ -2106,12 +2108,12 @@ class Irradiance(BaseSensor):
         self._sensor_instance.irradiance_properties.axis_system[:] = axis_system
         return self
 
-    def set_ray_file_type_none(self) -> Irradiance:
+    def set_ray_file_type_none(self) -> SensorIrradiance:
         """Set no ray file generation.
 
         Returns
         -------
-        ansys.speos.core.sensor.Irradiance
+        ansys.speos.core.sensor.SensorIrradiance
             Irradiance sensor.
         """
         self._sensor_instance.irradiance_properties.ray_file_type = (
@@ -2119,12 +2121,12 @@ class Irradiance(BaseSensor):
         )
         return self
 
-    def set_ray_file_type_classic(self) -> Irradiance:
+    def set_ray_file_type_classic(self) -> SensorIrradiance:
         """Set ray file generation without polarization data.
 
         Returns
         -------
-        ansys.speos.core.sensor.Irradiance
+        ansys.speos.core.sensor.SensorIrradiance
             Irradiance sensor.
         """
         self._sensor_instance.irradiance_properties.ray_file_type = (
@@ -2132,12 +2134,12 @@ class Irradiance(BaseSensor):
         )
         return self
 
-    def set_ray_file_type_polarization(self) -> Irradiance:
+    def set_ray_file_type_polarization(self) -> SensorIrradiance:
         """Set ray file generation with the polarization data for each ray.
 
         Returns
         -------
-        ansys.speos.core.sensor.Irradiance
+        ansys.speos.core.sensor.SensorIrradiance
             Irradiance sensor.
         """
         self._sensor_instance.irradiance_properties.ray_file_type = (
@@ -2145,12 +2147,12 @@ class Irradiance(BaseSensor):
         )
         return self
 
-    def set_ray_file_type_tm25(self) -> Irradiance:
+    def set_ray_file_type_tm25(self) -> SensorIrradiance:
         """Set ray file generation: a .tm25ray file with polarization data for each ray.
 
         Returns
         -------
-        ansys.speos.core.sensor.Irradiance
+        ansys.speos.core.sensor.SensorIrradiance
             Irradiance sensor.
         """
         self._sensor_instance.irradiance_properties.ray_file_type = (
@@ -2158,12 +2160,12 @@ class Irradiance(BaseSensor):
         )
         return self
 
-    def set_ray_file_type_tm25_no_polarization(self) -> Irradiance:
+    def set_ray_file_type_tm25_no_polarization(self) -> SensorIrradiance:
         """Set ray file generation: a .tm25ray file without polarization data.
 
         Returns
         -------
-        ansys.speos.core.sensor.Irradiance
+        ansys.speos.core.sensor.SensorIrradiance
             Irradiance sensor.
         """
         self._sensor_instance.irradiance_properties.ray_file_type = (
@@ -2171,13 +2173,13 @@ class Irradiance(BaseSensor):
         )
         return self
 
-    def set_layer_type_none(self) -> Irradiance:
+    def set_layer_type_none(self) -> SensorIrradiance:
         """
         Defines layer separation type as None.
 
         Returns
         -------
-        ansys.speos.core.sensor.Irradiance
+        ansys.speos.core.sensor.SensorIrradiance
             irradiance class instance
 
         """
@@ -2185,13 +2187,13 @@ class Irradiance(BaseSensor):
         self._layer_type = None
         return self
 
-    def set_layer_type_source(self) -> Irradiance:
+    def set_layer_type_source(self) -> SensorIrradiance:
         """
         Defines layer separation as by source.
 
         Returns
         -------
-        ansys.speos.core.sensor.Irradiance
+        ansys.speos.core.sensor.SensorIrradiance
            irradiance class instance
 
         """
@@ -2267,13 +2269,13 @@ class Irradiance(BaseSensor):
             )
         return self._layer_type
 
-    def set_layer_type_polarization(self) -> Irradiance:
+    def set_layer_type_polarization(self) -> SensorIrradiance:
         """
         Define layer separation as by polarization.
 
         Returns
         -------
-        ansys.speos.core.sensor.Irradiance
+        ansys.speos.core.sensor.SensorIrradiance
             Irradiance class instance
         """
         self._sensor_instance.irradiance_properties.layer_type_polarization.SetInParent()
@@ -2314,7 +2316,9 @@ class Irradiance(BaseSensor):
             )
         return self._layer_type
 
-    def set_output_face_geometries(self, geometries: Optional[List[GeoRef]] = None) -> Irradiance:
+    def set_output_face_geometries(
+        self, geometries: Optional[List[GeoRef]] = None
+    ) -> SensorIrradiance:
         """Select output faces for inverse simulation optimization.
 
         Parameters
@@ -2325,7 +2329,7 @@ class Irradiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.core.sensor.Irradiance
+        ansys.speos.core.sensor.SensorIrradiance
             Irradiance sensor.
         """
         if not geometries:
@@ -2337,7 +2341,7 @@ class Irradiance(BaseSensor):
         return self
 
 
-class Radiance(BaseSensor):
+class SensorRadiance(BaseSensor):
     """Sensor feature: Radiance.
     By default, regarding inherent characteristics, a radiance sensor of type photometric is chosen.
     By default, regarding properties, an axis system is selected to position the sensor and no layer separation is chosen.
@@ -2493,13 +2497,13 @@ class Radiance(BaseSensor):
             )
         return self._sensor_dimensions
 
-    def set_type_photometric(self) -> Radiance:
+    def set_type_photometric(self) -> SensorRadiance:
         """Set type photometric.
         The sensor considers the visible spectrum and gets the results in lm/m2 or lx.
 
         Returns
         -------
-        ansys.speos.core.sensor.Radiance
+        ansys.speos.core.sensor.SensorRadiance
             Radiance sensor.
         """
         self._sensor_template.radiance_sensor_template.sensor_type_photometric.SetInParent()
@@ -2540,13 +2544,13 @@ class Radiance(BaseSensor):
             )
         return self._type
 
-    def set_type_radiometric(self) -> Radiance:
+    def set_type_radiometric(self) -> SensorRadiance:
         """Set type radiometric.
         The sensor considers the entire spectrum and gets the results in W/m2.
 
         Returns
         -------
-        ansys.speos.core.sensor.Radiance
+        ansys.speos.core.sensor.SensorRadiance
             Radiance sensor.
         """
         self._sensor_template.radiance_sensor_template.sensor_type_radiometric.SetInParent()
@@ -2587,7 +2591,7 @@ class Radiance(BaseSensor):
             )
         return self._type
 
-    def set_focal(self, value: float = 250) -> Radiance:
+    def set_focal(self, value: float = 250) -> SensorRadiance:
         """Set the focal value.
 
         Parameters
@@ -2598,13 +2602,13 @@ class Radiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.core.sensor.Radiance
+        ansys.speos.core.sensor.SensorRadiance
             Radiance sensor.
         """
         self._sensor_template.radiance_sensor_template.focal = value
         return self
 
-    def set_integration_angle(self, value: float = 5) -> Radiance:
+    def set_integration_angle(self, value: float = 5) -> SensorRadiance:
         """Set the integration angle.
 
         Parameters
@@ -2615,13 +2619,13 @@ class Radiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.core.sensor.Radiance
+        ansys.speos.core.sensor.SensorRadiance
             Radiance sensor.
         """
         self._sensor_template.radiance_sensor_template.integration_angle = value
         return self
 
-    def set_axis_system(self, axis_system: Optional[List[float]] = None) -> Radiance:
+    def set_axis_system(self, axis_system: Optional[List[float]] = None) -> SensorRadiance:
         """Set position of the sensor.
 
         Parameters
@@ -2632,7 +2636,7 @@ class Radiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.core.sensor.Radiance
+        ansys.speos.core.sensor.SensorRadiance
             Radiance sensor.
         """
         if axis_system is None:
@@ -2640,7 +2644,7 @@ class Radiance(BaseSensor):
         self._sensor_instance.radiance_properties.axis_system[:] = axis_system
         return self
 
-    def set_observer_point(self, value: Optional[List[float]] = None) -> Radiance:
+    def set_observer_point(self, value: Optional[List[float]] = None) -> SensorRadiance:
         """Set the position of the observer point. This is optional, because the focal length is used by default.
         Choosing to set an observer point will make the focal length ignored.
 
@@ -2652,7 +2656,7 @@ class Radiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.core.sensor.Radiance
+        ansys.speos.core.sensor.SensorRadiance
             Radiance sensor.
         """
         if not value:
@@ -2661,7 +2665,7 @@ class Radiance(BaseSensor):
             self._sensor_instance.radiance_properties.observer_point[:] = value
         return self
 
-    def set_layer_type_none(self) -> Radiance:
+    def set_layer_type_none(self) -> SensorRadiance:
         """
         Defines layer separation type as None
 
@@ -2670,7 +2674,7 @@ class Radiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.core.sensor.Radiance
+        ansys.speos.core.sensor.SensorRadiance
             Radiance sensor
 
         """
@@ -2678,13 +2682,13 @@ class Radiance(BaseSensor):
         self._layer_type = None
         return self
 
-    def set_layer_type_source(self) -> Radiance:
+    def set_layer_type_source(self) -> SensorRadiance:
         """
         Defines layer separation as by source.
 
         Returns
         -------
-        ansys.speos.core.sensor.Radiance
+        ansys.speos.core.sensor.SensorRadiance
             Radiance sensor
 
         """

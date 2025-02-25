@@ -12,9 +12,9 @@
 import os
 
 from ansys.speos.core import Project, Speos
-from ansys.speos.core.sensor import Irradiance
-from ansys.speos.core.simulation import Direct
-from ansys.speos.core.source import Surface
+from ansys.speos.core.sensor import SensorIrradiance
+from ansys.speos.core.simulation import SimulationDirect
+from ansys.speos.core.source import SourceSurface
 
 # If using docker container
 tests_data_path = os.path.join("/app", "assets")
@@ -40,7 +40,7 @@ print(p)
 # create feature - e.g. source
 
 # +
-source1 = p.create_source(name="Source.1", feature_type=Surface)
+source1 = p.create_source(name="Source.1", feature_type=SourceSurface)
 source1.commit()
 # -
 
@@ -94,12 +94,12 @@ print(features[0])
 # Here a wrong type is given: no source is called Sensor.1 in the project
 
 # +
-features = p.find(name="Sensor.1", feature_type=Surface)
+features = p.find(name="Sensor.1", feature_type=SourceSurface)
 print(features)
 # -
 
 # +
-features = p.find(name="Sensor.1", feature_type=Irradiance)
+features = p.find(name="Sensor.1", feature_type=SensorIrradiance)
 print(features[0])
 # -
 
@@ -173,7 +173,7 @@ for it in p2.find_key(key="surface"):
 # e.g. surface source
 
 # +
-features = p2.find(name=".*", name_regex=True, feature_type=Surface)
+features = p2.find(name=".*", name_regex=True, feature_type=SourceSurface)
 for feat in features:
     print(str(type(feat)) + " : name=" + feat._name)
 src = features[1]
@@ -190,7 +190,7 @@ src.commit()
 # Retrieve a simulation feature:
 
 # +
-features = p2.find(name=".*", name_regex=True, feature_type=Direct)
+features = p2.find(name=".*", name_regex=True, feature_type=SimulationDirect)
 sim_feat = features[0]
 print(sim_feat)
 # -
