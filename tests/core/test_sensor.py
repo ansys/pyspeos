@@ -146,7 +146,7 @@ def test_create_camera_sensor(speos: Speos):
 
     # distortion_file_uri
     sensor1.set_distortion_file_uri(
-        uri=str(Path(test_path) / ("CameraInputFiles" / "CameraDistortion_130deg.OPTDistortion"))
+        uri=str(Path(test_path) / "CameraInputFiles" / "CameraDistortion_130deg.OPTDistortion")
     )
     sensor1.commit()
     assert sensor1.sensor_template_link.get().camera_sensor_template.distortion_file_uri != ""

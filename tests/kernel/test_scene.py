@@ -464,7 +464,7 @@ def test_scene_actions_load(speos: Speos):
     """Test the scene action: load file."""
     assert speos.client.healthy is True
     speos_file_path = str(
-        Path(test_path) / "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
+        Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
     )
 
     # Create empty scene + load_file
