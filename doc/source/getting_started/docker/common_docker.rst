@@ -6,10 +6,10 @@ Manually launch the Speos service.
 Environment variables
 ^^^^^^^^^^^^^^^^^^^^^
 
-The Speos service requires this mandatory environment variable for its use:
+The Speos service requires this mandatory environment variable to function properly:
 
-* ``ANSYSLMD_LICENSE_FILE``: License server (port and IP address or DNS) that the Speos service is to
-  connect to. For example, ``1055@127.0.0.1``.
+* ``ANSYSLMD_LICENSE_FILE``: License server (port and IP address or DNS) the Speos service connects to.
+  For example, ``1055@127.0.0.1``.
 
 You can also specify other optional environment variables:
 
@@ -18,20 +18,22 @@ You can also specify other optional environment variables:
 
 Here are some terms to keep in mind:
 
-* **host**: Machine that hosts the Speos service. It is typically on ``localhost``, but if
-  you are deploying the service on a remote machine, you must pass in this host machine's
-  IP address when connecting. By default, PySpeos assumes it is on ``localhost``.
+* **host**: Machine that hosts the Speos service. It is typically on ``localhost``.
+  But if you are deploying the service on a remote machine, then the machine's IP address is expected.
+  By default, PySpeos assumes it is on ``localhost``.
 
 * **port**: Port that exposes the Speos service on the host machine. Its
   value is assumed to be ``50098``, but users can deploy the service on preferred ports.
 
 
-Docker compose for Speos service
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Docker for Speos service
+^^^^^^^^^^^^^^^^^^^^^^^^
 
-You can find a `docker-compose.yml <https://github.com/ansys-internal/pyspeos/blob/main/docker-compose.yml>`_ file within the pySpeos
-repository. This method allows you to start the Speos service based on predefined environment variables and properties.
+This method allows you to start the Speos service based on predefined environment variables and properties.
 Afterwards, see the next section to understand how to connect to this service instance from PySpeos.
+
+The following snippet shows how to run Speos service 2025.1.
+To use another product version, please modify the image label from `251` to the corresponding product version.
 
 .. tab-set::
 
@@ -40,21 +42,21 @@ Afterwards, see the next section to understand how to connect to this service in
         .. code-block:: bash
 
             export LICENSE_SERVER="1055@XXX.XXX.XXX.XXX"
-            docker-compose -f <path to docker-compose.yml> up -d
+            docker run --detach --name speos-rpc -p 50098:50098 -e ANSYSLMD_LICENSE_FILE=$LICENSE_SERVER --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:251
 
     .. tab-item:: Powershell
 
         .. code-block:: pwsh
 
             $env:LICENSE_SERVER="1055@XXX.XXX.XXX.XXX"
-            docker-compose -f <path to docker-compose.yml> up -d
+            docker run --detach --name speos-rpc -p 50098:50098 -e ANSYSLMD_LICENSE_FILE=$env:LICENSE_SERVER --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:251
 
     .. tab-item:: Windows CMD
 
         .. code-block:: bash
 
             set LICENSE_SERVER="1055@XXX.XXX.XXX.XXX"
-            docker-compose -f <path to docker-compose.yml> up -d
+            docker run --detach --name speos-rpc -p 50098:50098 -e ANSYSLMD_LICENSE_FILE=%LICENSE_SERVER% --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:251
 
 Connect to the Speos service
 ----------------------------

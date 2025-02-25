@@ -11,13 +11,13 @@ from sphinx.builders.latex import LaTeXBuilder
 from sphinx.util import logging
 from sphinx.util.display import status_iterator
 
-from ansys.speos import __version__
+from ansys.speos.core import __version__
 
 LaTeXBuilder.supported_image_types = ["image/png", "image/pdf", "image/svg+xml"]
 os.environ["DOCUMENTATION_BUILDING"] = "true"
 
 # Project information
-project = "ansys-pyspeos"
+project = "ansys-speos-core"
 copyright = f"(c) {datetime.now().year} ANSYS, Inc. All rights reserved"
 author = "Ansys Inc."
 release = version = __version__
@@ -40,10 +40,6 @@ html_theme_options = {
     "ansys_sphinx_theme_autoapi": {
         "project": project,
     },
-    "cheatsheet": {
-        "file": "cheat_sheet/cheat_sheet_script.qmd",
-        "title": "PySpeos Cheat Sheet",
-    },
 }
 BUILD_CHEATSHEET = os.environ.get("BUILD_CHEATSHEET", "false").lower() == "true"
 if BUILD_CHEATSHEET:
@@ -63,10 +59,10 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx_design",
     "sphinx_jinja",
-    "sphinx.ext.autodoc",
     "ansys_sphinx_theme.extension.autoapi",
     "nbsphinx",
     "myst_parser",
+    "sphinxcontrib.mermaid",
 ]
 
 # Intersphinx mapping

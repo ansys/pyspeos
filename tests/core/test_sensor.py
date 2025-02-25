@@ -27,10 +27,10 @@ Test basic using sensor.
 import math
 import os
 
-from conftest import test_path
-
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2
 from ansys.speos.core import GeoRef, Project, Speos, sensor
+from ansys.speos.core.sensor import SensorCamera, SensorIrradiance, SensorRadiance
+from tests.conftest import test_path
 
 
 def test_create_camera_sensor(speos: Speos):
@@ -38,7 +38,7 @@ def test_create_camera_sensor(speos: Speos):
     p = Project(speos=speos)
 
     # Default value
-    sensor1 = p.create_sensor(name="Camera.1", feature_type=sensor.Camera)
+    sensor1 = p.create_sensor(name="Camera.1", feature_type=SensorCamera)
     sensor1.commit()
     assert sensor1.sensor_template_link is not None
     assert sensor1.sensor_template_link.get().HasField("camera_sensor_template")
@@ -429,7 +429,7 @@ def test_create_irradiance_sensor(speos: Speos):
     p = Project(speos=speos)
 
     # Default value
-    sensor1 = p.create_sensor(name="Irradiance.1", feature_type=sensor.Irradiance)
+    sensor1 = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
     sensor1.commit()
     assert sensor1.sensor_template_link is not None
     assert sensor1.sensor_template_link.get().HasField("irradiance_sensor_template")
@@ -781,7 +781,7 @@ def test_create_radiance_sensor(speos: Speos):
     p = Project(speos=speos)
 
     # Default value
-    sensor1 = p.create_sensor(name="Radiance.1", feature_type=sensor.Radiance)
+    sensor1 = p.create_sensor(name="Radiance.1", feature_type=SensorRadiance)
     sensor1.commit()
     assert sensor1.sensor_template_link is not None
     assert sensor1.sensor_template_link.get().HasField("radiance_sensor_template")
@@ -1007,7 +1007,7 @@ def test_commit_sensor(speos: Speos):
     p = Project(speos=speos)
 
     # Create
-    sensor1 = p.create_sensor(name="Irradiance.1", feature_type=sensor.Irradiance)
+    sensor1 = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
     assert sensor1.sensor_template_link is None
     assert len(p.scene_link.get().sensors) == 0
 
@@ -1030,7 +1030,7 @@ def test_reset_sensor(speos: Speos):
     p = Project(speos=speos)
 
     # Create + commit
-    sensor1 = p.create_sensor(name="Sensor.1", feature_type=sensor.Irradiance)
+    sensor1 = p.create_sensor(name="Sensor.1", feature_type=SensorIrradiance)
     sensor1.commit()
     assert sensor1._sensor_template.irradiance_sensor_template.dimensions.x_start == -50  # local
     assert (
@@ -1143,11 +1143,11 @@ def test_irradiance_modify_after_reset(speos: Speos):
     p = Project(speos=speos)
 
     # Create + commit
-    sensor1 = p.create_sensor(name="Sensor.1", feature_type=sensor.Irradiance)
+    sensor1 = p.create_sensor(name="Sensor.1", feature_type=SensorIrradiance)
     sensor1.set_type_spectral()
     sensor1.set_layer_type_sequence()
     sensor1.commit()
-    assert type(sensor1) == sensor.Irradiance
+    assert type(sensor1) == SensorIrradiance
 
     # Ask for reset
     sensor1.reset()
@@ -1221,8 +1221,8 @@ def test_radiance_modify_after_reset(speos: Speos):
     p = Project(speos=speos)
 
     # Create + commit
-    sensor1 = p.create_sensor(name="Sensor.1", feature_type=sensor.Radiance)
-    assert type(sensor1) == sensor.Radiance
+    sensor1 = p.create_sensor(name="Sensor.1", feature_type=SensorRadiance)
+    assert type(sensor1) == SensorRadiance
     sensor1.set_type_colorimetric()
     sensor1.set_layer_type_sequence()
     sensor1.commit()
@@ -1299,8 +1299,8 @@ def test_camera_modify_after_reset(speos: Speos):
     p = Project(speos=speos)
 
     # Create + commit
-    sensor1 = p.create_sensor(name="Sensor.1", feature_type=sensor.Camera)
-    assert type(sensor1) == sensor.Camera
+    sensor1 = p.create_sensor(name="Sensor.1", feature_type=SensorCamera)
+    assert type(sensor1) == SensorCamera
     sensor1.set_mode_photometric().set_mode_color().set_balance_mode_user_white()
     sensor1.set_mode_photometric().set_layer_type_source()
     sensor1.commit()
@@ -1375,7 +1375,7 @@ def test_delete_sensor(speos: Speos):
     p = Project(speos=speos)
 
     # Create + commit
-    sensor1 = p.create_sensor(name="Sensor.1", feature_type=sensor.Irradiance)
+    sensor1 = p.create_sensor(name="Sensor.1", feature_type=SensorIrradiance)
     sensor1.commit()
     assert sensor1.sensor_template_link.get().HasField("irradiance_sensor_template")
     assert sensor1._sensor_template.HasField("irradiance_sensor_template")  # local
@@ -1398,9 +1398,9 @@ def test_delete_sensor(speos: Speos):
 def test_get_sensor(speos: Speos, capsys):
     """Test get of a sensor."""
     p = Project(speos=speos)
-    sensor1 = p.create_sensor(name="Sensor.1", feature_type=sensor.Irradiance)
-    sensor2 = p.create_sensor(name="Sensor.2", feature_type=sensor.Radiance)
-    sensor3 = p.create_sensor(name="Sensor.3", feature_type=sensor.Camera)
+    sensor1 = p.create_sensor(name="Sensor.1", feature_type=SensorIrradiance)
+    sensor2 = p.create_sensor(name="Sensor.2", feature_type=SensorRadiance)
+    sensor3 = p.create_sensor(name="Sensor.3", feature_type=SensorCamera)
     # test when key exists
     name1 = sensor1.get(key="name")
     assert name1 == "Sensor.1"

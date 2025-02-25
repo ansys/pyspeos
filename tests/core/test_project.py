@@ -26,10 +26,12 @@ Test basic using project.
 
 import os
 
-from conftest import test_path
-
-from ansys.speos.core import Body, Face, Part, Project, Speos, sensor, simulation, source
+from ansys.speos.core import Body, Face, Part, Project, Speos
 from ansys.speos.core.opt_prop import OptProp
+from ansys.speos.core.sensor import SensorIrradiance, SensorRadiance
+from ansys.speos.core.simulation import SimulationDirect
+from ansys.speos.core.source import SourceSurface
+from tests.conftest import test_path
 
 
 def test_find_feature(speos: Speos):
@@ -45,20 +47,20 @@ def test_find_feature(speos: Speos):
     assert len(p.scene_link.get().sources) == 1
 
     # Create an irradiance sensor in the project
-    sensor1 = p.create_sensor(name="Sensor.1", feature_type=sensor.Irradiance)
+    sensor1 = p.create_sensor(name="Sensor.1", feature_type=SensorIrradiance)
     sensor1.commit()
     assert len(p._features) == 2
     assert len(p.scene_link.get().sensors) == 1
 
     # Create an radiance sensor in the project
     # TODO: enhance the initialize method
-    sensor2 = p.create_sensor(name="Sensor.2", feature_type=sensor.Radiance)
+    sensor2 = p.create_sensor(name="Sensor.2", feature_type=SensorRadiance)
     sensor2.commit()
     assert len(p._features) == 3
     assert len(p.scene_link.get().sensors) == 2
 
     # Create an radiance sensor in the project
-    sensor3 = p.create_sensor(name="Sensor.3", feature_type=sensor.Radiance)
+    sensor3 = p.create_sensor(name="Sensor.3", feature_type=SensorRadiance)
     sensor3.set_layer_type_face()
     sensor3.commit()
     assert len(p._features) == 4
@@ -90,25 +92,25 @@ def test_find_feature(speos: Speos):
     # With type filtering
 
     # Wrong combination name-type
-    features = p.find(name="Sensor.3", feature_type=source.Surface)
+    features = p.find(name="Sensor.3", feature_type=SourceSurface)
     assert features == []
 
     # Good combination name-type
-    features = p.find(name="Sensor.3", feature_type=sensor.Radiance)
+    features = p.find(name="Sensor.3", feature_type=SensorRadiance)
     assert len(features) == 1
     assert features[0] == sensor3
 
     # Wrong combination name-type specialized
-    features = p.find(name="Sensor.3", feature_type=sensor.Irradiance)
+    features = p.find(name="Sensor.3", feature_type=SensorIrradiance)
     assert features == []
 
     # Good combination name-type specialized
-    features = p.find(name="Sensor.3", feature_type=sensor.Radiance)
+    features = p.find(name="Sensor.3", feature_type=SensorRadiance)
     assert len(features) == 1
     assert features[0] == sensor3
 
     # Good combination name-type specialized + regex
-    features = p.find(name=r".*sor\.3", name_regex=True, feature_type=sensor.Radiance)
+    features = p.find(name=r".*sor\.3", name_regex=True, feature_type=SensorRadiance)
     assert len(features) == 1
     assert features[0] == sensor3
 
@@ -250,18 +252,18 @@ def test_find_after_load(speos: Speos):
     )
 
     # Retrieve all surface sources
-    src_feats = p.find(name=".*", name_regex=True, feature_type=source.Surface)
+    src_feats = p.find(name=".*", name_regex=True, feature_type=SourceSurface)
     assert len(src_feats) == 2
     assert src_feats[0]._name == "Dom Source 2 (0) in SOURCE2"
     assert src_feats[1]._name == "Surface Source (0) in SOURCE1"
 
     # Retrieve all irradiance sensors
-    ssr_feats = p.find(name=".*", name_regex=True, feature_type=sensor.Irradiance)
+    ssr_feats = p.find(name=".*", name_regex=True, feature_type=SensorIrradiance)
     assert len(ssr_feats) == 1
     assert ssr_feats[0]._name == "Dom Irradiance Sensor (0)"
 
     # Retrieve all direct simulations
-    sim_feats = p.find(name=".*", name_regex=True, feature_type=simulation.Direct)
+    sim_feats = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)
     assert len(sim_feats) == 1
     assert sim_feats[0]._name == "ASSEMBLY1.DS (0)"
 
@@ -294,13 +296,13 @@ def test_delete(speos: Speos):
     assert len(p._features) == 0
 
     # Create a surface source in the project
-    source1 = p.create_source(name="Source.1", feature_type=source.Surface)
+    source1 = p.create_source(name="Source.1", feature_type=SourceSurface)
     assert len(p._features) == 1
     source1.commit()
     assert len(p.scene_link.get().sources) == 1
 
     # Create an irradiance sensor in the project
-    sensor1 = p.create_sensor(name="Sensor.1", feature_type=sensor.Irradiance)
+    sensor1 = p.create_sensor(name="Sensor.1", feature_type=SensorIrradiance)
     sensor1.commit()
     assert len(p._features) == 2
     assert len(p.scene_link.get().sensors) == 1
@@ -328,7 +330,7 @@ def test_from_file(speos: Speos):
 
     feat_sims = p.find(name=p.scene_link.get().simulations[0].name)
     assert len(feat_sims) == 1
-    assert type(feat_sims[0]) is simulation.Direct
+    assert type(feat_sims[0]) is SimulationDirect
 
     # Check that feature can be retrieved
     feat_ops = p.find(name=p.scene_link.get().materials[2].name)
@@ -337,17 +339,8 @@ def test_from_file(speos: Speos):
 
     # And that the feature retrieved has a real impact on the project
     feat_ops[0].set_surface_mirror(reflectance=60).commit()
-    assert (
-        speos.client.get_item(key=p.scene_link.get().materials[2].sop_guids[0])
-        .get()
-        .HasField("mirror")
-    )
-    assert (
-        speos.client.get_item(key=p.scene_link.get().materials[2].sop_guids[0])
-        .get()
-        .mirror.reflectance
-        == 60
-    )
+    assert speos.client[p.scene_link.get().materials[2].sop_guids[0]].get().HasField("mirror")
+    assert speos.client[p.scene_link.get().materials[2].sop_guids[0]].get().mirror.reflectance == 60
 
     # Check that ambient mat has no sop
     feat_op_ambients = p.find(name=p.scene_link.get().materials[-1].name)
@@ -357,12 +350,12 @@ def test_from_file(speos: Speos):
     # Retrieve another feature
     feat_ssrs = p.find(name=p.scene_link.get().sensors[0].name)
     assert len(feat_ssrs) == 1
-    assert type(feat_ssrs[0]) is sensor.Irradiance
+    assert type(feat_ssrs[0]) is SensorIrradiance
 
     # And that we can modify it (and that other values are not overridden by default values)
     feat_ssrs[0].set_type_colorimetric().set_wavelengths_range().set_end(value=800)
     feat_ssrs[0].commit()
-    ssr_link = speos.client.get_item(key=p.scene_link.get().sensors[0].sensor_guid)
+    ssr_link = speos.client[p.scene_link.get().sensors[0].sensor_guid]
     ssr_data = ssr_link.get()
     assert ssr_data.HasField("irradiance_sensor_template")
     assert ssr_data.irradiance_sensor_template.HasField("sensor_type_colorimetric")
@@ -390,21 +383,21 @@ def test_find_geom(speos: Speos):
     assert p.scene_link.get().part_guid != ""
 
     # Check that RootPart feature can be retrieved
-    part_data = speos.client.get_item(p.scene_link.get().part_guid).get()
+    part_data = speos.client[p.scene_link.get().part_guid].get()
     feat_rps = p.find(name="", feature_type=Part)
     assert len(feat_rps) == 1
     assert type(feat_rps[0]) is Part
 
     # Check that body can be retrieved
     assert len(part_data.body_guids) == 3
-    body1_data = speos.client.get_item(part_data.body_guids[1]).get()
+    body1_data = speos.client[part_data.body_guids[1]].get()
     feat_bodies = p.find(name=body1_data.name, feature_type=Part)
     assert len(feat_bodies) == 1
     assert type(feat_bodies[0]) is Body
 
     # Check that face can be retrieved
     assert len(body1_data.face_guids) > 4
-    face2_data = speos.client.get_item(body1_data.face_guids[2]).get()
+    face2_data = speos.client[body1_data.face_guids[2]].get()
     feat_faces = p.find(name=body1_data.name + "/" + face2_data.name, feature_type=Part)
     assert len(feat_faces) == 1
     assert type(feat_faces[0]) is Face

@@ -28,7 +28,7 @@ Installation can be done using the published `package`_ or the repository `sourc
 
 Package
 ~~~~~~~
-.. warning:: Release is in process it might take some time till available. Until then, please use `Sources`_.
+.. warning:: Release is in progress. It might take some time before it becomes available. Until then, please use `Sources`_.
 
 This repository is deployed as the Python packages `ansys-speos-core <https://pypi.org/project/ansys-speos-core>`_.
 As usual, installation is done by running:
@@ -95,17 +95,37 @@ The configuration file `<tests/local_config.json>`_ located in tests folder cont
 
 Start server
 ~~~~~~~~~~~~
-First option is to use the Docker container of `SpeosRPC_Server <https://github.com/orgs/ansys-internal/packages/container/package/pyspeos%2Fspeos-rpc>`_.
-It can be started using `<docker-compose.yml>`_ (if needed, please provide GitHub username and PAT as password).
+
+The first option is to use the Docker image from the `PySpeos repository <https://github.com/orgs/ansys/pyspeos>`_ on Github.
+
+.. note::
+
+   This option is only available for users with write access to the repository or
+   who are members of the Ansys organization.
+
+Use a GitHub personal access token with permission for reading packages to authorize Docker to access this repository.
+For more information, see `Managing your personal access tokens <https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens>`_ in the GitHub documentation.
+Save the token to a file with this command:
+
+.. code-block:: bash
+
+      echo XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX > GH_TOKEN.txt
+
 Since the Docker image contains no license server, you will need to enter your license server IP address in the `LICENSE_SERVER` environment variable.
-Then, you can launch SpeosRPC server with:
+Then, to launch SpeosRPC server with product version 2025.1, you can run:
 
 .. code:: bash
 
+   export GH_USERNAME=<my-github-username>
    export LICENSE_SERVER=1055@XXX.XXX.XXX.XXX
 
-   docker login ghcr.io/ansys-internal
-   docker-compose up -d
+   cat GH_TOKEN.txt | docker login ghcr.io -u "$GH_USERNAME" --password-stdin
+   docker pull ghcr.io/ansys/pyspeos-rpc:251
+   docker run --detach --name speos-rpc -p 50098:50098 -e ANSYSLMD_LICENSE_FILE=$LICENSE_SERVER --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:251
+
+.. note::
+
+   To use the latest image in development, you can use `ghcr.io/ansys/speos-rpc:dev`.
 
 On the other hand, the SpeosRPC server can be started locally.
 

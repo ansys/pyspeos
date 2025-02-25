@@ -24,12 +24,11 @@
 Test basic geometry database connection.
 """
 
-from test_scene import create_face_rectangle
-
 from ansys.speos.core.kernel.body import BodyLink, ProtoBody
 from ansys.speos.core.kernel.face import FaceLink, ProtoFace
 from ansys.speos.core.kernel.part import ProtoPart
 from ansys.speos.core.speos import Speos
+from tests.kernel.test_scene import create_face_rectangle
 
 
 def test_create_big_face(speos: Speos):
@@ -182,7 +181,7 @@ def test_body(speos: Speos):
     faces_to_delete = body0.get().face_guids
     body0.delete()
     for face_key in faces_to_delete:
-        face = speos.client.get_item(key=face_key)
+        face = speos.client[face_key]
         assert isinstance(face, FaceLink)
         face.delete()
 
@@ -223,10 +222,10 @@ def test_part(speos: Speos):
     assert part1.key != ""
 
     for body_key in part1.get().body_guids:
-        body = speos.client.get_item(key=body_key)
+        body = speos.client[body_key]
         assert isinstance(body, BodyLink)
         for face_key in body.get().face_guids:
-            face = speos.client.get_item(key=face_key)
+            face = speos.client[face_key]
             assert isinstance(face, FaceLink)
             face.delete()
         body.delete()
