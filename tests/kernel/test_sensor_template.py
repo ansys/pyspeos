@@ -42,12 +42,12 @@ def test_sensor_template(speos: Speos):
         speos.client.sensor_templates()
     )  # Create sensor_templates stub from client channel
 
-    camera_input_files_path = Path(test_path).joinpath("CameraInputFiles")
-    red_spectrum = str(camera_input_files_path.joinpath("CameraSensitivityRed.spectrum"))
-    green_spectrum = str(camera_input_files_path.joinpath("CameraSensitivityGreen.spectrum"))
-    blue_spectrum = str(camera_input_files_path.joinpath("CameraSensitivityBlue.spectrum"))
-    transmittance = str(camera_input_files_path.joinpath("CameraTransmittance.spectrum"))
-    distortion = str(camera_input_files_path.joinpath("CameraDistortion_130deg.OPTDistortion"))
+    camera_input_files_path = Path(test_path) / "CameraInputFiles"
+    red_spectrum = str(camera_input_files_path / "CameraSensitivityRed.spectrum")
+    green_spectrum = str(camera_input_files_path / "CameraSensitivityGreen.spectrum")
+    blue_spectrum = str(camera_input_files_path / "CameraSensitivityBlue.spectrum")
+    transmittance = str(camera_input_files_path / "CameraTransmittance.spectrum")
+    distortion = str(camera_input_files_path / "CameraDistortion_130deg.OPTDistortion")
 
     # Camera sensor template mode monochrome
     camera_t0 = sensor_t_db.create(

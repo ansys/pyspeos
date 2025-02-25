@@ -146,9 +146,9 @@ def compareIesIntensities(ies1, ies2):
 def test_grpc_ies_intensity(speos: Speos):
     stub = ies_pb2_grpc.IesIntensityServiceStub(speos.client.channel)
     save_request = ies_pb2.Save_Request()
-    save_request.file_uri = str(Path(test_path).joinpath("tmp2_file.ies"))
+    save_request.file_uri = str(Path(test_path) / "tmp2_file.ies")
     load_request = ies_pb2.Load_Request()
-    load_request.file_uri = str(Path(test_path).joinpath("tmp2_file.ies"))
+    load_request.file_uri = str(Path(test_path) / "tmp2_file.ies")
 
     logging.debug("Creating ies intensity protocol buffer")
     ies = createIesIntensity()

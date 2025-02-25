@@ -59,7 +59,7 @@ def speos():
 local_path = Path(os.path.realpath(__file__)).parent
 
 # Load the local config file
-local_config_file = local_path.joinpath("local_config.json")
+local_config_file = local_path / "local_config.json"
 if local_config_file.exists():
     with local_config_file.open() as f:
         config = json.load(f)
@@ -68,7 +68,7 @@ else:
 
 
 # set test_path var depending on if we are using the servers in a docker container or not
-local_test_path = local_path.joinpath("assets/")
+local_test_path = local_path / "assets"
 if config.get("SpeosServerOnDocker"):
     test_path = "/app/assets/"
 else:

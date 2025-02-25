@@ -62,7 +62,7 @@ def test_create_luminaire_source(speos: Speos):
     ]
 
     # intensity_file_uri
-    source1.set_intensity_file_uri(uri=str(Path(test_path).joinpath("IES_C_DETECTOR.ies")))
+    source1.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
     source1.commit()
     assert source1.source_template_link is not None
     assert source1.source_template_link.get().luminaire.intensity_file_uri != ""
@@ -154,7 +154,7 @@ def test_create_surface_source(speos: Speos):
 
     # set intensity as library to be able to use flux_from_intensity_file
     source1.set_intensity().set_library().set_intensity_file_uri(
-        uri=str(Path(test_path).joinpath("IES_C_DETECTOR.ies"))
+        uri=str(Path(test_path) / "IES_C_DETECTOR.ies")
     )
     source1.set_flux_from_intensity_file()
     source1.commit()
@@ -193,7 +193,7 @@ def test_create_surface_source(speos: Speos):
 
     # exitance_variable + spectrum_from_xmp_file
     source1.set_exitance_variable().set_xmp_file_uri(
-        uri=str(Path(test_path).joinpath("PROJECT.Direct-no-Ray.Irradiance Ray Spectral.xmp"))
+        uri=str(Path(test_path) / "PROJECT.Direct-no-Ray.Irradiance Ray Spectral.xmp")
     )
     source1.set_spectrum_from_xmp_file()
     source1.commit()
@@ -307,7 +307,7 @@ def test_create_rayfile_source(speos: Speos):
     assert source1._source_template.rayfile.ray_file_uri == ""
 
     # ray_file_uri
-    source1.set_ray_file_uri(uri=str(Path(test_path).joinpath("Rays.ray")))
+    source1.set_ray_file_uri(uri=str(Path(test_path) / "Rays.ray"))
     source1.commit()
     assert source1.source_template_link is not None
     assert source1.source_template_link.get().HasField("rayfile")
@@ -333,7 +333,7 @@ def test_create_rayfile_source(speos: Speos):
     assert source1.source_template_link.get().rayfile.HasField("flux_from_ray_file")
 
     # spectrum (need to change ray file so that it does not contain spectral data)
-    source1.set_ray_file_uri(uri=str(Path(test_path).joinpath("RaysWithoutSpectralData.RAY")))
+    source1.set_ray_file_uri(uri=str(Path(test_path) / "RaysWithoutSpectralData.RAY"))
     source1.set_spectrum().set_blackbody()
     source1.commit()
     assert source1.source_template_link.get().rayfile.spectrum_guid != ""
@@ -408,7 +408,7 @@ def test_keep_same_internal_feature(speos: Speos):
 
     # LUMINAIRE SOURCE
     source2 = SourceLuminaire(project=p, name="Luminaire.1")
-    source2.set_intensity_file_uri(uri=str(Path(test_path).joinpath("IES_C_DETECTOR.ies")))
+    source2.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
     source2.commit()
     spectrum_guid = source2.source_template_link.get().luminaire.spectrum_guid
 
@@ -420,7 +420,7 @@ def test_keep_same_internal_feature(speos: Speos):
     # RAY FILE SOURCE
     source3 = SourceRayFile(project=p, name="Ray-fiile.1")
     source3.set_ray_file_uri(
-        uri=str(Path(test_path).joinpath("RaysWithoutSpectralData.RAY"))
+        uri=str(Path(test_path) / "RaysWithoutSpectralData.RAY")
     ).set_spectrum().set_blackbody()
     source3.commit()
     spectrum_guid = source3.source_template_link.get().rayfile.spectrum_guid
@@ -441,7 +441,7 @@ def test_commit_source(speos: Speos):
 
     # Create
     source1 = SourceRayFile(project=p, name="Ray-file.1")
-    source1.set_ray_file_uri(uri=str(Path(test_path).joinpath("Rays.ray")))
+    source1.set_ray_file_uri(uri=str(Path(test_path) / "Rays.ray"))
     assert source1.source_template_link is None
     assert len(p.scene_link.get().sources) == 0
 
@@ -465,7 +465,7 @@ def test_reset_source(speos: Speos):
 
     # Create + commit
     source1 = SourceRayFile(project=p, name="1")
-    source1.set_ray_file_uri(uri=str(Path(test_path).joinpath("Rays.ray")))
+    source1.set_ray_file_uri(uri=str(Path(test_path) / "Rays.ray"))
     source1.commit()
     assert source1.source_template_link is not None
     assert source1.source_template_link.get().HasField("rayfile")
@@ -503,7 +503,7 @@ def test_luminaire_modify_after_reset(speos: Speos):
     # Create + commit
     source = SourceLuminaire(project=p, name="Luminaire.1")
     source.set_intensity_file_uri(
-        uri=str(Path(test_path).joinpath("IES_C_DETECTOR.ies"))
+        uri=str(Path(test_path) / "IES_C_DETECTOR.ies")
     ).set_flux_luminous()
     source.commit()
 
@@ -562,7 +562,7 @@ def test_rayfile_modify_after_reset(speos: Speos):
     # Create + commit
     source = SourceRayFile(project=p, name="1")
     source.set_flux_luminous().set_ray_file_uri(
-        uri=str(Path(test_path).joinpath("RaysWithoutSpectralData.RAY"))
+        uri=str(Path(test_path) / "RaysWithoutSpectralData.RAY")
     ).set_spectrum()
     source.commit()
 
@@ -677,7 +677,7 @@ def test_delete_source(speos: Speos):
     # Create + commit
     # source1 = p.create_source(name="1")
     source1 = SourceRayFile(project=p, name="1")
-    source1.set_ray_file_uri(uri=str(Path(test_path).joinpath("Rays.ray")))
+    source1.set_ray_file_uri(uri=str(Path(test_path) / "Rays.ray"))
     source1.commit()
     assert source1.source_template_link.get().HasField("rayfile")
     assert source1._source_template.HasField("rayfile")  # local
@@ -705,7 +705,7 @@ def test_print_source(speos: Speos):
     # Create + commit
     # source = p.create_source(name="Luminaire.1")
     source = SourceLuminaire(project=p, name="Luminaire.1")
-    source.set_intensity_file_uri(uri=str(Path(test_path).joinpath("IES_C_DETECTOR.ies")))
+    source.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
     source.commit()
 
     # Retrieve print
@@ -724,9 +724,7 @@ def test_print_source(speos: Speos):
     # Create + commit
     # source = p.create_source(name="1")
     source = SourceRayFile(project=p, name="1")
-    source.set_ray_file_uri(
-        uri=str(Path(test_path).joinpath("RaysWithoutSpectralData.RAY"))
-    ).set_spectrum()
+    source.set_ray_file_uri(uri=str(Path(test_path) / "RaysWithoutSpectralData.RAY")).set_spectrum()
     source.commit()
 
     # Retrieve print

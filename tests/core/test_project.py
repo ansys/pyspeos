@@ -122,9 +122,7 @@ def test_find_feature_geom(speos: Speos):
     p = Project(
         speos=speos,
         path=str(
-            Path(test_path).joinpath(
-                "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
-            )
+            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
         ),
     )
 
@@ -250,9 +248,7 @@ def test_find_after_load(speos: Speos):
     p = Project(
         speos=speos,
         path=str(
-            Path(test_path).joinpath(
-                "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
-            )
+            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
         ),
     )
 
@@ -279,9 +275,7 @@ def test_create_root_part_after_load(speos: Speos):
     p = Project(
         speos=speos,
         path=str(
-            Path(test_path).joinpath(
-                "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
-            )
+            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
         ),
     )
 
@@ -325,9 +319,7 @@ def test_from_file(speos: Speos):
     p = Project(
         speos=speos,
         path=str(
-            Path(test_path).joinpath(
-                "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
-            )
+            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
         ),
     )
 
@@ -384,9 +376,7 @@ def test_find_geom(speos: Speos):
     p = Project(
         speos=speos,
         path=str(
-            Path(test_path).joinpath(
-                "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
-            )
+            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
         ),
     )
 

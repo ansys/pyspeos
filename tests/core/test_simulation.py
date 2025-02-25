@@ -105,7 +105,7 @@ def test_create_direct(speos: Speos):
     # assert sim1._simulation_template.direct_mc_simulation_template.fast_transmission_gathering == True
 
     # ambient_material_uri
-    sim1.set_ambient_material_file_uri(uri=str(Path(test_path).joinpath("AIR.material")))
+    sim1.set_ambient_material_file_uri(uri=str(Path(test_path) / "AIR.material"))
     assert sim1._simulation_template.direct_mc_simulation_template.ambient_material_uri.endswith(
         "AIR.material"
     )
@@ -239,7 +239,7 @@ def test_create_inverse(speos: Speos):
     # assert sim1._simulation_template.inverse_mc_simulation_template.fast_transmission_gathering == True
 
     # ambient_material_uri
-    sim1.set_ambient_material_file_uri(uri=str(Path(test_path).joinpath("AIR.material")))
+    sim1.set_ambient_material_file_uri(uri=str(Path(test_path) / "AIR.material"))
     assert sim1._simulation_template.inverse_mc_simulation_template.ambient_material_uri.endswith(
         "AIR.material"
     )
@@ -341,7 +341,7 @@ def test_create_interactive(speos: Speos):
     )
 
     # ambient_material_uri
-    sim1.set_ambient_material_file_uri(uri=str(Path(test_path).joinpath("AIR.material")))
+    sim1.set_ambient_material_file_uri(uri=str(Path(test_path) / "AIR.material"))
     assert sim1._simulation_template.interactive_simulation_template.ambient_material_uri.endswith(
         "AIR.material"
     )
@@ -422,7 +422,7 @@ def test_commit(speos: Speos):
     ssr2.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
-    src.set_intensity_file_uri(uri=str(Path(test_path).joinpath("IES_C_DETECTOR.ies")))
+    src.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
     src.commit()
 
     # Create
@@ -476,7 +476,7 @@ def test_reset(speos: Speos):
     ssr2.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
-    src.set_intensity_file_uri(uri=str(Path(test_path).joinpath("IES_C_DETECTOR.ies")))
+    src.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
     src.commit()
 
     # Create + commit
@@ -530,7 +530,7 @@ def test_direct_modify_after_reset(speos: Speos):
     ssr2.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
-    src.set_intensity_file_uri(uri=str(Path(test_path).joinpath("IES_C_DETECTOR.ies")))
+    src.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
     src.commit()
 
     # Create + commit
@@ -586,7 +586,7 @@ def test_inverse_modify_after_reset(speos: Speos):
     ssr2.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
-    src.set_intensity_file_uri(uri=str(Path(test_path).joinpath("IES_C_DETECTOR.ies")))
+    src.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
     src.commit()
 
     # Create + commit
@@ -648,7 +648,7 @@ def test_interactive_modify_after_reset(speos: Speos):
     ssr2.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
-    src.set_intensity_file_uri(uri=str(Path(test_path).joinpath("IES_C_DETECTOR.ies")))
+    src.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
     src.commit()
 
     # Create + commit
@@ -700,7 +700,7 @@ def test_delete(speos: Speos):
     ssr.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
-    src.set_intensity_file_uri(uri=str(Path(test_path).joinpath("IES_C_DETECTOR.ies")))
+    src.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
     src.commit()
 
     # Create + commit

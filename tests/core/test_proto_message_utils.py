@@ -141,9 +141,7 @@ def test_replace_guid_elt_complex(speos: Speos):
     scene_link = speos.client.scenes().create(message=scene.ProtoScene())
     scene_link.load_file(
         file_uri=str(
-            Path(test_path).joinpath(
-                "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
-            )
+            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
         )
     )
 
@@ -279,9 +277,7 @@ def test_finder_by_key(speos: Speos):
     p = Project(
         speos=speos,
         path=str(
-            Path(test_path).joinpath(
-                "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
-            )
+            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
         ),
     )
 
@@ -325,9 +321,7 @@ def test_flatten_dict(speos: Speos):
     p = Project(
         speos=speos,
         path=str(
-            Path(test_path).joinpath(
-                "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
-            )
+            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
         ),
     )
 

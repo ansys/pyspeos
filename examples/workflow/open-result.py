@@ -10,7 +10,7 @@ from ansys.speos.core import Project, Speos
 from ansys.speos.core.simulation import SimulationDirect
 
 # If using docker container
-tests_data_path = Path().joinpath("/app", "assets")
+tests_data_path = Path("/app") / "assets"
 # If using local server
 # tests_data_path = os.path.join(os.path.abspath(""), os.path.pardir, os.path.pardir, os.path.pardir, "tests", "assets")
 # -
@@ -26,9 +26,7 @@ speos = Speos(host="localhost", port=50098)
 # +
 p = Project(
     speos=speos,
-    path=str(
-        tests_data_path.joinpath("LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5")
-    ),
+    path=str(tests_data_path / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"),
 )
 print(p)
 # -

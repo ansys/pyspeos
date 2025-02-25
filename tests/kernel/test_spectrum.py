@@ -126,9 +126,7 @@ def test_spectrum(speos: Speos):
     assert s_sampled.key != ""
 
     # Library
-    spectrum_path = str(
-        Path(test_path).joinpath("CameraInputFiles", "CameraSensitivityBlue.spectrum")
-    )
+    spectrum_path = str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum")
     s_lib = spec_db.create(
         message=ProtoSpectrum(
             name="library_1",

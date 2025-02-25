@@ -65,7 +65,7 @@ def _find_correct_result(
                         download_location=tempfile.gettempdir(),
                     )
                     file_path = str(
-                        Path().joinpath(tempfile.gettempdir(), res.upload_response.info.file_name)
+                        Path(tempfile.gettempdir()) / res.upload_response.info.file_name
                     )
                 else:
                     file_path = res.upload_response.info.uri

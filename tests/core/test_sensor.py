@@ -146,9 +146,7 @@ def test_create_camera_sensor(speos: Speos):
 
     # distortion_file_uri
     sensor1.set_distortion_file_uri(
-        uri=str(
-            Path(test_path).joinpath("CameraInputFiles", "CameraDistortion_130deg.OPTDistortion")
-        )
+        uri=str(Path(test_path) / ("CameraInputFiles" / "CameraDistortion_130deg.OPTDistortion"))
     )
     sensor1.commit()
     assert sensor1.sensor_template_link.get().camera_sensor_template.distortion_file_uri != ""
@@ -205,7 +203,7 @@ def test_create_camera_sensor(speos: Speos):
 
     # transmittance_file_uri
     sensor1.set_mode_photometric().set_transmittance_file_uri(
-        uri=str(Path(test_path).joinpath("CameraInputFiles", "CameraTransmittance.spectrum"))
+        uri=str(Path(test_path) / "CameraInputFiles" / "CameraTransmittance.spectrum")
     )
     sensor1.commit()
     assert (
@@ -250,7 +248,7 @@ def test_create_camera_sensor(speos: Speos):
     # color_mode_monochromatic
     sensor1.set_mode_photometric().set_mode_monochromatic(
         spectrum_file_uri=str(
-            Path(test_path).joinpath("CameraInputFiles", "CameraSensitivityBlue.spectrum")
+            Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum"
         )
     )
     sensor1.commit()
@@ -271,7 +269,7 @@ def test_create_camera_sensor(speos: Speos):
 
     # red_spectrum_file_uri
     sensor1.set_mode_photometric().set_mode_color().set_red_spectrum_file_uri(
-        uri=str(Path(test_path).joinpath("CameraInputFiles", "CameraSensitivityRed.spectrum"))
+        uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum")
     )
     sensor1.commit()
     mode_photometric = (
@@ -283,7 +281,7 @@ def test_create_camera_sensor(speos: Speos):
 
     # green_spectrum_file_uri
     sensor1.set_mode_photometric().set_mode_color().set_green_spectrum_file_uri(
-        uri=str(Path(test_path).joinpath("CameraInputFiles", "CameraSensitivityGreen.spectrum"))
+        uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityGreen.spectrum")
     )
     sensor1.commit()
     mode_photometric = (
@@ -295,7 +293,7 @@ def test_create_camera_sensor(speos: Speos):
 
     # blue_spectrum_file_uri
     sensor1.set_mode_photometric().set_mode_color().set_blue_spectrum_file_uri(
-        uri=str(Path(test_path).joinpath("CameraInputFiles", "CameraSensitivityBlue.spectrum"))
+        uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum")
     )
     sensor1.commit()
     mode_photometric = (
@@ -347,11 +345,11 @@ def test_create_camera_sensor(speos: Speos):
     assert mode_photometric.color_mode_color.balance_mode_display.blue_display_file_uri == ""
 
     sensor1.set_mode_photometric().set_mode_color().set_balance_mode_display_primaries().set_red_display_file_uri(
-        uri=str(Path(test_path).joinpath("CameraInputFiles", "CameraSensitivityRed.spectrum"))
+        uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum")
     ).set_green_display_file_uri(
-        uri=str(Path(test_path).joinpath("CameraInputFiles", "CameraSensitivityGreen.spectrum"))
+        uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityGreen.spectrum")
     ).set_blue_display_file_uri(
-        uri=str(Path(test_path).joinpath("CameraInputFiles", "CameraSensitivityBlue.spectrum"))
+        uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum")
     )
     sensor1.commit()
     mode_photometric = (

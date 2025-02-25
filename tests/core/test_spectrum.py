@@ -57,9 +57,7 @@ def test_create_spectrum(speos: Speos):
 
     # library
     spectrum1.set_library(
-        file_uri=str(
-            Path(test_path).joinpath("LG_50M_Colorimetric_short.sv5", "Blue Spectrum.spectrum")
-        )
+        file_uri=str(Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "Blue Spectrum.spectrum")
     ).commit()
     assert spectrum1.spectrum_link.get().HasField("library")
 

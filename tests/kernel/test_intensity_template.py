@@ -47,7 +47,7 @@ def test_intensity_template(speos: Speos):
             name="library_0",
             description="library intensity template",
             library=ProtoIntensityTemplate.Library(
-                intensity_file_uri=str(Path(test_path).joinpath("IES_C_DETECTOR.ies"))
+                intensity_file_uri=str(Path(test_path) / "IES_C_DETECTOR.ies")
             ),
         )
     )
@@ -118,7 +118,7 @@ def test_action_get_library_type_info(speos: Speos):
             name="library_0",
             description="library intensity template",
             library=ProtoIntensityTemplate.Library(
-                intensity_file_uri=str(Path(test_path).joinpath("IES_C_DETECTOR.ies"))
+                intensity_file_uri=str(Path(test_path) / "IES_C_DETECTOR.ies")
             ),
         )
     )
