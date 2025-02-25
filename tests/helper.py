@@ -93,7 +93,11 @@ def does_file_exist(path):
     if config.get("SpeosServerOnDocker"):
         return (
             subprocess.call(
-                "docker exec " + config.get("SpeosContainerName") + ' test -f "' + path + '"',
+                "docker exec "
+                + config.get("SpeosContainerName")
+                + ' test -f "'
+                + Path(path).as_posix()
+                + '"',
                 shell=True,
             )
             == 0
