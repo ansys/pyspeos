@@ -20,6 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+"""Module to start Speos RPC Server"""
+
 import os
 
 from ansys.speos.core import LOG as logger

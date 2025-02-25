@@ -106,9 +106,9 @@ ignore = [
     "PTH122",
     "PTH123", # TODO: Use Path.open
     "PTH118", # TODO: Use pathlib instead of os.path
-    "D100",
-    "D101",
-    "D102",
+#    "D100",
+#    "D101",
+#    "D102",
     "D103", # TODO: Add docstring to functions
     "D104",
     "D105",
@@ -139,9 +139,14 @@ ignore = [
     "TD003", # Missing issue link in TODOs comment
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"examples/*" = ["D100"]
+"src/ansys/speos/core/logger.py" = ["D"]
+
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
+
 
 [tool.ruff.lint.isort]
 combine-as-imports = true

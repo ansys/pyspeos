@@ -20,6 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+"""Module with utility elements for protobuf messages from Speos RPC server"""
+
 import json
 
 from google.protobuf import __version__ as protobuf_version

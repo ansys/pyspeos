@@ -20,6 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+"""Provides interface to link Speos Objects to Geometries"""
+
 from __future__ import annotations
 
 from typing import Mapping
