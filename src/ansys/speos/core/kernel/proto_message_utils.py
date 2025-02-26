@@ -31,7 +31,7 @@ from google.protobuf.message import Message
 
 def protobuf_message_to_str(message: Message, with_full_name: bool = True) -> str:
     """
-    Returns a protobuf message as formatted json string.
+    Convert a protobuf message to formatted json string.
 
     Parameters
     ----------
@@ -69,8 +69,7 @@ def protobuf_message_to_str(message: Message, with_full_name: bool = True) -> st
 
 
 def protobuf_message_to_dict(message) -> dict:
-    """
-    Returns a protobuf message as formatted json dict.
+    """Convert protobuf message to a formatted json dict.
 
     Parameters
     ----------

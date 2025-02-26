@@ -99,7 +99,7 @@ LOG.log_to_stdout()
 
 @pytest.fixture
 def fake_record():
-    """Function to emulate logger.
+    """Emulate logger.
 
     Returns
     -------
@@ -122,7 +122,7 @@ def fake_record():
         extra={},
     ):
         """
-        Function to fake log records using the format from the logger handler.
+        Fake log records using the format from the logger handler.
 
         Parameters
         ----------

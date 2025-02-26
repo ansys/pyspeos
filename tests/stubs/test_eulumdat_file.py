@@ -32,7 +32,7 @@ import tests.helper as helper
 
 
 def createEulumdatIntensity():
-    """Function to create simple eulumdat file."""
+    """Create simple eulumdat file."""
     eulumdat = eulumdat_pb2.EulumdatIntensityDistribution()
 
     # file information
@@ -103,7 +103,7 @@ def createEulumdatIntensity():
 
 
 def compareEulumdatIntensities(eulumdat1, eulumdat2):
-    """Function to compare 2 eulumdat files."""
+    """Compare 2 eulumdat files."""
     # file information
     if eulumdat1.file_info.company_identification != eulumdat2.file_info.company_identification:
         return False

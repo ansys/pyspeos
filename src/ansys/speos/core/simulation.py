@@ -566,7 +566,7 @@ class SimulationDirect(BaseSimulation):
         return self
 
     def set_max_impact(self, value: int = 100) -> SimulationDirect:
-        """Defines a value to determine the maximum number of ray impacts during propagation.
+        """Define a value to determine the maximum number of ray impacts during propagation.
 
         When a ray has interacted N times with the geometry, the propagation of the ray stops.
 
@@ -839,7 +839,7 @@ class SimulationInverse(BaseSimulation):
         return self
 
     def set_max_impact(self, value: int = 100) -> SimulationInverse:
-        """Defines a value to determine the maximum number of ray impacts during propagation.
+        """Define a value to determine the maximum number of ray impacts during propagation.
 
         When a ray has interacted N times with the geometry, the propagation of the ray stops.
 
@@ -1176,7 +1176,7 @@ class SimulationInteractive(BaseSimulation):
         return self
 
     def set_max_impact(self, value: int = 100) -> SimulationInteractive:
-        """Defines a value to determine the maximum number of ray impacts during propagation.
+        """Define a value to determine the maximum number of ray impacts during propagation.
 
         When a ray has interacted N times with the geometry, the propagation of the ray stops.
 

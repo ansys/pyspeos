@@ -117,7 +117,7 @@ ignore = [
 #    "D205", # TODO: Add one blank line between summary line and description
 #    "D301",
 #    "D400", # TODO: First line should end with a period
-    "D401",
+#    "D401",
     "D404", # TODO: First word of the docstring should not be "This"
     "D414",
     "E402",

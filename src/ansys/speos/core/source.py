@@ -653,7 +653,7 @@ class SourceRayFile(BaseSource):
         return self
 
     def set_spectrum(self) -> Spectrum:
-        """Method to set spectrum.
+        """Set spectrum of the Source.
 
         Returns
         -------
@@ -1015,7 +1015,7 @@ class SourceSurface(BaseSource):
         return self
 
     def set_spectrum(self) -> Spectrum:
-        """Method to set spectrum.
+        """Set spectrum of the Source.
 
         Returns
         -------

@@ -199,7 +199,7 @@ class RayPath:
         return self._sensor_contribution
 
     def get(self, key=""):
-        """Method to retrieve any information from RayPath object.
+        """Retrieve any information from RayPath object.
 
         Parameters
         ----------
@@ -220,7 +220,7 @@ class RayPath:
             print("Used key: {} not found in key list: {}.".format(key, data.keys()))
 
     def __str__(self):
-        """String representation of a RayPath."""
+        """Create string representation of a RayPath."""
         return str(self.get())
 
 
@@ -284,7 +284,7 @@ class LightPathFinder:
         return self._filtered_rays
 
     def __str__(self):
-        """String representation of LightPathFinder."""
+        """Create string representation of LightPathFinder."""
         return str(
             {
                 k: v.fget(self)
@@ -294,8 +294,7 @@ class LightPathFinder:
         )
 
     def __open(self, path: str):
-        """
-        Method to open lpf file.
+        """Open lpf file.
 
         Parameters
         ----------
@@ -308,7 +307,7 @@ class LightPathFinder:
 
     def __parse_traces(self) -> list[RayPath]:
         """
-        Reads all raypaths from lpf dataset.
+        Read all raypaths from lpf dataset.
 
         Returns
         -------
@@ -321,7 +320,7 @@ class LightPathFinder:
         return raypaths
 
     def __filter_by_last_intersection_types(self, options: list[int], new=True):
-        """Filters raypaths based on last intersection types and populates filtered_rays property."""
+        """Filter raypaths based on last intersection types and populates filtered_rays property."""
         if new:
             self._filtered_rays = []
             for ray in self._rays:
@@ -335,7 +334,7 @@ class LightPathFinder:
                     self._filtered_rays.append(ray)
 
     def filter_by_face_ids(self, options: list[int], new=True) -> LightPathFinder:
-        """Filters raypaths based on face ids and populates filtered_rays property.
+        """Filter raypaths based on face ids and populates filtered_rays property.
 
         Parameters
         ----------
@@ -363,7 +362,7 @@ class LightPathFinder:
         return self
 
     def filter_by_body_ids(self, options: list[int], new=True) -> LightPathFinder:
-        """Filters raypaths based on body ids and populates filtered_rays property.
+        """Filter raypaths based on body ids and populates filtered_rays property.
 
         Parameters
         ----------
@@ -391,7 +390,7 @@ class LightPathFinder:
         return self
 
     def filter_error_rays(self) -> LightPathFinder:
-        """Filters raypaths and only shows rays in error.
+        """Filter raypaths and only shows rays in error.
 
         Returns
         -------
@@ -402,7 +401,7 @@ class LightPathFinder:
         return self
 
     def remove_error_rays(self) -> LightPathFinder:
-        """Filters rays and only shows rays not in error.
+        """Filter rays and only shows rays not in error.
 
         Returns
         -------
@@ -448,8 +447,7 @@ class LightPathFinder:
         ray_filter: bool = False,
         project: Project = None,
     ) -> LightPathFinder:
-        """
-        Method to preview lpf file with pyvista.
+        """Preview lpf file with pyvista.
 
         Parameters
         ----------
@@ -499,7 +497,7 @@ class LightPathFinder:
 
 
 def wavelength_to_rgb(wavelength: float, gamma: float = 0.8) -> [int, int, int, int]:
-    """This converts a given wavelength of light to an approximate RGB color value.
+    """Convert a given wavelength of light to an approximate RGB color value.
 
     The wavelength must be given in nanometers in the range from 380 nm through 750 nm (789 THz through 400 THz).
     Based on code by Dan Bruton http://www.physics.sfasu.edu/astro/color/spectra.html

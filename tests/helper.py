@@ -38,7 +38,7 @@ from tests.conftest import config
 
 
 def clean_all_dbs(speos_client: SpeosClient):
-    """Helper function to clean all database entries of a current SpeosRPC client.
+    """Clean all database entries of a current SpeosRPC client.
 
     Parameters
     ----------
@@ -67,7 +67,7 @@ def clean_all_dbs(speos_client: SpeosClient):
 
 
 def run_job_and_check_state(job: JobLink):
-    """Helper function to run a job and wait for state changes.
+    """Run a job and wait for state changes.
 
     Parameters
     ----------

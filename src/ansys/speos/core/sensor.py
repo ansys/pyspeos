@@ -2202,7 +2202,7 @@ class SensorIrradiance(BaseSensor):
 
     def set_layer_type_none(self) -> SensorIrradiance:
         """
-        Defines layer separation type as None.
+        Define layer separation type as None.
 
         Returns
         -------
@@ -2216,7 +2216,7 @@ class SensorIrradiance(BaseSensor):
 
     def set_layer_type_source(self) -> SensorIrradiance:
         """
-        Defines layer separation as by source.
+        Define layer separation as by source.
 
         Returns
         -------
@@ -2230,7 +2230,7 @@ class SensorIrradiance(BaseSensor):
 
     def set_layer_type_face(self) -> BaseSensor.LayerTypeFace:
         """
-        Defines layer separation as by face.
+        Define layer separation as by face.
 
         Returns
         -------
@@ -2264,7 +2264,7 @@ class SensorIrradiance(BaseSensor):
 
     def set_layer_type_sequence(self) -> BaseSensor.LayerTypeSequence:
         """
-        Defines layer separation as by sequence.
+        Define layer separation as by sequence.
 
         Returns
         -------
@@ -2311,7 +2311,7 @@ class SensorIrradiance(BaseSensor):
 
     def set_layer_type_incidence_angle(self) -> BaseSensor.LayerTypeIncidenceAngle:
         """
-        Defines layer separation as by incidence angle.
+        Define layer separation as by incidence angle.
 
         Returns
         -------
@@ -2700,7 +2700,7 @@ class SensorRadiance(BaseSensor):
 
     def set_layer_type_none(self) -> SensorRadiance:
         """
-        Defines layer separation type as None.
+        Define layer separation type as None.
 
         Parameters
         ----------
@@ -2717,7 +2717,7 @@ class SensorRadiance(BaseSensor):
 
     def set_layer_type_source(self) -> SensorRadiance:
         """
-        Defines layer separation as by source.
+        Define layer separation as by source.
 
         Returns
         -------
@@ -2730,8 +2730,7 @@ class SensorRadiance(BaseSensor):
         return self
 
     def set_layer_type_face(self) -> BaseSensor.LayerTypeFace:
-        """
-        Defines layer separation as by face.
+        """Define layer separation as by face.
 
         Returns
         -------

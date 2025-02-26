@@ -32,7 +32,7 @@ import tests.helper as helper
 
 
 def createIesIntensity():
-    """Function to create IES file."""
+    """Create simple IES file."""
     ies = ies_pb2.IesIntensityDistribution()
 
     ies.norme_version = 1
@@ -74,7 +74,7 @@ def createIesIntensity():
 
 
 def compareIesIntensities(ies1, ies2):
-    """Function to compare ies files."""
+    """Compare two ies files."""
     if ies1.norme_version != ies2.norme_version:
         return False
     if len(ies1.key_words) != len(ies2.key_words):

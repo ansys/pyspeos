@@ -46,7 +46,7 @@ import tests.helper as helper
 
 
 def createSpectralBsdf() -> spectral_bsdf__v1__pb2.SpectralBsdfData:
-    """Function to create simple spectral bsdf."""
+    """Create simple spectral bsdf."""
     bsdf = spectral_bsdf__v1__pb2.SpectralBsdfData(description="test description")
     nbw = 7
     nbi = 10
@@ -87,12 +87,12 @@ def createSpectralBsdf() -> spectral_bsdf__v1__pb2.SpectralBsdfData:
 
 
 def approx_cmp(a, b):
-    """Function to do an approximated comparison."""
+    """Approximated comparison of two numbers."""
     return math.fabs(a - b) < 1e-6
 
 
 def compareDiagram(a, b):
-    """Function to do an approximated comparison of intensity diagrams."""
+    """Approximated comparison of intensity diagrams."""
     if len(a.theta_samples) != len(b.theta_samples):
         return False
     for i, j in zip(a.theta_samples, b.theta_samples):
@@ -114,7 +114,7 @@ def compareDiagram(a, b):
 
 
 def compareSpectralBsdf(bsdf1, bsdf2):
-    """Function to compare two spectral bsdf."""
+    """Compare two spectral bsdf."""
     if bsdf1.description != bsdf2.description:
         return False
     if len(bsdf1.incidence_samples) != len(bsdf2.incidence_samples):
@@ -136,7 +136,7 @@ def compareSpectralBsdf(bsdf1, bsdf2):
 
 
 def compareSpecularEnhancementData(c1, c2):
-    """Function to compare Specular enhancement data."""
+    """Compare Specular enhancement data."""
     if c1.incidence_nb != c2.incidence_nb:
         return False
     if c1.wavelength_nb != c2.wavelength_nb:

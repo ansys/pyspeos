@@ -37,7 +37,7 @@ import tests.helper as helper
 
 
 def create_xmp_intensity():
-    """Function to create simple intensity XMP."""
+    """Create simple intensity XMP."""
     xmp = extended_map_template_pb2.ExtendedMap()
 
     # file description
@@ -88,7 +88,7 @@ def create_xmp_intensity():
 
 
 def compare_xmp_intensity_distributions(xmp1, xmp2):
-    """Function to compare 2 XMPs."""
+    """Compare 2 intensity XMPs."""
     if xmp1.base_data.value_type != xmp2.base_data.value_type:
         return False
     if xmp1.base_data.intensity_type != xmp2.base_data.intensity_type:

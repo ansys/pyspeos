@@ -46,7 +46,7 @@ import tests.helper as helper
 
 
 def createAnisotropicBsdf():
-    """Function to creat a lambertian bsdf."""
+    """Create a lambertian bsdf."""
     bsdf = anisotropic_bsdf__v1__pb2.AnisotropicBsdfData()
 
     # description
@@ -122,12 +122,12 @@ def createAnisotropicBsdf():
 
 
 def approx_cmp(a, b):
-    """Function to do an approximated comparison."""
+    """Approximated comparison of two numbers."""
     return math.fabs(a - b) < 1e-6
 
 
 def compareAnisotropicBsdf(bsdf1, bsdf2):
-    """Function to compar 2 bsdf."""
+    """Compare 2 bsdf."""
     # description
     if bsdf1.description != bsdf2.description:
         return False
@@ -266,7 +266,7 @@ def compareAnisotropicBsdf(bsdf1, bsdf2):
 
 
 def compareEnhancementData(cones1, cones2):
-    """Function to compare enhancement cones."""
+    """Compare enhancement cones."""
     if len(cones1.anisotropic_samples) != len(cones2.anisotropic_samples):
         return False
 
@@ -283,7 +283,7 @@ def compareEnhancementData(cones1, cones2):
 
 
 def compareSpecularEnhancementData(data1, data2):
-    """Function to compare specular enhancement information."""
+    """Compare specular enhancement information."""
     if (
         data1.refractive_index_1 != data2.refractive_index_1
         or data1.refractive_index_2 != data2.refractive_index_2
