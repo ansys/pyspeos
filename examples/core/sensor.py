@@ -42,18 +42,10 @@ print(p)
 distortion_file_path = str(
     tests_data_path / "CameraInputFiles" / "CameraDistortion_130deg.OPTDistortion"
 )
-transmittance_file_path = str(
-    tests_data_path / "CameraInputFiles" / "CameraTransmittance.spectrum"
-)
-blue_spectrum_path = str(
-    tests_data_path / "CameraInputFiles" / "CameraSensitivityBlue.spectrum"
-)
-green_spectrum_path = str(
-    tests_data_path / "CameraInputFiles" / "CameraSensitivityGreen.spectrum"
-)
-red_spectrum_path = str(
-    tests_data_path / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
-)
+transmittance_file_path = str(tests_data_path / "CameraInputFiles" / "CameraTransmittance.spectrum")
+blue_spectrum_path = str(tests_data_path / "CameraInputFiles" / "CameraSensitivityBlue.spectrum")
+green_spectrum_path = str(tests_data_path / "CameraInputFiles" / "CameraSensitivityGreen.spectrum")
+red_spectrum_path = str(tests_data_path / "CameraInputFiles" / "CameraSensitivityRed.spectrum")
 
 sensor1 = p.create_sensor(name="Camera.1", feature_type=SensorCamera)
 sensor1.set_distortion_file_uri(uri=distortion_file_path)
@@ -88,18 +80,10 @@ print(sensor1)
 distortion_file_path = str(
     tests_data_path / "CameraInputFiles" / "CameraDistortion_130deg.OPTDistortion"
 )
-transmittance_file_path = str(
-    tests_data_path / "CameraInputFiles" /  "CameraTransmittance.spectrum"
-)
-blue_spectrum_path = str(
-    tests_data_path / "CameraInputFiles" / "CameraSensitivityBlue.spectrum"
-)
-green_spectrum_path = str(
-    tests_data_path / "CameraInputFiles" / "CameraSensitivityGreen.spectrum"
-)
-red_spectrum_path = str(
-    tests_data_path / "CameraInputFiles" /  "CameraSensitivityRed.spectrum"
-)
+transmittance_file_path = str(tests_data_path / "CameraInputFiles" / "CameraTransmittance.spectrum")
+blue_spectrum_path = str(tests_data_path / "CameraInputFiles" / "CameraSensitivityBlue.spectrum")
+green_spectrum_path = str(tests_data_path / "CameraInputFiles" / "CameraSensitivityGreen.spectrum")
+red_spectrum_path = str(tests_data_path / "CameraInputFiles" / "CameraSensitivityRed.spectrum")
 
 sensor2 = p.create_sensor(name="Camera.2", feature_type=SensorCamera)
 sensor2.set_distortion_file_uri(uri=distortion_file_path)

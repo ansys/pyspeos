@@ -48,9 +48,7 @@ speos = Speos(host="localhost", port=50098)
 # +
 my_scene = speos.client.scenes().create()
 
-speos_file = str(
-    tests_data_path / "Inverse_SeveralSensors.speos" / "Inverse_SeveralSensors.speos"
-)
+speos_file = str(tests_data_path / "Inverse_SeveralSensors.speos" / "Inverse_SeveralSensors.speos")
 my_scene.load_file(file_uri=speos_file)
 # -
 

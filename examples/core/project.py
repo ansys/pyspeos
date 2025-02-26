@@ -146,9 +146,7 @@ print(p.find(name="Sensor.1"))
 # +
 p2 = Project(
     speos=speos,
-    path=str(
-        tests_data_path / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
-    ),
+    path=str(tests_data_path / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"),
 )
 print(p2)
 # -
