@@ -30,6 +30,7 @@ For example a method to check file existence depending on if the file is in the 
 """
 
 import os
+from pathlib import Path
 import subprocess
 import time
 
@@ -92,13 +93,17 @@ def does_file_exist(path):
     if config.get("SpeosServerOnDocker"):
         return (
             subprocess.call(
-                "docker exec " + config.get("SpeosContainerName") + ' test -f "' + path + '"',
+                "docker exec "
+                + config.get("SpeosContainerName")
+                + ' test -f "'
+                + Path(path).as_posix()
+                + '"',
                 shell=True,
             )
             == 0
         )
     else:
-        return os.path.isfile(path)
+        return Path(path).exists()
 
 
 def remove_file(path):
@@ -113,4 +118,4 @@ def remove_file(path):
             "docker exec " + config.get("SpeosContainerName") + ' rm -rf "' + path + '"', shell=True
         )
     else:
-        os.remove(path)
+        Path(path).unlink()

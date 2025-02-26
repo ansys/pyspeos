@@ -25,6 +25,7 @@ Test basic intensity template database connection.
 """
 
 import os
+from pathlib import Path
 
 from ansys.api.speos.common.v1 import data_pb2
 from ansys.speos.core.kernel.intensity_template import ProtoIntensityTemplate
@@ -46,7 +47,7 @@ def test_intensity_template(speos: Speos):
             name="library_0",
             description="library intensity template",
             library=ProtoIntensityTemplate.Library(
-                intensity_file_uri=os.path.join(test_path, "IES_C_DETECTOR.ies")
+                intensity_file_uri=str(Path(test_path) / "IES_C_DETECTOR.ies")
             ),
         )
     )
@@ -117,7 +118,7 @@ def test_action_get_library_type_info(speos: Speos):
             name="library_0",
             description="library intensity template",
             library=ProtoIntensityTemplate.Library(
-                intensity_file_uri=os.path.join(test_path, "IES_C_DETECTOR.ies")
+                intensity_file_uri=str(Path(test_path) / "IES_C_DETECTOR.ies")
             ),
         )
     )

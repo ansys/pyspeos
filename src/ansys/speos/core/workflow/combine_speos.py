@@ -22,6 +22,7 @@
 """Provides a way to combine several speos files into one project feature."""
 
 import os
+from pathlib import Path
 from typing import List, Optional
 
 from ansys.speos.core.kernel.part import PartLink, ProtoPart
@@ -57,7 +58,7 @@ class SpeosFileInstance:
         """Name for the entity (speos file + location/orientation)."""
 
         if self.name == "":
-            self.name = os.path.splitext(os.path.basename(speos_file))[0]
+            self.name = Path(speos_file).stem
 
 
 def insert_speos(project: Project, speos_to_insert: List[SpeosFileInstance]) -> None:

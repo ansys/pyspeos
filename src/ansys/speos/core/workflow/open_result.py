@@ -22,6 +22,7 @@
 """Provides a way to open result of the simulation feature."""
 
 import os
+from pathlib import Path
 import tempfile
 from typing import Union
 
@@ -63,8 +64,8 @@ def _find_correct_result(
                         file_uri=res.upload_response.info.uri,
                         download_location=tempfile.gettempdir(),
                     )
-                    file_path = os.path.join(
-                        tempfile.gettempdir(), res.upload_response.info.file_name
+                    file_path = str(
+                        Path(tempfile.gettempdir()) / res.upload_response.info.file_name
                     )
                 else:
                     file_path = res.upload_response.info.uri

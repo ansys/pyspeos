@@ -6,14 +6,15 @@
 
 # +
 import os
+from pathlib import Path
 
 from ansys.speos.core import GeoRef, Project, Speos
 from ansys.speos.core.source import SourceLuminaire, SourceRayFile, SourceSurface
 
 # If using docker container
-tests_data_path = os.path.join("/app", "assets")
+tests_data_path = Path("/app") / "assets"
 # If using local server
-# tests_data_path = os.path.join(os.path.abspath(""), os.path.pardir, os.path.pardir, "tests", "assets")
+# tests_data_path = Path().resolve().parent.parent / "tests" / "assets"
 # -
 
 # ## Create connection with speos rpc server
@@ -38,7 +39,7 @@ print(p)
 # The mention "local: " is added when printing the source.
 
 # +
-intensity_file_path = os.path.join(tests_data_path, "IES_C_DETECTOR.ies")
+intensity_file_path = str(tests_data_path / "IES_C_DETECTOR.ies")
 
 source1 = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)  # type luminaire
 source1.set_intensity_file_uri(uri=intensity_file_path)
@@ -59,7 +60,7 @@ print(source1)
 # Setting several more characteristics.
 
 # +
-intensity_file_path = os.path.join(tests_data_path, "IES_C_DETECTOR.ies")
+intensity_file_path = str(tests_data_path / "IES_C_DETECTOR.ies")
 
 source2 = p.create_source(name="Luminaire.2", feature_type=SourceLuminaire)
 source2.set_intensity_file_uri(uri=intensity_file_path)
@@ -132,7 +133,7 @@ source1.delete()
 # ### ray-file source
 
 # +
-ray_file_path = os.path.join(tests_data_path, "Rays.ray")
+ray_file_path = str(tests_data_path / "Rays.ray")
 
 source3 = p.create_source(name="Ray-file.1", feature_type=SourceRayFile)  # type ray file
 source3.set_ray_file_uri(uri=ray_file_path)

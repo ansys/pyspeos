@@ -4,26 +4,27 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "ansys-speos-core"
-version = "0.1.dev0"
+version = "0.2.dev0"
 description = "A Python wrapper for Ansys Speos"
 readme = "README.rst"
 requires-python = ">=3.10"
 license = {file = "LICENSE"}
-authors = [
-    {name = "ANSYS, Inc.", email = "pyansys.support@ansys.com"},
-]
-maintainers = [
-    {name = "PyAnsys developers", email = "pyansys.maintainers@ansys.com"},
-]
+authors = [{name = "ANSYS, Inc.", email = "pyansys.core@ansys.com"}]
+maintainers = [{name = "ANSYS, Inc.", email = "pyansys.core@ansys.com"}]
 classifiers=[
     "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Manufacturing",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-    "Private :: Do Not Upload",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Scientific/Engineering :: Information Analysis",
 ]
 dependencies=[
     "protobuf>=3.20,<6",
@@ -98,14 +99,6 @@ select = [
     "TD",   # flake8-todos, https://docs.astral.sh/ruff/rules/#flake8-todos-td
 ]
 ignore = [
-    "PTH107", # TODO: Use Path.unlink
-    "PTH110",
-    "PTH113", # TODO: Use Path.is_file
-    "PTH119",
-    "PTH120",
-    "PTH122",
-    "PTH123", # TODO: Use Path.open
-    "PTH118", # TODO: Use pathlib instead of os.path
     "D100",
     "D101",
     "D102",

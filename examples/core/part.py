@@ -9,14 +9,14 @@
 # Then a material optical property can be then applied to a part (like bodies, faces).
 
 # +
-import os
+from pathlib import Path
 
 from ansys.speos.core import Body, Face, Part, Project, Speos
 
 # If using docker container
-tests_data_path = os.path.join("/app", "assets")
+tests_data_path = Path("/app") / "assets"
 # If using local server
-# tests_data_path = os.path.join(os.path.abspath(""), os.path.pardir, os.path.pardir, "tests", "assets")
+# tests_data_path = Path().resolve().parent.parent / "tests" / "assets"
 # -
 
 # ## Create connection with speos rpc server

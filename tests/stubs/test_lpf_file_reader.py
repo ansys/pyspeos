@@ -34,6 +34,7 @@ With coverage.
 """
 
 import os
+from pathlib import Path
 
 import ansys.api.speos.file.v1.file_transfer as file_transfer_helper__v1
 import ansys.api.speos.file.v1.file_transfer_pb2 as file_transfer__v1__pb2
@@ -49,7 +50,7 @@ def test_lpf_file_reader_mono_v2_DirectSimu(speos: Speos):
     stub = lpf_file_reader__v2__pb2_grpc.LpfFileReader_MonoStub(speos.client.channel)
 
     # Init with file local path
-    path = os.path.join(test_path, "basic_DirectSimu.lpf")
+    path = str(Path(test_path) / "basic_DirectSimu.lpf")
     stub.InitLpfFileName(lpf_file_reader__v2__pb2.InitLpfFileName_Request_Mono(lpf_file_uri=path))
 
     # GetInformation
@@ -105,7 +106,7 @@ def test_lpf_file_reader_mono_v2_InverseSimu(speos: Speos):
     stub = lpf_file_reader__v2__pb2_grpc.LpfFileReader_MonoStub(speos.client.channel)
 
     # Init with file local path
-    path = os.path.join(test_path, "basic_InverseSimu.lpf")
+    path = str(Path(test_path) / "basic_InverseSimu.lpf")
     stub.InitLpfFileName(lpf_file_reader__v2__pb2.InitLpfFileName_Request_Mono(lpf_file_uri=path))
 
     # GetInformation
@@ -145,7 +146,7 @@ def test_lpf_file_reader_multi_v2(speos: Speos):
     guid = create_lpf_reader_response.lpf_reader_guid
 
     # Init with file local path
-    path = os.path.join(test_path, "basic_DirectSimu.lpf")
+    path = str(Path(test_path) / "basic_DirectSimu.lpf")
     stub.InitLpfFileName(
         lpf_file_reader__v2__pb2.InitLpfFileName_Request_Multi(
             lpf_reader_guid=guid, lpf_file_uri=path
@@ -163,7 +164,7 @@ def test_lpf_file_reader_multi_v2(speos: Speos):
     # Create a second reader
     guid2 = stub.Create(lpf_file_reader__v2__pb2.Create_Request_Multi()).lpf_reader_guid
     # Init second reader
-    path2 = os.path.join(test_path, "basic_InverseSimu.lpf")
+    path2 = str(Path(test_path) / "basic_InverseSimu.lpf")
     stub.InitLpfFileName(
         lpf_file_reader__v2__pb2.InitLpfFileName_Request_Multi(
             lpf_reader_guid=guid2, lpf_file_uri=path2
@@ -221,7 +222,7 @@ def test_lpf_file_reader_multi_v2(speos: Speos):
 
 def test_lpf_file_reader_mono_v2_DirectSimu_with_file_transfer(speos: Speos):
     # local file upload to the server
-    path = os.path.join(local_test_path, "basic_DirectSimu.lpf")
+    path = str(Path(local_test_path) / "basic_DirectSimu.lpf")
     file_transfer_stub = file_transfer__v1__pb2_grpc.FileTransferServiceStub(speos.client.channel)
     upload_response = file_transfer_helper__v1.upload_file(file_transfer_stub, path)
 

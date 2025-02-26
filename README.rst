@@ -64,13 +64,24 @@ All sources are located in `<src/>`_ folder.
 
    speos = Speos(host="localhost", port=50098)
 
-Documentation
--------------
+Documentation and issues
+------------------------
 
 Documentation for the latest stable release of PySpeos is hosted at
 `PySpeos Documentation <https://speos.docs.pyansys.com>`_.
 
-Documentation is stored in `<doc>`_ folder and generated using `Sphinx`_.
+In the upper right corner of the documentation's title bar, there is an option for switching from
+viewing the documentation for the latest stable release to viewing the documentation for the
+development version or previously released versions.
+
+On the `PySpeos Issues <https://github.com/ansys-internal/pyspeos/issues>`_ page,
+you can create issues to report bugs and request new features. On the `PySpeos Discussions
+<https://github.com/ansys-internal/pyspeos/discussions>`_ page or the `Discussions <https://discuss.ansys.com/>`_
+page on the Ansys Developer portal, you can post questions, share ideas, and get community feedback.
+
+To reach the project support team, email `pyansys.core@ansys.com <mailto:pyansys.core@ansys.com>`_.
+
+The documentation sources are stored in `<doc>`_ folder and generated using `Sphinx`_.
 To build it manually :
 
 .. code:: bash
