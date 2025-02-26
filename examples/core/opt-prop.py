@@ -10,7 +10,6 @@
 # The property is then applied to a geometry (like bodies, faces).
 
 # +
-import os
 from pathlib import Path
 
 from ansys.speos.core import GeoRef, Project, Speos
@@ -18,7 +17,7 @@ from ansys.speos.core import GeoRef, Project, Speos
 # If using docker container
 tests_data_path = Path("/app") / "assets"
 # If using local server
-# tests_data_path = os.path.join(os.path.abspath(""), os.path.pardir, os.path.pardir, "tests", "assets")
+# tests_data_path = Path().resolve().parent.parent / "tests" / "assets"
 # -
 
 # ## Create connection with speos rpc server

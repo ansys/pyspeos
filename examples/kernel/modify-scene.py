@@ -22,7 +22,6 @@
 # The Scene object will gather all features that you need to run a job (compute a simulation).
 
 # +
-import os
 from pathlib import Path
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2
@@ -34,7 +33,7 @@ from ansys.speos.core.kernel.sensor_template import ProtoSensorTemplate
 # If using docker container
 tests_data_path = Path("/app") / "assets"
 # If using local server
-# tests_data_path = os.path.join(os.path.abspath(""), os.path.pardir, os.path.pardir, "tests", "assets")
+# tests_data_path = Path().resolve().parent.parent / "tests" / "assets"
 # -
 
 # Create connection with speos rpc server

@@ -5,7 +5,6 @@
 # There are different type of sensors available: irradiance sensor, radiance sensor, camera sensor.
 
 # +
-import os
 from pathlib import Path
 
 from ansys.speos.core import Project, Speos
@@ -14,7 +13,7 @@ from ansys.speos.core.sensor import SensorCamera, SensorIrradiance, SensorRadian
 # If using docker container
 tests_data_path = Path("/app") / "assets"
 # If using local server
-# tests_data_path = os.path.join(os.path.abspath(""), os.path.pardir, os.path.pardir, "tests", "assets")
+# tests_data_path = Path().resolve().parent.parent / "tests" / "assets"
 # -
 
 # ## Create connection with speos rpc server

@@ -20,7 +20,7 @@ from ansys.speos.core.source import SourceSurface
 # If using docker container
 tests_data_path = Path("/app") / "assets"
 # If using local server
-# tests_data_path = os.path.join(os.path.abspath(""), os.path.pardir, os.path.pardir, "tests", "assets")
+# tests_data_path = Path().resolve().parent.parent / "tests" / "assets"
 # -
 
 # ## Create connection with speos rpc server
