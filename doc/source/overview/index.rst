@@ -8,7 +8,7 @@ This section provides an overview of the PySpeos library,
 explaining its key concepts.
 
 PySpeos overview
-======================
+================
 
 PySpeos is a Python client to communicate with the Ansys SpeosRPC server.
 
