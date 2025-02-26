@@ -154,7 +154,8 @@ class RayPath:
 
         Notes
         -----
-        available intersection types: \n
+        available intersection types:
+
         - StatusAbsorbed = 0
         - StatusSpecularTransmitted = 1
         - StatusGaussianTransmitted = 2

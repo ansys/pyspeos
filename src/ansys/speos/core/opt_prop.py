@@ -119,7 +119,7 @@ class OptProp:
         return self
 
     def set_surface_library(self, path: str) -> OptProp:
-        """
+        r"""
         Based on surface optical properties file.
 
         Parameters
@@ -231,7 +231,7 @@ class OptProp:
     #    return self
 
     def set_volume_library(self, path: str) -> OptProp:
-        """
+        r"""
         Based on \*.material file.
 
         Parameters
