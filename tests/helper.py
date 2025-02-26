@@ -41,6 +41,17 @@ from tests.conftest import config
 
 
 def clean_all_dbs(speos_client: SpeosClient):
+    """Helper function to clean all database entries of a current SpeosRPC client
+
+    Parameters
+    ----------
+    speos_client : ansys.speos.core.kernel.client.SpeosClient
+        SpeosRPC server client
+
+    Returns
+    -------
+    None
+    """
     for item in (
         speos_client.jobs().list()
         + speos_client.scenes().list()
@@ -59,6 +70,13 @@ def clean_all_dbs(speos_client: SpeosClient):
 
 
 def run_job_and_check_state(job: JobLink):
+    """Helper function to run a job and wait for state changes
+
+    Parameters
+    ----------
+    job:  ansys.speos.core.kernel.job.JobLink
+        Job to be run and validated
+    """
     job.start()
     job_state_res = job.get_state()
     while (

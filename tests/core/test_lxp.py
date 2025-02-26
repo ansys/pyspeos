@@ -32,6 +32,7 @@ from tests.conftest import test_path
 
 
 def test_light_path_finder_direct(speos: Speos):
+    """Test for direct simulation lpf"""
     path = os.path.join(test_path, "basic_DirectSimu.lpf")
     lpf = lxp.LightPathFinder(speos=speos, path=path)
     expected_ray = {
@@ -65,6 +66,7 @@ def test_light_path_finder_direct(speos: Speos):
 
 
 def test_light_path_finder_inverse(speos: Speos):
+    """Test for inverse simulation lpf"""
     path = os.path.join(test_path, "basic_InverseSimu.lpf")
     lpf = lxp.LightPathFinder(speos=speos, path=path)
     expected_ray = {

@@ -45,6 +45,7 @@ from tests.conftest import local_test_path, test_path
 
 
 def test_lpf_file_reader_mono_v2_DirectSimu(speos: Speos):
+    """Test to check lpf reader for direct simulation"""
     # Lpf file reader creation
     stub = lpf_file_reader__v2__pb2_grpc.LpfFileReader_MonoStub(speos.client.channel)
 
@@ -101,6 +102,7 @@ def test_lpf_file_reader_mono_v2_DirectSimu(speos: Speos):
 
 
 def test_lpf_file_reader_mono_v2_InverseSimu(speos: Speos):
+    """Test to check lpf service for inverse simulation"""
     # Lpf file reader creation
     stub = lpf_file_reader__v2__pb2_grpc.LpfFileReader_MonoStub(speos.client.channel)
 
@@ -137,6 +139,7 @@ def test_lpf_file_reader_mono_v2_InverseSimu(speos: Speos):
 
 
 def test_lpf_file_reader_multi_v2(speos: Speos):
+    """Test to check multifile lpf service"""
     # Lpf file reader multi creation
     stub = lpf_file_reader__v2__pb2_grpc.LpfFileReader_MultiStub(speos.client.channel)
 
@@ -220,6 +223,7 @@ def test_lpf_file_reader_multi_v2(speos: Speos):
 
 
 def test_lpf_file_reader_mono_v2_DirectSimu_with_file_transfer(speos: Speos):
+    """Test to check lpf service with file transfer service"""
     # local file upload to the server
     path = os.path.join(local_test_path, "basic_DirectSimu.lpf")
     file_transfer_stub = file_transfer__v1__pb2_grpc.FileTransferServiceStub(speos.client.channel)

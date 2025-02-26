@@ -44,7 +44,8 @@ from tests.conftest import test_path
 import tests.helper as helper
 
 
-def createXmpIntensity():
+def create_xmp_intensity():
+    """Function to create simple intensity XMP"""
     xmp = extended_map_template_pb2.ExtendedMap()
 
     # file description
@@ -94,7 +95,8 @@ def createXmpIntensity():
     return xmp
 
 
-def compareXmpIntensityDistributions(xmp1, xmp2):
+def compare_xmp_intensity_distributions(xmp1, xmp2):
+    """Function to compar 2 XMPs"""
     if xmp1.base_data.value_type != xmp2.base_data.value_type:
         return False
     if xmp1.base_data.intensity_type != xmp2.base_data.intensity_type:
@@ -151,6 +153,7 @@ def compareXmpIntensityDistributions(xmp1, xmp2):
 
 
 def test_grpc_xmp_intensity(speos: Speos):
+    """Tets to check intensity xmp service"""
     stub = xmp_pb2_grpc.XmpIntensityServiceStub(speos.client.channel)
     load_request = xmp_pb2.Load_Request()
     load_request.file_uri = os.path.join(test_path, "conoscopic_intensity.xmp")
@@ -160,7 +163,7 @@ def test_grpc_xmp_intensity(speos: Speos):
     xmp_pb2.Save_Response()
 
     logging.debug("Creating xmp intensity protocol buffer")
-    xmp = createXmpIntensity()
+    xmp = create_xmp_intensity()
     response = xmp_pb2.XmpDistribution()
     response.extended_map.CopyFrom(xmp)
 
@@ -183,4 +186,4 @@ def test_grpc_xmp_intensity(speos: Speos):
     xmp2 = distri.extended_map
 
     logging.debug("Comparing xmp intensity distributions")
-    assert compareXmpIntensityDistributions(xmp, xmp2)
+    assert compare_xmp_intensity_distributions(xmp, xmp2)

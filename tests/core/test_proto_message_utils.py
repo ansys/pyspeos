@@ -317,6 +317,7 @@ def test_finder_by_key(speos: Speos):
 
 
 def test_flatten_dict(speos: Speos):
+    """proto_message_utils test of '_flatten_dict' method"""
     p = Project(
         speos=speos,
         path=os.path.join(

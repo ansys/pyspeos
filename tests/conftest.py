@@ -43,6 +43,17 @@ from ansys.speos.core.speos import Speos
 
 @pytest.fixture(scope="session")
 def speos():
+    """Pytest ficture to create Speos objects for all unit, integration and workflow tests
+
+    Yields
+    ------
+    ansys.speos.cor.speos.Speos
+        Speos Class instance
+
+    Returns
+    -------
+    None
+    """
     # Log to file - accepts str or Path objects, Path is passed for testing/coverage purposes.
     log_file_path = Path(__file__).absolute().parent / "logs" / "integration_tests_logs.txt"
     try:
@@ -92,6 +103,15 @@ LOG.log_to_stdout()
 
 @pytest.fixture
 def fake_record():
+    """Function to emulate logger
+
+    Returns
+    -------
+    logger
+        fake logger
+
+    """
+
     def inner_fake_record(
         logger,
         msg="This is a message",
