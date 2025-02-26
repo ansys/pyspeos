@@ -24,6 +24,7 @@
 
 import math
 import os
+from pathlib import Path
 
 from google.protobuf.empty_pb2 import Empty
 
@@ -159,7 +160,7 @@ def test_grpc_spectral_bsdf(speos: Speos):
 
     # Sending protocol buffer to server
     stub.Import(bsdf)
-    file_name.file_name = os.path.join(test_path, "Spectral.serialized")
+    file_name.file_name = str(Path(test_path) / "Spectral.serialized")
 
     # Exporting to {file_name.file_name}
     stub.ExportFile(file_name)
@@ -174,7 +175,7 @@ def test_grpc_spectral_bsdf(speos: Speos):
     bsdf2 = stub.Export(Empty())
 
     assert compareSpectralBsdf(bsdf, bsdf2)
-    file_name.file_name = os.path.join(test_path, "Lambert.anisotropicbsdf")
+    file_name.file_name = str(Path(test_path) / "Lambert.anisotropicbsdf")
 
     # Writing as {file_name.file_name}
     stub.Save(file_name)
@@ -191,7 +192,7 @@ def test_grpc_spectral_bsdf(speos: Speos):
 
     # conoscopic map
     cm = spectral_bsdf__v1__pb2.ConoscopicMap()
-    cm.output_file_name = os.path.join(test_path, "test_conoscopic_spectral.xmp")
+    cm.output_file_name = str(Path(test_path) / "test_conoscopic_spectral.xmp")
     cm.wavelength = 555.0
     cm.side = spectral_bsdf__v1__pb2.ConoscopicMap.TRANSMISSION
     cm.resolution = 512
@@ -217,7 +218,7 @@ def test_grpc_spectral_bsdf(speos: Speos):
     # setting cones back
     stub.SetSpecularInterpolationEnhancementData(cones)
 
-    file_name.file_name = os.path.join(test_path, "tmp_autocut.anisotropicbsdf")
+    file_name.file_name = str(Path(test_path) / "tmp_autocut.anisotropicbsdf")
     # writing result in {file_name.file_name}
     stub.Save(file_name)
     assert helper.does_file_exist(file_name.file_name)

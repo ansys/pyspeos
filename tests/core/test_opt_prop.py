@@ -23,6 +23,7 @@
 """Test basic using optical properties."""
 
 import os
+from pathlib import Path
 
 from ansys.speos.core import GeoRef, Project, Speos
 from tests.conftest import test_path
@@ -60,7 +61,7 @@ def test_create_optical_property(speos: Speos):
     assert op1.vop_template_link.get().optic.HasField("constringence") == False
 
     # VOP library
-    op1.set_volume_library(path=os.path.join(test_path, "AIR.material")).commit()
+    op1.set_volume_library(path=str(Path(test_path) / "AIR.material")).commit()
     assert op1.vop_template_link.get().HasField("library")
     assert op1.vop_template_link.get().library.material_file_uri.endswith("AIR.material")
 
@@ -79,7 +80,7 @@ def test_create_optical_property(speos: Speos):
     assert op1.sop_template_link.get().HasField("optical_polished")
 
     # SOP library
-    op1.set_surface_library(path=os.path.join(test_path, "R_test.anisotropicbsdf")).commit()
+    op1.set_surface_library(path=str(Path(test_path) / "R_test.anisotropicbsdf")).commit()
     assert op1.sop_template_link.get().HasField("library")
     assert op1.sop_template_link.get().library.sop_file_uri.endswith("R_test.anisotropicbsdf")
 
@@ -257,7 +258,7 @@ def test_get_optical_property(speos: Speos, capsys):
     op3 = (
         p.create_optical_property(name="OpticalProperty3")
         .set_volume_none()
-        .set_surface_library(path=os.path.join(test_path, "R_test.anisotropicbsdf"))
+        .set_surface_library(path=str(Path(test_path) / "R_test.anisotropicbsdf"))
         .commit()
     )
 

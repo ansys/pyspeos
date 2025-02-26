@@ -23,6 +23,7 @@
 """Test source template."""
 
 import os
+from pathlib import Path
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2, common_pb2, irradiance_sensor_pb2
 from ansys.speos.core.kernel.sensor_template import ProtoSensorTemplate
@@ -39,12 +40,12 @@ def test_sensor_template(speos: Speos):
         speos.client.sensor_templates()
     )  # Create sensor_templates stub from client channel
 
-    camera_input_files_path = os.path.join(test_path, "CameraInputFiles")
-    red_spectrum = os.path.join(camera_input_files_path, "CameraSensitivityRed.spectrum")
-    green_spectrum = os.path.join(camera_input_files_path, "CameraSensitivityGreen.spectrum")
-    blue_spectrum = os.path.join(camera_input_files_path, "CameraSensitivityBlue.spectrum")
-    transmittance = os.path.join(camera_input_files_path, "CameraTransmittance.spectrum")
-    distortion = os.path.join(camera_input_files_path, "CameraDistortion_130deg.OPTDistortion")
+    camera_input_files_path = Path(test_path) / "CameraInputFiles"
+    red_spectrum = str(camera_input_files_path / "CameraSensitivityRed.spectrum")
+    green_spectrum = str(camera_input_files_path / "CameraSensitivityGreen.spectrum")
+    blue_spectrum = str(camera_input_files_path / "CameraSensitivityBlue.spectrum")
+    transmittance = str(camera_input_files_path / "CameraTransmittance.spectrum")
+    distortion = str(camera_input_files_path / "CameraDistortion_130deg.OPTDistortion")
 
     # Camera sensor template mode monochrome
     camera_t0 = sensor_t_db.create(

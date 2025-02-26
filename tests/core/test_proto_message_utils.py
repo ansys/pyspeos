@@ -23,6 +23,7 @@
 """Test basic using proto_message_utils."""
 
 import os
+from pathlib import Path
 
 from ansys.speos.core import OptProp, Project, Speos, proto_message_utils
 from ansys.speos.core.kernel import scene
@@ -137,8 +138,8 @@ def test_replace_guid_elt_complex(speos: Speos):
     """Test _replace_guid_elt in a bigger message like scene."""
     scene_link = speos.client.scenes().create(message=scene.ProtoScene())
     scene_link.load_file(
-        file_uri=os.path.join(
-            test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
+        file_uri=str(
+            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
         )
     )
 
@@ -273,8 +274,8 @@ def test_finder_by_key(speos: Speos):
     """Test _finder_by_key."""
     p = Project(
         speos=speos,
-        path=os.path.join(
-            test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
+        path=str(
+            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
         ),
     )
 
@@ -318,8 +319,8 @@ def test_flatten_dict(speos: Speos):
     """proto_message_utils test of '_flatten_dict' method."""
     p = Project(
         speos=speos,
-        path=os.path.join(
-            test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
+        path=str(
+            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
         ),
     )
 

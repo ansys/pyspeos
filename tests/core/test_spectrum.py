@@ -23,6 +23,7 @@
 """Test basic using spectrums."""
 
 import os
+from pathlib import Path
 
 from ansys.speos.core import Spectrum, Speos
 from tests.conftest import test_path
@@ -54,7 +55,7 @@ def test_create_spectrum(speos: Speos):
 
     # library
     spectrum1.set_library(
-        file_uri=os.path.join(test_path, "LG_50M_Colorimetric_short.sv5", "Blue Spectrum.spectrum")
+        file_uri=str(Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "Blue Spectrum.spectrum")
     ).commit()
     assert spectrum1.spectrum_link.get().HasField("library")
 

@@ -4,15 +4,16 @@
 
 # +
 import os
+from pathlib import Path
 
 from ansys.speos.core import Project, Speos
 from ansys.speos.core.sensor import SensorIrradiance
 from ansys.speos.core.simulation import SimulationDirect
 
 # If using docker container
-tests_data_path = os.path.join("/app", "assets")
+tests_data_path = Path("/app") / "assets"
 # If using local server
-# tests_data_path = os.path.join(os.path.abspath(""), os.path.pardir, os.path.pardir, "tests", "assets")
+# tests_data_path = Path().resolve().parent.parent / "tests" / "assets"
 # -
 
 # ## Create connection with speos rpc server
@@ -27,7 +28,7 @@ speos = Speos(host="localhost", port=50098)
 # Load a project from .speos file.
 
 # +
-p = Project(speos=speos, path=os.path.join(tests_data_path, "Prism.speos", "Prism.speos"))
+p = Project(speos=speos, path=str(tests_data_path / "Prism.speos" / "Prism.speos"))
 print(p)
 # -
 

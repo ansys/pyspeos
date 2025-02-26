@@ -23,6 +23,7 @@
 """Test basic using lxp."""
 
 import os
+from pathlib import Path
 
 import ansys.speos.core.lxp as lxp
 from ansys.speos.core.speos import Speos
@@ -31,7 +32,7 @@ from tests.conftest import test_path
 
 def test_light_path_finder_direct(speos: Speos):
     """Test for direct simulation lpf."""
-    path = os.path.join(test_path, "basic_DirectSimu.lpf")
+    path = str(Path(test_path) / "basic_DirectSimu.lpf")
     lpf = lxp.LightPathFinder(speos=speos, path=path)
     expected_ray = {
         "nb_impacts": 4,
@@ -65,7 +66,7 @@ def test_light_path_finder_direct(speos: Speos):
 
 def test_light_path_finder_inverse(speos: Speos):
     """Test for inverse simulation lpf."""
-    path = os.path.join(test_path, "basic_InverseSimu.lpf")
+    path = str(Path(test_path) / "basic_InverseSimu.lpf")
     lpf = lxp.LightPathFinder(speos=speos, path=path)
     expected_ray = {
         "nb_impacts": 7,

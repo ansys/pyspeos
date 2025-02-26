@@ -4,16 +4,16 @@
 # Then this demonstrates how to create a job from the scene, and run it.
 
 # +
-import os
+from pathlib import Path
 import time
 
 from ansys.speos.core.kernel.job import ProtoJob
 from ansys.speos.core.speos import Speos
 
 # If using docker container
-tests_data_path = os.path.join("/app", "assets")
+tests_data_path = Path("/app") / "assets"
 # If using local server
-# tests_data_path = os.path.join(os.path.abspath(""), os.path.pardir, os.path.pardir, "tests", "assets")
+# tests_data_path = Path().resolve().parent.parent / "tests" / "assets"
 # -
 
 # Create connection with speos rpc server
@@ -33,8 +33,8 @@ my_scene = speos.client.scenes().create()
 # Load a file to fill the scene
 
 # +
-speos_file = os.path.join(
-    tests_data_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
+speos_file = str(
+    tests_data_path / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
 )
 my_scene.load_file(file_uri=speos_file)
 # -

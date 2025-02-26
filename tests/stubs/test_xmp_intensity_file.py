@@ -24,6 +24,7 @@
 
 import logging
 import os
+from pathlib import Path
 
 from ansys.api.speos.intensity_distributions.v1 import (
     base_map_template_pb2,
@@ -148,10 +149,10 @@ def test_grpc_xmp_intensity(speos: Speos):
     """Test to check intensity xmp service."""
     stub = xmp_pb2_grpc.XmpIntensityServiceStub(speos.client.channel)
     load_request = xmp_pb2.Load_Request()
-    load_request.file_uri = os.path.join(test_path, "conoscopic_intensity.xmp")
+    load_request.file_uri = str(Path(test_path) / "conoscopic_intensity.xmp")
     xmp_pb2.Load_Response()
     save_request = xmp_pb2.Save_Request()
-    save_request.file_uri = os.path.join(test_path, "conoscopic_intensity.xmp")
+    save_request.file_uri = str(Path(test_path) / "conoscopic_intensity.xmp")
     xmp_pb2.Save_Response()
 
     logging.debug("Creating xmp intensity protocol buffer")

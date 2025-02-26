@@ -23,6 +23,7 @@
 """Test scene."""
 
 import os
+from pathlib import Path
 from typing import List, Mapping, Optional
 
 import numpy as np
@@ -113,7 +114,7 @@ def create_basic_scene(speos: Speos) -> SceneLink:
             description="Luminaire source template",
             luminaire=ProtoSourceTemplate.Luminaire(
                 flux_from_intensity_file=ProtoSourceTemplate.FromIntensityFile(),
-                intensity_file_uri=os.path.join(test_path, "IES_C_DETECTOR.ies"),
+                intensity_file_uri=str(Path(test_path) / "IES_C_DETECTOR.ies"),
                 spectrum_guid=spec_bb_3500.key,
             ),
         )
@@ -521,8 +522,8 @@ def test_scene(speos: Speos):
 def test_scene_actions_load(speos: Speos):
     """Test the scene action: load file."""
     assert speos.client.healthy is True
-    speos_file_path = os.path.join(
-        test_path, os.path.join("LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5")
+    speos_file_path = str(
+        Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
     )
 
     # Create empty scene + load_file
@@ -540,8 +541,8 @@ def test_scene_actions_load(speos: Speos):
 def test_scene_actions_load_modify(speos: Speos):
     """Test the scene action: load file and modify sensors."""
     assert speos.client.healthy is True
-    speos_file_path = os.path.join(
-        test_path, os.path.join("LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5")
+    speos_file_path = str(
+        Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
     )
 
     # Create empty scene + load_file
@@ -598,7 +599,7 @@ def test_scene_actions_get_source_ray_paths(speos: Speos):
             name="Luminaire",
             luminaire=ProtoSourceTemplate.Luminaire(
                 flux_from_intensity_file=ProtoSourceTemplate.FromIntensityFile(),
-                intensity_file_uri=os.path.join(test_path, "IES_C_DETECTOR.ies"),
+                intensity_file_uri=str(Path(test_path) / "IES_C_DETECTOR.ies"),
                 spectrum_guid=blackbody_2856.key,
             ),
         )
