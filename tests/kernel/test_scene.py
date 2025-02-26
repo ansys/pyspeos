@@ -20,9 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""
-Test scene.
-"""
+"""Test scene."""
 
 import os
 from typing import List, Mapping, Optional
