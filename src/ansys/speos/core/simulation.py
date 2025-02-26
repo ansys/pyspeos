@@ -330,7 +330,8 @@ class BaseSimulation:
 
         Returns
         -------
-
+        str | dict :
+            Dictionary of Simulation Feature
         """
         if key == "":
             return self._to_dict()

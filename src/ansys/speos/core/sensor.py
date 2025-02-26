@@ -2702,9 +2702,6 @@ class SensorRadiance(BaseSensor):
         """
         Define layer separation type as None.
 
-        Parameters
-        ----------
-
         Returns
         -------
         ansys.speos.core.sensor.SensorRadiance
