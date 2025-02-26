@@ -35,6 +35,7 @@ With coverage.
 
 import math
 import os
+from pathlib import Path
 
 from google.protobuf.empty_pb2 import Empty
 
@@ -301,7 +302,7 @@ def test_grpc_anisotropic_bsdf(speos: Speos):
 
     # Sending protocol buffer to server
     stub.Import(bsdf)
-    file_name.file_name = os.path.join(test_path, "Lambert.serialized")
+    file_name.file_name = str(Path(test_path) / "Lambert.serialized")
 
     # Exporting to {file_name.file_name}
     stub.ExportFile(file_name)
@@ -315,7 +316,7 @@ def test_grpc_anisotropic_bsdf(speos: Speos):
     bsdf2 = stub.Export(Empty())
 
     assert compareAnisotropicBsdf(bsdf, bsdf2)
-    file_name.file_name = os.path.join(test_path, "Lambert.anisotropicbsdf")
+    file_name.file_name = str(Path(test_path) / "Lambert.anisotropicbsdf")
 
     # Writing as {file_name.file_name}
     stub.Save(file_name)
@@ -330,13 +331,13 @@ def test_grpc_anisotropic_bsdf(speos: Speos):
 
     assert compareAnisotropicBsdf(bsdf, bsdf3)
 
-    file_name.file_name = os.path.join(test_path, "Gaussian Fresnel 10 deg.anisotropicbsdf")
+    file_name.file_name = str(Path(test_path) / "Gaussian Fresnel 10 deg.anisotropicbsdf")
     # loading {file_name.file_name}
     stub.Load(file_name)
 
     # conoscopic map
     cm = anisotropic_bsdf__v1__pb2.ConoscopicMap()
-    cm.output_file_name = os.path.join(test_path, "test_conoscopic_anisotropic.xmp")
+    cm.output_file_name = str(Path(test_path) / "test_conoscopic_anisotropic.xmp")
     cm.wavelength = 555.0
     cm.anisotropic_angle = 0.0
     cm.side = anisotropic_bsdf__v1__pb2.ConoscopicMap.TRANSMISSION
@@ -363,7 +364,7 @@ def test_grpc_anisotropic_bsdf(speos: Speos):
     # setting cones back
     stub.SetSpecularInterpolationEnhancementData(cones)
 
-    file_name.file_name = os.path.join(test_path, "Gaussian Fresnel 10 deg_autocut.anisotropicbsdf")
+    file_name.file_name = str(Path(test_path) / "Gaussian Fresnel 10 deg_autocut.anisotropicbsdf")
     # writing result in {file_name.file_name}
     stub.Save(file_name)
 
@@ -413,7 +414,7 @@ def test_grpc_anisotropic_bsdf(speos: Speos):
     spi = anisotropic_bsdf__v1__pb2.SpectrumImport()
     spi.incidence_angle = 0.05
     spi.anisotropy_angle = 0.0
-    spi.file_name = os.path.join(test_path, "R04.spectrum")
+    spi.file_name = str(Path(test_path) / "R04.spectrum")
     stub.ImportReflectionSpectrum(spi)
     stub.ImportTransmissionSpectrum(spi)
 
