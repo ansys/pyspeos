@@ -249,6 +249,7 @@ class PySpeosCustomAdapter(logging.LoggerAdapter):
 
 class PySpeosPercentStyle(logging.PercentStyle):
     """Customized ``PercentStyle`` class for overwriting default format styles."""
+
     def __init__(self, fmt, *, defaults=None):
         """Initialize the class."""
         self._fmt = fmt or self.default_format
@@ -256,11 +257,12 @@ class PySpeosPercentStyle(logging.PercentStyle):
 
     def _format(self, record):
         """Format the record.
+
         Parameters
         ----------
         record : logging.LogRecord
             Record to format.
-        
+
         Returns
         -------
         str
@@ -311,17 +313,17 @@ class InstanceFilter(logging.Filter):
 
     def filter(self, record):
         """Filter the record.
-        
+
         Parameters
         ----------
         record : logging.LogRecord
             Record to filter.
-            
+
         Returns
         -------
         bool
-            Whether the record is valid.        
-        """    
+            Whether the record is valid.
+        """
         if not hasattr(record, "instance_name"):
             record.instance_name = ""
         return True
