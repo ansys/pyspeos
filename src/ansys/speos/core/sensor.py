@@ -99,6 +99,7 @@ class BaseSensor:
 
     class WavelengthsRange:
         """Range of wavelengths.
+
         By default, a range from 400nm to 700nm is chosen, with a sampling of 13.
 
         Parameters
@@ -184,6 +185,7 @@ class BaseSensor:
 
     class Dimensions:
         """Dimensions of the sensor.
+
         By default, for both x and y axis: from -50mm to 50mm is chosen, with a sampling of 100.
 
         Parameters
@@ -319,6 +321,7 @@ class BaseSensor:
 
     class Colorimetric:
         """Type of sensor : Colorimetric.
+
         This kind of sensor will generate color results without any spectral data or layer separation (in lx or W//m2).
         By default, it uses a default wavelengths range.
 
@@ -378,6 +381,7 @@ class BaseSensor:
 
     class Spectral:
         """Type of sensor : Spectral.
+
         This kind of sensor will generate color results and spectral data separated by wavelength (in lx or W/m2).
         By default, it uses a default wavelengths range.
 
@@ -454,6 +458,7 @@ class BaseSensor:
 
     class LayerTypeFace:
         """Type of layer : Face.
+
         Includes in the result one layer per surface selected.
         By default, a filtering mode by last impact is chosen.
 
@@ -541,6 +546,7 @@ class BaseSensor:
 
     class LayerTypeSequence:
         """Type of layer : Sequence.
+
         Includes in the result one layer per sequence.
         By default, the sequence is defined per geometries, with a maximum number of 10 sequences.
 
@@ -619,6 +625,7 @@ class BaseSensor:
 
     class LayerTypeIncidenceAngle:
         """Type of layer : IncidenceAngle.
+
         Includes in the result one layer per range of incident angles.
         By default, a sampling of 9 is chosen.
 
@@ -818,6 +825,7 @@ class BaseSensor:
 
     def delete(self) -> BaseSensor:
         """Delete feature: delete data from the speos server database.
+
         The local data are still available
 
         Returns
@@ -850,6 +858,7 @@ class BaseSensor:
 
 class SensorCamera(BaseSensor):
     """Sensor feature: Camera.
+
     By default, regarding inherent characteristics, a camera with mode photometric is chosen.
     By default, regarding properties, an axis system is selected to position the sensor, and no layer separation is chosen.
 
@@ -875,6 +884,7 @@ class SensorCamera(BaseSensor):
 
     class Photometric:
         """Mode of camera sensor : Photometric.
+
         This allows to set every Camera Sensor parameters, including the photometric definition parameters.
         By default, a camera with mode color is chosen (vs monochromatic mode).
 
@@ -895,6 +905,7 @@ class SensorCamera(BaseSensor):
 
         class Color:
             """Mode of camera sensor : Color.
+
             Results will be available in color according to the White Balance mode.
             By default, a balance mode none is chosen (referred as the basic conversion).
 
@@ -915,6 +926,7 @@ class SensorCamera(BaseSensor):
 
             class BalanceModeUserWhite:
                 """BalanceMode : UserWhite.
+
                 In addition to the basic treatment, it allows to apply specific coefficients to the red, green, blue images.
                 By default, coefficients of 1 are chosen for red, green and blue images.
 
@@ -1007,6 +1019,7 @@ class SensorCamera(BaseSensor):
 
             class BalanceModeDisplayPrimaries:
                 """BalanceMode : DisplayPrimaries.
+
                 Spectral results are converted in a three-channel result.
                 Then a post-treatment is realized to take the distortion induced by the display devices into account.
                 With this method, displayed results are similar to what the camera really gets.
@@ -1164,6 +1177,7 @@ class SensorCamera(BaseSensor):
 
             def set_balance_mode_none(self) -> SensorCamera.Photometric.Color:
                 """Set the balance mode as none.
+
                 The spectral transmittance of the optical system and the spectral sensitivity for each channel are applied
                 to the detected spectral image before the conversion in a three-channel result.
                 This method is referred to as the basic conversion.
@@ -1179,6 +1193,7 @@ class SensorCamera(BaseSensor):
 
             def set_balance_mode_grey_world(self) -> SensorCamera.Photometric.Color:
                 """Set the balance mode as grey world.
+
                 The grey world assumption states that the content of the image is grey on average.
                 This method converts spectral results in a three-channel result with the basic conversion.
                 Then it computes and applies coefficients to the red, green and blue images to make sure their averages are equal.
@@ -1196,6 +1211,7 @@ class SensorCamera(BaseSensor):
                 self,
             ) -> SensorCamera.Photometric.Color.BalanceModeUserWhite:
                 """Set the balance mode as user white.
+
                 In addition to the basic treatment, it allows to apply specific coefficients to the red, green, blue images.
 
                 Returns
@@ -1228,6 +1244,7 @@ class SensorCamera(BaseSensor):
                 self,
             ) -> SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries:
                 """Set the balance mode as display primaries.
+
                 Spectral results are converted in a three-channel result.
                 Then a post-treatment is realized to take the distortion induced by the display devices into account.
                 With this method, displayed results are similar to what the camera really gets.
@@ -1414,6 +1431,7 @@ class SensorCamera(BaseSensor):
 
         def set_mode_monochromatic(self, spectrum_file_uri: str) -> SensorCamera.Photometric:
             """Set the monochromatic mode.
+
             Results will be available in grey scale.
 
             Parameters
@@ -1432,6 +1450,7 @@ class SensorCamera(BaseSensor):
 
         def set_mode_color(self) -> SensorCamera.Photometric.Color:
             """Set the color mode.
+
             Results will be available in color.
 
             Returns
@@ -1673,6 +1692,7 @@ class SensorCamera(BaseSensor):
 
     def set_mode_geometric(self) -> SensorCamera:
         """Set mode geometric for the camera sensor.
+
         This is a simplified version of the Camera Sensor.
 
         Returns
@@ -1686,6 +1706,7 @@ class SensorCamera(BaseSensor):
 
     def set_mode_photometric(self) -> SensorCamera.Photometric:
         """Set mode photometric for the camera sensor.
+
         This allows setting every Camera Sensor parameter, including the photometric definition parameters.
 
         Returns
@@ -1742,6 +1763,7 @@ class SensorCamera(BaseSensor):
 
 class SensorIrradiance(BaseSensor):
     """Sensor feature: Irradiance.
+
     By default, regarding inherent characteristics, an irradiance sensor of type photometric and illuminance type planar is chosen.
     By default, regarding properties, an axis system is selected to position the sensor, no layer separation and no ray file generation
     are chosen.
@@ -1913,6 +1935,7 @@ class SensorIrradiance(BaseSensor):
 
     def set_type_photometric(self) -> SensorIrradiance:
         """Set type photometric.
+
         The sensor considers the visible spectrum and gets the results in lm/m2 or lx.
 
         Returns
@@ -1926,6 +1949,7 @@ class SensorIrradiance(BaseSensor):
 
     def set_type_colorimetric(self) -> BaseSensor.Colorimetric:
         """Set type colorimetric.
+
         The sensor will generate color results without any spectral data or layer separation (in lx or W//m2).
 
         Returns
@@ -1960,6 +1984,7 @@ class SensorIrradiance(BaseSensor):
 
     def set_type_radiometric(self) -> SensorIrradiance:
         """Set type radiometric.
+
         The sensor considers the entire spectrum and gets the results in W/m2.
 
         Returns
@@ -1973,6 +1998,7 @@ class SensorIrradiance(BaseSensor):
 
     def set_type_spectral(self) -> BaseSensor.Spectral:
         """Set type spectral.
+
         The sensor will generate color results and spectral data separated by wavelength (in lx or W/m2).
 
         Returns
@@ -2009,6 +2035,7 @@ class SensorIrradiance(BaseSensor):
         self, integration_direction: Optional[List[float]] = None
     ) -> SensorIrradiance:
         """Set illuminance type planar.
+
         The integration is made orthogonally with the sensor plane.
 
         Parameters
@@ -2343,6 +2370,7 @@ class SensorIrradiance(BaseSensor):
 
 class SensorRadiance(BaseSensor):
     """Sensor feature: Radiance.
+
     By default, regarding inherent characteristics, a radiance sensor of type photometric is chosen.
     By default, regarding properties, an axis system is selected to position the sensor and no layer separation is chosen.
 
@@ -2499,6 +2527,7 @@ class SensorRadiance(BaseSensor):
 
     def set_type_photometric(self) -> SensorRadiance:
         """Set type photometric.
+
         The sensor considers the visible spectrum and gets the results in lm/m2 or lx.
 
         Returns
@@ -2512,6 +2541,7 @@ class SensorRadiance(BaseSensor):
 
     def set_type_colorimetric(self) -> BaseSensor.Colorimetric:
         """Set type colorimetric.
+
         The sensor will generate color results without any spectral data or layer separation (in lx or W//m2).
 
         Returns
@@ -2546,6 +2576,7 @@ class SensorRadiance(BaseSensor):
 
     def set_type_radiometric(self) -> SensorRadiance:
         """Set type radiometric.
+
         The sensor considers the entire spectrum and gets the results in W/m2.
 
         Returns
@@ -2559,6 +2590,7 @@ class SensorRadiance(BaseSensor):
 
     def set_type_spectral(self) -> BaseSensor.Spectral:
         """Set type spectral.
+
         The sensor will generate color results and spectral data separated by wavelength (in lx or W/m2).
 
         Returns
@@ -2646,6 +2678,7 @@ class SensorRadiance(BaseSensor):
 
     def set_observer_point(self, value: Optional[List[float]] = None) -> SensorRadiance:
         """Set the position of the observer point. This is optional, because the focal length is used by default.
+
         Choosing to set an observer point will make the focal length ignored.
 
         Parameters

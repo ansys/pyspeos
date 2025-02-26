@@ -39,6 +39,7 @@ except ModuleNotFoundError:  # pragma: no cover
 
 def launch_speos(version: str = None) -> Speos:
     """Start the Speos Service remotely using the product instance management API.
+
     Prerequisite : product instance management configured.
 
     Parameters
@@ -66,6 +67,7 @@ def launch_remote_speos(
     version: str = None,
 ) -> Speos:
     """Start the Speos Service remotely using the product instance management API.
+
     When calling this method, you need to ensure that you are in an
     environment where PyPIM is configured. This can be verified with
     :func:`pypim.is_configured <ansys.platform.instancemanagement.is_configured>`.

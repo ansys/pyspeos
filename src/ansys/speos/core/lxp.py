@@ -19,7 +19,8 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-"""The lxp module contains classes and function to simplify the interaction with ray data e.g lpf files. \
+"""The lxp module contains classes and function to simplify the interaction with ray data e.g lpf files.
+
 These files contain a set of simulated rays with all their intersections and properties.
 """
 
@@ -223,9 +224,9 @@ class RayPath:
 
 
 class LightPathFinder:
-    """
-    The Lightpathfinder defines an interface to read lpf files. These files contain a set of simulated rays including \
-    their intersections and properties.
+    """The Lightpathfinder defines an interface to read lpf files.
+
+    These files contain a set of simulated rays including their intersections and properties.
 
     Parameters
     ----------
@@ -498,6 +499,7 @@ class LightPathFinder:
 
 def wavelength_to_rgb(wavelength: float, gamma: float = 0.8) -> [int, int, int, int]:
     """This converts a given wavelength of light to an approximate RGB color value.
+
     The wavelength must be given in nanometers in the range from 380 nm through 750 nm (789 THz through 400 THz).
     Based on code by Dan Bruton http://www.physics.sfasu.edu/astro/color/spectra.html
 

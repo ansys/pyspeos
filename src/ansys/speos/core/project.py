@@ -49,8 +49,8 @@ from ansys.speos.core.speos import Speos
 
 class Project:
     """A project describes all Speos features (optical properties, sources, sensors, simulations) that user can fill in.
-    Project provides functions to create new feature, find a feature.
 
+    Project provides functions to create new feature, find a feature.
     It can be created from empty or loaded from a specific file.
 
     Parameters
@@ -486,6 +486,7 @@ class Project:
 
     def delete(self) -> Project:
         """Delete project: erase scene data.
+
         Delete all features contained in the project.
 
         Returns

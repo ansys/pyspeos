@@ -382,6 +382,7 @@ def test_create_rayfile_source(speos: Speos):
 
 def test_keep_same_internal_feature(speos: Speos):
     """Test regarding source internal features (like spectrum, intensity).
+
     The aim is not to pollute server each time a spectrum/intensity is modified in a
     So use better update of the spectrum/intensity instead of create.
     """

@@ -20,11 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""
-Unit Test Helper Module
--------------------------------
-Description
-===========
+"""Unit Test Helper Module
+
 This module offers some helpers that can be useful in PySpeos unit tests.
 For example a method to check file existence depending on if the file is in the docker container or in local.
 """

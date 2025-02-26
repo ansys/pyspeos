@@ -25,6 +25,7 @@
 
 class CrudStub:
     """Wraps a speos gRPC CRUD connection.
+
     This class is used as base class for all Speos databases interactions.
     Better use directly those inherited classes like SOPTemplateStub, SpectrumStub, ...
     """

@@ -26,20 +26,13 @@ from grpc import insecure_channel
 import pytest
 
 from ansys.speos.core.kernel.client import SpeosClient
+from ansys.speos.core.speos import Speos
 from tests.conftest import config
 
 
-@pytest.fixture(scope="function")
-def client(speos):
-    """Pytest fixture to retrieve SpeosClient from general speos class instance"""
-    # this uses DEFAULT_HOST and DEFAULT_PORT which are set by environment
-    # variables in the workflow
-    return speos._client
-
-
-def test_client_init(client: SpeosClient):
+def test_client_init(speos: Speos):
     """Test the instantiation of a client from the default constructor."""
-    assert client.healthy is True
+    assert speos._client.healthy is True
 
 
 def test_client_through_channel():

@@ -187,6 +187,7 @@ class Face:
 
     def delete(self) -> Face:
         """Delete feature: delete data from the speos server database.
+
         The local data are still available
 
         Returns

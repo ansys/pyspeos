@@ -20,15 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""This module allows pytest to perform unit testing.
-Usage:
-.. code::
-   $ pytest
-   $ pytest -vx
-With coverage.
-.. code::
-   $ pytest --cov ansys.speos.core
-"""
+"""Unit Test for Eulumdat service"""
 
 import logging
 import os
