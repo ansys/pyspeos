@@ -111,7 +111,7 @@ ignore = [
 #    "D102",
 #    "D103", # TODO: Add docstring to functions
 #    "D104",
-    "D105",
+#    "D105",
     "D200", # TODO: One-line doscstring should git on one line
     "D210",
     "D205", # TODO: Add one blank line between summary line and description

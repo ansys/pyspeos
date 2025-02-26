@@ -218,6 +218,7 @@ class RayPath:
             print("Used key: {} not found in key list: {}.".format(key, data.keys()))
 
     def __str__(self):
+        """String representation of a RayPath"""
         return str(self.get())
 
 
@@ -281,6 +282,7 @@ class LightPathFinder:
         return self._filtered_rays
 
     def __str__(self):
+        """String representation of LightPathFinder"""
         return str(
             {
                 k: v.fget(self)
