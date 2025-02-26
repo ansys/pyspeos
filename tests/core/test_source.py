@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Test basic using"""
+"""Unit test for Source Class."""
 
 import os
 
@@ -30,7 +30,7 @@ from tests.conftest import test_path
 
 
 def test_create_luminaire_source(speos: Speos):
-    """Test creation of luminaire"""
+    """Test creation of luminaire source."""
     p = Project(speos=speos)
 
     # Default value
@@ -128,7 +128,7 @@ def test_create_luminaire_source(speos: Speos):
 
 
 def test_create_surface_source(speos: Speos):
-    """Test creation of surface"""
+    """Test creation of surface source."""
     p = Project(speos=speos)
 
     # Default value
@@ -275,7 +275,7 @@ def test_create_surface_source(speos: Speos):
 
 
 def test_create_rayfile_source(speos: Speos):
-    """Test creation of ray file"""
+    """Test creation of ray file."""
     p = Project(speos=speos)
 
     # Default value : not committed because not valid by default due to ray_file_uri needed
@@ -434,7 +434,7 @@ def test_keep_same_internal_feature(speos: Speos):
 
 
 def test_commit_source(speos: Speos):
-    """Test commit of"""
+    """Test commit of source."""
     p = Project(speos=speos)
 
     # Create
@@ -458,7 +458,7 @@ def test_commit_source(speos: Speos):
 
 
 def test_reset_source(speos: Speos):
-    """Test reset of a"""
+    """Test reset of a source."""
     p = Project(speos=speos)
 
     # Create + commit
@@ -669,7 +669,7 @@ def test_surface_modify_after_reset(speos: Speos):
 
 
 def test_delete_source(speos: Speos):
-    """Test delete of"""
+    """Test delete of source."""
     p = Project(speos=speos)
 
     # Create + commit
@@ -696,7 +696,7 @@ def test_delete_source(speos: Speos):
 
 
 def test_print_source(speos: Speos):
-    """Test delete of"""
+    """Test delete of source."""
     p = Project(speos=speos)
 
     # LUMINAIRE - SPECTRUM
@@ -757,7 +757,7 @@ def test_print_source(speos: Speos):
 
 
 def test_get_source(speos: Speos, capsys):
-    """Test get of a"""
+    """Test get method of the source class."""
     p = Project(speos=speos)
     source1 = p.create_source(name="rayfile_source", feature_type=SourceRayFile)
     source2 = p.create_source(name="source2", feature_type=SourceLuminaire)

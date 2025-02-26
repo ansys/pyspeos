@@ -782,7 +782,7 @@ class Project:
 
     def _create_preview(self, viz_args=None) -> pv.Plotter:
         """
-        Create preview pyvista plotter object
+        Create preview pyvista plotter object.
 
         Parameters
         ----------

@@ -39,7 +39,7 @@ from ansys.speos.core.spectrum import Spectrum
 
 class BaseSource:
     """
-    Super Class for all sources
+    Super Class for all sources.
 
     Parameters
     ----------
@@ -653,7 +653,7 @@ class SourceRayFile(BaseSource):
         return self
 
     def set_spectrum(self) -> Spectrum:
-        """Set spectrum
+        """Method to set spectrum.
 
         Returns
         -------
@@ -1015,7 +1015,7 @@ class SourceSurface(BaseSource):
         return self
 
     def set_spectrum(self) -> Spectrum:
-        """Set spectrum
+        """Method to set spectrum.
 
         Returns
         -------

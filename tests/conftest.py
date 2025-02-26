@@ -20,8 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""
-Unit Test Configuration Module
+"""Unit Test Configuration Module.
 
 This module loads the configuration for PySpeos unit tests.
 The configuration can be changed by modifying a file called local_config.json in the same
@@ -40,7 +39,7 @@ from ansys.speos.core.speos import Speos
 
 @pytest.fixture(scope="session")
 def speos():
-    """Pytest ficture to create Speos objects for all unit, integration and workflow tests
+    """Pytest ficture to create Speos objects for all unit, integration and workflow tests.
 
     Yields
     ------
@@ -100,11 +99,11 @@ LOG.log_to_stdout()
 
 @pytest.fixture
 def fake_record():
-    """Function to emulate logger
+    """Function to emulate logger.
 
     Returns
     -------
-    logger
+    logger :
         fake logger
 
     """

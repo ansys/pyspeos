@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Unit Test Helper Module
+"""Unit Test Helper Module.
 
 This module offers some helpers that can be useful in PySpeos unit tests.
 For example a method to check file existence depending on if the file is in the docker container or in local.
@@ -38,7 +38,7 @@ from tests.conftest import config
 
 
 def clean_all_dbs(speos_client: SpeosClient):
-    """Helper function to clean all database entries of a current SpeosRPC client
+    """Helper function to clean all database entries of a current SpeosRPC client.
 
     Parameters
     ----------
@@ -67,7 +67,7 @@ def clean_all_dbs(speos_client: SpeosClient):
 
 
 def run_job_and_check_state(job: JobLink):
-    """Helper function to run a job and wait for state changes
+    """Helper function to run a job and wait for state changes.
 
     Parameters
     ----------
@@ -90,7 +90,7 @@ def run_job_and_check_state(job: JobLink):
 
 
 def does_file_exist(path):
-    """Check file existence
+    """Check file existence.
 
     Parameters
     ----------
@@ -117,7 +117,7 @@ def does_file_exist(path):
 
 
 def remove_file(path):
-    """Remove file
+    """Remove file.
 
     Parameters
     ----------

@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Unit Test for Eulumdat service"""
+"""Unit Test for Eulumdat service."""
 
 import logging
 import os
@@ -32,7 +32,7 @@ import tests.helper as helper
 
 
 def createEulumdatIntensity():
-    """Function to create simple eulumdat file"""
+    """Function to create simple eulumdat file."""
     eulumdat = eulumdat_pb2.EulumdatIntensityDistribution()
 
     # file information
@@ -103,7 +103,7 @@ def createEulumdatIntensity():
 
 
 def compareEulumdatIntensities(eulumdat1, eulumdat2):
-    """Function to compare 2 eulumdat files"""
+    """Function to compare 2 eulumdat files."""
     # file information
     if eulumdat1.file_info.company_identification != eulumdat2.file_info.company_identification:
         return False
@@ -220,7 +220,7 @@ def compareEulumdatIntensities(eulumdat1, eulumdat2):
 
 
 def test_grpc_eulumdat_intensity(speos: Speos):
-    """Test for eulumdat intensity service"""
+    """Test for eulumdat intensity service."""
     stub = eulumdat_pb2_grpc.EulumdatIntensityServiceStub(speos.client.channel)
     save_name = eulumdat_pb2.Save_Request()
     save_name.file_uri = os.path.join(test_path, "eulumdat_tmp00.ldt")

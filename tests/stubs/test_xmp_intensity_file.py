@@ -37,7 +37,7 @@ import tests.helper as helper
 
 
 def create_xmp_intensity():
-    """Function to create simple intensity XMP"""
+    """Function to create simple intensity XMP."""
     xmp = extended_map_template_pb2.ExtendedMap()
 
     # file description
@@ -88,7 +88,7 @@ def create_xmp_intensity():
 
 
 def compare_xmp_intensity_distributions(xmp1, xmp2):
-    """Function to compar 2 XMPs"""
+    """Function to compare 2 XMPs."""
     if xmp1.base_data.value_type != xmp2.base_data.value_type:
         return False
     if xmp1.base_data.intensity_type != xmp2.base_data.intensity_type:
@@ -145,7 +145,7 @@ def compare_xmp_intensity_distributions(xmp1, xmp2):
 
 
 def test_grpc_xmp_intensity(speos: Speos):
-    """Tets to check intensity xmp service"""
+    """Test to check intensity xmp service."""
     stub = xmp_pb2_grpc.XmpIntensityServiceStub(speos.client.channel)
     load_request = xmp_pb2.Load_Request()
     load_request.file_uri = os.path.join(test_path, "conoscopic_intensity.xmp")

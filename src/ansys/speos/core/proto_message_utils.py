@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Module with method to process Protobuf messages"""
+"""Module with method to process Protobuf messages."""
 
 import json
 from typing import Iterator, List
@@ -110,7 +110,7 @@ def _replace_guid_elt(
 
 
 class _ReplacePropsElt:
-    """Class to help replacing properties element"""
+    """Class to help replacing properties element."""
 
     def __init__(self) -> None:
         self.new_items = {}

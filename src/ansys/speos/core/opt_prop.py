@@ -36,7 +36,7 @@ import ansys.speos.core.proto_message_utils as proto_message_utils
 
 
 class OptProp:
-    """Speos feature: optical property
+    """Speos feature: optical property.
 
     By default, a mirror 100% is chosen as surface optical property, without any volume optical property.
     By default, the optical property is applied to no geometry.

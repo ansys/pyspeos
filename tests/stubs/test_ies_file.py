@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Unit test for IES service"""
+"""Unit test for IES service."""
 
 import logging
 import os
@@ -32,7 +32,7 @@ import tests.helper as helper
 
 
 def createIesIntensity():
-    """Function to create IES file"""
+    """Function to create IES file."""
     ies = ies_pb2.IesIntensityDistribution()
 
     ies.norme_version = 1
@@ -74,7 +74,7 @@ def createIesIntensity():
 
 
 def compareIesIntensities(ies1, ies2):
-    """Function to compare ies files"""
+    """Function to compare ies files."""
     if ies1.norme_version != ies2.norme_version:
         return False
     if len(ies1.key_words) != len(ies2.key_words):
@@ -137,7 +137,7 @@ def compareIesIntensities(ies1, ies2):
 
 
 def test_grpc_ies_intensity(speos: Speos):
-    """Test to check ies intensity service"""
+    """Test to check ies intensity service."""
     stub = ies_pb2_grpc.IesIntensityServiceStub(speos.client.channel)
     save_request = ies_pb2.Save_Request()
     save_request.file_uri = os.path.join(test_path, "tmp2_file.ies")

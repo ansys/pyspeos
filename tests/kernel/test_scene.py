@@ -46,7 +46,7 @@ from tests.helper import clean_all_dbs
 
 
 def create_basic_scene(speos: Speos) -> SceneLink:
-    """Function to create basic scene"""
+    """Function to create basic scene."""
     assert speos.client.healthy is True
 
     # Get DB
@@ -337,7 +337,7 @@ def create_face_rectangle(
     y_size: float = 100,
     metadata: Optional[Mapping[str, str]] = None,
 ) -> ProtoFace:
-    """Function to create Rectangular face
+    """Function to create Rectangular face.
 
     Parameters
     ----------

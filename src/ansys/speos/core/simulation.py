@@ -44,7 +44,7 @@ import ansys.speos.core.proto_message_utils as proto_message_utils
 
 class BaseSimulation:
     """
-    Super Class for all simulations
+    Super Class for all simulations.
 
     Parameters
     ----------
@@ -343,7 +343,7 @@ class BaseSimulation:
         print("Used key: {} not found in key list: {}.".format(key, info.keys()))
 
     def __str__(self) -> str:
-        """Return the string representation of the simulation"""
+        """Return the string representation of the simulation."""
         out_str = ""
 
         # SimulationInstance (= simulation guid + simulation properties)

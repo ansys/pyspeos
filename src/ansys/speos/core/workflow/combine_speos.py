@@ -30,7 +30,7 @@ from ansys.speos.core.speos import Speos
 
 
 class SpeosFileInstance:
-    """Represents a speos file that is placed and oriented in a specific way
+    """Represents a speos file that is placed and oriented in a specific way.
 
     Parameters
     ----------
@@ -86,7 +86,7 @@ def insert_speos(project: Project, speos_to_insert: List[SpeosFileInstance]) -> 
 
 
 def combine_speos(speos: Speos, speos_to_combine: List[SpeosFileInstance]) -> Project:
-    """Creates a project feature by combining several speos files
+    """Creates a project feature by combining several speos files.
 
     The function places/orients them in the root part. This only combines geometry and materials.
 

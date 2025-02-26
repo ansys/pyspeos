@@ -530,7 +530,7 @@ class Logger:
         return self._instances[new_name]
 
     def __getitem__(self, key):
-        """Magic method to allow retrieval of instances"""
+        """Magic method to allow retrieval of instances."""
         if key in self._instances.keys():
             return self._instances[key]
         else:

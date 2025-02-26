@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Provides interface to link Speos Objects to Geometries"""
+"""Provides interface to link Speos Objects to Geometries."""
 
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ from typing import Mapping
 
 
 class GeoRef:
-    """Represent a CAD object"""
+    """Represent a CAD object."""
 
     def __init__(self, name: str, description: str, metadata: Mapping[str, str]):
         self.name = name
@@ -39,7 +39,7 @@ class GeoRef:
     @staticmethod
     def from_native_link(geopath: str) -> GeoRef:
         """
-        Convert a native link to a GeoRef
+        Convert a native link to a GeoRef.
 
         Parameters
         ----------

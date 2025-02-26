@@ -44,7 +44,7 @@ import tests.helper as helper
 
 
 def test_grpc_spectral_bsdf(speos: Speos):
-    """Test for spectral bsdf service(*.BRDF)"""
+    """Test for spectral bsdf service (*.BRDF)."""
     stub = bsdf_creation__v1__pb2_grpc.BsdfCreationServiceStub(speos.client.channel)
 
     # BSDF180

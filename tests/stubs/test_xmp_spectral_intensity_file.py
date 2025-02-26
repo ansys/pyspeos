@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Unit test for spectral Intensity XMP service"""
+"""Unit test for spectral Intensity XMP service."""
 
 import logging
 import os
@@ -37,7 +37,7 @@ import tests.helper as helper
 
 
 def create_xmp_intensity():
-    """Function to create simple spectral intensity xmp"""
+    """Function to create simple spectral intensity xmp."""
     xmp = spectral_map_template_pb2.SpectralMap()
 
     # file description
@@ -115,7 +115,7 @@ def create_xmp_intensity():
 
 
 def compare_xmp_intensity_distributions(xmp1, xmp2):
-    """Function to compare spectral intensity distribution xmps"""
+    """Function to compare spectral intensity distribution xmps."""
     if xmp1.base_data.value_type != xmp2.base_data.value_type:
         return False
     if xmp1.base_data.intensity_type != xmp2.base_data.intensity_type:
@@ -225,7 +225,7 @@ def compare_xmp_intensity_distributions(xmp1, xmp2):
 
 
 def test_grpc_xmp_intensity(speos: Speos):
-    """Tes to check spectral intensity xmp service"""
+    """Test to check spectral intensity xmp service."""
     stub = xmp_pb2_grpc.XmpIntensityServiceStub(speos.client.channel)
     load_request = xmp_pb2.Load_Request()
     load_request.file_uri = os.path.join(test_path, "conoscopic_intensity_spectral.xmp")
