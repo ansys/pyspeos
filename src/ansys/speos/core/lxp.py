@@ -363,7 +363,7 @@ class LightPathFinder:
         Parameters
         ----------
         options : list[int]
-            List of body IDs
+            List of body IDs.
         new : bool
             Defines if a new filter is created or an existing filter is filtered.
 
