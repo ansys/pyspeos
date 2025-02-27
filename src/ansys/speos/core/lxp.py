@@ -495,6 +495,7 @@ class LightPathFinder:
 
 def wavelength_to_rgb(wavelength: float, gamma: float = 0.8) -> [int, int, int, int]:
     """Converts a given wavelength of light to an approximate RGB color value.
+
     The wavelength must be given in nanometers in the range from 380 nm to 750 nm (789 THz to 400 THz).
     Based on the code from http://www.physics.sfasu.edu/astro/color/spectra.html
 
