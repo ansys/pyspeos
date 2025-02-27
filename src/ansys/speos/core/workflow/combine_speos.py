@@ -19,7 +19,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-"""Provides a way to combine several speos files into one project feature."""
+"""Allows to import geometries and materials from several SPEOS files to a project."""
 
 import os
 from pathlib import Path
@@ -31,47 +31,47 @@ from ansys.speos.core.speos import Speos
 
 
 class SpeosFileInstance:
-    """Represents a speos file that is placed and oriented in a specific way
+    """Represents a SPEOS file containing geometries and materials that are placed in the root part of a project, and oriented according to the axis_system argument.
 
     Parameters
     ----------
     speos_file : str
-        Speos file to be loaded.
+        SPEOS file to be loaded.
     axis_system : Optional[List[float]]
-        Location and orientation wished for speos file, [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+        Location and orientation to define for the geometry of the SPEOS file, [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
         By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
     name : str
-        Name chosen, this name will be used as sub part name in the root part feature of the project.
-        By default, ``""``, empty means that the name from speos_file basename without extension will be taken.
+        Name chosen for the imported geometry. This name is used as subpart name under the root part of the project.
+        By default, "" (meaning user has not defined a name), then the name of the SPEOS file without extension is taken.
+        Note: Materials are named after the name. For instance name.material.1 representing the first material of the imported geometry.
     """
 
     def __init__(
         self, speos_file: str, axis_system: Optional[List[float]] = None, name: str = ""
     ) -> None:
         self.speos_file = speos_file
-        """Speos file."""
+        """SPEOS file."""
         if axis_system is None:
             axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
         self.axis_system = axis_system
-        """Location/Orientation wished for speos file."""
+        """Location and orientation to define for the geometry of the SPEOS file."""
         self.name = name
-        """Name for the entity (speos file + location/orientation)."""
+        """Name for the imported geometry, and used to name the materials."""
 
         if self.name == "":
             self.name = Path(speos_file).stem
 
 
 def insert_speos(project: Project, speos_to_insert: List[SpeosFileInstance]) -> None:
-    """Complete a project feature with one or several speos files, placing/orienting them in the root part.
-    All the features from the input project are kept.
-    Only geometry and materials are taken from the speos files to combine.
+    """Imports the geometries and materials from the selected SPEOS files to the already existing project, places them in the root part, and orientates them thanks to the SpeosFileInstance object.
+    Note: Sources, Sensors and Simulations are not imported to the project.
 
     Parameters
     ----------
     project : ansys.speos.core.project.Project
-        Project feature to be completed with geometry and materials data.
+        Project in which to import geometries and materials from SPEOS files.
     speos_to_combine : List[ansys.speos.core.workflow.combine_speos.SpeosFileInstance]
-        List of speos + location/orientation to insert into the project
+        List of SPEOS files, location and orientation of geometries to be imported to the project.
     """
     # Part link : either create it empty if none is present in the project's scene
     # or just retrieve it from project's scene
@@ -86,20 +86,19 @@ def insert_speos(project: Project, speos_to_insert: List[SpeosFileInstance]) -> 
 
 
 def combine_speos(speos: Speos, speos_to_combine: List[SpeosFileInstance]) -> Project:
-    """Creates a project feature by combining several speos files, and place/orient them in the root part.
-    This only combine geometry and materials.
+    """Creates a project by combining geometries and materials from the selected SPEOS files, places them in the root part, and orientates them thanks to the SpeosFileInstance object.
 
     Parameters
     ----------
     speos : ansys.speos.core.speos.Speos
         Speos session (connected to gRPC server).
     speos_to_combine : List[ansys.speos.core.workflow.combine_speos.SpeosFileInstance]
-        List of speos + location/orientation to combine into a single project
+        List of SPEOS files, location and orientation of geometries to be imported to the project.
 
     Returns
     -------
     ansys.speos.core.project.Project
-        Project feature created by combining the input list.
+        Project created by combining the input list of SPEOS files.
     """
     # Create an empty project and an empty part link
     p = Project(speos=speos)
