@@ -120,8 +120,6 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "examples/*" = ["D100"]
-"src/ansys/speos/core/logger.py" = ["D102", "D101"]
-
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"

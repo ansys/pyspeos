@@ -192,7 +192,21 @@ class PySpeosCustomAdapter(logging.LoggerAdapter):
         self.file_handler = logger.file_handler
         self.std_out_handler = logger.std_out_handler
 
-    def process(self, msg, kwargs):
+    def process(self, msg, kwargs) -> tuple[str, dict]:
+        """Process extra Arguments.
+
+        Parameters
+        ----------
+        msg : str
+            Log message
+        kwargs : dict
+            extra Arguments dictionary
+
+        Returns
+        -------
+        tuple[str, dict]
+            Message and processed extra arguments
+        """
         kwargs["extra"] = {}
         # This are the extra parameters sent to log
         kwargs["extra"]["instance_name"] = (
