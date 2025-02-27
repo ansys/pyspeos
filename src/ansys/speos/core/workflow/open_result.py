@@ -19,7 +19,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-"""Opens one of the possible results generated out of the simulation."""
+"""Open one of the possible results generated out of the simulation."""
 
 import os
 from pathlib import Path
@@ -88,7 +88,7 @@ if os.name == "nt":
         simulation_feature: Union[SimulationDirect, SimulationInverse, SimulationInteractive],
         result_name: str,
     ) -> None:
-        """Retrieves an image from a specific simulation result.
+        """Retrieve an image from a specific simulation result.
 
         Parameters
         ----------
@@ -118,7 +118,7 @@ if os.name == "nt":
     def open_result_in_viewer(
         simulation_feature: Union[SimulationDirect, SimulationInverse], result_name: str
     ) -> None:
-        """Opens a specific simulation result in the suitable viewer.
+        """Open a specific simulation result in the suitable viewer.
 
         Parameters
         ----------

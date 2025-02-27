@@ -19,7 +19,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-"""Allows to import geometries and materials from several SPEOS files to a project."""
+"""Allow to import geometries and materials from several SPEOS files to a project."""
 
 import os
 from pathlib import Path
@@ -31,7 +31,8 @@ from ansys.speos.core.speos import Speos
 
 
 class SpeosFileInstance:
-    """Represents a SPEOS file containing geometries and materials that are placed in the root part of a project, and oriented according to the axis_system argument.
+    """Represent a SPEOS file containing geometries and materials.
+    Geometries are placed in the root part of a project, and oriented according to the axis_system argument.
 
     Parameters
     ----------
@@ -63,7 +64,8 @@ class SpeosFileInstance:
 
 
 def insert_speos(project: Project, speos_to_insert: List[SpeosFileInstance]) -> None:
-    """Imports the geometries and materials from the selected SPEOS files to the already existing project, places them in the root part, and orientates them thanks to the SpeosFileInstance object.
+    """Import the geometries and materials from the selected SPEOS files to the already existing project.
+    Geometries and materials are placed in the root part, and orientated thanks to the SpeosFileInstance object.
     Note: Sources, Sensors and Simulations are not imported to the project.
 
     Parameters
@@ -86,7 +88,9 @@ def insert_speos(project: Project, speos_to_insert: List[SpeosFileInstance]) -> 
 
 
 def combine_speos(speos: Speos, speos_to_combine: List[SpeosFileInstance]) -> Project:
-    """Creates a project by combining geometries and materials from the selected SPEOS files, places them in the root part, and orientates them thanks to the SpeosFileInstance object.
+    """Creates a project by combining geometries and materials from the selected SPEOS files.
+    Geometries and materials are placed in the root part, and orientated thanks to the SpeosFileInstance object.
+    Note: Sources, Sensors and Simulations are not imported to the project.
 
     Parameters
     ----------

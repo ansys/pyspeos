@@ -183,7 +183,7 @@ class RayPath:
 
     @property
     def sensor_contribution(self) -> Union[None, list[dict]]:
-        """Provides the sensor contribution information for each sensor.
+        """Provide the sensor contribution information for each sensor.
 
         Returns
         -------
@@ -222,7 +222,7 @@ class RayPath:
 
 class LightPathFinder:
     """
-    Defines an interface to read LPF files. LPF files contain a set of simulated rays including \
+    Define an interface to read LPF files. LPF files contain a set of simulated rays including \
     their intersections and properties.
 
     Parameters
@@ -261,7 +261,7 @@ class LightPathFinder:
 
     @property
     def has_sensor_contributions(self) -> bool:
-        """Defines if a LPF file contains information regarding the sensor contribution."""
+        """Define if a LPF file contains information regarding the sensor contribution."""
         return self._has_sensor_contributions
 
     @property
@@ -303,7 +303,7 @@ class LightPathFinder:
 
     def __parse_traces(self) -> list[RayPath]:
         """
-        Reads all ray paths from lpf dataset.
+        Read all ray paths from lpf dataset.
 
         Returns
         -------
@@ -316,7 +316,7 @@ class LightPathFinder:
         return raypaths
 
     def __filter_by_last_intersection_types(self, options: list[int], new=True):
-        """Filters ray paths based on last intersection types and populates filtered_rays property."""
+        """Filter ray paths based on last intersection types and populates filtered_rays property."""
         if new:
             self._filtered_rays = []
             for ray in self._rays:
@@ -330,14 +330,14 @@ class LightPathFinder:
                     self._filtered_rays.append(ray)
 
     def filter_by_face_ids(self, options: list[int], new=True) -> LightPathFinder:
-        """Filters ray paths based on face IDs and populates filtered_rays property.
+        """Filter ray paths based on face IDs and populates filtered_rays property.
 
         Parameters
         ----------
         options : list[int]
             List of face IDs.
         new : bool
-            Defines if a new filter is created or an existing filter is filtered.
+            Define if a new filter is created or an existing filter is filtered.
 
         Returns
         -------
@@ -358,14 +358,14 @@ class LightPathFinder:
         return self
 
     def filter_by_body_ids(self, options: list[int], new=True) -> LightPathFinder:
-        """Filters ray paths based on body IDs and populates filtered_rays property.
+        """Filter ray paths based on body IDs and populates filtered_rays property.
 
         Parameters
         ----------
         options : list[int]
             List of body IDs.
         new : bool
-            Defines if a new filter is created or an existing filter is filtered.
+            Define if a new filter is created or an existing filter is filtered.
 
         Returns
         -------
@@ -386,7 +386,7 @@ class LightPathFinder:
         return self
 
     def filter_error_rays(self) -> LightPathFinder:
-        """Filters ray paths and only shows rays in error.
+        """Filter ray paths and only shows rays in error.
 
         Returns
         -------
@@ -397,7 +397,7 @@ class LightPathFinder:
         return self
 
     def remove_error_rays(self) -> LightPathFinder:
-        """Filters rays and only shows rays not in error.
+        """Filter rays and only shows rays not in error.
 
         Returns
         -------
@@ -460,7 +460,7 @@ class LightPathFinder:
         Returns
         -------
         ansys.speos.core.lxp.LightPathFinder
-            LightPathFinder Instance
+            LightPathFinder Instance.
         """
         if ray_filter:
             if len(self._filtered_rays) > 0:
@@ -494,8 +494,7 @@ class LightPathFinder:
 
 
 def wavelength_to_rgb(wavelength: float, gamma: float = 0.8) -> [int, int, int, int]:
-    """Converts a given wavelength of light to an approximate RGB color value.
-
+    """Convert a given wavelength of light to an approximate RGB color value.
     The wavelength must be given in nanometers in the range from 380 nm to 750 nm (789 THz to 400 THz).
     Based on the code from http://www.physics.sfasu.edu/astro/color/spectra.html
 
