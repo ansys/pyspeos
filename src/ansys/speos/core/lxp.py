@@ -138,7 +138,7 @@ class RayPath:
         Returns
         -------
         list[float]
-            Last direction of the rays as list[x,y,z]
+            Last direction of the rays as list[x,y,z].
         """
         return self._last_direction
 
