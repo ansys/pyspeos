@@ -42,8 +42,7 @@ NO_ERROR_IDS = [0, 1, 2, 3, 4, 5, 6, 16, -7, -6, -5, -5, -4, -3, -2, -1]
 
 
 class RayPath:
-    """
-    Framework representing a singular ray path.
+    """Framework representing a singular ray path.
 
     Parameters
     ----------
@@ -221,9 +220,8 @@ class RayPath:
 
 
 class LightPathFinder:
-    """
-    Define an interface to read LPF files.
-    
+    """Define an interface to read LPF files.
+
     LPF files contain a set of simulated rays including their intersections and properties.
 
     Parameters
@@ -290,8 +288,7 @@ class LightPathFinder:
         )
 
     def __open(self, path: str):
-        """
-        Method to open LPF file.
+        """Method to open LPF file.
 
         Parameters
         ----------
@@ -303,8 +300,7 @@ class LightPathFinder:
         )
 
     def __parse_traces(self) -> list[RayPath]:
-        """
-        Read all ray paths from lpf dataset.
+        """Read all ray paths from lpf dataset.
 
         Returns
         -------
@@ -410,8 +406,7 @@ class LightPathFinder:
 
     @staticmethod
     def __add_ray_to_pv(plotter: pv.Plotter, ray: RayPath, max_ray_length: float):
-        """
-        Add a ray to pyvista plotter.
+        """Add a ray to pyvista plotter.
 
         Parameters
         ----------
@@ -444,8 +439,7 @@ class LightPathFinder:
         ray_filter: bool = False,
         project: Project = None,
     ) -> LightPathFinder:
-        """
-        Method to preview LPF file with pyvista.
+        """Method to preview LPF file with pyvista.
 
         Parameters
         ----------
