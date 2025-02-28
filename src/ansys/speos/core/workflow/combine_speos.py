@@ -91,8 +91,12 @@ def insert_speos(project: Project, speos_to_insert: List[SpeosFileInstance]) -> 
 
 def combine_speos(speos: Speos, speos_to_combine: List[SpeosFileInstance]) -> Project:
     """Creates a project by combining geometries and materials from the selected SPEOS files.
+    
     Geometries and materials are placed in the root part, and orientated thanks to the SpeosFileInstance object.
-    Note: Sources, Sensors and Simulations are not imported to the project.
+    
+    Notes
+    -----
+        Sources, Sensors and Simulations are not imported to the project.
 
     Parameters
     ----------
