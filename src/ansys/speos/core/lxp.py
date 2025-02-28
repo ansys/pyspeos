@@ -222,8 +222,9 @@ class RayPath:
 
 class LightPathFinder:
     """
-    Define an interface to read LPF files. LPF files contain a set of simulated rays including \
-    their intersections and properties.
+    Define an interface to read LPF files.
+    
+    LPF files contain a set of simulated rays including their intersections and properties.
 
     Parameters
     ----------
