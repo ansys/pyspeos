@@ -64,8 +64,10 @@ class SpeosFileInstance:
 
 
 def insert_speos(project: Project, speos_to_insert: List[SpeosFileInstance]) -> None:
-    """Import the geometries and materials from the selected SPEOS files to the already existing project.
-    Geometries and materials are placed in the root part, and orientated thanks to the SpeosFileInstance object.
+    """Import geometries and materials from the selected SPEOS files to the existing project.
+
+    Geometries and materials are placed in the root part, and orientated thanks to the
+    SpeosFileInstance object.
     Note: Sources, Sensors and Simulations are not imported to the project.
 
     Parameters
