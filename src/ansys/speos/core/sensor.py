@@ -114,7 +114,6 @@ class BaseSensor:
         Notes
         -----
         **Do not instantiate this class yourself**, use set_wavelengths_range method available in sensor classes.
-
         """
 
         def __init__(
@@ -1544,8 +1543,7 @@ class SensorCamera(BaseSensor):
 
     @property
     def photometric(self) -> Union[SensorCamera.Photometric, None]:
-        """
-        Property containing the instance of Camera.Photometric used to build the sensor.
+        """Property containing the instance of Camera.Photometric used to build the sensor.
 
         Returns
         -------
@@ -1829,8 +1827,7 @@ class SensorIrradiance(BaseSensor):
 
     @property
     def dimensions(self) -> BaseSensor.Dimensions:
-        """
-        Property containing all options in regard to the Dimensions sensor properties.
+        """Property containing all options in regard to the Dimensions sensor properties.
 
         Returns
         -------
@@ -1841,8 +1838,7 @@ class SensorIrradiance(BaseSensor):
 
     @property
     def type(self) -> str:
-        """
-        Type of sensor.
+        """Type of sensor.
 
         Returns
         -------
@@ -1860,8 +1856,7 @@ class SensorIrradiance(BaseSensor):
 
     @property
     def colorimetric(self) -> Union[None, BaseSensor.Colorimetric]:
-        """
-        Property containing all options in regard to the Colorimetric sensor properties.
+        """Property containing all options in regard to the Colorimetric sensor properties.
 
         Returns
         -------
@@ -1875,8 +1870,7 @@ class SensorIrradiance(BaseSensor):
 
     @property
     def spectral(self) -> Union[None, BaseSensor.Spectral]:
-        """
-        Property containing all options in regard to the Spectral sensor properties.
+        """Property containing all options in regard to the Spectral sensor properties.
 
         Returns
         -------
@@ -1898,8 +1892,7 @@ class SensorIrradiance(BaseSensor):
         BaseSensor.LayerTypeSequence,
         BaseSensor.LayerTypeIncidenceAngle,
     ]:
-        """
-        Property containing all options in regard to the layer separation properties.
+        """Property containing all options in regard to the layer separation properties.
 
         Returns
         -------
@@ -1915,8 +1908,7 @@ class SensorIrradiance(BaseSensor):
         return self._layer_type
 
     def set_dimensions(self) -> BaseSensor.Dimensions:
-        """
-        Set the dimensions of the sensor.
+        """Set the dimensions of the sensor.
 
         Returns
         -------
@@ -2215,8 +2207,7 @@ class SensorIrradiance(BaseSensor):
         return self
 
     def set_layer_type_source(self) -> SensorIrradiance:
-        """
-        Define layer separation as by source.
+        """Define layer separation as by source.
 
         Returns
         -------
@@ -2229,8 +2220,7 @@ class SensorIrradiance(BaseSensor):
         return self
 
     def set_layer_type_face(self) -> BaseSensor.LayerTypeFace:
-        """
-        Define layer separation as by face.
+        """Define layer separation as by face.
 
         Returns
         -------
@@ -2263,8 +2253,7 @@ class SensorIrradiance(BaseSensor):
         return self._layer_type
 
     def set_layer_type_sequence(self) -> BaseSensor.LayerTypeSequence:
-        """
-        Define layer separation as by sequence.
+        """Define layer separation as by sequence.
 
         Returns
         -------
@@ -2297,8 +2286,7 @@ class SensorIrradiance(BaseSensor):
         return self._layer_type
 
     def set_layer_type_polarization(self) -> SensorIrradiance:
-        """
-        Define layer separation as by polarization.
+        """Define layer separation as by polarization.
 
         Returns
         -------
@@ -2310,8 +2298,7 @@ class SensorIrradiance(BaseSensor):
         return self
 
     def set_layer_type_incidence_angle(self) -> BaseSensor.LayerTypeIncidenceAngle:
-        """
-        Define layer separation as by incidence angle.
+        """Define layer separation as by incidence angle.
 
         Returns
         -------
@@ -2435,8 +2422,7 @@ class SensorRadiance(BaseSensor):
 
     @property
     def dimensions(self) -> BaseSensor.Dimensions:
-        """
-        Property containing all options in regard to the Dimensions sensor properties.
+        """Property containing all options in regard to the Dimensions sensor properties.
 
         Returns
         -------
@@ -2447,8 +2433,7 @@ class SensorRadiance(BaseSensor):
 
     @property
     def type(self) -> str:
-        """
-        Type of sensor.
+        """Type of sensor.
 
         Returns
         -------
@@ -2466,8 +2451,7 @@ class SensorRadiance(BaseSensor):
 
     @property
     def colorimetric(self) -> Union[None, BaseSensor.Colorimetric]:
-        """
-        Property containing all options in regard to the Colorimetric sensor properties.
+        """Property containing all options in regard to the Colorimetric sensor properties.
 
         Returns
         -------
@@ -2481,8 +2465,7 @@ class SensorRadiance(BaseSensor):
 
     @property
     def spectral(self) -> Union[None, BaseSensor.Spectral]:
-        """
-        Property containing all options in regard to the Spectral sensor properties.
+        """Property containing all options in regard to the Spectral sensor properties.
 
         Returns
         -------
@@ -2496,8 +2479,7 @@ class SensorRadiance(BaseSensor):
 
     @property
     def layer(self) -> Union[None, BaseSensor.LayerTypeFace, BaseSensor.LayerTypeSequence]:
-        """
-        Property containing all options in regard to the layer separation property.
+        """Property containing all options in regard to the layer separation property.
 
         Returns
         -------
@@ -2507,8 +2489,7 @@ class SensorRadiance(BaseSensor):
         return self._layer_type
 
     def set_dimensions(self) -> BaseSensor.Dimensions:
-        """
-        Set the dimensions of the sensor.
+        """Set the dimensions of the sensor.
 
         Returns
         -------
@@ -2699,8 +2680,7 @@ class SensorRadiance(BaseSensor):
         return self
 
     def set_layer_type_none(self) -> SensorRadiance:
-        """
-        Define layer separation type as None.
+        """Define layer separation type as None.
 
         Returns
         -------
@@ -2713,8 +2693,7 @@ class SensorRadiance(BaseSensor):
         return self
 
     def set_layer_type_source(self) -> SensorRadiance:
-        """
-        Define layer separation as by source.
+        """Define layer separation as by source.
 
         Returns
         -------
@@ -2760,8 +2739,7 @@ class SensorRadiance(BaseSensor):
         return self._layer_type
 
     def set_layer_type_sequence(self) -> BaseSensor.LayerTypeSequence:
-        """
-        Define layer separation as by sequence.
+        """Define layer separation as by sequence.
 
         Returns
         -------

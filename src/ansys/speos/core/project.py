@@ -716,8 +716,7 @@ class Project:
     def __extract_part_mesh_info(
         self, part_data: ProtoPart, part_coordinate_info: RepeatedScalarFieldContainer = None
     ) -> pv.PolyData:
-        """
-        Extract mesh data info from a part.
+        """Extract mesh data info from a part.
 
         Parameters
         ----------
@@ -735,8 +734,7 @@ class Project:
         """
 
         def local2absolute(local_vertice: np.ndarray, coordinates) -> np.ndarray:
-            """
-            Convert local coordinate to global coordinate.
+            """Convert local coordinate to global coordinate.
 
             Parameters
             ----------
@@ -781,8 +779,7 @@ class Project:
         return part_mesh_info
 
     def _create_preview(self, viz_args=None) -> pv.Plotter:
-        """
-        Create preview pyvista plotter object.
+        """Create preview pyvista plotter object.
 
         Parameters
         ----------
@@ -792,8 +789,6 @@ class Project:
             - {'style': 'wireframe'},
             - {'style': 'surface', 'color':'white'},
             - {'opacity': 0.7, 'color':'white', 'show_edges': False},
-
-
         """
         if viz_args is None:
             viz_args = {}
