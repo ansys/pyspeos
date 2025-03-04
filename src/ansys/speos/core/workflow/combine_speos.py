@@ -19,7 +19,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-"""Allow to import geometries and materials from several SPEOS files to a project."""
+"""Import geometries and materials from several SPEOS files to a project."""
 
 import os
 from pathlib import Path
