@@ -31,7 +31,7 @@ from ansys.speos.core.speos import Speos
 
 
 class SpeosFileInstance:
-    """Represent a SPEOS file containing geometries and materials.
+    """Represents a SPEOS file containing geometries and materials.
     Geometries are placed in the root part of a project, and oriented according to the axis_system argument.
 
     Parameters

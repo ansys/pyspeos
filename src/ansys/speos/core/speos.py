@@ -39,7 +39,7 @@ if TYPE_CHECKING:  # pragma: no cover
 
 
 class Speos:
-    """Allow the Speos session (client) to interact with the SpeosRPC server.
+    """Allows the Speos session (client) to interact with the SpeosRPC server.
 
     Parameters
     ----------
