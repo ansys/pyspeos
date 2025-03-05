@@ -198,7 +198,7 @@ class RayPath:
         return self._sensor_contribution
 
     def get(self, key=""):
-        """Method to retrieve any information from the RayPath object.
+        """Retrieve any information from the RayPath object.
 
         Parameters
         ----------
@@ -293,7 +293,7 @@ class LightPathFinder:
         )
 
     def __open(self, path: str):
-        """Method to open LPF file.
+        """Open LPF file.
 
         Parameters
         ----------
@@ -444,7 +444,7 @@ class LightPathFinder:
         ray_filter: bool = False,
         project: Project = None,
     ) -> LightPathFinder:
-        """Method to preview LPF file with pyvista.
+        """Preview LPF file with pyvista.
 
         Parameters
         ----------
