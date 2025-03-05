@@ -82,7 +82,6 @@ jobs:
           operating-system: ${{ matrix.os }}
           python-version: ${{ matrix.python-version }}
 
-  # TODO: Registry should be updated to ghcr.io once released
   doc-build:
     name: Documentation build
     runs-on: ubuntu-latest
