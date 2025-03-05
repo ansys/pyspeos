@@ -19,7 +19,9 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-"""The lxp module contains classes and functions to simplify the interaction with ray data (LPF file). \
+
+"""The lxp module contains classes and functions to simplify the interaction with ray data (LPF file).
+
 LPF files contain a set of simulated rays with all their intersections and properties.
 """
 
@@ -88,7 +90,7 @@ class RayPath:
 
     @property
     def impacts(self) -> list[list[float]]:
-        """XYZ coordinates for each impact
+        """XYZ coordinates for each impact.
 
         Returns
         -------
@@ -99,7 +101,7 @@ class RayPath:
 
     @property
     def wl(self) -> float:
-        """Wavelength of the ray
+        """Wavelength of the ray.
 
         Returns
         -------
@@ -152,7 +154,8 @@ class RayPath:
 
         Notes
         -----
-        available intersection types: \n
+        Available intersection types:
+
         - StatusAbsorbed = 0
         - StatusSpecularTransmitted = 1
         - StatusGaussianTransmitted = 2
@@ -216,6 +219,7 @@ class RayPath:
             print("Used key: {} not found in key list: {}.".format(key, data.keys()))
 
     def __str__(self):
+        """Create string representation of a RayPath."""
         return str(self.get())
 
 
@@ -279,6 +283,7 @@ class LightPathFinder:
         return self._filtered_rays
 
     def __str__(self):
+        """Create string representation of LightPathFinder."""
         return str(
             {
                 k: v.fget(self)

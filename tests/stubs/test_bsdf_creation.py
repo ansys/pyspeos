@@ -20,18 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""This module allows pytest to perform unit testing.
-
-Usage:
-.. code::
-   $ pytest
-   $ pytest -vx
-
-With coverage.
-.. code::
-   $ pytest --cov ansys.speos.core
-
-"""
+"""Unit test for BSDF creation service."""
 
 import math
 import os
@@ -45,6 +34,7 @@ import tests.helper as helper
 
 
 def test_grpc_spectral_bsdf(speos: Speos):
+    """Test for spectral bsdf service (*.BRDF)."""
     stub = bsdf_creation__v1__pb2_grpc.BsdfCreationServiceStub(speos.client.channel)
 
     # BSDF180

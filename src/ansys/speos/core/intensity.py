@@ -36,6 +36,7 @@ from ansys.speos.core.proto_message_utils import dict_to_str
 
 class Intensity:
     """Speos feature : Intensity.
+
     By default, a lambertian intensity is created (cos with N=1 and total_angle=180).
 
     Parameters
@@ -64,6 +65,7 @@ class Intensity:
 
     class Library:
         """Intensity of type: Library.
+
         By default, orientation as axis system is chosen and no exit geometries.
 
         Parameters
@@ -174,6 +176,7 @@ class Intensity:
 
     class Gaussian:
         """Intensity of type: Gaussian.
+
         By default, full width at half maximum following x and y are set at 30 degrees, and total angle at 180 degrees.
         By default, no axis system is chosen, that means normal to surface map.
 
@@ -460,6 +463,7 @@ class Intensity:
 
     def delete(self) -> Intensity:
         """Delete feature: delete data from the speos server database.
+
         The local data are still available
 
         Returns

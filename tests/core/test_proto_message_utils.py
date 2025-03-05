@@ -20,9 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""
-Test basic using proto_message_utils.
-"""
+"""Test basic using proto_message_utils."""
 
 import os
 from pathlib import Path
@@ -318,6 +316,7 @@ def test_finder_by_key(speos: Speos):
 
 
 def test_flatten_dict(speos: Speos):
+    """proto_message_utils test of '_flatten_dict' method."""
     p = Project(
         speos=speos,
         path=str(
