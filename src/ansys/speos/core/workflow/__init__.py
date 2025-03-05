@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""This module defines processes used in workflows."""
+"""PySpeos workflow gathers functionality to use Speos capabilities in advanced ways."""
 
 import os
 

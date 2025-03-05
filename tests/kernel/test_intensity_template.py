@@ -20,9 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""
-Test basic intensity template database connection.
-"""
+"""Test basic intensity template database connection."""
 
 import os
 from pathlib import Path

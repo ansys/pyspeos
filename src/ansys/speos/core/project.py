@@ -49,8 +49,8 @@ from ansys.speos.core.speos import Speos
 
 class Project:
     """A project describes all Speos features (optical properties, sources, sensors, simulations) that user can fill in.
-    Project provides functions to create new feature, find a feature.
 
+    Project provides functions to create new feature, find a feature.
     It can be created from empty or loaded from a specific file.
 
     Parameters
@@ -486,6 +486,7 @@ class Project:
 
     def delete(self) -> Project:
         """Delete project: erase scene data.
+
         Delete all features contained in the project.
 
         Returns
@@ -715,8 +716,7 @@ class Project:
     def __extract_part_mesh_info(
         self, part_data: ProtoPart, part_coordinate_info: RepeatedScalarFieldContainer = None
     ) -> pv.PolyData:
-        """
-        Extract mesh data info from a part.
+        """Extract mesh data info from a part.
 
         Parameters
         ----------
@@ -734,8 +734,7 @@ class Project:
         """
 
         def local2absolute(local_vertice: np.ndarray, coordinates) -> np.ndarray:
-            """
-            Convert local coordinate to global coordinate.
+            """Convert local coordinate to global coordinate.
 
             Parameters
             ----------
@@ -780,8 +779,7 @@ class Project:
         return part_mesh_info
 
     def _create_preview(self, viz_args=None) -> pv.Plotter:
-        """
-        Create preview pyvista plotter object
+        """Create preview pyvista plotter object.
 
         Parameters
         ----------
@@ -791,8 +789,6 @@ class Project:
             - {'style': 'wireframe'},
             - {'style': 'surface', 'color':'white'},
             - {'opacity': 0.7, 'color':'white', 'show_edges': False},
-
-
         """
         if viz_args is None:
             viz_args = {}

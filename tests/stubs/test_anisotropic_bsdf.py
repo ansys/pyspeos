@@ -20,18 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""This module allows pytest to perform unit testing.
-
-Usage:
-.. code::
-   $ pytest
-   $ pytest -vx
-
-With coverage.
-.. code::
-   $ pytest --cov ansys.speos.core
-
-"""
+"""Unit test for anisotropic bsdf service."""
 
 import math
 import os
@@ -47,6 +36,7 @@ import tests.helper as helper
 
 
 def createAnisotropicBsdf():
+    """Create a lambertian bsdf."""
     bsdf = anisotropic_bsdf__v1__pb2.AnisotropicBsdfData()
 
     # description
@@ -122,10 +112,12 @@ def createAnisotropicBsdf():
 
 
 def approx_cmp(a, b):
+    """Approximated comparison of two numbers."""
     return math.fabs(a - b) < 1e-6
 
 
 def compareAnisotropicBsdf(bsdf1, bsdf2):
+    """Compare 2 bsdf."""
     # description
     if bsdf1.description != bsdf2.description:
         return False
@@ -264,6 +256,7 @@ def compareAnisotropicBsdf(bsdf1, bsdf2):
 
 
 def compareEnhancementData(cones1, cones2):
+    """Compare enhancement cones."""
     if len(cones1.anisotropic_samples) != len(cones2.anisotropic_samples):
         return False
 
@@ -280,6 +273,7 @@ def compareEnhancementData(cones1, cones2):
 
 
 def compareSpecularEnhancementData(data1, data2):
+    """Compare specular enhancement information."""
     if (
         data1.refractive_index_1 != data2.refractive_index_1
         or data1.refractive_index_2 != data2.refractive_index_2
@@ -292,6 +286,7 @@ def compareSpecularEnhancementData(data1, data2):
 
 
 def test_grpc_anisotropic_bsdf(speos: Speos):
+    """Test for anisotropic bsdf service."""
     stub = anisotropic_bsdf__v1__pb2_grpc.AnisotropicBsdfServiceStub(speos.client.channel)
 
     # anisotropic bsdf

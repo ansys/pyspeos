@@ -19,7 +19,8 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-"""The lxp module contains classes and function to simplify the interaction with ray data e.g lpf files. \
+"""The lxp module contains classes and function to simplify the interaction with ray data e.g lpf files.
+
 These files contain a set of simulated rays with all their intersections and properties.
 """
 
@@ -89,7 +90,7 @@ class RayPath:
 
     @property
     def impacts(self) -> list[list[float]]:
-        """XYZ coordinates for each impact
+        """XYZ coordinates for each impact.
 
         Returns
         -------
@@ -100,7 +101,7 @@ class RayPath:
 
     @property
     def wl(self) -> float:
-        """Wavelength of the ray
+        """Wavelength of the ray.
 
         Returns
         -------
@@ -133,7 +134,7 @@ class RayPath:
 
     @property
     def last_direction(self) -> list[float]:
-        """Last direction of the ray
+        """Last direction of the ray.
 
         Returns
         -------
@@ -144,7 +145,7 @@ class RayPath:
 
     @property
     def intersection_type(self) -> list[int]:
-        """Intersection type of the ray for each impact
+        """Intersection type of the ray for each impact.
 
         Returns
         -------
@@ -153,7 +154,8 @@ class RayPath:
 
         Notes
         -----
-        available intersection types: \n
+        Available intersection types:
+
         - StatusAbsorbed = 0
         - StatusSpecularTransmitted = 1
         - StatusGaussianTransmitted = 2
@@ -183,7 +185,7 @@ class RayPath:
 
     @property
     def sensor_contribution(self) -> Union[None, list[dict]]:
-        """Provide sensor contribution information for each sensor
+        """Provide sensor contribution information for each sensor.
 
         Returns
         -------
@@ -197,7 +199,7 @@ class RayPath:
         return self._sensor_contribution
 
     def get(self, key=""):
-        """Method to retrieve any information from RayPath object
+        """Retrieve any information from RayPath object.
 
         Parameters
         ----------
@@ -218,13 +220,14 @@ class RayPath:
             print("Used key: {} not found in key list: {}.".format(key, data.keys()))
 
     def __str__(self):
+        """Create string representation of a RayPath."""
         return str(self.get())
 
 
 class LightPathFinder:
-    """
-    The Lightpathfinder defines an interface to read lpf files. These files contain a set of simulated rays including \
-    their intersections and properties.
+    """The Lightpathfinder defines an interface to read lpf files.
+
+    These files contain a set of simulated rays including their intersections and properties.
 
     Parameters
     ----------
@@ -252,35 +255,36 @@ class LightPathFinder:
 
     @property
     def nb_traces(self) -> int:
-        """Number of light path's within LPF data set"""
+        """Number of light path's within LPF data set."""
         return self._nb_traces
 
     @property
     def nb_xmps(self) -> int:
-        """Number of sensors involved within LPF data set"""
+        """Number of sensors involved within LPF data set."""
         return self._nb_xmps
 
     @property
     def has_sensor_contributions(self) -> bool:
-        """Defines if a lpf file contains information regarding the sensor contribution"""
+        """Defines if a lpf file contains information regarding the sensor contribution."""
         return self._has_sensor_contributions
 
     @property
     def sensor_names(self) -> list[str]:
-        """List of involved sensor names"""
+        """List of involved sensor names."""
         return self._sensor_names
 
     @property
     def rays(self) -> list[RayPath]:
-        """List raypath's within lpf file"""
+        """List raypath's within lpf file."""
         return self._rays
 
     @property
     def filtered_rays(self) -> list[RayPath]:
-        """List of filtered ray path's"""
+        """List of filtered ray path's."""
         return self._filtered_rays
 
     def __str__(self):
+        """Create string representation of LightPathFinder."""
         return str(
             {
                 k: v.fget(self)
@@ -290,8 +294,7 @@ class LightPathFinder:
         )
 
     def __open(self, path: str):
-        """
-        Method to open lpf file
+        """Open lpf file.
 
         Parameters
         ----------
@@ -304,7 +307,7 @@ class LightPathFinder:
 
     def __parse_traces(self) -> list[RayPath]:
         """
-        Reads all raypaths from lpf dataset.
+        Read all raypaths from lpf dataset.
 
         Returns
         -------
@@ -317,7 +320,7 @@ class LightPathFinder:
         return raypaths
 
     def __filter_by_last_intersection_types(self, options: list[int], new=True):
-        """Filters raypaths based on last intersection types and populates filtered_rays property"""
+        """Filter raypaths based on last intersection types and populates filtered_rays property."""
         if new:
             self._filtered_rays = []
             for ray in self._rays:
@@ -331,7 +334,7 @@ class LightPathFinder:
                     self._filtered_rays.append(ray)
 
     def filter_by_face_ids(self, options: list[int], new=True) -> LightPathFinder:
-        """Filters raypaths based on face ids and populates filtered_rays property.
+        """Filter raypaths based on face ids and populates filtered_rays property.
 
         Parameters
         ----------
@@ -359,7 +362,7 @@ class LightPathFinder:
         return self
 
     def filter_by_body_ids(self, options: list[int], new=True) -> LightPathFinder:
-        """Filters raypaths based on body ids and populates filtered_rays property.
+        """Filter raypaths based on body ids and populates filtered_rays property.
 
         Parameters
         ----------
@@ -387,7 +390,7 @@ class LightPathFinder:
         return self
 
     def filter_error_rays(self) -> LightPathFinder:
-        """Filters raypaths and only shows rays in error.
+        """Filter raypaths and only shows rays in error.
 
         Returns
         -------
@@ -398,7 +401,7 @@ class LightPathFinder:
         return self
 
     def remove_error_rays(self) -> LightPathFinder:
-        """Filters rays and only shows rays not in error.
+        """Filter rays and only shows rays not in error.
 
         Returns
         -------
@@ -444,8 +447,7 @@ class LightPathFinder:
         ray_filter: bool = False,
         project: Project = None,
     ) -> LightPathFinder:
-        """
-        Method to preview lpf file with pyvista.
+        """Preview lpf file with pyvista.
 
         Parameters
         ----------
@@ -495,7 +497,8 @@ class LightPathFinder:
 
 
 def wavelength_to_rgb(wavelength: float, gamma: float = 0.8) -> [int, int, int, int]:
-    """This converts a given wavelength of light to an approximate RGB color value.
+    """Convert a given wavelength of light to an approximate RGB color value.
+
     The wavelength must be given in nanometers in the range from 380 nm through 750 nm (789 THz through 400 THz).
     Based on code by Dan Bruton http://www.physics.sfasu.edu/astro/color/spectra.html
 

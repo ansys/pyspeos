@@ -20,9 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""
-Test basic spectrum database connection.
-"""
+"""Test basic spectrum database connection."""
 
 import os
 from pathlib import Path
@@ -33,7 +31,7 @@ from tests.conftest import test_path
 
 
 def test_client_spectrum_init(speos: Speos):
-    """Test the abstraction layer for spectrums. How to use SpectrumLink objects"""
+    """Test the abstraction layer for spectrums. How to use SpectrumLink objects."""
     assert speos.client.healthy is True
     # Get DB
     spec_db = speos.client.spectrums()  # Create spectrum stub from client channel

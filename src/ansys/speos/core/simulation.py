@@ -44,7 +44,7 @@ import ansys.speos.core.proto_message_utils as proto_message_utils
 
 class BaseSimulation:
     """
-    Super Class for all simulations
+    Super Class for all simulations.
 
     Parameters
     ----------
@@ -69,6 +69,7 @@ class BaseSimulation:
 
     class Weight:
         """The Weight represents the ray energy. In real life, a ray loses some energy (power) when it interacts with an object.
+
         Activating weight means that the Weight message is present.
         When weight is not activated, rays' energy stays constant and probability laws dictate if rays continue or stop propagating.
         When weight is activated, the rays' energy evolves with interactions until rays reach the sensors.
@@ -329,7 +330,8 @@ class BaseSimulation:
 
         Returns
         -------
-
+        str | dict :
+            Dictionary of Simulation Feature
         """
         if key == "":
             return self._to_dict()
@@ -342,7 +344,7 @@ class BaseSimulation:
         print("Used key: {} not found in key list: {}.".format(key, info.keys()))
 
     def __str__(self) -> str:
-        """Return the string representation of the simulation"""
+        """Return the string representation of the simulation."""
         out_str = ""
 
         # SimulationInstance (= simulation guid + simulation properties)
@@ -441,6 +443,7 @@ class BaseSimulation:
 
     def delete(self) -> BaseSimulation:
         """Delete feature: delete data from the speos server database.
+
         The local data are still available
 
         Returns
@@ -483,8 +486,8 @@ class BaseSimulation:
 
 
 class SimulationDirect(BaseSimulation):
-    """
-    Type of Simulation: Direct.
+    """Type of Simulation: Direct.
+
     By default,
     geometry distance tolerance is set to 0.01,
     maximum number of impacts is set to 100,
@@ -564,7 +567,8 @@ class SimulationDirect(BaseSimulation):
         return self
 
     def set_max_impact(self, value: int = 100) -> SimulationDirect:
-        """Defines a value to determine the maximum number of ray impacts during propagation.
+        """Define a value to determine the maximum number of ray impacts during propagation.
+
         When a ray has interacted N times with the geometry, the propagation of the ray stops.
 
         Parameters
@@ -606,6 +610,7 @@ class SimulationDirect(BaseSimulation):
 
     def set_colorimetric_standard_CIE_1931(self) -> SimulationDirect:
         """Set the colorimetric standard to CIE 1931.
+
         2 degrees CIE Standard Colorimetric Observer Data.
 
         Returns
@@ -620,6 +625,7 @@ class SimulationDirect(BaseSimulation):
 
     def set_colorimetric_standard_CIE_1964(self) -> SimulationDirect:
         """Set the colorimetric standard to CIE 1964.
+
         10 degrees CIE Standard Colorimetric Observer Data.
 
         Returns
@@ -727,6 +733,7 @@ class SimulationDirect(BaseSimulation):
 
     def set_automatic_save_frequency(self, value: int = 1800) -> SimulationDirect:
         """Define a backup interval (s).
+
         This option is useful when computing long simulations.
         But a reduced number of save operations naturally increases the simulation performance.
 
@@ -747,6 +754,7 @@ class SimulationDirect(BaseSimulation):
 
 class SimulationInverse(BaseSimulation):
     """Type of simulation : Inverse.
+
     By default,
     geometry distance tolerance is set to 0.01,
     maximum number of impacts is set to 100,
@@ -832,7 +840,8 @@ class SimulationInverse(BaseSimulation):
         return self
 
     def set_max_impact(self, value: int = 100) -> SimulationInverse:
-        """Defines a value to determine the maximum number of ray impacts during propagation.
+        """Define a value to determine the maximum number of ray impacts during propagation.
+
         When a ray has interacted N times with the geometry, the propagation of the ray stops.
 
         Parameters
@@ -874,6 +883,7 @@ class SimulationInverse(BaseSimulation):
 
     def set_colorimetric_standard_CIE_1931(self) -> SimulationInverse:
         """Set the colorimetric standard to CIE 1931.
+
         2 degrees CIE Standard Colorimetric Observer Data.
 
         Returns
@@ -888,6 +898,7 @@ class SimulationInverse(BaseSimulation):
 
     def set_colorimetric_standard_CIE_1964(self) -> SimulationInverse:
         """Set the colorimetric standard to CIE 1964.
+
         10 degrees CIE Standard Colorimetric Observer Data.
 
         Returns
@@ -919,6 +930,7 @@ class SimulationInverse(BaseSimulation):
 
     def set_splitting(self, value: bool = False) -> SimulationInverse:
         """Activate/Deactivate the splitting.
+
         To split each propagated ray into several paths at their first impact after leaving the observer point.
 
         Parameters
@@ -1049,6 +1061,7 @@ class SimulationInverse(BaseSimulation):
 
     def set_automatic_save_frequency(self, value: int = 1800) -> SimulationInverse:
         """Define a backup interval (s).
+
         This option is useful when computing long simulations.
         But a reduced number of save operations naturally increases the simulation performance.
 
@@ -1069,6 +1082,7 @@ class SimulationInverse(BaseSimulation):
 
 class SimulationInteractive(BaseSimulation):
     """Type of simulation : Interactive.
+
     By default,
     geometry distance tolerance is set to 0.01,
     maximum number of impacts is set to 100,
@@ -1163,7 +1177,8 @@ class SimulationInteractive(BaseSimulation):
         return self
 
     def set_max_impact(self, value: int = 100) -> SimulationInteractive:
-        """Defines a value to determine the maximum number of ray impacts during propagation.
+        """Define a value to determine the maximum number of ray impacts during propagation.
+
         When a ray has interacted N times with the geometry, the propagation of the ray stops.
 
         Parameters
@@ -1205,6 +1220,7 @@ class SimulationInteractive(BaseSimulation):
 
     def set_colorimetric_standard_CIE_1931(self) -> SimulationInteractive:
         """Set the colorimetric standard to CIE 1931.
+
         2 degrees CIE Standard Colorimetric Observer Data.
 
         Returns
@@ -1219,6 +1235,7 @@ class SimulationInteractive(BaseSimulation):
 
     def set_colorimetric_standard_CIE_1964(self) -> SimulationInteractive:
         """Set the colorimetric standard to CIE 1964.
+
         10 degrees CIE Standard Colorimetric Observer Data.
 
         Returns
@@ -1251,8 +1268,9 @@ class SimulationInteractive(BaseSimulation):
     def set_rays_number_per_sources(
         self, values: List[SimulationInteractive.RaysNumberPerSource]
     ) -> SimulationInteractive:
-        """Select the number of rays emitted for each source. If a source is present in the simulation but not referenced here,
-        it will send by default 100 rays.
+        """Select the number of rays emitted for each source.
+
+        If a source is present in the simulation but not referenced here, it will send by default 100 rays.
 
         Parameters
         ----------
