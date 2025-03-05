@@ -19,9 +19,10 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-"""The lxp module contains classes and function to simplify the interaction with ray data e.g lpf files.
 
-These files contain a set of simulated rays with all their intersections and properties.
+"""The lxp module contains classes and functions to simplify the interaction with ray data (LPF file).
+
+LPF files contain a set of simulated rays with all their intersections and properties.
 """
 
 from __future__ import annotations
@@ -43,13 +44,12 @@ NO_ERROR_IDS = [0, 1, 2, 3, 4, 5, 6, 16, -7, -6, -5, -5, -4, -3, -2, -1]
 
 
 class RayPath:
-    """
-    Framework representing a singular raypath.
+    """Framework representing a singular ray path.
 
     Parameters
     ----------
     raypath : ansys.api.speos.lpf.v2.lpf_file_reader__v2__pb2.RayPath
-        Raypath object
+        RayPath object
     sensor_contribution : bool
         Defines if sensor contributions are stored within the data.
         By default ``False``.
@@ -79,7 +79,7 @@ class RayPath:
 
     @property
     def nb_impacts(self) -> int:
-        """Number of impacts contained in raypath.
+        """Number of impacts contained in ray path.
 
         Returns
         -------
@@ -112,23 +112,23 @@ class RayPath:
 
     @property
     def body_ids(self) -> list[int]:
-        """Body id of interacted body for each impact.
+        """Body ID of interacted body for each impact.
 
         Returns
         -------
         list[int]
-            list of body IDs for each impact
+            List of body IDs for each impact.
         """
         return self._body_ids
 
     @property
     def face_ids(self) -> list[int]:
-        """Face id of interacted body for each impact.
+        """Face ID of interacted body for each impact.
 
         Returns
         -------
         list[int]
-            list of face IDs for each impact
+            List of face IDs for each impact.
         """
         return self._face_ids
 
@@ -139,7 +139,7 @@ class RayPath:
         Returns
         -------
         list[float]
-            last direction of the rays as list[x,y,z]
+            Last direction of the rays as list[x,y,z].
         """
         return self._last_direction
 
@@ -150,7 +150,7 @@ class RayPath:
         Returns
         -------
         list[int]
-            intersection type at each impact
+            Intersection type at each impact.
 
         Notes
         -----
@@ -185,31 +185,30 @@ class RayPath:
 
     @property
     def sensor_contribution(self) -> Union[None, list[dict]]:
-        """Provide sensor contribution information for each sensor.
+        """Provide the sensor contribution information for each sensor.
 
         Returns
         -------
         Union[None, list[dict]]
-            If no sensor contribution None will be returned. If there is sensor contribution a dictionary with \
-            following information will be returned:\
-            {"sensor_id": sc.sensor_id,
-            "position": [sc.coordinates.x, sc.coordinates.y]}
-
+            If no sensor contribution, None will be returned. If there is sensor contribution, a dictionary with \
+            the following information is returned:\
+            {“sensor_id”: sc.sensor_id,
+            “position”: [sc.coordinates.x, sc.coordinates.y]}
         """
         return self._sensor_contribution
 
     def get(self, key=""):
-        """Retrieve any information from RayPath object.
+        """Retrieve any information from the RayPath object.
 
         Parameters
         ----------
         key : str
-            Name of property
+            Name of the property.
 
         Returns
         -------
         property
-            values/content of the associated property
+            Values/content of the associated property.
         """
         data = {k: v.fget(self) for k, v in RayPath.__dict__.items() if isinstance(v, property)}
         if key == "":
@@ -225,16 +224,16 @@ class RayPath:
 
 
 class LightPathFinder:
-    """The Lightpathfinder defines an interface to read lpf files.
+    """Define an interface to read LPF files.
 
-    These files contain a set of simulated rays including their intersections and properties.
+    LPF files contain a set of simulated rays including their intersections and properties.
 
     Parameters
     ----------
     speos : ansys.speos.core.speos.Speos
-        Speos Session (connected to Speos gRPC server)
+        Speos Session (connected to Speos gRPC server).
     path : str
-        path to lpf file to be opened
+        Path to the LPF file to be opened.
 
     """
 
@@ -255,7 +254,7 @@ class LightPathFinder:
 
     @property
     def nb_traces(self) -> int:
-        """Number of light path's within LPF data set."""
+        """Number of light paths within LPF data set."""
         return self._nb_traces
 
     @property
@@ -265,7 +264,7 @@ class LightPathFinder:
 
     @property
     def has_sensor_contributions(self) -> bool:
-        """Defines if a lpf file contains information regarding the sensor contribution."""
+        """Define if a LPF file contains information regarding the sensor contribution."""
         return self._has_sensor_contributions
 
     @property
@@ -275,12 +274,12 @@ class LightPathFinder:
 
     @property
     def rays(self) -> list[RayPath]:
-        """List raypath's within lpf file."""
+        """List ray paths within LPF file."""
         return self._rays
 
     @property
     def filtered_rays(self) -> list[RayPath]:
-        """List of filtered ray path's."""
+        """List of filtered ray paths."""
         return self._filtered_rays
 
     def __str__(self):
@@ -294,7 +293,7 @@ class LightPathFinder:
         )
 
     def __open(self, path: str):
-        """Open lpf file.
+        """Open LPF file.
 
         Parameters
         ----------
@@ -306,8 +305,7 @@ class LightPathFinder:
         )
 
     def __parse_traces(self) -> list[RayPath]:
-        """
-        Read all raypaths from lpf dataset.
+        """Read all ray paths from lpf dataset.
 
         Returns
         -------
@@ -320,7 +318,7 @@ class LightPathFinder:
         return raypaths
 
     def __filter_by_last_intersection_types(self, options: list[int], new=True):
-        """Filter raypaths based on last intersection types and populates filtered_rays property."""
+        """Filter ray paths based on last intersection types and populates filtered_rays property."""
         if new:
             self._filtered_rays = []
             for ray in self._rays:
@@ -334,19 +332,19 @@ class LightPathFinder:
                     self._filtered_rays.append(ray)
 
     def filter_by_face_ids(self, options: list[int], new=True) -> LightPathFinder:
-        """Filter raypaths based on face ids and populates filtered_rays property.
+        """Filter ray paths based on face IDs and populates filtered_rays property.
 
         Parameters
         ----------
         options : list[int]
-         list of face ids
+            List of face IDs.
         new : bool
-            defines if new filter is created or existing filter is filtered
+            Define if a new filter is created or an existing filter is filtered.
 
         Returns
         -------
         ansys.speos.core.lxp.LightPathFinder
-            LightPathfinder Instance
+            LightPathFinder Instance.
         """
         if new:
             self._filtered_rays = []
@@ -362,19 +360,19 @@ class LightPathFinder:
         return self
 
     def filter_by_body_ids(self, options: list[int], new=True) -> LightPathFinder:
-        """Filter raypaths based on body ids and populates filtered_rays property.
+        """Filter ray paths based on body IDs and populates filtered_rays property.
 
         Parameters
         ----------
         options : list[int]
-            list of body ids
+            List of body IDs.
         new : bool
-            defines if new filter is created or existing filter is filtered
+            Define if a new filter is created or an existing filter is filtered.
 
         Returns
         -------
         ansys.speos.core.lxp.LightPathFinder
-            LightPathfinder Instance
+            LightPathFinder Instance.
         """
         if new:
             self._filtered_rays = []
@@ -390,12 +388,12 @@ class LightPathFinder:
         return self
 
     def filter_error_rays(self) -> LightPathFinder:
-        """Filter raypaths and only shows rays in error.
+        """Filter ray paths and only shows rays in error.
 
         Returns
         -------
         ansys.speos.core.lxp.LightPathFinder
-            LightPathfinder Instance
+            LightPathFinder Instance.
         """
         self.__filter_by_last_intersection_types(options=ERROR_IDS)
         return self
@@ -406,24 +404,23 @@ class LightPathFinder:
         Returns
         -------
         ansys.speos.core.lxp.LightPathFinder
-            LightPathfinder Instance
+            LightPathFinder Instance.
         """
         self.__filter_by_last_intersection_types(options=NO_ERROR_IDS)
         return self
 
     @staticmethod
     def __add_ray_to_pv(plotter: pv.Plotter, ray: RayPath, max_ray_length: float):
-        """
-        Add a ray to pyvista plotter.
+        """Add a ray to pyvista plotter.
 
         Parameters
         ----------
         plotter : pv.Plotter
-            pyvista plotter object to which rays should be added
+            Pyvista plotter object to which rays should be added.
         ray : script.RayPath
-            RayPath object which contains ray information to be added
+            RayPath object which contains ray information to be added.
         max_ray_length : float
-            length of the last ray
+            Length of the last ray.
         """
         temp = ray.impacts
         if not 7 <= ray.intersection_type[-1] <= 15:
@@ -447,23 +444,23 @@ class LightPathFinder:
         ray_filter: bool = False,
         project: Project = None,
     ) -> LightPathFinder:
-        """Preview lpf file with pyvista.
+        """Preview LPF file with pyvista.
 
         Parameters
         ----------
         nb_ray : int
-            number of rays to be visualized
+            Number of rays to be visualized.
         max_ray_length : float
-            length of last ray
+            Length of last ray.
         ray_filter : bool
-            boolean to decide if filtered rays or all rays should be shown
+            Boolean to decide if filtered rays or all rays should be shown.
         project : ansys.speos.core.project.Project
-            Speos Project/Geometry to be added to pyvista visualisation
+            Speos Project/Geometry to be added to pyvista visualisation.
 
         Returns
         -------
         ansys.speos.core.lxp.LightPathFinder
-            LightPathfinder Instance
+            LightPathFinder Instance.
         """
         if ray_filter:
             if len(self._filtered_rays) > 0:
@@ -499,8 +496,8 @@ class LightPathFinder:
 def wavelength_to_rgb(wavelength: float, gamma: float = 0.8) -> [int, int, int, int]:
     """Convert a given wavelength of light to an approximate RGB color value.
 
-    The wavelength must be given in nanometers in the range from 380 nm through 750 nm (789 THz through 400 THz).
-    Based on code by Dan Bruton http://www.physics.sfasu.edu/astro/color/spectra.html
+    The wavelength must be given in nanometers in the range from 380 nm to 750 nm (789 THz to 400 THz).
+    Based on the code from http://www.physics.sfasu.edu/astro/color/spectra.html
 
     Parameters
     ----------
