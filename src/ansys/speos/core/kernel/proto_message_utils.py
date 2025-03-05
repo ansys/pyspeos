@@ -20,6 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+"""Module with utility elements for protobuf messages from Speos RPC server."""
+
 import json
 
 from google.protobuf import __version__ as protobuf_version
@@ -29,7 +31,7 @@ from google.protobuf.message import Message
 
 def protobuf_message_to_str(message: Message, with_full_name: bool = True) -> str:
     """
-    Returns a protobuf message as formatted json string.
+    Convert a protobuf message to formatted json string.
 
     Parameters
     ----------
@@ -67,8 +69,7 @@ def protobuf_message_to_str(message: Message, with_full_name: bool = True) -> st
 
 
 def protobuf_message_to_dict(message) -> dict:
-    """
-    Returns a protobuf message as formatted json dict.
+    """Convert protobuf message to a formatted json dict.
 
     Parameters
     ----------

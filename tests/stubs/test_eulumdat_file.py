@@ -20,15 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""This module allows pytest to perform unit testing.
-Usage:
-.. code::
-   $ pytest
-   $ pytest -vx
-With coverage.
-.. code::
-   $ pytest --cov ansys.speos.core
-"""
+"""Unit Test for Eulumdat service."""
 
 import logging
 import os
@@ -41,6 +33,7 @@ import tests.helper as helper
 
 
 def createEulumdatIntensity():
+    """Create simple eulumdat file."""
     eulumdat = eulumdat_pb2.EulumdatIntensityDistribution()
 
     # file information
@@ -111,6 +104,7 @@ def createEulumdatIntensity():
 
 
 def compareEulumdatIntensities(eulumdat1, eulumdat2):
+    """Compare 2 eulumdat files."""
     # file information
     if eulumdat1.file_info.company_identification != eulumdat2.file_info.company_identification:
         return False
@@ -227,6 +221,7 @@ def compareEulumdatIntensities(eulumdat1, eulumdat2):
 
 
 def test_grpc_eulumdat_intensity(speos: Speos):
+    """Test for eulumdat intensity service."""
     stub = eulumdat_pb2_grpc.EulumdatIntensityServiceStub(speos.client.channel)
     save_name = eulumdat_pb2.Save_Request()
     save_name.file_uri = str(Path(test_path) / "eulumdat_tmp00.ldt")

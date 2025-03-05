@@ -20,9 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""
-Test basic vop template database connection.
-"""
+"""Test basic vop template database connection."""
 
 import json
 import os

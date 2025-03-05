@@ -133,8 +133,8 @@ class JobLink(CrudItem):
         )
 
     def get_ray_paths(self) -> Iterator[RayPath]:
-        """
-        Retrieve ray paths.
+        """Retrieve ray paths.
+
         Available for interactive simulation.
 
         Returns

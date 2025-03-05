@@ -39,7 +39,7 @@ from ansys.speos.core.spectrum import Spectrum
 
 class BaseSource:
     """
-    Super Class for all sources
+    Super Class for all sources.
 
     Parameters
     ----------
@@ -294,6 +294,7 @@ class BaseSource:
 
     def _delete(self) -> BaseSource:
         """Delete feature: delete data from the speos server database.
+
         The local data are still available
 
         Returns
@@ -357,6 +358,7 @@ class BaseSource:
 
     def delete(self) -> BaseSource:
         """Delete feature: delete data from the speos server database.
+
         The local data are still available
 
         Returns
@@ -371,6 +373,7 @@ class BaseSource:
 
 class SourceLuminaire(BaseSource):
     """LuminaireSource.
+
     By default, a flux from intensity file is chosen, with an incandescent spectrum.
 
     Parameters
@@ -517,6 +520,7 @@ class SourceLuminaire(BaseSource):
 
 class SourceRayFile(BaseSource):
     """RayFile Source.
+
     By default, flux and spectrum from ray file are selected.
 
     Parameters
@@ -649,7 +653,7 @@ class SourceRayFile(BaseSource):
         return self
 
     def set_spectrum(self) -> Spectrum:
-        """Set spectrum
+        """Set spectrum of the Source.
 
         Returns
         -------
@@ -714,6 +718,7 @@ class SourceRayFile(BaseSource):
 
 class SourceSurface(BaseSource):
     """Type of Source : Surface.
+
     By default, a luminous flux and existence constant are chosen. With a monochromatic spectrum,
     and lambertian intensity (cos with N = 1).
 
@@ -1010,7 +1015,7 @@ class SourceSurface(BaseSource):
         return self
 
     def set_spectrum(self) -> Spectrum:
-        """Set spectrum
+        """Set spectrum of the Source.
 
         Returns
         -------
@@ -1061,6 +1066,7 @@ class SourceSurface(BaseSource):
 
     def delete(self) -> SourceSurface:
         """Delete feature: delete data from the speos server database.
+
         The local data are still available
 
         Returns

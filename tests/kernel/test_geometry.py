@@ -20,9 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""
-Test basic geometry database connection.
-"""
+"""Test basic geometry database connection."""
 
 from ansys.speos.core.kernel.body import BodyLink, ProtoBody
 from ansys.speos.core.kernel.face import FaceLink, ProtoFace
