@@ -738,7 +738,7 @@ class SourceSurface(BaseSource):
         ----------
         exitance_variable : ansys.api.speos.source.v1.source_pb2.SourceTemplate.Surface.ExitanceVariable
             Existence variable to complete.
-        exitance_variable_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.SurfaceProperties.ExitanceVariableProperties
+        exitance_variable_props : scene_pb2.Scene.SourceInstance.SurfaceProperties.ExitanceVariableProperties
             Existence variable properties to complete.
         default_values : bool
             Uses default values when True.
