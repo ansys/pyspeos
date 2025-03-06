@@ -136,7 +136,7 @@ Then, to launch SpeosRPC server with product version 2025.1, you can run:
 
 .. note::
 
-   To use the latest image in development, you can use `ghcr.io/ansys/speos-rpc:dev`.
+   To use the latest image in development, you can use `ghcr.io/ansys/speos-rpc:251`.
 
 On the other hand, the SpeosRPC server can be started locally.
 
