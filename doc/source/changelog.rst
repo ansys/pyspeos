@@ -9,6 +9,61 @@ This document contains the release notes for the PySpeos project.
 
 .. towncrier release notes start
 
+`0.2.0 <https://github.com/ansys/pyspeos/releases/tag/v0.2.0>`_ - March 06, 2025
+================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - documentation review changes
+          - `#483 <https://github.com/ansys/pyspeos/pull/483>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - add missing notebook dependency
+          - `#488 <https://github.com/ansys/pyspeos/pull/488>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - add project required info
+          - `#470 <https://github.com/ansys/pyspeos/pull/470>`_
+
+        * - update CHANGELOG for v0.1.1
+          - `#473 <https://github.com/ansys/pyspeos/pull/473>`_
+
+        * - update organization name
+          - `#486 <https://github.com/ansys/pyspeos/pull/486>`_
+
+
+  .. tab-item:: Miscellaneous
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - remove ignores for PTH
+          - `#474 <https://github.com/ansys/pyspeos/pull/474>`_
+
+        * - Remove ruff ignore for "D", pydocstyle
+          - `#482 <https://github.com/ansys/pyspeos/pull/482>`_
+
+
 `0.1.1 <https://github.com/ansys/pyspeos/releases/tag/v0.1.1>`_ - 2025-02-25
 ============================================================================
 
