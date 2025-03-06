@@ -231,7 +231,7 @@ jobs:
       - name: Release to the public PyPI repository
         uses: ansys/actions/release-pypi-public@v8
         with:
-          library-name: "ansys-api-speos"
+          library-name: ${{ env.PACKAGE_NAME }}
           use-trusted-publisher: true
       - name: Release to GitHub
         uses: ansys/actions/release-github@v8
