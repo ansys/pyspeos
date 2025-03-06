@@ -189,7 +189,6 @@ def copy_examples_to_output_dir(app: sphinx.application.Sphinx, exception: Excep
 
     """
     # TODO: investigate issues when using OUTPUT_EXAMPLES instead of SOURCE_EXAMPLES
-    # https://github.com/ansys/pystk/issues/415
     OUTPUT_EXAMPLES = pathlib.Path(app.outdir) / "examples"
     OUTPUT_IMAGES = OUTPUT_EXAMPLES / "img"
     OUTPUT_CORE = OUTPUT_EXAMPLES / "core"
