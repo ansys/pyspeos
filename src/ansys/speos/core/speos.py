@@ -39,8 +39,7 @@ if TYPE_CHECKING:  # pragma: no cover
 
 
 class Speos:
-    """
-    Provides interaction with the speos session.
+    """Allows the Speos session (client) to interact with the SpeosRPC server.
 
     Parameters
     ----------

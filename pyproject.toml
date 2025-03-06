@@ -47,6 +47,7 @@ jupyter = [
     "jupyterlab>=3",
     "ipywidgets",
     "pyvista[jupyter]>=0.43,<0.45",
+    "notebook==7.3.2",
 ]
 doc = [
     "ansys-sphinx-theme==1.3.2",
@@ -99,20 +100,6 @@ select = [
     "TD",   # flake8-todos, https://docs.astral.sh/ruff/rules/#flake8-todos-td
 ]
 ignore = [
-    "D100",
-    "D101",
-    "D102",
-    "D103", # TODO: Add docstring to functions
-    "D104",
-    "D105",
-    "D200", # TODO: One-line doscstring should git on one line
-    "D210",
-    "D205", # TODO: Add one blank line between summary line and description
-    "D301",
-    "D400", # TODO: First line should end with a period
-    "D401",
-    "D404", # TODO: First word of the docstring should not be "This"
-    "D414",
     "E402",
     "E501", # TODO: Line too long
     "E711",
@@ -132,6 +119,8 @@ ignore = [
     "TD003", # Missing issue link in TODOs comment
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"examples/*" = ["D100"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"

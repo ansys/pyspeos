@@ -36,7 +36,8 @@ import ansys.speos.core.proto_message_utils as proto_message_utils
 
 
 class OptProp:
-    """Speos feature: optical property
+    """Speos feature: optical property.
+
     By default, a mirror 100% is chosen as surface optical property, without any volume optical property.
     By default, the optical property is applied to no geometry.
 
@@ -118,7 +119,7 @@ class OptProp:
         return self
 
     def set_surface_library(self, path: str) -> OptProp:
-        """
+        r"""
         Based on surface optical properties file.
 
         Parameters
@@ -230,7 +231,7 @@ class OptProp:
     #    return self
 
     def set_volume_library(self, path: str) -> OptProp:
-        """
+        r"""
         Based on \*.material file.
 
         Parameters
@@ -457,6 +458,7 @@ class OptProp:
 
     def delete(self) -> OptProp:
         """Delete feature: delete data from the speos server database.
+
         The local data are still available
 
         Returns

@@ -20,12 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""
-Unit Test Configuration Module
--------------------------------
+"""Unit Test Configuration Module.
 
-Description
-===========
 This module loads the configuration for PySpeos unit tests.
 The configuration can be changed by modifying a file called local_config.json in the same
 directory as this module.
@@ -43,6 +39,17 @@ from ansys.speos.core.speos import Speos
 
 @pytest.fixture(scope="session")
 def speos():
+    """Pytest ficture to create Speos objects for all unit, integration and workflow tests.
+
+    Yields
+    ------
+    ansys.speos.cor.speos.Speos
+        Speos Class instance
+
+    Returns
+    -------
+    None
+    """
     # Log to file - accepts str or Path objects, Path is passed for testing/coverage purposes.
     log_file_path = Path(__file__).absolute().parent / "logs" / "integration_tests_logs.txt"
     Path(log_file_path).unlink(missing_ok=True)
@@ -89,6 +96,15 @@ LOG.log_to_stdout()
 
 @pytest.fixture
 def fake_record():
+    """Emulate logger.
+
+    Returns
+    -------
+    logger :
+        fake logger
+
+    """
+
     def inner_fake_record(
         logger,
         msg="This is a message",
@@ -103,7 +119,7 @@ def fake_record():
         extra={},
     ):
         """
-        Function to fake log records using the format from the logger handler.
+        Fake log records using the format from the logger handler.
 
         Parameters
         ----------

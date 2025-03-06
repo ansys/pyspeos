@@ -34,6 +34,7 @@ from ansys.speos.core.proto_message_utils import dict_to_str
 
 class Spectrum:
     """Speos feature : Spectrum.
+
     By default, a monochromatic spectrum is created.
 
     Parameters
@@ -272,6 +273,7 @@ class Spectrum:
 
     def delete(self) -> Spectrum:
         """Delete feature: delete data from the speos server database.
+
         The local data are still available
 
         Returns
