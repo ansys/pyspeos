@@ -33,8 +33,6 @@ jobs:
           python -c "import sys; print(sys.executable)"
 
       - name: Install packages for testing
-        env:
-          PIP_EXTRA_INDEX_URL: 'https://${{ secrets.PYANSYS_PYPI_PRIVATE_PAT }}@pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/simple/'
         run: |
           . .venv/bin/activate
           python -m pip install --upgrade pip

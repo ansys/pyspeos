@@ -14,7 +14,6 @@ env:
   DOCUMENTATION_CNAME: 'speos.docs.pyansys.com'
   PACKAGE_NAMESPACE: 'ansys.speos.core'
   PACKAGE_NAME: 'ansys-speos-core'
-  PIP_EXTRA_INDEX_URL: 'https://${{ secrets.PYANSYS_PYPI_PRIVATE_PAT }}@pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/simple/'
   BUILD_CHEATSHEET: 'true'
 
 concurrency:
@@ -229,20 +228,11 @@ jobs:
       id-token: write
       contents: write
     steps:
-    #  - name: "Release to the private PyPI repository"
-    #    uses: ansys/actions/release-pypi-private@v1
-    #    with:
-    #      library-name: ${{ env.PACKAGE_NAME }}
-    #      twine-username: "__token__"
-    #      twine-token: ${{ secrets.PYANSYS_PYPI_PRIVATE_PAT }}
-    #
-    #  - name: "Release to the public PyPI repository"
-    #    uses: ansys/actions/release-pypi-public@v1
-    #    with:
-    #      library-name: ${{ env.PACKAGE_NAME }}
-    #      twine-username: "__token__"
-    #      twine-token: ${{ secrets.PYPI_TOKEN }}
-    #
+      - name: Release to the public PyPI repository
+        uses: ansys/actions/release-pypi-public@v8
+        with:
+          library-name: "ansys-api-speos"
+          use-trusted-publisher: true
       - name: Release to GitHub
         uses: ansys/actions/release-github@v8
         with:
