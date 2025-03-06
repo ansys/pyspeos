@@ -131,7 +131,7 @@ Then, to launch SpeosRPC server with product version 2025.1, you can run:
    export LICENSE_SERVER=1055@XXX.XXX.XXX.XXX
 
    cat GH_TOKEN.txt | docker login ghcr.io -u "$GH_USERNAME" --password-stdin
-   docker pull ghcr.io/ansys/pyspeos-rpc:251
+   docker pull ghcr.io/ansys/speos-rpc:251
    docker run --detach --name speos-rpc -p 50098:50098 -e ANSYSLMD_LICENSE_FILE=$LICENSE_SERVER --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:251
 
 .. note::
