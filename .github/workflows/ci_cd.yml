@@ -10,7 +10,7 @@ on:
       - main
 
 env:
-  MAIN_PYTHON_VERSION: '3.10'
+  MAIN_PYTHON_VERSION: '3.11'
   DOCUMENTATION_CNAME: 'speos.docs.pyansys.com'
   PACKAGE_NAMESPACE: 'ansys.speos.core'
   PACKAGE_NAME: 'ansys-speos-core'
