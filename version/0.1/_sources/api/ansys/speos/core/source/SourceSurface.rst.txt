@@ -1,0 +1,477 @@
+
+
+
+
+
+
+:class:`SourceSurface`
+======================
+
+.. toctree::
+   :hidden:
+
+    /api/ansys/speos/core/source/SourceSurface.ExitanceVariable
+
+.. py:class:: ansys.speos.core.source.SourceSurface(project, name, description = '', metadata = None, source_instance = None, default_values = True)
+
+   Bases: :py:obj:`BaseSource`
+
+
+   
+   Type of Source : Surface.
+   By default, a luminous flux and existence constant are chosen. With a monochromatic spectrum,
+   and lambertian intensity (cos with N = 1).
+
+
+   :Parameters:
+
+       **speos_client** : :obj:`ansys.speos.core.kernel.client.SpeosClient`
+           The Speos instance client.
+
+       **name** : :class:`python:str`
+           Name of the source feature.
+
+       **surface** : :obj:`ansys.api.speos.source.v1.source_pb2.SourceTemplate.Surface`
+           Surface source to complete.
+
+       **surface_props** : :obj:`ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.SurfaceProperties`
+           Surface source properties to complete.
+
+       **default_values** : :ref:`bool <python:bltin-boolean-values>`
+           Uses default values when True.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SourceSurface
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_flux_from_intensity_file`
+            - Take flux from intensity file provided.
+          * - :py:attr:`~set_flux_luminous`
+            - Set luminous flux.
+          * - :py:attr:`~set_flux_radiant`
+            - Set radiant flux.
+          * - :py:attr:`~set_flux_luminous_intensity`
+            - Set luminous intensity flux.
+          * - :py:attr:`~set_intensity`
+            - Set intensity.
+          * - :py:attr:`~set_exitance_constant`
+            - Set existence constant.
+          * - :py:attr:`~set_exitance_variable`
+            - Set existence variable, taken from XMP map.
+          * - :py:attr:`~set_spectrum_from_xmp_file`
+            - Take spectrum from xmp file provided.
+          * - :py:attr:`~set_spectrum`
+            - Set spectrum
+          * - :py:attr:`~commit`
+            - Save feature: send the local data to the speos server database.
+          * - :py:attr:`~reset`
+            - Reset feature: override local data by the one from the speos server database.
+          * - :py:attr:`~delete`
+            - Delete feature: delete data from the speos server database.
+
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.source import SourceSurface
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_flux_from_intensity_file()
+
+   
+   Take flux from intensity file provided.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceSurface`
+           Surface source.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_flux_luminous(value = 683)
+
+   
+   Set luminous flux.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Luminous flux in lumens.
+           By default, ``683.0``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceSurface`
+           Surface source.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_flux_radiant(value = 1)
+
+   
+   Set radiant flux.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Radiant flux in watts.
+           By default, ``1.0``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceSurface`
+           Surface source.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_flux_luminous_intensity(value = 5)
+
+   
+   Set luminous intensity flux.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Luminous intensity in candelas.
+           By default, ``5.0``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceSurface`
+           Surface source.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_intensity()
+
+   
+   Set intensity.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.intensity.Intensity`
+           Intensity.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_exitance_constant(geometries)
+
+   
+   Set existence constant.
+
+
+   :Parameters:
+
+       **geometries** : :obj:`List`\[:class:`python:tuple`\[:obj:`ansys.speos.core.geo_ref.GeoRef`, :ref:`bool <python:bltin-boolean-values>`]]
+           List of (face, reverseNormal).
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceSurface`
+           Surface source.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_exitance_variable()
+
+   
+   Set existence variable, taken from XMP map.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceSurface.ExitanceVariable`
+           ExitanceVariable of surface source.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_spectrum_from_xmp_file()
+
+   
+   Take spectrum from xmp file provided.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceSurface`
+           Surface source.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_spectrum()
+
+   
+   Set spectrum
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.spectrum.Spectrum`
+           Spectrum.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: commit()
+
+   
+   Save feature: send the local data to the speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceSurface`
+           Source feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: reset()
+
+   
+   Reset feature: override local data by the one from the speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceSurface`
+           Source feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: delete()
+
+   
+   Delete feature: delete data from the speos server database.
+   The local data are still available
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceSurface`
+           Source feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+    ansys.speos.core.source.SourceSurface.ExitanceVariable
+
+
+
+
