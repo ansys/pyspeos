@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""This module manages low-level interactions and internal operations of the project."""
+"""PySpeos Kernel module gathers low-level interactions and internal operations of the project."""
 
 from ansys.speos.core.kernel.body import BodyLink, ProtoBody
 from ansys.speos.core.kernel.client import SpeosClient

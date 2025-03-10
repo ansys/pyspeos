@@ -16,7 +16,7 @@ these commands:
 
 .. code::
 
-    git clone https://github.com/ansys-internal/pyspeos
+    git clone https://github.com/ansys/pyspeos
     cd pyspeos
     python -m pip install --upgrade pip
     pip install -e .
@@ -25,7 +25,7 @@ these commands:
 Post issues
 -----------
 
-Use the `PySpeos Issues <https://github.com/ansys-internal/pyspeos/issues>`_
+Use the `PySpeos Issues <https://github.com/ansys/pyspeos/issues>`_
 page to submit questions, report bugs, and request new features. When possible, you
 should use these issue templates:
 

@@ -6,8 +6,8 @@ PySpeos library
    :target: https://docs.pyansys.com/
    :alt: PyAnsys
 
-.. |GH-CI| image:: https://github.com/ansys-internal/pyspeos/actions/workflows/ci_cd.yml/badge.svg
-   :target: https://github.com/ansys-internal/pyspeos/actions/workflows/ci_cd.yml
+.. |GH-CI| image:: https://github.com/ansys/pyspeos/actions/workflows/ci_cd.yml/badge.svg
+   :target: https://github.com/ansys/pyspeos/actions/workflows/ci_cd.yml
 
 .. |MIT| image:: https://img.shields.io/badge/License-MIT-yellow.svg
    :target: https://opensource.org/licenses/MIT
@@ -74,9 +74,9 @@ In the upper right corner of the documentation's title bar, there is an option f
 viewing the documentation for the latest stable release to viewing the documentation for the
 development version or previously released versions.
 
-On the `PySpeos Issues <https://github.com/ansys-internal/pyspeos/issues>`_ page,
+On the `PySpeos Issues <https://github.com/ansys/pyspeos/issues>`_ page,
 you can create issues to report bugs and request new features. On the `PySpeos Discussions
-<https://github.com/ansys-internal/pyspeos/discussions>`_ page or the `Discussions <https://discuss.ansys.com/>`_
+<https://github.com/ansys/pyspeos/discussions>`_ page or the `Discussions <https://discuss.ansys.com/>`_
 page on the Ansys Developer portal, you can post questions, share ideas, and get community feedback.
 
 To reach the project support team, email `pyansys.core@ansys.com <mailto:pyansys.core@ansys.com>`_.
@@ -131,7 +131,7 @@ Then, to launch SpeosRPC server with product version 2025.1, you can run:
    export LICENSE_SERVER=1055@XXX.XXX.XXX.XXX
 
    cat GH_TOKEN.txt | docker login ghcr.io -u "$GH_USERNAME" --password-stdin
-   docker pull ghcr.io/ansys/pyspeos-rpc:251
+   docker pull ghcr.io/ansys/speos-rpc:251
    docker run --detach --name speos-rpc -p 50098:50098 -e ANSYSLMD_LICENSE_FILE=$LICENSE_SERVER --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:251
 
 .. note::
@@ -186,6 +186,6 @@ License
 The full license can be found in the root directory of the repository, see `<LICENSE>`_.
 
 .. LINKS AND REFERENCES
-.. _PySpeos: https://github.com/ansys-internal/pyspeos
+.. _PySpeos: https://github.com/ansys/pyspeos
 .. _PyAnsys: https://docs.pyansys.com
 .. _Sphinx: https://www.sphinx-doc.org/en/master/

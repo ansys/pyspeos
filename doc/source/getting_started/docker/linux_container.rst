@@ -28,7 +28,7 @@ The Speos service image can be downloaded from the GitHub Container Registry
 
 .. note::
 
-   This option is only available for users who are members of the ansys-internal organization.
+   This option is only available for users who are members of the ansys organization.
 
 Once Docker is installed on your machine, follow these steps to download the Linux Docker
 container for the Speos service and install this image.

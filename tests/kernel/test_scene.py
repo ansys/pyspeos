@@ -20,9 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""
-Test scene.
-"""
+"""Test scene."""
 
 import os
 from pathlib import Path
@@ -49,6 +47,7 @@ from tests.helper import clean_all_dbs
 
 
 def create_basic_scene(speos: Speos) -> SceneLink:
+    """Create basic scene."""
     assert speos.client.healthy is True
 
     # Get DB
@@ -339,6 +338,33 @@ def create_face_rectangle(
     y_size: float = 100,
     metadata: Optional[Mapping[str, str]] = None,
 ) -> ProtoFace:
+    """Create Rectangular face.
+
+    Parameters
+    ----------
+    name : str
+        Name of the face
+    description : str
+        Description of the face.
+        By default, ``""``.
+    base : Optional[List[float]]
+        Start location and horizontal and vertical direction
+        By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0]``.
+    x_size : float
+        first base vector size
+        By default, ``100``
+    y_size : float
+        second base vector size
+        By default, ``100``
+    metadata : Optional[Mapping[str, str]]
+        Metadata of the feature.
+        By default, ``{}``.
+
+    Returns
+    -------
+    ansys.speos.core.kerne.face.ProtoFace
+        A rectangular Face
+    """
     if base is None:
         base = [0, 0, 0, 1, 0, 0, 0, 1, 0]
     if metadata is None:
@@ -379,6 +405,39 @@ def create_body_box(
     idx_face: int = 0,
     metadata: Optional[Mapping[str, str]] = None,
 ) -> ProtoBody:
+    """Create a box in a scene.
+
+    Parameters
+    ----------
+    name : str
+        Name of the face
+    face_stub : ansys.speos.core.kernel.face.FaceStub
+        facestub to create faces in scene
+    description : str
+        Description of the face.
+        By default, ``""``.
+    base : Optional[List[float]]
+        Start location and horizontal and vertical direction
+        By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+    x_size : float
+        first base vector size
+        By default, ``100``
+    y_size : float
+        second base vector size
+        By default, ``100``
+    z_size : float
+        third base vector sizee
+    idx_face : int
+        Starting number for Face counter
+    metadata : Optional[Mapping[str, str]]
+        Metadata of the feature.
+        By default, ``{}``.
+
+    Returns
+    -------
+    ansys.speos.core.kernel.body.ProtoBody
+        ProtoBody
+    """
     if base is None:
         base = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     if metadata is None:

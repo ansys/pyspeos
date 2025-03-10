@@ -20,6 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+"""Module with method to process Protobuf messages."""
+
 import json
 from typing import Iterator, List
 
@@ -108,7 +110,7 @@ def _replace_guid_elt(
 
 
 class _ReplacePropsElt:
-    """Class to help replacing properties element"""
+    """Class to help replacing properties element."""
 
     def __init__(self) -> None:
         self.new_items = {}
@@ -219,6 +221,7 @@ def _finder_by_key(dict_var: dict, key: str, x_path: str = "") -> List[tuple[str
 
 def _flatten_dict(dict_var: dict):
     """Flatten a dictionary (recursively).
+
     It will return a dictionary of (key, value) of items corresponding to the key.
     If a same key appears multiple time, the last value will be used as the value.
 

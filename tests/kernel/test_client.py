@@ -20,27 +20,19 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""
-Test basic client connection.
-"""
+"""Test basic client connection."""
 
 from grpc import insecure_channel
 import pytest
 
 from ansys.speos.core.kernel.client import SpeosClient
+from ansys.speos.core.speos import Speos
 from tests.conftest import config
 
 
-@pytest.fixture(scope="function")
-def client(speos):
-    # this uses DEFAULT_HOST and DEFAULT_PORT which are set by environment
-    # variables in the workflow
-    return SpeosClient(port=str(config.get("SpeosServerPort")))
-
-
-def test_client_init(client: SpeosClient):
+def test_client_init(speos: Speos):
     """Test the instantiation of a client from the default constructor."""
-    assert client.healthy is True
+    assert speos._client.healthy is True
 
 
 def test_client_through_channel():
