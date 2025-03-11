@@ -49,7 +49,7 @@ def test_lpf_file_reader_mono_v2_DirectSimu(speos: Speos):
     assert nb_of_traces == 24817
     assert res_information.nb_of_xmps == 3
     assert (
-        res_information.has_sensor_contributions == False
+        res_information.has_sensor_contributions is False
     )  # No contributions stored in Direct simu
     assert len(res_information.sensor_names) == 3
     assert res_information.sensor_names[0] == "Irradiance Sensor (0)"
@@ -105,7 +105,7 @@ def test_lpf_file_reader_mono_v2_InverseSimu(speos: Speos):
     nb_of_traces = res_information.nb_of_traces
     assert nb_of_traces == 21044
     assert res_information.nb_of_xmps == 1
-    assert res_information.has_sensor_contributions == True  # contributions stored in Inverse simu
+    assert res_information.has_sensor_contributions is True  # contributions stored in Inverse simu
     assert len(res_information.sensor_names) == 1
     assert res_information.sensor_names[0] == "Camera_Perfect_Lens_System_V2:3"
 
@@ -233,7 +233,7 @@ def test_lpf_file_reader_mono_v2_DirectSimu_with_file_transfer(speos: Speos):
     assert nb_of_traces == 24817
     assert res_information.nb_of_xmps == 3
     assert (
-        res_information.has_sensor_contributions == False
+        res_information.has_sensor_contributions is False
     )  # No contributions stored in Direct simu
     assert len(res_information.sensor_names) == 3
     assert res_information.sensor_names[0] == "Irradiance Sensor (0)"

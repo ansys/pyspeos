@@ -55,7 +55,7 @@ def test_light_path_finder_direct(speos: Speos):
     }
     assert lpf.nb_traces == 24817
     assert lpf.nb_xmps == 3
-    assert lpf.has_sensor_contributions == False  # No contributions stored in Direct simu
+    assert lpf.has_sensor_contributions is False  # No contributions stored in Direct simu
     assert len(lpf.sensor_names) == 3
     assert lpf.sensor_names[0] == "Irradiance Sensor (0)"
     assert lpf.sensor_names[2] == "Irradiance Sensor (2)"
@@ -114,7 +114,7 @@ def test_light_path_finder_inverse(speos: Speos):
 
     assert lpf.nb_traces == 21044
     assert lpf.nb_xmps == 1
-    assert lpf.has_sensor_contributions == True  # No contributions stored in Direct simu
+    assert lpf.has_sensor_contributions is True  # No contributions stored in Direct simu
     assert len(lpf.sensor_names) == 1
     assert lpf.sensor_names[0] == "Camera_Perfect_Lens_System_V2:3"
     lpf.filter_by_body_ids([3744252339])

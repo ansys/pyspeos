@@ -46,7 +46,7 @@ def test_create_intensity(speos: Speos):
     assert intensity1.intensity_template_link.get().HasField("library")
     assert intensity1._intensity_properties.HasField("library_properties")
     assert intensity1._intensity_properties.library_properties.HasField("axis_system")
-    assert intensity1._intensity_properties.library_properties.HasField("exit_geometries") == False
+    assert intensity1._intensity_properties.library_properties.HasField("exit_geometries") is False
 
     intensity1.set_library().set_orientation_normal_to_surface()
     intensity1.commit()
@@ -69,14 +69,14 @@ def test_create_intensity(speos: Speos):
 
     intensity1.set_library().set_exit_geometries()  # use default [] to reset exit geometries
     intensity1.commit()
-    assert intensity1._intensity_properties.library_properties.HasField("exit_geometries") == False
+    assert intensity1._intensity_properties.library_properties.HasField("exit_geometries") is False
 
     # cos
     intensity1.set_cos(N=2, total_angle=160).commit()
     assert intensity1.intensity_template_link.get().HasField("cos")
     assert intensity1.intensity_template_link.get().cos.N == 2
     assert intensity1.intensity_template_link.get().cos.total_angle == 160
-    assert intensity1._intensity_properties.HasField("library_properties") == False
+    assert intensity1._intensity_properties.HasField("library_properties") is False
 
     # gaussian
     intensity1.set_gaussian().set_FWHM_angle_x(value=20).set_FWHM_angle_y(value=30).set_total_angle(
@@ -130,7 +130,7 @@ def test_switch_intensity(speos: Speos):
 
     # Switch to cos that has no properties
     intensity1.set_cos().commit()
-    assert intensity1._intensity_properties.HasField("properties") == False
+    assert intensity1._intensity_properties.HasField("properties") is False
 
 
 def test_commit_intensity(speos: Speos):

@@ -40,7 +40,7 @@ def test_create_optical_property(speos: Speos):
     assert op1.sop_template_link is not None
     assert op1.sop_template_link.get().HasField("mirror")
     assert op1.sop_template_link.get().mirror.reflectance == 100
-    assert op1._material_instance.HasField("geometries") == False
+    assert op1._material_instance.HasField("geometries") is False
 
     # VOP opaque
     op1.set_volume_opaque().commit()
@@ -58,7 +58,7 @@ def test_create_optical_property(speos: Speos):
     op1.set_volume_optic().commit()
     assert op1.vop_template_link.get().optic.index == 1.5
     assert op1.vop_template_link.get().optic.absorption == 0.0
-    assert op1.vop_template_link.get().optic.HasField("constringence") == False
+    assert op1.vop_template_link.get().optic.HasField("constringence") is False
 
     # VOP library
     op1.set_volume_library(path=str(Path(test_path) / "AIR.material")).commit()
@@ -108,7 +108,7 @@ def test_create_optical_property(speos: Speos):
     op1._material_instance.geometries.geo_paths == ["TheBody1", "TheBodyB2"]
 
     op1.set_geometries(geometries=None)  # means no geometry
-    assert op1._material_instance.HasField("geometries") == False
+    assert op1._material_instance.HasField("geometries") is False
 
     op1.set_geometries(geometries=[])  # means all geometries
     assert op1._material_instance.HasField("geometries")
@@ -168,7 +168,7 @@ def test_reset_optical_property(speos: Speos):
     assert op1.sop_template_link.get().HasField("mirror")
     assert op1._sop_template.HasField("optical_polished")  # local template
     assert p.scene_link.get().materials[0].HasField("geometries")
-    assert op1._material_instance.HasField("geometries") == False  # local instance
+    assert op1._material_instance.HasField("geometries") is False  # local instance
 
     # Ask for reset
     op1.reset()

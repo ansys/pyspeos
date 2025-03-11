@@ -670,7 +670,7 @@ class Project:
         root_part = root_part_link.get()
         update_rp = False
         for sub_part in root_part.parts:
-            if sub_part.description.startswith("UniqueId_") == False:
+            if sub_part.description.startswith("UniqueId_") is False:
                 sub_part.description = "UniqueId_" + str(uuid.uuid4())
                 update_rp = True
         if update_rp:
