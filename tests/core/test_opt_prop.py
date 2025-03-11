@@ -66,14 +66,22 @@ def test_create_optical_property(speos: Speos):
     assert op1.vop_template_link.get().library.material_file_uri.endswith("AIR.material")
 
     # VOP non-homogeneous - bug to be fixed
-    # op1.set_volume_nonhomogeneous(path=os.path.join(test_path, "Index_1.5_Gradient_0.499_Abs_0.gradedmaterial"),
-    #                               axis_system=[10,20,30,1,0,0,0,1,0,0,0,1]).commit()
+    # op1.set_volume_nonhomogeneous(
+    #     path=Path(test_path) / "Index_1.5_Gradient_0.499_Abs_0.gradedmaterial",
+    #     axis_system=[10, 20, 30, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+    # ).commit()
     # assert op1.vop_template_link.get().HasField("non_homogeneous")
-    # assert op1.vop_template_link.get().non_homogeneous.gradedmaterial_file_uri.endswith("Index_1.5_Gradient_0.499_Abs_0.gradedmaterial")
-    # assert op1._material_instance.non_homogeneous_properties.axis_system == [10,20,30,1,0,0,0,1,0,0,0,1]
+    # non_homogeneous = op1.vop_template_link.get().non_homogeneous
+    # assert non_homogeneous.gradedmaterial_file_uri.endswith(
+    #     "Index_1.5_Gradient_0.499_Abs_0.gradedmaterial"
+    # )
+    # non_homogenous_properties = op1._material_instance.non_homogeneous_properties
+    # assert non_homogenous_properties.axis_system == [10, 20, 30, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     #
-    # op1.set_volume_nonhomogeneous(path=os.path.join(test_path, "Index_1.5_Gradient_0.499_Abs_0.gradedmaterial")).commit()
-    # assert op1._material_instance.non_homogeneous_properties.axis_system == [0,0,0,1,0,0,0,1,0,0,0,1]
+    # op1.set_volume_nonhomogeneous(
+    #     path=Path(test_path) / "Index_1.5_Gradient_0.499_Abs_0.gradedmaterial"
+    # ).commit()
+    # assert non_homogenous_properties.axis_system == [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 
     # SOP optical_polished
     op1.set_surface_opticalpolished().commit()

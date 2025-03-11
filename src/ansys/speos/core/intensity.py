@@ -51,7 +51,8 @@ class Intensity:
     metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
-    intensity_props_to_complete : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.IntensityProperties, optional
+    intensity_props_to_complete : \
+    ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.IntensityProperties, optional
         Intensity properties to complete.
         By default, ``None``.
     key : str
@@ -72,7 +73,8 @@ class Intensity:
         ----------
         library : ansys.api.speos.intensity.v1.IntensityTemplate.Library
             Library to complete.
-        library_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.IntensityProperties.LibraryProperties
+        library_props : \
+        ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.IntensityProperties.LibraryProperties
             Library properties to complete.
         default_values : bool
             Uses default values when True.
@@ -177,14 +179,16 @@ class Intensity:
     class Gaussian:
         """Intensity of type: Gaussian.
 
-        By default, full width at half maximum following x and y are set at 30 degrees, and total angle at 180 degrees.
+        By default, full width at half maximum following x and y are set at 30 degrees, and total
+        angle at 180 degrees.
         By default, no axis system is chosen, that means normal to surface map.
 
         Parameters
         ----------
         gaussian : ansys.api.speos.intensity.v1.IntensityTemplate.Gaussian
             Gaussian to complete.
-        gaussian_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.IntensityProperties.GaussianProperties
+        gaussian_props : \
+        ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.IntensityProperties.GaussianProperties
             Gaussian properties to complete.
         default_values : bool
             Uses default values when True.

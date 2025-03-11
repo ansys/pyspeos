@@ -116,7 +116,10 @@ def test_create_intensity(speos: Speos):
 
 
 def test_switch_intensity(speos: Speos):
-    """Test switch of intensity : from one with properties to one without (properties should be emptied)."""
+    """Test switch of intensity : from one with properties to one without.
+
+    Properties should be emptied.
+    """
     # Use intensity library with some default properties
     intensity1 = Intensity(speos_client=speos.client, name="Intensity.1")
     intensity1.set_library().set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))

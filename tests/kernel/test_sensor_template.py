@@ -25,7 +25,11 @@
 import os
 from pathlib import Path
 
-from ansys.api.speos.sensor.v1 import camera_sensor_pb2, common_pb2, irradiance_sensor_pb2
+from ansys.api.speos.sensor.v1 import (
+    camera_sensor_pb2,
+    common_pb2,
+    irradiance_sensor_pb2,
+)
 from ansys.speos.core.kernel.sensor_template import ProtoSensorTemplate
 from ansys.speos.core.speos import Speos
 from tests.conftest import test_path

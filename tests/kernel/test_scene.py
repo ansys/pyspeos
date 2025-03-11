@@ -237,7 +237,9 @@ def create_basic_scene(speos: Speos) -> SceneLink:
     # Create a vop template
     opaque_t = speos.client.vop_templates().create(
         message=ProtoVOPTemplate(
-            name="opaque", description="opaque vop template", opaque=ProtoVOPTemplate.Opaque()
+            name="opaque",
+            description="opaque vop template",
+            opaque=ProtoVOPTemplate.Opaque(),
         )
     )
 
@@ -281,7 +283,10 @@ def create_basic_scene(speos: Speos) -> SceneLink:
                     surface_properties=ProtoScene.SourceInstance.SurfaceProperties(
                         exitance_constant_properties=ProtoScene.SourceInstance.SurfaceProperties.ExitanceConstantProperties(
                             geo_paths=[
-                                ProtoScene.GeoPath(geo_path="BodySource:1", reverse_normal=False)
+                                ProtoScene.GeoPath(
+                                    geo_path="BodySource:1",
+                                    reverse_normal=False,
+                                )
                             ]
                         )
                     ),
@@ -303,14 +308,24 @@ def create_basic_scene(speos: Speos) -> SceneLink:
                 ProtoScene.SimulationInstance(
                     name="direct_simu.1",
                     simulation_guid=direct_t.key,
-                    source_paths=["luminaire_AA.1", "luminaire_AA.2", "surface_with_blackbody.1"],
-                    sensor_paths=["irradiance_photometric.1", "irradiance_colorimetric.1"],
+                    source_paths=[
+                        "luminaire_AA.1",
+                        "luminaire_AA.2",
+                        "surface_with_blackbody.1",
+                    ],
+                    sensor_paths=[
+                        "irradiance_photometric.1",
+                        "irradiance_colorimetric.1",
+                    ],
                 ),
                 ProtoScene.SimulationInstance(
                     name="direct_simu.2",
                     simulation_guid=direct_t.key,
                     source_paths=["surface_with_blackbody.1"],
-                    sensor_paths=["irradiance_photometric.1", "irradiance_colorimetric.1"],
+                    sensor_paths=[
+                        "irradiance_photometric.1",
+                        "irradiance_colorimetric.1",
+                    ],
                 ),
                 ProtoScene.SimulationInstance(
                     name="inverse_simu.1",
@@ -321,8 +336,15 @@ def create_basic_scene(speos: Speos) -> SceneLink:
                 ProtoScene.SimulationInstance(
                     name="interactive_simu.1",
                     simulation_guid=interactive_t.key,
-                    source_paths=["luminaire_AA.1", "luminaire_AA.2", "surface_with_blackbody.1"],
-                    sensor_paths=["irradiance_photometric.1", "irradiance_colorimetric.1"],
+                    source_paths=[
+                        "luminaire_AA.1",
+                        "luminaire_AA.2",
+                        "surface_with_blackbody.1",
+                    ],
+                    sensor_paths=[
+                        "irradiance_photometric.1",
+                        "irradiance_colorimetric.1",
+                    ],
                 ),
             ],
         )
@@ -451,7 +473,10 @@ def create_body_box(
     base0.extend(base[6:9])  # y_vect
     face0 = face_stub.create(
         message=create_face_rectangle(
-            name="Face:" + str(idx_face), base=base0, x_size=x_size, y_size=y_size
+            name="Face:" + str(idx_face),
+            base=base0,
+            x_size=x_size,
+            y_size=y_size,
         )
     )
 
@@ -461,7 +486,10 @@ def create_body_box(
     base1.extend(base[6:9])
     face1 = face_stub.create(
         message=create_face_rectangle(
-            name="Face:" + str(idx_face + 1), base=base1, x_size=x_size, y_size=y_size
+            name="Face:" + str(idx_face + 1),
+            base=base1,
+            x_size=x_size,
+            y_size=y_size,
         )
     )
 
@@ -471,7 +499,10 @@ def create_body_box(
     base2.extend(base[6:9])
     face2 = face_stub.create(
         message=create_face_rectangle(
-            name="Face:" + str(idx_face + 2), base=base2, x_size=z_size, y_size=y_size
+            name="Face:" + str(idx_face + 2),
+            base=base2,
+            x_size=z_size,
+            y_size=y_size,
         )
     )
 
@@ -481,7 +512,10 @@ def create_body_box(
     base3.extend(base[6:9])
     face3 = face_stub.create(
         message=create_face_rectangle(
-            name="Face:" + str(idx_face + 3), base=base3, x_size=z_size, y_size=y_size
+            name="Face:" + str(idx_face + 3),
+            base=base3,
+            x_size=z_size,
+            y_size=y_size,
         )
     )
 
@@ -491,7 +525,10 @@ def create_body_box(
     base4.extend(base[9:])
     face4 = face_stub.create(
         message=create_face_rectangle(
-            name="Face:" + str(idx_face + 4), base=base4, x_size=x_size, y_size=z_size
+            name="Face:" + str(idx_face + 4),
+            base=base4,
+            x_size=x_size,
+            y_size=z_size,
         )
     )
 
@@ -501,7 +538,10 @@ def create_body_box(
     base5.extend(np.multiply(-1, base[9:]))
     face5 = face_stub.create(
         message=create_face_rectangle(
-            name="Face:" + str(idx_face + 5), base=base5, x_size=x_size, y_size=z_size
+            name="Face:" + str(idx_face + 5),
+            base=base5,
+            x_size=x_size,
+            y_size=z_size,
         )
     )
 
@@ -591,7 +631,8 @@ def test_scene_actions_get_source_ray_paths(speos: Speos):
 
     blackbody_2856 = speos.client.spectrums().create(
         message=ProtoSpectrum(
-            name="Blackbody_2856", blackbody=ProtoSpectrum.BlackBody(temperature=2856)
+            name="Blackbody_2856",
+            blackbody=ProtoSpectrum.BlackBody(temperature=2856),
         )
     )
     luminaire_t = speos.client.source_templates().create(

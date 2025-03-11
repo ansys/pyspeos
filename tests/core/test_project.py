@@ -133,7 +133,10 @@ def test_find_feature_geom(speos: Speos):
     assert len(feats) == 1
 
     # Retrieve face
-    feats = p.find(name="Solid Body in GUIDE:1379760262/Face in GUIDE:166", feature_type=Part)
+    feats = p.find(
+        name="Solid Body in GUIDE:1379760262/Face in GUIDE:166",
+        feature_type=Part,
+    )
     assert len(feats) == 1
 
     # Retrieve face with regex (regex at body and at face level)

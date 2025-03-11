@@ -87,7 +87,6 @@ extend-exclude = ["tests/assets"]
 quote-style = "double"
 indent-style = "space"
 docstring-code-format = true
-docstring-code-line-length = "dynamic"
 
 [tool.ruff.lint]
 select = [
@@ -100,8 +99,8 @@ select = [
     "TD",   # flake8-todos, https://docs.astral.sh/ruff/rules/#flake8-todos-td
 ]
 ignore = [
-    "E402",
-    "E501", # TODO: Line too long
+    # "E402",
+    # "E501", # TODO: Line too long
     "E711",
     "E712", # TODO: Avoid equality comparisons to `False`
     "E721", # TODO: Avoid `is` and `is not` for type comparison, use `isinstance()` instead

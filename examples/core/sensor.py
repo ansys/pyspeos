@@ -8,7 +8,11 @@
 from pathlib import Path
 
 from ansys.speos.core import Project, Speos
-from ansys.speos.core.sensor import SensorCamera, SensorIrradiance, SensorRadiance
+from ansys.speos.core.sensor import (
+    SensorCamera,
+    SensorIrradiance,
+    SensorRadiance,
+)
 
 # If using docker container
 tests_data_path = Path("/app") / "assets"
@@ -59,7 +63,8 @@ print(sensor1)
 
 # ## Push it to the server.
 
-# Now that it is committed to the server, the mention "local: " is no more present when printing the sensor.
+# Now that it is committed to the server, the mention "local: " is no more present when printing the
+# sensor.
 
 # +
 sensor1.commit()
@@ -146,7 +151,8 @@ print(sensor1._sensor_template)
 
 # ## Delete
 
-# Once the data is deleted from the server, you can still work with local data and maybe commit later.
+# Once the data is deleted from the server, you can still work with local data and maybe commit
+# later.
 
 # +
 sensor2.delete()

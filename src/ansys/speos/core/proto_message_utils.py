@@ -53,7 +53,9 @@ def _replace_guids(
     json_dict = protobuf_message_to_dict(message=message)
     # Add for each element xxx_guid a key xxx with value the corresponding data from database
     _replace_guid_elt(
-        speos_client=speos_client, json_dict=json_dict, ignore_simple_key=ignore_simple_key
+        speos_client=speos_client,
+        json_dict=json_dict,
+        ignore_simple_key=ignore_simple_key,
     )
     return json_dict
 
@@ -63,14 +65,17 @@ def _replace_guid_elt(
 ) -> None:
     new_items = []
     for k, v in json_dict.items():
-        # If we are in the case of key "xxx_guid", with a guid non empty and that the key is not to ignore
+        # If we are in the case of key "xxx_guid", with a guid non empty
+        # and that the key is not to ignore
         if k.endswith("_guid") and v != "" and k != ignore_simple_key:
             # Retrieve the item from db and transform it to dictionary
             new_v = protobuf_message_to_dict(message=speos_client[v].get())
 
             # This item can potentially have some "xxx_guid" fields to replace
             _replace_guid_elt(
-                speos_client=speos_client, json_dict=new_v, ignore_simple_key=ignore_simple_key
+                speos_client=speos_client,
+                json_dict=new_v,
+                ignore_simple_key=ignore_simple_key,
             )
             # Add the new value under "xxx" key
             new_items.append((k[: k.find("_guid")], new_v))
@@ -85,7 +90,9 @@ def _replace_guid_elt(
 
                 # This item can potentially have some "xxx_guid" fields to replace
                 _replace_guid_elt(
-                    speos_client=speos_client, json_dict=new_v, ignore_simple_key=ignore_simple_key
+                    speos_client=speos_client,
+                    json_dict=new_v,
+                    ignore_simple_key=ignore_simple_key,
                 )
                 # Add the new value to the "xxxs" list
                 new_value_list.append(new_v)
@@ -94,13 +101,17 @@ def _replace_guid_elt(
         # Call recursevely if the value is a dict or a list with dict as items values
         if type(v) == dict:
             _replace_guid_elt(
-                speos_client=speos_client, json_dict=v, ignore_simple_key=ignore_simple_key
+                speos_client=speos_client,
+                json_dict=v,
+                ignore_simple_key=ignore_simple_key,
             )
         elif type(v) == list:
             for iv in v:
                 if type(iv) == dict:
                     _replace_guid_elt(
-                        speos_client=speos_client, json_dict=iv, ignore_simple_key=ignore_simple_key
+                        speos_client=speos_client,
+                        json_dict=iv,
+                        ignore_simple_key=ignore_simple_key,
                     )
 
     # To avoid modifying a dict when reading it, all changes were stored in new_items list
@@ -178,7 +189,10 @@ def _replace_properties(json_dict: dict) -> None:
 
 
 def _finder_by_key(dict_var: dict, key: str, x_path: str = "") -> List[tuple[str, dict]]:
-    """Find a key in a dictionary (recursively). It will return a list of (x_path, dictionary) of items corresponding to the key."""
+    """Find a key in a dictionary (recursively).
+
+    It will return a list of (x_path, dictionary) of items corresponding to the key.
+    """
     out_list = []
 
     # Loop on all dictionary items
@@ -204,7 +218,8 @@ def _finder_by_key(dict_var: dict, key: str, x_path: str = "") -> List[tuple[str
             for item in v:
                 if isinstance(item, dict):
                     x_path_bckp2 = x_path
-                    # In case the dict has field name, use it in x_path like .key[.name='TheName'], it is more meaningful that just [idx]
+                    # In case the dict has field name, use it in x_path like .key[.name='TheName']
+                    # it is more meaningful that just [idx]
                     if "name" in item.keys():
                         x_path = x_path + ".name='" + item["name"] + "']"
                     else:  # if no field name, then just use .key[idx]

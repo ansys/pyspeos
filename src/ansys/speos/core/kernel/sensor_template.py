@@ -24,7 +24,10 @@
 
 from typing import List
 
-from ansys.api.speos.sensor.v1 import sensor_pb2 as messages, sensor_pb2_grpc as service
+from ansys.api.speos.sensor.v1 import (
+    sensor_pb2 as messages,
+    sensor_pb2_grpc as service,
+)
 from ansys.speos.core.kernel.crud import CrudItem, CrudStub
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 
@@ -106,8 +109,8 @@ class SensorTemplateStub(CrudStub):
 
     Examples
     --------
-    The best way to get a SensorTemplateStub is to retrieve it from SpeosClient via sensor_templates() method.
-    Like in the following example:
+    The best way to get a SensorTemplateStub is to retrieve it from SpeosClient via
+    sensor_templates() method. Like in the following example:
 
     >>> from ansys.speos.core.speos import Speos
     >>> speos = Speos(host="localhost", port=50098)

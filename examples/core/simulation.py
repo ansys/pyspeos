@@ -37,7 +37,8 @@ print(p)
 
 # ## Prepare prerequisites
 
-# Create the necessary elements for a simulation: Sensor, source, root part, optical property are prerequisites.
+# Create the necessary elements for a simulation: Sensor, source, root part, optical property are
+# prerequisites.
 
 # ### Prepare the root part
 
@@ -63,7 +64,8 @@ opt_prop.commit()
 
 # +
 sensor1 = p.create_sensor(name="Irradiance.1")
-sensor1.set_type_colorimetric()  # colorimetric or spectral so that the sensor can be used both in direct and inverse simulation
+sensor1.set_type_colorimetric()
+# colorimetric or spectral so that the sensor can be used both in direct and inverse simulation
 sensor1.commit()
 # -
 
@@ -72,7 +74,8 @@ sensor1.commit()
 # +
 source1 = p.create_source(name="Surface.1")
 source1.set_exitance_constant(geometries=[(GeoRef.from_native_link(geopath="Body.1/Face.1"), True)])
-source1.set_spectrum().set_blackbody()  # blackbody so that the source can be used both in direct and inverse simulation
+source1.set_spectrum().set_blackbody()
+# blackbody so that the source can be used both in direct and inverse simulation
 source1.commit()
 # -
 

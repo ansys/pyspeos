@@ -24,12 +24,17 @@
 
 from typing import List
 
-from ansys.api.speos.intensity.v1 import intensity_pb2 as messages, intensity_pb2_grpc as service
+from ansys.api.speos.intensity.v1 import (
+    intensity_pb2 as messages,
+    intensity_pb2_grpc as service,
+)
 from ansys.speos.core.kernel.crud import CrudItem, CrudStub
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 
 ProtoIntensityTemplate = messages.IntensityTemplate
-"""IntensityTemplate protobuf class : ansys.api.speos.intensity.v1.intensity_pb2.IntensityTemplate"""
+"""IntensityTemplate protobuf class.
+
+ansys.api.speos.intensity.v1.intensity_pb2.IntensityTemplate"""
 ProtoIntensityTemplate.__str__ = lambda self: protobuf_message_to_str(self)
 
 
@@ -47,7 +52,9 @@ class IntensityTemplateLink(CrudItem):
     Examples
     --------
     >>> from ansys.speos.core.speos import Speos
-    >>> from ansys.speos.core.kernel.intensity_template import ProtoIntensityTemplate
+    >>> from ansys.speos.core.kernel.intensity_template import (
+    ...     ProtoIntensityTemplate,
+    ... )
     >>> speos = Speos(host="localhost", port=50098)
     >>> int_t_db = speos.client.intensity_templates()
     >>> int_t_message = ProtoIntensityTemplate(name="Cos_3_170")
@@ -115,8 +122,8 @@ class IntensityTemplateStub(CrudStub):
 
     Examples
     --------
-    The best way to get a IntensityTemplateStub is to retrieve it from SpeosClient via intensity_templates() method.
-    Like in the following example:
+    The best way to get a IntensityTemplateStub is to retrieve it from SpeosClient via
+    intensity_templates() method. Like in the following example:
 
     >>> from ansys.speos.core.speos import Speos
     >>> speos = Speos(host="localhost", port=50098)

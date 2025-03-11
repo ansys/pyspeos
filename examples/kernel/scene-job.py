@@ -49,7 +49,8 @@ print(my_scene)
 
 # ## Job
 
-# Create a job for the first simulation. When loaded from a speos file, there is always only one simulation in the scene.
+# Create a job for the first simulation. When loaded from a speos file, there is always only one
+# simulation in the scene.
 
 # +
 # First create the protobuf message
@@ -96,8 +97,8 @@ while (
 
 # Retrieve results of the job
 
-# Two results are generated : the result of irradiance sensor: ASSEMBLY1.DS (0).Dom Irradiance Sensor (0).xmp
-# and the simulation report in html
+# Two results are generated : the result of irradiance sensor:
+# "ASSEMBLY1.DS (0).Dom Irradiance Sensor (0).xmp" and the simulation report in html
 
 # +
 results = job_link.get_results().results
@@ -111,7 +112,8 @@ job_link.delete()
 # -
 
 
-# When loading a speos file into a scene, this creates many objects (source templates, sensor templates, vop template, sop templates).
+# When loading a speos file into a scene, this creates many objects
+# (source templates, sensor templates, vop template, sop templates).
 # Then at the end of the example, we just clean all databases
 
 # +
