@@ -333,7 +333,7 @@ class Intensity:
                 library_props=self._intensity_properties.library_properties,
                 default_values=False,
             )
-        elif type(self._type) != Intensity.Library:
+        elif not isinstance(self._type, Intensity.Library):
             # if the _type is not Library then we create a new type.
             self._type = Intensity.Library(
                 library=self._intensity_template.library,
@@ -386,7 +386,7 @@ class Intensity:
                 gaussian_props=self._intensity_properties.gaussian_properties,
                 default_values=False,
             )
-        elif type(self._type) != Intensity.Gaussian:
+        elif not isinstance(self._type, Intensity.Gaussian):
             # if the _type is not Gaussian then we create a new type.
             self._type = Intensity.Gaussian(
                 gaussian=self._intensity_template.gaussian,

@@ -408,7 +408,7 @@ class Part:
                         [
                             x
                             for x in self._geom_features
-                            if p.match(x._name) and type(x) == feature_type
+                            if p.match(x._name) and isinstance(x, feature_type)
                         ]
                     )
                 else:
@@ -416,7 +416,7 @@ class Part:
                         [
                             x
                             for x in self._geom_features
-                            if x._name == name and type(x) == feature_type
+                            if x._name == name and isinstance(x, feature_type)
                         ]
                     )
             else:
@@ -650,11 +650,19 @@ class Part:
             if name_regex:
                 p = re.compile(name)
                 found_features.extend(
-                    [x for x in self._geom_features if p.match(x._name) and type(x) == feature_type]
+                    [
+                        x
+                        for x in self._geom_features
+                        if p.match(x._name) and isinstance(x, feature_type)
+                    ]
                 )
             else:
                 found_features.extend(
-                    [x for x in self._geom_features if x._name == name and type(x) == feature_type]
+                    [
+                        x
+                        for x in self._geom_features
+                        if x._name == name and isinstance(x, feature_type)
+                    ]
                 )
         else:
             if name_regex:

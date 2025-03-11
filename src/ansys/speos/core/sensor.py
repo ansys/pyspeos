@@ -1271,7 +1271,9 @@ class SensorCamera(BaseSensor):
                         default_values=False,
                         stable_ctr=True,
                     )
-                elif type(self._mode) != SensorCamera.Photometric.Color.BalanceModeUserWhite:
+                elif not isinstance(
+                    self._mode, SensorCamera.Photometric.Color.BalanceModeUserWhite
+                ):
                     # if the _mode is not BalanceModeUserWhite then we create a new type.
                     self._mode = SensorCamera.Photometric.Color.BalanceModeUserWhite(
                         balance_mode_user_white=self._mode_color.balance_mode_userwhite,
@@ -1307,7 +1309,9 @@ class SensorCamera(BaseSensor):
                         default_values=False,
                         stable_ctr=True,
                     )
-                elif type(self._mode) != SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries:
+                elif not isinstance(
+                    self._mode, SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries
+                ):
                     # if the _mode is not BalanceModeDisplayPrimaries then we create a new type.
                     self._mode = SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries(
                         balance_mode_display=self._mode_color.balance_mode_display,
@@ -1513,7 +1517,7 @@ class SensorCamera(BaseSensor):
                     default_values=False,
                     stable_ctr=True,
                 )
-            elif type(self._mode) != SensorCamera.Photometric.Color:
+            elif not isinstance(self._mode, SensorCamera.Photometric.Color):
                 # if the _mode is not Color then we create a new type.
                 self._mode = SensorCamera.Photometric.Color(
                     mode_color=self._mode_photometric.color_mode_color,
@@ -1777,7 +1781,7 @@ class SensorCamera(BaseSensor):
                 default_values=False,
                 stable_ctr=True,
             )
-        elif type(self._type) != SensorCamera.Photometric:
+        elif not isinstance(self._type, SensorCamera.Photometric):
             # if the _type is not Photometric then we create a new type.
             self._type = SensorCamera.Photometric(
                 mode_photometric=self._sensor_template.camera_sensor_template.sensor_mode_photometric,
@@ -2014,7 +2018,7 @@ class SensorIrradiance(BaseSensor):
                 default_values=False,
                 stable_ctr=True,
             )
-        elif type(self._type) != BaseSensor.Colorimetric:
+        elif not isinstance(self._type, BaseSensor.Colorimetric):
             # if the _type is not Colorimetric then we create a new type.
             self._type = BaseSensor.Colorimetric(
                 sensor_type_colorimetric=self._sensor_template.irradiance_sensor_template.sensor_type_colorimetric,
@@ -2064,7 +2068,7 @@ class SensorIrradiance(BaseSensor):
                 default_values=False,
                 stable_ctr=True,
             )
-        elif type(self._type) != BaseSensor.Spectral:
+        elif not isinstance(self._type, BaseSensor.Spectral):
             # if the _type is not Spectral then we create a new type.
             self._type = BaseSensor.Spectral(
                 sensor_type_spectral=self._sensor_template.irradiance_sensor_template.sensor_type_spectral,
@@ -2295,7 +2299,7 @@ class SensorIrradiance(BaseSensor):
                 default_values=False,
                 stable_ctr=True,
             )
-        elif type(self._layer_type) != BaseSensor.LayerTypeFace:
+        elif not isinstance(self._layer_type, BaseSensor.LayerTypeFace):
             # if the _layer_type is not LayerTypeFace then we create a new type.
             self._layer_type = BaseSensor.LayerTypeFace(
                 layer_type_face=self._sensor_instance.irradiance_properties.layer_type_face,
@@ -2328,7 +2332,7 @@ class SensorIrradiance(BaseSensor):
                 default_values=False,
                 stable_ctr=True,
             )
-        elif type(self._layer_type) != BaseSensor.LayerTypeSequence:
+        elif not isinstance(self._layer_type, BaseSensor.LayerTypeSequence):
             # if the _type is not LayerTypeSequence then we create a new type.
             self._layer_type = BaseSensor.LayerTypeSequence(
                 layer_type_sequence=self._sensor_instance.irradiance_properties.layer_type_sequence,
@@ -2375,7 +2379,7 @@ class SensorIrradiance(BaseSensor):
                 default_values=False,
                 stable_ctr=True,
             )
-        elif type(self._layer_type) != BaseSensor.LayerTypeIncidenceAngle:
+        elif not isinstance(self._layer_type, BaseSensor.LayerTypeIncidenceAngle):
             # if the _layer_type is not LayerTypeIncidenceAngle then we create a new type.
             self._layer_type = BaseSensor.LayerTypeIncidenceAngle(
                 layer_type_incidence_angle=self._sensor_instance.irradiance_properties.layer_type_incidence_angle,
@@ -2608,7 +2612,7 @@ class SensorRadiance(BaseSensor):
                 default_values=False,
                 stable_ctr=True,
             )
-        elif type(self._type) != BaseSensor.Colorimetric:
+        elif not isinstance(self._type, BaseSensor.Colorimetric):
             # if the _type is not Colorimetric then we create a new type.
             self._type = BaseSensor.Colorimetric(
                 sensor_type_colorimetric=self._sensor_template.radiance_sensor_template.sensor_type_colorimetric,
@@ -2658,7 +2662,7 @@ class SensorRadiance(BaseSensor):
                 default_values=False,
                 stable_ctr=True,
             )
-        elif type(self._type) != BaseSensor.Spectral:
+        elif not isinstance(self._type, BaseSensor.Spectral):
             # if the _type is not Spectral then we create a new type.
             self._type = BaseSensor.Spectral(
                 sensor_type_spectral=self._sensor_template.radiance_sensor_template.sensor_type_spectral,
@@ -2793,7 +2797,7 @@ class SensorRadiance(BaseSensor):
                 default_values=False,
                 stable_ctr=True,
             )
-        elif type(self._layer_type) != BaseSensor.LayerTypeFace:
+        elif not isinstance(self._layer_type, BaseSensor.LayerTypeFace):
             # if the _layer_type is not LayerTypeFace then we create a new type.
             self._layer_type = BaseSensor.LayerTypeFace(
                 layer_type_face=self._sensor_instance.radiance_properties.layer_type_face,
@@ -2826,7 +2830,7 @@ class SensorRadiance(BaseSensor):
                 default_values=False,
                 stable_ctr=True,
             )
-        elif type(self._layer_type) != BaseSensor.LayerTypeSequence:
+        elif not isinstance(self._layer_type, BaseSensor.LayerTypeSequence):
             # if the _layer_type is not LayerTypeSequence then we create a new type.
             self._layer_type = BaseSensor.LayerTypeSequence(
                 layer_type_sequence=self._sensor_instance.radiance_properties.layer_type_sequence,

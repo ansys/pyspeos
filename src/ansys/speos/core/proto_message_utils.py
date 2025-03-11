@@ -99,15 +99,15 @@ def _replace_guid_elt(
             new_items.append((new_key_list, new_value_list))
 
         # Call recursevely if the value is a dict or a list with dict as items values
-        if type(v) == dict:
+        if isinstance(v, dict):
             _replace_guid_elt(
                 speos_client=speos_client,
                 json_dict=v,
                 ignore_simple_key=ignore_simple_key,
             )
-        elif type(v) == list:
+        elif isinstance(v, list):
             for iv in v:
-                if type(iv) == dict:
+                if isinstance(iv, dict):
                     _replace_guid_elt(
                         speos_client=speos_client,
                         json_dict=iv,

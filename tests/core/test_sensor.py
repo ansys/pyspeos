@@ -1033,7 +1033,7 @@ def test_irradiance_modify_after_reset(speos: Speos):
     sensor1.set_type_spectral()
     sensor1.set_layer_type_sequence()
     sensor1.commit()
-    assert type(sensor1) == SensorIrradiance
+    assert isinstance(sensor1, SensorIrradiance)
 
     # Ask for reset
     sensor1.reset()
@@ -1108,7 +1108,7 @@ def test_radiance_modify_after_reset(speos: Speos):
 
     # Create + commit
     sensor1 = p.create_sensor(name="Sensor.1", feature_type=SensorRadiance)
-    assert type(sensor1) == SensorRadiance
+    assert isinstance(sensor1, SensorRadiance)
     sensor1.set_type_colorimetric()
     sensor1.set_layer_type_sequence()
     sensor1.commit()
@@ -1186,7 +1186,7 @@ def test_camera_modify_after_reset(speos: Speos):
 
     # Create + commit
     sensor1 = p.create_sensor(name="Sensor.1", feature_type=SensorCamera)
-    assert type(sensor1) == SensorCamera
+    assert isinstance(sensor1, SensorCamera)
     sensor1.set_mode_photometric().set_mode_color().set_balance_mode_user_white()
     sensor1.set_mode_photometric().set_layer_type_source()
     sensor1.commit()

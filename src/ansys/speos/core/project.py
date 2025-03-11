@@ -508,8 +508,8 @@ class Project:
                         x
                         for x in self._features
                         if (
-                            type(x) == feature_type
-                            or (type(x._type) == feature_type if hasattr(x, "_type") else False)
+                            isinstance(x, feature_type)
+                            or (isinstance(x._type, feature_type) if hasattr(x, "_type") else False)
                         )
                         and p.match(x._name)
                     ]
@@ -520,8 +520,8 @@ class Project:
                         x
                         for x in self._features
                         if (
-                            type(x) == feature_type
-                            or (type(x._type) == feature_type if hasattr(x, "_type") else False)
+                            isinstance(x, feature_type)
+                            or (isinstance(x._type, feature_type) if hasattr(x, "_type") else False)
                         )
                         and x._name == name
                     ]

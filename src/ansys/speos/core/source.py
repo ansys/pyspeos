@@ -1005,7 +1005,7 @@ class SourceSurface(BaseSource):
                 default_values=False,
                 stable_ctr=True,
             )
-        elif type(self._exitance_type) != SourceSurface.ExitanceVariable:
+        elif not isinstance(self._exitance_type, SourceSurface.ExitanceVariable):
             # if the _exitance_type is not ExitanceVariable then we create a new type.
             self._exitance_type = SourceSurface.ExitanceVariable(
                 exitance_variable=self._source_template.surface.exitance_variable,
