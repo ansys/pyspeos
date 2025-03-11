@@ -99,13 +99,6 @@ select = [
     "TD",   # flake8-todos, https://docs.astral.sh/ruff/rules/#flake8-todos-td
 ]
 ignore = [
-    # "E402",
-    # "E501", # TODO: Line too long
-    # "E711",
-    # "E712", # TODO: Avoid equality comparisons to `False`
-    # "E721", # TODO: Avoid `is` and `is not` for type comparison, use `isinstance()` instead
-    "E722",
-    "E741", # TODO: Rename ambiguous variable name
     "F401",
     "F841", # TODO: Local variable assigned but never used
     "N802", # TODO: Function name should be lowercase

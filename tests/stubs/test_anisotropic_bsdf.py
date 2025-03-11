@@ -410,9 +410,9 @@ def test_grpc_anisotropic_bsdf(speos: Speos):
     assert compareEnhancementData(rc, rc2)
 
     # white specular enabling and disabling
-    l = anisotropic_bsdf__v1__pb2.Wavelength()
-    l.wavelength = 632.0
-    stub.EnableWhiteSpecular(l)
+    wl = anisotropic_bsdf__v1__pb2.Wavelength()
+    wl.wavelength = 632.0
+    stub.EnableWhiteSpecular(wl)
     stub.DisableWhiteSpecular(Empty())
 
     # spectrum imports

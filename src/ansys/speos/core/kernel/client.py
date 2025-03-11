@@ -195,7 +195,7 @@ class SpeosClient:
         try:
             grpc.channel_ready_future(self.channel).result(timeout=60)
             return True
-        except:
+        except BaseException:
             return False
 
     def target(self) -> str:
