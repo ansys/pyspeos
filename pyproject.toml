@@ -101,7 +101,7 @@ select = [
 ignore = [
     # "E402",
     # "E501", # TODO: Line too long
-    "E711",
+    # "E711",
     "E712", # TODO: Avoid equality comparisons to `False`
     "E721", # TODO: Avoid `is` and `is not` for type comparison, use `isinstance()` instead
     "E722",

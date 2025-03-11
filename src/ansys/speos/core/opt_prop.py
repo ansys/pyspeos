@@ -278,7 +278,7 @@ class OptProp:
         ansys.speos.core.opt_prop.OptProp
             Optical property.
         """
-        if geometries == None:
+        if geometries is None:
             self._material_instance.ClearField("geometries")
         else:
             self._material_instance.geometries.geo_paths[:] = [
