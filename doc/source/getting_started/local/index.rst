@@ -11,7 +11,7 @@ To launch the service you need to use the following commands:
 
         .. code-block:: bash
 
-            %AWP_ROOT251%\Optical Products\SPEOS_RPC\SpeosRPC_Server.exe
+            "%AWP_ROOT251%\Optical Products\SPEOS_RPC\SpeosRPC_Server.exe"
 
     .. tab-item:: Linux
 
