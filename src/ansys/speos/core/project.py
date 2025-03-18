@@ -766,14 +766,14 @@ class Project:
                     sensor_instance=ssr_inst,
                     default_values=False,
                 )
-            elif ssr_inst.HasField("camera_properties"):
+            elif ssr_inst.HasField("radiance_properties"):
                 ssr_feat = SensorRadiance(
                     project=self,
                     name=ssr_inst.name,
                     sensor_instance=ssr_inst,
                     default_values=False,
                 )
-            elif ssr_inst.HasField("radiance_properties"):
+            elif ssr_inst.HasField("camera_properties"):
                 ssr_feat = SensorCamera(
                     project=self,
                     name=ssr_inst.name,
