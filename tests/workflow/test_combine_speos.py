@@ -26,7 +26,11 @@ import os
 from pathlib import Path
 
 from ansys.speos.core import OptProp, Part, Project, Speos
-from ansys.speos.core.workflow.combine_speos import SpeosFileInstance, combine_speos, insert_speos
+from ansys.speos.core.workflow.combine_speos import (
+    SpeosFileInstance,
+    combine_speos,
+    insert_speos,
+)
 from tests.conftest import test_path
 
 
@@ -42,11 +46,37 @@ def test_combine_speos(speos: Speos):
             ),
             SpeosFileInstance(
                 speos_file=str(Path(test_path) / "BlueCar.speos" / "BlueCar.speos"),
-                axis_system=[2000, 0, 35000, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+                axis_system=[
+                    2000,
+                    0,
+                    35000,
+                    0.0,
+                    0.0,
+                    -1.0,
+                    -1.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0,
+                    0.0,
+                ],
             ),
             SpeosFileInstance(
                 speos_file=str(Path(test_path) / "RedCar.speos" / "RedCar.speos"),
-                axis_system=[-4000, 0, 48000, 1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0],
+                axis_system=[
+                    -4000,
+                    0,
+                    48000,
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -1.0,
+                    0.0,
+                    1.0,
+                    0.0,
+                ],
             ),
         ],
     )
@@ -92,11 +122,37 @@ def test_modify_parts_after_combine(speos: Speos):
             ),
             SpeosFileInstance(
                 speos_file=str(Path(test_path) / "BlueCar.speos" / "BlueCar.speos"),
-                axis_system=[2000, 0, 35000, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+                axis_system=[
+                    2000,
+                    0,
+                    35000,
+                    0.0,
+                    0.0,
+                    -1.0,
+                    -1.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0,
+                    0.0,
+                ],
             ),
             SpeosFileInstance(
                 speos_file=str(Path(test_path) / "RedCar.speos" / "RedCar.speos"),
-                axis_system=[-4000, 0, 48000, 1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0],
+                axis_system=[
+                    -4000,
+                    0,
+                    48000,
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -1.0,
+                    0.0,
+                    1.0,
+                    0.0,
+                ],
             ),
         ],
     )
@@ -147,11 +203,37 @@ def test_insert_speos(speos: Speos):
         speos_to_insert=[
             SpeosFileInstance(
                 speos_file=str(Path(test_path) / "BlueCar.speos" / "BlueCar.speos"),
-                axis_system=[2000, 0, 35000, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+                axis_system=[
+                    2000,
+                    0,
+                    35000,
+                    0.0,
+                    0.0,
+                    -1.0,
+                    -1.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0,
+                    0.0,
+                ],
             ),
             SpeosFileInstance(
                 speos_file=str(Path(test_path) / "RedCar.speos" / "RedCar.speos"),
-                axis_system=[-4000, 0, 48000, 1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0],
+                axis_system=[
+                    -4000,
+                    0,
+                    48000,
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -1.0,
+                    0.0,
+                    1.0,
+                    0.0,
+                ],
             ),
         ],
     )

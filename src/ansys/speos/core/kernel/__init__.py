@@ -25,7 +25,10 @@
 from ansys.speos.core.kernel.body import BodyLink, ProtoBody
 from ansys.speos.core.kernel.client import SpeosClient
 from ansys.speos.core.kernel.face import FaceLink, ProtoFace
-from ansys.speos.core.kernel.intensity_template import IntensityTemplateLink, ProtoIntensityTemplate
+from ansys.speos.core.kernel.intensity_template import (
+    IntensityTemplateLink,
+    ProtoIntensityTemplate,
+)
 from ansys.speos.core.kernel.job import JobLink, ProtoJob
 from ansys.speos.core.kernel.part import PartLink, ProtoPart
 from ansys.speos.core.kernel.proto_message_utils import (
@@ -33,12 +36,24 @@ from ansys.speos.core.kernel.proto_message_utils import (
     protobuf_message_to_str,
 )
 from ansys.speos.core.kernel.scene import ProtoScene, SceneLink
-from ansys.speos.core.kernel.sensor_template import ProtoSensorTemplate, SensorTemplateLink
+from ansys.speos.core.kernel.sensor_template import (
+    ProtoSensorTemplate,
+    SensorTemplateLink,
+)
 from ansys.speos.core.kernel.simulation_template import (
     ProtoSimulationTemplate,
     SimulationTemplateLink,
 )
-from ansys.speos.core.kernel.sop_template import ProtoSOPTemplate, SOPTemplateLink
-from ansys.speos.core.kernel.source_template import ProtoSourceTemplate, SourceTemplateLink
+from ansys.speos.core.kernel.sop_template import (
+    ProtoSOPTemplate,
+    SOPTemplateLink,
+)
+from ansys.speos.core.kernel.source_template import (
+    ProtoSourceTemplate,
+    SourceTemplateLink,
+)
 from ansys.speos.core.kernel.spectrum import ProtoSpectrum, SpectrumLink
-from ansys.speos.core.kernel.vop_template import ProtoVOPTemplate, VOPTemplateLink
+from ansys.speos.core.kernel.vop_template import (
+    ProtoVOPTemplate,
+    VOPTemplateLink,
+)

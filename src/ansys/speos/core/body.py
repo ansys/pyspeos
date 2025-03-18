@@ -82,7 +82,10 @@ class Body:
         self._geom_features = []
 
     def create_face(
-        self, name: str, description: str = "", metadata: Optional[Mapping[str, str]] = None
+        self,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
     ) -> face.Face:
         """Create a face in this element.
 
@@ -210,7 +213,10 @@ class Body:
         return self
 
     def find(
-        self, name: str, name_regex: bool = False, feature_type: Optional[type] = None
+        self,
+        name: str,
+        name_regex: bool = False,
+        feature_type: Optional[type] = None,
     ) -> List[face.Face]:
         """Find feature(s). In a body, only faces features can be found.
 

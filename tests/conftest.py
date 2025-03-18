@@ -29,11 +29,13 @@ directory as this module.
 
 import json
 import logging
+import logging as deflogging  # Default logging
 import os
 from pathlib import Path
 
 import pytest
 
+from ansys.speos.core import LOG
 from ansys.speos.core.speos import Speos
 
 
@@ -81,14 +83,8 @@ if config.get("SpeosServerOnDocker"):
 else:
     test_path = local_test_path
 
-# Wait for the grpc server - in case the timeout is reached raise an error
-
-import logging as deflogging  # Default logging
-
-import pytest
 
 # Define default pytest logging level to DEBUG and stdout
-from ansys.speos.core import LOG
 
 LOG.setLevel(level="DEBUG")
 LOG.log_to_stdout()

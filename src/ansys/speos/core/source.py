@@ -28,7 +28,10 @@ from difflib import SequenceMatcher
 from typing import List, Mapping, Optional, Union
 import uuid
 
-from ansys.speos.core import project as project, proto_message_utils as proto_message_utils
+from ansys.speos.core import (
+    project as project,
+    proto_message_utils as proto_message_utils,
+)
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.intensity import Intensity
 from ansys.speos.core.kernel.client import SpeosClient
@@ -109,7 +112,9 @@ class BaseSource:
             self._message_to_complete = message_to_complete
             if spectrum_guid != "":
                 self._spectrum = Spectrum(
-                    speos_client=speos_client, name=name + ".Spectrum", key=spectrum_guid
+                    speos_client=speos_client,
+                    name=name + ".Spectrum",
+                    key=spectrum_guid,
                 )
             else:
                 self._spectrum = Spectrum(speos_client=speos_client, name=name + ".Spectrum")
@@ -150,7 +155,8 @@ class BaseSource:
         if self._project.scene_link and self._unique_id is not None:
             scene_data = self._project.scene_link.get()
             src_inst = next(
-                (x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None
+                (x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id),
+                None,
             )
             if src_inst is not None:
                 out_dict = proto_message_utils._replace_guids(
@@ -158,7 +164,8 @@ class BaseSource:
                 )
             else:
                 out_dict = proto_message_utils._replace_guids(
-                    speos_client=self._project.client, message=self._source_instance
+                    speos_client=self._project.client,
+                    message=self._source_instance,
                 )
         else:
             out_dict = proto_message_utils._replace_guids(
@@ -169,11 +176,13 @@ class BaseSource:
             # SourceTemplate
             if self.source_template_link is None:
                 out_dict["source"] = proto_message_utils._replace_guids(
-                    speos_client=self._project.client, message=self._source_template
+                    speos_client=self._project.client,
+                    message=self._source_template,
                 )
             else:
                 out_dict["source"] = proto_message_utils._replace_guids(
-                    speos_client=self._project.client, message=self.source_template_link.get()
+                    speos_client=self._project.client,
+                    message=self.source_template_link.get(),
                 )
 
         # # handle spectrum & intensity
@@ -200,7 +209,10 @@ class BaseSource:
         info = proto_message_utils._value_finder_key_startswith(dict_var=self._to_dict(), key=key)
         content = list(info)
         if len(content) != 0:
-            content.sort(key=lambda x: SequenceMatcher(None, x[0], key).ratio(), reverse=True)
+            content.sort(
+                key=lambda x: SequenceMatcher(None, x[0], key).ratio(),
+                reverse=True,
+            )
             return content[0][1]
         info = proto_message_utils._flatten_dict(dict_var=self._to_dict())
         print("Used key: {} not found in key list: {}.".format(key, info.keys()))
@@ -211,7 +223,8 @@ class BaseSource:
         if self._project.scene_link and self._unique_id is not None:
             scene_data = self._project.scene_link.get()
             src_inst = next(
-                (x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None
+                (x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id),
+                None,
             )
             if src_inst is None:
                 out_str += "local: "
@@ -229,7 +242,8 @@ class BaseSource:
         ansys.speos.core.source.BaseSource
             Source feature.
         """
-        # The _unique_id will help to find correct item in the scene.sources (the list of SourceInstance)
+        # The _unique_id will help to find correct item in the scene.sources:
+        # the list of SourceInstance
         if self._unique_id is None:
             self._unique_id = str(uuid.uuid4())
             self._source_instance.metadata["UniqueId"] = self._unique_id
@@ -252,7 +266,8 @@ class BaseSource:
 
             # Look if an element corresponds to the _unique_id
             src_inst = next(
-                (x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None
+                (x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id),
+                None,
             )
             if src_inst is not None:
                 if src_inst != self._source_instance:
@@ -286,7 +301,8 @@ class BaseSource:
             scene_data = self._project.scene_link.get()  # retrieve scene data
             # Look if an element corresponds to the _unique_id
             src_inst = next(
-                (x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None
+                (x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id),
+                None,
             )
             if src_inst is not None:
                 self._source_instance = src_inst
@@ -302,7 +318,8 @@ class BaseSource:
         ansys.speos.core.source.BaseSource
             Source feature.
         """
-        # This allows to clean-managed object contained in _luminaire, _rayfile, etc.. Like Spectrum, IntensityTemplate
+        # This allows to clean-managed object contained in _luminaire, _rayfile, etc..
+        # Like Spectrum, IntensityTemplate
 
         # Delete the source template
         if self.source_template_link is not None:
@@ -315,7 +332,8 @@ class BaseSource:
         # Remove the source from the scene
         scene_data = self._project.scene_link.get()  # retrieve scene data
         src_inst = next(
-            (x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id), None
+            (x for x in scene_data.sources if x.metadata["UniqueId"] == self._unique_id),
+            None,
         )
         if src_inst is not None:
             scene_data.sources.remove(src_inst)
@@ -741,24 +759,27 @@ class SourceSurface(BaseSource):
 
         Parameters
         ----------
-        exitance_variable : ansys.api.speos.source.v1.source_pb2.SourceTemplate.Surface.ExitanceVariable
+        exitance_variable : ansys.api.speos.source.v1.source_pb2.SourceTemplate.Surface.
+        ExitanceVariable
             Existence variable to complete.
-        exitance_variable_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.SurfaceProperties.ExitanceVariableProperties
+        exitance_variable_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.
+        SurfaceProperties.ExitanceVariableProperties
             Existence variable properties to complete.
         default_values : bool
             Uses default values when True.
-                stable_ctr : bool
+        stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
         Notes
         -----
-        **Do not instantiate this class yourself**, use set_exitance_variable method available in Source classes.
+        **Do not instantiate this class yourself**, use set_exitance_variable method available in
+        Source classes.
         """
 
         def __init__(
             self,
-            exitance_variable: ProtoSourceTemplate.Surface.ExitanceVariable,
-            exitance_variable_props: ProtoScene.SourceInstance.SurfaceProperties.ExitanceVariableProperties,
+            exitance_variable,
+            exitance_variable_props,
             default_values: bool = True,
             stable_ctr: bool = False,
         ) -> None:
@@ -984,7 +1005,7 @@ class SourceSurface(BaseSource):
                 default_values=False,
                 stable_ctr=True,
             )
-        elif type(self._exitance_type) != SourceSurface.ExitanceVariable:
+        elif not isinstance(self._exitance_type, SourceSurface.ExitanceVariable):
             # if the _exitance_type is not ExitanceVariable then we create a new type.
             self._exitance_type = SourceSurface.ExitanceVariable(
                 exitance_variable=self._source_template.surface.exitance_variable,
@@ -1074,7 +1095,8 @@ class SourceSurface(BaseSource):
         ansys.speos.core.source.SourceSurface
             Source feature.
         """
-        # Currently we don't perform delete in cascade, so deleting a surface source does not delete the intensity template used
+        # Currently we don't perform delete in cascade,
+        # so deleting a surface source does not delete the intensity template used
         # self._intensity.delete()
 
         # spectrum & source

@@ -90,7 +90,8 @@ print(op2)
 
 # Sometimes it is needed to create property but only for surface.
 
-# In this case, no call for set_volume_xxx function is needed, and we will select a face for the geometries.
+# In this case, no call for set_volume_xxx function is needed, and we will select a face for the
+# geometries.
 
 # +
 op3 = p.create_optical_property(name="Material.FOP")
@@ -161,7 +162,8 @@ print(p)
 
 # ## Update
 
-# Tipp: if you are manipulating an optical property already committed, don't forget to commit your changes.
+# Tipp: if you are manipulating an optical property already committed, don't forget to commit your
+# changes.
 
 # If you don't, you will still only watch what is committed on the server.
 
@@ -185,7 +187,8 @@ print(op1)
 
 # ## Delete
 
-# Once the data is deleted from the server, you can still work with local data and maybe commit later.
+# Once the data is deleted from the server, you can still work with local data and maybe commit
+# later.
 
 # +
 op2.delete()

@@ -101,7 +101,10 @@ class Part:
             self._geom_features = []
 
         def create_body(
-            self, name: str, description: str = "", metadata: Optional[Mapping[str, str]] = None
+            self,
+            name: str,
+            description: str = "",
+            metadata: Optional[Mapping[str, str]] = None,
         ) -> body.Body:
             """Create a body in this element.
 
@@ -195,7 +198,8 @@ class Part:
                     )
                 else:
                     out_dict = proto_message_utils._replace_guids(
-                        speos_client=self._speos_client, message=self._part_instance
+                        speos_client=self._speos_client,
+                        message=self._part_instance,
                     )
             else:
                 out_dict = proto_message_utils._replace_guids(
@@ -210,7 +214,8 @@ class Part:
                     )
                 else:
                     out_dict["part"] = proto_message_utils._replace_guids(
-                        speos_client=self._speos_client, message=self.part_link.get()
+                        speos_client=self._speos_client,
+                        message=self.part_link.get(),
                     )
 
             return out_dict
@@ -245,7 +250,8 @@ class Part:
             ansys.speos.core.part.Part.SubPart
                 SubPart feature.
             """
-            # The _unique_id will help to find correct item in the scene.materials (the list of MaterialInstance)
+            # The _unique_id will help to find correct item in the scene.materials:
+            # the list of MaterialInstance
             if self._unique_id is None:
                 self._unique_id = str(uuid.uuid4())
                 self._part_instance.description = "UniqueId_" + self._unique_id
@@ -361,7 +367,10 @@ class Part:
             return self
 
         def find(
-            self, name: str, name_regex: bool = False, feature_type: Optional[type] = None
+            self,
+            name: str,
+            name_regex: bool = False,
+            feature_type: Optional[type] = None,
         ) -> List[Union[body.Body, face.Face, Part.SubPart]]:
             """Find feature(s).
 
@@ -375,13 +384,14 @@ class Part:
                 Allows to use regex for name parameter.
                 By default, ``False``, means that regex is not used for name parameter.
             feature_type : type
-                Type of the wanted feature (example: ansys.speos.core.body.Body, ansys.speos.core.face.Face,
-                ansys.speos.core.part.Part.SubPart).
+                Type of the wanted feature (example: ansys.speos.core.body.Body,\
+                ansys.speos.core.face.Face, ansys.speos.core.part.Part.SubPart).
                 By default, ``None``, means that all features will be considered.
 
             Returns
             -------
-            List[Union[ansys.speos.core.body.Body, ansys.speos.core.face.Face, ansys.speos.core.part.Part.SubPart]]
+            List[Union[ansys.speos.core.body.Body, ansys.speos.core.face.Face,\
+            ansys.speos.core.part.Part.SubPart]]
                 Found features.
             """
             orig_name = name
@@ -398,7 +408,7 @@ class Part:
                         [
                             x
                             for x in self._geom_features
-                            if p.match(x._name) and type(x) == feature_type
+                            if p.match(x._name) and isinstance(x, feature_type)
                         ]
                     )
                 else:
@@ -406,7 +416,7 @@ class Part:
                         [
                             x
                             for x in self._geom_features
-                            if x._name == name and type(x) == feature_type
+                            if x._name == name and isinstance(x, feature_type)
                         ]
                     )
             else:
@@ -419,7 +429,9 @@ class Part:
             if found_features and idx != -1:
                 tmp = [
                     f.find(
-                        name=orig_name[idx + 1 :], name_regex=name_regex, feature_type=feature_type
+                        name=orig_name[idx + 1 :],
+                        name_regex=name_regex,
+                        feature_type=feature_type,
                     )
                     for f in found_features
                 ]
@@ -450,7 +462,10 @@ class Part:
         self._part = ProtoPart(name=name, description=description, metadata=metadata)
 
     def create_body(
-        self, name: str, description: str = "", metadata: Optional[Mapping[str, str]] = None
+        self,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
     ) -> body.Body:
         """Create a body in this element.
 
@@ -500,7 +515,10 @@ class Part:
             SubPart feature.
         """
         sub_part_feat = Part.SubPart(
-            speos_client=self._project.client, name=name, description=description, parent_part=self
+            speos_client=self._project.client,
+            name=name,
+            description=description,
+            parent_part=self,
         )
         self._geom_features.append(sub_part_feat)
         return sub_part_feat
@@ -595,7 +613,10 @@ class Part:
         return self
 
     def find(
-        self, name: str, name_regex: bool = False, feature_type: Optional[type] = None
+        self,
+        name: str,
+        name_regex: bool = False,
+        feature_type: Optional[type] = None,
     ) -> List[Union[body.Body, face.Face, Part.SubPart]]:
         """Find feature(s).
 
@@ -609,13 +630,14 @@ class Part:
             Allows to use regex for name parameter.
             By default, ``False``, means that regex is not used for name parameter.
         feature_type : type
-            Type of the wanted feature (example: ansys.speos.core.body.Body, ansys.speos.core.face.Face,
-            ansys.speos.core.part.Part.SubPart).
+            Type of the wanted feature (example: ansys.speos.core.body.Body,\
+            ansys.speos.core.face.Face, ansys.speos.core.part.Part.SubPart).
             By default, ``None``, means that all features will be considered.
 
         Returns
         -------
-        List[Union[ansys.speos.core.body.Body, ansys.speos.core.face.Face, ansys.speos.core.part.Part.SubPart]]
+        List[Union[ansys.speos.core.body.Body, ansys.speos.core.face.Face,\
+        ansys.speos.core.part.Part.SubPart]]
             Found features.
         """
         orig_name = name
@@ -628,11 +650,19 @@ class Part:
             if name_regex:
                 p = re.compile(name)
                 found_features.extend(
-                    [x for x in self._geom_features if p.match(x._name) and type(x) == feature_type]
+                    [
+                        x
+                        for x in self._geom_features
+                        if p.match(x._name) and isinstance(x, feature_type)
+                    ]
                 )
             else:
                 found_features.extend(
-                    [x for x in self._geom_features if x._name == name and type(x) == feature_type]
+                    [
+                        x
+                        for x in self._geom_features
+                        if x._name == name and isinstance(x, feature_type)
+                    ]
                 )
         else:
             if name_regex:
@@ -643,7 +673,11 @@ class Part:
 
         if found_features and idx != -1:
             tmp = [
-                f.find(name=orig_name[idx + 1 :], name_regex=name_regex, feature_type=feature_type)
+                f.find(
+                    name=orig_name[idx + 1 :],
+                    name_regex=name_regex,
+                    feature_type=feature_type,
+                )
                 for f in found_features
             ]
 

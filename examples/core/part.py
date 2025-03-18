@@ -53,7 +53,8 @@ print(root_part)
 # -
 
 # ### Create faces inside a body.
-# A body can have one (example, surface/open-volume type of body) or multiple faces (close-volume type of body).
+# A body can have one (example, surface/open-volume type of body) or multiple faces
+# (close-volume type of body).
 
 # Each face is then defined by a number of triangles/facets.
 
@@ -176,7 +177,8 @@ for feat in features:
 # -
 
 
-# If you want to retrieve several kind of geometry features at a certain level, give feature_type=Part
+# If you want to retrieve several kind of geometry features at a certain level, give
+# feature_type=Part
 
 # all the geometry features at root part level:
 

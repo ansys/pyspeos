@@ -4,9 +4,11 @@
 
 # ## What is a project?
 
-# A project is a speos simulation container that includes parts, material properties, sensor, sources and simulations.
+# A project is a speos simulation container that includes parts, material properties, sensor,
+# sources and simulations.
 
-# In this tutorial you will learn how to create a project from scratch or from a pre-defined .speos file.
+# In this tutorial you will learn how to create a project from scratch or from a pre-defined .speos
+# file.
 
 # +
 import os
@@ -205,6 +207,7 @@ if os.name == "nt":
     from ansys.speos.core.workflow.open_result import open_result_image
 
     open_result_image(
-        simulation_feature=sim_feat, result_name="ASSEMBLY1.DS (0).Dom Irradiance Sensor (0).xmp"
+        simulation_feature=sim_feat,
+        result_name="ASSEMBLY1.DS (0).Dom Irradiance Sensor (0).xmp",
     )
 # -

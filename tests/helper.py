@@ -23,7 +23,8 @@
 """Unit Test Helper Module.
 
 This module offers some helpers that can be useful in PySpeos unit tests.
-For example a method to check file existence depending on if the file is in the docker container or in local.
+For example a method to check file existence depending on if the file is in the docker container or
+in local.
 """
 
 import os
@@ -130,7 +131,8 @@ def remove_file(path):
     """
     if config.get("SpeosServerOnDocker"):
         subprocess.call(
-            "docker exec " + config.get("SpeosContainerName") + ' rm -rf "' + path + '"', shell=True
+            "docker exec " + config.get("SpeosContainerName") + ' rm -rf "' + path + '"',
+            shell=True,
         )
     else:
         Path(path).unlink()

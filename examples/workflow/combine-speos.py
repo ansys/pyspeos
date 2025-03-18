@@ -10,7 +10,10 @@ from ansys.speos.core import Part, Speos
 from ansys.speos.core.sensor import SensorCamera
 from ansys.speos.core.simulation import SimulationInverse
 from ansys.speos.core.source import SourceLuminaire
-from ansys.speos.core.workflow.combine_speos import SpeosFileInstance, combine_speos
+from ansys.speos.core.workflow.combine_speos import (
+    SpeosFileInstance,
+    combine_speos,
+)
 
 # If using docker container
 tests_data_path = Path("/app") / "assets"
@@ -41,11 +44,37 @@ p = combine_speos(
         ),
         SpeosFileInstance(
             speos_file=str(tests_data_path / "BlueCar.speos" / "BlueCar.speos"),
-            axis_system=[2000, 0, 35000, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+            axis_system=[
+                2000,
+                0,
+                35000,
+                0.0,
+                0.0,
+                -1.0,
+                -1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+            ],
         ),
         SpeosFileInstance(
             speos_file=str(tests_data_path / "RedCar.speos" / "RedCar.speos"),
-            axis_system=[-4000, 0, 48000, 1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0],
+            axis_system=[
+                -4000,
+                0,
+                48000,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                -1.0,
+                0.0,
+                1.0,
+                0.0,
+            ],
         ),
     ],
 )

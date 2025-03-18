@@ -43,7 +43,9 @@ def test_vop_template(speos: Speos):
     # Opaque
     vop_t_opaque = vop_t_db.create(
         ProtoVOPTemplate(
-            name="opaque_0", description="Opaque vop template", opaque=ProtoVOPTemplate.Opaque()
+            name="opaque_0",
+            description="Opaque vop template",
+            opaque=ProtoVOPTemplate.Opaque(),
         )
     )
     assert vop_t_opaque.key != ""

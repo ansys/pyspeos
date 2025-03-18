@@ -207,7 +207,10 @@ def test_part(speos: Speos):
                                 message=create_face_rectangle(
                                     name="face_0",
                                     description="face_0 for body_0",
-                                    metadata={"key_0": "val_0", "key_1": "val_1"},
+                                    metadata={
+                                        "key_0": "val_0",
+                                        "key_1": "val_1",
+                                    },
                                 )
                             ).key
                         ],

@@ -1,24 +1,27 @@
 # # How to modify scene elements
 
-# This tutorial demonstrates how to modify a scene. For example how to modify an existing sensor, how to add a new sensor.
+# This tutorial demonstrates how to modify a scene. For example how to modify an existing sensor,
+# how to add a new sensor.
 # The logic is the same to modify sources, simulations, materials.
 
 # ## Template vs Instance
 
 # When applicable, the speos objects are separated in two different notions: template and instance.
 # The template represents the feature with its inherent characteristics.
-# The instance represents the completion of a template by adding properties such as spatial position, link to geometry, etc.
+# The instance represents the completion of a template by adding properties such as spatial
+# position, link to geometry, etc.
 
 # ### Template
 
 # The template objects are handled by a manager.
-# It was explained how to interact with them in the kernel-object-link example ("How to use an ObjectLink").
-# The interesting thing about the template notion is that the same template can be used several times with different properties.
+# It was explained how to interact with them in the kernel-object-link example
+# ("How to use an ObjectLink"). The interesting thing about the template notion is that the same
+# template can be used several times with different properties.
 
 # ### Instance
 
-# The template objects are instantiated in the Scene object, with properties needed to place them at the wanted position,
-# or attached to the wanted geometry.
+# The template objects are instantiated in the Scene object, with properties needed to place them at
+# the wanted position, or attached to the wanted geometry.
 # The Scene object will gather all features that you need to run a job (compute a simulation).
 
 # +
@@ -135,28 +138,27 @@ sensor_t_db = speos.client.sensor_templates()  # Retrieve access to sensor templ
 
 # Create protobuf message SensorTemplate
 sensor_t_data = ProtoSensorTemplate(name="CameraFromScratch")
-sensor_t_data.camera_sensor_template.sensor_mode_photometric.acquisition_integration = 0.01
-sensor_t_data.camera_sensor_template.sensor_mode_photometric.acquisition_lag_time = 0
-sensor_t_data.camera_sensor_template.sensor_mode_photometric.transmittance_file_uri = str(
+photometric = sensor_t_data.camera_sensor_template.sensor_mode_photometric
+photometric.acquisition_integration = 0.01
+photometric.acquisition_lag_time = 0
+photometric.transmittance_file_uri = str(
     tests_data_path / "CameraInputFiles" / "CameraTransmittance.spectrum"
 )
-sensor_t_data.camera_sensor_template.sensor_mode_photometric.gamma_correction = 2.2
-sensor_t_data.camera_sensor_template.sensor_mode_photometric.png_bits = (
-    camera_sensor_pb2.EnumSensorCameraPNGBits.PNG_16
-)
-sensor_t_data.camera_sensor_template.sensor_mode_photometric.color_mode_color.red_spectrum_file_uri = str(
+photometric.gamma_correction = 2.2
+photometric.png_bits = camera_sensor_pb2.EnumSensorCameraPNGBits.PNG_16
+photometric.color_mode_color.red_spectrum_file_uri = str(
     tests_data_path / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
 )
-sensor_t_data.camera_sensor_template.sensor_mode_photometric.color_mode_color.green_spectrum_file_uri = str(
+photometric.color_mode_color.green_spectrum_file_uri = str(
     tests_data_path / "CameraInputFiles" / "CameraSensitivityGreen.spectrum"
 )
-sensor_t_data.camera_sensor_template.sensor_mode_photometric.color_mode_color.blue_spectrum_file_uri = str(
+photometric.color_mode_color.blue_spectrum_file_uri = str(
     tests_data_path / "CameraInputFiles" / "CameraSensitivityBlue.spectrum"
 )
-sensor_t_data.camera_sensor_template.sensor_mode_photometric.color_mode_color.balance_mode_none.SetInParent()
-sensor_t_data.camera_sensor_template.sensor_mode_photometric.wavelengths_range.w_start = 400
-sensor_t_data.camera_sensor_template.sensor_mode_photometric.wavelengths_range.w_end = 700
-sensor_t_data.camera_sensor_template.sensor_mode_photometric.wavelengths_range.w_sampling = 13
+photometric.color_mode_color.balance_mode_none.SetInParent()
+photometric.wavelengths_range.w_start = 400
+photometric.wavelengths_range.w_end = 700
+photometric.wavelengths_range.w_sampling = 13
 sensor_t_data.camera_sensor_template.focal_length = 5
 sensor_t_data.camera_sensor_template.imager_distance = 10
 sensor_t_data.camera_sensor_template.f_number = 20
@@ -177,7 +179,9 @@ print(sensor_t_new)
 
 # +
 camera_i_2 = ProtoScene.SensorInstance(name=sensor_t_new.get().name + ".1")
-camera_i_2.sensor_guid = sensor_t_new.key  # An instance has to reference a template - here we use the SensorTemplateLink's key that we got just above.
+# An instance has to reference a template - here we use the SensorTemplateLink's key that we got
+camera_i_2.sensor_guid = sensor_t_new.key
+# just above.
 camera_i_2.camera_properties.axis_system.extend(
     [50, 50, 50, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 )  # Choose axis system
@@ -192,7 +196,8 @@ my_scene_data = my_scene.get()  # Retrieve scene datamodel
 # Modify scene datamodel to add our camera instance
 my_scene_data.sensors.append(camera_i_2)
 
-# We can also reference it in the first simulation, so that it will be taken into account by this simulation
+# We can also reference it in the first simulation, so that it will be taken into account by this
+# simulation
 my_scene_data.simulations[0].sensor_paths.append(camera_i_2.name)  # We reference by name
 
 # Update value in db
@@ -202,7 +207,8 @@ my_scene.set(my_scene_data)
 print(my_scene)
 # -
 
-# When loading a speos file into a scene, this creates many objects (source templates, sensor templates, vop template, sop templates).
+# When loading a speos file into a scene, this creates many objects
+# (source templates, sensor templates, vop template, sop templates).
 # Then at the end of the example, we just clean all databases
 
 # +

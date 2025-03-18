@@ -94,7 +94,8 @@ class BaseSensor:
         else:
             self._unique_id = sensor_instance.metadata["UniqueId"]
             self.sensor_template_link = self._project.client[sensor_instance.sensor_guid]
-            # reset will fill _sensor_instance and _sensor_template from respectively project (using _unique_id) and sensor_template_link
+            # reset will fill _sensor_instance and _sensor_template from respectively project
+            # (using _unique_id) and sensor_template_link
             self.reset()
 
     class WavelengthsRange:
@@ -113,7 +114,8 @@ class BaseSensor:
 
         Notes
         -----
-        **Do not instantiate this class yourself**, use set_wavelengths_range method available in sensor classes.
+        **Do not instantiate this class yourself**, use set_wavelengths_range method available in
+        sensor classes.
         """
 
         def __init__(
@@ -171,7 +173,8 @@ class BaseSensor:
             Parameters
             ----------
             value : int
-                Number of wavelengths to be taken into account between the minimum and maximum wavelengths range.
+                Number of wavelengths to be taken into account between the minimum and maximum
+                wavelengths range.
                 By default, ``13``.
 
             Returns
@@ -198,7 +201,8 @@ class BaseSensor:
 
         Notes
         -----
-        **Do not instantiate this class yourself**, use set_dimensions method available in sensor classes.
+        **Do not instantiate this class yourself**, use set_dimensions method available in sensor
+        classes.
         """
 
         def __init__(
@@ -321,7 +325,8 @@ class BaseSensor:
     class Colorimetric:
         """Type of sensor : Colorimetric.
 
-        This kind of sensor will generate color results without any spectral data or layer separation (in lx or W//m2).
+        This kind of sensor will generate color results without any spectral data or layer
+        separation in lx or W//m2.
         By default, it uses a default wavelengths range.
 
         Parameters
@@ -335,7 +340,8 @@ class BaseSensor:
 
         Notes
         -----
-        **Do not instantiate this class yourself**, use set_type_colorimetric method available in sensor classes.
+        **Do not instantiate this class yourself**, use set_type_colorimetric method available in
+        sensor classes.
         """
 
         def __init__(
@@ -381,7 +387,8 @@ class BaseSensor:
     class Spectral:
         """Type of sensor : Spectral.
 
-        This kind of sensor will generate color results and spectral data separated by wavelength (in lx or W/m2).
+        This kind of sensor will generate color results and spectral data separated by wavelength
+        in lx or W/m2.
         By default, it uses a default wavelengths range.
 
         Parameters
@@ -395,7 +402,8 @@ class BaseSensor:
 
         Notes
         -----
-        **Do not instantiate this class yourself**, use set_type_spectral method available in sensor classes.
+        **Do not instantiate this class yourself**, use set_type_spectral method available in
+        sensor classes.
         """
 
         def __init__(
@@ -463,7 +471,8 @@ class BaseSensor:
 
         Parameters
         ----------
-        layer_type_face : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance.LayerTypeFace
+        layer_type_face : \
+        ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance.LayerTypeFace
             LayerTypeFace protobuf object to modify.
         default_values : bool
             Uses default values when True.
@@ -472,7 +481,8 @@ class BaseSensor:
 
         Notes
         -----
-        **Do not instantiate this class yourself**, use set_layer_type_face method available in sensor classes.
+        **Do not instantiate this class yourself**, use set_layer_type_face method available in
+        sensor classes.
         """
 
         def __init__(
@@ -491,7 +501,9 @@ class BaseSensor:
                 # Default values
                 self.set_sca_filtering_mode_last_impact()
 
-        def set_sca_filtering_mode_intersected_one_time(self) -> BaseSensor.LayerTypeFace:
+        def set_sca_filtering_mode_intersected_one_time(
+            self,
+        ) -> BaseSensor.LayerTypeFace:
             """Set the filtering mode as intersected one time.
 
             Returns
@@ -504,7 +516,9 @@ class BaseSensor:
             )
             return self
 
-        def set_sca_filtering_mode_last_impact(self) -> BaseSensor.LayerTypeFace:
+        def set_sca_filtering_mode_last_impact(
+            self,
+        ) -> BaseSensor.LayerTypeFace:
             """Set the filtering mode as last impact.
 
             Returns
@@ -551,7 +565,8 @@ class BaseSensor:
 
         Parameters
         ----------
-        layer_type_sequence : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance.LayerTypeSequence
+        layer_type_sequence : \
+        ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance.LayerTypeSequence
             LayerTypeSequence protobuf object to modify.
         default_values : bool
             Uses default values when True.
@@ -560,7 +575,8 @@ class BaseSensor:
 
         Notes
         -----
-        **Do not instantiate this class yourself**, use set_layer_type_sequence method available in sensor classes.
+        **Do not instantiate this class yourself**, use set_layer_type_sequence method available in
+        sensor classes.
         """
 
         def __init__(
@@ -596,7 +612,9 @@ class BaseSensor:
             self._layer_type_sequence.maximum_nb_of_sequence = value
             return self
 
-        def set_define_sequence_per_geometries(self) -> BaseSensor.LayerTypeSequence:
+        def set_define_sequence_per_geometries(
+            self,
+        ) -> BaseSensor.LayerTypeSequence:
             """Define sequence per geometries.
 
             Returns
@@ -630,7 +648,8 @@ class BaseSensor:
 
         Parameters
         ----------
-        layer_type_incidence_angle : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance.LayerTypeIncidenceAngle
+        layer_type_incidence_angle : \
+        ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance.LayerTypeIncidenceAngle
             LayerTypeIncidenceAngle protobuf object to modify.
         default_values : bool
             Uses default values when True.
@@ -639,7 +658,8 @@ class BaseSensor:
 
         Notes
         -----
-        **Do not instantiate this class yourself**, use set_layer_type_incidence_angle method available in sensor classes.
+        **Do not instantiate this class yourself**, use set_layer_type_incidence_angle method
+        available in sensor classes.
         """
 
         def __init__(
@@ -682,7 +702,8 @@ class BaseSensor:
         if self._project.scene_link and self._unique_id is not None:
             scene_data = self._project.scene_link.get()
             ssr_inst = next(
-                (x for x in scene_data.sensors if x.metadata["UniqueId"] == self._unique_id), None
+                (x for x in scene_data.sensors if x.metadata["UniqueId"] == self._unique_id),
+                None,
             )
             if ssr_inst is not None:
                 out_dict = proto_message_utils._replace_guids(
@@ -690,7 +711,8 @@ class BaseSensor:
                 )
             else:
                 out_dict = proto_message_utils._replace_guids(
-                    speos_client=self._project.client, message=self._sensor_instance
+                    speos_client=self._project.client,
+                    message=self._sensor_instance,
                 )
         else:
             out_dict = proto_message_utils._replace_guids(
@@ -701,11 +723,13 @@ class BaseSensor:
             # SensorTemplate
             if self.sensor_template_link is None:
                 out_dict["sensor"] = proto_message_utils._replace_guids(
-                    speos_client=self._project.client, message=self._sensor_template
+                    speos_client=self._project.client,
+                    message=self._sensor_template,
                 )
             else:
                 out_dict["sensor"] = proto_message_utils._replace_guids(
-                    speos_client=self._project.client, message=self.sensor_template_link.get()
+                    speos_client=self._project.client,
+                    message=self.sensor_template_link.get(),
                 )
 
         proto_message_utils._replace_properties(json_dict=out_dict)
@@ -728,7 +752,10 @@ class BaseSensor:
         info = proto_message_utils._value_finder_key_startswith(dict_var=self._to_dict(), key=key)
         content = list(info)
         if len(content) != 0:
-            content.sort(key=lambda x: SequenceMatcher(None, x[0], key).ratio(), reverse=True)
+            content.sort(
+                key=lambda x: SequenceMatcher(None, x[0], key).ratio(),
+                reverse=True,
+            )
             return content[0][1]
         info = proto_message_utils._flatten_dict(dict_var=self._to_dict())
         print("Used key: {} not found in key list: {}.".format(key, info.keys()))
@@ -740,7 +767,8 @@ class BaseSensor:
         if self._project.scene_link and self._unique_id is not None:
             scene_data = self._project.scene_link.get()
             ssr_inst = next(
-                (x for x in scene_data.sensors if x.metadata["UniqueId"] == self._unique_id), None
+                (x for x in scene_data.sensors if x.metadata["UniqueId"] == self._unique_id),
+                None,
             )
             if ssr_inst is None:
                 out_str += "local: "
@@ -759,7 +787,8 @@ class BaseSensor:
         ansys.speos.core.sensor.BaseSensor
             Sensor feature.
         """
-        # The _unique_id will help to find the correct item in the scene.sensors (the list of SensorInstance)
+        # The _unique_id will help to find the correct item in the scene.sensors:
+        # the list of SensorInstance
         if self._unique_id is None:
             self._unique_id = str(uuid.uuid4())
             self._sensor_instance.metadata["UniqueId"] = self._unique_id
@@ -782,7 +811,8 @@ class BaseSensor:
 
             # Look if an element corresponds to the _unique_id
             ssr_inst = next(
-                (x for x in scene_data.sensors if x.metadata["UniqueId"] == self._unique_id), None
+                (x for x in scene_data.sensors if x.metadata["UniqueId"] == self._unique_id),
+                None,
             )
             if ssr_inst is not None:
                 if ssr_inst != self._sensor_instance:
@@ -816,7 +846,8 @@ class BaseSensor:
             scene_data = self._project.scene_link.get()  # retrieve scene data
             # Look if an element corresponds to the _unique_id
             ssr_inst = next(
-                (x for x in scene_data.sensors if x.metadata["UniqueId"] == self._unique_id), None
+                (x for x in scene_data.sensors if x.metadata["UniqueId"] == self._unique_id),
+                None,
             )
             if ssr_inst is not None:
                 self._sensor_instance = ssr_inst
@@ -843,7 +874,8 @@ class BaseSensor:
         # Remove the sensor from the scene
         scene_data = self._project.scene_link.get()  # retrieve scene data
         ssr_inst = next(
-            (x for x in scene_data.sensors if x.metadata["UniqueId"] == self._unique_id), None
+            (x for x in scene_data.sensors if x.metadata["UniqueId"] == self._unique_id),
+            None,
         )
         if ssr_inst is not None:
             scene_data.sensors.remove(ssr_inst)
@@ -859,7 +891,8 @@ class SensorCamera(BaseSensor):
     """Sensor feature: Camera.
 
     By default, regarding inherent characteristics, a camera with mode photometric is chosen.
-    By default, regarding properties, an axis system is selected to position the sensor, and no layer separation is chosen.
+    By default, regarding properties, an axis system is selected to position the sensor,
+    and no layer separation is chosen.
 
     Parameters
     ----------
@@ -884,7 +917,8 @@ class SensorCamera(BaseSensor):
     class Photometric:
         """Mode of camera sensor : Photometric.
 
-        This allows to set every Camera Sensor parameters, including the photometric definition parameters.
+        This allows to set every Camera Sensor parameters, including the photometric definition
+        parameters.
         By default, a camera with mode color is chosen (vs monochromatic mode).
 
         Parameters
@@ -898,7 +932,8 @@ class SensorCamera(BaseSensor):
 
         Notes
         -----
-        **Do not instantiate this class yourself**, use set_type_photometric method available in sensor classes.
+        **Do not instantiate this class yourself**, use set_type_photometric method available in
+        sensor classes.
 
         """
 
@@ -919,19 +954,22 @@ class SensorCamera(BaseSensor):
 
             Notes
             -----
-            **Do not instantiate this class yourself**, use set_mode_color method available in photometric class.
+            **Do not instantiate this class yourself**, use set_mode_color method available in
+            photometric class.
 
             """
 
             class BalanceModeUserWhite:
                 """BalanceMode : UserWhite.
 
-                In addition to the basic treatment, it allows to apply specific coefficients to the red, green, blue images.
+                In addition to the basic treatment, it allows to apply specific coefficients to the
+                red, green, blue images.
                 By default, coefficients of 1 are chosen for red, green and blue images.
 
                 Parameters
                 ----------
-                balance_mode_user_white : ansys.api.speos.sensor.v1.camera_sensor_pb2.SensorCameraBalanceModeUserwhite
+                balance_mode_user_white : ansys.api.speos.sensor.v1.camera_sensor_pb2.
+                SensorCameraBalanceModeUserwhite
                     SensorCameraBalanceModeUserwhite protobuf object to modify.
                 default_values : bool
                     Uses default values when True.
@@ -940,7 +978,8 @@ class SensorCamera(BaseSensor):
 
                 Notes
                 -----
-                **Do not instantiate this class yourself**, use set_balance_mode_user_white method available in color class.
+                **Do not instantiate this class yourself**, use set_balance_mode_user_white method
+                available in color class.
 
                 """
 
@@ -1020,19 +1059,22 @@ class SensorCamera(BaseSensor):
                 """BalanceMode : DisplayPrimaries.
 
                 Spectral results are converted in a three-channel result.
-                Then a post-treatment is realized to take the distortion induced by the display devices into account.
+                Then a post-treatment is realized to take the distortion induced by the display
+                devices into account.
                 With this method, displayed results are similar to what the camera really gets.
 
                 Parameters
                 ----------
-                balance_mode_display : ansys.api.speos.sensor.v1.camera_sensor_pb2.SensorCameraBalanceModeDisplay
+                balance_mode_display : ansys.api.speos.sensor.v1.camera_sensor_pb2.
+                SensorCameraBalanceModeDisplay
                     SensorCameraBalanceModeDisplay protobuf object to modify.
                 default_values : bool
                     Uses default values when True.
 
                 Notes
                 -----
-                **Do not instantiate this class yourself**, use set_balance_mode_display_primaries method available in color class.
+                **Do not instantiate this class yourself**, use set_balance_mode_display_primaries
+                method available in color class.
 
                 """
 
@@ -1177,9 +1219,9 @@ class SensorCamera(BaseSensor):
             def set_balance_mode_none(self) -> SensorCamera.Photometric.Color:
                 """Set the balance mode as none.
 
-                The spectral transmittance of the optical system and the spectral sensitivity for each channel are applied
-                to the detected spectral image before the conversion in a three-channel result.
-                This method is referred to as the basic conversion.
+                The spectral transmittance of the optical system and the spectral sensitivity for
+                each channel are applied to the detected spectral image before the conversion in
+                a three-channel result. This method is referred to as the basic conversion.
 
                 Returns
                 -------
@@ -1190,12 +1232,15 @@ class SensorCamera(BaseSensor):
                 self._mode_color.balance_mode_none.SetInParent()
                 return self
 
-            def set_balance_mode_grey_world(self) -> SensorCamera.Photometric.Color:
+            def set_balance_mode_grey_world(
+                self,
+            ) -> SensorCamera.Photometric.Color:
                 """Set the balance mode as grey world.
 
                 The grey world assumption states that the content of the image is grey on average.
-                This method converts spectral results in a three-channel result with the basic conversion.
-                Then it computes and applies coefficients to the red, green and blue images to make sure their averages are equal.
+                This method converts spectral results in a three-channel result with the basic
+                conversion. Then it computes and applies coefficients to the red, green and blue
+                images to make sure their averages are equal.
 
                 Returns
                 -------
@@ -1211,7 +1256,8 @@ class SensorCamera(BaseSensor):
             ) -> SensorCamera.Photometric.Color.BalanceModeUserWhite:
                 """Set the balance mode as user white.
 
-                In addition to the basic treatment, it allows to apply specific coefficients to the red, green, blue images.
+                In addition to the basic treatment, it allows to apply specific coefficients to the
+                red, green, blue images.
 
                 Returns
                 -------
@@ -1225,7 +1271,9 @@ class SensorCamera(BaseSensor):
                         default_values=False,
                         stable_ctr=True,
                     )
-                elif type(self._mode) != SensorCamera.Photometric.Color.BalanceModeUserWhite:
+                elif not isinstance(
+                    self._mode, SensorCamera.Photometric.Color.BalanceModeUserWhite
+                ):
                     # if the _mode is not BalanceModeUserWhite then we create a new type.
                     self._mode = SensorCamera.Photometric.Color.BalanceModeUserWhite(
                         balance_mode_user_white=self._mode_color.balance_mode_userwhite,
@@ -1245,8 +1293,9 @@ class SensorCamera(BaseSensor):
                 """Set the balance mode as display primaries.
 
                 Spectral results are converted in a three-channel result.
-                Then a post-treatment is realized to take the distortion induced by the display devices into account.
-                With this method, displayed results are similar to what the camera really gets.
+                Then a post-treatment is realized to take the distortion induced by the display
+                devices into account. With this method, displayed results are similar to what the
+                camera really gets.
 
                 Returns
                 -------
@@ -1260,10 +1309,13 @@ class SensorCamera(BaseSensor):
                         default_values=False,
                         stable_ctr=True,
                     )
-                elif type(self._mode) != SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries:
+                elif not isinstance(
+                    self._mode, SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries
+                ):
                     # if the _mode is not BalanceModeDisplayPrimaries then we create a new type.
                     self._mode = SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries(
-                        balance_mode_display=self._mode_color.balance_mode_display, stable_ctr=True
+                        balance_mode_display=self._mode_color.balance_mode_display,
+                        stable_ctr=True,
                     )
                 elif self._mode._balance_mode_display is not self._mode_color.balance_mode_display:
                     # Happens in case of feature reset (to be sure to always modify correct data)
@@ -1288,7 +1340,8 @@ class SensorCamera(BaseSensor):
 
             # Attribute to keep track of wavelength range object
             self._wavelengths_range = SensorCamera.WavelengthsRange(
-                wavelengths_range=self._mode_photometric.wavelengths_range, stable_ctr=stable_ctr
+                wavelengths_range=self._mode_photometric.wavelengths_range,
+                stable_ctr=stable_ctr,
             )
 
             if default_values:
@@ -1464,10 +1517,11 @@ class SensorCamera(BaseSensor):
                     default_values=False,
                     stable_ctr=True,
                 )
-            elif type(self._mode) != SensorCamera.Photometric.Color:
+            elif not isinstance(self._mode, SensorCamera.Photometric.Color):
                 # if the _mode is not Color then we create a new type.
                 self._mode = SensorCamera.Photometric.Color(
-                    mode_color=self._mode_photometric.color_mode_color, stable_ctr=True
+                    mode_color=self._mode_photometric.color_mode_color,
+                    stable_ctr=True,
                 )
             elif self._mode._mode_color is not self._mode_photometric.color_mode_color:
                 # Happens in case of feature reset (to be sure to always modify correct data)
@@ -1480,7 +1534,8 @@ class SensorCamera(BaseSensor):
             Parameters
             ----------
             uri : str
-                Trajectory file, used to define the position and orientations of the Camera sensor in time.
+                Trajectory file, used to define the position and orientations of the Camera sensor
+                in time.
 
             Returns
             -------
@@ -1576,7 +1631,8 @@ class SensorCamera(BaseSensor):
         Parameters
         ----------
         value : float
-            Imager distance (mm). The imager is located at the focal point. The Imager distance has no impact on the result.
+            Imager distance (mm). The imager is located at the focal point.
+            The Imager distance has no impact on the result.
             By default, ``10``.
 
         Returns
@@ -1593,7 +1649,8 @@ class SensorCamera(BaseSensor):
         Parameters
         ----------
         value : float
-            F-number represents the aperture of the front lens. F number has no impact on the result.
+            F-number represents the aperture of the front lens.
+            F number has no impact on the result.
             By default, ``20``.
 
         Returns
@@ -1610,7 +1667,8 @@ class SensorCamera(BaseSensor):
         Parameters
         ----------
         uri : str
-            Optical aberration that deforms and bends straight lines. The distortion is expressed in a .OPTDistortion file.
+            Optical aberration that deforms and bends straight lines. The distortion is expressed in
+            a .OPTDistortion file.
 
         Returns
         -------
@@ -1705,7 +1763,8 @@ class SensorCamera(BaseSensor):
     def set_mode_photometric(self) -> SensorCamera.Photometric:
         """Set mode photometric for the camera sensor.
 
-        This allows setting every Camera Sensor parameter, including the photometric definition parameters.
+        This allows setting every Camera Sensor parameter, including the photometric definition
+        parameters.
 
         Returns
         -------
@@ -1722,7 +1781,7 @@ class SensorCamera(BaseSensor):
                 default_values=False,
                 stable_ctr=True,
             )
-        elif type(self._type) != SensorCamera.Photometric:
+        elif not isinstance(self._type, SensorCamera.Photometric):
             # if the _type is not Photometric then we create a new type.
             self._type = SensorCamera.Photometric(
                 mode_photometric=self._sensor_template.camera_sensor_template.sensor_mode_photometric,
@@ -1762,9 +1821,9 @@ class SensorCamera(BaseSensor):
 class SensorIrradiance(BaseSensor):
     """Sensor feature: Irradiance.
 
-    By default, regarding inherent characteristics, an irradiance sensor of type photometric and illuminance type planar is chosen.
-    By default, regarding properties, an axis system is selected to position the sensor, no layer separation and no ray file generation
-    are chosen.
+    By default, regarding inherent characteristics, an irradiance sensor of type photometric and
+    illuminance type planar is chosen. By default, regarding properties, an axis system is
+    selected to position the sensor, no layer separation and no ray file generation are chosen.
 
     Parameters
     ----------
@@ -1898,7 +1957,7 @@ class SensorIrradiance(BaseSensor):
         -------
         Union[\
             None,\
-            ansys.speos.core.sensor.Irradiance,\
+            ansys.speos.core.sensor.SensorIrradiance,\
             ansys.speos.core.sensor.BaseSensor.LayerTypeFace,\
             ansys.speos.core.sensor.BaseSensor.LayerTypeSequence,\
             ansys.speos.core.sensor.BaseSensor.LayerTypeIncidenceAngle\
@@ -1942,7 +2001,8 @@ class SensorIrradiance(BaseSensor):
     def set_type_colorimetric(self) -> BaseSensor.Colorimetric:
         """Set type colorimetric.
 
-        The sensor will generate color results without any spectral data or layer separation (in lx or W//m2).
+        The sensor will generate color results without any spectral data or layer separation
+        in lx or W//m2.
 
         Returns
         -------
@@ -1958,7 +2018,7 @@ class SensorIrradiance(BaseSensor):
                 default_values=False,
                 stable_ctr=True,
             )
-        elif type(self._type) != BaseSensor.Colorimetric:
+        elif not isinstance(self._type, BaseSensor.Colorimetric):
             # if the _type is not Colorimetric then we create a new type.
             self._type = BaseSensor.Colorimetric(
                 sensor_type_colorimetric=self._sensor_template.irradiance_sensor_template.sensor_type_colorimetric,
@@ -1991,7 +2051,8 @@ class SensorIrradiance(BaseSensor):
     def set_type_spectral(self) -> BaseSensor.Spectral:
         """Set type spectral.
 
-        The sensor will generate color results and spectral data separated by wavelength (in lx or W/m2).
+        The sensor will generate color results and spectral data separated by wavelength
+        in lx or W/m2.
 
         Returns
         -------
@@ -2007,7 +2068,7 @@ class SensorIrradiance(BaseSensor):
                 default_values=False,
                 stable_ctr=True,
             )
-        elif type(self._type) != BaseSensor.Spectral:
+        elif not isinstance(self._type, BaseSensor.Spectral):
             # if the _type is not Spectral then we create a new type.
             self._type = BaseSensor.Spectral(
                 sensor_type_spectral=self._sensor_template.irradiance_sensor_template.sensor_type_spectral,
@@ -2034,7 +2095,8 @@ class SensorIrradiance(BaseSensor):
         ----------
         integration_direction : List[float], optional
             Sensor global integration direction [x,y,z].
-            By default, ``None``. None means that a default direction is chosen (anti-normal of the sensor plane).
+            By default, ``None``. None means that a default direction is chosen
+            (anti-normal of the sensor plane).
 
         Returns
         -------
@@ -2092,7 +2154,8 @@ class SensorIrradiance(BaseSensor):
         ----------
         integration_direction : List[float], optional
             Sensor global integration direction [x,y,z].
-            By default, ``None``. None means that a default direction is chosen (anti-normal of the sensor plane).
+            By default, ``None``. None means that a default direction is chosen
+            (anti-normal of the sensor plane).
 
         Returns
         -------
@@ -2236,7 +2299,7 @@ class SensorIrradiance(BaseSensor):
                 default_values=False,
                 stable_ctr=True,
             )
-        elif type(self._layer_type) != BaseSensor.LayerTypeFace:
+        elif not isinstance(self._layer_type, BaseSensor.LayerTypeFace):
             # if the _layer_type is not LayerTypeFace then we create a new type.
             self._layer_type = BaseSensor.LayerTypeFace(
                 layer_type_face=self._sensor_instance.irradiance_properties.layer_type_face,
@@ -2269,7 +2332,7 @@ class SensorIrradiance(BaseSensor):
                 default_values=False,
                 stable_ctr=True,
             )
-        elif type(self._layer_type) != BaseSensor.LayerTypeSequence:
+        elif not isinstance(self._layer_type, BaseSensor.LayerTypeSequence):
             # if the _type is not LayerTypeSequence then we create a new type.
             self._layer_type = BaseSensor.LayerTypeSequence(
                 layer_type_sequence=self._sensor_instance.irradiance_properties.layer_type_sequence,
@@ -2297,7 +2360,9 @@ class SensorIrradiance(BaseSensor):
         self._layer_type = None
         return self
 
-    def set_layer_type_incidence_angle(self) -> BaseSensor.LayerTypeIncidenceAngle:
+    def set_layer_type_incidence_angle(
+        self,
+    ) -> BaseSensor.LayerTypeIncidenceAngle:
         """Define layer separation as by incidence angle.
 
         Returns
@@ -2314,7 +2379,7 @@ class SensorIrradiance(BaseSensor):
                 default_values=False,
                 stable_ctr=True,
             )
-        elif type(self._layer_type) != BaseSensor.LayerTypeIncidenceAngle:
+        elif not isinstance(self._layer_type, BaseSensor.LayerTypeIncidenceAngle):
             # if the _layer_type is not LayerTypeIncidenceAngle then we create a new type.
             self._layer_type = BaseSensor.LayerTypeIncidenceAngle(
                 layer_type_incidence_angle=self._sensor_instance.irradiance_properties.layer_type_incidence_angle,
@@ -2359,7 +2424,8 @@ class SensorRadiance(BaseSensor):
     """Sensor feature: Radiance.
 
     By default, regarding inherent characteristics, a radiance sensor of type photometric is chosen.
-    By default, regarding properties, an axis system is selected to position the sensor and no layer separation is chosen.
+    By default, regarding properties, an axis system is selected to position the sensor and no layer
+    separation is chosen.
 
     Parameters
     ----------
@@ -2478,12 +2544,18 @@ class SensorRadiance(BaseSensor):
             return None
 
     @property
-    def layer(self) -> Union[None, BaseSensor.LayerTypeFace, BaseSensor.LayerTypeSequence]:
+    def layer(
+        self,
+    ) -> Union[None, BaseSensor.LayerTypeFace, BaseSensor.LayerTypeSequence]:
         """Property containing all options in regard to the layer separation property.
 
         Returns
         -------
-        Union[None, ansys.speos.core.sensor.BaseSensor.LayerTypeFace, ansys.speos.core.sensor.BaseSensor.LayerTypeSequence]
+        Union[\
+            None,\
+            ansys.speos.core.sensor.BaseSensor.LayerTypeFace,\
+            ansys.speos.core.sensor.BaseSensor.LayerTypeSequence\
+        ]
             Instance of Layer type Class for this sensor feature
         """
         return self._layer_type
@@ -2523,7 +2595,8 @@ class SensorRadiance(BaseSensor):
     def set_type_colorimetric(self) -> BaseSensor.Colorimetric:
         """Set type colorimetric.
 
-        The sensor will generate color results without any spectral data or layer separation (in lx or W//m2).
+        The sensor will generate color results without any spectral data or layer separation
+        in lx or W//m2.
 
         Returns
         -------
@@ -2539,7 +2612,7 @@ class SensorRadiance(BaseSensor):
                 default_values=False,
                 stable_ctr=True,
             )
-        elif type(self._type) != BaseSensor.Colorimetric:
+        elif not isinstance(self._type, BaseSensor.Colorimetric):
             # if the _type is not Colorimetric then we create a new type.
             self._type = BaseSensor.Colorimetric(
                 sensor_type_colorimetric=self._sensor_template.radiance_sensor_template.sensor_type_colorimetric,
@@ -2572,7 +2645,8 @@ class SensorRadiance(BaseSensor):
     def set_type_spectral(self) -> BaseSensor.Spectral:
         """Set type spectral.
 
-        The sensor will generate color results and spectral data separated by wavelength (in lx or W/m2).
+        The sensor will generate color results and spectral data separated by wavelength
+        in lx or W/m2.
 
         Returns
         -------
@@ -2588,7 +2662,7 @@ class SensorRadiance(BaseSensor):
                 default_values=False,
                 stable_ctr=True,
             )
-        elif type(self._type) != BaseSensor.Spectral:
+        elif not isinstance(self._type, BaseSensor.Spectral):
             # if the _type is not Spectral then we create a new type.
             self._type = BaseSensor.Spectral(
                 sensor_type_spectral=self._sensor_template.radiance_sensor_template.sensor_type_spectral,
@@ -2658,8 +2732,9 @@ class SensorRadiance(BaseSensor):
         return self
 
     def set_observer_point(self, value: Optional[List[float]] = None) -> SensorRadiance:
-        """Set the position of the observer point. This is optional, because the focal length is used by default.
+        """Set the position of the observer point.
 
+        This is optional, because the focal length is used by default.
         Choosing to set an observer point will make the focal length ignored.
 
         Parameters
@@ -2722,7 +2797,7 @@ class SensorRadiance(BaseSensor):
                 default_values=False,
                 stable_ctr=True,
             )
-        elif type(self._layer_type) != BaseSensor.LayerTypeFace:
+        elif not isinstance(self._layer_type, BaseSensor.LayerTypeFace):
             # if the _layer_type is not LayerTypeFace then we create a new type.
             self._layer_type = BaseSensor.LayerTypeFace(
                 layer_type_face=self._sensor_instance.radiance_properties.layer_type_face,
@@ -2755,7 +2830,7 @@ class SensorRadiance(BaseSensor):
                 default_values=False,
                 stable_ctr=True,
             )
-        elif type(self._layer_type) != BaseSensor.LayerTypeSequence:
+        elif not isinstance(self._layer_type, BaseSensor.LayerTypeSequence):
             # if the _layer_type is not LayerTypeSequence then we create a new type.
             self._layer_type = BaseSensor.LayerTypeSequence(
                 layer_type_sequence=self._sensor_instance.radiance_properties.layer_type_sequence,
