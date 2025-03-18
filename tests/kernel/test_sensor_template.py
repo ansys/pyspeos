@@ -22,7 +22,6 @@
 
 """Test source template."""
 
-import os
 from pathlib import Path
 
 from ansys.api.speos.sensor.v1 import (

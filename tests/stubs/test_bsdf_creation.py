@@ -23,7 +23,6 @@
 """Unit test for BSDF creation service."""
 
 import math
-import os
 from pathlib import Path
 
 import ansys.api.speos.bsdf.v1.bsdf_creation_pb2 as bsdf_creation__v1__pb2

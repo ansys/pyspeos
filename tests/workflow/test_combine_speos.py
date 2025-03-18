@@ -22,7 +22,6 @@
 
 """Test using combine_speos module in workflow layer."""
 
-import os
 from pathlib import Path
 
 from ansys.speos.core import OptProp, Part, Project, Speos

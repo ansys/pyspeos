@@ -21,7 +21,6 @@
 # SOFTWARE.
 """Import geometries and materials from several SPEOS files to a project."""
 
-import os
 from pathlib import Path
 from typing import List, Optional
 

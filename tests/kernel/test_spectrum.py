@@ -22,7 +22,6 @@
 
 """Test basic spectrum database connection."""
 
-import os
 from pathlib import Path
 
 from ansys.speos.core.kernel.spectrum import ProtoSpectrum

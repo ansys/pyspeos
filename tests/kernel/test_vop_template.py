@@ -23,7 +23,6 @@
 """Test basic vop template database connection."""
 
 import json
-import os
 from pathlib import Path
 
 import grpc

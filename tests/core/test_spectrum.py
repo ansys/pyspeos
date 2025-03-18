@@ -22,7 +22,6 @@
 
 """Test basic using spectrums."""
 
-import os
 from pathlib import Path
 
 from ansys.speos.core import Spectrum, Speos

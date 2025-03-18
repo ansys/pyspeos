@@ -23,7 +23,6 @@
 """Unit Test for Eulumdat service."""
 
 import logging
-import os
 from pathlib import Path
 
 from ansys.api.speos.intensity_distributions.v1 import (
@@ -235,17 +234,17 @@ def test_grpc_eulumdat_intensity(speos: Speos):
     eulumdat = createEulumdatIntensity()
 
     logging.debug("Sending protocol buffer to server")
-    import_response = eulumdat_pb2.Import_Response()
-    import_response = stub.Import(eulumdat)
+    eulumdat_pb2.Import_Response()
+    stub.Import(eulumdat)
 
     logging.debug("Writing as {save_name.file_uri}")
-    save_response = eulumdat_pb2.Save_Response()
-    save_response = stub.Save(save_name)
+    eulumdat_pb2.Save_Response()
+    stub.Save(save_name)
     assert helper.does_file_exist(save_name.file_uri)
 
     logging.debug("Reading {load_name.file_uri} back")
-    load_response = eulumdat_pb2.Load_Response()
-    load_response = stub.Load(load_name)
+    eulumdat_pb2.Load_Response()
+    stub.Load(load_name)
     helper.remove_file(load_name.file_uri)
 
     logging.debug("Exporting eulumdat intensity protocol buffer")
