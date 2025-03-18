@@ -67,23 +67,23 @@ def create_xmp_intensity():
     xmp.base_data.rad_angular_resolution_radius = 0
 
     # fill layer data
-    for l in range(xmp.base_data.layer_nb):
+    for layer_index in range(xmp.base_data.layer_nb):
         xmp.base_data.layer.add()
-        xmp.base_data.layer[l].layer_name = "0" + str(l)
-        xmp.base_data.layer[l].initial_source_power = 1000
-        xmp.base_data.layer[l].initial_source_power_watt = 1000
-        xmp.base_data.layer[l].initial_source_power_lumen = 1000
+        xmp.base_data.layer[layer_index].layer_name = "0" + str(layer_index)
+        xmp.base_data.layer[layer_index].initial_source_power = 1000
+        xmp.base_data.layer[layer_index].initial_source_power_watt = 1000
+        xmp.base_data.layer[layer_index].initial_source_power_lumen = 1000
         for s in range(10):
-            xmp.base_data.layer[l].wavelength.append(400 + 40 * s)
-            xmp.base_data.layer[l].value.append(0.1)
+            xmp.base_data.layer[layer_index].wavelength.append(400 + 40 * s)
+            xmp.base_data.layer[layer_index].value.append(0.1)
         xmp.value.layer.add()
         for y in range(xmp.base_data.y_nb):
-            xmp.value.layer[l].y.add()
+            xmp.value.layer[layer_index].y.add()
             for x in range(xmp.base_data.x_nb):
                 if x == y:
-                    xmp.value.layer[l].y[y].x.append(1)
+                    xmp.value.layer[layer_index].y[y].x.append(1)
                 else:
-                    xmp.value.layer[l].y[y].x.append(0)
+                    xmp.value.layer[layer_index].y[y].x.append(0)
 
     return xmp
 
@@ -120,27 +120,33 @@ def compare_xmp_intensity_distributions(xmp1, xmp2):
         return False
     if xmp1.base_data.precision != xmp2.base_data.precision:
         return False
-    for l in range(xmp1.base_data.layer_nb):
-        if xmp1.base_data.layer[l].layer_name != xmp2.base_data.layer[l].layer_name:
-            return False
+    for layer_index in range(xmp1.base_data.layer_nb):
         if (
-            xmp1.base_data.layer[l].initial_source_power
-            != xmp2.base_data.layer[l].initial_source_power
+            xmp1.base_data.layer[layer_index].layer_name
+            != xmp2.base_data.layer[layer_index].layer_name
         ):
             return False
         if (
-            xmp1.base_data.layer[l].initial_source_power_watt
-            != xmp2.base_data.layer[l].initial_source_power_watt
+            xmp1.base_data.layer[layer_index].initial_source_power
+            != xmp2.base_data.layer[layer_index].initial_source_power
         ):
             return False
         if (
-            xmp1.base_data.layer[l].initial_source_power_lumen
-            != xmp2.base_data.layer[l].initial_source_power_lumen
+            xmp1.base_data.layer[layer_index].initial_source_power_watt
+            != xmp2.base_data.layer[layer_index].initial_source_power_watt
+        ):
+            return False
+        if (
+            xmp1.base_data.layer[layer_index].initial_source_power_lumen
+            != xmp2.base_data.layer[layer_index].initial_source_power_lumen
         ):
             return False
         for y in range(xmp1.base_data.y_nb):
             for x in range(xmp1.base_data.x_nb):
-                if xmp1.value.layer[l].y[y].x[x] != xmp2.value.layer[l].y[y].x[x]:
+                if (
+                    xmp1.value.layer[layer_index].y[y].x[x]
+                    != xmp2.value.layer[layer_index].y[y].x[x]
+                ):
                     return False
     return True
 

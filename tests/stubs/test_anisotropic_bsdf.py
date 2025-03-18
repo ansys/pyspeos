@@ -175,7 +175,10 @@ def compareAnisotropicBsdf(bsdf1, bsdf2):
                 return False
 
             for p in range(len(incidence_diag1.phi_samples)):
-                if not approx_cmp(incidence_diag1.phi_samples[p], incidence_diag2.phi_samples[p]):
+                if not approx_cmp(
+                    incidence_diag1.phi_samples[p],
+                    incidence_diag2.phi_samples[p],
+                ):
                     return False
 
             if len(incidence_diag1.theta_samples) != len(incidence_diag2.theta_samples):
@@ -192,7 +195,10 @@ def compareAnisotropicBsdf(bsdf1, bsdf2):
                         return False
 
     # transmission spectrum
-    if not approx_cmp(bsdf1.transmission.spectrum_incidence, bsdf2.transmission.spectrum_incidence):
+    if not approx_cmp(
+        bsdf1.transmission.spectrum_incidence,
+        bsdf2.transmission.spectrum_incidence,
+    ):
         return False
 
     if bsdf1.transmission.spectrum_anisotropy != bsdf2.transmission.spectrum_anisotropy:
@@ -234,7 +240,10 @@ def compareAnisotropicBsdf(bsdf1, bsdf2):
                 return False
 
             for p in range(len(incidence_diag1.phi_samples)):
-                if not approx_cmp(incidence_diag1.phi_samples[p], incidence_diag2.phi_samples[p]):
+                if not approx_cmp(
+                    incidence_diag1.phi_samples[p],
+                    incidence_diag2.phi_samples[p],
+                ):
                     return False
 
             if len(incidence_diag1.theta_samples) != len(incidence_diag2.theta_samples):
@@ -242,7 +251,8 @@ def compareAnisotropicBsdf(bsdf1, bsdf2):
 
             for t in range(len(incidence_diag1.theta_samples)):
                 if not approx_cmp(
-                    incidence_diag1.theta_samples[t], incidence_diag2.theta_samples[t]
+                    incidence_diag1.theta_samples[t],
+                    incidence_diag2.theta_samples[t],
                 ):
                     return False
                 for p in range(len(incidence_diag1.phi_samples)):
@@ -400,9 +410,9 @@ def test_grpc_anisotropic_bsdf(speos: Speos):
     assert compareEnhancementData(rc, rc2)
 
     # white specular enabling and disabling
-    l = anisotropic_bsdf__v1__pb2.Wavelength()
-    l.wavelength = 632.0
-    stub.EnableWhiteSpecular(l)
+    wl = anisotropic_bsdf__v1__pb2.Wavelength()
+    wl.wavelength = 632.0
+    stub.EnableWhiteSpecular(wl)
     stub.DisableWhiteSpecular(Empty())
 
     # spectrum imports

@@ -4,7 +4,8 @@
 
 # ## What is an ObjectLink?
 
-# The ObjectLink is an object that is created from a protobuf message and then stored in the server database.
+# The ObjectLink is an object that is created from a protobuf message and then stored in the server
+# database.
 
 # ## Which speos objects are used via ObjectLink?
 

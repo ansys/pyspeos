@@ -9,7 +9,11 @@ import os
 from pathlib import Path
 
 from ansys.speos.core import GeoRef, Project, Speos
-from ansys.speos.core.source import SourceLuminaire, SourceRayFile, SourceSurface
+from ansys.speos.core.source import (
+    SourceLuminaire,
+    SourceRayFile,
+    SourceSurface,
+)
 
 # If using docker container
 tests_data_path = Path("/app") / "assets"
@@ -48,7 +52,8 @@ print(source1)
 
 # ## Push it to the server.
 
-# Now that it is committed to the server, the mention "local: " is no more present when printing the source.
+# Now that it is committed to the server, the mention "local: " is no more present when printing the
+# source.
 
 # +
 source1.commit()
@@ -110,14 +115,17 @@ print(source1)
 
 # +
 source1.set_flux_luminous()  # modify to luminous flux BUT no commit
-source1.reset()  # reset -> this will apply the server value to the local value (then local value will be back to halogen)
+source1.reset()
+# reset -> this will apply the server value to the local value the local value will be back to
+# halogen
 source1.delete()  # delete (to display the local value with the below print)
 print(source1)
 # -
 
 # ## Delete
 
-# Once the data is deleted from the server, you can still work with local data and maybe commit later.
+# Once the data is deleted from the server, you can still work with local data and maybe commit
+# later.
 
 # +
 source2.delete()

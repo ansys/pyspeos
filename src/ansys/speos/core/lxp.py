@@ -20,8 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""The lxp module contains classes and functions to simplify the interaction with ray data (LPF file).
+"""The lxp module contains classes and functions to simplify the interaction with ray data.
 
+Ray data is provided as lpf file.
 LPF files contain a set of simulated rays with all their intersections and properties.
 """
 
@@ -56,7 +57,9 @@ class RayPath:
     """
 
     def __init__(
-        self, raypath: lpf_file_reader__v2__pb2.RayPath, sensor_contribution: bool = False
+        self,
+        raypath: lpf_file_reader__v2__pb2.RayPath,
+        sensor_contribution: bool = False,
     ):
         self._nb_impacts = len(raypath.impacts)
         self._impacts = [[inter.x, inter.y, inter.z] for inter in raypath.impacts]
@@ -71,7 +74,10 @@ class RayPath:
         self._intersection_type = raypath.interaction_statuses
         if sensor_contribution:
             self._sensor_contribution = [
-                {"sensor_id": sc.sensor_id, "position": [sc.coordinates.x, sc.coordinates.y]}
+                {
+                    "sensor_id": sc.sensor_id,
+                    "position": [sc.coordinates.x, sc.coordinates.y],
+                }
                 for sc in raypath.sensor_contributions
             ]
         else:
@@ -190,8 +196,8 @@ class RayPath:
         Returns
         -------
         Union[None, list[dict]]
-            If no sensor contribution, None will be returned. If there is sensor contribution, a dictionary with \
-            the following information is returned:\
+            If no sensor contribution, None will be returned. If there is sensor contribution, \
+            a dictionary with the following information is returned:\
             {“sensor_id”: sc.sensor_id,
             “position”: [sc.coordinates.x, sc.coordinates.y]}
         """
@@ -318,7 +324,10 @@ class LightPathFinder:
         return raypaths
 
     def __filter_by_last_intersection_types(self, options: list[int], new=True):
-        """Filter ray paths based on last intersection types and populates filtered_rays property."""
+        """Filter ray paths based on last intersection types.
+
+        Populate filtered_rays property.
+        """
         if new:
             self._filtered_rays = []
             for ray in self._rays:
@@ -496,7 +505,7 @@ class LightPathFinder:
 def wavelength_to_rgb(wavelength: float, gamma: float = 0.8) -> [int, int, int, int]:
     """Convert a given wavelength of light to an approximate RGB color value.
 
-    The wavelength must be given in nanometers in the range from 380 nm to 750 nm (789 THz to 400 THz).
+    The wavelength must be given in nanometers in the range from 380 nm to 750 nm.
     Based on the code from http://www.physics.sfasu.edu/astro/color/spectra.html
 
     Parameters

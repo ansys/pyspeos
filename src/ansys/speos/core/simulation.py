@@ -68,13 +68,15 @@ class BaseSimulation:
     """
 
     class Weight:
-        """The Weight represents the ray energy. In real life, a ray loses some energy (power) when it interacts with an object.
+        """The Weight represents the ray energy.
 
+        In real life, a ray loses some energy (power) when it interacts with an object.
         Activating weight means that the Weight message is present.
-        When weight is not activated, rays' energy stays constant and probability laws dictate if rays continue or stop propagating.
-        When weight is activated, the rays' energy evolves with interactions until rays reach the sensors.
-        It is highly recommended to fill this parameter excepted in interactive simulation.
-        Not filling this parameter is useful to understand certain phenomena as absorption.
+        When weight is not activated, rays' energy stays constant and probability laws dictate if
+        rays continue or stop propagating. When weight is activated, the rays' energy evolves with
+        interactions until rays reach the sensors. It is highly recommended to fill this parameter
+        excepted in interactive simulation. Not filling this parameter is useful to understand
+        certain phenomena as absorption.
 
         Parameters
         ----------
@@ -84,12 +86,15 @@ class BaseSimulation:
 
         Notes
         -----
-        **Do not instantiate this class yourself**, use set_weight method available in simulation classes.
+        **Do not instantiate this class yourself**, use set_weight method available in simulation
+        classes.
 
         """
 
         def __init__(
-            self, weight: simulation_template_pb2.Weight, stable_ctr: bool = False
+            self,
+            weight: simulation_template_pb2.Weight,
+            stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
                 msg = "Weight class instantiated outside of class scope"
@@ -104,8 +109,8 @@ class BaseSimulation:
             Parameters
             ----------
             value : float
-                The Minimum energy percentage parameter defines the minimum energy ratio to continue to propagate a ray with weight.
-                By default, ``0.005``.
+                The Minimum energy percentage parameter defines the minimum energy ratio to continue
+                to propagate a ray with weight. By default, ``0.005``.
 
             Returns
             -------
@@ -198,24 +203,24 @@ class BaseSimulation:
         return self
 
     # def set_geometries(self, geometries: List[GeoRef]) -> Simulation:
-    #    """Set geometries that the simulation will take into account.
+    #     """Set geometries that the simulation will take into account.
     #
-    #    Parameters
-    #    ----------
-    #    geometries : List[ansys.speos.core.geo_ref.GeoRef]
+    #     Parameters
+    #     ----------
+    #     geometries : List[ansys.speos.core.geo_ref.GeoRef]
     #        List of geometries.
     #
-    #    Returns
-    #    -------
-    #    ansys.speos.core.simulation.BaseSimulation
+    #     Returns
+    #     -------
+    #     ansys.speos.core.simulation.BaseSimulation
     #        Simulation feature.
-    #    """
-    #    if geometries is []:
-    #        self._simulation_instance.ClearField("geometries")
-    #    else:
-    #        self._simulation_instance.geometries.geo_paths[:] = [gr.to_native_link() for gr in geometries]
-    #
-    #    return self
+    #     """
+    #     if geometries is []:
+    #         self._simulation_instance.ClearField("geometries")
+    #     else:
+    #         geo_paths = [gr.to_native_link() for gr in geometries]
+    #         self._simulation_instance.geometries.geo_paths[:] = geo_paths
+    #     return self
 
     def compute_CPU(self) -> List[job_pb2.Result]:
         """Compute the simulation on CPU.
@@ -288,27 +293,33 @@ class BaseSimulation:
                 )
             else:
                 out_dict = proto_message_utils._replace_guids(
-                    speos_client=self._project.client, message=self._simulation_instance
+                    speos_client=self._project.client,
+                    message=self._simulation_instance,
                 )
         else:
             out_dict = proto_message_utils._replace_guids(
-                speos_client=self._project.client, message=self._simulation_instance
+                speos_client=self._project.client,
+                message=self._simulation_instance,
             )
 
         if "simulation" not in out_dict.keys():
             # SimulationTemplate
             if self.simulation_template_link is None:
                 out_dict["simulation"] = proto_message_utils._replace_guids(
-                    speos_client=self._project.client, message=self._simulation_template
+                    speos_client=self._project.client,
+                    message=self._simulation_template,
                 )
             else:
                 out_dict["simulation"] = proto_message_utils._replace_guids(
-                    speos_client=self._project.client, message=self.simulation_template_link.get()
+                    speos_client=self._project.client,
+                    message=self.simulation_template_link.get(),
                 )
 
         if self.job_link is None:
             out_dict["simulation_properties"] = proto_message_utils._replace_guids(
-                speos_client=self._project.client, message=self._job, ignore_simple_key="scene_guid"
+                speos_client=self._project.client,
+                message=self._job,
+                ignore_simple_key="scene_guid",
             )
         else:
             out_dict["simulation_properties"] = proto_message_utils._replace_guids(
@@ -338,7 +349,10 @@ class BaseSimulation:
         info = proto_message_utils._value_finder_key_startswith(dict_var=self._to_dict(), key=key)
         content = list(info)
         if len(content) != 0:
-            content.sort(key=lambda x: SequenceMatcher(None, x[0], key).ratio(), reverse=True)
+            content.sort(
+                key=lambda x: SequenceMatcher(None, x[0], key).ratio(),
+                reverse=True,
+            )
             return content[0][1]
         info = proto_message_utils._flatten_dict(dict_var=self._to_dict())
         print("Used key: {} not found in key list: {}.".format(key, info.keys()))
@@ -371,7 +385,8 @@ class BaseSimulation:
         ansys.speos.core.simulation.BaseSimulation
             Simulation feature.
         """
-        # The _unique_id will help to find correct item in the scene.simulations (the list of SimulationInstance)
+        # The _unique_id will help to find correct item in the scene.simulations:
+        # the list of SimulationInstance
         if self._unique_id is None:
             self._unique_id = str(uuid.uuid4())
             self._simulation_instance.metadata["UniqueId"] = self._unique_id
@@ -462,7 +477,8 @@ class BaseSimulation:
         # Remove the simulation from the scene
         scene_data = self._project.scene_link.get()  # retrieve scene data
         sim_inst = next(
-            (x for x in scene_data.simulations if x.metadata["UniqueId"] == self._unique_id), None
+            (x for x in scene_data.simulations if x.metadata["UniqueId"] == self._unique_id),
+            None,
         )
         if sim_inst is not None:
             scene_data.simulations.remove(sim_inst)
@@ -496,7 +512,8 @@ class SimulationDirect(BaseSimulation):
     fast transmission gathering is set to False,
     ambient material URI is empty,
     and weight's minimum energy percentage is set to 0.005.
-    By default, the simulation will stop after 200000 rays, with an automatic save frequency of 1800s.
+    By default, the simulation will stop after 200000 rays,
+    with an automatic save frequency of 1800s.
 
     Parameters
     ----------
@@ -594,7 +611,8 @@ class SimulationDirect(BaseSimulation):
             Weight.
         """
         return BaseSimulation.Weight(
-            self._simulation_template.direct_mc_simulation_template.weight, stable_ctr=True
+            self._simulation_template.direct_mc_simulation_template.weight,
+            stable_ctr=True,
         )
 
     def set_weight_none(self) -> SimulationDirect:
@@ -656,23 +674,26 @@ class SimulationDirect(BaseSimulation):
         return self
 
     # def set_fast_transmission_gathering(self, value: bool = False) -> Simulation.Direct:
-    #    """Activate/Deactivate the fast transmission gathering.
-    #    To accelerate the simulation by neglecting the light refraction that occurs when the light is being
-    #    transmitted through a transparent surface.
+    #     """Activate/Deactivate the fast transmission gathering.
     #
-    #    Parameters
-    #    ----------
-    #    value : bool
+    #     To accelerate the simulation by neglecting the light refraction that occurs when the
+    #     light is being
+    #     transmitted through a transparent surface.
+    #
+    #     Parameters
+    #     ----------
+    #     value : bool
     #        Activate/Deactivate.
     #        By default, ``False``, means deactivate
     #
-    #    Returns
-    #    -------
-    #    ansys.speos.core.simulation.Direct
+    #     Returns
+    #     -------
+    #     ansys.speos.core.simulation.Direct
     #        Direct simulation
-    #    """
-    #    self._simulation_template.direct_mc_simulation_template.fast_transmission_gathering = value
-    #    return self
+    #     """
+    #     template = self._simulation_template.direct_mc_simulation_template
+    #     template.fast_transmission_gathering = value
+    #     return self
 
     def set_ambient_material_file_uri(self, uri: str = "") -> SimulationDirect:
         """To define the environment in which the light will propagate (water, fog, smoke etc.).
@@ -692,7 +713,9 @@ class SimulationDirect(BaseSimulation):
         return self
 
     def set_stop_condition_rays_number(self, value: Optional[int] = 200000) -> SimulationDirect:
-        """To stop the simulation after a certain number of rays were sent. Set None as value to have no condition about rays number.
+        """To stop the simulation after a certain number of rays were sent.
+
+        Set None as value to have no condition about rays number.
 
         Parameters
         ----------
@@ -712,7 +735,9 @@ class SimulationDirect(BaseSimulation):
         return self
 
     def set_stop_condition_duration(self, value: Optional[int] = None) -> SimulationDirect:
-        """To stop the simulation after a certain duration. Set None as value to have no condition about duration.
+        """To stop the simulation after a certain duration.
+
+        Set None as value to have no condition about duration.
 
         Parameters
         ----------
@@ -867,7 +892,8 @@ class SimulationInverse(BaseSimulation):
             Simulation.Weight
         """
         return BaseSimulation.Weight(
-            self._simulation_template.inverse_mc_simulation_template.weight, stable_ctr=True
+            self._simulation_template.inverse_mc_simulation_template.weight,
+            stable_ctr=True,
         )
 
     def set_weight_none(self) -> SimulationInverse:
@@ -931,7 +957,8 @@ class SimulationInverse(BaseSimulation):
     def set_splitting(self, value: bool = False) -> SimulationInverse:
         """Activate/Deactivate the splitting.
 
-        To split each propagated ray into several paths at their first impact after leaving the observer point.
+        To split each propagated ray into several paths at their first impact after leaving the
+        observer point.
 
         Parameters
         ----------
@@ -961,7 +988,8 @@ class SimulationInverse(BaseSimulation):
         ansys.speos.core.simulation.SimulationInverse
             Inverse simulation
         """
-        self._simulation_template.inverse_mc_simulation_template.number_of_gathering_rays_per_source = value
+        template = self._simulation_template.inverse_mc_simulation_template
+        template.number_of_gathering_rays_per_source = value
         return self
 
     def set_maximum_gathering_error(self, value: int = 0) -> SimulationInverse:
@@ -982,23 +1010,25 @@ class SimulationInverse(BaseSimulation):
         return self
 
     # def set_fast_transmission_gathering(self, value: bool = False) -> Simulation.Inverse:
-    #    """Activate/Deactivate the fast transmission gathering.
-    #    To accelerate the simulation by neglecting the light refraction that occurs when the light is being
-    #    transmitted through a transparent surface.
+    #     """Activate/Deactivate the fast transmission gathering.
     #
-    #    Parameters
-    #    ----------
-    #    value : bool
-    #        Activate/Deactivate.
-    #        By default, ``False``, means deactivate
+    #     To accelerate the simulation by neglecting the light refraction that occurs when the light
+    #     is being transmitted through a transparent surface.
     #
-    #    Returns
-    #    -------
-    #    ansys.speos.core.simulation.Inverse
-    #        Inverse simulation
-    #    """
-    #    self._simulation_template.inverse_mc_simulation_template.fast_transmission_gathering = value
-    #    return self
+    #     Parameters
+    #     ----------
+    #     value : bool
+    #         Activate/Deactivate.
+    #         By default, ``False``, means deactivate
+    #
+    #     Returns
+    #     -------
+    #     ansys.speos.core.simulation.Inverse
+    #         Inverse simulation
+    #     """
+    #     template = self._simulation_template.inverse_mc_simulation_template
+    #     template.fast_transmission_gathering = value
+    #     return self
 
     def set_ambient_material_file_uri(self, uri: str = "") -> SimulationInverse:
         """To define the environment in which the light will propagate (water, fog, smoke etc.).
@@ -1018,7 +1048,9 @@ class SimulationInverse(BaseSimulation):
         return self
 
     def set_stop_condition_passes_number(self, value: Optional[int] = 5) -> SimulationInverse:
-        """To stop the simulation after a certain number of passes. Set None as value to have no condition about passes.
+        """To stop the simulation after a certain number of passes.
+
+        Set None as value to have no condition about passes.
 
         Parameters
         ----------
@@ -1031,16 +1063,17 @@ class SimulationInverse(BaseSimulation):
         ansys.speos.core.simulation.SimulationInverse
             Inverse simulation
         """
+        propagation_none = self._job.inverse_mc_simulation_properties.optimized_propagation_none
         if value is None:
-            self._job.inverse_mc_simulation_properties.optimized_propagation_none.ClearField(
-                "stop_condition_passes_number"
-            )
+            propagation_none.ClearField("stop_condition_passes_number")
         else:
-            self._job.inverse_mc_simulation_properties.optimized_propagation_none.stop_condition_passes_number = value
+            propagation_none.stop_condition_passes_number = value
         return self
 
     def set_stop_condition_duration(self, value: Optional[int] = None) -> SimulationInverse:
-        """To stop the simulation after a certain duration. Set None as value to have no condition about duration.
+        """To stop the simulation after a certain duration.
+
+        Set None as value to have no condition about duration.
 
         Parameters
         ----------
@@ -1204,7 +1237,8 @@ class SimulationInteractive(BaseSimulation):
             Simulation.Weight
         """
         return BaseSimulation.Weight(
-            self._simulation_template.interactive_simulation_template.weight, stable_ctr=True
+            self._simulation_template.interactive_simulation_template.weight,
+            stable_ctr=True,
         )
 
     def set_weight_none(self) -> SimulationInteractive:
@@ -1270,7 +1304,8 @@ class SimulationInteractive(BaseSimulation):
     ) -> SimulationInteractive:
         """Select the number of rays emitted for each source.
 
-        If a source is present in the simulation but not referenced here, it will send by default 100 rays.
+        If a source is present in the simulation but not referenced here, it will send by default
+        100 rays.
 
         Parameters
         ----------
@@ -1284,7 +1319,8 @@ class SimulationInteractive(BaseSimulation):
         """
         my_list = [
             ProtoJob.InteractiveSimulationProperties.RaysNumberPerSource(
-                source_path=rays_nb_per_source.source_path, rays_nb=rays_nb_per_source.rays_nb
+                source_path=rays_nb_per_source.source_path,
+                rays_nb=rays_nb_per_source.rays_nb,
             )
             for rays_nb_per_source in values
         ]
@@ -1310,7 +1346,9 @@ class SimulationInteractive(BaseSimulation):
         return self
 
     def set_impact_report(self, value: bool = False) -> SimulationInteractive:
-        """Activate/Deactivate the details like number of impacts, position and surface state to the HTML simulation report.
+        """Activate/Deactivate the details in the HTML simulation report.
+
+        e.g: number of impacts, position and surface state
 
         Parameters
         ----------

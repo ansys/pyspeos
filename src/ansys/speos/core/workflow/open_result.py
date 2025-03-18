@@ -36,7 +36,11 @@ import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 from numpy import ndarray
 
-from ansys.speos.core.simulation import SimulationDirect, SimulationInteractive, SimulationInverse
+from ansys.speos.core.simulation import (
+    SimulationDirect,
+    SimulationInteractive,
+    SimulationInverse,
+)
 
 
 def _find_correct_result(
@@ -116,7 +120,8 @@ if os.name == "nt":
             _display_image(mpimg.imread(file_path))
 
     def open_result_in_viewer(
-        simulation_feature: Union[SimulationDirect, SimulationInverse], result_name: str
+        simulation_feature: Union[SimulationDirect, SimulationInverse],
+        result_name: str,
     ) -> None:
         """Open a specific simulation result in the suitable viewer.
 

@@ -45,13 +45,17 @@ def test_light_path_finder_direct(speos: Speos):
         "wl": 779.0769653320312,
         "body_ids": [2001802324, 2001802324, 2001802324, 3601101451],
         "face_ids": [1815582994, 1815582994, 2122462972, 3866239813],
-        "last_direction": [0.07366610318422318, -0.9527596235275269, 0.2946563959121704],
+        "last_direction": [
+            0.07366610318422318,
+            -0.9527596235275269,
+            0.2946563959121704,
+        ],
         "intersection_type": [5, 1, 1, -1],
         "sensor_contribution": None,
     }
     assert lpf.nb_traces == 24817
     assert lpf.nb_xmps == 3
-    assert lpf.has_sensor_contributions == False  # No contributions stored in Direct simu
+    assert lpf.has_sensor_contributions is False  # No contributions stored in Direct simu
     assert len(lpf.sensor_names) == 3
     assert lpf.sensor_names[0] == "Irradiance Sensor (0)"
     assert lpf.sensor_names[2] == "Irradiance Sensor (2)"
@@ -101,13 +105,16 @@ def test_light_path_finder_inverse(speos: Speos):
         "last_direction": [0.0, 0.0, 0.0],
         "intersection_type": [5, 1, 1, -1, 1, 1, -1],
         "sensor_contribution": [
-            {"sensor_id": 0, "position": [-0.14824546764179047, 0.3064812525259446]}
+            {
+                "sensor_id": 0,
+                "position": [-0.14824546764179047, 0.3064812525259446],
+            }
         ],
     }
 
     assert lpf.nb_traces == 21044
     assert lpf.nb_xmps == 1
-    assert lpf.has_sensor_contributions == True  # No contributions stored in Direct simu
+    assert lpf.has_sensor_contributions is True  # No contributions stored in Direct simu
     assert len(lpf.sensor_names) == 1
     assert lpf.sensor_names[0] == "Camera_Perfect_Lens_System_V2:3"
     lpf.filter_by_body_ids([3744252339])

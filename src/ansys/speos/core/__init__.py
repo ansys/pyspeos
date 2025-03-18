@@ -20,7 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""PySpeos is a Python library that gathers functionalities and tools based on Speos solver remote API."""
+"""PySpeos is a Python library based on Speos solver remote API.
+
+It gathers functionaties and tools of these APIs.
+"""
 
 try:
     import importlib.metadata as importlib_metadata
