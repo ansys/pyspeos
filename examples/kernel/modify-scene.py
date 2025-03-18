@@ -179,8 +179,8 @@ print(sensor_t_new)
 
 # +
 camera_i_2 = ProtoScene.SensorInstance(name=sensor_t_new.get().name + ".1")
-camera_i_2.sensor_guid = sensor_t_new.key
 # An instance has to reference a template - here we use the SensorTemplateLink's key that we got
+camera_i_2.sensor_guid = sensor_t_new.key
 # just above.
 camera_i_2.camera_properties.axis_system.extend(
     [50, 50, 50, 1, 0, 0, 0, 1, 0, 0, 0, 1]
