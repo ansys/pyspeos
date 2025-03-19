@@ -28,6 +28,7 @@ from difflib import SequenceMatcher
 import time
 from typing import List, Mapping, Optional
 import uuid
+import warnings
 
 from ansys.api.speos.job.v2 import job_pb2
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
@@ -234,6 +235,10 @@ class BaseSimulation:
         List[ansys.api.speos.job.v2.job_pb2.Result]
             List of simulation results.
         """
+        warnings.warn(
+            "`compute_CPU` is deprecated. Use `compute_cpu` method instead.",
+            DeprecationWarning,
+        )
         return self.compute_cpu()
 
     def compute_cpu(self) -> List[job_pb2.Result]:
@@ -260,6 +265,10 @@ class BaseSimulation:
         List[ansys.api.speos.job.v2.job_pb2.Result]
             List of simulation results.
         """
+        warnings.warn(
+            "`compute_GPU` is deprecated. Use `compute_gpu` method instead.",
+            DeprecationWarning,
+        )
         return self.compute_gpu()
 
     def compute_gpu(self) -> List[job_pb2.Result]:

@@ -25,6 +25,7 @@
 from __future__ import annotations
 
 from typing import List, Mapping, Optional
+import warnings
 
 from ansys.speos.core.kernel.client import SpeosClient
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_dict
@@ -198,6 +199,10 @@ class Spectrum:
         ansys.speos.core.spectrum.Spectrum
             Spectrum feature.
         """
+        warnings.warn(
+            "`set_whiteLED` is deprecated. Use `set_white_led` method instead.",
+            DeprecationWarning,
+        )
         return self.set_white_led()
 
     def set_white_led(self) -> Spectrum:
