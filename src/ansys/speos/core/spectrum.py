@@ -186,7 +186,7 @@ class Spectrum:
         self._spectrum.predefined.daylightfluorescent.SetInParent()
         return self
 
-    def set_whiteLED(self) -> Spectrum:
+    def set_white_led(self) -> Spectrum:
         """Set the spectrum as whiteLED (predefined spectrum).
 
         Returns

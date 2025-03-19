@@ -197,7 +197,7 @@ print(sim_feat)
 # -
 
 # +
-sim_feat.compute_CPU()
+sim_feat.compute_cpu()
 # -
 
 # Preview simulation result (only windows)

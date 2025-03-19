@@ -31,7 +31,7 @@ from tests.conftest import test_path
 import tests.helper as helper
 
 
-def createIesIntensity():
+def create_ies_intensity():
     """Create simple IES file."""
     ies = ies_pb2.IesIntensityDistribution()
 
@@ -73,7 +73,7 @@ def createIesIntensity():
     return ies
 
 
-def compareIesIntensities(ies1, ies2):
+def compare_ies_intensities(ies1, ies2):
     """Compare two ies files."""
     if ies1.norme_version != ies2.norme_version:
         return False
@@ -145,7 +145,7 @@ def test_grpc_ies_intensity(speos: Speos):
     load_request.file_uri = str(Path(test_path) / "tmp2_file.ies")
 
     logging.debug("Creating ies intensity protocol buffer")
-    ies = createIesIntensity()
+    ies = create_ies_intensity()
 
     logging.debug("Sending protocol buffer to server")
     ies_pb2.Import_Response()
@@ -167,4 +167,4 @@ def test_grpc_ies_intensity(speos: Speos):
     ies2 = stub.Export(export_request)
 
     logging.debug("Comparing ies intensity distributions")
-    assert compareIesIntensities(ies, ies2)
+    assert compare_ies_intensities(ies, ies2)

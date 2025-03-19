@@ -34,7 +34,7 @@ from tests.conftest import test_path
 import tests.helper as helper
 
 
-def createSpectralBsdf() -> spectral_bsdf__v1__pb2.SpectralBsdfData:
+def create_spectral_bsdf() -> spectral_bsdf__v1__pb2.SpectralBsdfData:
     """Create simple spectral bsdf."""
     bsdf = spectral_bsdf__v1__pb2.SpectralBsdfData(description="test description")
     nbw = 7
@@ -80,7 +80,7 @@ def approx_cmp(a, b):
     return math.fabs(a - b) < 1e-6
 
 
-def compareDiagram(a, b):
+def compare_diagram(a, b):
     """Approximated comparison of intensity diagrams."""
     if len(a.theta_samples) != len(b.theta_samples):
         return False
@@ -102,7 +102,7 @@ def compareDiagram(a, b):
     return True
 
 
-def compareSpectralBsdf(bsdf1, bsdf2):
+def compare_spectral_bsdf(bsdf1, bsdf2):
     """Compare two spectral bsdf."""
     if bsdf1.description != bsdf2.description:
         return False
@@ -117,14 +117,14 @@ def compareSpectralBsdf(bsdf1, bsdf2):
         if a != b:
             return False
     for a, b in zip(bsdf1.wavelength_incidence_samples, bsdf2.wavelength_incidence_samples):
-        if not compareDiagram(a.reflection, b.reflection) or not compareDiagram(
+        if not compare_diagram(a.reflection, b.reflection) or not compare_diagram(
             a.transmission, b.transmission
         ):
             return False
     return True
 
 
-def compareSpecularEnhancementData(c1, c2):
+def compare_specular_enhancement_data(c1, c2):
     """Compare Specular enhancement data."""
     if c1.incidence_nb != c2.incidence_nb:
         return False
@@ -155,7 +155,7 @@ def test_grpc_spectral_bsdf(speos: Speos):
     file_name = spectral_bsdf__v1__pb2.FileName()
 
     # Creating spectral bsdf protocol buffer
-    bsdf = createSpectralBsdf()
+    bsdf = create_spectral_bsdf()
 
     # Sending protocol buffer to server
     stub.Import(bsdf)
@@ -173,7 +173,7 @@ def test_grpc_spectral_bsdf(speos: Speos):
     # Exporting anisotropic bsdf protocol buffer
     bsdf2 = stub.Export(Empty())
 
-    assert compareSpectralBsdf(bsdf, bsdf2)
+    assert compare_spectral_bsdf(bsdf, bsdf2)
     file_name.file_name = str(Path(test_path) / "Lambert.anisotropicbsdf")
 
     # Writing as {file_name.file_name}
@@ -187,7 +187,7 @@ def test_grpc_spectral_bsdf(speos: Speos):
     # Exporting anisotropic bsdf protocol buffer
     bsdf3 = stub.Export(Empty())
 
-    assert compareSpectralBsdf(bsdf, bsdf3)
+    assert compare_spectral_bsdf(bsdf, bsdf3)
 
     # conoscopic map
     cm = spectral_bsdf__v1__pb2.ConoscopicMap()
@@ -230,4 +230,4 @@ def test_grpc_spectral_bsdf(speos: Speos):
     cones2 = stub.GetSpecularInterpolationEnhancementData(Empty())
 
     # comparing cones to previous ones
-    assert compareSpecularEnhancementData(cones, cones2)
+    assert compare_specular_enhancement_data(cones, cones2)

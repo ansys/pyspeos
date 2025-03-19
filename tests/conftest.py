@@ -86,7 +86,7 @@ else:
 
 # Define default pytest logging level to DEBUG and stdout
 
-LOG.setLevel(level="DEBUG")
+LOG.set_level(level="DEBUG")
 LOG.log_to_stdout()
 
 

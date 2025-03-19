@@ -44,7 +44,7 @@ sim = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
 # simulation can be run using CPU via compute_CPU method or using GPU via compute_GPU method.
 
 # +
-results = sim.compute_CPU()  # run in CPU
+results = sim.compute_cpu()  # run in CPU
 print(results)
 # -
 

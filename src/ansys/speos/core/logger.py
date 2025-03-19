@@ -246,7 +246,7 @@ class PySpeosCustomAdapter(logging.LoggerAdapter):
         self.logger = add_stdout_handler(self.logger, level=level)
         self.std_out_handler = self.logger.std_out_handler
 
-    def setLevel(self, level="DEBUG"):
+    def set_level(self, level="DEBUG"):
         """Change the log level of the object and the attached handlers.
 
         Parameters
@@ -465,7 +465,7 @@ class Logger:
         """
         self = add_stdout_handler(self, level=level)
 
-    def setLevel(self, level="DEBUG"):
+    def set_level(self, level="DEBUG"):
         """Change the log level of the object and the attached handlers."""
         self.logger.setLevel(level)
         for each_handler in self.logger.handlers:

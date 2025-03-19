@@ -205,9 +205,9 @@ class Intensity:
 
             if default_values:
                 # Default values
-                self.set_FWHM_angle_x().set_FWHM_angle_y().set_total_angle().set_axis_system()
+                self.set_fwhm_angle_x().set_fwhm_angle_y().set_total_angle().set_axis_system()
 
-        def set_FWHM_angle_x(self, value: float = 30) -> Intensity.Gaussian:
+        def set_fwhm_angle_x(self, value: float = 30) -> Intensity.Gaussian:
             """Set the full width following x at half maximum.
 
             Parameters
@@ -224,7 +224,7 @@ class Intensity:
             self._gaussian.FWHM_angle_x = value
             return self
 
-        def set_FWHM_angle_y(self, value: float = 30) -> Intensity.Gaussian:
+        def set_fwhm_angle_y(self, value: float = 30) -> Intensity.Gaussian:
             """Set the full width following y at half maximum.
 
             Parameters

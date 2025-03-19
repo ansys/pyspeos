@@ -99,7 +99,7 @@ select = [
     "TD",   # flake8-todos, https://docs.astral.sh/ruff/rules/#flake8-todos-td
 ]
 ignore = [
-    "N802", # TODO: Function name should be lowercase
+    # "N802", # TODO: Function name should be lowercase
     "N803",
     "N806",
     "N811",
@@ -113,6 +113,8 @@ ignore = [
 "examples/*" = ["D100", "E402"]
 "__init__.py" = ["F401"]
 
+[tool.ruff.lint.pep8-naming]
+ignore-names = ["set_colorimetric_standard_CIE_1964", "set_colorimetric_standard_CIE_1931"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"

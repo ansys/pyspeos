@@ -78,7 +78,7 @@ def test_create_intensity(speos: Speos):
     assert intensity1._intensity_properties.HasField("library_properties") is False
 
     # gaussian
-    intensity1.set_gaussian().set_FWHM_angle_x(value=20).set_FWHM_angle_y(value=30).set_total_angle(
+    intensity1.set_gaussian().set_fwhm_angle_x(value=20).set_fwhm_angle_y(value=30).set_total_angle(
         value=150
     )
     intensity1.commit()
@@ -219,7 +219,7 @@ def test_gaussian_modify_after_reset(speos: Speos):
     intensity1.reset()
 
     # Template modification
-    intensity1.set_gaussian().set_FWHM_angle_y(value=40)
+    intensity1.set_gaussian().set_fwhm_angle_y(value=40)
     assert intensity1._intensity_template.gaussian.FWHM_angle_y == 40
 
     # Properties modification
