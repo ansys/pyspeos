@@ -100,7 +100,7 @@ select = [
 ]
 ignore = [
     # "N802", # TODO: Function name should be lowercase
-    "N803",
+    # "N803",
     "N806",
     "N811",
     "N806", # TODO: Update variables to be lowercase

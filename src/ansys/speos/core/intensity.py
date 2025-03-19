@@ -312,7 +312,7 @@ class Intensity:
             )
 
             # Default values
-            self.set_cos(N=1)  # By default will be lambertian (cos with N =1)
+            self.set_cos(n=1)  # By default will be lambertian (cos with N =1)
         else:
             # Retrieve IntensityTemplate
             self.intensity_template_link = speos_client[key]
@@ -348,12 +348,12 @@ class Intensity:
             self._type._library_props = self._intensity_properties.library_properties
         return self._type
 
-    def set_cos(self, N: float = 3, total_angle: float = 180) -> Intensity:
+    def set_cos(self, n: float = 3, total_angle: float = 180) -> Intensity:
         """Set the intensity as cos.
 
         Parameters
         ----------
-        N : float
+        n : float
             Order of cos law.
             By default, ``3``.
         total_angle : float
@@ -366,7 +366,7 @@ class Intensity:
             Intensity feature.
         """
         self._type = None
-        self._intensity_template.cos.N = N
+        self._intensity_template.cos.N = n
         self._intensity_template.cos.total_angle = total_angle
         self._intensity_properties.Clear()
         return self
