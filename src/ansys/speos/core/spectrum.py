@@ -186,6 +186,20 @@ class Spectrum:
         self._spectrum.predefined.daylightfluorescent.SetInParent()
         return self
 
+    def set_whiteLED(self) -> Spectrum:
+        """Set the spectrum as whiteLED (predefined spectrum).
+
+        .. deprecated:: 0.2.5
+            `set_whiteLed` will be removed
+            `set_white_led` shall be used to comply with PEP8 naming convention
+
+        Returns
+        -------
+        ansys.speos.core.spectrum.Spectrum
+            Spectrum feature.
+        """
+        return self.set_white_led()
+
     def set_white_led(self) -> Spectrum:
         """Set the spectrum as whiteLED (predefined spectrum).
 
