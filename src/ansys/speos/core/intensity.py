@@ -249,7 +249,7 @@ class Intensity:
                 "`set_FWHM_angle_x` is deprecated. Use `set_fwhm_angle_x` method instead.",
                 DeprecationWarning,
             )
-            self.set_fwhm_angle_x(value)
+            return self.set_fwhm_angle_x(value)
 
         def set_fwhm_angle_y(self, value: float = 30) -> Intensity.Gaussian:
             """Set the full width following y at half maximum.
@@ -292,7 +292,7 @@ class Intensity:
                 "`set_FWHM_angle_y` is deprecated. Use `set_fwhm_angle_y` method instead.",
                 DeprecationWarning,
             )
-            self.set_fwhm_angle_y(value)
+            return self.set_fwhm_angle_y(value)
 
         def set_total_angle(self, value: float = 180) -> Intensity.Gaussian:
             """Set the total angle of the emission of the light source.
