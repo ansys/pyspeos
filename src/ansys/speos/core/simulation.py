@@ -222,6 +222,20 @@ class BaseSimulation:
     #         self._simulation_instance.geometries.geo_paths[:] = geo_paths
     #     return self
 
+    def compute_CPU(self) -> List[job_pb2.Result]:
+        """Compute the simulation on CPU.
+
+        .. deprecated:: 0.2.5
+                `compute_CPU` will be removed
+                `compute_cpu` shall be used to comply with PEP8 naming convention
+
+        Returns
+        -------
+        List[ansys.api.speos.job.v2.job_pb2.Result]
+            List of simulation results.
+        """
+        return self.compute_cpu()
+
     def compute_cpu(self) -> List[job_pb2.Result]:
         """Compute the simulation on CPU.
 
@@ -233,6 +247,20 @@ class BaseSimulation:
         self._job.job_type = ProtoJob.Type.CPU
         self.result_list = self._run_job()
         return self.result_list
+
+    def compute_GPU(self) -> List[job_pb2.Result]:
+        """Compute the simulation on GPU.
+
+        .. deprecated:: 0.2.5
+            `compute_GPU` will be removed
+            `compute_gpu` shall be used to comply with PEP8 naming convention
+
+        Returns
+        -------
+        List[ansys.api.speos.job.v2.job_pb2.Result]
+            List of simulation results.
+        """
+        return self.compute_gpu()
 
     def compute_gpu(self) -> List[job_pb2.Result]:
         """Compute the simulation on GPU.
