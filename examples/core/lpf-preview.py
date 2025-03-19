@@ -49,11 +49,11 @@ sim.compute_cpu()
 # If looking to the simulation report, we will find that we have 40% simulation error
 
 # +
-import ansys.speos.core.workflow.open_result as ORF
+import ansys.speos.core.workflow.open_result as orf
 
 # Methods from workflow class provide a way to find the correct result file.
 # Detailed information can be found in the workflow_open_result example.
-data = ORF._find_correct_result(sim, "Direct.1.html")
+data = orf._find_correct_result(sim, "Direct.1.html")
 # -
 
 # ## Create a simulation with light expert
@@ -76,7 +76,7 @@ interactive_sim.commit()
 
 # +
 results = interactive_sim.compute_CPU()
-path = ORF._find_correct_result(interactive_sim, "error.lpf", download_if_distant=False)
+path = orf._find_correct_result(interactive_sim, "error.lpf", download_if_distant=False)
 lxp = LightPathFinder(speos, path)
 lxp.preview(project=p)
 # -
