@@ -23,7 +23,6 @@
 """Test basic client connection."""
 
 from grpc import insecure_channel
-import pytest
 
 from ansys.speos.core.kernel.client import SpeosClient
 from ansys.speos.core.speos import Speos

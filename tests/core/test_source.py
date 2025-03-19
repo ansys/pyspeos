@@ -22,7 +22,6 @@
 
 """Unit test for Source Class."""
 
-import os
 from pathlib import Path
 
 from ansys.speos.core import GeoRef, Project, Speos

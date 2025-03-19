@@ -23,7 +23,6 @@
 """Test basic sop template database connection."""
 
 import json
-import os
 from pathlib import Path
 
 import grpc

@@ -23,7 +23,6 @@
 """Test basic using sensor."""
 
 import math
-import os
 from pathlib import Path
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2

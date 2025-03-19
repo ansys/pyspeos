@@ -23,7 +23,6 @@
 """Unit test for spectral Intensity XMP service."""
 
 import logging
-import os
 from pathlib import Path
 
 from ansys.api.speos.intensity_distributions.v1 import (

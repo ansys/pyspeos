@@ -22,7 +22,6 @@
 
 """Test scene."""
 
-import os
 from pathlib import Path
 from typing import List, Mapping, Optional
 

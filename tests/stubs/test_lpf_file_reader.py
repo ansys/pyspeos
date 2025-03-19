@@ -22,7 +22,6 @@
 
 """Unit test for LPF reader service."""
 
-import os
 from pathlib import Path
 
 import ansys.api.speos.file.v1.file_transfer as file_transfer_helper__v1

@@ -23,7 +23,6 @@
 """Unit test for anisotropic bsdf service."""
 
 import math
-import os
 from pathlib import Path
 
 from google.protobuf.empty_pb2 import Empty
