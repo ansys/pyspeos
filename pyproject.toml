@@ -114,7 +114,11 @@ ignore = [
 "__init__.py" = ["F401"]
 
 [tool.ruff.lint.pep8-naming]
-ignore-names = ["set_colorimetric_standard_CIE_1964", "set_colorimetric_standard_CIE_1931"]
+ignore-names = [
+    "set_colorimetric_standard_CIE_1964",
+    "set_colorimetric_standard_CIE_1931",
+    "setLevel",
+]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"

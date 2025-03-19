@@ -103,8 +103,8 @@ def test_global_logger_logging(caplog: pytest.LogCaptureFixture):
     caplog : pytest.LogCaptureFixture
         Fixture for capturing logs.
     """
-    LOG.logger.set_level("DEBUG")
-    LOG.std_out_handler.set_level("DEBUG")
+    LOG.logger.setLevel("DEBUG")
+    LOG.std_out_handler.setLevel("DEBUG")
     for each_log_name, each_log_number in LOG_LEVELS.items():
         msg = f"This is an {each_log_name} message."
         LOG.logger.log(each_log_number, msg)
@@ -116,8 +116,8 @@ def test_global_logger_logging(caplog: pytest.LogCaptureFixture):
         )
 
     #  Set back to default level == ERROR
-    LOG.logger.set_level("ERROR")
-    LOG.std_out_handler.set_level("ERROR")
+    LOG.logger.setLevel("ERROR")
+    LOG.std_out_handler.setLevel("ERROR")
 
 
 def test_global_logger_level_mode():
@@ -228,8 +228,8 @@ def test_global_methods(caplog: pytest.LogCaptureFixture):
     caplog : pytest.LogCaptureFixture
         Fixture for capturing logs.
     """
-    LOG.logger.set_level("DEBUG")
-    LOG.std_out_handler.set_level("DEBUG")
+    LOG.logger.setLevel("DEBUG")
+    LOG.std_out_handler.setLevel("DEBUG")
 
     msg = "This is a debug message"
     LOG.debug(msg)
@@ -256,8 +256,8 @@ def test_global_methods(caplog: pytest.LogCaptureFixture):
     assert msg in caplog.text
 
     # Setting back to original level
-    LOG.logger.set_level("INFO")
-    LOG.std_out_handler.set_level("INFO")
+    LOG.logger.setLevel("INFO")
+    LOG.std_out_handler.setLevel("INFO")
 
 
 def test_log_to_file(tmp_path_factory: pytest.TempPathFactory):
@@ -277,8 +277,8 @@ def test_log_to_file(tmp_path_factory: pytest.TempPathFactory):
 
     # The LOG loglevel is changed in previous test,
     # hence making sure now it is the "default" one.
-    LOG.logger.set_level("ERROR")
-    LOG.std_out_handler.set_level("ERROR")
+    LOG.logger.setLevel("ERROR")
+    LOG.std_out_handler.setLevel("ERROR")
 
     if not LOG.file_handler:
         LOG.log_to_file(file_path)
@@ -294,9 +294,9 @@ def test_log_to_file(tmp_path_factory: pytest.TempPathFactory):
     assert "ERROR" in text
     assert "DEBUG" not in text
 
-    LOG.logger.set_level("DEBUG")
+    LOG.logger.setLevel("DEBUG")
     for each_handler in LOG.logger.handlers:
-        each_handler.set_level("DEBUG")
+        each_handler.setLevel("DEBUG")
 
     file_msg_debug = "This debug message should be recorded."
     LOG.debug(file_msg_debug)
