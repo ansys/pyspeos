@@ -113,6 +113,8 @@ ignore-names = [
     "set_colorimetric_standard_CIE_1964",
     "set_colorimetric_standard_CIE_1931",
     "setLevel",
+    "set_FWHM_angle_y",
+    "set_FWHM_angle_x",
 ]
 
 [tool.ruff.lint.pydocstyle]

@@ -25,6 +25,7 @@
 from __future__ import annotations
 
 from typing import List, Mapping, Optional
+import warnings
 
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.client import SpeosClient
@@ -224,6 +225,32 @@ class Intensity:
             self._gaussian.FWHM_angle_x = value
             return self
 
+        def set_FWHM_angle_x(self, value: float = 30) -> Intensity.Gaussian:
+            """Set the full width following x at half maximum.
+
+            .. deprecated:: 0.2.5
+                `set_FWHM_angle_x` will be removed
+                `set_fwhm_angle_x` shall be used to comply with PEP8 naming convention
+
+            Parameters
+            ----------
+            value : float
+                Full Width in degrees following x at Half Maximum.
+                By default, ``30.0``.
+
+            Returns
+            -------
+            ansys.speos.core.intensity.Intensity.Gaussian
+                Gaussian intensity.
+
+
+            """
+            warnings.warn(
+                "`set_FWHM_angle_x` is deprecated. Use `set_fwhm_angle_x` method instead.",
+                DeprecationWarning,
+            )
+            self.set_fwhm_angle_x(value)
+
         def set_fwhm_angle_y(self, value: float = 30) -> Intensity.Gaussian:
             """Set the full width following y at half maximum.
 
@@ -240,6 +267,32 @@ class Intensity:
             """
             self._gaussian.FWHM_angle_y = value
             return self
+
+        def set_FWHM_angle_y(self, value: float = 30) -> Intensity.Gaussian:
+            """Set the full width following y at half maximum.
+
+            .. deprecated:: 0.2.5
+                `set_FWHM_angle_y` will be removed
+                `set_fwhm_angle_y` shall be used to comply with PEP8 naming convention
+
+            Parameters
+            ----------
+            value : float
+                Full Width in degrees following y at Half Maximum.
+                By default, ``30.0``.
+
+            Returns
+            -------
+            ansys.speos.core.intensity.Intensity.Gaussian
+                Gaussian intensity.
+
+
+            """
+            warnings.warn(
+                "`set_FWHM_angle_y` is deprecated. Use `set_fwhm_angle_y` method instead.",
+                DeprecationWarning,
+            )
+            self.set_fwhm_angle_y(value)
 
         def set_total_angle(self, value: float = 180) -> Intensity.Gaussian:
             """Set the total angle of the emission of the light source.
