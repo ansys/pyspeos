@@ -61,7 +61,7 @@ from ansys.speos.core.kernel.vop_template import (
     VOPTemplateLink,
     VOPTemplateStub,
 )
-from ansys.speos.core.logger import LOG as logger, PySpeosCustomAdapter
+from ansys.speos.core.logger import PySpeosCustomAdapter, log as logger
 
 DEFAULT_HOST = "localhost"
 DEFAULT_PORT = "50098"

@@ -37,7 +37,7 @@ from ansys.speos.core.kernel.job import ProtoJob
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 from ansys.speos.core.kernel.scene import ProtoScene
 from ansys.speos.core.kernel.simulation_template import ProtoSimulationTemplate
-from ansys.speos.core.logger import LOG
+from ansys.speos.core.logger import log
 import ansys.speos.core.project as project
 import ansys.speos.core.proto_message_utils as proto_message_utils
 
@@ -273,7 +273,7 @@ class BaseSimulation:
 
             job_state_res = self.job_link.get_state()
             if job_state_res.state == ProtoJob.State.IN_ERROR:
-                LOG.error(protobuf_message_to_str(self.job_link.get_error()))
+                log.error(protobuf_message_to_str(self.job_link.get_error()))
 
         return self.job_link.get_results().results
 

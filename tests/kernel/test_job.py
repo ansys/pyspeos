@@ -24,7 +24,7 @@
 
 import time
 
-from ansys.speos.core import LOG  # Global logger
+from ansys.speos.core import log  # Global logger
 from ansys.speos.core.kernel.job import ProtoJob, messages as job_messages
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 from ansys.speos.core.speos import Speos
@@ -108,9 +108,9 @@ def test_job_actions(speos: Speos):
     ):
         time.sleep(2)
         job_state_res = job_dir.get_state()
-        LOG.info(protobuf_message_to_str(job_state_res))
+        log.info(protobuf_message_to_str(job_state_res))
         if job_state_res.state == job_messages.Job.State.IN_ERROR:
-            LOG.error(protobuf_message_to_str(job_dir.get_error()))
+            log.error(protobuf_message_to_str(job_dir.get_error()))
             assert False
 
     # Verify that results are generated

@@ -38,7 +38,7 @@ from ansys.speos.core.body import Body
 from ansys.speos.core.face import Face
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.intensity import Intensity
-from ansys.speos.core.logger import LOG, Logger
+from ansys.speos.core.logger import Logger, log
 from ansys.speos.core.lxp import LightPathFinder, RayPath
 from ansys.speos.core.opt_prop import OptProp
 from ansys.speos.core.part import Part

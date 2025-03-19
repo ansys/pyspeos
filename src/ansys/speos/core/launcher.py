@@ -24,7 +24,7 @@
 
 import os
 
-from ansys.speos.core import LOG as logger
+from ansys.speos.core import log as logger
 from ansys.speos.core.speos import Speos
 
 MAX_MESSAGE_LENGTH = int(os.environ.get("SPEOS_MAX_MESSAGE_LENGTH", 256 * 1024**2))

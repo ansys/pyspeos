@@ -102,7 +102,7 @@ ignore = [
     # "N802", # TODO: Function name should be lowercase
     # "N803",
     # "N806",
-    "N811",
+    # "N811",
     "N812",
     "TD002", # Missing author in TODOs comment
     "TD003", # Missing issue link in TODOs comment

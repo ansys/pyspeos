@@ -88,7 +88,7 @@ To log using this logger, call the desired method as a normal logger with:
     >>> import logging
     >>> from ansys.speos.core.logger import Logger
     >>> LOG = Logger(level=logging.DEBUG, to_file=False, to_stdout=True)
-    >>> LOG.debug("This is LOG debug message.")
+    >>> log.debug("This is LOG debug message.")
     DEBUG -  -  <ipython-input-24-80df150fe31f> - <module> - This is LOG debug message.
 
 Instance Logger
@@ -374,9 +374,9 @@ class Logger:
     Import the global pyspeos logger and add a file output handler.
 
     >>> import os
-    >>> from ansys.speos.core import LOG
+    >>> from ansys.speos.core import log
     >>> file_path = os.path.join(os.getcwd(), "pyspeos.log")
-    >>> LOG.log_to_file(file_path)
+    >>> log.log_to_file(file_path)
     """
 
     file_handler = None
@@ -447,10 +447,10 @@ class Logger:
         --------
         Write to the ``"pyspeos.log"`` file in the current working directory.
 
-        >>> from ansys.speos.core import LOG
+        >>> from ansys.speos.core import log
         >>> import os
         >>> file_path = os.path.join(os.getcwd(), "pyspeos.log")
-        >>> LOG.log_to_file(file_path)
+        >>> log.log_to_file(file_path)
         """
         self = addfile_handler(self, filename=filename, level=level, write_headers=True)
 
@@ -684,5 +684,5 @@ def add_stdout_handler(logger, level=LOG_LEVEL, write_headers=False):
 
 # Logger
 # ------------------------------------------------------------------------------
-LOG = Logger(level=logging.ERROR, to_file=False, to_stdout=True)
-LOG.debug("Loaded logging module as LOG")
+log = Logger(level=logging.ERROR, to_file=False, to_stdout=True)
+log.debug("Loaded logging module as log")
