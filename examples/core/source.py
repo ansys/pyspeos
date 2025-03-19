@@ -5,7 +5,6 @@
 # There are different type of sources available: luminaire source, surface source, ray file source.
 
 # +
-import os
 from pathlib import Path
 
 from ansys.speos.core import GeoRef, Project, Speos

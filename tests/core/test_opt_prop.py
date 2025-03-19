@@ -22,7 +22,6 @@
 
 """Test basic using optical properties."""
 
-import os
 from pathlib import Path
 
 from ansys.speos.core import GeoRef, Project, Speos

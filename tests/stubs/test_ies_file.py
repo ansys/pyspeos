@@ -23,7 +23,6 @@
 """Unit test for IES service."""
 
 import logging
-import os
 from pathlib import Path
 
 from ansys.api.speos.intensity_distributions.v1 import ies_pb2, ies_pb2_grpc
@@ -149,22 +148,22 @@ def test_grpc_ies_intensity(speos: Speos):
     ies = createIesIntensity()
 
     logging.debug("Sending protocol buffer to server")
-    import_response = ies_pb2.Import_Response()
-    import_response = stub.Import(ies)
+    ies_pb2.Import_Response()
+    stub.Import(ies)
 
     logging.debug("Writing as {save_request.file_uri}")
-    save_response = ies_pb2.Save_Response()
-    save_response = stub.Save(save_request)
+    ies_pb2.Save_Response()
+    stub.Save(save_request)
     assert helper.does_file_exist(save_request.file_uri)
 
     logging.debug("Reading {load_response.file_uri}")
-    load_response = ies_pb2.Load_Response()
-    load_response = stub.Load(load_request)
+    ies_pb2.Load_Response()
+    stub.Load(load_request)
     helper.remove_file(load_request.file_uri)
 
     logging.debug("Exporting ies intensity protocol buffer")
     export_request = ies_pb2.Export_Request()
-    ies2 = ies_pb2.IesIntensityDistribution()
+    ies_pb2.IesIntensityDistribution()
     ies2 = stub.Export(export_request)
 
     logging.debug("Comparing ies intensity distributions")

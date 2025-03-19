@@ -22,7 +22,6 @@
 
 """Test basic using lxp."""
 
-import os
 from pathlib import Path
 
 import ansys.speos.core.lxp as lxp

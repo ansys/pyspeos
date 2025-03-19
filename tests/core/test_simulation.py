@@ -22,7 +22,6 @@
 
 """Test basic using simulation."""
 
-import os
 from pathlib import Path
 
 from ansys.api.speos.simulation.v1 import simulation_template_pb2

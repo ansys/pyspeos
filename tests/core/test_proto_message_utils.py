@@ -22,7 +22,6 @@
 
 """Test basic using proto_message_utils."""
 
-import os
 from pathlib import Path
 
 from ansys.speos.core import OptProp, Project, Speos, proto_message_utils

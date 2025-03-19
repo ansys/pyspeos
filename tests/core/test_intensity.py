@@ -22,7 +22,6 @@
 
 """Test basic using intensity."""
 
-import os
 from pathlib import Path
 
 from ansys.speos.core import GeoRef, Intensity, Speos

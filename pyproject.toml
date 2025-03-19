@@ -99,8 +99,6 @@ select = [
     "TD",   # flake8-todos, https://docs.astral.sh/ruff/rules/#flake8-todos-td
 ]
 ignore = [
-    "F401",
-    "F841", # TODO: Local variable assigned but never used
     "N802", # TODO: Function name should be lowercase
     "N803",
     "N806",
@@ -113,6 +111,7 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "examples/*" = ["D100", "E402"]
+"__init__.py" = ["F401"]
 
 
 [tool.ruff.lint.pydocstyle]

@@ -27,7 +27,6 @@ For example a method to check file existence depending on if the file is in the 
 in local.
 """
 
-import os
 from pathlib import Path
 import subprocess
 import time
