@@ -695,27 +695,27 @@ def test_delete(speos: Speos):
 def test_get_simulation(speos: Speos, capsys):
     """Test get of a simulation."""
     p = Project(speos=speos)
-    Sim1 = p.create_simulation(name="Sim.1", feature_type=SimulationDirect)
-    Sim2 = p.create_simulation(name="Sim.2", feature_type=SimulationInteractive)
-    Sim3 = p.create_simulation(name="Sim.3", feature_type=SimulationInverse)
+    sim1 = p.create_simulation(name="Sim.1", feature_type=SimulationDirect)
+    sim2 = p.create_simulation(name="Sim.2", feature_type=SimulationInteractive)
+    sim3 = p.create_simulation(name="Sim.3", feature_type=SimulationInverse)
     # test when key exists
-    name1 = Sim1.get(key="name")
+    name1 = sim1.get(key="name")
     assert name1 == "Sim.1"
-    property_info = Sim2.get(key="rays_number_per_sources")
+    property_info = sim2.get(key="rays_number_per_sources")
     assert property_info is not None
-    property_info = Sim3.get(key="source_paths")
+    property_info = sim3.get(key="source_paths")
     assert property_info is not None
 
     # test when key does not exist
-    get_result1 = Sim1.get(key="geometry")
+    get_result1 = sim1.get(key="geometry")
     stdout, stderr = capsys.readouterr()
     assert get_result1 is None
     assert "Used key: geometry not found in key list" in stdout
-    get_result2 = Sim2.get(key="geometry")
+    get_result2 = sim2.get(key="geometry")
     stdout, stderr = capsys.readouterr()
     assert get_result2 is None
     assert "Used key: geometry not found in key list" in stdout
-    get_result3 = Sim3.get(key="geometry")
+    get_result3 = sim3.get(key="geometry")
     stdout, stderr = capsys.readouterr()
     assert get_result3 is None
     assert "Used key: geometry not found in key list" in stdout

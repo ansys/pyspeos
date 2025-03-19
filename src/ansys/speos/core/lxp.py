@@ -519,35 +519,35 @@ def wavelength_to_rgb(wavelength: float, gamma: float = 0.8) -> [int, int, int, 
     wavelength = float(wavelength)
     if 380 <= wavelength <= 440:
         attenuation = 0.3 + 0.7 * (wavelength - 380) / (440 - 380)
-        R = ((-(wavelength - 440) / (440 - 380)) * attenuation) ** gamma
-        G = 0.0
-        B = (1.0 * attenuation) ** gamma
+        r = ((-(wavelength - 440) / (440 - 380)) * attenuation) ** gamma
+        g = 0.0
+        b = (1.0 * attenuation) ** gamma
     elif 440 <= wavelength <= 490:
-        R = 0.0
-        G = ((wavelength - 440) / (490 - 440)) ** gamma
-        B = 1.0
+        r = 0.0
+        g = ((wavelength - 440) / (490 - 440)) ** gamma
+        b = 1.0
     elif 490 <= wavelength <= 510:
-        R = 0.0
-        G = 1.0
-        B = (-(wavelength - 510) / (510 - 490)) ** gamma
+        r = 0.0
+        g = 1.0
+        b = (-(wavelength - 510) / (510 - 490)) ** gamma
     elif 510 <= wavelength <= 580:
-        R = ((wavelength - 510) / (580 - 510)) ** gamma
-        G = 1.0
-        B = 0.0
+        r = ((wavelength - 510) / (580 - 510)) ** gamma
+        g = 1.0
+        b = 0.0
     elif 580 <= wavelength <= 645:
-        R = 1.0
-        G = (-(wavelength - 645) / (645 - 580)) ** gamma
-        B = 0.0
+        r = 1.0
+        g = (-(wavelength - 645) / (645 - 580)) ** gamma
+        b = 0.0
     elif 645 <= wavelength <= 750:
         attenuation = 0.3 + 0.7 * (750 - wavelength) / (750 - 645)
-        R = (1.0 * attenuation) ** gamma
-        G = 0.0
-        B = 0.0
+        r = (1.0 * attenuation) ** gamma
+        g = 0.0
+        b = 0.0
     else:
-        R = 0.0
-        G = 0.0
-        B = 0.0
-    R *= 255
-    G *= 255
-    B *= 255
-    return [int(R), int(G), int(B), 255]
+        r = 0.0
+        g = 0.0
+        b = 0.0
+    r *= 255
+    g *= 255
+    b *= 255
+    return [int(r), int(g), int(b), 255]
