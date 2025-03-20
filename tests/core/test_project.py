@@ -395,7 +395,7 @@ def test_from_file_threads_limited(speos: Speos):
 
     # Compute on CPU with the amount of threads selected
     feat_sims[0].compute_CPU(threads_number=threads_nb)
-    assert feat_sims[0]._simulation_template.metadata[
+    assert feat_sims[0].simulation_template_link.get().metadata[
         "SimulationSetting::OPTThreadNumber"
     ] == "int::" + str(threads_nb)
 
