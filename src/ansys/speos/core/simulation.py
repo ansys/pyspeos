@@ -170,6 +170,11 @@ class BaseSimulation:
         if self._project.scene_link is not None:
             self._job.scene_guid = self._project.scene_link.key
 
+        if project._threads_number is not None:
+            self._simulation_template.metadata["SimulationSetting::OPTThreadNumber"] = (
+                "int::" + str(project._threads_number)
+            )
+
     def set_sensor_paths(self, sensor_paths: List[str]) -> BaseSimulation:
         """Set the sensors that the simulation will take into account.
 
