@@ -228,7 +228,7 @@ class BaseSimulation:
         Parameters
         ----------
         threads_number : int, optional
-            The number of threads used by each simulation computing.
+            The number of threads used.
             By default, ``None``, means the number of processor available.
 
         Returns
