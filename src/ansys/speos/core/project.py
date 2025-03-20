@@ -73,9 +73,6 @@ class Project:
     path : str
         The project will be loaded from this speos file.
         By default, ``""``, means create from empty.
-    threads_number : int, optional
-        The number of threads used by each simulation computing.
-        By default, ``None``, means the number of processor available.
 
     Attributes
     ----------
@@ -83,13 +80,12 @@ class Project:
         Link object for the scene in database.
     """
 
-    def __init__(self, speos: Speos, path: str = "", threads_number: Optional[int] = None):
+    def __init__(self, speos: Speos, path: str = ""):
         self.client = speos.client
         """Speos instance client."""
         self.scene_link = speos.client.scenes().create()
         """Link object for the scene in database."""
         self._features = []
-        self._threads_number = threads_number
         if len(path):
             self.scene_link.load_file(path)
             self._fill_features()

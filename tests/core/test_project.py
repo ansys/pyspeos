@@ -372,16 +372,12 @@ def test_from_file(speos: Speos):
 
 def test_from_file_threads_limited(speos: Speos):
     """Test create a project from file."""
-    # Choose number of threads
-    threads_nb = 8
-
     # Create a project from a file
     p = Project(
         speos=speos,
         path=str(
             Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
         ),
-        threads_number=threads_nb,
     )
 
     # Check that scene is filled
@@ -393,6 +389,12 @@ def test_from_file_threads_limited(speos: Speos):
     feat_sims = p.find(name=p.scene_link.get().simulations[0].name)
     assert len(feat_sims) == 1
     assert type(feat_sims[0]) is SimulationDirect
+
+    # Choose number of threads
+    threads_nb = 8
+
+    # Compute on CPU with the amount of threads selected
+    feat_sims[0].compute_CPU(threads_number=threads_nb)
     assert feat_sims[0]._simulation_template.metadata[
         "SimulationSetting::OPTThreadNumber"
     ] == "int::" + str(threads_nb)
