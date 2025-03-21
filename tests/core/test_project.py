@@ -371,7 +371,7 @@ def test_from_file(speos: Speos):
 
 
 def test_from_file_threads_limited(speos: Speos):
-    """Test change Number of threads used"""
+    """Test change Number of threads used."""
     # Create a project from a file
     p = Project(
         speos=speos,
