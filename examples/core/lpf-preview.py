@@ -43,7 +43,7 @@ p.preview(viz_args={"opacity": 0.7})
 
 # +
 sim = p.find("Direct.1")[0]
-sim.compute_cpu()
+sim.compute_CPU()
 # -
 
 # If looking to the simulation report, we will find that we have 40% simulation error

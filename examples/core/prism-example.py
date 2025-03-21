@@ -45,7 +45,7 @@ p.preview()
 # +
 sim_features = p.find(name="Prism", feature_type=SimulationDirect)
 sim = sim_features[0]
-sim.compute_cpu()
+sim.compute_CPU()
 # -
 
 # Use the open_result_image method to review the result
@@ -73,7 +73,7 @@ irr.commit()
 # ## Re-run the simulation with new sensor definition
 
 # +
-sim.compute_cpu()
+sim.compute_CPU()
 if os.name == "nt":
     open_result_image(simulation_feature=sim, result_name="Prism.Irradiance.1.xmp")
 # -

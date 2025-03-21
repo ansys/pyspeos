@@ -188,7 +188,7 @@ class Spectrum:
         return self
 
     def set_whiteLED(self) -> Spectrum:
-        """Set the spectrum as whiteLED (predefined spectrum).
+        """Set the spectrum as white led (predefined spectrum).
 
         .. deprecated:: 0.2.2
             `set_whiteLed` will be removed with 0.3.0
@@ -207,7 +207,7 @@ class Spectrum:
         return self.set_white_led()
 
     def set_white_led(self) -> Spectrum:
-        """Set the spectrum as whiteLED (predefined spectrum).
+        """Set the spectrum as white led (predefined spectrum).
 
         Returns
         -------

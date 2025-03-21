@@ -28,7 +28,6 @@ from difflib import SequenceMatcher
 import time
 from typing import List, Mapping, Optional
 import uuid
-import warnings
 
 from ansys.api.speos.job.v2 import job_pb2
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
@@ -226,25 +225,6 @@ class BaseSimulation:
     def compute_CPU(self) -> List[job_pb2.Result]:
         """Compute the simulation on CPU.
 
-        .. deprecated:: 0.2.2
-                `compute_CPU`  will be removed with 0.3.0
-                `compute_cpu` shall be used to comply with PEP8 naming convention
-
-        Returns
-        -------
-        List[ansys.api.speos.job.v2.job_pb2.Result]
-            List of simulation results.
-        """
-        warnings.warn(
-            "`compute_CPU` is deprecated. Use `compute_cpu` method instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.compute_cpu()
-
-    def compute_cpu(self) -> List[job_pb2.Result]:
-        """Compute the simulation on CPU.
-
         Returns
         -------
         List[ansys.api.speos.job.v2.job_pb2.Result]
@@ -255,25 +235,6 @@ class BaseSimulation:
         return self.result_list
 
     def compute_GPU(self) -> List[job_pb2.Result]:
-        """Compute the simulation on GPU.
-
-        .. deprecated:: 0.2.2
-            `compute_GPU` will be removed with 0.3.0
-            `compute_gpu` shall be used to comply with PEP8 naming convention
-
-        Returns
-        -------
-        List[ansys.api.speos.job.v2.job_pb2.Result]
-            List of simulation results.
-        """
-        warnings.warn(
-            "`compute_GPU` is deprecated. Use `compute_gpu` method instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.compute_gpu()
-
-    def compute_gpu(self) -> List[job_pb2.Result]:
         """Compute the simulation on GPU.
 
         Returns
