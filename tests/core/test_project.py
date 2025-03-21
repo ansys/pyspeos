@@ -370,6 +370,31 @@ def test_from_file(speos: Speos):
     assert ssr_data.irradiance_sensor_template.dimensions.x_sampling == 500
 
 
+def test_from_file_threads_limited(speos: Speos):
+    """Test change Number of threads used."""
+    # Create a project from a file
+    p = Project(
+        speos=speos,
+        path=str(
+            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
+        ),
+    )
+
+    assert len(p.scene_link.get().simulations) == 1
+
+    feat_sims = p.find(name=p.scene_link.get().simulations[0].name)
+    assert len(feat_sims) == 1
+
+    # Choose number of threads
+    threads_nb = 8
+
+    # Compute on CPU with the amount of threads selected
+    feat_sims[0].compute_CPU(threads_number=threads_nb)
+    assert feat_sims[0].simulation_template_link.get().metadata[
+        "SimulationSetting::OPTThreadNumber"
+    ] == "int::" + str(threads_nb)
+
+
 def test_find_geom(speos: Speos):
     """Test find geometry feature in a project."""
     # Create a project from a file
