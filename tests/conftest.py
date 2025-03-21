@@ -35,7 +35,7 @@ from pathlib import Path
 
 import pytest
 
-from ansys.speos.core import log
+from ansys.speos.core import LOG
 from ansys.speos.core.speos import Speos
 
 
@@ -86,8 +86,8 @@ else:
 
 # Define default pytest logging level to DEBUG and stdout
 
-log.setLevel(level="DEBUG")
-log.log_to_stdout()
+LOG.setLevel(level="DEBUG")
+LOG.log_to_stdout()
 
 
 @pytest.fixture

@@ -27,6 +27,7 @@ from __future__ import annotations
 from typing import List, Mapping, Optional
 import warnings
 
+from ansys.speos.core.generic.general_methods import deprecate_kwargs
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.client import SpeosClient
 from ansys.speos.core.kernel.intensity_template import ProtoIntensityTemplate
@@ -229,7 +230,7 @@ class Intensity:
             """Set the full width following x at half maximum.
 
             .. deprecated:: 0.2.5
-                `set_FWHM_angle_x` will be removed
+                `set_FWHM_angle_x` will be removed with 0.3.0
                 `set_fwhm_angle_x` shall be used to comply with PEP8 naming convention
 
             Parameters
@@ -248,6 +249,7 @@ class Intensity:
             warnings.warn(
                 "`set_FWHM_angle_x` is deprecated. Use `set_fwhm_angle_x` method instead.",
                 DeprecationWarning,
+                stacklevel=2,
             )
             return self.set_fwhm_angle_x(value)
 
@@ -271,8 +273,8 @@ class Intensity:
         def set_FWHM_angle_y(self, value: float = 30) -> Intensity.Gaussian:
             """Set the full width following y at half maximum.
 
-            .. deprecated:: 0.2.5
-                `set_FWHM_angle_y` will be removed
+            .. deprecated:: 0.2.2
+                `set_FWHM_angle_y` will be removed with 0.3.0
                 `set_fwhm_angle_y` shall be used to comply with PEP8 naming convention
 
             Parameters
@@ -291,6 +293,7 @@ class Intensity:
             warnings.warn(
                 "`set_FWHM_angle_y` is deprecated. Use `set_fwhm_angle_y` method instead.",
                 DeprecationWarning,
+                stacklevel=2,
             )
             return self.set_fwhm_angle_y(value)
 
@@ -401,6 +404,7 @@ class Intensity:
             self._type._library_props = self._intensity_properties.library_properties
         return self._type
 
+    @deprecate_kwargs({"N": "n"}, "0.3.0")
     def set_cos(self, n: float = 3, total_angle: float = 180) -> Intensity:
         """Set the intensity as cos.
 

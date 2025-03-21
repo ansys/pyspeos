@@ -29,7 +29,7 @@ from typing import Callable
 
 import pytest
 
-from ansys.speos.core import log  # Global logger
+from ansys.speos.core import LOG  # Global logger
 import ansys.speos.core.logger as logger
 
 ## Notes
@@ -77,8 +77,8 @@ def test_only_logger(caplog: pytest.LogCaptureFixture):
 
 def test_global_logger_exist():
     """Test for checking the accurate naming of the general Logger instance."""
-    assert isinstance(log.logger, deflogging.Logger)
-    assert log.logger.name == "pyspeos_global"
+    assert isinstance(LOG.LOGGER, deflogging.Logger)
+    assert LOG.LOGGER.name == "pyspeos_global"
 
 
 def test_global_logger_has_handlers():
@@ -86,10 +86,10 @@ def test_global_logger_has_handlers():
 
     and sdtout file_handlers implemented.
     """
-    assert hasattr(log, "file_handler")
-    assert hasattr(log, "std_out_handler")
-    assert log.logger.hasHandlers
-    assert log.file_handler or log.std_out_handler  # at least a handler is not empty
+    assert hasattr(LOG, "file_handler")
+    assert hasattr(LOG, "std_out_handler")
+    assert LOG.LOGGER.hasHandlers
+    assert LOG.file_handler or LOG.std_out_handler  # at least a handler is not empty
 
 
 def test_global_logger_logging(caplog: pytest.LogCaptureFixture):
@@ -103,11 +103,11 @@ def test_global_logger_logging(caplog: pytest.LogCaptureFixture):
     caplog : pytest.LogCaptureFixture
         Fixture for capturing logs.
     """
-    log.logger.setLevel("DEBUG")
-    log.std_out_handler.setLevel("DEBUG")
+    LOG.LOGGER.setLevel("DEBUG")
+    LOG.std_out_handler.setLevel("DEBUG")
     for each_log_name, each_log_number in LOG_LEVELS.items():
         msg = f"This is an {each_log_name} message."
-        log.logger.log(each_log_number, msg)
+        LOG.LOGGER.LOG(each_log_number, msg)
         # Make sure we are using the right logger, the right level and message.
         assert caplog.record_tuples[-1] == (
             "pyspeos_global",
@@ -116,8 +116,8 @@ def test_global_logger_logging(caplog: pytest.LogCaptureFixture):
         )
 
     #  Set back to default level == ERROR
-    log.logger.setLevel("ERROR")
-    log.std_out_handler.setLevel("ERROR")
+    LOG.LOGGER.setLevel("ERROR")
+    LOG.std_out_handler.setLevel("ERROR")
 
 
 def test_global_logger_level_mode():
@@ -125,8 +125,8 @@ def test_global_logger_level_mode():
 
     and that the default value (unless changed) is ERROR.
     """
-    assert isinstance(log.logger.level, int)
-    assert log.logger.level == logger.ERROR
+    assert isinstance(LOG.LOGGER.level, int)
+    assert LOG.LOGGER.level == logger.ERROR
 
 
 def test_global_logger_exception_handling(caplog: pytest.LogCaptureFixture):
@@ -172,10 +172,10 @@ def test_global_logger_debug_levels(level: int, caplog: pytest.LogCaptureFixture
     caplog : pytest.LogCaptureFixture
         Fixture for capturing logs.
     """
-    with caplog.at_level(level, log.logger.name):  # changing root logger level:
+    with caplog.at_level(level, LOG.LOGGER.name):  # changing root logger level:
         for each_log_name, each_log_number in LOG_LEVELS.items():
             msg = f"This is a message of type {each_log_name}."
-            log.logger.log(each_log_number, msg)
+            LOG.LOGGER.LOG(each_log_number, msg)
             # Make sure we are using the right logger, the right level and message.
             if each_log_number >= level:
                 assert caplog.record_tuples[-1] == (
@@ -210,7 +210,7 @@ def test_global_logger_format(fake_record: Callable):
     assert "instance" in logger.STDOUT_MSG_FORMAT
 
     logging = fake_record(
-        log.logger,
+        LOG.LOGGER,
         msg="This is a message",
         level=deflogging.DEBUG,
         extra={"instance_name": "172.1.1.1"},
@@ -228,36 +228,36 @@ def test_global_methods(caplog: pytest.LogCaptureFixture):
     caplog : pytest.LogCaptureFixture
         Fixture for capturing logs.
     """
-    log.logger.setLevel("DEBUG")
-    log.std_out_handler.setLevel("DEBUG")
+    LOG.LOGGER.setLevel("DEBUG")
+    LOG.std_out_handler.setLevel("DEBUG")
 
     msg = "This is a debug message"
-    log.debug(msg)
+    LOG.debug(msg)
     assert msg in caplog.text
 
     msg = "This is an info message"
-    log.info(msg)
+    LOG.info(msg)
     assert msg in caplog.text
 
     msg = "This is a warning message"
-    log.warning(msg)
+    LOG.warning(msg)
     assert msg in caplog.text
 
     msg = "This is an error message"
-    log.error(msg)
+    LOG.error(msg)
     assert msg in caplog.text
 
     msg = "This is a critical message"
-    log.critical(msg)
+    LOG.critical(msg)
     assert msg in caplog.text
 
     msg = 'This is a 30 message using "log"'
-    log.log(30, msg)
+    LOG.LOG(30, msg)
     assert msg in caplog.text
 
     # Setting back to original level
-    log.logger.setLevel("INFO")
-    log.std_out_handler.setLevel("INFO")
+    LOG.LOGGER.setLevel("INFO")
+    LOG.std_out_handler.setLevel("INFO")
 
 
 def test_log_to_file(tmp_path_factory: pytest.TempPathFactory):
@@ -277,14 +277,14 @@ def test_log_to_file(tmp_path_factory: pytest.TempPathFactory):
 
     # The LOG loglevel is changed in previous test,
     # hence making sure now it is the "default" one.
-    log.logger.setLevel("ERROR")
-    log.std_out_handler.setLevel("ERROR")
+    LOG.LOGGER.setLevel("ERROR")
+    LOG.std_out_handler.setLevel("ERROR")
 
-    if not log.file_handler:
-        log.log_to_file(file_path)
+    if not LOG.file_handler:
+        LOG.log_to_file(file_path)
 
-    log.error(file_msg_error)
-    log.debug(file_msg_debug)
+    LOG.error(file_msg_error)
+    LOG.debug(file_msg_debug)
 
     with Path(file_path).open(mode="r") as fid:
         text = "".join(fid.readlines())
@@ -294,12 +294,12 @@ def test_log_to_file(tmp_path_factory: pytest.TempPathFactory):
     assert "ERROR" in text
     assert "DEBUG" not in text
 
-    log.logger.setLevel("DEBUG")
-    for each_handler in log.logger.handlers:
+    LOG.LOGGER.setLevel("DEBUG")
+    for each_handler in LOG.LOGGER.handlers:
         each_handler.setLevel("DEBUG")
 
     file_msg_debug = "This debug message should be recorded."
-    log.debug(file_msg_debug)
+    LOG.debug(file_msg_debug)
 
     with Path(file_path).open(mode="r") as fid:
         text = "".join(fid.readlines())

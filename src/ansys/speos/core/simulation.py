@@ -38,7 +38,7 @@ from ansys.speos.core.kernel.job import ProtoJob
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 from ansys.speos.core.kernel.scene import ProtoScene
 from ansys.speos.core.kernel.simulation_template import ProtoSimulationTemplate
-from ansys.speos.core.logger import log
+from ansys.speos.core.logger import LOG
 import ansys.speos.core.project as project
 import ansys.speos.core.proto_message_utils as proto_message_utils
 
@@ -226,8 +226,8 @@ class BaseSimulation:
     def compute_CPU(self) -> List[job_pb2.Result]:
         """Compute the simulation on CPU.
 
-        .. deprecated:: 0.2.5
-                `compute_CPU` will be removed
+        .. deprecated:: 0.2.2
+                `compute_CPU`  will be removed with 0.3.0
                 `compute_cpu` shall be used to comply with PEP8 naming convention
 
         Returns
@@ -238,6 +238,7 @@ class BaseSimulation:
         warnings.warn(
             "`compute_CPU` is deprecated. Use `compute_cpu` method instead.",
             DeprecationWarning,
+            stacklevel=2,
         )
         return self.compute_cpu()
 
@@ -256,8 +257,8 @@ class BaseSimulation:
     def compute_GPU(self) -> List[job_pb2.Result]:
         """Compute the simulation on GPU.
 
-        .. deprecated:: 0.2.5
-            `compute_GPU` will be removed
+        .. deprecated:: 0.2.2
+            `compute_GPU` will be removed with 0.3.0
             `compute_gpu` shall be used to comply with PEP8 naming convention
 
         Returns
@@ -268,6 +269,7 @@ class BaseSimulation:
         warnings.warn(
             "`compute_GPU` is deprecated. Use `compute_gpu` method instead.",
             DeprecationWarning,
+            stacklevel=2,
         )
         return self.compute_gpu()
 
@@ -310,7 +312,7 @@ class BaseSimulation:
 
             job_state_res = self.job_link.get_state()
             if job_state_res.state == ProtoJob.State.IN_ERROR:
-                log.error(protobuf_message_to_str(self.job_link.get_error()))
+                LOG.error(protobuf_message_to_str(self.job_link.get_error()))
 
         return self.job_link.get_results().results
 

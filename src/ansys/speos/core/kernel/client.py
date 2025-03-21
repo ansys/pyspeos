@@ -61,7 +61,7 @@ from ansys.speos.core.kernel.vop_template import (
     VOPTemplateLink,
     VOPTemplateStub,
 )
-from ansys.speos.core.logger import PySpeosCustomAdapter, log as logger
+from ansys.speos.core.logger import LOG as LOGGER, PySpeosCustomAdapter
 
 DEFAULT_HOST = "localhost"
 DEFAULT_PORT = "50098"
@@ -155,7 +155,7 @@ class SpeosClient:
         wait_until_healthy(self._channel, timeout)
 
         # once connection with the client is established, create a logger
-        self._log = logger.add_instance_logger(
+        self._log = LOGGER.add_instance_logger(
             name=self._target, client_instance=self, level=logging_level
         )
         if logging_file:

@@ -190,8 +190,8 @@ class Spectrum:
     def set_whiteLED(self) -> Spectrum:
         """Set the spectrum as whiteLED (predefined spectrum).
 
-        .. deprecated:: 0.2.5
-            `set_whiteLed` will be removed
+        .. deprecated:: 0.2.2
+            `set_whiteLed` will be removed with 0.3.0
             `set_white_led` shall be used to comply with PEP8 naming convention
 
         Returns
@@ -202,6 +202,7 @@ class Spectrum:
         warnings.warn(
             "`set_whiteLED` is deprecated. Use `set_white_led` method instead.",
             DeprecationWarning,
+            stacklevel=2,
         )
         return self.set_white_led()
 
