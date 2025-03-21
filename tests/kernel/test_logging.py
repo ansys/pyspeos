@@ -209,15 +209,15 @@ def test_global_logger_format(fake_record: Callable):
     assert "instance" in logger.FILE_MSG_FORMAT
     assert "instance" in logger.STDOUT_MSG_FORMAT
 
-    log = fake_record(
+    logging = fake_record(
         LOG.logger,
         msg="This is a message",
         level=deflogging.DEBUG,
         extra={"instance_name": "172.1.1.1"},
     )
-    assert re.findall(r"(?:[0-9]{1,3}.){3}[0-9]{1,3}", log)
-    assert "DEBUG" in log
-    assert "This is a message" in log
+    assert re.findall(r"(?:[0-9]{1,3}.){3}[0-9]{1,3}", logging)
+    assert "DEBUG" in logging
+    assert "This is a message" in logging
 
 
 def test_global_methods(caplog: pytest.LogCaptureFixture):

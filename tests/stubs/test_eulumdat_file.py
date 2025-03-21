@@ -34,7 +34,7 @@ from tests.conftest import test_path
 import tests.helper as helper
 
 
-def createEulumdatIntensity():
+def create_eulumdat_intensity():
     """Create simple eulumdat file."""
     eulumdat = eulumdat_pb2.EulumdatIntensityDistribution()
 
@@ -105,7 +105,7 @@ def createEulumdatIntensity():
     return eulumdat
 
 
-def compareEulumdatIntensities(eulumdat1, eulumdat2):
+def compare_eulumdat_intensities(eulumdat1, eulumdat2):
     """Compare 2 eulumdat files."""
     # file information
     if eulumdat1.file_info.company_identification != eulumdat2.file_info.company_identification:
@@ -231,7 +231,7 @@ def test_grpc_eulumdat_intensity(speos: Speos):
     load_name.file_uri = str(Path(test_path) / "eulumdat_tmp00.ldt")
 
     logging.debug("Creating eulumdat intensity protocol buffer")
-    eulumdat = createEulumdatIntensity()
+    eulumdat = create_eulumdat_intensity()
 
     logging.debug("Sending protocol buffer to server")
     eulumdat_pb2.Import_Response()
@@ -252,4 +252,4 @@ def test_grpc_eulumdat_intensity(speos: Speos):
     eulumdat2 = stub.Export(export_request)
 
     logging.debug("Check equal")
-    assert compareEulumdatIntensities(eulumdat, eulumdat2)
+    assert compare_eulumdat_intensities(eulumdat, eulumdat2)

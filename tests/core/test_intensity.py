@@ -71,7 +71,7 @@ def test_create_intensity(speos: Speos):
     assert intensity1._intensity_properties.library_properties.HasField("exit_geometries") is False
 
     # cos
-    intensity1.set_cos(N=2, total_angle=160).commit()
+    intensity1.set_cos(n=2, total_angle=160).commit()
     assert intensity1.intensity_template_link.get().HasField("cos")
     assert intensity1.intensity_template_link.get().cos.N == 2
     assert intensity1.intensity_template_link.get().cos.total_angle == 160

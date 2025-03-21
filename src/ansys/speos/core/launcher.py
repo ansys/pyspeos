@@ -24,7 +24,7 @@
 
 import os
 
-from ansys.speos.core import LOG as logger
+from ansys.speos.core import LOG as LOGGER
 from ansys.speos.core.speos import Speos
 
 MAX_MESSAGE_LENGTH = int(os.environ.get("SPEOS_MAX_MESSAGE_LENGTH", 256 * 1024**2))
@@ -59,7 +59,7 @@ def launch_speos(version: str = None) -> Speos:
         )
 
     if pypim.is_configured():
-        logger.info("Starting Speos service remotely. The startup configuration will be ignored.")
+        LOGGER.info("Starting Speos service remotely. The startup configuration will be ignored.")
         return launch_remote_speos(version)
 
 

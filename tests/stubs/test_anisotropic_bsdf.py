@@ -34,7 +34,7 @@ from tests.conftest import test_path
 import tests.helper as helper
 
 
-def createAnisotropicBsdf():
+def create_anisotropic_bsdf():
     """Create a lambertian bsdf."""
     bsdf = anisotropic_bsdf__v1__pb2.AnisotropicBsdfData()
 
@@ -115,7 +115,7 @@ def approx_cmp(a, b):
     return math.fabs(a - b) < 1e-6
 
 
-def compareAnisotropicBsdf(bsdf1, bsdf2):
+def compare_anisotropic_bsdf(bsdf1, bsdf2):
     """Compare 2 bsdf."""
     # description
     if bsdf1.description != bsdf2.description:
@@ -264,7 +264,7 @@ def compareAnisotropicBsdf(bsdf1, bsdf2):
     return True
 
 
-def compareEnhancementData(cones1, cones2):
+def compare_enhancement_data(cones1, cones2):
     """Compare enhancement cones."""
     if len(cones1.anisotropic_samples) != len(cones2.anisotropic_samples):
         return False
@@ -281,7 +281,7 @@ def compareEnhancementData(cones1, cones2):
     return True
 
 
-def compareSpecularEnhancementData(data1, data2):
+def compare_specular_enhancement_data(data1, data2):
     """Compare specular enhancement information."""
     if (
         data1.refractive_index_1 != data2.refractive_index_1
@@ -289,9 +289,9 @@ def compareSpecularEnhancementData(data1, data2):
     ):
         return False
 
-    return compareEnhancementData(data1.reflection, data2.reflection) and compareEnhancementData(
-        data1.transmission, data2.transmission
-    )
+    return compare_enhancement_data(
+        data1.reflection, data2.reflection
+    ) and compare_enhancement_data(data1.transmission, data2.transmission)
 
 
 def test_grpc_anisotropic_bsdf(speos: Speos):
@@ -302,7 +302,7 @@ def test_grpc_anisotropic_bsdf(speos: Speos):
     file_name = anisotropic_bsdf__v1__pb2.FileName()
 
     # Creating anisotropic bsdf protocol buffer
-    bsdf = createAnisotropicBsdf()
+    bsdf = create_anisotropic_bsdf()
 
     # Sending protocol buffer to server
     stub.Import(bsdf)
@@ -319,7 +319,7 @@ def test_grpc_anisotropic_bsdf(speos: Speos):
     # Exporting anisotropic bsdf protocol buffer
     bsdf2 = stub.Export(Empty())
 
-    assert compareAnisotropicBsdf(bsdf, bsdf2)
+    assert compare_anisotropic_bsdf(bsdf, bsdf2)
     file_name.file_name = str(Path(test_path) / "Lambert.anisotropicbsdf")
 
     # Writing as {file_name.file_name}
@@ -333,7 +333,7 @@ def test_grpc_anisotropic_bsdf(speos: Speos):
     # Exporting anisotropic bsdf protocol buffer
     bsdf3 = stub.Export(Empty())
 
-    assert compareAnisotropicBsdf(bsdf, bsdf3)
+    assert compare_anisotropic_bsdf(bsdf, bsdf3)
 
     file_name.file_name = str(Path(test_path) / "Gaussian Fresnel 10 deg.anisotropicbsdf")
     # loading {file_name.file_name}
@@ -379,7 +379,7 @@ def test_grpc_anisotropic_bsdf(speos: Speos):
     cones2 = stub.GetSpecularInterpolationEnhancementData(Empty())
 
     # comparing cones to previous ones
-    assert compareSpecularEnhancementData(cones, cones2)
+    assert compare_specular_enhancement_data(cones, cones2)
 
     # generating retroreflection cones even if there's no retroreflection on this surface
     stub.GenerateRetroReflectionInterpolationEnhancementData(Empty())
@@ -406,7 +406,7 @@ def test_grpc_anisotropic_bsdf(speos: Speos):
     rc2 = stub.GetRetroReflectionInterpolationEnhancementData(Empty())
 
     # comparing cones to previous ones
-    assert compareEnhancementData(rc, rc2)
+    assert compare_enhancement_data(rc, rc2)
 
     # white specular enabling and disabling
     wl = anisotropic_bsdf__v1__pb2.Wavelength()

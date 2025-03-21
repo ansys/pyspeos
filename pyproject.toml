@@ -99,12 +99,6 @@ select = [
     "TD",   # flake8-todos, https://docs.astral.sh/ruff/rules/#flake8-todos-td
 ]
 ignore = [
-    "N802", # TODO: Function name should be lowercase
-    "N803",
-    "N806",
-    "N811",
-    "N806", # TODO: Update variables to be lowercase
-    "N812",
     "TD002", # Missing author in TODOs comment
     "TD003", # Missing issue link in TODOs comment
 ]
@@ -112,7 +106,19 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 "examples/*" = ["D100", "E402"]
 "__init__.py" = ["F401"]
+"doc/source/conf.py" = ["N806"]
 
+[tool.ruff.lint.pep8-naming]
+ignore-names = [
+    "set_colorimetric_standard_CIE_1964",
+    "set_colorimetric_standard_CIE_1931",
+    "setLevel",
+    "set_FWHM_angle_y",
+    "set_FWHM_angle_x",
+    "compute_CPU",
+    "compute_GPU",
+    "set_whiteLED",
+]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"

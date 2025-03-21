@@ -33,7 +33,7 @@ from ansys.speos.core.speos import Speos
 from tests.conftest import local_test_path, test_path
 
 
-def test_lpf_file_reader_mono_v2_DirectSimu(speos: Speos):
+def test_lpf_file_reader_mono_v2_direct_simu(speos: Speos):
     """Test to check lpf reader for direct simulation."""
     # Lpf file reader creation
     stub = lpf_file_reader__v2__pb2_grpc.LpfFileReader_MonoStub(speos.client.channel)
@@ -90,7 +90,7 @@ def test_lpf_file_reader_mono_v2_DirectSimu(speos: Speos):
     stub.CloseLpfFileName(lpf_file_reader__v2__pb2.CloseLpfFileName_Request_Mono())
 
 
-def test_lpf_file_reader_mono_v2_InverseSimu(speos: Speos):
+def test_lpf_file_reader_mono_v2_inverse_simu(speos: Speos):
     """Test to check lpf service for inverse simulation."""
     # Lpf file reader creation
     stub = lpf_file_reader__v2__pb2_grpc.LpfFileReader_MonoStub(speos.client.channel)
@@ -211,7 +211,7 @@ def test_lpf_file_reader_multi_v2(speos: Speos):
     stub.Delete(lpf_file_reader__v2__pb2.Delete_Request_Multi(lpf_reader_guid=guid))
 
 
-def test_lpf_file_reader_mono_v2_DirectSimu_with_file_transfer(speos: Speos):
+def test_lpf_file_reader_mono_v2_direct_simu_with_file_transfer(speos: Speos):
     """Test to check lpf service with file transfer service."""
     # local file upload to the server
     path = str(Path(local_test_path) / "basic_DirectSimu.lpf")
