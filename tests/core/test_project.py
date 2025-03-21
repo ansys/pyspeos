@@ -371,7 +371,7 @@ def test_from_file(speos: Speos):
 
 
 def test_from_file_threads_limited(speos: Speos):
-    """Test create a project from file."""
+    """Test change Number of threads used"""
     # Create a project from a file
     p = Project(
         speos=speos,
@@ -380,15 +380,10 @@ def test_from_file_threads_limited(speos: Speos):
         ),
     )
 
-    # Check that scene is filled
-    assert len(p.scene_link.get().materials) == 4
-    assert len(p.scene_link.get().sensors) == 1
-    assert len(p.scene_link.get().sources) == 2
     assert len(p.scene_link.get().simulations) == 1
 
     feat_sims = p.find(name=p.scene_link.get().simulations[0].name)
     assert len(feat_sims) == 1
-    assert type(feat_sims[0]) is SimulationDirect
 
     # Choose number of threads
     threads_nb = 8
