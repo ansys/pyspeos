@@ -86,7 +86,7 @@ To log using this logger, call the desired method as a normal logger with:
 .. code:: pycon
 
     >>> import logging
-    >>> from ansys.speos.core.LOGGER import Logger
+    >>> from ansys.speos.core.logger import Logger
     >>> LOG = Logger(level=logging.DEBUG, to_file=False, to_stdout=True)
     >>> LOG.debug("This is LOG debug message.")
     DEBUG -  -  <ipython-input-24-80df150fe31f> - <module> - This is LOG debug message.
