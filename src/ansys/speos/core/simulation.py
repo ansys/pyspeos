@@ -222,8 +222,14 @@ class BaseSimulation:
     #         self._simulation_instance.geometries.geo_paths[:] = geo_paths
     #     return self
 
-    def compute_CPU(self) -> List[job_pb2.Result]:
+    def compute_CPU(self, threads_number: Optional[int] = None) -> List[job_pb2.Result]:
         """Compute the simulation on CPU.
+
+        Parameters
+        ----------
+        threads_number : int, optional
+            The number of threads used.
+            By default, ``None``, means the number of processor available.
 
         Returns
         -------
@@ -231,6 +237,12 @@ class BaseSimulation:
             List of simulation results.
         """
         self._job.job_type = ProtoJob.Type.CPU
+
+        if threads_number is not None:
+            self._simulation_template.metadata["SimulationSetting::OPTThreadNumber"] = (
+                "int::" + str(threads_number)
+            )
+
         self.result_list = self._run_job()
         return self.result_list
 
