@@ -208,7 +208,7 @@ def copy_examples_to_output_dir(app: sphinx.application.Sphinx, exception: Excep
     EXAMPLES_DIRECTORY = SOURCE_EXAMPLES.parent.parent.parent / "examples"
 
     # Copyt the examples
-    examples = list(EXAMPLES_DIRECTORY.glob("*.py"))
+    examples = list(EXAMPLES_DIRECTORY.glob("**/*.py"))
     for file in status_iterator(
         examples,
         "Copying example to doc/_build/examples/",
