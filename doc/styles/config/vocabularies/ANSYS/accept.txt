@@ -5,6 +5,8 @@ exitance
 Lumerical
 (?i)pyansys
 (?i)pyspeos
+pytest
+Solver
 (?i)Speos
 Zemax
 SpeosRPC

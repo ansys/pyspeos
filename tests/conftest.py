@@ -20,12 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""
-Unit Test Configuration Module
--------------------------------
+"""Unit Test Configuration Module.
 
-Description
-===========
 This module loads the configuration for PySpeos unit tests.
 The configuration can be changed by modifying a file called local_config.json in the same
 directory as this module.
@@ -33,22 +29,32 @@ directory as this module.
 
 import json
 import logging
+import logging as deflogging  # Default logging
 import os
 from pathlib import Path
 
 import pytest
 
+from ansys.speos.core import LOG
 from ansys.speos.core.speos import Speos
 
 
 @pytest.fixture(scope="session")
 def speos():
+    """Pytest ficture to create Speos objects for all unit, integration and workflow tests.
+
+    Yields
+    ------
+    ansys.speos.cor.speos.Speos
+        Speos Class instance
+
+    Returns
+    -------
+    None
+    """
     # Log to file - accepts str or Path objects, Path is passed for testing/coverage purposes.
     log_file_path = Path(__file__).absolute().parent / "logs" / "integration_tests_logs.txt"
-    try:
-        os.remove(log_file_path)
-    except OSError:
-        pass
+    Path(log_file_path).unlink(missing_ok=True)
 
     speos = Speos(
         logging_level=logging.DEBUG,
@@ -59,32 +65,26 @@ def speos():
     yield speos
 
 
-local_path = os.path.dirname(os.path.realpath(__file__))
+local_path = Path(os.path.realpath(__file__)).parent
 
 # Load the local config file
-local_config_file = os.path.join(local_path, "local_config.json")
-if os.path.exists(local_config_file):
-    with open(local_config_file) as f:
+local_config_file = local_path / "local_config.json"
+if local_config_file.exists():
+    with local_config_file.open() as f:
         config = json.load(f)
 else:
     raise ValueError("Missing local_config.json file")
 
 
 # set test_path var depending on if we are using the servers in a docker container or not
-local_test_path = os.path.join(local_path, "assets/")
+local_test_path = local_path / "assets"
 if config.get("SpeosServerOnDocker"):
     test_path = "/app/assets/"
 else:
     test_path = local_test_path
 
-# Wait for the grpc server - in case the timeout is reached raise an error
-
-import logging as deflogging  # Default logging
-
-import pytest
 
 # Define default pytest logging level to DEBUG and stdout
-from ansys.speos.core import LOG
 
 LOG.setLevel(level="DEBUG")
 LOG.log_to_stdout()
@@ -92,6 +92,15 @@ LOG.log_to_stdout()
 
 @pytest.fixture
 def fake_record():
+    """Emulate logger.
+
+    Returns
+    -------
+    logger :
+        fake logger
+
+    """
+
     def inner_fake_record(
         logger,
         msg="This is a message",
@@ -106,7 +115,7 @@ def fake_record():
         extra={},
     ):
         """
-        Function to fake log records using the format from the logger handler.
+        Fake log records using the format from the logger handler.
 
         Parameters
         ----------

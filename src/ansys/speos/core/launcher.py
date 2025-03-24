@@ -20,11 +20,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+"""Module to start Speos RPC Server."""
+
 import os
 from pathlib import Path
 import subprocess
+import tempfile
 
-from ansys.speos.core import LOG as logger
+from ansys.speos.core import LOG as LOGGER
 from ansys.speos.core.kernel.client import DEFAULT_PORT, LATEST_VERSION
 from ansys.speos.core.speos import Speos
 from ansys.tools.path import get_available_ansys_installations
@@ -44,6 +47,7 @@ except ModuleNotFoundError:  # pragma: no cover
 
 def launch_speos(version: str = None) -> Speos:
     """Start the Speos Service remotely using the product instance management API.
+
     Prerequisite : product instance management configured.
 
     Parameters
@@ -63,7 +67,7 @@ def launch_speos(version: str = None) -> Speos:
         )
 
     if pypim.is_configured():
-        logger.info("Starting Speos service remotely. The startup configuration will be ignored.")
+        LOGGER.info("Starting Speos service remotely. The startup configuration will be ignored.")
         return launch_remote_speos(version)
 
 
@@ -71,6 +75,7 @@ def launch_remote_speos(
     version: str = None,
 ) -> Speos:
     """Start the Speos Service remotely using the product instance management API.
+
     When calling this method, you need to ensure that you are in an
     environment where PyPIM is configured. This can be verified with
     :func:`pypim.is_configured <ansys.platform.instancemanagement.is_configured>`.
@@ -105,14 +110,14 @@ def launch_local_speos_rpc_server(
     logfile_loc: str = None,
     log_level: int = 20,
 ) -> Speos:
-    """
-    Launch Speos RPC server locally
+    """Launch Speos RPC server locally.
 
     Parameters
     ----------
     version : str
         The Speos server version to run, in the 3 digits format, such as "242".
-        If unspecified, the version will be chosen as ``ansys.speos.core.kernel.client.LATEST_VERSION``.
+        If unspecified, the version will be chosen as
+        ``ansys.speos.core.kernel.client.LATEST_VERSION``.
     port : Union[str, int], optional
         Port number where the server is running.
         By default, ``ansys.speos.core.kernel.client.DEFAULT_PORT``.
@@ -122,18 +127,20 @@ def launch_local_speos_rpc_server(
     logfile_loc : str
         location for the logfile to be created in.
     log_level : int
-        The logging level to be applied to the server, integer values can be taken from logging module,
+        The logging level to be applied to the server, integer values can be taken from logging
+        module.
         By default, ``logging.WARNING`` = 20.
 
 
     Returns
     -------
-
+    ansys.speos.core.speos.Speos
+        An instance of the Speos Service.
     """
     versions = get_available_ansys_installations()
-    ansys_loc = versions.get(int(version))
+    ansys_loc = Path(versions.get(int(version)))
     if not ansys_loc:
-        ansys_loc = os.environ.get("AWP_ROOT{}".format(version))
+        ansys_loc = Path(os.environ.get("AWP_ROOT{}".format(version)))
     if not ansys_loc:
         msg = (
             "Ansys installation directory is not found."
@@ -142,29 +149,29 @@ def launch_local_speos_rpc_server(
         FileNotFoundError(msg)
 
     if os.name == "nt":
-        speos_exec = os.path.join(ansys_loc, "Optical Products", "SPEOS_RPC", "SpeosRPC_Server.exe")
+        speos_exec = ansys_loc / "Optical Products" / "SPEOS_RPC" / "SpeosRPC_Server.exe"
     else:
-        speos_exec = os.path.join(ansys_loc, "OpticalProducts", "SPEOS_RPC", "SpeosRPC_Server.x")
-    if not os.path.isfile(speos_exec):
+        speos_exec = ansys_loc / "OpticalProducts" / "SPEOS_RPC" / "SpeosRPC_Server.x"
+    if not Path.is_file(speos_exec):
         msg = "Ansys Speos RPC server version {} is not installed.".format(version)
         raise FileNotFoundError(msg)
     if not logfile_loc:
-        if os.environ.get("temp"):
-            logfile_loc = os.path.join(os.environ.get("temp"), ".ansys", "speos_rpc.log")
-        else:
-            logfile_loc = os.path.join(str(Path.cwd()), ".ansys", "speos_rpc.log")
-        if not os.path.exists(os.path.dirname(logfile_loc)):
-            Path.mkdir(Path(os.path.dirname(logfile_loc)))
+        logfile_loc = Path(tempfile.gettempdir()) / ".ansys"
+        logfile = logfile_loc / "speos_rpc.log"
+        if not logfile_loc.exists():
+            logfile_loc.mkdir()
+    else:
+        logfile = Path(logfile_loc)
+        logfile_loc = logfile.parent
     command = [
         speos_exec,
         "-p{}".format(port),
         "-m{}".format(message_size),
-        "-l{}".format(logfile_loc),
+        "-l{}".format(str(logfile)),
     ]
-    stdout_file = os.path.join(os.path.dirname(logfile_loc), "speos_out.txt")
-    stderr_file = os.path.join(os.path.dirname(logfile_loc), "speos_err.txt")
+    out, stdout_file = tempfile.mkstemp(suffix="speos_out.txt", dir=logfile_loc)
+    err, stderr_file = tempfile.mkstemp(suffix="speos_err.txt", dir=logfile_loc)
 
-    with open(stdout_file, "wb") as out, open(stderr_file, "wb") as err:
-        subprocess.Popen(command, stdout=out, stderr=err)
+    subprocess.Popen(command, stdout=out, stderr=err)
 
-    return Speos(host="localhost", port=port, logging_level=log_level, logging_file=logfile_loc)
+    return Speos(host="localhost", port=port, logging_level=log_level, logging_file=logfile)

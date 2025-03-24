@@ -36,8 +36,10 @@ import ansys.speos.core.proto_message_utils as proto_message_utils
 
 
 class OptProp:
-    """Speos feature: optical property
-    By default, a mirror 100% is chosen as surface optical property, without any volume optical property.
+    """Speos feature: optical property.
+
+    By default, a mirror 100% is chosen as surface optical property,
+    without any volume optical property.
     By default, the optical property is applied to no geometry.
 
     Parameters
@@ -118,7 +120,7 @@ class OptProp:
         return self
 
     def set_surface_library(self, path: str) -> OptProp:
-        """
+        r"""
         Based on surface optical properties file.
 
         Parameters
@@ -165,7 +167,10 @@ class OptProp:
         return self
 
     def set_volume_optic(
-        self, index: float = 1.5, absorption: float = 0, constringence: Optional[float] = None
+        self,
+        index: float = 1.5,
+        absorption: float = 0,
+        constringence: Optional[float] = None,
     ) -> OptProp:
         """
         Transparent colorless material without bulk scattering.
@@ -202,7 +207,11 @@ class OptProp:
         return self
 
     # Deactivated due to a bug on SpeosRPC server side
-    # def set_volume_nonhomogeneous(self, path: str, axis_system: Optional[List[float]] = None) -> OptProp:
+    # def set_volume_nonhomogeneous(
+    #         self,
+    #         path: str,
+    #         axis_system: Optional[List[float]] = None
+    # ) -> OptProp:
     #    """
     #    Material with non-homogeneous refractive index.
     #
@@ -223,14 +232,17 @@ class OptProp:
     #    if not axis_system:
     #        axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     #    if self._vop_template is None:
-    #        self._vop_template = VOPTemplate(name=self._name + ".VOP", description=self._sop_template.description,
-    #                                              metadata=self._sop_template.metadata)
+    #        self._vop_template = VOPTemplate(
+    #            name=self._name + ".VOP",
+    #            description=self._sop_template.description,
+    #            metadata=self._sop_template.metadata
+    #        )
     #    self._vop_template.non_homogeneous.gradedmaterial_file_uri = path
     #    self._material_instance.non_homogeneous_properties.axis_system[:] = axis_system
     #    return self
 
     def set_volume_library(self, path: str) -> OptProp:
-        """
+        r"""
         Based on \*.material file.
 
         Parameters
@@ -266,7 +278,7 @@ class OptProp:
         ansys.speos.core.opt_prop.OptProp
             Optical property.
         """
-        if geometries == None:
+        if geometries is None:
             self._material_instance.ClearField("geometries")
         else:
             self._material_instance.geometries.geo_paths[:] = [
@@ -281,7 +293,8 @@ class OptProp:
         if self._project.scene_link and self._unique_id is not None:
             scene_data = self._project.scene_link.get()
             mat_inst = next(
-                (x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id), None
+                (x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id),
+                None,
             )
             if mat_inst is not None:
                 out_dict = proto_message_utils._replace_guids(
@@ -289,11 +302,13 @@ class OptProp:
                 )
             else:
                 out_dict = proto_message_utils._replace_guids(
-                    speos_client=self._project.client, message=self._material_instance
+                    speos_client=self._project.client,
+                    message=self._material_instance,
                 )
         else:
             out_dict = proto_message_utils._replace_guids(
-                speos_client=self._project.client, message=self._material_instance
+                speos_client=self._project.client,
+                message=self._material_instance,
             )
 
         if "vop" not in out_dict.keys():
@@ -301,11 +316,13 @@ class OptProp:
             if self.vop_template_link is None:
                 if self._vop_template is not None:
                     out_dict["vop"] = proto_message_utils._replace_guids(
-                        speos_client=self._project.client, message=self._vop_template
+                        speos_client=self._project.client,
+                        message=self._vop_template,
                     )
             else:
                 out_dict["vop"] = proto_message_utils._replace_guids(
-                    speos_client=self._project.client, message=self.vop_template_link.get()
+                    speos_client=self._project.client,
+                    message=self.vop_template_link.get(),
                 )
 
         if "sops" not in out_dict.keys():
@@ -314,13 +331,15 @@ class OptProp:
                 if self._sop_template is not None:
                     out_dict["sops"] = [
                         proto_message_utils._replace_guids(
-                            speos_client=self._project.client, message=self._sop_template
+                            speos_client=self._project.client,
+                            message=self._sop_template,
                         )
                     ]
             else:
                 out_dict["sops"] = [
                     proto_message_utils._replace_guids(
-                        speos_client=self._project.client, message=self.sop_template_link.get()
+                        speos_client=self._project.client,
+                        message=self.sop_template_link.get(),
                     )
                 ]
 
@@ -344,7 +363,10 @@ class OptProp:
         info = proto_message_utils._value_finder_key_startswith(dict_var=self._to_dict(), key=key)
         content = list(info)
         if len(content) != 0:
-            content.sort(key=lambda x: SequenceMatcher(None, x[0], key).ratio(), reverse=True)
+            content.sort(
+                key=lambda x: SequenceMatcher(None, x[0], key).ratio(),
+                reverse=True,
+            )
             return content[0][1]
         info = proto_message_utils._flatten_dict(dict_var=self._to_dict())
         print("Used key: {} not found in key list: {}.".format(key, info.keys()))
@@ -356,7 +378,8 @@ class OptProp:
         if self._project.scene_link and self._unique_id is not None:
             scene_data = self._project.scene_link.get()
             mat_inst = next(
-                (x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id), None
+                (x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id),
+                None,
             )
             if mat_inst is None:
                 out_str += "local: "
@@ -374,7 +397,8 @@ class OptProp:
         ansys.speos.core.opt_prop.OptProp
             Optical Property feature.
         """
-        # The _unique_id will help to find correct item in the scene.materials (the list of MaterialInstance)
+        # The _unique_id will help to find correct item in the scene.materials:
+        # the list of MaterialInstance
         if self._unique_id is None:
             self._unique_id = str(uuid.uuid4())
             self._material_instance.metadata["UniqueId"] = self._unique_id
@@ -411,7 +435,8 @@ class OptProp:
 
             # Look if an element corresponds to the _unique_id
             mat_inst = next(
-                (x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id), None
+                (x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id),
+                None,
             )
             if mat_inst is not None:
                 if mat_inst != self._material_instance:
@@ -449,7 +474,8 @@ class OptProp:
             scene_data = self._project.scene_link.get()  # retrieve scene data
             # Look if an element corresponds to the _unique_id
             mat_inst = next(
-                (x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id), None
+                (x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id),
+                None,
             )
             if mat_inst is not None:
                 self._material_instance = mat_inst
@@ -457,6 +483,7 @@ class OptProp:
 
     def delete(self) -> OptProp:
         """Delete feature: delete data from the speos server database.
+
         The local data are still available
 
         Returns
@@ -483,7 +510,8 @@ class OptProp:
         # Remove the material instance from the scene
         scene_data = self._project.scene_link.get()  # retrieve scene data
         mat_inst = next(
-            (x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id), None
+            (x for x in scene_data.materials if x.metadata["UniqueId"] == self._unique_id),
+            None,
         )
         if mat_inst is not None:
             scene_data.materials.remove(mat_inst)

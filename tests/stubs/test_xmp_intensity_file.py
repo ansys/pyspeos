@@ -20,18 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""This module allows pytest to perform unit testing.
-Usage:
-.. code::
-   $ pytest
-   $ pytest -vx
-With coverage.
-.. code::
-   $ pytest --cov ansys.speos.core
-"""
+"""Unit test for Intensity XMP service."""
 
 import logging
-import os
+from pathlib import Path
 
 from ansys.api.speos.intensity_distributions.v1 import (
     base_map_template_pb2,
@@ -44,7 +36,8 @@ from tests.conftest import test_path
 import tests.helper as helper
 
 
-def createXmpIntensity():
+def create_xmp_intensity():
+    """Create simple intensity XMP."""
     xmp = extended_map_template_pb2.ExtendedMap()
 
     # file description
@@ -73,28 +66,29 @@ def createXmpIntensity():
     xmp.base_data.rad_angular_resolution_radius = 0
 
     # fill layer data
-    for l in range(xmp.base_data.layer_nb):
+    for layer_index in range(xmp.base_data.layer_nb):
         xmp.base_data.layer.add()
-        xmp.base_data.layer[l].layer_name = "0" + str(l)
-        xmp.base_data.layer[l].initial_source_power = 1000
-        xmp.base_data.layer[l].initial_source_power_watt = 1000
-        xmp.base_data.layer[l].initial_source_power_lumen = 1000
+        xmp.base_data.layer[layer_index].layer_name = "0" + str(layer_index)
+        xmp.base_data.layer[layer_index].initial_source_power = 1000
+        xmp.base_data.layer[layer_index].initial_source_power_watt = 1000
+        xmp.base_data.layer[layer_index].initial_source_power_lumen = 1000
         for s in range(10):
-            xmp.base_data.layer[l].wavelength.append(400 + 40 * s)
-            xmp.base_data.layer[l].value.append(0.1)
+            xmp.base_data.layer[layer_index].wavelength.append(400 + 40 * s)
+            xmp.base_data.layer[layer_index].value.append(0.1)
         xmp.value.layer.add()
         for y in range(xmp.base_data.y_nb):
-            xmp.value.layer[l].y.add()
+            xmp.value.layer[layer_index].y.add()
             for x in range(xmp.base_data.x_nb):
                 if x == y:
-                    xmp.value.layer[l].y[y].x.append(1)
+                    xmp.value.layer[layer_index].y[y].x.append(1)
                 else:
-                    xmp.value.layer[l].y[y].x.append(0)
+                    xmp.value.layer[layer_index].y[y].x.append(0)
 
     return xmp
 
 
-def compareXmpIntensityDistributions(xmp1, xmp2):
+def compare_xmp_intensity_distributions(xmp1, xmp2):
+    """Compare 2 intensity XMPs."""
     if xmp1.base_data.value_type != xmp2.base_data.value_type:
         return False
     if xmp1.base_data.intensity_type != xmp2.base_data.intensity_type:
@@ -125,42 +119,49 @@ def compareXmpIntensityDistributions(xmp1, xmp2):
         return False
     if xmp1.base_data.precision != xmp2.base_data.precision:
         return False
-    for l in range(xmp1.base_data.layer_nb):
-        if xmp1.base_data.layer[l].layer_name != xmp2.base_data.layer[l].layer_name:
-            return False
+    for layer_index in range(xmp1.base_data.layer_nb):
         if (
-            xmp1.base_data.layer[l].initial_source_power
-            != xmp2.base_data.layer[l].initial_source_power
+            xmp1.base_data.layer[layer_index].layer_name
+            != xmp2.base_data.layer[layer_index].layer_name
         ):
             return False
         if (
-            xmp1.base_data.layer[l].initial_source_power_watt
-            != xmp2.base_data.layer[l].initial_source_power_watt
+            xmp1.base_data.layer[layer_index].initial_source_power
+            != xmp2.base_data.layer[layer_index].initial_source_power
         ):
             return False
         if (
-            xmp1.base_data.layer[l].initial_source_power_lumen
-            != xmp2.base_data.layer[l].initial_source_power_lumen
+            xmp1.base_data.layer[layer_index].initial_source_power_watt
+            != xmp2.base_data.layer[layer_index].initial_source_power_watt
+        ):
+            return False
+        if (
+            xmp1.base_data.layer[layer_index].initial_source_power_lumen
+            != xmp2.base_data.layer[layer_index].initial_source_power_lumen
         ):
             return False
         for y in range(xmp1.base_data.y_nb):
             for x in range(xmp1.base_data.x_nb):
-                if xmp1.value.layer[l].y[y].x[x] != xmp2.value.layer[l].y[y].x[x]:
+                if (
+                    xmp1.value.layer[layer_index].y[y].x[x]
+                    != xmp2.value.layer[layer_index].y[y].x[x]
+                ):
                     return False
     return True
 
 
 def test_grpc_xmp_intensity(speos: Speos):
+    """Test to check intensity xmp service."""
     stub = xmp_pb2_grpc.XmpIntensityServiceStub(speos.client.channel)
     load_request = xmp_pb2.Load_Request()
-    load_request.file_uri = os.path.join(test_path, "conoscopic_intensity.xmp")
+    load_request.file_uri = str(Path(test_path) / "conoscopic_intensity.xmp")
     xmp_pb2.Load_Response()
     save_request = xmp_pb2.Save_Request()
-    save_request.file_uri = os.path.join(test_path, "conoscopic_intensity.xmp")
+    save_request.file_uri = str(Path(test_path) / "conoscopic_intensity.xmp")
     xmp_pb2.Save_Response()
 
     logging.debug("Creating xmp intensity protocol buffer")
-    xmp = createXmpIntensity()
+    xmp = create_xmp_intensity()
     response = xmp_pb2.XmpDistribution()
     response.extended_map.CopyFrom(xmp)
 
@@ -183,4 +184,4 @@ def test_grpc_xmp_intensity(speos: Speos):
     xmp2 = distri.extended_map
 
     logging.debug("Comparing xmp intensity distributions")
-    assert compareXmpIntensityDistributions(xmp, xmp2)
+    assert compare_xmp_intensity_distributions(xmp, xmp2)

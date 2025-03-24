@@ -5,15 +5,19 @@
 # There are different type of sensors available: irradiance sensor, radiance sensor, camera sensor.
 
 # +
-import os
+from pathlib import Path
 
 from ansys.speos.core import Project, Speos
-from ansys.speos.core.sensor import SensorCamera, SensorIrradiance, SensorRadiance
+from ansys.speos.core.sensor import (
+    SensorCamera,
+    SensorIrradiance,
+    SensorRadiance,
+)
 
 # If using docker container
-tests_data_path = os.path.join("/app", "assets")
+tests_data_path = Path("/app") / "assets"
 # If using local server
-# tests_data_path = os.path.join(os.path.abspath(""), os.path.pardir, os.path.pardir, "tests", "assets")
+# tests_data_path = Path().resolve().parent.parent / "tests" / "assets"
 # -
 
 # ## Create connection with speos rpc server
@@ -38,21 +42,13 @@ print(p)
 # The mention "local: " is added when printing the sensor
 
 # +
-distortion_file_path = os.path.join(
-    tests_data_path, "CameraInputFiles", "CameraDistortion_130deg.OPTDistortion"
+distortion_file_path = str(
+    tests_data_path / "CameraInputFiles" / "CameraDistortion_130deg.OPTDistortion"
 )
-transmittance_file_path = os.path.join(
-    tests_data_path, "CameraInputFiles", "CameraTransmittance.spectrum"
-)
-blue_spectrum_path = os.path.join(
-    tests_data_path, "CameraInputFiles", "CameraSensitivityBlue.spectrum"
-)
-green_spectrum_path = os.path.join(
-    tests_data_path, "CameraInputFiles", "CameraSensitivityGreen.spectrum"
-)
-red_spectrum_path = os.path.join(
-    tests_data_path, "CameraInputFiles", "CameraSensitivityRed.spectrum"
-)
+transmittance_file_path = str(tests_data_path / "CameraInputFiles" / "CameraTransmittance.spectrum")
+blue_spectrum_path = str(tests_data_path / "CameraInputFiles" / "CameraSensitivityBlue.spectrum")
+green_spectrum_path = str(tests_data_path / "CameraInputFiles" / "CameraSensitivityGreen.spectrum")
+red_spectrum_path = str(tests_data_path / "CameraInputFiles" / "CameraSensitivityRed.spectrum")
 
 sensor1 = p.create_sensor(name="Camera.1", feature_type=SensorCamera)
 sensor1.set_distortion_file_uri(uri=distortion_file_path)
@@ -67,7 +63,8 @@ print(sensor1)
 
 # ## Push it to the server.
 
-# Now that it is committed to the server, the mention "local: " is no more present when printing the sensor.
+# Now that it is committed to the server, the mention "local: " is no more present when printing the
+# sensor.
 
 # +
 sensor1.commit()
@@ -84,21 +81,13 @@ print(sensor1)
 # it is possible to do so as below.
 
 # +
-distortion_file_path = os.path.join(
-    tests_data_path, "CameraInputFiles", "CameraDistortion_130deg.OPTDistortion"
+distortion_file_path = str(
+    tests_data_path / "CameraInputFiles" / "CameraDistortion_130deg.OPTDistortion"
 )
-transmittance_file_path = os.path.join(
-    tests_data_path, "CameraInputFiles", "CameraTransmittance.spectrum"
-)
-blue_spectrum_path = os.path.join(
-    tests_data_path, "CameraInputFiles", "CameraSensitivityBlue.spectrum"
-)
-green_spectrum_path = os.path.join(
-    tests_data_path, "CameraInputFiles", "CameraSensitivityGreen.spectrum"
-)
-red_spectrum_path = os.path.join(
-    tests_data_path, "CameraInputFiles", "CameraSensitivityRed.spectrum"
-)
+transmittance_file_path = str(tests_data_path / "CameraInputFiles" / "CameraTransmittance.spectrum")
+blue_spectrum_path = str(tests_data_path / "CameraInputFiles" / "CameraSensitivityBlue.spectrum")
+green_spectrum_path = str(tests_data_path / "CameraInputFiles" / "CameraSensitivityGreen.spectrum")
+red_spectrum_path = str(tests_data_path / "CameraInputFiles" / "CameraSensitivityRed.spectrum")
 
 sensor2 = p.create_sensor(name="Camera.2", feature_type=SensorCamera)
 sensor2.set_distortion_file_uri(uri=distortion_file_path)
@@ -162,7 +151,8 @@ print(sensor1._sensor_template)
 
 # ## Delete
 
-# Once the data is deleted from the server, you can still work with local data and maybe commit later.
+# Once the data is deleted from the server, you can still work with local data and maybe commit
+# later.
 
 # +
 sensor2.delete()

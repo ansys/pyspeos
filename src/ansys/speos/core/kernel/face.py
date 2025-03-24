@@ -24,7 +24,10 @@
 
 from typing import Iterator, List
 
-from ansys.api.speos.part.v1 import face_pb2 as messages, face_pb2_grpc as service
+from ansys.api.speos.part.v1 import (
+    face_pb2 as messages,
+    face_pb2_grpc as service,
+)
 from ansys.speos.core.kernel.crud import CrudItem, CrudStub
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 
@@ -154,7 +157,10 @@ class FaceStub(CrudStub):
         if not ref.stub == self:
             raise ValueError("FaceLink is not on current database")
 
-        CrudStub.update(self, messages.Update_Request(guid=ref.key, face=ProtoFace(name="tmp")))
+        CrudStub.update(
+            self,
+            messages.Update_Request(guid=ref.key, face=ProtoFace(name="tmp")),
+        )
         chunk_iterator = FaceStub._face_to_chunks(guid=ref.key, message=data, nb_items=128 * 1024)
         self._actions_stub.Upload(chunk_iterator)
 

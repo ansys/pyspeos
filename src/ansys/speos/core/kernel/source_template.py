@@ -24,7 +24,10 @@
 
 from typing import List
 
-from ansys.api.speos.source.v1 import source_pb2 as messages, source_pb2_grpc as service
+from ansys.api.speos.source.v1 import (
+    source_pb2 as messages,
+    source_pb2_grpc as service,
+)
 from ansys.speos.core.kernel.crud import CrudItem, CrudStub
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 
@@ -100,8 +103,8 @@ class SourceTemplateStub(CrudStub):
 
     Examples
     --------
-    The best way to get a SourceTemplateStub is to retrieve it from SpeosClient via source_templates() method.
-    Like in the following example:
+    The best way to get a SourceTemplateStub is to retrieve it from SpeosClient via
+    source_templates() method. Like in the following example:
 
     >>> from ansys.speos.core.speos import Speos
     >>> speos = Speos(host="localhost", port=50098)

@@ -22,10 +22,14 @@
 
 """Test using combine_speos module in workflow layer."""
 
-import os
+from pathlib import Path
 
 from ansys.speos.core import OptProp, Part, Project, Speos
-from ansys.speos.core.workflow.combine_speos import SpeosFileInstance, combine_speos, insert_speos
+from ansys.speos.core.workflow.combine_speos import (
+    SpeosFileInstance,
+    combine_speos,
+    insert_speos,
+)
 from tests.conftest import test_path
 
 
@@ -36,16 +40,42 @@ def test_combine_speos(speos: Speos):
         speos=speos,
         speos_to_combine=[
             SpeosFileInstance(
-                speos_file=os.path.join(test_path, "Env_Simplified.speos", "Env_Simplified.speos"),
+                speos_file=str(Path(test_path) / "Env_Simplified.speos" / "Env_Simplified.speos"),
                 axis_system=[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
             ),
             SpeosFileInstance(
-                speos_file=os.path.join(test_path, "BlueCar.speos", "BlueCar.speos"),
-                axis_system=[2000, 0, 35000, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+                speos_file=str(Path(test_path) / "BlueCar.speos" / "BlueCar.speos"),
+                axis_system=[
+                    2000,
+                    0,
+                    35000,
+                    0.0,
+                    0.0,
+                    -1.0,
+                    -1.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0,
+                    0.0,
+                ],
             ),
             SpeosFileInstance(
-                speos_file=os.path.join(test_path, "RedCar.speos", "RedCar.speos"),
-                axis_system=[-4000, 0, 48000, 1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0],
+                speos_file=str(Path(test_path) / "RedCar.speos" / "RedCar.speos"),
+                axis_system=[
+                    -4000,
+                    0,
+                    48000,
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -1.0,
+                    0.0,
+                    1.0,
+                    0.0,
+                ],
             ),
         ],
     )
@@ -86,16 +116,42 @@ def test_modify_parts_after_combine(speos: Speos):
         speos=speos,
         speos_to_combine=[
             SpeosFileInstance(
-                speos_file=os.path.join(test_path, "Env_Simplified.speos", "Env_Simplified.speos"),
+                speos_file=str(Path(test_path) / "Env_Simplified.speos" / "Env_Simplified.speos"),
                 axis_system=[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
             ),
             SpeosFileInstance(
-                speos_file=os.path.join(test_path, "BlueCar.speos", "BlueCar.speos"),
-                axis_system=[2000, 0, 35000, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+                speos_file=str(Path(test_path) / "BlueCar.speos" / "BlueCar.speos"),
+                axis_system=[
+                    2000,
+                    0,
+                    35000,
+                    0.0,
+                    0.0,
+                    -1.0,
+                    -1.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0,
+                    0.0,
+                ],
             ),
             SpeosFileInstance(
-                speos_file=os.path.join(test_path, "RedCar.speos", "RedCar.speos"),
-                axis_system=[-4000, 0, 48000, 1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0],
+                speos_file=str(Path(test_path) / "RedCar.speos" / "RedCar.speos"),
+                axis_system=[
+                    -4000,
+                    0,
+                    48000,
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -1.0,
+                    0.0,
+                    1.0,
+                    0.0,
+                ],
             ),
         ],
     )
@@ -129,7 +185,8 @@ def test_insert_speos(speos: Speos):
     """Test inserting several speos files in an existing project."""
     # Create a project from a speos file
     p = Project(
-        speos=speos, path=os.path.join(test_path, "Env_Simplified.speos", "Env_Simplified.speos")
+        speos=speos,
+        path=str(Path(test_path) / "Env_Simplified.speos" / "Env_Simplified.speos"),
     )
 
     # Check that scene is filled
@@ -144,12 +201,38 @@ def test_insert_speos(speos: Speos):
         project=p,
         speos_to_insert=[
             SpeosFileInstance(
-                speos_file=os.path.join(test_path, "BlueCar.speos", "BlueCar.speos"),
-                axis_system=[2000, 0, 35000, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+                speos_file=str(Path(test_path) / "BlueCar.speos" / "BlueCar.speos"),
+                axis_system=[
+                    2000,
+                    0,
+                    35000,
+                    0.0,
+                    0.0,
+                    -1.0,
+                    -1.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0,
+                    0.0,
+                ],
             ),
             SpeosFileInstance(
-                speos_file=os.path.join(test_path, "RedCar.speos", "RedCar.speos"),
-                axis_system=[-4000, 0, 48000, 1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0],
+                speos_file=str(Path(test_path) / "RedCar.speos" / "RedCar.speos"),
+                axis_system=[
+                    -4000,
+                    0,
+                    48000,
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -1.0,
+                    0.0,
+                    1.0,
+                    0.0,
+                ],
             ),
         ],
     )

@@ -20,11 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""
-Test scene.
-"""
+"""Test scene."""
 
-import os
+from pathlib import Path
 from typing import List, Mapping, Optional
 
 import numpy as np
@@ -48,6 +46,7 @@ from tests.helper import clean_all_dbs
 
 
 def create_basic_scene(speos: Speos) -> SceneLink:
+    """Create basic scene."""
     assert speos.client.healthy is True
 
     # Get DB
@@ -114,7 +113,7 @@ def create_basic_scene(speos: Speos) -> SceneLink:
             description="Luminaire source template",
             luminaire=ProtoSourceTemplate.Luminaire(
                 flux_from_intensity_file=ProtoSourceTemplate.FromIntensityFile(),
-                intensity_file_uri=os.path.join(test_path, "IES_C_DETECTOR.ies"),
+                intensity_file_uri=str(Path(test_path) / "IES_C_DETECTOR.ies"),
                 spectrum_guid=spec_bb_3500.key,
             ),
         )
@@ -237,7 +236,9 @@ def create_basic_scene(speos: Speos) -> SceneLink:
     # Create a vop template
     opaque_t = speos.client.vop_templates().create(
         message=ProtoVOPTemplate(
-            name="opaque", description="opaque vop template", opaque=ProtoVOPTemplate.Opaque()
+            name="opaque",
+            description="opaque vop template",
+            opaque=ProtoVOPTemplate.Opaque(),
         )
     )
 
@@ -281,7 +282,10 @@ def create_basic_scene(speos: Speos) -> SceneLink:
                     surface_properties=ProtoScene.SourceInstance.SurfaceProperties(
                         exitance_constant_properties=ProtoScene.SourceInstance.SurfaceProperties.ExitanceConstantProperties(
                             geo_paths=[
-                                ProtoScene.GeoPath(geo_path="BodySource:1", reverse_normal=False)
+                                ProtoScene.GeoPath(
+                                    geo_path="BodySource:1",
+                                    reverse_normal=False,
+                                )
                             ]
                         )
                     ),
@@ -303,14 +307,24 @@ def create_basic_scene(speos: Speos) -> SceneLink:
                 ProtoScene.SimulationInstance(
                     name="direct_simu.1",
                     simulation_guid=direct_t.key,
-                    source_paths=["luminaire_AA.1", "luminaire_AA.2", "surface_with_blackbody.1"],
-                    sensor_paths=["irradiance_photometric.1", "irradiance_colorimetric.1"],
+                    source_paths=[
+                        "luminaire_AA.1",
+                        "luminaire_AA.2",
+                        "surface_with_blackbody.1",
+                    ],
+                    sensor_paths=[
+                        "irradiance_photometric.1",
+                        "irradiance_colorimetric.1",
+                    ],
                 ),
                 ProtoScene.SimulationInstance(
                     name="direct_simu.2",
                     simulation_guid=direct_t.key,
                     source_paths=["surface_with_blackbody.1"],
-                    sensor_paths=["irradiance_photometric.1", "irradiance_colorimetric.1"],
+                    sensor_paths=[
+                        "irradiance_photometric.1",
+                        "irradiance_colorimetric.1",
+                    ],
                 ),
                 ProtoScene.SimulationInstance(
                     name="inverse_simu.1",
@@ -321,8 +335,15 @@ def create_basic_scene(speos: Speos) -> SceneLink:
                 ProtoScene.SimulationInstance(
                     name="interactive_simu.1",
                     simulation_guid=interactive_t.key,
-                    source_paths=["luminaire_AA.1", "luminaire_AA.2", "surface_with_blackbody.1"],
-                    sensor_paths=["irradiance_photometric.1", "irradiance_colorimetric.1"],
+                    source_paths=[
+                        "luminaire_AA.1",
+                        "luminaire_AA.2",
+                        "surface_with_blackbody.1",
+                    ],
+                    sensor_paths=[
+                        "irradiance_photometric.1",
+                        "irradiance_colorimetric.1",
+                    ],
                 ),
             ],
         )
@@ -338,6 +359,33 @@ def create_face_rectangle(
     y_size: float = 100,
     metadata: Optional[Mapping[str, str]] = None,
 ) -> ProtoFace:
+    """Create Rectangular face.
+
+    Parameters
+    ----------
+    name : str
+        Name of the face
+    description : str
+        Description of the face.
+        By default, ``""``.
+    base : Optional[List[float]]
+        Start location and horizontal and vertical direction
+        By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0]``.
+    x_size : float
+        first base vector size
+        By default, ``100``
+    y_size : float
+        second base vector size
+        By default, ``100``
+    metadata : Optional[Mapping[str, str]]
+        Metadata of the feature.
+        By default, ``{}``.
+
+    Returns
+    -------
+    ansys.speos.core.kerne.face.ProtoFace
+        A rectangular Face
+    """
     if base is None:
         base = [0, 0, 0, 1, 0, 0, 0, 1, 0]
     if metadata is None:
@@ -378,6 +426,39 @@ def create_body_box(
     idx_face: int = 0,
     metadata: Optional[Mapping[str, str]] = None,
 ) -> ProtoBody:
+    """Create a box in a scene.
+
+    Parameters
+    ----------
+    name : str
+        Name of the face
+    face_stub : ansys.speos.core.kernel.face.FaceStub
+        facestub to create faces in scene
+    description : str
+        Description of the face.
+        By default, ``""``.
+    base : Optional[List[float]]
+        Start location and horizontal and vertical direction
+        By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+    x_size : float
+        first base vector size
+        By default, ``100``
+    y_size : float
+        second base vector size
+        By default, ``100``
+    z_size : float
+        third base vector sizee
+    idx_face : int
+        Starting number for Face counter
+    metadata : Optional[Mapping[str, str]]
+        Metadata of the feature.
+        By default, ``{}``.
+
+    Returns
+    -------
+    ansys.speos.core.kernel.body.ProtoBody
+        ProtoBody
+    """
     if base is None:
         base = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     if metadata is None:
@@ -391,7 +472,10 @@ def create_body_box(
     base0.extend(base[6:9])  # y_vect
     face0 = face_stub.create(
         message=create_face_rectangle(
-            name="Face:" + str(idx_face), base=base0, x_size=x_size, y_size=y_size
+            name="Face:" + str(idx_face),
+            base=base0,
+            x_size=x_size,
+            y_size=y_size,
         )
     )
 
@@ -401,7 +485,10 @@ def create_body_box(
     base1.extend(base[6:9])
     face1 = face_stub.create(
         message=create_face_rectangle(
-            name="Face:" + str(idx_face + 1), base=base1, x_size=x_size, y_size=y_size
+            name="Face:" + str(idx_face + 1),
+            base=base1,
+            x_size=x_size,
+            y_size=y_size,
         )
     )
 
@@ -411,7 +498,10 @@ def create_body_box(
     base2.extend(base[6:9])
     face2 = face_stub.create(
         message=create_face_rectangle(
-            name="Face:" + str(idx_face + 2), base=base2, x_size=z_size, y_size=y_size
+            name="Face:" + str(idx_face + 2),
+            base=base2,
+            x_size=z_size,
+            y_size=y_size,
         )
     )
 
@@ -421,7 +511,10 @@ def create_body_box(
     base3.extend(base[6:9])
     face3 = face_stub.create(
         message=create_face_rectangle(
-            name="Face:" + str(idx_face + 3), base=base3, x_size=z_size, y_size=y_size
+            name="Face:" + str(idx_face + 3),
+            base=base3,
+            x_size=z_size,
+            y_size=y_size,
         )
     )
 
@@ -431,7 +524,10 @@ def create_body_box(
     base4.extend(base[9:])
     face4 = face_stub.create(
         message=create_face_rectangle(
-            name="Face:" + str(idx_face + 4), base=base4, x_size=x_size, y_size=z_size
+            name="Face:" + str(idx_face + 4),
+            base=base4,
+            x_size=x_size,
+            y_size=z_size,
         )
     )
 
@@ -441,7 +537,10 @@ def create_body_box(
     base5.extend(np.multiply(-1, base[9:]))
     face5 = face_stub.create(
         message=create_face_rectangle(
-            name="Face:" + str(idx_face + 5), base=base5, x_size=x_size, y_size=z_size
+            name="Face:" + str(idx_face + 5),
+            base=base5,
+            x_size=x_size,
+            y_size=z_size,
         )
     )
 
@@ -462,8 +561,8 @@ def test_scene(speos: Speos):
 def test_scene_actions_load(speos: Speos):
     """Test the scene action: load file."""
     assert speos.client.healthy is True
-    speos_file_path = os.path.join(
-        test_path, os.path.join("LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5")
+    speos_file_path = str(
+        Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
     )
 
     # Create empty scene + load_file
@@ -481,8 +580,8 @@ def test_scene_actions_load(speos: Speos):
 def test_scene_actions_load_modify(speos: Speos):
     """Test the scene action: load file and modify sensors."""
     assert speos.client.healthy is True
-    speos_file_path = os.path.join(
-        test_path, os.path.join("LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5")
+    speos_file_path = str(
+        Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
     )
 
     # Create empty scene + load_file
@@ -531,7 +630,8 @@ def test_scene_actions_get_source_ray_paths(speos: Speos):
 
     blackbody_2856 = speos.client.spectrums().create(
         message=ProtoSpectrum(
-            name="Blackbody_2856", blackbody=ProtoSpectrum.BlackBody(temperature=2856)
+            name="Blackbody_2856",
+            blackbody=ProtoSpectrum.BlackBody(temperature=2856),
         )
     )
     luminaire_t = speos.client.source_templates().create(
@@ -539,7 +639,7 @@ def test_scene_actions_get_source_ray_paths(speos: Speos):
             name="Luminaire",
             luminaire=ProtoSourceTemplate.Luminaire(
                 flux_from_intensity_file=ProtoSourceTemplate.FromIntensityFile(),
-                intensity_file_uri=os.path.join(test_path, "IES_C_DETECTOR.ies"),
+                intensity_file_uri=str(Path(test_path) / "IES_C_DETECTOR.ies"),
                 spectrum_guid=blackbody_2856.key,
             ),
         )

@@ -32,7 +32,10 @@ from ansys.speos.core.kernel.crud import CrudItem, CrudStub
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 
 ProtoSimulationTemplate = messages.SimulationTemplate
-"""SimulationTemplate protobuf class : ansys.api.speos.simulation.v1.simulation_template_pb2.SimulationTemplate"""
+"""SimulationTemplate protobuf class.
+
+ansys.api.speos.simulation.v1.simulation_template_pb2.SimulationTemplate
+"""
 ProtoSimulationTemplate.__str__ = lambda self: protobuf_message_to_str(self)
 
 
@@ -51,7 +54,9 @@ class SimulationTemplateLink(CrudItem):
     --------
     >>> from ansys.speos.core.speos import Speos
     >>> from ansys.api.speos.simulation.v1 import simulation_template_pb2
-    >>> from ansys.speos.core.kernel.simulation_template import ProtoSimulationTemplate
+    >>> from ansys.speos.core.kernel.simulation_template import (
+    ...     ProtoSimulationTemplate,
+    ... )
     >>> speos = Speos(host="localhost", port=50098)
     >>> sim_t_db = speos.client.simulation_templates()
     >>> sim_t_message = ProtoSimulationTemplate(name="Direct")
@@ -109,8 +114,8 @@ class SimulationTemplateStub(CrudStub):
 
     Examples
     --------
-    The best way to get a SimulationTemplateStub is to retrieve it from SpeosClient via simulation_templates() method.
-    Like in the following example:
+    The best way to get a SimulationTemplateStub is to retrieve it from SpeosClient via
+    simulation_templates() method. Like in the following example:
 
     >>> from ansys.speos.core.speos import Speos
     >>> speos = Speos(host="localhost", port=50098)
@@ -168,7 +173,10 @@ class SimulationTemplateStub(CrudStub):
         """
         if not ref.stub == self:
             raise ValueError("SimulationTemplateLink is not on current database")
-        CrudStub.update(self, messages.Update_Request(guid=ref.key, simulation_template=data))
+        CrudStub.update(
+            self,
+            messages.Update_Request(guid=ref.key, simulation_template=data),
+        )
 
     def delete(self, ref: SimulationTemplateLink) -> None:
         """Remove an existing entry.

@@ -20,11 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""
-Test basic spectrum database connection.
-"""
+"""Test basic spectrum database connection."""
 
-import os
+from pathlib import Path
 
 from ansys.speos.core.kernel.spectrum import ProtoSpectrum
 from ansys.speos.core.speos import Speos
@@ -32,7 +30,7 @@ from tests.conftest import test_path
 
 
 def test_client_spectrum_init(speos: Speos):
-    """Test the abstraction layer for spectrums. How to use SpectrumLink objects"""
+    """Test the abstraction layer for spectrums. How to use SpectrumLink objects."""
     assert speos.client.healthy is True
     # Get DB
     spec_db = speos.client.spectrums()  # Create spectrum stub from client channel
@@ -125,9 +123,7 @@ def test_spectrum(speos: Speos):
     assert s_sampled.key != ""
 
     # Library
-    spectrum_path = os.path.join(
-        test_path, os.path.join("CameraInputFiles", "CameraSensitivityBlue.spectrum")
-    )
+    spectrum_path = str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum")
     s_lib = spec_db.create(
         message=ProtoSpectrum(
             name="library_1",

@@ -20,11 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""
-Test basic using proto_message_utils.
-"""
+"""Test basic using proto_message_utils."""
 
-import os
+from pathlib import Path
 
 from ansys.speos.core import OptProp, Project, Speos, proto_message_utils
 from ansys.speos.core.kernel import scene
@@ -54,7 +52,8 @@ def test_replace_guid_elt(speos: Speos):
     assert proto_message_utils._finder_by_key(dict_var=src_t_dict, key="intensity") == []
     assert proto_message_utils._finder_by_key(dict_var=src_t_dict, key="spectrum") == []
 
-    # Replace guid elements for this message, by adding new key to the dict with value corresponding to database item
+    # Replace guid elements for this message,
+    # by adding new key to the dict with value corresponding to database item
     proto_message_utils._replace_guid_elt(speos_client=speos.client, json_dict=src_t_dict)
 
     # Check that the new keys are added
@@ -82,9 +81,12 @@ def test_replace_guid_elt_ignore_simple_key(speos: Speos):
     # Check that the new keys are not already present before calling _replace_guid_elt
     assert proto_message_utils._finder_by_key(dict_var=src_t_dict, key="intensity") == []
 
-    # Replace guid elements for this message, by adding new key to the dict with value corresponding to database item
+    # Replace guid elements for this message,
+    # by adding new key to the dict with value corresponding to database item
     proto_message_utils._replace_guid_elt(
-        speos_client=speos.client, json_dict=src_t_dict, ignore_simple_key="intensity_guid"
+        speos_client=speos.client,
+        json_dict=src_t_dict,
+        ignore_simple_key="intensity_guid",
     )
 
     # Check that the ignored key is not replaced
@@ -114,7 +116,8 @@ def test_replace_guid_elt_list(speos: Speos):
     assert proto_message_utils._finder_by_key(dict_var=mat_i_dict, key="vop") == []
     assert proto_message_utils._finder_by_key(dict_var=mat_i_dict, key="sops") == []
 
-    # Replace guid elements for this message, by adding new key to the dict with value corresponding to database item
+    # Replace guid elements for this message,
+    # by adding new key to the dict with value corresponding to database item
     proto_message_utils._replace_guid_elt(speos_client=speos.client, json_dict=mat_i_dict)
 
     # Check that the new keys are added
@@ -139,8 +142,8 @@ def test_replace_guid_elt_complex(speos: Speos):
     """Test _replace_guid_elt in a bigger message like scene."""
     scene_link = speos.client.scenes().create(message=scene.ProtoScene())
     scene_link.load_file(
-        file_uri=os.path.join(
-            test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
+        file_uri=str(
+            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
         )
     )
 
@@ -155,9 +158,11 @@ def test_replace_guid_elt_complex(speos: Speos):
     assert proto_message_utils._finder_by_key(dict_var=scene_dict, key="vop") == []
     assert proto_message_utils._finder_by_key(dict_var=scene_dict, key="sops") == []
 
-    # To avoid a lot of replacements (part -> bodies -> faces), part_guid is set as ignore_simple_key
+    # To avoid a lot of replacements (part->bodies->faces), part_guid is set as ignore_simple_key
     proto_message_utils._replace_guid_elt(
-        speos_client=speos.client, json_dict=scene_dict, ignore_simple_key="part_guid"
+        speos_client=speos.client,
+        json_dict=scene_dict,
+        ignore_simple_key="part_guid",
     )
 
     # Check that the part_guid was correctly ignored
@@ -235,7 +240,11 @@ def test__value_finder_key_endswith(speos: Speos):
         dict_var=src_i_dict, key="_properties"
     ):
         keys.append(key)
-    assert keys == ["surface_properties", "exitance_constant_properties", "intensity_properties"]
+    assert keys == [
+        "surface_properties",
+        "exitance_constant_properties",
+        "intensity_properties",
+    ]
 
 
 def test_replace_properties(speos: Speos):
@@ -275,13 +284,15 @@ def test_finder_by_key(speos: Speos):
     """Test _finder_by_key."""
     p = Project(
         speos=speos,
-        path=os.path.join(
-            test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
+        path=str(
+            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
         ),
     )
 
     scene_dict = p._to_dict()
-
+    expected_res = (
+        ".sources[.name='Dom Source 2 (0) in SOURCE2'].source.surface.radiant_flux.radiant_value"
+    )
     # key at root
     res = proto_message_utils._finder_by_key(dict_var=scene_dict, key="part_guid")
     assert len(res) == 1
@@ -290,37 +301,40 @@ def test_finder_by_key(speos: Speos):
     # key in a list elt (with name property : sources[.name='XXXX'])
     res = proto_message_utils._finder_by_key(dict_var=scene_dict, key="radiant_value")
     assert len(res) == 2
-    assert (
-        res[0][0]
-        == ".sources[.name='Dom Source 2 (0) in SOURCE2'].source.surface.radiant_flux.radiant_value"
+    expected_res = (
+        ".sources[.name='Dom Source 2 (0) in SOURCE2'].source.surface.radiant_flux.radiant_value"
     )
+    assert res[0][0] == expected_res
     assert res[0][1] == 6.590041607465698
-    assert (
-        res[1][0]
-        == ".sources[.name='Surface Source (0) in SOURCE1'].source.surface.radiant_flux.radiant_value"
+    expected_res = (
+        ".sources[.name='Surface Source (0) in SOURCE1'].source.surface.radiant_flux.radiant_value"
     )
+    assert res[1][0] == expected_res
     assert res[1][1] == 9.290411220389682
 
     # key in a list (without name property : geo_paths[0])
     res = proto_message_utils._finder_by_key(dict_var=scene_dict, key="geo_path")
     assert len(res) == 2
-    assert (
-        res[0][0]
-        == ".sources[.name='Dom Source 2 (0) in SOURCE2'].source.surface.exitance_constant.geo_paths[0].geo_path"
+    expected_res = (
+        ".sources[.name='Dom Source 2 (0) in SOURCE2']"
+        ".source.surface.exitance_constant.geo_paths[0].geo_path"
     )
+    assert res[0][0] == expected_res
     assert res[0][1] == "Solid Body in SOURCE2:2920204960/Face in SOURCE2:222"
-    assert (
-        res[1][0]
-        == ".sources[.name='Surface Source (0) in SOURCE1'].source.surface.exitance_constant.geo_paths[0].geo_path"
+    expected_res = (
+        ".sources[.name='Surface Source (0) in SOURCE1']"
+        ".source.surface.exitance_constant.geo_paths[0].geo_path"
     )
+    assert res[1][0] == expected_res
     assert res[1][1] == "Solid Body in SOURCE1:2494956811/Face in SOURCE1:187"
 
 
 def test_flatten_dict(speos: Speos):
+    """proto_message_utils test of '_flatten_dict' method."""
     p = Project(
         speos=speos,
-        path=os.path.join(
-            test_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
+        path=str(
+            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
         ),
     )
 

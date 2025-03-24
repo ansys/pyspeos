@@ -20,9 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""
-Test basic geometry database connection.
-"""
+"""Test basic geometry database connection."""
 
 from ansys.speos.core.kernel.body import BodyLink, ProtoBody
 from ansys.speos.core.kernel.face import FaceLink, ProtoFace
@@ -209,7 +207,10 @@ def test_part(speos: Speos):
                                 message=create_face_rectangle(
                                     name="face_0",
                                     description="face_0 for body_0",
-                                    metadata={"key_0": "val_0", "key_1": "val_1"},
+                                    metadata={
+                                        "key_0": "val_0",
+                                        "key_1": "val_1",
+                                    },
                                 )
                             ).key
                         ],

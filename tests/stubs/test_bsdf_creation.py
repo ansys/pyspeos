@@ -20,21 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""This module allows pytest to perform unit testing.
-
-Usage:
-.. code::
-   $ pytest
-   $ pytest -vx
-
-With coverage.
-.. code::
-   $ pytest --cov ansys.speos.core
-
-"""
+"""Unit test for BSDF creation service."""
 
 import math
-import os
+from pathlib import Path
 
 import ansys.api.speos.bsdf.v1.bsdf_creation_pb2 as bsdf_creation__v1__pb2
 import ansys.api.speos.bsdf.v1.bsdf_creation_pb2_grpc as bsdf_creation__v1__pb2_grpc
@@ -44,17 +33,18 @@ import tests.helper as helper
 
 
 def test_grpc_spectral_bsdf(speos: Speos):
+    """Test for spectral bsdf service (*.BRDF)."""
     stub = bsdf_creation__v1__pb2_grpc.BsdfCreationServiceStub(speos.client.channel)
 
     # BSDF180
     bsdf180_request = bsdf_creation__v1__pb2.Bsdf180InputData()
-    bsdf180_request.input_front_bsdf_file_name = os.path.join(
-        test_path, "Gaussian Fresnel 10 deg.anisotropicbsdf"
+    bsdf180_request.input_front_bsdf_file_name = str(
+        Path(test_path) / "Gaussian Fresnel 10 deg.anisotropicbsdf"
     )
-    bsdf180_request.input_opposite_bsdf_file_name = os.path.join(
-        test_path, "Gaussian Fresnel 10 deg.anisotropicbsdf"
+    bsdf180_request.input_opposite_bsdf_file_name = str(
+        Path(test_path) / "Gaussian Fresnel 10 deg.anisotropicbsdf"
     )
-    bsdf180_request.output_file_name = os.path.join(test_path, "Test.bsdf180")
+    bsdf180_request.output_file_name = str(Path(test_path) / "Test.bsdf180")
     stub.BuildBsdf180(bsdf180_request)
     assert helper.does_file_exist(bsdf180_request.output_file_name)
     helper.remove_file(bsdf180_request.output_file_name)
@@ -63,11 +53,11 @@ def test_grpc_spectral_bsdf(speos: Speos):
     spectral_request = bsdf_creation__v1__pb2.SpectralBsdfInputData()
     tmp = spectral_request.input_anisotropic_samples.add()
     tmp.wavelength = 400.0
-    tmp.file_name = os.path.join(test_path, "R_test.anisotropicbsdf")
+    tmp.file_name = str(Path(test_path) / "R_test.anisotropicbsdf")
     tmp = spectral_request.input_anisotropic_samples.add()
     tmp.wavelength = 700.0
-    tmp.file_name = os.path.join(test_path, "R_test.anisotropicbsdf")
-    spectral_request.output_file_name = os.path.join(test_path, "Test.brdf")
+    tmp.file_name = str(Path(test_path) / "R_test.anisotropicbsdf")
+    spectral_request.output_file_name = str(Path(test_path) / "Test.brdf")
     stub.BuildSpectralBsdf(spectral_request)
     assert helper.does_file_exist(spectral_request.output_file_name)
     helper.remove_file(spectral_request.output_file_name)
@@ -76,12 +66,12 @@ def test_grpc_spectral_bsdf(speos: Speos):
     anisotropic_request = bsdf_creation__v1__pb2.AnisotropicBsdfInputData()
     temp = anisotropic_request.input_anisotropic_bsdf_samples.add()
     temp.anisotropic_angle = 0.0
-    temp.file_name = os.path.join(test_path, "R_test.anisotropicbsdf")
+    temp.file_name = str(Path(test_path) / "R_test.anisotropicbsdf")
     temp = anisotropic_request.input_anisotropic_bsdf_samples.add()
     temp.anisotropic_angle = math.pi / 2
-    temp.file_name = os.path.join(test_path, "R_test.anisotropicbsdf")
+    temp.file_name = str(Path(test_path) / "R_test.anisotropicbsdf")
     anisotropic_request.fix_disparity = False
-    anisotropic_request.output_file_name = os.path.join(test_path, "Assembled.anisotropicbsdf")
+    anisotropic_request.output_file_name = str(Path(test_path) / "Assembled.anisotropicbsdf")
     stub.BuildAnisotropicBsdf(anisotropic_request)
     assert helper.does_file_exist(anisotropic_request.output_file_name)
     helper.remove_file(anisotropic_request.output_file_name)

@@ -99,8 +99,8 @@ class SOPTemplateStub(CrudStub):
 
     Examples
     --------
-    The best way to get a SOPTemplateStub is to retrieve it from SpeosClient via sop_templates() method.
-    Like in the following example:
+    The best way to get a SOPTemplateStub is to retrieve it from SpeosClient via sop_templates()
+    method. Like in the following example:
 
     >>> from ansys.speos.core.speos import Speos
     >>> speos = Speos(host="localhost", port=50098)

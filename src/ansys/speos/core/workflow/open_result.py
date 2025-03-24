@@ -19,9 +19,10 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-"""Provides a way to open result of the simulation feature."""
+"""Open one of the possible results generated out of the simulation."""
 
 import os
+from pathlib import Path
 import tempfile
 from typing import Union
 
@@ -35,7 +36,11 @@ import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 from numpy import ndarray
 
-from ansys.speos.core.simulation import SimulationDirect, SimulationInteractive, SimulationInverse
+from ansys.speos.core.simulation import (
+    SimulationDirect,
+    SimulationInteractive,
+    SimulationInverse,
+)
 
 
 def _find_correct_result(
@@ -63,8 +68,8 @@ def _find_correct_result(
                         file_uri=res.upload_response.info.uri,
                         download_location=tempfile.gettempdir(),
                     )
-                    file_path = os.path.join(
-                        tempfile.gettempdir(), res.upload_response.info.file_name
+                    file_path = str(
+                        Path(tempfile.gettempdir()) / res.upload_response.info.file_name
                     )
                 else:
                     file_path = res.upload_response.info.uri
@@ -115,7 +120,8 @@ if os.name == "nt":
             _display_image(mpimg.imread(file_path))
 
     def open_result_in_viewer(
-        simulation_feature: Union[SimulationDirect, SimulationInverse], result_name: str
+        simulation_feature: Union[SimulationDirect, SimulationInverse],
+        result_name: str,
     ) -> None:
         """Open a specific simulation result in the suitable viewer.
 

@@ -20,12 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""
-Test basic sop template database connection.
-"""
+"""Test basic sop template database connection."""
 
 import json
-import os
+from pathlib import Path
 
 import grpc
 import pytest
@@ -67,7 +65,7 @@ def test_sop_template(speos: Speos):
             name="library_0",
             description="library sop template",
             library=ProtoSOPTemplate.Library(
-                sop_file_uri=os.path.join(test_path, "Gaussian Fresnel 10 deg.anisotropicbsdf")
+                sop_file_uri=str(Path(test_path) / "Gaussian Fresnel 10 deg.anisotropicbsdf")
             ),
         )
     )

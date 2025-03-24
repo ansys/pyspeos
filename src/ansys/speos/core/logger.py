@@ -183,6 +183,7 @@ class PySpeosCustomAdapter(logging.LoggerAdapter):
     stdout_handler = None
 
     def __init__(self, logger, extra=None):
+        """Initialize the logger adapter."""
         self.logger = logger
         if extra is not None:
             self.extra = weakref.proxy(extra)
@@ -191,7 +192,21 @@ class PySpeosCustomAdapter(logging.LoggerAdapter):
         self.file_handler = logger.file_handler
         self.std_out_handler = logger.std_out_handler
 
-    def process(self, msg, kwargs):
+    def process(self, msg, kwargs) -> tuple[str, dict]:
+        """Process extra Arguments.
+
+        Parameters
+        ----------
+        msg : str
+            Log message
+        kwargs : dict
+            extra Arguments dictionary
+
+        Returns
+        -------
+        tuple[str, dict]
+            Message and processed extra arguments
+        """
         kwargs["extra"] = {}
         # This are the extra parameters sent to log
         kwargs["extra"]["instance_name"] = (
@@ -247,11 +262,26 @@ class PySpeosCustomAdapter(logging.LoggerAdapter):
 
 
 class PySpeosPercentStyle(logging.PercentStyle):
+    """Customized ``PercentStyle`` class for overwriting default format styles."""
+
     def __init__(self, fmt, *, defaults=None):
+        """Initialize the class."""
         self._fmt = fmt or self.default_format
         self._defaults = defaults
 
     def _format(self, record):
+        """Format the record.
+
+        Parameters
+        ----------
+        record : logging.LogRecord
+            Record to format.
+
+        Returns
+        -------
+        str
+            Formatted record.
+        """
         defaults = self._defaults
         if defaults:
             values = defaults | record.__dict__
@@ -283,6 +313,7 @@ class PySpeosFormatter(logging.Formatter):
         validate=True,
         defaults=None,
     ):
+        """Initialize the class."""
         if sys.version_info[1] < 8:
             super().__init__(fmt, datefmt, style)
         else:
@@ -295,6 +326,18 @@ class InstanceFilter(logging.Filter):
     """Ensures that the ``instance_name`` record always exists."""
 
     def filter(self, record):
+        """Filter the record.
+
+        Parameters
+        ----------
+        record : logging.LogRecord
+            Record to filter.
+
+        Returns
+        -------
+        bool
+            Whether the record is valid.
+        """
         if not hasattr(record, "instance_name"):
             record.instance_name = ""
         return True
@@ -341,7 +384,13 @@ class Logger:
     _level = logging.DEBUG
     _instances = {}
 
-    def __init__(self, level=logging.DEBUG, to_file=False, to_stdout=True, filename=FILE_NAME):
+    def __init__(
+        self,
+        level=logging.DEBUG,
+        to_file=False,
+        to_stdout=True,
+        filename=FILE_NAME,
+    ):
         """Customize the logger class for PySpeos.
 
         Parameters
@@ -492,7 +541,10 @@ class Logger:
         return self._instances[name]
 
     def add_instance_logger(
-        self, name: str, client_instance: "SpeosClient", level: Optional[int] = None
+        self,
+        name: str,
+        client_instance: "SpeosClient",
+        level: Optional[int] = None,
     ) -> PySpeosCustomAdapter:
         """Add a logger for a speos instance.
 
@@ -530,6 +582,7 @@ class Logger:
         return self._instances[new_name]
 
     def __getitem__(self, key):
+        """Magic method to allow retrieval of instances."""
         if key in self._instances.keys():
             return self._instances[key]
         else:
@@ -548,7 +601,10 @@ class Logger:
             if issubclass(exc_type, KeyboardInterrupt):
                 sys.__excepthook__(exc_type, exc_value, exc_traceback)
                 return
-            logger.critical("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
+            logger.critical(
+                "Uncaught exception",
+                exc_info=(exc_type, exc_value, exc_traceback),
+            )
 
         sys.excepthook = handle_exception
 

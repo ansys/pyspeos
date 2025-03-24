@@ -74,4 +74,4 @@ Any questions? Refer to :ref:`Q&A <ref_faq>` before submitting an issue.
 
 
 .. Links
-.. _README: https://github.com/ansys-internal/pyspeos
+.. _README: https://github.com/ansys/pyspeos

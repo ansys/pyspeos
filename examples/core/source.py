@@ -5,15 +5,19 @@
 # There are different type of sources available: luminaire source, surface source, ray file source.
 
 # +
-import os
+from pathlib import Path
 
 from ansys.speos.core import GeoRef, Project, Speos
-from ansys.speos.core.source import SourceLuminaire, SourceRayFile, SourceSurface
+from ansys.speos.core.source import (
+    SourceLuminaire,
+    SourceRayFile,
+    SourceSurface,
+)
 
 # If using docker container
-tests_data_path = os.path.join("/app", "assets")
+tests_data_path = Path("/app") / "assets"
 # If using local server
-# tests_data_path = os.path.join(os.path.abspath(""), os.path.pardir, os.path.pardir, "tests", "assets")
+# tests_data_path = Path().resolve().parent.parent / "tests" / "assets"
 # -
 
 # ## Create connection with speos rpc server
@@ -38,7 +42,7 @@ print(p)
 # The mention "local: " is added when printing the source.
 
 # +
-intensity_file_path = os.path.join(tests_data_path, "IES_C_DETECTOR.ies")
+intensity_file_path = str(tests_data_path / "IES_C_DETECTOR.ies")
 
 source1 = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)  # type luminaire
 source1.set_intensity_file_uri(uri=intensity_file_path)
@@ -47,7 +51,8 @@ print(source1)
 
 # ## Push it to the server.
 
-# Now that it is committed to the server, the mention "local: " is no more present when printing the source.
+# Now that it is committed to the server, the mention "local: " is no more present when printing the
+# source.
 
 # +
 source1.commit()
@@ -59,7 +64,7 @@ print(source1)
 # Setting several more characteristics.
 
 # +
-intensity_file_path = os.path.join(tests_data_path, "IES_C_DETECTOR.ies")
+intensity_file_path = str(tests_data_path / "IES_C_DETECTOR.ies")
 
 source2 = p.create_source(name="Luminaire.2", feature_type=SourceLuminaire)
 source2.set_intensity_file_uri(uri=intensity_file_path)
@@ -109,14 +114,17 @@ print(source1)
 
 # +
 source1.set_flux_luminous()  # modify to luminous flux BUT no commit
-source1.reset()  # reset -> this will apply the server value to the local value (then local value will be back to halogen)
+source1.reset()
+# reset -> this will apply the server value to the local value the local value will be back to
+# halogen
 source1.delete()  # delete (to display the local value with the below print)
 print(source1)
 # -
 
 # ## Delete
 
-# Once the data is deleted from the server, you can still work with local data and maybe commit later.
+# Once the data is deleted from the server, you can still work with local data and maybe commit
+# later.
 
 # +
 source2.delete()
@@ -132,7 +140,7 @@ source1.delete()
 # ### ray-file source
 
 # +
-ray_file_path = os.path.join(tests_data_path, "Rays.ray")
+ray_file_path = str(tests_data_path / "Rays.ray")
 
 source3 = p.create_source(name="Ray-file.1", feature_type=SourceRayFile)  # type ray file
 source3.set_ray_file_uri(uri=ray_file_path)

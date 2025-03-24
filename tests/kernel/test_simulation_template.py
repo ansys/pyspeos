@@ -20,9 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""
-Test basic sop template database connection.
-"""
+"""Test basic sop template database connection."""
 
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
 from ansys.speos.core.kernel.simulation_template import ProtoSimulationTemplate

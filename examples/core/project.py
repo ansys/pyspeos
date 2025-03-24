@@ -4,12 +4,15 @@
 
 # ## What is a project?
 
-# A project is a speos simulation container that includes parts, material properties, sensor, sources and simulations.
+# A project is a speos simulation container that includes parts, material properties, sensor,
+# sources and simulations.
 
-# In this tutorial you will learn how to create a project from scratch or from a pre-defined .speos file.
+# In this tutorial you will learn how to create a project from scratch or from a pre-defined .speos
+# file.
 
 # +
 import os
+from pathlib import Path
 
 from ansys.speos.core import Project, Speos
 from ansys.speos.core.sensor import SensorIrradiance
@@ -17,9 +20,9 @@ from ansys.speos.core.simulation import SimulationDirect
 from ansys.speos.core.source import SourceSurface
 
 # If using docker container
-tests_data_path = os.path.join("/app", "assets")
+tests_data_path = Path("/app") / "assets"
 # If using local server
-# tests_data_path = os.path.join(os.path.abspath(""), os.path.pardir, os.path.pardir, "tests", "assets")
+# tests_data_path = Path().resolve().parent.parent / "tests" / "assets"
 # -
 
 # ## Create connection with speos rpc server
@@ -145,9 +148,7 @@ print(p.find(name="Sensor.1"))
 # +
 p2 = Project(
     speos=speos,
-    path=os.path.join(
-        tests_data_path, "LG_50M_Colorimetric_short.sv5", "LG_50M_Colorimetric_short.sv5"
-    ),
+    path=str(tests_data_path / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"),
 )
 print(p2)
 # -
@@ -206,6 +207,7 @@ if os.name == "nt":
     from ansys.speos.core.workflow.open_result import open_result_image
 
     open_result_image(
-        simulation_feature=sim_feat, result_name="ASSEMBLY1.DS (0).Dom Irradiance Sensor (0).xmp"
+        simulation_feature=sim_feat,
+        result_name="ASSEMBLY1.DS (0).Dom Irradiance Sensor (0).xmp",
     )
 # -

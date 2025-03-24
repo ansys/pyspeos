@@ -20,11 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""
-Test basic using optical properties.
-"""
+"""Test basic using optical properties."""
 
-import os
+from pathlib import Path
 
 from ansys.speos.core import GeoRef, Project, Speos
 from tests.conftest import test_path
@@ -41,7 +39,7 @@ def test_create_optical_property(speos: Speos):
     assert op1.sop_template_link is not None
     assert op1.sop_template_link.get().HasField("mirror")
     assert op1.sop_template_link.get().mirror.reflectance == 100
-    assert op1._material_instance.HasField("geometries") == False
+    assert op1._material_instance.HasField("geometries") is False
 
     # VOP opaque
     op1.set_volume_opaque().commit()
@@ -59,29 +57,37 @@ def test_create_optical_property(speos: Speos):
     op1.set_volume_optic().commit()
     assert op1.vop_template_link.get().optic.index == 1.5
     assert op1.vop_template_link.get().optic.absorption == 0.0
-    assert op1.vop_template_link.get().optic.HasField("constringence") == False
+    assert op1.vop_template_link.get().optic.HasField("constringence") is False
 
     # VOP library
-    op1.set_volume_library(path=os.path.join(test_path, "AIR.material")).commit()
+    op1.set_volume_library(path=str(Path(test_path) / "AIR.material")).commit()
     assert op1.vop_template_link.get().HasField("library")
     assert op1.vop_template_link.get().library.material_file_uri.endswith("AIR.material")
 
     # VOP non-homogeneous - bug to be fixed
-    # op1.set_volume_nonhomogeneous(path=os.path.join(test_path, "Index_1.5_Gradient_0.499_Abs_0.gradedmaterial"),
-    #                               axis_system=[10,20,30,1,0,0,0,1,0,0,0,1]).commit()
+    # op1.set_volume_nonhomogeneous(
+    #     path=Path(test_path) / "Index_1.5_Gradient_0.499_Abs_0.gradedmaterial",
+    #     axis_system=[10, 20, 30, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+    # ).commit()
     # assert op1.vop_template_link.get().HasField("non_homogeneous")
-    # assert op1.vop_template_link.get().non_homogeneous.gradedmaterial_file_uri.endswith("Index_1.5_Gradient_0.499_Abs_0.gradedmaterial")
-    # assert op1._material_instance.non_homogeneous_properties.axis_system == [10,20,30,1,0,0,0,1,0,0,0,1]
+    # non_homogeneous = op1.vop_template_link.get().non_homogeneous
+    # assert non_homogeneous.gradedmaterial_file_uri.endswith(
+    #     "Index_1.5_Gradient_0.499_Abs_0.gradedmaterial"
+    # )
+    # non_homogenous_properties = op1._material_instance.non_homogeneous_properties
+    # assert non_homogenous_properties.axis_system == [10, 20, 30, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     #
-    # op1.set_volume_nonhomogeneous(path=os.path.join(test_path, "Index_1.5_Gradient_0.499_Abs_0.gradedmaterial")).commit()
-    # assert op1._material_instance.non_homogeneous_properties.axis_system == [0,0,0,1,0,0,0,1,0,0,0,1]
+    # op1.set_volume_nonhomogeneous(
+    #     path=Path(test_path) / "Index_1.5_Gradient_0.499_Abs_0.gradedmaterial"
+    # ).commit()
+    # assert non_homogenous_properties.axis_system == [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 
     # SOP optical_polished
     op1.set_surface_opticalpolished().commit()
     assert op1.sop_template_link.get().HasField("optical_polished")
 
     # SOP library
-    op1.set_surface_library(path=os.path.join(test_path, "R_test.anisotropicbsdf")).commit()
+    op1.set_surface_library(path=str(Path(test_path) / "R_test.anisotropicbsdf")).commit()
     assert op1.sop_template_link.get().HasField("library")
     assert op1.sop_template_link.get().library.sop_file_uri.endswith("R_test.anisotropicbsdf")
 
@@ -101,7 +107,7 @@ def test_create_optical_property(speos: Speos):
     op1._material_instance.geometries.geo_paths == ["TheBody1", "TheBodyB2"]
 
     op1.set_geometries(geometries=None)  # means no geometry
-    assert op1._material_instance.HasField("geometries") == False
+    assert op1._material_instance.HasField("geometries") is False
 
     op1.set_geometries(geometries=[])  # means all geometries
     assert op1._material_instance.HasField("geometries")
@@ -161,7 +167,7 @@ def test_reset_optical_property(speos: Speos):
     assert op1.sop_template_link.get().HasField("mirror")
     assert op1._sop_template.HasField("optical_polished")  # local template
     assert p.scene_link.get().materials[0].HasField("geometries")
-    assert op1._material_instance.HasField("geometries") == False  # local instance
+    assert op1._material_instance.HasField("geometries") is False  # local instance
 
     # Ask for reset
     op1.reset()
@@ -259,7 +265,7 @@ def test_get_optical_property(speos: Speos, capsys):
     op3 = (
         p.create_optical_property(name="OpticalProperty3")
         .set_volume_none()
-        .set_surface_library(path=os.path.join(test_path, "R_test.anisotropicbsdf"))
+        .set_surface_library(path=str(Path(test_path) / "R_test.anisotropicbsdf"))
         .commit()
     )
 

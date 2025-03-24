@@ -20,11 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""
-Test basic using intensity.
-"""
+"""Test basic using intensity."""
 
-import os
+from pathlib import Path
 
 from ansys.speos.core import GeoRef, Intensity, Speos
 from tests.conftest import test_path
@@ -41,13 +39,13 @@ def test_create_intensity(speos: Speos):
 
     # library
     intensity1.set_library().set_intensity_file_uri(
-        uri=os.path.join(test_path, "IES_C_DETECTOR.ies")
+        uri=str(Path(test_path) / "IES_C_DETECTOR.ies")
     ).set_orientation_axis_system()
     intensity1.commit()
     assert intensity1.intensity_template_link.get().HasField("library")
     assert intensity1._intensity_properties.HasField("library_properties")
     assert intensity1._intensity_properties.library_properties.HasField("axis_system")
-    assert intensity1._intensity_properties.library_properties.HasField("exit_geometries") == False
+    assert intensity1._intensity_properties.library_properties.HasField("exit_geometries") is False
 
     intensity1.set_library().set_orientation_normal_to_surface()
     intensity1.commit()
@@ -70,14 +68,14 @@ def test_create_intensity(speos: Speos):
 
     intensity1.set_library().set_exit_geometries()  # use default [] to reset exit geometries
     intensity1.commit()
-    assert intensity1._intensity_properties.library_properties.HasField("exit_geometries") == False
+    assert intensity1._intensity_properties.library_properties.HasField("exit_geometries") is False
 
     # cos
-    intensity1.set_cos(N=2, total_angle=160).commit()
+    intensity1.set_cos(n=2, total_angle=160).commit()
     assert intensity1.intensity_template_link.get().HasField("cos")
     assert intensity1.intensity_template_link.get().cos.N == 2
     assert intensity1.intensity_template_link.get().cos.total_angle == 160
-    assert intensity1._intensity_properties.HasField("library_properties") == False
+    assert intensity1._intensity_properties.HasField("library_properties") is False
 
     # gaussian
     intensity1.set_gaussian().set_FWHM_angle_x(value=20).set_FWHM_angle_y(value=30).set_total_angle(
@@ -117,12 +115,13 @@ def test_create_intensity(speos: Speos):
 
 
 def test_switch_intensity(speos: Speos):
-    """Test switch of intensity : from one with properties to one without (properties should be emptied)."""
+    """Test switch of intensity : from one with properties to one without.
+
+    Properties should be emptied.
+    """
     # Use intensity library with some default properties
     intensity1 = Intensity(speos_client=speos.client, name="Intensity.1")
-    intensity1.set_library().set_intensity_file_uri(
-        uri=os.path.join(test_path, "IES_C_DETECTOR.ies")
-    )
+    intensity1.set_library().set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
     intensity1.commit()
     assert intensity1._intensity_properties.HasField("properties")
     assert intensity1._intensity_properties.HasField("library_properties")
@@ -130,7 +129,7 @@ def test_switch_intensity(speos: Speos):
 
     # Switch to cos that has no properties
     intensity1.set_cos().commit()
-    assert intensity1._intensity_properties.HasField("properties") == False
+    assert intensity1._intensity_properties.HasField("properties") is False
 
 
 def test_commit_intensity(speos: Speos):
@@ -138,7 +137,7 @@ def test_commit_intensity(speos: Speos):
     # Create
     intensity1 = Intensity(speos_client=speos.client, name="Intensity.1")
     intensity1.set_library().set_intensity_file_uri(
-        uri=os.path.join(test_path, "IES_C_DETECTOR.ies")
+        uri=str(Path(test_path) / "IES_C_DETECTOR.ies")
     ).set_orientation_axis_system()
     assert intensity1.intensity_template_link is None
 
@@ -154,9 +153,7 @@ def test_reset_intensity(speos: Speos):
     """Test reset of intensity."""
     # Create + commit
     intensity1 = Intensity(speos_client=speos.client, name="Intensity.1")
-    intensity1.set_library().set_intensity_file_uri(
-        uri=os.path.join(test_path, "IES_C_DETECTOR.ies")
-    )
+    intensity1.set_library().set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
     intensity1.commit()
     assert intensity1.intensity_template_link.get().HasField("library")
 
@@ -177,9 +174,7 @@ def test_library_modify_after_reset(speos: Speos):
     """Test modify library intensity feature after reset."""
     # Create + commit
     intensity1 = Intensity(speos_client=speos.client, name="Intensity.1")
-    intensity1.set_library().set_intensity_file_uri(
-        uri=os.path.join(test_path, "IES_C_DETECTOR.ies")
-    )
+    intensity1.set_library().set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
     intensity1.commit()
 
     # Ask for reset
@@ -187,7 +182,7 @@ def test_library_modify_after_reset(speos: Speos):
 
     # Template modification
     intensity1.set_library().set_intensity_file_uri(
-        uri=os.path.join(test_path, "PROJECT.Direct-no-Ray.Irradiance Ray Spectral.xmp")
+        uri=str(Path(test_path) / "PROJECT.Direct-no-Ray.Irradiance Ray Spectral.xmp")
     )
     assert intensity1._intensity_template.library.intensity_file_uri.endswith("xmp")
 
@@ -250,7 +245,7 @@ def test_delete_intensity(speos: Speos):
     # Create + commit
     intensity1 = Intensity(speos_client=speos.client, name="Intensity.1")
     intensity1.set_library().set_intensity_file_uri(
-        uri=os.path.join(test_path, "IES_C_DETECTOR.ies")
+        uri=str(Path(test_path) / "IES_C_DETECTOR.ies")
     ).set_orientation_axis_system()
     intensity1.commit()
     assert intensity1.intensity_template_link.get().HasField("library")

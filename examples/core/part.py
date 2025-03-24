@@ -9,14 +9,14 @@
 # Then a material optical property can be then applied to a part (like bodies, faces).
 
 # +
-import os
+from pathlib import Path
 
 from ansys.speos.core import Body, Face, Part, Project, Speos
 
 # If using docker container
-tests_data_path = os.path.join("/app", "assets")
+tests_data_path = Path("/app") / "assets"
 # If using local server
-# tests_data_path = os.path.join(os.path.abspath(""), os.path.pardir, os.path.pardir, "tests", "assets")
+# tests_data_path = Path().resolve().parent.parent / "tests" / "assets"
 # -
 
 # ## Create connection with speos rpc server
@@ -53,7 +53,8 @@ print(root_part)
 # -
 
 # ### Create faces inside a body.
-# A body can have one (example, surface/open-volume type of body) or multiple faces (close-volume type of body).
+# A body can have one (example, surface/open-volume type of body) or multiple faces
+# (close-volume type of body).
 
 # Each face is then defined by a number of triangles/facets.
 
@@ -176,7 +177,8 @@ for feat in features:
 # -
 
 
-# If you want to retrieve several kind of geometry features at a certain level, give feature_type=Part
+# If you want to retrieve several kind of geometry features at a certain level, give
+# feature_type=Part
 
 # all the geometry features at root part level:
 

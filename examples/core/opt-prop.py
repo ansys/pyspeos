@@ -10,14 +10,14 @@
 # The property is then applied to a geometry (like bodies, faces).
 
 # +
-import os
+from pathlib import Path
 
 from ansys.speos.core import GeoRef, Project, Speos
 
 # If using docker container
-tests_data_path = os.path.join("/app", "assets")
+tests_data_path = Path("/app") / "assets"
 # If using local server
-# tests_data_path = os.path.join(os.path.abspath(""), os.path.pardir, os.path.pardir, "tests", "assets")
+# tests_data_path = Path().resolve().parent.parent / "tests" / "assets"
 # -
 
 # ## Create connection with speos rpc server
@@ -73,7 +73,7 @@ print(op1)
 op2 = p.create_optical_property(name="Material.2")
 op2.set_surface_opticalpolished()  # SOP : optical polished
 op2.set_volume_library(
-    path=os.path.join(tests_data_path, "AIR.material")
+    path=str(tests_data_path / "AIR.material")
 )  # VOP : selected library via a file .material
 # This optical property will be applied to two bodies named : "TheBodyD" and "TheBodyE".
 op2.set_geometries(
@@ -90,7 +90,8 @@ print(op2)
 
 # Sometimes it is needed to create property but only for surface.
 
-# In this case, no call for set_volume_xxx function is needed, and we will select a face for the geometries.
+# In this case, no call for set_volume_xxx function is needed, and we will select a face for the
+# geometries.
 
 # +
 op3 = p.create_optical_property(name="Material.FOP")
@@ -161,7 +162,8 @@ print(p)
 
 # ## Update
 
-# Tipp: if you are manipulating an optical property already committed, don't forget to commit your changes.
+# Tipp: if you are manipulating an optical property already committed, don't forget to commit your
+# changes.
 
 # If you don't, you will still only watch what is committed on the server.
 
@@ -185,7 +187,8 @@ print(op1)
 
 # ## Delete
 
-# Once the data is deleted from the server, you can still work with local data and maybe commit later.
+# Once the data is deleted from the server, you can still work with local data and maybe commit
+# later.
 
 # +
 op2.delete()

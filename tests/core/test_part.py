@@ -20,9 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""
-Test basic using part/body/face.
-"""
+"""Test basic using part/body/face."""
 
 from ansys.speos.core import Project, Speos
 
@@ -136,7 +134,20 @@ def test_create_subpart(speos: Speos):
     assert len(root_part._geom_features) == 1
     assert len(root_part.part_link.get().parts) == 1
     assert root_part.part_link.get().parts[0] == sp1._part_instance
-    assert sp1._part_instance.axis_system == [5, 4, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    assert sp1._part_instance.axis_system == [
+        5,
+        4,
+        10,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+    ]
     assert sp1._part_instance.part_guid == sp1.part_link.key
     assert (
         sp1.part_link.get().name == "SubPart.1"
@@ -151,7 +162,20 @@ def test_create_subpart(speos: Speos):
     assert len(root_part._geom_features) == 2
     assert len(root_part.part_link.get().parts) == 2
     assert root_part.part_link.get().parts[1] == sp2._part_instance
-    assert sp2._part_instance.axis_system == [15, 14, 14, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    assert sp2._part_instance.axis_system == [
+        15,
+        14,
+        14,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+    ]
     assert sp2._part_instance.part_guid == sp2.part_link.key
     assert (
         sp2.part_link.get().name == "SubPart.2"
@@ -220,7 +244,20 @@ def test_create_subpart_subpart(speos: Speos):
     assert len(sp1._geom_features) == 1
     assert len(sp1.part_link.get().parts) == 1
     assert sp1.part_link.get().parts[0] == sp11._part_instance
-    assert sp11._part_instance.axis_system == [-5, -4, -10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    assert sp11._part_instance.axis_system == [
+        -5,
+        -4,
+        -10,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+    ]
     assert sp11._part_instance.part_guid == sp11.part_link.key
     assert (
         sp11.part_link.get().name == "SubPart.11"
@@ -235,7 +272,20 @@ def test_create_subpart_subpart(speos: Speos):
     assert len(sp1._geom_features) == 2
     assert len(sp1.part_link.get().parts) == 2
     assert sp1.part_link.get().parts[1] == sp12._part_instance
-    assert sp12._part_instance.axis_system == [-15, -14, -14, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    assert sp12._part_instance.axis_system == [
+        -15,
+        -14,
+        -14,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+    ]
     assert sp12._part_instance.part_guid == sp12.part_link.key
     assert (
         sp12.part_link.get().name == "SubPart.12"

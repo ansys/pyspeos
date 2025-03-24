@@ -20,9 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""
-Test job.
-"""
+"""Test job."""
 
 import time
 
@@ -41,7 +39,7 @@ def test_job(speos: Speos):
     scene = create_basic_scene(speos)
     assert len(scene.get().simulations) == 4
 
-    job_dir = speos.client.jobs().create(
+    speos.client.jobs().create(
         message=ProtoJob(
             name="job_dir",
             scene_guid=scene.key,
@@ -52,7 +50,7 @@ def test_job(speos: Speos):
         )
     )
 
-    job_inv = speos.client.jobs().create(
+    speos.client.jobs().create(
         message=ProtoJob(
             name="job_inv",
             scene_guid=scene.key,
@@ -66,7 +64,7 @@ def test_job(speos: Speos):
         )
     )
 
-    job_int = speos.client.jobs().create(
+    speos.client.jobs().create(
         message=ProtoJob(
             name="job_int",
             scene_guid=scene.key,

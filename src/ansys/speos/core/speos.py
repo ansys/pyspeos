@@ -35,8 +35,7 @@ if TYPE_CHECKING:  # pragma: no cover
 
 
 class Speos:
-    """
-    Provides interaction with the speos session.
+    """Allows the Speos session (client) to interact with the SpeosRPC server.
 
     Parameters
     ----------
@@ -48,7 +47,8 @@ class Speos:
         By default, ``ansys.speos.core.kernel.client.DEFAULT_PORT``.
     version : str
         The Speos server version to run, in the 3 digits format, such as "242".
-        If unspecified, the version will be chosen as ``ansys.speos.core.kernel.client,LATEST_VERSION``.
+        If unspecified, the version will be chosen as
+        ``ansys.speos.core.kernel.client.LATEST_VERSION``.
     channel : ~grpc.Channel, optional
         gRPC channel for server communication.
         By default, ``None``.
@@ -94,12 +94,13 @@ class Speos:
         return self._client
 
     def close(self, try_kill_server=False) -> bool:
-        """Close the channel. and deletes all Speos objects from memory
+        """Close the channel and deletes all Speos objects from memory.
 
         Parameters
         ----------
         try_kill_server : bool
-            Decides if the Speos RPC server instance should be closed only works if it is a local instance
+            Decides if the Speos RPC server instance should be closed only works if it is a local
+            instance
 
         Returns
         -------

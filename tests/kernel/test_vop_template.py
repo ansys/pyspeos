@@ -20,12 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""
-Test basic vop template database connection.
-"""
+"""Test basic vop template database connection."""
 
 import json
-import os
+from pathlib import Path
 
 import grpc
 import pytest
@@ -44,7 +42,9 @@ def test_vop_template(speos: Speos):
     # Opaque
     vop_t_opaque = vop_t_db.create(
         ProtoVOPTemplate(
-            name="opaque_0", description="Opaque vop template", opaque=ProtoVOPTemplate.Opaque()
+            name="opaque_0",
+            description="Opaque vop template",
+            opaque=ProtoVOPTemplate.Opaque(),
         )
     )
     assert vop_t_opaque.key != ""
@@ -75,7 +75,7 @@ def test_vop_template(speos: Speos):
             name="library_0",
             description="Library vop template",
             library=ProtoVOPTemplate.Library(
-                material_file_uri=os.path.join(test_path, "AIR.material")
+                material_file_uri=str(Path(test_path) / "AIR.material")
             ),
         )
     )
@@ -87,8 +87,8 @@ def test_vop_template(speos: Speos):
             name="non_homogeneous_0",
             description="Non Homogeneous vop template",
             non_homogeneous=ProtoVOPTemplate.NonHomogeneous(
-                gradedmaterial_file_uri=os.path.join(
-                    test_path, "Index_1.5_Gradient_0.499_Abs_0.gradedmaterial"
+                gradedmaterial_file_uri=str(
+                    Path(test_path) / "Index_1.5_Gradient_0.499_Abs_0.gradedmaterial"
                 )
             ),
         )

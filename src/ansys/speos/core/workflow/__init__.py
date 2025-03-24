@@ -20,11 +20,18 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""This module defines processes used in workflows."""
+"""PySpeos workflow gathers functionality to use Speos capabilities in advanced ways."""
 
 import os
 
-from ansys.speos.core.workflow.combine_speos import SpeosFileInstance, combine_speos, insert_speos
+from ansys.speos.core.workflow.combine_speos import (
+    SpeosFileInstance,
+    combine_speos,
+    insert_speos,
+)
 
 if os.name == "nt":
-    from ansys.speos.core.workflow.open_result import open_result_image, open_result_in_viewer
+    from ansys.speos.core.workflow.open_result import (
+        open_result_image,
+        open_result_in_viewer,
+    )

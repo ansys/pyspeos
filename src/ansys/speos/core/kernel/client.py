@@ -35,20 +35,35 @@ from grpc._channel import _InactiveRpcError
 from ansys.api.speos.part.v1 import body_pb2, face_pb2, part_pb2
 from ansys.speos.core.kernel.body import BodyLink, BodyStub
 from ansys.speos.core.kernel.face import FaceLink, FaceStub
-from ansys.speos.core.kernel.intensity_template import IntensityTemplateLink, IntensityTemplateStub
+from ansys.speos.core.kernel.intensity_template import (
+    IntensityTemplateLink,
+    IntensityTemplateStub,
+)
 from ansys.speos.core.kernel.job import JobLink, JobStub
 from ansys.speos.core.kernel.part import PartLink, PartStub
 from ansys.speos.core.kernel.scene import SceneLink, SceneStub
-from ansys.speos.core.kernel.sensor_template import SensorTemplateLink, SensorTemplateStub
+from ansys.speos.core.kernel.sensor_template import (
+    SensorTemplateLink,
+    SensorTemplateStub,
+)
 from ansys.speos.core.kernel.simulation_template import (
     SimulationTemplateLink,
     SimulationTemplateStub,
 )
-from ansys.speos.core.kernel.sop_template import SOPTemplateLink, SOPTemplateStub
-from ansys.speos.core.kernel.source_template import SourceTemplateLink, SourceTemplateStub
+from ansys.speos.core.kernel.sop_template import (
+    SOPTemplateLink,
+    SOPTemplateStub,
+)
+from ansys.speos.core.kernel.source_template import (
+    SourceTemplateLink,
+    SourceTemplateStub,
+)
 from ansys.speos.core.kernel.spectrum import SpectrumLink, SpectrumStub
-from ansys.speos.core.kernel.vop_template import VOPTemplateLink, VOPTemplateStub
-from ansys.speos.core.logger import LOG as logger, PySpeosCustomAdapter
+from ansys.speos.core.kernel.vop_template import (
+    VOPTemplateLink,
+    VOPTemplateStub,
+)
+from ansys.speos.core.logger import LOG as LOGGER, PySpeosCustomAdapter
 from ansys.tools.path import get_available_ansys_installations
 
 DEFAULT_HOST = "localhost"
@@ -153,7 +168,7 @@ class SpeosClient:
         wait_until_healthy(self._channel, timeout)
 
         # once connection with the client is established, create a logger
-        self._log = logger.add_instance_logger(
+        self._log = LOGGER.add_instance_logger(
             name=self._target, client_instance=self, level=logging_level
         )
         if logging_file:
@@ -193,7 +208,7 @@ class SpeosClient:
         try:
             grpc.channel_ready_future(self.channel).result(timeout=60)
             return True
-        except:
+        except BaseException:
             return False
 
     def target(self) -> str:
@@ -430,7 +445,8 @@ List[ansys.speos.core.kernel.job.JobLink], \
 List[ansys.speos.core.kernel.part.PartLink], \
 List[ansys.speos.core.kernel.body.BodyLink], \
 List[ansys.speos.core.kernel.face.FaceLink]]
-            List of Link objects corresponding to the keys - Empty if no objects corresponds to the keys.
+            List of Link objects corresponding to the keys - Empty if no objects corresponds to the
+            keys.
         """
         if self._closed:
             raise ConnectionAbortedError()
@@ -483,7 +499,8 @@ List[ansys.speos.core.kernel.face.FaceLink]]
         Parameters
         ----------
         try_kill_instance : bool
-            Decides if the Speos RPC server instance should be closed only works if it is a local instance
+            Decides if the Speos RPC server instance should be closed only works if it is a local
+            instance
 
         Returns
         -------
@@ -521,9 +538,9 @@ List[ansys.speos.core.kernel.face.FaceLink]]
 
     def __close_local_speos_rpc_server(self):
         versions = get_available_ansys_installations()
-        ansys_loc = versions.get(int(self._version))
+        ansys_loc = Path(versions.get(int(self._version)))
         if not ansys_loc:
-            ansys_loc = os.environ.get("AWP_ROOT{}".format(self._version))
+            ansys_loc = Path(os.environ.get("AWP_ROOT{}".format(self._version)))
         if not ansys_loc:
             msg = (
                 "Ansys installation directory is not found."
@@ -532,13 +549,12 @@ List[ansys.speos.core.kernel.face.FaceLink]]
             FileNotFoundError(msg)
 
         if os.name == "nt":
-            speos_exec = os.path.join(
-                ansys_loc, "Optical Products", "SPEOS_RPC", "SpeosRPC_Server.exe"
-            )
+            speos_exec = ansys_loc / "Optical Products" / "SPEOS_RPC" / "SpeosRPC_Server.exe"
         else:
-            speos_exec = os.path.join(
-                ansys_loc, "OpticalProducts", "SPEOS_RPC", "SpeosRPC_Server.x"
-            )
+            speos_exec = ansys_loc / "OpticalProducts" / "SPEOS_RPC" / "SpeosRPC_Server.x"
+        if not Path.is_file(speos_exec):
+            msg = "Ansys Speos RPC server version {} is not installed.".format(self._version)
+            raise FileNotFoundError(msg)
 
         command = [speos_exec, "-s{}".format(self._port)]
 

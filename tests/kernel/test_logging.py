@@ -20,9 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-""" "Testing of log module."""
+"""Test log module."""
 
 import logging as deflogging  # Default logging
+from pathlib import Path
 import re
 from typing import Callable
 
@@ -36,7 +37,13 @@ import ansys.speos.core.logger as logger
 # - capfd: for testing console printing.
 # - caplog: for testing logging printing.
 
-LOG_LEVELS = {"CRITICAL": 50, "ERROR": 40, "WARNING": 30, "INFO": 20, "DEBUG": 10}
+LOG_LEVELS = {
+    "CRITICAL": 50,
+    "ERROR": 40,
+    "WARNING": 30,
+    "INFO": 20,
+    "DEBUG": 10,
+}
 
 
 def test_stdout_reading(capfd: pytest.CaptureFixture):
@@ -54,8 +61,7 @@ def test_stdout_reading(capfd: pytest.CaptureFixture):
 
 
 def test_only_logger(caplog: pytest.LogCaptureFixture):
-    """Test for checking that the logging capabilities are working fine
-    in the Python version installed.
+    """Test for checking that the logging capabilities are working fine.
 
     Parameters
     ----------
@@ -76,8 +82,9 @@ def test_global_logger_exist():
 
 
 def test_global_logger_has_handlers():
-    """Test for checking that the general Logger has file_handlers and
-    sdtout file_handlers implemented.
+    """Test for checking that the general Logger has file_handlers \
+
+    and sdtout file_handlers implemented.
     """
     assert hasattr(LOG, "file_handler")
     assert hasattr(LOG, "std_out_handler")
@@ -86,8 +93,9 @@ def test_global_logger_has_handlers():
 
 
 def test_global_logger_logging(caplog: pytest.LogCaptureFixture):
-    """Testing the global PyDiscovery logger capabilities. Forcing minimum
-    logging level to Debug, adding a message with different logging levels,
+    """Testing the global PySpeos logger capabilities.
+
+    Forcing minimum logging level to Debug, adding a message with different logging levels,
     checking the output and restoring to original level.
 
     Parameters
@@ -101,7 +109,11 @@ def test_global_logger_logging(caplog: pytest.LogCaptureFixture):
         msg = f"This is an {each_log_name} message."
         LOG.logger.log(each_log_number, msg)
         # Make sure we are using the right logger, the right level and message.
-        assert caplog.record_tuples[-1] == ("pyspeos_global", each_log_number, msg)
+        assert caplog.record_tuples[-1] == (
+            "pyspeos_global",
+            each_log_number,
+            msg,
+        )
 
     #  Set back to default level == ERROR
     LOG.logger.setLevel("ERROR")
@@ -109,16 +121,16 @@ def test_global_logger_logging(caplog: pytest.LogCaptureFixture):
 
 
 def test_global_logger_level_mode():
-    """Checking that the Logger levels are stored as integer values and
-    that the default value (unless changed) is ERROR.
+    """Checking that the Logger levels are stored as integer values \
+
+    and that the default value (unless changed) is ERROR.
     """
     assert isinstance(LOG.logger.level, int)
     assert LOG.logger.level == logger.ERROR
 
 
 def test_global_logger_exception_handling(caplog: pytest.LogCaptureFixture):
-    """Test for checking that Errors are also raised in the logger as
-    ERROR type.
+    """Test for checking that Errors are also raised in the logger as ERROR type.
 
     Parameters
     ----------
@@ -149,8 +161,9 @@ def test_global_logger_exception_handling(caplog: pytest.LogCaptureFixture):
     ],
 )
 def test_global_logger_debug_levels(level: int, caplog: pytest.LogCaptureFixture):
-    """Testing for all the possible logging level that the output is
-    recorded properly for each type of msg.
+    """Testing for all the possible logging level that the output is recorded properly.
+
+    Test is done for each type of msg.
 
     Parameters
     ----------
@@ -196,20 +209,19 @@ def test_global_logger_format(fake_record: Callable):
     assert "instance" in logger.FILE_MSG_FORMAT
     assert "instance" in logger.STDOUT_MSG_FORMAT
 
-    log = fake_record(
+    logging = fake_record(
         LOG.logger,
         msg="This is a message",
         level=deflogging.DEBUG,
         extra={"instance_name": "172.1.1.1"},
     )
-    assert re.findall(r"(?:[0-9]{1,3}.){3}[0-9]{1,3}", log)
-    assert "DEBUG" in log
-    assert "This is a message" in log
+    assert re.findall(r"(?:[0-9]{1,3}.){3}[0-9]{1,3}", logging)
+    assert "DEBUG" in logging
+    assert "This is a message" in logging
 
 
 def test_global_methods(caplog: pytest.LogCaptureFixture):
-    """Testing global logger methods for printing out different log messages,
-    from DEBUG to CRITICAL.
+    """Testing global logger methods for printing out different log messages.
 
     Parameters
     ----------
@@ -274,7 +286,7 @@ def test_log_to_file(tmp_path_factory: pytest.TempPathFactory):
     LOG.error(file_msg_error)
     LOG.debug(file_msg_debug)
 
-    with open(file_path, "r") as fid:
+    with Path(file_path).open(mode="r") as fid:
         text = "".join(fid.readlines())
 
     assert file_msg_error in text
@@ -289,7 +301,7 @@ def test_log_to_file(tmp_path_factory: pytest.TempPathFactory):
     file_msg_debug = "This debug message should be recorded."
     LOG.debug(file_msg_debug)
 
-    with open(file_path, "r") as fid:
+    with Path(file_path).open(mode="r") as fid:
         text = "".join(fid.readlines())
 
     assert file_msg_debug in text

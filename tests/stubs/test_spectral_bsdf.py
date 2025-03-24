@@ -20,21 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""This module allows pytest to perform unit testing.
-
-Usage:
-.. code::
-   $ pytest
-   $ pytest -vx
-
-With coverage.
-.. code::
-   $ pytest --cov ansys.speos.core
-
-"""
+"""Unit tests for spectral BSDF service."""
 
 import math
-import os
+from pathlib import Path
 
 from google.protobuf.empty_pb2 import Empty
 
@@ -45,7 +34,8 @@ from tests.conftest import test_path
 import tests.helper as helper
 
 
-def createSpectralBsdf() -> spectral_bsdf__v1__pb2.SpectralBsdfData:
+def create_spectral_bsdf() -> spectral_bsdf__v1__pb2.SpectralBsdfData:
+    """Create simple spectral bsdf."""
     bsdf = spectral_bsdf__v1__pb2.SpectralBsdfData(description="test description")
     nbw = 7
     nbi = 10
@@ -54,42 +44,44 @@ def createSpectralBsdf() -> spectral_bsdf__v1__pb2.SpectralBsdfData:
     for w in range(nbw):
         bsdf.wavelength_samples.append(360.0 + w * (780.0 - 360.0) / (nbw - 1))
         for i in range(nbi):
-            IW = bsdf.wavelength_incidence_samples.add()
+            iw = bsdf.wavelength_incidence_samples.add()
 
-            # IW.reflection
+            # iw.reflection
             nb_theta = 10
             nb_phi = 37
-            IW.reflection.integral = 0.5
+            iw.reflection.integral = 0.5
             for p in range(nb_phi):
-                IW.reflection.phi_samples.append(p * 2 * math.pi / (nb_phi - 1))
+                iw.reflection.phi_samples.append(p * 2 * math.pi / (nb_phi - 1))
             for t in range(nb_theta):
-                IW.reflection.theta_samples.append(t * math.pi * 0.5 / (nb_theta - 1))
+                iw.reflection.theta_samples.append(t * math.pi * 0.5 / (nb_theta - 1))
                 for p in range(nb_phi):
-                    IW.reflection.bsdf_cos_theta.append(
-                        0.5 * math.cos(IW.reflection.theta_samples[t]) / math.pi
+                    iw.reflection.bsdf_cos_theta.append(
+                        0.5 * math.cos(iw.reflection.theta_samples[t]) / math.pi
                     )
 
-            # IW.transmission
+            # iw.transmission
             nb_theta = 10
             nb_phi = 37
-            IW.transmission.integral = 0.5
+            iw.transmission.integral = 0.5
             for p in range(nb_phi):
-                IW.transmission.phi_samples.append(p * 2 * math.pi / (nb_phi - 1))
+                iw.transmission.phi_samples.append(p * 2 * math.pi / (nb_phi - 1))
             for t in range(nb_theta):
-                IW.transmission.theta_samples.append(math.pi * 0.5 * (1 + t / (nb_theta - 1)))
+                iw.transmission.theta_samples.append(math.pi * 0.5 * (1 + t / (nb_theta - 1)))
                 for p in range(nb_phi):
-                    IW.transmission.bsdf_cos_theta.append(
-                        0.5 * abs(math.cos(IW.transmission.theta_samples[t])) / math.pi
+                    iw.transmission.bsdf_cos_theta.append(
+                        0.5 * abs(math.cos(iw.transmission.theta_samples[t])) / math.pi
                     )
 
     return bsdf
 
 
 def approx_cmp(a, b):
+    """Approximated comparison of two numbers."""
     return math.fabs(a - b) < 1e-6
 
 
-def compareDiagram(a, b):
+def compare_diagram(a, b):
+    """Approximated comparison of intensity diagrams."""
     if len(a.theta_samples) != len(b.theta_samples):
         return False
     for i, j in zip(a.theta_samples, b.theta_samples):
@@ -110,7 +102,8 @@ def compareDiagram(a, b):
     return True
 
 
-def compareSpectralBsdf(bsdf1, bsdf2):
+def compare_spectral_bsdf(bsdf1, bsdf2):
+    """Compare two spectral bsdf."""
     if bsdf1.description != bsdf2.description:
         return False
     if len(bsdf1.incidence_samples) != len(bsdf2.incidence_samples):
@@ -124,14 +117,15 @@ def compareSpectralBsdf(bsdf1, bsdf2):
         if a != b:
             return False
     for a, b in zip(bsdf1.wavelength_incidence_samples, bsdf2.wavelength_incidence_samples):
-        if not compareDiagram(a.reflection, b.reflection) or not compareDiagram(
+        if not compare_diagram(a.reflection, b.reflection) or not compare_diagram(
             a.transmission, b.transmission
         ):
             return False
     return True
 
 
-def compareSpecularEnhancementData(c1, c2):
+def compare_specular_enhancement_data(c1, c2):
+    """Compare Specular enhancement data."""
     if c1.incidence_nb != c2.incidence_nb:
         return False
     if c1.wavelength_nb != c2.wavelength_nb:
@@ -155,16 +149,17 @@ def compareSpecularEnhancementData(c1, c2):
 
 
 def test_grpc_spectral_bsdf(speos: Speos):
+    """Test to check Spectral bsdf service."""
     stub = spectral_bsdf__v1__pb2_grpc.SpectralBsdfServiceStub(speos.client.channel)
 
     file_name = spectral_bsdf__v1__pb2.FileName()
 
     # Creating spectral bsdf protocol buffer
-    bsdf = createSpectralBsdf()
+    bsdf = create_spectral_bsdf()
 
     # Sending protocol buffer to server
     stub.Import(bsdf)
-    file_name.file_name = os.path.join(test_path, "Spectral.serialized")
+    file_name.file_name = str(Path(test_path) / "Spectral.serialized")
 
     # Exporting to {file_name.file_name}
     stub.ExportFile(file_name)
@@ -178,8 +173,8 @@ def test_grpc_spectral_bsdf(speos: Speos):
     # Exporting anisotropic bsdf protocol buffer
     bsdf2 = stub.Export(Empty())
 
-    assert compareSpectralBsdf(bsdf, bsdf2)
-    file_name.file_name = os.path.join(test_path, "Lambert.anisotropicbsdf")
+    assert compare_spectral_bsdf(bsdf, bsdf2)
+    file_name.file_name = str(Path(test_path) / "Lambert.anisotropicbsdf")
 
     # Writing as {file_name.file_name}
     stub.Save(file_name)
@@ -192,11 +187,11 @@ def test_grpc_spectral_bsdf(speos: Speos):
     # Exporting anisotropic bsdf protocol buffer
     bsdf3 = stub.Export(Empty())
 
-    assert compareSpectralBsdf(bsdf, bsdf3)
+    assert compare_spectral_bsdf(bsdf, bsdf3)
 
     # conoscopic map
     cm = spectral_bsdf__v1__pb2.ConoscopicMap()
-    cm.output_file_name = os.path.join(test_path, "test_conoscopic_spectral.xmp")
+    cm.output_file_name = str(Path(test_path) / "test_conoscopic_spectral.xmp")
     cm.wavelength = 555.0
     cm.side = spectral_bsdf__v1__pb2.ConoscopicMap.TRANSMISSION
     cm.resolution = 512
@@ -222,7 +217,7 @@ def test_grpc_spectral_bsdf(speos: Speos):
     # setting cones back
     stub.SetSpecularInterpolationEnhancementData(cones)
 
-    file_name.file_name = os.path.join(test_path, "tmp_autocut.anisotropicbsdf")
+    file_name.file_name = str(Path(test_path) / "tmp_autocut.anisotropicbsdf")
     # writing result in {file_name.file_name}
     stub.Save(file_name)
     assert helper.does_file_exist(file_name.file_name)
@@ -235,4 +230,4 @@ def test_grpc_spectral_bsdf(speos: Speos):
     cones2 = stub.GetSpecularInterpolationEnhancementData(Empty())
 
     # comparing cones to previous ones
-    assert compareSpecularEnhancementData(cones, cones2)
+    assert compare_specular_enhancement_data(cones, cones2)

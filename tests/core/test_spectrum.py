@@ -20,11 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""
-Test basic using spectrums.
-"""
+"""Test basic using spectrums."""
 
-import os
+from pathlib import Path
 
 from ansys.speos.core import Spectrum, Speos
 from tests.conftest import test_path
@@ -56,7 +54,7 @@ def test_create_spectrum(speos: Speos):
 
     # library
     spectrum1.set_library(
-        file_uri=os.path.join(test_path, "LG_50M_Colorimetric_short.sv5", "Blue Spectrum.spectrum")
+        file_uri=str(Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "Blue Spectrum.spectrum")
     ).commit()
     assert spectrum1.spectrum_link.get().HasField("library")
 
@@ -73,7 +71,7 @@ def test_create_spectrum(speos: Speos):
     assert spectrum1.spectrum_link.get().HasField("predefined")
     assert spectrum1.spectrum_link.get().predefined.HasField("daylightfluorescent")
 
-    spectrum1.set_whiteLED().commit()
+    spectrum1.set_white_led().commit()
     assert spectrum1.spectrum_link.get().HasField("predefined")
     assert spectrum1.spectrum_link.get().predefined.HasField("whiteLED")
 

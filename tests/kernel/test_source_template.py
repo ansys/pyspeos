@@ -20,12 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""
-Test source template.
-"""
+"""Test source template."""
 
 import json
-import os
+from pathlib import Path
 
 import grpc
 import pytest
@@ -76,7 +74,7 @@ def test_source_template(speos: Speos):
             description="Luminaire source template",
             luminaire=ProtoSourceTemplate.Luminaire(
                 flux_from_intensity_file=ProtoSourceTemplate.FromIntensityFile(),
-                intensity_file_uri=os.path.join(test_path, "IES_C_DETECTOR.ies"),
+                intensity_file_uri=str(Path(test_path) / "IES_C_DETECTOR.ies"),
                 spectrum_guid=spec_bb_2500.key,
             ),
         )
@@ -153,7 +151,7 @@ def test_action_get_ray_file_info(speos: Speos):
         message=ProtoSourceTemplate(
             name="Ray-File",
             rayfile=ProtoSourceTemplate.RayFile(
-                ray_file_uri=os.path.join(test_path, "Rays.ray"),
+                ray_file_uri=str(Path(test_path) / "Rays.ray"),
                 flux_from_ray_file=ProtoSourceTemplate.FromRayFile(),
                 spectrum_from_ray_file=ProtoSourceTemplate.RayFile.SpectrumFromRayFile(),
             ),

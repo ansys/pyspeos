@@ -30,7 +30,7 @@ html_favicon = ansys_favicon
 # specify the location of your github repo
 html_theme_options = {
     "logo": "pyansys",
-    "github_url": "https://github.com/ansys-internal/pyspeos",
+    "github_url": "https://github.com/ansys/pyspeos",
     "show_prev_next": False,
     "switcher": {
         "json_url": f"https://{cname}/versions.json",
@@ -132,8 +132,8 @@ if BUILD_EXAMPLES:
         "examples/kernel/object-link": "_static/thumbnails/pySpeos_520x520.png",
         "examples/kernel/scene-job": "_static/thumbnails/pySpeos_520x520.png",
         "examples/kernel/modify-scene": "_static/thumbnails/pySpeos_520x520.png",
-        "examples/workflow/open-result": "_static/thumbnails/how_to_open_result_using_workflow_method.png",
-        "examples/workflow/combine-speos": "_static/thumbnails/moving_car_workflow_example_using_script_layer.PNG",
+        "examples/workflow/open-result": "_static/thumbnails/workflow_open_result.png",
+        "examples/workflow/combine-speos": "_static/thumbnails/workflow_moving_car.PNG",
     }
     nbsphinx_prompt_width = ""
     nbsphinx_prolog = """
@@ -189,13 +189,18 @@ def copy_examples_to_output_dir(app: sphinx.application.Sphinx, exception: Excep
 
     """
     # TODO: investigate issues when using OUTPUT_EXAMPLES instead of SOURCE_EXAMPLES
-    # https://github.com/ansys-internal/pystk/issues/415
     OUTPUT_EXAMPLES = pathlib.Path(app.outdir) / "examples"
     OUTPUT_IMAGES = OUTPUT_EXAMPLES / "img"
     OUTPUT_CORE = OUTPUT_EXAMPLES / "core"
     OUTPUT_KERNEL = OUTPUT_EXAMPLES / "kernel"
     OUTPUT_WORKFLOW = OUTPUT_EXAMPLES / "workflow"
-    for directory in [OUTPUT_EXAMPLES, OUTPUT_IMAGES, OUTPUT_CORE, OUTPUT_KERNEL, OUTPUT_WORKFLOW]:
+    for directory in [
+        OUTPUT_EXAMPLES,
+        OUTPUT_IMAGES,
+        OUTPUT_CORE,
+        OUTPUT_KERNEL,
+        OUTPUT_WORKFLOW,
+    ]:
         if not directory.exists():
             directory.mkdir(parents=True, exist_ok=True)
 
