@@ -76,6 +76,7 @@ class Speos:
         timeout: Optional[int] = 60,
         logging_level: Optional[int] = logging.INFO,
         logging_file: Optional[Union[Path, str]] = None,
+        command_line: Optional[Union[Path, str]] = None,
     ):
         self._client = SpeosClient(
             host=host,
@@ -86,6 +87,7 @@ class Speos:
             timeout=timeout,
             logging_level=logging_level,
             logging_file=logging_file,
+            command_line=command_line,
         )
 
     @property
@@ -93,14 +95,8 @@ class Speos:
         """The ``Speos`` instance client."""
         return self._client
 
-    def close(self, try_kill_server=False) -> bool:
+    def close(self) -> bool:
         """Close the channel and deletes all Speos objects from memory.
-
-        Parameters
-        ----------
-        try_kill_server : bool
-            Decides if the Speos RPC server instance should be closed only works if it is a local
-            instance
 
         Returns
         -------
@@ -112,4 +108,4 @@ class Speos:
         If an instance of the Speos Service was started using
         PyPIM, this instance will be deleted.
         """
-        return self.client.close(try_kill_instance=try_kill_server)
+        return self.client.close()

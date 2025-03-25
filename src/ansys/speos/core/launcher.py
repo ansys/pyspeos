@@ -26,6 +26,7 @@ import os
 from pathlib import Path
 import subprocess
 import tempfile
+from typing import Optional, Union
 
 from ansys.speos.core import LOG as LOGGER
 from ansys.speos.core.kernel.client import DEFAULT_PORT, LATEST_VERSION
@@ -109,6 +110,7 @@ def launch_local_speos_rpc_server(
     message_size: int = MAX_MESSAGE_LENGTH,
     logfile_loc: str = None,
     log_level: int = 20,
+    speos_rpc_loc: Optional[Union[Path, str]] = None,
 ) -> Speos:
     """Launch Speos RPC server locally.
 
@@ -130,29 +132,39 @@ def launch_local_speos_rpc_server(
         The logging level to be applied to the server, integer values can be taken from logging
         module.
         By default, ``logging.WARNING`` = 20.
-
+    speos_rpc_loc : Optional[str, Path]
+        location of Speos rpc executable
 
     Returns
     -------
     ansys.speos.core.speos.Speos
         An instance of the Speos Service.
     """
-    versions = get_available_ansys_installations()
-    ansys_loc = Path(versions.get(int(version)))
-    if not ansys_loc:
-        ansys_loc = Path(os.environ.get("AWP_ROOT{}".format(version)))
-    if not ansys_loc:
-        msg = (
-            "Ansys installation directory is not found."
-            " Please define AWP_ROOT{} environment variable"
-        ).format(version)
-        FileNotFoundError(msg)
-
+    if not speos_rpc_loc:
+        speos_rpc_loc = ""
+    if not speos_rpc_loc or not Path(speos_rpc_loc).exists():
+        versions = get_available_ansys_installations()
+        ansys_loc = Path(versions.get(int(version)))
+        if not ansys_loc:
+            ansys_loc = Path(os.environ.get("AWP_ROOT{}".format(version)))
+        if not ansys_loc:
+            msg = (
+                "Ansys installation directory is not found."
+                " Please define AWP_ROOT{} environment variable"
+            ).format(version)
+            FileNotFoundError(msg)
+        speos_rpc_loc = ansys_loc / "Optical Products" / "SPEOS_RPC"
+    elif Path(speos_rpc_loc).is_file():
+        if "SpeosRPC_Server" not in Path(speos_rpc_loc).name:
+            msg = "Ansys Speos RPC server version {} is not installed.".format(version)
+            FileNotFoundError(msg)
+        else:
+            speos_rpc_loc = Path(speos_rpc_loc).parent
     if os.name == "nt":
-        speos_exec = ansys_loc / "Optical Products" / "SPEOS_RPC" / "SpeosRPC_Server.exe"
+        speos_exec = speos_rpc_loc / "SpeosRPC_Server.exe"
     else:
-        speos_exec = ansys_loc / "OpticalProducts" / "SPEOS_RPC" / "SpeosRPC_Server.x"
-    if not Path.is_file(speos_exec):
+        speos_exec = speos_rpc_loc / "SpeosRPC_Server.x"
+    if not speos_exec.is_file():
         msg = "Ansys Speos RPC server version {} is not installed.".format(version)
         raise FileNotFoundError(msg)
     if not logfile_loc:
@@ -164,7 +176,7 @@ def launch_local_speos_rpc_server(
         logfile = Path(logfile_loc)
         logfile_loc = logfile.parent
     command = [
-        speos_exec,
+        str(speos_exec),
         "-p{}".format(port),
         "-m{}".format(message_size),
         "-l{}".format(str(logfile)),
@@ -174,4 +186,10 @@ def launch_local_speos_rpc_server(
 
     subprocess.Popen(command, stdout=out, stderr=err)
 
-    return Speos(host="localhost", port=port, logging_level=log_level, logging_file=logfile)
+    return Speos(
+        host="localhost",
+        port=port,
+        logging_level=log_level,
+        logging_file=logfile,
+        command_line=speos_exec,
+    )

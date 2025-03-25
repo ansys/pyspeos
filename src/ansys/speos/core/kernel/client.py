@@ -23,7 +23,6 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
 
 import logging
-import os
 from pathlib import Path
 import subprocess
 import time
@@ -64,7 +63,6 @@ from ansys.speos.core.kernel.vop_template import (
     VOPTemplateStub,
 )
 from ansys.speos.core.logger import LOG as LOGGER, PySpeosCustomAdapter
-from ansys.tools.path import get_available_ansys_installations
 
 DEFAULT_HOST = "localhost"
 """Default host used by Speos RPC server and client """
@@ -135,6 +133,8 @@ class SpeosClient:
         By default, ``INFO``.
     logging_file : Optional[str, Path]
         The file to output the log, if requested. By default, ``None``.
+    command_line : Optional[str, Path]
+        location of Speos rpc executable
     """
 
     def __init__(
@@ -147,10 +147,12 @@ class SpeosClient:
         timeout: Optional[int] = 60,
         logging_level: Optional[int] = logging.INFO,
         logging_file: Optional[Union[Path, str]] = None,
+        command_line: Optional[Union[Path, str]] = None,
     ):
         """Initialize the ``SpeosClient`` object."""
         self._closed = False
         self._remote_instance = remote_instance
+        self._command_line = command_line
         if not version:
             self._version = LATEST_VERSION
         else:
@@ -493,14 +495,8 @@ List[ansys.speos.core.kernel.face.FaceLink]]
             lines.append("  Connection: Unhealthy")  # pragma: no cover
         return "\n".join(lines)
 
-    def close(self, try_kill_instance=False):
+    def close(self):
         """Close the channel.
-
-        Parameters
-        ----------
-        try_kill_instance : bool
-            Decides if the Speos RPC server instance should be closed only works if it is a local
-            instance
 
         Returns
         -------
@@ -514,9 +510,8 @@ List[ansys.speos.core.kernel.face.FaceLink]]
         """
         if self._remote_instance:
             self._remote_instance.delete()
-        elif self._host in ["localhost", "0.0.0.0", "127.0.0.1"] and try_kill_instance:
+        elif self._host in ["localhost", "0.0.0.0", "127.0.0.1"]:
             self.__close_local_speos_rpc_server()
-        if not self._closed:
             time.sleep(5)  # takes some seconds to close rpc server
         ret_val = self.healthy
 
@@ -537,26 +532,6 @@ List[ansys.speos.core.kernel.face.FaceLink]]
         return ret_val
 
     def __close_local_speos_rpc_server(self):
-        versions = get_available_ansys_installations()
-        ansys_loc = Path(versions.get(int(self._version)))
-        if not ansys_loc:
-            ansys_loc = Path(os.environ.get("AWP_ROOT{}".format(self._version)))
-        if not ansys_loc:
-            msg = (
-                "Ansys installation directory is not found."
-                " Please define AWP_ROOT{} environment variable"
-            ).format(self._version)
-            FileNotFoundError(msg)
-
-        if os.name == "nt":
-            speos_exec = ansys_loc / "Optical Products" / "SPEOS_RPC" / "SpeosRPC_Server.exe"
-        else:
-            speos_exec = ansys_loc / "OpticalProducts" / "SPEOS_RPC" / "SpeosRPC_Server.x"
-        if not Path.is_file(speos_exec):
-            msg = "Ansys Speos RPC server version {} is not installed.".format(self._version)
-            raise FileNotFoundError(msg)
-
-        command = [speos_exec, "-s{}".format(self._port)]
-
+        command = [self._command_line, "-s{}".format(self._port)]
         p = subprocess.Popen(command)
         p.wait()
