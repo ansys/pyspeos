@@ -51,7 +51,6 @@ def test_find_feature(speos: Speos):
     assert len(p.scene_link.get().sensors) == 1
 
     # Create an radiance sensor in the project
-    # TODO: enhance the initialize method
     sensor2 = p.create_sensor(name="Sensor.2", feature_type=SensorRadiance)
     sensor2.commit()
     assert len(p._features) == 3
