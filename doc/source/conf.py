@@ -188,7 +188,6 @@ def copy_examples_to_output_dir(app: sphinx.application.Sphinx, exception: Excep
         Exception encountered during the building of the documentation.
 
     """
-    # TODO(echambla): #511 investigate issues when using OUTPUT_EXAMPLES instead of SOURCE_EXAMPLES
     OUTPUT_EXAMPLES = pathlib.Path(app.outdir) / "examples"
     OUTPUT_IMAGES = OUTPUT_EXAMPLES / "img"
     OUTPUT_CORE = OUTPUT_EXAMPLES / "core"
@@ -208,7 +207,7 @@ def copy_examples_to_output_dir(app: sphinx.application.Sphinx, exception: Excep
     EXAMPLES_DIRECTORY = SOURCE_EXAMPLES.parent.parent.parent / "examples"
 
     # Copyt the examples
-    examples = list(EXAMPLES_DIRECTORY.glob("*.py"))
+    examples = list(EXAMPLES_DIRECTORY.glob("**/*.py"))
     for file in status_iterator(
         examples,
         "Copying example to doc/_build/examples/",
