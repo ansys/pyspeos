@@ -512,9 +512,10 @@ List[ansys.speos.core.kernel.face.FaceLink]]
             self._remote_instance.delete()
         elif self._host in ["localhost", "0.0.0.0", "127.0.0.1"]:
             self.__close_local_speos_rpc_server()
-            time.sleep(5)  # takes some seconds to close rpc server
-        ret_val = self.healthy
-
+            waittime = 0
+            while self.healthy or waittime > 15:
+                time.sleep(1)
+                waittime += 1  # takes some seconds to close rpc server
         self._closed = True
         self._channel.close()
         self._faceDB = None
@@ -529,7 +530,7 @@ List[ansys.speos.core.kernel.face.FaceLink]]
         self._simulationTemplateDB = None
         self._sceneDB = None
         self._jobDB = None
-        return ret_val
+        return not self.healthy
 
     def __close_local_speos_rpc_server(self):
         command = [self._command_line, "-s{}".format(self._port)]

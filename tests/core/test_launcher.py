@@ -22,8 +22,6 @@
 
 """Test launcher."""
 
-import time
-
 import psutil
 
 from ansys.speos.core.launcher import launch_local_speos_rpc_server
@@ -41,8 +39,7 @@ def test_local_session():
         name = "SpeosRPC_Server.exe"
     test_speos = launch_local_speos_rpc_server(port=port, speos_rpc_loc=speos_loc)
     running = name in (p.name() for p in psutil.process_iter())
-    assert running
-    test_speos.close()
-    time.sleep(5)
+    assert running is test_speos.client.healthy
+    closed = test_speos.close()
     running = name in (p.name() for p in psutil.process_iter())
-    assert not running
+    assert running is not closed
