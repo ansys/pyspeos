@@ -50,7 +50,6 @@ if BUILD_CHEATSHEET:
         "pages": ["index"],
     }
 
-
 # Sphinx extensions
 extensions = [
     "numpydoc",
@@ -177,7 +176,7 @@ if BUILD_EXAMPLES:
         cname_pref=f"https://{cname}/version/{get_version_match(version)}",
         python_file_loc="{{ env.docname }}.py",
         ipynb_file_loc="{{ env.docname }}.ipynb",
-        assets_loc="_static/assets/download/"
+        assets_loc="_static/assets/download/",
     )
 
 
@@ -285,11 +284,11 @@ def copy_assets_to_output_dir(app: sphinx.application.Sphinx, exception: Excepti
         Exception encountered during the building of the documentation.
     """
     SOURCE_ASSETS = pathlib.Path(app.outdir) / "_static" / "assets" / "download"
-    ASSETS_DIRECTORY = SOURCE_ASSETS.parent.parent.parent / "tests" / "assets"
+    ASSETS_DIRECTORY = pathlib.Path(app.outdir).parent.parent.parent / "tests" / "assets"
 
     logger = logging.getLogger(__name__)
     logger.info("Extracting assets to output directory...")
-    zip_path = pathlib.Path(shutil.make_archive("assets", 'zip', ASSETS_DIRECTORY))
+    zip_path = pathlib.Path(shutil.make_archive("assets", "zip", ASSETS_DIRECTORY))
     zip_path = shutil.move(zip_path, SOURCE_ASSETS / zip_path.name)
     logger.info(f"Extracted assets to {zip_path}.")
 
