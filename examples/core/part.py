@@ -17,6 +17,8 @@ from ansys.speos.core import Body, Face, Part, Project, Speos
 tests_data_path = Path("/app") / "assets"
 # If using local server
 # tests_data_path = Path().resolve().parent.parent / "tests" / "assets"
+# If using a different path
+# tests_data_path = Path("path/to/downloaded/example/assets")
 # -
 
 # ## Create connection with speos rpc server
