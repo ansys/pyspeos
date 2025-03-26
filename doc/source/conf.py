@@ -138,8 +138,9 @@ if BUILD_EXAMPLES:
     nbsphinx_prompt_width = ""
     nbsphinx_prolog = """
 
-    .. grid:: 3
-        :gutter: 1
+    .. grid:: 5
+
+        .. grid-item::
 
         .. grid-item::
             :child-align: center
@@ -159,12 +160,24 @@ if BUILD_EXAMPLES:
 
                 Download as Jupyter notebook :fas:`book`
 
+        .. grid-item::
+            :child-align: center
+
+            .. button-link:: {cname_pref}/{assets_loc}
+               :color: primary
+               :shadow:
+
+                Download example's assets :fa:`file`
+
+        .. grid-item::
+
 ----
 
     """.format(
         cname_pref=f"https://{cname}/version/{get_version_match(version)}",
         python_file_loc="{{ env.docname }}.py",
         ipynb_file_loc="{{ env.docname }}.ipynb",
+        assets_loc="_static/assets/download/"
     )
 
 
@@ -261,6 +274,26 @@ def copy_examples_files_to_source_dir(app: sphinx.application.Sphinx):
         destination_file.write_text(file.read_text(encoding="utf-8"), encoding="utf-8")
 
 
+def copy_assets_to_output_dir(app: sphinx.application.Sphinx, exception: Exception):
+    """Copy the assets directory to the output directory of the documentation.
+
+    Parameters
+    ----------
+    app : sphinx.application.Sphinx
+        Sphinx application instance containing the all the doc build configuration.
+    exception : Exception
+        Exception encountered during the building of the documentation.
+    """
+    SOURCE_ASSETS = pathlib.Path(app.outdir) / "_static" / "assets" / "download"
+    ASSETS_DIRECTORY = SOURCE_ASSETS.parent.parent.parent / "tests" / "assets"
+
+    logger = logging.getLogger(__name__)
+    logger.info("Extracting assets to output directory...")
+    zip_path = pathlib.Path(shutil.make_archive("assets", 'zip', ASSETS_DIRECTORY))
+    zip_path = shutil.move(zip_path, SOURCE_ASSETS / zip_path.name)
+    logger.info(f"Extracted assets to {zip_path}.")
+
+
 def remove_examples_from_source_dir(app: sphinx.application.Sphinx, exception: Exception):
     """
     Remove the example files from the documentation source directory.
@@ -297,4 +330,5 @@ def setup(app: sphinx.application.Sphinx):
     if BUILD_EXAMPLES:
         app.connect("builder-inited", copy_examples_files_to_source_dir)
         app.connect("build-finished", remove_examples_from_source_dir)
+        app.connect("build-finished", copy_assets_to_output_dir)
         app.connect("build-finished", copy_examples_to_output_dir)
