@@ -27,6 +27,7 @@ from pathlib import Path
 import subprocess
 import tempfile
 from typing import Optional, Union
+import warnings
 
 from ansys.speos.core import LOG as LOGGER
 from ansys.speos.core.kernel.client import DEFAULT_PORT, LATEST_VERSION
@@ -143,6 +144,10 @@ def launch_local_speos_rpc_server(
     if not speos_rpc_loc:
         speos_rpc_loc = ""
     if not speos_rpc_loc or not Path(speos_rpc_loc).exists():
+        if not Path(speos_rpc_loc).exists():
+            warnings.warn(
+                "Provide executable location not found looking for local installation", UserWarning
+            )
         versions = get_available_ansys_installations()
         ansys_loc = versions.get(int(version))
         if not ansys_loc:

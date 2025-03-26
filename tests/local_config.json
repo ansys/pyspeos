@@ -1,6 +1,5 @@
 {
   "SpeosServerOnDocker": true,
   "SpeosContainerName" : "speos-rpc",
-  "SpeosServerPort": 50098,
-  "SpeosDockerLocation": "/app/SpeosRPC_Server.x"
+  "SpeosServerPort": 50098
 }
