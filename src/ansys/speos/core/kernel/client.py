@@ -508,14 +508,14 @@ List[ansys.speos.core.kernel.face.FaceLink]]
         If an instance of the Speos Service was started using
         PyPIM, this instance will be deleted.
         """
+        wait_time = 0
         if self._remote_instance:
             self._remote_instance.delete()
         elif self._host in ["localhost", "0.0.0.0", "127.0.0.1"]:
             self.__close_local_speos_rpc_server()
-            waittime = 0
-            while self.healthy or waittime > 15:
+            while self.healthy or wait_time > 15:
                 time.sleep(1)
-                waittime += 1  # takes some seconds to close rpc server
+                wait_time += 1  # takes some seconds to close rpc server
         self._closed = True
         self._channel.close()
         self._faceDB = None
@@ -530,7 +530,10 @@ List[ansys.speos.core.kernel.face.FaceLink]]
         self._simulationTemplateDB = None
         self._sceneDB = None
         self._jobDB = None
-        return not self.healthy
+        if wait_time > 15:
+            return self.healthy
+        else:
+            return True
 
     def __close_local_speos_rpc_server(self):
         command = [self._command_line, "-s{}".format(self._port)]
