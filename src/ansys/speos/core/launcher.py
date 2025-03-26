@@ -170,11 +170,11 @@ def launch_local_speos_rpc_server(
     if not logfile_loc:
         logfile_loc = Path(tempfile.gettempdir()) / ".ansys"
         logfile = logfile_loc / "speos_rpc.log"
-        if not logfile_loc.exists():
-            logfile_loc.mkdir()
     else:
         logfile = Path(logfile_loc)
         logfile_loc = logfile.parent
+    if not logfile_loc.exists():
+        logfile_loc.mkdir()
     command = [
         str(speos_exec),
         "-p{}".format(port),
