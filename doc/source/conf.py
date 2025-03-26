@@ -296,6 +296,7 @@ def copy_assets_to_output_dir(app: sphinx.application.Sphinx, exception: Excepti
     else:
         logger.info(f"Skip assets extraction with build {app.builder.name}.")
 
+
 def remove_examples_from_source_dir(app: sphinx.application.Sphinx, exception: Exception):
     """
     Remove the example files from the documentation source directory.
