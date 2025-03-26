@@ -144,16 +144,16 @@ def launch_local_speos_rpc_server(
         speos_rpc_loc = ""
     if not speos_rpc_loc or not Path(speos_rpc_loc).exists():
         versions = get_available_ansys_installations()
-        ansys_loc = Path(versions.get(int(version)))
+        ansys_loc = versions.get(int(version))
         if not ansys_loc:
-            ansys_loc = Path(os.environ.get("AWP_ROOT{}".format(version)))
+            ansys_loc = os.environ.get("AWP_ROOT{}".format(version))
         if not ansys_loc:
             msg = (
                 "Ansys installation directory is not found."
                 " Please define AWP_ROOT{} environment variable"
             ).format(version)
             FileNotFoundError(msg)
-        speos_rpc_loc = ansys_loc / "Optical Products" / "SPEOS_RPC"
+        speos_rpc_loc = Path(ansys_loc) / "Optical Products" / "SPEOS_RPC"
     elif Path(speos_rpc_loc).is_file():
         if "SpeosRPC_Server" not in Path(speos_rpc_loc).name:
             msg = "Ansys Speos RPC server version {} is not installed.".format(version)
