@@ -39,6 +39,7 @@ dependencies=[
 
 [project.optional-dependencies]
 tests = [
+    "psutil==6.1.1",
     "pytest==8.3.5",
     "ansys-platform-instancemanagement>=1.0.3",
     "pytest-cov==6.0.0",
