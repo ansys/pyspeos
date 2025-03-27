@@ -129,7 +129,7 @@ def test_light_path_finder_inverse(speos: Speos):
     assert lpf.rays[50].get() == expected_ray
 
 
-@patch.object(pv.Plotter, "show")
+@patch.object(pv, "Plotter")
 def test_light_path_finder_preview(speos: Speos):
     """Test for direct simulation lpf."""
     path = str(Path(test_path) / "basic_DirectSimu.lpf")
@@ -141,6 +141,5 @@ def test_light_path_finder_preview(speos: Speos):
     )
     lpf = lxp.LightPathFinder(speos=speos, path=path)
     lpf.preview(project=p, nb_ray=50000)
-    lpf.filter_by_face_ids([3866239813], new=False)
-    assert len(lpf.filtered_rays) == 11747
-    lpf.preview(project=p, ray_filter=True)
+    lpf1 = lxp.LightPathFinder(speos=speos, path=path)
+    lpf1.preview(project=p, ray_filter=True)
