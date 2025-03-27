@@ -1598,7 +1598,7 @@ class SensorCamera(BaseSensor):
 
     @property
     def photometric(self) -> Union[SensorCamera.Photometric, None]:
-        """Property containing the instance of Camera.Photometric used to build the sensor.
+        """Property containing the instance of SensorCamera.Photometric used to build the sensor.
 
         Returns
         -------
