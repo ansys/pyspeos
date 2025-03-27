@@ -128,7 +128,6 @@ def test_light_path_finder_inverse(speos: Speos):
     assert lpf.rays[50].get() == expected_ray
 
 
-@patch.object(pv.Plotter, "show")
 def test_light_path_finder_preview(speos: Speos):
     """Test for direct simulation lpf."""
     path = str(Path(test_path) / "basic_DirectSimu.lpf")
