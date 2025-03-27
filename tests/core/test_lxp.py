@@ -68,7 +68,14 @@ def test_light_path_finder_direct(speos: Speos):
     assert len(lpf.filtered_rays) == 11747
     lpf.filter_error_rays()
     assert len(lpf.filtered_rays) == 0
-    assert lpf.rays[50].get() == expected_ray
+    assert lpf.rays[50].nb_impacts == expected_ray["nb_impacts"]
+    assert lpf.rays[50].impacts == expected_ray["impacts"]
+    assert lpf.rays[50].wl == expected_ray["wl"]
+    assert lpf.rays[50].body_ids == expected_ray["body_ids"]
+    assert lpf.rays[50].face_ids == expected_ray["face_ids"]
+    assert lpf.rays[50].last_direction == expected_ray["last_direction"]
+    assert lpf.rays[50].intersection_type == expected_ray["intersection_type"]
+    assert lpf.rays[50].sensor_contribution == expected_ray["sensor_contribution"]
 
 
 def test_light_path_finder_inverse(speos: Speos):
@@ -133,6 +140,11 @@ def test_light_path_finder_inverse(speos: Speos):
 def test_light_path_finder_preview(speos: Speos):
     """Test for direct simulation lpf."""
     path = str(Path(test_path) / "basic_DirectSimu.lpf")
+    lpf1 = lxp.LightPathFinder(speos=speos, path=path)
+    lpf1.filter_by_body_ids([3601101451])
+    lpf1.filter_by_face_ids([3866239813], new=False)
+    lpf1.remove_error_rays()
+    lpf1.preview(ray_filter=True)
     p = Project(
         speos=speos,
         path=str(
@@ -141,5 +153,3 @@ def test_light_path_finder_preview(speos: Speos):
     )
     lpf = lxp.LightPathFinder(speos=speos, path=path)
     lpf.preview(project=p, nb_ray=50000)
-    lpf1 = lxp.LightPathFinder(speos=speos, path=path)
-    lpf1.preview(project=p, ray_filter=True)
