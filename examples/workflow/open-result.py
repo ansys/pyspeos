@@ -10,11 +10,11 @@ from ansys.speos.core import Project, Speos
 from ansys.speos.core.simulation import SimulationDirect
 
 # If using docker container
-tests_data_path = Path("/app") / "assets"
+assets_data_path = Path("/app") / "assets"
 # If using local server
-# tests_data_path = Path().resolve().parent.parent / "tests" / "assets"
+# assets_data_path = Path().resolve().parent.parent / "tests" / "assets"
 # If using a different path
-# tests_data_path = Path("path/to/downloaded/example/assets")
+# assets_data_path = Path("path/to/downloaded/example/assets")
 # -
 
 # ## Create connection with speos rpc server
@@ -28,7 +28,7 @@ speos = Speos(host="localhost", port=50098)
 # +
 p = Project(
     speos=speos,
-    path=str(tests_data_path / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"),
+    path=str(assets_data_path / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"),
 )
 print(p)
 # -
