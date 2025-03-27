@@ -33,9 +33,11 @@ from ansys.speos.core.kernel.scene import ProtoScene
 from ansys.speos.core.kernel.sensor_template import ProtoSensorTemplate
 
 # If using docker container
-tests_data_path = Path("/app") / "assets"
+assets_data_path = Path("/app") / "assets"
 # If using local server
-# tests_data_path = Path().resolve().parent.parent / "tests" / "assets"
+# assets_data_path = Path().resolve().parent.parent / "tests" / "assets"
+# If using a different path
+# assets_data_path = Path("path/to/downloaded/example/assets")
 # -
 
 # Create connection with speos rpc server
@@ -49,7 +51,7 @@ speos = Speos(host="localhost", port=50098)
 # +
 my_scene = speos.client.scenes().create()
 
-speos_file = str(tests_data_path / "Inverse_SeveralSensors.speos" / "Inverse_SeveralSensors.speos")
+speos_file = str(assets_data_path / "Inverse_SeveralSensors.speos" / "Inverse_SeveralSensors.speos")
 my_scene.load_file(file_uri=speos_file)
 # -
 
@@ -108,7 +110,7 @@ print(my_scene.get().sensors[0])  # Do another get() to check new value on datab
 
 # +
 new_distortion_file = str(
-    tests_data_path / "CameraInputFiles" / "CameraDistortion_150deg.OPTDistortion"
+    assets_data_path / "CameraInputFiles" / "CameraDistortion_150deg.OPTDistortion"
 )
 
 # Retrieve SensorTemplateLink corresponding to camera_i_0.sensor_guid
@@ -141,18 +143,18 @@ photometric = sensor_t_data.camera_sensor_template.sensor_mode_photometric
 photometric.acquisition_integration = 0.01
 photometric.acquisition_lag_time = 0
 photometric.transmittance_file_uri = str(
-    tests_data_path / "CameraInputFiles" / "CameraTransmittance.spectrum"
+    assets_data_path / "CameraInputFiles" / "CameraTransmittance.spectrum"
 )
 photometric.gamma_correction = 2.2
 photometric.png_bits = camera_sensor_pb2.EnumSensorCameraPNGBits.PNG_16
 photometric.color_mode_color.red_spectrum_file_uri = str(
-    tests_data_path / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
+    assets_data_path / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
 )
 photometric.color_mode_color.green_spectrum_file_uri = str(
-    tests_data_path / "CameraInputFiles" / "CameraSensitivityGreen.spectrum"
+    assets_data_path / "CameraInputFiles" / "CameraSensitivityGreen.spectrum"
 )
 photometric.color_mode_color.blue_spectrum_file_uri = str(
-    tests_data_path / "CameraInputFiles" / "CameraSensitivityBlue.spectrum"
+    assets_data_path / "CameraInputFiles" / "CameraSensitivityBlue.spectrum"
 )
 photometric.color_mode_color.balance_mode_none.SetInParent()
 photometric.wavelengths_range.w_start = 400
@@ -162,7 +164,7 @@ sensor_t_data.camera_sensor_template.focal_length = 5
 sensor_t_data.camera_sensor_template.imager_distance = 10
 sensor_t_data.camera_sensor_template.f_number = 20
 sensor_t_data.camera_sensor_template.distortion_file_uri = str(
-    tests_data_path / "CameraInputFiles" / "CameraDistortion_130deg.OPTDistortion"
+    assets_data_path / "CameraInputFiles" / "CameraDistortion_130deg.OPTDistortion"
 )
 sensor_t_data.camera_sensor_template.horz_pixel = 640
 sensor_t_data.camera_sensor_template.vert_pixel = 480

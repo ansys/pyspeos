@@ -9,9 +9,11 @@ from ansys.speos.core import LightPathFinder, Project, Speos
 from ansys.speos.core.simulation import SimulationInteractive
 
 # If using docker container
-tests_data_path = Path("/app") / "assets"
+assets_data_path = Path("/app") / "assets"
 # If using local server
-# tests_data_path = Path().resolve().parent.parent / "tests" / "assets"
+# assets_data_path = Path().resolve().parent.parent / "tests" / "assets"
+# If using a different path
+# assets_data_path = Path("path/to/downloaded/example/assets")
 # -
 
 # ## Create connection with speos rpc server
@@ -34,7 +36,7 @@ speos = Speos(host="localhost", port=50098)
 # +
 p = Project(
     speos=speos,
-    path=str(tests_data_path / "error_data.speos" / "error_data.speos"),
+    path=str(assets_data_path / "error_data.speos" / "error_data.speos"),
 )
 p.preview(viz_args={"opacity": 0.7})
 # -

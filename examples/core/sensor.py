@@ -15,9 +15,11 @@ from ansys.speos.core.sensor import (
 )
 
 # If using docker container
-tests_data_path = Path("/app") / "assets"
+assets_data_path = Path("/app") / "assets"
 # If using local server
-# tests_data_path = Path().resolve().parent.parent / "tests" / "assets"
+# assets_data_path = Path().resolve().parent.parent / "tests" / "assets"
+# If using a different path
+# assets_data_path = Path("path/to/downloaded/example/assets")
 # -
 
 # ## Create connection with speos rpc server
@@ -43,12 +45,14 @@ print(p)
 
 # +
 distortion_file_path = str(
-    tests_data_path / "CameraInputFiles" / "CameraDistortion_130deg.OPTDistortion"
+    assets_data_path / "CameraInputFiles" / "CameraDistortion_130deg.OPTDistortion"
 )
-transmittance_file_path = str(tests_data_path / "CameraInputFiles" / "CameraTransmittance.spectrum")
-blue_spectrum_path = str(tests_data_path / "CameraInputFiles" / "CameraSensitivityBlue.spectrum")
-green_spectrum_path = str(tests_data_path / "CameraInputFiles" / "CameraSensitivityGreen.spectrum")
-red_spectrum_path = str(tests_data_path / "CameraInputFiles" / "CameraSensitivityRed.spectrum")
+transmittance_file_path = str(
+    assets_data_path / "CameraInputFiles" / "CameraTransmittance.spectrum"
+)
+blue_spectrum_path = str(assets_data_path / "CameraInputFiles" / "CameraSensitivityBlue.spectrum")
+green_spectrum_path = str(assets_data_path / "CameraInputFiles" / "CameraSensitivityGreen.spectrum")
+red_spectrum_path = str(assets_data_path / "CameraInputFiles" / "CameraSensitivityRed.spectrum")
 
 sensor1 = p.create_sensor(name="Camera.1", feature_type=SensorCamera)
 sensor1.set_distortion_file_uri(uri=distortion_file_path)
@@ -82,12 +86,14 @@ print(sensor1)
 
 # +
 distortion_file_path = str(
-    tests_data_path / "CameraInputFiles" / "CameraDistortion_130deg.OPTDistortion"
+    assets_data_path / "CameraInputFiles" / "CameraDistortion_130deg.OPTDistortion"
 )
-transmittance_file_path = str(tests_data_path / "CameraInputFiles" / "CameraTransmittance.spectrum")
-blue_spectrum_path = str(tests_data_path / "CameraInputFiles" / "CameraSensitivityBlue.spectrum")
-green_spectrum_path = str(tests_data_path / "CameraInputFiles" / "CameraSensitivityGreen.spectrum")
-red_spectrum_path = str(tests_data_path / "CameraInputFiles" / "CameraSensitivityRed.spectrum")
+transmittance_file_path = str(
+    assets_data_path / "CameraInputFiles" / "CameraTransmittance.spectrum"
+)
+blue_spectrum_path = str(assets_data_path / "CameraInputFiles" / "CameraSensitivityBlue.spectrum")
+green_spectrum_path = str(assets_data_path / "CameraInputFiles" / "CameraSensitivityGreen.spectrum")
+red_spectrum_path = str(assets_data_path / "CameraInputFiles" / "CameraSensitivityRed.spectrum")
 
 sensor2 = p.create_sensor(name="Camera.2", feature_type=SensorCamera)
 sensor2.set_distortion_file_uri(uri=distortion_file_path)
