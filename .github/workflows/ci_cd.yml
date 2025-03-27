@@ -126,7 +126,9 @@ jobs:
 
       - name: Installing OS packages
         shell: bash
-        run: sudo apt-get update && apt install -y libgl1-mesa-glx xvfb libgomp1
+        run: |
+          sudo apt-get update
+          sudo apt install -y libgl1-mesa-glx xvfb libgomp1
 
       - name: Set up Python
         uses: actions/setup-python@v5
