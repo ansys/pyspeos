@@ -40,6 +40,7 @@ from ansys.speos.core.speos import Speos
 
 try:
     import pyvista as pv
+
     pv.OFF_SCREEN = True
     pv.global_theme.window_size = [500, 500]
 except ImportError:
