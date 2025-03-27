@@ -396,7 +396,7 @@ class LightPathFinder:
                     self._filtered_rays.append(ray)
         return self
 
-    def filter_error_rays(self) -> LightPathFinder:
+    def filter_error_rays(self, new=True) -> LightPathFinder:
         """Filter ray paths and only shows rays in error.
 
         Returns
@@ -404,7 +404,7 @@ class LightPathFinder:
         ansys.speos.core.lxp.LightPathFinder
             LightPathFinder Instance.
         """
-        self.__filter_by_last_intersection_types(options=ERROR_IDS)
+        self.__filter_by_last_intersection_types(options=ERROR_IDS, new=new)
         return self
 
     def remove_error_rays(self) -> LightPathFinder:
