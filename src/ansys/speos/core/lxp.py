@@ -477,7 +477,7 @@ class LightPathFinder:
         """
         if screenshot is not None:
             screenshot = Path(screenshot)
- 
+
         if ray_filter:
             if len(self._filtered_rays) > 0:
                 temp_rays = self._filtered_rays

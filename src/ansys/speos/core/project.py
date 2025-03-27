@@ -925,7 +925,11 @@ class Project:
         p.add_mesh(_preview_mesh, show_edges=True, **viz_args)
         return p
 
-    def preview(self, viz_args=None, screenshot: Optional[Union[str, Path]] = None,) -> None:
+    def preview(
+        self,
+        viz_args=None,
+        screenshot: Optional[Union[str, Path]] = None,
+    ) -> None:
         """Preview cad bodies inside the project's scene.
 
         Parameters

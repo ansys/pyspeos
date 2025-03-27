@@ -40,6 +40,7 @@ from ansys.speos.core.speos import Speos
 
 IMAGE_RESULTS_DIR = Path(Path(__file__).parent, "image_results")
 
+
 @pytest.fixture(scope="session")
 def speos():
     """Pytest ficture to create Speos objects for all unit, integration and workflow tests.

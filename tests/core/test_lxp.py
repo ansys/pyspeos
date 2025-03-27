@@ -129,4 +129,6 @@ def test_light_path_finder_preview(speos: Speos):
     """Test for direct simulation lpf."""
     path = str(Path(test_path) / "basic_DirectSimu.lpf")
     lpf = lxp.LightPathFinder(speos=speos, path=path)
-    lpf.preview(screenshot=Path(IMAGE_RESULTS_DIR, "test_light_path_finder_preview.png"),)
+    lpf.preview(
+        screenshot=Path(IMAGE_RESULTS_DIR, "test_light_path_finder_preview.png"),
+    )
