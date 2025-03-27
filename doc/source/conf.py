@@ -16,6 +16,8 @@ from ansys.speos.core import __version__
 LaTeXBuilder.supported_image_types = ["image/png", "image/pdf", "image/svg+xml"]
 os.environ["DOCUMENTATION_BUILDING"] = "true"
 
+logger = logging.getLogger(__name__)
+
 # Project information
 project = "ansys-speos-core"
 copyright = f"(c) {datetime.now().year} ANSYS, Inc. All rights reserved"
@@ -283,14 +285,16 @@ def copy_assets_to_output_dir(app: sphinx.application.Sphinx, exception: Excepti
     exception : Exception
         Exception encountered during the building of the documentation.
     """
-    SOURCE_ASSETS = pathlib.Path(app.outdir) / "_static" / "assets" / "download"
-    ASSETS_DIRECTORY = pathlib.Path(app.outdir).parent.parent.parent / "tests" / "assets"
+    if app.builder.name == "html":
+        SOURCE_ASSETS = pathlib.Path(app.outdir) / "_static" / "assets" / "download"
+        ASSETS_DIRECTORY = pathlib.Path(app.outdir).parent.parent.parent / "tests" / "assets"
 
-    logger = logging.getLogger(__name__)
-    logger.info("Extracting assets to output directory...")
-    zip_path = pathlib.Path(shutil.make_archive("assets", "zip", ASSETS_DIRECTORY))
-    zip_path = shutil.move(zip_path, SOURCE_ASSETS / zip_path.name)
-    logger.info(f"Extracted assets to {zip_path}.")
+        logger.info("Extracting assets to output directory...")
+        zip_path = pathlib.Path(shutil.make_archive("assets", "zip", ASSETS_DIRECTORY))
+        zip_path = shutil.move(zip_path, SOURCE_ASSETS / zip_path.name)
+        logger.info(f"Extracted assets to {zip_path}.")
+    else:
+        logger.info(f"Skip assets extraction with build {app.builder.name}.")
 
 
 def remove_examples_from_source_dir(app: sphinx.application.Sphinx, exception: Exception):
@@ -306,7 +310,6 @@ def remove_examples_from_source_dir(app: sphinx.application.Sphinx, exception: E
 
     """
     EXAMPLES_DIRECTORY = pathlib.Path(app.srcdir) / "examples"
-    logger = logging.getLogger(__name__)
     logger.info(f"\nRemoving {EXAMPLES_DIRECTORY} directory...")
     shutil.rmtree(EXAMPLES_DIRECTORY)
 
