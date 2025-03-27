@@ -27,6 +27,8 @@ from unittest.mock import patch
 
 import pyvista as pv
 
+import ansys.api.speos.lpf.v2.lpf_file_reader_pb2 as lpf_file_reader__v2__pb2
+import ansys.api.speos.lpf.v2.lpf_file_reader_pb2_grpc as lpf_file_reader__v2__pb2_grpc
 import ansys.speos.core.lxp as lxp
 from ansys.speos.core.project import Project
 from ansys.speos.core.speos import Speos
@@ -68,14 +70,7 @@ def test_light_path_finder_direct(speos: Speos):
     assert len(lpf.filtered_rays) == 11747
     lpf.filter_error_rays()
     assert len(lpf.filtered_rays) == 0
-    assert lpf.rays[50].nb_impacts == expected_ray["nb_impacts"]
-    assert lpf.rays[50].impacts == expected_ray["impacts"]
-    assert lpf.rays[50].wl == expected_ray["wl"]
-    assert lpf.rays[50].body_ids == expected_ray["body_ids"]
-    assert lpf.rays[50].face_ids == expected_ray["face_ids"]
-    assert lpf.rays[50].last_direction == expected_ray["last_direction"]
-    assert lpf.rays[50].intersection_type == expected_ray["intersection_type"]
-    assert lpf.rays[50].sensor_contribution == expected_ray["sensor_contribution"]
+    assert lpf.rays[50].get() == expected_ray
 
 
 def test_light_path_finder_inverse(speos: Speos):
@@ -138,7 +133,7 @@ def test_light_path_finder_inverse(speos: Speos):
 
 @patch.object(pv, "Plotter")
 def test_light_path_finder_preview(speos: Speos):
-    """Test for direct simulation lpf."""
+    """Test for visualizing lpf data."""
     path = str(Path(test_path) / "basic_DirectSimu.lpf")
     lpf1 = lxp.LightPathFinder(speos=speos, path=path)
     lpf1.filter_by_body_ids([3601101451])
@@ -153,3 +148,43 @@ def test_light_path_finder_preview(speos: Speos):
     )
     lpf = lxp.LightPathFinder(speos=speos, path=path)
     lpf.preview(project=p, nb_ray=50000)
+
+
+def test_ray_path(speos: Speos):
+    """Test for RayPath class."""
+    path = str(Path(test_path) / "basic_DirectSimu.lpf")
+    expected_ray = {
+        "nb_impacts": 4,
+        "impacts": [
+            [0.0, 0.0, 0.0],
+            [1.6715503931045532, 15.0, 6.686765193939209],
+            [2.4986863136291504, 27.193265914916992, 9.995587348937988],
+            [5.421861171722412, 65.0, 21.68793296813965],
+        ],
+        "wl": 779.0769653320312,
+        "body_ids": [2001802324, 2001802324, 2001802324, 3601101451],
+        "face_ids": [1815582994, 1815582994, 2122462972, 3866239813],
+        "last_direction": [
+            0.07366610318422318,
+            -0.9527596235275269,
+            0.2946563959121704,
+        ],
+        "intersection_type": [5, 1, 1, -1],
+        "sensor_contribution": None,
+    }
+    stub_data = lpf_file_reader__v2__pb2_grpc.LpfFileReader_MonoStub(speos.client.channel)
+    stub_data.InitLpfFileName(
+        lpf_file_reader__v2__pb2.InitLpfFileName_Request_Mono(lpf_file_uri=path)
+    )
+    info = stub_data.GetInformation(lpf_file_reader__v2__pb2.GetInformation_Request_Mono())
+    rps = [rp for rp in stub_data.Read(lpf_file_reader__v2__pb2.Read_Request_Mono())]
+
+    ray = lxp.RayPath(rps[50], info.has_sensor_contributions)
+    assert ray.nb_impacts == expected_ray["nb_impacts"]
+    assert ray.impacts == expected_ray["impacts"]
+    assert ray.wl == expected_ray["wl"]
+    assert ray.body_ids == expected_ray["body_ids"]
+    assert ray.face_ids == expected_ray["face_ids"]
+    assert ray.last_direction == expected_ray["last_direction"]
+    assert ray.intersection_type == expected_ray["intersection_type"]
+    assert ray.sensor_contribution == expected_ray["sensor_contribution"]
