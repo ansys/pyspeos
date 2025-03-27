@@ -20,9 +20,11 @@ from ansys.speos.core.simulation import SimulationDirect
 from ansys.speos.core.source import SourceSurface
 
 # If using docker container
-tests_data_path = Path("/app") / "assets"
+assets_data_path = Path("/app") / "assets"
 # If using local server
-# tests_data_path = Path().resolve().parent.parent / "tests" / "assets"
+# assets_data_path = Path().resolve().parent.parent / "tests" / "assets"
+# If using a different path
+# assets_data_path = Path("path/to/downloaded/example/assets")
 # -
 
 # ## Create connection with speos rpc server
@@ -148,7 +150,7 @@ print(p.find(name="Sensor.1"))
 # +
 p2 = Project(
     speos=speos,
-    path=str(tests_data_path / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"),
+    path=str(assets_data_path / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"),
 )
 print(p2)
 # -

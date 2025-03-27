@@ -13,9 +13,11 @@ from ansys.speos.core import GeoRef, Project, Speos
 from ansys.speos.core.simulation import SimulationInteractive, SimulationInverse
 
 # If using docker container
-tests_data_path = Path("/app") / "assets"
+assets_data_path = Path("/app") / "assets"
 # If using local server
-# tests_data_path = Path().resolve().parent.parent / "tests" / "assets"
+# assets_data_path = Path().resolve().parent.parent / "tests" / "assets"
+# If using a different path
+# assets_data_path = Path("path/to/downloaded/example/assets")
 # -
 
 # ## Create connection with speos rpc server
@@ -101,7 +103,7 @@ print(simulation1)
 simulation2_direct = p.create_simulation(name="Simulation.2")
 
 simulation2_direct.set_ambient_material_file_uri(
-    uri=str(tests_data_path / "AIR.material")
+    uri=str(assets_data_path / "AIR.material")
 ).set_colorimetric_standard_CIE_1964().set_weight_none().set_geom_distance_tolerance(
     0.01
 ).set_max_impact(200).set_dispersion(False)
@@ -130,7 +132,7 @@ print(p)
 # If you don't, you will still only watch what is committed on the server.
 
 # +
-simulation1.set_ambient_material_file_uri(uri=str(tests_data_path / "AIR.material"))
+simulation1.set_ambient_material_file_uri(uri=str(assets_data_path / "AIR.material"))
 simulation1.commit()
 print(simulation1)
 # -
