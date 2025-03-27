@@ -23,6 +23,9 @@
 """Test basic using lxp."""
 
 from pathlib import Path
+from unittest.mock import patch
+
+import pyvista as pv
 
 import ansys.speos.core.lxp as lxp
 from ansys.speos.core.project import Project
@@ -34,7 +37,6 @@ def test_light_path_finder_direct(speos: Speos):
     """Test for direct simulation lpf."""
     path = str(Path(test_path) / "basic_DirectSimu.lpf")
     lpf = lxp.LightPathFinder(speos=speos, path=path)
-    lpf.preview()
     expected_ray = {
         "nb_impacts": 4,
         "impacts": [
@@ -73,9 +75,6 @@ def test_light_path_finder_inverse(speos: Speos):
     """Test for inverse simulation lpf."""
     path = str(Path(test_path) / "basic_InverseSimu.lpf")
     lpf = lxp.LightPathFinder(speos=speos, path=path)
-    speos_path = str(Path(test_path) / "Inverse_simu.speos" / "Inverse_simu.speos")
-    p = Project(speos, speos_path)
-    lpf.preview(project=p)
     expected_ray = {
         "nb_impacts": 7,
         "impacts": [
@@ -128,3 +127,20 @@ def test_light_path_finder_inverse(speos: Speos):
     lpf.filter_error_rays()
     assert len(lpf.filtered_rays) == 0
     assert lpf.rays[50].get() == expected_ray
+
+
+@patch.object(pv.Plotter, "show")
+def test_light_path_finder_preview(speos: Speos):
+    """Test for direct simulation lpf."""
+    path = str(Path(test_path) / "basic_DirectSimu.lpf")
+    p = Project(
+        speos=speos,
+        path=str(
+            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
+        ),
+    )
+    lpf = lxp.LightPathFinder(speos=speos, path=path)
+    lpf.preview(project=p, nb_ray=50000)
+    lpf.filter_by_face_ids([3866239813], new=False)
+    assert len(lpf.filtered_rays) == 11747
+    lpf.preview(project=p, ray_filter=True)
