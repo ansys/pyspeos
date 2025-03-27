@@ -131,6 +131,6 @@ def test_light_path_finder_preview(speos: Speos):
     screenshot = Path(IMAGE_RESULTS_DIR, "test_light_path_finder_preview.png")
     lpf = lxp.LightPathFinder(speos=speos, path=path)
     lpf.preview(screenshot=screenshot)
-    
+
     assert screenshot.exists()
     assert screenshot.stat().st_size > 0
