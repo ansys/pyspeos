@@ -29,7 +29,8 @@ LPF files contain a set of simulated rays with all their intersections and prope
 from __future__ import annotations
 
 import os
-from typing import Union
+from pathlib import Path
+from typing import Optional, Union
 
 import pyvista as pv
 
@@ -452,6 +453,7 @@ class LightPathFinder:
         max_ray_length: float = 50.0,
         ray_filter: bool = False,
         project: Project = None,
+        screenshot: Optional[Union[str, Path]] = None,
     ) -> LightPathFinder:
         """Preview LPF file with pyvista.
 
@@ -465,12 +467,17 @@ class LightPathFinder:
             Boolean to decide if filtered rays or all rays should be shown.
         project : ansys.speos.core.project.Project
             Speos Project/Geometry to be added to pyvista visualisation.
+        screenshot : str or Path or ``None``
+            Path to save a screenshot of the plotter.
 
         Returns
         -------
         ansys.speos.core.lxp.LightPathFinder
             LightPathFinder Instance.
         """
+        if screenshot is not None:
+            screenshot = Path(screenshot)
+ 
         if ray_filter:
             if len(self._filtered_rays) > 0:
                 temp_rays = self._filtered_rays
@@ -496,9 +503,9 @@ class LightPathFinder:
                 for i in range(nb_ray):
                     self.__add_ray_to_pv(plotter, temp_rays[i], max_ray_length)
         if os.environ.get("DOCUMENTATION_BUILDING", "true") == "true":
-            plotter.show(jupyter_backend="html")
+            plotter.show(screenshot=screenshot, jupyter_backend="html")
         else:
-            plotter.show()
+            plotter.show(screenshot=screenshot)
         return self
 
 

@@ -38,6 +38,7 @@ import pytest
 from ansys.speos.core import LOG
 from ansys.speos.core.speos import Speos
 
+IMAGE_RESULTS_DIR = Path(Path(__file__).parent, "image_results")
 
 @pytest.fixture(scope="session")
 def speos():

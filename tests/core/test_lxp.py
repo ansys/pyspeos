@@ -26,7 +26,7 @@ from pathlib import Path
 
 import ansys.speos.core.lxp as lxp
 from ansys.speos.core.speos import Speos
-from tests.conftest import test_path
+from tests.conftest import IMAGE_RESULTS_DIR, test_path
 
 
 def test_light_path_finder_direct(speos: Speos):
@@ -129,4 +129,4 @@ def test_light_path_finder_preview(speos: Speos):
     """Test for direct simulation lpf."""
     path = str(Path(test_path) / "basic_DirectSimu.lpf")
     lpf = lxp.LightPathFinder(speos=speos, path=path)
-    lpf.preview()
+    lpf.preview(screenshot=Path(IMAGE_RESULTS_DIR, "test_light_path_finder_preview.png"),)
