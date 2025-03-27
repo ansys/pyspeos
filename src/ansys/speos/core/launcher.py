@@ -146,7 +146,8 @@ def launch_local_speos_rpc_server(
     if not speos_rpc_loc or not Path(speos_rpc_loc).exists():
         if not Path(speos_rpc_loc).exists():
             warnings.warn(
-                "Provided executable location not found looking for local installation", UserWarning
+                "Provided executable location not found, looking for local installation",
+                UserWarning,
             )
         versions = get_available_ansys_installations()
         ansys_loc = versions.get(int(version))
