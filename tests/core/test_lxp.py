@@ -23,10 +23,13 @@
 """Test basic using lxp."""
 
 from pathlib import Path
+from unittest.mock import patch
 
 import ansys.speos.core.lxp as lxp
 from ansys.speos.core.speos import Speos
 from tests.conftest import test_path
+import pyvista as pv
+
 
 
 def test_light_path_finder_direct(speos: Speos):
@@ -123,3 +126,11 @@ def test_light_path_finder_inverse(speos: Speos):
     lpf.filter_error_rays()
     assert len(lpf.filtered_rays) == 0
     assert lpf.rays[50].get() == expected_ray
+
+
+@patch.object(pv.Plotter, "show")
+def test_light_path_finder_preview(speos: Speos):
+    """Test for direct simulation lpf."""
+    path = str(Path(test_path) / "basic_DirectSimu.lpf")
+    lpf = lxp.LightPathFinder(speos=speos, path=path)
+    lpf.preview()
