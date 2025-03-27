@@ -23,13 +23,10 @@
 """Test basic using lxp."""
 
 from pathlib import Path
-from unittest.mock import patch
 
 import ansys.speos.core.lxp as lxp
 from ansys.speos.core.speos import Speos
 from tests.conftest import test_path
-import pyvista as pv
-
 
 
 def test_light_path_finder_direct(speos: Speos):
