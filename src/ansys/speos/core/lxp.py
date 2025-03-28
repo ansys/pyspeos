@@ -432,7 +432,7 @@ class LightPathFinder:
         max_ray_length : float
             Length of the last ray.
         """
-        temp = ray.impacts
+        temp = ray.impacts.copy()
         if not 7 <= ray.intersection_type[-1] <= 15:
             temp.append(
                 [
