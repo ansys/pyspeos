@@ -77,7 +77,7 @@ def _find_correct_result(
     return file_path
 
 
-def _display_image(img: ndarray):
+def _display_image(img: ndarray, screenshot=None):
     if img is not None:
         plt.imshow(img)
         plt.axis("off")  # turns off axes
