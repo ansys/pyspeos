@@ -901,6 +901,7 @@ class Project:
         """
         if viz_args is None:
             viz_args = {}
+        p = pv.Plotter()
         _preview_mesh = pv.PolyData()
         # Retrieve root part
         root_part_data = self.client[self.scene_link.get().part_guid].get()
@@ -920,8 +921,75 @@ class Project:
         poly_data = self.__extract_part_mesh_info(part_data=root_part_data)
         if poly_data is not None:
             _preview_mesh = _preview_mesh.append_polydata(poly_data)
-        p = pv.Plotter()
         p.add_mesh(_preview_mesh, show_edges=True, **viz_args)
+
+        # Add sensor at the root part
+        for feature in self._features:
+            if isinstance(feature, SensorIrradiance):
+                feature_pos_info = feature.get(key="axis_system")
+                feature_irradiance_pos = np.array(feature_pos_info[:3])
+                feature_irradiance_x_dir = np.array(feature_pos_info[3:6])
+                feature_irradiance_y_dir = np.array(feature_pos_info[6:9])
+                feature_irradiance_z_dir = np.array(feature_pos_info[9:12])
+                feature_x_start = feature.get(key="x_start")
+                feature_x_end = feature.get(key="x_end")
+                feature_y_start = feature.get(key="y_start")
+                feature_y_end = feature.get(key="y_end")
+
+                # irradiance sensor
+                p1 = (
+                    feature_irradiance_pos
+                    + feature_irradiance_x_dir * feature_x_end
+                    + feature_irradiance_y_dir * feature_y_end
+                )
+                p2 = (
+                    feature_irradiance_pos
+                    + feature_irradiance_x_dir * feature_x_start
+                    + feature_irradiance_y_dir * feature_y_start
+                )
+                p3 = (
+                    feature_irradiance_pos
+                    + feature_irradiance_x_dir * feature_x_end
+                    + feature_irradiance_y_dir * feature_y_start
+                )
+                rectangle = pv.Rectangle([p1, p2, p3])
+                p.add_mesh(
+                    rectangle,
+                    show_edges=True,
+                    line_width=2,
+                    edge_color="red",
+                    color="orange",
+                    opacity=0.5,
+                )
+
+                # irradiance direction
+                x_arrow = pv.Arrow(
+                    start=feature_irradiance_pos,
+                    direction=feature_irradiance_x_dir,
+                    scale=max(feature_y_end - feature_y_start, feature_x_end - feature_x_start)
+                    / 4.0,
+                    tip_radius=0.05,
+                    shaft_radius=0.01,
+                )
+                y_arrow = pv.Arrow(
+                    start=feature_irradiance_pos,
+                    direction=feature_irradiance_y_dir,
+                    scale=max(feature_y_end - feature_y_start, feature_x_end - feature_x_start)
+                    / 4.0,
+                    tip_radius=0.05,
+                    shaft_radius=0.01,
+                )
+                integration_arrow = pv.Arrow(
+                    start=feature_irradiance_pos,
+                    direction=feature_irradiance_z_dir,
+                    scale=max(feature_y_end - feature_y_start, feature_x_end - feature_x_start)
+                    / 4.0,
+                    tip_radius=0.05,
+                    shaft_radius=0.01,
+                )
+                p.add_mesh(x_arrow, color="red")
+                p.add_mesh(y_arrow, color="green")
+                p.add_mesh(integration_arrow, color="blue")
         return p
 
     def preview(self, viz_args=None) -> None:
