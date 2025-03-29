@@ -990,6 +990,106 @@ class Project:
                 p.add_mesh(x_arrow, color="red")
                 p.add_mesh(y_arrow, color="green")
                 p.add_mesh(integration_arrow, color="blue")
+            if isinstance(feature, SensorRadiance):
+                feature_pos_info = feature.get(key="axis_system")
+                feature_radiance_pos = np.array(feature_pos_info[:3])
+                feature_radiance_x_dir = np.array(feature_pos_info[3:6])
+                feature_radiance_y_dir = np.array(feature_pos_info[6:9])
+                feature_radiance_z_dir = np.array(feature_pos_info[9:12])
+                feature_x_start = feature.get(key="x_start")
+                feature_x_end = feature.get(key="x_end")
+                feature_y_start = feature.get(key="y_start")
+                feature_y_end = feature.get(key="y_end")
+                feature_radiance_focal = feature.get(key="focal")
+
+                # radiance sensor
+                p1 = (
+                    feature_radiance_pos
+                    + feature_radiance_x_dir * feature_x_end
+                    + feature_radiance_y_dir * feature_y_end
+                )
+                p2 = (
+                    feature_radiance_pos
+                    + feature_radiance_x_dir * feature_x_end
+                    + feature_radiance_y_dir * feature_y_start
+                )
+                p3 = (
+                    feature_radiance_pos
+                    + feature_radiance_x_dir * feature_x_start
+                    + feature_radiance_y_dir * feature_y_start
+                )
+                p4 = (
+                    feature_radiance_pos
+                    + feature_radiance_x_dir * feature_x_start
+                    + feature_radiance_y_dir * feature_y_end
+                )
+                rectangle = pv.Rectangle([p1, p2, p3])
+                p.add_mesh(
+                    rectangle,
+                    show_edges=True,
+                    line_width=2,
+                    edge_color="red",
+                    color="orange",
+                    opacity=0.5,
+                )
+                p5 = feature_radiance_pos + feature_radiance_z_dir * feature_radiance_focal
+                faces = np.hstack([[3, 0, 1, 2]])
+                radiance_f1 = pv.PolyData(np.array([p1, p2, p5]), faces)
+                radiance_f2 = pv.PolyData(np.array([p3, p4, p5]), faces)
+                radiance_f3 = pv.PolyData(np.array([p1, p4, p5]), faces)
+                radiance_f4 = pv.PolyData(np.array([p2, p3, p5]), faces)
+                p.add_mesh(
+                    radiance_f1,
+                    show_edges=True,
+                    line_width=2,
+                    edge_color="red",
+                    color="orange",
+                    opacity=0.5,
+                )
+                p.add_mesh(
+                    radiance_f2,
+                    show_edges=True,
+                    line_width=2,
+                    edge_color="red",
+                    color="orange",
+                    opacity=0.5,
+                )
+                p.add_mesh(
+                    radiance_f3,
+                    show_edges=True,
+                    line_width=2,
+                    edge_color="red",
+                    color="orange",
+                    opacity=0.5,
+                )
+                p.add_mesh(
+                    radiance_f4,
+                    show_edges=True,
+                    line_width=2,
+                    edge_color="red",
+                    color="orange",
+                    opacity=0.5,
+                )
+
+                # radiance direction
+                x_arrow = pv.Arrow(
+                    start=feature_radiance_y_dir,
+                    direction=feature_radiance_x_dir,
+                    scale=max(feature_y_end - feature_y_start, feature_x_end - feature_x_start)
+                    / 4.0,
+                    tip_radius=0.05,
+                    shaft_radius=0.01,
+                )
+                y_arrow = pv.Arrow(
+                    start=feature_radiance_y_dir,
+                    direction=feature_radiance_y_dir,
+                    scale=max(feature_y_end - feature_y_start, feature_x_end - feature_x_start)
+                    / 4.0,
+                    tip_radius=0.05,
+                    shaft_radius=0.01,
+                )
+                p.add_mesh(x_arrow, color="red")
+                p.add_mesh(y_arrow, color="green")
         return p
 
     def preview(self, viz_args=None) -> None:
