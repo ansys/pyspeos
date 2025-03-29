@@ -1,0 +1,80 @@
+
+
+
+
+
+
+The ``opt_prop.py`` module
+==========================
+
+.. py:module:: ansys.speos.core.opt_prop
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: opt_prop
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.opt_prop.OptProp`
+            - Speos feature: optical property
+
+
+
+
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> OptProp</api/ansys/speos/core/opt_prop/OptProp>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides a way to interact with Speos feature: Optical Property.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+
