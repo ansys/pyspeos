@@ -474,10 +474,13 @@ class LightPathFinder:
         -------
         ansys.speos.core.lxp.LightPathFinder
             LightPathFinder Instance.
-        """
-        if screenshot is not None:
-            screenshot = Path(screenshot)
 
+        Notes
+        -----
+        Please use the ``q``-key to close the plotter as some
+        operating systems (namely Windows) will experience issues
+        saving a screenshot if the exit button in the GUI is pressed.
+        """
         if ray_filter:
             if len(self._filtered_rays) > 0:
                 temp_rays = self._filtered_rays
@@ -502,7 +505,7 @@ class LightPathFinder:
             else:
                 for i in range(nb_ray):
                     self.__add_ray_to_pv(plotter, temp_rays[i], max_ray_length)
-        if os.environ.get("DOCUMENTATION_BUILDING", "true") == "true":
+        if os.environ.get("DOCUMENTATION_BUILDING", "false") == "true":
             plotter.show(screenshot=screenshot, jupyter_backend="html")
         else:
             plotter.show(screenshot=screenshot)
