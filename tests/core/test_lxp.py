@@ -131,7 +131,7 @@ def test_light_path_finder_inverse(speos: Speos):
 def test_lpf_preview_with_project(speos: Speos):
     """Test for visualizing lpf data."""
     path = str(Path(test_path) / "basic_DirectSimu.lpf")
-    screenshot = Path(IMAGE_RESULTS_DIR, "test_light_path_finder_preview.png")
+    screenshot = Path(IMAGE_RESULTS_DIR, "test_light_path_finder_direct.png")
     p = Project(
         speos=speos,
         path=str(
@@ -147,7 +147,7 @@ def test_lpf_preview_with_project(speos: Speos):
 def test_lpf_preview_without_project(speos: Speos):
     """Test for visualizing lpf data."""
     path = str(Path(test_path) / "basic_DirectSimu.lpf")
-    screenshot = Path(IMAGE_RESULTS_DIR, "test_light_path_finder_preview.png")
+    screenshot = Path(IMAGE_RESULTS_DIR, "test_lpf_preview_without_project.png")
     lpf1 = lxp.LightPathFinder(speos=speos, path=path)
     lpf1.filter_by_body_ids([3601101451])
     lpf1.filter_by_face_ids([3866239813], new=False)
