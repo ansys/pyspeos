@@ -16,19 +16,19 @@ exclude: |
 repos:
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.9.3
+  rev: v0.11.2
   hooks:
     - id: ruff
     - id: ruff-format
 
 - repo: https://github.com/codespell-project/codespell
-  rev: v2.4.0
+  rev: v2.4.1
   hooks:
   - id: codespell
     args: ["--ignore-words", "doc/styles/config/vocabularies/ANSYS/accept.txt", "-w"]
 
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.4.0
+  rev: v5.0.0
   hooks:
   - id: check-merge-conflict
   - id: debug-statements
@@ -37,12 +37,12 @@ repos:
 
 # This validates our github workflow files
 - repo: https://github.com/python-jsonschema/check-jsonschema
-  rev: 0.31.0
+  rev: 0.32.1
   hooks:
     - id: check-github-workflows
 
 - repo: https://github.com/ansys/pre-commit-hooks
-  rev: v0.5.1
+  rev: v0.5.2
   hooks:
     - id: add-license-headers
       files: '(ansys|tests)/.*\.(py)'
