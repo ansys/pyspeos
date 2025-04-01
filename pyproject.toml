@@ -39,10 +39,12 @@ dependencies=[
 [project.optional-dependencies]
 graphics = [
     "pyvista>=0.40.0,<0.45",
-    "ansys-tools-visualization-interface>=0.8.3"
+    "ansys-tools-visualization-interface>=0.8.3",
 ]
 tests = [
     "pytest==8.3.5",
+    "pyvista>=0.40.0,<0.45",
+    "ansys-tools-visualization-interface>=0.8.3",
     "ansys-platform-instancemanagement>=1.0.3",
     "pytest-cov==6.0.0",
 ]
