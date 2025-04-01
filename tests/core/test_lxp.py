@@ -25,14 +25,17 @@
 from pathlib import Path
 
 import ansys.speos.core.lxp as lxp
+from ansys.speos.core.project import Project
 from ansys.speos.core.speos import Speos
-from tests.conftest import test_path
+from tests.conftest import IMAGE_RESULTS_DIR, test_path
 
 
 def test_light_path_finder_direct(speos: Speos):
     """Test for direct simulation lpf."""
     path = str(Path(test_path) / "basic_DirectSimu.lpf")
     lpf = lxp.LightPathFinder(speos=speos, path=path)
+    screenshot = Path(IMAGE_RESULTS_DIR, "test_light_path_finder_preview.png")
+    lpf.preview(screenshot=screenshot)
     expected_ray = {
         "nb_impacts": 4,
         "impacts": [
@@ -123,3 +126,32 @@ def test_light_path_finder_inverse(speos: Speos):
     lpf.filter_error_rays()
     assert len(lpf.filtered_rays) == 0
     assert lpf.rays[50].get() == expected_ray
+
+
+def test_lpf_preview_with_project(speos: Speos):
+    """Test for visualizing lpf data."""
+    path = str(Path(test_path) / "basic_DirectSimu.lpf")
+    screenshot = Path(IMAGE_RESULTS_DIR, "test_light_path_finder_direct.png")
+    p = Project(
+        speos=speos,
+        path=str(
+            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
+        ),
+    )
+    lpf = lxp.LightPathFinder(speos=speos, path=path)
+    lpf.preview(project=p, screenshot=screenshot)
+    assert screenshot.exists()
+    assert screenshot.stat().st_size > 0
+
+
+def test_lpf_preview_without_project(speos: Speos):
+    """Test for visualizing lpf data."""
+    path = str(Path(test_path) / "basic_DirectSimu.lpf")
+    screenshot = Path(IMAGE_RESULTS_DIR, "test_lpf_preview_without_project.png")
+    lpf1 = lxp.LightPathFinder(speos=speos, path=path)
+    lpf1.filter_by_body_ids([3601101451])
+    lpf1.filter_by_face_ids([3866239813], new=False)
+    lpf1.remove_error_rays()
+    lpf1.preview(ray_filter=True, screenshot=screenshot)
+    assert screenshot.exists()
+    assert screenshot.stat().st_size > 0

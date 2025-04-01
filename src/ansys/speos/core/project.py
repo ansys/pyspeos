@@ -24,6 +24,7 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 import re
 from typing import List, Mapping, Optional, Union
 import uuid
@@ -924,7 +925,11 @@ class Project:
         p.add_mesh(_preview_mesh, show_edges=True, **viz_args)
         return p
 
-    def preview(self, viz_args=None) -> None:
+    def preview(
+        self,
+        viz_args=None,
+        screenshot: Optional[Union[str, Path]] = None,
+    ) -> None:
         """Preview cad bodies inside the project's scene.
 
         Parameters
@@ -934,12 +939,19 @@ class Project:
             e.g.
             - {'style': 'wireframe'},
             - {'style': 'surface', 'color':'white'},
-            - {'opacity': 0.7, 'color':'white', 'show_edges': False},
+            - {'opacity': 0.7, 'color':'white', 'show_edges': False}.
+
+        screenshot : str or Path or ``None``
+            Path to save a screenshot of the plotter.
+
         """
         if viz_args is None:
             viz_args = {"opacity": 1}
+        if screenshot is not None:
+            screenshot = Path(screenshot)
+
         p = self._create_preview(viz_args=viz_args)
         if os.environ.get("DOCUMENTATION_BUILDING", "true") == "true":
-            p.show(jupyter_backend="html")
+            p.show(screenshot=screenshot, jupyter_backend="html")
         else:
-            p.show()
+            p.show(screenshot=screenshot)
