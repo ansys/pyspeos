@@ -926,277 +926,40 @@ class Project:
         # Add sensor at the root part
         for feature in self._features:
             if isinstance(feature, SensorIrradiance):
-                feature_pos_info = feature.get(key="axis_system")
-                feature_irradiance_pos = np.array(feature_pos_info[:3])
-                feature_irradiance_x_dir = np.array(feature_pos_info[3:6])
-                feature_irradiance_y_dir = np.array(feature_pos_info[6:9])
-                feature_irradiance_z_dir = np.array(feature_pos_info[9:12])
-                feature_x_start = feature.get(key="x_start")
-                feature_x_end = feature.get(key="x_end")
-                feature_y_start = feature.get(key="y_start")
-                feature_y_end = feature.get(key="y_end")
-
-                # irradiance sensor
-                p1 = (
-                    feature_irradiance_pos
-                    + feature_irradiance_x_dir * feature_x_end
-                    + feature_irradiance_y_dir * feature_y_end
-                )
-                p2 = (
-                    feature_irradiance_pos
-                    + feature_irradiance_x_dir * feature_x_start
-                    + feature_irradiance_y_dir * feature_y_start
-                )
-                p3 = (
-                    feature_irradiance_pos
-                    + feature_irradiance_x_dir * feature_x_end
-                    + feature_irradiance_y_dir * feature_y_start
-                )
-                rectangle = pv.Rectangle([p1, p2, p3])
                 p.add_mesh(
-                    rectangle,
+                    feature.visual_data.data,
                     show_edges=True,
                     line_width=2,
                     edge_color="red",
                     color="orange",
                     opacity=0.5,
                 )
-
-                # irradiance direction
-                x_arrow = pv.Arrow(
-                    start=feature_irradiance_pos,
-                    direction=feature_irradiance_x_dir,
-                    scale=max(feature_y_end - feature_y_start, feature_x_end - feature_x_start)
-                    / 4.0,
-                    tip_radius=0.05,
-                    shaft_radius=0.01,
-                )
-                y_arrow = pv.Arrow(
-                    start=feature_irradiance_pos,
-                    direction=feature_irradiance_y_dir,
-                    scale=max(feature_y_end - feature_y_start, feature_x_end - feature_x_start)
-                    / 4.0,
-                    tip_radius=0.05,
-                    shaft_radius=0.01,
-                )
-                integration_arrow = pv.Arrow(
-                    start=feature_irradiance_pos,
-                    direction=feature_irradiance_z_dir,
-                    scale=max(feature_y_end - feature_y_start, feature_x_end - feature_x_start)
-                    / 4.0,
-                    tip_radius=0.05,
-                    shaft_radius=0.01,
-                )
-                p.add_mesh(x_arrow, color="red")
-                p.add_mesh(y_arrow, color="green")
-                p.add_mesh(integration_arrow, color="blue")
+                p.add_mesh(feature.visual_data.x_axis, color="red")
+                p.add_mesh(feature.visual_data.y_axis, color="green")
+                p.add_mesh(feature.visual_data.z_axis, color="blue")
             if isinstance(feature, SensorRadiance):
-                feature_pos_info = feature.get(key="axis_system")
-                feature_radiance_pos = np.array(feature_pos_info[:3])
-                feature_radiance_x_dir = np.array(feature_pos_info[3:6])
-                feature_radiance_y_dir = np.array(feature_pos_info[6:9])
-                feature_radiance_z_dir = np.array(feature_pos_info[9:12])
-                feature_x_start = feature.get(key="x_start")
-                feature_x_end = feature.get(key="x_end")
-                feature_y_start = feature.get(key="y_start")
-                feature_y_end = feature.get(key="y_end")
-                feature_radiance_focal = feature.get(key="focal")
-
-                # radiance sensor
-                p1 = (
-                    feature_radiance_pos
-                    + feature_radiance_x_dir * feature_x_end
-                    + feature_radiance_y_dir * feature_y_end
-                )
-                p2 = (
-                    feature_radiance_pos
-                    + feature_radiance_x_dir * feature_x_end
-                    + feature_radiance_y_dir * feature_y_start
-                )
-                p3 = (
-                    feature_radiance_pos
-                    + feature_radiance_x_dir * feature_x_start
-                    + feature_radiance_y_dir * feature_y_start
-                )
-                p4 = (
-                    feature_radiance_pos
-                    + feature_radiance_x_dir * feature_x_start
-                    + feature_radiance_y_dir * feature_y_end
-                )
-                rectangle = pv.Rectangle([p1, p2, p3])
                 p.add_mesh(
-                    rectangle,
+                    feature.visual_data.data,
                     show_edges=True,
                     line_width=2,
                     edge_color="red",
                     color="orange",
                     opacity=0.5,
                 )
-                p5 = feature_radiance_pos + feature_radiance_z_dir * feature_radiance_focal
-                faces = np.hstack([[3, 0, 1, 2]])
-                radiance_f1 = pv.PolyData(np.array([p1, p2, p5]), faces)
-                radiance_f2 = pv.PolyData(np.array([p3, p4, p5]), faces)
-                radiance_f3 = pv.PolyData(np.array([p1, p4, p5]), faces)
-                radiance_f4 = pv.PolyData(np.array([p2, p3, p5]), faces)
-                p.add_mesh(
-                    radiance_f1,
-                    show_edges=True,
-                    line_width=2,
-                    edge_color="red",
-                    color="orange",
-                    opacity=0.5,
-                )
-                p.add_mesh(
-                    radiance_f2,
-                    show_edges=True,
-                    line_width=2,
-                    edge_color="red",
-                    color="orange",
-                    opacity=0.5,
-                )
-                p.add_mesh(
-                    radiance_f3,
-                    show_edges=True,
-                    line_width=2,
-                    edge_color="red",
-                    color="orange",
-                    opacity=0.5,
-                )
-                p.add_mesh(
-                    radiance_f4,
-                    show_edges=True,
-                    line_width=2,
-                    edge_color="red",
-                    color="orange",
-                    opacity=0.5,
-                )
-
-                # radiance direction
-                x_arrow = pv.Arrow(
-                    start=feature_radiance_y_dir,
-                    direction=feature_radiance_x_dir,
-                    scale=max(feature_y_end - feature_y_start, feature_x_end - feature_x_start)
-                    / 4.0,
-                    tip_radius=0.05,
-                    shaft_radius=0.01,
-                )
-                y_arrow = pv.Arrow(
-                    start=feature_radiance_y_dir,
-                    direction=feature_radiance_y_dir,
-                    scale=max(feature_y_end - feature_y_start, feature_x_end - feature_x_start)
-                    / 4.0,
-                    tip_radius=0.05,
-                    shaft_radius=0.01,
-                )
-                p.add_mesh(x_arrow, color="red")
-                p.add_mesh(y_arrow, color="green")
+                p.add_mesh(feature.visual_data.x_axis, color="red")
+                p.add_mesh(feature.visual_data.y_axis, color="green")
             if isinstance(feature, SensorCamera):
-                feature_pos_info = feature.get(key="axis_system")
-                feature_camera_pos = np.array(feature_pos_info[:3])
-                feature_camera_x_dir = np.array(feature_pos_info[3:6])
-                feature_camera_y_dir = np.array(feature_pos_info[6:9])
-                feature_camera_z_dir = np.array(feature_pos_info[9:12])
-                feature_width = feature.get(key="width")
-                feature_height = feature.get(key="height")
-                feature_camera_focal = feature.get(key="focal_length")
-                feature_camera_image_dis = feature.get(key="imager_distance")
+                p.add_mesh(
+                    feature.visual_data.data,
+                    show_edges=True,
+                    line_width=2,
+                    edge_color="red",
+                    color="orange",
+                    opacity=0.5,
+                )
+                p.add_mesh(feature.visual_data.x_axis, color="red")
+                p.add_mesh(feature.visual_data.y_axis, color="green")
 
-                # camera radiance sensor
-                p1 = (
-                    feature_camera_pos
-                    + feature_camera_x_dir * feature_width / 2.0
-                    + feature_camera_y_dir * feature_height / 2.0
-                    + feature_camera_z_dir * feature_camera_image_dis
-                )
-                p2 = (
-                    feature_camera_pos
-                    + feature_camera_x_dir * feature_width / 2.0
-                    - feature_camera_y_dir * feature_height / 2.0
-                    + feature_camera_z_dir * feature_camera_image_dis
-                )
-                p3 = (
-                    feature_camera_pos
-                    - feature_camera_x_dir * feature_width / 2.0
-                    + feature_camera_y_dir * feature_height / 2.0
-                    + feature_camera_z_dir * feature_camera_image_dis
-                )
-                p4 = (
-                    feature_camera_pos
-                    - feature_camera_x_dir * feature_width / 2.0
-                    - feature_camera_y_dir * feature_height / 2.0
-                    + feature_camera_z_dir * feature_camera_image_dis
-                )
-                rectangle = pv.Rectangle([p1, p2, p3])
-                p.add_mesh(
-                    rectangle,
-                    show_edges=True,
-                    line_width=2,
-                    edge_color="red",
-                    color="orange",
-                    opacity=0.5,
-                )
-                p5 = feature_camera_pos + feature_camera_z_dir * (
-                    feature_camera_image_dis - feature_camera_focal
-                )
-                faces = np.hstack([[3, 0, 1, 2]])
-                radiance_f1 = pv.PolyData(np.array([p1, p2, p5]), faces)
-                radiance_f2 = pv.PolyData(np.array([p3, p4, p5]), faces)
-                radiance_f3 = pv.PolyData(np.array([p1, p3, p5]), faces)
-                radiance_f4 = pv.PolyData(np.array([p2, p4, p5]), faces)
-                p.add_mesh(
-                    radiance_f1,
-                    show_edges=True,
-                    line_width=2,
-                    edge_color="red",
-                    color="orange",
-                    opacity=0.5,
-                )
-                p.add_mesh(
-                    radiance_f2,
-                    show_edges=True,
-                    line_width=2,
-                    edge_color="red",
-                    color="orange",
-                    opacity=0.5,
-                )
-                p.add_mesh(
-                    radiance_f3,
-                    show_edges=True,
-                    line_width=2,
-                    edge_color="red",
-                    color="orange",
-                    opacity=0.5,
-                )
-                p.add_mesh(
-                    radiance_f4,
-                    show_edges=True,
-                    line_width=2,
-                    edge_color="red",
-                    color="orange",
-                    opacity=0.5,
-                )
-
-                # camera object field
-                camera_object_field_radius = 100
-                object_field_sphere = pv.Sphere(
-                    radius=camera_object_field_radius,
-                    center=feature_camera_pos,
-                    direction=feature_camera_x_dir,
-                    theta_resolution=30,
-                    phi_resolution=30,
-                    start_theta=0.0,
-                    end_theta=60.0,
-                    start_phi=45,
-                    end_phi=135,
-                )
-                p.add_mesh(
-                    object_field_sphere,
-                    show_edges=True,
-                    line_width=2,
-                    edge_color="red",
-                    color="orange",
-                    opacity=0.5,
-                )
         return p
 
     def preview(self, viz_args=None) -> None:
