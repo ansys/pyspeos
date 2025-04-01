@@ -28,10 +28,10 @@ from pathlib import Path
 import re
 from typing import List, Mapping, Optional, Union
 import uuid
+import warnings
 
 from google.protobuf.internal.containers import RepeatedScalarFieldContainer
 import numpy as np
-import pyvista as pv
 
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
@@ -58,7 +58,17 @@ from ansys.speos.core.source import (
     SourceSurface,
 )
 from ansys.speos.core.speos import Speos
-from ansys.tools.visualization_interface import Plotter
+
+try:
+    import pyvista as pv
+
+    from ansys.tools.visualization_interface import Plotter
+
+    GRAPHICS = True
+except ImportError:
+    GRAPHICS_ERROR = "Preview unsupported without 'ansys-tools-visualization_interface' installed "
+    warnings.warn(GRAPHICS_ERROR)
+    GRAPHICS = False
 
 
 class Project:
@@ -948,6 +958,8 @@ class Project:
             screenshot
 
         """
+        if not GRAPHICS:
+            raise ModuleNotFoundError(GRAPHICS_ERROR)
         if viz_args is None:
             viz_args = {"opacity": 1}
         if screenshot is not None:

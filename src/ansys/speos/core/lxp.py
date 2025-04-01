@@ -31,13 +31,22 @@ from __future__ import annotations
 import os
 from pathlib import Path
 from typing import Optional, Union
-
-import pyvista as pv
+import warnings
 
 import ansys.api.speos.lpf.v2.lpf_file_reader_pb2 as lpf_file_reader__v2__pb2
 import ansys.api.speos.lpf.v2.lpf_file_reader_pb2_grpc as lpf_file_reader__v2__pb2_grpc
 from ansys.speos.core.project import Project, Speos
-from ansys.tools.visualization_interface import Plotter
+
+try:
+    import pyvista as pv
+
+    from ansys.tools.visualization_interface import Plotter
+
+    GRAPHICS = True
+except ImportError:
+    GRAPHICS_ERROR = "Preview unsupported without 'ansys-tools-visualization_interface' installed "
+    warnings.warn(GRAPHICS_ERROR)
+    GRAPHICS = False
 
 ERROR_IDS = [7, 8, 9, 10, 11, 12, 13, 14, 15]
 """Intersection types indicating an error state."""
@@ -483,6 +492,9 @@ class LightPathFinder:
         operating systems (namely Windows) will experience issues
         saving a screenshot if the exit button in the GUI is pressed.
         """
+        if not GRAPHICS:
+            raise ModuleNotFoundError(GRAPHICS_ERROR)
+
         if ray_filter:
             if len(self._filtered_rays) > 0:
                 temp_rays = self._filtered_rays
