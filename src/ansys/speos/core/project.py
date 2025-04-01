@@ -66,7 +66,10 @@ try:
 
     GRAPHICS = True
 except ImportError:
-    GRAPHICS_ERROR = "Preview unsupported without 'ansys-tools-visualization_interface' installed "
+    GRAPHICS_ERROR = (
+        "Preview unsupported without 'ansys-tools-visualization_interface' installed."
+        "You  can install this using `pip install ansys-speos-core[graphics]`."
+    )
     warnings.warn(GRAPHICS_ERROR)
     GRAPHICS = False
 
