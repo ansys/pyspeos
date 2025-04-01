@@ -940,12 +940,13 @@ class Project:
         poly_data = self.__extract_part_mesh_info(part_data=root_part_data)
         if poly_data is not None:
             _preview_mesh = _preview_mesh.append_polydata(poly_data)
-        p.add_mesh(_preview_mesh, show_edges=True, **viz_args)
+        viz_args["show_edges"] = True
+        p.plot(_preview_mesh, **viz_args)
 
         # Add sensor at the root part
         for feature in self._features:
             if isinstance(feature, SensorIrradiance):
-                p.add_mesh(
+                p.plot(
                     feature.visual_data.data,
                     show_edges=True,
                     line_width=2,
@@ -953,11 +954,11 @@ class Project:
                     color="orange",
                     opacity=0.5,
                 )
-                p.add_mesh(feature.visual_data.x_axis, color="red")
-                p.add_mesh(feature.visual_data.y_axis, color="green")
-                p.add_mesh(feature.visual_data.z_axis, color="blue")
+                p.plot(feature.visual_data.x_axis, color="red")
+                p.plot(feature.visual_data.y_axis, color="green")
+                p.plot(feature.visual_data.z_axis, color="blue")
             if isinstance(feature, SensorRadiance):
-                p.add_mesh(
+                p.plot(
                     feature.visual_data.data,
                     show_edges=True,
                     line_width=2,
@@ -965,10 +966,10 @@ class Project:
                     color="orange",
                     opacity=0.5,
                 )
-                p.add_mesh(feature.visual_data.x_axis, color="red")
-                p.add_mesh(feature.visual_data.y_axis, color="green")
+                p.plot(feature.visual_data.x_axis, color="red")
+                p.plot(feature.visual_data.y_axis, color="green")
             if isinstance(feature, SensorCamera):
-                p.add_mesh(
+                p.plot(
                     feature.visual_data.data,
                     show_edges=True,
                     line_width=2,
@@ -976,10 +977,8 @@ class Project:
                     color="orange",
                     opacity=0.5,
                 )
-                p.add_mesh(feature.visual_data.x_axis, color="red")
-                p.add_mesh(feature.visual_data.y_axis, color="green")
-        viz_args["show_edges"] = True
-        p.plot(_preview_mesh, **viz_args)
+                p.plot(feature.visual_data.x_axis, color="red")
+                p.plot(feature.visual_data.y_axis, color="green")
         return p
 
     @graphics_required
