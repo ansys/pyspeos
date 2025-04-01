@@ -924,7 +924,7 @@ class Project:
             _preview_mesh = _preview_mesh.append_polydata(poly_data)
         p = Plotter()
         viz_args["show_edges"] = True
-        p.add_mesh(_preview_mesh, **viz_args)
+        p.plot(_preview_mesh, **viz_args)
         return p
 
     def preview(
