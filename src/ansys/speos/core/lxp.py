@@ -43,7 +43,7 @@ try:
     from ansys.tools.visualization_interface import Plotter
 
     GRAPHICS = True
-except ImportError:
+except ImportError:  # pragma: no cover
     GRAPHICS_ERROR = (
         "Preview unsupported without 'ansys-tools-visualization_interface' installed."
         "You  can install this using `pip install ansys-speos-core[graphics]`."
