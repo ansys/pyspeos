@@ -74,18 +74,18 @@ def run_if_graphics_required(warning=False):
     """Check if graphics are available."""
     global __GRAPHICS_AVAILABLE
     if __GRAPHICS_AVAILABLE is None:
-        try:  # pragma: no cover
+        try:
             import pyvista as pv  # noqa: F401
 
             from ansys.tools.visualization_interface import Plotter  # noqa: F401
 
             __GRAPHICS_AVAILABLE = True
-        except ImportError:
+        except ImportError:  # pragma: no cover
             __GRAPHICS_AVAILABLE = False
 
-    if __GRAPHICS_AVAILABLE is False and warning is False:
+    if __GRAPHICS_AVAILABLE is False and warning is False:  # pragma: no cover
         raise ImportError(GRAPHICS_ERROR)
-    elif __GRAPHICS_AVAILABLE is False:
+    elif __GRAPHICS_AVAILABLE is False:  # pragma: no cover
         warnings.warn(GRAPHICS_ERROR)
 
 
