@@ -58,6 +58,7 @@ from ansys.speos.core.source import (
     SourceSurface,
 )
 from ansys.speos.core.speos import Speos
+from ansys.tools.visualization_interface import Plotter
 
 
 class Project:
@@ -921,8 +922,9 @@ class Project:
         poly_data = self.__extract_part_mesh_info(part_data=root_part_data)
         if poly_data is not None:
             _preview_mesh = _preview_mesh.append_polydata(poly_data)
-        p = pv.Plotter()
-        p.add_mesh(_preview_mesh, show_edges=True, **viz_args)
+        p = Plotter()
+        viz_args["show_edges"] = True
+        p.add_mesh(_preview_mesh, **viz_args)
         return p
 
     def preview(
@@ -942,7 +944,8 @@ class Project:
             - {'opacity': 0.7, 'color':'white', 'show_edges': False}.
 
         screenshot : str or Path or ``None``
-            Path to save a screenshot of the plotter.
+            Path to save a screenshot of the plotter. If defined Plotter will only create the
+            screenshot
 
         """
         if viz_args is None:

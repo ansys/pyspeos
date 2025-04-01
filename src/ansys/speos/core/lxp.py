@@ -37,6 +37,7 @@ import pyvista as pv
 import ansys.api.speos.lpf.v2.lpf_file_reader_pb2 as lpf_file_reader__v2__pb2
 import ansys.api.speos.lpf.v2.lpf_file_reader_pb2_grpc as lpf_file_reader__v2__pb2_grpc
 from ansys.speos.core.project import Project, Speos
+from ansys.tools.visualization_interface import Plotter
 
 ERROR_IDS = [7, 8, 9, 10, 11, 12, 13, 14, 15]
 """Intersection types indicating an error state."""
@@ -420,13 +421,13 @@ class LightPathFinder:
         return self
 
     @staticmethod
-    def __add_ray_to_pv(plotter: pv.Plotter, ray: RayPath, max_ray_length: float):
+    def __add_ray_to_pv(plotter: Plotter, ray: RayPath, max_ray_length: float):
         """Add a ray to pyvista plotter.
 
         Parameters
         ----------
-        plotter : pv.Plotter
-            Pyvista plotter object to which rays should be added.
+        plotter : Plotter
+            Ansys plotter object to which rays should be added.
         ray : script.RayPath
             RayPath object which contains ray information to be added.
         max_ray_length : float
@@ -445,7 +446,7 @@ class LightPathFinder:
             mesh = pv.MultipleLines(temp)
         else:
             mesh = pv.Line(temp[0], temp[1])
-        plotter.add_mesh(mesh, color=wavelength_to_rgb(ray.wl), line_width=2)
+        plotter.plot(mesh, color=wavelength_to_rgb(ray.wl), line_width=2)
 
     def preview(
         self,
@@ -468,7 +469,8 @@ class LightPathFinder:
         project : ansys.speos.core.project.Project
             Speos Project/Geometry to be added to pyvista visualisation.
         screenshot : str or Path or ``None``
-            Path to save a screenshot of the plotter.
+            Path to save a screenshot of the plotter. If defined Plotter will only create the
+            screenshot
 
         Returns
         -------
@@ -490,7 +492,7 @@ class LightPathFinder:
         else:
             temp_rays = self._rays
         if not project:
-            plotter = pv.Plotter()
+            plotter = Plotter()
             if nb_ray > len(temp_rays):
                 for ray in temp_rays:
                     self.__add_ray_to_pv(plotter, ray, max_ray_length)
