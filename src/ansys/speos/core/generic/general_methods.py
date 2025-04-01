@@ -28,6 +28,12 @@ this includes decorator and methods
 from functools import wraps
 import warnings
 
+__GRAPHICS_AVAILABLE = None
+GRAPHICS_ERROR = (
+    "Preview unsupported without 'ansys-tools-visualization_interface' installed. "
+    "You can install this using `pip install ansys-speos-core[graphics]`."
+)
+
 
 def deprecate_kwargs(old_arguments: dict, removed_version="0.3.0"):
     """Issues deprecation warnings for arguments.
@@ -62,3 +68,43 @@ def deprecate_kwargs(old_arguments: dict, removed_version="0.3.0"):
         return wrapper
 
     return decorator
+
+
+def run_if_graphics_required(warning=False):
+    """Check if graphics are available."""
+    global __GRAPHICS_AVAILABLE
+    if __GRAPHICS_AVAILABLE is None:
+        try:  # pragma: no cover
+            import pyvista as pv  # noqa: F401
+
+            from ansys.tools.visualization_interface import Plotter  # noqa: F401
+
+            __GRAPHICS_AVAILABLE = True
+        except ImportError:
+            __GRAPHICS_AVAILABLE = False
+
+    if (__GRAPHICS_AVAILABLE and warning) is False:
+        raise ImportError(GRAPHICS_ERROR)
+    elif __GRAPHICS_AVAILABLE is False:
+        warnings.warn(GRAPHICS_ERROR)
+
+
+def graphics_required(method):
+    """Decorate a method as requiring graphics.
+
+    Parameters
+    ----------
+    method : callable
+        Method to decorate.
+
+    Returns
+    -------
+    callable
+        Decorated method.
+    """
+
+    def wrapper(*args, **kwargs):
+        run_if_graphics_required()
+        return method(*args, **kwargs)
+
+    return wrapper

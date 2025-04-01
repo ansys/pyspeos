@@ -26,15 +26,15 @@ from __future__ import annotations
 import os
 from pathlib import Path
 import re
-from typing import List, Mapping, Optional, Union
+from typing import TYPE_CHECKING, List, Mapping, Optional, Union
 import uuid
-import warnings
 
 from google.protobuf.internal.containers import RepeatedScalarFieldContainer
 import numpy as np
 
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
+from ansys.speos.core.generic.general_methods import graphics_required
 from ansys.speos.core.kernel.body import BodyLink
 from ansys.speos.core.kernel.face import FaceLink
 from ansys.speos.core.kernel.part import ProtoPart
@@ -60,18 +60,16 @@ from ansys.speos.core.source import (
 from ansys.speos.core.speos import Speos
 
 try:
+    from ansys.speos.core.generic.general_methods import run_if_graphics_required
+
+    run_if_graphics_required(warning=True)
+except ImportError as err:  # pragma: no cover
+    raise err
+
+if TYPE_CHECKING:  # pragma: no cover
     import pyvista as pv
 
     from ansys.tools.visualization_interface import Plotter
-
-    GRAPHICS = True
-except ImportError:  # pragma: no cover
-    GRAPHICS_ERROR = (
-        "Preview unsupported without 'ansys-tools-visualization_interface' installed."
-        "You  can install this using `pip install ansys-speos-core[graphics]`."
-    )
-    warnings.warn(GRAPHICS_ERROR)
-    GRAPHICS = False
 
 
 class Project:
@@ -902,7 +900,7 @@ class Project:
                     part_mesh_info = part_mesh_info.append_polydata(face_mesh_data)
         return part_mesh_info
 
-    def _create_preview(self, viz_args=None) -> pv.Plotter:
+    def _create_preview(self, viz_args=None) -> Plotter:
         """Create preview pyvista plotter object.
 
         Parameters
@@ -940,6 +938,7 @@ class Project:
         p.plot(_preview_mesh, **viz_args)
         return p
 
+    @graphics_required
     def preview(
         self,
         viz_args=None,
@@ -961,8 +960,6 @@ class Project:
             screenshot
 
         """
-        if not GRAPHICS:
-            raise ModuleNotFoundError(GRAPHICS_ERROR)
         if viz_args is None:
             viz_args = {"opacity": 1}
         if screenshot is not None:
