@@ -29,7 +29,8 @@ LPF files contain a set of simulated rays with all their intersections and prope
 from __future__ import annotations
 
 import os
-from typing import Union
+from pathlib import Path
+from typing import Optional, Union
 
 import pyvista as pv
 
@@ -431,7 +432,7 @@ class LightPathFinder:
         max_ray_length : float
             Length of the last ray.
         """
-        temp = ray.impacts
+        temp = ray.impacts.copy()
         if not 7 <= ray.intersection_type[-1] <= 15:
             temp.append(
                 [
@@ -452,6 +453,7 @@ class LightPathFinder:
         max_ray_length: float = 50.0,
         ray_filter: bool = False,
         project: Project = None,
+        screenshot: Optional[Union[str, Path]] = None,
     ) -> LightPathFinder:
         """Preview LPF file with pyvista.
 
@@ -465,11 +467,19 @@ class LightPathFinder:
             Boolean to decide if filtered rays or all rays should be shown.
         project : ansys.speos.core.project.Project
             Speos Project/Geometry to be added to pyvista visualisation.
+        screenshot : str or Path or ``None``
+            Path to save a screenshot of the plotter.
 
         Returns
         -------
         ansys.speos.core.lxp.LightPathFinder
             LightPathFinder Instance.
+
+        Notes
+        -----
+        Please use the ``q``-key to close the plotter as some
+        operating systems (namely Windows) will experience issues
+        saving a screenshot if the exit button in the GUI is pressed.
         """
         if ray_filter:
             if len(self._filtered_rays) > 0:
@@ -495,10 +505,10 @@ class LightPathFinder:
             else:
                 for i in range(nb_ray):
                     self.__add_ray_to_pv(plotter, temp_rays[i], max_ray_length)
-        if os.environ.get("DOCUMENTATION_BUILDING", "true") == "true":
-            plotter.show(jupyter_backend="html")
+        if os.environ.get("DOCUMENTATION_BUILDING", "false") == "true":
+            plotter.show(screenshot=screenshot, jupyter_backend="html")
         else:
-            plotter.show()
+            plotter.show(screenshot=screenshot)
         return self
 
 

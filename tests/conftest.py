@@ -38,6 +38,16 @@ import pytest
 from ansys.speos.core import LOG
 from ansys.speos.core.speos import Speos
 
+try:
+    import pyvista as pv
+
+    pv.OFF_SCREEN = True
+    pv.global_theme.window_size = [500, 500]
+except ImportError:
+    pass
+
+IMAGE_RESULTS_DIR = Path(Path(__file__).parent, "image_results")
+
 
 @pytest.fixture(scope="session")
 def speos():
