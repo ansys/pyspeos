@@ -841,6 +841,7 @@ class Project:
         pv.PolyData
             mesh data extracted.
         """
+        import pyvista as pv
 
         def local2absolute(local_vertice: np.ndarray, coordinates) -> np.ndarray:
             """Convert local coordinate to global coordinate.
@@ -900,6 +901,7 @@ class Project:
                     part_mesh_info = part_mesh_info.append_polydata(face_mesh_data)
         return part_mesh_info
 
+    @graphics_required
     def _create_preview(self, viz_args=None) -> Plotter:
         """Create preview pyvista plotter object.
 
@@ -912,6 +914,10 @@ class Project:
             - {'style': 'surface', 'color':'white'},
             - {'opacity': 0.7, 'color':'white', 'show_edges': False},
         """
+        import pyvista as pv
+
+        from ansys.tools.visualization_interface import Plotter
+
         if viz_args is None:
             viz_args = {}
         _preview_mesh = pv.PolyData()

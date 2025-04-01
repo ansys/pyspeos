@@ -38,8 +38,6 @@ from ansys.speos.core.generic.general_methods import graphics_required
 from ansys.speos.core.project import Project, Speos
 
 if TYPE_CHECKING:  # pragma: no cover
-    import pyvista as pv
-
     from ansys.tools.visualization_interface import Plotter
 try:
     from ansys.speos.core.generic.general_methods import run_if_graphics_required
@@ -430,6 +428,7 @@ class LightPathFinder:
         return self
 
     @staticmethod
+    @graphics_required
     def __add_ray_to_pv(plotter: Plotter, ray: RayPath, max_ray_length: float):
         """Add a ray to pyvista plotter.
 
@@ -442,6 +441,8 @@ class LightPathFinder:
         max_ray_length : float
             Length of the last ray.
         """
+        import pyvista as pv
+
         temp = ray.impacts.copy()
         if not 7 <= ray.intersection_type[-1] <= 15:
             temp.append(
@@ -493,6 +494,8 @@ class LightPathFinder:
         operating systems (namely Windows) will experience issues
         saving a screenshot if the exit button in the GUI is pressed.
         """
+        from ansys.tools.visualization_interface import Plotter
+
         if ray_filter:
             if len(self._filtered_rays) > 0:
                 temp_rays = self._filtered_rays

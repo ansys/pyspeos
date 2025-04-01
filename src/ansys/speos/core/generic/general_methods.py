@@ -83,7 +83,7 @@ def run_if_graphics_required(warning=False):
         except ImportError:
             __GRAPHICS_AVAILABLE = False
 
-    if (__GRAPHICS_AVAILABLE and warning) is False:
+    if __GRAPHICS_AVAILABLE is False and warning is False:
         raise ImportError(GRAPHICS_ERROR)
     elif __GRAPHICS_AVAILABLE is False:
         warnings.warn(GRAPHICS_ERROR)
