@@ -21,6 +21,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Installing OS packages
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt install -y libgl1 libglx-mesa0 xvfb libgomp1
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
