@@ -22,8 +22,8 @@ from ansys.speos.core.workflow.combine_speos import SpeosFileInstance, combine_s
 
 HOSTNAME = "localhost"
 GRPC_PORT = 50098  # Be sure the Speos GRPC Server has been started on this port.
-car_names = ["BlueCar", "RedCar"]
-environment_name = "Env_Simplified"
+CAR_NAMES = ["BlueCar", "RedCar"]
+ENVIRONMENT_NAME = "Env_Simplified"
 USE_DOCKER = True  # Set to False if you're running this example locally as a Notebook.
 USE_GPU = False
 
@@ -31,35 +31,22 @@ USE_GPU = False
 #
 # Define the global coordinate systems for each of the assets.
 
-global_cs = [
-    0,
-    0,
-    0,  # Origin
-    1,
-    0,
-    0,  # x-direction
-    0,
-    1,
-    0,  # y-direction
-    0,
-    0,
-    1,
+GLOBAL_CS = [
+    0,  # Origin x
+    0,  # Origin y
+    0,  # Origin z
+    1,  # x-direction x
+    0,  # x-direction y
+    0,  # x-direction z
+    0,  # y-direction x
+    1,  # y-direction y
+    0,  # y-direction z
+    0,  # z-direction x
+    0,  # z-direction y
+    0,  # z-direction z
 ]
 car_cs = {}
-car_cs["red"] = [
-    2000,
-    0,
-    35000,  # Origin of red car
-    0.0,
-    0.0,
-    -1.0,  # x-direction
-    -1.0,
-    0.0,
-    0.0,  # y-direction
-    0.0,
-    1.0,
-    0.0,  # z-direction
-]
+car_cs["red"] = [2000, 0, 35000, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
 car_cs["blue"] = [2000, 0, 35000, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
 
 
@@ -74,7 +61,7 @@ car_cs["blue"] = [2000, 0, 35000, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
 if USE_DOCKER:  # Running on the remote server.
     tests_data_path = Path("/app") / "assets"
 else:
-    tests_data_path = Path().resolve().parent.parent / "tests" / "assets"
+    tests_data_path = Path("/path/to/your/download/assets/directory")
 
 # ## Create connection with speos rpc server
 
@@ -87,12 +74,12 @@ speos = Speos(host=HOSTNAME, port=GRPC_PORT)
 # - A blue car
 # - A red car
 
-full_env_path = tests_data_path / f"{environment_name}.speos" / f"{environment_name}.speos"
-car_paths = [tests_data_path / f"{car}.speos" / f"{car}.speos" for car in car_names]
+full_env_path = tests_data_path / f"{ENVIRONMENT_NAME}.speos" / f"{ENVIRONMENT_NAME}.speos"
+car_paths = [tests_data_path / f"{car}.speos" / f"{car}.speos" for car in CAR_NAMES]
 assets = [
     SpeosFileInstance(
         speos_file=str(full_env_path),
-        axis_system=global_cs,
+        axis_system=GLOBAL_CS,
     ),
     SpeosFileInstance(
         speos_file=str(car_paths[0]),
