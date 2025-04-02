@@ -920,7 +920,7 @@ class Project:
 
         if viz_args is None:
             viz_args = {}
-        p = Plotter()
+
         _preview_mesh = pv.PolyData()
         # Retrieve root part
         root_part_data = self.client[self.scene_link.get().part_guid].get()
@@ -940,6 +940,7 @@ class Project:
         poly_data = self.__extract_part_mesh_info(part_data=root_part_data)
         if poly_data is not None:
             _preview_mesh = _preview_mesh.append_polydata(poly_data)
+        p = Plotter()
         viz_args["show_edges"] = True
         p.plot(_preview_mesh, **viz_args)
 

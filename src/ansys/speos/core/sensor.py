@@ -1701,19 +1701,23 @@ class SensorCamera(BaseSensor):
             )
 
             # camera object field
-            camera_object_field_radius = 100
+            camera_object_field_radius = 500
+            camera_object_field_data = pv.Sphere(
+                radius=camera_object_field_radius,
+                center=feature_camera_pos,
+                direction=feature_camera_y_dir,
+                theta_resolution=30,
+                phi_resolution=30,
+                start_theta=0.0,
+                end_theta=60.0,
+                start_phi=90,
+                end_phi=135,
+            )
+            camera_object_field_data = camera_object_field_data.rotate_vector(
+                vector=feature_camera_y_dir, angle=-30, point=feature_camera_pos
+            )
             self._visual_data.data = self._visual_data.data.append_polydata(
-                pv.Sphere(
-                    radius=camera_object_field_radius,
-                    center=feature_camera_pos,
-                    direction=feature_camera_x_dir,
-                    theta_resolution=30,
-                    phi_resolution=30,
-                    start_theta=0.0,
-                    end_theta=60.0,
-                    start_phi=45,
-                    end_phi=135,
-                )
+                camera_object_field_data
             )
 
             # camera axis system
