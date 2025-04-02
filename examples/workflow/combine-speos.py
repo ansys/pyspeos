@@ -45,9 +45,9 @@ GLOBAL_CS = [
     0,  # z-direction y
     0,  # z-direction z
 ]
-car_cs = {}
-car_cs["red"] = [2000, 0, 35000, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
-car_cs["blue"] = [2000, 0, 35000, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
+CAR_CS = {}
+CAR_CS["red"] = [2000, 0, 35000, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
+CAR_CS["blue"] = [2000, 0, 35000, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
 
 
 # ## Load assets
@@ -59,9 +59,9 @@ car_cs["blue"] = [2000, 0, 35000, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
 # > to point to the assets folder.
 
 if USE_DOCKER:  # Running on the remote server.
-    tests_data_path = Path("/app") / "assets"
+    assets_data_path = Path("/app") / "assets"
 else:
-    tests_data_path = Path("/path/to/your/download/assets/directory")
+    assets_data_path = Path("/path/to/your/download/assets/directory")
 
 # ## Create connection with speos rpc server
 
@@ -74,8 +74,8 @@ speos = Speos(host=HOSTNAME, port=GRPC_PORT)
 # - A blue car
 # - A red car
 
-full_env_path = tests_data_path / f"{ENVIRONMENT_NAME}.speos" / f"{ENVIRONMENT_NAME}.speos"
-car_paths = [tests_data_path / f"{car}.speos" / f"{car}.speos" for car in CAR_NAMES]
+full_env_path = assets_data_path / f"{ENVIRONMENT_NAME}.speos" / f"{ENVIRONMENT_NAME}.speos"
+car_paths = [assets_data_path / f"{car}.speos" / f"{car}.speos" for car in CAR_NAMES]
 assets = [
     SpeosFileInstance(
         speos_file=str(full_env_path),
@@ -83,11 +83,11 @@ assets = [
     ),
     SpeosFileInstance(
         speos_file=str(car_paths[0]),
-        axis_system=car_cs["red"],
+        axis_system=CAR_CS["red"],
     ),
     SpeosFileInstance(
         speos_file=str(car_paths[1]),
-        axis_system=car_cs["blue"],
+        axis_system=CAR_CS["blue"],
     ),
 ]
 p = combine_speos(
@@ -113,15 +113,15 @@ p.preview()
 
 ssr = p.create_sensor(name="Camera.1", feature_type=SensorCamera)
 ssr.set_distortion_file_uri(
-    uri=str(tests_data_path / "CameraInputFiles" / "CameraDistortion_190deg.OPTDistortion")
+    uri=str(assets_data_path / "CameraInputFiles" / "CameraDistortion_190deg.OPTDistortion")
 ).set_mode_photometric().set_transmittance_file_uri(
-    uri=str(tests_data_path / "CameraInputFiles" / "CameraTransmittance.spectrum")
+    uri=str(assets_data_path / "CameraInputFiles" / "CameraTransmittance.spectrum")
 ).set_mode_color().set_red_spectrum_file_uri(
-    uri=str(tests_data_path / "CameraInputFiles" / "CameraSensitivityRed.spectrum")
+    uri=str(assets_data_path / "CameraInputFiles" / "CameraSensitivityRed.spectrum")
 ).set_blue_spectrum_file_uri(
-    uri=str(tests_data_path / "CameraInputFiles" / "CameraSensitivityBlue.spectrum")
+    uri=str(assets_data_path / "CameraInputFiles" / "CameraSensitivityBlue.spectrum")
 ).set_green_spectrum_file_uri(
-    uri=str(tests_data_path / "CameraInputFiles" / "CameraSensitivityGreen.spectrum")
+    uri=str(assets_data_path / "CameraInputFiles" / "CameraSensitivityGreen.spectrum")
 )
 ssr.set_axis_system([-2000, 1500, 11000, -1, 0, 0, 0, 1, 0, 0, 0, -1])
 ssr.commit()
@@ -135,7 +135,7 @@ ssr.commit()
 # +
 src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
 src.set_intensity_file_uri(
-    uri=str(tests_data_path / "IES_C_DETECTOR.ies")
+    uri=str(assets_data_path / "IES_C_DETECTOR.ies")
 ).set_spectrum().set_daylightfluorescent()
 src.set_axis_system([0, 10000, 50000, 1, 0, 0, 0, 1, 0, 0, 0, 1])
 
