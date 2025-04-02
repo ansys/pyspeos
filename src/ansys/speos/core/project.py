@@ -973,6 +973,6 @@ class Project:
 
         p = self._create_preview(viz_args=viz_args)
         if os.environ.get("DOCUMENTATION_BUILDING", "true") == "true":
-            p.show(screenshot=screenshot, jupyter_backend="html")
+            p.show(jupyter_backend="html")
         else:
             p.show(screenshot=screenshot)
