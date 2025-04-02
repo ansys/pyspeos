@@ -6,11 +6,12 @@ import pathlib
 import shutil
 
 from ansys_sphinx_theme import ansys_favicon, get_version_match
+import pyvista
 import sphinx
 from sphinx.builders.latex import LaTeXBuilder
 from sphinx.util import logging
 from sphinx.util.display import status_iterator
-import pyvista
+
 from ansys.speos.core import __version__
 
 LaTeXBuilder.supported_image_types = ["image/png", "image/pdf", "image/svg+xml"]
