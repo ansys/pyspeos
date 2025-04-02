@@ -22,7 +22,6 @@
 
 """Test basic intensity template database connection."""
 
-import os
 from pathlib import Path
 
 from ansys.api.speos.common.v1 import data_pb2

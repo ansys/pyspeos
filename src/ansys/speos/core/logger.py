@@ -384,7 +384,13 @@ class Logger:
     _level = logging.DEBUG
     _instances = {}
 
-    def __init__(self, level=logging.DEBUG, to_file=False, to_stdout=True, filename=FILE_NAME):
+    def __init__(
+        self,
+        level=logging.DEBUG,
+        to_file=False,
+        to_stdout=True,
+        filename=FILE_NAME,
+    ):
         """Customize the logger class for PySpeos.
 
         Parameters
@@ -405,7 +411,6 @@ class Logger:
         self.logger.addFilter(InstanceFilter())
         self.logger.setLevel(level)
         self.logger.propagate = True
-        self.level = self.logger.level  # TODO: TO REMOVE
 
         # Writing logging methods.
         self.debug = self.logger.debug
@@ -535,7 +540,10 @@ class Logger:
         return self._instances[name]
 
     def add_instance_logger(
-        self, name: str, client_instance: "SpeosClient", level: Optional[int] = None
+        self,
+        name: str,
+        client_instance: "SpeosClient",
+        level: Optional[int] = None,
     ) -> PySpeosCustomAdapter:
         """Add a logger for a speos instance.
 
@@ -592,7 +600,10 @@ class Logger:
             if issubclass(exc_type, KeyboardInterrupt):
                 sys.__excepthook__(exc_type, exc_value, exc_traceback)
                 return
-            logger.critical("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
+            logger.critical(
+                "Uncaught exception",
+                exc_info=(exc_type, exc_value, exc_traceback),
+            )
 
         sys.excepthook = handle_exception
 

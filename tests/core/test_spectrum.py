@@ -22,7 +22,6 @@
 
 """Test basic using spectrums."""
 
-import os
 from pathlib import Path
 
 from ansys.speos.core import Spectrum, Speos
@@ -72,7 +71,7 @@ def test_create_spectrum(speos: Speos):
     assert spectrum1.spectrum_link.get().HasField("predefined")
     assert spectrum1.spectrum_link.get().predefined.HasField("daylightfluorescent")
 
-    spectrum1.set_whiteLED().commit()
+    spectrum1.set_white_led().commit()
     assert spectrum1.spectrum_link.get().HasField("predefined")
     assert spectrum1.spectrum_link.get().predefined.HasField("whiteLED")
 

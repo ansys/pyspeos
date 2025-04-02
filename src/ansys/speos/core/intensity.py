@@ -26,6 +26,7 @@ from __future__ import annotations
 
 from typing import List, Mapping, Optional
 
+from ansys.speos.core.generic.general_methods import deprecate_kwargs
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.client import SpeosClient
 from ansys.speos.core.kernel.intensity_template import ProtoIntensityTemplate
@@ -51,7 +52,8 @@ class Intensity:
     metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
-    intensity_props_to_complete : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.IntensityProperties, optional
+    intensity_props_to_complete : \
+    ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.IntensityProperties, optional
         Intensity properties to complete.
         By default, ``None``.
     key : str
@@ -72,7 +74,8 @@ class Intensity:
         ----------
         library : ansys.api.speos.intensity.v1.IntensityTemplate.Library
             Library to complete.
-        library_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.IntensityProperties.LibraryProperties
+        library_props : \
+        ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.IntensityProperties.LibraryProperties
             Library properties to complete.
         default_values : bool
             Uses default values when True.
@@ -177,14 +180,16 @@ class Intensity:
     class Gaussian:
         """Intensity of type: Gaussian.
 
-        By default, full width at half maximum following x and y are set at 30 degrees, and total angle at 180 degrees.
+        By default, full width at half maximum following x and y are set at 30 degrees, and total
+        angle at 180 degrees.
         By default, no axis system is chosen, that means normal to surface map.
 
         Parameters
         ----------
         gaussian : ansys.api.speos.intensity.v1.IntensityTemplate.Gaussian
             Gaussian to complete.
-        gaussian_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.IntensityProperties.GaussianProperties
+        gaussian_props : \
+        ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.IntensityProperties.GaussianProperties
             Gaussian properties to complete.
         default_values : bool
             Uses default values when True.
@@ -308,7 +313,7 @@ class Intensity:
             )
 
             # Default values
-            self.set_cos(N=1)  # By default will be lambertian (cos with N =1)
+            self.set_cos(n=1)  # By default will be lambertian (cos with N =1)
         else:
             # Retrieve IntensityTemplate
             self.intensity_template_link = speos_client[key]
@@ -329,7 +334,7 @@ class Intensity:
                 library_props=self._intensity_properties.library_properties,
                 default_values=False,
             )
-        elif type(self._type) != Intensity.Library:
+        elif not isinstance(self._type, Intensity.Library):
             # if the _type is not Library then we create a new type.
             self._type = Intensity.Library(
                 library=self._intensity_template.library,
@@ -344,12 +349,13 @@ class Intensity:
             self._type._library_props = self._intensity_properties.library_properties
         return self._type
 
-    def set_cos(self, N: float = 3, total_angle: float = 180) -> Intensity:
+    @deprecate_kwargs({"N": "n"}, "0.3.0")
+    def set_cos(self, n: float = 3, total_angle: float = 180) -> Intensity:
         """Set the intensity as cos.
 
         Parameters
         ----------
-        N : float
+        n : float
             Order of cos law.
             By default, ``3``.
         total_angle : float
@@ -362,7 +368,7 @@ class Intensity:
             Intensity feature.
         """
         self._type = None
-        self._intensity_template.cos.N = N
+        self._intensity_template.cos.N = n
         self._intensity_template.cos.total_angle = total_angle
         self._intensity_properties.Clear()
         return self
@@ -382,7 +388,7 @@ class Intensity:
                 gaussian_props=self._intensity_properties.gaussian_properties,
                 default_values=False,
             )
-        elif type(self._type) != Intensity.Gaussian:
+        elif not isinstance(self._type, Intensity.Gaussian):
             # if the _type is not Gaussian then we create a new type.
             self._type = Intensity.Gaussian(
                 gaussian=self._intensity_template.gaussian,

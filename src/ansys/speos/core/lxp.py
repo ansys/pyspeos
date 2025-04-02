@@ -20,21 +20,31 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""The lxp module contains classes and functions to simplify the interaction with ray data (LPF file).
+"""The lxp module contains classes and functions to simplify the interaction with ray data.
 
+Ray data is provided as lpf file.
 LPF files contain a set of simulated rays with all their intersections and properties.
 """
 
 from __future__ import annotations
 
 import os
-from typing import Union
-
-import pyvista as pv
+from pathlib import Path
+from typing import TYPE_CHECKING, Optional, Union
 
 import ansys.api.speos.lpf.v2.lpf_file_reader_pb2 as lpf_file_reader__v2__pb2
 import ansys.api.speos.lpf.v2.lpf_file_reader_pb2_grpc as lpf_file_reader__v2__pb2_grpc
+from ansys.speos.core.generic.general_methods import graphics_required
 from ansys.speos.core.project import Project, Speos
+
+if TYPE_CHECKING:  # pragma: no cover
+    from ansys.tools.visualization_interface import Plotter
+try:
+    from ansys.speos.core.generic.general_methods import run_if_graphics_required
+
+    run_if_graphics_required(warning=True)
+except ImportError as err:  # pragma: no cover
+    raise err
 
 ERROR_IDS = [7, 8, 9, 10, 11, 12, 13, 14, 15]
 """Intersection types indicating an error state."""
@@ -56,7 +66,9 @@ class RayPath:
     """
 
     def __init__(
-        self, raypath: lpf_file_reader__v2__pb2.RayPath, sensor_contribution: bool = False
+        self,
+        raypath: lpf_file_reader__v2__pb2.RayPath,
+        sensor_contribution: bool = False,
     ):
         self._nb_impacts = len(raypath.impacts)
         self._impacts = [[inter.x, inter.y, inter.z] for inter in raypath.impacts]
@@ -71,7 +83,10 @@ class RayPath:
         self._intersection_type = raypath.interaction_statuses
         if sensor_contribution:
             self._sensor_contribution = [
-                {"sensor_id": sc.sensor_id, "position": [sc.coordinates.x, sc.coordinates.y]}
+                {
+                    "sensor_id": sc.sensor_id,
+                    "position": [sc.coordinates.x, sc.coordinates.y],
+                }
                 for sc in raypath.sensor_contributions
             ]
         else:
@@ -190,8 +205,8 @@ class RayPath:
         Returns
         -------
         Union[None, list[dict]]
-            If no sensor contribution, None will be returned. If there is sensor contribution, a dictionary with \
-            the following information is returned:\
+            If no sensor contribution, None will be returned. If there is sensor contribution, \
+            a dictionary with the following information is returned:\
             {“sensor_id”: sc.sensor_id,
             “position”: [sc.coordinates.x, sc.coordinates.y]}
         """
@@ -318,7 +333,10 @@ class LightPathFinder:
         return raypaths
 
     def __filter_by_last_intersection_types(self, options: list[int], new=True):
-        """Filter ray paths based on last intersection types and populates filtered_rays property."""
+        """Filter ray paths based on last intersection types.
+
+        Populate filtered_rays property.
+        """
         if new:
             self._filtered_rays = []
             for ray in self._rays:
@@ -410,19 +428,22 @@ class LightPathFinder:
         return self
 
     @staticmethod
-    def __add_ray_to_pv(plotter: pv.Plotter, ray: RayPath, max_ray_length: float):
+    @graphics_required
+    def __add_ray_to_pv(plotter: Plotter, ray: RayPath, max_ray_length: float):
         """Add a ray to pyvista plotter.
 
         Parameters
         ----------
-        plotter : pv.Plotter
-            Pyvista plotter object to which rays should be added.
+        plotter : Plotter
+            Ansys plotter object to which rays should be added.
         ray : script.RayPath
             RayPath object which contains ray information to be added.
         max_ray_length : float
             Length of the last ray.
         """
-        temp = ray.impacts
+        import pyvista as pv
+
+        temp = ray.impacts.copy()
         if not 7 <= ray.intersection_type[-1] <= 15:
             temp.append(
                 [
@@ -435,14 +456,16 @@ class LightPathFinder:
             mesh = pv.MultipleLines(temp)
         else:
             mesh = pv.Line(temp[0], temp[1])
-        plotter.add_mesh(mesh, color=wavelength_to_rgb(ray.wl), line_width=2)
+        plotter.plot(mesh, color=wavelength_to_rgb(ray.wl), line_width=2)
 
+    @graphics_required
     def preview(
         self,
         nb_ray: int = 100,
         max_ray_length: float = 50.0,
         ray_filter: bool = False,
         project: Project = None,
+        screenshot: Optional[Union[str, Path]] = None,
     ) -> LightPathFinder:
         """Preview LPF file with pyvista.
 
@@ -456,12 +479,23 @@ class LightPathFinder:
             Boolean to decide if filtered rays or all rays should be shown.
         project : ansys.speos.core.project.Project
             Speos Project/Geometry to be added to pyvista visualisation.
+        screenshot : str or Path or ``None``
+            Path to save a screenshot of the plotter. If defined Plotter will only create the
+            screenshot
 
         Returns
         -------
         ansys.speos.core.lxp.LightPathFinder
             LightPathFinder Instance.
+
+        Notes
+        -----
+        Please use the ``q``-key to close the plotter as some
+        operating systems (namely Windows) will experience issues
+        saving a screenshot if the exit button in the GUI is pressed.
         """
+        from ansys.tools.visualization_interface import Plotter
+
         if ray_filter:
             if len(self._filtered_rays) > 0:
                 temp_rays = self._filtered_rays
@@ -471,7 +505,7 @@ class LightPathFinder:
         else:
             temp_rays = self._rays
         if not project:
-            plotter = pv.Plotter()
+            plotter = Plotter()
             if nb_ray > len(temp_rays):
                 for ray in temp_rays:
                     self.__add_ray_to_pv(plotter, ray, max_ray_length)
@@ -486,17 +520,17 @@ class LightPathFinder:
             else:
                 for i in range(nb_ray):
                     self.__add_ray_to_pv(plotter, temp_rays[i], max_ray_length)
-        if os.environ.get("DOCUMENTATION_BUILDING", "true") == "true":
-            plotter.show(jupyter_backend="html")
+        if os.environ.get("DOCUMENTATION_BUILDING", "false") == "true":
+            plotter.show(screenshot=screenshot, jupyter_backend="html")
         else:
-            plotter.show()
+            plotter.show(screenshot=screenshot)
         return self
 
 
 def wavelength_to_rgb(wavelength: float, gamma: float = 0.8) -> [int, int, int, int]:
     """Convert a given wavelength of light to an approximate RGB color value.
 
-    The wavelength must be given in nanometers in the range from 380 nm to 750 nm (789 THz to 400 THz).
+    The wavelength must be given in nanometers in the range from 380 nm to 750 nm.
     Based on the code from http://www.physics.sfasu.edu/astro/color/spectra.html
 
     Parameters
@@ -510,35 +544,35 @@ def wavelength_to_rgb(wavelength: float, gamma: float = 0.8) -> [int, int, int, 
     wavelength = float(wavelength)
     if 380 <= wavelength <= 440:
         attenuation = 0.3 + 0.7 * (wavelength - 380) / (440 - 380)
-        R = ((-(wavelength - 440) / (440 - 380)) * attenuation) ** gamma
-        G = 0.0
-        B = (1.0 * attenuation) ** gamma
+        r = ((-(wavelength - 440) / (440 - 380)) * attenuation) ** gamma
+        g = 0.0
+        b = (1.0 * attenuation) ** gamma
     elif 440 <= wavelength <= 490:
-        R = 0.0
-        G = ((wavelength - 440) / (490 - 440)) ** gamma
-        B = 1.0
+        r = 0.0
+        g = ((wavelength - 440) / (490 - 440)) ** gamma
+        b = 1.0
     elif 490 <= wavelength <= 510:
-        R = 0.0
-        G = 1.0
-        B = (-(wavelength - 510) / (510 - 490)) ** gamma
+        r = 0.0
+        g = 1.0
+        b = (-(wavelength - 510) / (510 - 490)) ** gamma
     elif 510 <= wavelength <= 580:
-        R = ((wavelength - 510) / (580 - 510)) ** gamma
-        G = 1.0
-        B = 0.0
+        r = ((wavelength - 510) / (580 - 510)) ** gamma
+        g = 1.0
+        b = 0.0
     elif 580 <= wavelength <= 645:
-        R = 1.0
-        G = (-(wavelength - 645) / (645 - 580)) ** gamma
-        B = 0.0
+        r = 1.0
+        g = (-(wavelength - 645) / (645 - 580)) ** gamma
+        b = 0.0
     elif 645 <= wavelength <= 750:
         attenuation = 0.3 + 0.7 * (750 - wavelength) / (750 - 645)
-        R = (1.0 * attenuation) ** gamma
-        G = 0.0
-        B = 0.0
+        r = (1.0 * attenuation) ** gamma
+        g = 0.0
+        b = 0.0
     else:
-        R = 0.0
-        G = 0.0
-        B = 0.0
-    R *= 255
-    G *= 255
-    B *= 255
-    return [int(R), int(G), int(B), 255]
+        r = 0.0
+        g = 0.0
+        b = 0.0
+    r *= 255
+    g *= 255
+    b *= 255
+    return [int(r), int(g), int(b), 255]

@@ -23,16 +23,18 @@
 """Unit Test for Eulumdat service."""
 
 import logging
-import os
 from pathlib import Path
 
-from ansys.api.speos.intensity_distributions.v1 import eulumdat_pb2, eulumdat_pb2_grpc
+from ansys.api.speos.intensity_distributions.v1 import (
+    eulumdat_pb2,
+    eulumdat_pb2_grpc,
+)
 from ansys.speos.core.speos import Speos
 from tests.conftest import test_path
 import tests.helper as helper
 
 
-def createEulumdatIntensity():
+def create_eulumdat_intensity():
     """Create simple eulumdat file."""
     eulumdat = eulumdat_pb2.EulumdatIntensityDistribution()
 
@@ -103,7 +105,7 @@ def createEulumdatIntensity():
     return eulumdat
 
 
-def compareEulumdatIntensities(eulumdat1, eulumdat2):
+def compare_eulumdat_intensities(eulumdat1, eulumdat2):
     """Compare 2 eulumdat files."""
     # file information
     if eulumdat1.file_info.company_identification != eulumdat2.file_info.company_identification:
@@ -229,20 +231,20 @@ def test_grpc_eulumdat_intensity(speos: Speos):
     load_name.file_uri = str(Path(test_path) / "eulumdat_tmp00.ldt")
 
     logging.debug("Creating eulumdat intensity protocol buffer")
-    eulumdat = createEulumdatIntensity()
+    eulumdat = create_eulumdat_intensity()
 
     logging.debug("Sending protocol buffer to server")
-    import_response = eulumdat_pb2.Import_Response()
-    import_response = stub.Import(eulumdat)
+    eulumdat_pb2.Import_Response()
+    stub.Import(eulumdat)
 
     logging.debug("Writing as {save_name.file_uri}")
-    save_response = eulumdat_pb2.Save_Response()
-    save_response = stub.Save(save_name)
+    eulumdat_pb2.Save_Response()
+    stub.Save(save_name)
     assert helper.does_file_exist(save_name.file_uri)
 
     logging.debug("Reading {load_name.file_uri} back")
-    load_response = eulumdat_pb2.Load_Response()
-    load_response = stub.Load(load_name)
+    eulumdat_pb2.Load_Response()
+    stub.Load(load_name)
     helper.remove_file(load_name.file_uri)
 
     logging.debug("Exporting eulumdat intensity protocol buffer")
@@ -250,4 +252,4 @@ def test_grpc_eulumdat_intensity(speos: Speos):
     eulumdat2 = stub.Export(export_request)
 
     logging.debug("Check equal")
-    assert compareEulumdatIntensities(eulumdat, eulumdat2)
+    assert compare_eulumdat_intensities(eulumdat, eulumdat2)

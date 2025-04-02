@@ -33,20 +33,35 @@ from grpc._channel import _InactiveRpcError
 from ansys.api.speos.part.v1 import body_pb2, face_pb2, part_pb2
 from ansys.speos.core.kernel.body import BodyLink, BodyStub
 from ansys.speos.core.kernel.face import FaceLink, FaceStub
-from ansys.speos.core.kernel.intensity_template import IntensityTemplateLink, IntensityTemplateStub
+from ansys.speos.core.kernel.intensity_template import (
+    IntensityTemplateLink,
+    IntensityTemplateStub,
+)
 from ansys.speos.core.kernel.job import JobLink, JobStub
 from ansys.speos.core.kernel.part import PartLink, PartStub
 from ansys.speos.core.kernel.scene import SceneLink, SceneStub
-from ansys.speos.core.kernel.sensor_template import SensorTemplateLink, SensorTemplateStub
+from ansys.speos.core.kernel.sensor_template import (
+    SensorTemplateLink,
+    SensorTemplateStub,
+)
 from ansys.speos.core.kernel.simulation_template import (
     SimulationTemplateLink,
     SimulationTemplateStub,
 )
-from ansys.speos.core.kernel.sop_template import SOPTemplateLink, SOPTemplateStub
-from ansys.speos.core.kernel.source_template import SourceTemplateLink, SourceTemplateStub
+from ansys.speos.core.kernel.sop_template import (
+    SOPTemplateLink,
+    SOPTemplateStub,
+)
+from ansys.speos.core.kernel.source_template import (
+    SourceTemplateLink,
+    SourceTemplateStub,
+)
 from ansys.speos.core.kernel.spectrum import SpectrumLink, SpectrumStub
-from ansys.speos.core.kernel.vop_template import VOPTemplateLink, VOPTemplateStub
-from ansys.speos.core.logger import LOG as logger, PySpeosCustomAdapter
+from ansys.speos.core.kernel.vop_template import (
+    VOPTemplateLink,
+    VOPTemplateStub,
+)
+from ansys.speos.core.logger import LOG as LOGGER, PySpeosCustomAdapter
 
 DEFAULT_HOST = "localhost"
 DEFAULT_PORT = "50098"
@@ -140,7 +155,7 @@ class SpeosClient:
         wait_until_healthy(self._channel, timeout)
 
         # once connection with the client is established, create a logger
-        self._log = logger.add_instance_logger(
+        self._log = LOGGER.add_instance_logger(
             name=self._target, client_instance=self, level=logging_level
         )
         if logging_file:
@@ -180,7 +195,7 @@ class SpeosClient:
         try:
             grpc.channel_ready_future(self.channel).result(timeout=60)
             return True
-        except:
+        except BaseException:
             return False
 
     def target(self) -> str:
@@ -417,7 +432,8 @@ List[ansys.speos.core.kernel.job.JobLink], \
 List[ansys.speos.core.kernel.part.PartLink], \
 List[ansys.speos.core.kernel.body.BodyLink], \
 List[ansys.speos.core.kernel.face.FaceLink]]
-            List of Link objects corresponding to the keys - Empty if no objects corresponds to the keys.
+            List of Link objects corresponding to the keys - Empty if no objects corresponds to the
+            keys.
         """
         if self._closed:
             raise ConnectionAbortedError()

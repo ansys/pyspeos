@@ -22,7 +22,6 @@
 
 """Test basic using project."""
 
-import os
 from pathlib import Path
 
 from ansys.speos.core import Body, Face, Part, Project, Speos
@@ -52,7 +51,6 @@ def test_find_feature(speos: Speos):
     assert len(p.scene_link.get().sensors) == 1
 
     # Create an radiance sensor in the project
-    # TODO: enhance the initialize method
     sensor2 = p.create_sensor(name="Sensor.2", feature_type=SensorRadiance)
     sensor2.commit()
     assert len(p._features) == 3
@@ -133,7 +131,10 @@ def test_find_feature_geom(speos: Speos):
     assert len(feats) == 1
 
     # Retrieve face
-    feats = p.find(name="Solid Body in GUIDE:1379760262/Face in GUIDE:166", feature_type=Part)
+    feats = p.find(
+        name="Solid Body in GUIDE:1379760262/Face in GUIDE:166",
+        feature_type=Part,
+    )
     assert len(feats) == 1
 
     # Retrieve face with regex (regex at body and at face level)
@@ -164,16 +165,16 @@ def test_find_feature_geom(speos: Speos):
     p2 = Project(speos=speos)
     root_part = p2.create_root_part()
     body_01 = root_part.create_body(name="Body.01")
-    face_011 = body_01.create_face(name="Face.011")
-    face_012 = body_01.create_face(name="Face.012")
-    body_02 = root_part.create_body(name="Body.02")
-    face_021 = body_01.create_face(name="Face.021")
+    body_01.create_face(name="Face.011")
+    body_01.create_face(name="Face.012")
+    root_part.create_body(name="Body.02")
+    body_01.create_face(name="Face.021")
     face_022 = body_01.create_face(name="Face.022")
-    face_023 = body_01.create_face(name="Face.023")
+    body_01.create_face(name="Face.023")
     sub_part_1 = root_part.create_sub_part(name="SubPart.1")
     body_1 = sub_part_1.create_body(name="Body.1")
-    face_11 = body_1.create_face(name="Face.11")
-    face_12 = body_1.create_face(name="Face.12")
+    body_1.create_face(name="Face.11")
+    body_1.create_face(name="Face.12")
     sub_part_11 = sub_part_1.create_sub_part(name="SubPart.11")
     body_11 = sub_part_11.create_body(name="Body.11")
     face_111 = body_11.create_face(name="Face.111")
@@ -182,7 +183,7 @@ def test_find_feature_geom(speos: Speos):
     body_2 = sub_part_2.create_body(name="Body.2")
     face_21 = body_2.create_face(name="Face.21")
     face_22 = body_2.create_face(name="Face.22")
-    face_23 = body_2.create_face(name="Face.23")
+    body_2.create_face(name="Face.23")
 
     # Look at first level : 2 Bodies and 2 SubParts
     found_feats = p2.find(name=".*", name_regex=True, feature_type=Part)
@@ -366,6 +367,31 @@ def test_from_file(speos: Speos):
         == 25
     )
     assert ssr_data.irradiance_sensor_template.dimensions.x_sampling == 500
+
+
+def test_from_file_threads_limited(speos: Speos):
+    """Test change Number of threads used."""
+    # Create a project from a file
+    p = Project(
+        speos=speos,
+        path=str(
+            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
+        ),
+    )
+
+    assert len(p.scene_link.get().simulations) == 1
+
+    feat_sims = p.find(name=p.scene_link.get().simulations[0].name)
+    assert len(feat_sims) == 1
+
+    # Choose number of threads
+    threads_nb = 8
+
+    # Compute on CPU with the amount of threads selected
+    feat_sims[0].compute_CPU(threads_number=threads_nb)
+    assert feat_sims[0].simulation_template_link.get().metadata[
+        "SimulationSetting::OPTThreadNumber"
+    ] == "int::" + str(threads_nb)
 
 
 def test_find_geom(speos: Speos):

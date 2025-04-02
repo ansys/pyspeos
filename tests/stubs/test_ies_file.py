@@ -23,7 +23,6 @@
 """Unit test for IES service."""
 
 import logging
-import os
 from pathlib import Path
 
 from ansys.api.speos.intensity_distributions.v1 import ies_pb2, ies_pb2_grpc
@@ -32,7 +31,7 @@ from tests.conftest import test_path
 import tests.helper as helper
 
 
-def createIesIntensity():
+def create_ies_intensity():
     """Create simple IES file."""
     ies = ies_pb2.IesIntensityDistribution()
 
@@ -74,7 +73,7 @@ def createIesIntensity():
     return ies
 
 
-def compareIesIntensities(ies1, ies2):
+def compare_ies_intensities(ies1, ies2):
     """Compare two ies files."""
     if ies1.norme_version != ies2.norme_version:
         return False
@@ -146,26 +145,26 @@ def test_grpc_ies_intensity(speos: Speos):
     load_request.file_uri = str(Path(test_path) / "tmp2_file.ies")
 
     logging.debug("Creating ies intensity protocol buffer")
-    ies = createIesIntensity()
+    ies = create_ies_intensity()
 
     logging.debug("Sending protocol buffer to server")
-    import_response = ies_pb2.Import_Response()
-    import_response = stub.Import(ies)
+    ies_pb2.Import_Response()
+    stub.Import(ies)
 
     logging.debug("Writing as {save_request.file_uri}")
-    save_response = ies_pb2.Save_Response()
-    save_response = stub.Save(save_request)
+    ies_pb2.Save_Response()
+    stub.Save(save_request)
     assert helper.does_file_exist(save_request.file_uri)
 
     logging.debug("Reading {load_response.file_uri}")
-    load_response = ies_pb2.Load_Response()
-    load_response = stub.Load(load_request)
+    ies_pb2.Load_Response()
+    stub.Load(load_request)
     helper.remove_file(load_request.file_uri)
 
     logging.debug("Exporting ies intensity protocol buffer")
     export_request = ies_pb2.Export_Request()
-    ies2 = ies_pb2.IesIntensityDistribution()
+    ies_pb2.IesIntensityDistribution()
     ies2 = stub.Export(export_request)
 
     logging.debug("Comparing ies intensity distributions")
-    assert compareIesIntensities(ies, ies2)
+    assert compare_ies_intensities(ies, ies2)

@@ -24,16 +24,17 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 import re
-from typing import List, Mapping, Optional, Union
+from typing import TYPE_CHECKING, List, Mapping, Optional, Union
 import uuid
 
 from google.protobuf.internal.containers import RepeatedScalarFieldContainer
 import numpy as np
-import pyvista as pv
 
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
+from ansys.speos.core.generic.general_methods import graphics_required
 from ansys.speos.core.kernel.body import BodyLink
 from ansys.speos.core.kernel.face import FaceLink
 from ansys.speos.core.kernel.part import ProtoPart
@@ -41,15 +42,40 @@ from ansys.speos.core.kernel.scene import ProtoScene
 import ansys.speos.core.opt_prop as opt_prop
 import ansys.speos.core.part as part
 import ansys.speos.core.proto_message_utils as proto_message_utils
-from ansys.speos.core.sensor import SensorCamera, SensorIrradiance, SensorRadiance
-from ansys.speos.core.simulation import SimulationDirect, SimulationInteractive, SimulationInverse
-from ansys.speos.core.source import SourceLuminaire, SourceRayFile, SourceSurface
+from ansys.speos.core.sensor import (
+    SensorCamera,
+    SensorIrradiance,
+    SensorRadiance,
+)
+from ansys.speos.core.simulation import (
+    SimulationDirect,
+    SimulationInteractive,
+    SimulationInverse,
+)
+from ansys.speos.core.source import (
+    SourceLuminaire,
+    SourceRayFile,
+    SourceSurface,
+)
 from ansys.speos.core.speos import Speos
+
+try:
+    from ansys.speos.core.generic.general_methods import run_if_graphics_required
+
+    run_if_graphics_required(warning=True)
+except ImportError as err:  # pragma: no cover
+    raise err
+
+if TYPE_CHECKING:  # pragma: no cover
+    import pyvista as pv
+
+    from ansys.tools.visualization_interface import Plotter
 
 
 class Project:
-    """A project describes all Speos features (optical properties, sources, sensors, simulations) that user can fill in.
+    """A project describes all Speos features.
 
+    This includes optical properties, sources, sensors, simulations that user can fill in.
     Project provides functions to create new feature, find a feature.
     It can be created from empty or loaded from a specific file.
 
@@ -78,11 +104,17 @@ class Project:
             self._fill_features()
 
     # def list(self):
-    #    """Return all feature key as a tree, can be used to list all features- Not yet implemented"""
+    #    """Return all feature key as a tree.
+    #
+    #    Can be used to list all features- Not yet implemented.
+    #    """
     #    pass
 
     def create_optical_property(
-        self, name: str, description: str = "", metadata: Optional[Mapping[str, str]] = None
+        self,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
     ) -> opt_prop.OptProp:
         """Create a new Optical Property feature.
 
@@ -145,7 +177,8 @@ class Project:
 
         Returns
         -------
-        Union[ansys.speos.core.source.SourceSurface, ansys.speos.core.source.SourceRayFile, ansys.speos.core.source.SourceLuminaire]
+        Union[ansys.speos.core.source.SourceSurface,ansys.speos.core.source.SourceRayFile,\
+        ansys.speos.core.source.SourceLuminaire]
             Source class instance.
         """
         if metadata is None:
@@ -160,15 +193,24 @@ class Project:
         feature = None
         if feature_type == SourceSurface:
             feature = SourceSurface(
-                project=self, name=name, description=description, metadata=metadata
+                project=self,
+                name=name,
+                description=description,
+                metadata=metadata,
             )
         elif feature_type == SourceRayFile:
             feature = SourceRayFile(
-                project=self, name=name, description=description, metadata=metadata
+                project=self,
+                name=name,
+                description=description,
+                metadata=metadata,
             )
         elif feature_type == SourceLuminaire:
             feature = SourceLuminaire(
-                project=self, name=name, description=description, metadata=metadata
+                project=self,
+                name=name,
+                description=description,
+                metadata=metadata,
             )
         else:
             msg = "Requested feature {} does not exist in supported list {}".format(
@@ -198,14 +240,17 @@ class Project:
             Simulation type to be created.
             By default, ``ansys.speos.core.simulation.SimulationDirect``.
             Allowed types: Union[ansys.speos.core.simulation.SimulationDirect, \
-            ansys.speos.core.simulation.SimulationInteractive, ansys.speos.core.simulation.SimulationInverse].
+            ansys.speos.core.simulation.SimulationInteractive, \
+            ansys.speos.core.simulation.SimulationInverse].
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
 
         Returns
         -------
-        Union[ansys.speos.core.simulation.SimulationDirect, ansys.speos.core.simulation.SimulationInteractive, ansys.speos.core.simulation.SimulationInverse]
+        Union[ansys.speos.core.simulation.SimulationDirect,\
+        ansys.speos.core.simulation.SimulationInteractive,\
+        ansys.speos.core.simulation.SimulationInverse]
             Simulation class instance
         """
         if metadata is None:
@@ -220,15 +265,24 @@ class Project:
         feature = None
         if feature_type == SimulationDirect:
             feature = SimulationDirect(
-                project=self, name=name, description=description, metadata=metadata
+                project=self,
+                name=name,
+                description=description,
+                metadata=metadata,
             )
         elif feature_type == SimulationInverse:
             feature = SimulationInverse(
-                project=self, name=name, description=description, metadata=metadata
+                project=self,
+                name=name,
+                description=description,
+                metadata=metadata,
             )
         elif feature_type == SimulationInteractive:
             feature = SimulationInteractive(
-                project=self, name=name, description=description, metadata=metadata
+                project=self,
+                name=name,
+                description=description,
+                metadata=metadata,
             )
         else:
             msg = "Requested feature {} does not exist in supported list {}".format(
@@ -262,7 +316,8 @@ class Project:
         feature_type: type
             Sensor type to be created.
             By default, ``ansys.speos.core.sensor.SensorIrradiance``.
-            Allowed types: Union[ansys.speos.core.sensor.SensorCamera, ansys.speos.core.sensor.SensorRadiance, \
+            Allowed types: Union[ansys.speos.core.sensor.SensorCamera,\
+            ansys.speos.core.sensor.SensorRadiance, \
             ansys.speos.core.sensor.SensorIrradiance].
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
@@ -270,7 +325,8 @@ class Project:
 
         Returns
         -------
-        Union[ansys.speos.core.sensor.SensorCamera, ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance]
+        Union[ansys.speos.core.sensor.SensorCamera,\
+        ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance]
             Sensor class instance.
         """
         if metadata is None:
@@ -285,15 +341,24 @@ class Project:
         feature = None
         if feature_type == SensorIrradiance:
             feature = SensorIrradiance(
-                project=self, name=name, description=description, metadata=metadata
+                project=self,
+                name=name,
+                description=description,
+                metadata=metadata,
             )
         elif feature_type == SensorRadiance:
             feature = SensorRadiance(
-                project=self, name=name, description=description, metadata=metadata
+                project=self,
+                name=name,
+                description=description,
+                metadata=metadata,
             )
         elif feature_type == SensorCamera:
             feature = SensorCamera(
-                project=self, name=name, description=description, metadata=metadata
+                project=self,
+                name=name,
+                description=description,
+                metadata=metadata,
             )
         else:
             msg = "Requested feature {} does not exist in supported list {}".format(
@@ -304,9 +369,13 @@ class Project:
         return feature
 
     def create_root_part(
-        self, description: str = "", metadata: Optional[Mapping[str, str]] = None
+        self,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
     ) -> part.Part:
-        """Create the project root part feature. If a root part is already created in the project, it is returned.
+        """Create the project root part feature.
+
+        If a root part is already created in the project, it is returned.
 
         Parameters
         ----------
@@ -335,7 +404,10 @@ class Project:
         return feature
 
     def find(
-        self, name: str, name_regex: bool = False, feature_type: Optional[type] = None
+        self,
+        name: str,
+        name_regex: bool = False,
+        feature_type: Optional[type] = None,
     ) -> List[
         Union[
             opt_prop.OptProp,
@@ -366,15 +438,18 @@ class Project:
         feature_type : type
             Type of the wanted features.
             Mandatory to fill for geometry features.
-            By default, ``None``, means that all features will be considered (except geometry features).
+            By default, ``None``, means that all features will be considered
+            (except geometry features).
 
         Returns
         -------
         List[Union[ansys.speos.core.opt_prop.OptProp, ansys.speos.core.source.Surface, \
-        ansys.speos.core.source.RayFile, ansys.speos.core.source.Luminaire, ansys.speos.core.sensor.Camera, \
+        ansys.speos.core.source.RayFile, ansys.speos.core.source.Luminaire, \
+        ansys.speos.core.sensor.Camera, \
         ansys.speos.core.sensor.Radiance, ansys.speos.core.sensor.Irradiance, \
         ansys.speos.core.simulation.Direct, ansys.speos.core.simulation.Interactive, \
-        ansys.speos.core.simulation.Inverse, ansys.speos.core.part.Part, ansys.speos.core.body.Body, \
+        ansys.speos.core.simulation.Inverse, ansys.speos.core.part.Part, \
+        ansys.speos.core.body.Body, \
         ansys.speos.core.face.Face, ansys.speos.core.part.Part.SubPart]]
             Found features.
 
@@ -385,8 +460,11 @@ class Project:
         >>> # Specify feature type
         >>> find(name="Camera.1", feature_type=ansys.speos.core.sensor.SensorCamera)
         >>> # Using regex
-        >>> find(name="Camera.*", name_regex=True, feature_type=ansys.speos.core.sensor.SensorCamera)
-
+        >>> find(
+        >>>     name="Camera.*",
+        >>>     name_regex=True,
+        >>>     feature_type=ansys.speos.core.sensor.SensorCamera,
+        >>> )
         Here some examples when looking for a geometry feature:
         (always precise feature_type)
 
@@ -443,8 +521,8 @@ class Project:
                         x
                         for x in self._features
                         if (
-                            type(x) == feature_type
-                            or (type(x._type) == feature_type if hasattr(x, "_type") else False)
+                            isinstance(x, feature_type)
+                            or (isinstance(x._type, feature_type) if hasattr(x, "_type") else False)
                         )
                         and p.match(x._name)
                     ]
@@ -455,8 +533,8 @@ class Project:
                         x
                         for x in self._features
                         if (
-                            type(x) == feature_type
-                            or (type(x._type) == feature_type if hasattr(x, "_type") else False)
+                            isinstance(x, feature_type)
+                            or (isinstance(x._type, feature_type) if hasattr(x, "_type") else False)
                         )
                         and x._name == name
                     ]
@@ -465,7 +543,9 @@ class Project:
         if found_features and idx != -1:
             tmp = [
                 f.find(
-                    name=orig_name[idx + 1 :], name_regex=name_regex, feature_type=orig_feature_type
+                    name=orig_name[idx + 1 :],
+                    name_regex=name_regex,
+                    feature_type=orig_feature_type,
                 )
                 for f in found_features
             ]
@@ -508,7 +588,9 @@ class Project:
     def _to_dict(self) -> dict:
         # Replace all guids by content of objects in the dict
         output_dict = proto_message_utils._replace_guids(
-            speos_client=self.client, message=self.scene_link.get(), ignore_simple_key="part_guid"
+            speos_client=self.client,
+            message=self.scene_link.get(),
+            ignore_simple_key="part_guid",
         )
 
         # For each feature, replace properties by putting them at correct place
@@ -517,11 +599,13 @@ class Project:
                 for inside_dict in v:
                     if k == "simulations":
                         sim_feat = self.find(
-                            name=inside_dict["name"], feature_type=SimulationDirect
+                            name=inside_dict["name"],
+                            feature_type=SimulationDirect,
                         )
                         if len(sim_feat) == 0:
                             sim_feat = self.find(
-                                name=inside_dict["name"], feature_type=SimulationInverse
+                                name=inside_dict["name"],
+                                feature_type=SimulationInverse,
                             )
                         if len(sim_feat) == 0:
                             sim_feat = self.find(
@@ -572,7 +656,11 @@ class Project:
         """Return the string representation of the project's scene."""
         return proto_message_utils.dict_to_str(dict=self._to_dict())
 
-    def _fill_bodies(self, body_guids: List[str], feat_host: Union[part.Part, part.Part.SubPart]):
+    def _fill_bodies(
+        self,
+        body_guids: List[str],
+        feat_host: Union[part.Part, part.Part.SubPart],
+    ):
         """Fill part of sub part features from a list of body guids."""
         for b_link in self.client.get_items(keys=body_guids, item_type=BodyLink):
             b_data = b_link.get()
@@ -595,7 +683,7 @@ class Project:
         root_part = root_part_link.get()
         update_rp = False
         for sub_part in root_part.parts:
-            if sub_part.description.startswith("UniqueId_") == False:
+            if sub_part.description.startswith("UniqueId_") is False:
                 sub_part.description = "UniqueId_" + str(uuid.uuid4())
                 update_rp = True
         if update_rp:
@@ -638,7 +726,8 @@ class Project:
             root_part_feat = root_part_feats[0]
 
         root_part_feat.part_link = root_part_link
-        root_part_feat._part = root_part_data  # instead of root_part_feat.reset() - this avoid a useless read in server
+        root_part_feat._part = root_part_data
+        # instead of root_part_feat.reset() - this avoid a useless read in server
 
         for sp in root_part_data.parts:
             sp_feat = root_part_feat.create_sub_part(name=sp.name, description=sp.description)
@@ -661,30 +750,48 @@ class Project:
         for src_inst in scene_data.sources:
             if src_inst.HasField("rayfile_properties"):
                 src_feat = SourceRayFile(
-                    project=self, name=src_inst.name, source_instance=src_inst, default_values=False
+                    project=self,
+                    name=src_inst.name,
+                    source_instance=src_inst,
+                    default_values=False,
                 )
             elif src_inst.HasField("luminaire_properties"):
                 src_feat = SourceLuminaire(
-                    project=self, name=src_inst.name, source_instance=src_inst, default_values=False
+                    project=self,
+                    name=src_inst.name,
+                    source_instance=src_inst,
+                    default_values=False,
                 )
             elif src_inst.HasField("surface_properties"):
                 src_feat = SourceSurface(
-                    project=self, name=src_inst.name, source_instance=src_inst, default_values=False
+                    project=self,
+                    name=src_inst.name,
+                    source_instance=src_inst,
+                    default_values=False,
                 )
             self._features.append(src_feat)
 
         for ssr_inst in scene_data.sensors:
             if ssr_inst.HasField("irradiance_properties"):
                 ssr_feat = SensorIrradiance(
-                    project=self, name=ssr_inst.name, sensor_instance=ssr_inst, default_values=False
-                )
-            elif ssr_inst.HasField("camera_properties"):
-                ssr_feat = SensorRadiance(
-                    project=self, name=ssr_inst.name, sensor_instance=ssr_inst, default_values=False
+                    project=self,
+                    name=ssr_inst.name,
+                    sensor_instance=ssr_inst,
+                    default_values=False,
                 )
             elif ssr_inst.HasField("radiance_properties"):
+                ssr_feat = SensorRadiance(
+                    project=self,
+                    name=ssr_inst.name,
+                    sensor_instance=ssr_inst,
+                    default_values=False,
+                )
+            elif ssr_inst.HasField("camera_properties"):
                 ssr_feat = SensorCamera(
-                    project=self, name=ssr_inst.name, sensor_instance=ssr_inst, default_values=False
+                    project=self,
+                    name=ssr_inst.name,
+                    sensor_instance=ssr_inst,
+                    default_values=False,
                 )
             self._features.append(ssr_feat)
 
@@ -714,7 +821,9 @@ class Project:
             self._features.append(sim_feat)
 
     def __extract_part_mesh_info(
-        self, part_data: ProtoPart, part_coordinate_info: RepeatedScalarFieldContainer = None
+        self,
+        part_data: ProtoPart,
+        part_coordinate_info: RepeatedScalarFieldContainer = None,
     ) -> pv.PolyData:
         """Extract mesh data info from a part.
 
@@ -732,6 +841,7 @@ class Project:
         pv.PolyData
             mesh data extracted.
         """
+        import pyvista as pv
 
         def local2absolute(local_vertice: np.ndarray, coordinates) -> np.ndarray:
             """Convert local coordinate to global coordinate.
@@ -753,7 +863,20 @@ class Project:
             global_z = np.array(coordinates[9:]) * local_vertice[2]
             return global_origin + global_x + global_y + global_z
 
-        part_coordinate = [0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+        part_coordinate = [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+        ]
         if part_coordinate_info is not None:
             part_coordinate = part_coordinate_info
         part_mesh_info = None
@@ -778,7 +901,8 @@ class Project:
                     part_mesh_info = part_mesh_info.append_polydata(face_mesh_data)
         return part_mesh_info
 
-    def _create_preview(self, viz_args=None) -> pv.Plotter:
+    @graphics_required
+    def _create_preview(self, viz_args=None) -> Plotter:
         """Create preview pyvista plotter object.
 
         Parameters
@@ -790,6 +914,10 @@ class Project:
             - {'style': 'surface', 'color':'white'},
             - {'opacity': 0.7, 'color':'white', 'show_edges': False},
         """
+        import pyvista as pv
+
+        from ansys.tools.visualization_interface import Plotter
+
         if viz_args is None:
             viz_args = {}
         _preview_mesh = pv.PolyData()
@@ -801,7 +929,8 @@ class Project:
             for part_idx, part_item in enumerate(root_part_data.parts):
                 part_item_data = self.client[part_item.part_guid].get()
                 poly_data = self.__extract_part_mesh_info(
-                    part_data=part_item_data, part_coordinate_info=part_item.axis_system
+                    part_data=part_item_data,
+                    part_coordinate_info=part_item.axis_system,
                 )
                 if poly_data is not None:
                     _preview_mesh = _preview_mesh.append_polydata(poly_data)
@@ -810,11 +939,17 @@ class Project:
         poly_data = self.__extract_part_mesh_info(part_data=root_part_data)
         if poly_data is not None:
             _preview_mesh = _preview_mesh.append_polydata(poly_data)
-        p = pv.Plotter()
-        p.add_mesh(_preview_mesh, show_edges=True, **viz_args)
+        p = Plotter()
+        viz_args["show_edges"] = True
+        p.plot(_preview_mesh, **viz_args)
         return p
 
-    def preview(self, viz_args=None) -> None:
+    @graphics_required
+    def preview(
+        self,
+        viz_args=None,
+        screenshot: Optional[Union[str, Path]] = None,
+    ) -> None:
         """Preview cad bodies inside the project's scene.
 
         Parameters
@@ -824,12 +959,20 @@ class Project:
             e.g.
             - {'style': 'wireframe'},
             - {'style': 'surface', 'color':'white'},
-            - {'opacity': 0.7, 'color':'white', 'show_edges': False},
+            - {'opacity': 0.7, 'color':'white', 'show_edges': False}.
+
+        screenshot : str or Path or ``None``
+            Path to save a screenshot of the plotter. If defined Plotter will only create the
+            screenshot
+
         """
         if viz_args is None:
             viz_args = {"opacity": 1}
+        if screenshot is not None:
+            screenshot = Path(screenshot)
+
         p = self._create_preview(viz_args=viz_args)
         if os.environ.get("DOCUMENTATION_BUILDING", "true") == "true":
-            p.show(jupyter_backend="html")
+            p.show(screenshot=screenshot, jupyter_backend="html")
         else:
-            p.show()
+            p.show(screenshot=screenshot)

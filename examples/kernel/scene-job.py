@@ -11,9 +11,11 @@ from ansys.speos.core.kernel.job import ProtoJob
 from ansys.speos.core.speos import Speos
 
 # If using docker container
-tests_data_path = Path("/app") / "assets"
+assets_data_path = Path("/app") / "assets"
 # If using local server
-# tests_data_path = Path().resolve().parent.parent / "tests" / "assets"
+# assets_data_path = Path().resolve().parent.parent / "tests" / "assets"
+# If using a different path
+# assets_data_path = Path("path/to/downloaded/example/assets")
 # -
 
 # Create connection with speos rpc server
@@ -34,7 +36,7 @@ my_scene = speos.client.scenes().create()
 
 # +
 speos_file = str(
-    tests_data_path / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
+    assets_data_path / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
 )
 my_scene.load_file(file_uri=speos_file)
 # -
@@ -49,7 +51,8 @@ print(my_scene)
 
 # ## Job
 
-# Create a job for the first simulation. When loaded from a speos file, there is always only one simulation in the scene.
+# Create a job for the first simulation. When loaded from a speos file, there is always only one
+# simulation in the scene.
 
 # +
 # First create the protobuf message
@@ -96,8 +99,8 @@ while (
 
 # Retrieve results of the job
 
-# Two results are generated : the result of irradiance sensor: ASSEMBLY1.DS (0).Dom Irradiance Sensor (0).xmp
-# and the simulation report in html
+# Two results are generated : the result of irradiance sensor:
+# "ASSEMBLY1.DS (0).Dom Irradiance Sensor (0).xmp" and the simulation report in html
 
 # +
 results = job_link.get_results().results
@@ -111,7 +114,8 @@ job_link.delete()
 # -
 
 
-# When loading a speos file into a scene, this creates many objects (source templates, sensor templates, vop template, sop templates).
+# When loading a speos file into a scene, this creates many objects
+# (source templates, sensor templates, vop template, sop templates).
 # Then at the end of the example, we just clean all databases
 
 # +
