@@ -974,5 +974,6 @@ class Project:
         p = self._create_preview(viz_args=viz_args)
         if os.environ.get("DOCUMENTATION_BUILDING", "true") == "true":
             p.backend.pv_interface.show(jupyter_backend="static")
+            p.show()
         else:
             p.backend.pv_interface.show(jupyter_backend="static")
