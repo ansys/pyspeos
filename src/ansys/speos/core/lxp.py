@@ -520,9 +520,6 @@ class LightPathFinder:
             else:
                 for i in range(nb_ray):
                     self.__add_ray_to_pv(plotter, temp_rays[i], max_ray_length)
-        if os.environ.get("DOCUMENTATION_BUILDING", "false") == "true":
-            plotter.show(screenshot=screenshot, jupyter_backend="html")
-        else:
             plotter.show(screenshot=screenshot)
         return self
 
