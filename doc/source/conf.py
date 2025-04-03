@@ -47,10 +47,11 @@ html_theme_options = {
         "version_match": get_version_match(__version__),
     },
     "check_switcher": False,
-    "ansys_sphinx_theme_autoapi": {
-        "project": project,
-    },
+    # "ansys_sphinx_theme_autoapi": {
+    #     "project": project,
+    # },
 }
+nbsphinx_allow_errors = True
 BUILD_CHEATSHEET = os.environ.get("BUILD_CHEATSHEET", "false").lower() == "true"
 if BUILD_CHEATSHEET:
     html_theme_options["cheatsheet"] = {
@@ -68,7 +69,8 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx_design",
     "sphinx_jinja",
-    "ansys_sphinx_theme.extension.autoapi",
+    "pyvista.ext.viewer_directive",
+    # "ansys_sphinx_theme.extension.autoapi",
     "nbsphinx",
     "myst_parser",
     "sphinxcontrib.mermaid",
