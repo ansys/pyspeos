@@ -972,4 +972,4 @@ class Project:
             screenshot = Path(screenshot)
 
         p = self._create_preview(viz_args=viz_args)
-            p.show(screenshot=screenshot)
+        p.show(screenshot=screenshot)

@@ -519,7 +519,7 @@ class LightPathFinder:
             else:
                 for i in range(nb_ray):
                     self.__add_ray_to_pv(plotter, temp_rays[i], max_ray_length)
-            plotter.show(screenshot=screenshot)
+        plotter.show(screenshot=screenshot)
         return self
 
 
