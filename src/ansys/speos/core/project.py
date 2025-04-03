@@ -919,6 +919,7 @@ class Project:
 
         if viz_args is None:
             viz_args = {}
+
         _preview_mesh = pv.PolyData()
         # Retrieve root part
         root_part_data = self.client[self.scene_link.get().part_guid].get()
@@ -941,6 +942,43 @@ class Project:
         p = Plotter()
         viz_args["show_edges"] = True
         p.plot(_preview_mesh, **viz_args)
+
+        # Add sensor at the root part
+        for feature in self._features:
+            if isinstance(feature, SensorIrradiance):
+                p.plot(
+                    feature.visual_data.data,
+                    show_edges=True,
+                    line_width=2,
+                    edge_color="red",
+                    color="orange",
+                    opacity=0.5,
+                )
+                p.plot(feature.visual_data.x_axis, color="red")
+                p.plot(feature.visual_data.y_axis, color="green")
+                p.plot(feature.visual_data.z_axis, color="blue")
+            if isinstance(feature, SensorRadiance):
+                p.plot(
+                    feature.visual_data.data,
+                    show_edges=True,
+                    line_width=2,
+                    edge_color="red",
+                    color="orange",
+                    opacity=0.5,
+                )
+                p.plot(feature.visual_data.x_axis, color="red")
+                p.plot(feature.visual_data.y_axis, color="green")
+            if isinstance(feature, SensorCamera):
+                p.plot(
+                    feature.visual_data.data,
+                    show_edges=True,
+                    line_width=2,
+                    edge_color="red",
+                    color="orange",
+                    opacity=0.5,
+                )
+                p.plot(feature.visual_data.x_axis, color="red")
+                p.plot(feature.visual_data.y_axis, color="green")
         return p
 
     @graphics_required
