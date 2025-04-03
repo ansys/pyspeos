@@ -56,7 +56,7 @@ CAR_CS = {
 # [PySpeos repository](https://github.com/ansys/pyspeos/) on GitHub.
 #
 # > **Note:** Make sure you
-# > have downloaded simulation assets and set ``test_data_path``
+# > have downloaded simulation assets and set ``assets_data_path``
 # > to point to the assets folder.
 
 if USE_DOCKER:  # Running on the remote server.
