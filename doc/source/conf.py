@@ -11,6 +11,7 @@ import sphinx
 from sphinx.builders.latex import LaTeXBuilder
 from sphinx.util import logging
 from sphinx.util.display import status_iterator
+from pyvista.plotting.utilities.sphinx_gallery import DynamicScraper
 
 from ansys.speos.core import __version__
 
