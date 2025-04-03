@@ -43,7 +43,7 @@ GLOBAL_CS = [
     0,  # y-direction z
     0,  # z-direction x
     0,  # z-direction y
-    0,  # z-direction z
+    1,  # z-direction z
 ]
 CAR_CS = {
     "red": [-4000, 0, 48000, 1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0],
