@@ -975,4 +975,4 @@ class Project:
         if os.environ.get("DOCUMENTATION_BUILDING", "true") == "true":
             p.show(jupyter_backend="html")
         else:
-            p.show(screenshot=screenshot)
+            p.show(screenshot=screenshot, jupyter_backend="html")
