@@ -119,6 +119,27 @@ master_doc = "index"
 suppress_warnings = ["autoapi"]
 autodoc_typehints = "description"
 
+sphinx_gallery_conf = {
+    # path to your examples scripts
+    "examples_dirs": ["../../examples"],
+    # path where to save gallery generated examples
+    "gallery_dirs": ["examples"],
+    # Pattern to search for example files
+    "filename_pattern": r"\.py",
+    # Remove the "Download all examples" button from the top level gallery
+    "download_all_examples": False,
+    # Sort gallery example by file name instead of number of lines (default)
+    # directory where function granular galleries are stored
+    "backreferences_dir": None,
+    # Modules for which function level galleries are created.  In
+    "doc_module": "ansys-tools-visualization-interface",
+    "image_scrapers": (DynamicScraper(), "matplotlib"),
+    "ignore_pattern": "flycheck*",
+    "thumbnail_size": (350, 350),
+    "remove_config_comments": True,
+    "show_signature": False,
+}
+
 # -- Declare the Jinja context -----------------------------------------------
 BUILD_EXAMPLES = True if os.environ.get("BUILD_EXAMPLES", "true") == "true" else False
 if BUILD_EXAMPLES:
