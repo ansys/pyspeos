@@ -23,7 +23,6 @@
 
 from __future__ import annotations
 
-import os
 from pathlib import Path
 import re
 from typing import TYPE_CHECKING, List, Mapping, Optional, Union
@@ -972,7 +971,4 @@ class Project:
             screenshot = Path(screenshot)
 
         p = self._create_preview(viz_args=viz_args)
-        if os.environ.get("DOCUMENTATION_BUILDING", "true") == "true":
-            p.show(screenshot=screenshot, jupyter_backend="html")
-        else:
-            p.show(screenshot=screenshot)
+        p.show(screenshot=screenshot)
