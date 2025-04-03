@@ -51,7 +51,7 @@ html_theme_options = {
     #     "project": project,
     # },
 }
-nbsphinx_allow_errors = True
+
 BUILD_CHEATSHEET = os.environ.get("BUILD_CHEATSHEET", "false").lower() == "true"
 if BUILD_CHEATSHEET:
     html_theme_options["cheatsheet"] = {
