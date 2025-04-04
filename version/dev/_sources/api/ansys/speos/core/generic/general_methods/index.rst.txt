@@ -1,0 +1,185 @@
+
+
+
+
+
+
+The ``general_methods.py`` module
+=================================
+
+.. py:module:: ansys.speos.core.generic.general_methods
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+.. py:currentmodule:: general_methods
+.. tab-set::
+
+
+
+
+
+
+
+    .. tab-item:: Functions
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~deprecate_kwargs`
+            - Issues deprecation warnings for arguments.
+
+
+          * - :py:obj:`~run_if_graphics_required`
+            - Check if graphics are available.
+
+
+          * - :py:obj:`~graphics_required`
+            - Decorate a method as requiring graphics.
+
+
+
+
+    .. tab-item:: Constants
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~GRAPHICS_ERROR`
+            - 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+General methods and helpers collection.
+
+this includes decorator and methods
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+.. py:function:: deprecate_kwargs(old_arguments, removed_version='0.3.0')
+
+   
+   Issues deprecation warnings for arguments.
+
+
+   :Parameters:
+
+       **old_arguments** : :class:`python:dict`
+           key old argument value new argument name
+
+       **removed_version** : :class:`python:str`
+           Release version with which argument support will be removed
+           By Default, next major release
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: run_if_graphics_required(warning=False)
+
+   
+   Check if graphics are available.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: graphics_required(method)
+
+   
+   Decorate a method as requiring graphics.
+
+
+   :Parameters:
+
+       **method** : :func:`python:callable`
+           Method to decorate.
+
+
+
+   :Returns:
+
+       :func:`python:callable`
+           Decorated method.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:data:: GRAPHICS_ERROR
+   :value: "Preview unsupported without 'ansys-tools-visualization_interface' installed. You can install...
+
+
+
+
