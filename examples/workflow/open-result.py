@@ -1,4 +1,4 @@
-# # How to open result (windows os)
+# # How to open result (MS Windows OS only)
 
 # This tutorial demonstrates how to open and review results using workflow method.
 
@@ -6,11 +6,13 @@
 #
 # ### Perform imports
 
+# +
 import os
 from pathlib import Path
 
 from ansys.speos.core import Project, Speos
 from ansys.speos.core.simulation import SimulationDirect
+# -
 
 # ### Define constants
 # Constants help ensure consistency and avoid repetition throughout the example.
@@ -22,8 +24,10 @@ RESULT_NAME = "ASSEMBLY1.DS (0).Dom Irradiance Sensor (0).xmp"
 USE_DOCKER = True  # Set to False if you're running this example locally as a Notebook.
 USE_GPU = False
 
-# ## Load assets
-# The assets are used to run this example are available in the
+# ## Model Setup
+#
+# ### Load assets
+# The assets used to run this example are available in the
 # [PySpeos repository](https://github.com/ansys/pyspeos/) on GitHub.
 #
 # > **Note:** Make sure you
@@ -35,11 +39,17 @@ if USE_DOCKER:  # Running on the remote server.
 else:
     assets_data_path = Path("/path/to/your/download/assets/directory")
 
-# ## Create connection with speos rpc server
+# ### Connect to the RPC Server
+# This Python client connects to a server where the Speos engine
+# is running as a service. In this example, the server and 
+# client are the same
+# machine.
 
 speos = Speos(host=HOSTNAME, port=GRPC_PORT)
 
-# ## Create project from speos file
+# ### Create project from a Speos file
+#
+# The ``Project`` class is instantiated by passing a ``Speos`` instance and the name of the Speos project file.
 
 p = Project(
     speos=speos,
@@ -47,33 +57,35 @@ p = Project(
 )
 print(p)
 
-# ## Retrieve the simulation feature
+# ### Retrieve the simulation feature
 #
-# Use find method from project class to retrieve the simulation feature.
+# Use the method ``Project.find()`` to retrieve an instance
+# of the ``SimulationDirect`` feature.
 
 sim = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
 
 # ## Run simulation
 #
-# The simulation can be run using CPU via compute_CPU method or using GPU via compute_GPU method.
+# The simulation can be run using either the CPU or with GPU accelleration. The following cell shows how Python is used to assign the appropriate 
+# metod to ``run_sim``.
 
 run_sim = sim.compute_GPU if USE_GPU else sim.compute_CPU
 results = run_sim()  # run the simulation
 print(results)
 
 
-# ## Open result (only windows):
+# ## Postprocessing
+# ### Open the results (MS Windows OS only):
 #
 # Display one result as image.
 #
 # A full path can be given, or the name of the result.
 
-if os.name == "nt":
+if os.name == "nt":  # Are we running on Windows OS?
     from ansys.speos.core.workflow.open_result import open_result_image
-
     open_result_image(simulation_feature=sim, result_name=RESULT_NAME)
 
-# ## Display result in viewer (only windows).
+# ### Display the image
 #
 # Display one result in a result viewer.
 #
