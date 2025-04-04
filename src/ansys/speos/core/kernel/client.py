@@ -24,6 +24,7 @@
 
 import logging
 from pathlib import Path
+import subprocess
 import time
 from typing import TYPE_CHECKING, List, Optional, Union
 
@@ -64,8 +65,11 @@ from ansys.speos.core.kernel.vop_template import (
 from ansys.speos.core.logger import LOG as LOGGER, PySpeosCustomAdapter
 
 DEFAULT_HOST = "localhost"
+"""Default host used by Speos RPC server and client """
 DEFAULT_PORT = "50098"
-
+"""Default port used by Speos RPC server and client """
+LATEST_VERSION = "251"
+"""Latest supported Speos version of the current PySpeos Package"""
 
 if TYPE_CHECKING:  # pragma: no cover
     from ansys.platform.instancemanagement import Instance
@@ -129,26 +133,37 @@ class SpeosClient:
         By default, ``INFO``.
     logging_file : Optional[str, Path]
         The file to output the log, if requested. By default, ``None``.
+    command_line : Optional[str, Path]
+        location of Speos rpc executable
     """
 
     def __init__(
         self,
         host: Optional[str] = DEFAULT_HOST,
         port: Union[str, int] = DEFAULT_PORT,
+        version: str = LATEST_VERSION,
         channel: Optional[grpc.Channel] = None,
         remote_instance: Optional["Instance"] = None,
         timeout: Optional[int] = 60,
         logging_level: Optional[int] = logging.INFO,
         logging_file: Optional[Union[Path, str]] = None,
+        command_line: Optional[Union[Path, str]] = None,
     ):
         """Initialize the ``SpeosClient`` object."""
         self._closed = False
         self._remote_instance = remote_instance
+        self._command_line = command_line
+        if not version:
+            self._version = LATEST_VERSION
+        else:
+            self._version = version
         if channel:
             # Used for PyPIM when directly providing a channel
             self._channel = channel
             self._target = str(channel)
         else:
+            self._host = host
+            self._port = port
             self._target = f"{host}:{port}"
             self._channel = grpc.insecure_channel(self._target)
         # do not finish initialization until channel is healthy
@@ -483,13 +498,24 @@ List[ansys.speos.core.kernel.face.FaceLink]]
     def close(self):
         """Close the channel.
 
+        Returns
+        -------
+        bool
+            Information if the server instance was terminated.
+
         Notes
         -----
         If an instance of the Speos Service was started using
         PyPIM, this instance will be deleted.
         """
+        wait_time = 0
         if self._remote_instance:
             self._remote_instance.delete()
+        elif self._host in ["localhost", "0.0.0.0", "127.0.0.1"]:
+            self.__close_local_speos_rpc_server()
+            while self.healthy or wait_time > 15:
+                time.sleep(1)
+                wait_time += 1  # takes some seconds to close rpc server
         self._closed = True
         self._channel.close()
         self._faceDB = None
@@ -504,3 +530,12 @@ List[ansys.speos.core.kernel.face.FaceLink]]
         self._simulationTemplateDB = None
         self._sceneDB = None
         self._jobDB = None
+        if wait_time > 15:
+            return self.healthy
+        else:
+            return True
+
+    def __close_local_speos_rpc_server(self):
+        command = [self._command_line, "-s{}".format(self._port)]
+        p = subprocess.Popen(command)
+        p.wait()
