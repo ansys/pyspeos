@@ -12,6 +12,7 @@ from pathlib import Path
 
 from ansys.speos.core import Project, Speos
 from ansys.speos.core.simulation import SimulationDirect
+
 # -
 
 # ### Define constants
@@ -41,7 +42,7 @@ else:
 
 # ### Connect to the RPC Server
 # This Python client connects to a server where the Speos engine
-# is running as a service. In this example, the server and 
+# is running as a service. In this example, the server and
 # client are the same
 # machine.
 
@@ -66,8 +67,8 @@ sim = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
 
 # ## Run simulation
 #
-# The simulation can be run using either the CPU or with GPU accelleration. The following cell shows how Python is used to assign the appropriate 
-# metod to ``run_sim``.
+# The simulation can be run using either the CPU or with GPU acceleration. The following cell shows how Python is used to assign the appropriate
+# method to ``run_sim``.
 
 run_sim = sim.compute_GPU if USE_GPU else sim.compute_CPU
 results = run_sim()  # run the simulation
@@ -83,6 +84,7 @@ print(results)
 
 if os.name == "nt":  # Are we running on Windows OS?
     from ansys.speos.core.workflow.open_result import open_result_image
+
     open_result_image(simulation_feature=sim, result_name=RESULT_NAME)
 
 # ### Display the image
