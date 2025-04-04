@@ -50,7 +50,8 @@ speos = Speos(host=HOSTNAME, port=GRPC_PORT)
 
 # ### Create project from a Speos file
 #
-# The ``Project`` class is instantiated by passing a ``Speos`` instance and the name of the Speos project file.
+# The ``Project`` class is instantiated by passing a ``Speos`` instance and the name of the Speos
+# project file.
 
 p = Project(
     speos=speos,
@@ -67,8 +68,8 @@ sim = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
 
 # ## Run simulation
 #
-# The simulation can be run using either the CPU or with GPU acceleration. The following cell shows how Python is used to assign the appropriate
-# method to ``run_sim``.
+# The simulation can be run using either the CPU or with GPU acceleration. The following cell shows
+# how Python is used to assign the appropriate method to ``run_sim``.
 
 run_sim = sim.compute_GPU if USE_GPU else sim.compute_CPU
 results = run_sim()  # run the simulation
