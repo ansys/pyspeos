@@ -22,24 +22,45 @@
 
 """Test launcher."""
 
+import subprocess
+from unittest.mock import patch
+
 import psutil
+import pytest
 
 from ansys.speos.core.launcher import launch_local_speos_rpc_server
-from tests.conftest import config
+from tests.conftest import IS_WINDOWS, config
+
+IS_DOCKER = config.get("SpeosServerOnDocker")
 
 
-def test_local_session():
+@pytest.mark.skipif(IS_DOCKER, reason="launcher only works without Docker image")
+def test_local_session(*args):
     """Test local session launch and close."""
     port = config.get("SpeosServerPort") + 1
-    if config.get("SpeosServerOnDocker"):
-        # currently not able to test
-        return
-    else:
+    if IS_WINDOWS:
         speos_loc = None
         name = "SpeosRPC_Server.exe"
+    else:
+        speos_loc = None
+        name = "SpeosRPC_Server.x"
+    p_list = [p.name() for p in psutil.process_iter()]
+    nb_process = p_list.count(name)
     test_speos = launch_local_speos_rpc_server(port=port, speos_rpc_loc=speos_loc)
-    running = name in (p.name() for p in psutil.process_iter())
+    p_list = [p.name() for p in psutil.process_iter()]
+    running = p_list.count(name) > nb_process
     assert running is test_speos.client.healthy
     closed = test_speos.close()
-    running = name in (p.name() for p in psutil.process_iter())
+    p_list = [p.name() for p in psutil.process_iter()]
+    running = p_list.count(name) > nb_process
     assert running is not closed
+
+
+@patch.object(subprocess, "Popen")
+def test_coverage_launcher_speosdocker(*args):
+    """Test local session launch on remote server to improve coverage."""
+    port = config.get("SpeosServerPort")
+    test_speos = launch_local_speos_rpc_server(port=port)
+    assert True is test_speos.client.healthy
+    assert True is test_speos.close()
+    assert False is test_speos.client.healthy

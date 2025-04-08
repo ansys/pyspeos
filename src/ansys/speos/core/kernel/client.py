@@ -97,7 +97,7 @@ def wait_until_healthy(channel: grpc.Channel, timeout: float):
         try:
             grpc.channel_ready_future(channel).result(timeout=timeout)
             return True
-        except _InactiveRpcError:
+        except (_InactiveRpcError, grpc.FutureTimeoutError):
             continue
     else:
         target_str = channel._channel.target().decode()
@@ -513,10 +513,9 @@ List[ansys.speos.core.kernel.face.FaceLink]]
             self._remote_instance.delete()
         elif self._host in ["localhost", "0.0.0.0", "127.0.0.1"]:
             self.__close_local_speos_rpc_server()
-            while self.healthy or wait_time > 15:
+            while self.healthy and wait_time < 15:
                 time.sleep(1)
                 wait_time += 1  # takes some seconds to close rpc server
-        self._closed = True
         self._channel.close()
         self._faceDB = None
         self._bodyDB = None
@@ -530,10 +529,12 @@ List[ansys.speos.core.kernel.face.FaceLink]]
         self._simulationTemplateDB = None
         self._sceneDB = None
         self._jobDB = None
-        if wait_time > 15:
-            return self.healthy
+        if wait_time < 15:
+            self._closed = not self.healthy
+            return self._closed
         else:
-            return True
+            self._closed = True
+            return self._closed
 
     def __close_local_speos_rpc_server(self):
         command = [self._command_line, "-s{}".format(self._port)]
