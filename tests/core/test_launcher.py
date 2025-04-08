@@ -67,7 +67,7 @@ def test_coverage_launcher_speosdocker(*args):
     if not speos_loc.parent.exists():
         speos_loc.parent.mkdir()
         f = speos_loc.open("w")
-        f.write("123")
+        f.write("speos_test_file")
         f.close()
     os.environ["AWP_ROOT{}".format(LATEST_VERSION)] = "/app/"
     test_speos = launch_local_speos_rpc_server(port=port)
