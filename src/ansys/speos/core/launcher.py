@@ -150,9 +150,9 @@ def launch_local_speos_rpc_server(
                 UserWarning,
             )
         versions = get_available_ansys_installations()
-        ansys_loc = versions.get(int(version))
+        ansys_loc = versions.get(int(version), False)
         if not ansys_loc:
-            ansys_loc = os.environ.get("AWP_ROOT{}".format(version))
+            ansys_loc = os.environ.get("AWP_ROOT{}".format(version), False)
         if not ansys_loc:
             msg = (
                 "Ansys installation directory is not found."
