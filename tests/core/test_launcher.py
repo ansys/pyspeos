@@ -85,6 +85,7 @@ def test_coverage_launcher_speosdocker(*args):
         port=port, speos_rpc_loc=speos_loc, logfile_loc=tmp_file
     )
     assert True is test_speos.client.healthy
+    test_speos.client._closed = True
     assert True is test_speos.close()
     assert False is test_speos.client.healthy
     speos_loc.unlink()
