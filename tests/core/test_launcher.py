@@ -25,6 +25,7 @@
 import os
 from pathlib import Path
 import subprocess
+import tempfile
 from unittest.mock import patch
 
 import psutil
@@ -63,14 +64,18 @@ def test_local_session(*args):
 def test_coverage_launcher_speosdocker(*args):
     """Test local session launch on remote server to improve coverage."""
     port = config.get("SpeosServerPort")
-    speos_loc = Path("/app/SpeosRPC_Server.x")
-    if not speos_loc.parent.exists():
-        speos_loc.parent.mkdir()
+    tmp_file = tempfile.gettempdir()
+    speos_loc = Path(tmp_file) / "SpeosRPC_Server.x"
+    if not speos_loc.exists():
         f = speos_loc.open("w")
         f.write("speos_test_file")
         f.close()
-    os.environ["AWP_ROOT{}".format(LATEST_VERSION)] = "/app/"
+    os.environ["AWP_ROOT{}".format(LATEST_VERSION)] = str(speos_loc.parent)
     test_speos = launch_local_speos_rpc_server(port=port)
+    assert True is test_speos.client.healthy
+    assert True is test_speos.close()
+    assert False is test_speos.client.healthy
+    test_speos = launch_local_speos_rpc_server(port=port, speos_rpc_loc=speos_loc)
     assert True is test_speos.client.healthy
     assert True is test_speos.close()
     assert False is test_speos.client.healthy
