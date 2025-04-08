@@ -192,7 +192,11 @@ def launch_local_speos_rpc_server(
         logfile = logfile_loc / "speos_rpc.log"
     else:
         logfile = Path(logfile_loc)
-        logfile_loc = logfile.parent
+        if logfile.is_file():
+            logfile_loc = logfile.parent
+        else:
+            logfile_loc = Path(logfile_loc)
+            logfile = logfile_loc / "speos_rpc.log"
     if not logfile_loc.exists():
         logfile_loc.mkdir()
     command = [
@@ -205,7 +209,6 @@ def launch_local_speos_rpc_server(
     err, stderr_file = tempfile.mkstemp(suffix="speos_err.txt", dir=logfile_loc)
 
     subprocess.Popen(command, stdout=out, stderr=err)
-
     return Speos(
         host="localhost",
         port=port,
