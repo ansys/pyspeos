@@ -529,7 +529,7 @@ List[ansys.speos.core.kernel.face.FaceLink]]
         self._simulationTemplateDB = None
         self._sceneDB = None
         self._jobDB = None
-        if wait_time > 15:
+        if wait_time >= 15:
             self._closed = not self.healthy
             return self._closed
         else:
