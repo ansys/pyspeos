@@ -4,9 +4,9 @@
 #
 # There are different type of sources available: luminaire source, surface source, ray file source.
 
-# ## Prerequisites
+# ### Prerequisites
 #
-# ### Perform imports
+# ## Perform imports
 # +
 from pathlib import Path
 
@@ -19,7 +19,7 @@ from ansys.speos.core.source import (
 
 # -
 
-# ### Define constants
+# ## Define constants
 # Constants help ensure consistency and avoid repetition throughout the example.
 
 HOSTNAME = "localhost"
@@ -27,9 +27,9 @@ GRPC_PORT = 50098  # Be sure the Speos GRPC Server has been started on this port
 USE_DOCKER = True  # Set to False if you're running this example locally as a Notebook.
 IES = "IES_C_DETECTOR.ies"
 
-# ## Model Setup
+# ### Model Setup
 #
-# ### Load assets
+# ## Load assets
 # The assets used to run this example are available in the
 # [PySpeos repository](https://github.com/ansys/pyspeos/) on GitHub.
 #
@@ -42,7 +42,7 @@ if USE_DOCKER:  # Running on the remote server.
 else:
     assets_data_path = Path("/path/to/your/download/assets/directory")
 
-# ### Connect to the RPC Server
+# ## Connect to the RPC Server
 # This Python client connects to a server where the Speos engine
 # is running as a service. In this example, the server and
 # client are the same
@@ -50,7 +50,7 @@ else:
 
 speos = Speos(host=HOSTNAME, port=GRPC_PORT)
 
-# ### Create a new project
+# ## Create a new project
 #
 # The only way to create a source using the core layer, is to create it from a project.
 # The ``Project`` class is instantiated by passing a ``Speos`` instance
@@ -59,20 +59,18 @@ p = Project(speos=speos)
 print(p)
 
 
-# ### Source Creation
+# ## Source Creation
 #
-# #### Create locally
+# **Create locally**
 # The mention "local: " is added when printing the source data and information is not yet
 # pushed to the RPC server
-
 
 intensity_file_path = str(assets_data_path / IES)
 source1 = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)  # type luminaire
 source1.set_intensity_file_uri(uri=intensity_file_path)
 print(source1)
-# -
 
-# #### Push it to the server.
+# **Push it to the server.**
 #
 # After it is committed to the server, the mention "local: " is no more present when printing the
 # source.
@@ -80,7 +78,7 @@ print(source1)
 source1.commit()
 print(source1)
 
-# #### Changing additional Source Properties
+# **Changing additional Source Properties**
 #
 # Setting several more characteristics.
 
@@ -95,19 +93,19 @@ source2.set_spectrum().set_blackbody()  # choose blackbody with default value fo
 source2.commit()  # Push to the server
 print(source2)
 
-# #### Source Instance
+# **Source Instance**
 #
 # As mention "local: " is added if it is not yet committed to the server.
 
 print(source1)
 
-# #### Project
+# **Project**
 #
 # Committed feature will appear inside the project information.
 
 print(p)
 
-# #### Update
+# **Update**
 #
 # Tipp: if you are manipulating a source already committed, don't forget to commit your changes.
 #
@@ -119,7 +117,7 @@ source1.set_spectrum().set_halogen()  # modify spectrum by choosing halogen
 source1.commit()  # Push changes to the server
 print(source1)
 
-# #### Reset
+# **Reset**
 #
 # Possibility to reset local values from the one available in the server.
 
@@ -131,7 +129,7 @@ source1.delete()  # delete (to display the local value with the below print)
 print(source1)
 
 
-# #### Delete
+# **Delete**
 #
 # Once the data is deleted from the server, you can still work with local data and maybe commit
 # later.
@@ -145,7 +143,7 @@ print(p)
 
 # ### Other Sources Examples
 
-# #### Ray-file source
+# ## Ray-file source
 
 # +
 ray_file_path = str(assets_data_path / "Rays.ray")
@@ -166,7 +164,7 @@ print(source3)
 source3.delete()
 # -
 
-# #### Surface source
+# ## Surface source
 
 # +
 source4 = p.create_source(name="Surface.1", feature_type=SourceSurface)
