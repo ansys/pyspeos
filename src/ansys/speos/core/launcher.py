@@ -153,12 +153,12 @@ def launch_local_speos_rpc_server(
         ansys_loc = versions.get(int(version), False)
         if not ansys_loc:
             ansys_loc = os.environ.get("AWP_ROOT{}".format(version), False)
-        if not ansys_loc:
-            msg = (
-                "Ansys installation directory is not found."
-                " Please define AWP_ROOT{} environment variable"
-            ).format(version)
-            FileNotFoundError(msg)
+            if not ansys_loc:
+                msg = (
+                    "Ansys installation directory is not found."
+                    " Please define AWP_ROOT{} environment variable"
+                ).format(version)
+                FileNotFoundError(msg)
         speos_rpc_loc = Path(ansys_loc) / "Optical Products" / "SPEOS_RPC"
     elif Path(speos_rpc_loc).is_file():
         if "SpeosRPC_Server" not in Path(speos_rpc_loc).name:
