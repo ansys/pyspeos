@@ -25,13 +25,16 @@
 from __future__ import annotations
 
 from difflib import SequenceMatcher
-from typing import List, Mapping, Optional, Union
+from typing import TYPE_CHECKING, List, Mapping, Optional, Union
 import uuid
 
 import numpy as np
-import pyvista as pv
+
+if TYPE_CHECKING:  # pragma: no cover
+    import pyvista as pv
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2, common_pb2
+from ansys.speos.core.generic.visualization_methods import VisualData
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.scene import ProtoScene
 from ansys.speos.core.kernel.sensor_template import ProtoSensorTemplate
@@ -79,7 +82,7 @@ class BaseSensor:
         self._project = project
         self._name = name
         self._unique_id = None
-        self._visual_data = self.VisualData()
+        self._visual_data = VisualData()
         self._visual_data_updated = False
         self.sensor_template_link = None
         """Link object for the sensor template in database."""
@@ -102,34 +105,6 @@ class BaseSensor:
             # reset will fill _sensor_instance and _sensor_template from respectively project
             # (using _unique_id) and sensor_template_link
             self.reset()
-
-    class VisualData:
-        """Visualization data for the sensor.
-
-        By default, there is empty visualization data.
-
-        Parameters
-        ----------
-        data : pyvista.PolyData
-            Surface data defining the visualization faces.
-        x_axis : pyvista.PolyData
-            x-axis arrow data.
-        y_axis : pyvista.PolyData
-            y-axis arrow data.
-        z_axis: pyvista.PolyData
-            z-axis arrow data.
-
-        Notes
-        -----
-        **Do not instantiate this class yourself**, use set_dimensions method available in sensor
-        classes.
-        """
-
-        def __init__(self) -> None:
-            self.data = pv.PolyData()
-            self.x_axis = pv.PolyData()
-            self.y_axis = pv.PolyData()
-            self.z_axis = pv.PolyData()
 
     class WavelengthsRange:
         """Range of wavelengths.
