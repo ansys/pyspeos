@@ -108,8 +108,8 @@ print(p)
 
 # **Update:**
 #
-# > **Note:** if you are manipulating a source already committed, don't forget to commit your changes.
-# >
+# > **Note:** If you are manipulating a source already committed, don't forget to commit your
+# > changes.
 # > If you don't, you will still only watch what is committed on the server.
 
 source1.set_flux_radiant(value=1.2)  # modify radiant flux value
