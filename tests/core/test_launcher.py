@@ -22,12 +22,15 @@
 
 """Test launcher."""
 
+import os
+from pathlib import Path
 import subprocess
 from unittest.mock import patch
 
 import psutil
 import pytest
 
+from ansys.speos.core.kernel.client import LATEST_VERSION
 from ansys.speos.core.launcher import launch_local_speos_rpc_server
 from tests.conftest import IS_WINDOWS, config
 
@@ -60,7 +63,15 @@ def test_local_session(*args):
 def test_coverage_launcher_speosdocker(*args):
     """Test local session launch on remote server to improve coverage."""
     port = config.get("SpeosServerPort")
+    speos_loc = Path("/app/SpeosRPC_Server.x")
+    if not speos_loc.parent.exists():
+        speos_loc.parent.mkdir()
+        f = speos_loc.open("w")
+        f.write("123")
+        f.close()
+    os.environ["AWP_ROOT{}".format(LATEST_VERSION)] = "/app/"
     test_speos = launch_local_speos_rpc_server(port=port)
     assert True is test_speos.client.healthy
     assert True is test_speos.close()
     assert False is test_speos.client.healthy
+    speos_loc.unlink()
