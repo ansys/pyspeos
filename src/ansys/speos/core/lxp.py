@@ -28,14 +28,22 @@ LPF files contain a set of simulated rays with all their intersections and prope
 
 from __future__ import annotations
 
-import os
-from typing import Union
-
-import pyvista as pv
+from pathlib import Path
+from typing import TYPE_CHECKING, Optional, Union
 
 import ansys.api.speos.lpf.v2.lpf_file_reader_pb2 as lpf_file_reader__v2__pb2
 import ansys.api.speos.lpf.v2.lpf_file_reader_pb2_grpc as lpf_file_reader__v2__pb2_grpc
+from ansys.speos.core.generic.general_methods import graphics_required
 from ansys.speos.core.project import Project, Speos
+
+if TYPE_CHECKING:  # pragma: no cover
+    from ansys.tools.visualization_interface import Plotter
+try:
+    from ansys.speos.core.generic.general_methods import run_if_graphics_required
+
+    run_if_graphics_required(warning=True)
+except ImportError as err:  # pragma: no cover
+    raise err
 
 ERROR_IDS = [7, 8, 9, 10, 11, 12, 13, 14, 15]
 """Intersection types indicating an error state."""
@@ -419,19 +427,22 @@ class LightPathFinder:
         return self
 
     @staticmethod
-    def __add_ray_to_pv(plotter: pv.Plotter, ray: RayPath, max_ray_length: float):
+    @graphics_required
+    def __add_ray_to_pv(plotter: Plotter, ray: RayPath, max_ray_length: float):
         """Add a ray to pyvista plotter.
 
         Parameters
         ----------
-        plotter : pv.Plotter
-            Pyvista plotter object to which rays should be added.
+        plotter : Plotter
+            Ansys plotter object to which rays should be added.
         ray : script.RayPath
             RayPath object which contains ray information to be added.
         max_ray_length : float
             Length of the last ray.
         """
-        temp = ray.impacts
+        import pyvista as pv
+
+        temp = ray.impacts.copy()
         if not 7 <= ray.intersection_type[-1] <= 15:
             temp.append(
                 [
@@ -444,14 +455,16 @@ class LightPathFinder:
             mesh = pv.MultipleLines(temp)
         else:
             mesh = pv.Line(temp[0], temp[1])
-        plotter.add_mesh(mesh, color=wavelength_to_rgb(ray.wl), line_width=2)
+        plotter.plot(mesh, color=wavelength_to_rgb(ray.wl), line_width=2)
 
+    @graphics_required
     def preview(
         self,
         nb_ray: int = 100,
         max_ray_length: float = 50.0,
         ray_filter: bool = False,
         project: Project = None,
+        screenshot: Optional[Union[str, Path]] = None,
     ) -> LightPathFinder:
         """Preview LPF file with pyvista.
 
@@ -465,12 +478,23 @@ class LightPathFinder:
             Boolean to decide if filtered rays or all rays should be shown.
         project : ansys.speos.core.project.Project
             Speos Project/Geometry to be added to pyvista visualisation.
+        screenshot : str or Path or ``None``
+            Path to save a screenshot of the plotter. If defined Plotter will only create the
+            screenshot
 
         Returns
         -------
         ansys.speos.core.lxp.LightPathFinder
             LightPathFinder Instance.
+
+        Notes
+        -----
+        Please use the ``q``-key to close the plotter as some
+        operating systems (namely Windows) will experience issues
+        saving a screenshot if the exit button in the GUI is pressed.
         """
+        from ansys.tools.visualization_interface import Plotter
+
         if ray_filter:
             if len(self._filtered_rays) > 0:
                 temp_rays = self._filtered_rays
@@ -480,7 +504,7 @@ class LightPathFinder:
         else:
             temp_rays = self._rays
         if not project:
-            plotter = pv.Plotter()
+            plotter = Plotter()
             if nb_ray > len(temp_rays):
                 for ray in temp_rays:
                     self.__add_ray_to_pv(plotter, ray, max_ray_length)
@@ -495,10 +519,7 @@ class LightPathFinder:
             else:
                 for i in range(nb_ray):
                     self.__add_ray_to_pv(plotter, temp_rays[i], max_ray_length)
-        if os.environ.get("DOCUMENTATION_BUILDING", "true") == "true":
-            plotter.show(jupyter_backend="html")
-        else:
-            plotter.show()
+        plotter.show(screenshot=screenshot)
         return self
 
 

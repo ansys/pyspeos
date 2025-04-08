@@ -9,6 +9,99 @@ This document contains the release notes for the PySpeos project.
 
 .. towncrier release notes start
 
+`0.3.0 <https://github.com/ansys/pyspeos/releases/tag/v0.3.0>`_ - March 28, 2025
+================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - provide a way for the user to limit number of threads
+          - `#508 <https://github.com/ansys/pyspeos/pull/508>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - bump pytest from 8.3.4 to 8.3.5
+          - `#484 <https://github.com/ansys/pyspeos/pull/484>`_
+
+        * - bump the doc-deps group across 1 directory with 4 updates
+          - `#509 <https://github.com/ansys/pyspeos/pull/509>`_
+
+        * - bump notebook from 7.3.2 to 7.3.3
+          - `#510 <https://github.com/ansys/pyspeos/pull/510>`_
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - fix 404 page when download example as python script
+          - `#514 <https://github.com/ansys/pyspeos/pull/514>`_
+
+        * - add example assets button
+          - `#518 <https://github.com/ansys/pyspeos/pull/518>`_
+
+        * - fix path to download assets
+          - `#522 <https://github.com/ansys/pyspeos/pull/522>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - core layer loading a camera sensor
+          - `#503 <https://github.com/ansys/pyspeos/pull/503>`_
+
+        * - doc: Adjust server launch command
+          - `#505 <https://github.com/ansys/pyspeos/pull/505>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - update CHANGELOG for v0.2.0
+          - `#490 <https://github.com/ansys/pyspeos/pull/490>`_
+
+        * - update CHANGELOG for v0.2.1
+          - `#492 <https://github.com/ansys/pyspeos/pull/492>`_
+
+
+  .. tab-item:: Miscellaneous
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - remove ruff E ignores
+          - `#495 <https://github.com/ansys/pyspeos/pull/495>`_
+
+        * - remove ruff ignores F
+          - `#506 <https://github.com/ansys/pyspeos/pull/506>`_
+
+        * - ruff n
+          - `#507 <https://github.com/ansys/pyspeos/pull/507>`_
+
+        * - ruff TD002, TD003
+          - `#512 <https://github.com/ansys/pyspeos/pull/512>`_
+
+
 `0.2.1 <https://github.com/ansys/pyspeos/releases/tag/v0.2.1>`_ - March 06, 2025
 ================================================================================
 

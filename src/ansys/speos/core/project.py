@@ -23,17 +23,17 @@
 
 from __future__ import annotations
 
-import os
+from pathlib import Path
 import re
-from typing import List, Mapping, Optional, Union
+from typing import TYPE_CHECKING, List, Mapping, Optional, Union
 import uuid
 
 from google.protobuf.internal.containers import RepeatedScalarFieldContainer
 import numpy as np
-import pyvista as pv
 
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
+from ansys.speos.core.generic.general_methods import graphics_required
 from ansys.speos.core.kernel.body import BodyLink
 from ansys.speos.core.kernel.face import FaceLink
 from ansys.speos.core.kernel.part import ProtoPart
@@ -57,6 +57,18 @@ from ansys.speos.core.source import (
     SourceSurface,
 )
 from ansys.speos.core.speos import Speos
+
+try:
+    from ansys.speos.core.generic.general_methods import run_if_graphics_required
+
+    run_if_graphics_required(warning=True)
+except ImportError as err:  # pragma: no cover
+    raise err
+
+if TYPE_CHECKING:  # pragma: no cover
+    import pyvista as pv
+
+    from ansys.tools.visualization_interface import Plotter
 
 
 class Project:
@@ -828,6 +840,7 @@ class Project:
         pv.PolyData
             mesh data extracted.
         """
+        import pyvista as pv
 
         def local2absolute(local_vertice: np.ndarray, coordinates) -> np.ndarray:
             """Convert local coordinate to global coordinate.
@@ -887,7 +900,8 @@ class Project:
                     part_mesh_info = part_mesh_info.append_polydata(face_mesh_data)
         return part_mesh_info
 
-    def _create_preview(self, viz_args=None) -> pv.Plotter:
+    @graphics_required
+    def _create_preview(self, viz_args=None) -> Plotter:
         """Create preview pyvista plotter object.
 
         Parameters
@@ -899,6 +913,10 @@ class Project:
             - {'style': 'surface', 'color':'white'},
             - {'opacity': 0.7, 'color':'white', 'show_edges': False},
         """
+        import pyvista as pv
+
+        from ansys.tools.visualization_interface import Plotter
+
         if viz_args is None:
             viz_args = {}
         _preview_mesh = pv.PolyData()
@@ -920,11 +938,17 @@ class Project:
         poly_data = self.__extract_part_mesh_info(part_data=root_part_data)
         if poly_data is not None:
             _preview_mesh = _preview_mesh.append_polydata(poly_data)
-        p = pv.Plotter()
-        p.add_mesh(_preview_mesh, show_edges=True, **viz_args)
+        p = Plotter()
+        viz_args["show_edges"] = True
+        p.plot(_preview_mesh, **viz_args)
         return p
 
-    def preview(self, viz_args=None) -> None:
+    @graphics_required
+    def preview(
+        self,
+        viz_args=None,
+        screenshot: Optional[Union[str, Path]] = None,
+    ) -> None:
         """Preview cad bodies inside the project's scene.
 
         Parameters
@@ -934,12 +958,17 @@ class Project:
             e.g.
             - {'style': 'wireframe'},
             - {'style': 'surface', 'color':'white'},
-            - {'opacity': 0.7, 'color':'white', 'show_edges': False},
+            - {'opacity': 0.7, 'color':'white', 'show_edges': False}.
+
+        screenshot : str or Path or ``None``
+            Path to save a screenshot of the plotter. If defined Plotter will only create the
+            screenshot
+
         """
         if viz_args is None:
             viz_args = {"opacity": 1}
+        if screenshot is not None:
+            screenshot = Path(screenshot)
+
         p = self._create_preview(viz_args=viz_args)
-        if os.environ.get("DOCUMENTATION_BUILDING", "true") == "true":
-            p.show(jupyter_backend="html")
-        else:
-            p.show()
+        p.show(screenshot=screenshot)
