@@ -65,14 +65,18 @@ def test_coverage_launcher_speosdocker(*args):
     """Test local session launch on remote server to improve coverage."""
     port = config.get("SpeosServerPort")
     tmp_file = tempfile.gettempdir()
-    speos_loc = Path(tmp_file) / "Optical Products" / "SPEOS_RPC" / "SpeosRPC_Server.x"
+    if IS_WINDOWS:
+        name = "SpeosRPC_Server.exe"
+    else:
+        name = "SpeosRPC_Server.x"
+    speos_loc = Path(tmp_file) / "Optical Products" / "SPEOS_RPC" / name
+    speos_loc.parent.parent.mkdir(exist_ok=True)
+    speos_loc.parent.mkdir(exist_ok=True)
     if not speos_loc.exists():
-        speos_loc.parent.parent.mkdir()
-        speos_loc.parent.mkdir()
         f = speos_loc.open("w")
         f.write("speos_test_file")
         f.close()
-    os.environ["AWP_ROOT{}".format(LATEST_VERSION)] = str(speos_loc.parent)
+    os.environ["AWP_ROOT{}".format(LATEST_VERSION)] = tmp_file
     test_speos = launch_local_speos_rpc_server(port=port)
     assert True is test_speos.client.healthy
     assert True is test_speos.close()
@@ -82,4 +86,5 @@ def test_coverage_launcher_speosdocker(*args):
     assert True is test_speos.close()
     assert False is test_speos.client.healthy
     speos_loc.unlink()
-    speos_loc.parent.parent.unlink()
+    speos_loc.parent.rmdir()
+    speos_loc.parent.parent.rmdir()
