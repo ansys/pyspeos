@@ -26,6 +26,8 @@ this includes decorator and methods
 """
 
 from functools import wraps
+from pathlib import Path
+from typing import Union
 import warnings
 
 __GRAPHICS_AVAILABLE = None
@@ -108,3 +110,26 @@ def graphics_required(method):
         return method(*args, **kwargs)
 
     return wrapper
+
+
+def error_no_install(install_loc: Union[Path, str], version: Union[int, str]):
+    """Raise error that installation was not found at a location.
+
+    Parameters
+    ----------
+    install_loc : Union[Path, str]
+        Installation Path
+    version : Union[int, str]
+        Version
+    """
+    install_loc = Path(install_loc)
+    exe_notfound = (
+        "Ansys Speos RPC server installation not found at {}."
+        " Please define AWP_ROOT{} environment variable"
+    )
+    raise FileNotFoundError(
+        exe_notfound.format(
+            str(Path(install_loc.parent)),
+            version,
+        )
+    )

@@ -30,6 +30,7 @@ from typing import Optional, Union
 import warnings
 
 from ansys.speos.core import LOG as LOGGER
+from ansys.speos.core.generic.general_methods import error_no_install
 from ansys.speos.core.kernel.client import DEFAULT_PORT, LATEST_VERSION
 from ansys.speos.core.speos import Speos
 from ansys.tools.path import get_available_ansys_installations
@@ -141,10 +142,6 @@ def launch_local_speos_rpc_server(
     ansys.speos.core.speos.Speos
         An instance of the Speos Service.
     """
-    exe_notfound = (
-        "Ansys Speos RPC server installation not found at {}."
-        " Please define AWP_ROOT{} environment variable"
-    )
     if not speos_rpc_loc:
         speos_rpc_loc = ""
     if not speos_rpc_loc or not Path(speos_rpc_loc).exists():
@@ -158,21 +155,12 @@ def launch_local_speos_rpc_server(
         if not ansys_loc:
             ansys_loc = os.environ.get("AWP_ROOT{}".format(version), False)
             if not ansys_loc:
-                raise FileNotFoundError(
-                    exe_notfound.format(
-                        str(Path(speos_rpc_loc.parent)),
-                        version,
-                    )
-                )
+                error_no_install(speos_rpc_loc, int(version))
+
         speos_rpc_loc = Path(ansys_loc) / "Optical Products" / "SPEOS_RPC"
     elif Path(speos_rpc_loc).is_file():
         if "SpeosRPC_Server" not in Path(speos_rpc_loc).name:
-            raise FileNotFoundError(
-                exe_notfound.format(
-                    str(Path(speos_rpc_loc.parent)),
-                    version,
-                )
-            )
+            error_no_install(speos_rpc_loc, int(version))
         else:
             speos_rpc_loc = Path(speos_rpc_loc).parent
     if os.name == "nt":
@@ -180,13 +168,7 @@ def launch_local_speos_rpc_server(
     else:
         speos_exec = speos_rpc_loc / "SpeosRPC_Server.x"
     if not speos_exec.is_file():
-        exe_notfound = "Ansys Speos RPC server version {} is not installed.".format(version)
-        raise FileNotFoundError(
-            exe_notfound.format(
-                str(Path(speos_rpc_loc.parent)),
-                version,
-            )
-        )
+        error_no_install(speos_rpc_loc, int(version))
     if not logfile_loc:
         logfile_loc = Path(tempfile.gettempdir()) / ".ansys"
         logfile = logfile_loc / "speos_rpc.log"
