@@ -221,8 +221,7 @@ class SpeosClient:
 
     def faces(self) -> FaceStub:
         """Get face database access."""
-        if self._closed:
-            raise ConnectionAbortedError()
+        self.__closed_error()
         # connect to database
         if self._faceDB is None:
             self._faceDB = FaceStub(self._channel)
@@ -230,8 +229,7 @@ class SpeosClient:
 
     def bodies(self) -> BodyStub:
         """Get body database access."""
-        if self._closed:
-            raise ConnectionAbortedError()
+        self.__closed_error()
         # connect to database
         if self._bodyDB is None:
             self._bodyDB = BodyStub(self._channel)
@@ -239,8 +237,7 @@ class SpeosClient:
 
     def parts(self) -> PartStub:
         """Get part database access."""
-        if self._closed:
-            raise ConnectionAbortedError()
+        self.__closed_error()
         # connect to database
         if self._partDB is None:
             self._partDB = PartStub(self._channel)
@@ -248,8 +245,7 @@ class SpeosClient:
 
     def sop_templates(self) -> SOPTemplateStub:
         """Get sop template database access."""
-        if self._closed:
-            raise ConnectionAbortedError()
+        self.__closed_error()
         # connect to database
         if self._sopTemplateDB is None:
             self._sopTemplateDB = SOPTemplateStub(self._channel)
@@ -257,8 +253,7 @@ class SpeosClient:
 
     def vop_templates(self) -> VOPTemplateStub:
         """Get vop template database access."""
-        if self._closed:
-            raise ConnectionAbortedError()
+        self.__closed_error()
         # connect to database
         if self._vopTemplateDB is None:
             self._vopTemplateDB = VOPTemplateStub(self._channel)
@@ -266,8 +261,7 @@ class SpeosClient:
 
     def spectrums(self) -> SpectrumStub:
         """Get spectrum database access."""
-        if self._closed:
-            raise ConnectionAbortedError()
+        self.__closed_error()
         # connect to database
         if self._spectrumDB is None:
             self._spectrumDB = SpectrumStub(self._channel)
@@ -275,8 +269,7 @@ class SpeosClient:
 
     def intensity_templates(self) -> IntensityTemplateStub:
         """Get intensity template database access."""
-        if self._closed:
-            raise ConnectionAbortedError()
+        self.__closed_error()
         # connect to database
         if self._intensityTemplateDB is None:
             self._intensityTemplateDB = IntensityTemplateStub(self._channel)
@@ -284,8 +277,7 @@ class SpeosClient:
 
     def source_templates(self) -> SourceTemplateStub:
         """Get source template database access."""
-        if self._closed:
-            raise ConnectionAbortedError()
+        self.__closed_error()
         # connect to database
         if self._sourceTemplateDB is None:
             self._sourceTemplateDB = SourceTemplateStub(self._channel)
@@ -293,8 +285,7 @@ class SpeosClient:
 
     def sensor_templates(self) -> SensorTemplateStub:
         """Get sensor template database access."""
-        if self._closed:
-            raise ConnectionAbortedError()
+        self.__closed_error()
         # connect to database
         if self._sensorTemplateDB is None:
             self._sensorTemplateDB = SensorTemplateStub(self._channel)
@@ -302,8 +293,7 @@ class SpeosClient:
 
     def simulation_templates(self) -> SimulationTemplateStub:
         """Get simulation template database access."""
-        if self._closed:
-            raise ConnectionAbortedError()
+        self.__closed_error()
         # connect to database
         if self._simulationTemplateDB is None:
             self._simulationTemplateDB = SimulationTemplateStub(self._channel)
@@ -311,8 +301,7 @@ class SpeosClient:
 
     def scenes(self) -> SceneStub:
         """Get scene database access."""
-        if self._closed:
-            raise ConnectionAbortedError()
+        self.__closed_error()
         # connect to database
         if self._sceneDB is None:
             self._sceneDB = SceneStub(self._channel)
@@ -320,12 +309,16 @@ class SpeosClient:
 
     def jobs(self) -> JobStub:
         """Get job database access."""
-        if self._closed:
-            raise ConnectionAbortedError()
+        self.__closed_error()
         # connect to database
         if self._jobDB is None:
             self._jobDB = JobStub(self._channel)
         return self._jobDB
+
+    def __closed_error(self):
+        """Check if closed."""
+        if self._closed:
+            raise ConnectionAbortedError()
 
     def __getitem__(
         self, key: str
@@ -368,8 +361,7 @@ ansys.speos.core.kernel.face.FaceLink, \
 None]
             Link object corresponding to the key - None if no objects corresponds to the key.
         """
-        if self._closed:
-            raise ConnectionAbortedError()
+        self.__closed_error()
         for sop in self.sop_templates().list():
             if sop.key == key:
                 return sop
@@ -450,8 +442,7 @@ List[ansys.speos.core.kernel.face.FaceLink]]
             List of Link objects corresponding to the keys - Empty if no objects corresponds to the
             keys.
         """
-        if self._closed:
-            raise ConnectionAbortedError()
+        self.__closed_error()
 
         if item_type == SOPTemplateLink:
             return [x for x in self.sop_templates().list() if x.key in keys]
