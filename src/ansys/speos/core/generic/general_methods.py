@@ -28,7 +28,7 @@ this includes decorator and methods
 from functools import wraps
 import warnings
 
-__GRAPHICS_AVAILABLE = None
+_GRAPHICS_AVAILABLE = None
 GRAPHICS_ERROR = (
     "Preview unsupported without 'ansys-tools-visualization_interface' installed. "
     "You can install this using `pip install ansys-speos-core[graphics]`."
@@ -72,20 +72,20 @@ def deprecate_kwargs(old_arguments: dict, removed_version="0.3.0"):
 
 def run_if_graphics_required(warning=False):
     """Check if graphics are available."""
-    global __GRAPHICS_AVAILABLE
-    if __GRAPHICS_AVAILABLE is None:
+    global _GRAPHICS_AVAILABLE
+    if _GRAPHICS_AVAILABLE is None:
         try:
             import pyvista as pv  # noqa: F401
 
             from ansys.tools.visualization_interface import Plotter  # noqa: F401
 
-            __GRAPHICS_AVAILABLE = True
+            _GRAPHICS_AVAILABLE = True
         except ImportError:  # pragma: no cover
-            __GRAPHICS_AVAILABLE = False
+            _GRAPHICS_AVAILABLE = False
 
-    if __GRAPHICS_AVAILABLE is False and warning is False:  # pragma: no cover
+    if _GRAPHICS_AVAILABLE is False and warning is False:  # pragma: no cover
         raise ImportError(GRAPHICS_ERROR)
-    elif __GRAPHICS_AVAILABLE is False:  # pragma: no cover
+    elif _GRAPHICS_AVAILABLE is False:  # pragma: no cover
         warnings.warn(GRAPHICS_ERROR)
 
 
