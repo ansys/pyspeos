@@ -15,7 +15,7 @@ from ansys.speos.core import __version__
 
 LaTeXBuilder.supported_image_types = ["image/png", "image/pdf", "image/svg+xml"]
 os.environ["DOCUMENTATION_BUILDING"] = "true"
-
+os.environ["PYANSYS_VISUALIZER_HTML_BACKEND"] = "true"
 logger = logging.getLogger(__name__)
 
 # Project information
