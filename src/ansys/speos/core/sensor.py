@@ -25,15 +25,13 @@
 from __future__ import annotations
 
 from difflib import SequenceMatcher
-from typing import TYPE_CHECKING, List, Mapping, Optional, Union
+from typing import List, Mapping, Optional, Union
 import uuid
 
 import numpy as np
 
-if TYPE_CHECKING:  # pragma: no cover
-    import pyvista as pv
-
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2, common_pb2
+import ansys.speos.core.generic.general_methods as general_methods
 from ansys.speos.core.generic.visualization_methods import VisualData
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.scene import ProtoScene
@@ -82,8 +80,7 @@ class BaseSensor:
         self._project = project
         self._name = name
         self._unique_id = None
-        self._visual_data = VisualData()
-        self._visual_data_updated = False
+        self._visual_data = VisualData() if general_methods._GRAPHICS_AVAILABLE else None
         self.sensor_template_link = None
         """Link object for the sensor template in database."""
         if metadata is None:
@@ -1607,7 +1604,8 @@ class SensorCamera(BaseSensor):
             self.set_axis_system()
 
     @property
-    def visual_data(self) -> BaseSensor.VisualData:
+    @general_methods.graphics_required
+    def visual_data(self) -> VisualData:
         """Property containing camera sensor visualization data.
 
         Returns
@@ -1616,7 +1614,7 @@ class SensorCamera(BaseSensor):
             Instance of VisualData Class for pyvista.PolyData of feature faces, coordinate_systems.
 
         """
-        if self._visual_data_updated:
+        if self._visual_data.updated:
             return self._visual_data
         else:
             feature_pos_info = self.get(key="axis_system")
@@ -1654,26 +1652,15 @@ class SensorCamera(BaseSensor):
                 - feature_camera_y_dir * feature_height / 2.0
                 + feature_camera_z_dir * feature_camera_image_dis
             )
-            self._visual_data.data = self._visual_data.data.append_polydata(
-                pv.Rectangle([p1, p2, p3])
-            )
+            self._visual_data.add_data_rectangle([p1, p2, p3])
 
             p5 = feature_camera_pos + feature_camera_z_dir * (
                 feature_camera_image_dis - feature_camera_focal
             )
-            faces = np.hstack([[3, 0, 1, 2]])
-            self._visual_data.data = self._visual_data.data.append_polydata(
-                pv.PolyData(np.array([p1, p2, p5]), faces)
-            )
-            self._visual_data.data = self._visual_data.data.append_polydata(
-                pv.PolyData(np.array([p3, p4, p5]), faces)
-            )
-            self._visual_data.data = self._visual_data.data.append_polydata(
-                pv.PolyData(np.array([p1, p3, p5]), faces)
-            )
-            self._visual_data.data = self._visual_data.data.append_polydata(
-                pv.PolyData(np.array([p2, p4, p5]), faces)
-            )
+            self._visual_data.add_data_triangle([p1, p2, p5])
+            self._visual_data.add_data_triangle([p3, p4, p5])
+            self._visual_data.add_data_triangle([p1, p3, p5])
+            self._visual_data.add_data_triangle([p2, p4, p5])
 
             # camera object field
             # current gRPC service not available to get object field open angle
@@ -1697,35 +1684,18 @@ class SensorCamera(BaseSensor):
             # )
 
             # camera axis system
-            self._visual_data.x_axis = self._visual_data.x_axis.append_polydata(
-                pv.Arrow(
-                    start=feature_camera_pos,
-                    direction=feature_camera_x_dir,
-                    scale=max(feature_width, feature_height) / 4.0,
-                    tip_radius=0.05,
-                    shaft_radius=0.01,
-                )
+            self._visual_data.coordinates.origin = feature_camera_pos
+            self._visual_data.coordinates.x_axis = (
+                feature_camera_x_dir * max(feature_width, feature_height) / 4.0
             )
-            self._visual_data.y_axis = self._visual_data.y_axis.append_polydata(
-                pv.Arrow(
-                    start=feature_camera_pos,
-                    direction=feature_camera_y_dir,
-                    scale=max(feature_width, feature_height) / 4.0,
-                    tip_radius=0.05,
-                    shaft_radius=0.01,
-                )
+            self._visual_data.coordinates.y_axis = (
+                feature_camera_y_dir * max(feature_width, feature_height) / 4.0
             )
-            self._visual_data.z_axis = self._visual_data.z_axis.append_polydata(
-                pv.Arrow(
-                    start=feature_camera_pos,
-                    direction=feature_camera_z_dir,
-                    scale=max(feature_width, feature_height) / 4.0,
-                    tip_radius=0.05,
-                    shaft_radius=0.01,
-                )
+            self._visual_data.coordinates.z_axis = (
+                feature_camera_z_dir * max(feature_width, feature_height) / 4.0
             )
 
-            self._visual_data_updated = True
+            self._visual_data.updated = True
             return self._visual_data
 
     @property
@@ -2017,7 +1987,8 @@ class SensorIrradiance(BaseSensor):
             self.set_axis_system().set_ray_file_type_none().set_layer_type_none()
 
     @property
-    def visual_data(self) -> BaseSensor.VisualData:
+    @general_methods.graphics_required
+    def visual_data(self) -> VisualData:
         """Property containing irradiance sensor visualization data.
 
         Returns
@@ -2026,7 +1997,7 @@ class SensorIrradiance(BaseSensor):
             Instance of VisualData Class for pyvista.PolyData of feature faces, coordinate_systems.
 
         """
-        if self._visual_data_updated is True:
+        if self._visual_data.updated is True:
             return self._visual_data
         else:
             feature_pos_info = self.get(key="axis_system")
@@ -2055,42 +2026,21 @@ class SensorIrradiance(BaseSensor):
                 + feature_irradiance_x_dir * feature_x_end
                 + feature_irradiance_y_dir * feature_y_start
             )
-            self._visual_data.data = self._visual_data.data.append_polydata(
-                pv.Rectangle([p1, p2, p3])
-            )
+            self._visual_data.add_data_rectangle([p1, p2, p3])
 
             # irradiance direction
-            self._visual_data.x_axis = self._visual_data.x_axis.append_polydata(
-                pv.Arrow(
-                    start=feature_irradiance_pos,
-                    direction=feature_irradiance_x_dir,
-                    scale=max(feature_y_end - feature_y_start, feature_x_end - feature_x_start)
-                    / 4.0,
-                    tip_radius=0.05,
-                    shaft_radius=0.01,
-                )
+            self._visual_data.coordinates.origin = feature_irradiance_pos
+            self._visual_data.coordinates.x_axis = feature_irradiance_x_dir * max(
+                feature_y_end - feature_y_start, feature_x_end - feature_x_start
             )
-            self._visual_data.y_axis = self._visual_data.y_axis.append_polydata(
-                pv.Arrow(
-                    start=feature_irradiance_pos,
-                    direction=feature_irradiance_y_dir,
-                    scale=max(feature_y_end - feature_y_start, feature_x_end - feature_x_start)
-                    / 4.0,
-                    tip_radius=0.05,
-                    shaft_radius=0.01,
-                )
+            self._visual_data.coordinates.y_axis = feature_irradiance_y_dir * max(
+                feature_y_end - feature_y_start, feature_x_end - feature_x_start
             )
-            self._visual_data.z_axis = self._visual_data.z_axis.append_polydata(
-                pv.Arrow(
-                    start=feature_irradiance_pos,
-                    direction=feature_irradiance_z_dir,
-                    scale=max(feature_y_end - feature_y_start, feature_x_end - feature_x_start)
-                    / 4.0,
-                    tip_radius=0.05,
-                    shaft_radius=0.01,
-                )
+            self._visual_data.coordinates.z_axis = feature_irradiance_z_dir * max(
+                feature_y_end - feature_y_start, feature_x_end - feature_x_start
             )
-            self._visual_data_updated = True
+
+            self._visual_data.updated = True
             return self._visual_data
 
     @property
@@ -2696,16 +2646,17 @@ class SensorRadiance(BaseSensor):
             self.set_axis_system().set_layer_type_none()
 
     @property
-    def visual_data(self) -> BaseSensor.VisualData:
+    @general_methods.graphics_required
+    def visual_data(self) -> VisualData:
         """Property containing radiance sensor visualization data.
 
         Returns
         -------
-        BaseSensor.VisualData
+        VisualData
             Instance of VisualData Class for pyvista.PolyData of feature faces, coordinate_systems.
 
         """
-        if self._visual_data_updated:
+        if self._visual_data.updated:
             return self._visual_data
         else:
             feature_pos_info = self.get(key="axis_system")
@@ -2740,47 +2691,24 @@ class SensorRadiance(BaseSensor):
                 + feature_radiance_x_dir * feature_x_start
                 + feature_radiance_y_dir * feature_y_end
             )
-            self._visual_data.data = self._visual_data.data.append_polydata(
-                pv.Rectangle([p1, p2, p3])
-            )
+            self._visual_data.add_data_rectangle([p1, p2, p3])
 
             p5 = feature_radiance_pos + feature_radiance_z_dir * feature_radiance_focal
-            faces = np.hstack([[3, 0, 1, 2]])
-            self._visual_data.data = self._visual_data.data.append_polydata(
-                pv.PolyData(np.array([p1, p2, p5]), faces)
-            )
-            self._visual_data.data = self._visual_data.data.append_polydata(
-                pv.PolyData(np.array([p3, p4, p5]), faces)
-            )
-            self._visual_data.data = self._visual_data.data.append_polydata(
-                pv.PolyData(np.array([p1, p4, p5]), faces)
-            )
-            self._visual_data.data = self._visual_data.data.append_polydata(
-                pv.PolyData(np.array([p2, p3, p5]), faces)
-            )
+            self._visual_data.add_data_triangle([p1, p2, p5])
+            self._visual_data.add_data_triangle([p3, p4, p5])
+            self._visual_data.add_data_triangle([p1, p4, p5])
+            self._visual_data.add_data_triangle([p2, p3, p5])
 
             # radiance direction
-            self._visual_data.x_axis = self._visual_data.x_axis.append_polydata(
-                pv.Arrow(
-                    start=feature_radiance_y_dir,
-                    direction=feature_radiance_x_dir,
-                    scale=max(feature_y_end - feature_y_start, feature_x_end - feature_x_start)
-                    / 4.0,
-                    tip_radius=0.05,
-                    shaft_radius=0.01,
-                )
+            self._visual_data.coordinates.origin = feature_radiance_pos
+            self._visual_data.coordinates.x_axis = feature_radiance_x_dir * max(
+                feature_y_end - feature_y_start, feature_x_end - feature_x_start
             )
-            self._visual_data.y_axis = self._visual_data.y_axis.append_polydata(
-                pv.Arrow(
-                    start=feature_radiance_y_dir,
-                    direction=feature_radiance_y_dir,
-                    scale=max(feature_y_end - feature_y_start, feature_x_end - feature_x_start)
-                    / 4.0,
-                    tip_radius=0.05,
-                    shaft_radius=0.01,
-                )
+            self._visual_data.coordinates.y_axis = feature_radiance_y_dir * max(
+                feature_y_end - feature_y_start, feature_x_end - feature_x_start
             )
-            self._visual_data_updated = True
+
+            self._visual_data.updated = True
             return self._visual_data
 
     @property
