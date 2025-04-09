@@ -46,8 +46,7 @@ else:
 # ### Connect to the RPC Server
 # This Python client connects to a server where the Speos engine
 # is running as a service. In this example, the server and
-# client are the same
-# machine.
+# client are the same machine.
 
 speos = Speos(host=HOSTNAME, port=GRPC_PORT)
 
