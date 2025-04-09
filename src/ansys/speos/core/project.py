@@ -748,6 +748,7 @@ class Project:
                 op_feature._fill(mat_inst=mat_inst)
 
         for src_inst in scene_data.sources:
+            src_feat = None
             if src_inst.HasField("rayfile_properties"):
                 src_feat = SourceRayFile(
                     project=self,
@@ -772,6 +773,7 @@ class Project:
             self._features.append(src_feat)
 
         for ssr_inst in scene_data.sensors:
+            ssr_feat = None
             if ssr_inst.HasField("irradiance_properties"):
                 ssr_feat = SensorIrradiance(
                     project=self,
@@ -796,6 +798,7 @@ class Project:
             self._features.append(ssr_feat)
 
         for sim_inst in scene_data.simulations:
+            sim_feat = None
             simulation_template_link = self.client[sim_inst.simulation_guid].get()
             if simulation_template_link.HasField("direct_mc_simulation_template"):
                 sim_feat = SimulationDirect(
@@ -955,9 +958,9 @@ class Project:
                     color="orange",
                     opacity=0.5,
                 )
-                p.plot(feature.visual_data.x_axis, color="red")
-                p.plot(feature.visual_data.y_axis, color="green")
-                p.plot(feature.visual_data.z_axis, color="blue")
+                p.plot(feature.visual_data.coordinates.x_axis, color="red")
+                p.plot(feature.visual_data.coordinates.y_axis, color="green")
+                p.plot(feature.visual_data.coordinates.z_axis, color="blue")
             if isinstance(feature, SensorRadiance):
                 p.plot(
                     feature.visual_data.data,
@@ -967,8 +970,8 @@ class Project:
                     color="orange",
                     opacity=0.5,
                 )
-                p.plot(feature.visual_data.x_axis, color="red")
-                p.plot(feature.visual_data.y_axis, color="green")
+                p.plot(feature.visual_data.coordinates.x_axis, color="red")
+                p.plot(feature.visual_data.coordinates.y_axis, color="green")
             if isinstance(feature, SensorCamera):
                 p.plot(
                     feature.visual_data.data,
@@ -978,8 +981,8 @@ class Project:
                     color="orange",
                     opacity=0.5,
                 )
-                p.plot(feature.visual_data.x_axis, color="red")
-                p.plot(feature.visual_data.y_axis, color="green")
+                p.plot(feature.visual_data.coordinates.x_axis, color="red")
+                p.plot(feature.visual_data.coordinates.y_axis, color="green")
         return p
 
     @graphics_required
