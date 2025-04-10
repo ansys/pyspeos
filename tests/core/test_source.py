@@ -612,8 +612,11 @@ def test_surface_modify_after_reset(speos: Speos):
     p = Project(speos=speos)
 
     # Create + commit
-    source = SourceSurface(project=p, name="Surface.1").set_flux_luminous()
-    source.set_exitance_variable().set_axis_plane()
+    source = SourceSurface(project=p, name="Surface.2").set_flux_luminous()
+    source.set_spectrum_from_xmp_file()
+    source.set_exitance_variable().set_xmp_file_uri(
+        uri=str(Path(test_path) / "PROJECT.Direct-no-Ray.Irradiance Ray Spectral.xmp")
+    )
     source.commit()
 
     # Ask for reset
