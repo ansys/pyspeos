@@ -28,10 +28,9 @@ from difflib import SequenceMatcher
 from typing import List, Mapping, Optional, Union
 import uuid
 
-import numpy as np
-
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2, common_pb2
 import ansys.speos.core.generic.general_methods as general_methods
+from ansys.speos.core.generic.general_methods import Vector
 from ansys.speos.core.generic.visualization_methods import VisualData
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.scene import ProtoScene
@@ -1618,14 +1617,14 @@ class SensorCamera(BaseSensor):
             return self._visual_data
         else:
             feature_pos_info = self.get(key="axis_system")
-            feature_camera_pos = np.array(feature_pos_info[:3])
-            feature_camera_x_dir = np.array(feature_pos_info[3:6])
-            feature_camera_y_dir = np.array(feature_pos_info[6:9])
-            feature_camera_z_dir = np.array(feature_pos_info[9:12])
-            feature_width = self.get(key="width")
-            feature_height = self.get(key="height")
-            feature_camera_focal = self.get(key="focal_length")
-            feature_camera_image_dis = self.get(key="imager_distance")
+            feature_camera_pos = Vector(feature_pos_info[:3])
+            feature_camera_x_dir = Vector(feature_pos_info[3:6])
+            feature_camera_y_dir = Vector(feature_pos_info[6:9])
+            feature_camera_z_dir = Vector(feature_pos_info[9:12])
+            feature_width = float(self.get(key="width"))
+            feature_height = float(self.get(key="height"))
+            feature_camera_focal = float(self.get(key="focal_length"))
+            feature_camera_image_dis = float(self.get(key="imager_distance"))
 
             # camera radiance sensor
             p1 = (
@@ -2001,14 +2000,14 @@ class SensorIrradiance(BaseSensor):
             return self._visual_data
         else:
             feature_pos_info = self.get(key="axis_system")
-            feature_irradiance_pos = np.array(feature_pos_info[:3])
-            feature_irradiance_x_dir = np.array(feature_pos_info[3:6])
-            feature_irradiance_y_dir = np.array(feature_pos_info[6:9])
-            feature_irradiance_z_dir = np.array(feature_pos_info[9:12])
-            feature_x_start = self.get(key="x_start")
-            feature_x_end = self.get(key="x_end")
-            feature_y_start = self.get(key="y_start")
-            feature_y_end = self.get(key="y_end")
+            feature_irradiance_pos = Vector(feature_pos_info[:3])
+            feature_irradiance_x_dir = Vector(feature_pos_info[3:6])
+            feature_irradiance_y_dir = Vector(feature_pos_info[6:9])
+            feature_irradiance_z_dir = Vector(feature_pos_info[9:12])
+            feature_x_start = float(self.get(key="x_start"))
+            feature_x_end = float(self.get(key="x_end"))
+            feature_y_start = float(self.get(key="y_start"))
+            feature_y_end = float(self.get(key="y_end"))
 
             # irradiance sensor
             p1 = (
@@ -2660,15 +2659,15 @@ class SensorRadiance(BaseSensor):
             return self._visual_data
         else:
             feature_pos_info = self.get(key="axis_system")
-            feature_radiance_pos = np.array(feature_pos_info[:3])
-            feature_radiance_x_dir = np.array(feature_pos_info[3:6])
-            feature_radiance_y_dir = np.array(feature_pos_info[6:9])
-            feature_radiance_z_dir = np.array(feature_pos_info[9:12])
-            feature_x_start = self.get(key="x_start")
-            feature_x_end = self.get(key="x_end")
-            feature_y_start = self.get(key="y_start")
-            feature_y_end = self.get(key="y_end")
-            feature_radiance_focal = self.get(key="focal")
+            feature_radiance_pos = Vector(feature_pos_info[:3])
+            feature_radiance_x_dir = Vector(feature_pos_info[3:6])
+            feature_radiance_y_dir = Vector(feature_pos_info[6:9])
+            feature_radiance_z_dir = Vector(feature_pos_info[9:12])
+            feature_x_start = float(self.get(key="x_start"))
+            feature_x_end = float(self.get(key="x_end"))
+            feature_y_start = float(self.get(key="y_start"))
+            feature_y_end = float(self.get(key="y_end"))
+            feature_radiance_focal = float(self.get(key="focal"))
 
             # radiance sensor
             p1 = (

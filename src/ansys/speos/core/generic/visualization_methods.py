@@ -22,9 +22,10 @@
 
 """Provides the ``VisualData`` class."""
 
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Union
 
 from ansys.speos.core.generic.general_methods import (
+    Vector,
     graphics_required,
     magnitude_vector,
     normalize_vector,
@@ -49,7 +50,7 @@ class VisualCoordinateSystem:
     def __init__(self):
         import pyvista as pv
 
-        self._origin = [0.0, 0.0, 0.0]
+        self._origin = Vector([0.0, 0.0, 0.0])
         self._x_axis = pv.Arrow(
             start=self._origin,
             direction=[1.0, 0.0, 0.0],
@@ -73,7 +74,7 @@ class VisualCoordinateSystem:
         )
 
     @property
-    def origin(self) -> List[float]:
+    def origin(self) -> Vector:
         """Returns the origin of the coordinate system.
 
         Returns
@@ -85,12 +86,12 @@ class VisualCoordinateSystem:
         return self._origin
 
     @origin.setter
-    def origin(self, value: List[float]) -> None:
+    def origin(self, value: Union[List[float], Vector]) -> None:
         """Set the origin of the coordinate system.
 
         Parameters
         ----------
-        value: List[float]
+        value: Union[List[float], Vector]
             The origin of the coordinate system.
 
         Returns
@@ -100,7 +101,7 @@ class VisualCoordinateSystem:
         if len(value) != 3:
             msg = "origin must be a list with three elements."
             raise ValueError(msg)
-        self._origin = value
+        self._origin = value if isinstance(value, Vector) else Vector(value)
 
     @property
     def x_axis(self) -> "pv.Arrow":
@@ -115,12 +116,12 @@ class VisualCoordinateSystem:
         return self._x_axis
 
     @x_axis.setter
-    def x_axis(self, x_vector: List[float]) -> None:
+    def x_axis(self, x_vector: Union[List[float], Vector]) -> None:
         """Set the x-axis of the coordinate system.
 
         Parameters
         ----------
-        x_vector: List[float]
+        x_vector: Union[List[float], Vector]
             The x-axis of the coordinate system.
 
         Returns
@@ -154,7 +155,7 @@ class VisualCoordinateSystem:
         return self._y_axis
 
     @y_axis.setter
-    def y_axis(self, y_vector: List[float]) -> None:
+    def y_axis(self, y_vector: Union[List[float], Vector]) -> None:
         """Set the y-axis of the coordinate system.
 
         Parameters
@@ -193,7 +194,7 @@ class VisualCoordinateSystem:
         return self._z_axis
 
     @z_axis.setter
-    def z_axis(self, z_vector: List[float]) -> None:
+    def z_axis(self, z_vector: Union[List[float], Vector]) -> None:
         """Set the z-axis of the coordinate system.
 
         Parameters
@@ -251,13 +252,13 @@ class VisualData:
         """
         return self._data
 
-    def add_data_triangle(self, triangle_vertices: List[List[float]]) -> None:
+    def add_data_triangle(self, triangle_vertices: List[Vector]) -> None:
         """
         Add surface data triangle to Visualization data.
 
         Parameters
         ----------
-        triangle_vertices: List[List[float]]
+        triangle_vertices: List[Vector]
             The vertices of the triangle.
 
         Returns
@@ -272,13 +273,13 @@ class VisualData:
         faces = [[3, 0, 1, 2]]
         self._data = self._data.append_polydata(pv.PolyData(triangle_vertices, faces))
 
-    def add_data_rectangle(self, rectangle_vertices: List[List[float]]) -> None:
+    def add_data_rectangle(self, rectangle_vertices: List[Vector]) -> None:
         """
         Add surface data rectangle to Visualization data.
 
         Parameters
         ----------
-        rectangle_vertices: List[List[float]]
+        rectangle_vertices: List[Vector]
             The vertices of the rectangle.
 
         Returns
