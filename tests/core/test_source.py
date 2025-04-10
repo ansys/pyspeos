@@ -135,9 +135,20 @@ def test_create_surface_source(speos: Speos):
     """Test creation of surface source."""
     p = Project(speos=speos)
 
+    root_part = p.create_root_part()
+    body_b = root_part.create_body(name="BodyB")
+    body_b.create_face(name="FaceB1").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
+        [0, 1, 2]
+    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    body_b.create_face(name="FaceB2").set_vertices([1, 0, 0, 2, 0, 0, 1, 1, 0]).set_facets(
+        [0, 1, 2]
+    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    root_part.commit()
+
     # Default value
     # source1 = p.create_source(name="Surface.1")
     source1 = SourceSurface(project=p, name="Surface.1")
+    source1.set_exitance_constant(geometries=[(GeoRef.from_native_link("BodyB"), False)])
     # source1.set_surface()
     source1.commit()
     assert source1.source_template_link is not None
@@ -244,7 +255,6 @@ def test_create_surface_source(speos: Speos):
     assert surface_properties.exitance_constant_properties.geo_paths[1].reverse_normal is True
 
     source1.set_exitance_constant(geometries=[])  # clear geometries
-    source1.commit()
     assert surface_properties.HasField("exitance_constant_properties")
     assert len(surface_properties.exitance_constant_properties.geo_paths) == 0
 
@@ -365,8 +375,16 @@ def test_keep_same_internal_feature(speos: Speos):
     """
     p = Project(speos=speos)
 
+    root_part = p.create_root_part()
+    body_b = root_part.create_body(name="BodyB")
+    body_b.create_face(name="FaceB1").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
+        [0, 1, 2]
+    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    root_part.commit()
+
     # SURFACE SOURCE
     source1 = SourceSurface(project=p, name="Surface.1")
+    source1.set_exitance_constant(geometries=[(GeoRef.from_native_link("BodyB"), False)])
     source1.commit()
     spectrum_guid = source1.source_template_link.get().surface.spectrum_guid
     intensity_guid = source1.source_template_link.get().surface.intensity_guid
@@ -676,6 +694,13 @@ def test_print_source(speos: Speos):
     """Test delete of source."""
     p = Project(speos=speos)
 
+    root_part = p.create_root_part()
+    body_b = root_part.create_body(name="BodyB")
+    body_b.create_face(name="FaceB1").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
+        [0, 1, 2]
+    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    root_part.commit()
+
     # LUMINAIRE - SPECTRUM
     # Create + commit
     # source = p.create_source(name="Luminaire.1")
@@ -716,6 +741,7 @@ def test_print_source(speos: Speos):
 
     # SURFACE - SPECTRUM
     source = SourceSurface(project=p, name="Surface.1")
+    source.set_exitance_constant(geometries=[(GeoRef.from_native_link("BodyB"), False)])
     source.commit()
 
     # Retrieve print
