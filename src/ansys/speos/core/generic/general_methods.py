@@ -256,6 +256,33 @@ class Vector:
         else:
             return NotImplemented
 
+    def __truediv__(self, other: Union[int, float]) -> "Vector":
+        """
+        Divide the vector by a scalar.
+
+        Parameters
+        ----------
+        other : int or float
+            The scalar value to divide by.
+
+        Returns
+        -------
+        Vector
+            A new vector with each component divided by the scalar.
+
+        Raises
+        ------
+        TypeError
+            If the divisor is not an int or float.
+        ZeroDivisionError
+            If attempting to divide by zero.
+        """
+        if not isinstance(other, (int, float)):
+            return NotImplemented
+        if other == 0:
+            raise ZeroDivisionError("Cannot divide by zero.")
+        return Vector([a / other for a in self.components])
+
     def __eq__(self, other: object) -> bool:
         """
         Check if two vectors are equal.
@@ -284,6 +311,23 @@ class Vector:
             The number of elements in the vector (2 or 3).
         """
         return len(self.components)
+
+    def __getitem__(self, index: int) -> Union[int, float]:
+        """
+        Get a vector element by index.
+
+        Parameters
+        ----------
+        index: int
+            The index of the element to get.
+
+        Returns
+        -------
+        Union[int, float]
+            The vector element.
+
+        """
+        return self.components[index]
 
     def __repr__(self) -> str:
         """
