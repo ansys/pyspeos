@@ -27,7 +27,7 @@ this includes decorator and methods
 
 from functools import lru_cache, wraps
 import math
-from typing import List
+from typing import List, Union
 import warnings
 
 _GRAPHICS_AVAILABLE = None
@@ -166,3 +166,132 @@ def normalize_vector(vector: List[float]) -> List[float]:
         raise ValueError("Input vector must be either 2D or 3D")
 
     return normalized_v
+
+
+class Vector:
+    """A simple 2D or 3D vector class supporting basic vector operations."""
+
+    def __init__(self, components: List[Union[int, float]]):
+        """
+        Initialize a Vector.
+
+        Parameters
+        ----------
+        components : List[int or float]
+            The components of the vector (must be 2D or 3D).
+
+        Raises
+        ------
+        TypeError
+            If the input is not a list.
+        ValueError
+            If the input list is not of length 2 or 3.
+        """
+        if not isinstance(components, list):
+            raise TypeError("Vector components must be provided as a list.")
+        if len(components) not in (2, 3):
+            raise ValueError("Only 2D or 3D vectors are supported.")
+        self.components = components
+
+    def __add__(self, other: "Vector") -> "Vector":
+        """
+        Add two vectors.
+
+        Parameters
+        ----------
+        other : Vector
+            The vector to add.
+
+        Returns
+        -------
+        Vector
+            The result of vector addition.
+        """
+        if not isinstance(other, Vector):
+            return NotImplemented
+        if len(self.components) != len(other.components):
+            raise ValueError("Vectors must have the same dimensions.")
+        return Vector([a + b for a, b in zip(self.components, other.components)])
+
+    def __sub__(self, other: "Vector") -> "Vector":
+        """
+        Subtract one vector from another.
+
+        Parameters
+        ----------
+        other : Vector
+            The vector to subtract.
+
+        Returns
+        -------
+        Vector
+            The result of vector subtraction.
+        """
+        if not isinstance(other, Vector):
+            return NotImplemented
+        if len(self.components) != len(other.components):
+            raise ValueError("Vectors must have the same dimensions.")
+        return Vector([a - b for a, b in zip(self.components, other.components)])
+
+    def __mul__(self, other: Union[int, float, "Vector"]) -> Union["Vector", float]:
+        """
+        Multiply the vector by a scalar or compute the dot product with another vector.
+
+        Parameters
+        ----------
+        other : int, float, or Vector
+            A scalar for scalar multiplication, or another vector for dot product.
+
+        Returns
+        -------
+        Vector or float
+            A new scaled vector or the result of the dot product.
+        """
+        if isinstance(other, (int, float)):
+            return Vector([a * other for a in self.components])
+        elif isinstance(other, Vector):
+            if len(self.components) != len(other.components):
+                raise ValueError("Vectors must have the same dimensions.")
+            return sum(a * b for a, b in zip(self.components, other.components))
+        else:
+            return NotImplemented
+
+    def __eq__(self, other: object) -> bool:
+        """
+        Check if two vectors are equal.
+
+        Parameters
+        ----------
+        other : object
+            The vector to compare.
+
+        Returns
+        -------
+        bool
+            True if vectors have the same components, False otherwise.
+        """
+        if not isinstance(other, Vector):
+            return NotImplemented
+        return self.components == other.components
+
+    def __len__(self) -> int:
+        """
+        Return the number of dimensions of the vector.
+
+        Returns
+        -------
+        int
+            The number of elements in the vector (2 or 3).
+        """
+        return len(self.components)
+
+    def __repr__(self) -> str:
+        """
+        Return a string representation of the vector.
+
+        Returns
+        -------
+        str
+            The string representation.
+        """
+        return f"Vector({self.components})"
