@@ -26,7 +26,7 @@ assets_data_path = Path("/app") / "assets"
 # If using a different path
 # assets_data_path = Path("path/to/downloaded/example/assets")
 # -
-assets_data_path = Path().resolve().parent.parent / "tests" / "assets"
+
 # ## Create connection with speos rpc server
 
 # +
