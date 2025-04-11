@@ -180,7 +180,7 @@ print(sensor3)
 # -
 
 # +
-sensor3.set_type_colorimetric()
+sensor3.set_type_radiometric()
 sensor3.set_layer_type_polarization()
 sensor3.commit()
 print(sensor3)
