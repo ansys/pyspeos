@@ -28,6 +28,30 @@ GRPC_PORT = 50098  # Be sure the Speos GRPC Server has been started on this port
 USE_DOCKER = True  # Set to False if you're running this example locally as a Notebook.
 IES = "IES_C_DETECTOR.ies"
 
+# ### Define helper functions
+
+
+def create_helper_geometries(project: Project):
+    """Create bodies and faces."""
+
+    def create_face(body):
+        (
+            body.create_face(name="TheFaceF")
+            .set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0])
+            .set_facets([0, 1, 2])
+            .set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+            .commit()
+        )
+
+    root_part = project.create_root_part().commit()
+    body_b1 = root_part.create_body(name="TheBodyB").commit()
+    body_b2 = root_part.create_body(name="TheBodyC").commit()
+    body_b3 = root_part.create_body(name="TheBodyD").commit()
+    body_b4 = root_part.create_body(name="TheBodyE").commit()
+    for b in [body_b1, body_b2, body_b3, body_b4]:
+        create_face(b)
+
+
 # ## Model Setup
 #
 # ### Load assets
@@ -168,11 +192,12 @@ source3.delete()
 # ### Surface source
 
 # +
+create_helper_geometries(p)
 source4 = p.create_source(name="Surface.1", feature_type=SourceSurface)
 source4.set_exitance_constant(
     geometries=[
         (GeoRef.from_native_link("TheBodyB/TheFaceF"), False),
-        (GeoRef.from_native_link("TheBodyB/TheFaceG"), True),
+        (GeoRef.from_native_link("TheBodyC/TheFaceF"), True),
     ]
 )
 source4.commit()
