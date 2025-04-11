@@ -13,9 +13,12 @@
 #
 # ### Perform imports
 
+# +
 from pathlib import Path
 
 from ansys.speos.core import GeoRef, Project, Speos
+
+# -
 
 # ### Define constants
 # Constants help ensure consistency and avoid repetition throughout the example.
@@ -97,7 +100,7 @@ op1.set_geometries(
 print(op1)
 
 
-# ## Push it to the server.
+# ### Push it to the server.
 #
 # Now that it is committed to the server,
 # the mention "local: " is no more present when printing the optical property.
@@ -125,7 +128,7 @@ op2.commit()
 print(op2)
 
 
-# ## Create FOP (face optical property)
+# ### Create FOP (face optical property)
 #
 # Sometimes it is needed to create property but only for surface.
 #
@@ -139,14 +142,14 @@ op3.set_geometries(geometries=[GeoRef.from_native_link(geopath="TheBodyD/TheFace
 op3.commit()
 print(op3)
 
-# ## Default values
+# ### Default values
 #
 # Some default values are available when applicable in every methods and class.
 
 op4 = p.create_optical_property(name="Material.3").commit()
 print(op4)
 
-# ## Read
+# ### Read
 # ### Material Instance Information
 #
 # A mention "local: " is added if it is not yet committed to the server.
@@ -191,7 +194,7 @@ print("op3 has reflectance value of {}".format(op3.get(key="sops")[0]["mirror"][
 
 print(p)
 
-# ## Update
+# ### Update
 #
 # Tipp: if you are manipulating an optical property already committed, don't forget to commit your
 # changes.
@@ -205,7 +208,7 @@ print(op1)
 print("op1 surface type after update: {}".format(op1.get(key="sops")[0]))
 
 
-# ## Reset
+# ### Reset
 #
 # Possibility to reset local values from the one available in the server.
 
@@ -215,7 +218,7 @@ op1.delete()  # delete (to display the local value with the below print)
 print(op1)
 
 
-# ## Delete
+# ### Delete
 #
 # Once the data is deleted from the server, you can still work with local data and maybe commit
 # later.
