@@ -28,7 +28,7 @@ from ansys.speos.core import Body, Face, Part, Project, Speos
 from ansys.speos.core.opt_prop import OptProp
 from ansys.speos.core.sensor import SensorIrradiance, SensorRadiance
 from ansys.speos.core.simulation import SimulationDirect
-from ansys.speos.core.source import SourceSurface
+from ansys.speos.core.source import SourceLuminaire, SourceSurface
 from tests.conftest import test_path
 
 
@@ -38,8 +38,9 @@ def test_find_feature(speos: Speos):
     p = Project(speos=speos)
     assert len(p._features) == 0
 
-    # Create a surface source in the project
-    source1 = p.create_source(name="Source.1")
+    # Create a luminaire source in the project
+    source1 = p.create_source(name="Source.1", feature_type=SourceLuminaire)
+    source1.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
     assert len(p._features) == 1
     source1.commit()
     assert len(p.scene_link.get().sources) == 1
@@ -58,7 +59,7 @@ def test_find_feature(speos: Speos):
 
     # Create an radiance sensor in the project
     sensor3 = p.create_sensor(name="Sensor.3", feature_type=SensorRadiance)
-    sensor3.set_layer_type_face()
+    sensor3.set_layer_type_source()
     sensor3.commit()
     assert len(p._features) == 4
     assert len(p.scene_link.get().sensors) == 3
@@ -296,7 +297,8 @@ def test_delete(speos: Speos):
     assert len(p._features) == 0
 
     # Create a surface source in the project
-    source1 = p.create_source(name="Source.1", feature_type=SourceSurface)
+    source1 = p.create_source(name="Source.1", feature_type=SourceLuminaire)
+    source1.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
     assert len(p._features) == 1
     source1.commit()
     assert len(p.scene_link.get().sources) == 1
