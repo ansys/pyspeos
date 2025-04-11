@@ -25,10 +25,13 @@
 this includes decorator and methods
 """
 
-from functools import wraps
+from functools import lru_cache, wraps
+from typing import List, Union
 import warnings
 
-__GRAPHICS_AVAILABLE = None
+import numpy as np
+
+_GRAPHICS_AVAILABLE = None
 GRAPHICS_ERROR = (
     "Preview unsupported without 'ansys-tools-visualization_interface' installed. "
     "You can install this using `pip install ansys-speos-core[graphics]`."
@@ -70,22 +73,23 @@ def deprecate_kwargs(old_arguments: dict, removed_version="0.3.0"):
     return decorator
 
 
+@lru_cache
 def run_if_graphics_required(warning=False):
     """Check if graphics are available."""
-    global __GRAPHICS_AVAILABLE
-    if __GRAPHICS_AVAILABLE is None:
+    global _GRAPHICS_AVAILABLE
+    if _GRAPHICS_AVAILABLE is None:
         try:
             import pyvista as pv  # noqa: F401
 
             from ansys.tools.visualization_interface import Plotter  # noqa: F401
 
-            __GRAPHICS_AVAILABLE = True
+            _GRAPHICS_AVAILABLE = True
         except ImportError:  # pragma: no cover
-            __GRAPHICS_AVAILABLE = False
+            _GRAPHICS_AVAILABLE = False
 
-    if __GRAPHICS_AVAILABLE is False and warning is False:  # pragma: no cover
+    if _GRAPHICS_AVAILABLE is False and warning is False:  # pragma: no cover
         raise ImportError(GRAPHICS_ERROR)
-    elif __GRAPHICS_AVAILABLE is False:  # pragma: no cover
+    elif _GRAPHICS_AVAILABLE is False:  # pragma: no cover
         warnings.warn(GRAPHICS_ERROR)
 
 
@@ -108,3 +112,48 @@ def graphics_required(method):
         return method(*args, **kwargs)
 
     return wrapper
+
+
+def magnitude_vector(vector: Union[List[float], np.array]) -> float:
+    """
+    Compute the magnitude (length) of a 2D or 3D vector using NumPy.
+
+    Parameters
+    ----------
+    vector: List[float]
+        A 2D or 3D vector as a list [x, y] or [x, y, z].
+
+    Returns
+    -------
+    float
+        The magnitude (length) of the vector.
+    """
+    vector_np = np.array(vector, dtype=float)
+    if vector_np.size not in (2, 3):
+        raise ValueError("Input vector must be either 2D or 3D")
+    return np.linalg.norm(vector_np)
+
+
+def normalize_vector(vector: Union[List[float], np.array]) -> List[float]:
+    """
+    Normalize a 2D or 3D vector to have a length of 1 using NumPy.
+
+    Parameters
+    ----------
+    vector: List[float]
+        A vector as a list [x, y] for 2D or [x, y, z] for 3D.
+
+    Returns
+    -------
+    List[float]
+        The normalized vector.
+    """
+    vector_np = np.array(vector, dtype=float)
+    if vector_np.size not in (2, 3):
+        raise ValueError("Input vector must be either 2D or 3D")
+
+    magnitude = magnitude_vector(vector_np)
+    if magnitude == 0:
+        raise ValueError("Cannot normalize the zero vector")
+
+    return (vector_np / magnitude).tolist()
