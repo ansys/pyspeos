@@ -47,6 +47,7 @@ except ImportError:
     pass
 
 IMAGE_RESULTS_DIR = Path(Path(__file__).parent, "image_results")
+IS_WINDOWS = os.name == "nt"
 
 
 @pytest.fixture(scope="session")
