@@ -31,7 +31,7 @@ from pathlib import Path
 from typing import Optional, Union
 import warnings
 
-from ansys.speos.core.kernel.client import LATEST_VERSION
+from ansys.speos.core.generic.constants import LATEST_VERSION
 from ansys.tools.path import get_available_ansys_installations
 
 __GRAPHICS_AVAILABLE = None

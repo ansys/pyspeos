@@ -33,6 +33,7 @@ import grpc
 from grpc._channel import _InactiveRpcError
 
 from ansys.api.speos.part.v1 import body_pb2, face_pb2, part_pb2
+from ansys.speos.core.generic.constants import DEFAULT_HOST, DEFAULT_PORT, LATEST_VERSION
 from ansys.speos.core.generic.general_methods import retrieve_speos_install_dir
 from ansys.speos.core.kernel.body import BodyLink, BodyStub
 from ansys.speos.core.kernel.face import FaceLink, FaceStub
@@ -65,13 +66,6 @@ from ansys.speos.core.kernel.vop_template import (
     VOPTemplateStub,
 )
 from ansys.speos.core.logger import LOG as LOGGER, PySpeosCustomAdapter
-
-DEFAULT_HOST = "localhost"
-"""Default host used by Speos RPC server and client """
-DEFAULT_PORT = "50098"
-"""Default port used by Speos RPC server and client """
-LATEST_VERSION = "251"
-"""Latest supported Speos version of the current PySpeos Package"""
 
 if TYPE_CHECKING:  # pragma: no cover
     from ansys.platform.instancemanagement import Instance
@@ -154,12 +148,14 @@ class SpeosClient:
         """Initialize the ``SpeosClient`` object."""
         self._closed = False
         self._remote_instance = remote_instance
-        if not speos_install_loc:
+        if speos_install_loc:
             speos_install_loc = retrieve_speos_install_dir(speos_install_loc)
             if os.name == "nt":
-                self.__speos_exec = speos_install_loc / "SpeosRPC_Server.exe"
+                self.__speos_exec = str(speos_install_loc / "SpeosRPC_Server.exe")
             else:
-                self.__speos_exec = speos_install_loc / "SpeosRPC_Server.x"
+                self.__speos_exec = str(speos_install_loc / "SpeosRPC_Server.x")
+        else:
+            self.__speos_exec = None
         if not version:
             self._version = LATEST_VERSION
         else:

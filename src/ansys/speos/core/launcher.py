@@ -29,14 +29,9 @@ import tempfile
 from typing import Optional, Union
 
 from ansys.speos.core import LOG as LOGGER
+from ansys.speos.core.generic.constants import DEFAULT_PORT, LATEST_VERSION, MAX_MESSAGE_LENGTH
 from ansys.speos.core.generic.general_methods import retrieve_speos_install_dir
-from ansys.speos.core.kernel.client import DEFAULT_PORT, LATEST_VERSION
 from ansys.speos.core.speos import Speos
-
-MAX_MESSAGE_LENGTH = int(os.environ.get("SPEOS_MAX_MESSAGE_LENGTH", 256 * 1024**2))
-"""Maximum message length value accepted by the Speos RPC server,
-By default, value stored in environment variable SPEOS_MAX_MESSAGE_LENGTH or 268 435 456.
-"""
 
 try:
     import ansys.platform.instancemanagement as pypim
@@ -170,10 +165,11 @@ def launch_local_speos_rpc_server(
     err, stderr_file = tempfile.mkstemp(suffix="speos_err.txt", dir=logfile_loc)
 
     subprocess.Popen(command, stdout=out, stderr=err)
+    print(speos_rpc_loc)
     return Speos(
         host="localhost",
         port=port,
         logging_level=log_level,
         logging_file=logfile,
-        speos_install_loc=speos_exec,
+        speos_install_loc=speos_rpc_loc,
     )

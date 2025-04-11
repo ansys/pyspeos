@@ -31,7 +31,7 @@ from unittest.mock import patch
 import psutil
 import pytest
 
-from ansys.speos.core.kernel.client import LATEST_VERSION
+from ansys.speos.core.generic.constants import LATEST_VERSION
 from ansys.speos.core.launcher import launch_local_speos_rpc_server
 from tests.conftest import IS_WINDOWS, config
 

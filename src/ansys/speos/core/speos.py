@@ -28,7 +28,8 @@ from typing import TYPE_CHECKING, Optional, Union
 
 from grpc import Channel
 
-from ansys.speos.core.kernel.client import DEFAULT_HOST, DEFAULT_PORT, LATEST_VERSION, SpeosClient
+from ansys.speos.core.generic.constants import DEFAULT_HOST, DEFAULT_PORT, LATEST_VERSION
+from ansys.speos.core.kernel.client import SpeosClient
 
 if TYPE_CHECKING:  # pragma: no cover
     from ansys.platform.instancemanagement import Instance
