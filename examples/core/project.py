@@ -17,7 +17,7 @@ from pathlib import Path
 from ansys.speos.core import Project, Speos
 from ansys.speos.core.sensor import SensorIrradiance
 from ansys.speos.core.simulation import SimulationDirect
-from ansys.speos.core.source import SourceSurface
+from ansys.speos.core.source import SourceLuminaire, SourceSurface
 
 # If using docker container
 assets_data_path = Path("/app") / "assets"
@@ -45,7 +45,8 @@ print(p)
 # create feature - e.g. source
 
 # +
-source1 = p.create_source(name="Source.1", feature_type=SourceSurface)
+source1 = p.create_source(name="Source.1", feature_type=SourceLuminaire)
+source1.set_intensity_file_uri(uri=str(assets_data_path / "IES_C_DETECTOR.ies"))
 source1.commit()
 # -
 
@@ -99,7 +100,7 @@ print(features[0])
 # Here a wrong type is given: no source is called Sensor.1 in the project
 
 # +
-features = p.find(name="Sensor.1", feature_type=SourceSurface)
+features = p.find(name="Sensor.1", feature_type=SourceLuminaire)
 print(features)
 # -
 
@@ -177,6 +178,7 @@ for it in p2.find_key(key="surface"):
 
 # +
 features = p2.find(name=".*", name_regex=True, feature_type=SourceSurface)
+print(features)
 for feat in features:
     print(str(type(feat)) + " : name=" + feat._name)
 src = features[1]

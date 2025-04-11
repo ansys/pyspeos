@@ -769,7 +769,8 @@ class Project:
                     source_instance=src_inst,
                     default_values=False,
                 )
-            self._features.append(src_feat)
+            if src_feat is not None:
+                self._features.append(src_feat)
 
         for ssr_inst in scene_data.sensors:
             ssr_feat = None

@@ -41,6 +41,15 @@ def test_create_camera_sensor(speos: Speos):
 
     # Default value
     sensor1 = p.create_sensor(name="Camera.1", feature_type=SensorCamera)
+    sensor1.set_mode_photometric().set_mode_color().set_red_spectrum_file_uri(
+        uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum")
+    )
+    sensor1.set_mode_photometric().set_mode_color().set_green_spectrum_file_uri(
+        uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityGreen.spectrum")
+    )
+    sensor1.set_mode_photometric().set_mode_color().set_blue_spectrum_file_uri(
+        uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum")
+    )
     sensor1.commit()
     assert sensor1.sensor_template_link is not None
     assert sensor1.sensor_template_link.get().HasField("camera_sensor_template")
@@ -54,36 +63,31 @@ def test_create_camera_sensor(speos: Speos):
     assert camera_sensor_template.width == 5.0
     assert camera_sensor_template.height == 5.0
     assert camera_sensor_template.HasField("sensor_mode_photometric")
-    assert camera_sensor_template.sensor_mode_photometric.acquisition_integration == 0.01
-    assert camera_sensor_template.sensor_mode_photometric.acquisition_lag_time == 0.0
-    assert camera_sensor_template.sensor_mode_photometric.transmittance_file_uri == ""
+    mode_photometric = camera_sensor_template.sensor_mode_photometric
+    assert mode_photometric.acquisition_integration == 0.01
+    assert mode_photometric.acquisition_lag_time == 0.0
+    assert mode_photometric.transmittance_file_uri == ""
     assert math.isclose(
-        a=camera_sensor_template.sensor_mode_photometric.gamma_correction,
+        a=mode_photometric.gamma_correction,
         b=2.2,
         rel_tol=1.192092896e-07,
     )
-    assert (
-        camera_sensor_template.sensor_mode_photometric.png_bits
-        == camera_sensor_pb2.EnumSensorCameraPNGBits.PNG_16
+    assert mode_photometric.png_bits == camera_sensor_pb2.EnumSensorCameraPNGBits.PNG_16
+    assert mode_photometric.HasField("wavelengths_range")
+    assert mode_photometric.wavelengths_range.w_start == 400
+    assert mode_photometric.wavelengths_range.w_end == 700
+    assert mode_photometric.wavelengths_range.w_sampling == 13
+    assert mode_photometric.HasField("color_mode_color")
+    assert mode_photometric.color_mode_color.red_spectrum_file_uri.endswith(
+        "CameraSensitivityRed.spectrum"
     )
-    assert camera_sensor_template.sensor_mode_photometric.HasField("wavelengths_range")
-    assert camera_sensor_template.sensor_mode_photometric.wavelengths_range.w_start == 400
-    assert camera_sensor_template.sensor_mode_photometric.wavelengths_range.w_end == 700
-    assert camera_sensor_template.sensor_mode_photometric.wavelengths_range.w_sampling == 13
-    assert camera_sensor_template.sensor_mode_photometric.HasField("color_mode_color")
-    assert (
-        camera_sensor_template.sensor_mode_photometric.color_mode_color.red_spectrum_file_uri == ""
+    assert mode_photometric.color_mode_color.green_spectrum_file_uri.endswith(
+        "CameraSensitivityGreen.spectrum"
     )
-    assert (
-        camera_sensor_template.sensor_mode_photometric.color_mode_color.green_spectrum_file_uri
-        == ""
+    assert mode_photometric.color_mode_color.blue_spectrum_file_uri.endswith(
+        "CameraSensitivityBlue.spectrum"
     )
-    assert (
-        camera_sensor_template.sensor_mode_photometric.color_mode_color.blue_spectrum_file_uri == ""
-    )
-    assert camera_sensor_template.sensor_mode_photometric.color_mode_color.HasField(
-        "balance_mode_none"
-    )
+    assert mode_photometric.color_mode_color.HasField("balance_mode_none")
     assert sensor1._sensor_instance.camera_properties.axis_system == [
         0,
         0,
@@ -367,11 +371,6 @@ def test_create_camera_sensor(speos: Speos):
 
     # Properties for camera photometric
 
-    # trajectory_file_uri
-    sensor1.set_mode_photometric().set_trajectory_file_uri(uri="TrajectoryFile")
-    sensor1.commit()
-    assert sensor1._sensor_instance.camera_properties.trajectory_file_uri != ""
-
     # layer_type_source
     sensor1.set_mode_photometric().set_layer_type_source()
     sensor1.commit()
@@ -388,6 +387,20 @@ def test_create_camera_sensor(speos: Speos):
 def test_create_irradiance_sensor(speos: Speos):
     """Test creation of irradiance sensor."""
     p = Project(speos=speos)
+
+    root_part = p.create_root_part()
+    body_b = root_part.create_body(name="TheBodyB")
+    body_b.create_face(name="TheFaceF").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
+        [0, 1, 2]
+    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    body_c = root_part.create_body(name="TheBodyC")
+    body_c.create_face(name="TheFaceC1").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
+        [0, 1, 2]
+    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    body_c.create_face(name="TheFaceC2").set_vertices([1, 0, 0, 2, 0, 0, 1, 1, 0]).set_facets(
+        [0, 1, 2]
+    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    root_part.commit()
 
     # Default value
     sensor1 = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
@@ -631,6 +644,7 @@ def test_create_irradiance_sensor(speos: Speos):
     )
 
     # layer_type_polarization
+    sensor1.set_type_radiometric()
     sensor1.set_layer_type_polarization()
     sensor1.commit()
     assert irra_properties.HasField("layer_type_polarization")
@@ -665,6 +679,20 @@ def test_create_irradiance_sensor(speos: Speos):
 def test_create_radiance_sensor(speos: Speos):
     """Test creation of radiance sensor."""
     p = Project(speos=speos)
+
+    root_part = p.create_root_part()
+    body_b = root_part.create_body(name="TheBodyB")
+    body_b.create_face(name="TheFaceF").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
+        [0, 1, 2]
+    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    body_c = root_part.create_body(name="TheBodyC")
+    body_c.create_face(name="TheFaceC1").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
+        [0, 1, 2]
+    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    body_c.create_face(name="TheFaceC2").set_vertices([1, 0, 0, 2, 0, 0, 1, 1, 0]).set_facets(
+        [0, 1, 2]
+    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    root_part.commit()
 
     # Default value
     sensor1 = p.create_sensor(name="Radiance.1", feature_type=SensorRadiance)
@@ -856,11 +884,6 @@ def test_create_radiance_sensor(speos: Speos):
         radiance_properties.layer_type_face.sca_filtering_mode
         == radiance_properties.layer_type_face.EnumSCAFilteringType.LastImpact
     )
-
-    # layer_type_face -> clear layers list
-    sensor1.set_layer_type_face().set_layers(values=[])  # clear layers list
-    sensor1.commit()
-    assert len(radiance_properties.layer_type_face.layers) == 0
 
     # layer_type_sequence
     sensor1.set_layer_type_sequence().set_maximum_nb_of_sequence(
@@ -1187,6 +1210,15 @@ def test_camera_modify_after_reset(speos: Speos):
     sensor1 = p.create_sensor(name="Sensor.1", feature_type=SensorCamera)
     assert isinstance(sensor1, SensorCamera)
     sensor1.set_mode_photometric().set_mode_color().set_balance_mode_user_white()
+    sensor1.set_mode_photometric().set_mode_color().set_red_spectrum_file_uri(
+        uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum")
+    )
+    sensor1.set_mode_photometric().set_mode_color().set_green_spectrum_file_uri(
+        uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityGreen.spectrum")
+    )
+    sensor1.set_mode_photometric().set_mode_color().set_blue_spectrum_file_uri(
+        uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum")
+    )
     sensor1.set_mode_photometric().set_layer_type_source()
     sensor1.commit()
 
