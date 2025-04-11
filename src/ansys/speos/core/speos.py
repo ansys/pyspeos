@@ -76,7 +76,7 @@ class Speos:
         timeout: Optional[int] = 60,
         logging_level: Optional[int] = logging.INFO,
         logging_file: Optional[Union[Path, str]] = None,
-        command_line: Optional[Union[Path, str]] = None,
+        speos_install_loc: Optional[Union[Path, str]] = None,
     ):
         self._client = SpeosClient(
             host=host,
@@ -87,7 +87,7 @@ class Speos:
             timeout=timeout,
             logging_level=logging_level,
             logging_file=logging_file,
-            command_line=command_line,
+            speos_install_loc=speos_install_loc,
         )
 
     @property

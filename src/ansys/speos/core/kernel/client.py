@@ -23,6 +23,7 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
 
 import logging
+import os
 from pathlib import Path
 import subprocess
 import time
@@ -32,6 +33,7 @@ import grpc
 from grpc._channel import _InactiveRpcError
 
 from ansys.api.speos.part.v1 import body_pb2, face_pb2, part_pb2
+from ansys.speos.core.generic.general_methods import retrieve_speos_install_dir
 from ansys.speos.core.kernel.body import BodyLink, BodyStub
 from ansys.speos.core.kernel.face import FaceLink, FaceStub
 from ansys.speos.core.kernel.intensity_template import (
@@ -133,7 +135,7 @@ class SpeosClient:
         By default, ``INFO``.
     logging_file : Optional[str, Path]
         The file to output the log, if requested. By default, ``None``.
-    command_line : Optional[str, Path]
+    speos_install_loc : Optional[str, Path]
         location of Speos rpc executable
     """
 
@@ -147,12 +149,17 @@ class SpeosClient:
         timeout: Optional[int] = 60,
         logging_level: Optional[int] = logging.INFO,
         logging_file: Optional[Union[Path, str]] = None,
-        command_line: Optional[Union[Path, str]] = None,
+        speos_install_loc: Optional[Union[Path, str]] = None,
     ):
         """Initialize the ``SpeosClient`` object."""
         self._closed = False
         self._remote_instance = remote_instance
-        self._command_line = command_line
+        if not speos_install_loc:
+            speos_install_loc = retrieve_speos_install_dir(speos_install_loc)
+            if os.name == "nt":
+                self.__command_line = speos_install_loc / "SpeosRPC_Server.exe"
+            else:
+                self.__command_line = speos_install_loc / "SpeosRPC_Server.x"
         if not version:
             self._version = LATEST_VERSION
         else:
@@ -528,6 +535,5 @@ List[ansys.speos.core.kernel.face.FaceLink]]
             return self._closed
 
     def __close_local_speos_rpc_server(self):
-        command = [self._command_line, "-s{}".format(self._port)]
-        p = subprocess.Popen(command)
-        p.wait()
+        command = [self.__command_line, "-s{}".format(self._port)]
+        subprocess.run(command, check=True)

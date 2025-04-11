@@ -27,13 +27,11 @@ from pathlib import Path
 import subprocess
 import tempfile
 from typing import Optional, Union
-import warnings
 
 from ansys.speos.core import LOG as LOGGER
-from ansys.speos.core.generic.general_methods import error_no_install
+from ansys.speos.core.generic.general_methods import retrieve_speos_install_dir
 from ansys.speos.core.kernel.client import DEFAULT_PORT, LATEST_VERSION
 from ansys.speos.core.speos import Speos
-from ansys.tools.path import get_available_ansys_installations
 
 MAX_MESSAGE_LENGTH = int(os.environ.get("SPEOS_MAX_MESSAGE_LENGTH", 256 * 1024**2))
 """Maximum message length value accepted by the Speos RPC server,
@@ -116,6 +114,9 @@ def launch_local_speos_rpc_server(
 ) -> Speos:
     """Launch Speos RPC server locally.
 
+        .. warning::
+            Do not execute this function with untrusted input parameters.
+
     Parameters
     ----------
     version : str
@@ -142,33 +143,11 @@ def launch_local_speos_rpc_server(
     ansys.speos.core.speos.Speos
         An instance of the Speos Service.
     """
-    if not speos_rpc_loc:
-        speos_rpc_loc = ""
-    if not speos_rpc_loc or not Path(speos_rpc_loc).exists():
-        if not Path(speos_rpc_loc).exists():
-            warnings.warn(
-                "Provided executable location not found, looking for local installation",
-                UserWarning,
-            )
-        versions = get_available_ansys_installations()
-        ansys_loc = versions.get(int(version), False)
-        if not ansys_loc:
-            ansys_loc = os.environ.get("AWP_ROOT{}".format(version), False)
-            if not ansys_loc:
-                error_no_install(speos_rpc_loc, int(version))
-
-        speos_rpc_loc = Path(ansys_loc) / "Optical Products" / "SPEOS_RPC"
-    elif Path(speos_rpc_loc).is_file():
-        if "SpeosRPC_Server" not in Path(speos_rpc_loc).name:
-            error_no_install(speos_rpc_loc, int(version))
-        else:
-            speos_rpc_loc = Path(speos_rpc_loc).parent
+    speos_rpc_loc = retrieve_speos_install_dir(speos_rpc_loc)
     if os.name == "nt":
         speos_exec = speos_rpc_loc / "SpeosRPC_Server.exe"
     else:
         speos_exec = speos_rpc_loc / "SpeosRPC_Server.x"
-    if not speos_exec.is_file():
-        error_no_install(speos_rpc_loc, int(version))
     if not logfile_loc:
         logfile_loc = Path(tempfile.gettempdir()) / ".ansys"
         logfile = logfile_loc / "speos_rpc.log"
@@ -196,5 +175,5 @@ def launch_local_speos_rpc_server(
         port=port,
         logging_level=log_level,
         logging_file=logfile,
-        command_line=speos_exec,
+        speos_install_loc=speos_exec,
     )
