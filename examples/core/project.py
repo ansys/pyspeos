@@ -17,7 +17,7 @@ from pathlib import Path
 from ansys.speos.core import Project, Speos
 from ansys.speos.core.sensor import SensorIrradiance
 from ansys.speos.core.simulation import SimulationDirect
-from ansys.speos.core.source import SourceLuminaire
+from ansys.speos.core.source import SourceLuminaire, SourceSurface
 
 # If using docker container
 assets_data_path = Path("/app") / "assets"
@@ -26,7 +26,7 @@ assets_data_path = Path("/app") / "assets"
 # If using a different path
 # assets_data_path = Path("path/to/downloaded/example/assets")
 # -
-
+assets_data_path = Path().resolve().parent.parent / "tests" / "assets"
 # ## Create connection with speos rpc server
 
 # +
@@ -177,7 +177,8 @@ for it in p2.find_key(key="surface"):
 # e.g. surface source
 
 # +
-features = p2.find(name=".*", name_regex=True, feature_type=SourceLuminaire)
+features = p2.find(name=".*", name_regex=True, feature_type=SourceSurface)
+print(features)
 for feat in features:
     print(str(type(feat)) + " : name=" + feat._name)
 src = features[1]
