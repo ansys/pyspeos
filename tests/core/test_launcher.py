@@ -61,6 +61,7 @@ def test_local_session(*args):
 
 
 @patch.object(subprocess, "Popen")
+@patch.object(subprocess, "run")
 def test_coverage_launcher_speosdocker(*args):
     """Test local session launch on remote server to improve coverage."""
     port = config.get("SpeosServerPort")

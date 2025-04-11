@@ -157,9 +157,9 @@ class SpeosClient:
         if not speos_install_loc:
             speos_install_loc = retrieve_speos_install_dir(speos_install_loc)
             if os.name == "nt":
-                self.__command_line = speos_install_loc / "SpeosRPC_Server.exe"
+                self.__speos_exec = speos_install_loc / "SpeosRPC_Server.exe"
             else:
-                self.__command_line = speos_install_loc / "SpeosRPC_Server.x"
+                self.__speos_exec = speos_install_loc / "SpeosRPC_Server.x"
         if not version:
             self._version = LATEST_VERSION
         else:
@@ -535,5 +535,5 @@ List[ansys.speos.core.kernel.face.FaceLink]]
             return self._closed
 
     def __close_local_speos_rpc_server(self):
-        command = [self.__command_line, "-s{}".format(self._port)]
+        command = [self.__speos_exec, "-s{}".format(self._port)]
         subprocess.run(command, check=True)
