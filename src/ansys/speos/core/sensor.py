@@ -28,10 +28,11 @@ from difflib import SequenceMatcher
 from typing import List, Mapping, Optional, Union
 import uuid
 
+import numpy as np
+
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2, common_pb2
 import ansys.speos.core.generic.general_methods as general_methods
-from ansys.speos.core.generic.general_methods import Vector
-from ansys.speos.core.generic.visualization_methods import VisualData
+from ansys.speos.core.generic.visualization_methods import _VisualData
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.scene import ProtoScene
 from ansys.speos.core.kernel.sensor_template import ProtoSensorTemplate
@@ -79,7 +80,7 @@ class BaseSensor:
         self._project = project
         self._name = name
         self._unique_id = None
-        self._visual_data = VisualData() if general_methods._GRAPHICS_AVAILABLE else None
+        self._visual_data = _VisualData() if general_methods._GRAPHICS_AVAILABLE else None
         self.sensor_template_link = None
         """Link object for the sensor template in database."""
         if metadata is None:
@@ -1604,7 +1605,7 @@ class SensorCamera(BaseSensor):
 
     @property
     @general_methods.graphics_required
-    def visual_data(self) -> VisualData:
+    def visual_data(self) -> _VisualData:
         """Property containing camera sensor visualization data.
 
         Returns
@@ -1617,10 +1618,10 @@ class SensorCamera(BaseSensor):
             return self._visual_data
         else:
             feature_pos_info = self.get(key="axis_system")
-            feature_camera_pos = Vector(feature_pos_info[:3])
-            feature_camera_x_dir = Vector(feature_pos_info[3:6])
-            feature_camera_y_dir = Vector(feature_pos_info[6:9])
-            feature_camera_z_dir = Vector(feature_pos_info[9:12])
+            feature_camera_pos = np.array(feature_pos_info[:3])
+            feature_camera_x_dir = np.array(feature_pos_info[3:6])
+            feature_camera_y_dir = np.array(feature_pos_info[6:9])
+            feature_camera_z_dir = np.array(feature_pos_info[9:12])
             feature_width = float(self.get(key="width"))
             feature_height = float(self.get(key="height"))
             feature_camera_focal = float(self.get(key="focal_length"))
@@ -1987,7 +1988,7 @@ class SensorIrradiance(BaseSensor):
 
     @property
     @general_methods.graphics_required
-    def visual_data(self) -> VisualData:
+    def visual_data(self) -> _VisualData:
         """Property containing irradiance sensor visualization data.
 
         Returns
@@ -2000,10 +2001,10 @@ class SensorIrradiance(BaseSensor):
             return self._visual_data
         else:
             feature_pos_info = self.get(key="axis_system")
-            feature_irradiance_pos = Vector(feature_pos_info[:3])
-            feature_irradiance_x_dir = Vector(feature_pos_info[3:6])
-            feature_irradiance_y_dir = Vector(feature_pos_info[6:9])
-            feature_irradiance_z_dir = Vector(feature_pos_info[9:12])
+            feature_irradiance_pos = np.array(feature_pos_info[:3])
+            feature_irradiance_x_dir = np.array(feature_pos_info[3:6])
+            feature_irradiance_y_dir = np.array(feature_pos_info[6:9])
+            feature_irradiance_z_dir = np.array(feature_pos_info[9:12])
             feature_x_start = float(self.get(key="x_start"))
             feature_x_end = float(self.get(key="x_end"))
             feature_y_start = float(self.get(key="y_start"))
@@ -2646,12 +2647,12 @@ class SensorRadiance(BaseSensor):
 
     @property
     @general_methods.graphics_required
-    def visual_data(self) -> VisualData:
+    def visual_data(self) -> _VisualData:
         """Property containing radiance sensor visualization data.
 
         Returns
         -------
-        VisualData
+        _VisualData
             Instance of VisualData Class for pyvista.PolyData of feature faces, coordinate_systems.
 
         """
@@ -2659,10 +2660,10 @@ class SensorRadiance(BaseSensor):
             return self._visual_data
         else:
             feature_pos_info = self.get(key="axis_system")
-            feature_radiance_pos = Vector(feature_pos_info[:3])
-            feature_radiance_x_dir = Vector(feature_pos_info[3:6])
-            feature_radiance_y_dir = Vector(feature_pos_info[6:9])
-            feature_radiance_z_dir = Vector(feature_pos_info[9:12])
+            feature_radiance_pos = np.array(feature_pos_info[:3])
+            feature_radiance_x_dir = np.array(feature_pos_info[3:6])
+            feature_radiance_y_dir = np.array(feature_pos_info[6:9])
+            feature_radiance_z_dir = np.array(feature_pos_info[9:12])
             feature_x_start = float(self.get(key="x_start"))
             feature_x_end = float(self.get(key="x_end"))
             feature_y_start = float(self.get(key="y_start"))
