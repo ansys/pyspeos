@@ -791,6 +791,7 @@ class SourceSurface(BaseSource):
 
             if default_values:
                 # Default values
+                self._exitance_variable.SetInParent()
                 self.set_axis_plane()
 
         def set_xmp_file_uri(self, uri: str) -> SourceSurface.ExitanceVariable:
