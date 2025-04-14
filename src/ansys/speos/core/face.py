@@ -30,6 +30,7 @@ from ansys.speos.core import proto_message_utils
 import ansys.speos.core.body as body
 from ansys.speos.core.kernel.client import SpeosClient
 from ansys.speos.core.kernel.face import ProtoFace
+import ansys.speos.core.part as part
 
 
 class Face:
@@ -66,7 +67,7 @@ class Face:
         parent_body: Optional[body.Body] = None,
     ) -> None:
         self._speos_client = speos_client
-        self._parent_body = parent_body
+        self._parent = parent_body
         self._name = name
         self.face_link = None
         """Link object for the face in database."""
@@ -75,6 +76,21 @@ class Face:
 
         # Create local Face
         self._face = ProtoFace(name=name, description=description, metadata=metadata)
+
+    @property
+    def geo_path(self):
+        """Geometry path to be used within other speos objects."""
+        return self.__get_geo_path(self)
+
+    @staticmethod
+    def __get_geo_path(face, end=""):
+        if isinstance(face._parent, part.Part):
+            if end:
+                return face._name + "/" + end
+            else:
+                return face._name
+        else:
+            return face.__get_geo_path(face._parent, face._name)
 
     def set_vertices(self, values: List[float]) -> Face:
         """Set the face vertices.
@@ -163,11 +179,11 @@ class Face:
             self.face_link.set(data=self._face)  # Only Update if data has changed
 
         # Update the parent body
-        if self._parent_body is not None:
-            if self.face_link.key not in self._parent_body._body.face_guids:
-                self._parent_body._body.face_guids.append(self.face_link.key)
-                if self._parent_body.body_link is not None:
-                    self._parent_body.body_link.set(data=self._parent_body._body)
+        if self._parent is not None:
+            if self.face_link.key not in self._parent._body.face_guids:
+                self._parent._body.face_guids.append(self.face_link.key)
+                if self._parent.body_link is not None:
+                    self._parent.body_link.set(data=self._parent._body)
 
         return self
 
@@ -197,17 +213,17 @@ class Face:
         """
         if self.face_link is not None:
             # Update the parent body
-            if self._parent_body is not None:
-                if self.face_link.key in self._parent_body._body.face_guids:
-                    self._parent_body._body.face_guids.remove(self.face_link.key)
-                    if self._parent_body.body_link is not None:
-                        self._parent_body.body_link.set(data=self._parent_body._body)
+            if self._parent is not None:
+                if self.face_link.key in self._parent._body.face_guids:
+                    self._parent._body.face_guids.remove(self.face_link.key)
+                    if self._parent.body_link is not None:
+                        self._parent.body_link.set(data=self._parent._body)
 
             # Delete the face
             self.face_link.delete()
             self.face_link = None
 
-            if self in self._parent_body._geom_features:
-                self._parent_body._geom_features.remove(self)
+            if self in self._parent._geom_features:
+                self._parent._geom_features.remove(self)
 
         return self

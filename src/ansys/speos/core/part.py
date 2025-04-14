@@ -88,7 +88,7 @@ class Part:
             parent_part: Optional[Part] = None,
         ) -> None:
             self._speos_client = speos_client
-            self._parent_part = parent_part
+            self._parent = parent_part
             self._name = name
             self.part_link = None
             """Link object for the part in database."""
@@ -99,6 +99,21 @@ class Part:
             self._part = ProtoPart(name=name, description=description)
 
             self._geom_features = []
+
+        @property
+        def geo_path(self):
+            """Geometry path to be used within other speos objects."""
+            return self.__get_geo_path(self)
+
+        @staticmethod
+        def __get_geo_path(part, end=""):
+            if isinstance(part._parent, Part):
+                if end:
+                    return part._name + "/" + end
+                else:
+                    return part._name
+            else:
+                return part.__get_geo_path(part._parent, part._name)
 
         def create_body(
             self,
@@ -182,8 +197,8 @@ class Part:
             out_dict = ""
 
             # Part Instance
-            if self._parent_part is not None and self._parent_part.part_link is not None:
-                parent_part_data = self._parent_part.part_link.get()
+            if self._parent is not None and self._parent.part_link is not None:
+                parent_part_data = self._parent.part_link.get()
                 part_inst = next(
                     (
                         x
@@ -224,8 +239,8 @@ class Part:
             """Return the string representation of the sub part."""
             out_str = ""
 
-            if self._parent_part is not None and self._parent_part.part_link is not None:
-                parent_part_data = self._parent_part.part_link.get()
+            if self._parent is not None and self._parent.part_link is not None:
+                parent_part_data = self._parent.part_link.get()
                 part_inst = next(
                     (
                         x
@@ -268,9 +283,9 @@ class Part:
                 g.commit()
 
             # Look if an element corresponds to the instance
-            if self._parent_part is not None and self._parent_part.part_link is not None:
+            if self._parent is not None and self._parent.part_link is not None:
                 update_part = True
-                parent_part_data = self._parent_part.part_link.get()
+                parent_part_data = self._parent.part_link.get()
 
                 part_inst = next(
                     (
@@ -286,14 +301,12 @@ class Part:
                     else:
                         update_part = False
                 else:
-                    self._parent_part._part.parts.append(
+                    self._parent._part.parts.append(
                         self._part_instance
                     )  # if no, just add it to the list of part instances
 
-                if self._parent_part.part_link is not None and update_part:
-                    self._parent_part.part_link.set(
-                        data=self._parent_part._part
-                    )  # update parent part
+                if self._parent.part_link is not None and update_part:
+                    self._parent.part_link.set(data=self._parent._part)  # update parent part
 
             return self
 
@@ -310,8 +323,8 @@ class Part:
                 self._part = self.part_link.get()
 
             # Reset part instance
-            if self._parent_part is not None and self._parent_part.part_link is not None:
-                parent_part_data = self._parent_part.part_link.get()  # retrieve server data
+            if self._parent is not None and self._parent.part_link is not None:
+                parent_part_data = self._parent.part_link.get()  # retrieve server data
                 # Look if an element corresponds to the _unique_id
                 if self._unique_id is not None:
                     part_inst = next(
@@ -340,8 +353,8 @@ class Part:
                 self._geom_features[0].delete()
 
             # Remove the part instance from the parent part
-            if self._parent_part is not None and self._parent_part.part_link is not None:
-                parent_part_data = self._parent_part.part_link.get()
+            if self._parent is not None and self._parent.part_link is not None:
+                parent_part_data = self._parent.part_link.get()
                 part_inst = next(
                     (
                         x
@@ -351,18 +364,16 @@ class Part:
                     None,
                 )
                 if part_inst is not None:
-                    self._parent_part._part.parts.remove(part_inst)
-                    if self._parent_part.part_link is not None:
-                        self._parent_part.part_link.set(
-                            data=self._parent_part._part
-                        )  # update parent part
+                    self._parent._part.parts.remove(part_inst)
+                    if self._parent.part_link is not None:
+                        self._parent.part_link.set(data=self._parent._part)  # update parent part
 
             # Reset the _unique_id
             self._unique_id = None
             self._part_instance.description = ""
 
-            if self in self._parent_part._geom_features:
-                self._parent_part._geom_features.remove(self)
+            if self in self._parent._geom_features:
+                self._parent._geom_features.remove(self)
 
             return self
 
