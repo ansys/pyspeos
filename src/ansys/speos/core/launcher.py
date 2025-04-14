@@ -109,8 +109,8 @@ def launch_local_speos_rpc_server(
 ) -> Speos:
     """Launch Speos RPC server locally.
 
-        .. warning::
-            Do not execute this function with untrusted input parameters.
+    .. warning::
+        Do not execute this function with untrusted input parameters.
 
     Parameters
     ----------

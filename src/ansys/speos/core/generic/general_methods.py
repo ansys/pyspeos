@@ -126,9 +126,8 @@ def error_no_install(install_path: Union[Path, str], version: Union[int, str]):
     version : Union[int, str]
         Version
     """
-    if not install_path:
-        install_loc_msg = ""
-    else:
+    install_loc_msg = ""
+    if install_path:
         install_loc_msg = f"at {Path(install_path).parent}"
     raise FileNotFoundError(
         f"Ansys Speos RPC server installation not found{install_loc_msg}. "
@@ -138,7 +137,7 @@ def error_no_install(install_path: Union[Path, str], version: Union[int, str]):
 
 def retrieve_speos_install_dir(
     speos_rpc_path: Optional[Union[Path, str]] = None, version: str = DEFAULT_VERSION
-):
+) -> Path:
     """Retrieve Speos install location based on Path or Environment.
 
     Parameters
