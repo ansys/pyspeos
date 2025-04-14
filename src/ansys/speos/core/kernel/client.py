@@ -33,7 +33,7 @@ import grpc
 from grpc._channel import _InactiveRpcError
 
 from ansys.api.speos.part.v1 import body_pb2, face_pb2, part_pb2
-from ansys.speos.core.generic.constants import DEFAULT_HOST, DEFAULT_PORT, LATEST_VERSION
+from ansys.speos.core.generic.constants import DEFAULT_HOST, DEFAULT_PORT, DEFAULT_VERSION
 from ansys.speos.core.generic.general_methods import retrieve_speos_install_dir
 from ansys.speos.core.kernel.body import BodyLink, BodyStub
 from ansys.speos.core.kernel.face import FaceLink, FaceStub
@@ -129,7 +129,7 @@ class SpeosClient:
         By default, ``INFO``.
     logging_file : Optional[str, Path]
         The file to output the log, if requested. By default, ``None``.
-    speos_install_loc : Optional[str, Path]
+    speos_install_path : Optional[str, Path]
         location of Speos rpc executable
     """
 
@@ -137,27 +137,27 @@ class SpeosClient:
         self,
         host: Optional[str] = DEFAULT_HOST,
         port: Union[str, int] = DEFAULT_PORT,
-        version: str = LATEST_VERSION,
+        version: str = DEFAULT_VERSION,
         channel: Optional[grpc.Channel] = None,
         remote_instance: Optional["Instance"] = None,
         timeout: Optional[int] = 60,
         logging_level: Optional[int] = logging.INFO,
         logging_file: Optional[Union[Path, str]] = None,
-        speos_install_loc: Optional[Union[Path, str]] = None,
+        speos_install_path: Optional[Union[Path, str]] = None,
     ):
         """Initialize the ``SpeosClient`` object."""
         self._closed = False
         self._remote_instance = remote_instance
-        if speos_install_loc:
-            speos_install_loc = retrieve_speos_install_dir(speos_install_loc)
+        if speos_install_path:
+            speos_install_path = retrieve_speos_install_dir(speos_install_path)
             if os.name == "nt":
-                self.__speos_exec = str(speos_install_loc / "SpeosRPC_Server.exe")
+                self.__speos_exec = str(speos_install_path / "SpeosRPC_Server.exe")
             else:
-                self.__speos_exec = str(speos_install_loc / "SpeosRPC_Server.x")
+                self.__speos_exec = str(speos_install_path / "SpeosRPC_Server.x")
         else:
             self.__speos_exec = None
         if not version:
-            self._version = LATEST_VERSION
+            self._version = DEFAULT_VERSION
         else:
             self._version = version
         if channel:
@@ -505,7 +505,7 @@ List[ansys.speos.core.kernel.face.FaceLink]]
         wait_time = 0
         if self._remote_instance:
             self._remote_instance.delete()
-        elif self._host in ["localhost", "0.0.0.0", "127.0.0.1"]:
+        elif self._host in ["localhost", "0.0.0.0", "127.0.0.1"] and self.__speos_exec:
             self.__close_local_speos_rpc_server()
             while self.healthy and wait_time < 15:
                 time.sleep(1)

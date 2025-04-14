@@ -28,7 +28,7 @@ DEFAULT_HOST = "localhost"
 """Default host used by Speos RPC server and client """
 DEFAULT_PORT = "50098"
 """Default port used by Speos RPC server and client """
-LATEST_VERSION = "251"
+DEFAULT_VERSION = "251"
 """Latest supported Speos version of the current PySpeos Package"""
 MAX_MESSAGE_LENGTH = int(os.environ.get("SPEOS_MAX_MESSAGE_LENGTH", 256 * 1024**2))
 """Maximum message length value accepted by the Speos RPC server,

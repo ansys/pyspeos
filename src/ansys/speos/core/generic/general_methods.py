@@ -31,7 +31,7 @@ from pathlib import Path
 from typing import Optional, Union
 import warnings
 
-from ansys.speos.core.generic.constants import LATEST_VERSION
+from ansys.speos.core.generic.constants import DEFAULT_VERSION
 from ansys.tools.path import get_available_ansys_installations
 
 __GRAPHICS_AVAILABLE = None
@@ -116,20 +116,20 @@ def graphics_required(method):
     return wrapper
 
 
-def error_no_install(install_loc: Union[Path, str], version: Union[int, str]):
+def error_no_install(install_path: Union[Path, str], version: Union[int, str]):
     """Raise error that installation was not found at a location.
 
     Parameters
     ----------
-    install_loc : Union[Path, str]
+    install_path : Union[Path, str]
         Installation Path
     version : Union[int, str]
         Version
     """
-    if not install_loc:
+    if not install_path:
         install_loc_msg = ""
     else:
-        install_loc_msg = f"at {Path(install_loc).parent}"
+        install_loc_msg = f"at {Path(install_path).parent}"
     raise FileNotFoundError(
         f"Ansys Speos RPC server installation not found{install_loc_msg}. "
         f"Please define AWP_ROOT{version} environment variable"
@@ -137,24 +137,24 @@ def error_no_install(install_loc: Union[Path, str], version: Union[int, str]):
 
 
 def retrieve_speos_install_dir(
-    speos_rpc_loc: Optional[Union[Path, str]], version: str = LATEST_VERSION
+    speos_rpc_path: Optional[Union[Path, str]] = None, version: str = DEFAULT_VERSION
 ):
     """Retrieve Speos install location based on Path or Environment.
 
     Parameters
     ----------
-    speos_rpc_loc : Optional[str, Path]
+    speos_rpc_path : Optional[str, Path]
         location of Speos rpc executable
-    version : str
+    version : Union[str, int]
         The Speos server version to run, in the 3 digits format, such as "242".
         If unspecified, the version will be chosen as
         ``ansys.speos.core.kernel.client.LATEST_VERSION``.
 
     """
-    if not speos_rpc_loc:
-        speos_rpc_loc = ""
-    if not speos_rpc_loc or not Path(speos_rpc_loc).exists():
-        if not Path(speos_rpc_loc).exists():
+    if not speos_rpc_path:
+        speos_rpc_path = ""
+    if not speos_rpc_path or not Path(speos_rpc_path).exists():
+        if not Path(speos_rpc_path).exists():
             warnings.warn(
                 "Provided executable location not found, looking for local installation",
                 UserWarning,
@@ -164,18 +164,18 @@ def retrieve_speos_install_dir(
         if not ansys_loc:
             ansys_loc = os.environ.get("AWP_ROOT{}".format(version), False)
             if not ansys_loc:
-                error_no_install(speos_rpc_loc, int(version))
+                error_no_install(speos_rpc_path, int(version))
 
-        speos_rpc_loc = Path(ansys_loc) / "Optical Products" / "SPEOS_RPC"
-    elif Path(speos_rpc_loc).is_file():
-        if "SpeosRPC_Server" not in Path(speos_rpc_loc).name:
-            error_no_install(speos_rpc_loc, int(version))
+        speos_rpc_path = Path(ansys_loc) / "Optical Products" / "SPEOS_RPC"
+    elif Path(speos_rpc_path).is_file():
+        if "SpeosRPC_Server" not in Path(speos_rpc_path).name:
+            error_no_install(speos_rpc_path, int(version))
         else:
-            speos_rpc_loc = Path(speos_rpc_loc).parent
+            speos_rpc_path = Path(speos_rpc_path).parent
     if os.name == "nt":
-        speos_exec = speos_rpc_loc / "SpeosRPC_Server.exe"
+        speos_exec = speos_rpc_path / "SpeosRPC_Server.exe"
     else:
-        speos_exec = speos_rpc_loc / "SpeosRPC_Server.x"
+        speos_exec = speos_rpc_path / "SpeosRPC_Server.x"
     if not speos_exec.is_file():
-        error_no_install(speos_rpc_loc, int(version))
-    return speos_rpc_loc
+        error_no_install(speos_rpc_path, int(version))
+    return speos_rpc_path

@@ -31,7 +31,7 @@ from unittest.mock import patch
 import psutil
 import pytest
 
-from ansys.speos.core.generic.constants import LATEST_VERSION
+from ansys.speos.core.generic.constants import DEFAULT_VERSION
 from ansys.speos.core.launcher import launch_local_speos_rpc_server
 from tests.conftest import IS_WINDOWS, config
 
@@ -50,7 +50,7 @@ def test_local_session(*args):
         name = "SpeosRPC_Server.x"
     p_list = [p.name() for p in psutil.process_iter()]
     nb_process = p_list.count(name)
-    test_speos = launch_local_speos_rpc_server(port=port, speos_rpc_loc=speos_loc)
+    test_speos = launch_local_speos_rpc_server(port=port, speos_rpc_path=speos_loc)
     p_list = [p.name() for p in psutil.process_iter()]
     running = p_list.count(name) > nb_process
     assert running is test_speos.client.healthy
@@ -77,13 +77,13 @@ def test_coverage_launcher_speosdocker(*args):
         f = speos_loc.open("w")
         f.write("speos_test_file")
         f.close()
-    os.environ["AWP_ROOT{}".format(LATEST_VERSION)] = tmp_file
+    os.environ["AWP_ROOT{}".format(DEFAULT_VERSION)] = tmp_file
     test_speos = launch_local_speos_rpc_server(port=port)
     assert True is test_speos.client.healthy
     assert True is test_speos.close()
     assert False is test_speos.client.healthy
     test_speos = launch_local_speos_rpc_server(
-        port=port, speos_rpc_loc=speos_loc, logfile_loc=tmp_file
+        port=port, speos_rpc_path=speos_loc, logfile_loc=tmp_file
     )
     assert True is test_speos.client.healthy
     test_speos.client._closed = True

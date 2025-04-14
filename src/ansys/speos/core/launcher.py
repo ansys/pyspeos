@@ -29,7 +29,7 @@ import tempfile
 from typing import Optional, Union
 
 from ansys.speos.core import LOG as LOGGER
-from ansys.speos.core.generic.constants import DEFAULT_PORT, LATEST_VERSION, MAX_MESSAGE_LENGTH
+from ansys.speos.core.generic.constants import DEFAULT_PORT, DEFAULT_VERSION, MAX_MESSAGE_LENGTH
 from ansys.speos.core.generic.general_methods import retrieve_speos_install_dir
 from ansys.speos.core.speos import Speos
 
@@ -100,12 +100,12 @@ def launch_remote_speos(
 
 
 def launch_local_speos_rpc_server(
-    version: str = LATEST_VERSION,
-    port: str = DEFAULT_PORT,
+    version: str = DEFAULT_VERSION,
+    port: Union[str, int] = DEFAULT_PORT,
     message_size: int = MAX_MESSAGE_LENGTH,
     logfile_loc: str = None,
     log_level: int = 20,
-    speos_rpc_loc: Optional[Union[Path, str]] = None,
+    speos_rpc_path: Optional[Union[Path, str]] = None,
 ) -> Speos:
     """Launch Speos RPC server locally.
 
@@ -130,7 +130,7 @@ def launch_local_speos_rpc_server(
         The logging level to be applied to the server, integer values can be taken from logging
         module.
         By default, ``logging.WARNING`` = 20.
-    speos_rpc_loc : Optional[str, Path]
+    speos_rpc_path : Optional[str, Path]
         location of Speos rpc executable
 
     Returns
@@ -138,11 +138,11 @@ def launch_local_speos_rpc_server(
     ansys.speos.core.speos.Speos
         An instance of the Speos Service.
     """
-    speos_rpc_loc = retrieve_speos_install_dir(speos_rpc_loc)
+    speos_rpc_path = retrieve_speos_install_dir(speos_rpc_path, version)
     if os.name == "nt":
-        speos_exec = speos_rpc_loc / "SpeosRPC_Server.exe"
+        speos_exec = speos_rpc_path / "SpeosRPC_Server.exe"
     else:
-        speos_exec = speos_rpc_loc / "SpeosRPC_Server.x"
+        speos_exec = speos_rpc_path / "SpeosRPC_Server.x"
     if not logfile_loc:
         logfile_loc = Path(tempfile.gettempdir()) / ".ansys"
         logfile = logfile_loc / "speos_rpc.log"
@@ -165,11 +165,10 @@ def launch_local_speos_rpc_server(
     err, stderr_file = tempfile.mkstemp(suffix="speos_err.txt", dir=logfile_loc)
 
     subprocess.Popen(command, stdout=out, stderr=err)
-    print(speos_rpc_loc)
     return Speos(
         host="localhost",
         port=port,
         logging_level=log_level,
         logging_file=logfile,
-        speos_install_loc=speos_rpc_loc,
+        speos_install_path=speos_rpc_path,
     )

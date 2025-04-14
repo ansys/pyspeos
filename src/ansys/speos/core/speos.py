@@ -28,7 +28,7 @@ from typing import TYPE_CHECKING, Optional, Union
 
 from grpc import Channel
 
-from ansys.speos.core.generic.constants import DEFAULT_HOST, DEFAULT_PORT, LATEST_VERSION
+from ansys.speos.core.generic.constants import DEFAULT_HOST, DEFAULT_PORT, DEFAULT_VERSION
 from ansys.speos.core.kernel.client import SpeosClient
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -71,13 +71,13 @@ class Speos:
         self,
         host: str = DEFAULT_HOST,
         port: Union[str, int] = DEFAULT_PORT,
-        version: str = LATEST_VERSION,
+        version: str = DEFAULT_VERSION,
         channel: Optional[Channel] = None,
         remote_instance: Optional["Instance"] = None,
         timeout: Optional[int] = 60,
         logging_level: Optional[int] = logging.INFO,
         logging_file: Optional[Union[Path, str]] = None,
-        speos_install_loc: Optional[Union[Path, str]] = None,
+        speos_install_path: Optional[Union[Path, str]] = None,
     ):
         self._client = SpeosClient(
             host=host,
@@ -88,7 +88,7 @@ class Speos:
             timeout=timeout,
             logging_level=logging_level,
             logging_file=logging_file,
-            speos_install_loc=speos_install_loc,
+            speos_install_path=speos_install_path,
         )
 
     @property
