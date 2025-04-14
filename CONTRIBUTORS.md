@@ -14,3 +14,4 @@
 * [Marouan Nefzaoui](https://github.com/mnefzaou)
 * [Etienne Lesage](https://github.com/elesage)
 * [Morais Sébastien](https://github.com/SMoraisAnsys)
+* [Thomas Auzinger](https://github.com/ThomasAuzinger)
