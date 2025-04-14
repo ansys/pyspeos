@@ -128,7 +128,7 @@ op2.commit()
 print(op2)
 
 
-# ### Create FOP (face optical property)
+# ## Create FOP (face optical property)
 #
 # Sometimes it is needed to create property but only for surface.
 #
@@ -149,7 +149,7 @@ print(op3)
 op4 = p.create_optical_property(name="Material.3").commit()
 print(op4)
 
-# ### Read
+# ## Read
 # ### Material Instance Information
 #
 # A mention "local: " is added if it is not yet committed to the server.
@@ -194,7 +194,7 @@ print("op3 has reflectance value of {}".format(op3.get(key="sops")[0]["mirror"][
 
 print(p)
 
-# ### Update
+# ## Update
 #
 # Tipp: if you are manipulating an optical property already committed, don't forget to commit your
 # changes.
@@ -208,7 +208,7 @@ print(op1)
 print("op1 surface type after update: {}".format(op1.get(key="sops")[0]))
 
 
-# ### Reset
+# ## Reset
 #
 # Possibility to reset local values from the one available in the server.
 
@@ -218,7 +218,7 @@ op1.delete()  # delete (to display the local value with the below print)
 print(op1)
 
 
-# ### Delete
+# ## Delete
 #
 # Once the data is deleted from the server, you can still work with local data and maybe commit
 # later.
