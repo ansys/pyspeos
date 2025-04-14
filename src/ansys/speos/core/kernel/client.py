@@ -149,7 +149,7 @@ class SpeosClient:
         self._closed = False
         self._remote_instance = remote_instance
         if speos_install_path:
-            speos_install_path = retrieve_speos_install_dir(speos_install_path)
+            speos_install_path = retrieve_speos_install_dir(speos_install_path, version)
             if os.name == "nt":
                 self.__speos_exec = str(speos_install_path / "SpeosRPC_Server.exe")
             else:
