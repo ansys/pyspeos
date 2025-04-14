@@ -81,8 +81,6 @@ class Body:
 
         self._geom_features = []
 
-        self._geo_path = ""
-
     @property
     def geo_path(self):
         """Geometry path to be used within other speos objects."""
