@@ -24,7 +24,7 @@
 
 from pathlib import Path
 
-from ansys.speos.core import OptProp, Project, Speos, proto_message_utils
+from ansys.speos.core import GeoRef, OptProp, Project, Speos, proto_message_utils
 from ansys.speos.core.kernel import scene
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_dict
 from ansys.speos.core.source import SourceSurface
@@ -35,7 +35,19 @@ def test_replace_guid_elt(speos: Speos):
     """Test _replace_guid_elt."""
     # Example with surface source : spectrum guid + intensity guid
     p = Project(speos=speos)
+
+    root_part = p.create_root_part()
+    body_b = root_part.create_body(name="BodyB")
+    body_b.create_face(name="FaceB1").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
+        [0, 1, 2]
+    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    body_b.create_face(name="FaceB2").set_vertices([1, 0, 0, 2, 0, 0, 1, 1, 0]).set_facets(
+        [0, 1, 2]
+    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    root_part.commit()
+
     src_feat = SourceSurface(project=p, name="Surface.1")
+    src_feat.set_exitance_constant(geometries=[(GeoRef.from_native_link("BodyB"), False)])
     src_feat.commit()
 
     # Retrieve source template message and transform it into dict
@@ -72,7 +84,19 @@ def test_replace_guid_elt_ignore_simple_key(speos: Speos):
     """Test _replace_guid_elt with parameter ignore_simple_key."""
     # Example with surface source : spectrum guid + intensity guid
     p = Project(speos=speos)
+
+    root_part = p.create_root_part()
+    body_b = root_part.create_body(name="BodyB")
+    body_b.create_face(name="FaceB1").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
+        [0, 1, 2]
+    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    body_b.create_face(name="FaceB2").set_vertices([1, 0, 0, 2, 0, 0, 1, 1, 0]).set_facets(
+        [0, 1, 2]
+    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    root_part.commit()
+
     src_feat = SourceSurface(project=p, name="Surface.1")
+    src_feat.set_exitance_constant(geometries=[(GeoRef.from_native_link("BodyB"), False)])
     src_feat.commit()
 
     # Retrieve source template message and transform it into dict
@@ -212,7 +236,19 @@ def test_replace_guid_elt_complex(speos: Speos):
 def test_value_finder_key_startswith(speos: Speos):
     """Test _value_finder_key_startswith."""
     p = Project(speos=speos)
+
+    root_part = p.create_root_part()
+    body_b = root_part.create_body(name="BodyB")
+    body_b.create_face(name="FaceB1").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
+        [0, 1, 2]
+    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    body_b.create_face(name="FaceB2").set_vertices([1, 0, 0, 2, 0, 0, 1, 1, 0]).set_facets(
+        [0, 1, 2]
+    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    root_part.commit()
+
     src_feat = SourceSurface(project=p, name="Surface.1")
+    src_feat.set_exitance_constant(geometries=[(GeoRef.from_native_link("BodyB"), False)])
     src_feat.commit()
 
     # Retrieve source instance message and transform it into dict
@@ -229,7 +265,19 @@ def test_value_finder_key_startswith(speos: Speos):
 def test__value_finder_key_endswith(speos: Speos):
     """Test _value_finder_key_endswith."""
     p = Project(speos=speos)
+
+    root_part = p.create_root_part()
+    body_b = root_part.create_body(name="BodyB")
+    body_b.create_face(name="FaceB1").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
+        [0, 1, 2]
+    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    body_b.create_face(name="FaceB2").set_vertices([1, 0, 0, 2, 0, 0, 1, 1, 0]).set_facets(
+        [0, 1, 2]
+    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    root_part.commit()
+
     src_feat = SourceSurface(project=p, name="Surface.1")
+    src_feat.set_exitance_constant(geometries=[(GeoRef.from_native_link("BodyB"), False)])
     src_feat.commit()
 
     # Retrieve source instance message and transform it into dict
@@ -250,7 +298,19 @@ def test__value_finder_key_endswith(speos: Speos):
 def test_replace_properties(speos: Speos):
     """Test _replace_properties."""
     p = Project(speos=speos)
+
+    root_part = p.create_root_part()
+    body_b = root_part.create_body(name="BodyB")
+    body_b.create_face(name="FaceB1").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
+        [0, 1, 2]
+    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    body_b.create_face(name="FaceB2").set_vertices([1, 0, 0, 2, 0, 0, 1, 1, 0]).set_facets(
+        [0, 1, 2]
+    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    root_part.commit()
+
     src_feat = SourceSurface(project=p, name="Surface.1")
+    src_feat.set_exitance_constant(geometries=[(GeoRef.from_native_link("BodyB"), False)])
     src_feat.set_intensity().set_gaussian().set_axis_system([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     src_feat.commit()
 

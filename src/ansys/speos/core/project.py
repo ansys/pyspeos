@@ -747,6 +747,7 @@ class Project:
                 op_feature._fill(mat_inst=mat_inst)
 
         for src_inst in scene_data.sources:
+            src_feat = None
             if src_inst.HasField("rayfile_properties"):
                 src_feat = SourceRayFile(
                     project=self,
@@ -768,7 +769,8 @@ class Project:
                     source_instance=src_inst,
                     default_values=False,
                 )
-            self._features.append(src_feat)
+            if src_feat is not None:
+                self._features.append(src_feat)
 
         for ssr_inst in scene_data.sensors:
             if ssr_inst.HasField("irradiance_properties"):

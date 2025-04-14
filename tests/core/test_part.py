@@ -75,9 +75,15 @@ def test_create_face(speos: Speos):
     p = Project(speos=speos)
     root_part = p.create_root_part()
     body1 = root_part.create_body(name="Body.1")
+    face0 = (
+        body1.create_face(name="TheFaceF")
+        .set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0])
+        .set_facets([0, 1, 2])
+        .set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    )
     root_part.commit()
-    assert len(body1._geom_features) == 0
-    assert len(body1.body_link.get().face_guids) == 0
+    assert len(body1._geom_features) == 1
+    assert len(body1.body_link.get().face_guids) == 1
 
     # Add a face
     face1 = (
@@ -87,10 +93,10 @@ def test_create_face(speos: Speos):
         .set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
         .commit()
     )
-    assert len(body1._geom_features) == 1
+    assert len(body1._geom_features) == 2
 
-    assert len(body1.body_link.get().face_guids) == 1
-    assert body1.body_link.get().face_guids[0] == face1.face_link.key
+    assert len(body1.body_link.get().face_guids) == 2
+    assert body1.body_link.get().face_guids[1] == face1.face_link.key
     assert face1.face_link.get().vertices == [0, 1, 0, 0, 2, 0, 1, 2, 0]
     assert face1.face_link.get().facets == [0, 1, 2]
     assert face1.face_link.get().normals == [0, 0, 1, 0, 0, 1, 0, 0, 1]
@@ -103,15 +109,16 @@ def test_create_face(speos: Speos):
         .set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
         .commit()
     )
-    assert len(body1._geom_features) == 2
+    assert len(body1._geom_features) == 3
 
-    assert len(body1.body_link.get().face_guids) == 2
-    assert body1.body_link.get().face_guids[1] == face2.face_link.key
+    assert len(body1.body_link.get().face_guids) == 3
+    assert body1.body_link.get().face_guids[2] == face2.face_link.key
     assert face2.face_link.get().vertices == [0, 0, 0, 1, 0, 0, 0, 1, 0]
     assert face2.face_link.get().facets == [0, 2, 1]
     assert face2.face_link.get().normals == [0, 0, 1, 0, 0, 1, 0, 0, 1]
 
     # Delete faces
+    face0.delete()
     face1.delete()
     face2.delete()
     assert len(body1.body_link.get().face_guids) == 0
@@ -310,7 +317,10 @@ def test_commit_part(speos: Speos):
     sp1.create_sub_part(name="SubPart.11").set_axis_system(
         axis_system=[-5, -4, -10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     )
-    root_part.create_body(name="Body.1")
+    body1 = root_part.create_body(name="Body.1")
+    body1.create_face(name="TheFaceF").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
+        [0, 1, 2]
+    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
     assert root_part.part_link is None
     assert p.scene_link.get().part_guid == ""
 
@@ -341,7 +351,10 @@ def test_reset_part(speos: Speos):
     sp1.create_sub_part(name="SubPart.11").set_axis_system(
         axis_system=[-5, -4, -10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     )
-    root_part.create_body(name="Body.1")
+    body1 = root_part.create_body(name="Body.1")
+    body1.create_face(name="TheFaceF").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
+        [0, 1, 2]
+    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
     root_part.commit()
     assert root_part.part_link is not None
 
@@ -368,7 +381,10 @@ def test_delete_part(speos: Speos):
     sp1.create_sub_part(name="SubPart.11").set_axis_system(
         axis_system=[-5, -4, -10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     )
-    root_part.create_body(name="Body.1")
+    body1 = root_part.create_body(name="Body.1")
+    body1.create_face(name="TheFaceF").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
+        [0, 1, 2]
+    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
     root_part.commit()
     assert root_part.part_link is not None
 
