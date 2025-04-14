@@ -13,9 +13,12 @@
 #
 # ### Perform imports
 
+# +
 from pathlib import Path
 
 from ansys.speos.core import GeoRef, Project, Speos
+
+# -
 
 # ### Define constants
 # Constants help ensure consistency and avoid repetition throughout the example.
@@ -97,7 +100,7 @@ op1.set_geometries(
 print(op1)
 
 
-# ## Push it to the server.
+# ### Push it to the server.
 #
 # Now that it is committed to the server,
 # the mention "local: " is no more present when printing the optical property.
@@ -139,7 +142,7 @@ op3.set_geometries(geometries=[GeoRef.from_native_link(geopath="TheBodyD/TheFace
 op3.commit()
 print(op3)
 
-# ## Default values
+# ### Default values
 #
 # Some default values are available when applicable in every methods and class.
 
