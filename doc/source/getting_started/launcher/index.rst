@@ -9,7 +9,7 @@ To launch a Speos service you have several options:
 * Use Bash to start it yourself
 * Rely on Ansys PIM to start a service
 
-Python Launcher
+Python launcher
 ---------------
 
 to launch a local Speos RPC server instance use:
@@ -35,10 +35,10 @@ The session can be ended via the object ``Speos`` like this:
 
     speos.close()
 
-Launch a local service by command line
+Launch a local service from the command line
 --------------------------------------
 
-To launch the service you need to use the following commands:
+To launch the service, you need to use the following commands:
 
 .. tab-set::
 
