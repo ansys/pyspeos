@@ -251,7 +251,7 @@ class _VisualData:
 
         Parameters
         ----------
-        triangle_vertices: List[Vector]
+        triangle_vertices: List[List[float]]
             The vertices of the triangle.
 
         Returns
@@ -260,8 +260,10 @@ class _VisualData:
         """
         import pyvista as pv
 
-        if len(triangle_vertices) != 3 or any(len(vertice) != 3 for vertice in triangle_vertices):
-            raise ValueError("provided triangle vertices must have 3 elements")
+        if len(triangle_vertices) != 3 or any(len(vertex) != 3 for vertex in triangle_vertices):
+            raise ValueError(
+                "triangle_vertices is expected to be composed of 3 vertices with 3 elements each."
+            )
         faces = [[3, 0, 1, 2]]
         self.__data = self.__data.append_polydata(pv.PolyData(triangle_vertices, faces))
 
@@ -271,7 +273,7 @@ class _VisualData:
 
         Parameters
         ----------
-        rectangle_vertices: List[Vector]
+        rectangle_vertices: List[List[float]]
             The vertices of the rectangle.
 
         Returns
@@ -280,6 +282,8 @@ class _VisualData:
         """
         import pyvista as pv
 
-        if len(rectangle_vertices) != 3 or any(len(vertice) != 3 for vertice in rectangle_vertices):
-            raise ValueError("provided rectangle vertices must have 3 elements")
+        if len(rectangle_vertices) != 3 or any(len(vertex) != 3 for vertex in rectangle_vertices):
+            raise ValueError(
+                "rectangle_vertices is expected to be composed of 3 vertices with 3 elements each."
+            )
         self.__data = self.__data.append_polydata(pv.Rectangle(rectangle_vertices))
