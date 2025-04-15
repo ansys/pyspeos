@@ -36,7 +36,7 @@ import numpy as np
 from ansys.speos.core.generic.constants import DEFAULT_VERSION
 from ansys.tools.path import get_available_ansys_installations
 
-__GRAPHICS_AVAILABLE = None
+_GRAPHICS_AVAILABLE = None
 
 GRAPHICS_ERROR = (
     "Preview unsupported without 'ansys-tools-visualization_interface' installed. "
