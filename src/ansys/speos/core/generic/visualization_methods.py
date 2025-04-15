@@ -48,23 +48,23 @@ class _VisualCoordinateSystem:
     def __init__(self):
         import pyvista as pv
 
-        self._origin = [0.0, 0.0, 0.0]
-        self._x_axis = pv.Arrow(
-            start=self._origin,
+        self.__origin = [0.0, 0.0, 0.0]
+        self.__x_axis = pv.Arrow(
+            start=self.__origin,
             direction=[1.0, 0.0, 0.0],
             scale=10.0,
             tip_radius=0.05,
             shaft_radius=0.01,
         )
-        self._y_axis = pv.Arrow(
-            start=self._origin,
+        self.__y_axis = pv.Arrow(
+            start=self.__origin,
             direction=[0.0, 1.0, 0.0],
             scale=10.0,
             tip_radius=0.05,
             shaft_radius=0.01,
         )
-        self._z_axis = pv.Arrow(
-            start=self._origin,
+        self.__z_axis = pv.Arrow(
+            start=self.__origin,
             direction=[0.0, 0.0, 1.0],
             scale=10.0,
             tip_radius=0.05,
@@ -81,7 +81,7 @@ class _VisualCoordinateSystem:
             The origin of the coordinate system.
 
         """
-        return self._origin
+        return self.__origin
 
     @origin.setter
     def origin(self, value: List[float]) -> None:
@@ -98,7 +98,7 @@ class _VisualCoordinateSystem:
         """
         if len(value) != 3:
             raise ValueError("origin must be a list with three elements.")
-        self._origin = value
+        self.__origin = value
 
     @property
     def x_axis(self) -> "pv.Arrow":
@@ -110,7 +110,7 @@ class _VisualCoordinateSystem:
             pyvista.Arrow the x-axis of the coordinate system.
 
         """
-        return self._x_axis
+        return self.__x_axis
 
     @x_axis.setter
     def x_axis(self, x_vector: List[float]) -> None:
@@ -129,8 +129,8 @@ class _VisualCoordinateSystem:
 
         if len(x_vector) != 3:
             raise ValueError("x_axis must be a list with three elements.")
-        self._x_axis = pv.Arrow(
-            start=self._origin,
+        self.__x_axis = pv.Arrow(
+            start=self.__origin,
             direction=normalize_vector(vector=x_vector),
             scale=magnitude_vector(vector=x_vector),
             tip_radius=0.05,
@@ -148,7 +148,7 @@ class _VisualCoordinateSystem:
             pyvista.Arrow the y-axis of the coordinate system.
 
         """
-        return self._y_axis
+        return self.__y_axis
 
     @y_axis.setter
     def y_axis(self, y_vector: List[float]) -> None:
@@ -167,8 +167,8 @@ class _VisualCoordinateSystem:
 
         if len(y_vector) != 3:
             raise ValueError("y_axis must be a list with three elements.")
-        self._y_axis = pv.Arrow(
-            start=self._origin,
+        self.__y_axis = pv.Arrow(
+            start=self.__origin,
             direction=normalize_vector(vector=y_vector),
             scale=magnitude_vector(vector=y_vector),
             tip_radius=0.05,
@@ -186,7 +186,7 @@ class _VisualCoordinateSystem:
             pyvista.Arrow the z-axis of the coordinate system.
 
         """
-        return self._z_axis
+        return self.__z_axis
 
     @z_axis.setter
     def z_axis(self, z_vector: List[float]) -> None:
@@ -205,8 +205,8 @@ class _VisualCoordinateSystem:
 
         if len(z_vector) != 3:
             raise ValueError("z_axis must be a list with three elements.")
-        self._z_axis = pv.Arrow(
-            start=self._origin,
+        self.__z_axis = pv.Arrow(
+            start=self.__origin,
             direction=normalize_vector(vector=z_vector),
             scale=magnitude_vector(vector=z_vector),
             tip_radius=0.05,
@@ -228,7 +228,7 @@ class _VisualData:
     def __init__(self, coordinate_system=True):
         import pyvista as pv
 
-        self._data = pv.PolyData()
+        self.__data = pv.PolyData()
         self.coordinates = _VisualCoordinateSystem() if coordinate_system else None
         self.updated = False
 
@@ -243,7 +243,7 @@ class _VisualData:
             The data of the surface visualization.
 
         """
-        return self._data
+        return self.__data
 
     def add_data_triangle(self, triangle_vertices: List[List[float]]) -> None:
         """
@@ -263,7 +263,7 @@ class _VisualData:
         if len(triangle_vertices) != 3 or any(len(vertice) != 3 for vertice in triangle_vertices):
             raise ValueError("provided triangle vertices must have 3 elements")
         faces = [[3, 0, 1, 2]]
-        self._data = self._data.append_polydata(pv.PolyData(triangle_vertices, faces))
+        self.__data = self.__data.append_polydata(pv.PolyData(triangle_vertices, faces))
 
     def add_data_rectangle(self, rectangle_vertices: List[List[float]]) -> None:
         """
@@ -282,4 +282,4 @@ class _VisualData:
 
         if len(rectangle_vertices) != 3 or any(len(vertice) != 3 for vertice in rectangle_vertices):
             raise ValueError("provided rectangle vertices must have 3 elements")
-        self._data = self._data.append_polydata(pv.Rectangle(rectangle_vertices))
+        self.__data = self.__data.append_polydata(pv.Rectangle(rectangle_vertices))
