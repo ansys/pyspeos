@@ -42,7 +42,7 @@ graphics = [
     "ansys-tools-visualization-interface>=0.8.3",
 ]
 tests = [
-    "psutil==6.1.1",
+    "psutil==7.0.0",
     "pytest==8.3.5",
     "pyvista>=0.40.0,<0.45",
     "ansys-tools-visualization-interface>=0.8.3",
