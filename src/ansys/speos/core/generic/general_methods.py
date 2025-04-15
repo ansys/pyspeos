@@ -164,6 +164,7 @@ def normalize_vector(vector: Union[List[float], np.array]) -> List[float]:
 
     return (vector_np / magnitude).tolist()
 
+
 def error_no_install(install_path: Union[Path, str], version: Union[int, str]):
     """Raise error that installation was not found at a location.
 
@@ -226,4 +227,3 @@ def retrieve_speos_install_dir(
     if not speos_exec.is_file():
         error_no_install(speos_rpc_path, int(version))
     return speos_rpc_path
-
