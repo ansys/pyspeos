@@ -42,11 +42,17 @@ To launch the service, you need to use the following commands:
 
 .. tab-set::
 
-    .. tab-item:: Windows
+    .. tab-item:: Windows CMD
 
         .. code-block:: bash
 
             "%AWP_ROOT251%\Optical Products\SPEOS_RPC\SpeosRPC_Server.exe"
+
+    .. tab-item:: Windows Powershell
+
+        .. code-block:: bash
+
+            "$env:AWP_ROOT251\Optical Products\SPEOS_RPC\SpeosRPC_Server.exe"
 
     .. tab-item:: Linux
 
