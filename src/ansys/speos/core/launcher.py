@@ -23,11 +23,15 @@
 """Module to start Speos RPC Server."""
 
 import os
+from pathlib import Path
+import subprocess
+import tempfile
+from typing import Optional, Union
 
 from ansys.speos.core import LOG as LOGGER
+from ansys.speos.core.generic.constants import DEFAULT_PORT, DEFAULT_VERSION, MAX_MESSAGE_LENGTH
+from ansys.speos.core.generic.general_methods import retrieve_speos_install_dir
 from ansys.speos.core.speos import Speos
-
-MAX_MESSAGE_LENGTH = int(os.environ.get("SPEOS_MAX_MESSAGE_LENGTH", 256 * 1024**2))
 
 try:
     import ansys.platform.instancemanagement as pypim
@@ -93,3 +97,78 @@ def launch_remote_speos(
     instance.wait_for_ready()
     channel = instance.build_grpc_channel()
     return Speos(channel=channel, remote_instance=instance)
+
+
+def launch_local_speos_rpc_server(
+    version: str = DEFAULT_VERSION,
+    port: Union[str, int] = DEFAULT_PORT,
+    message_size: int = MAX_MESSAGE_LENGTH,
+    logfile_loc: str = None,
+    log_level: int = 20,
+    speos_rpc_path: Optional[Union[Path, str]] = None,
+) -> Speos:
+    """Launch Speos RPC server locally.
+
+    .. warning::
+        Do not execute this function with untrusted input parameters.
+
+    Parameters
+    ----------
+    version : str
+        The Speos server version to run, in the 3 digits format, such as "242".
+        If unspecified, the version will be chosen as
+        ``ansys.speos.core.kernel.client.LATEST_VERSION``.
+    port : Union[str, int], optional
+        Port number where the server is running.
+        By default, ``ansys.speos.core.kernel.client.DEFAULT_PORT``.
+    message_size : int
+        Maximum message length value accepted by the Speos RPC server,
+        By default, value stored in environment variable SPEOS_MAX_MESSAGE_LENGTH or 268 435 456.
+    logfile_loc : str
+        location for the logfile to be created in.
+    log_level : int
+        The logging level to be applied to the server, integer values can be taken from logging
+        module.
+        By default, ``logging.WARNING`` = 20.
+    speos_rpc_path : Optional[str, Path]
+        location of Speos rpc executable
+
+    Returns
+    -------
+    ansys.speos.core.speos.Speos
+        An instance of the Speos Service.
+    """
+    speos_rpc_path = retrieve_speos_install_dir(speos_rpc_path, version)
+    if os.name == "nt":
+        speos_exec = speos_rpc_path / "SpeosRPC_Server.exe"
+    else:
+        speos_exec = speos_rpc_path / "SpeosRPC_Server.x"
+    if not logfile_loc:
+        logfile_loc = Path(tempfile.gettempdir()) / ".ansys"
+        logfile = logfile_loc / "speos_rpc.log"
+    else:
+        logfile = Path(logfile_loc)
+        if logfile.is_file():
+            logfile_loc = logfile.parent
+        else:
+            logfile_loc = Path(logfile_loc)
+            logfile = logfile_loc / "speos_rpc.log"
+    if not logfile_loc.exists():
+        logfile_loc.mkdir()
+    command = [
+        str(speos_exec),
+        "-p{}".format(port),
+        "-m{}".format(message_size),
+        "-l{}".format(str(logfile)),
+    ]
+    out, stdout_file = tempfile.mkstemp(suffix="speos_out.txt", dir=logfile_loc)
+    err, stderr_file = tempfile.mkstemp(suffix="speos_err.txt", dir=logfile_loc)
+
+    subprocess.Popen(command, stdout=out, stderr=err)
+    return Speos(
+        host="localhost",
+        port=port,
+        logging_level=log_level,
+        logging_file=logfile,
+        speos_install_path=speos_rpc_path,
+    )

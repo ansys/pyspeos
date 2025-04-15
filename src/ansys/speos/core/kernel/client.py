@@ -23,7 +23,9 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
 
 import logging
+import os
 from pathlib import Path
+import subprocess
 import time
 from typing import TYPE_CHECKING, List, Optional, Union
 
@@ -31,6 +33,8 @@ import grpc
 from grpc._channel import _InactiveRpcError
 
 from ansys.api.speos.part.v1 import body_pb2, face_pb2, part_pb2
+from ansys.speos.core.generic.constants import DEFAULT_HOST, DEFAULT_PORT, DEFAULT_VERSION
+from ansys.speos.core.generic.general_methods import retrieve_speos_install_dir
 from ansys.speos.core.kernel.body import BodyLink, BodyStub
 from ansys.speos.core.kernel.face import FaceLink, FaceStub
 from ansys.speos.core.kernel.intensity_template import (
@@ -63,10 +67,6 @@ from ansys.speos.core.kernel.vop_template import (
 )
 from ansys.speos.core.logger import LOG as LOGGER, PySpeosCustomAdapter
 
-DEFAULT_HOST = "localhost"
-DEFAULT_PORT = "50098"
-
-
 if TYPE_CHECKING:  # pragma: no cover
     from ansys.platform.instancemanagement import Instance
 
@@ -93,7 +93,7 @@ def wait_until_healthy(channel: grpc.Channel, timeout: float):
         try:
             grpc.channel_ready_future(channel).result(timeout=timeout)
             return True
-        except _InactiveRpcError:
+        except (_InactiveRpcError, grpc.FutureTimeoutError):
             continue
     else:
         target_str = channel._channel.target().decode()
@@ -129,26 +129,44 @@ class SpeosClient:
         By default, ``INFO``.
     logging_file : Optional[str, Path]
         The file to output the log, if requested. By default, ``None``.
+    speos_install_path : Optional[str, Path]
+        location of Speos rpc executable
     """
 
     def __init__(
         self,
         host: Optional[str] = DEFAULT_HOST,
         port: Union[str, int] = DEFAULT_PORT,
+        version: str = DEFAULT_VERSION,
         channel: Optional[grpc.Channel] = None,
         remote_instance: Optional["Instance"] = None,
         timeout: Optional[int] = 60,
         logging_level: Optional[int] = logging.INFO,
         logging_file: Optional[Union[Path, str]] = None,
+        speos_install_path: Optional[Union[Path, str]] = None,
     ):
         """Initialize the ``SpeosClient`` object."""
         self._closed = False
         self._remote_instance = remote_instance
+        if speos_install_path:
+            speos_install_path = retrieve_speos_install_dir(speos_install_path, version)
+            if os.name == "nt":
+                self.__speos_exec = str(speos_install_path / "SpeosRPC_Server.exe")
+            else:
+                self.__speos_exec = str(speos_install_path / "SpeosRPC_Server.x")
+        else:
+            self.__speos_exec = None
+        if not version:
+            self._version = DEFAULT_VERSION
+        else:
+            self._version = version
         if channel:
             # Used for PyPIM when directly providing a channel
             self._channel = channel
             self._target = str(channel)
         else:
+            self._host = host
+            self._port = port
             self._target = f"{host}:{port}"
             self._channel = grpc.insecure_channel(self._target)
         # do not finish initialization until channel is healthy
@@ -206,8 +224,7 @@ class SpeosClient:
 
     def faces(self) -> FaceStub:
         """Get face database access."""
-        if self._closed:
-            raise ConnectionAbortedError()
+        self.__closed_error()
         # connect to database
         if self._faceDB is None:
             self._faceDB = FaceStub(self._channel)
@@ -215,8 +232,7 @@ class SpeosClient:
 
     def bodies(self) -> BodyStub:
         """Get body database access."""
-        if self._closed:
-            raise ConnectionAbortedError()
+        self.__closed_error()
         # connect to database
         if self._bodyDB is None:
             self._bodyDB = BodyStub(self._channel)
@@ -224,8 +240,7 @@ class SpeosClient:
 
     def parts(self) -> PartStub:
         """Get part database access."""
-        if self._closed:
-            raise ConnectionAbortedError()
+        self.__closed_error()
         # connect to database
         if self._partDB is None:
             self._partDB = PartStub(self._channel)
@@ -233,8 +248,7 @@ class SpeosClient:
 
     def sop_templates(self) -> SOPTemplateStub:
         """Get sop template database access."""
-        if self._closed:
-            raise ConnectionAbortedError()
+        self.__closed_error()
         # connect to database
         if self._sopTemplateDB is None:
             self._sopTemplateDB = SOPTemplateStub(self._channel)
@@ -242,8 +256,7 @@ class SpeosClient:
 
     def vop_templates(self) -> VOPTemplateStub:
         """Get vop template database access."""
-        if self._closed:
-            raise ConnectionAbortedError()
+        self.__closed_error()
         # connect to database
         if self._vopTemplateDB is None:
             self._vopTemplateDB = VOPTemplateStub(self._channel)
@@ -251,8 +264,7 @@ class SpeosClient:
 
     def spectrums(self) -> SpectrumStub:
         """Get spectrum database access."""
-        if self._closed:
-            raise ConnectionAbortedError()
+        self.__closed_error()
         # connect to database
         if self._spectrumDB is None:
             self._spectrumDB = SpectrumStub(self._channel)
@@ -260,8 +272,7 @@ class SpeosClient:
 
     def intensity_templates(self) -> IntensityTemplateStub:
         """Get intensity template database access."""
-        if self._closed:
-            raise ConnectionAbortedError()
+        self.__closed_error()
         # connect to database
         if self._intensityTemplateDB is None:
             self._intensityTemplateDB = IntensityTemplateStub(self._channel)
@@ -269,8 +280,7 @@ class SpeosClient:
 
     def source_templates(self) -> SourceTemplateStub:
         """Get source template database access."""
-        if self._closed:
-            raise ConnectionAbortedError()
+        self.__closed_error()
         # connect to database
         if self._sourceTemplateDB is None:
             self._sourceTemplateDB = SourceTemplateStub(self._channel)
@@ -278,8 +288,7 @@ class SpeosClient:
 
     def sensor_templates(self) -> SensorTemplateStub:
         """Get sensor template database access."""
-        if self._closed:
-            raise ConnectionAbortedError()
+        self.__closed_error()
         # connect to database
         if self._sensorTemplateDB is None:
             self._sensorTemplateDB = SensorTemplateStub(self._channel)
@@ -287,8 +296,7 @@ class SpeosClient:
 
     def simulation_templates(self) -> SimulationTemplateStub:
         """Get simulation template database access."""
-        if self._closed:
-            raise ConnectionAbortedError()
+        self.__closed_error()
         # connect to database
         if self._simulationTemplateDB is None:
             self._simulationTemplateDB = SimulationTemplateStub(self._channel)
@@ -296,8 +304,7 @@ class SpeosClient:
 
     def scenes(self) -> SceneStub:
         """Get scene database access."""
-        if self._closed:
-            raise ConnectionAbortedError()
+        self.__closed_error()
         # connect to database
         if self._sceneDB is None:
             self._sceneDB = SceneStub(self._channel)
@@ -305,12 +312,16 @@ class SpeosClient:
 
     def jobs(self) -> JobStub:
         """Get job database access."""
-        if self._closed:
-            raise ConnectionAbortedError()
+        self.__closed_error()
         # connect to database
         if self._jobDB is None:
             self._jobDB = JobStub(self._channel)
         return self._jobDB
+
+    def __closed_error(self):
+        """Check if closed."""
+        if self._closed:
+            raise ConnectionAbortedError()
 
     def __getitem__(
         self, key: str
@@ -353,8 +364,7 @@ ansys.speos.core.kernel.face.FaceLink, \
 None]
             Link object corresponding to the key - None if no objects corresponds to the key.
         """
-        if self._closed:
-            raise ConnectionAbortedError()
+        self.__closed_error()
         for sop in self.sop_templates().list():
             if sop.key == key:
                 return sop
@@ -435,8 +445,7 @@ List[ansys.speos.core.kernel.face.FaceLink]]
             List of Link objects corresponding to the keys - Empty if no objects corresponds to the
             keys.
         """
-        if self._closed:
-            raise ConnectionAbortedError()
+        self.__closed_error()
 
         if item_type == SOPTemplateLink:
             return [x for x in self.sop_templates().list() if x.key in keys]
@@ -483,14 +492,24 @@ List[ansys.speos.core.kernel.face.FaceLink]]
     def close(self):
         """Close the channel.
 
+        Returns
+        -------
+        bool
+            Information if the server instance was terminated.
+
         Notes
         -----
         If an instance of the Speos Service was started using
         PyPIM, this instance will be deleted.
         """
+        wait_time = 0
         if self._remote_instance:
             self._remote_instance.delete()
-        self._closed = True
+        elif self._host in ["localhost", "0.0.0.0", "127.0.0.1"] and self.__speos_exec:
+            self.__close_local_speos_rpc_server()
+            while self.healthy and wait_time < 15:
+                time.sleep(1)
+                wait_time += 1  # takes some seconds to close rpc server
         self._channel.close()
         self._faceDB = None
         self._bodyDB = None
@@ -504,3 +523,13 @@ List[ansys.speos.core.kernel.face.FaceLink]]
         self._simulationTemplateDB = None
         self._sceneDB = None
         self._jobDB = None
+        if wait_time >= 15:
+            self._closed = not self.healthy
+            return self._closed
+        else:
+            self._closed = True
+            return self._closed
+
+    def __close_local_speos_rpc_server(self):
+        command = [self.__speos_exec, "-s{}".format(self._port)]
+        subprocess.run(command, check=True)
