@@ -31,14 +31,14 @@ containers. Select the option that best suits your needs.
             Launch the Speos service as a Docker container
             and connect to it from PySpeos.
 
-   .. grid-item-card:: Start a service
+   .. grid-item-card:: Launch a service
             :link: launcher/index
             :link-type: doc
 
             Launch the Speos service locally or remotely on a Computer
             and connect to it from PySpeos.
 
-   .. grid-item-card:: Connect to an existing service
+   .. grid-item-card:: Use an existing service
             :link: existing/index
             :link-type: doc
 

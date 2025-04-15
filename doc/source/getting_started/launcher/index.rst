@@ -52,7 +52,7 @@ To launch the service you need to use the following commands:
 
         .. code-block:: bash
 
-            $AWP_ROOT251\OpticalProducts\SPEOS_RPC\SpeosRPC_Server.x
+            $AWP_ROOT251/OpticalProducts/SPEOS_RPC/SpeosRPC_Server.x
 
 
 Use PySpeos launcher with PIM
