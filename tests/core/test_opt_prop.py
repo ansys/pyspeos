@@ -112,6 +112,25 @@ def test_create_optical_property(speos: Speos):
     op1.set_geometries(geometries=[])  # means all geometries
     assert op1._material_instance.HasField("geometries")
     assert op1._material_instance.geometries.geo_paths == []
+    
+    # geometries append
+    op1.set_geometries(geometries=None)  # clear geometries
+    op1.append_geometries(
+        geometries=[
+            GeoRef.from_native_link("TheBodyB1")
+        ]
+    )
+    assert op1._material_instance.HasField("geometries")
+    op1._material_instance.geometries.geo_paths == ["TheBody1"]
+    
+    op1.append_geometries(
+        geometries=[
+            GeoRef.from_native_link("TheBodyB2")
+        ]
+    )
+    assert op1._material_instance.HasField("geometries")
+    op1._material_instance.geometries.geo_paths == ["TheBody1", "TheBodyB2"]
+    
 
     op1.delete()
 

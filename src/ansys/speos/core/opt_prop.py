@@ -285,6 +285,28 @@ class OptProp:
                 gr.to_native_link() for gr in geometries
             ]
         return self
+    
+    def append_geometries(self, geometries: Optional[List[GeoRef]] = None) -> OptProp:
+        """Append geometries on which the optical property will be applied.
+
+        Parameters
+        ----------
+        geometries : List[ansys.speos.core.geo_ref.GeoRef], optional
+            List of geometries.
+            By default, ``None``, means "no geometry".
+
+        Returns
+        -------
+        ansys.speos.core.opt_prop.OptProp
+            Optical property.
+        """
+        if geometries:
+            self._material_instance.geometries.geo_paths.extend([
+                gr.to_native_link()
+                for gr in geometries 
+                if gr.to_native_link() not in self._material_instance.geometries.geo_paths
+                ])
+        return self
 
     def _to_dict(self) -> dict:
         out_dict = {}
