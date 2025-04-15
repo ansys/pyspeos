@@ -18,17 +18,25 @@ to launch a local Speos RPC server instance use:
 
     from ansys.speos.core.launcher import launch_local_speos_rpc_server
 
-    speos = launch_local_speos_rpc_server()
+    speos = launch_local_speos_rpc_server(version='251')
 
 You receive a ``Speos`` object in return that you then use as a Speos session.
+For more information you can look at the API Reference.
+
+.. button-ref:: ../../api/ansys/speos/core/launcher/index
+    :ref-type: doc
+    :color: primary
+    :shadow:
+
+
 The session can be ended via the object ``Speos`` like this:
 
 .. code:: python
 
     speos.close()
 
-Launch a local service using bash
----------------------------------
+Launch a local service by command line
+--------------------------------------
 
 To launch the service you need to use the following commands:
 
