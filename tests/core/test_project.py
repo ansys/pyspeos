@@ -445,3 +445,26 @@ def test_find_geom(speos: Speos):
     # All faces of specific body
     all_faces = p.find(name="Solid Body in GUIDE.*/.*", name_regex=True, feature_type=Part)
     assert len(all_faces) == 11
+
+
+def test_preview_visual_data(speos: Speos):
+    """Test preview visualization data inside a project."""
+    # preview irradiance sensor data
+    p1 = Project(
+        speos=speos,
+        path=str(
+            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
+        ),
+    )
+    p1.preview()
+
+    # preview irradiance sensor visual data and camera sensor visual data
+    p2 = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Inverse_SeveralSensors.speos" / "Inverse_SeveralSensors.speos"),
+    )
+    p2.preview()
+
+    # preview radiance sensor visual data
+    p2.create_sensor(name="radiance_sensor", feature_type=SensorRadiance)
+    p2.preview()
