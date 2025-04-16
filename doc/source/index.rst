@@ -38,6 +38,7 @@ PySpeos documentation |version|
         Learn how to use PySpeos with examples that demonstrate its capabilities.
 
     .. grid-item-card:: Contribute :fa:`people-group`
+        :padding: 2 2 2 2
         :link: contributing
         :link-type: doc
 

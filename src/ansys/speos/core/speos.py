@@ -28,11 +28,8 @@ from typing import TYPE_CHECKING, Optional, Union
 
 from grpc import Channel
 
+from ansys.speos.core.generic.constants import DEFAULT_HOST, DEFAULT_PORT, DEFAULT_VERSION
 from ansys.speos.core.kernel.client import SpeosClient
-
-DEFAULT_HOST = "localhost"
-DEFAULT_PORT = "50098"
-
 
 if TYPE_CHECKING:  # pragma: no cover
     from ansys.platform.instancemanagement import Instance
@@ -45,10 +42,14 @@ class Speos:
     ----------
     host : str, optional
         Host where the server is running.
-        By default, ``DEFAULT_HOST``.
+        By default, ``ansys.speos.core.kernel.client.DEFAULT_HOST``.
     port : Union[str, int], optional
         Port number where the server is running.
-        By default, ``DEFAULT_PORT``.
+        By default, ``ansys.speos.core.kernel.client.DEFAULT_PORT``.
+    version : str
+        The Speos server version to run, in the 3 digits format, such as "242".
+        If unspecified, the version will be chosen as
+        ``ansys.speos.core.kernel.client.LATEST_VERSION``.
     channel : ~grpc.Channel, optional
         gRPC channel for server communication.
         By default, ``None``.
@@ -70,23 +71,42 @@ class Speos:
         self,
         host: str = DEFAULT_HOST,
         port: Union[str, int] = DEFAULT_PORT,
+        version: str = DEFAULT_VERSION,
         channel: Optional[Channel] = None,
         remote_instance: Optional["Instance"] = None,
         timeout: Optional[int] = 60,
         logging_level: Optional[int] = logging.INFO,
         logging_file: Optional[Union[Path, str]] = None,
+        speos_install_path: Optional[Union[Path, str]] = None,
     ):
         self._client = SpeosClient(
             host=host,
             port=port,
+            version=version,
             channel=channel,
             remote_instance=remote_instance,
             timeout=timeout,
             logging_level=logging_level,
             logging_file=logging_file,
+            speos_install_path=speos_install_path,
         )
 
     @property
     def client(self) -> SpeosClient:
         """The ``Speos`` instance client."""
         return self._client
+
+    def close(self) -> bool:
+        """Close the channel and deletes all Speos objects from memory.
+
+        Returns
+        -------
+        bool
+            Information if the server instance was terminated.
+
+        Notes
+        -----
+        If an instance of the Speos Service was started using
+        PyPIM, this instance will be deleted.
+        """
+        return self.client.close()
