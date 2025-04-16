@@ -1604,7 +1604,6 @@ class SensorCamera(BaseSensor):
             self.set_axis_system()
 
     @property
-    @general_methods.graphics_required
     def visual_data(self) -> _VisualData:
         """Property containing camera sensor visualization data.
 
@@ -1987,7 +1986,6 @@ class SensorIrradiance(BaseSensor):
             self.set_axis_system().set_ray_file_type_none().set_layer_type_none()
 
     @property
-    @general_methods.graphics_required
     def visual_data(self) -> _VisualData:
         """Property containing irradiance sensor visualization data.
 
@@ -2646,7 +2644,6 @@ class SensorRadiance(BaseSensor):
             self.set_axis_system().set_layer_type_none()
 
     @property
-    @general_methods.graphics_required
     def visual_data(self) -> _VisualData:
         """Property containing radiance sensor visualization data.
 
