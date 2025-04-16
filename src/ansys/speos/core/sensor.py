@@ -1661,7 +1661,7 @@ class SensorCamera(BaseSensor):
             self._visual_data.add_data_triangle([p1, p3, p5])
             self._visual_data.add_data_triangle([p2, p4, p5])
 
-            # camera object field
+            # NOTE: camera object field to be added
             # current gRPC service not available to get object field open angle
             # camera_object_field_radius = 500
             # camera_object_field_data = pv.Sphere(
