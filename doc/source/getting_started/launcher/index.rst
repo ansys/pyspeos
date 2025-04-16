@@ -62,6 +62,7 @@ To launch the service, you need to use the following commands:
 
 
 To stop the server you can use the following command line:
+
 .. tab-set::
 
     .. tab-item:: Windows CMD
