@@ -12,7 +12,7 @@ To launch a Speos service you have several options:
 Python launcher
 ---------------
 
-to launch a local Speos RPC server instance use:
+To launch a local Speos RPC server instance use:
 
 .. code:: python
 
