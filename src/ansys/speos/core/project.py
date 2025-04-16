@@ -949,40 +949,41 @@ class Project:
 
         # Add sensor at the root part
         for feature in self._features:
-            if isinstance(feature, SensorIrradiance):
-                p.plot(
-                    feature.visual_data.data,
-                    show_edges=True,
-                    line_width=2,
-                    edge_color="red",
-                    color="orange",
-                    opacity=0.5,
-                )
-                p.plot(feature.visual_data.coordinates.x_axis, color="red")
-                p.plot(feature.visual_data.coordinates.y_axis, color="green")
-                p.plot(feature.visual_data.coordinates.z_axis, color="blue")
-            if isinstance(feature, SensorRadiance):
-                p.plot(
-                    feature.visual_data.data,
-                    show_edges=True,
-                    line_width=2,
-                    edge_color="red",
-                    color="orange",
-                    opacity=0.5,
-                )
-                p.plot(feature.visual_data.coordinates.x_axis, color="red")
-                p.plot(feature.visual_data.coordinates.y_axis, color="green")
-            if isinstance(feature, SensorCamera):
-                p.plot(
-                    feature.visual_data.data,
-                    show_edges=True,
-                    line_width=2,
-                    edge_color="red",
-                    color="orange",
-                    opacity=0.5,
-                )
-                p.plot(feature.visual_data.coordinates.x_axis, color="red")
-                p.plot(feature.visual_data.coordinates.y_axis, color="green")
+            match feature:
+                case SensorRadiance():
+                    p.plot(
+                        feature.visual_data.data,
+                        show_edges=True,
+                        line_width=2,
+                        edge_color="red",
+                        color="orange",
+                        opacity=0.5,
+                    )
+                    p.plot(feature.visual_data.coordinates.x_axis, color="red")
+                    p.plot(feature.visual_data.coordinates.y_axis, color="green")
+                case SensorIrradiance():
+                    p.plot(
+                        feature.visual_data.data,
+                        show_edges=True,
+                        line_width=2,
+                        edge_color="red",
+                        color="orange",
+                        opacity=0.5,
+                    )
+                    p.plot(feature.visual_data.coordinates.x_axis, color="red")
+                    p.plot(feature.visual_data.coordinates.y_axis, color="green")
+                    p.plot(feature.visual_data.coordinates.z_axis, color="blue")
+                case SensorCamera():
+                    p.plot(
+                        feature.visual_data.data,
+                        show_edges=True,
+                        line_width=2,
+                        edge_color="red",
+                        color="orange",
+                        opacity=0.5,
+                    )
+                    p.plot(feature.visual_data.coordinates.x_axis, color="red")
+                    p.plot(feature.visual_data.coordinates.y_axis, color="green")
         return p
 
     @graphics_required
