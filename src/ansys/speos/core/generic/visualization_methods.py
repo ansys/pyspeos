@@ -97,7 +97,7 @@ class _VisualCoordinateSystem:
         None
         """
         if len(value) != 3:
-            raise ValueError("origin must be a list with three elements.")
+            raise ValueError("origin must be a List of three values.")
         self.__origin = value
 
     @property
@@ -128,7 +128,7 @@ class _VisualCoordinateSystem:
         import pyvista as pv
 
         if len(x_vector) != 3:
-            raise ValueError("x_axis must be a list with three elements.")
+            raise ValueError("x_axis must be a List of three values.")
         self.__x_axis = pv.Arrow(
             start=self.__origin,
             direction=normalize_vector(vector=x_vector),
@@ -166,7 +166,7 @@ class _VisualCoordinateSystem:
         import pyvista as pv
 
         if len(y_vector) != 3:
-            raise ValueError("y_axis must be a list with three elements.")
+            raise ValueError("y_axis must be a List of three values.")
         self.__y_axis = pv.Arrow(
             start=self.__origin,
             direction=normalize_vector(vector=y_vector),
@@ -204,7 +204,7 @@ class _VisualCoordinateSystem:
         import pyvista as pv
 
         if len(z_vector) != 3:
-            raise ValueError("z_axis must be a list with three elements.")
+            raise ValueError("z_axis must be a List of three values.")
         self.__z_axis = pv.Arrow(
             start=self.__origin,
             direction=normalize_vector(vector=z_vector),
