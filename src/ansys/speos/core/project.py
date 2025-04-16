@@ -904,6 +904,46 @@ class Project:
                     part_mesh_info = part_mesh_info.append_polydata(face_mesh_data)
         return part_mesh_info
 
+    def _create_speos_feature_preview(
+        self, plotter: Plotter, speos_feature: Union[SensorCamera, SensorRadiance, SensorIrradiance]
+    ) -> Plotter:
+        """Add speos feature visual preview to pyvista plotter object.
+
+        Parameters
+        ----------
+        plotter: Plotter
+            ansys.tools.visualization_interface.Plotter
+        speos_feature: Union[SensorCamera, SensorRadiance, SensorIrradiance]
+            speos feature whose visual data will be added.
+
+        Returns
+        -------
+        Plotter
+            ansys.tools.visualization_interface.Plotter
+        """
+        if not isinstance(speos_feature, (SensorIrradiance, SensorRadiance, SensorCamera)):
+            return plotter
+        plotter.plot(
+            speos_feature.visual_data.data,
+            show_edges=True,
+            line_width=2,
+            edge_color="red",
+            color="orange",
+            opacity=0.5,
+        )
+        match speos_feature:
+            case SensorRadiance():
+                plotter.plot(speos_feature.visual_data.coordinates.x_axis, color="red")
+                plotter.plot(speos_feature.visual_data.coordinates.y_axis, color="green")
+            case SensorIrradiance():
+                plotter.plot(speos_feature.visual_data.coordinates.x_axis, color="red")
+                plotter.plot(speos_feature.visual_data.coordinates.y_axis, color="green")
+                plotter.plot(speos_feature.visual_data.coordinates.z_axis, color="blue")
+            case SensorCamera():
+                plotter.plot(speos_feature.visual_data.coordinates.x_axis, color="red")
+                plotter.plot(speos_feature.visual_data.coordinates.y_axis, color="green")
+        return plotter
+
     @graphics_required
     def _create_preview(self, viz_args=None) -> Plotter:
         """Create preview pyvista plotter object.
@@ -947,43 +987,9 @@ class Project:
         viz_args["show_edges"] = True
         p.plot(_preview_mesh, **viz_args)
 
-        # Add sensor at the root part
+        # Add speos visual data at the root part
         for feature in self._features:
-            match feature:
-                case SensorRadiance():
-                    p.plot(
-                        feature.visual_data.data,
-                        show_edges=True,
-                        line_width=2,
-                        edge_color="red",
-                        color="orange",
-                        opacity=0.5,
-                    )
-                    p.plot(feature.visual_data.coordinates.x_axis, color="red")
-                    p.plot(feature.visual_data.coordinates.y_axis, color="green")
-                case SensorIrradiance():
-                    p.plot(
-                        feature.visual_data.data,
-                        show_edges=True,
-                        line_width=2,
-                        edge_color="red",
-                        color="orange",
-                        opacity=0.5,
-                    )
-                    p.plot(feature.visual_data.coordinates.x_axis, color="red")
-                    p.plot(feature.visual_data.coordinates.y_axis, color="green")
-                    p.plot(feature.visual_data.coordinates.z_axis, color="blue")
-                case SensorCamera():
-                    p.plot(
-                        feature.visual_data.data,
-                        show_edges=True,
-                        line_width=2,
-                        edge_color="red",
-                        color="orange",
-                        opacity=0.5,
-                    )
-                    p.plot(feature.visual_data.coordinates.x_axis, color="red")
-                    p.plot(feature.visual_data.coordinates.y_axis, color="green")
+            p = self._create_speos_feature_preview(p, feature)
         return p
 
     @graphics_required
