@@ -935,13 +935,10 @@ class Project:
             case SensorRadiance():
                 plotter.plot(speos_feature.visual_data.coordinates.x_axis, color="red")
                 plotter.plot(speos_feature.visual_data.coordinates.y_axis, color="green")
-            case SensorIrradiance():
+            case SensorIrradiance() | SensorCamera():
                 plotter.plot(speos_feature.visual_data.coordinates.x_axis, color="red")
                 plotter.plot(speos_feature.visual_data.coordinates.y_axis, color="green")
                 plotter.plot(speos_feature.visual_data.coordinates.z_axis, color="blue")
-            case SensorCamera():
-                plotter.plot(speos_feature.visual_data.coordinates.x_axis, color="red")
-                plotter.plot(speos_feature.visual_data.coordinates.y_axis, color="green")
         return plotter
 
     @graphics_required
