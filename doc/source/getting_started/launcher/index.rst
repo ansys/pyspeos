@@ -36,7 +36,7 @@ The session can be ended via the object ``Speos`` like this:
     speos.close()
 
 Launch a local service from the command line
---------------------------------------
+--------------------------------------------
 
 To launch the service, you need to use the following commands:
 
@@ -60,6 +60,49 @@ To launch the service, you need to use the following commands:
 
             $AWP_ROOT251/OpticalProducts/SPEOS_RPC/SpeosRPC_Server.x
 
+
+To stop the server you can use the following command line:
+.. tab-set::
+
+    .. tab-item:: Windows CMD
+
+        .. code-block:: bash
+
+            "%AWP_ROOT251%\Optical Products\SPEOS_RPC\SpeosRPC_Server.exe --stop portNumber"
+
+    .. tab-item:: Windows Powershell
+
+        .. code-block:: bash
+
+            & "$env:AWP_ROOT251\Optical Products\SPEOS_RPC\SpeosRPC_Server.exe --stop portNumber"
+
+    .. tab-item:: Linux
+
+        .. code-block:: bash
+
+            $AWP_ROOT251/OpticalProducts/SPEOS_RPC/SpeosRPC_Server.x --stop portNumber
+
+To see all the command line parameters you can use the help flag:
+
+.. tab-set::
+
+    .. tab-item:: Windows CMD
+
+        .. code-block:: bash
+
+            "%AWP_ROOT251%\Optical Products\SPEOS_RPC\SpeosRPC_Server.exe --help"
+
+    .. tab-item:: Windows Powershell
+
+        .. code-block:: bash
+
+            & "$env:AWP_ROOT251\Optical Products\SPEOS_RPC\SpeosRPC_Server.exe --help"
+
+    .. tab-item:: Linux
+
+        .. code-block:: bash
+
+            $AWP_ROOT251/OpticalProducts/SPEOS_RPC/SpeosRPC_Server.x --help
 
 Use PySpeos launcher with PIM
 -----------------------------
