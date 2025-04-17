@@ -9,6 +9,122 @@ This document contains the release notes for the PySpeos project.
 
 .. towncrier release notes start
 
+`0.4.0 <https://github.com/ansys/pyspeos/releases/tag/v0.4.0>`_ - April 17, 2025
+================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Feat/add local launcher
+          - `#454 <https://github.com/ansys/pyspeos/pull/454>`_
+
+        * - add screenshot in pyvista related methods
+          - `#521 <https://github.com/ansys/pyspeos/pull/521>`_
+
+        * - enhance the project preview: irrad, rad, camera sensor features
+          - `#528 <https://github.com/ansys/pyspeos/pull/528>`_
+
+        * - switch to ansys tools and decouple requirements
+          - `#532 <https://github.com/ansys/pyspeos/pull/532>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - bump ansys-sphinx-theme from 1.3.3 to 1.4.2 in the doc-deps group
+          - `#524 <https://github.com/ansys/pyspeos/pull/524>`_
+
+        * - bump pytest-cov from 6.0.0 to 6.1.0
+          - `#533 <https://github.com/ansys/pyspeos/pull/533>`_
+
+        * - bump pytest-cov from 6.1.0 to 6.1.1
+          - `#542 <https://github.com/ansys/pyspeos/pull/542>`_
+
+        * - bump psutil from 6.1.1 to 7.0.0
+          - `#555 <https://github.com/ansys/pyspeos/pull/555>`_
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Update example combine-speos.py
+          - `#499 <https://github.com/ansys/pyspeos/pull/499>`_
+
+        * - open-results adjustments
+          - `#538 <https://github.com/ansys/pyspeos/pull/538>`_
+
+        * - adjust source example
+          - `#543 <https://github.com/ansys/pyspeos/pull/543>`_
+
+        * - adjust simulation example
+          - `#545 <https://github.com/ansys/pyspeos/pull/545>`_
+
+        * - remote instance
+          - `#553 <https://github.com/ansys/pyspeos/pull/553>`_
+
+        * - adjust sensor.py example
+          - `#554 <https://github.com/ansys/pyspeos/pull/554>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - issue with nightly pipeline
+          - `#534 <https://github.com/ansys/pyspeos/pull/534>`_
+
+        * - Graphs not showing with Ansys visualizer
+          - `#537 <https://github.com/ansys/pyspeos/pull/537>`_
+
+        * - improve examples and tests due to more errors raised by the new SpeosRPC server
+          - `#546 <https://github.com/ansys/pyspeos/pull/546>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - remove code-style job to use precommit.ci
+          - `#523 <https://github.com/ansys/pyspeos/pull/523>`_
+
+        * - update CHANGELOG for v0.3.0
+          - `#525 <https://github.com/ansys/pyspeos/pull/525>`_
+
+        * - bump dev version into v0.4.dev0
+          - `#526 <https://github.com/ansys/pyspeos/pull/526>`_
+
+        * - pre-commit autoupdate
+          - `#529 <https://github.com/ansys/pyspeos/pull/529>`_, `#541 <https://github.com/ansys/pyspeos/pull/541>`_
+
+        * - bump ansys/actions from 8 to 9 in the actions group
+          - `#544 <https://github.com/ansys/pyspeos/pull/544>`_
+
+        * - Rename CONTRUBUTORS.md to CONTRIBUTORS.md
+          - `#548 <https://github.com/ansys/pyspeos/pull/548>`_
+
+        * - remove strong upper bound on build dep
+          - `#549 <https://github.com/ansys/pyspeos/pull/549>`_
+
+        * - pin actions version with full commit hash
+          - `#557 <https://github.com/ansys/pyspeos/pull/557>`_
+
+
 `0.3.0 <https://github.com/ansys/pyspeos/releases/tag/v0.3.0>`_ - March 28, 2025
 ================================================================================
 
