@@ -1,0 +1,73 @@
+
+
+
+
+
+
+The ``geo_ref.py`` module
+=========================
+
+.. py:module:: ansys.speos.core.geo_ref
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: geo_ref
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.geo_ref.GeoRef`
+            - Represent a CAD object
+
+
+
+
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> GeoRef</api/ansys/speos/core/geo_ref/GeoRef>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
