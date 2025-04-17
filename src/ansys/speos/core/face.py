@@ -30,7 +30,6 @@ from ansys.speos.core import proto_message_utils
 import ansys.speos.core.body as body
 from ansys.speos.core.kernel.client import SpeosClient
 from ansys.speos.core.kernel.face import ProtoFace
-import ansys.speos.core.part as part
 
 
 class Face:
@@ -80,17 +79,11 @@ class Face:
     @property
     def geo_path(self):
         """Geometry path to be used within other speos objects."""
-        return self.__get_geo_path(self)
-
-    @staticmethod
-    def __get_geo_path(face, end=""):
-        if isinstance(face._parent, part.Part):
-            if end:
-                return face._name + "/" + end
-            else:
-                return face._name
-        else:
-            return face.__get_geo_path(face._parent, face._name)
+        geo_paths = [self._name]
+        parent = self._parent
+        if isinstance(parent, body.Body):
+            geo_paths.insert(0, parent.geo_path)
+        return "/".join(geo_paths)
 
     def set_vertices(self, values: List[float]) -> Face:
         """Set the face vertices.

@@ -103,17 +103,10 @@ class Part:
         @property
         def geo_path(self):
             """Geometry path to be used within other speos objects."""
-            return self.__get_geo_path(self)
-
-        @staticmethod
-        def __get_geo_path(part, end=""):
-            if isinstance(part._parent, Part):
-                if end:
-                    return part._name + "/" + end
-                else:
-                    return part._name
-            else:
-                return part.__get_geo_path(part._parent, part._name)
+            geo_paths = [self._name]
+            if isinstance(self._parent, Part.SubPart):
+                geo_paths.insert(0, self._parent.geo_path)
+            return "/".join(geo_paths)
 
         def create_body(
             self,

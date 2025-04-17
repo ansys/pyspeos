@@ -84,17 +84,10 @@ class Body:
     @property
     def geo_path(self):
         """Geometry path to be used within other speos objects."""
-        return self.__get_geo_path(self)
-
-    @staticmethod
-    def __get_geo_path(body, end=""):
-        if isinstance(body._parent, part.Part):
-            if end:
-                return body._name + "/" + end
-            else:
-                return body._name
-        else:
-            return body.__get_geo_path(body._parent, body._name)
+        geo_paths = [self._name]
+        if isinstance(self._parent, part.Part.SubPart):
+            geo_paths.insert(0, self._parent.geo_path)
+        return "/".join(geo_paths)
 
     def create_face(
         self,
