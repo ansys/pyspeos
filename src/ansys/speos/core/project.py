@@ -921,7 +921,9 @@ class Project:
         Plotter
             ansys.tools.visualization_interface.Plotter
         """
-        if not isinstance(speos_feature, (SensorIrradiance, SensorRadiance, SensorCamera)):
+        if not isinstance(
+            speos_feature, (SensorIrradiance, SensorRadiance, SensorCamera, SourceLuminaire)
+        ):
             return plotter
         plotter.plot(
             speos_feature.visual_data.data,
@@ -935,7 +937,7 @@ class Project:
             case SensorRadiance():
                 plotter.plot(speos_feature.visual_data.coordinates.x_axis, color="red")
                 plotter.plot(speos_feature.visual_data.coordinates.y_axis, color="green")
-            case SensorIrradiance() | SensorCamera():
+            case SensorIrradiance() | SensorCamera() | SourceLuminaire():
                 plotter.plot(speos_feature.visual_data.coordinates.x_axis, color="red")
                 plotter.plot(speos_feature.visual_data.coordinates.y_axis, color="green")
                 plotter.plot(speos_feature.visual_data.coordinates.z_axis, color="blue")
