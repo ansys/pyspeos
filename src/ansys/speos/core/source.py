@@ -449,7 +449,7 @@ class SourceLuminaire(BaseSource):
 
     @property
     def visual_data(self) -> _VisualData:
-        """Property containing Luminaire sensor visualization data.
+        """Property containing Luminaire source visualization data.
 
         Returns
         -------
@@ -630,6 +630,35 @@ class SourceRayFile(BaseSource):
             # Default values
             self.set_flux_from_ray_file().set_spectrum_from_ray_file()
             self.set_axis_system()
+
+    @property
+    def visual_data(self) -> _VisualData:
+        """Property containing Rayfile source visualization data.
+
+        Returns
+        -------
+        _VisualData
+            Instance of VisualData Class for pyvista.PolyData of feature rays, coordinate_systems.
+
+        """
+        if self._visual_data.updated:
+            return self._visual_data
+        else:
+            for ray_path in self._project.scene_link.get_source_ray_paths(self._name, rays_nb=100):
+                self._visual_data.add_data_line(
+                    [ray_path.impacts_coordinates, ray_path.last_direction]
+                )
+            feature_pos_info = self.get(key="axis_system")
+            feature_luminaire_pos = np.array(feature_pos_info[:3])
+            feature_luminaire_x_dir = np.array(feature_pos_info[3:6])
+            feature_luminaire_y_dir = np.array(feature_pos_info[6:9])
+            feature_luminaire_z_dir = np.array(feature_pos_info[9:12])
+            self._visual_data.coordinates.origin = feature_luminaire_pos
+            self._visual_data.coordinates.x_axis = feature_luminaire_x_dir * 75
+            self._visual_data.coordinates.y_axis = feature_luminaire_y_dir * 75
+            self._visual_data.coordinates.z_axis = feature_luminaire_z_dir * 75
+            self._visual_data.updated = True
+            return self._visual_data
 
     def set_ray_file_uri(self, uri: str) -> SourceRayFile:
         """Set ray file.
