@@ -24,6 +24,8 @@
 
 from typing import TYPE_CHECKING, List
 
+import numpy as np
+
 from ansys.speos.core.generic.general_methods import (
     graphics_required,
     magnitude_vector,
@@ -287,3 +289,40 @@ class _VisualData:
                 "rectangle_vertices is expected to be composed of 3 vertices with 3 elements each."
             )
         self.__data = self.__data.append_polydata(pv.Rectangle(rectangle_vertices))
+
+    def add_data_line(self, line_vertices: List[List[float]], arrow: bool = False) -> None:
+        """
+        Add line data to Visualization data.
+
+        Parameters
+        ----------
+        line_vertices: List[List[float]]
+            The vertices of the line.
+        arrow: bool
+            True if adding line as an arrow, false as line.
+
+        Returns
+        -------
+        None
+        """
+        import pyvista as pv
+
+        if len(line_vertices) != 2 or any(len(point) != 3 for point in line_vertices):
+            raise ValueError(
+                "line_vertices is expected to be composed of 2 vertices with 3 elements each."
+            )
+        line_vertices = np.array(line_vertices)
+        if arrow:
+            self.__data = self.__data.append_polydata(
+                pv.Arrow(
+                    start=line_vertices[0],
+                    direction=line_vertices[1],
+                    scale=75,
+                    tip_radius=0.05,
+                    shaft_radius=0.01,
+                )
+            )
+        else:
+            self.__data = self.__data.append_polydata(
+                pv.Line(line_vertices[0], 75 * line_vertices[1])
+            )
