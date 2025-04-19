@@ -28,10 +28,14 @@ from difflib import SequenceMatcher
 from typing import List, Mapping, Optional, Union
 import uuid
 
+import numpy as np
+
 from ansys.speos.core import (
     project as project,
     proto_message_utils as proto_message_utils,
 )
+import ansys.speos.core.generic.general_methods as general_methods
+from ansys.speos.core.generic.visualization_methods import _VisualData
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.intensity import Intensity
 from ansys.speos.core.kernel.client import SpeosClient
@@ -76,6 +80,7 @@ class BaseSource:
         self._project = project
         self._name = name
         self._unique_id = None
+        self._visual_data = _VisualData() if general_methods._GRAPHICS_AVAILABLE else None
         self.source_template_link = None
         """Link object for the source template in database."""
 
@@ -441,6 +446,35 @@ class SourceLuminaire(BaseSource):
             # Default values
             self.set_flux_from_intensity_file().set_spectrum().set_incandescent()
             self.set_axis_system()
+
+    @property
+    def visual_data(self) -> _VisualData:
+        """Property containing Luminaire sensor visualization data.
+
+        Returns
+        -------
+        _VisualData
+            Instance of VisualData Class for pyvista.PolyData of feature rays, coordinate_systems.
+
+        """
+        if self._visual_data.updated:
+            return self._visual_data
+        else:
+            for ray_path in self._project.scene_link.get_source_ray_paths(self._name, rays_nb=100):
+                self._visual_data.add_data_line(
+                    [ray_path.impacts_coordinates, ray_path.last_direction]
+                )
+            feature_pos_info = self.get(key="axis_system")
+            feature_luminaire_pos = np.array(feature_pos_info[:3])
+            feature_luminaire_x_dir = np.array(feature_pos_info[3:6])
+            feature_luminaire_y_dir = np.array(feature_pos_info[6:9])
+            feature_luminaire_z_dir = np.array(feature_pos_info[9:12])
+            self._visual_data.coordinates.origin = feature_luminaire_pos
+            self._visual_data.coordinates.x_axis = feature_luminaire_x_dir * 75
+            self._visual_data.coordinates.y_axis = feature_luminaire_y_dir * 75
+            self._visual_data.coordinates.z_axis = feature_luminaire_z_dir * 75
+            self._visual_data.updated = True
+            return self._visual_data
 
     def set_flux_from_intensity_file(self) -> SourceLuminaire:
         """Take flux from intensity file provided.
