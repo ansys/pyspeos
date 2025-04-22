@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "ansys-speos-core"
-version = "0.4.dev0"
+version = "0.5.dev0"
 description = "A Python wrapper for Ansys Speos"
 readme = "README.rst"
 requires-python = ">=3.10"
@@ -38,13 +38,13 @@ dependencies=[
 
 [project.optional-dependencies]
 graphics = [
-    "pyvista>=0.40.0,<0.45",
+    "pyvista>=0.40.0,<0.46",
     "ansys-tools-visualization-interface>=0.8.3",
 ]
 tests = [
     "psutil==7.0.0",
     "pytest==8.3.5",
-    "pyvista>=0.40.0,<0.45",
+    "pyvista>=0.40.0,<0.46",
     "ansys-tools-visualization-interface>=0.8.3",
     "ansys-platform-instancemanagement>=1.0.3",
     "pytest-cov==6.1.1",
