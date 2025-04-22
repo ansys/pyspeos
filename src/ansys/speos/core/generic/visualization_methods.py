@@ -22,7 +22,7 @@
 
 """Provides the ``VisualData`` class."""
 
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Tuple, Union
 
 import numpy as np
 
@@ -30,6 +30,7 @@ from ansys.speos.core.generic.general_methods import (
     graphics_required,
     magnitude_vector,
     normalize_vector,
+    wavelength_to_rgb,
 )
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -38,7 +39,7 @@ if TYPE_CHECKING:  # pragma: no cover
 
 @graphics_required
 class _VisualCoordinateSystem:
-    """Visualization data for the coordinate system..
+    """Visualization data for the coordinate system.
 
     By default, there is empty visualization data.
 
@@ -217,6 +218,69 @@ class _VisualCoordinateSystem:
 
 
 @graphics_required
+class _VisualArrow:
+    """Visualization data for the line or arrow.
+
+    By default, there is empty visualization data.
+
+    Notes
+    -----
+    **Do not instantiate this class yourself**.
+    """
+
+    def __init__(
+        self,
+        line_vertices: List[List[float]],
+        color: Union[float, Tuple[float, float, float]] = (0.643, 1.0, 0.0),
+        arrow: bool = False,
+    ) -> None:
+        import pyvista as pv
+
+        if len(line_vertices) != 2 or any(len(point) != 3 for point in line_vertices):
+            raise ValueError(
+                "line_vertices is expected to be composed of 2 vertices with 3 elements each."
+            )
+        line_vertices = np.array(line_vertices)
+        if arrow:
+            self.__data = pv.Arrow(
+                start=line_vertices[0],
+                direction=line_vertices[1],
+                scale=75,
+                tip_radius=0.05,
+                shaft_radius=0.01,
+            )
+        else:
+            self.__data = pv.Line(line_vertices[0], 75 * line_vertices[1])
+        self.__color = wavelength_to_rgb(color) if isinstance(color, float) else color
+
+    @property
+    def data(self) -> "pv.PolyData":
+        """
+        Returns the pyvista data of _VisualArrow.
+
+        Returns
+        -------
+        pv.PolyData
+            The pyvista data of _VisualArrow.
+
+        """
+        return self.__data
+
+    @property
+    def color(self) -> Tuple[float, float, float]:
+        """
+        Returns the color property of _VisualArrow.
+
+        Returns
+        -------
+        Tuple[float, float, float]
+            The color tuple of _VisualArrow.
+
+        """
+        return self.__color
+
+
+@graphics_required
 class _VisualData:
     """Visualization data for the sensor.
 
@@ -227,25 +291,26 @@ class _VisualData:
     **Do not instantiate this class yourself**
     """
 
-    def __init__(self, coordinate_system=True):
+    def __init__(self, ray: bool = False, coordinate_system: bool = True):
         import pyvista as pv
 
-        self.__data = pv.PolyData()
+        self._data = [] if ray else pv.PolyData()
         self.coordinates = _VisualCoordinateSystem() if coordinate_system else None
         self.updated = False
 
     @property
-    def data(self) -> "pv.PolyData":
+    def data(self) -> Union["pv.PolyData", List[_VisualArrow]]:
         """
-        Returns the data of the sensor.
+        Returns the pyvista data of _VisualData.
 
         Returns
         -------
-        pv.PolyData
-            The data of the surface visualization.
+        Union["pv.PolyData", List[_VisualArrow]]
+            The data of the surface visualization if surface data,
+            else List[_VisualArrow] containing ray info.
 
         """
-        return self.__data
+        return self._data
 
     def add_data_triangle(self, triangle_vertices: List[List[float]]) -> None:
         """
@@ -267,7 +332,7 @@ class _VisualData:
                 "triangle_vertices is expected to be composed of 3 vertices with 3 elements each."
             )
         faces = [[3, 0, 1, 2]]
-        self.__data = self.__data.append_polydata(pv.PolyData(triangle_vertices, faces))
+        self._data = self._data.append_polydata(pv.PolyData(triangle_vertices, faces))
 
     def add_data_rectangle(self, rectangle_vertices: List[List[float]]) -> None:
         """
@@ -288,41 +353,19 @@ class _VisualData:
             raise ValueError(
                 "rectangle_vertices is expected to be composed of 3 vertices with 3 elements each."
             )
-        self.__data = self.__data.append_polydata(pv.Rectangle(rectangle_vertices))
+        self._data = self._data.append_polydata(pv.Rectangle(rectangle_vertices))
 
-    def add_data_line(self, line_vertices: List[List[float]], arrow: bool = False) -> None:
+    def add_data_line(self, line: _VisualArrow) -> None:
         """
         Add line data to Visualization data.
 
         Parameters
         ----------
-        line_vertices: List[List[float]]
-            The vertices of the line.
-        arrow: bool
-            True if adding line as an arrow, false as line.
+        line: _VisualArrow
+            _VisualArrow presenting one line
 
         Returns
         -------
         None
         """
-        import pyvista as pv
-
-        if len(line_vertices) != 2 or any(len(point) != 3 for point in line_vertices):
-            raise ValueError(
-                "line_vertices is expected to be composed of 2 vertices with 3 elements each."
-            )
-        line_vertices = np.array(line_vertices)
-        if arrow:
-            self.__data = self.__data.append_polydata(
-                pv.Arrow(
-                    start=line_vertices[0],
-                    direction=line_vertices[1],
-                    scale=75,
-                    tip_radius=0.05,
-                    shaft_radius=0.01,
-                )
-            )
-        else:
-            self.__data = self.__data.append_polydata(
-                pv.Line(line_vertices[0], 75 * line_vertices[1])
-            )
+        self._data.append(line)
