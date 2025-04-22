@@ -926,14 +926,22 @@ class Project:
             (SensorIrradiance, SensorRadiance, SensorCamera, SourceLuminaire, SourceRayFile),
         ):
             return plotter
-        plotter.plot(
-            speos_feature.visual_data.data,
-            show_edges=True,
-            line_width=2,
-            edge_color="red",
-            color="orange",
-            opacity=0.5,
-        )
+        match speos_feature:
+            case SourceRayFile() | SourceLuminaire():
+                for visual_ray in speos_feature.visual_data.data:
+                    plotter.plot(
+                        visual_ray.data,
+                        color=visual_ray.color,
+                    )
+            case _:
+                plotter.plot(
+                    speos_feature.visual_data.data,
+                    show_edges=True,
+                    line_width=2,
+                    edge_color="red",
+                    color="orange",
+                    opacity=0.5,
+                )
         match speos_feature:
             case SensorRadiance():
                 plotter.plot(speos_feature.visual_data.coordinates.x_axis, color="red")

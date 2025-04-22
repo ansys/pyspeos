@@ -35,7 +35,7 @@ from ansys.speos.core import (
     proto_message_utils as proto_message_utils,
 )
 import ansys.speos.core.generic.general_methods as general_methods
-from ansys.speos.core.generic.visualization_methods import _VisualData
+from ansys.speos.core.generic.visualization_methods import _VisualArrow, _VisualData
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.intensity import Intensity
 from ansys.speos.core.kernel.client import SpeosClient
@@ -80,7 +80,7 @@ class BaseSource:
         self._project = project
         self._name = name
         self._unique_id = None
-        self._visual_data = _VisualData() if general_methods._GRAPHICS_AVAILABLE else None
+        self._visual_data = _VisualData(ray=True) if general_methods._GRAPHICS_AVAILABLE else None
         self.source_template_link = None
         """Link object for the source template in database."""
 
@@ -462,7 +462,11 @@ class SourceLuminaire(BaseSource):
         else:
             for ray_path in self._project.scene_link.get_source_ray_paths(self._name, rays_nb=100):
                 self._visual_data.add_data_line(
-                    [ray_path.impacts_coordinates, ray_path.last_direction]
+                    _VisualArrow(
+                        line_vertices=[ray_path.impacts_coordinates, ray_path.last_direction],
+                        color=ray_path.wavelengths[0],
+                        arrow=False,
+                    )
                 )
             feature_pos_info = self.get(key="axis_system")
             feature_luminaire_pos = np.array(feature_pos_info[:3])
@@ -646,7 +650,11 @@ class SourceRayFile(BaseSource):
         else:
             for ray_path in self._project.scene_link.get_source_ray_paths(self._name, rays_nb=100):
                 self._visual_data.add_data_line(
-                    [ray_path.impacts_coordinates, ray_path.last_direction]
+                    _VisualArrow(
+                        line_vertices=[ray_path.impacts_coordinates, ray_path.last_direction],
+                        color=ray_path.wavelengths[0],
+                        arrow=False,
+                    )
                 )
             feature_pos_info = self.get(key="axis_system")
             feature_luminaire_pos = np.array(feature_pos_info[:3])
