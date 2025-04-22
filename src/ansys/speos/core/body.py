@@ -68,7 +68,7 @@ class Body:
         parent_part: Optional[Union[part.Part, part.Part.SubPart]] = None,
     ) -> None:
         self._speos_client = speos_client
-        self._parent = parent_part
+        self._parent_part = parent_part
         self._name = name
         self.body_link = None
         """Link object for the body in database."""
@@ -85,8 +85,8 @@ class Body:
     def geo_path(self):
         """Geometry path to be used within other speos objects."""
         geo_paths = [self._name]
-        if isinstance(self._parent, part.Part.SubPart):
-            geo_paths.insert(0, self._parent.geo_path)
+        if isinstance(self._parent_part, part.Part.SubPart):
+            geo_paths.insert(0, self._parent_part.geo_path)
         return "/".join(geo_paths)
 
     def create_face(
@@ -169,11 +169,11 @@ class Body:
             self.body_link.set(data=self._body)  # Only Update if data has changed
 
         # Update the parent part
-        if self._parent is not None:
-            if self.body_link.key not in self._parent._part.body_guids:
-                self._parent._part.body_guids.append(self.body_link.key)
-                if self._parent.part_link is not None:
-                    self._parent.part_link.set(data=self._parent._part)
+        if self._parent_part is not None:
+            if self.body_link.key not in self._parent_part._part.body_guids:
+                self._parent_part._part.body_guids.append(self.body_link.key)
+                if self._parent_part.part_link is not None:
+                    self._parent_part.part_link.set(data=self._parent_part._part)
 
         return self
 
@@ -205,18 +205,18 @@ class Body:
 
         if self.body_link is not None:
             # Update the parent part
-            if self._parent is not None:
-                if self.body_link.key in self._parent._part.body_guids:
-                    self._parent._part.body_guids.remove(self.body_link.key)
-                    if self._parent.part_link is not None:
-                        self._parent.part_link.set(data=self._parent._part)
+            if self._parent_part is not None:
+                if self.body_link.key in self._parent_part._part.body_guids:
+                    self._parent_part._part.body_guids.remove(self.body_link.key)
+                    if self._parent_part.part_link is not None:
+                        self._parent_part.part_link.set(data=self._parent_part._part)
 
             # Delete the body
             self.body_link.delete()
             self.body_link = None
 
-        if self in self._parent._geom_features:
-            self._parent._geom_features.remove(self)
+        if self in self._parent_part._geom_features:
+            self._parent_part._geom_features.remove(self)
 
         return self
 

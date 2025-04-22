@@ -163,7 +163,7 @@ def test_modify_parts_after_combine(speos: Speos):
     )
     blue_car_sub_part.commit()
 
-    for sp in blue_car_sub_part._parent.part_link.get().parts:
+    for sp in blue_car_sub_part._parent_part.part_link.get().parts:
         if sp.name == "BlueCar":
             assert sp.axis_system == [
                 2000,

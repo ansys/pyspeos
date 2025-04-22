@@ -51,7 +51,7 @@ def test_create_body(speos: Speos):
     # Add empty body
     body1 = root_part.create_body(name="Body.1").commit()
     assert len(root_part._geom_features) == 1
-
+    assert body1.geo_path == "Body.1"
     assert len(root_part.part_link.get().body_guids) == 1
     assert root_part.part_link.get().body_guids[0] == body1.body_link.key
 
@@ -59,7 +59,7 @@ def test_create_body(speos: Speos):
     body2 = root_part.create_body(name="Body.2")
     root_part.commit()
     assert len(root_part._geom_features) == 2
-
+    assert body2.geo_path == "Body.2"
     assert len(root_part.part_link.get().body_guids) == 2
     assert root_part.part_link.get().body_guids[1] == body2.body_link.key
 
@@ -84,7 +84,7 @@ def test_create_face(speos: Speos):
     root_part.commit()
     assert len(body1._geom_features) == 1
     assert len(body1.body_link.get().face_guids) == 1
-
+    assert face0.geo_path == "Body.1/TheFaceF"
     # Add a face
     face1 = (
         body1.create_face(name="Face.1")
@@ -94,7 +94,7 @@ def test_create_face(speos: Speos):
         .commit()
     )
     assert len(body1._geom_features) == 2
-
+    assert face1.geo_path == "Body.1/Face.1"
     assert len(body1.body_link.get().face_guids) == 2
     assert body1.body_link.get().face_guids[1] == face1.face_link.key
     assert face1.face_link.get().vertices == [0, 1, 0, 0, 2, 0, 1, 2, 0]
@@ -110,7 +110,7 @@ def test_create_face(speos: Speos):
         .commit()
     )
     assert len(body1._geom_features) == 3
-
+    assert face2.geo_path == "Body.1/Face.2"
     assert len(body1.body_link.get().face_guids) == 3
     assert body1.body_link.get().face_guids[2] == face2.face_link.key
     assert face2.face_link.get().vertices == [0, 0, 0, 1, 0, 0, 0, 1, 0]
@@ -140,6 +140,7 @@ def test_create_subpart(speos: Speos):
     )
     assert len(root_part._geom_features) == 1
     assert len(root_part.part_link.get().parts) == 1
+    assert sp1.geo_path == "SubPart.1"
     assert root_part.part_link.get().parts[0] == sp1._part_instance
     assert sp1._part_instance.axis_system == [
         5,
@@ -168,6 +169,7 @@ def test_create_subpart(speos: Speos):
     root_part.commit()
     assert len(root_part._geom_features) == 2
     assert len(root_part.part_link.get().parts) == 2
+    assert sp2.geo_path == "SubPart.2"
     assert root_part.part_link.get().parts[1] == sp2._part_instance
     assert sp2._part_instance.axis_system == [
         15,
@@ -211,7 +213,7 @@ def test_create_subpart_body(speos: Speos):
     # Add empty body
     body1 = sp1.create_body(name="Body.1").commit()
     assert len(sp1._geom_features) == 1
-
+    assert body1.geo_path == "SubPart.1/Body.1"
     assert len(sp1.part_link.get().body_guids) == 1
     assert sp1.part_link.get().body_guids[0] == body1.body_link.key
 
@@ -219,7 +221,7 @@ def test_create_subpart_body(speos: Speos):
     body2 = sp1.create_body(name="Body.2")
     root_part.commit()
     assert len(sp1._geom_features) == 2
-
+    assert body2.geo_path == "SubPart.1/Body.2"
     assert len(sp1.part_link.get().body_guids) == 2
     assert sp1.part_link.get().body_guids[1] == body2.body_link.key
 
@@ -266,6 +268,7 @@ def test_create_subpart_subpart(speos: Speos):
         1,
     ]
     assert sp11._part_instance.part_guid == sp11.part_link.key
+    assert sp11.geo_path == "SubPart.1/SubPart.11"
     assert (
         sp11.part_link.get().name == "SubPart.11"
     )  # part contained in a sub part gets same name as the sub part
@@ -294,6 +297,7 @@ def test_create_subpart_subpart(speos: Speos):
         1,
     ]
     assert sp12._part_instance.part_guid == sp12.part_link.key
+    assert sp12.geo_path == "SubPart.1/SubPart.12"
     assert (
         sp12.part_link.get().name == "SubPart.12"
     )  # part contained in a sub part gets same name as the sub part

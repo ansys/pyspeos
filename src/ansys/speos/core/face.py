@@ -66,7 +66,7 @@ class Face:
         parent_body: Optional[body.Body] = None,
     ) -> None:
         self._speos_client = speos_client
-        self._parent = parent_body
+        self._parent_body = parent_body
         self._name = name
         self.face_link = None
         """Link object for the face in database."""
@@ -80,7 +80,7 @@ class Face:
     def geo_path(self):
         """Geometry path to be used within other speos objects."""
         geo_paths = [self._name]
-        parent = self._parent
+        parent = self._parent_body
         if isinstance(parent, body.Body):
             geo_paths.insert(0, parent.geo_path)
         return "/".join(geo_paths)
@@ -172,11 +172,11 @@ class Face:
             self.face_link.set(data=self._face)  # Only Update if data has changed
 
         # Update the parent body
-        if self._parent is not None:
-            if self.face_link.key not in self._parent._body.face_guids:
-                self._parent._body.face_guids.append(self.face_link.key)
-                if self._parent.body_link is not None:
-                    self._parent.body_link.set(data=self._parent._body)
+        if self._parent_body is not None:
+            if self.face_link.key not in self._parent_body._body.face_guids:
+                self._parent_body._body.face_guids.append(self.face_link.key)
+                if self._parent_body.body_link is not None:
+                    self._parent_body.body_link.set(data=self._parent_body._body)
 
         return self
 
@@ -206,17 +206,17 @@ class Face:
         """
         if self.face_link is not None:
             # Update the parent body
-            if self._parent is not None:
-                if self.face_link.key in self._parent._body.face_guids:
-                    self._parent._body.face_guids.remove(self.face_link.key)
-                    if self._parent.body_link is not None:
-                        self._parent.body_link.set(data=self._parent._body)
+            if self._parent_body is not None:
+                if self.face_link.key in self._parent_body._body.face_guids:
+                    self._parent_body._body.face_guids.remove(self.face_link.key)
+                    if self._parent_body.body_link is not None:
+                        self._parent_body.body_link.set(data=self._parent_body._body)
 
             # Delete the face
             self.face_link.delete()
             self.face_link = None
 
-            if self in self._parent._geom_features:
-                self._parent._geom_features.remove(self)
+            if self in self._parent_body._geom_features:
+                self._parent_body._geom_features.remove(self)
 
         return self
