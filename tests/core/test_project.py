@@ -28,7 +28,7 @@ from ansys.speos.core import Body, Face, Part, Project, Speos
 from ansys.speos.core.opt_prop import OptProp
 from ansys.speos.core.sensor import SensorIrradiance, SensorRadiance
 from ansys.speos.core.simulation import SimulationDirect
-from ansys.speos.core.source import SourceLuminaire, SourceSurface
+from ansys.speos.core.source import SourceLuminaire, SourceRayFile, SourceSurface
 from tests.conftest import test_path
 
 
@@ -467,4 +467,17 @@ def test_preview_visual_data(speos: Speos):
 
     # preview radiance sensor visual data
     p2.create_sensor(name="radiance_sensor", feature_type=SensorRadiance)
+    p2.preview()
+
+    # preview luminaire source
+    sr = p2.create_source(name="Luminaire_source", feature_type=SourceLuminaire)
+    sr.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
+    sr.set_spectrum().set_halogen()
+    sr.commit()
+    p2.preview()
+
+    # preview rayfile source
+    sr = p2.create_source(name="Rayfile_source", feature_type=SourceRayFile)
+    sr.set_ray_file_uri(uri=str(Path(test_path) / "Rays.ray"))
+    sr.commit()
     p2.preview()
