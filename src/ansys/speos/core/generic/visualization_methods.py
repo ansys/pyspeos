@@ -250,7 +250,7 @@ class _VisualArrow:
                 shaft_radius=0.01,
             )
         else:
-            self.__data = pv.Line(line_vertices[0], 75 * line_vertices[1])
+            self.__data = pv.Line(line_vertices[0], line_vertices[0] + 75 * line_vertices[1])
         self.__color = wavelength_to_rgb(color) if isinstance(color, float) else color
 
     @property
