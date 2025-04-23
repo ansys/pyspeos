@@ -30,7 +30,6 @@ from ansys.speos.core.generic.general_methods import (
     graphics_required,
     magnitude_vector,
     normalize_vector,
-    wavelength_to_rgb,
 )
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -231,7 +230,7 @@ class _VisualArrow:
     def __init__(
         self,
         line_vertices: List[List[float]],
-        color: Union[float, Tuple[float, float, float]] = (0.643, 1.0, 0.0),
+        color: Tuple[float, float, float] = (0.643, 1.0, 0.0),
         arrow: bool = False,
     ) -> None:
         import pyvista as pv
@@ -251,7 +250,10 @@ class _VisualArrow:
             )
         else:
             self.__data = pv.Line(line_vertices[0], line_vertices[0] + 75 * line_vertices[1])
-        self.__color = wavelength_to_rgb(color) if isinstance(color, float) else color
+        if all(value < 1 for value in color):
+            self.__color = color + (255,)
+        else:
+            self.__color = tuple(value / 255 for value in color) + (255,)
 
     @property
     def data(self) -> "pv.PolyData":

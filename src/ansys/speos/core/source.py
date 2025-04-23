@@ -460,11 +460,13 @@ class SourceLuminaire(BaseSource):
         if self._visual_data.updated:
             return self._visual_data
         else:
-            for ray_path in self._project.scene_link.get_source_ray_paths(self._name, rays_nb=100):
+            for ray_path in self._project.scene_link.get_source_ray_paths(
+                self._name, rays_nb=100, raw_data=True, display_data=True
+            ):
                 self._visual_data.add_data_line(
                     _VisualArrow(
                         line_vertices=[ray_path.impacts_coordinates, ray_path.last_direction],
-                        color=ray_path.wavelengths[0],
+                        color=tuple(ray_path.colors.values),
                         arrow=False,
                     )
                 )
@@ -648,11 +650,13 @@ class SourceRayFile(BaseSource):
         if self._visual_data.updated:
             return self._visual_data
         else:
-            for ray_path in self._project.scene_link.get_source_ray_paths(self._name, rays_nb=100):
+            for ray_path in self._project.scene_link.get_source_ray_paths(
+                self._name, rays_nb=100, raw_data=True, display_data=True
+            ):
                 self._visual_data.add_data_line(
                     _VisualArrow(
                         line_vertices=[ray_path.impacts_coordinates, ray_path.last_direction],
-                        color=ray_path.wavelengths[0],
+                        color=tuple(ray_path.colors.values),
                         arrow=False,
                     )
                 )
