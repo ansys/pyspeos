@@ -927,7 +927,7 @@ class Project:
         ):
             return plotter
         match speos_feature:
-            case SourceRayFile() | SourceLuminaire():
+            case SourceRayFile() | SourceLuminaire() | SourceSurface():
                 for visual_ray in speos_feature.visual_data.data:
                     plotter.plot(
                         visual_ray.data,
@@ -943,9 +943,10 @@ class Project:
                     opacity=0.5,
                 )
         match speos_feature:
-            case SensorRadiance():
-                plotter.plot(speos_feature.visual_data.coordinates.x_axis, color="red")
-                plotter.plot(speos_feature.visual_data.coordinates.y_axis, color="green")
+            case SensorRadiance() | SourceSurface():
+                if speos_feature.visual_data.coordinates is not None:
+                    plotter.plot(speos_feature.visual_data.coordinates.x_axis, color="red")
+                    plotter.plot(speos_feature.visual_data.coordinates.y_axis, color="green")
             case SensorIrradiance() | SensorCamera() | SourceLuminaire() | SourceRayFile():
                 plotter.plot(speos_feature.visual_data.coordinates.x_axis, color="red")
                 plotter.plot(speos_feature.visual_data.coordinates.y_axis, color="green")
