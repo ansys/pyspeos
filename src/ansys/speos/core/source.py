@@ -363,6 +363,7 @@ class BaseSource:
         ansys.speos.core.source.BaseSource
             Source feature.
         """
+        self._visual_data.updated = False
         self._spectrum._commit()
         self._commit()
         return self
