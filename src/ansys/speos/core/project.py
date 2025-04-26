@@ -979,29 +979,32 @@ class Project:
 
         if viz_args is None:
             viz_args = {}
-
-        _preview_mesh = pv.PolyData()
-        # Retrieve root part
-        root_part_data = self.client[self.scene_link.get().part_guid].get()
-
-        # Loop on all sub parts to retrieve their mesh
-        if len(root_part_data.parts) != 0:
-            for part_idx, part_item in enumerate(root_part_data.parts):
-                part_item_data = self.client[part_item.part_guid].get()
-                poly_data = self.__extract_part_mesh_info(
-                    part_data=part_item_data,
-                    part_coordinate_info=part_item.axis_system,
-                )
-                if poly_data is not None:
-                    _preview_mesh = _preview_mesh.append_polydata(poly_data)
-
-        # Add also the mesh of bodies directly contained in root part
-        poly_data = self.__extract_part_mesh_info(part_data=root_part_data)
-        if poly_data is not None:
-            _preview_mesh = _preview_mesh.append_polydata(poly_data)
-        p = Plotter()
         viz_args["show_edges"] = True
-        p.plot(_preview_mesh, **viz_args)
+
+        p = Plotter()
+        # Add cad visual data at the root part
+        if self.scene_link.get().part_guid != "":
+            _preview_mesh = pv.PolyData()
+            # Retrieve root part
+            root_part_data = self.client[self.scene_link.get().part_guid].get()
+
+            # Loop on all sub parts to retrieve their mesh
+            if len(root_part_data.parts) != 0:
+                for part_idx, part_item in enumerate(root_part_data.parts):
+                    part_item_data = self.client[part_item.part_guid].get()
+                    poly_data = self.__extract_part_mesh_info(
+                        part_data=part_item_data,
+                        part_coordinate_info=part_item.axis_system,
+                    )
+                    if poly_data is not None:
+                        _preview_mesh = _preview_mesh.append_polydata(poly_data)
+
+            # Add also the mesh of bodies directly contained in root part
+            poly_data = self.__extract_part_mesh_info(part_data=root_part_data)
+            if poly_data is not None:
+                _preview_mesh = _preview_mesh.append_polydata(poly_data)
+            if _preview_mesh.n_points != 0 and _preview_mesh.n_cells != 0:
+                p.plot(_preview_mesh, **viz_args)
 
         # Add speos visual data at the root part
         for feature in self._features:
