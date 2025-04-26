@@ -923,7 +923,14 @@ class Project:
         """
         if not isinstance(
             speos_feature,
-            (SensorIrradiance, SensorRadiance, SensorCamera, SourceLuminaire, SourceRayFile),
+            (
+                SensorIrradiance,
+                SensorRadiance,
+                SensorCamera,
+                SourceLuminaire,
+                SourceRayFile,
+                SourceSurface,
+            ),
         ):
             return plotter
         match speos_feature:

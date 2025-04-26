@@ -960,6 +960,7 @@ class SourceSurface(BaseSource):
             self.set_flux_luminous().set_exitance_constant(geometries=[]).set_intensity()
             self.set_spectrum()
 
+    @property
     def visual_data(self) -> _VisualData:
         """Property containing Rayfile source visualization data.
 
