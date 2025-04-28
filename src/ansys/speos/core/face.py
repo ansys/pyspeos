@@ -28,6 +28,7 @@ from typing import List, Mapping, Optional
 
 from ansys.speos.core import proto_message_utils
 import ansys.speos.core.body as body
+from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.client import SpeosClient
 from ansys.speos.core.kernel.face import ProtoFace
 
@@ -77,13 +78,13 @@ class Face:
         self._face = ProtoFace(name=name, description=description, metadata=metadata)
 
     @property
-    def geo_path(self):
+    def geo_path(self) -> GeoRef:
         """Geometry path to be used within other speos objects."""
         geo_paths = [self._name]
         parent = self._parent_body
         if isinstance(parent, body.Body):
-            geo_paths.insert(0, parent.geo_path)
-        return "/".join(geo_paths)
+            geo_paths.insert(0, parent.geo_path.metadata["GeoPath"])
+        return GeoRef.from_native_link("/".join(geo_paths))
 
     def set_vertices(self, values: List[float]) -> Face:
         """Set the face vertices.

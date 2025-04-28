@@ -29,6 +29,7 @@ from typing import List, Mapping, Optional, Union
 
 from ansys.speos.core import proto_message_utils
 import ansys.speos.core.face as face
+from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.body import ProtoBody
 from ansys.speos.core.kernel.client import SpeosClient
 import ansys.speos.core.part as part
@@ -82,12 +83,12 @@ class Body:
         self._geom_features = []
 
     @property
-    def geo_path(self):
+    def geo_path(self) -> GeoRef:
         """Geometry path to be used within other speos objects."""
         geo_paths = [self._name]
         if isinstance(self._parent_part, part.Part.SubPart):
-            geo_paths.insert(0, self._parent_part.geo_path)
-        return "/".join(geo_paths)
+            geo_paths.insert(0, self._parent_part.geo_path.metadata["GeoPath"])
+        return GeoRef.from_native_link("/".join(geo_paths))
 
     def create_face(
         self,
