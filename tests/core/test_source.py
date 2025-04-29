@@ -384,7 +384,7 @@ def test_keep_same_internal_feature(speos: Speos):
 
     # SURFACE SOURCE
     source1 = SourceSurface(project=p, name="Surface.1")
-    source1.set_exitance_constant(geometries=[(GeoRef.from_native_link("BodyB"), False)])
+    source1.set_exitance_constant(geometries=[(body_b, False)])
     source1.commit()
     spectrum_guid = source1.source_template_link.get().surface.spectrum_guid
     intensity_guid = source1.source_template_link.get().surface.intensity_guid
