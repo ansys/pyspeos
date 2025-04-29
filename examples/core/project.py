@@ -43,7 +43,7 @@ USE_DOCKER = True  # Set to False if you're running this example locally as a No
 # > **Note:** Make sure you
 # > have downloaded simulation assets and set ``assets_data_path``
 # > to point to the assets folder.
-USE_DOCKER = False
+
 if USE_DOCKER:  # Running on the remote server.
     assets_data_path = Path("/app") / "assets"
 else:
