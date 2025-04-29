@@ -27,13 +27,13 @@ from difflib import SequenceMatcher
 from typing import List, Mapping, Optional, Union
 import uuid
 
-from ansys.speos.core.body import Body
-from ansys.speos.core.face import Face
+import ansys.speos.core.body as body
+import ansys.speos.core.face as face
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.scene import ProtoScene
 from ansys.speos.core.kernel.sop_template import ProtoSOPTemplate
 from ansys.speos.core.kernel.vop_template import ProtoVOPTemplate
-from ansys.speos.core.part import Part
+import ansys.speos.core.part as part
 import ansys.speos.core.project as project
 import ansys.speos.core.proto_message_utils as proto_message_utils
 
@@ -268,7 +268,8 @@ class OptProp:
         return self
 
     def set_geometries(
-        self, geometries: Optional[List[Union[GeoRef, Body, Face, Part.SubPart]]] = None
+        self,
+        geometries: Optional[List[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]] = None,
     ) -> OptProp:
         """Select geometries on which the optical properties will be applied.
 
@@ -290,12 +291,14 @@ class OptProp:
             for gr in geometries:
                 if isinstance(gr, GeoRef):
                     geo_paths.append(gr)
-                elif isinstance(gr, (Face, Body, Part.SubPart)):
+                elif isinstance(gr, (face.Face, body.Body, part.Part.SubPart)):
                     geo_paths.append(gr.geo_path)
                 else:
                     msg = f"Type {type(gr)} is not supported as Optical property geometry input."
                     raise TypeError(msg)
-            self._material_instance.geometries.geo_paths[:] = geo_paths
+            self._material_instance.geometries.geo_paths[:] = [
+                gp.to_native_link() for gp in geo_paths
+            ]
         return self
 
     def _to_dict(self) -> dict:
