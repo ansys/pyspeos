@@ -32,6 +32,7 @@ from ansys.speos.core import (
     project as project,
     proto_message_utils as proto_message_utils,
 )
+from ansys.speos.core.face import Face
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.intensity import Intensity
 from ansys.speos.core.kernel.client import SpeosClient
@@ -959,7 +960,9 @@ class SourceSurface(BaseSource):
 
         return self._intensity
 
-    def set_exitance_constant(self, geometries: List[tuple[GeoRef, bool]]) -> SourceSurface:
+    def set_exitance_constant(
+        self, geometries: List[tuple[Union[GeoRef, Face], bool]]
+    ) -> SourceSurface:
         """Set existence constant.
 
         Parameters
@@ -979,12 +982,25 @@ class SourceSurface(BaseSource):
             "geo_paths"
         )
         if geometries != []:
-            my_list = [
-                ProtoScene.GeoPath(geo_path=gr.to_native_link(), reverse_normal=reverse_normal)
-                for (gr, reverse_normal) in geometries
-            ]
+            geo_paths = []
+            for gr, reverse_normal in geometries:
+                if isinstance(gr, GeoRef):
+                    geo_paths.append(
+                        ProtoScene.GeoPath(
+                            geo_path=gr.to_native_link(), reverse_normal=reverse_normal
+                        )
+                    )
+                elif isinstance(gr, Face):
+                    geo_paths.append(
+                        ProtoScene.GeoPath(
+                            geo_path=gr.geo_path.to_native_link(), reverse_normal=reverse_normal
+                        )
+                    )
+                else:
+                    msg = f"Type {type(gr)} is not supported as Surface Source geometry input."
+                    raise TypeError(msg)
             self._source_instance.surface_properties.exitance_constant_properties.geo_paths.extend(
-                my_list
+                geo_paths
             )
         return self
 
