@@ -2267,7 +2267,7 @@ class SensorIrradiance(BaseSensor):
         Notes
         -----
         Contrary to any visualization of integration directions within Speos Software or its
-        documentation the integration direction must be set in the anti-rays direction to integrate
+        documentation, the integration direction must be set in the anti-rays direction to integrate
         their signal.
         """
         self._sensor_template.irradiance_sensor_template.illuminance_type_planar.SetInParent()
@@ -2317,7 +2317,7 @@ class SensorIrradiance(BaseSensor):
     ) -> SensorIrradiance:
         """Set illuminance type semi cylindrical.
 
-        PParameters
+        Parameters
         ----------
         integration_direction : List[float], optional
             Sensor global integration direction [x,y,z].
