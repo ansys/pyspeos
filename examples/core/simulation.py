@@ -83,7 +83,7 @@ opt_prop.set_volume_opaque().set_surface_mirror()
 
 # Choose the geometry for this optical property : Body.1
 
-opt_prop.set_geometries(geometries=[body_1.geo_path])
+opt_prop.set_geometries(geometries=[body_1])
 opt_prop.commit()
 
 
@@ -99,7 +99,7 @@ sensor1.commit()
 # ### Prepare a surface source
 
 source1 = p.create_source(name=SOURCE_NAME)
-source1.set_exitance_constant(geometries=[(face_1.geo_path, True)])
+source1.set_exitance_constant(geometries=[(face_1, True)])
 # define a spectrum which is not monochromatic so it can be used in both direct and inverse
 # simulation
 source1.set_spectrum().set_blackbody()

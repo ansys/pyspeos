@@ -98,8 +98,8 @@ op1.set_volume_opaque()  # VOP : opaque
 # This optical property will be applied to two bodies named : "TheBodyB" and "TheBodyC".
 op1.set_geometries(
     geometries=[
-        bodies[0].geo_path,
-        bodies[1].geo_path,
+        bodies[0],
+        bodies[1],
     ]
 )
 print(op1)
@@ -125,8 +125,8 @@ op2.set_volume_library(
 # This optical property will be applied to two bodies named : "TheBodyD" and "TheBodyE".
 op2.set_geometries(
     geometries=[
-        bodies[2].geo_path,
-        bodies[3].geo_path,
+        bodies[2],
+        bodies[3],
     ]
 )
 op2.commit()
@@ -143,7 +143,7 @@ print(op2)
 op3 = p.create_optical_property(name="Material.FOP")
 op3.set_surface_mirror(reflectance=90)  # SOP : mirror
 # This optical property will be applied a face from TheBodyD named : "TheFaceF".
-op3.set_geometries(geometries=[faces[2].geo_path])
+op3.set_geometries(geometries=[faces[2]])
 op3.commit()
 print(op3)
 
