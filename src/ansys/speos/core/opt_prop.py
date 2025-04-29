@@ -292,6 +292,9 @@ class OptProp:
                     geo_paths.append(gr)
                 elif isinstance(gr, (Face, Body, Part.SubPart)):
                     geo_paths.append(gr.geo_path)
+                else:
+                    msg = f"Type {type(gr)} is not supported as Optical property geometry input."
+                    raise TypeError(msg)
             self._material_instance.geometries.geo_paths[:] = geo_paths
         return self
 
