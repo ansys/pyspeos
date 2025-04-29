@@ -251,7 +251,7 @@ def test_get_optical_property(speos: Speos, capsys):
     op1 = (
         p.create_optical_property(name="Material.1")
         .set_volume_opaque()
-        .set_geometries(geometries=[body_a.geo_path])
+        .set_geometries(geometries=[body_a])
         .commit()
     )
 
@@ -275,7 +275,7 @@ def test_get_optical_property(speos: Speos, capsys):
         p.create_optical_property(name="OpticalProperty2")
         .set_volume_optic(index=1.7, absorption=0.01, constringence=55)
         .set_surface_opticalpolished()
-        .set_geometries(geometries=[body_b.geo_path])
+        .set_geometries(geometries=[body_b])
         .commit()
     )
 
@@ -298,7 +298,7 @@ def test_get_optical_property(speos: Speos, capsys):
         p.create_optical_property(name="OpticalProperty3")
         .set_volume_none()
         .set_surface_library(path=str(Path(test_path) / "R_test.anisotropicbsdf"))
-        .set_geometries(geometries=[face.geo_path])
+        .set_geometries(geometries=[face])
         .commit()
     )
 
