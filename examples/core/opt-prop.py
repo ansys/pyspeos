@@ -16,7 +16,7 @@
 # +
 from pathlib import Path
 
-from ansys.speos.core import GeoRef, Project, Speos
+from ansys.speos.core import Project, Speos
 
 # -
 
@@ -34,21 +34,24 @@ def create_helper_geometries(project: Project):
     """Create bodies and faces."""
 
     def create_face(body):
-        (
+        face = (
             body.create_face(name="TheFaceF")
             .set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0])
             .set_facets([0, 1, 2])
             .set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
             .commit()
         )
+        return face
 
+    data = {"bodies": [], "faces": []}
     root_part = project.create_root_part().commit()
-    body_b1 = root_part.create_body(name="TheBodyB").commit()
-    body_b2 = root_part.create_body(name="TheBodyC").commit()
-    body_b3 = root_part.create_body(name="TheBodyD").commit()
-    body_b4 = root_part.create_body(name="TheBodyE").commit()
-    for b in [body_b1, body_b2, body_b3, body_b4]:
-        create_face(b)
+    data["bodies"].append(root_part.create_body(name="TheBodyB").commit())
+    data["bodies"].append(root_part.create_body(name="TheBodyC").commit())
+    data["bodies"].append(root_part.create_body(name="TheBodyD").commit())
+    data["bodies"].append(root_part.create_body(name="TheBodyE").commit())
+    for b in data["bodies"]:
+        data["faces"].append(create_face(b))
+    return data
 
 
 # ## Model Setup
@@ -80,7 +83,9 @@ speos = Speos(host=HOSTNAME, port=GRPC_PORT)
 
 p = Project(speos=speos)
 print(p)
-create_helper_geometries(p)
+data = create_helper_geometries(p)
+bodies = data["bodies"]
+faces = data["faces"]
 
 # ## Create VOP (volume optical property)
 #
@@ -93,8 +98,8 @@ op1.set_volume_opaque()  # VOP : opaque
 # This optical property will be applied to two bodies named : "TheBodyB" and "TheBodyC".
 op1.set_geometries(
     geometries=[
-        GeoRef.from_native_link(geopath="TheBodyB"),
-        GeoRef.from_native_link(geopath="TheBodyC"),
+        bodies[0],
+        bodies[1],
     ]
 )
 print(op1)
@@ -120,8 +125,8 @@ op2.set_volume_library(
 # This optical property will be applied to two bodies named : "TheBodyD" and "TheBodyE".
 op2.set_geometries(
     geometries=[
-        GeoRef.from_native_link(geopath="TheBodyD"),
-        GeoRef.from_native_link(geopath="TheBodyE"),
+        bodies[2],
+        bodies[3],
     ]
 )
 op2.commit()
@@ -138,7 +143,7 @@ print(op2)
 op3 = p.create_optical_property(name="Material.FOP")
 op3.set_surface_mirror(reflectance=90)  # SOP : mirror
 # This optical property will be applied a face from TheBodyD named : "TheFaceF".
-op3.set_geometries(geometries=[GeoRef.from_native_link(geopath="TheBodyD/TheFaceF")])
+op3.set_geometries(geometries=[faces[2]])
 op3.commit()
 print(op3)
 
