@@ -13,7 +13,7 @@
 # +
 from pathlib import Path
 
-from ansys.speos.core import GeoRef, Project, Speos
+from ansys.speos.core import Project, Speos
 from ansys.speos.core.simulation import SimulationInteractive, SimulationInverse
 
 # -
@@ -48,7 +48,7 @@ else:
 # is running as a service. In this example, the server and
 # client are the same machine.
 
-speos = Speos(host="localhost", port=50098)
+speos = Speos(host=HOSTNAME, port=GRPC_PORT)
 
 # ### Create a new project
 #
@@ -66,9 +66,13 @@ print(p)
 # ### Prepare the root part
 
 root_part = p.create_root_part()
-root_part.create_body(name="Body.1").create_face(name="Face.1").set_vertices(
-    [0, 1, 2, 0, 2, 2, 1, 2, 2]
-).set_facets([0, 1, 2]).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+body_1 = root_part.create_body(name="Body.1")
+face_1 = (
+    body_1.create_face(name="Face.1")
+    .set_vertices([0, 1, 2, 0, 2, 2, 1, 2, 2])
+    .set_facets([0, 1, 2])
+    .set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+)
 root_part.commit()
 
 # ### Prepare an optical property
@@ -79,7 +83,7 @@ opt_prop.set_volume_opaque().set_surface_mirror()
 
 # Choose the geometry for this optical property : Body.1
 
-opt_prop.set_geometries(geometries=[GeoRef.from_native_link(geopath="Body.1")])
+opt_prop.set_geometries(geometries=[body_1])
 opt_prop.commit()
 
 
@@ -95,7 +99,7 @@ sensor1.commit()
 # ### Prepare a surface source
 
 source1 = p.create_source(name=SOURCE_NAME)
-source1.set_exitance_constant(geometries=[(GeoRef.from_native_link(geopath="Body.1/Face.1"), True)])
+source1.set_exitance_constant(geometries=[(face_1, True)])
 # define a spectrum which is not monochromatic so it can be used in both direct and inverse
 # simulation
 source1.set_spectrum().set_blackbody()
