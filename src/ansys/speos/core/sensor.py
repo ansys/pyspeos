@@ -792,7 +792,7 @@ class BaseSensor:
         ansys.speos.core.sensor.BaseSensor
             Sensor feature.
         """
-        self._visual_data_updated = False
+        self._visual_data.updated = False
 
         # The _unique_id will help to find the correct item in the scene.sensors:
         # the list of SensorInstance
@@ -2002,7 +2002,12 @@ class SensorIrradiance(BaseSensor):
             feature_irradiance_pos = np.array(feature_pos_info[:3])
             feature_irradiance_x_dir = np.array(feature_pos_info[3:6])
             feature_irradiance_y_dir = np.array(feature_pos_info[6:9])
-            feature_irradiance_z_dir = np.array(feature_pos_info[9:12])
+            if self._sensor_instance.irradiance_properties.integration_direction:
+                feature_irradiance_z_dir = np.array(
+                    self._sensor_instance.irradiance_properties.integration_direction
+                )
+            else:
+                feature_irradiance_z_dir = np.array(feature_pos_info[9:12])
             feature_x_start = float(self.get(key="x_start"))
             feature_x_end = float(self.get(key="x_end"))
             feature_y_start = float(self.get(key="y_start"))
@@ -2246,19 +2251,24 @@ class SensorIrradiance(BaseSensor):
     ) -> SensorIrradiance:
         """Set illuminance type planar.
 
-        The integration is made orthogonally with the sensor plane.
-
         Parameters
         ----------
         integration_direction : List[float], optional
             Sensor global integration direction [x,y,z].
-            By default, ``None``. None means that a default direction is chosen
-            (anti-normal of the sensor plane).
+            The integration direction must be set in the anti-rays direction to integrate their
+            signal.
+            By default, ``None``. None means that the Z axis of axis_system is taken.
 
         Returns
         -------
         ansys.speos.core.sensor.SensorIrradiance
             Irradiance sensor.
+
+        Notes
+        -----
+        Contrary to any visualization of integration directions within Speos Software or its
+        documentation, the integration direction must be set in the anti-rays direction to integrate
+        their signal.
         """
         self._sensor_template.irradiance_sensor_template.illuminance_type_planar.SetInParent()
         if not integration_direction:
@@ -2311,8 +2321,7 @@ class SensorIrradiance(BaseSensor):
         ----------
         integration_direction : List[float], optional
             Sensor global integration direction [x,y,z].
-            By default, ``None``. None means that a default direction is chosen
-            (anti-normal of the sensor plane).
+            By default, ``None``. None means that the Z axis of axis_system is taken.
 
         Returns
         -------
