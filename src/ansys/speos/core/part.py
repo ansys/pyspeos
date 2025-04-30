@@ -31,6 +31,7 @@ import uuid
 from ansys.speos.core import proto_message_utils
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
+from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.client import SpeosClient
 from ansys.speos.core.kernel.part import ProtoPart
 import ansys.speos.core.project as project
@@ -99,6 +100,14 @@ class Part:
             self._part = ProtoPart(name=name, description=description)
 
             self._geom_features = []
+
+        @property
+        def geo_path(self) -> GeoRef:
+            """Geometry path to be used within other speos objects."""
+            geo_paths = [self._name]
+            if isinstance(self._parent_part, Part.SubPart):
+                geo_paths.insert(0, self._parent_part.geo_path.metadata["GeoPath"])
+            return GeoRef.from_native_link("/".join(geo_paths))
 
         def create_body(
             self,
