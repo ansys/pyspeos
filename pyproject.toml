@@ -87,6 +87,9 @@ Changelog = "https://github.com/ansys/pyspeos/blob/main/doc/source/changelog.rst
 [tool.flit.module]
 name = "ansys.speos.core"
 
+[tool.flit.sdist]
+include = ["ansys/speos/core/py.typed"]
+
 [tool.ruff]
 line-length = 100
 fix = true
@@ -144,6 +147,17 @@ show_missing = true
 minversion = "7.1"
 addopts = "-vvv --color=yes -ra --durations=25 --cov=ansys.speos --cov-report html:.cov/html --cov-report xml:.cov/xml --cov-report term"
 testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.10"
+disable_error_code = "type-abstract"
+show_error_context = true
+pretty = true
+
+[[tool.mypy.overrides]]
+module = [
+    "ansys.tools.visualization_interface",
+]
 
 [tool.towncrier]
 package = "ansys.speos.core"

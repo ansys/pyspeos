@@ -25,10 +25,11 @@
 this includes decorator and methods
 """
 
+from collections.abc import Collection
 from functools import lru_cache, wraps
 import os
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import List, Optional, Union, cast
 import warnings
 
 import numpy as np
@@ -120,9 +121,8 @@ def graphics_required(method):
     return wrapper
 
 
-def magnitude_vector(vector: Union[List[float], np.array]) -> float:
-    """
-    Compute the magnitude (length) of a 2D or 3D vector using NumPy.
+def magnitude_vector(vector: Collection[float]) -> float:
+    """Compute the magnitude (length) of a 2D or 3D vector using NumPy.
 
     Parameters
     ----------
@@ -137,10 +137,10 @@ def magnitude_vector(vector: Union[List[float], np.array]) -> float:
     vector_np = np.array(vector, dtype=float)
     if vector_np.size not in (2, 3):
         raise ValueError("Input vector must be either 2D or 3D")
-    return np.linalg.norm(vector_np)
+    return float(np.linalg.norm(vector_np))
 
 
-def normalize_vector(vector: Union[List[float], np.array]) -> List[float]:
+def normalize_vector(vector: Collection[float]) -> List[float]:
     """
     Normalize a 2D or 3D vector to have a length of 1 using NumPy.
 
@@ -162,7 +162,7 @@ def normalize_vector(vector: Union[List[float], np.array]) -> List[float]:
     if magnitude == 0:
         raise ValueError("Cannot normalize the zero vector")
 
-    return (vector_np / magnitude).tolist()
+    return cast(List[float], (vector_np / magnitude).tolist())
 
 
 def error_no_install(install_path: Union[Path, str], version: Union[int, str]):
@@ -201,6 +201,7 @@ def retrieve_speos_install_dir(
     """
     if not speos_rpc_path:
         speos_rpc_path = ""
+
     if not speos_rpc_path or not Path(speos_rpc_path).exists():
         if not Path(speos_rpc_path).exists():
             warnings.warn(
@@ -208,9 +209,9 @@ def retrieve_speos_install_dir(
                 UserWarning,
             )
         versions = get_available_ansys_installations()
-        ansys_loc = versions.get(int(version), False)
+        ansys_loc = versions.get(int(version), "")
         if not ansys_loc:
-            ansys_loc = os.environ.get("AWP_ROOT{}".format(version), False)
+            ansys_loc = os.environ.get("AWP_ROOT{}".format(version), "")
             if not ansys_loc:
                 error_no_install(speos_rpc_path, int(version))
 
@@ -220,6 +221,8 @@ def retrieve_speos_install_dir(
             error_no_install(speos_rpc_path, int(version))
         else:
             speos_rpc_path = Path(speos_rpc_path).parent
+
+    speos_rpc_path = Path(speos_rpc_path)
     if os.name == "nt":
         speos_exec = speos_rpc_path / "SpeosRPC_Server.exe"
     else:

@@ -101,13 +101,13 @@ class _VisualCoordinateSystem:
         self.__origin = value
 
     @property
-    def x_axis(self) -> "pv.Arrow":
+    def x_axis(self) -> "pv.PolyData":
         """Returns the x-axis of the coordinate system.
 
         Returns
         -------
-        pv.Arrow
-            pyvista.Arrow the x-axis of the coordinate system.
+        pv.PolyData
+            pyvista.PolyData the x-axis of the coordinate system.
 
         """
         return self.__x_axis
@@ -138,14 +138,14 @@ class _VisualCoordinateSystem:
         )
 
     @property
-    def y_axis(self) -> "pv.Arrow":
+    def y_axis(self) -> "pv.PolyData":
         """
         Returns the y-axis of the coordinate system.
 
         Returns
         -------
-        pv.Arrow
-            pyvista.Arrow the y-axis of the coordinate system.
+        pv.PolyData
+            pyvista.PolyData the y-axis of the coordinate system.
 
         """
         return self.__y_axis
@@ -176,14 +176,14 @@ class _VisualCoordinateSystem:
         )
 
     @property
-    def z_axis(self) -> "pv.Arrow":
+    def z_axis(self) -> "pv.PolyData":
         """
         Returns the z-axis of the coordinate system.
 
         Returns
         -------
-        pv.Arrow
-            pyvista.Arrow the z-axis of the coordinate system.
+        pv.PolyData
+            pyvista.PolyData the z-axis of the coordinate system.
 
         """
         return self.__z_axis
