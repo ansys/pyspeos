@@ -46,7 +46,7 @@ else:
 # ### Start/Connect to Speos RPC Server
 # This Python client connects to a server where the Speos engine
 # is running as a service. In this example, the server and
-# client are the same machine. the launch_local_speos_rpc_method can
+# client are the same machine. The launch_local_speos_rpc_method can
 # be used to start a local instance of the service.
 
 if USE_DOCKER:
@@ -96,7 +96,7 @@ irr = irr_features[0]
 irr.set_type_spectral().set_wavelengths_range().set_start(500).set_end(600).set_sampling(11)
 irr.commit()
 
-# ## Re-run the simulation with new sensor definition
+# ## Re-run the simulation with new sensor definition.
 
 sim.compute_CPU()
 if os.name == "nt":
