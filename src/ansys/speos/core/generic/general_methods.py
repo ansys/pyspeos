@@ -25,8 +25,23 @@
 this includes decorator and methods
 """
 
-from functools import wraps
+from functools import lru_cache, wraps
+import os
+from pathlib import Path
+from typing import List, Optional, Union
 import warnings
+
+import numpy as np
+
+from ansys.speos.core.generic.constants import DEFAULT_VERSION
+from ansys.tools.path import get_available_ansys_installations
+
+_GRAPHICS_AVAILABLE = None
+
+GRAPHICS_ERROR = (
+    "Preview unsupported without 'ansys-tools-visualization_interface' installed. "
+    "You can install this using `pip install ansys-speos-core[graphics]`."
+)
 
 
 def deprecate_kwargs(old_arguments: dict, removed_version="0.3.0"):
@@ -62,3 +77,153 @@ def deprecate_kwargs(old_arguments: dict, removed_version="0.3.0"):
         return wrapper
 
     return decorator
+
+
+@lru_cache
+def run_if_graphics_required(warning=False):
+    """Check if graphics are available."""
+    global _GRAPHICS_AVAILABLE
+    if _GRAPHICS_AVAILABLE is None:
+        try:
+            import pyvista as pv  # noqa: F401
+
+            from ansys.tools.visualization_interface import Plotter  # noqa: F401
+
+            _GRAPHICS_AVAILABLE = True
+        except ImportError:  # pragma: no cover
+            _GRAPHICS_AVAILABLE = False
+
+    if _GRAPHICS_AVAILABLE is False and warning is False:  # pragma: no cover
+        raise ImportError(GRAPHICS_ERROR)
+    elif _GRAPHICS_AVAILABLE is False:  # pragma: no cover
+        warnings.warn(GRAPHICS_ERROR)
+
+
+def graphics_required(method):
+    """Decorate a method as requiring graphics.
+
+    Parameters
+    ----------
+    method : callable
+        Method to decorate.
+
+    Returns
+    -------
+    callable
+        Decorated method.
+    """
+
+    def wrapper(*args, **kwargs):
+        run_if_graphics_required()
+        return method(*args, **kwargs)
+
+    return wrapper
+
+
+def magnitude_vector(vector: Union[List[float], np.array]) -> float:
+    """
+    Compute the magnitude (length) of a 2D or 3D vector using NumPy.
+
+    Parameters
+    ----------
+    vector: List[float]
+        A 2D or 3D vector as a list [x, y] or [x, y, z].
+
+    Returns
+    -------
+    float
+        The magnitude (length) of the vector.
+    """
+    vector_np = np.array(vector, dtype=float)
+    if vector_np.size not in (2, 3):
+        raise ValueError("Input vector must be either 2D or 3D")
+    return np.linalg.norm(vector_np)
+
+
+def normalize_vector(vector: Union[List[float], np.array]) -> List[float]:
+    """
+    Normalize a 2D or 3D vector to have a length of 1 using NumPy.
+
+    Parameters
+    ----------
+    vector: List[float]
+        A vector as a list [x, y] for 2D or [x, y, z] for 3D.
+
+    Returns
+    -------
+    List[float]
+        The normalized vector.
+    """
+    vector_np = np.array(vector, dtype=float)
+    if vector_np.size not in (2, 3):
+        raise ValueError("Input vector must be either 2D or 3D")
+
+    magnitude = magnitude_vector(vector_np)
+    if magnitude == 0:
+        raise ValueError("Cannot normalize the zero vector")
+
+    return (vector_np / magnitude).tolist()
+
+
+def error_no_install(install_path: Union[Path, str], version: Union[int, str]):
+    """Raise error that installation was not found at a location.
+
+    Parameters
+    ----------
+    install_path : Union[Path, str]
+        Installation Path
+    version : Union[int, str]
+        Version
+    """
+    install_loc_msg = ""
+    if install_path:
+        install_loc_msg = f"at {Path(install_path).parent}"
+    raise FileNotFoundError(
+        f"Ansys Speos RPC server installation not found{install_loc_msg}. "
+        f"Please define AWP_ROOT{version} environment variable"
+    )
+
+
+def retrieve_speos_install_dir(
+    speos_rpc_path: Optional[Union[Path, str]] = None, version: str = DEFAULT_VERSION
+) -> Path:
+    """Retrieve Speos install location based on Path or Environment.
+
+    Parameters
+    ----------
+    speos_rpc_path : Optional[str, Path]
+        location of Speos rpc executable
+    version : Union[str, int]
+        The Speos server version to run, in the 3 digits format, such as "242".
+        If unspecified, the version will be chosen as
+        ``ansys.speos.core.kernel.client.LATEST_VERSION``.
+
+    """
+    if not speos_rpc_path:
+        speos_rpc_path = ""
+    if not speos_rpc_path or not Path(speos_rpc_path).exists():
+        if not Path(speos_rpc_path).exists():
+            warnings.warn(
+                "Provided executable location not found, looking for local installation",
+                UserWarning,
+            )
+        versions = get_available_ansys_installations()
+        ansys_loc = versions.get(int(version), False)
+        if not ansys_loc:
+            ansys_loc = os.environ.get("AWP_ROOT{}".format(version), False)
+            if not ansys_loc:
+                error_no_install(speos_rpc_path, int(version))
+
+        speos_rpc_path = Path(ansys_loc) / "Optical Products" / "SPEOS_RPC"
+    elif Path(speos_rpc_path).is_file():
+        if "SpeosRPC_Server" not in Path(speos_rpc_path).name:
+            error_no_install(speos_rpc_path, int(version))
+        else:
+            speos_rpc_path = Path(speos_rpc_path).parent
+    if os.name == "nt":
+        speos_exec = speos_rpc_path / "SpeosRPC_Server.exe"
+    else:
+        speos_exec = speos_rpc_path / "SpeosRPC_Server.x"
+    if not speos_exec.is_file():
+        error_no_install(speos_rpc_path, int(version))
+    return speos_rpc_path
