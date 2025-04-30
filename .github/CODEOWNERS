@@ -1,4 +1,4 @@
-.github/* @Revathyvenugopal162 @SMoraisAnsys
+.github/* @Revathyvenugopal162 @SMoraisAnsys @StefanThoene
 
-src/ansys/speos/core/*.py @StefanThoene @pluAtAnsys @echambla
+src/ansys/speos/core/*.py @StefanThoene @pluAtAnsys @echambla @jomadec
 src/ansys/speos/core/kernel/**/*.py @etiennearnal @echambla @jomadec
