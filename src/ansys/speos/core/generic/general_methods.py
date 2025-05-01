@@ -27,7 +27,6 @@ this includes decorator and methods
 
 from __future__ import annotations
 
-
 from collections.abc import Collection
 from functools import lru_cache, wraps
 import os

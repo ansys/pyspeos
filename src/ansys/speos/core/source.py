@@ -34,11 +34,10 @@ from ansys.speos.core import (
     project as project,
     proto_message_utils as proto_message_utils,
 )
-
-import ansys.speos.core.generic.general_methods as general_methods
-from ansys.speos.core.generic.visualization_methods import _VisualArrow, _VisualData
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
+import ansys.speos.core.generic.general_methods as general_methods
+from ansys.speos.core.generic.visualization_methods import _VisualArrow, _VisualData
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.intensity import Intensity
 from ansys.speos.core.kernel.client import SpeosClient
