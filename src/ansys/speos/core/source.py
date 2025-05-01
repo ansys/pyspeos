@@ -964,7 +964,7 @@ class SourceSurface(BaseSource):
 
     @property
     def visual_data(self) -> _VisualData:
-        """Property containing Rayfile source visualization data.
+        """Property containing Surface source visualization data.
 
         Returns
         -------
