@@ -27,7 +27,7 @@ classifiers=[
     "Topic :: Scientific/Engineering :: Information Analysis",
 ]
 dependencies=[
-    "protobuf>=3.20,<6",
+    "protobuf>=3.20,<7",
     "grpcio>=1.50.0,<1.71",
     "grpcio-health-checking>=1.45.0,<1.68",
     "ansys-api-speos==0.14.2",
@@ -53,9 +53,9 @@ jupyter = [
     "matplotlib",
     "jupyterlab>=3",
     "ipywidgets",
-    "pyvista[jupyter]>=0.43,<0.45",
+    "pyvista[jupyter]>=0.43,<0.46",
     "ansys-tools-visualization-interface>=0.8.3",
-    "notebook==7.3.3",
+    "notebook==7.4.1",
 ]
 doc = [
     "ansys-sphinx-theme==1.4.2",
@@ -68,11 +68,11 @@ doc = [
     "sphinxcontrib-mermaid==1.0.0",
     "myst-parser==4.0.1",
     "nbsphinx==0.9.7",
-    "jupytext==1.16.7",
-    "jupyterlab==4.3.6",
+    "jupytext==1.17.1",
+    "jupyterlab==4.4.1",
     "jupyter-server==2.15.0",
     "nbconvert==7.16.6",
-    "pyvista[jupyter]>=0.43,<0.45",
+    "pyvista[jupyter]>=0.43,<0.46",
     "ansys-tools-visualization-interface>=0.8.3",
 ]
 
@@ -86,6 +86,9 @@ Changelog = "https://github.com/ansys/pyspeos/blob/main/doc/source/changelog.rst
 
 [tool.flit.module]
 name = "ansys.speos.core"
+
+[tool.flit.sdist]
+include = ["ansys/speos/core/py.typed"]
 
 [tool.ruff]
 line-length = 100
@@ -144,6 +147,17 @@ show_missing = true
 minversion = "7.1"
 addopts = "-vvv --color=yes -ra --durations=25 --cov=ansys.speos --cov-report html:.cov/html --cov-report xml:.cov/xml --cov-report term"
 testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.10"
+disable_error_code = "type-abstract"
+show_error_context = true
+pretty = true
+
+[[tool.mypy.overrides]]
+module = [
+    "ansys.tools.visualization_interface",
+]
 
 [tool.towncrier]
 package = "ansys.speos.core"
