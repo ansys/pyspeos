@@ -479,7 +479,7 @@ def test_preview_visual_data(speos: Speos):
     # preview when there is no cad
     p3 = Project(speos=speos)
     sr = p3.create_source(name="Luminaire_source.2", feature_type=SourceLuminaire)
-    sr.set_intensity_file_uri(uri=str(str(test_path / "IES_C_DETECTOR.ies")))
+    sr.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
     sr.commit()
     p3.preview()
 
@@ -492,7 +492,13 @@ def test_preview_visual_data(speos: Speos):
     # preview surface
     # preview from direct creation
     # constant exitance
+    p2_root_part = p2.find(name="", feature_type=Part)[0]
+    p2_body1 = p2_root_part.create_body(name="TheBodyB").commit()
+    p2_body1.create_face(name="TheFaceF").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
+        [0, 1, 2]
+    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1]).commit()
     sr = p2.create_source(name="Surface.1", feature_type=SourceSurface)
+
     sr.set_exitance_constant(geometries=[(GeoRef.from_native_link("TheBodyB/TheFaceF"), False)])
     sr.commit()
     p2.preview()
