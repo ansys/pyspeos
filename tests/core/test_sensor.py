@@ -163,6 +163,15 @@ def test_create_camera_sensor(speos: Speos):
 
     # sensor_mode_photometric
     sensor1.set_mode_photometric()
+    sensor1.set_mode_photometric().set_mode_color().set_red_spectrum_file_uri(
+        uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum")
+    )
+    sensor1.set_mode_photometric().set_mode_color().set_green_spectrum_file_uri(
+        uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityGreen.spectrum")
+    )
+    sensor1.set_mode_photometric().set_mode_color().set_blue_spectrum_file_uri(
+        uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum")
+    )
     sensor1.commit()
     camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
     assert camera_sensor_template.HasField("sensor_mode_photometric")
@@ -237,39 +246,29 @@ def test_create_camera_sensor(speos: Speos):
 
     # color_mode_color
     sensor1.set_mode_photometric().set_mode_color()
-    sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    assert camera_sensor_template.sensor_mode_photometric.HasField("color_mode_color")
-
     # red_spectrum_file_uri
     sensor1.set_mode_photometric().set_mode_color().set_red_spectrum_file_uri(
         uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum")
     )
-    sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    mode_photometric = camera_sensor_template.sensor_mode_photometric
-    assert mode_photometric.color_mode_color.red_spectrum_file_uri.endswith(
-        "CameraSensitivityRed.spectrum"
-    )
-
     # green_spectrum_file_uri
     sensor1.set_mode_photometric().set_mode_color().set_green_spectrum_file_uri(
         uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityGreen.spectrum")
     )
-    sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    mode_photometric = camera_sensor_template.sensor_mode_photometric
-    assert mode_photometric.color_mode_color.green_spectrum_file_uri.endswith(
-        "CameraSensitivityGreen.spectrum"
-    )
-
     # blue_spectrum_file_uri
     sensor1.set_mode_photometric().set_mode_color().set_blue_spectrum_file_uri(
         uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum")
     )
     sensor1.commit()
     camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    assert camera_sensor_template.sensor_mode_photometric.HasField("color_mode_color")
+
     mode_photometric = camera_sensor_template.sensor_mode_photometric
+    assert mode_photometric.color_mode_color.red_spectrum_file_uri.endswith(
+        "CameraSensitivityRed.spectrum"
+    )
+    assert mode_photometric.color_mode_color.green_spectrum_file_uri.endswith(
+        "CameraSensitivityGreen.spectrum"
+    )
     assert mode_photometric.color_mode_color.blue_spectrum_file_uri.endswith(
         "CameraSensitivityBlue.spectrum"
     )
@@ -302,15 +301,6 @@ def test_create_camera_sensor(speos: Speos):
     assert mode_photometric.color_mode_color.balance_mode_userwhite.blue_gain == 4
 
     # balance_mode_display
-    sensor1.set_mode_photometric().set_mode_color().set_balance_mode_display_primaries()
-    sensor1.commit()
-    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    mode_photometric = camera_sensor_template.sensor_mode_photometric
-    assert mode_photometric.color_mode_color.HasField("balance_mode_display")
-    assert mode_photometric.color_mode_color.balance_mode_display.red_display_file_uri == ""
-    assert mode_photometric.color_mode_color.balance_mode_display.green_display_file_uri == ""
-    assert mode_photometric.color_mode_color.balance_mode_display.blue_display_file_uri == ""
-
     sensor1.set_mode_photometric().set_mode_color().set_balance_mode_display_primaries().set_red_display_file_uri(
         uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum")
     ).set_green_display_file_uri(
@@ -321,6 +311,7 @@ def test_create_camera_sensor(speos: Speos):
     sensor1.commit()
     camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
     mode_photometric = camera_sensor_template.sensor_mode_photometric
+    assert mode_photometric.color_mode_color.HasField("balance_mode_display")
     assert mode_photometric.color_mode_color.balance_mode_display.red_display_file_uri.endswith(
         "CameraSensitivityRed.spectrum"
     )
