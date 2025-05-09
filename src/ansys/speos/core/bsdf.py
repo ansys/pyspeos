@@ -53,10 +53,10 @@ class BSDF:
         if not file_path:
             self.file_path = Path(file_path)
             self._grpcbsdf = self._importfile(str(self.file_path))
-            self._brdf, self._btdf = self._extractbsdf()
+            self._brdf, self._btdf = self._extract_bsdf()
             self._transmission = bool(self._btdf)
             self._reflection = bool(self._brdf)
-            self._transmission_spectrum, self._reflection_spectrum = self._extractspectrum()
+            self._transmission_spectrum, self._reflection_spectrum = self._extract_spectrum()
         else:
             self.file_path = None
             self._grpcbsdf = None
@@ -67,10 +67,13 @@ class BSDF:
     def _importfile(self, filepath):
         pass
 
-    def _extractbsdf(self) -> tuple[Collection[BxdfDatapoint], Collection[BxdfDatapoint]]:
+    def _extract_bsdf(self) -> tuple[Collection[BxdfDatapoint], Collection[BxdfDatapoint]]:
         pass
 
-    def _extractspectrum(self) -> Collection[Collection[float], Collection[float]]:
+    def _extract_spectrum(self) -> Collection[Collection[float], Collection[float]]:
+        pass
+
+    def _export_file(self, filepath):
         pass
 
     @property
@@ -197,6 +200,8 @@ class BxdfDatapoint:
         list of phi values for the bxdf data matrix, in radian
     bxdf : Collection[float]
         nested list of bxdf values in 1/sr
+    anisotropy : float
+        Anisotropy angle in radian
     """
 
     def __init__(
@@ -206,12 +211,27 @@ class BxdfDatapoint:
         theta_values: Collection[float],
         phi_values: Collection[float],
         bxdf: Collection[float],
+        anisotropy: float = 0,
     ):
         self.type = bxdf_type
         self.incident_angle = incident_angle
+        self.anisotropy = anisotropy
         self.theta_values = theta_values
         self.phi_values = phi_values
         self.bxdf = bxdf
+
+    @property
+    def anisotropy(self):
+        """Anisotropy angels of Datapoint."""
+        return self._anisotropy
+
+    @anisotropy.setter
+    def anisotropy(self, value):
+        if 0 <= value <= 2 * np.pi:
+            self._anisotropy = value
+        else:
+            msg = "Anisotropy angle needs to be between [0, 2*pi]"
+            raise ValueError(msg)
 
     @property
     def bxdf(self) -> np.array:
@@ -264,7 +284,7 @@ class BxdfDatapoint:
 
     @incident_angle.setter
     def incident_angle(self, value):
-        if 0 <= value <= 2 * np.pi:
+        if 0 <= value <= np.pi / 2:
             self._incident_angle = value
         else:
             msg = "Incident angle needs to be between [0, pi/2]"
