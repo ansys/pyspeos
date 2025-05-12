@@ -54,14 +54,14 @@ class BSDF:
             self.file_path = Path(file_path)
             self._grpcbsdf = self._importfile(str(self.file_path))
             self._brdf, self._btdf = self._extract_bsdf()
-            self._transmission = bool(self._btdf)
-            self._reflection = bool(self._brdf)
+            self._has_transmission = bool(self._btdf)
+            self._has_reflection = bool(self._brdf)
             self._transmission_spectrum, self._reflection_spectrum = self._extract_spectrum()
         else:
             self.file_path = None
             self._grpcbsdf = None
-            self.transmission = False
-            self.reflection = False
+            self.has_transmission = False
+            self.has_reflection = False
             self._spectrum = None
 
     def _importfile(self, filepath):
@@ -85,8 +85,11 @@ class BSDF:
         return self._reflection_spectrum
 
     @reflection_spectrum.setter
-    def reflection_spectrum(self, value: Collection[Collection[float], Collection[float]]):
-        self._reflection_spectrum = value
+    def reflection_spectrum(self, value: list[Collection[float], Collection[float]]):
+        if len(value[0]) == len(value[1]):
+            self._reflection_spectrum = value
+        else:
+            raise ValueError("You need the same number of wavelength and energy values")
 
     @property
     def transmission_spectrum(self):
@@ -97,33 +100,36 @@ class BSDF:
         return self._transmission_spectrum
 
     @transmission_spectrum.setter
-    def transmission_spectrum(self, value: Collection[Collection[float], Collection[float]]):
-        self._transmission_spectrum = value
+    def transmission_spectrum(self, value: list[Collection[float], Collection[float]]):
+        if len(value[0]) == len(value[1]):
+            self._transmission_spectrum = value
+        else:
+            raise ValueError("You need the same number of wavelength and energy values")
 
     @property
-    def transmission(self) -> bool:
+    def has_transmission(self) -> bool:
         """Contains the BSDF Transmission data."""
-        return self._transmission
+        return self._has_transmission
 
-    @transmission.setter
-    def transmission(self, value: bool):
+    @has_transmission.setter
+    def has_transmission(self, value: bool):
         if value:
-            self._transmission = value
+            self._has_transmission = value
         else:
-            self._transmission = value
+            self._has_transmission = value
             self._btdf = None
 
     @property
-    def reflection(self) -> bool:
+    def has_reflection(self) -> bool:
         """Contains the BSDF Reflection data."""
-        return self._reflection
+        return self._has_reflection
 
-    @reflection.setter
-    def reflection(self, value: bool):
+    @has_reflection.setter
+    def has_reflection(self, value: bool):
         if value:
-            self._reflection = value
+            self._has_reflection = value
         else:
-            self._reflection = value
+            self._has_reflection = value
             self._brdf = None
 
     @property
@@ -133,7 +139,7 @@ class BSDF:
 
     @brdf.setter
     def brdf(self, value: Collection[BxdfDatapoint]):
-        check = any([not bxdf.type for bxdf in value])
+        check = any([bxdf.is_brdf for bxdf in value])
         if check is True or value is None:
             self._brdf = value
         else:
@@ -147,7 +153,7 @@ class BSDF:
 
     @btdf.setter
     def btdf(self, value: Collection[BxdfDatapoint]):
-        check = any([bxdf.type for bxdf in value])
+        check = any([not bxdf.is_brdf for bxdf in value])
         if check is True or value is None:
             self._btdf = value
         else:
@@ -213,7 +219,7 @@ class BxdfDatapoint:
         bxdf: Collection[float],
         anisotropy: float = 0,
     ):
-        self.type = bxdf_type
+        self.is_brdf = bxdf_type
         self.incident_angle = incident_angle
         self.anisotropy = anisotropy
         self.theta_values = theta_values
@@ -247,28 +253,33 @@ class BxdfDatapoint:
 
     @bxdf.setter
     def bxdf(self, value: Collection[float]):
-        bxdf = np.array(value, ndmin=2)
-        if np.shape(bxdf) == (len(self.theta_values), len(self.phi_values)):
-            self._bxdf = bxdf
-        elif np.shape(bxdf) == (len(self.phi_values), len(self.theta_values)):
-            self._bxdf = bxdf.transpose()
+        if value:
+            bxdf = np.array(value, ndmin=2)
+            if np.shape(bxdf) == (len(self.theta_values), len(self.phi_values)):
+                self._bxdf = bxdf
+            elif np.shape(bxdf) == (len(self.phi_values), len(self.theta_values)):
+                self._bxdf = bxdf.transpose()
+            else:
+                raise ValueError("bxdf data has incorrect dimensions")
+        elif value is None:
+            self._bxdf = None
         else:
-            raise ValueError("bxdf data has incorrect dimensions")
+            raise ValueError("bxdf data has to be a 2d Array of bsdfdata")
 
     @property
-    def type(self):
+    def is_brdf(self):
         """Type of bxdf data point eitehr reflective or transmittive.
 
         Returns
         -------
         bool:
-            true if transmittive false if reflective
+            true if reflective false if transmittive
         """
-        return self._type
+        return self._is_brdf
 
-    @type.setter
-    def type(self, value):
-        self._type = bool(value)
+    @is_brdf.setter
+    def is_brdf(self, value):
+        self._is_brdf = bool(value)
 
     @property
     def incident_angle(self):
@@ -312,15 +323,19 @@ class BxdfDatapoint:
 
     @theta_values.setter
     def theta_values(self, value):
-        if type:
+        if not self.is_brdf:
             if any([np.pi / 2 <= theta <= np.pi for theta in value]):
                 self._theta_values = value
+                if np.shape(self.bxdf) != (len(self.theta_values), len(self.phi_values)):
+                    self.bxdf = None
             else:
                 msg = "Theta values for Transmission need to be between [pi/2, pi]"
                 raise ValueError(msg)
         else:
             if any([0 <= theta <= np.pi / 2 for theta in value]):
                 self._theta_values = value
+                if np.shape(self.bxdf) != (len(self.theta_values), len(self.phi_values)):
+                    self.bxdf = None
             else:
                 msg = "Theta values for Transmission need to be between [0, pi/2]"
                 raise ValueError(msg)
@@ -334,6 +349,8 @@ class BxdfDatapoint:
     def phi_values(self, value):
         if any([0 <= phi <= 2 * np.pi for phi in value]):
             self._phi_values = value
+            if np.shape(self.bxdf) != (len(self.theta_values), len(self.phi_values)):
+                self.bxdf = None
         else:
             msg = "Theta values for Transmission need to be between [pi/2, pi]"
             raise ValueError(msg)
