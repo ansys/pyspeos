@@ -979,7 +979,7 @@ class SourceSurface(BaseSource):
                 _VisualData(
                     ray=True,
                     coordinate_system=True
-                    if self.get(key="exitance_variable") is not None
+                    if self._exitance_type is not None
                     else False,
                 )
                 if general_methods._GRAPHICS_AVAILABLE
