@@ -24,6 +24,7 @@
 
 from __future__ import annotations
 
+from collections import Counter
 from collections.abc import Collection
 from pathlib import Path
 from typing import Union
@@ -54,9 +55,6 @@ class BaseBSDF:
     def __init__(self, speos: Speos, stub):
         self.client = speos.client
         self._stub = stub
-
-    def _export_file(self, filepath):
-        pass
 
     @property
     def has_transmission(self) -> bool:
@@ -237,8 +235,12 @@ class AnisotropicBSDF(BaseBSDF):
             trans_s = np.append(trans_s, [[value.wavelength], [value.coefficient]], axis=1)
         return [refl_s, trans_s]
 
-    def _export_file(self, filepath):
-        pass
+    @property
+    def anisotropic_angles(self):
+        """Anisotropic angles available in bsdf data."""
+        r_angles = [brdf.anisotropy for brdf in self.brdf]
+        t_angles = [btdf.anisotropy for btdf in self.btdf]
+        return Counter(r_angles).keys(), Counter(t_angles).keys()
 
     @property
     def spectrum_incidence(self) -> list[float]:
@@ -326,7 +328,51 @@ class AnisotropicBSDF(BaseBSDF):
 
     def commit(self):
         """Sent Data to gRPC interface."""
-        pass
+        # set basic values
+        bsdf = anisotropic_bsdf__v1__pb2.AnisotropicBsdfData()
+        bsdf.description = self.description
+        bsdf.anisotropy_vector.x = self.ansistropy_vector[0]
+        bsdf.anisotropy_vector.y = self.ansistropy_vector[1]
+        bsdf.anisotropy_vector.z = self.ansistropy_vector[2]
+        if self.has_reflection:
+            bsdf.reflection.spectrum_incidence = self.spectrum_incidence[0]
+            bsdf.reflection.spectrum_anisotropy = self.spectrum_anisotropy[0]
+            for w in range(len(self.reflection_spectrum[0])):
+                pair = bsdf.reflection.spectrum.add()
+                pair.wavelength = self.reflection_spectrum[0][w]
+                pair.coefficient = self.reflection_spectrum[1][w]
+            for ani in self.anisotropic_angles[0]:
+                slice = bsdf.reflection.anisotropic_samples.add()
+                slice.anisotropic_sample = ani
+                for brdf in self.brdf:
+                    if brdf.anisotropy == ani:
+                        incidence_diag = slice.incidence_samples.add()
+                        incidence_diag.incidence_sample = brdf.incident_angle
+                        # intensity diagrams
+                        incidence_diag.phi_samples[:] = brdf.phi_values
+                        incidence_diag.theta_samples[:] = brdf.theta_values
+                        incidence_diag.bsdf_cos_theta[:] = brdf.bxdf.flatten().tolist()
+        if self.has_transmission:
+            bsdf.transmission.spectrum_incidence = self.spectrum_incidence[1]
+            bsdf.transmission.spectrum_anisotropy = self.spectrum_anisotropy[1]
+            for w in range(len(self.transmission_spectrum[0])):
+                pair = bsdf.transmission.spectrum.add()
+                pair.wavelength = self.transmission_spectrum[0][w]
+                pair.coefficient = self.transmission_spectrum[1][w]
+            for ani in self.anisotropic_angles[0]:
+                slice = bsdf.reflection.anisotropic_samples.add()
+                slice.anisotropic_sample = ani
+                for btdf in self.btdf:
+                    if btdf.anisotropy == ani:
+                        incidence_diag = slice.incidence_samples.add()
+                        incidence_diag.incidence_sample = btdf.incident_angle
+                        # intensity diagrams
+                        incidence_diag.phi_samples[:] = btdf.phi_values
+                        incidence_diag.theta_samples[:] = btdf.theta_values
+                        incidence_diag.bsdf_cos_theta[:] = btdf.bxdf.flatten().tolist()
+
+        self._stub.Import(bsdf)
+        self._grpcbsdf = bsdf
 
     def save(self, file_path: Union[Path, str], commit: bool = True) -> Path:
         """Save a Speos anistropic bsdf.
