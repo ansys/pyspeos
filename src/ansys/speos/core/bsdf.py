@@ -142,6 +142,7 @@ class BSDF:
         check = any([bxdf.is_brdf for bxdf in value])
         if check is True or value is None:
             self._brdf = value
+            self.has_reflection = True
         else:
             msg = "One or multiple datapoints are transmission datapoints"
             raise ValueError(msg)
@@ -156,6 +157,7 @@ class BSDF:
         check = any([not bxdf.is_brdf for bxdf in value])
         if check is True or value is None:
             self._btdf = value
+            self.has_transmission = True
         else:
             msg = "One or multiple datapoints are reflection datapoints"
             raise ValueError(msg)
