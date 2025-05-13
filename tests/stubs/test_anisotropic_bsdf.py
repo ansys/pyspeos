@@ -144,7 +144,7 @@ def compare_anisotropic_bsdf(bsdf1, bsdf2):
     for w in range(len(bsdf1.reflection.spectrum)):
         if bsdf1.reflection.spectrum[w].wavelength != bsdf2.reflection.spectrum[w].wavelength:
             return False
-        if bsdf1.reflection.spectrum[w].wavelength != bsdf2.reflection.spectrum[w].wavelength:
+        if bsdf1.reflection.spectrum[w].coefficient != bsdf2.reflection.spectrum[w].coefficient:
             return False
 
     # anisotropy sampling
