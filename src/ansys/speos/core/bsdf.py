@@ -52,10 +52,11 @@ class BSDF:
     def __init__(self, speos: Speos, file_path: Union[Path, str] = None):
         self.client = speos.client
         self._stub = anisotropic_bsdf__v1__pb2_grpc.AnisotropicBsdfServiceStub(speos.client.channel)
-
-        if not file_path:
+        self._spectrum_incidence = [0, 0]
+        self._spectrum_anisotropy = [0, 0]
+        if file_path:
             self.file_path = Path(file_path)
-            self._grpcbsdf = self._importfile(str(self.file_path))
+            self._grpcbsdf = self._import_file(str(self.file_path))
             self._brdf, self._btdf = self._extract_bsdf()
             self._has_transmission = bool(self._btdf)
             self._has_reflection = bool(self._brdf)
@@ -71,13 +72,11 @@ class BSDF:
             self.ansistropy_vector = [1, 0, 0]
             self._spectrum = None
             self.description = ""
-            self.spectrum_incidence = [0, 0]
-            self.spectrum_anisotropy = [0, 0]
 
-    def _importfile(self, filepath):
+    def _import_file(self, filepath):
         file_name = anisotropic_bsdf__v1__pb2.FileName()
         file_name.file_name = str(filepath)
-        self._stub.ImportFile(file_name)
+        self._stub.Load(file_name)
         return self._stub.Export(Empty())
 
     def _extract_bsdf(self) -> tuple[Collection[BxdfDatapoint], Collection[BxdfDatapoint]]:
@@ -91,10 +90,10 @@ class BSDF:
         btdf = []
         for i in range(len(self._grpcbsdf.reflection.anisotropic_samples)):
             ani_bsdf_data = self._grpcbsdf.reflection.anisotropic_samples[i]
-            anisotropic_angle = ani_bsdf_data.anisotropic_samples
+            anisotropic_angle = ani_bsdf_data.anisotropic_sample
             for j in range(len(ani_bsdf_data.incidence_samples)):
                 bsdf_data = ani_bsdf_data.incidence_samples[j]
-                incident_angle = bsdf_data.incident_sample
+                incident_angle = bsdf_data.incidence_sample
                 thetas = np.array(bsdf_data.theta_samples)
                 phis = np.array(bsdf_data.phi_samples)
                 bsdf = np.array(bsdf_data.bsdf_cos_theta)
@@ -104,10 +103,10 @@ class BSDF:
                 )
         for i in range(len(self._grpcbsdf.transmission.anisotropic_samples)):
             ani_bsdf_data = self._grpcbsdf.transmission.anisotropic_samples[i]
-            anisotropic_angle = ani_bsdf_data.anisotropic_samples
+            anisotropic_angle = ani_bsdf_data.anisotropic_sample
             for j in range(len(ani_bsdf_data.incidence_samples)):
                 bsdf_data = ani_bsdf_data.incidence_samples[j]
-                incident_angle = bsdf_data.incident_sample
+                incident_angle = bsdf_data.incidence_sample
                 thetas = np.array(bsdf_data.theta_samples)
                 phis = np.array(bsdf_data.phi_samples)
                 bsdf = np.array(bsdf_data.bsdf_cos_theta)
@@ -134,6 +133,56 @@ class BSDF:
 
     def _export_file(self, filepath):
         pass
+
+    @property
+    def spectrum_incidence(self) -> list[float]:
+        """Incident angle (theta) of spectrum measurement.
+
+        First value is for reflection second for transmission
+        """
+        return self._spectrum_incidence
+
+    @spectrum_incidence.setter
+    def spectrum_incidence(self, value) -> list[float]:
+        if isinstance(value, float) and self.has_reflection and self.has_transmission:
+            raise ValueError("You need to define the value for both reflection and transmission")
+        elif isinstance(value, float) and 0 <= value <= np.pi / 2:
+            if self.has_reflection:
+                self._spectrum_incidence[0] = value
+            else:
+                self._spectrum_incidence[1] = value
+        elif isinstance(value, list):
+            if len(value) == 2 and any([0 <= theta <= np.pi / 2 for theta in value]):
+                self._spectrum_incidence = value
+        else:
+            raise ValueError(
+                "You need to define the value in radian for both reflection and transmission"
+            )
+
+    @property
+    def spectrum_anisotropy(self) -> list[float]:
+        """Incident angle (phi) of spectrum measurement.
+
+        First value is for reflection second for transmission
+        """
+        return self._spectrum_anisotropy
+
+    @spectrum_anisotropy.setter
+    def spectrum_anisotropy(self, value):
+        if isinstance(value, float) and self.has_reflection and self.has_transmission:
+            raise ValueError("You need to define the value for both reflection and transmission")
+        elif isinstance(value, float) and 0 <= value <= 2 * np.pi:
+            if self.has_reflection:
+                self._spectrum_anisotropy[0] = value
+            else:
+                self._spectrum_anisotropy[1] = value
+        elif isinstance(value, list):
+            if len(value) == 2 and any([0 <= theta <= 2 * np.pi for theta in value]):
+                self._spectrum_anisotropy = value
+        else:
+            raise ValueError(
+                "You need to define the value in radian for both reflection and transmission"
+            )
 
     @property
     def reflection_spectrum(self):
@@ -251,6 +300,37 @@ class BSDF:
         """Reset BSDF data to what was stored in file."""
         pass
 
+    def commit(self):
+        """Sent Data to gRPC interface."""
+        pass
+
+    def save(self, file_path: Union[Path, str], commit: bool = True) -> Path:
+        """Save a Speos anistropic bsdf.
+
+        Parameters
+        ----------
+        file_path : Union[Path, str]
+            Filepath to save bsdf
+        commit : bool
+            commit data before saving
+
+        Returns
+        -------
+        Path
+            File location
+        """
+        file_path = Path(file_path)
+        file_name = anisotropic_bsdf__v1__pb2.FileName()
+        if not file_path.parent.exists():
+            file_path.parent.mkdir()
+        elif file_path.suffix == ".anisotropicbsdf":
+            file_name.file_name = str(file_path)
+        else:
+            file_name.file_name = str(file_path.parent / (file_path.name + ".anisotropicbsdf"))
+        self.file_path = Path(file_name.file_name)
+        self._stub.Save(file_name)
+        return self.file_path
+
 
 class BxdfDatapoint:
     """Class to store a BxDF data point.
@@ -281,6 +361,11 @@ class BxdfDatapoint:
         tis: float,
         anisotropy: float = 0,
     ):
+        # data_reset
+        self._theta_values = []
+        self._phi_values = []
+        self._bxdf = None
+        # define data
         self.is_brdf = is_brdf
         self.incident_angle = incident_angle
         self.anisotropy = anisotropy
@@ -316,14 +401,17 @@ class BxdfDatapoint:
 
     @bxdf.setter
     def bxdf(self, value: Collection[float]):
-        if value:
-            bxdf = np.array(value, ndmin=2)
+        if value is not None:
+            bxdf = np.array(value)
             if np.shape(bxdf) == (len(self.theta_values), len(self.phi_values)):
                 self._bxdf = bxdf
             elif np.shape(bxdf) == (len(self.phi_values), len(self.theta_values)):
                 self._bxdf = bxdf.transpose()
             else:
-                raise ValueError("bxdf data has incorrect dimensions")
+                try:
+                    self._bxdf = bxdf.reshape((len(self.theta_values), len(self.phi_values)))
+                except ValueError:
+                    raise ValueError("bxdf data has incorrect dimensions")
         elif value is None:
             self._bxdf = None
         else:
