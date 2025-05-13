@@ -28,8 +28,10 @@ from collections.abc import Collection
 from pathlib import Path
 from typing import Union
 
+from google.protobuf.empty_pb2 import Empty
 import numpy as np
 
+import ansys.api.speos.bsdf.v1.anisotropic_bsdf_pb2 as anisotropic_bsdf__v1__pb2
 import ansys.api.speos.bsdf.v1.anisotropic_bsdf_pb2_grpc as anisotropic_bsdf__v1__pb2_grpc
 from ansys.speos.core.speos import Speos
 
@@ -50,6 +52,7 @@ class BSDF:
     def __init__(self, speos: Speos, file_path: Union[Path, str] = None):
         self.client = speos.client
         self._stub = anisotropic_bsdf__v1__pb2_grpc.AnisotropicBsdfServiceStub(speos.client.channel)
+
         if not file_path:
             self.file_path = Path(file_path)
             self._grpcbsdf = self._importfile(str(self.file_path))
@@ -62,16 +65,72 @@ class BSDF:
             self._grpcbsdf = None
             self.has_transmission = False
             self.has_reflection = False
+            self._transmission_spectrum, self._reflection_spectrum = None, None
+
+            # anisotropic file
+            self.ansistropy_vector = [1, 0, 0]
             self._spectrum = None
+            self.description = ""
+            self.spectrum_incidence = [0, 0]
+            self.spectrum_anisotropy = [0, 0]
 
     def _importfile(self, filepath):
-        pass
+        file_name = anisotropic_bsdf__v1__pb2.FileName()
+        file_name.file_name = str(filepath)
+        self._stub.ImportFile(file_name)
+        return self._stub.Export(Empty())
 
     def _extract_bsdf(self) -> tuple[Collection[BxdfDatapoint], Collection[BxdfDatapoint]]:
-        pass
+        self.description = self._grpcbsdf.description
+        self.ansistropy_vector = [
+            self._grpcbsdf.anisotropy_vector.x,
+            self._grpcbsdf.anisotropy_vector.y,
+            self._grpcbsdf.anisotropy_vector.z,
+        ]
+        brdf = []
+        btdf = []
+        for i in range(len(self._grpcbsdf.reflection.anisotropic_samples)):
+            ani_bsdf_data = self._grpcbsdf.reflection.anisotropic_samples[i]
+            anisotropic_angle = ani_bsdf_data.anisotropic_samples
+            for j in range(len(ani_bsdf_data.incidence_samples)):
+                bsdf_data = ani_bsdf_data.incidence_samples[j]
+                incident_angle = bsdf_data.incident_sample
+                thetas = np.array(bsdf_data.theta_samples)
+                phis = np.array(bsdf_data.phi_samples)
+                bsdf = np.array(bsdf_data.bsdf_cos_theta)
+                tis = bsdf_data.integral
+                brdf.append(
+                    BxdfDatapoint(True, incident_angle, thetas, phis, bsdf, tis, anisotropic_angle)
+                )
+        for i in range(len(self._grpcbsdf.transmission.anisotropic_samples)):
+            ani_bsdf_data = self._grpcbsdf.transmission.anisotropic_samples[i]
+            anisotropic_angle = ani_bsdf_data.anisotropic_samples
+            for j in range(len(ani_bsdf_data.incidence_samples)):
+                bsdf_data = ani_bsdf_data.incidence_samples[j]
+                incident_angle = bsdf_data.incident_sample
+                thetas = np.array(bsdf_data.theta_samples)
+                phis = np.array(bsdf_data.phi_samples)
+                bsdf = np.array(bsdf_data.bsdf_cos_theta)
+                tis = bsdf_data.integral
+                btdf.append(
+                    BxdfDatapoint(True, incident_angle, thetas, phis, bsdf, tis, anisotropic_angle)
+                )
+        return brdf, btdf
 
-    def _extract_spectrum(self) -> Collection[Collection[float], Collection[float]]:
-        pass
+    def _extract_spectrum(self) -> list[np.ndarray, np.ndarray]:
+        if self.has_reflection:
+            self.spectrum_incidence[0] = self._grpcbsdf.reflection.spectrum_incidence
+            self.spectrum_anisotropy[0] = self._grpcbsdf.reflection.spectrum_anisotropy
+        if self.has_transmission:
+            self.spectrum_incidence[1] = self._grpcbsdf.transmission.spectrum_incidence
+            self.spectrum_anisotropy[1] = self._grpcbsdf.transmission.spectrum_anisotropy
+        refl_s = np.array([[], []])
+        trans_s = np.array([[], []])
+        for value in self._grpcbsdf.reflection.spectrum:
+            refl_s = np.append(refl_s, [[value.wavelength], [value.coefficient]], axis=1)
+        for value in self._grpcbsdf.transmission.spectrum:
+            trans_s = np.append(trans_s, [[value.wavelength], [value.coefficient]], axis=1)
+        return [refl_s, trans_s]
 
     def _export_file(self, filepath):
         pass
@@ -198,7 +257,7 @@ class BxdfDatapoint:
 
     Parameters
     ----------
-    bxdf_type : bool
+    is_brdf : bool
         true for transmittive date, False for reflective
     incident_angle : float
         incident angle in radian
@@ -214,19 +273,21 @@ class BxdfDatapoint:
 
     def __init__(
         self,
-        bxdf_type: bool,
+        is_brdf: bool,
         incident_angle: float,
         theta_values: Collection[float],
         phi_values: Collection[float],
         bxdf: Collection[float],
+        tis: float,
         anisotropy: float = 0,
     ):
-        self.is_brdf = bxdf_type
+        self.is_brdf = is_brdf
         self.incident_angle = incident_angle
         self.anisotropy = anisotropy
         self.theta_values = theta_values
         self.phi_values = phi_values
         self.bxdf = bxdf
+        self.tis = tis
 
     @property
     def anisotropy(self):
