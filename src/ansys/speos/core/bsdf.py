@@ -36,7 +36,112 @@ import ansys.api.speos.bsdf.v1.anisotropic_bsdf_pb2_grpc as anisotropic_bsdf__v1
 from ansys.speos.core.speos import Speos
 
 
-class BSDF:
+class BaseBSDF:
+    """Super class for all BSDF datamodels.
+
+    Parameters
+    ----------
+    speos : ansys.speos.core.speos.Speos
+    stub :
+        grpc stub to connect to BSDF service
+
+    Notes
+    -----
+    This is a Super class, **Do not instantiate this class yourself**
+
+    """
+
+    def __init__(self, speos: Speos, stub):
+        self.client = speos.client
+        self._stub = stub
+
+    def _export_file(self, filepath):
+        pass
+
+    @property
+    def has_transmission(self) -> bool:
+        """Contains the BSDF Transmission data."""
+        return self._has_transmission
+
+    @has_transmission.setter
+    def has_transmission(self, value: bool):
+        if value:
+            self._has_transmission = value
+        else:
+            self._has_transmission = value
+            self._btdf = None
+
+    @property
+    def has_reflection(self) -> bool:
+        """Contains the BSDF Reflection data."""
+        return self._has_reflection
+
+    @has_reflection.setter
+    def has_reflection(self, value: bool):
+        if value:
+            self._has_reflection = value
+        else:
+            self._has_reflection = value
+            self._brdf = None
+
+    @property
+    def brdf(self) -> Collection[BxdfDatapoint]:
+        """List of BRDFDatapoints."""
+        return self._brdf
+
+    @brdf.setter
+    def brdf(self, value: Collection[BxdfDatapoint]):
+        check = any([bxdf.is_brdf for bxdf in value])
+        if check is True or value is None:
+            self._brdf = value
+            self.has_reflection = True
+        else:
+            msg = "One or multiple datapoints are transmission datapoints"
+            raise ValueError(msg)
+
+    @property
+    def btdf(self) -> Collection[BxdfDatapoint]:
+        """List of BTDFDatapoints."""
+        return self._btdf
+
+    @btdf.setter
+    def btdf(self, value: Collection[BxdfDatapoint]):
+        check = any([not bxdf.is_brdf for bxdf in value])
+        if check is True or value is None:
+            self._btdf = value
+            self.has_transmission = True
+        else:
+            msg = "One or multiple datapoints are reflection datapoints"
+            raise ValueError(msg)
+
+    @property
+    def nb_incidents(self) -> list[int]:
+        """Number of incidence angle for reflection and transmission.
+
+        Returns
+        -------
+        list[int]:
+            first value of the list is nb of reflective data, second value is nb of transmittive
+            data
+        """
+        return [len(self.brdf), len(self.btdf)]
+
+    @property
+    def incident_angles(self) -> list[Union[list[float], None], Union[list[float], None]]:
+        """List of incident angles for reflection and transmission.
+
+        Returns
+        -------
+        list[Union[list[float], None],Union[list[float], None]]
+            Returns a nested list of incidence angels for reflective and transmittive
+            data if not available the value will be None
+        """
+        r_angle = [bxdf.incident_angle for bxdf in self.brdf]
+        t_angle = [bxdf.incident_angle for bxdf in self.btdf]
+        return [r_angle, t_angle]
+
+
+class AnisotropicBSDF(BaseBSDF):
     """BSDF - Bidirectional scattering distribution function.
 
     This class contains the methods and functions to load and edit existing Speos bsdf datasets.
@@ -50,8 +155,9 @@ class BSDF:
     """
 
     def __init__(self, speos: Speos, file_path: Union[Path, str] = None):
-        self.client = speos.client
-        self._stub = anisotropic_bsdf__v1__pb2_grpc.AnisotropicBsdfServiceStub(speos.client.channel)
+        super().__init__(
+            speos, anisotropic_bsdf__v1__pb2_grpc.AnisotropicBsdfServiceStub(speos.client.channel)
+        )
         self._spectrum_incidence = [0, 0]
         self._spectrum_anisotropy = [0, 0]
         if file_path:
@@ -213,88 +319,6 @@ class BSDF:
             self._transmission_spectrum = value
         else:
             raise ValueError("You need the same number of wavelength and energy values")
-
-    @property
-    def has_transmission(self) -> bool:
-        """Contains the BSDF Transmission data."""
-        return self._has_transmission
-
-    @has_transmission.setter
-    def has_transmission(self, value: bool):
-        if value:
-            self._has_transmission = value
-        else:
-            self._has_transmission = value
-            self._btdf = None
-
-    @property
-    def has_reflection(self) -> bool:
-        """Contains the BSDF Reflection data."""
-        return self._has_reflection
-
-    @has_reflection.setter
-    def has_reflection(self, value: bool):
-        if value:
-            self._has_reflection = value
-        else:
-            self._has_reflection = value
-            self._brdf = None
-
-    @property
-    def brdf(self) -> Collection[BxdfDatapoint]:
-        """List of BRDFDatapoints."""
-        return self._brdf
-
-    @brdf.setter
-    def brdf(self, value: Collection[BxdfDatapoint]):
-        check = any([bxdf.is_brdf for bxdf in value])
-        if check is True or value is None:
-            self._brdf = value
-            self.has_reflection = True
-        else:
-            msg = "One or multiple datapoints are transmission datapoints"
-            raise ValueError(msg)
-
-    @property
-    def btdf(self) -> Collection[BxdfDatapoint]:
-        """List of BTDFDatapoints."""
-        return self._btdf
-
-    @btdf.setter
-    def btdf(self, value: Collection[BxdfDatapoint]):
-        check = any([not bxdf.is_brdf for bxdf in value])
-        if check is True or value is None:
-            self._btdf = value
-            self.has_transmission = True
-        else:
-            msg = "One or multiple datapoints are reflection datapoints"
-            raise ValueError(msg)
-
-    @property
-    def nb_incidents(self) -> list[int]:
-        """Number of incidence angle for reflection and transmission.
-
-        Returns
-        -------
-        list[int]:
-            first value of the list is nb of reflective data, second value is nb of transmittive
-            data
-        """
-        return [len(self.brdf), len(self.btdf)]
-
-    @property
-    def incident_angles(self) -> list[Union[list[float], None], Union[list[float], None]]:
-        """List of incident angles for reflection and transmission.
-
-        Returns
-        -------
-        list[Union[list[float], None],Union[list[float], None]]
-            Returns a nested list of incidence angels for reflective and transmittive
-            data if not available the value will be None
-        """
-        r_angle = [bxdf.incident_angle for bxdf in self.brdf]
-        t_angle = [bxdf.incident_angle for bxdf in self.btdf]
-        return [r_angle, t_angle]
 
     def reset(self):
         """Reset BSDF data to what was stored in file."""
