@@ -461,9 +461,9 @@ class AnisotropicBSDF(BaseBSDF):
         # set basic values
         bsdf = anisotropic_bsdf__v1__pb2.AnisotropicBsdfData()
         bsdf.description = self.description
-        bsdf.anisotropy_vector.x = self.ansistropy_vector[0]
-        bsdf.anisotropy_vector.y = self.ansistropy_vector[1]
-        bsdf.anisotropy_vector.z = self.ansistropy_vector[2]
+        bsdf.anisotropy_vector.x = self.anisotropy_vector[0]
+        bsdf.anisotropy_vector.y = self.anisotropy_vector[1]
+        bsdf.anisotropy_vector.z = self.anisotropy_vector[2]
         if self.has_reflection:
             bsdf.reflection.spectrum_incidence = self.spectrum_incidence[0]
             bsdf.reflection.spectrum_anisotropy = self.spectrum_anisotropy[0]
