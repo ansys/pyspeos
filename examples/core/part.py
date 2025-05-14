@@ -34,9 +34,8 @@ USE_DOCKER = True  # Set to False if you're running this example locally as a No
 # The assets used to run this example are available in the
 # [PySpeos repository](https://github.com/ansys/pyspeos/) on GitHub.
 #
-# > **Note:** Make sure you
-# > have downloaded simulation assets and set ``assets_data_path``
-# > to point to the assets folder.
+# > **Note:** Make sure you have downloaded the simulation assets
+# > and set ``assets_data_path`` to point to the assets folder.
 
 if USE_DOCKER:  # Running on the remote server.
     assets_data_path = Path("/app") / "assets"
