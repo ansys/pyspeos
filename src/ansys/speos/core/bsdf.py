@@ -127,7 +127,15 @@ class BaseBSDF:
             first value of the list is nb of reflective data, second value is nb of transmittive
             data
         """
-        return [len(self.brdf), len(self.btdf)]
+        if self.has_transmission:
+            t = len(self.btdf)
+        else:
+            t = 0
+        if self.has_reflection:
+            r = len(self.brdf)
+        else:
+            r = 0
+        return [r, t]
 
     @property
     def incident_angles(self) -> list[Union[list[float], None], Union[list[float], None]]:
@@ -139,8 +147,14 @@ class BaseBSDF:
             Returns a nested list of incidence angels for reflective and transmittive
             data if not available the value will be None
         """
-        r_angle = [bxdf.incident_angle for bxdf in self.brdf]
-        t_angle = [bxdf.incident_angle for bxdf in self.btdf]
+        if self.has_transmission:
+            t_angle = [bxdf.incident_angle for bxdf in self.btdf]
+        else:
+            t_angle = []
+        if self.has_reflection:
+            r_angle = [bxdf.incident_angle for bxdf in self.brdf]
+        else:
+            r_angle = []
         return [r_angle, t_angle]
 
 
@@ -365,8 +379,14 @@ class AnisotropicBSDF(BaseBSDF):
     @property
     def anisotropic_angles(self):
         """Anisotropic angles available in bsdf data."""
-        r_angles = [brdf.anisotropy for brdf in self.brdf]
-        t_angles = [btdf.anisotropy for btdf in self.btdf]
+        if self.has_transmission:
+            t_angles = [btdf.anisotropy for btdf in self.btdf]
+        else:
+            t_angles = []
+        if self.has_reflection:
+            r_angles = [brdf.anisotropy for brdf in self.brdf]
+        else:
+            r_angles = []
         return [list(Counter(r_angles).keys()), list(Counter(t_angles).keys())]
 
     @property
