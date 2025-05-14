@@ -55,6 +55,11 @@ class BaseBSDF:
     def __init__(self, speos: Speos, stub):
         self.client = speos.client
         self._stub = stub
+        self._grpcbsdf = None
+        self.has_transmission = False
+        self.has_reflection = False
+        self.anisotropy_vector = [1, 0, 0]
+        self.description = ""
 
     @property
     def has_transmission(self) -> bool:
@@ -139,6 +144,139 @@ class BaseBSDF:
         return [r_angle, t_angle]
 
 
+class InterpolationEnhancement:
+    """Class to facilitate Specular interpolation enhancement.
+
+    Notes
+    -----
+    **Do not instantiate this class yourself**, This is a Helper class,
+    """
+
+    def __init__(self, bsdf: Union[AnisotropicBSDF], index1: float = 1, index2: float = 1):
+        self._bsdf = bsdf
+        self._index1 = index1
+        self._index2 = index2
+
+        self._data, self._data_reflection, self._data_transmission = (
+            self._create_interpolation_data()
+        )
+
+    def _create_interpolation_data(self):
+        indices = anisotropic_bsdf__v1__pb2.RefractiveIndices(
+            refractive_index_1=self.index1, refractive_index_2=self.index2
+        )
+        self._bsdf._stub.GenerateSpecularInterpolationEnhancementData(indices)
+        data = self._bsdf._stub.GetSpecularInterpolationEnhancementData(Empty())
+        data_r, data_t = None, None
+        if self._bsdf.has_transmission:
+            data_t = data.transmission
+        if self._bsdf.has_reflection:
+            data_r = data.reflection
+        return data, data_r, data_t
+
+    @property
+    def index1(self):
+        """Refractive index on reflection side."""
+        return self._index1
+
+    @index1.setter
+    def index1(self, value):
+        self._index1 = value
+        self._data.refractive_index_1 = value
+
+    @property
+    def index2(self):
+        """Refractive index on transmission side."""
+        return self._index1
+
+    @index2.setter
+    def index2(self, value):
+        self._index2 = value
+        self._data.refractive_index_2 = value
+
+    @property
+    def data_reflection(self):
+        """Interpolation data for reflection.
+
+        Notes
+        -----
+        Please don't set directly use define_interpolation_*** methods
+        """
+        data = {}
+        if isinstance(self._bsdf, AnisotropicBSDF) and self._data_reflection is not None:
+            for i, ani_sample in enumerate(self._data_reflection.anisotropic_samples):
+                data[str(self._bsdf.anisotropic_angles[0][i])] = {}
+                for j, incident in enumerate(ani_sample.incidence_samples):
+                    data[str(self._bsdf.anisotropic_angles[0][i])][
+                        str(self._bsdf.incident_angles[0][(i + 1) * (j + 1) - 1])
+                    ] = {"half_angle": incident.cone_half_angle, "height": incident.cone_height}
+            return data
+        elif self._data_reflection is None:
+            return None
+        else:
+            raise ValueError("only anistropic bsdf supported")
+
+    def define_interpolation_anisotropicbsdf(
+        self, is_brdf: bool, anisotropic_index, incidence_index, half_angle, height
+    ):
+        """Define intrpolatrion for one incident angle.
+
+        Parameters
+        ----------
+        is_brdf : bool
+            defines if reflection or transmission data is set
+        anisotropic_index : int
+            index to define for which anisotropy sample data is set
+        incidence_index : int
+            index to define for which incidence sample data is set
+        half_angle : float
+            Half angle of the cone in radian
+        height : float
+            Height of the cone
+        """
+        if self._data_reflection is None and self._data_transmission is None:
+            return None
+        if isinstance(self._bsdf, AnisotropicBSDF):
+            if is_brdf and self._data_reflection is not None:
+                interpolation_data = self._data_reflection.anisotropic_samples[
+                    anisotropic_index
+                ].incidence_samples[incidence_index]
+            elif self._data_transmission is not None:
+                interpolation_data = self._data_transmission.anisotropic_samples[
+                    anisotropic_index
+                ].incidence_samples[incidence_index]
+            else:
+                raise ValueError(
+                    "Interpolation can only be applied for a direction where data is present"
+                )
+            interpolation_data.cone_half_angle = half_angle
+            interpolation_data.cone_height = height
+        else:
+            raise ValueError("only anistropic bsdf supported")
+
+    @property
+    def data_transmission(self):
+        """Interpolation data for transmission.
+
+        Notes
+        -----
+        Please don't set directly use define_interpolation_*** methods
+        """
+        data = {}
+        if isinstance(self._bsdf, AnisotropicBSDF) and self._data_transmission is not None:
+            for i, ani_sample in enumerate(self._data_transmission.anisotropic_samples):
+                data[str(self._bsdf.anisotropic_angles[1][i])] = {}
+                for j, incident in enumerate(ani_sample.incidence_samples):
+                    data[str(self._bsdf.anisotropic_angles[1][i])][
+                        str(self._bsdf.incident_angles[1][(i + 1) * (j + 1) - 1])
+                    ] = {"half_angle": incident.cone_half_angle, "height": incident.cone_height}
+            return data
+        elif self._data_transmission is None:
+            return None
+        else:
+            raise ValueError("only anistropic bsdf supported")
+
+
 class AnisotropicBSDF(BaseBSDF):
     """BSDF - Bidirectional scattering distribution function.
 
@@ -159,23 +297,17 @@ class AnisotropicBSDF(BaseBSDF):
         self._spectrum_incidence = [0, 0]
         self._spectrum_anisotropy = [0, 0]
         if file_path:
-            self.file_path = Path(file_path)
-            self._grpcbsdf = self._import_file(str(self.file_path))
+            file_path = Path(file_path)
+            self._grpcbsdf = self._import_file(file_path)
             self._brdf, self._btdf = self._extract_bsdf()
             self._has_transmission = bool(self._btdf)
             self._has_reflection = bool(self._brdf)
             self._transmission_spectrum, self._reflection_spectrum = self._extract_spectrum()
         else:
             self.file_path = None
-            self._grpcbsdf = None
-            self.has_transmission = False
-            self.has_reflection = False
             self._transmission_spectrum, self._reflection_spectrum = None, None
 
             # anisotropic file
-            self.ansistropy_vector = [1, 0, 0]
-            self._spectrum = None
-            self.description = ""
 
     def _import_file(self, filepath):
         file_name = anisotropic_bsdf__v1__pb2.FileName()
@@ -192,31 +324,27 @@ class AnisotropicBSDF(BaseBSDF):
         ]
         brdf = []
         btdf = []
-        for i in range(len(self._grpcbsdf.reflection.anisotropic_samples)):
-            ani_bsdf_data = self._grpcbsdf.reflection.anisotropic_samples[i]
+        for ani_bsdf_data in self._grpcbsdf.reflection.anisotropic_samples:
             anisotropic_angle = ani_bsdf_data.anisotropic_sample
-            for j in range(len(ani_bsdf_data.incidence_samples)):
-                bsdf_data = ani_bsdf_data.incidence_samples[j]
+            for bsdf_data in ani_bsdf_data.incidence_samples:
                 incident_angle = bsdf_data.incidence_sample
                 thetas = np.array(bsdf_data.theta_samples)
                 phis = np.array(bsdf_data.phi_samples)
-                bsdf = np.array(bsdf_data.bsdf_cos_theta)
+                bsdf = np.array(bsdf_data.bsdf_cos_theta).reshape((len(thetas), len(phis)))
                 tis = bsdf_data.integral
                 brdf.append(
                     BxdfDatapoint(True, incident_angle, thetas, phis, bsdf, tis, anisotropic_angle)
                 )
-        for i in range(len(self._grpcbsdf.transmission.anisotropic_samples)):
-            ani_bsdf_data = self._grpcbsdf.transmission.anisotropic_samples[i]
+        for ani_bsdf_data in self._grpcbsdf.transmission.anisotropic_samples:
             anisotropic_angle = ani_bsdf_data.anisotropic_sample
-            for j in range(len(ani_bsdf_data.incidence_samples)):
-                bsdf_data = ani_bsdf_data.incidence_samples[j]
+            for bsdf_data in ani_bsdf_data.incidence_samples:
                 incident_angle = bsdf_data.incidence_sample
                 thetas = np.array(bsdf_data.theta_samples)
                 phis = np.array(bsdf_data.phi_samples)
-                bsdf = np.array(bsdf_data.bsdf_cos_theta)
+                bsdf = np.array(bsdf_data.bsdf_cos_theta).reshape((len(thetas), len(phis)))
                 tis = bsdf_data.integral
                 btdf.append(
-                    BxdfDatapoint(True, incident_angle, thetas, phis, bsdf, tis, anisotropic_angle)
+                    BxdfDatapoint(False, incident_angle, thetas, phis, bsdf, tis, anisotropic_angle)
                 )
         return brdf, btdf
 
@@ -240,7 +368,7 @@ class AnisotropicBSDF(BaseBSDF):
         """Anisotropic angles available in bsdf data."""
         r_angles = [brdf.anisotropy for brdf in self.brdf]
         t_angles = [btdf.anisotropy for btdf in self.btdf]
-        return Counter(r_angles).keys(), Counter(t_angles).keys()
+        return [list(Counter(r_angles).keys()), list(Counter(t_angles).keys())]
 
     @property
     def spectrum_incidence(self) -> list[float]:
@@ -324,7 +452,10 @@ class AnisotropicBSDF(BaseBSDF):
 
     def reset(self):
         """Reset BSDF data to what was stored in file."""
-        pass
+        self._brdf, self._btdf = self._extract_bsdf()
+        self._has_transmission = bool(self._btdf)
+        self._has_reflection = bool(self._brdf)
+        self._transmission_spectrum, self._reflection_spectrum = self._extract_spectrum()
 
     def commit(self):
         """Sent Data to gRPC interface."""
@@ -359,7 +490,7 @@ class AnisotropicBSDF(BaseBSDF):
                 pair = bsdf.transmission.spectrum.add()
                 pair.wavelength = self.transmission_spectrum[0][w]
                 pair.coefficient = self.transmission_spectrum[1][w]
-            for ani in self.anisotropic_angles[0]:
+            for ani in self.anisotropic_angles[1]:
                 slice = bsdf.reflection.anisotropic_samples.add()
                 slice.anisotropic_sample = ani
                 for btdf in self.btdf:
@@ -389,6 +520,8 @@ class AnisotropicBSDF(BaseBSDF):
         Path
             File location
         """
+        if commit:
+            self.commit()
         file_path = Path(file_path)
         file_name = anisotropic_bsdf__v1__pb2.FileName()
         if not file_path.parent.exists():
@@ -397,9 +530,8 @@ class AnisotropicBSDF(BaseBSDF):
             file_name.file_name = str(file_path)
         else:
             file_name.file_name = str(file_path.parent / (file_path.name + ".anisotropicbsdf"))
-        self.file_path = Path(file_name.file_name)
         self._stub.Save(file_name)
-        return self.file_path
+        return file_path
 
 
 class BxdfDatapoint:
@@ -477,10 +609,7 @@ class BxdfDatapoint:
             elif np.shape(bxdf) == (len(self.phi_values), len(self.theta_values)):
                 self._bxdf = bxdf.transpose()
             else:
-                try:
-                    self._bxdf = bxdf.reshape((len(self.theta_values), len(self.phi_values)))
-                except ValueError:
-                    raise ValueError("bxdf data has incorrect dimensions")
+                raise ValueError("bxdf data has incorrect dimensions")
         elif value is None:
             self._bxdf = None
         else:
