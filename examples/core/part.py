@@ -182,13 +182,13 @@ for feat in features:
 # If you want to retrieve several kind of geometry features at a certain level, give
 # feature_type=Part
 
-# all the geometry features at root part level:
+# All the geometry features at root part level:
 
 features = p.find(name=".*", name_regex=True, feature_type=Part)
 for feat in features:
     print(str(type(feat)) + " : name=" + feat._name)
 
-# all the geometry features at second level: e.g.:
+# All the geometry features at second level: e.g.:
 # - TheBodyB1's all faces
 # - TheSubPartSP1's all bodies
 # - TheSubPartSP1's all sub part
@@ -197,7 +197,7 @@ features = p.find(name=".*/.*", name_regex=True, feature_type=Part)
 for feat in features:
     print(str(type(feat)) + " : name=" + feat._name)
 
-# all the geometry features at the third level:
+# All the geometry features at the third level:
 # e.g. TheSubPartSP1's all bodies' faces
 
 features = p.find(name=".*/.*/.*", name_regex=True, feature_type=Part)
