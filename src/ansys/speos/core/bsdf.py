@@ -522,9 +522,7 @@ class AnisotropicBSDF(BaseBSDF):
         file_name = anisotropic_bsdf__v1__pb2.FileName()
         if commit:
             self.commit()
-        if not file_path.parent.exists():
-            file_path.parent.mkdir()
-        elif file_path.suffix == ".anisotropicbsdf":
+        if file_path.suffix == ".anisotropicbsdf":
             file_name.file_name = str(file_path)
         else:
             file_name.file_name = str(file_path.parent / (file_path.name + ".anisotropicbsdf"))
