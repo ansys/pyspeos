@@ -304,7 +304,6 @@ class AnisotropicBSDF(BaseBSDF):
             self._has_reflection = bool(self._brdf)
             self._transmission_spectrum, self._reflection_spectrum = self._extract_spectrum()
         else:
-            self.file_path = None
             self._transmission_spectrum, self._reflection_spectrum = None, None
 
             # anisotropic file
@@ -480,8 +479,8 @@ class AnisotropicBSDF(BaseBSDF):
                         incidence_diag = slice.incidence_samples.add()
                         incidence_diag.incidence_sample = brdf.incident_angle
                         # intensity diagrams
-                        incidence_diag.phi_samples[:] = brdf.phi_values
-                        incidence_diag.theta_samples[:] = brdf.theta_values
+                        incidence_diag.phi_samples[:] = list(brdf.phi_values)
+                        incidence_diag.theta_samples[:] = list(brdf.theta_values)
                         incidence_diag.bsdf_cos_theta[:] = brdf.bxdf.flatten().tolist()
         if self.has_transmission:
             bsdf.transmission.spectrum_incidence = self.spectrum_incidence[1]
@@ -491,17 +490,16 @@ class AnisotropicBSDF(BaseBSDF):
                 pair.wavelength = self.transmission_spectrum[0][w]
                 pair.coefficient = self.transmission_spectrum[1][w]
             for ani in self.anisotropic_angles[1]:
-                slice = bsdf.reflection.anisotropic_samples.add()
+                slice = bsdf.transmission.anisotropic_samples.add()
                 slice.anisotropic_sample = ani
                 for btdf in self.btdf:
                     if btdf.anisotropy == ani:
                         incidence_diag = slice.incidence_samples.add()
                         incidence_diag.incidence_sample = btdf.incident_angle
                         # intensity diagrams
-                        incidence_diag.phi_samples[:] = btdf.phi_values
-                        incidence_diag.theta_samples[:] = btdf.theta_values
+                        incidence_diag.phi_samples[:] = list(btdf.phi_values)
+                        incidence_diag.theta_samples[:] = list(btdf.theta_values)
                         incidence_diag.bsdf_cos_theta[:] = btdf.bxdf.flatten().tolist()
-
         self._stub.Import(bsdf)
         self._grpcbsdf = bsdf
 
@@ -520,10 +518,10 @@ class AnisotropicBSDF(BaseBSDF):
         Path
             File location
         """
-        if commit:
-            self.commit()
         file_path = Path(file_path)
         file_name = anisotropic_bsdf__v1__pb2.FileName()
+        if commit:
+            self.commit()
         if not file_path.parent.exists():
             file_path.parent.mkdir()
         elif file_path.suffix == ".anisotropicbsdf":
