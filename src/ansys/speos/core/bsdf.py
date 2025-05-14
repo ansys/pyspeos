@@ -454,8 +454,7 @@ class BxdfDatapoint:
         if 0 <= value <= 2 * np.pi:
             self._anisotropy = value
         else:
-            msg = "Anisotropy angle needs to be between [0, 2*pi]"
-            raise ValueError(msg)
+            raise ValueError("Anisotropy angle needs to be between [0, 2*pi]")
 
     @property
     def bxdf(self) -> np.array:
@@ -519,8 +518,7 @@ class BxdfDatapoint:
         if 0 <= value <= np.pi / 2:
             self._incident_angle = value
         else:
-            msg = "Incident angle needs to be between [0, pi/2]"
-            raise ValueError(msg)
+            raise ValueError("Incident angle needs to be between [0, pi/2]")
 
     def set_incident_angle(self, value, is_deg=True):
         """Allow to set an incident value in degree.
@@ -573,5 +571,4 @@ class BxdfDatapoint:
             if np.shape(self.bxdf) != (len(self.theta_values), len(self.phi_values)):
                 self.bxdf = None
         else:
-            msg = "Theta values for Transmission need to be between [pi/2, pi]"
-            raise ValueError(msg)
+            raise ValueError("Theta values for Transmission need to be between [pi/2, pi]")
