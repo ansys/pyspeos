@@ -548,7 +548,7 @@ class AnisotropicBSDF(BaseBSDF):
         else:
             file_name.file_name = str(file_path.parent / (file_path.name + ".anisotropicbsdf"))
         self._stub.Save(file_name)
-        return file_path
+        return file_name.file_name
 
 
 class BxdfDatapoint:
@@ -696,16 +696,14 @@ class BxdfDatapoint:
                 if np.shape(self.bxdf) != (len(self.theta_values), len(self.phi_values)):
                     self.bxdf = None
             else:
-                msg = "Theta values for Transmission need to be between [pi/2, pi]"
-                raise ValueError(msg)
+                raise ValueError("Theta values for Transmission need to be between [pi/2, pi]")
         else:
             if any([0 <= theta <= np.pi / 2 for theta in value]):
                 self._theta_values = value
                 if np.shape(self.bxdf) != (len(self.theta_values), len(self.phi_values)):
                     self.bxdf = None
             else:
-                msg = "Theta values for Transmission need to be between [0, pi/2]"
-                raise ValueError(msg)
+                raise ValueError("Theta values for Transmission need to be between [0, pi/2]")
 
     @property
     def phi_values(self):

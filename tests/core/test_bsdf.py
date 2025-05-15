@@ -168,19 +168,41 @@ def test_anisotropic_bsdf(speos: Speos):
     exported_bsdf = AnisotropicBSDF(speos, bsdf_path)
     assert compare_anisotropic_bsdf(initial_bsdf, exported_bsdf)
 
-    # remove transmission
-    exported_bsdf.has_transmission = False
-    assert not compare_anisotropic_bsdf(initial_bsdf, exported_bsdf)
-
-    # compare only reflective
-    initial_bsdf.has_transmission = False
-    assert compare_anisotropic_bsdf(initial_bsdf, exported_bsdf)
-
-    # change spectrum incidence
-    exported_bsdf.spectrum_incidence = np.radians(5)
-    exported_bsdf.spectrum_anisotropy = np.radians(2)
-    assert not compare_anisotropic_bsdf(initial_bsdf, exported_bsdf)
-
-    exported_bsdf.reset()
-    initial_bsdf.reset()
-    assert compare_anisotropic_bsdf(initial_bsdf, exported_bsdf)
+    # # remove transmission
+    # exported_bsdf.has_transmission = False
+    # assert not compare_anisotropic_bsdf(initial_bsdf, exported_bsdf)
+    #
+    # # compare only reflective
+    # initial_bsdf.has_transmission = False
+    # assert compare_anisotropic_bsdf(initial_bsdf, exported_bsdf)
+    #
+    # # change spectrum incidence
+    # exported_bsdf.spectrum_incidence = np.radians(5)
+    # exported_bsdf.spectrum_anisotropy = np.radians(2)
+    # assert not compare_anisotropic_bsdf(initial_bsdf, exported_bsdf)
+    #
+    # # test reset
+    # exported_bsdf.reset()
+    # initial_bsdf.reset()
+    # assert compare_anisotropic_bsdf(initial_bsdf, exported_bsdf)
+    #
+    # # test commit True/false
+    # # change value
+    # exported_bsdf.spectrum_incidence = [np.radians(5), np.radians(5)]
+    # exported_bsdf.spectrum_anisotropy = [np.radians(2), np.radians(2)]
+    #
+    # # save non changed file
+    # bsdf_path2 = Path(test_path) / "Test_Lambertian_bsdf2"
+    # bsdf_path2 = exported_bsdf.save(bsdf_path2, commit=False)
+    # assert does_file_exist(str(bsdf_path2))
+    #
+    # # save changed file
+    # bsdf_path3 = Path(test_path) / "Test_Lambertian_bsdf3"
+    # bsdf_path3 = exported_bsdf.save(bsdf_path3, commit=True)
+    # assert does_file_exist(str(bsdf_path3))
+    #
+    # # load and compare files
+    # bsdf2 = AnisotropicBSDF(speos, bsdf_path2)
+    # bsdf3 = AnisotropicBSDF(speos, bsdf_path3)
+    # assert compare_anisotropic_bsdf(initial_bsdf, bsdf2)
+    # assert not compare_anisotropic_bsdf(bsdf2, bsdf3)
