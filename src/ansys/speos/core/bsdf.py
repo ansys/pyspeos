@@ -621,6 +621,8 @@ class BxdfDatapoint:
     def bxdf(self, value: Collection[float]):
         if value is not None:
             bxdf = np.array(value)
+            if any((bxdf < 0).flatten()):
+                raise ValueError("bxdf data has to be positive")
             if np.shape(bxdf) == (len(self.theta_values), len(self.phi_values)):
                 self._bxdf = bxdf
             elif np.shape(bxdf) == (len(self.phi_values), len(self.theta_values)):
