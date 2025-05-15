@@ -331,6 +331,38 @@ class AnisotropicBSDF(BaseBSDF):
 
             # anisotropic file
 
+    def get(self, key=""):
+        """Retrieve any information from the BSDF object.
+
+        Parameters
+        ----------
+        key : str
+            Name of the property.
+
+        Returns
+        -------
+        property
+            Values/content of the associated property.
+        """
+        data = {k: v.fget(self) for k, v in BaseBSDF.__dict__.items() if isinstance(v, property)}
+        data.update(
+            {
+                k: v.fget(self)
+                for k, v in AnisotropicBSDF.__dict__.items()
+                if isinstance(v, property)
+            }
+        )
+        if key == "":
+            return data
+        elif data.get(key):
+            return data.get(key)
+        else:
+            print("Used key: {} not found in key list: {}.".format(key, data.keys()))
+
+    def __str__(self):
+        """Create string representation of a BSDF."""
+        return str(self.get())
+
     def _import_file(self, filepath):
         file_name = anisotropic_bsdf__v1__pb2.FileName()
         file_name.file_name = str(filepath)
@@ -585,7 +617,7 @@ class BxdfDatapoint:
         theta_values: Collection[float],
         phi_values: Collection[float],
         bxdf: Collection[float],
-        tis: float,
+        tis: float = 1,
         anisotropy: float = 0,
         wavelength: float = 555,
     ):
@@ -602,6 +634,33 @@ class BxdfDatapoint:
         self.bxdf = bxdf
         self.tis = tis
         self.wavelength = wavelength
+
+    def get(self, key=""):
+        """Retrieve any information from the RayPath object.
+
+        Parameters
+        ----------
+        key : str
+            Name of the property.
+
+        Returns
+        -------
+        property
+            Values/content of the associated property.
+        """
+        data = {
+            k: v.fget(self) for k, v in BxdfDatapoint.__dict__.items() if isinstance(v, property)
+        }
+        if key == "":
+            return data
+        elif data.get(key):
+            return data.get(key)
+        else:
+            print("Used key: {} not found in key list: {}.".format(key, data.keys()))
+
+    def __str__(self):
+        """Create string representation of a RayPath."""
+        return str(self.get())
 
     @property
     def anisotropy(self):
