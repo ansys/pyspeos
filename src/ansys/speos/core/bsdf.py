@@ -24,7 +24,7 @@
 
 from __future__ import annotations
 
-from collections import Counter
+from collections import Counter, UserDict
 from collections.abc import Collection
 from pathlib import Path
 from typing import Union
@@ -34,6 +34,7 @@ import numpy as np
 
 import ansys.api.speos.bsdf.v1.anisotropic_bsdf_pb2 as anisotropic_bsdf__v1__pb2
 import ansys.api.speos.bsdf.v1.anisotropic_bsdf_pb2_grpc as anisotropic_bsdf__v1__pb2_grpc
+import ansys.api.speos.bsdf.v1.spectral_bsdf_pb2 as spectral_bsdf__v1__pb2
 from ansys.speos.core.speos import Speos
 
 
@@ -166,136 +167,224 @@ class BaseBSDF:
         return [r_angle, t_angle]
 
 
-class InterpolationEnhancement:
-    """Class to facilitate Specular interpolation enhancement.
+class _InterpolationEnhancement:
+    """Class to facilitate Specular interpolation enhancement."""
 
-    Notes
-    -----
-    **Do not instantiate this class yourself**, This is a Helper class,
-    """
+    class _InterpolationSettings(UserDict):
+        """Class to facilitate interpolation settings as fixed dictionary."""
 
-    def __init__(self, bsdf: Union[AnisotropicBSDF], index1: float = 1, index2: float = 1):
+        def __init__(self, initial_data) -> None:
+            self._fixed_keys = list(initial_data.keys())
+            super().__init__(initial_data)
+
+        def __setitem__(self, key, value) -> None:
+            """Dis-able setting values under two conditions.
+
+            1) methods to set value if dictionary value is a fixed dictionary.
+            2) key is not inside fixed dictionary.
+            """
+            if key in self._fixed_keys:
+                if not isinstance(self.get(key), self.__class__):
+                    super().__setitem__(key, value)
+                else:
+                    raise ValueError(
+                        "Cannot update key {key} with a FixedKeyDict as value.".format(key=key)
+                    )
+            else:
+                raise KeyError("Cannot add new key: {key} is not allowed.".format(key=key))
+
+        def __delitem__(self, key) -> None:
+            """Dis-able delete key from a fixed dictionary."""
+            raise KeyError("Deletion of key: {key}  is not allowed.".format(key=key))
+
+        def __iter__(self):
+            """Iterate keys in fixed key order."""
+            return iter(self._fixed_keys)
+
+        def keys(self) -> list[str]:
+            """Return keys from fixed dictionary."""
+            return self._fixed_keys
+
+        def items(self):
+            """Return items from fixed dictionary."""
+            return [(key, self[key]) for key in self._fixed_keys]
+
+        def update(self, *args, **kwargs) -> None:
+            """
+            Update the fixed dictionary with multiple values.
+
+            Example:
+                my_dict.update({'a': 10, 'b': 20})
+                my_dict.update({'x': 100})
+                my_dict.update(x=200, y=300)
+
+            Parameters
+            ----------
+            args: tuple
+                Dictionary or iterable of key-value pairs.
+            kwargs: dict
+                Key-value pairs to update the dictionary.
+            """
+            updates = dict(*args, **kwargs)
+            for key in updates:
+                if key not in self._fixed_keys:
+                    raise KeyError("Cannot add new key: {key} is not allowed.".format(key=key))
+                if isinstance(self.get(key), self.__class__):
+                    raise ValueError(
+                        "Cannot update key {key} with FixedKeyDict as value.".format(key=key)
+                    )
+            super().update(updates)
+
+    def __init__(
+        self,
+        bsdf: Union[AnisotropicBSDF],
+        bsdf_namespace: Union[spectral_bsdf__v1__pb2, anisotropic_bsdf__v1__pb2],
+        index_1: float = 1,
+        index_2: float = 1,
+    ) -> None:
         self._bsdf = bsdf
-        self._index1 = index1
-        self._index2 = index2
 
-        self._data, self._data_reflection, self._data_transmission = (
-            self._create_interpolation_data()
+        self.__indices = bsdf_namespace.RefractiveIndices(
+            refractive_index_1=index_1,
+            refractive_index_2=index_2,
         )
-
-    def _create_interpolation_data(self):
-        indices = anisotropic_bsdf__v1__pb2.RefractiveIndices(
-            refractive_index_1=self.index1, refractive_index_2=self.index2
-        )
-        self._bsdf._stub.GenerateSpecularInterpolationEnhancementData(indices)
-        data = self._bsdf._stub.GetSpecularInterpolationEnhancementData(Empty())
-        data_r, data_t = None, None
-        if self._bsdf.has_transmission:
-            data_t = data.transmission
-        if self._bsdf.has_reflection:
-            data_r = data.reflection
-        return data, data_r, data_t
+        self._bsdf._stub.GenerateSpecularInterpolationEnhancementData(self.__indices)
+        self.__cones_data = self._bsdf._stub.GetSpecularInterpolationEnhancementData(Empty())
 
     @property
-    def index1(self):
+    def index1(self) -> float:
         """Refractive index on reflection side."""
-        return self._index1
+        return self.__cones_data.refractive_index_1
 
     @index1.setter
-    def index1(self, value):
-        self._index1 = value
-        self._data.refractive_index_1 = value
+    def index1(self, value: Union[float, int]) -> None:
+        """Set refractive index on reflection side."""
+        self.__cones_data.refractive_index_1 = value
 
     @property
-    def index2(self):
+    def index2(self) -> float:
         """Refractive index on transmission side."""
-        return self._index1
+        return self.__cones_data.refractive_index_2
 
     @index2.setter
-    def index2(self, value):
-        self._index2 = value
-        self._data.refractive_index_2 = value
+    def index2(self, value: Union[float, int]) -> None:
+        """Set refractive index on transmission side."""
+        self.__cones_data.refractive_index_2 = value
 
     @property
-    def data_reflection(self):
-        """Interpolation data for reflection.
-
-        Notes
-        -----
-        Please don't set directly use define_interpolation_*** methods
-        """
-        data = {}
-        if isinstance(self._bsdf, AnisotropicBSDF) and self._data_reflection is not None:
-            for i, ani_sample in enumerate(self._data_reflection.anisotropic_samples):
-                data[str(self._bsdf.anisotropic_angles[0][i])] = {}
-                for j, incident in enumerate(ani_sample.incidence_samples):
-                    data[str(self._bsdf.anisotropic_angles[0][i])][
-                        str(self._bsdf.incident_angles[0][(i + 1) * (j + 1) - 1])
-                    ] = {"half_angle": incident.cone_half_angle, "height": incident.cone_height}
-            return data
-        elif self._data_reflection is None:
+    def get_reflection_interpolation_settings(self) -> Union[None, _InterpolationSettings]:
+        """Return a fixed dictionary for reflection interpolation settings to be set by user."""
+        if self.__cones_data.reflection is None:
             return None
+        if isinstance(self._bsdf, AnisotropicBSDF):
+            reflection_interpolation_settings = self._InterpolationSettings(
+                {str(key): 0 for key in self._bsdf.anisotropic_angles[0]}
+            )
+            for aniso_sample_index, ani_sample in enumerate(
+                self.__cones_data.reflection.anisotropic_samples
+            ):
+                reflection_incident_interpolation_settings = self._InterpolationSettings(
+                    {str(key): 0 for key in self._bsdf.incident_angles[0]}
+                )
+                tmp_reflection_key = str(self._bsdf.anisotropic_angles[0][aniso_sample_index])
+                reflection_interpolation_settings.update(
+                    {tmp_reflection_key: reflection_incident_interpolation_settings}
+                )
+                for incident_sample_index, incident in enumerate(ani_sample.incidence_samples):
+                    tmp_reflection_incident_key = str(
+                        self._bsdf.incident_angles[0][
+                            aniso_sample_index * len(ani_sample.incidence_samples)
+                            + incident_sample_index
+                        ]
+                    )
+                    reflection_interpolation_settings[
+                        str(self._bsdf.anisotropic_angles[0][aniso_sample_index])
+                    ].update(
+                        {
+                            tmp_reflection_incident_key: {
+                                "half_angle": incident.cone_half_angle,
+                                "height": incident.cone_height,
+                            }
+                        }
+                    )
+            return reflection_interpolation_settings
         else:
             raise ValueError("only anistropic bsdf supported")
 
-    def define_interpolation_anisotropicbsdf(
-        self, is_brdf: bool, anisotropic_index, incidence_index, half_angle, height
-    ):
-        """Define intrpolatrion for one incident angle.
+    def set_interpolation_settings(
+        self, is_brdf: bool, settings: _InterpolationEnhancement._InterpolationSettings
+    ) -> None:
+        """Set interpolation obtained from bsdf Class or that modified by user.
 
         Parameters
         ----------
-        is_brdf : bool
-            defines if reflection or transmission data is set
-        anisotropic_index : int
-            index to define for which anisotropy sample data is set
-        incidence_index : int
-            index to define for which incidence sample data is set
-        half_angle : float
-            Half angle of the cone in radian
-        height : float
-            Height of the cone
+        is_brdf: bool
+            true if settings is for brdf, else for btdf
+        settings: _InterpolationEnhancement._InterpolationSettings
+            interpolation settings.
         """
-        if self._data_reflection is None and self._data_transmission is None:
+        if self.__cones_data.reflection is None and self.__cones_data.transmission is None:
             return None
+        if not isinstance(settings, _InterpolationEnhancement._InterpolationSettings):
+            raise ValueError("only interpolation settings are supported")
         if isinstance(self._bsdf, AnisotropicBSDF):
-            if is_brdf and self._data_reflection is not None:
-                interpolation_data = self._data_reflection.anisotropic_samples[
-                    anisotropic_index
-                ].incidence_samples[incidence_index]
-            elif self._data_transmission is not None:
-                interpolation_data = self._data_transmission.anisotropic_samples[
-                    anisotropic_index
-                ].incidence_samples[incidence_index]
-            else:
-                raise ValueError(
-                    "Interpolation can only be applied for a direction where data is present"
-                )
-            interpolation_data.cone_half_angle = half_angle
-            interpolation_data.cone_height = height
-            self._bsdf._stub.SetSpecularInterpolationEnhancementData(self._data)
+            if is_brdf and self.__cones_data.reflection is not None:
+                for iso_sample_key_index, iso_sample_key in enumerate(settings.keys()):
+                    for incident_key_index, incident_key in enumerate(
+                        settings[iso_sample_key].keys()
+                    ):
+                        self.__cones_data.reflection.anisotropic_samples[
+                            iso_sample_key_index
+                        ].incidence_samples[incident_key_index].cone_half_angle = settings[
+                            iso_sample_key
+                        ][incident_key]["half_angle"]
+                        self.__cones_data.reflection.anisotropic_samples[
+                            iso_sample_key_index
+                        ].incidence_samples[incident_key_index].cone_height = settings[
+                            iso_sample_key
+                        ][incident_key]["height"]
+            self._bsdf._stub.SetSpecularInterpolationEnhancementData(self.__cones_data)
         else:
             raise ValueError("only anistropic bsdf supported")
 
     @property
-    def data_transmission(self):
-        """Interpolation data for transmission.
-
-        Notes
-        -----
-        Please don't set directly use define_interpolation_*** methods
-        """
-        data = {}
-        if isinstance(self._bsdf, AnisotropicBSDF) and self._data_transmission is not None:
-            for i, ani_sample in enumerate(self._data_transmission.anisotropic_samples):
-                data[str(self._bsdf.anisotropic_angles[1][i])] = {}
-                for j, incident in enumerate(ani_sample.incidence_samples):
-                    data[str(self._bsdf.anisotropic_angles[1][i])][
-                        str(self._bsdf.incident_angles[1][(i + 1) * (j + 1) - 1])
-                    ] = {"half_angle": incident.cone_half_angle, "height": incident.cone_height}
-            return data
-        elif self._data_transmission is None:
+    def get_transmission_interpolation_settings(self) -> Union[None, _InterpolationSettings]:
+        """Return a fixed dictionary for reflection interpolation settings to be set by user."""
+        if self.__cones_data.transmission is None:
             return None
+        if isinstance(self._bsdf, AnisotropicBSDF):
+            transmission_interpolation_settings = self._InterpolationSettings(
+                {str(key): 0 for key in self._bsdf.anisotropic_angles[1]}
+            )
+            for aniso_sample_index, ani_sample in enumerate(
+                self.__cones_data.transmission.anisotropic_samples
+            ):
+                transmission_incident_interpolation_settings = self._InterpolationSettings(
+                    {str(key): 0 for key in self._bsdf.incident_angles[1]}
+                )
+                tmp_transmission_key = str(self._bsdf.anisotropic_angles[1][aniso_sample_index])
+                transmission_interpolation_settings.update(
+                    {tmp_transmission_key: transmission_incident_interpolation_settings}
+                )
+                for incident_sample_index, incident in enumerate(ani_sample.incidence_samples):
+                    tmp_transmission_incident_key = str(
+                        self._bsdf.incident_angles[1][
+                            aniso_sample_index * len(ani_sample.incidence_samples)
+                            + incident_sample_index
+                        ]
+                    )
+                    transmission_interpolation_settings[
+                        str(self._bsdf.anisotropic_angles[1][aniso_sample_index])
+                    ].update(
+                        {
+                            tmp_transmission_incident_key: {
+                                "half_angle": incident.cone_half_angle,
+                                "height": incident.cone_height,
+                            }
+                        }
+                    )
+            return transmission_interpolation_settings
+
         else:
             raise ValueError("only anistropic bsdf supported")
 
