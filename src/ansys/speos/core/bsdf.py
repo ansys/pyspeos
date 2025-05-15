@@ -265,6 +265,7 @@ class InterpolationEnhancement:
                 )
             interpolation_data.cone_half_angle = half_angle
             interpolation_data.cone_height = height
+            self._bsdf._stub.SetSpecularInterpolationEnhancementData(self._data)
         else:
             raise ValueError("only anistropic bsdf supported")
 

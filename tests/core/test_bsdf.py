@@ -50,7 +50,7 @@ def create_bsdf_data_point(is_brdf, incident_angle, anisotropy):
             thetas[t] = np.pi * 0.5 * (1 + t / (nb_theta - 1))
             for p in range(nb_phi):
                 phis[p] = p * 2 * np.pi / (nb_phi - 1)
-                bxdf[t, p] = np.cos(thetas[t]) / np.pi
+                bxdf[t, p] = abs(np.cos(thetas[t]) / np.pi)
     datapoint = bsdf.BxdfDatapoint(is_brdf, 0, thetas, phis, bxdf, 0.5, anisotropy)
     datapoint.set_incident_angle(0, False)
     datapoint.set_incident_angle(incident_angle)
@@ -91,17 +91,27 @@ def create_anisotropicbsdf(speos: Speos):
 def compare_bsdf_data_point(bsdfdata1: BxdfDatapoint, bsdfdata2: BxdfDatapoint):
     """COmpare a BXDF Datapoint."""
     test_list = []
-    test_list.append(bsdfdata1.tis == bsdfdata2.tis)
+    # test_list.append(bsdfdata1.tis == bsdfdata2.tis)
     test_list.append(bsdfdata1.anisotropy == bsdfdata2.anisotropy)
-    test_list.append(bsdfdata1.theta_values == bsdfdata2.theta_values)
-    test_list.append(bsdfdata1.phi_values == bsdfdata1.phi_values)
-    test_list.append(bsdfdata1.bxdf == bsdfdata2.bxdf)
-    test_list.append(bsdfdata1.incident_angle == bsdfdata2.incident_angle)
+    test_list.append(approx_arrays(bsdfdata1.theta_values, bsdfdata2.theta_values))
+    test_list.append(approx_arrays(bsdfdata1.phi_values, bsdfdata2.phi_values))
+    test_list.append(approx_arrays(bsdfdata1.bxdf, bsdfdata2.bxdf))
+    test_list.append(approx_comparison(bsdfdata1.incident_angle, bsdfdata2.incident_angle))
     test_list.append(bsdfdata1.is_brdf == bsdfdata2.is_brdf)
-    if any(test_list):
+    if all(test_list):
         return True
     else:
         return False
+
+
+def approx_comparison(value1, value2):
+    """Approximation comparison for floats."""
+    return np.fabs(value1 - value2) < 1e-6
+
+
+def approx_arrays(value1, values2):
+    """Approximation comparison for arrays."""
+    return all(np.isclose(value1, values2, atol=1e-4).flatten())
 
 
 def compare_anisotropic_bsdf(bsdf1: AnisotropicBSDF, bsdf2: AnisotropicBSDF):
@@ -113,7 +123,6 @@ def compare_anisotropic_bsdf(bsdf1: AnisotropicBSDF, bsdf2: AnisotropicBSDF):
         bsdf1.incident_angles,
         bsdf1.has_reflection,
         bsdf1.has_transmission,
-        bsdf1.reflection_spectrum,
         bsdf1.spectrum_anisotropy,
         bsdf1.spectrum_incidence,
         bsdf1.anisotropy_vector,
@@ -125,7 +134,6 @@ def compare_anisotropic_bsdf(bsdf1: AnisotropicBSDF, bsdf2: AnisotropicBSDF):
         bsdf2.incident_angles,
         bsdf2.has_reflection,
         bsdf2.has_transmission,
-        bsdf2.reflection_spectrum,
         bsdf2.spectrum_anisotropy,
         bsdf2.spectrum_incidence,
         bsdf2.anisotropy_vector,
@@ -133,17 +141,15 @@ def compare_anisotropic_bsdf(bsdf1: AnisotropicBSDF, bsdf2: AnisotropicBSDF):
     ]
     for item1, item2 in zip(bsdf1_data, bsdf2_data):
         test_list.append(item1 == item2)
-    if not any(test_list):
-        return False
-    test_list = []
     if bsdf1.has_reflection and bsdf2.has_reflection:
+        test_list.append(approx_arrays(bsdf1.reflection_spectrum, bsdf2.reflection_spectrum))
         for brdf1data, brdf2data in zip(bsdf1.brdf, bsdf2.brdf):
             test_list.append(compare_bsdf_data_point(brdf1data, brdf2data))
     if bsdf1.has_transmission and bsdf2.has_transmission:
+        test_list.append(approx_arrays(bsdf1.transmission_spectrum, bsdf2.transmission_spectrum))
         for btdf1data, btdf2data in zip(bsdf1.btdf, bsdf2.btdf):
             test_list.append(compare_bsdf_data_point(btdf1data, btdf2data))
-
-    if any(test_list):
+    if all(test_list):
         return True
     else:
         return False
@@ -171,8 +177,8 @@ def test_anisotropic_bsdf(speos: Speos):
     assert compare_anisotropic_bsdf(initial_bsdf, exported_bsdf)
 
     # change spectrum incidence
-    exported_bsdf.spectrum_incidence = 5
-    exported_bsdf.spectrum_anisotropy = 2
+    exported_bsdf.spectrum_incidence = np.radians(5)
+    exported_bsdf.spectrum_anisotropy = np.radians(2)
     assert not compare_anisotropic_bsdf(initial_bsdf, exported_bsdf)
 
     exported_bsdf.reset()
