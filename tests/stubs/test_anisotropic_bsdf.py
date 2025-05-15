@@ -209,7 +209,7 @@ def compare_anisotropic_bsdf(bsdf1, bsdf2):
     for w in range(len(bsdf1.transmission.spectrum)):
         if bsdf1.transmission.spectrum[w].wavelength != bsdf2.transmission.spectrum[w].wavelength:
             return False
-        if bsdf1.transmission.spectrum[w].wavelength != bsdf2.transmission.spectrum[w].wavelength:
+        if bsdf1.transmission.spectrum[w].coefficient != bsdf2.transmission.spectrum[w].coefficient:
             return False
 
     # anisotropy sampling
