@@ -93,14 +93,18 @@ class BaseBSDF:
         return self._brdf
 
     @brdf.setter
-    def brdf(self, value: Collection[BxdfDatapoint]):
-        check = any([bxdf.is_brdf for bxdf in value])
-        if check is True or value is None:
+    def brdf(self, value: list[BxdfDatapoint]):
+        if value is None:
             self._brdf = value
-            self.has_reflection = True
         else:
-            msg = "One or multiple datapoints are transmission datapoints"
-            raise ValueError(msg)
+            check = any([bxdf.is_brdf for bxdf in value])
+            if check is True:
+                value.sort(key=lambda x: (x.anisotropy, x.wavelength, x.incident_angle))
+                self._brdf = value
+                self.has_reflection = True
+            else:
+                msg = "One or multiple datapoints are transmission datapoints"
+                raise ValueError(msg)
 
     @property
     def btdf(self) -> Collection[BxdfDatapoint]:
@@ -108,14 +112,18 @@ class BaseBSDF:
         return self._btdf
 
     @btdf.setter
-    def btdf(self, value: Collection[BxdfDatapoint]):
-        check = any([not bxdf.is_brdf for bxdf in value])
-        if check is True or value is None:
+    def btdf(self, value: list[BxdfDatapoint]):
+        if value is None:
             self._btdf = value
-            self.has_transmission = True
         else:
-            msg = "One or multiple datapoints are reflection datapoints"
-            raise ValueError(msg)
+            check = any([not bxdf.is_brdf for bxdf in value])
+            if check is True:
+                value.sort(key=lambda x: (x.anisotropy, x.wavelength, x.incident_angle))
+                self._btdf = value
+                self.has_transmission = True
+            else:
+                msg = "One or multiple datapoints are reflection datapoints"
+                raise ValueError(msg)
 
     @property
     def nb_incidents(self) -> list[int]:
@@ -579,6 +587,7 @@ class BxdfDatapoint:
         bxdf: Collection[float],
         tis: float,
         anisotropy: float = 0,
+        wavelength: float = 555,
     ):
         # data_reset
         self._theta_values = []
@@ -592,6 +601,7 @@ class BxdfDatapoint:
         self.phi_values = phi_values
         self.bxdf = bxdf
         self.tis = tis
+        self.wavelength = wavelength
 
     @property
     def anisotropy(self):
