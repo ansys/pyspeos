@@ -263,6 +263,7 @@ class _InterpolationEnhancement:
     def index1(self, value: Union[float, int]) -> None:
         """Set refractive index on reflection side."""
         self.__cones_data.refractive_index_1 = value
+        self._bsdf._stub.SetSpecularInterpolationEnhancementData(self.__cones_data)
 
     @property
     def index2(self) -> float:
