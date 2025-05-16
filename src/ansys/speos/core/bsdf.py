@@ -34,7 +34,10 @@ import numpy as np
 
 import ansys.api.speos.bsdf.v1.anisotropic_bsdf_pb2 as anisotropic_bsdf__v1__pb2
 import ansys.api.speos.bsdf.v1.anisotropic_bsdf_pb2_grpc as anisotropic_bsdf__v1__pb2_grpc
+import ansys.api.speos.bsdf.v1.bsdf_creation_pb2 as bsdf_creation__v1__pb2
+import ansys.api.speos.bsdf.v1.bsdf_creation_pb2_grpc as bsdf_creation__v1__pb2_grpc
 import ansys.api.speos.bsdf.v1.spectral_bsdf_pb2 as spectral_bsdf__v1__pb2
+import ansys.speos.core
 from ansys.speos.core.speos import Speos
 
 
@@ -893,3 +896,54 @@ class BxdfDatapoint:
                 self.bxdf = None
         else:
             raise ValueError("Theta values for Transmission need to be between [pi/2, pi]")
+
+
+def create_bsdf180(
+    speos: ansys.speos.core.Speos,
+    bsdf180_file_path: Union[str, Path],
+    path_normal_bsdf: Union[str, Path],
+    path_opposite_bsdf: Union[str, Path],
+) -> Path:
+    """Create a bsdf180 from 2 bsdf.
+
+    This function allows to create BSDF180 from 2 bsdf files
+    allowed files: *.coated *.brdf *.anisotropicbsdf *.scattering
+
+    Parameters
+    ----------
+    speos : ansys.speos.core.Speos
+        Speos Object to connect to RPC server
+    bsdf180_file_path : Union[str, Path]
+        File location of created bsdf180
+    path_normal_bsdf : Union[str, Path]
+        File location of first file, which represent normal direction
+        Allowed files: *.coated, *.brdf, *.anisotropicbsdf, *.scattering
+    path_opposite_bsdf : Union[str, Path]
+        File location of first file, which represent anti-normal direction
+        Allowed files: *.coated, *.brdf, *.anisotropicbsdf, *.scattering
+    fix_disparity : bool
+        This allows to create a bsdf when the two files are not normalized to each other.
+        By default, ``False``
+
+    Returns
+    -------
+    Path
+        Returns where the file location of the bsdf180
+    """
+    supported = [".coated", ".brdf", ".anisotropicbsdf", ".scattering"]
+    stub = bsdf_creation__v1__pb2_grpc.BsdfCreationServiceStub(speos.client.channel)
+    bsdf180_file_path = Path(bsdf180_file_path)
+    path_normal_bsdf = Path(path_normal_bsdf)
+    path_opposite_bsdf = Path(path_opposite_bsdf)
+    if path_normal_bsdf.suffix not in supported or path_opposite_bsdf.suffix not in supported:
+        raise TypeError(
+            f"Filetype not support please use one of the supported filetype, {supported}."
+        )
+    if bsdf180_file_path.suffix != ".bsdf180":
+        bsdf180_file_path = bsdf180_file_path.parent / (bsdf180_file_path.name + ".anisotropicbsdf")
+    bsdf180_request = bsdf_creation__v1__pb2.Bsdf180InputData()
+    bsdf180_request.input_front_bsdf_file_name = str(path_normal_bsdf)
+    bsdf180_request.input_opposite_bsdf_file_name = str(path_opposite_bsdf)
+    bsdf180_request.output_file_name = str(bsdf180_file_path)
+    stub.BuildBsdf180(bsdf180_request)
+    return bsdf180_file_path

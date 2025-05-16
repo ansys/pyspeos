@@ -29,7 +29,7 @@ import numpy as np
 from ansys.speos.core import Speos, bsdf
 from ansys.speos.core.bsdf import AnisotropicBSDF, BxdfDatapoint
 from tests.conftest import test_path
-from tests.helper import does_file_exist
+from tests.helper import does_file_exist, remove_file
 
 
 def create_bsdf_data_point(is_brdf, incident_angle, anisotropy):
@@ -206,3 +206,19 @@ def test_anisotropic_bsdf(speos: Speos):
     bsdf3 = AnisotropicBSDF(speos, bsdf_path3)
     assert compare_anisotropic_bsdf(initial_bsdf, bsdf2)
     assert not compare_anisotropic_bsdf(bsdf2, bsdf3)
+    remove_file(str(bsdf_path))
+    remove_file(str(bsdf_path2))
+    remove_file(str(bsdf_path3))
+
+
+def test_bsdf180(speos: Speos):
+    """Znit test for create bsdf180 method."""
+    input_file = Path(test_path) / "Gaussian Fresnel 10 deg.anisotropicbsdf"
+    output_file_1 = Path(test_path) / "Test_bsdf180_1"
+    output_file_2 = Path(test_path) / "Test_bsdf180_2.bsdf180"
+    output_file_1 = bsdf.create_bsdf180(speos, output_file_1, input_file, input_file)
+    assert does_file_exist(str(output_file_1))
+    bsdf.create_bsdf180(speos, output_file_2, input_file, input_file)
+    assert does_file_exist(str(output_file_2))
+    remove_file(str(output_file_1))
+    remove_file(str(output_file_2))
