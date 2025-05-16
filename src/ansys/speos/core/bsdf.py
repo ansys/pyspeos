@@ -324,25 +324,28 @@ class _InterpolationEnhancement:
             interpolation settings.
         """
         if self.__cones_data.reflection is None and self.__cones_data.transmission is None:
-            return None
+            raise ValueError("does not have reflection or transmission")
+        if is_brdf and self.__cones_data.reflection is None:
+            raise ValueError("reflection data is none")
+        if not is_brdf and self.__cones_data.transmission is None:
+            raise ValueError("transmission data is none")
         if not isinstance(settings, _InterpolationEnhancement._InterpolationSettings):
-            raise ValueError("only interpolation settings are supported")
+            raise ImportError("only interpolation settings are supported")
+
         if isinstance(self._bsdf, AnisotropicBSDF):
-            if is_brdf and self.__cones_data.reflection is not None:
-                for iso_sample_key_index, iso_sample_key in enumerate(settings.keys()):
-                    for incident_key_index, incident_key in enumerate(
-                        settings[iso_sample_key].keys()
-                    ):
-                        self.__cones_data.reflection.anisotropic_samples[
-                            iso_sample_key_index
-                        ].incidence_samples[incident_key_index].cone_half_angle = settings[
-                            iso_sample_key
-                        ][incident_key]["half_angle"]
-                        self.__cones_data.reflection.anisotropic_samples[
-                            iso_sample_key_index
-                        ].incidence_samples[incident_key_index].cone_height = settings[
-                            iso_sample_key
-                        ][incident_key]["height"]
+            tmp_settings = None
+            if is_brdf:
+                tmp_settings = self.__cones_data.reflection
+            elif not is_brdf:
+                tmp_settings = self.__cones_data.transmission
+            for iso_sample_key_index, iso_sample_key in enumerate(settings.keys()):
+                for incident_key_index, incident_key in enumerate(settings[iso_sample_key].keys()):
+                    tmp_settings.anisotropic_samples[iso_sample_key_index].incidence_samples[
+                        incident_key_index
+                    ].cone_half_angle = settings[iso_sample_key][incident_key]["half_angle"]
+                    tmp_settings.anisotropic_samples[iso_sample_key_index].incidence_samples[
+                        incident_key_index
+                    ].cone_height = settings[iso_sample_key][incident_key]["height"]
             self._bsdf._stub.SetSpecularInterpolationEnhancementData(self.__cones_data)
         else:
             raise ValueError("only anistropic bsdf supported")
