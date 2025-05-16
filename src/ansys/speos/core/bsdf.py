@@ -661,18 +661,20 @@ class AnisotropicBSDF(BaseBSDF):
         self._stub.Import(bsdf)
         self._grpcbsdf = bsdf
 
-    def interpolation_enhancement(self, index_1 : float = 1, index_2 : float = 1) -> _InterpolationEnhancement:
+    def interpolation_enhancement(
+        self, index_1: float = 1, index_2: float = 1
+    ) -> _InterpolationEnhancement:
         """Apply automatic interpolation enhancement.
 
         Return interpolation settings to user if settings need change.
-        
+
         Parameters
-        ------------
+        ----------
         index_1 : float
             outside refractive index
         index_2 : float
             inside refractive index
-        
+
         Returns
         -------
         ansys.speos.core.bsdf._InterpolationEnhancement
