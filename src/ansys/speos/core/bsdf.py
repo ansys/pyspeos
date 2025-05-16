@@ -940,10 +940,60 @@ def create_bsdf180(
             f"Filetype not support please use one of the supported filetype, {supported}."
         )
     if bsdf180_file_path.suffix != ".bsdf180":
-        bsdf180_file_path = bsdf180_file_path.parent / (bsdf180_file_path.name + ".anisotropicbsdf")
+        bsdf180_file_path = bsdf180_file_path.parent / (bsdf180_file_path.name + ".bsdf180")
     bsdf180_request = bsdf_creation__v1__pb2.Bsdf180InputData()
     bsdf180_request.input_front_bsdf_file_name = str(path_normal_bsdf)
     bsdf180_request.input_opposite_bsdf_file_name = str(path_opposite_bsdf)
     bsdf180_request.output_file_name = str(bsdf180_file_path)
     stub.BuildBsdf180(bsdf180_request)
     return bsdf180_file_path
+
+
+def create_spectral_brdf(
+    speos: ansys.speos.core.Speos,
+    spectral_bsdf_file_path: Union[str, Path],
+    wavelength_list: list[float],
+    anisotropic_bsdf_file_list: list[Union[Path, str]],
+) -> Path:
+    """Create a brdf from multiple bsdf.
+
+    This function allows to create BRDF from multiple bsdf files
+    allowed files: *.anisotropicbsdf
+
+    Parameters
+    ----------
+    speos : ansys.speos.core.Speos
+        Speos Object to connect to RPC server
+    spectral_bsdf_file_path : Union[str, Path]
+        File location of created BRDF file
+    wavelength_list : list[float]
+        List of wavelength
+    anisotropic_bsdf_file_list :  list[Union[Path, str]]
+        list of bsdf file locations
+
+    Returns
+    -------
+    Path
+        Location of created BRDF
+    """
+    stub = bsdf_creation__v1__pb2_grpc.BsdfCreationServiceStub(speos.client.channel)
+    spectral_request = bsdf_creation__v1__pb2.SpectralBsdfInputData()
+    spectral_bsdf_file_path = Path(spectral_bsdf_file_path)
+    if spectral_bsdf_file_path.suffix != ".brdf":
+        spectral_bsdf_file_path = spectral_bsdf_file_path.parent / (
+            spectral_bsdf_file_path.name + ".brdf"
+        )
+    spectral_request.output_file_name = str(spectral_bsdf_file_path)
+    if len(wavelength_list) == len(anisotropic_bsdf_file_list):
+        anisotropic_bsdf_file_list = [Path(bsdf_loc) for bsdf_loc in anisotropic_bsdf_file_list]
+        for bsdf_loc in anisotropic_bsdf_file_list:
+            if bsdf_loc.suffix != ".anisotropicbsdf":
+                raise TypeError("Filetype not support please use only anisotropicbsdf files.")
+    else:
+        raise RuntimeError("The Number BSDF file and wavelength needs to be identical")
+    for wl, file in zip(wavelength_list, anisotropic_bsdf_file_list):
+        tmp = spectral_request.input_anisotropic_samples.add()
+        tmp.wavelength = float(wl)
+        tmp.file_name = str(file)
+    stub.BuildSpectralBsdf(spectral_request)
+    return spectral_bsdf_file_path

@@ -211,14 +211,31 @@ def test_anisotropic_bsdf(speos: Speos):
     remove_file(str(bsdf_path3))
 
 
-def test_bsdf180(speos: Speos):
-    """Znit test for create bsdf180 method."""
+def test_bsdf180_creation(speos: Speos):
+    """Unit test for create bsdf180 method."""
     input_file = Path(test_path) / "Gaussian Fresnel 10 deg.anisotropicbsdf"
     output_file_1 = Path(test_path) / "Test_bsdf180_1"
     output_file_2 = Path(test_path) / "Test_bsdf180_2.bsdf180"
     output_file_1 = bsdf.create_bsdf180(speos, output_file_1, input_file, input_file)
     assert does_file_exist(str(output_file_1))
     bsdf.create_bsdf180(speos, output_file_2, input_file, input_file)
+    assert does_file_exist(str(output_file_2))
+    remove_file(str(output_file_1))
+    remove_file(str(output_file_2))
+
+
+def test_spectral_brdf_creation(speos: Speos):
+    """Unit test for create spectral brdf method."""
+    input_file = [
+        Path(test_path) / "R_test.anisotropicbsdf",
+        Path(test_path) / "R_test.anisotropicbsdf",
+    ]
+    wl_list = [400.0, 700.0]
+    output_file_1 = Path(test_path) / "Test_brdf_1"
+    output_file_2 = Path(test_path) / "Test_brdf_2.brdf"
+    output_file_1 = bsdf.create_spectral_brdf(speos, output_file_1, wl_list, input_file)
+    assert does_file_exist(str(output_file_1))
+    bsdf.create_spectral_brdf(speos, output_file_2, wl_list, input_file)
     assert does_file_exist(str(output_file_2))
     remove_file(str(output_file_1))
     remove_file(str(output_file_2))
