@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -93,7 +93,7 @@ To log using this logger, call the desired method as a normal logger with:
 
 Instance Logger
 ~~~~~~~~~~~~~~~
-Every time an instance of :class:`speos <ansys.speos.core.speos.speos>`
+Every time an instance of :class:`ansys.speos.core.speos.Speos`
 is created, a logger is created and stored in ``LOG._instances``. This field is a
 dictionary where the key is the name of the created logger.
 These instance loggers inherit the ``pyspeos_global`` output handlers and
@@ -126,7 +126,7 @@ from typing import TYPE_CHECKING, Optional
 import weakref
 
 if TYPE_CHECKING:
-    from ansys.speos.core.client import SpeosClient  # pragma: no cover
+    from ansys.speos.core.kernel.client import SpeosClient  # pragma: no cover
 
 ## Default configuration
 LOG_LEVEL = logging.DEBUG
@@ -135,7 +135,7 @@ FILE_NAME = "pyspeos.log"
 # For convenience
 DEBUG = logging.DEBUG
 INFO = logging.INFO
-WARN = logging.WARN
+WARN = logging.WARNING
 ERROR = logging.ERROR
 CRITICAL = logging.CRITICAL
 
@@ -176,11 +176,14 @@ class PySpeosCustomAdapter(logging.LoggerAdapter):
 
     """
 
-    level = None  # This is maintained for compatibility with ``supress_logging``, but it does nothing.
+    level = (
+        None  # This is maintained for compatibility with ``supress_logging``, but it does nothing.
+    )
     file_handler = None
     stdout_handler = None
 
     def __init__(self, logger, extra=None):
+        """Initialize the logger adapter."""
         self.logger = logger
         if extra is not None:
             self.extra = weakref.proxy(extra)
@@ -189,10 +192,26 @@ class PySpeosCustomAdapter(logging.LoggerAdapter):
         self.file_handler = logger.file_handler
         self.std_out_handler = logger.std_out_handler
 
-    def process(self, msg, kwargs):
+    def process(self, msg, kwargs) -> tuple[str, dict]:
+        """Process extra Arguments.
+
+        Parameters
+        ----------
+        msg : str
+            Log message
+        kwargs : dict
+            extra Arguments dictionary
+
+        Returns
+        -------
+        tuple[str, dict]
+            Message and processed extra arguments
+        """
         kwargs["extra"] = {}
         # This are the extra parameters sent to log
-        kwargs["extra"]["instance_name"] = self.extra.get_name()  # here self.extra is the argument pass to the log records.
+        kwargs["extra"]["instance_name"] = (
+            self.extra.get_name()
+        )  # here self.extra is the argument pass to the log records.
         return msg, kwargs
 
     def log_to_file(self, filename: str = FILE_NAME, level: int = LOG_LEVEL):
@@ -207,8 +226,9 @@ class PySpeosCustomAdapter(logging.LoggerAdapter):
             Level of logging. The default is ``10``, in which case the
             ``logging.DEBUG`` level is used.
         """
-
-        self.logger = addfile_handler(self.logger, filename=filename, level=level, write_headers=True)
+        self.logger = addfile_handler(
+            self.logger, filename=filename, level=level, write_headers=True
+        )
         self.file_handler = self.logger.file_handler
 
     def log_to_stdout(self, level=LOG_LEVEL):
@@ -242,11 +262,26 @@ class PySpeosCustomAdapter(logging.LoggerAdapter):
 
 
 class PySpeosPercentStyle(logging.PercentStyle):
+    """Customized ``PercentStyle`` class for overwriting default format styles."""
+
     def __init__(self, fmt, *, defaults=None):
+        """Initialize the class."""
         self._fmt = fmt or self.default_format
         self._defaults = defaults
 
     def _format(self, record):
+        """Format the record.
+
+        Parameters
+        ----------
+        record : logging.LogRecord
+            Record to format.
+
+        Returns
+        -------
+        str
+            Formatted record.
+        """
         defaults = self._defaults
         if defaults:
             values = defaults | record.__dict__
@@ -278,6 +313,7 @@ class PySpeosFormatter(logging.Formatter):
         validate=True,
         defaults=None,
     ):
+        """Initialize the class."""
         if sys.version_info[1] < 8:
             super().__init__(fmt, datefmt, style)
         else:
@@ -290,6 +326,18 @@ class InstanceFilter(logging.Filter):
     """Ensures that the ``instance_name`` record always exists."""
 
     def filter(self, record):
+        """Filter the record.
+
+        Parameters
+        ----------
+        record : logging.LogRecord
+            Record to filter.
+
+        Returns
+        -------
+        bool
+            Whether the record is valid.
+        """
         if not hasattr(record, "instance_name"):
             record.instance_name = ""
         return True
@@ -319,15 +367,15 @@ class Logger:
     created when a speos instance is created.
 
     >>> from ansys.speos.core import speos
-    >>> speos = Speos(loglevel='DEBUG')
-    >>> speos._log.info('This is a useful message')
+    >>> speos = Speos(loglevel="DEBUG")
+    >>> speos._log.info("This is a useful message")
     INFO -  -  <ipython-input-24-80df150fe31f> - <module> - This is LOG debug message.
 
     Import the global pyspeos logger and add a file output handler.
 
     >>> import os
     >>> from ansys.speos.core import LOG
-    >>> file_path = os.path.join(os.getcwd(), 'pyspeos.log')
+    >>> file_path = os.path.join(os.getcwd(), "pyspeos.log")
     >>> LOG.log_to_file(file_path)
     """
 
@@ -336,7 +384,13 @@ class Logger:
     _level = logging.DEBUG
     _instances = {}
 
-    def __init__(self, level=logging.DEBUG, to_file=False, to_stdout=True, filename=FILE_NAME):
+    def __init__(
+        self,
+        level=logging.DEBUG,
+        to_file=False,
+        to_stdout=True,
+        filename=FILE_NAME,
+    ):
         """Customize the logger class for PySpeos.
 
         Parameters
@@ -352,13 +406,11 @@ class Logger:
         filename : str, optional
            Name of the file to write log messages to. The default is ``"pyspeos.log"``.
         """
-
         # create default main logger
         self.logger = logging.getLogger("pyspeos_global")
         self.logger.addFilter(InstanceFilter())
         self.logger.setLevel(level)
         self.logger.propagate = True
-        self.level = self.logger.level  # TODO: TO REMOVE
 
         # Writing logging methods.
         self.debug = self.logger.debug
@@ -396,10 +448,9 @@ class Logger:
 
         >>> from ansys.speos.core import LOG
         >>> import os
-        >>> file_path = os.path.join(os.getcwd(), 'pyspeos.log')
+        >>> file_path = os.path.join(os.getcwd(), "pyspeos.log")
         >>> LOG.log_to_file(file_path)
         """
-
         self = addfile_handler(self, filename=filename, level=level, write_headers=True)
 
     def log_to_stdout(self, level=LOG_LEVEL):
@@ -407,29 +458,26 @@ class Logger:
 
         Parameters
         ----------
-
         level : int, optional
             Level of logging. The default is ``10``, in which case the
             ``logging.DEBUG`` level is used.
         """
-
         self = add_stdout_handler(self, level=level)
 
     def setLevel(self, level="DEBUG"):
         """Change the log level of the object and the attached handlers."""
-
         self.logger.setLevel(level)
         for each_handler in self.logger.handlers:
             each_handler.setLevel(level)
         self._level = level
 
-    def _make_child_logger(self, sufix, level):
+    def _make_child_logger(self, suffix, level):
         """Create a child logger.
 
         This method uses the ``getChild`` method or copies attributes between the
         ``pyspeos_global`` logger and the new one.
         """
-        logger = logging.getLogger(sufix)
+        logger = logging.getLogger(suffix)
         logger.std_out_handler = None
         logger.file_handler = None
 
@@ -448,7 +496,10 @@ class Logger:
                     # global.
                     if isinstance(level, int) and each_handler.level > level:
                         new_handler.setLevel(level)
-                    elif isinstance(level, str) and each_handler.level > string_to_loglevel[level.upper()]:
+                    elif (
+                        isinstance(level, str)
+                        and each_handler.level > string_to_loglevel[level.upper()]
+                    ):
                         new_handler.setLevel(level)
 
                 logger.addHandler(new_handler)
@@ -464,7 +515,7 @@ class Logger:
         logger.propagate = True
         return logger
 
-    def add_child_logger(self, sufix: str, level: Optional[str] = None):
+    def add_child_logger(self, suffix: str, level: Optional[str] = None):
         """Add a child logger to the main logger.
 
         This logger is more general than an instance logger, which is designed to
@@ -474,7 +525,7 @@ class Logger:
 
         Parameters
         ----------
-        sufix : str
+        suffix : str
             Name of the child logger.
         level : str, optional
             Level of logging. The default is ``None``.
@@ -484,11 +535,16 @@ class Logger:
         logging.logger
             Logger class.
         """
-        name = self.logger.name + "." + sufix
+        name = self.logger.name + "." + suffix
         self._instances[name] = self._make_child_logger(self, name, level)
         return self._instances[name]
 
-    def add_instance_logger(self, name: str, client_instance: "SpeosClient", level: Optional[int] = None) -> PySpeosCustomAdapter:
+    def add_instance_logger(
+        self,
+        name: str,
+        client_instance: "SpeosClient",
+        level: Optional[int] = None,
+    ) -> PySpeosCustomAdapter:
         """Add a logger for a speos instance.
 
         The speos instance logger is a logger with an adapter that adds
@@ -500,7 +556,7 @@ class Logger:
         ----------
         name : str
             Name for the new instance logger.
-        client_instance : SpeosClient
+        client_instance : ansys.speos.core.kernel.client.SpeosClient
             speos SpeosClient object, which should contain the ``get_name`` method.
         level : int, optional
             Level of logging. The default is ``None``.
@@ -512,18 +568,20 @@ class Logger:
             logs. You can use this class to log events in the same
             way you would with the ``Logger`` class.
         """
-
         count_ = 0
         new_name = name
         while new_name in logging.root.manager.__dict__.keys():
             count_ += 1
             new_name = f"{name}_{count_}"
 
-        self._instances[new_name] = PySpeosCustomAdapter(self._make_child_logger(name, level), client_instance)
+        self._instances[new_name] = PySpeosCustomAdapter(
+            self._make_child_logger(name, level), client_instance
+        )
 
         return self._instances[new_name]
 
     def __getitem__(self, key):
+        """Magic method to allow retrieval of instances."""
         if key in self._instances.keys():
             return self._instances[key]
         else:
@@ -542,7 +600,10 @@ class Logger:
             if issubclass(exc_type, KeyboardInterrupt):
                 sys.__excepthook__(exc_type, exc_value, exc_traceback)
                 return
-            logger.critical("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
+            logger.critical(
+                "Uncaught exception",
+                exc_info=(exc_type, exc_value, exc_traceback),
+            )
 
         sys.excepthook = handle_exception
 
@@ -566,7 +627,6 @@ def addfile_handler(logger, filename=FILE_NAME, level=LOG_LEVEL, write_headers=F
     logger
         Logger or Logger object.
     """
-
     file_handler = logging.FileHandler(filename)
     file_handler.setLevel(level)
     file_handler.setFormatter(logging.Formatter(FILE_MSG_FORMAT))
@@ -604,7 +664,6 @@ def add_stdout_handler(logger, level=LOG_LEVEL, write_headers=False):
     logger
         Logger or Logger object.
     """
-
     std_out_handler = logging.StreamHandler()
     std_out_handler.setLevel(level)
     std_out_handler.setFormatter(PySpeosFormatter(STDOUT_MSG_FORMAT))

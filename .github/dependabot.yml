@@ -1,25 +1,70 @@
 version: 2
 updates:
-  - package-ecosystem: "pip" # See documentation for possible values
-    directory: "/" # Location of package manifests
-    insecure-external-code-execution: allow
+  - package-ecosystem: "pip"
+    directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "monday"
+      time: "05:00"
+      timezone: "Europe/Paris"
+    labels:
+      - "maintenance"
+      - "dependencies"
+    reviewers:
+      - "StefanThoene"
+      - "pluatansys"
+    assignees:
+      - "pyansys-ci-bot"
     ignore:
       - dependency-name: "grpcio-tools"
       - dependency-name: "grpcio-health-checking"
-    assignees:
-      - "pyansys-ci-bot"
     commit-message:
-      prefix: "MAINT"
+      prefix: "build(pip)"
     groups:
-       grpc-deps:
-          patterns:
-            - "google*"
-            - "grpc*"
-            - "protobuf"
-
+      core-deps:
+        patterns:
+          - "ansys-tools-path"
+          - "numpy"
+          - "comtypes"
+      grpc-deps:
+        patterns:
+          - "grpc*"
+          - "protobuf"
+      doc-deps:
+        patterns:
+          - "ansys-sphinx-theme*"
+          - "jupytext"
+          - "jupyterlab"
+          - "jupyter-server"
+          - "myst-parser"
+          - "nbconvert"
+          - "nbsphinx"
+          - "numpydoc"
+          - "sphinx"
+          - "sphinx*"
+      test-deps:
+        patterns:
+          - "pytest*"
+      graphics-deps:
+        patterns:
+          - "pyvista"
+          - "ansys-tools-visualization-interface"
+      jupyter-deps:
+        patterns:
+          - "jupyterlab"
+          - "ipywidgets"
+          - "notebook"
+          - "matplotlib"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "monday"
+      time: "05:00"
+      timezone: "Europe/Paris"
+    labels:
+      - "maintenance"
+    assignees:
+      - "pyansys-ci-bot"
+    commit-message:
+      prefix: "ci"

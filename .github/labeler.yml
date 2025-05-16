@@ -1,8 +1,10 @@
-Documentation:
-- any-glob-to-any-file: ['doc/source/**/*']
-Maintenance:
-- any-glob-to-any-file: ['.github/**/*', '.flake8', 'ignore_words.txt']
-Dependencies:
-- any-glob-to-any-file: ['requirements/*']
-CI/CD:
-- any-glob-to-any-file: ['.github/**/*']
+documentation:
+- changed-files:
+  - any-glob-to-any-file: 'doc/source/**/*'
+maintenance:
+- changed-files:
+  - any-glob-to-any-file: '.github/**/*'
+  - any-glob-to-any-file: 'pyproject.toml'
+testing:
+- changed-files:
+  - any-glob-to-any-file:  'tests/*'

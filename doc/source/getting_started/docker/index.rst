@@ -10,9 +10,9 @@ Docker is an open platform for developing, shipping, and running apps in a
 containerized way.
 
 Containers are standard units of software that package the code and all its dependencies
-so that the app runs quickly and reliably from one computing environment to another.
+so that the app runs quickly and reliably across different computing environments.
 
-Ensure that the machine where the Speos service is to run has Docker installed. Otherwise,
+Ensure that Docker is installed on the machine where the Speos service is running. Otherwise,
 see `Install Docker Engine <https://docs.docker.com/engine/install/>`_ in the Docker documentation.
 
 Select your Docker container

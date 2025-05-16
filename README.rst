@@ -1,26 +1,26 @@
 PySpeos library
 ================
-|pyansys| |GH-CI| |MIT| |black|
+|pyansys| |GH-CI| |MIT| |ruff|
 
 .. |pyansys| image:: https://img.shields.io/badge/Py-Ansys-ffc107.svg?logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAABDklEQVQ4jWNgoDfg5mD8vE7q/3bpVyskbW0sMRUwofHD7Dh5OBkZGBgW7/3W2tZpa2tLQEOyOzeEsfumlK2tbVpaGj4N6jIs1lpsDAwMJ278sveMY2BgCA0NFRISwqkhyQ1q/Nyd3zg4OBgYGNjZ2ePi4rB5loGBhZnhxTLJ/9ulv26Q4uVk1NXV/f///////69du4Zdg78lx//t0v+3S88rFISInD59GqIH2esIJ8G9O2/XVwhjzpw5EAam1xkkBJn/bJX+v1365hxxuCAfH9+3b9/+////48cPuNehNsS7cDEzMTAwMMzb+Q2u4dOnT2vWrMHu9ZtzxP9vl/69RVpCkBlZ3N7enoDXBwEAAA+YYitOilMVAAAAAElFTkSuQmCC
    :target: https://docs.pyansys.com/
    :alt: PyAnsys
 
-.. |GH-CI| image:: https://github.com/ansys-internal/pyspeos/actions/workflows/ci_cd.yml/badge.svg
-   :target: https://github.com/ansys-internal/pyspeos/actions/workflows/ci_cd.yml
+.. |GH-CI| image:: https://github.com/ansys/pyspeos/actions/workflows/ci_cd.yml/badge.svg
+   :target: https://github.com/ansys/pyspeos/actions/workflows/ci_cd.yml
 
 .. |MIT| image:: https://img.shields.io/badge/License-MIT-yellow.svg
    :target: https://opensource.org/licenses/MIT
    :alt: MIT
 
-.. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg?style=flat
-   :target: https://github.com/psf/black
-   :alt: Black
+.. |ruff| image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json
+   :target: https://github.com/astral-sh/ruff
+   :alt: Ruff
 
 
 Project overview
 ----------------
-``PySpeos`` is a Python library that gathers functionalities and tools based on remote API of Ansys software `Speos <https://www.ansys.com/fr-fr/products/optics-vr>`_ .
+``PySpeos`` is a Python library that gathers functionalities and tools based on remote API of Ansys software `Speos <https://www.ansys.com/products/optics>`_ .
 
 Installation
 ------------
@@ -28,14 +28,14 @@ Installation can be done using the published `package`_ or the repository `sourc
 
 Package
 ~~~~~~~
-.. warning:: Not currently available, work in progress. Please use `Sources`_.
+.. warning:: Release is in progress. It might take some time before it becomes available. Until then, please use `Sources`_.
 
-This repository is deployed as the Python packages `ansys-pyspeos <...>`_.
+This repository is deployed as the Python packages `ansys-speos-core <https://pypi.org/project/ansys-speos-core>`_.
 As usual, installation is done by running:
 
-.. code::
+.. code:: bash
 
-   pip install ansys-pyspeos
+   pip install ansys-speos-core
 
 Sources
 ~~~~~~~
@@ -45,16 +45,14 @@ Sources
 Clone and install
 ^^^^^^^^^^^^^^^^^
 
-.. code::
+.. code:: bash
 
-   git clone https://<PAT>@github.com/ansys-internal/pyspeos.git
+   git clone https://github.com/ansys/pyspeos.git
    cd pyspeos
    python -m pip install --upgrade pip
    pip install -U pip tox
    tox -e style
-   export PIP_EXTRA_INDEX_URL=https://<PYANSYS_PYPI_PRIVATE_PAT>@pkgs.dev.azure.com/pyansys/_packaging/pyansys/pypi/simple/
    pip install -e .
-
 
 Functionalities
 ^^^^^^^^^^^^^^^
@@ -64,23 +62,34 @@ All sources are located in `<src/>`_ folder.
 
    from ansys.speos.core.speos import Speos
 
-   speos = Speos(host="localhost", port=50051)
+   speos = Speos(host="localhost", port=50098)
 
-Documentation
--------------
-Documentation is stored in `<doc>`_ folder and generated using `Sphinx`_.
+Documentation and issues
+------------------------
+
+Documentation for the latest stable release of PySpeos is hosted at
+`PySpeos Documentation <https://speos.docs.pyansys.com>`_.
+
+In the upper right corner of the documentation's title bar, there is an option for switching from
+viewing the documentation for the latest stable release to viewing the documentation for the
+development version or previously released versions.
+
+On the `PySpeos Issues <https://github.com/ansys/pyspeos/issues>`_ page,
+you can create issues to report bugs and request new features. On the `PySpeos Discussions
+<https://github.com/ansys/pyspeos/discussions>`_ page or the `Discussions <https://discuss.ansys.com/>`_
+page on the Ansys Developer portal, you can post questions, share ideas, and get community feedback.
+
+To reach the project support team, email `pyansys.core@ansys.com <mailto:pyansys.core@ansys.com>`_.
+
+The documentation sources are stored in `<doc>`_ folder and generated using `Sphinx`_.
 To build it manually :
 
-.. code::
+.. code:: bash
 
    pip install -U pip tox
    pip install .[doc]
    tox -e doc && your_browser_name .tox/doc_out/index.html
 
-
-.. note::
-
-      Include a link to the full sphinx documentation. For example `PyAnsys`_
 
 Testing
 -------
@@ -97,24 +106,51 @@ The configuration file `<tests/local_config.json>`_ located in tests folder cont
 
 Start server
 ~~~~~~~~~~~~
-First option is to use the Docker container of `SpeosRPC_Server <https://github.com/orgs/ansys-internal/packages/container/package/pyspeos%2Fspeos-rpc>`_.
-It can be started using `<docker-compose.yml>`_ (if needed, please provide GitHub username and PAT as password).
+
+The first option is to use the Docker image from the `PySpeos repository <https://github.com/orgs/ansys/pyspeos>`_ on Github.
+
+.. note::
+
+   This option is only available for users with write access to the repository or
+   who are members of the Ansys organization.
+
+Use a GitHub personal access token with permission for reading packages to authorize Docker to access this repository.
+For more information, see `Managing your personal access tokens <https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens>`_ in the GitHub documentation.
+Save the token to a file with this command:
+
+.. code-block:: bash
+
+      echo XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX > GH_TOKEN.txt
+
 Since the Docker image contains no license server, you will need to enter your license server IP address in the `LICENSE_SERVER` environment variable.
-Then, you can launch SpeosRPC server with:
+Then, to launch SpeosRPC server with product version 2025.1, you can run:
 
-.. code::
+.. code:: bash
 
+   export GH_USERNAME=<my-github-username>
    export LICENSE_SERVER=1055@XXX.XXX.XXX.XXX
 
-   docker login ghcr.io/ansys-internal
-   docker-compose up -d
+   cat GH_TOKEN.txt | docker login ghcr.io -u "$GH_USERNAME" --password-stdin
+   docker pull ghcr.io/ansys/speos-rpc:251
+   docker run --detach --name speos-rpc -p 50098:50098 -e ANSYSLMD_LICENSE_FILE=$LICENSE_SERVER --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:251
 
-On the other hand, SpeosRPC server can be started locally.
-The pipeline artifact can be found in La Farlède shared folders.
+.. note::
 
-.. code::
+   To use the latest image in development, you can use `ghcr.io/ansys/speos-rpc:dev`.
 
-   \\win.ansys.com\eu\LaFarlede\Product Artifacts\SpeosRPC\refs\heads\main
+On the other hand, the SpeosRPC server can be started locally.
+
+For Windows:
+
+.. code:: bash
+
+    %AWP_ROOT251%\Optical Products\SPEOS_RPC\SpeosRPC_Server.exe
+
+For Linux:
+
+.. code:: bash
+
+    $AWP_ROOT251\OpticalProducts\SPEOS_RPC\SpeosRPC_Server.x
 
 And test configuration file `<tests/local_config.json>`_ must be updated to use local server:
 
@@ -123,13 +159,13 @@ And test configuration file `<tests/local_config.json>`_ must be updated to use 
    {
       "SpeosServerOnDocker": false,
       "SpeosContainerName" : "speos-rpc",
-      "SpeosServerPort": 50051
+      "SpeosServerPort": 50098
    }
 
 Launch unit tests
 ~~~~~~~~~~~~~~~~~
 
-.. code::
+.. code:: bash
 
    pip install .[tests]
    pytest -vx
@@ -137,20 +173,12 @@ Launch unit tests
 Use jupyter notebook
 ~~~~~~~~~~~~~~~~~~~~
 
-.. code::
+.. code:: bash
 
    pip install .[jupyter]
    jupyter notebook
 
-jupyter notebook files are stored in `<tests/jupyter_notebooks>`_ folder.
-
-Use app db_viewer
-~~~~~~~~~~~~~~~~~
-
-.. code::
-
-   pip install .[app]
-   python app/db_viewer.py
+jupyter notebook can be downloaded from the documentations example section.
 
 License
 -------
@@ -158,6 +186,6 @@ License
 The full license can be found in the root directory of the repository, see `<LICENSE>`_.
 
 .. LINKS AND REFERENCES
-.. _PySpeos: https://github.com/ansys-internal/pyspeos
+.. _PySpeos: https://github.com/ansys/pyspeos
 .. _PyAnsys: https://docs.pyansys.com
 .. _Sphinx: https://www.sphinx-doc.org/en/master/
