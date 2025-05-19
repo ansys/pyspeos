@@ -333,3 +333,21 @@ def test_spectral_brdf_creation(speos: Speos):
     assert does_file_exist(str(output_file_2))
     remove_file(str(output_file_1))
     remove_file(str(output_file_2))
+
+
+def test_anisotropic_bsdf_creation(speos: Speos):
+    """Unit test for create anisotropic bsdf method."""
+    input_file = [
+        Path(test_path) / "R_test.anisotropicbsdf",
+        Path(test_path) / "R_test.anisotropicbsdf",
+        Path(test_path) / "R_test.anisotropicbsdf",
+    ]
+    ani_list = [np.radians(0), np.radians(90), np.radians(180)]
+    output_file_1 = Path(test_path) / "Test_brdf_1"
+    output_file_2 = Path(test_path) / "Test_brdf_2.anisotropicbsdf"
+    output_file_1 = bsdf.create_anisotropic_bsdf(speos, output_file_1, ani_list, input_file)
+    assert does_file_exist(str(output_file_1))
+    bsdf.create_anisotropic_bsdf(speos, output_file_2, ani_list, input_file, fix_disparity=True)
+    assert does_file_exist(str(output_file_2))
+    remove_file(str(output_file_1))
+    remove_file(str(output_file_2))
