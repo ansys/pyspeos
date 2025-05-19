@@ -436,6 +436,7 @@ class AnisotropicBSDF(BaseBSDF):
         )
         self._spectrum_incidence = [0, 0]
         self._spectrum_anisotropy = [0, 0]
+        self.__interpolation_settings = None
         if file_path:
             file_path = Path(file_path)
             self._grpcbsdf = self._import_file(file_path)
@@ -680,6 +681,10 @@ class AnisotropicBSDF(BaseBSDF):
                         incidence_diag.bsdf_cos_theta[:] = btdf.bxdf.flatten().tolist()
         self._stub.Import(bsdf)
         self._grpcbsdf = bsdf
+        if self.__interpolation_settings is not None:
+            self._stub.SetSpecularInterpolationEnhancementData(
+                self.__interpolation_settings._InterpolationEnhancement__cones_data
+            )
 
     def interpolation_enhancement(
         self, index_1: float = 1.0, index_2: float = 1.0
@@ -700,9 +705,10 @@ class AnisotropicBSDF(BaseBSDF):
         ansys.speos.core.bsdf._InterpolationEnhancement
             automatic interpolation settings with index_1 = 1 and index_2 = 1 by default.
         """
-        return _InterpolationEnhancement(
-            bsdf=self, bsdf_namespace=anisotropic_bsdf__v1__pb2, index_1=index_1, index_2=index_1
+        self.__interpolation_settings = _InterpolationEnhancement(
+            bsdf=self, bsdf_namespace=anisotropic_bsdf__v1__pb2, index_1=index_1, index_2=index_2
         )
+        return self.__interpolation_settings
 
     def save(self, file_path: Union[Path, str], commit: bool = True) -> Path:
         """Save a Speos anistropic bsdf.
