@@ -24,7 +24,9 @@
 
 from pathlib import Path
 
+from google.protobuf.empty_pb2 import Empty
 import numpy as np
+import pytest
 
 from ansys.speos.core import Speos, bsdf
 from ansys.speos.core.bsdf import AnisotropicBSDF, BxdfDatapoint
@@ -209,6 +211,98 @@ def test_anisotropic_bsdf(speos: Speos):
     remove_file(str(bsdf_path))
     remove_file(str(bsdf_path2))
     remove_file(str(bsdf_path3))
+
+
+def test_anisotropic_bsdf_interpolation_enhancement(speos: Speos):
+    """Unit test for anisotropic bsdf interpolation class."""
+    # test automatic interpolation enhancement
+    input_file = Path(test_path) / "Gaussian Fresnel 10 deg.anisotropicbsdf"
+    output_file = Path(test_path) / "Gaussian Fresnel 10 deg interpolation test.anisotropicbsdf"
+    initial_bsdf = AnisotropicBSDF(speos=speos, file_path=input_file)
+
+    # test indices setting and cones data generation
+    automatic_interpolation_settings = initial_bsdf.interpolation_enhancement(
+        index_1=1.0, index_2=1.5
+    )
+    assert automatic_interpolation_settings.index1 == 1
+    assert automatic_interpolation_settings.index2 == 1.5
+
+    # test methods retrieving the automated reflection and transmission interpolation settings
+    cons_reflection_data = automatic_interpolation_settings.get_reflection_interpolation_settings
+    cons_transmission_data = (
+        automatic_interpolation_settings.get_transmission_interpolation_settings
+    )
+    cons_data = initial_bsdf._stub.GetSpecularInterpolationEnhancementData(
+        Empty()
+    )  # retrieve data using kernel method
+
+    for cons_key_index, cons_key in enumerate(cons_reflection_data.keys()):
+        for incidence_key_index, incidence_key in enumerate(cons_reflection_data[cons_key].keys()):
+            assert (
+                cons_data.reflection.anisotropic_samples[cons_key_index]
+                .incidence_samples[incidence_key_index]
+                .cone_half_angle
+                == cons_reflection_data[cons_key][incidence_key]["half_angle"]
+            )
+            assert (
+                cons_data.reflection.anisotropic_samples[cons_key_index]
+                .incidence_samples[incidence_key_index]
+                .cone_height
+                == cons_reflection_data[cons_key][incidence_key]["height"]
+            )
+
+    for cons_key_index, cons_key in enumerate(cons_transmission_data.keys()):
+        for incidence_key_index, incidence_key in enumerate(
+            cons_transmission_data[cons_key].keys()
+        ):
+            assert (
+                cons_data.transmission.anisotropic_samples[cons_key_index]
+                .incidence_samples[incidence_key_index]
+                .cone_half_angle
+                == cons_transmission_data[cons_key][incidence_key]["half_angle"]
+            )
+            assert (
+                cons_data.transmission.anisotropic_samples[cons_key_index]
+                .incidence_samples[incidence_key_index]
+                .cone_height
+                == cons_transmission_data[cons_key][incidence_key]["height"]
+            )
+
+    # test modifying the interpolation setting dictionary
+    # test cannot change a key's value if the value is a fixed dictionary
+    with pytest.raises(ValueError, match="Cannot update key 0.0 with a FixedKeyDict as value"):
+        cons_transmission_data["0.0"] = 0
+    # test cannot add a new key
+    with pytest.raises(KeyError, match="Cannot add new key: 1.0 is not allowed."):
+        cons_reflection_data["1.0"] = 2
+    # test modifying the interpolation settings and apply settings
+    cons_reflection_data["0.0"]["0.0"]["half_angle"] = 0.523
+    cons_reflection_data["0.0"]["0.0"]["height"] = 0.5
+    automatic_interpolation_settings.set_interpolation_settings(
+        is_brdf=True, settings=cons_reflection_data
+    )
+    new_cons_reflection_data = (
+        automatic_interpolation_settings.get_reflection_interpolation_settings
+    )
+    assert new_cons_reflection_data["0.0"]["0.0"]["half_angle"] == 0.523
+    assert new_cons_reflection_data["0.0"]["0.0"]["height"] == 0.5
+
+    # test the interpolation enhancement settings in a saved bsdf file
+    initial_bsdf.save(output_file)
+    saved_bsdf = AnisotropicBSDF(speos=speos, file_path=output_file)
+    saved_cons_reflection_data = saved_bsdf._stub.GetSpecularInterpolationEnhancementData(Empty())
+    assert approx_comparison(
+        value1=saved_cons_reflection_data.reflection.anisotropic_samples[0]
+        .incidence_samples[0]
+        .cone_half_angle,
+        value2=0.523,
+    )
+    assert approx_comparison(
+        value1=saved_cons_reflection_data.reflection.anisotropic_samples[0]
+        .incidence_samples[0]
+        .cone_height,
+        value2=0.5,
+    )
 
 
 def test_bsdf180_creation(speos: Speos):
