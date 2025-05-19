@@ -662,7 +662,7 @@ class AnisotropicBSDF(BaseBSDF):
         self._grpcbsdf = bsdf
 
     def interpolation_enhancement(
-        self, index_1: float = 1, index_2: float = 1
+        self, index_1: float = 1.0, index_2: float = 1.0
     ) -> _InterpolationEnhancement:
         """Apply automatic interpolation enhancement.
 
