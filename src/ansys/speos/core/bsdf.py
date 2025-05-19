@@ -997,3 +997,60 @@ def create_spectral_brdf(
         tmp.file_name = str(file)
     stub.BuildSpectralBsdf(spectral_request)
     return spectral_bsdf_file_path
+
+
+def create_anisotropic_bsdf(
+    speos: ansys.speos.core.Speos,
+    anisotropic_bsdf_file_path: Union[str, Path],
+    anisotropy_list: list[float],
+    anisotropic_bsdf_file_list: list[Union[Path, str]],
+    fix_disparity: bool = False,
+) -> Path:
+    """Create an anisotropic bsdf from anisotropic bsdf files.
+
+    Parameters
+    ----------
+    speos : ansys.speos.core.Speos
+        Speos Object to connect to RPC server
+    anisotropic_bsdf_file_path : Union[str, Path]
+        File location of created Anisotropic BSDF file
+    anisotropy_list : list[float]
+        ordered List of anisotropy value, in radian
+    anisotropic_bsdf_file_list : list[Union[Path, str]]
+        list of bsdf file locations
+    fix_disparity : bool
+        Fixes normalization disparity between BSDF,
+        By default: ``False``
+
+    Notes
+    -----
+    Please note that the bsdf files from the bsdf list need to be isotropic.
+
+    Returns
+    -------
+    Path
+        Location of created Anisotropic BSDF files
+    """
+    stub = bsdf_creation__v1__pb2_grpc.BsdfCreationServiceStub(speos.client.channel)
+    ani_request = bsdf_creation__v1__pb2.AnisotropicBsdfInputData()
+    anisotropic_bsdf_file_path = Path(anisotropic_bsdf_file_path)
+    if anisotropic_bsdf_file_path.suffix != ".anisotropicbsdf":
+        anisotropic_bsdf_file_path = anisotropic_bsdf_file_path.parent / (
+            anisotropic_bsdf_file_path.name + ".anisotropicbsdf"
+        )
+    ani_request.output_file_name = str(anisotropic_bsdf_file_path)
+    if len(anisotropy_list) == len(anisotropic_bsdf_file_list):
+        anisotropic_bsdf_file_list = [Path(bsdf_loc) for bsdf_loc in anisotropic_bsdf_file_list]
+        for bsdf_loc in anisotropic_bsdf_file_list:
+            if bsdf_loc.suffix != ".anisotropicbsdf":
+                raise TypeError("Filetype not support please use only anisotropicbsdf files.")
+    else:
+        raise RuntimeError("The Number BSDF file and wavelength needs to be identical")
+    for ani, file in zip(anisotropy_list, anisotropic_bsdf_file_list):
+        temp = ani_request.input_anisotropic_bsdf_samples.add()
+        temp.anisotropic_angle = ani
+        temp.file_name = str(file)
+    ani_request.fix_disparity = fix_disparity
+    ani_request.output_file_name = str(anisotropic_bsdf_file_path)
+    stub.BuildAnisotropicBsdf(ani_request)
+    return anisotropic_bsdf_file_path
