@@ -131,3 +131,19 @@ new_bsdf.brdf = all_brdfs
 save_path = assets_data_path / "example_bsdf.anisotropicbsdf"
 new_bsdf.save(save_path)
 print(new_bsdf)
+
+# Apply automatic interpolation enhancement
+new_bsdf.interpolation_enhancement(index_1=1.0, index_2=1.4)
+new_bsdf.save(file_path=assets_data_path / "example_bsdf_automatic_interpolation.anisotropicbsdf")
+
+# Apply user defined interpolation enhancement
+interpolation_settings = new_bsdf.interpolation_enhancement(index_1=1.0, index_2=1.4)
+interpolation_settings_reflection = (
+    interpolation_settings.get_reflection_interpolation_settings
+)  # return as fixed dictionary, user cannot add/remove item
+interpolation_settings_reflection["0"][str(np.radians(5))]["half_angle"] = 0.523
+interpolation_settings_reflection["0"][str(np.radians(5))]["height"] = 0.5
+interpolation_settings.set_interpolation_settings(
+    is_brdf=True, settings=interpolation_settings_reflection
+)
+new_bsdf.save(file_path=assets_data_path / "example_bsdf_user_interpolation.anisotropicbsdf")
