@@ -26,7 +26,7 @@ from pathlib import Path
 
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
 from ansys.speos.core import GeoRef, Project, Speos
-from ansys.speos.core.sensor import SensorIrradiance
+from ansys.speos.core.sensor import BaseSensor, SensorIrradiance
 from ansys.speos.core.simulation import (
     SimulationDirect,
     SimulationInteractive,
@@ -116,6 +116,18 @@ def test_create_direct(speos: Speos):
     # source_paths
     sim1.set_source_paths(source_paths=["source.1"])
     assert sim1._simulation_instance.source_paths == ["source.1"]
+
+    # Light expert
+    sim1.set_light_expert(True, 1000)
+    for item in sim1._project._features:
+        if isinstance(item, BaseSensor):
+            assert item._sensor_instance.lxp_properties.HasField("nb_max_paths")
+            assert item._sensor_instance.lxp_properties.nb_max_paths == 1000
+
+    sim1.set_light_expert(False, 1000)
+    for item in sim1._project._features:
+        if isinstance(item, BaseSensor):
+            assert item._sensor_instance.lxp_properties.HasField("nb_max_paths") is False
 
     # geometries
     # sim1.set_geometries(
@@ -234,6 +246,18 @@ def test_create_inverse(speos: Speos):
     # source_paths
     sim1.set_source_paths(source_paths=["source.1"])
     assert sim1._simulation_instance.source_paths == ["source.1"]
+
+    # Light expert
+    sim1.set_light_expert(True, 1000)
+    for item in sim1._project._features:
+        if isinstance(item, BaseSensor):
+            assert item._sensor_instance.lxp_properties.HasField("nb_max_paths")
+            assert item._sensor_instance.lxp_properties.nb_max_paths == 1000
+
+    sim1.set_light_expert(False, 1000)
+    for item in sim1._project._features:
+        if isinstance(item, BaseSensor):
+            assert item._sensor_instance.lxp_properties.HasField("nb_max_paths") is False
 
     # geometries
     # sim1.set_geometries(
