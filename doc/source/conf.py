@@ -122,6 +122,7 @@ if BUILD_EXAMPLES:
         ".py": ["jupytext.reads", {"fmt": ""}],
     }
     nbsphinx_thumbnails = {
+        "examples/core/bsdf": "_static/thumbnails/bsdf.png",
         "examples/core/opt-prop": "_static/thumbnails/property_520x520.png",
         "examples/core/source": "_static/thumbnails/source_520x520.png",
         "examples/core/sensor": "_static/thumbnails/sensor_520x520.png",
