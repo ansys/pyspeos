@@ -91,7 +91,6 @@ class BaseSensor:
             self._sensor_template = ProtoSensorTemplate(
                 name=name, description=description, metadata=metadata
             )
-
             # Create local SensorInstance
             self._sensor_instance = ProtoScene.SensorInstance(
                 name=name, description=description, metadata=metadata
@@ -102,6 +101,18 @@ class BaseSensor:
             # reset will fill _sensor_instance and _sensor_template from respectively project
             # (using _unique_id) and sensor_template_link
             self.reset()
+
+    @property
+    def lxp_path_number(self):
+        """Number of LXP rays simulated for the Sensor."""
+        return self._sensor_instance.lxp_properties.nb_max_paths
+
+    @lxp_path_number.setter
+    def lxp_path_number(self, value: int):
+        if value:
+            self._sensor_instance.lxp_properties.nb_max_paths = int(value)
+        else:
+            self._sensor_instance.lxp_properties.ClearField("nb_max_paths")
 
     class WavelengthsRange:
         """Range of wavelengths.
