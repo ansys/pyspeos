@@ -105,7 +105,7 @@ class BaseSensor:
     @property
     def lxp_path_number(self):
         """Number of LXP rays simulated for the Sensor."""
-        if self._sensor_instance.lxp_properties.HasField("nb_max_paths"):
+        if self._sensor_instance.HasField("lxp_properties"):
             return self._sensor_instance.lxp_properties.nb_max_paths
         else:
             return None
