@@ -284,30 +284,48 @@ def test_anisotropic_bsdf_interpolation_enhancement(speos: Speos):
     # test modifying the interpolation settings and apply settings
     cons_reflection_data["0.0"]["0.0"]["half_angle"] = 0.523
     cons_reflection_data["0.0"]["0.0"]["height"] = 0.5
+    cons_transmission_data["0.0"]["0.0"]["half_angle"] = 0.523
+    cons_transmission_data["0.0"]["0.0"]["height"] = 0.6
     automatic_interpolation_settings.set_interpolation_settings(
         is_brdf=True, settings=cons_reflection_data
+    )
+    automatic_interpolation_settings.set_interpolation_settings(
+        is_brdf=False, settings=cons_transmission_data
     )
     new_cons_reflection_data = (
         automatic_interpolation_settings.get_reflection_interpolation_settings
     )
+    new_cons_transmission_data = (
+        automatic_interpolation_settings.get_transmission_interpolation_settings
+    )
     assert new_cons_reflection_data["0.0"]["0.0"]["half_angle"] == 0.523
     assert new_cons_reflection_data["0.0"]["0.0"]["height"] == 0.5
+    assert new_cons_transmission_data["0.0"]["0.0"]["half_angle"] == 0.523
+    assert new_cons_transmission_data["0.0"]["0.0"]["height"] == 0.6
 
     # test the interpolation enhancement settings in a saved bsdf file
     initial_bsdf.save(output_file)
     saved_bsdf = AnisotropicBSDF(speos=speos, file_path=output_file)
-    saved_cons_reflection_data = saved_bsdf._stub.GetSpecularInterpolationEnhancementData(Empty())
+    saved_cons_data = saved_bsdf._stub.GetSpecularInterpolationEnhancementData(Empty())
     assert approx_comparison(
-        value1=saved_cons_reflection_data.reflection.anisotropic_samples[0]
+        value1=saved_cons_data.reflection.anisotropic_samples[0]
         .incidence_samples[0]
         .cone_half_angle,
         value2=0.523,
     )
     assert approx_comparison(
-        value1=saved_cons_reflection_data.reflection.anisotropic_samples[0]
-        .incidence_samples[0]
-        .cone_height,
+        value1=saved_cons_data.reflection.anisotropic_samples[0].incidence_samples[0].cone_height,
         value2=0.5,
+    )
+    assert approx_comparison(
+        value1=saved_cons_data.transmission.anisotropic_samples[0]
+        .incidence_samples[0]
+        .cone_half_angle,
+        value2=0.523,
+    )
+    assert approx_comparison(
+        value1=saved_cons_data.transmission.anisotropic_samples[0].incidence_samples[0].cone_height,
+        value2=0.6,
     )
 
 
