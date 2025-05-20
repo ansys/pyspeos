@@ -170,19 +170,19 @@ new_bsdf.save(file_path=assets_data_path / "example_bsdf_user_interpolation.anis
 saved_bsdf = AnisotropicBSDF(
     speos=speos, file_path=assets_data_path / "example_bsdf_user_interpolation.anisotropicbsdf"
 )
-print(new_bsdf.interpolation_settings)  # here an _InterpolationEnhancement object is returned
-previous_settings = new_bsdf.interpolation_settings
+print(saved_bsdf.interpolation_settings)  # here an _InterpolationEnhancement object is returned
+previous_settings = saved_bsdf.interpolation_settings
 print(
     previous_settings.get_reflection_interpolation_settings
 )  # user can review the previous settings
-previous_settings = new_bsdf.interpolation_enhancement(index_1=1.0, index_2=1.4)
+previous_settings = saved_bsdf.interpolation_enhancement(index_1=1.0, index_2=1.4)
 print(
     previous_settings.get_reflection_interpolation_settings
 )  # with same index values, user can retrieve the previous settings
 
 # Defined new interpolation settings for an already enhanced bsdf file
 
-previous_settings_diff_index = new_bsdf.interpolation_enhancement(index_1=1.0, index_2=1.5)
+previous_settings_diff_index = saved_bsdf.interpolation_enhancement(index_1=1.0, index_2=1.5)
 print(
     previous_settings.get_reflection_interpolation_settings
 )  # with different index values, a new automatic settings is returned
