@@ -30,6 +30,7 @@ from pathlib import Path
 from typing import Union
 
 from google.protobuf.empty_pb2 import Empty
+import grpc
 import numpy as np
 
 import ansys.api.speos.bsdf.v1.anisotropic_bsdf_pb2 as anisotropic_bsdf__v1__pb2
@@ -247,12 +248,27 @@ class _InterpolationEnhancement:
     ) -> None:
         self._bsdf = bsdf
 
-        self.__indices = bsdf_namespace.RefractiveIndices(
-            refractive_index_1=index_1,
-            refractive_index_2=index_2,
-        )
-        self._bsdf._stub.GenerateSpecularInterpolationEnhancementData(self.__indices)
-        self.__cones_data = self._bsdf._stub.GetSpecularInterpolationEnhancementData(Empty())
+        self.__cones_data = None
+        try:
+            self.__cones_data = self._bsdf._stub.GetSpecularInterpolationEnhancementData(Empty())
+            if self.__cones_data.refractive_index_1 != float(
+                index_1
+            ) or self.__cones_data.refractive_index_2 != float(index_2):
+                self.__indices = bsdf_namespace.RefractiveIndices(
+                    refractive_index_1=index_1,
+                    refractive_index_2=index_2,
+                )
+                self._bsdf._stub.GenerateSpecularInterpolationEnhancementData(self.__indices)
+                self.__cones_data = self._bsdf._stub.GetSpecularInterpolationEnhancementData(
+                    Empty()
+                )
+        except grpc.RpcError:
+            self.__indices = bsdf_namespace.RefractiveIndices(
+                refractive_index_1=index_1,
+                refractive_index_2=index_2,
+            )
+            self._bsdf._stub.GenerateSpecularInterpolationEnhancementData(self.__indices)
+            self.__cones_data = self._bsdf._stub.GetSpecularInterpolationEnhancementData(Empty())
 
     @property
     def index1(self) -> float:
@@ -436,7 +452,6 @@ class AnisotropicBSDF(BaseBSDF):
         )
         self._spectrum_incidence = [0, 0]
         self._spectrum_anisotropy = [0, 0]
-        self.__interpolation_settings = None
         if file_path:
             file_path = Path(file_path)
             self._grpcbsdf = self._import_file(file_path)
@@ -447,7 +462,16 @@ class AnisotropicBSDF(BaseBSDF):
         else:
             self._transmission_spectrum, self._reflection_spectrum = None, None
 
-            # anisotropic file
+        try:
+            existing_interpolation = self._stub.GetSpecularInterpolationEnhancementData(Empty())
+            self.__interpolation_settings = _InterpolationEnhancement(
+                bsdf=self,
+                bsdf_namespace=anisotropic_bsdf__v1__pb2,
+                index_1=existing_interpolation.refractive_index_1,
+                index_2=existing_interpolation.refractive_index_2,
+            )
+        except grpc.RpcError:
+            self.__interpolation_settings = None
 
     def get(self, key=""):
         """Retrieve any information from the BSDF object.
@@ -685,6 +709,15 @@ class AnisotropicBSDF(BaseBSDF):
             self._stub.SetSpecularInterpolationEnhancementData(
                 self.__interpolation_settings._InterpolationEnhancement__cones_data
             )
+
+    @property
+    def interpolation_settings(self) -> Union[None, _InterpolationEnhancement]:
+        """Interpolation enhancement settings of the bsdf file.
+
+        If bsdf file does not have interpolation enhancement settings, return None.
+        if bsdf file has interpolation enhancement settings, return _InterpolationEnhancement.
+        """
+        return self.__interpolation_settings
 
     def interpolation_enhancement(
         self, index_1: float = 1.0, index_2: float = 1.0
