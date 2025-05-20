@@ -142,10 +142,11 @@ print(new_bsdf)
 # and save the post-processed file
 # - How to re-load a bsdf file has interpolation enhanced and retrieve the interpolation settings.
 
-new_bsdf.interpolation_enhancement(index_1=1.0, index_2=1.4)
 print(
     new_bsdf.interpolation_settings
 )  # user can check if there was interpolation settings, here is None
+new_bsdf.interpolation_enhancement(index_1=1.0, index_2=1.4)
+print(new_bsdf.interpolation_settings)  # Now interpolation settings is not None
 new_bsdf.save(file_path=assets_data_path / "example_bsdf_automatic_interpolation.anisotropicbsdf")
 
 # Apply user defined interpolation enhancement
