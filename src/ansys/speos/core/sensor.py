@@ -115,7 +115,7 @@ class BaseSensor:
         if value:
             self._sensor_instance.lxp_properties.nb_max_paths = int(value)
         else:
-            self._sensor_instance.lxp_properties.ClearField("nb_max_paths")
+            self._sensor_instance.ClearField("lxp_properties")
 
     class WavelengthsRange:
         """Range of wavelengths.
