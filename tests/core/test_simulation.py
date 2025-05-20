@@ -253,11 +253,13 @@ def test_create_inverse(speos: Speos):
         if isinstance(item, BaseSensor):
             assert item._sensor_instance.lxp_properties.HasField("nb_max_paths")
             assert item._sensor_instance.lxp_properties.nb_max_paths == 1000
+            assert item.lxp_path_number == 1000
 
     sim1.set_light_expert(False, 1000)
     for item in sim1._project._features:
         if isinstance(item, BaseSensor):
             assert item._sensor_instance.lxp_properties.HasField("nb_max_paths") is False
+            assert item.lxp_path_number is None
 
     # geometries
     # sim1.set_geometries(
