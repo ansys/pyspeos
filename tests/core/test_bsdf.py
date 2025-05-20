@@ -226,11 +226,13 @@ def test_anisotropic_bsdf_interpolation_enhancement(speos: Speos):
     )
     assert automatic_interpolation_settings.index1 == 1
     assert automatic_interpolation_settings.index2 == 1.5
-automatic_interpolation_settings.index1 = 1.5
-automatic_interpolation_settings.index2 = 1
 
-assert automatic_interpolation_settings.index1 == 1.5
-assert automatic_interpolation_settings.index2 == 1
+    # test setting the index values
+    automatic_interpolation_settings.index1 = 1.5
+    automatic_interpolation_settings.index2 = 1
+    assert automatic_interpolation_settings.index1 == 1.5
+    assert automatic_interpolation_settings.index2 == 1
+
     # test methods retrieving the automated reflection and transmission interpolation settings
     cons_reflection_data = automatic_interpolation_settings.get_reflection_interpolation_settings
     cons_transmission_data = (
