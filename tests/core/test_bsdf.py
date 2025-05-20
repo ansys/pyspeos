@@ -219,6 +219,7 @@ def test_anisotropic_bsdf_interpolation_enhancement(speos: Speos):
     input_file = Path(test_path) / "Gaussian Fresnel 10 deg.anisotropicbsdf"
     output_file = Path(test_path) / "Gaussian Fresnel 10 deg interpolation test.anisotropicbsdf"
     initial_bsdf = AnisotropicBSDF(speos=speos, file_path=input_file)
+    assert initial_bsdf.interpolation_settings is None
 
     # test indices setting and cones data generation
     automatic_interpolation_settings = initial_bsdf.interpolation_enhancement(
@@ -306,7 +307,14 @@ def test_anisotropic_bsdf_interpolation_enhancement(speos: Speos):
     # test the interpolation enhancement settings in a saved bsdf file
     initial_bsdf.save(output_file)
     saved_bsdf = AnisotropicBSDF(speos=speos, file_path=output_file)
+    assert saved_bsdf.interpolation_settings is not None
+
+    # test if the backend data is correct
     saved_cons_data = saved_bsdf._stub.GetSpecularInterpolationEnhancementData(Empty())
+    assert (
+        saved_cons_data.reflection.anisotropic_samples[0].incidence_samples[0].cone_half_angle
+        == 0.523
+    )
     assert approx_comparison(
         value1=saved_cons_data.reflection.anisotropic_samples[0]
         .incidence_samples[0]
@@ -327,6 +335,33 @@ def test_anisotropic_bsdf_interpolation_enhancement(speos: Speos):
         value1=saved_cons_data.transmission.anisotropic_samples[0].incidence_samples[0].cone_height,
         value2=0.6,
     )
+
+    # test if retrieving interpolation property is correct
+    interpolation_settings = saved_bsdf.interpolation_settings
+    interpolated_cons_reflection = interpolation_settings.get_reflection_interpolation_settings
+    interpolated_cons_transmission = interpolation_settings.get_transmission_interpolation_settings
+    assert interpolated_cons_reflection["0.0"]["0.0"]["half_angle"] == 0.523
+    assert interpolated_cons_reflection["0.0"]["0.0"]["height"] == 0.5
+    assert interpolated_cons_transmission["0.0"]["0.0"]["half_angle"] == 0.523
+    assert interpolated_cons_transmission["0.0"]["0.0"]["height"] == 0.6
+
+    # test if retrieving interpolation settings is correct with same index provided
+    interpolation_settings = saved_bsdf.interpolation_enhancement(index_1=1.5, index_2=1.0)
+    interpolated_cons_reflection = interpolation_settings.get_reflection_interpolation_settings
+    interpolated_cons_transmission = interpolation_settings.get_transmission_interpolation_settings
+    assert interpolated_cons_reflection["0.0"]["0.0"]["half_angle"] == 0.523
+    assert interpolated_cons_reflection["0.0"]["0.0"]["height"] == 0.5
+    assert interpolated_cons_transmission["0.0"]["0.0"]["half_angle"] == 0.523
+    assert interpolated_cons_transmission["0.0"]["0.0"]["height"] == 0.6
+
+    # test if retrieving interpolation settings is correct with different index provided
+    interpolation_settings = saved_bsdf.interpolation_enhancement(index_1=1, index_2=1.5)
+    interpolated_cons_reflection = interpolation_settings.get_reflection_interpolation_settings
+    interpolated_cons_transmission = interpolation_settings.get_transmission_interpolation_settings
+    assert interpolated_cons_reflection["0.0"]["0.0"]["half_angle"] != 0.523
+    assert interpolated_cons_reflection["0.0"]["0.0"]["height"] != 0.5
+    assert interpolated_cons_transmission["0.0"]["0.0"]["half_angle"] != 0.523
+    assert interpolated_cons_transmission["0.0"]["0.0"]["height"] != 0.6
 
 
 def test_bsdf180_creation(speos: Speos):
