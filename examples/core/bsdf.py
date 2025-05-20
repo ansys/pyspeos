@@ -135,9 +135,17 @@ save_path = assets_data_path / "example_bsdf.anisotropicbsdf"
 new_bsdf.save(save_path)
 print(new_bsdf)
 
-# Apply automatic interpolation enhancement
+# ### BSDF Interpolation Enhancement
+# This section shows:
+# - How to apply automatic interpolation settings and save a post-processed bsdf file.
+# - How to change interpolation settings, apply the new settings to bsdf,
+# and save the post-processed file
+# - How to re-load a bsdf file has interpolation enhanced and retrieve the interpolation settings.
 
 new_bsdf.interpolation_enhancement(index_1=1.0, index_2=1.4)
+print(
+    new_bsdf.interpolation_settings
+)  # user can check if there was interpolation settings, here is None
 new_bsdf.save(file_path=assets_data_path / "example_bsdf_automatic_interpolation.anisotropicbsdf")
 
 # Apply user defined interpolation enhancement
@@ -156,3 +164,25 @@ interpolation_settings.set_interpolation_settings(
     is_brdf=True, settings=interpolation_settings_reflection
 )
 new_bsdf.save(file_path=assets_data_path / "example_bsdf_user_interpolation.anisotropicbsdf")
+
+# Load a bsdf file with interpolation enhanced
+
+saved_bsdf = AnisotropicBSDF(
+    speos=speos, file_path=assets_data_path / "example_bsdf_user_interpolation.anisotropicbsdf"
+)
+print(new_bsdf.interpolation_settings)  # here an _InterpolationEnhancement object is returned
+previous_settings = new_bsdf.interpolation_settings
+print(
+    previous_settings.get_reflection_interpolation_settings
+)  # user can review the previous settings
+previous_settings = new_bsdf.interpolation_enhancement(index_1=1.0, index_2=1.4)
+print(
+    previous_settings.get_reflection_interpolation_settings
+)  # with same index values, user can retrieve the previous settings
+
+# Defined new interpolation settings for an already enhanced bsdf file
+
+previous_settings_diff_index = new_bsdf.interpolation_enhancement(index_1=1.0, index_2=1.5)
+print(
+    previous_settings.get_reflection_interpolation_settings
+)  # with different index values, a new automatic settings is returned
