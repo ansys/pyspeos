@@ -280,6 +280,7 @@ class InterpolationEnhancement:
     def index1(self, value: Union[float, int]) -> None:
         """Set refractive index on reflection side."""
         self.__cones_data.refractive_index_1 = value
+        self._bsdf._stub.Import(self._bsdf._grpcbsdf)
         self._bsdf._stub.SetSpecularInterpolationEnhancementData(self.__cones_data)
 
     @property
@@ -291,6 +292,7 @@ class InterpolationEnhancement:
     def index2(self, value: Union[float, int]) -> None:
         """Set refractive index on transmission side."""
         self.__cones_data.refractive_index_2 = value
+        self._bsdf._stub.Import(self._bsdf._grpcbsdf)
         self._bsdf._stub.SetSpecularInterpolationEnhancementData(self.__cones_data)
 
     @property
@@ -357,6 +359,7 @@ class InterpolationEnhancement:
             raise ImportError("only interpolation settings are supported")
 
         if isinstance(self._bsdf, AnisotropicBSDF):
+            self._bsdf._stub.Import(self._bsdf._grpcbsdf)
             if is_brdf:
                 for iso_sample_key_index, iso_sample_key in enumerate(settings.keys()):
                     for incident_key_index, incident_key in enumerate(
@@ -739,6 +742,7 @@ class AnisotropicBSDF(BaseBSDF):
         ansys.speos.core.bsdf._InterpolationEnhancement
             automatic interpolation settings with index_1 = 1 and index_2 = 1 by default.
         """
+        self._stub.Import(self._grpcbsdf)
         self.__interpolation_settings = InterpolationEnhancement(
             bsdf=self, bsdf_namespace=anisotropic_bsdf__v1__pb2, index_1=index_1, index_2=index_2
         )
@@ -763,6 +767,8 @@ class AnisotropicBSDF(BaseBSDF):
         file_name = anisotropic_bsdf__v1__pb2.FileName()
         if commit:
             self.commit()
+        else:
+            self._stub.Import(self._grpcbsdf)
         if file_path.suffix == ".anisotropicbsdf":
             file_name.file_name = str(file_path)
         else:
