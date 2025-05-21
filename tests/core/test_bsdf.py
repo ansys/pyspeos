@@ -34,6 +34,25 @@ from tests.conftest import test_path
 from tests.helper import clean_all_dbs, does_file_exist, remove_file
 
 
+def create_lambertian_bsdf(is_brdf, nb_theta=5, nb_phi=5):
+    """Create a lambertian Distribution as np.array."""
+    thetas = np.zeros(nb_theta)
+    phis = np.zeros(nb_phi)
+    bxdf = np.zeros((nb_theta, nb_phi))
+    if is_brdf:
+        for t in range(nb_theta):
+            thetas[t] = t * np.pi * 0.5 / (nb_theta - 1)
+            for p in range(nb_phi):
+                phis[p] = p * 2 * np.pi / (nb_phi - 1)
+                bxdf[t, p] = np.cos(thetas[t]) / np.pi
+    else:
+        for t in range(nb_theta):
+            thetas[t] = np.pi * 0.5 * (1 + t / (nb_theta - 1))
+            for p in range(nb_phi):
+                phis[p] = p * 2 * np.pi / (nb_phi - 1)
+    return thetas, phis, bxdf
+
+
 def create_bsdf_data_point(is_brdf, incident_angle, anisotropy):
     """Create a BxDFDatapoint."""
     nb_theta = 10
@@ -411,3 +430,62 @@ def test_anisotropic_bsdf_creation(speos: Speos):
     assert does_file_exist(str(output_file_2))
     remove_file(str(output_file_1))
     remove_file(str(output_file_2))
+
+
+def test_bsdf_error_management(speos: Speos):
+    """Unit test of most bsdf error."""
+    # BXDF datapoint class
+    nb_theta, nb_phi = 5, 5
+    thetas, phis, brdf = create_lambertian_bsdf(False, nb_theta, nb_phi)
+    data = BxdfDatapoint(False, 0, thetas, phis, brdf)
+    with pytest.raises(ValueError, match="Phi values need to be between"):
+        t_phi = data.phi_values.tolist()
+        t_phi.append(7)
+        data.phi_values = t_phi
+    with pytest.raises(ValueError, match="Theta values for Transmission need to be between"):
+        data.theta_values = t_phi
+    t_phi = data.phi_values.tolist()
+    t_phi.append(2)
+    data.phi_values = t_phi
+    assert data.bxdf is None
+    with pytest.raises(ValueError, match="bxdf data has incorrect "):
+        data.bxdf = brdf
+    with pytest.raises(ValueError, match="bxdf data has to be "):
+        data.bxdf = [-1, 2, 3]
+    with pytest.raises(ValueError, match="Incident angle needs to be between"):
+        data.incident_angle = 1.6
+    data.is_brdf = True
+    with pytest.raises(ValueError, match="Theta values for Reflection need to be between"):
+        data.theta_values = t_phi
+    with pytest.raises(ValueError, match="Anisotropy angle needs to be between"):
+        data.anisotropy = 7
+    thetas, phis, brdf = create_lambertian_bsdf(False, nb_theta, nb_phi)
+    data_t = BxdfDatapoint(False, 0, thetas, phis, brdf)
+    thetas, phis, brdf = create_lambertian_bsdf(True, nb_theta, nb_phi)
+    data_r = BxdfDatapoint(True, 0, thetas, phis, brdf)
+    new_bsdf = AnisotropicBSDF(speos)
+    with pytest.raises(ValueError, match="One or multiple datapoints are transmission"):
+        new_bsdf.brdf = [data_t]
+    with pytest.raises(ValueError, match="One or multiple datapoints are reflection"):
+        new_bsdf.btdf = [data_r]
+    new_bsdf.brdf = [data_r]
+    new_bsdf.btdf = [data_t]
+    with pytest.raises(ValueError, match="You need to define the value for both reflection and "):
+        new_bsdf.spectrum_anisotropy = 7.0
+    with pytest.raises(ValueError, match="You need to define the value for both reflection and "):
+        new_bsdf.spectrum_incidence = 7.0
+    new_bsdf.has_transmission = False
+    with pytest.raises(
+        ValueError,
+        match="You need to define the value in radian for both reflection and transmission",
+    ):
+        new_bsdf.spectrum_anisotropy = 7.0
+    with pytest.raises(
+        ValueError,
+        match="You need to define the value in radian for both reflection and transmission",
+    ):
+        new_bsdf.spectrum_incidence = 7.0
+    with pytest.raises(ValueError, match="You need the same number of wavelength and energy value"):
+        new_bsdf.reflection_spectrum = [[1, 2], [1, 2, 3]]
+    with pytest.raises(ValueError, match="You need the same number of wavelength and energy value"):
+        new_bsdf.transmission_spectrum = [[1, 2, 3], [1, 2]]

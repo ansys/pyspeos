@@ -108,8 +108,7 @@ class BaseBSDF:
                 self._brdf = value
                 self.has_reflection = True
             else:
-                msg = "One or multiple datapoints are transmission datapoints"
-                raise ValueError(msg)
+                raise ValueError("One or multiple datapoints are transmission datapoints")
 
     @property
     def btdf(self) -> Collection[BxdfDatapoint]:
@@ -127,8 +126,7 @@ class BaseBSDF:
                 self._btdf = value
                 self.has_transmission = True
             else:
-                msg = "One or multiple datapoints are reflection datapoints"
-                raise ValueError(msg)
+                raise ValueError("One or multiple datapoints are reflection datapoints")
 
     @property
     def nb_incidents(self) -> list[int]:
@@ -818,7 +816,7 @@ class BxdfDatapoint:
         self.wavelength = wavelength
 
     def get(self, key=""):
-        """Retrieve any information from the RayPath object.
+        """Retrieve any information from the BxdfDatapoint object.
 
         Parameters
         ----------
@@ -880,10 +878,8 @@ class BxdfDatapoint:
                 self._bxdf = bxdf.transpose()
             else:
                 raise ValueError("bxdf data has incorrect dimensions")
-        elif value is None:
-            self._bxdf = None
         else:
-            raise ValueError("bxdf data has to be a 2d Array of bsdfdata")
+            self._bxdf = None
 
     @property
     def is_brdf(self):
@@ -942,19 +938,19 @@ class BxdfDatapoint:
     @theta_values.setter
     def theta_values(self, value):
         if not self.is_brdf:
-            if any([np.pi / 2 <= theta <= np.pi for theta in value]):
+            if all([np.pi / 2 <= theta <= np.pi for theta in value]):
                 self._theta_values = value
                 if np.shape(self.bxdf) != (len(self.theta_values), len(self.phi_values)):
                     self.bxdf = None
             else:
                 raise ValueError("Theta values for Transmission need to be between [pi/2, pi]")
         else:
-            if any([0 <= theta <= np.pi / 2 for theta in value]):
+            if all([0 <= theta <= np.pi / 2 for theta in value]):
                 self._theta_values = value
                 if np.shape(self.bxdf) != (len(self.theta_values), len(self.phi_values)):
                     self.bxdf = None
             else:
-                raise ValueError("Theta values for Transmission need to be between [0, pi/2]")
+                raise ValueError("Theta values for Reflection need to be between [0, pi/2]")
 
     @property
     def phi_values(self):
@@ -963,12 +959,12 @@ class BxdfDatapoint:
 
     @phi_values.setter
     def phi_values(self, value):
-        if any([0 <= phi <= 2 * np.pi for phi in value]):
+        if all([0 <= phi <= 2 * np.pi for phi in value]):
             self._phi_values = value
             if np.shape(self.bxdf) != (len(self.theta_values), len(self.phi_values)):
                 self.bxdf = None
         else:
-            raise ValueError("Theta values for Transmission need to be between [pi/2, pi]")
+            raise ValueError("Phi values need to be between [0, 2pi]")
 
 
 def create_bsdf180(
