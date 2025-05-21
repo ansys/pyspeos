@@ -28,7 +28,12 @@ from typing import TYPE_CHECKING, Optional, Union
 
 from grpc import Channel
 
-from ansys.speos.core.generic.constants import DEFAULT_HOST, DEFAULT_PORT, DEFAULT_VERSION
+from ansys.speos.core.generic.constants import (
+    DEFAULT_HOST,
+    DEFAULT_PORT,
+    DEFAULT_VERSION,
+    MAX_CLIENT_MESSAGE_SIZE,
+)
 from ansys.speos.core.kernel.client import SpeosClient
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -73,6 +78,7 @@ class Speos:
         port: Union[str, int] = DEFAULT_PORT,
         version: str = DEFAULT_VERSION,
         channel: Optional[Channel] = None,
+        message_size: int = MAX_CLIENT_MESSAGE_SIZE,
         remote_instance: Optional["Instance"] = None,
         timeout: Optional[int] = 60,
         logging_level: Optional[int] = logging.INFO,
@@ -84,6 +90,7 @@ class Speos:
             port=port,
             version=version,
             channel=channel,
+            message_size=message_size,
             remote_instance=remote_instance,
             timeout=timeout,
             logging_level=logging_level,

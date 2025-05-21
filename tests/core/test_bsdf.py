@@ -55,8 +55,8 @@ def create_lambertian_bsdf(is_brdf, nb_theta=5, nb_phi=5):
 
 def create_bsdf_data_point(is_brdf, incident_angle, anisotropy):
     """Create a BxDFDatapoint."""
-    nb_theta = 10
-    nb_phi = 37
+    nb_theta = 91
+    nb_phi = 361
     thetas = np.zeros(nb_theta)
     phis = np.zeros(nb_phi)
     bxdf = np.zeros((nb_theta, nb_phi))

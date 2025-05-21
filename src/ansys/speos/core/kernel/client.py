@@ -33,7 +33,12 @@ import grpc
 from grpc._channel import _InactiveRpcError
 
 from ansys.api.speos.part.v1 import body_pb2, face_pb2, part_pb2
-from ansys.speos.core.generic.constants import DEFAULT_HOST, DEFAULT_PORT, DEFAULT_VERSION
+from ansys.speos.core.generic.constants import (
+    DEFAULT_HOST,
+    DEFAULT_PORT,
+    DEFAULT_VERSION,
+    MAX_CLIENT_MESSAGE_SIZE,
+)
 from ansys.speos.core.generic.general_methods import retrieve_speos_install_dir
 from ansys.speos.core.kernel.body import BodyLink, BodyStub
 from ansys.speos.core.kernel.face import FaceLink, FaceStub
@@ -139,6 +144,7 @@ class SpeosClient:
         port: Union[str, int] = DEFAULT_PORT,
         version: str = DEFAULT_VERSION,
         channel: Optional[grpc.Channel] = None,
+        message_size: int = MAX_CLIENT_MESSAGE_SIZE,
         remote_instance: Optional["Instance"] = None,
         timeout: Optional[int] = 60,
         logging_level: Optional[int] = logging.INFO,
@@ -168,7 +174,10 @@ class SpeosClient:
             self._host = host
             self._port = port
             self._target = f"{host}:{port}"
-            self._channel = grpc.insecure_channel(self._target)
+            self._channel = grpc.insecure_channel(
+                self._target,
+                options=[("grpc.max_receive_message_length", message_size)],
+            )
         # do not finish initialization until channel is healthy
         wait_until_healthy(self._channel, timeout)
 
