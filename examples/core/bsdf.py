@@ -37,7 +37,7 @@ from ansys.speos.core.speos import SpeosClient
 # Constants help ensure consistency and avoid repetition throughout the example.
 
 HOSTNAME = "localhost"
-GRPC_PORT = 50052  # Be sure the Speos GRPC Server has been started on this port.
+GRPC_PORT = 50098  # Be sure the Speos GRPC Server has been started on this port.
 USE_DOCKER = True  # Set to False if you're running this example locally as a Notebook.
 
 # ### Define helper functions
