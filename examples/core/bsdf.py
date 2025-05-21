@@ -240,6 +240,7 @@ interpolation_settings.set_interpolation_settings(
 new_bsdf.save(file_path=assets_data_path / "example_bsdf_user_interpolation.anisotropicbsdf")
 
 # Load a bsdf file with interpolation enhanced
+
 clean_all_dbs(speos.client)
 saved_bsdf = AnisotropicBSDF(
     speos=speos, file_path=assets_data_path / "example_bsdf_user_interpolation.anisotropicbsdf"
