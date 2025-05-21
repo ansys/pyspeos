@@ -171,8 +171,13 @@ class BaseBSDF:
         return [r_angle, t_angle]
 
 
-class _InterpolationEnhancement:
-    """Class to facilitate Specular interpolation enhancement."""
+class InterpolationEnhancement:
+    """Class to facilitate Specular interpolation enhancement.
+
+    Notes
+    -----
+    **Do not instantiate this class yourself**
+    """
 
     class _InterpolationSettings(UserDict):
         """Class to facilitate interpolation settings as fixed dictionary."""
@@ -243,17 +248,15 @@ class _InterpolationEnhancement:
         self,
         bsdf: Union[AnisotropicBSDF],
         bsdf_namespace: Union[spectral_bsdf__v1__pb2, anisotropic_bsdf__v1__pb2],
-        index_1: float = 1,
-        index_2: float = 1,
+        index_1: Union[float, None] = 1.0,
+        index_2: Union[float, None] = 1.0,
     ) -> None:
         self._bsdf = bsdf
 
         self.__cones_data = None
         try:
             self.__cones_data = self._bsdf._stub.GetSpecularInterpolationEnhancementData(Empty())
-            if self.__cones_data.refractive_index_1 != float(
-                index_1
-            ) or self.__cones_data.refractive_index_2 != float(index_2):
+            if index_1 is not None and index_2 is not None:
                 self.__indices = bsdf_namespace.RefractiveIndices(
                     refractive_index_1=index_1,
                     refractive_index_2=index_2,
@@ -333,7 +336,7 @@ class _InterpolationEnhancement:
             raise ValueError("only anistropic bsdf supported")
 
     def set_interpolation_settings(
-        self, is_brdf: bool, settings: _InterpolationEnhancement._InterpolationSettings
+        self, is_brdf: bool, settings: InterpolationEnhancement._InterpolationSettings
     ) -> None:
         """Set interpolation obtained from bsdf Class or that modified by user.
 
@@ -341,7 +344,7 @@ class _InterpolationEnhancement:
         ----------
         is_brdf: bool
             true if settings is for brdf, else for btdf
-        settings: _InterpolationEnhancement._InterpolationSettings
+        settings: InterpolationEnhancement._InterpolationSettings
             interpolation settings.
         """
         if self.__cones_data.reflection is None and self.__cones_data.transmission is None:
@@ -351,7 +354,7 @@ class _InterpolationEnhancement:
         if not is_brdf and self.__cones_data.transmission is None:
             raise ValueError("transmission data is none")
         if not isinstance(
-            settings, ansys.speos.core.bsdf._InterpolationEnhancement._InterpolationSettings
+            settings, ansys.speos.core.bsdf.InterpolationEnhancement._InterpolationSettings
         ):
             raise ImportError("only interpolation settings are supported")
 
@@ -463,12 +466,12 @@ class AnisotropicBSDF(BaseBSDF):
             self._transmission_spectrum, self._reflection_spectrum = None, None
 
         try:
-            existing_interpolation = self._stub.GetSpecularInterpolationEnhancementData(Empty())
-            self.__interpolation_settings = _InterpolationEnhancement(
+            self._stub.GetSpecularInterpolationEnhancementData(Empty())
+            self.__interpolation_settings = InterpolationEnhancement(
                 bsdf=self,
                 bsdf_namespace=anisotropic_bsdf__v1__pb2,
-                index_1=existing_interpolation.refractive_index_1,
-                index_2=existing_interpolation.refractive_index_2,
+                index_1=None,
+                index_2=None,
             )
         except grpc.RpcError:
             self.__interpolation_settings = None
@@ -711,7 +714,7 @@ class AnisotropicBSDF(BaseBSDF):
             )
 
     @property
-    def interpolation_settings(self) -> Union[None, _InterpolationEnhancement]:
+    def interpolation_settings(self) -> Union[None, InterpolationEnhancement]:
         """Interpolation enhancement settings of the bsdf file.
 
         If bsdf file does not have interpolation enhancement settings, return None.
@@ -719,9 +722,9 @@ class AnisotropicBSDF(BaseBSDF):
         """
         return self.__interpolation_settings
 
-    def interpolation_enhancement(
+    def create_interpolation_enhancement(
         self, index_1: float = 1.0, index_2: float = 1.0
-    ) -> _InterpolationEnhancement:
+    ) -> InterpolationEnhancement:
         """Apply automatic interpolation enhancement.
 
         Return interpolation settings to user if settings need change.
@@ -738,7 +741,7 @@ class AnisotropicBSDF(BaseBSDF):
         ansys.speos.core.bsdf._InterpolationEnhancement
             automatic interpolation settings with index_1 = 1 and index_2 = 1 by default.
         """
-        self.__interpolation_settings = _InterpolationEnhancement(
+        self.__interpolation_settings = InterpolationEnhancement(
             bsdf=self, bsdf_namespace=anisotropic_bsdf__v1__pb2, index_1=index_1, index_2=index_2
         )
         return self.__interpolation_settings
