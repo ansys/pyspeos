@@ -245,7 +245,9 @@ clean_all_dbs(speos.client)
 saved_bsdf = AnisotropicBSDF(
     speos=speos, file_path=assets_data_path / "example_bsdf_user_interpolation.anisotropicbsdf"
 )
-print(saved_bsdf.interpolation_settings)  # here an _InterpolationEnhancement object is returned
+print(
+    saved_bsdf.interpolation_settings
+)  # here an InterpolationEnhancement Class object is returned
 previous_settings = saved_bsdf.interpolation_settings
 print(
     previous_settings.get_reflection_interpolation_settings
