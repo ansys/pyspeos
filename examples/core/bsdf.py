@@ -29,6 +29,7 @@ import numpy as np
 from ansys.speos.core import Speos
 from ansys.speos.core.bsdf import AnisotropicBSDF, BxdfDatapoint
 from ansys.speos.core.launcher import launch_local_speos_rpc_server
+from ansys.speos.core.speos import SpeosClient
 
 # -
 
@@ -36,14 +37,64 @@ from ansys.speos.core.launcher import launch_local_speos_rpc_server
 # Constants help ensure consistency and avoid repetition throughout the example.
 
 HOSTNAME = "localhost"
-GRPC_PORT = 50098  # Be sure the Speos GRPC Server has been started on this port.
+GRPC_PORT = 50052  # Be sure the Speos GRPC Server has been started on this port.
 USE_DOCKER = True  # Set to False if you're running this example locally as a Notebook.
 
 # ### Define helper functions
 
 
+def clean_all_dbs(speos_client: SpeosClient):
+    """Clean all database entries of a current SpeosRPC client.
+
+    Parameters
+    ----------
+    speos_client : ansys.speos.core.kernel.client.SpeosClient
+        SpeosRPC server client
+
+    Returns
+    -------
+    None
+    """
+    for item in (
+        speos_client.jobs().list()
+        + speos_client.scenes().list()
+        + speos_client.simulation_templates().list()
+        + speos_client.sensor_templates().list()
+        + speos_client.source_templates().list()
+        + speos_client.intensity_templates().list()
+        + speos_client.spectrums().list()
+        + speos_client.vop_templates().list()
+        + speos_client.sop_templates().list()
+        + speos_client.parts().list()
+        + speos_client.bodies().list()
+        + speos_client.faces().list()
+    ):
+        item.delete()
+
+
 def create_lambertian_bsdf(is_brdf, nb_theta=5, nb_phi=5):
-    """Create a lambertian Distribution as np.array."""
+    """
+    Create a lambertian Distribution as np.array.
+
+    Parameters
+    ----------
+    is_brdf: bool
+        True if generating brdf data, False btdf data
+    nb_theta: int
+        number of theta samplings
+    nb_phi: int
+        number of phi samplings
+
+    Returns
+    -------
+    theta: np.array,
+        shape (nb_theta, 3)
+    phi: np.array,
+        shape (nb_phi, 3)
+    brdf: np.array,
+        shape (nb_theta, nb_phi)
+
+    """
     thetas = np.zeros(nb_theta)
     phis = np.zeros(nb_phi)
     bxdf = np.zeros((nb_theta, nb_phi))
@@ -62,7 +113,25 @@ def create_lambertian_bsdf(is_brdf, nb_theta=5, nb_phi=5):
 
 
 def create_spectrum(value, w_start=380.0, w_end=780.0, w_step=10):
-    """Create a spectrum for a bsdf."""
+    """
+    Create a spectrum for a bsdf.
+
+    Parameters
+    ----------
+    value: float
+        spectrum value
+    w_start: float
+        wavelength start
+    w_end: float
+        wavelength end
+    w_step: int
+        wavelength sampling number
+
+    Returns
+    -------
+    spectrum: np.array,
+
+    """
     spectrum = np.zeros((2, w_step))
     for w in range(w_step):
         spectrum[0, w] = w_start + w * (w_end - w_start) / (w_step - 1)
@@ -104,6 +173,7 @@ else:
 # angles so we can use anisotropic bsdf and we assume the data has no
 # anisotropy
 
+clean_all_dbs(speos.client)  # clean all the database entries
 incident_angles = [np.radians(5), np.radians(25), np.radians(45), np.radians(65), np.radians(85)]
 all_brdfs = []
 for inc in incident_angles:
@@ -145,13 +215,13 @@ print(new_bsdf)
 print(
     new_bsdf.interpolation_settings
 )  # user can check if there was interpolation settings, here is None
-new_bsdf.interpolation_enhancement(index_1=1.0, index_2=1.4)
+new_bsdf.create_interpolation_enhancement(index_1=1.0, index_2=1.4)
 print(new_bsdf.interpolation_settings)  # Now interpolation settings is not None
 new_bsdf.save(file_path=assets_data_path / "example_bsdf_automatic_interpolation.anisotropicbsdf")
 
 # Apply user defined interpolation enhancement
 
-interpolation_settings = new_bsdf.interpolation_enhancement(index_1=1.0, index_2=1.4)
+interpolation_settings = new_bsdf.create_interpolation_enhancement(index_1=1.0, index_2=1.4)
 interpolation_settings_reflection = (
     interpolation_settings.get_reflection_interpolation_settings
 )  # return as fixed dictionary, user cannot add/remove item
@@ -161,13 +231,16 @@ print(interpolation_settings_reflection)
 
 interpolation_settings_reflection["0"][str(np.radians(5))]["half_angle"] = 0.523
 interpolation_settings_reflection["0"][str(np.radians(5))]["height"] = 0.5
+
+# Set the changed interpolation settings back to bsdf file and save
+
 interpolation_settings.set_interpolation_settings(
     is_brdf=True, settings=interpolation_settings_reflection
 )
 new_bsdf.save(file_path=assets_data_path / "example_bsdf_user_interpolation.anisotropicbsdf")
 
 # Load a bsdf file with interpolation enhanced
-
+clean_all_dbs(speos.client)
 saved_bsdf = AnisotropicBSDF(
     speos=speos, file_path=assets_data_path / "example_bsdf_user_interpolation.anisotropicbsdf"
 )
@@ -176,14 +249,14 @@ previous_settings = saved_bsdf.interpolation_settings
 print(
     previous_settings.get_reflection_interpolation_settings
 )  # user can review the previous settings
-previous_settings = saved_bsdf.interpolation_enhancement(index_1=1.0, index_2=1.4)
+previous_settings = saved_bsdf.create_interpolation_enhancement(index_1=1.0, index_2=1.4)
 print(
     previous_settings.get_reflection_interpolation_settings
-)  # with same index values, user can retrieve the previous settings
+)  # with same index values, user use create_interpolation_enhancement to create a new settings
 
 # Defined new interpolation settings for an already enhanced bsdf file
 
-previous_settings_diff_index = saved_bsdf.interpolation_enhancement(index_1=1.0, index_2=1.5)
+previous_settings_diff_index = saved_bsdf.create_interpolation_enhancement(index_1=1.0, index_2=1.5)
 print(
     previous_settings.get_reflection_interpolation_settings
 )  # with different index values, a new automatic settings is returned
