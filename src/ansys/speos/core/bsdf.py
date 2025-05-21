@@ -460,18 +460,18 @@ class AnisotropicBSDF(BaseBSDF):
             self._has_transmission = bool(self._btdf)
             self._has_reflection = bool(self._brdf)
             self._transmission_spectrum, self._reflection_spectrum = self._extract_spectrum()
+            try:
+                self._stub.GetSpecularInterpolationEnhancementData(Empty())
+                self.__interpolation_settings = InterpolationEnhancement(
+                    bsdf=self,
+                    bsdf_namespace=anisotropic_bsdf__v1__pb2,
+                    index_1=None,
+                    index_2=None,
+                )
+            except grpc.RpcError:
+                self.__interpolation_settings = None
         else:
             self._transmission_spectrum, self._reflection_spectrum = None, None
-
-        try:
-            self._stub.GetSpecularInterpolationEnhancementData(Empty())
-            self.__interpolation_settings = InterpolationEnhancement(
-                bsdf=self,
-                bsdf_namespace=anisotropic_bsdf__v1__pb2,
-                index_1=None,
-                index_2=None,
-            )
-        except grpc.RpcError:
             self.__interpolation_settings = None
 
     def get(self, key=""):
