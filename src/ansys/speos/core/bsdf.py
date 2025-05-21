@@ -718,7 +718,7 @@ class AnisotropicBSDF(BaseBSDF):
         """Interpolation enhancement settings of the bsdf file.
 
         If bsdf file does not have interpolation enhancement settings, return None.
-        if bsdf file has interpolation enhancement settings, return _InterpolationEnhancement.
+        if bsdf file has interpolation enhancement settings, return InterpolationEnhancement.
         """
         return self.__interpolation_settings
 
