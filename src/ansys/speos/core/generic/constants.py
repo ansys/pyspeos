@@ -35,6 +35,6 @@ MAX_SERVER_MESSAGE_LENGTH: int = int(os.environ.get("SPEOS_MAX_MESSAGE_LENGTH", 
 By default, value stored in environment variable SPEOS_MAX_MESSAGE_LENGTH or 268 435 456.
 """
 MAX_CLIENT_MESSAGE_SIZE: int = int(4194304)
-"""Maximum message Size accepted by the Speos RPC server,
-By default, value stored in environment variable SPEOS_MAX_MESSAGE_LENGTH or 268 435 456.
+"""Maximum message Size accepted by grpc channel,
+By default, 4194304.
 """
