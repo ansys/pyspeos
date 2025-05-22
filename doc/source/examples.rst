@@ -34,6 +34,7 @@ Examples
         examples/core/simulation
         examples/core/lpf-preview
         examples/core/prism-example
+        examples/core/bsdf
 
 
     The series of basic examples below explains how to use different PySpeos kernel methods.
