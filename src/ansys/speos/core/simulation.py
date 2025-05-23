@@ -28,6 +28,7 @@ from difflib import SequenceMatcher
 import time
 from typing import List, Mapping, Optional
 import uuid
+import warnings
 
 from ansys.api.speos.job.v2 import job_pb2
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
@@ -143,6 +144,7 @@ class BaseSimulation:
             metadata = {}
         # Attribute representing the kind of simulation.
         self._type = None
+        self._light_expert_changed = None
 
         if simulation_instance is None:
             # Create local SimulationTemplate
@@ -807,6 +809,12 @@ class SimulationDirect(BaseSimulation):
         ansys.speos.core.simulation.SimulationDirect
             Interactive simulation
         """
+        self._light_expert_changed = True
+        warnings.warn(
+            "Please note by Setting a value for light expert option, this will force a sensor"
+            "commit on committing the Simulation class",
+            stacklevel=2,
+        )
         if value:
             for item in self._project._features:
                 if isinstance(item, BaseSensor):
@@ -825,9 +833,10 @@ class SimulationDirect(BaseSimulation):
         ansys.speos.core.simulation.SimulationDirect
             Simulation feature.
         """
-        for item in self._project._features:
-            if isinstance(item, BaseSensor):
-                item.commit()
+        if self._light_expert_changed:
+            for item in self._project._features:
+                if isinstance(item, BaseSensor):
+                    item.commit()
         super().commit()
         return self
 
@@ -1184,6 +1193,12 @@ class SimulationInverse(BaseSimulation):
         ansys.speos.core.simulation.SimulationInverse
             Interactive simulation
         """
+        self._light_expert_changed = True
+        warnings.warn(
+            "Please note by Setting a value for light expert option, this will force a sensor"
+            "commit on committing the Simulation class",
+            stacklevel=2,
+        )
         if value:
             for item in self._project._features:
                 if isinstance(item, BaseSensor):
@@ -1202,9 +1217,10 @@ class SimulationInverse(BaseSimulation):
         ansys.speos.core.simulation.SimulationInverse
             Simulation feature.
         """
-        for item in self._project._features:
-            if isinstance(item, BaseSensor):
-                item.commit()
+        if self._light_expert_changed:
+            for item in self._project._features:
+                if isinstance(item, BaseSensor):
+                    item.commit()
         super().commit()
         return self
 
