@@ -3288,24 +3288,20 @@ class Sensor3DIrradiance(BaseSensor):
         self._layer_type = None
         return self
 
-    def set_geometries(self, geometries: Optional[List[GeoRef]] = None) -> Sensor3DIrradiance:
+    def set_geometries(self, geometries: [List[GeoRef]]) -> Sensor3DIrradiance:
         """Select geometry faces to be defined with 3D irradiance sensor.
 
         Parameters
         ----------
         geometries : List[ansys.speos.core.geo_ref.GeoRef]
             List of geometries that will be considered as output faces.
-            By default, ``[]``, ie no output faces.
 
         Returns
         -------
         ansys.speos.core.sensor.Sensor3DIrradiance
             3D Irradiance sensor
         """
-        if not geometries:
-            self._sensor_instance.irradiance_3d_properties.ClearField("geometries")
-        else:
-            self._sensor_instance.irradiance_3d_properties.geometries.geo_paths[:] = [
-                gr.to_native_link() for gr in geometries
-            ]
+        self._sensor_instance.irradiance_3d_properties.geometries.geo_paths[:] = [
+            gr.to_native_link() for gr in geometries
+        ]
         return self
