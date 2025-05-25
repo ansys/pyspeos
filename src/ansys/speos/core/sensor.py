@@ -3076,3 +3076,236 @@ class SensorRadiance(BaseSensor):
                 self._sensor_instance.radiance_properties.layer_type_sequence
             )
         return self._layer_type
+
+
+class Sensor3DIrradiance(BaseSensor):
+    """Sensor feature: 3D Irradiance.
+
+    By default, regarding inherent characteristics, a 3d irradiance sensor of type photometric and
+    illuminance type planar is chosen, Reflection, Transmission, and Absorption measurements
+    are activated. By default, regarding properties, no layer separation and no ray file
+    generation are chosen.
+
+    Parameters
+    ----------
+    project : ansys.speos.core.project.Project
+        Project that will own the feature.
+    name : str
+        Name of the feature.
+    description : str
+        Description of the feature.
+        By default, ``""``.
+    metadata : Optional[Mapping[str, str]]
+        Metadata of the feature.
+        By default, ``{}``.
+    sensor_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance, optional
+        Sensor instance to provide if the feature does not has to be created from scratch
+        By default, ``None``, means that the feature is created from scratch by default.
+    default_values : bool
+        Uses default values when True.
+        By default, ``True``.
+    """
+
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        sensor_instance: Optional[ProtoScene.SensorInstance] = None,
+        default_values: bool = True,
+    ) -> None:
+        if metadata is None:
+            metadata = {}
+
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            sensor_instance=sensor_instance,
+        )
+
+        # Attribute gathering more complex irradiance type
+        self._type = None
+
+        # Attribute gathering more complex layer type
+        self._layer_type = None
+
+        if default_values:
+            # Default values template
+            self.set_type_photometric().set_illuminance_type_planar()
+            # Default values properties
+            self.set_ray_file_type_none().set_layer_type_none()
+
+    def set_type_photometric(self) -> Sensor3DIrradiance:
+        """Set type photometric.
+
+        The sensor considers the visible spectrum and gets the results in lm/m2 or lx.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.Sensor3DIrradiance
+            3D Irradiance sensor.
+        """
+        self._sensor_template.irradiance_3d.type_photometric.SetInParent()
+        self._type = "Photometric"
+        return self
+
+    def set_type_radiometric(self) -> Sensor3DIrradiance:
+        """Set type radiometric.
+
+        The sensor considers the entire spectrum and gets the results in W/m2.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.Sensor3DIrradiance
+            3D Irradiance sensor
+        """
+        self._sensor_template.irradiance_3d.type_radiometric.SetInParent()
+        self._type = "Radiometric"
+        return self
+
+    def set_illuminance_type_planar(self) -> Sensor3DIrradiance:
+        """Set illuminance type planar.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.Sensor3DIrradiance
+            3D Irradiance sensor
+
+        Notes
+        -----
+        Contrary to any visualization of integration directions within Speos Software or its
+        documentation, the integration direction must be set in the anti-rays direction to integrate
+        their signal.
+        """
+        self._sensor_template.irradiance_3d.IntegrationTypePlanar(
+            reflection=True, transmission=True, absorption=True
+        )
+        return self
+
+    def set_illuminance_type_radial(self) -> Sensor3DIrradiance:
+        """Set illuminance type radial.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.Sensor3DIrradiance
+            3D Irradiance sensor
+        """
+        self._sensor_template.irradiance_sensor_template.IntegrationTypeRadial()
+        return self
+
+    def set_ray_file_type_none(self) -> Sensor3DIrradiance:
+        """Set no ray file generation.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.Sensor3DIrradiance
+            3D Irradiance sensor
+        """
+        self._sensor_instance.irradiance_3d_properties.ray_file_type = (
+            ProtoScene.SensorInstance.EnumRayFileType.RayFileNone
+        )
+        return self
+
+    def set_ray_file_type_classic(self) -> Sensor3DIrradiance:
+        """Set ray file generation without polarization data.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.Sensor3DIrradiance
+            3D Irradiance sensor
+        """
+        self._sensor_instance.irradiance_3d_properties.ray_file_type = (
+            ProtoScene.SensorInstance.EnumRayFileType.RayFileClassic
+        )
+        return self
+
+    def set_ray_file_type_polarization(self) -> Sensor3DIrradiance:
+        """Set ray file generation with the polarization data for each ray.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.Sensor3DIrradiance
+            3D Irradiance sensor
+        """
+        self._sensor_instance.irradiance_3d_properties.ray_file_type = (
+            ProtoScene.SensorInstance.EnumRayFileType.RayFilePolarization
+        )
+        return self
+
+    def set_ray_file_type_tm25(self) -> Sensor3DIrradiance:
+        """Set ray file generation: a .tm25ray file with polarization data for each ray.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.Sensor3DIrradiance
+            3D Irradiance sensor
+        """
+        self._sensor_instance.irradiance_3d_properties.ray_file_type = (
+            ProtoScene.SensorInstance.EnumRayFileType.RayFileTM25
+        )
+        return self
+
+    def set_ray_file_type_tm25_no_polarization(self) -> Sensor3DIrradiance:
+        """Set ray file generation: a .tm25ray file without polarization data.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.Sensor3DIrradiance
+            3D Irradiance sensor
+        """
+        self._sensor_instance.irradiance_3d_properties.ray_file_type = (
+            ProtoScene.SensorInstance.EnumRayFileType.RayFileTM25NoPolarization
+        )
+        return self
+
+    def set_layer_type_none(self) -> Sensor3DIrradiance:
+        """
+        Define layer separation type as None.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.Sensor3DIrradiance
+            3D Irradiance sensor
+
+        """
+        self._sensor_instance.irradiance_3d_properties.layer_type_none.SetInParent()
+        self._layer_type = None
+        return self
+
+    def set_layer_type_source(self) -> Sensor3DIrradiance:
+        """Define layer separation as by source.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.Sensor3DIrradiance
+           3D Irradiance sensor
+
+        """
+        self._sensor_instance.irradiance_3d_properties.layer_type_source.SetInParent()
+        self._layer_type = None
+        return self
+
+    def set_geometries(self, geometries: Optional[List[GeoRef]] = None) -> Sensor3DIrradiance:
+        """Select geometry faces to be defined with 3D irradiance sensor.
+
+        Parameters
+        ----------
+        geometries : List[ansys.speos.core.geo_ref.GeoRef]
+            List of geometries that will be considered as output faces.
+            By default, ``[]``, ie no output faces.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.Sensor3DIrradiance
+            3D Irradiance sensor
+        """
+        if not geometries:
+            self._sensor_instance.irradiance_3d_properties.ClearField("geometries")
+        else:
+            self._sensor_instance.irradiance_3d_properties.geometries.geo_paths[:] = [
+                gr.to_native_link() for gr in geometries
+            ]
+        return self
