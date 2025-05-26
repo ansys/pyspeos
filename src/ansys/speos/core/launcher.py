@@ -130,6 +130,9 @@ def launch_local_speos_rpc_server(
     server_message_size : int
         Maximum message length value accepted by the Speos RPC server,
         By default, value stored in environment variable SPEOS_MAX_MESSAGE_LENGTH or 268 435 456.
+    client_message_size: int
+        Maximum Message size of a newly generated channel
+        By default, ``MAX_CLIENT_MESSAGE_SIZE``.
     logfile_loc : str
         location for the logfile to be created in.
     log_level : int

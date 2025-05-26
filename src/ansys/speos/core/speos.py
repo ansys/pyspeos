@@ -58,6 +58,9 @@ class Speos:
     channel : ~grpc.Channel, optional
         gRPC channel for server communication.
         By default, ``None``.
+    message_size: int
+        Maximum Message size of a newly generated channel
+        By default, ``MAX_CLIENT_MESSAGE_SIZE``.
     remote_instance : ansys.platform.instancemanagement.Instance
         The corresponding remote instance when the Speos Service
         is launched through PyPIM. This instance will be deleted when calling
