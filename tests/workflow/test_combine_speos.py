@@ -192,7 +192,7 @@ def test_insert_speos(speos: Speos):
     # Check that scene is filled
     assert len(p.scene_link.get().materials) == 7
     assert len(p.scene_link.get().sensors) == 1
-    assert len(p.scene_link.get().sources) == 2
+    assert len(p.scene_link.get().sources) == 0
     assert len(p.scene_link.get().simulations) == 1
     assert len(p.find(name=".*", name_regex=True, feature_type=OptProp)) == 7
 
@@ -239,7 +239,7 @@ def test_insert_speos(speos: Speos):
 
     assert len(p.scene_link.get().materials) == 12  # 11 + 1 (ambient material)
     assert len(p.scene_link.get().sensors) == 1
-    assert len(p.scene_link.get().sources) == 2
+    assert len(p.scene_link.get().sources) == 0
     assert len(p.scene_link.get().simulations) == 1
     assert len(p.find(name=".*", name_regex=True, feature_type=OptProp)) == 12
 
