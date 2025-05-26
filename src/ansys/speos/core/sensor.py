@@ -760,8 +760,6 @@ class BaseSensor:
                 )
 
         proto_message_utils._replace_properties(json_dict=out_dict)
-        data = {k: v.fget(self) for k, v in BaseSensor.__dict__.items() if isinstance(v, property)}
-        out_dict.update(data)
         return out_dict
 
     def get(self, key: str = "") -> str | dict:
