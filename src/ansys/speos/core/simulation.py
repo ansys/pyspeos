@@ -837,7 +837,7 @@ class SimulationDirect(BaseSimulation):
             for item in self._project._features:
                 if isinstance(item, BaseSensor):
                     item.commit()
-             self._light_expert_changed = False
+            self._light_expert_changed = False
         super().commit()
         return self
 
@@ -1222,7 +1222,7 @@ class SimulationInverse(BaseSimulation):
             for item in self._project._features:
                 if isinstance(item, BaseSensor):
                     item.commit()
-              self._light_expert_changed = False
+            self._light_expert_changed = False
         super().commit()
         return self
 
