@@ -144,7 +144,7 @@ class BaseSimulation:
             metadata = {}
         # Attribute representing the kind of simulation.
         self._type = None
-        self._light_expert_changed = None
+        self._light_expert_changed = False
 
         if simulation_instance is None:
             # Create local SimulationTemplate
@@ -837,6 +837,7 @@ class SimulationDirect(BaseSimulation):
             for item in self._project._features:
                 if isinstance(item, BaseSensor):
                     item.commit()
+             self._light_expert_changed = False
         super().commit()
         return self
 
@@ -1221,6 +1222,7 @@ class SimulationInverse(BaseSimulation):
             for item in self._project._features:
                 if isinstance(item, BaseSensor):
                     item.commit()
+              self._light_expert_changed = False
         super().commit()
         return self
 
