@@ -54,21 +54,21 @@ class _VisualCoordinateSystem:
         self.__x_axis = pv.Arrow(
             start=self.__origin,
             direction=[1.0, 0.0, 0.0],
-            scale=10.0,
+            scale=1.0,
             tip_radius=0.05,
             shaft_radius=0.01,
         )
         self.__y_axis = pv.Arrow(
             start=self.__origin,
             direction=[0.0, 1.0, 0.0],
-            scale=10.0,
+            scale=1.0,
             tip_radius=0.05,
             shaft_radius=0.01,
         )
         self.__z_axis = pv.Arrow(
             start=self.__origin,
             direction=[0.0, 0.0, 1.0],
-            scale=10.0,
+            scale=1.0,
             tip_radius=0.05,
             shaft_radius=0.01,
         )
