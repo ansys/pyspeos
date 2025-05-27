@@ -91,17 +91,38 @@ class BaseSensor:
             self._sensor_template = ProtoSensorTemplate(
                 name=name, description=description, metadata=metadata
             )
-
             # Create local SensorInstance
             self._sensor_instance = ProtoScene.SensorInstance(
                 name=name, description=description, metadata=metadata
             )
+            self.lxp_path_number = None
         else:
             self._unique_id = sensor_instance.metadata["UniqueId"]
             self.sensor_template_link = self._project.client[sensor_instance.sensor_guid]
             # reset will fill _sensor_instance and _sensor_template from respectively project
             # (using _unique_id) and sensor_template_link
             self.reset()
+
+    @property
+    def lxp_path_number(self):
+        """Number of LXP rays simulated for the Sensor."""
+        if self._sensor_instance.HasField("lxp_properties"):
+            return self._sensor_instance.lxp_properties.nb_max_paths
+        return None
+
+    @lxp_path_number.setter
+    def lxp_path_number(self, value: int):
+        """Setter for lxp_path_number property.
+
+        Parameters
+        ----------
+        value : int
+            Integer value to define number of rays stored
+        """
+        if value:
+            self._sensor_instance.lxp_properties.nb_max_paths = int(value)
+        else:
+            self._sensor_instance.ClearField("lxp_properties")
 
     class WavelengthsRange:
         """Range of wavelengths.
@@ -738,7 +759,6 @@ class BaseSensor:
                 )
 
         proto_message_utils._replace_properties(json_dict=out_dict)
-
         return out_dict
 
     def get(self, key: str = "") -> str | dict:
