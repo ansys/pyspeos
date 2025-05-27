@@ -670,14 +670,14 @@ class SourceRayFile(BaseSource):
                     )
                 )
             feature_pos_info = self.get(key="axis_system")
-            feature_luminaire_pos = np.array(feature_pos_info[:3])
-            feature_luminaire_x_dir = np.array(feature_pos_info[3:6])
-            feature_luminaire_y_dir = np.array(feature_pos_info[6:9])
-            feature_luminaire_z_dir = np.array(feature_pos_info[9:12])
-            self._visual_data.coordinates.origin = feature_luminaire_pos
-            self._visual_data.coordinates.x_axis = feature_luminaire_x_dir * 75
-            self._visual_data.coordinates.y_axis = feature_luminaire_y_dir * 75
-            self._visual_data.coordinates.z_axis = feature_luminaire_z_dir * 75
+            feature_rayfile_pos = np.array(feature_pos_info[:3])
+            feature_rayfile_x_dir = np.array(feature_pos_info[3:6])
+            feature_rayfile_y_dir = np.array(feature_pos_info[6:9])
+            feature_rayfile_z_dir = np.array(feature_pos_info[9:12])
+            self._visual_data.coordinates.origin = feature_rayfile_pos
+            self._visual_data.coordinates.x_axis = feature_rayfile_x_dir * 75
+            self._visual_data.coordinates.y_axis = feature_rayfile_y_dir * 75
+            self._visual_data.coordinates.z_axis = feature_rayfile_z_dir * 75
             self._visual_data.updated = True
             return self._visual_data
 
