@@ -35,6 +35,7 @@ __version__ = importlib_metadata.version("ansys-speos-core")
 
 
 from ansys.speos.core.body import Body
+import ansys.speos.core.bsdf as bsdf
 from ansys.speos.core.face import Face
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.intensity import Intensity
