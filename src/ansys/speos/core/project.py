@@ -958,15 +958,38 @@ class Project:
                     color="orange",
                     opacity=0.5,
                 )
+        from vtkmodules.vtkCommonTransforms import vtkTransform
+
+        transform = vtkTransform()
+        transform.Scale(0.001 * scene_max, 0.001 * scene_max, 0.001 * scene_max)
         match speos_feature:
             case SensorRadiance() | SourceSurface():
                 if speos_feature.visual_data.coordinates is not None:
-                    plotter.plot(speos_feature.visual_data.coordinates.x_axis, color="red")
-                    plotter.plot(speos_feature.visual_data.coordinates.y_axis, color="green")
+                    plotter.plot(
+                        speos_feature.visual_data.coordinates.x_axis.transform(
+                            transform, inplace=True
+                        ),
+                        color="red",
+                    )
+                    plotter.plot(
+                        speos_feature.visual_data.coordinates.y_axis.transform(
+                            transform, inplace=True
+                        ),
+                        color="green",
+                    )
             case SensorIrradiance() | SensorCamera() | SourceLuminaire() | SourceRayFile():
-                plotter.plot(speos_feature.visual_data.coordinates.x_axis, color="red")
-                plotter.plot(speos_feature.visual_data.coordinates.y_axis, color="green")
-                plotter.plot(speos_feature.visual_data.coordinates.z_axis, color="blue")
+                plotter.plot(
+                    speos_feature.visual_data.coordinates.x_axis.transform(transform, inplace=True),
+                    color="red",
+                )
+                plotter.plot(
+                    speos_feature.visual_data.coordinates.y_axis.transform(transform, inplace=True),
+                    color="green",
+                )
+                plotter.plot(
+                    speos_feature.visual_data.coordinates.z_axis.transform(transform, inplace=True),
+                    color="blue",
+                )
         return plotter
 
     @graphics_required

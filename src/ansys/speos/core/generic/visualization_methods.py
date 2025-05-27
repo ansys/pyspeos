@@ -244,7 +244,7 @@ class _VisualArrow:
             self.__data = pv.Arrow(
                 start=line_vertices[0],
                 direction=line_vertices[1],
-                scale=75,
+                scale=1,
                 tip_radius=0.05,
                 shaft_radius=0.01,
             )
