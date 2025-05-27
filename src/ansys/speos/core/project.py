@@ -971,17 +971,21 @@ class Project:
                     opacity=0.5,
                 )
 
-        match speos_feature:
-            case SensorRadiance() | SourceSurface():
-                if speos_feature.visual_data.coordinates is not None:
-                    tmp_orign = speos_feature.visual_data.coordinates.origin
-                    tmp = speos_feature.visual_data.coordinates
-                    speos_feature.visual_data.coordinates._VisualCoordinateSystem__x_axis.points[
-                        :
-                    ] = (tmp.x_axis.points - tmp_orign) * 0.2 * scene_seize + tmp_orign
-                    speos_feature.visual_data.coordinates._VisualCoordinateSystem__y_axis.points[
-                        :
-                    ] = (tmp.y_axis.points - tmp_orign) * 0.2 * scene_seize + tmp_orign
+        if speos_feature.visual_data.coordinates is not None:
+            tmp_origin = speos_feature.visual_data.coordinates.origin
+            tmp = speos_feature.visual_data.coordinates
+            speos_feature.visual_data.coordinates._VisualCoordinateSystem__x_axis.points[:] = (
+                tmp.x_axis.points - tmp_origin
+            ) * 0.2 * scene_seize + tmp_origin
+            speos_feature.visual_data.coordinates._VisualCoordinateSystem__y_axis.points[:] = (
+                tmp.y_axis.points - tmp_origin
+            ) * 0.2 * scene_seize + tmp_origin
+            speos_feature.visual_data.coordinates._VisualCoordinateSystem__z_axis.points[:] = (
+                tmp.z_axis.points - tmp_origin
+            ) * 0.2 * scene_seize + tmp_origin
+
+            match speos_feature:
+                case SensorRadiance() | SourceSurface():
                     plotter.plot(
                         speos_feature.visual_data.coordinates.x_axis,
                         color="red",
@@ -990,31 +994,19 @@ class Project:
                         speos_feature.visual_data.coordinates.y_axis,
                         color="green",
                     )
-            case SensorIrradiance() | SensorCamera() | SourceLuminaire() | SourceRayFile():
-                tmp_origin = speos_feature.visual_data.coordinates.origin
-                tmp = speos_feature.visual_data.coordinates
-                speos_feature.visual_data.coordinates._VisualCoordinateSystem__x_axis.points[:] = (
-                    tmp.x_axis.points - tmp_origin
-                ) * 0.2 * scene_seize + tmp_origin
-                speos_feature.visual_data.coordinates._VisualCoordinateSystem__y_axis.points[:] = (
-                    tmp.y_axis.points - tmp_origin
-                ) * 0.2 * scene_seize + tmp_origin
-                speos_feature.visual_data.coordinates._VisualCoordinateSystem__z_axis.points[:] = (
-                    tmp.z_axis.points - tmp_origin
-                ) * 0.2 * scene_seize + tmp_origin
-
-                plotter.plot(
-                    speos_feature.visual_data.coordinates.x_axis,
-                    color="red",
-                )
-                plotter.plot(
-                    speos_feature.visual_data.coordinates.y_axis,
-                    color="green",
-                )
-                plotter.plot(
-                    speos_feature.visual_data.coordinates.z_axis,
-                    color="blue",
-                )
+                case SensorIrradiance() | SensorCamera() | SourceLuminaire() | SourceRayFile():
+                    plotter.plot(
+                        speos_feature.visual_data.coordinates.x_axis,
+                        color="red",
+                    )
+                    plotter.plot(
+                        speos_feature.visual_data.coordinates.y_axis,
+                        color="green",
+                    )
+                    plotter.plot(
+                        speos_feature.visual_data.coordinates.z_axis,
+                        color="blue",
+                    )
         return plotter
 
     @graphics_required
