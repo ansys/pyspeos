@@ -26,7 +26,7 @@ from pathlib import Path
 
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
 from ansys.speos.core import GeoRef, Project, Speos
-from ansys.speos.core.sensor import SensorIrradiance
+from ansys.speos.core.sensor import BaseSensor, SensorIrradiance
 from ansys.speos.core.simulation import (
     SimulationDirect,
     SimulationInteractive,
@@ -503,6 +503,20 @@ def test_direct_modify_after_reset(speos: Speos):
         source_paths=[src._name]
     ).commit()
 
+    # Light expert
+    sim1.set_light_expert(True, 1000)
+    for item in sim1._project._features:
+        if isinstance(item, BaseSensor):
+            assert item._sensor_instance.HasField("lxp_properties")
+            assert item._sensor_instance.lxp_properties.nb_max_paths == 1000
+            assert item.lxp_path_number == 1000
+
+    sim1.set_light_expert(False, 1000)
+    for item in sim1._project._features:
+        if isinstance(item, BaseSensor):
+            assert item._sensor_instance.HasField("lxp_properties") is False
+            assert item.lxp_path_number is None
+
     # Ask for reset
     sim1.reset()
 
@@ -558,6 +572,20 @@ def test_inverse_modify_after_reset(speos: Speos):
     sim1.set_sensor_paths(sensor_paths=[ssr._name]).set_source_paths(
         source_paths=[src._name]
     ).commit()
+
+    # Light expert
+    sim1.set_light_expert(True, 1000)
+    for item in sim1._project._features:
+        if isinstance(item, BaseSensor):
+            assert item._sensor_instance.HasField("lxp_properties")
+            assert item._sensor_instance.lxp_properties.nb_max_paths == 1000
+            assert item.lxp_path_number == 1000
+
+    sim1.set_light_expert(False, 1000)
+    for item in sim1._project._features:
+        if isinstance(item, BaseSensor):
+            assert item._sensor_instance.HasField("lxp_properties") is False
+            assert item.lxp_path_number is None
 
     # Ask for reset
     sim1.reset()
