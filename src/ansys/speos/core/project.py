@@ -944,20 +944,20 @@ class Project:
         ):
             return plotter
 
+        from vtkmodules.vtkCommonTransforms import vtkTransform
+
         scene_bounds = plotter.backend.scene.bounds
         scene_x_seize = scene_bounds[1] - scene_bounds[0]
         scene_y_seize = scene_bounds[3] - scene_bounds[2]
         scene_z_seize = scene_bounds[5] - scene_bounds[4]
         scene_max = max(scene_x_seize, scene_y_seize, scene_z_seize)
-        from vtkmodules.vtkCommonTransforms import vtkTransform
 
+        ray_path_scale_factor = 0.2
         transform = vtkTransform()
         transform.Scale(0.001 * scene_max, 0.001 * scene_max, 0.001 * scene_max)
-        ray_path_scale_factor = 0.2
 
         match speos_feature:
-            case SourceRayFile():
-                # display ray path
+            case SourceRayFile() | SourceLuminaire() | SourceSurface():
                 for visual_ray in speos_feature.visual_data.data:
                     tmp = visual_ray._VisualArrow__data
                     visual_ray._VisualArrow__data.points[1] = (
@@ -968,62 +968,18 @@ class Project:
                         visual_ray.data,
                         color=visual_ray.color,
                     )
-
-                # display coordinate system
+            case _:
                 plotter.plot(
-                    speos_feature.visual_data.coordinates.x_axis.transform(transform, inplace=True),
-                    color="red",
-                )
-                plotter.plot(
-                    speos_feature.visual_data.coordinates.y_axis.transform(transform, inplace=True),
-                    color="green",
-                )
-                plotter.plot(
-                    speos_feature.visual_data.coordinates.z_axis.transform(transform, inplace=True),
-                    color="blue",
+                    speos_feature.visual_data.data,
+                    show_edges=True,
+                    line_width=2,
+                    edge_color="red",
+                    color="orange",
+                    opacity=0.5,
                 )
 
-            case SourceLuminaire():
-                # display Luminaire ray paths
-                for visual_ray in speos_feature.visual_data.data:
-                    tmp = visual_ray._VisualArrow__data
-                    visual_ray._VisualArrow__data.points[1] = (
-                        ray_path_scale_factor * scene_max * (tmp.points[1] - tmp.points[0])
-                        + tmp.points[0]
-                    )
-                    plotter.plot(
-                        visual_ray.data,
-                        color=visual_ray.color,
-                    )
-
-                # display coordinate system
-                plotter.plot(
-                    speos_feature.visual_data.coordinates.x_axis.transform(transform, inplace=True),
-                    color="red",
-                )
-                plotter.plot(
-                    speos_feature.visual_data.coordinates.y_axis.transform(transform, inplace=True),
-                    color="green",
-                )
-                plotter.plot(
-                    speos_feature.visual_data.coordinates.z_axis.transform(transform, inplace=True),
-                    color="blue",
-                )
-
-            case SourceSurface():
-                # display surface source ray paths
-                for visual_ray in speos_feature.visual_data.data:
-                    tmp = visual_ray._VisualArrow__data
-                    visual_ray._VisualArrow__data.points[1] = (
-                        ray_path_scale_factor * scene_max * (tmp.points[1] - tmp.points[0])
-                        + tmp.points[0]
-                    )
-                    plotter.plot(
-                        visual_ray.data,
-                        color=visual_ray.color,
-                    )
-
-                # display coordinate system if is variable existence
+        match speos_feature:
+            case SensorRadiance() | SourceSurface():
                 if speos_feature.visual_data.coordinates is not None:
                     plotter.plot(
                         speos_feature.visual_data.coordinates.x_axis.transform(
@@ -1037,63 +993,7 @@ class Project:
                         ),
                         color="green",
                     )
-
-            case SensorIrradiance():
-                # display sensor dimension bodies
-                plotter.plot(
-                    speos_feature.visual_data.data,
-                    show_edges=True,
-                    line_width=2,
-                    edge_color="red",
-                    color="orange",
-                    opacity=0.5,
-                )
-
-                # display coordinate system red for x, green for y, blue for integration axis
-                plotter.plot(
-                    speos_feature.visual_data.coordinates.x_axis.transform(transform, inplace=True),
-                    color="red",
-                )
-                plotter.plot(
-                    speos_feature.visual_data.coordinates.y_axis.transform(transform, inplace=True),
-                    color="green",
-                )
-                plotter.plot(
-                    speos_feature.visual_data.coordinates.z_axis.transform(transform, inplace=True),
-                    color="blue",
-                )
-            case SensorRadiance():
-                # display sensor dimension bodies
-                plotter.plot(
-                    speos_feature.visual_data.data,
-                    show_edges=True,
-                    line_width=2,
-                    edge_color="red",
-                    color="orange",
-                    opacity=0.5,
-                )
-
-                # display coordinate system red for x, green for y,
-                plotter.plot(
-                    speos_feature.visual_data.coordinates.x_axis.transform(transform, inplace=True),
-                    color="red",
-                )
-                plotter.plot(
-                    speos_feature.visual_data.coordinates.y_axis.transform(transform, inplace=True),
-                    color="green",
-                )
-            case SensorCamera():
-                # display sensor dimension bodies
-                plotter.plot(
-                    speos_feature.visual_data.data,
-                    show_edges=True,
-                    line_width=2,
-                    edge_color="red",
-                    color="orange",
-                    opacity=0.5,
-                )
-
-                # display coordinate system red for x, green for y, blue for light direction
+            case SensorIrradiance() | SensorCamera() | SourceLuminaire() | SourceRayFile():
                 plotter.plot(
                     speos_feature.visual_data.coordinates.x_axis.transform(transform, inplace=True),
                     color="red",
