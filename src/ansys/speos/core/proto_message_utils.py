@@ -178,7 +178,7 @@ def _replace_properties(json_dict: dict) -> None:
                         replace_props_elt.new_items[kkk] = vvv  # Store every property key, value
 
         # Replace only if dict_to_complete and new_items are not empty
-        if len(replace_props_elt.dict_to_complete) != 0 and len(replace_props_elt.new_items) != 0:
+        if len(replace_props_elt.dict_to_complete) != 0 or len(replace_props_elt.new_items) != 0:
             replace_props_elts.append(replace_props_elt)
 
     # To avoid modifying dictionary while parsing it, modifications are done now
