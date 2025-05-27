@@ -915,6 +915,7 @@ class Project:
             SourceRayFile,
             SourceLuminaire,
         ],
+        scene_seize: float,
     ) -> Plotter:
         """Add speos feature visual preview to pyvista plotter object.
 
@@ -925,6 +926,8 @@ class Project:
         speos_feature: Union[SensorCamera, SensorRadiance, SensorIrradiance,
         SourceLuminaire, SourceRayFile, SourceLuminaire]
             speos feature whose visual data will be added.
+        scene_seize: float
+            seize of max scene bounds
 
         Returns
         -------
@@ -944,24 +947,14 @@ class Project:
         ):
             return plotter
 
-        from vtkmodules.vtkCommonTransforms import vtkTransform
-
-        scene_bounds = plotter.backend.scene.bounds
-        scene_x_seize = scene_bounds[1] - scene_bounds[0]
-        scene_y_seize = scene_bounds[3] - scene_bounds[2]
-        scene_z_seize = scene_bounds[5] - scene_bounds[4]
-        scene_max = max(scene_x_seize, scene_y_seize, scene_z_seize)
-
         ray_path_scale_factor = 0.2
-        transform = vtkTransform()
-        transform.Scale(0.001 * scene_max, 0.001 * scene_max, 0.001 * scene_max)
 
         match speos_feature:
             case SourceRayFile() | SourceLuminaire() | SourceSurface():
                 for visual_ray in speos_feature.visual_data.data:
                     tmp = visual_ray._VisualArrow__data
                     visual_ray._VisualArrow__data.points[1] = (
-                        ray_path_scale_factor * scene_max * (tmp.points[1] - tmp.points[0])
+                        ray_path_scale_factor * scene_seize * (tmp.points[1] - tmp.points[0])
                         + tmp.points[0]
                     )
                     plotter.plot(
@@ -981,29 +974,45 @@ class Project:
         match speos_feature:
             case SensorRadiance() | SourceSurface():
                 if speos_feature.visual_data.coordinates is not None:
+                    tmp_orign = speos_feature.visual_data.coordinates.origin
+                    tmp = speos_feature.visual_data.coordinates
+                    speos_feature.visual_data.coordinates._VisualCoordinateSystem__x_axis.points[
+                        :
+                    ] = (tmp.x_axis.points - tmp_orign) * 0.2 * scene_seize + tmp_orign
+                    speos_feature.visual_data.coordinates._VisualCoordinateSystem__y_axis.points[
+                        :
+                    ] = (tmp.y_axis.points - tmp_orign) * 0.2 * scene_seize + tmp_orign
                     plotter.plot(
-                        speos_feature.visual_data.coordinates.x_axis.transform(
-                            transform, inplace=True
-                        ),
+                        speos_feature.visual_data.coordinates.x_axis,
                         color="red",
                     )
                     plotter.plot(
-                        speos_feature.visual_data.coordinates.y_axis.transform(
-                            transform, inplace=True
-                        ),
+                        speos_feature.visual_data.coordinates.y_axis,
                         color="green",
                     )
             case SensorIrradiance() | SensorCamera() | SourceLuminaire() | SourceRayFile():
+                tmp_origin = speos_feature.visual_data.coordinates.origin
+                tmp = speos_feature.visual_data.coordinates
+                speos_feature.visual_data.coordinates._VisualCoordinateSystem__x_axis.points[:] = (
+                    tmp.x_axis.points - tmp_origin
+                ) * 0.2 * scene_seize + tmp_origin
+                speos_feature.visual_data.coordinates._VisualCoordinateSystem__y_axis.points[:] = (
+                    tmp.y_axis.points - tmp_origin
+                ) * 0.2 * scene_seize + tmp_origin
+                speos_feature.visual_data.coordinates._VisualCoordinateSystem__z_axis.points[:] = (
+                    tmp.z_axis.points - tmp_origin
+                ) * 0.2 * scene_seize + tmp_origin
+
                 plotter.plot(
-                    speos_feature.visual_data.coordinates.x_axis.transform(transform, inplace=True),
+                    speos_feature.visual_data.coordinates.x_axis,
                     color="red",
                 )
                 plotter.plot(
-                    speos_feature.visual_data.coordinates.y_axis.transform(transform, inplace=True),
+                    speos_feature.visual_data.coordinates.y_axis,
                     color="green",
                 )
                 plotter.plot(
-                    speos_feature.visual_data.coordinates.z_axis.transform(transform, inplace=True),
+                    speos_feature.visual_data.coordinates.z_axis,
                     color="blue",
                 )
         return plotter
@@ -1055,8 +1064,15 @@ class Project:
                 p.plot(_preview_mesh, **viz_args)
 
         # Add speos visual data at the root part
+        scene_bounds = p.backend.scene.bounds
+        scene_x_seize = scene_bounds[1] - scene_bounds[0]
+        scene_y_seize = scene_bounds[3] - scene_bounds[2]
+        scene_z_seize = scene_bounds[5] - scene_bounds[4]
+        scene_max = max(scene_x_seize, scene_y_seize, scene_z_seize)
         for feature in self._features:
-            p = self._create_speos_feature_preview(p, feature)
+            p = self._create_speos_feature_preview(
+                plotter=p, speos_feature=feature, scene_seize=scene_max
+            )
         return p
 
     @graphics_required
