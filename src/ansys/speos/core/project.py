@@ -957,10 +957,7 @@ class Project:
                         ray_path_scale_factor * scene_seize * (tmp.points[1] - tmp.points[0])
                         + tmp.points[0]
                     )
-                    plotter.plot(
-                        visual_ray.data,
-                        color=visual_ray.color,
-                    )
+                    plotter.plot(visual_ray.data, color=visual_ray.color)
             case _:
                 plotter.plot(
                     speos_feature.visual_data.data,
@@ -986,27 +983,12 @@ class Project:
 
             match speos_feature:
                 case SensorRadiance() | SourceSurface():
-                    plotter.plot(
-                        speos_feature.visual_data.coordinates.x_axis,
-                        color="red",
-                    )
-                    plotter.plot(
-                        speos_feature.visual_data.coordinates.y_axis,
-                        color="green",
-                    )
+                    plotter.plot(speos_feature.visual_data.coordinates.x_axis, color="red")
+                    plotter.plot(speos_feature.visual_data.coordinates.y_axis, color="green")
                 case SensorIrradiance() | SensorCamera() | SourceLuminaire() | SourceRayFile():
-                    plotter.plot(
-                        speos_feature.visual_data.coordinates.x_axis,
-                        color="red",
-                    )
-                    plotter.plot(
-                        speos_feature.visual_data.coordinates.y_axis,
-                        color="green",
-                    )
-                    plotter.plot(
-                        speos_feature.visual_data.coordinates.z_axis,
-                        color="blue",
-                    )
+                    plotter.plot(speos_feature.visual_data.coordinates.x_axis, color="red")
+                    plotter.plot(speos_feature.visual_data.coordinates.y_axis, color="green")
+                    plotter.plot(speos_feature.visual_data.coordinates.z_axis, color="blue")
         return plotter
 
     @graphics_required
