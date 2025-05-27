@@ -905,7 +905,16 @@ class Project:
         return part_mesh_info
 
     def _create_speos_feature_preview(
-        self, plotter: Plotter, speos_feature: Union[SensorCamera, SensorRadiance, SensorIrradiance]
+        self,
+        plotter: Plotter,
+        speos_feature: Union[
+            SensorCamera,
+            SensorRadiance,
+            SensorIrradiance,
+            SourceLuminaire,
+            SourceRayFile,
+            SourceLuminaire,
+        ],
     ) -> Plotter:
         """Add speos feature visual preview to pyvista plotter object.
 
@@ -913,7 +922,8 @@ class Project:
         ----------
         plotter: Plotter
             ansys.tools.visualization_interface.Plotter
-        speos_feature: Union[SensorCamera, SensorRadiance, SensorIrradiance]
+        speos_feature: Union[SensorCamera, SensorRadiance, SensorIrradiance,
+        SourceLuminaire, SourceRayFile, SourceLuminaire]
             speos feature whose visual data will be added.
 
         Returns
