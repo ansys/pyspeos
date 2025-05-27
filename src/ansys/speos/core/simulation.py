@@ -811,8 +811,8 @@ class SimulationDirect(BaseSimulation):
         """
         self._light_expert_changed = True
         warnings.warn(
-            "Please note by Setting a value for light expert option, this will force a sensor"
-            "commit on committing the Simulation class",
+            "Please note that setting a value for light expert option forces a sensor"
+            "commit when committing the Simulation class",
             stacklevel=2,
         )
         if value:
