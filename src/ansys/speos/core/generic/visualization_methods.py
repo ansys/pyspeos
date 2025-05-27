@@ -249,7 +249,7 @@ class _VisualArrow:
                 shaft_radius=0.01,
             )
         else:
-            self.__data = pv.Line(line_vertices[0], line_vertices[0] + 75 * line_vertices[1])
+            self.__data = pv.Line(line_vertices[0], line_vertices[0] + line_vertices[1])
         if all(value < 1 for value in color):
             self.__color = color + (255,)
         else:

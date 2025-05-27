@@ -921,6 +921,11 @@ class Project:
         Plotter
             ansys.tools.visualization_interface.Plotter
         """
+        scene_bounds = plotter.backend.scene.bounds
+        scene_x_seize = scene_bounds[1] - scene_bounds[0]
+        scene_y_seize = scene_bounds[3] - scene_bounds[2]
+        scene_z_seize = scene_bounds[5] - scene_bounds[4]
+        scene_max = max(scene_x_seize, scene_y_seize, scene_z_seize)
         if not isinstance(
             speos_feature,
             (
@@ -936,6 +941,10 @@ class Project:
         match speos_feature:
             case SourceRayFile() | SourceLuminaire() | SourceSurface():
                 for visual_ray in speos_feature.visual_data.data:
+                    tmp = visual_ray._VisualArrow__data
+                    visual_ray._VisualArrow__data.points[1] = (
+                        0.2 * scene_max * (tmp.points[1] - tmp.points[0]) + tmp.points[0]
+                    )
                     plotter.plot(
                         visual_ray.data,
                         color=visual_ray.color,
