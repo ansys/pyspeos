@@ -1704,15 +1704,9 @@ class SensorCamera(BaseSensor):
 
             # camera axis system
             self._visual_data.coordinates.origin = feature_camera_pos
-            self._visual_data.coordinates.x_axis = (
-                feature_camera_x_dir * max(feature_width, feature_height) / 4.0
-            )
-            self._visual_data.coordinates.y_axis = (
-                feature_camera_y_dir * max(feature_width, feature_height) / 4.0
-            )
-            self._visual_data.coordinates.z_axis = (
-                feature_camera_z_dir * max(feature_width, feature_height) / 4.0
-            )
+            self._visual_data.coordinates.x_axis = feature_camera_x_dir
+            self._visual_data.coordinates.y_axis = feature_camera_y_dir
+            self._visual_data.coordinates.z_axis = feature_camera_z_dir
 
             self._visual_data.updated = True
             return self._visual_data
@@ -2053,15 +2047,9 @@ class SensorIrradiance(BaseSensor):
 
             # irradiance direction
             self._visual_data.coordinates.origin = feature_irradiance_pos
-            self._visual_data.coordinates.x_axis = feature_irradiance_x_dir * max(
-                feature_y_end - feature_y_start, feature_x_end - feature_x_start
-            )
-            self._visual_data.coordinates.y_axis = feature_irradiance_y_dir * max(
-                feature_y_end - feature_y_start, feature_x_end - feature_x_start
-            )
-            self._visual_data.coordinates.z_axis = feature_irradiance_z_dir * max(
-                feature_y_end - feature_y_start, feature_x_end - feature_x_start
-            )
+            self._visual_data.coordinates.x_axis = feature_irradiance_x_dir
+            self._visual_data.coordinates.y_axis = feature_irradiance_y_dir
+            self._visual_data.coordinates.z_axis = feature_irradiance_z_dir
 
             self._visual_data.updated = True
             return self._visual_data
@@ -2727,12 +2715,8 @@ class SensorRadiance(BaseSensor):
 
             # radiance direction
             self._visual_data.coordinates.origin = feature_radiance_pos
-            self._visual_data.coordinates.x_axis = feature_radiance_x_dir * max(
-                feature_y_end - feature_y_start, feature_x_end - feature_x_start
-            )
-            self._visual_data.coordinates.y_axis = feature_radiance_y_dir * max(
-                feature_y_end - feature_y_start, feature_x_end - feature_x_start
-            )
+            self._visual_data.coordinates.x_axis = feature_radiance_x_dir
+            self._visual_data.coordinates.y_axis = feature_radiance_y_dir
 
             self._visual_data.updated = True
             return self._visual_data
