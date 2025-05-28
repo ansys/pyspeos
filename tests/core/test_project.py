@@ -24,11 +24,11 @@
 
 from pathlib import Path
 
-from ansys.speos.core import Body, Face, Part, Project, Speos
+from ansys.speos.core import Body, Face, GeoRef, Part, Project, Speos
 from ansys.speos.core.opt_prop import OptProp
 from ansys.speos.core.sensor import SensorIrradiance, SensorRadiance
 from ansys.speos.core.simulation import SimulationDirect
-from ansys.speos.core.source import SourceLuminaire, SourceSurface
+from ansys.speos.core.source import SourceLuminaire, SourceRayFile, SourceSurface
 from tests.conftest import test_path
 
 
@@ -468,3 +468,50 @@ def test_preview_visual_data(speos: Speos):
     # preview radiance sensor visual data
     p2.create_sensor(name="radiance_sensor", feature_type=SensorRadiance)
     p2.preview()
+
+    # preview luminaire source
+    # preview when there is cad
+    sr = p2.create_source(name="Luminaire_source", feature_type=SourceLuminaire)
+    sr.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
+    sr.set_spectrum().set_halogen()
+    sr.commit()
+    p2.preview()
+    # preview when there is no cad
+    p3 = Project(speos=speos)
+    sr = p3.create_source(name="Luminaire_source.2", feature_type=SourceLuminaire)
+    sr.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
+    sr.commit()
+    p3.preview()
+
+    # preview rayfile source
+    sr = p2.create_source(name="Rayfile_source", feature_type=SourceRayFile)
+    sr.set_ray_file_uri(uri=str(Path(test_path) / "Rays.ray"))
+    sr.commit()
+    p2.preview()
+
+    # preview surface
+    # preview from direct creation
+    # constant exitance
+    p2_root_part = p2.find(name="", feature_type=Part)[0]
+    p2_body1 = p2_root_part.create_body(name="TheBodyB").commit()
+    p2_body1.create_face(name="TheFaceF").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
+        [0, 1, 2]
+    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1]).commit()
+    sr = p2.create_source(name="Surface.1", feature_type=SourceSurface)
+
+    sr.set_exitance_constant(geometries=[(GeoRef.from_native_link("TheBodyB/TheFaceF"), False)])
+    sr.commit()
+    p2.preview()
+    # variable exitance
+    sr.set_spectrum_from_xmp_file()
+    sr.set_exitance_variable().set_xmp_file_uri(
+        uri=str(Path(test_path) / "PROJECT.Direct-no-Ray.Irradiance Ray Spectral.xmp")
+    )
+    sr.commit()
+    p2.preview()
+    # preview from loaded file
+    p4 = Project(
+        speos=speos,
+        path=str(Path(test_path) / "error_data.speos" / "error_data.speos"),
+    )
+    p4.preview()
