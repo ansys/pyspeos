@@ -184,7 +184,7 @@ jobs:
   build-library:
     name: Build library
     runs-on: ubuntu-latest
-    needs: [doc-build, testing]
+    needs: [testing]
     steps:
       - name: "Build library source and wheel artifacts"
         uses: ansys/actions/build-library@b46bf28ca54671fcb1444fb119533ecd113e98f0 # v9.0.11
