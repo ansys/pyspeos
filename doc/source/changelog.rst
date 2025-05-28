@@ -9,6 +9,61 @@ This document contains the release notes for the PySpeos project.
 
 .. towncrier release notes start
 
+`0.6.0.rc0 <https://github.com/ansys/pyspeos/releases/tag/v0.6.0.rc0>`_ - May 28, 2025
+======================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - enhance the project preview: luminaire, surface, rayfile
+          - `#561 <https://github.com/ansys/pyspeos/pull/561>`_
+
+        * - lightexpert
+          - `#592 <https://github.com/ansys/pyspeos/pull/592>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - bump ansys-api-speos from 0.14.2 to 0.15.2
+          - `#589 <https://github.com/ansys/pyspeos/pull/589>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - add message size to nighly ci
+          - `#600 <https://github.com/ansys/pyspeos/pull/600>`_
+
+        * - coding error, switch to correct order
+          - `#601 <https://github.com/ansys/pyspeos/pull/601>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - update CHANGELOG for v0.5.0
+          - `#597 <https://github.com/ansys/pyspeos/pull/597>`_
+
+        * - bump dev version into v0.6.dev0
+          - `#598 <https://github.com/ansys/pyspeos/pull/598>`_
+
+
 `0.5.0 <https://github.com/ansys/pyspeos/releases/tag/v0.5.0>`_ - May 26, 2025
 ==============================================================================
 
