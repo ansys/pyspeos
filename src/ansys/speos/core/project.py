@@ -973,13 +973,13 @@ class Project:
             tmp = speos_feature.visual_data.coordinates
             speos_feature.visual_data.coordinates._VisualCoordinateSystem__x_axis.points[:] = (
                 tmp.x_axis.points - tmp_origin
-            ) * 0.2 * scene_seize + tmp_origin
+            ) * ray_path_scale_factor * scene_seize + tmp_origin
             speos_feature.visual_data.coordinates._VisualCoordinateSystem__y_axis.points[:] = (
                 tmp.y_axis.points - tmp_origin
-            ) * 0.2 * scene_seize + tmp_origin
+            ) * ray_path_scale_factor * scene_seize + tmp_origin
             speos_feature.visual_data.coordinates._VisualCoordinateSystem__z_axis.points[:] = (
                 tmp.z_axis.points - tmp_origin
-            ) * 0.2 * scene_seize + tmp_origin
+            ) * ray_path_scale_factor * scene_seize + tmp_origin
 
             match speos_feature:
                 case SensorRadiance() | SourceSurface():
