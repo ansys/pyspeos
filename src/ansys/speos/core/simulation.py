@@ -28,6 +28,7 @@ from difflib import SequenceMatcher
 import time
 from typing import List, Mapping, Optional
 import uuid
+import warnings
 
 from ansys.api.speos.job.v2 import job_pb2
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
@@ -40,6 +41,7 @@ from ansys.speos.core.kernel.simulation_template import ProtoSimulationTemplate
 from ansys.speos.core.logger import LOG
 import ansys.speos.core.project as project
 import ansys.speos.core.proto_message_utils as proto_message_utils
+from ansys.speos.core.sensor import BaseSensor
 
 
 class BaseSimulation:
@@ -142,6 +144,7 @@ class BaseSimulation:
             metadata = {}
         # Attribute representing the kind of simulation.
         self._type = None
+        self._light_expert_changed = False
 
         if simulation_instance is None:
             # Create local SimulationTemplate
@@ -575,6 +578,7 @@ class SimulationDirect(BaseSimulation):
             # self.set_fast_transmission_gathering()
             self.set_ambient_material_file_uri()
             self.set_weight()
+            self.set_light_expert()
             # Default job properties
             self.set_stop_condition_rays_number().set_stop_condition_duration().set_automatic_save_frequency()
 
@@ -786,6 +790,55 @@ class SimulationDirect(BaseSimulation):
             Direct simulation
         """
         self._job.direct_mc_simulation_properties.automatic_save_frequency = value
+        return self
+
+    def set_light_expert(self, value: bool = False, ray_number: int = 10e6) -> SimulationDirect:
+        """Activate/Deactivate the generation of light expert file.
+
+        Parameters
+        ----------
+        value : bool
+            Activate/Deactivate.
+            By default, ``False``, means deactivate.
+        ray_number : int
+            number of rays stored in lpf file
+            By default, ``10e6``
+
+        Returns
+        -------
+        ansys.speos.core.simulation.SimulationDirect
+            Interactive simulation
+        """
+        self._light_expert_changed = True
+        warnings.warn(
+            "Please note that setting a value for light expert option forces a sensor"
+            "commit when committing the Simulation class",
+            stacklevel=2,
+        )
+        if value:
+            for item in self._project._features:
+                if isinstance(item, BaseSensor):
+                    item.lxp_path_number = ray_number
+        else:
+            for item in self._project._features:
+                if isinstance(item, BaseSensor):
+                    item.lxp_path_number = None
+        return self
+
+    def commit(self) -> SimulationDirect:
+        """Save feature: send the local data to the speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.simulation.SimulationDirect
+            Simulation feature.
+        """
+        if self._light_expert_changed:
+            for item in self._project._features:
+                if isinstance(item, BaseSensor):
+                    item.commit()
+            self._light_expert_changed = False
+        super().commit()
         return self
 
 
@@ -1122,6 +1175,55 @@ class SimulationInverse(BaseSimulation):
             Inverse simulation
         """
         self._job.inverse_mc_simulation_properties.automatic_save_frequency = value
+        return self
+
+    def set_light_expert(self, value: bool = False, ray_number: int = 10e6) -> SimulationInverse:
+        """Activate/Deactivate the generation of light expert file.
+
+        Parameters
+        ----------
+        value : bool
+            Activate/Deactivate.
+            By default, ``False``, means deactivate.
+        ray_number : int
+            number of rays stored in lpf file
+            By default, ``10e6``
+
+        Returns
+        -------
+        ansys.speos.core.simulation.SimulationInverse
+            Interactive simulation
+        """
+        self._light_expert_changed = True
+        warnings.warn(
+            "Please note that setting a value for light expert option forces a sensor"
+            "commit when committing the Simulation class",
+            stacklevel=2,
+        )
+        if value:
+            for item in self._project._features:
+                if isinstance(item, BaseSensor):
+                    item.lxp_path_number = ray_number
+        else:
+            for item in self._project._features:
+                if isinstance(item, BaseSensor):
+                    item.lxp_path_number = None
+        return self
+
+    def commit(self) -> SimulationInverse:
+        """Save feature: send the local data to the speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.simulation.SimulationInverse
+            Simulation feature.
+        """
+        if self._light_expert_changed:
+            for item in self._project._features:
+                if isinstance(item, BaseSensor):
+                    item.commit()
+            self._light_expert_changed = False
+        super().commit()
         return self
 
 
