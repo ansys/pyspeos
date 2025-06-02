@@ -303,10 +303,10 @@ def min_speos_version(major: int, minor: int, service_pack: int):
 
     def decorator(function):
         def wrapper(*args, **kwargs):
-            if "__init__" in function.__qualname__:
-                name = function.__qualname__.split(".")[0]
+            if function.__qualname__.endswith("__init__"):
+                name = function.__qualname__[:-9]
             else:
-                name = function.__name__
+                name = function.__qualname__
             warnings.warn(VERSION_ERROR.format(version=version, feature_name=name), stacklevel=2)
             return function(*args, **kwargs)
 
