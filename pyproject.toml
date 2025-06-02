@@ -58,7 +58,7 @@ jupyter = [
     "notebook==7.4.2",
 ]
 doc = [
-    "ansys-sphinx-theme==1.4.4",
+    "ansys-sphinx-theme==1.5.0",
     "numpydoc==1.8.0",
     "Sphinx==8.1.3",
     "sphinx-copybutton==0.5.2",
@@ -68,8 +68,8 @@ doc = [
     "sphinxcontrib-mermaid==1.0.0",
     "myst-parser==4.0.1",
     "nbsphinx==0.9.7",
-    "jupytext==1.17.1",
-    "jupyterlab==4.4.2",
+    "jupytext==1.17.2",
+    "jupyterlab==4.4.3",
     "jupyter-server==2.16.0",
     "nbconvert==7.16.6",
     "pyvista[jupyter]>=0.43,<0.46",
