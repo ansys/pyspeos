@@ -397,6 +397,7 @@ class BaseSource:
         return self
 
 
+@general_methods.supported_version(252)
 class SourceLuminaire(BaseSource):
     """LuminaireSource.
 
@@ -582,6 +583,7 @@ class SourceLuminaire(BaseSource):
         return self
 
 
+@general_methods.supported_version(252)
 class SourceRayFile(BaseSource):
     """RayFile Source.
 
@@ -818,6 +820,7 @@ class SourceRayFile(BaseSource):
         return self
 
 
+@general_methods.supported_version(252)
 class SourceSurface(BaseSource):
     """Type of Source : Surface.
 
