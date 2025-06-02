@@ -46,9 +46,7 @@ GRAPHICS_ERROR = (
     "You can install this using `pip install ansys-speos-core[graphics]`."
 )
 
-VERSION_ERROR = (
-    "The pySpeos feature : {feature_name} needs a Speos Version of V{version} or higher."
-)
+VERSION_ERROR = "The pySpeos feature : {feature_name} needs a Speos Version of {version} or higher."
 
 
 def deprecate_kwargs(old_arguments: dict, removed_version="0.3.0"):
@@ -289,20 +287,27 @@ def wavelength_to_rgb(wavelength: float, gamma: float = 0.8) -> [int, int, int, 
     return [int(r), int(g), int(b), 255]
 
 
-def supported_version(version: int):
-    """Raise Version warnings.
+def min_speos_version(major: int, minor: int, service_pack: int):
+    """Raise Version Warning.
 
     Parameters
     ----------
-    version : int
-        Version from which it is working, in the 3 digits format, such as "242".
+    major : int
+        Major release version, e.g. 25
+    minor : int
+        Minor release version e.g. 1
+    service_pack : int
+        Service Pack version e.g. 3
     """
+    version = f"20{major} R{minor} SP{service_pack}"
 
     def decorator(function):
         def wrapper(*args, **kwargs):
-            warnings.warn(
-                VERSION_ERROR.format(version=version, feature_name=function.__name__), stacklevel=2
-            )
+            if "__init__" in function.__qualname__:
+                name = function.__qualname__.split(".")[0]
+            else:
+                name = function.__name__
+            warnings.warn(VERSION_ERROR.format(version=version, feature_name=name), stacklevel=2)
             return function(*args, **kwargs)
 
         return wrapper

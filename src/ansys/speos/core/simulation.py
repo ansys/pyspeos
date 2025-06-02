@@ -32,7 +32,7 @@ import warnings
 
 from ansys.api.speos.job.v2 import job_pb2
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
-from ansys.speos.core.generic.general_methods import supported_version
+from ansys.speos.core.generic.general_methods import min_speos_version
 
 # from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.job import ProtoJob
@@ -517,7 +517,6 @@ class BaseSimulation:
         self.reset()
 
 
-@supported_version(252)
 class SimulationDirect(BaseSimulation):
     """Type of Simulation: Direct.
 
@@ -551,6 +550,7 @@ class SimulationDirect(BaseSimulation):
         Uses default values when True.
     """
 
+    @min_speos_version(25, 2, 0)
     def __init__(
         self,
         project: project.Project,
@@ -844,7 +844,6 @@ class SimulationDirect(BaseSimulation):
         return self
 
 
-@supported_version(252)
 class SimulationInverse(BaseSimulation):
     """Type of simulation : Inverse.
 
@@ -880,6 +879,7 @@ class SimulationInverse(BaseSimulation):
         Uses default values when True.
     """
 
+    @min_speos_version(25, 2, 0)
     def __init__(
         self,
         project: project.Project,
