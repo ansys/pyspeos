@@ -288,7 +288,7 @@ def wavelength_to_rgb(wavelength: float, gamma: float = 0.8) -> [int, int, int, 
 
 
 def min_speos_version(major: int, minor: int, service_pack: int):
-    """Raise Version Warning.
+    """Raise version warning.
 
     Parameters
     ----------
