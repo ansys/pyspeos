@@ -1,28 +1,38 @@
 # # How to use an ObjectLink
+from ansys.speos.core import launcher
 
 # This tutorial demonstrates how to use speos objects in layer core.
-
 # ## What is an ObjectLink?
-
 # The ObjectLink is an object that is created from a protobuf message and then stored in the server
 # database.
-
 # ## Which speos objects are used via ObjectLink?
-
 # Almost all speos objects are used via ObjectLink: like sources, sensors, simulations and more.
 # For this tutorial we will use as example the surface optical property (sop)
-
+# ## Prerequisites
+#
+# ### Perform imports
 # +
 from ansys.speos.core.kernel.sop_template import ProtoSOPTemplate
 from ansys.speos.core.speos import Speos
 
 # -
+# ### Define constants
+# Constants help ensure consistency and avoid repetition throughout the example.
 
-# Create connection with speos rpc server
+HOSTNAME = "localhost"
+GRPC_PORT = 50098  # Be sure the Speos GRPC Server has been started on this port.
+USE_DOCKER = True  # Set to False if you're running this example locally as a Notebook.
 
-# +
-speos = Speos(host="localhost", port=50098)
-# -
+# ### Start/Connect to Speos RPC Server
+# This Python client connects to a server where the Speos engine
+# is running as a service. In this example, the server and
+# client are the same machine. The launch_local_speos_rpc_method can
+# be used to start a local instance of the service.
+
+if USE_DOCKER:
+    speos = Speos(host=HOSTNAME, port=GRPC_PORT)
+else:
+    speos = launcher.launch_local_speos_rpc_server(port=GRPC_PORT)
 
 # ## Create an ObjectLink
 

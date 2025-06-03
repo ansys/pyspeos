@@ -10,7 +10,7 @@
 
 from pathlib import Path
 
-from ansys.speos.core import Project, Speos
+from ansys.speos.core import Project, Speos, launcher
 from ansys.speos.core.sensor import (
     SensorCamera,
     SensorIrradiance,
@@ -46,7 +46,10 @@ else:
 # is running as a service. In this example, the server and
 # client are the same machine.
 
-speos = Speos(host=HOSTNAME, port=GRPC_PORT)
+if USE_DOCKER:
+    speos = Speos(host=HOSTNAME, port=GRPC_PORT)
+else:
+    speos = launcher.launch_local_speos_rpc_server(port=GRPC_PORT)
 
 # ## Create a new project
 #

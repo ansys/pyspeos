@@ -24,63 +24,79 @@
 # the wanted position, or attached to the wanted geometry.
 # The Scene object will gather all features that you need to run a job (compute a simulation).
 
+# ## Prerequisites
+#
+# ### Perform imports
+
 # +
 from pathlib import Path
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2
-from ansys.speos.core import Speos
+from ansys.speos.core import Speos, launcher
 from ansys.speos.core.kernel.scene import ProtoScene
 from ansys.speos.core.kernel.sensor_template import ProtoSensorTemplate
 
-# If using docker container
-assets_data_path = Path("/app") / "assets"
-# If using local server
-# assets_data_path = Path().resolve().parent.parent / "tests" / "assets"
-# If using a different path
-# assets_data_path = Path("path/to/downloaded/example/assets")
 # -
 
-# Create connection with speos rpc server
+# ### Define constants
+# Constants help ensure consistency and avoid repetition throughout the example.
 
-# +
-speos = Speos(host="localhost", port=50098)
-# -
+HOSTNAME = "localhost"
+GRPC_PORT = 50098  # Be sure the Speos GRPC Server has been started on this port.
+USE_DOCKER = True  # Set to False if you're running this example locally as a Notebook.
+
+# ### Load assets
+# The assets used to run this example are available in the
+# [PySpeos repository](https://github.com/ansys/pyspeos/) on GitHub.
+#
+# > **Note:** Make sure you
+# > have downloaded simulation assets and set ``assets_data_path``
+# > to point to the assets folder.
+
+if USE_DOCKER:  # Running on the remote server.
+    assets_data_path = Path("/app") / "assets"
+else:
+    assets_data_path = Path("/path/to/your/download/assets/directory")
+
+
+# ### Start/Connect to Speos RPC Server
+# This Python client connects to a server where the Speos engine
+# is running as a service. In this example, the server and
+# client are the same machine. The launch_local_speos_rpc_method can
+# be used to start a local instance of the service.
+
+if USE_DOCKER:
+    speos = Speos(host=HOSTNAME, port=GRPC_PORT)
+else:
+    speos = launcher.launch_local_speos_rpc_server(port=GRPC_PORT)
 
 # Create an empty scene and load speos file to fill it.
 
-# +
 my_scene = speos.client.scenes().create()
-
 speos_file = str(assets_data_path / "Inverse_SeveralSensors.speos" / "Inverse_SeveralSensors.speos")
 my_scene.load_file(file_uri=speos_file)
-# -
+
 
 # ## Print data models
 
 # ### Whole scene
 
-# +
 print(my_scene)
-# -
 
 # ### Sensors (instance + template) in this scene
 
-# +
 for sensor_i in my_scene.get().sensors:
     print(sensor_i)  # Print instance data model
     print(speos.client[sensor_i.sensor_guid])  # Print template data model
     print("\n")
-# -
 
 # ### Camera sensors in this scene
 
-# +
 for sensor_i in my_scene.get().sensors:
     if sensor_i.HasField("camera_properties"):
         print(sensor_i)  # Print instance data model
         print(speos.client[sensor_i.sensor_guid])  # Print template data model
         print("\n")
-# -
 
 # ## Modify existing data
 
@@ -212,7 +228,7 @@ print(my_scene)
 # (source templates, sensor templates, vop template, sop templates).
 # Then at the end of the example, we just clean all databases
 
-# +
+
 for item in (
     speos.client.scenes().list()
     + speos.client.simulation_templates().list()
@@ -227,4 +243,3 @@ for item in (
     + speos.client.faces().list()
 ):
     item.delete()
-# -
