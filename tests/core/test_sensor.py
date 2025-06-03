@@ -26,12 +26,14 @@ import math
 from pathlib import Path
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2
-from ansys.speos.core import GeoRef, Project, Speos, sensor
+from ansys.speos.core import Body, GeoRef, Project, Speos, sensor
 from ansys.speos.core.sensor import (
+    Sensor3DIrradiance,
     SensorCamera,
     SensorIrradiance,
     SensorRadiance,
 )
+from ansys.speos.core.simulation import SimulationDirect
 from tests.conftest import test_path
 
 
@@ -899,6 +901,31 @@ def test_create_radiance_sensor(speos: Speos):
     sensor1.set_layer_type_none()
     sensor1.commit()
     assert radiance_properties.HasField("layer_type_none")
+
+
+def test_create_3d_irradiance_sensor(speos: Speos):
+    """Test creation of 3d irradiance sensor."""
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
+    )
+    body = p.find(name="PrismBody", name_regex=True, feature_type=Body)[0]
+    sensor_3d = p.create_sensor(name="3d", feature_type=Sensor3DIrradiance)
+    sensor_3d.set_geometries([body.geo_path])
+    sensor_3d.commit()
+    assert sensor_3d.sensor_template_link is not None
+    # assert sensor_3d.sensor_template_link.get().HasField("Irradiance3D")
+    assert sensor_3d.sensor_template_link.get().name == "3d"
+    assert sensor_3d._sensor_instance.HasField("irradiance_3d_properties")
+    assert sensor_3d._sensor_instance.irradiance_3d_properties.geometries.geo_paths == [
+        "PrismBody:1130610277"
+    ]
+
+    sim = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
+    sim.set_sensor_paths(["Irradiance.1:564", "3d"])
+    sim.commit()
+    assert sim._simulation_instance.sensor_paths == ["Irradiance.1:564", "3d"]
+    sim.delete()
 
 
 def test_commit_sensor(speos: Speos):
