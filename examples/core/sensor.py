@@ -10,8 +10,9 @@
 
 from pathlib import Path
 
-from ansys.speos.core import Project, Speos
+from ansys.speos.core import GeoRef, Project, Speos
 from ansys.speos.core.sensor import (
+    Sensor3DIrradiance,
     SensorCamera,
     SensorIrradiance,
     SensorRadiance,
@@ -25,6 +26,30 @@ HOSTNAME = "localhost"
 GRPC_PORT = 50098  # Be sure the Speos GRPC Server has been started on this port.
 USE_DOCKER = True  # Set to False if you're running this example locally as a Notebook.
 FILES = "CameraInputFiles"
+
+# ### Define helper functions
+
+
+def create_helper_geometries(project: Project):
+    """Create bodies and faces."""
+
+    def create_face(body):
+        (
+            body.create_face(name="TheFaceF")
+            .set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0])
+            .set_facets([0, 1, 2])
+            .set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+            .commit()
+        )
+
+    root_part = project.create_root_part().commit()
+    body_b1 = root_part.create_body(name="TheBodyB").commit()
+    body_b2 = root_part.create_body(name="TheBodyC").commit()
+    body_b3 = root_part.create_body(name="TheBodyD").commit()
+    body_b4 = root_part.create_body(name="TheBodyE").commit()
+    for b in [body_b1, body_b2, body_b3, body_b4]:
+        create_face(b)
+
 
 # ## Model Setup
 #
@@ -195,3 +220,9 @@ print(sensor4)
 
 sensor4.delete()
 print(sensor4)
+
+create_helper_geometries(p)
+sensor5 = p.create_sensor(name="3D_Irradiance.2", feature_type=Sensor3DIrradiance)
+sensor5.set_geometries([GeoRef.from_native_link("TheBodyB/TheFaceF")])
+sensor5.commit()
+print(sensor5)
