@@ -9,6 +9,22 @@ This document contains the release notes for the PySpeos project.
 
 .. towncrier release notes start
 
+`0.5.1 <https://github.com/ansys/pyspeos/releases/tag/v0.5.1>`_ - May 28, 2025
+==============================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - coding error, switch to correct order
+          - `#601 <https://github.com/ansys/pyspeos/pull/601>`_
+
+
 `0.5.0 <https://github.com/ansys/pyspeos/releases/tag/v0.5.0>`_ - May 26, 2025
 ==============================================================================
 

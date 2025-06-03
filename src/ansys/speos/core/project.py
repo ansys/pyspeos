@@ -905,7 +905,17 @@ class Project:
         return part_mesh_info
 
     def _create_speos_feature_preview(
-        self, plotter: Plotter, speos_feature: Union[SensorCamera, SensorRadiance, SensorIrradiance]
+        self,
+        plotter: Plotter,
+        speos_feature: Union[
+            SensorCamera,
+            SensorRadiance,
+            SensorIrradiance,
+            SourceLuminaire,
+            SourceRayFile,
+            SourceLuminaire,
+        ],
+        scene_seize: float,
     ) -> Plotter:
         """Add speos feature visual preview to pyvista plotter object.
 
@@ -913,32 +923,72 @@ class Project:
         ----------
         plotter: Plotter
             ansys.tools.visualization_interface.Plotter
-        speos_feature: Union[SensorCamera, SensorRadiance, SensorIrradiance]
+        speos_feature: Union[SensorCamera, SensorRadiance, SensorIrradiance,
+        SourceLuminaire, SourceRayFile, SourceLuminaire]
             speos feature whose visual data will be added.
+        scene_seize: float
+            seize of max scene bounds
 
         Returns
         -------
         Plotter
             ansys.tools.visualization_interface.Plotter
         """
-        if not isinstance(speos_feature, (SensorIrradiance, SensorRadiance, SensorCamera)):
+        if not isinstance(
+            speos_feature,
+            (
+                SensorIrradiance,
+                SensorRadiance,
+                SensorCamera,
+                SourceLuminaire,
+                SourceRayFile,
+                SourceSurface,
+            ),
+        ):
             return plotter
-        plotter.plot(
-            speos_feature.visual_data.data,
-            show_edges=True,
-            line_width=2,
-            edge_color="red",
-            color="orange",
-            opacity=0.5,
-        )
+
+        ray_path_scale_factor = 0.2
+
         match speos_feature:
-            case SensorRadiance():
-                plotter.plot(speos_feature.visual_data.coordinates.x_axis, color="red")
-                plotter.plot(speos_feature.visual_data.coordinates.y_axis, color="green")
-            case SensorIrradiance() | SensorCamera():
-                plotter.plot(speos_feature.visual_data.coordinates.x_axis, color="red")
-                plotter.plot(speos_feature.visual_data.coordinates.y_axis, color="green")
-                plotter.plot(speos_feature.visual_data.coordinates.z_axis, color="blue")
+            case SourceRayFile() | SourceLuminaire() | SourceSurface():
+                for visual_ray in speos_feature.visual_data.data:
+                    tmp = visual_ray._VisualArrow__data
+                    visual_ray._VisualArrow__data.points[1] = (
+                        ray_path_scale_factor * scene_seize * (tmp.points[1] - tmp.points[0])
+                        + tmp.points[0]
+                    )
+                    plotter.plot(visual_ray.data, color=visual_ray.color)
+            case _:
+                plotter.plot(
+                    speos_feature.visual_data.data,
+                    show_edges=True,
+                    line_width=2,
+                    edge_color="red",
+                    color="orange",
+                    opacity=0.5,
+                )
+
+        if speos_feature.visual_data.coordinates is not None:
+            tmp_origin = speos_feature.visual_data.coordinates.origin
+            tmp = speos_feature.visual_data.coordinates
+            speos_feature.visual_data.coordinates._VisualCoordinateSystem__x_axis.points[:] = (
+                tmp.x_axis.points - tmp_origin
+            ) * ray_path_scale_factor * scene_seize + tmp_origin
+            speos_feature.visual_data.coordinates._VisualCoordinateSystem__y_axis.points[:] = (
+                tmp.y_axis.points - tmp_origin
+            ) * ray_path_scale_factor * scene_seize + tmp_origin
+            speos_feature.visual_data.coordinates._VisualCoordinateSystem__z_axis.points[:] = (
+                tmp.z_axis.points - tmp_origin
+            ) * ray_path_scale_factor * scene_seize + tmp_origin
+
+            match speos_feature:
+                case SensorRadiance() | SourceSurface():
+                    plotter.plot(speos_feature.visual_data.coordinates.x_axis, color="red")
+                    plotter.plot(speos_feature.visual_data.coordinates.y_axis, color="green")
+                case SensorIrradiance() | SensorCamera() | SourceLuminaire() | SourceRayFile():
+                    plotter.plot(speos_feature.visual_data.coordinates.x_axis, color="red")
+                    plotter.plot(speos_feature.visual_data.coordinates.y_axis, color="green")
+                    plotter.plot(speos_feature.visual_data.coordinates.z_axis, color="blue")
         return plotter
 
     @graphics_required
@@ -960,33 +1010,43 @@ class Project:
 
         if viz_args is None:
             viz_args = {}
-
-        _preview_mesh = pv.PolyData()
-        # Retrieve root part
-        root_part_data = self.client[self.scene_link.get().part_guid].get()
-
-        # Loop on all sub parts to retrieve their mesh
-        if len(root_part_data.parts) != 0:
-            for part_idx, part_item in enumerate(root_part_data.parts):
-                part_item_data = self.client[part_item.part_guid].get()
-                poly_data = self.__extract_part_mesh_info(
-                    part_data=part_item_data,
-                    part_coordinate_info=part_item.axis_system,
-                )
-                if poly_data is not None:
-                    _preview_mesh = _preview_mesh.append_polydata(poly_data)
-
-        # Add also the mesh of bodies directly contained in root part
-        poly_data = self.__extract_part_mesh_info(part_data=root_part_data)
-        if poly_data is not None:
-            _preview_mesh = _preview_mesh.append_polydata(poly_data)
-        p = Plotter()
         viz_args["show_edges"] = True
-        p.plot(_preview_mesh, **viz_args)
+
+        p = Plotter()
+        # Add cad visual data at the root part
+        if self.scene_link.get().part_guid != "":
+            _preview_mesh = pv.PolyData()
+            # Retrieve root part
+            root_part_data = self.client[self.scene_link.get().part_guid].get()
+
+            # Loop on all sub parts to retrieve their mesh
+            if len(root_part_data.parts) != 0:
+                for part_idx, part_item in enumerate(root_part_data.parts):
+                    part_item_data = self.client[part_item.part_guid].get()
+                    poly_data = self.__extract_part_mesh_info(
+                        part_data=part_item_data,
+                        part_coordinate_info=part_item.axis_system,
+                    )
+                    if poly_data is not None:
+                        _preview_mesh = _preview_mesh.append_polydata(poly_data)
+
+            # Add also the mesh of bodies directly contained in root part
+            poly_data = self.__extract_part_mesh_info(part_data=root_part_data)
+            if poly_data is not None:
+                _preview_mesh = _preview_mesh.append_polydata(poly_data)
+            if _preview_mesh.n_points != 0 and _preview_mesh.n_cells != 0:
+                p.plot(_preview_mesh, **viz_args)
 
         # Add speos visual data at the root part
+        scene_bounds = p.backend.scene.bounds
+        scene_x_seize = scene_bounds[1] - scene_bounds[0]
+        scene_y_seize = scene_bounds[3] - scene_bounds[2]
+        scene_z_seize = scene_bounds[5] - scene_bounds[4]
+        scene_max = max(scene_x_seize, scene_y_seize, scene_z_seize)
         for feature in self._features:
-            p = self._create_speos_feature_preview(p, feature)
+            p = self._create_speos_feature_preview(
+                plotter=p, speos_feature=feature, scene_seize=scene_max
+            )
         return p
 
     @graphics_required

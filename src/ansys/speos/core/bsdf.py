@@ -462,7 +462,7 @@ class AnisotropicBSDF(BaseBSDF):
             self._brdf, self._btdf = self._extract_bsdf()
             self._has_transmission = bool(self._btdf)
             self._has_reflection = bool(self._brdf)
-            self._transmission_spectrum, self._reflection_spectrum = self._extract_spectrum()
+            self._reflection_spectrum, self._transmission_spectrum = self._extract_spectrum()
             try:
                 self._stub.GetSpecularInterpolationEnhancementData(Empty())
                 self.__interpolation_settings = InterpolationEnhancement(
