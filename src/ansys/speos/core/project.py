@@ -42,6 +42,7 @@ import ansys.speos.core.opt_prop as opt_prop
 import ansys.speos.core.part as part
 import ansys.speos.core.proto_message_utils as proto_message_utils
 from ansys.speos.core.sensor import (
+    Sensor3DIrradiance,
     SensorCamera,
     SensorIrradiance,
     SensorRadiance,
@@ -302,7 +303,7 @@ class Project:
         description: str = "",
         feature_type: type = SensorIrradiance,
         metadata: Optional[Mapping[str, str]] = None,
-    ) -> Union[SensorCamera, SensorRadiance, SensorIrradiance]:
+    ) -> Union[SensorCamera, SensorRadiance, SensorIrradiance, Sensor3DIrradiance]:
         """Create a new Sensor feature.
 
         Parameters
@@ -317,7 +318,8 @@ class Project:
             By default, ``ansys.speos.core.sensor.SensorIrradiance``.
             Allowed types: Union[ansys.speos.core.sensor.SensorCamera,\
             ansys.speos.core.sensor.SensorRadiance, \
-            ansys.speos.core.sensor.SensorIrradiance].
+            ansys.speos.core.sensor.SensorIrradiance, \
+            ansys.speos.core.sensor.Sensor3DIrradiance].
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
@@ -325,7 +327,8 @@ class Project:
         Returns
         -------
         Union[ansys.speos.core.sensor.SensorCamera,\
-        ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance]
+        ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance, \
+        ansys.speos.core.sensor.Sensor3DIrradiance]
             Sensor class instance.
         """
         if metadata is None:
@@ -359,9 +362,16 @@ class Project:
                 description=description,
                 metadata=metadata,
             )
+        elif feature_type == Sensor3DIrradiance:
+            feature = Sensor3DIrradiance(
+                project=self,
+                name=name,
+                description=description,
+                metadata=metadata,
+            )
         else:
             msg = "Requested feature {} does not exist in supported list {}".format(
-                feature_type, [SensorIrradiance, SensorRadiance, SensorCamera]
+                feature_type, [SensorIrradiance, SensorRadiance, SensorCamera, Sensor3DIrradiance]
             )
             raise TypeError(msg)
         self._features.append(feature)
