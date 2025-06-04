@@ -899,27 +899,75 @@ class SpectralBRDF(BaseBSDF):
         """List of BTDFDatapoints."""
         return self._btdf
 
-    def add_spectral_data_point(self, brdf: BxdfDatapoint, btdf: BxdfDatapoint):
+    def add_spectral_data_point(self, brdf: BxdfDatapoint = None, btdf: BxdfDatapoint = None):
         """Add spectral data point."""
-        if not brdf.is_brdf or btdf.is_brdf:
-            raise ValueError("incorrect bsdf type")
-        if brdf.incident_angle != btdf.incident_angle:
-            raise ValueError("The incidence angle is not the same")
-        if brdf.wavelength != btdf.wavelength:
-            raise ValueError("The wavelength is not the same")
-        self._brdf.append(brdf)
-        self._btdf.append(btdf)
+        match self.has_reflection, self.has_transmission:
+            case True, True:
+                if brdf is None or btdf is None:
+                    raise ValueError("You need to add brdf and btdf at the same time")
+                if not brdf.is_brdf or btdf.is_brdf:
+                    raise ValueError("incorrect bsdf type")
+                if brdf.incident_angle != btdf.incident_angle:
+                    raise ValueError("The incidence angle is not the same")
+                if brdf.wavelength != btdf.wavelength:
+                    raise ValueError("The wavelength is not the same")
+
+                self._brdf.append(brdf)
+                self._brdf.sort(key=lambda x: (x.anisotropy, x.wavelength, x.incident_angle))
+                self._btdf.append(btdf)
+                self._btdf.sort(key=lambda x: (x.anisotropy, x.wavelength, x.incident_angle))
+            case True, False:
+                if brdf is None or btdf is not None:
+                    raise ValueError("This BSDF is reflective only you can only add brdf")
+                if not brdf.is_brdf:
+                    raise ValueError("incorrect bsdf type")
+                self._brdf.append(brdf)
+                self._brdf.sort(key=lambda x: (x.anisotropy, x.wavelength, x.incident_angle))
+            case False, True:
+                if brdf is not None or btdf is None:
+                    raise ValueError("This BSDF is transmittive only you can only add btdf")
+                if btdf.is_brdf:
+                    raise ValueError("incorrect bsdf type")
+                self._btdf.append(btdf)
+                self._btdf.sort(key=lambda x: (x.anisotropy, x.wavelength, x.incident_angle))
 
     def commit(self):
         """Sent Data to gRPC interface."""
         # set basic values
         spectral_bsdf = spectral_bsdf__v1__pb2.SpectralBsdfData()
         spectral_bsdf.description = self.description
-        if self.has_reflection:
-            for brdf in self.brdf:
-                spectral_bsdf.incidence_samples.append(brdf.incident_angle)
-                spectral_bsdf.wavelength_samples.append(brdf.wavelength)
-                # iw = spectral_bsdf.wavelength_incidence_samples.add()
+        match self.has_reflection, self.has_transmission:
+            case True, True:
+                for brdf, btdf in self.brdf, self.btdf:
+                    spectral_bsdf.incidence_samples.append(brdf.incident_angle)
+                    spectral_bsdf.wavelength_samples.append(brdf.wavelength)
+                    iw = spectral_bsdf.wavelength_incidence_samples.add()
+                    iw.reflection.integral = brdf.tis
+                    iw.reflection.phi_samples = list(brdf.phi_values)
+                    iw.reflection.theta_samples = list(brdf.theta_values)
+                    iw.reflection.bsdf_cos_theta = brdf.bxdf.flatten().tolist()
+                    iw.transmission.integral = btdf.tis
+                    iw.transmission.phi_samples = list(btdf.phi_values)
+                    iw.transmission.theta_samples = list(btdf.theta_values)
+                    iw.transmission.bsdf_cos_theta = btdf.bxdf.flatten().tolist()
+            case True, False:
+                for brdf in self.brdf:
+                    spectral_bsdf.incidence_samples.append(brdf.incident_angle)
+                    spectral_bsdf.wavelength_samples.append(brdf.wavelength)
+                    iw = spectral_bsdf.wavelength_incidence_samples.add()
+                    iw.reflection.integral = brdf.tis
+                    iw.reflection.phi_samples = list(brdf.phi_values)
+                    iw.reflection.theta_samples = list(brdf.theta_values)
+                    iw.reflection.bsdf_cos_theta = brdf.bxdf.flatten().tolist()
+            case False, True:
+                for btdf in self.btdf:
+                    spectral_bsdf.incidence_samples.append(btdf.incident_angle)
+                    spectral_bsdf.wavelength_samples.append(btdf.wavelength)
+                    iw = spectral_bsdf.wavelength_incidence_samples.add()
+                    iw.reflection.integral = btdf.tis
+                    iw.reflection.phi_samples = list(btdf.phi_values)
+                    iw.reflection.theta_samples = list(btdf.theta_values)
+                    iw.reflection.bsdf_cos_theta = btdf.bxdf.flatten().tolist()
 
         if self.has_transmission:
             for brdf in self.brdf:
@@ -984,15 +1032,15 @@ class SpectralBRDF(BaseBSDF):
             File location
         """
         file_path = Path(file_path)
-        file_name = anisotropic_bsdf__v1__pb2.FileName()
+        file_name = spectral_bsdf__v1__pb2.FileName()
         if commit:
             self.commit()
         else:
             self._stub.Import(self._grpcbsdf)
-        if file_path.suffix == ".anisotropicbsdf":
+        if file_path.suffix == ".brdf":
             file_name.file_name = str(file_path)
         else:
-            file_name.file_name = str(file_path.parent / (file_path.name + ".anisotropicbsdf"))
+            file_name.file_name = str(file_path.parent / (file_path.name + ".brdf"))
         self._stub.Save(file_name)
         return Path(file_name.file_name)
 
