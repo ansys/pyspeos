@@ -832,11 +832,7 @@ class SpectralBRDF(BaseBSDF):
         """
         data = {k: v.fget(self) for k, v in BaseBSDF.__dict__.items() if isinstance(v, property)}
         data.update(
-            {
-                k: v.fget(self)
-                for k, v in AnisotropicBSDF.__dict__.items()
-                if isinstance(v, property)
-            }
+            {k: v.fget(self) for k, v in SpectralBRDF.__dict__.items() if isinstance(v, property)}
         )
         if key == "":
             return data
@@ -850,7 +846,7 @@ class SpectralBRDF(BaseBSDF):
         return str(self.get())
 
     def _import_file(self, filepath):
-        file_name = anisotropic_bsdf__v1__pb2.FileName()
+        file_name = spectral_bsdf__v1__pb2.FileName()
         file_name.file_name = str(filepath)
         self._stub.Load(file_name)
         return self._stub.Export(Empty())
@@ -861,8 +857,10 @@ class SpectralBRDF(BaseBSDF):
         btdf = []
         for i, spectral_bsdf_data in enumerate(self._grpcbsdf.wavelength_incidence_samples):
             anisotropic_angle = 0
-            incident_angle = self._grpcbsdf.incidence_samples[i]
-            wl = self._grpcbsdf.wavelength_samples[i]
+            incident_angle = self._grpcbsdf.incidence_samples[
+                i % len(self._grpcbsdf.incidence_samples)
+            ]
+            wl = self._grpcbsdf.wavelength_samples[int(i / len(self._grpcbsdf.incidence_samples))]
             thetas = np.array(spectral_bsdf_data.reflection.theta_samples)
             phis = np.array(spectral_bsdf_data.reflection.phi_samples)
             bsdf = np.array(spectral_bsdf_data.reflection.bsdf_cos_theta).reshape(
@@ -936,45 +934,42 @@ class SpectralBRDF(BaseBSDF):
         # set basic values
         spectral_bsdf = spectral_bsdf__v1__pb2.SpectralBsdfData()
         spectral_bsdf.description = self.description
+        wl = []
+        inc = []
         match self.has_reflection, self.has_transmission:
             case True, True:
-                for brdf, btdf in self.brdf, self.btdf:
-                    spectral_bsdf.incidence_samples.append(brdf.incident_angle)
-                    spectral_bsdf.wavelength_samples.append(brdf.wavelength)
+                for brdf, btdf in zip(self.brdf, self.btdf):
+                    inc.append(brdf.incident_angle)
+                    wl.append(brdf.wavelength)
                     iw = spectral_bsdf.wavelength_incidence_samples.add()
                     iw.reflection.integral = brdf.tis
-                    iw.reflection.phi_samples = list(brdf.phi_values)
-                    iw.reflection.theta_samples = list(brdf.theta_values)
-                    iw.reflection.bsdf_cos_theta = brdf.bxdf.flatten().tolist()
+                    iw.reflection.phi_samples[:] = list(brdf.phi_values)
+                    iw.reflection.theta_samples[:] = list(brdf.theta_values)
+                    iw.reflection.bsdf_cos_theta[:] = brdf.bxdf.flatten().tolist()
                     iw.transmission.integral = btdf.tis
-                    iw.transmission.phi_samples = list(btdf.phi_values)
-                    iw.transmission.theta_samples = list(btdf.theta_values)
-                    iw.transmission.bsdf_cos_theta = btdf.bxdf.flatten().tolist()
+                    iw.transmission.phi_samples[:] = list(btdf.phi_values)
+                    iw.transmission.theta_samples[:] = list(btdf.theta_values)
+                    iw.transmission.bsdf_cos_theta[:] = btdf.bxdf.flatten().tolist()
             case True, False:
                 for brdf in self.brdf:
-                    spectral_bsdf.incidence_samples.append(brdf.incident_angle)
-                    spectral_bsdf.wavelength_samples.append(brdf.wavelength)
+                    inc.append(brdf.incident_angle)
+                    wl.append(brdf.wavelength)
                     iw = spectral_bsdf.wavelength_incidence_samples.add()
                     iw.reflection.integral = brdf.tis
-                    iw.reflection.phi_samples = list(brdf.phi_values)
-                    iw.reflection.theta_samples = list(brdf.theta_values)
-                    iw.reflection.bsdf_cos_theta = brdf.bxdf.flatten().tolist()
+                    iw.reflection.phi_samples[:] = list(brdf.phi_values)
+                    iw.reflection.theta_samples[:] = list(brdf.theta_values)
+                    iw.reflection.bsdf_cos_theta[:] = brdf.bxdf.flatten().tolist()
             case False, True:
                 for btdf in self.btdf:
-                    spectral_bsdf.incidence_samples.append(btdf.incident_angle)
-                    spectral_bsdf.wavelength_samples.append(btdf.wavelength)
+                    inc.append(btdf.incident_angle)
+                    wl.append(btdf.wavelength)
                     iw = spectral_bsdf.wavelength_incidence_samples.add()
                     iw.reflection.integral = btdf.tis
-                    iw.reflection.phi_samples = list(btdf.phi_values)
-                    iw.reflection.theta_samples = list(btdf.theta_values)
-                    iw.reflection.bsdf_cos_theta = btdf.bxdf.flatten().tolist()
-
-        if self.has_transmission:
-            for brdf in self.brdf:
-                spectral_bsdf.incidence_samples.append(brdf.incident_angle)
-                spectral_bsdf.wavelength_samples.append(brdf.wavelength)
-                # iw = spectral_bsdf.wavelength_incidence_samples.add()
-
+                    iw.reflection.phi_samples[:] = list(btdf.phi_values)
+                    iw.reflection.theta_samples[:] = list(btdf.theta_values)
+                    iw.reflection.bsdf_cos_theta[:] = btdf.bxdf.flatten().tolist()
+        spectral_bsdf.incidence_samples[:] = list(set(inc))
+        spectral_bsdf.wavelength_samples[:] = list(set(wl))
         self._stub.Import(spectral_bsdf)
         self._grpcbsdf = spectral_bsdf
         if self.__interpolation_settings is not None:
