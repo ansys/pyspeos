@@ -101,3 +101,4 @@ if os.name == "nt":
         simulation_feature=sim,
         result_name=RESULT_NAME,
     )
+speos.close()
