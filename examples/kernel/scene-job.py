@@ -3,26 +3,49 @@
 # This tutorial demonstrates how to create a scene, and fill it from a speos file.
 # Then this demonstrates how to create a job from the scene, and run it.
 
+# ## Prerequisites
+#
+# ### Perform imports
+
 # +
 from pathlib import Path
 import time
 
+from ansys.speos.core import launcher
 from ansys.speos.core.kernel.job import ProtoJob
 from ansys.speos.core.speos import Speos
 
-# If using docker container
-assets_data_path = Path("/app") / "assets"
-# If using local server
-# assets_data_path = Path().resolve().parent.parent / "tests" / "assets"
-# If using a different path
-# assets_data_path = Path("path/to/downloaded/example/assets")
-# -
+# ### Define constants
+# Constants help ensure consistency and avoid repetition throughout the example.
 
-# Create connection with speos rpc server
+HOSTNAME = "localhost"
+GRPC_PORT = 50098  # Be sure the Speos GRPC Server has been started on this port.
+USE_DOCKER = True  # Set to False if you're running this example locally as a Notebook.
 
-# +
-speos = Speos(host="localhost", port=50098)
-# -
+# ### Load assets
+# The assets used to run this example are available in the
+# [PySpeos repository](https://github.com/ansys/pyspeos/) on GitHub.
+#
+# > **Note:** Make sure you
+# > have downloaded simulation assets and set ``assets_data_path``
+# > to point to the assets folder.
+
+if USE_DOCKER:  # Running on the remote server.
+    assets_data_path = Path("/app") / "assets"
+else:
+    assets_data_path = Path("/path/to/your/download/assets/directory")
+
+
+# ### Start/Connect to Speos RPC Server
+# This Python client connects to a server where the Speos engine
+# is running as a service. In this example, the server and
+# client are the same machine. The launch_local_speos_rpc_method can
+# be used to start a local instance of the service.
+
+if USE_DOCKER:
+    speos = Speos(host=HOSTNAME, port=GRPC_PORT)
+else:
+    speos = launcher.launch_local_speos_rpc_server(port=GRPC_PORT)
 
 # ## Scene
 
@@ -45,9 +68,7 @@ my_scene.load_file(file_uri=speos_file)
 
 # Here it is possible to see that the scene contains two surface sources, one irradiance sensor.
 
-# +
 print(my_scene)
-# -
 
 # ## Job
 
@@ -73,15 +94,11 @@ job_link = speos.client.jobs().create(message=job_message)
 
 # Start the job
 
-# +
 job_link.start()
-# -
 
 # Verify state of the job
 
-# +
 job_link.get_state()
-# -
 
 # Wait that the job is finished
 
@@ -102,23 +119,20 @@ while (
 # Two results are generated : the result of irradiance sensor:
 # "ASSEMBLY1.DS (0).Dom Irradiance Sensor (0).xmp" and the simulation report in html
 
-# +
 results = job_link.get_results().results
 print(results)
-# -
 
 # Once no more needed: delete the job
 
-# +
+
 job_link.delete()
-# -
 
 
 # When loading a speos file into a scene, this creates many objects
 # (source templates, sensor templates, vop template, sop templates).
 # Then at the end of the example, we just clean all databases
 
-# +
+
 for item in (
     speos.client.scenes().list()
     + speos.client.simulation_templates().list()
@@ -133,4 +147,5 @@ for item in (
     + speos.client.faces().list()
 ):
     item.delete()
-# -
+
+speos.close()

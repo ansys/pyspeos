@@ -101,3 +101,5 @@ irr.commit()
 sim.compute_CPU()
 if os.name == "nt":
     open_result_image(simulation_feature=sim, result_name="Prism.Irradiance.1.xmp")
+
+speos.close()
