@@ -199,3 +199,5 @@ print(sensor4)
 
 sensor4.delete()
 print(sensor4)
+
+speos.close()

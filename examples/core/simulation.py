@@ -182,3 +182,5 @@ print(simulation3)
 simulation4 = p.create_simulation(name="Simulation.4", feature_type=SimulationInteractive)
 simulation4.set_source_paths(source_paths=[SOURCE_NAME]).commit()
 print(simulation4)
+
+speos.close()

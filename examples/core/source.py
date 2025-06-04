@@ -231,3 +231,5 @@ print(source4)
 # +
 for item in speos.client.intensity_templates().list() + speos.client.spectrums().list():
     item.delete()
+
+speos.close()

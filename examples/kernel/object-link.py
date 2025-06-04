@@ -98,3 +98,5 @@ mirror_100_link.delete()
 mirror_90_link.delete()
 sop_t_db.list()
 # -
+
+speos.close()

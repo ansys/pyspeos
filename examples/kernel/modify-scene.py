@@ -243,3 +243,5 @@ for item in (
     + speos.client.faces().list()
 ):
     item.delete()
+
+speos.close()

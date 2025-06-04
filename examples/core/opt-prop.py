@@ -241,3 +241,5 @@ print(op2)
 op1.delete()
 op3.delete()
 op4.delete()
+
+speos.close()
