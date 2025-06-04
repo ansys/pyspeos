@@ -38,6 +38,7 @@ import ansys.api.speos.bsdf.v1.anisotropic_bsdf_pb2_grpc as anisotropic_bsdf__v1
 import ansys.api.speos.bsdf.v1.bsdf_creation_pb2 as bsdf_creation__v1__pb2
 import ansys.api.speos.bsdf.v1.bsdf_creation_pb2_grpc as bsdf_creation__v1__pb2_grpc
 import ansys.api.speos.bsdf.v1.spectral_bsdf_pb2 as spectral_bsdf__v1__pb2
+import ansys.api.speos.bsdf.v1.spectral_bsdf_pb2_grpc as spectral_bsdf__v1__pb2_grpc
 import ansys.speos.core
 from ansys.speos.core.speos import Speos
 
@@ -774,7 +775,226 @@ class AnisotropicBSDF(BaseBSDF):
         else:
             file_name.file_name = str(file_path.parent / (file_path.name + ".anisotropicbsdf"))
         self._stub.Save(file_name)
-        return file_name.file_name
+        return Path(file_name.file_name)
+
+
+class SpectralBRDF(BaseBSDF):
+    """BSDF - Bidirectional scattering distribution function.
+
+    This class contains the methods and functions to load and edit existing Speos bsdf datasets.
+
+    Parameters
+    ----------
+    speos : ansys.speos.core.speos.Speos
+        Speos Object to connect to speos rpc server
+    file_path : Union[Path, str]
+        File path to bsdf file
+    """
+
+    def __init__(self, speos: Speos, file_path: Union[Path, str] = None):
+        super().__init__(
+            speos, spectral_bsdf__v1__pb2_grpc.SpectralBsdfServiceStub(speos.client.channel)
+        )
+        self._spectrum_incidence = [0, 0]
+        self._spectrum_anisotropy = [0, 0]
+        if file_path:
+            file_path = Path(file_path)
+            self._grpcbsdf = self._import_file(file_path)
+            self._brdf, self._btdf = self._extract_bsdf()
+            self._has_transmission = bool(self._btdf)
+            self._has_reflection = bool(self._brdf)
+            try:
+                self._stub.GetSpecularInterpolationEnhancementData(Empty())
+                self.__interpolation_settings = InterpolationEnhancement(
+                    bsdf=self,
+                    bsdf_namespace=spectral_bsdf__v1__pb2,
+                    index_1=None,
+                    index_2=None,
+                )
+            except grpc.RpcError:
+                self.__interpolation_settings = None
+        else:
+            self._transmission_spectrum, self._reflection_spectrum = None, None
+            self.__interpolation_settings = None
+
+    def get(self, key=""):
+        """Retrieve any information from the BSDF object.
+
+        Parameters
+        ----------
+        key : str
+            Name of the property.
+
+        Returns
+        -------
+        property
+            Values/content of the associated property.
+        """
+        data = {k: v.fget(self) for k, v in BaseBSDF.__dict__.items() if isinstance(v, property)}
+        data.update(
+            {
+                k: v.fget(self)
+                for k, v in AnisotropicBSDF.__dict__.items()
+                if isinstance(v, property)
+            }
+        )
+        if key == "":
+            return data
+        elif data.get(key):
+            return data.get(key)
+        else:
+            print("Used key: {} not found in key list: {}.".format(key, data.keys()))
+
+    def __str__(self):
+        """Create string representation of a BSDF."""
+        return str(self.get())
+
+    def _import_file(self, filepath):
+        file_name = anisotropic_bsdf__v1__pb2.FileName()
+        file_name.file_name = str(filepath)
+        self._stub.Load(file_name)
+        return self._stub.Export(Empty())
+
+    def _extract_bsdf(self) -> tuple[list[BxdfDatapoint], list[BxdfDatapoint]]:
+        self.description = self._grpcbsdf.description
+        brdf = []
+        btdf = []
+        for i, spectral_bsdf_data in enumerate(self._grpcbsdf.wavelength_incidence_samples):
+            anisotropic_angle = 0
+            incident_angle = self._grpcbsdf.incidence_samples[i]
+            wl = self._grpcbsdf.wavelength_samples[i]
+            thetas = np.array(spectral_bsdf_data.reflection.theta_samples)
+            phis = np.array(spectral_bsdf_data.reflection.phi_samples)
+            bsdf = np.array(spectral_bsdf_data.reflection.bsdf_cos_theta).reshape(
+                (len(thetas), len(phis))
+            )
+            tis = spectral_bsdf_data.reflection.integral
+            brdf.append(
+                BxdfDatapoint(True, incident_angle, thetas, phis, bsdf, tis, anisotropic_angle, wl)
+            )
+            thetas = np.array(spectral_bsdf_data.transmission.theta_samples)
+            phis = np.array(spectral_bsdf_data.transmission.phi_samples)
+            bsdf = np.array(spectral_bsdf_data.transmission.bsdf_cos_theta).reshape(
+                (len(thetas), len(phis))
+            )
+            tis = spectral_bsdf_data.transmission.integral
+            btdf.append(
+                BxdfDatapoint(False, incident_angle, thetas, phis, bsdf, tis, anisotropic_angle)
+            )
+        return brdf, btdf
+
+    def reset(self):
+        """Reset BSDF data to what was stored in file."""
+        self._brdf, self._btdf = self._extract_bsdf()
+        self._has_transmission = bool(self._btdf)
+        self._has_reflection = bool(self._brdf)
+
+    @property
+    def brdf(self) -> list[BxdfDatapoint]:
+        """List of BRDFDatapoints."""
+        return self._brdf
+
+    @property
+    def btdf(self) -> list[BxdfDatapoint]:
+        """List of BTDFDatapoints."""
+        return self._btdf
+
+    def add_spectral_data_point(self, brdf: BxdfDatapoint, btdf: BxdfDatapoint):
+        """Add spectral data point."""
+        if not brdf.is_brdf or btdf.is_brdf:
+            raise ValueError("incorrect bsdf type")
+        if brdf.incident_angle != btdf.incident_angle:
+            raise ValueError("The incidence angle is not the same")
+        if brdf.wavelength != btdf.wavelength:
+            raise ValueError("The wavelength is not the same")
+        self._brdf.append(brdf)
+        self._btdf.append(btdf)
+
+    def commit(self):
+        """Sent Data to gRPC interface."""
+        # set basic values
+        spectral_bsdf = spectral_bsdf__v1__pb2.SpectralBsdfData()
+        spectral_bsdf.description = self.description
+        if self.has_reflection:
+            for brdf in self.brdf:
+                spectral_bsdf.incidence_samples.append(brdf.incident_angle)
+                spectral_bsdf.wavelength_samples.append(brdf.wavelength)
+                # iw = spectral_bsdf.wavelength_incidence_samples.add()
+
+        if self.has_transmission:
+            for brdf in self.brdf:
+                spectral_bsdf.incidence_samples.append(brdf.incident_angle)
+                spectral_bsdf.wavelength_samples.append(brdf.wavelength)
+                # iw = spectral_bsdf.wavelength_incidence_samples.add()
+
+        self._stub.Import(spectral_bsdf)
+        self._grpcbsdf = spectral_bsdf
+        if self.__interpolation_settings is not None:
+            self._stub.SetSpecularInterpolationEnhancementData(
+                self.__interpolation_settings._InterpolationEnhancement__cones_data
+            )
+
+    @property
+    def interpolation_settings(self) -> Union[None, InterpolationEnhancement]:
+        """Interpolation enhancement settings of the bsdf file.
+
+        If bsdf file does not have interpolation enhancement settings, return None.
+        if bsdf file has interpolation enhancement settings, return InterpolationEnhancement.
+        """
+        return self.__interpolation_settings
+
+    def create_interpolation_enhancement(
+        self, index_1: float = 1.0, index_2: float = 1.0
+    ) -> InterpolationEnhancement:
+        """Apply automatic interpolation enhancement.
+
+        Return interpolation settings to user if settings need change.
+
+        Parameters
+        ----------
+        index_1 : float
+            outside refractive index
+        index_2 : float
+            inside refractive index
+
+        Returns
+        -------
+        ansys.speos.core.bsdf._InterpolationEnhancement
+            automatic interpolation settings with index_1 = 1 and index_2 = 1 by default.
+        """
+        self._stub.Import(self._grpcbsdf)
+        self.__interpolation_settings = InterpolationEnhancement(
+            bsdf=self, bsdf_namespace=anisotropic_bsdf__v1__pb2, index_1=index_1, index_2=index_2
+        )
+        return self.__interpolation_settings
+
+    def save(self, file_path: Union[Path, str], commit: bool = True) -> Path:
+        """Save a Speos anistropic bsdf.
+
+        Parameters
+        ----------
+        file_path : Union[Path, str]
+            Filepath to save bsdf
+        commit : bool
+            commit data before saving
+
+        Returns
+        -------
+        Path
+            File location
+        """
+        file_path = Path(file_path)
+        file_name = anisotropic_bsdf__v1__pb2.FileName()
+        if commit:
+            self.commit()
+        else:
+            self._stub.Import(self._grpcbsdf)
+        if file_path.suffix == ".anisotropicbsdf":
+            file_name.file_name = str(file_path)
+        else:
+            file_name.file_name = str(file_path.parent / (file_path.name + ".anisotropicbsdf"))
+        self._stub.Save(file_name)
+        return Path(file_name.file_name)
 
 
 class BxdfDatapoint:
