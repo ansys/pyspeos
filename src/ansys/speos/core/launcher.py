@@ -29,7 +29,12 @@ import tempfile
 from typing import Optional, Union
 
 from ansys.speos.core import LOG as LOGGER
-from ansys.speos.core.generic.constants import DEFAULT_PORT, DEFAULT_VERSION, MAX_MESSAGE_LENGTH
+from ansys.speos.core.generic.constants import (
+    DEFAULT_PORT,
+    DEFAULT_VERSION,
+    MAX_CLIENT_MESSAGE_SIZE,
+    MAX_SERVER_MESSAGE_LENGTH,
+)
 from ansys.speos.core.generic.general_methods import retrieve_speos_install_dir
 from ansys.speos.core.speos import Speos
 
@@ -102,7 +107,8 @@ def launch_remote_speos(
 def launch_local_speos_rpc_server(
     version: str = DEFAULT_VERSION,
     port: Union[str, int] = DEFAULT_PORT,
-    message_size: int = MAX_MESSAGE_LENGTH,
+    server_message_size: int = MAX_SERVER_MESSAGE_LENGTH,
+    client_message_size: int = MAX_CLIENT_MESSAGE_SIZE,
     logfile_loc: str = None,
     log_level: int = 20,
     speos_rpc_path: Optional[Union[Path, str]] = None,
@@ -121,9 +127,12 @@ def launch_local_speos_rpc_server(
     port : Union[str, int], optional
         Port number where the server is running.
         By default, ``ansys.speos.core.kernel.client.DEFAULT_PORT``.
-    message_size : int
+    server_message_size : int
         Maximum message length value accepted by the Speos RPC server,
         By default, value stored in environment variable SPEOS_MAX_MESSAGE_LENGTH or 268 435 456.
+    client_message_size: int
+        Maximum Message size of a newly generated channel
+        By default, ``MAX_CLIENT_MESSAGE_SIZE``.
     logfile_loc : str
         location for the logfile to be created in.
     log_level : int
@@ -158,7 +167,7 @@ def launch_local_speos_rpc_server(
     command = [
         str(speos_exec),
         "-p{}".format(port),
-        "-m{}".format(message_size),
+        "-m{}".format(server_message_size),
         "-l{}".format(str(logfile)),
     ]
     out, stdout_file = tempfile.mkstemp(suffix="speos_out.txt", dir=logfile_loc)
@@ -168,6 +177,7 @@ def launch_local_speos_rpc_server(
     return Speos(
         host="localhost",
         port=port,
+        message_size=client_message_size,
         logging_level=log_level,
         logging_file=logfile,
         speos_install_path=speos_rpc_path,

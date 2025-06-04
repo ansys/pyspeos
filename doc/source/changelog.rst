@@ -9,6 +9,151 @@ This document contains the release notes for the PySpeos project.
 
 .. towncrier release notes start
 
+`0.5.1 <https://github.com/ansys/pyspeos/releases/tag/v0.5.1>`_ - May 28, 2025
+==============================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - coding error, switch to correct order
+          - `#601 <https://github.com/ansys/pyspeos/pull/601>`_
+
+
+`0.5.0 <https://github.com/ansys/pyspeos/releases/tag/v0.5.0>`_ - May 26, 2025
+==============================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - geopath property
+          - `#551 <https://github.com/ansys/pyspeos/pull/551>`_
+
+        * - bsdf
+          - `#581 <https://github.com/ansys/pyspeos/pull/581>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - update protobuf requirement from <6,>=3.20 to >=3.20,<7 in the grpc-deps group
+          - `#500 <https://github.com/ansys/pyspeos/pull/500>`_
+
+        * - update pyvista requirement from <0.45,>=0.40.0 to >=0.40.0,<0.46
+          - `#562 <https://github.com/ansys/pyspeos/pull/562>`_
+
+        * - update pyvista[jupyter] requirement from <0.45,>=0.43 to >=0.43,<0.46
+          - `#563 <https://github.com/ansys/pyspeos/pull/563>`_
+
+        * - bump notebook from 7.3.3 to 7.4.1
+          - `#566 <https://github.com/ansys/pyspeos/pull/566>`_
+
+        * - bump the doc-deps group across 1 directory with 2 updates
+          - `#571 <https://github.com/ansys/pyspeos/pull/571>`_
+
+        * - bump notebook from 7.4.1 to 7.4.2 in the jupyter-deps group
+          - `#584 <https://github.com/ansys/pyspeos/pull/584>`_
+
+        * - bump the doc-deps group across 1 directory with 3 updates
+          - `#587 <https://github.com/ansys/pyspeos/pull/587>`_
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Update ``CONTRIBUTORS.md`` with the latest contributors
+          - `#568 <https://github.com/ansys/pyspeos/pull/568>`_
+
+        * - improve project example
+          - `#572 <https://github.com/ansys/pyspeos/pull/572>`_
+
+        * - Adjust prism example to new style
+          - `#576 <https://github.com/ansys/pyspeos/pull/576>`_
+
+        * - adjust part.py example to match new style
+          - `#580 <https://github.com/ansys/pyspeos/pull/580>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Integration direction display and adjust docstrings
+          - `#570 <https://github.com/ansys/pyspeos/pull/570>`_
+
+        * - unittest update based on bug 1229712
+          - `#579 <https://github.com/ansys/pyspeos/pull/579>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - pre-commit autoupdate
+          - `#552 <https://github.com/ansys/pyspeos/pull/552>`_, `#578 <https://github.com/ansys/pyspeos/pull/578>`_, `#585 <https://github.com/ansys/pyspeos/pull/585>`_, `#591 <https://github.com/ansys/pyspeos/pull/591>`_
+
+        * - update CHANGELOG for v0.4.0
+          - `#558 <https://github.com/ansys/pyspeos/pull/558>`_
+
+        * - bump dev version
+          - `#559 <https://github.com/ansys/pyspeos/pull/559>`_
+
+        * - bump ansys/actions from 9.0.2 to 9.0.6 in the actions group
+          - `#560 <https://github.com/ansys/pyspeos/pull/560>`_
+
+        * - bump the actions group with 2 updates
+          - `#567 <https://github.com/ansys/pyspeos/pull/567>`_
+
+        * - bump ansys action version with quarto fix
+          - `#573 <https://github.com/ansys/pyspeos/pull/573>`_
+
+        * - update dependabot configuration
+          - `#574 <https://github.com/ansys/pyspeos/pull/574>`_
+
+        * - update code owners
+          - `#577 <https://github.com/ansys/pyspeos/pull/577>`_
+
+        * - bump ansys/actions from 9.0.7 to 9.0.9
+          - `#582 <https://github.com/ansys/pyspeos/pull/582>`_
+
+        * - bump codecov/codecov-action from 5.4.2 to 5.4.3
+          - `#590 <https://github.com/ansys/pyspeos/pull/590>`_
+
+        * - bump ansys/actions from 9.0.9 to 9.0.11
+          - `#596 <https://github.com/ansys/pyspeos/pull/596>`_
+
+
+  .. tab-item:: Miscellaneous
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - improve type hints
+          - `#564 <https://github.com/ansys/pyspeos/pull/564>`_
+
+
 `0.4.0 <https://github.com/ansys/pyspeos/releases/tag/v0.4.0>`_ - April 17, 2025
 ================================================================================
 

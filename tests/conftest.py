@@ -36,6 +36,7 @@ from pathlib import Path
 import pytest
 
 from ansys.speos.core import LOG
+from ansys.speos.core.generic.constants import MAX_CLIENT_MESSAGE_SIZE
 from ansys.speos.core.speos import Speos
 
 try:
@@ -71,6 +72,7 @@ def speos():
         logging_level=logging.DEBUG,
         logging_file=log_file_path,
         port=str(config.get("SpeosServerPort")),
+        message_size=MAX_CLIENT_MESSAGE_SIZE * 128,
     )
 
     yield speos

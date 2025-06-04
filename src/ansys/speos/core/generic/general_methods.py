@@ -25,6 +25,8 @@
 this includes decorator and methods
 """
 
+from __future__ import annotations
+
 from collections.abc import Collection
 from functools import lru_cache, wraps
 import os
@@ -43,6 +45,8 @@ GRAPHICS_ERROR = (
     "Preview unsupported without 'ansys-tools-visualization_interface' installed. "
     "You can install this using `pip install ansys-speos-core[graphics]`."
 )
+
+VERSION_ERROR = "The pySpeos feature : {feature_name} needs a Speos Version of {version} or higher."
 
 
 def deprecate_kwargs(old_arguments: dict, removed_version="0.3.0"):
@@ -230,3 +234,82 @@ def retrieve_speos_install_dir(
     if not speos_exec.is_file():
         error_no_install(speos_rpc_path, int(version))
     return speos_rpc_path
+
+
+def wavelength_to_rgb(wavelength: float, gamma: float = 0.8) -> [int, int, int, int]:
+    """Convert a given wavelength of light to an approximate RGB color value.
+
+    The wavelength must be given in nanometers in the range from 380 nm to 750 nm.
+    Based on the code from http://www.physics.sfasu.edu/astro/color/spectra.html
+
+    Parameters
+    ----------
+    wavelength : float
+        Wavelength in nanometer between 380-750 nm
+    gamma : float
+        Gamma value.
+        By default : ``0.8``
+    """
+    wavelength = float(wavelength)
+    if 380 <= wavelength <= 440:
+        attenuation = 0.3 + 0.7 * (wavelength - 380) / (440 - 380)
+        r = ((-(wavelength - 440) / (440 - 380)) * attenuation) ** gamma
+        g = 0.0
+        b = (1.0 * attenuation) ** gamma
+    elif 440 <= wavelength <= 490:
+        r = 0.0
+        g = ((wavelength - 440) / (490 - 440)) ** gamma
+        b = 1.0
+    elif 490 <= wavelength <= 510:
+        r = 0.0
+        g = 1.0
+        b = (-(wavelength - 510) / (510 - 490)) ** gamma
+    elif 510 <= wavelength <= 580:
+        r = ((wavelength - 510) / (580 - 510)) ** gamma
+        g = 1.0
+        b = 0.0
+    elif 580 <= wavelength <= 645:
+        r = 1.0
+        g = (-(wavelength - 645) / (645 - 580)) ** gamma
+        b = 0.0
+    elif 645 <= wavelength <= 750:
+        attenuation = 0.3 + 0.7 * (750 - wavelength) / (750 - 645)
+        r = (1.0 * attenuation) ** gamma
+        g = 0.0
+        b = 0.0
+    else:
+        r = 0.0
+        g = 0.0
+        b = 0.0
+    r *= 255
+    g *= 255
+    b *= 255
+    return [int(r), int(g), int(b), 255]
+
+
+def min_speos_version(major: int, minor: int, service_pack: int):
+    """Raise version warning.
+
+    Parameters
+    ----------
+    major : int
+        Major release version, e.g. 25
+    minor : int
+        Minor release version e.g. 1
+    service_pack : int
+        Service Pack version e.g. 3
+    """
+    version = f"20{major} R{minor} SP{service_pack}"
+
+    def decorator(function):
+        def wrapper(*args, **kwargs):
+            if function.__qualname__.endswith("__init__"):
+                name = function.__qualname__[:-9]
+            else:
+                name = function.__qualname__
+            warnings.warn(VERSION_ERROR.format(version=version, feature_name=name), stacklevel=2)
+            return function(*args, **kwargs)
+
+        return wrapper
+
+    return decorator

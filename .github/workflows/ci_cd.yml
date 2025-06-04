@@ -30,7 +30,7 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      - uses: ansys/actions/doc-deploy-changelog@2cf9a9c43235a000d613c2b13e64c954232a4553 # v9.0.9
+      - uses: ansys/actions/doc-deploy-changelog@64ed650bc3d7576d81c4042e480d28a0babb177e # v10.0.3
         with:
           token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
           bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
@@ -42,7 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check commit name
-        uses: ansys/actions/check-pr-title@2cf9a9c43235a000d613c2b13e64c954232a4553 # v9.0.9
+        uses: ansys/actions/check-pr-title@64ed650bc3d7576d81c4042e480d28a0babb177e # v10.0.3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -51,7 +51,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: PyAnsys documentation style checks
-        uses: ansys/actions/doc-style@2cf9a9c43235a000d613c2b13e64c954232a4553 # v9.0.9
+        uses: ansys/actions/doc-style@64ed650bc3d7576d81c4042e480d28a0babb177e # v10.0.3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -65,7 +65,7 @@ jobs:
         python-version: ['3.10', '3.11', '3.12', '3.13']
     steps:
       - name: Build wheelhouse and perform smoke test
-        uses: ansys/actions/build-wheelhouse@2cf9a9c43235a000d613c2b13e64c954232a4553 # v9.0.9
+        uses: ansys/actions/build-wheelhouse@64ed650bc3d7576d81c4042e480d28a0babb177e # v10.0.3
         with:
           library-name: ${{ env.PACKAGE_NAME }}
           operating-system: ${{ matrix.os }}
@@ -91,7 +91,7 @@ jobs:
         run: |
           docker run --detach --name speos-rpc -p 50098:50098 -e SPEOS_LOG_LEVEL=2 -e ANSYSLMD_LICENSE_FILE=${{ env.ANSYSLMD_LICENSE_FILE }} -v "${{ github.workspace }}/tests/assets:/app/assets" --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:dev
       - name: "Run Ansys documentation building action"
-        uses: ansys/actions/doc-build@2cf9a9c43235a000d613c2b13e64c954232a4553 # v9.0.9
+        uses: ansys/actions/doc-build@64ed650bc3d7576d81c4042e480d28a0babb177e # v10.0.3
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           check-links: false
@@ -152,7 +152,7 @@ jobs:
           ANSYSLMD_LICENSE_FILE: 1055@${{ secrets.LICENSE_SERVER }}
         shell: bash
         run: |
-          docker run --detach --name speos-rpc -p 50098:50098 -e SPEOS_LOG_LEVEL=2 -e ANSYSLMD_LICENSE_FILE=${{ env.ANSYSLMD_LICENSE_FILE }} -v "${{ github.workspace }}/tests/assets:/app/assets" --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:dev
+          docker run --detach --name speos-rpc -p 50098:50098 -e SPEOS_LOG_LEVEL=2 -e ANSYSLMD_LICENSE_FILE=${{ env.ANSYSLMD_LICENSE_FILE }} -v "${{ github.workspace }}/tests/assets:/app/assets" --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:dev -m 25000000
 
       - name: Run pytest
         shell: bash
@@ -169,7 +169,7 @@ jobs:
           retention-days: 7
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@ad3126e916f78f00edff4ed0317cf185271ccc2d # v5.4.2
+        uses: codecov/codecov-action@18283e04ce6e62d37312384ff67231eb8fd56d24 # v5.4.3
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
@@ -187,7 +187,7 @@ jobs:
     needs: [doc-build, testing]
     steps:
       - name: "Build library source and wheel artifacts"
-        uses: ansys/actions/build-library@2cf9a9c43235a000d613c2b13e64c954232a4553 # v9.0.9
+        uses: ansys/actions/build-library@64ed650bc3d7576d81c4042e480d28a0babb177e # v10.0.3
         with:
           library-name: ${{ env.PACKAGE_NAME }}
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
@@ -199,7 +199,7 @@ jobs:
     needs: [build-library]
     steps:
       - name: "Deploy developers documentation"
-        uses: ansys/actions/doc-deploy-dev@2cf9a9c43235a000d613c2b13e64c954232a4553 # v9.0.9
+        uses: ansys/actions/doc-deploy-dev@64ed650bc3d7576d81c4042e480d28a0babb177e # v10.0.3
         with:
           cname: ${{ env.DOCUMENTATION_CNAME }}
           token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
@@ -213,7 +213,7 @@ jobs:
     needs: [release]
     steps:
       - name: Deploy the stable documentation
-        uses: ansys/actions/doc-deploy-stable@2cf9a9c43235a000d613c2b13e64c954232a4553 # v9.0.9
+        uses: ansys/actions/doc-deploy-stable@64ed650bc3d7576d81c4042e480d28a0babb177e # v10.0.3
         with:
           cname: ${{ env.DOCUMENTATION_CNAME }}
           token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
@@ -246,7 +246,7 @@ jobs:
           skip-existing: false
 
       - name: Release to GitHub
-        uses: ansys/actions/release-github@2cf9a9c43235a000d613c2b13e64c954232a4553 # v9.0.9
+        uses: ansys/actions/release-github@64ed650bc3d7576d81c4042e480d28a0babb177e # v10.0.3
         with:
           library-name: ${{ env.PACKAGE_NAME }}
           token: ${{ secrets.GITHUB_TOKEN }}

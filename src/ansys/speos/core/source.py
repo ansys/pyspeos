@@ -28,12 +28,16 @@ from difflib import SequenceMatcher
 from typing import List, Mapping, Optional, Union
 import uuid
 
+import numpy as np
+
 from ansys.speos.core import (
     project as project,
     proto_message_utils as proto_message_utils,
 )
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
+import ansys.speos.core.generic.general_methods as general_methods
+from ansys.speos.core.generic.visualization_methods import _VisualArrow, _VisualData
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.intensity import Intensity
 from ansys.speos.core.kernel.client import SpeosClient
@@ -78,6 +82,7 @@ class BaseSource:
         self._project = project
         self._name = name
         self._unique_id = None
+        self._visual_data = _VisualData(ray=True) if general_methods._GRAPHICS_AVAILABLE else None
         self.source_template_link = None
         """Link object for the source template in database."""
 
@@ -362,6 +367,7 @@ class BaseSource:
         """
         self._spectrum._commit()
         self._commit()
+        self._visual_data.updated = False
         return self
 
     def reset(self) -> BaseSource:
@@ -412,6 +418,7 @@ class SourceLuminaire(BaseSource):
         Uses default values when True.
     """
 
+    @general_methods.min_speos_version(25, 2, 0)
     def __init__(
         self,
         project: project.Project,
@@ -443,6 +450,44 @@ class SourceLuminaire(BaseSource):
             # Default values
             self.set_flux_from_intensity_file().set_spectrum().set_incandescent()
             self.set_axis_system()
+
+    @property
+    def visual_data(self) -> _VisualData:
+        """Property containing Luminaire source visualization data.
+
+        Returns
+        -------
+        _VisualData
+            Instance of VisualData Class for pyvista.PolyData of feature rays, coordinate_systems.
+
+        """
+        if self._visual_data.updated:
+            return self._visual_data
+        else:
+            self._visual_data = (
+                _VisualData(ray=True) if general_methods._GRAPHICS_AVAILABLE else None
+            )
+            for ray_path in self._project.scene_link.get_source_ray_paths(
+                self._name, rays_nb=100, raw_data=True, display_data=True
+            ):
+                self._visual_data.add_data_line(
+                    _VisualArrow(
+                        line_vertices=[ray_path.impacts_coordinates, ray_path.last_direction],
+                        color=tuple(ray_path.colors.values),
+                        arrow=False,
+                    )
+                )
+            feature_pos_info = self.get(key="axis_system")
+            feature_luminaire_pos = np.array(feature_pos_info[:3])
+            feature_luminaire_x_dir = np.array(feature_pos_info[3:6])
+            feature_luminaire_y_dir = np.array(feature_pos_info[6:9])
+            feature_luminaire_z_dir = np.array(feature_pos_info[9:12])
+            self._visual_data.coordinates.origin = feature_luminaire_pos
+            self._visual_data.coordinates.x_axis = feature_luminaire_x_dir
+            self._visual_data.coordinates.y_axis = feature_luminaire_y_dir
+            self._visual_data.coordinates.z_axis = feature_luminaire_z_dir
+            self._visual_data.updated = True
+            return self._visual_data
 
     def set_flux_from_intensity_file(self) -> SourceLuminaire:
         """Take flux from intensity file provided.
@@ -559,6 +604,7 @@ class SourceRayFile(BaseSource):
         Uses default values when True.
     """
 
+    @general_methods.min_speos_version(25, 2, 0)
     def __init__(
         self,
         project: project.Project,
@@ -598,6 +644,44 @@ class SourceRayFile(BaseSource):
             # Default values
             self.set_flux_from_ray_file().set_spectrum_from_ray_file()
             self.set_axis_system()
+
+    @property
+    def visual_data(self) -> _VisualData:
+        """Property containing Rayfile source visualization data.
+
+        Returns
+        -------
+        _VisualData
+            Instance of VisualData Class for pyvista.PolyData of feature rays, coordinate_systems.
+
+        """
+        if self._visual_data.updated:
+            return self._visual_data
+        else:
+            self._visual_data = (
+                _VisualData(ray=True) if general_methods._GRAPHICS_AVAILABLE else None
+            )
+            for ray_path in self._project.scene_link.get_source_ray_paths(
+                self._name, rays_nb=100, raw_data=True, display_data=True
+            ):
+                self._visual_data.add_data_line(
+                    _VisualArrow(
+                        line_vertices=[ray_path.impacts_coordinates, ray_path.last_direction],
+                        color=tuple(ray_path.colors.values),
+                        arrow=False,
+                    )
+                )
+            feature_pos_info = self.get(key="axis_system")
+            feature_rayfile_pos = np.array(feature_pos_info[:3])
+            feature_rayfile_x_dir = np.array(feature_pos_info[3:6])
+            feature_rayfile_y_dir = np.array(feature_pos_info[6:9])
+            feature_rayfile_z_dir = np.array(feature_pos_info[9:12])
+            self._visual_data.coordinates.origin = feature_rayfile_pos
+            self._visual_data.coordinates.x_axis = feature_rayfile_x_dir
+            self._visual_data.coordinates.y_axis = feature_rayfile_y_dir
+            self._visual_data.coordinates.z_axis = feature_rayfile_z_dir
+            self._visual_data.updated = True
+            return self._visual_data
 
     def set_ray_file_uri(self, uri: str) -> SourceRayFile:
         """Set ray file.
@@ -833,6 +917,7 @@ class SourceSurface(BaseSource):
             self._exitance_variable_props.axis_plane[:] = axis_plane
             return self
 
+    @general_methods.min_speos_version(25, 2, 0)
     def __init__(
         self,
         project: project.Project,
@@ -879,6 +964,48 @@ class SourceSurface(BaseSource):
             # Default values
             self.set_flux_luminous().set_exitance_constant(geometries=[]).set_intensity()
             self.set_spectrum()
+
+    @property
+    def visual_data(self) -> _VisualData:
+        """Property containing Surface source visualization data.
+
+        Returns
+        -------
+        _VisualData
+            Instance of VisualData Class for pyvista.PolyData of feature rays, coordinate_systems.
+
+        """
+        if self._visual_data.updated:
+            return self._visual_data
+        else:
+            self._visual_data = (
+                _VisualData(
+                    ray=True,
+                    coordinate_system=True if self._exitance_type is not None else False,
+                )
+                if general_methods._GRAPHICS_AVAILABLE
+                else None
+            )
+            for ray_path in self._project.scene_link.get_source_ray_paths(
+                self._name, rays_nb=100, raw_data=True, display_data=True
+            ):
+                self._visual_data.add_data_line(
+                    _VisualArrow(
+                        line_vertices=[ray_path.impacts_coordinates, ray_path.last_direction],
+                        color=tuple(ray_path.colors.values),
+                        arrow=False,
+                    )
+                )
+            if self._visual_data.coordinates is not None:
+                feature_pos_info = self.get(key="axis_plane")
+                feature_surface_pos = np.array(feature_pos_info[:3])
+                feature_surface_x_dir = np.array(feature_pos_info[3:6])
+                feature_surface_y_dir = np.array(feature_pos_info[6:9])
+                self._visual_data.coordinates.origin = feature_surface_pos
+                self._visual_data.coordinates.x_axis = feature_surface_x_dir
+                self._visual_data.coordinates.y_axis = feature_surface_y_dir
+            self._visual_data.updated = True
+            return self._visual_data
 
     def set_flux_from_intensity_file(self) -> SourceSurface:
         """Take flux from intensity file provided.
