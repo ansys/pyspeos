@@ -72,7 +72,8 @@ else:
 # ### Connect to the RPC Server
 # This Python client connects to a server where the Speos engine
 # is running as a service. In this example, the server and
-# client are the same machine.
+# client are the same machine. The launch_local_speos_rpc_method can
+# be used to start a local instance of the service.
 
 if USE_DOCKER:
     speos = Speos(host=HOSTNAME, port=GRPC_PORT)
