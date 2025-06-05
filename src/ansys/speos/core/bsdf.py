@@ -28,7 +28,9 @@ from collections import Counter, UserDict
 from collections.abc import Collection
 from pathlib import Path
 from typing import Union
+import warnings
 
+from docutils.io import InputError
 from google.protobuf.empty_pb2 import Empty
 import grpc
 import numpy as np
@@ -877,7 +879,7 @@ class SpectralBRDF(BaseBSDF):
             )
             tis = spectral_bsdf_data.transmission.integral
             btdf.append(
-                BxdfDatapoint(False, incident_angle, thetas, phis, bsdf, tis, anisotropic_angle)
+                BxdfDatapoint(False, incident_angle, thetas, phis, bsdf, tis, anisotropic_angle, wl)
             )
         return brdf, btdf
 
@@ -887,51 +889,89 @@ class SpectralBRDF(BaseBSDF):
         self._has_transmission = bool(self._btdf)
         self._has_reflection = bool(self._brdf)
 
-    @property
-    def brdf(self) -> list[BxdfDatapoint]:
-        """List of BRDFDatapoints."""
-        return self._brdf
+    def sanity_check(self, silent: bool = True) -> str:
+        """Verify BSDF data is correctly defined.
 
-    @property
-    def btdf(self) -> list[BxdfDatapoint]:
-        """List of BTDFDatapoints."""
-        return self._btdf
+        Parameters
+        ----------
+        silent : bool
+            If False Warnings will be raised else not, by Default True
 
-    def add_spectral_data_point(self, brdf: BxdfDatapoint = None, btdf: BxdfDatapoint = None):
-        """Add spectral data point."""
+        Returns
+        -------
+        WarningInformation : str
+            Description of what data is missing or incorrect
+        """
+        return self._sanity_check(raise_error=False, silent=silent)
+
+    def _sanity_check(self, raise_error=False, silent=True):
+        r_wl = []
+        r_inc = []
+        t_wl = []
+        t_inc = []
+        error_msg = ""
         match self.has_reflection, self.has_transmission:
             case True, True:
-                if brdf is None or btdf is None:
-                    raise ValueError("You need to add brdf and btdf at the same time")
-                if not brdf.is_brdf or btdf.is_brdf:
-                    raise ValueError("incorrect bsdf type")
-                if brdf.incident_angle != btdf.incident_angle:
-                    raise ValueError("The incidence angle is not the same")
-                if brdf.wavelength != btdf.wavelength:
-                    raise ValueError("The wavelength is not the same")
-
-                self._brdf.append(brdf)
-                self._brdf.sort(key=lambda x: (x.anisotropy, x.wavelength, x.incident_angle))
-                self._btdf.append(btdf)
-                self._btdf.sort(key=lambda x: (x.anisotropy, x.wavelength, x.incident_angle))
+                for brdf, btdf in zip(self.brdf, self.btdf):
+                    r_inc.append(brdf.incident_angle)
+                    r_wl.append(brdf.wavelength)
+                    t_inc.append(btdf.incident_angle)
+                    t_wl.append(btdf.wavelength)
+                if r_inc != t_inc or r_wl != t_wl:
+                    error_msg += (
+                        "Incidence and/or Wavelength information between reflection and"
+                        "transmission is not identical"
+                    )
+                test_inc = r_inc
+                test_wl = r_wl
             case True, False:
-                if brdf is None or btdf is not None:
-                    raise ValueError("This BSDF is reflective only you can only add brdf")
-                if not brdf.is_brdf:
-                    raise ValueError("incorrect bsdf type")
-                self._brdf.append(brdf)
-                self._brdf.sort(key=lambda x: (x.anisotropy, x.wavelength, x.incident_angle))
+                for brdf in self.brdf:
+                    r_inc.append(brdf.incident_angle)
+                    r_wl.append(brdf.wavelength)
+                test_inc = r_inc
+                test_wl = r_wl
             case False, True:
-                if brdf is not None or btdf is None:
-                    raise ValueError("This BSDF is transmittive only you can only add btdf")
-                if btdf.is_brdf:
-                    raise ValueError("incorrect bsdf type")
-                self._btdf.append(btdf)
-                self._btdf.sort(key=lambda x: (x.anisotropy, x.wavelength, x.incident_angle))
+                for btdf in self.btdf:
+                    t_inc.append(btdf.incident_angle)
+                    t_wl.append(btdf.wavelength)
+                test_inc = t_inc
+                test_wl = t_wl
+            case _:
+                test_inc = []
+                test_wl = []
+        inc_f = dict(Counter(test_inc))
+        wl_f = dict(Counter(test_wl))
+        inc_error_l = []
+        wl_error_l = []
+        for key in inc_f:
+            if len(wl_f.keys()) != inc_f[key]:
+                inc_error_l.append(key)
+        for key in wl_f:
+            if len(inc_f.keys()) != wl_f[key]:
+                wl_error_l.append(key)
+        if inc_error_l:
+            error_msg += (
+                "The bsdf is missing information's for the for the following incidence"
+                " angles one or more wavelengths are missing: {}".format(inc_error_l)
+            )
+        if inc_error_l:
+            error_msg += (
+                "The bsdf is missing information's for the for the following wavelength"
+                " one or more incidence angles are missing: {}".format(wl_error_l)
+            )
+        if raise_error:
+            raise InputError(error_msg)
+        elif silent:
+            return error_msg
+        else:
+            if error_msg:
+                warnings.warn(error_msg, stacklevel=2)
+            return error_msg
 
     def commit(self):
         """Sent Data to gRPC interface."""
         # set basic values
+        self._sanity_check(raise_error=True)
         spectral_bsdf = spectral_bsdf__v1__pb2.SpectralBsdfData()
         spectral_bsdf.description = self.description
         wl = []
