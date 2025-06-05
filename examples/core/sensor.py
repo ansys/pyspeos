@@ -234,4 +234,3 @@ sensor5.commit()
 print(sensor5)
 
 speos.close()
-
