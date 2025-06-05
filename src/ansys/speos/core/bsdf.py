@@ -30,7 +30,6 @@ from pathlib import Path
 from typing import Union
 import warnings
 
-from docutils.io import InputError
 from google.protobuf.empty_pb2 import Empty
 import grpc
 import numpy as np
@@ -960,7 +959,7 @@ class SpectralBRDF(BaseBSDF):
                 " one or more incidence angles are missing: {}".format(wl_error_l)
             )
         if raise_error:
-            raise InputError(error_msg)
+            raise ValueError(error_msg)
         elif silent:
             return error_msg
         else:
