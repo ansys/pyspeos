@@ -418,6 +418,7 @@ class SourceLuminaire(BaseSource):
         Uses default values when True.
     """
 
+    @general_methods.min_speos_version(25, 2, 0)
     def __init__(
         self,
         project: project.Project,
@@ -603,6 +604,7 @@ class SourceRayFile(BaseSource):
         Uses default values when True.
     """
 
+    @general_methods.min_speos_version(25, 2, 0)
     def __init__(
         self,
         project: project.Project,
@@ -915,6 +917,7 @@ class SourceSurface(BaseSource):
             self._exitance_variable_props.axis_plane[:] = axis_plane
             return self
 
+    @general_methods.min_speos_version(25, 2, 0)
     def __init__(
         self,
         project: project.Project,

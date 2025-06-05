@@ -218,3 +218,5 @@ if os.name == "nt":
         simulation_feature=sim_feat,
         result_name="ASSEMBLY1.DS (0).Dom Irradiance Sensor (0).xmp",
     )
+
+speos.close()
