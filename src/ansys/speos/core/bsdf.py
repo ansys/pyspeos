@@ -246,7 +246,7 @@ class InterpolationEnhancement:
 
     def __init__(
         self,
-        bsdf: Union[AnisotropicBSDF],
+        bsdf: Union[AnisotropicBSDF, SpectralBRDF],
         bsdf_namespace: Union[spectral_bsdf__v1__pb2, anisotropic_bsdf__v1__pb2],
         index_1: Union[float, None] = 1.0,
         index_2: Union[float, None] = 1.0,
@@ -300,31 +300,28 @@ class InterpolationEnhancement:
     @property
     def get_reflection_interpolation_settings(self) -> Union[None, _InterpolationSettings]:
         """Return a fixed dictionary for reflection interpolation settings to be set by user."""
-        if self.__cones_data.reflection is None:
-            return None
         if isinstance(self._bsdf, AnisotropicBSDF):
+            if self.__cones_data.reflection is None:
+                return None
             reflection_interpolation_settings = self._InterpolationSettings(
                 {str(key): 0 for key in self._bsdf.anisotropic_angles[0]}
             )
-            for aniso_sample_index, ani_sample in enumerate(
-                self.__cones_data.reflection.anisotropic_samples
-            ):
+            for sample_index, sample in enumerate(self.__cones_data.reflection.anisotropic_samples):
                 reflection_incident_interpolation_settings = self._InterpolationSettings(
                     {str(key): 0 for key in self._bsdf.incident_angles[0]}
                 )
-                tmp_reflection_key = str(self._bsdf.anisotropic_angles[0][aniso_sample_index])
+                tmp_reflection_key = str(self._bsdf.anisotropic_angles[0][sample_index])
                 reflection_interpolation_settings.update(
                     {tmp_reflection_key: reflection_incident_interpolation_settings}
                 )
-                for incident_sample_index, incident in enumerate(ani_sample.incidence_samples):
+                for incident_sample_index, incident in enumerate(sample.incidence_samples):
                     tmp_reflection_incident_key = str(
                         self._bsdf.incident_angles[0][
-                            aniso_sample_index * len(ani_sample.incidence_samples)
-                            + incident_sample_index
+                            sample_index * len(sample.incidence_samples) + incident_sample_index
                         ]
                     )
                     reflection_interpolation_settings[
-                        str(self._bsdf.anisotropic_angles[0][aniso_sample_index])
+                        str(self._bsdf.anisotropic_angles[0][sample_index])
                     ].update(
                         {
                             tmp_reflection_incident_key: {
@@ -334,8 +331,37 @@ class InterpolationEnhancement:
                         }
                     )
             return reflection_interpolation_settings
+        if isinstance(self._bsdf, SpectralBRDF):
+            if self.__cones_data.wavelength_incidence_samples[0].reflection is None:
+                return None
+            reflection_interpolation_settings = self._InterpolationSettings(
+                {str(key): 0 for key in self._bsdf.wavelength}
+            )
+            r_angles = list(set(self._bsdf.incident_angles[0]))
+            reflection_incident_interpolation_settings = self._InterpolationSettings(
+                {str(key): 0 for key in r_angles}
+            )
+            for sample_index, sample in enumerate(self.__cones_data.wavelength_incidence_samples):
+                tmp_reflection_key = str(self._bsdf.wavelength[int(sample_index / len(r_angles))])
+                reflection_interpolation_settings.update(
+                    {tmp_reflection_key: reflection_incident_interpolation_settings}
+                )
+                tmp_reflection_incident_key = str(
+                    self._bsdf.incident_angles[0][sample_index % len(r_angles)]
+                )
+                reflection_interpolation_settings[
+                    str(self._bsdf.wavelength[int(sample_index / len(r_angles))])
+                ].update(
+                    {
+                        tmp_reflection_incident_key: {
+                            "half_angle": sample.reflection.cone_half_angle,
+                            "height": sample.reflection.cone_height,
+                        }
+                    }
+                )
+            return reflection_interpolation_settings
         else:
-            raise ValueError("only anistropic bsdf supported")
+            raise ValueError("only anistropic and spectral bsdf supported")
 
     def set_interpolation_settings(
         self, is_brdf: bool, settings: InterpolationEnhancement._InterpolationSettings
@@ -349,60 +375,98 @@ class InterpolationEnhancement:
         settings: InterpolationEnhancement._InterpolationSettings
             interpolation settings.
         """
-        if self.__cones_data.reflection is None and self.__cones_data.transmission is None:
-            raise ValueError("does not have reflection or transmission")
-        if is_brdf and self.__cones_data.reflection is None:
-            raise ValueError("reflection data is none")
-        if not is_brdf and self.__cones_data.transmission is None:
-            raise ValueError("transmission data is none")
         if not isinstance(
             settings, ansys.speos.core.bsdf.InterpolationEnhancement._InterpolationSettings
         ):
             raise ImportError("only interpolation settings are supported")
 
         if isinstance(self._bsdf, AnisotropicBSDF):
+            if self.__cones_data.reflection is None and self.__cones_data.transmission is None:
+                raise ValueError("does not have reflection or transmission")
+            if is_brdf and self.__cones_data.reflection is None:
+                raise ValueError("reflection data is none")
+            if not is_brdf and self.__cones_data.transmission is None:
+                raise ValueError("transmission data is none")
             self._bsdf._stub.Import(self._bsdf._grpcbsdf)
             if is_brdf:
-                for iso_sample_key_index, iso_sample_key in enumerate(settings.keys()):
+                for wl_sample_key_index, wl_sample_key in enumerate(settings.keys()):
                     for incident_key_index, incident_key in enumerate(
-                        settings[iso_sample_key].keys()
+                        settings[wl_sample_key].keys()
                     ):
                         self.__cones_data.reflection.anisotropic_samples[
-                            iso_sample_key_index
+                            wl_sample_key_index
                         ].incidence_samples[incident_key_index].cone_half_angle = settings[
-                            iso_sample_key
+                            wl_sample_key
                         ][incident_key]["half_angle"]
                         self.__cones_data.reflection.anisotropic_samples[
-                            iso_sample_key_index
+                            wl_sample_key_index
                         ].incidence_samples[incident_key_index].cone_height = settings[
-                            iso_sample_key
+                            wl_sample_key
                         ][incident_key]["height"]
                 self._bsdf._stub.SetSpecularInterpolationEnhancementData(self.__cones_data)
             else:
-                for iso_sample_key_index, iso_sample_key in enumerate(settings.keys()):
+                for wl_sample_key_index, wl_sample_key in enumerate(settings.keys()):
                     for incident_key_index, incident_key in enumerate(
-                        settings[iso_sample_key].keys()
+                        settings[wl_sample_key].keys()
                     ):
                         self.__cones_data.transmission.anisotropic_samples[
-                            iso_sample_key_index
+                            wl_sample_key_index
                         ].incidence_samples[incident_key_index].cone_half_angle = settings[
-                            iso_sample_key
+                            wl_sample_key
                         ][incident_key]["half_angle"]
                         self.__cones_data.transmission.anisotropic_samples[
-                            iso_sample_key_index
+                            wl_sample_key_index
                         ].incidence_samples[incident_key_index].cone_height = settings[
-                            iso_sample_key
+                            wl_sample_key
                         ][incident_key]["height"]
                 self._bsdf._stub.SetSpecularInterpolationEnhancementData(self.__cones_data)
+        elif isinstance(self._bsdf, SpectralBRDF):
+            if (
+                self.__cones_data.wavelength_incidence_samples.reflection is None
+                and self.__cones_data.wavelength_incidence_samples.transmission is None
+            ):
+                raise ValueError("does not have reflection or transmission")
+            if is_brdf and self.__cones_data.wavelength_incidence_samples.reflection is None:
+                raise ValueError("reflection data is none")
+            if not is_brdf and self.__cones_data.wavelength_incidence_samples.transmission is None:
+                raise ValueError("transmission data is none")
+            self._bsdf._stub.Import(self._bsdf._grpcbsdf)
+            if is_brdf:
+                for wl_sample_key_index, wl_sample_key in enumerate(settings.keys()):
+                    for incident_key_index, incident_key in enumerate(
+                        settings[wl_sample_key].keys()
+                    ):
+                        self.__cones_data.wavelength_incidence_samples[
+                            (wl_sample_key_index + 1) * incident_key_index
+                        ].reflection.cone_half_angle = settings[wl_sample_key][incident_key][
+                            "half_angle"
+                        ]
+                        self.__cones_data.wavelength_incidence_samples[
+                            (wl_sample_key_index + 1) * incident_key_index
+                        ].reflection.cone_height = settings[wl_sample_key][incident_key]["height"]
+            else:
+                for wl_sample_key_index, wl_sample_key in enumerate(settings.keys()):
+                    for incident_key_index, incident_key in enumerate(
+                        settings[wl_sample_key].keys()
+                    ):
+                        self.__cones_data.wavelength_incidence_samples[
+                            (wl_sample_key_index + 1) * incident_key_index
+                        ].transmission.cone_half_angle = settings[wl_sample_key][incident_key][
+                            "half_angle"
+                        ]
+                        self.__cones_data.wavelength_incidence_samples[
+                            (wl_sample_key_index + 1) * incident_key_index
+                        ].transmission.cone_height = settings[wl_sample_key][incident_key]["height"]
+            self._bsdf._stub.SetSpecularInterpolationEnhancementData(self.__cones_data)
         else:
-            raise ValueError("only anistropic bsdf supported")
+            raise ValueError("only anistropic bsdf and spectral brdf are supported")
 
     @property
     def get_transmission_interpolation_settings(self) -> Union[None, _InterpolationSettings]:
         """Return a fixed dictionary for reflection interpolation settings to be set by user."""
-        if self.__cones_data.transmission is None:
-            return None
         if isinstance(self._bsdf, AnisotropicBSDF):
+            if self.__cones_data.transmission is None:
+                return None
             transmission_interpolation_settings = self._InterpolationSettings(
                 {str(key): 0 for key in self._bsdf.anisotropic_angles[1]}
             )
@@ -434,9 +498,37 @@ class InterpolationEnhancement:
                         }
                     )
             return transmission_interpolation_settings
-
+        if isinstance(self._bsdf, SpectralBRDF):
+            if self.__cones_data.wavelength_incidence_samples[0].transmission is None:
+                return None
+            reflection_interpolation_settings = self._InterpolationSettings(
+                {str(key): 0 for key in self._bsdf.wavelength}
+            )
+            r_angles = list(set(self._bsdf.incident_angles[1]))
+            transmission_incident_interpolation_settings = self._InterpolationSettings(
+                {str(key): 0 for key in r_angles}
+            )
+            for sample_index, sample in enumerate(self.__cones_data.wavelength_incidence_samples):
+                tmp_reflection_key = str(self._bsdf.wavelength[int(sample_index / len(r_angles))])
+                reflection_interpolation_settings.update(
+                    {tmp_reflection_key: transmission_incident_interpolation_settings}
+                )
+                tmp_reflection_incident_key = str(
+                    self._bsdf.incident_angles[1][sample_index % len(r_angles)]
+                )
+                reflection_interpolation_settings[
+                    str(self._bsdf.wavelength[int(sample_index / len(r_angles))])
+                ].update(
+                    {
+                        tmp_reflection_incident_key: {
+                            "half_angle": sample.transmission.cone_half_angle,
+                            "height": sample.transmission.cone_height,
+                        }
+                    }
+                )
+            return reflection_interpolation_settings
         else:
-            raise ValueError("only anistropic bsdf supported")
+            raise ValueError("only anistropic and spectral bsdf supported")
 
 
 class AnisotropicBSDF(BaseBSDF):
@@ -817,6 +909,22 @@ class SpectralBRDF(BaseBSDF):
         else:
             self._transmission_spectrum, self._reflection_spectrum = None, None
             self.__interpolation_settings = None
+
+    @property
+    def wavelength(self):
+        """List of all Wavelength in BRDF."""
+        r_wl = []
+        t_wl = []
+        if self.has_reflection:
+            for brdf in self.brdf:
+                r_wl.append(brdf.wavelength)
+            return list(set(r_wl))
+        if self.has_transmission:
+            for btdf in self.btdf:
+                t_wl.append(btdf.wavelength)
+            return list(set(t_wl))
+        else:
+            return []
 
     def get(self, key=""):
         """Retrieve any information from the BSDF object.
