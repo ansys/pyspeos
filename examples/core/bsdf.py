@@ -263,3 +263,5 @@ previous_settings_diff_index = saved_bsdf.create_interpolation_enhancement(index
 print(
     previous_settings.get_reflection_interpolation_settings
 )  # with different index values, a new automatic settings is returned
+
+speos.close()
