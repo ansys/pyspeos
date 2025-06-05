@@ -117,3 +117,5 @@ lxp.preview(project=p)
 
 lxp.filter_error_rays()
 lxp.preview(project=p, ray_filter=True)
+
+speos.close()
