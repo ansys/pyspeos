@@ -903,6 +903,16 @@ def test_create_radiance_sensor(speos: Speos):
     assert radiance_properties.HasField("layer_type_none")
 
 
+def test_load_3d_irradiance_sensor(speos: Speos):
+    """Test load of 3d irradiance sensor."""
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism_3D.speos"),
+    )
+    sensor_3d = p.find(name=".*", name_regex=True, feature_type=Sensor3DIrradiance)[0]
+    assert sensor_3d is not None
+
+
 def test_create_3d_irradiance_sensor(speos: Speos):
     """Test creation of 3d irradiance sensor."""
     p = Project(
