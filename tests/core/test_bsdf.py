@@ -576,6 +576,19 @@ def test_spectral_brdf(speos: Speos):
     initial_bsdf.reset()
     assert compare_spectral_bsdf(initial_bsdf, exported_bsdf)
 
+    # remove transmission
+    exported_bsdf.has_reflection = False
+    assert not compare_spectral_bsdf(initial_bsdf, exported_bsdf)
+
+    # compare only reflective
+    initial_bsdf.has_reflection = False
+    assert compare_spectral_bsdf(initial_bsdf, exported_bsdf)
+
+    # test reset
+    exported_bsdf.reset()
+    initial_bsdf.reset()
+    assert compare_spectral_bsdf(initial_bsdf, exported_bsdf)
+
     # test commit True/false
     # change value
     exported_bsdf.has_transmission = False
@@ -595,6 +608,30 @@ def test_spectral_brdf(speos: Speos):
     bsdf3 = SpectralBRDF(speos, bsdf_path3)
     assert compare_spectral_bsdf(initial_bsdf, bsdf2)
     assert not compare_spectral_bsdf(bsdf2, bsdf3)
+
+    # compare loaded with created
+    exported_bsdf = SpectralBRDF(speos, bsdf_path)
+    # test commit True/false
+    # change value
+    exported_bsdf.has_reflection = False
+
+    # save non changed file
+    bsdf_path4 = Path(test_path) / "Test_Lambertian_bsdf2"
+    bsdf_path4 = exported_bsdf.save(bsdf_path4, commit=False)
+    assert does_file_exist(str(bsdf_path4))
+
+    # save changed file
+    bsdf_path5 = Path(test_path) / "Test_Lambertian_bsdf3"
+    bsdf_path5 = exported_bsdf.save(bsdf_path5, commit=True)
+    assert does_file_exist(str(bsdf_path5))
+
+    # load and compare files
+    bsdf4 = SpectralBRDF(speos, bsdf_path4)
+    bsdf5 = SpectralBRDF(speos, bsdf_path5)
+    assert compare_spectral_bsdf(initial_bsdf, bsdf4)
+    assert not compare_spectral_bsdf(bsdf4, bsdf5)
     remove_file(str(bsdf_path))
     remove_file(str(bsdf_path2))
     remove_file(str(bsdf_path3))
+    remove_file(str(bsdf_path4))
+    remove_file(str(bsdf_path5))
