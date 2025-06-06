@@ -516,7 +516,7 @@ class InterpolationEnhancement:
                     )
             return transmission_interpolation_settings
         else:
-            raise ValueError("only anistropic and spectral bsdf supported")
+            raise ValueError("only anisotropic and spectral bsdf supported")
 
 
 class AnisotropicBSDF(BaseBSDF):
