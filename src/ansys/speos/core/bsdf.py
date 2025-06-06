@@ -897,7 +897,7 @@ class SpectralBRDF(BaseBSDF):
         if file_path:
             file_path = Path(file_path)
             self._grpcbsdf = self._import_file(file_path)
-            self._brdf, self._btdf = self._extract_bsdf()
+            self.brdf, self.btdf = self._extract_bsdf()
             self._has_transmission = bool(self._btdf)
             self._has_reflection = bool(self._brdf)
             try:
@@ -974,24 +974,30 @@ class SpectralBRDF(BaseBSDF):
                 i % len(self._grpcbsdf.incidence_samples)
             ]
             wl = self._grpcbsdf.wavelength_samples[int(i / len(self._grpcbsdf.incidence_samples))]
-            thetas = np.array(spectral_bsdf_data.reflection.theta_samples)
-            phis = np.array(spectral_bsdf_data.reflection.phi_samples)
-            bsdf = np.array(spectral_bsdf_data.reflection.bsdf_cos_theta).reshape(
-                (len(thetas), len(phis))
-            )
-            tis = spectral_bsdf_data.reflection.integral
-            brdf.append(
-                BxdfDatapoint(True, incident_angle, thetas, phis, bsdf, tis, anisotropic_angle, wl)
-            )
-            thetas = np.array(spectral_bsdf_data.transmission.theta_samples)
-            phis = np.array(spectral_bsdf_data.transmission.phi_samples)
-            bsdf = np.array(spectral_bsdf_data.transmission.bsdf_cos_theta).reshape(
-                (len(thetas), len(phis))
-            )
-            tis = spectral_bsdf_data.transmission.integral
-            btdf.append(
-                BxdfDatapoint(False, incident_angle, thetas, phis, bsdf, tis, anisotropic_angle, wl)
-            )
+            if spectral_bsdf_data.reflection.ListFields():
+                thetas = np.array(spectral_bsdf_data.reflection.theta_samples)
+                phis = np.array(spectral_bsdf_data.reflection.phi_samples)
+                bsdf = np.array(spectral_bsdf_data.reflection.bsdf_cos_theta).reshape(
+                    (len(thetas), len(phis))
+                )
+                tis = spectral_bsdf_data.reflection.integral
+                brdf.append(
+                    BxdfDatapoint(
+                        True, incident_angle, thetas, phis, bsdf, tis, anisotropic_angle, wl
+                    )
+                )
+            if spectral_bsdf_data.transmission.ListFields():
+                thetas = np.array(spectral_bsdf_data.transmission.theta_samples)
+                phis = np.array(spectral_bsdf_data.transmission.phi_samples)
+                bsdf = np.array(spectral_bsdf_data.transmission.bsdf_cos_theta).reshape(
+                    (len(thetas), len(phis))
+                )
+                tis = spectral_bsdf_data.transmission.integral
+                btdf.append(
+                    BxdfDatapoint(
+                        False, incident_angle, thetas, phis, bsdf, tis, anisotropic_angle, wl
+                    )
+                )
         return brdf, btdf
 
     def reset(self):
