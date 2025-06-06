@@ -116,10 +116,14 @@ class FaceStub(CrudStub):
         List[ansys.speos.core.kernel.face.FaceLink]
             List pf link objects created.
         """
-        guids = [
-            CrudStub.create(self, messages.Create_Request(face=ProtoFace(name="tmp"))).guid
-            for m in message_list
-        ]
+        reserve_faces_res = self._actions_stub.ReserveFaces(
+            FaceStub._reserve_face_iterator(message_list)
+        )
+
+        guids = []
+        for res in reserve_faces_res:
+            for guid in res.guids:
+                guids.append(guid)
 
         chunk_iterator = FaceStub._faces_to_chunks(
             guids=guids, message_list=message_list, nb_items=128 * 1024
@@ -234,6 +238,13 @@ class FaceStub(CrudStub):
         """
         guids = CrudStub.list(self, messages.List_Request()).guids
         return list(map(lambda x: FaceLink(self, x), guids))
+
+    @staticmethod
+    def _reserve_face_iterator(
+        message_list: List[ProtoFace],
+    ) -> Iterator[messages.ReserveFace_Request]:
+        for message in message_list:
+            yield messages.ReserveFace_Request(faces=[ProtoFace(name="tmp")])
 
     @staticmethod
     def _faces_to_chunks(
