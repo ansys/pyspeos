@@ -79,7 +79,7 @@ def create_bsdf_data_point(is_brdf, incident_angle, anisotropy, wavelength=555.0
 
 
 def create_spectral_brdf(speos: Speos):
-    """Create an anisotropic bsdf as Class object."""
+    """Create an spectral bsdf as Class object."""
     nb_lambda = 5
     spectrum = []
     for w in range(nb_lambda):
@@ -203,7 +203,7 @@ def compare_anisotropic_bsdf(bsdf1: AnisotropicBSDF, bsdf2: AnisotropicBSDF):
 
 
 def compare_spectral_bsdf(bsdf1: SpectralBRDF, bsdf2: SpectralBRDF):
-    """Compare an Anisotropic bsdf."""
+    """Compare an spectral bsdf."""
     test_list = []
     bsdf1_data = [
         bsdf1.description,
