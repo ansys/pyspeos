@@ -805,6 +805,13 @@ class Project:
                     sensor_instance=ssr_inst,
                     default_values=False,
                 )
+            elif ssr_inst.HasField("irradiance_3d_properties"):
+                ssr_feat = Sensor3DIrradiance(
+                    project=self,
+                    name=ssr_inst.name,
+                    sensor_instance=ssr_inst,
+                    default_values=False,
+                )
             self._features.append(ssr_feat)
 
         for sim_inst in scene_data.simulations:
