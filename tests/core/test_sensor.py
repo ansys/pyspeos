@@ -923,13 +923,108 @@ def test_create_3d_irradiance_sensor(speos: Speos):
     sensor_3d = p.create_sensor(name="3d", feature_type=Sensor3DIrradiance)
     sensor_3d.set_geometries([body.geo_path])
     sensor_3d.commit()
+
+    # when creating 3D irradiance, default properties:
+    # photometric
+    # planar integration
+    # layer type none
+    # measure reflection, transmission, absorption
+
+    backend_photometric_info = sensor_3d.sensor_template_link.get()
     assert sensor_3d.sensor_template_link is not None
-    # assert sensor_3d.sensor_template_link.get().HasField("Irradiance3D")
-    assert sensor_3d.sensor_template_link.get().name == "3d"
+    assert backend_photometric_info.name == "3d"
+    assert backend_photometric_info.HasField("irradiance_3d")
+    assert backend_photometric_info.irradiance_3d.HasField("type_photometric")
+    assert backend_photometric_info.irradiance_3d.type_photometric.HasField(
+        "integration_type_planar"
+    )
+    photometric_info = backend_photometric_info.irradiance_3d.type_photometric
+    assert photometric_info.integration_type_planar.reflection
+    assert photometric_info.integration_type_planar.transmission
+    assert photometric_info.integration_type_planar.absorption
     assert sensor_3d._sensor_instance.HasField("irradiance_3d_properties")
     assert sensor_3d._sensor_instance.irradiance_3d_properties.geometries.geo_paths == [
         "PrismBody:1130610277"
     ]
+    assert sensor_3d._sensor_instance.irradiance_3d_properties.HasField("layer_type_none")
+
+    # change integration to radial
+    sensor_3d.set_type_photometric().set_integration_radial()
+    sensor_3d.commit()
+    backend_photometric_info = sensor_3d.sensor_template_link.get()
+    assert backend_photometric_info.irradiance_3d.HasField("type_photometric")
+    assert backend_photometric_info.irradiance_3d.type_photometric.HasField(
+        "integration_type_radial"
+    )
+
+    # change back to planar
+    # reflection, transmission, absorption as default
+    # absorption is False after being set
+    sensor_3d.set_type_photometric().set_integration_planar().set_absorption(False)
+    sensor_3d.commit()
+    backend_photometric_info = sensor_3d.sensor_template_link.get()
+    photometric_info = backend_photometric_info.irradiance_3d.type_photometric
+    assert photometric_info.integration_type_planar.reflection
+    assert photometric_info.integration_type_planar.transmission
+    assert not photometric_info.integration_type_planar.absorption
+
+    # when change type into radiometric, default properties:
+    # radiometric
+    # planar integration
+    # layer type none
+    sensor_3d.set_type_radiometric()
+    sensor_3d.commit()
+    backend_radiometric_info = sensor_3d.sensor_template_link.get()
+    assert backend_radiometric_info.irradiance_3d.HasField("type_radiometric")
+    radiometric_info = backend_radiometric_info.irradiance_3d.type_radiometric
+    assert radiometric_info.HasField("integration_type_planar")
+    assert radiometric_info.integration_type_planar.reflection
+    assert radiometric_info.integration_type_planar.transmission
+    assert radiometric_info.integration_type_planar.absorption
+
+    # change integration type
+    sensor_3d.set_type_radiometric().set_integration_radial()
+    sensor_3d.commit()
+    radiometric_info = sensor_3d.sensor_template_link.get().irradiance_3d.type_radiometric
+    assert radiometric_info.HasField("integration_type_radial")
+
+    # change back to planar
+    # reflection, transmission, absorption as default
+    # absorption is False after being set
+    sensor_3d.set_type_radiometric().set_integration_planar().set_absorption(False)
+    sensor_3d.commit()
+    backend_radiometric_info = sensor_3d.sensor_template_link.get()
+    photometric_info = backend_radiometric_info.irradiance_3d.type_radiometric
+    assert photometric_info.integration_type_planar.reflection
+    assert photometric_info.integration_type_planar.transmission
+    assert not photometric_info.integration_type_planar.absorption
+
+    # when change type into colorimetric, default properties:
+    # colorimetric
+    # wavelength start 400 with end 700
+    # layer type none
+    sensor_3d.set_type_colorimetric()
+    sensor_3d.commit()
+    assert sensor_3d.sensor_template_link.get().irradiance_3d.HasField("type_colorimetric")
+    colorimetric_info = sensor_3d.sensor_template_link.get().irradiance_3d.type_colorimetric
+    assert colorimetric_info.wavelength_start == 400
+    assert colorimetric_info.wavelength_end == 700
+    sensor_3d.set_type_colorimetric().set_wavelengths_range().set_start(500)
+    sensor_3d.commit()
+    colorimetric_info = sensor_3d.sensor_template_link.get().irradiance_3d.type_colorimetric
+    assert sensor_3d.get(key="wavelength_start") == 500
+    assert colorimetric_info.wavelength_start == 500
+
+    # change back to planar
+    # reflection, transmission, absorption as default
+    # absorption is False after being set
+    sensor_3d.set_type_photometric().set_integration_planar().set_absorption(False)
+    sensor_3d.commit()
+    backend_photometric_info = sensor_3d.sensor_template_link.get()
+    photometric_info = backend_photometric_info.irradiance_3d.type_photometric
+    assert photometric_info.integration_type_planar.reflection
+    assert photometric_info.integration_type_planar.transmission
+    assert not photometric_info.integration_type_planar.absorption
 
     sim = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
     sim.set_sensor_paths(["Irradiance.1:564", "3d"])
