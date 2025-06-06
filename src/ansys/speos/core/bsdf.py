@@ -306,22 +306,25 @@ class InterpolationEnhancement:
             reflection_interpolation_settings = self._InterpolationSettings(
                 {str(key): 0 for key in self._bsdf.anisotropic_angles[0]}
             )
-            for sample_index, sample in enumerate(self.__cones_data.reflection.anisotropic_samples):
+            for aniso_sample_index, ani_sample in enumerate(
+                self.__cones_data.reflection.anisotropic_samples
+            ):
                 reflection_incident_interpolation_settings = self._InterpolationSettings(
                     {str(key): 0 for key in self._bsdf.incident_angles[0]}
                 )
-                tmp_reflection_key = str(self._bsdf.anisotropic_angles[0][sample_index])
+                tmp_reflection_key = str(self._bsdf.anisotropic_angles[0][aniso_sample_index])
                 reflection_interpolation_settings.update(
                     {tmp_reflection_key: reflection_incident_interpolation_settings}
                 )
-                for incident_sample_index, incident in enumerate(sample.incidence_samples):
+                for incident_sample_index, incident in enumerate(ani_sample.incidence_samples):
                     tmp_reflection_incident_key = str(
                         self._bsdf.incident_angles[0][
-                            sample_index * len(sample.incidence_samples) + incident_sample_index
+                            aniso_sample_index * len(ani_sample.incidence_samples)
+                            + incident_sample_index
                         ]
                     )
                     reflection_interpolation_settings[
-                        str(self._bsdf.anisotropic_angles[0][sample_index])
+                        str(self._bsdf.anisotropic_angles[0][aniso_sample_index])
                     ].update(
                         {
                             tmp_reflection_incident_key: {
@@ -345,15 +348,15 @@ class InterpolationEnhancement:
                     {tmp_reflection_key: reflection_incident_interpolation_settings}
                 )
                 for inc_index, inc in enumerate(r_angles):
-                    sample = self.__cones_data.wavelength_incidence_samples[
+                    ani_sample = self.__cones_data.wavelength_incidence_samples[
                         (wl_index + 1) * inc_index
                     ]
                     tmp_reflection_incident_key = str(inc)
                     reflection_interpolation_settings[str(wl)].update(
                         {
                             tmp_reflection_incident_key: {
-                                "half_angle": sample.reflection.cone_half_angle,
-                                "height": sample.reflection.cone_height,
+                                "half_angle": ani_sample.reflection.cone_half_angle,
+                                "height": ani_sample.reflection.cone_height,
                             }
                         }
                     )
@@ -384,35 +387,35 @@ class InterpolationEnhancement:
         if isinstance(self._bsdf, AnisotropicBSDF):
             self._bsdf._stub.Import(self._bsdf._grpcbsdf)
             if is_brdf:
-                for wl_sample_key_index, wl_sample_key in enumerate(settings.keys()):
+                for iso_sample_key_index, iso_sample_key in enumerate(settings.keys()):
                     for incident_key_index, incident_key in enumerate(
-                        settings[wl_sample_key].keys()
+                        settings[iso_sample_key].keys()
                     ):
                         self.__cones_data.reflection.anisotropic_samples[
-                            wl_sample_key_index
+                            iso_sample_key_index
                         ].incidence_samples[incident_key_index].cone_half_angle = settings[
-                            wl_sample_key
+                            iso_sample_key
                         ][incident_key]["half_angle"]
                         self.__cones_data.reflection.anisotropic_samples[
-                            wl_sample_key_index
+                            iso_sample_key_index
                         ].incidence_samples[incident_key_index].cone_height = settings[
-                            wl_sample_key
+                            iso_sample_key
                         ][incident_key]["height"]
                 self._bsdf._stub.SetSpecularInterpolationEnhancementData(self.__cones_data)
             else:
-                for wl_sample_key_index, wl_sample_key in enumerate(settings.keys()):
+                for iso_sample_key_index, iso_sample_key in enumerate(settings.keys()):
                     for incident_key_index, incident_key in enumerate(
-                        settings[wl_sample_key].keys()
+                        settings[iso_sample_key].keys()
                     ):
                         self.__cones_data.transmission.anisotropic_samples[
-                            wl_sample_key_index
+                            iso_sample_key_index
                         ].incidence_samples[incident_key_index].cone_half_angle = settings[
-                            wl_sample_key
+                            iso_sample_key
                         ][incident_key]["half_angle"]
                         self.__cones_data.transmission.anisotropic_samples[
-                            wl_sample_key_index
+                            iso_sample_key_index
                         ].incidence_samples[incident_key_index].cone_height = settings[
-                            wl_sample_key
+                            iso_sample_key
                         ][incident_key]["height"]
                 self._bsdf._stub.SetSpecularInterpolationEnhancementData(self.__cones_data)
         elif isinstance(self._bsdf, SpectralBRDF):
