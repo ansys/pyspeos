@@ -31,8 +31,9 @@ import uuid
 import numpy as np
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2, common_pb2, sensor_pb2
+import ansys.speos.core as core
 import ansys.speos.core.generic.general_methods as general_methods
-from ansys.speos.core.generic.visualization_methods import _VisualData
+from ansys.speos.core.generic.visualization_methods import _VisualData, local2absolute
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.scene import ProtoScene
 from ansys.speos.core.kernel.sensor_template import ProtoSensorTemplate
@@ -3431,6 +3432,70 @@ class Sensor3DIrradiance(BaseSensor):
                 # Happens in case of feature reset (to be sure to always modify correct data)
                 self._wavelengths_range._wavelengths_range = self._sensor_type_colorimetric
             return self._wavelengths_range
+
+    @property
+    def visual_data(self) -> _VisualData:
+        """Property containing 3d irradiance sensor visualization data.
+
+        Returns
+        -------
+        _VisualData
+            Instance of VisualData Class for pyvista.PolyData of feature faces, coordinate_systems.
+
+        """
+        if self._visual_data.updated:
+            return self._visual_data
+        else:
+            mesh_geo_paths = self.get(key="geo_paths")
+            for mesh_geo_path in mesh_geo_paths:
+                if len(self._project.find(name=mesh_geo_path, feature_type=core.face.Face)) != 0:
+                    # the geometry is a face
+                    mesh_geo = self._project.find(name=mesh_geo_path, feature_type=core.face.Face)[
+                        0
+                    ]
+                    face_data = mesh_geo._face
+                    vertices = np.array(face_data.vertices).reshape(-1, 3)
+                    if isinstance(mesh_geo._parent_body._parent_part, core.part.Part.SubPart):
+                        # the geometry has a local coordinate
+                        part_coordinate_info = (
+                            mesh_geo._parent_body._parent_part._part_instance.axis_system
+                        )
+                        vertices = np.array(
+                            [local2absolute(vertice, part_coordinate_info) for vertice in vertices]
+                        )
+                    facets = np.array(face_data.facets).reshape(-1, 3)
+                    temp = np.full(facets.shape[0], 3)
+                    temp = np.vstack(temp)
+                    facets = np.hstack((temp, facets))
+                    self._visual_data.add_data_mesh(vertices=vertices, facets=facets)
+                elif len(self._project.find(name=mesh_geo_path, feature_type=core.body.Body)) != 0:
+                    mesh_geo = self._project.find(name=mesh_geo_path, feature_type=core.body.Body)[
+                        0
+                    ]
+                    for mesh_geo_face in mesh_geo._geom_features:
+                        face_data = mesh_geo_face._face
+                        vertices = np.array(face_data.vertices).reshape(-1, 3)
+                        if isinstance(mesh_geo._parent_part, core.part.Part.SubPart):
+                            part_coordinate_info = mesh_geo._parent_part._part_instance.axis_system
+                            vertices = np.array(
+                                [
+                                    local2absolute(vertice, part_coordinate_info)
+                                    for vertice in vertices
+                                ]
+                            )
+                        facets = np.array(face_data.facets).reshape(-1, 3)
+                        temp = np.full(facets.shape[0], 3)
+                        temp = np.vstack(temp)
+                        facets = np.hstack((temp, facets))
+                        self._visual_data.add_data_mesh(vertices=vertices, facets=facets)
+                else:
+                    raise ValueError(
+                        "{} linked to Sensor 3D irradiance {} is not "
+                        "a valid geometry Face or Body".format(mesh_geo_path, self._name)
+                    )
+
+            self._visual_data.updated = True
+            return self._visual_data
 
     def set_type_photometric(self) -> Sensor3DIrradiance.Photometric:
         """Set type photometric.
