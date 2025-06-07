@@ -34,6 +34,7 @@ import numpy as np
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
 from ansys.speos.core.generic.general_methods import graphics_required
+from ansys.speos.core.generic.visualization_methods import local2absolute
 from ansys.speos.core.kernel.body import BodyLink
 from ansys.speos.core.kernel.face import FaceLink
 from ansys.speos.core.kernel.part import ProtoPart
@@ -863,26 +864,6 @@ class Project:
         """
         import pyvista as pv
 
-        def local2absolute(local_vertice: np.ndarray, coordinates) -> np.ndarray:
-            """Convert local coordinate to global coordinate.
-
-            Parameters
-            ----------
-            local_vertice: np.ndarray
-                numpy array includes x, y, z info.
-
-            Returns
-            -------
-            np.ndarray
-                numpy array includes x, y, z info
-
-            """
-            global_origin = np.array(coordinates[:3])
-            global_x = np.array(coordinates[3:6]) * local_vertice[0]
-            global_y = np.array(coordinates[6:9]) * local_vertice[1]
-            global_z = np.array(coordinates[9:]) * local_vertice[2]
-            return global_origin + global_x + global_y + global_z
-
         part_coordinate = [
             0.0,
             0.0,
@@ -928,6 +909,7 @@ class Project:
             SensorCamera,
             SensorRadiance,
             SensorIrradiance,
+            Sensor3DIrradiance,
             SourceLuminaire,
             SourceRayFile,
             SourceLuminaire,
@@ -941,7 +923,7 @@ class Project:
         plotter: Plotter
             ansys.tools.visualization_interface.Plotter
         speos_feature: Union[SensorCamera, SensorRadiance, SensorIrradiance,
-        SourceLuminaire, SourceRayFile, SourceLuminaire]
+        Sensor3DIrradiance, SourceLuminaire, SourceRayFile, SourceLuminaire]
             speos feature whose visual data will be added.
         scene_seize: float
             seize of max scene bounds
@@ -957,6 +939,7 @@ class Project:
                 SensorIrradiance,
                 SensorRadiance,
                 SensorCamera,
+                Sensor3DIrradiance,
                 SourceLuminaire,
                 SourceRayFile,
                 SourceSurface,
