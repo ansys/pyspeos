@@ -1122,10 +1122,10 @@ class SpectralBRDF(BaseBSDF):
                     inc.append(btdf.incident_angle)
                     wl.append(btdf.wavelength)
                     iw = spectral_bsdf.wavelength_incidence_samples.add()
-                    iw.reflection.integral = btdf.tis
-                    iw.reflection.phi_samples[:] = list(btdf.phi_values)
-                    iw.reflection.theta_samples[:] = list(btdf.theta_values)
-                    iw.reflection.bsdf_cos_theta[:] = btdf.bxdf.flatten().tolist()
+                    iw.transmission.integral = btdf.tis
+                    iw.transmission.phi_samples[:] = list(btdf.phi_values)
+                    iw.transmission.theta_samples[:] = list(btdf.theta_values)
+                    iw.transmission.bsdf_cos_theta[:] = btdf.bxdf.flatten().tolist()
         inc = list(set(inc))
         wl = list(set(wl))
         inc.sort()
