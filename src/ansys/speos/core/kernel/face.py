@@ -103,6 +103,35 @@ class FaceStub(CrudStub):
         super().__init__(stub=service.FacesManagerStub(channel=channel))
         self._actions_stub = service.FaceActionsStub(channel=channel)
 
+    def create_batch(self, message_list: List[ProtoFace]) -> List[FaceLink]:
+        """Create new entries.
+
+        Parameters
+        ----------
+        message_list : List[face.Face]
+            List of datamodels for the new entries.
+
+        Returns
+        -------
+        List[ansys.speos.core.kernel.face.FaceLink]
+            List pf link objects created.
+        """
+        reserve_faces_res = self._actions_stub.ReserveFaces(
+            FaceStub._reserve_face_iterator(message_list)
+        )
+
+        guids = []
+        for res in reserve_faces_res:
+            for guid in res.guids:
+                guids.append(guid)
+
+        chunk_iterator = FaceStub._faces_to_chunks(
+            guids=guids, message_list=message_list, nb_items=128 * 1024
+        )
+        self._actions_stub.Upload(chunk_iterator)
+
+        return [FaceLink(self, guid) for guid in guids]
+
     def create(self, message: ProtoFace) -> FaceLink:
         """Create a new entry.
 
@@ -116,14 +145,28 @@ class FaceStub(CrudStub):
         ansys.speos.core.kernel.face.FaceLink
             Link object created.
         """
-        resp = CrudStub.create(self, messages.Create_Request(face=ProtoFace(name="tmp")))
+        return self.create_batch(message_list=[message])[0]
 
-        chunk_iterator = FaceStub._face_to_chunks(
-            guid=resp.guid, message=message, nb_items=128 * 1024
+    def read_batch(self, refs: List[FaceLink]) -> List[ProtoFace]:
+        """Get existing entries.
+
+        Parameters
+        ----------
+        refs : List[ansys.speos.core.kernel.face.FaceLink]
+            List of link objects to read.
+
+        Returns
+        -------
+        List[face.Face]
+            Datamodels of the entries.
+        """
+        for ref in refs:
+            if not ref.stub == self:
+                raise ValueError("FaceLink is not on current database. Key=" + ref.key)
+        chunks = self._actions_stub.Download(
+            request=messages.Download_Request(guids=[ref.key for ref in refs])
         )
-        self._actions_stub.Upload(chunk_iterator)
-
-        return FaceLink(self, resp.guid)
+        return FaceStub._chunks_to_faces(chunks)
 
     def read(self, ref: FaceLink) -> ProtoFace:
         """Get an existing entry.
@@ -138,10 +181,27 @@ class FaceStub(CrudStub):
         face.Face
             Datamodel of the entry.
         """
-        if not ref.stub == self:
-            raise ValueError("FaceLink is not on current database")
-        chunks = self._actions_stub.Download(request=messages.Download_Request(guid=ref.key))
-        return FaceStub._chunks_to_face(chunks)
+        return self.read_batch(refs=[ref])[0]
+
+    def update_batch(self, refs: List[FaceLink], data: List[ProtoFace]) -> None:
+        """Change existing entries.
+
+        Parameters
+        ----------
+        ref : List[ansys.speos.core.kernel.face.FaceLink]
+            Link objects to update.
+
+        data : List[face.Face]
+            New datamodels for the entries.
+        """
+        for ref in refs:
+            if not ref.stub == self:
+                raise ValueError("FaceLink is not on current database")
+
+        chunk_iterator = FaceStub._faces_to_chunks(
+            guids=[ref.key for ref in refs], message_list=data, nb_items=128 * 1024
+        )
+        self._actions_stub.Upload(chunk_iterator)
 
     def update(self, ref: FaceLink, data: ProtoFace) -> None:
         """Change an existing entry.
@@ -154,15 +214,7 @@ class FaceStub(CrudStub):
         data : face.Face
             New datamodel for the entry.
         """
-        if not ref.stub == self:
-            raise ValueError("FaceLink is not on current database")
-
-        CrudStub.update(
-            self,
-            messages.Update_Request(guid=ref.key, face=ProtoFace(name="tmp")),
-        )
-        chunk_iterator = FaceStub._face_to_chunks(guid=ref.key, message=data, nb_items=128 * 1024)
-        self._actions_stub.Upload(chunk_iterator)
+        self.update_batch(refs=[ref], data=[data])
 
     def delete(self, ref: FaceLink) -> None:
         """Remove an existing entry.
@@ -188,47 +240,63 @@ class FaceStub(CrudStub):
         return list(map(lambda x: FaceLink(self, x), guids))
 
     @staticmethod
-    def _face_to_chunks(guid: str, message: ProtoFace, nb_items: int) -> Iterator[messages.Chunk]:
-        for j in range(4):
-            if j == 0:
-                chunk_face_header = messages.Chunk(
-                    face_header=messages.Chunk.FaceHeader(
-                        guid=guid,
-                        name=message.name,
-                        description=message.description,
-                        metadata=message.metadata,
-                        sizes=[
-                            len(message.vertices),
-                            len(message.facets),
-                            len(message.texture_coordinates_channels),
-                        ],
-                    )
-                )
-                yield chunk_face_header
-            elif j == 1:
-                for i in range(0, len(message.vertices), nb_items):
-                    chunk_vertices = messages.Chunk(
-                        vertices=messages.Chunk.Vertices(data=message.vertices[i : i + nb_items])
-                    )
-                    yield chunk_vertices
-            elif j == 2:
-                for i in range(0, len(message.facets), nb_items):
-                    chunk_facets = messages.Chunk(
-                        facets=messages.Chunk.Facets(data=message.facets[i : i + nb_items])
-                    )
-                    yield chunk_facets
-            elif j == 3:
-                for i in range(0, len(message.normals), nb_items):
-                    chunk_normals = messages.Chunk(
-                        normals=messages.Chunk.Normals(data=message.normals[i : i + nb_items])
-                    )
-                    yield chunk_normals
+    def _reserve_face_iterator(
+        message_list: List[ProtoFace],
+    ) -> Iterator[messages.ReserveFace_Request]:
+        for message in message_list:
+            yield messages.ReserveFace_Request(faces=[ProtoFace(name="tmp")])
 
     @staticmethod
-    def _chunks_to_face(chunks: messages.Chunk) -> ProtoFace:
+    def _faces_to_chunks(
+        guids: List[str], message_list: List[ProtoFace], nb_items: int
+    ) -> Iterator[messages.Chunk]:
+        for guid, message in zip(guids, message_list):
+            for j in range(4):
+                if j == 0:
+                    chunk_face_header = messages.Chunk(
+                        face_header=messages.Chunk.FaceHeader(
+                            guid=guid,
+                            name=message.name,
+                            description=message.description,
+                            metadata=message.metadata,
+                            sizes=[
+                                len(message.vertices),
+                                len(message.facets),
+                                len(message.texture_coordinates_channels),
+                            ],
+                        )
+                    )
+                    yield chunk_face_header
+                elif j == 1:
+                    for i in range(0, len(message.vertices), nb_items):
+                        chunk_vertices = messages.Chunk(
+                            vertices=messages.Chunk.Vertices(
+                                data=message.vertices[i : i + nb_items]
+                            )
+                        )
+                        yield chunk_vertices
+                elif j == 2:
+                    for i in range(0, len(message.facets), nb_items):
+                        chunk_facets = messages.Chunk(
+                            facets=messages.Chunk.Facets(data=message.facets[i : i + nb_items])
+                        )
+                        yield chunk_facets
+                elif j == 3:
+                    for i in range(0, len(message.normals), nb_items):
+                        chunk_normals = messages.Chunk(
+                            normals=messages.Chunk.Normals(data=message.normals[i : i + nb_items])
+                        )
+                        yield chunk_normals
+
+    @staticmethod
+    def _chunks_to_faces(chunks: messages.Chunk) -> List[ProtoFace]:
+        out_faces = []
         out_face = ProtoFace()
         for chunk in chunks:
             if chunk.HasField("face_header"):
+                if out_face != ProtoFace():  # Add face each time a new one starts
+                    out_faces.append(out_face)
+                    out_face = ProtoFace()
                 out_face.name = chunk.face_header.name
                 out_face.description = chunk.face_header.description
                 out_face.metadata.update(chunk.face_header.metadata)
@@ -239,4 +307,5 @@ class FaceStub(CrudStub):
             if chunk.HasField("normals"):
                 out_face.normals.extend(chunk.normals.data)
 
-        return out_face
+        out_faces.append(out_face)  # Don't forget to add last face
+        return out_faces
