@@ -616,12 +616,12 @@ def test_spectral_brdf(speos: Speos):
     exported_bsdf.has_reflection = False
 
     # save non changed file
-    bsdf_path4 = Path(test_path) / "Test_Lambertian_bsdf2"
+    bsdf_path4 = Path(test_path) / "Test_Lambertian_bsdf4"
     bsdf_path4 = exported_bsdf.save(bsdf_path4, commit=False)
     assert does_file_exist(str(bsdf_path4))
 
     # save changed file
-    bsdf_path5 = Path(test_path) / "Test_Lambertian_bsdf3"
+    bsdf_path5 = Path(test_path) / "Test_Lambertian_bsdf5"
     bsdf_path5 = exported_bsdf.save(bsdf_path5, commit=True)
     assert does_file_exist(str(bsdf_path5))
 
