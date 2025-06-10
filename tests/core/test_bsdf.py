@@ -635,3 +635,148 @@ def test_spectral_brdf(speos: Speos):
     remove_file(str(bsdf_path3))
     remove_file(str(bsdf_path4))
     remove_file(str(bsdf_path5))
+
+
+def test_spectral_bsdf_interpolation_enhancement(speos: Speos):
+    """Unit test for anisotropic bsdf interpolation class."""
+    # test automatic interpolation enhancement
+    input_file = Path(test_path) / "Test_not_interpolated.brdf"
+    output_file = Path(test_path) / "Test_interpolated.brdf"
+    initial_bsdf = SpectralBRDF(speos=speos, file_path=input_file)
+    assert initial_bsdf.interpolation_settings is None
+
+    # test indices setting and cones data generation
+    automatic_interpolation_settings = initial_bsdf.create_interpolation_enhancement(
+        index_1=1.0, index_2=1.5
+    )
+    assert automatic_interpolation_settings.index1 == 1
+    assert automatic_interpolation_settings.index2 == 1.5
+
+    # test setting the index values
+    automatic_interpolation_settings.index1 = 1.5
+    automatic_interpolation_settings.index2 = 1
+    assert automatic_interpolation_settings.index1 == 1.5
+    assert automatic_interpolation_settings.index2 == 1
+
+    # test methods retrieving the automated reflection and transmission interpolation settings
+    cons_reflection_data = automatic_interpolation_settings.get_reflection_interpolation_settings
+    cons_transmission_data = (
+        automatic_interpolation_settings.get_transmission_interpolation_settings
+    )
+    cons_data = initial_bsdf._stub.GetSpecularInterpolationEnhancementData(
+        Empty()
+    )  # retrieve data using kernel method
+
+    for cons_key_index, cons_key in enumerate(cons_reflection_data.keys()):
+        for incidence_key_index, incidence_key in enumerate(cons_reflection_data[cons_key].keys()):
+            assert (
+                cons_data.wavelength_incidence_samples[
+                    (cons_key_index + 1) * incidence_key_index
+                ].reflection.cone_half_angle
+                == cons_reflection_data[cons_key][incidence_key]["half_angle"]
+            )
+            assert (
+                cons_data.wavelength_incidence_samples[
+                    (cons_key_index + 1) * incidence_key_index
+                ].reflection.cone_height
+                == cons_reflection_data[cons_key][incidence_key]["height"]
+            )
+
+    for cons_key_index, cons_key in enumerate(cons_transmission_data.keys()):
+        for incidence_key_index, incidence_key in enumerate(
+            cons_transmission_data[cons_key].keys()
+        ):
+            assert (
+                cons_data.wavelength_incidence_samples[
+                    (cons_key_index + 1) * incidence_key_index
+                ].transmission.cone_half_angle
+                == cons_transmission_data[cons_key][incidence_key]["half_angle"]
+            )
+            assert (
+                cons_data.wavelength_incidence_samples[
+                    (cons_key_index + 1) * incidence_key_index
+                ].transmission.cone_height
+                == cons_transmission_data[cons_key][incidence_key]["height"]
+            )
+
+    # test modifying the interpolation setting dictionary
+    # test cannot change a key's value if the value is a fixed dictionary
+    with pytest.raises(ValueError, match="Cannot update key 380.0 with a FixedKeyDict as value"):
+        cons_transmission_data["380.0"] = 0
+    # test cannot add a new key
+    with pytest.raises(KeyError, match="Cannot add new key: 1.0 is not allowed."):
+        cons_reflection_data["1.0"] = 2
+    # test modifying the interpolation settings and apply settings
+    cons_reflection_data["380.0"]["0.0"]["half_angle"] = 0.523
+    cons_reflection_data["380.0"]["0.0"]["height"] = 0.5
+    cons_transmission_data["380.0"]["0.0"]["half_angle"] = 0.523
+    cons_transmission_data["380.0"]["0.0"]["height"] = 0.6
+    automatic_interpolation_settings.set_interpolation_settings(
+        is_brdf=True, settings=cons_reflection_data
+    )
+    automatic_interpolation_settings.set_interpolation_settings(
+        is_brdf=False, settings=cons_transmission_data
+    )
+    new_cons_reflection_data = (
+        automatic_interpolation_settings.get_reflection_interpolation_settings
+    )
+    new_cons_transmission_data = (
+        automatic_interpolation_settings.get_transmission_interpolation_settings
+    )
+    assert new_cons_reflection_data["380.0"]["0.0"]["half_angle"] == 0.523
+    assert new_cons_reflection_data["380.0"]["0.0"]["height"] == 0.5
+    assert new_cons_transmission_data["380.0"]["0.0"]["half_angle"] == 0.523
+    assert new_cons_transmission_data["380.0"]["0.0"]["height"] == 0.6
+
+    # test the interpolation enhancement settings in a saved bsdf file
+    initial_bsdf.save(output_file)
+    clean_all_dbs(speos.client)
+    saved_bsdf = SpectralBRDF(speos=speos, file_path=output_file)
+    assert saved_bsdf.interpolation_settings is not None
+
+    # test if the backend data is correct
+    saved_cons_data = saved_bsdf._stub.GetSpecularInterpolationEnhancementData(Empty())
+    assert saved_cons_data.wavelength_incidence_samples[0].reflection.cone_half_angle == 0.523
+    assert approx_comparison(
+        value1=saved_cons_data.wavelength_incidence_samples[0].reflection.cone_half_angle,
+        value2=0.523,
+    )
+    assert approx_comparison(
+        value1=saved_cons_data.wavelength_incidence_samples[0].reflection.cone_height,
+        value2=0.5,
+    )
+    assert approx_comparison(
+        value1=saved_cons_data.wavelength_incidence_samples[0].transmission.cone_half_angle,
+        value2=0.523,
+    )
+    assert approx_comparison(
+        value1=saved_cons_data.wavelength_incidence_samples[0].transmission.cone_height,
+        value2=0.6,
+    )
+
+    # test if retrieving interpolation property is correct
+    interpolation_settings = saved_bsdf.interpolation_settings
+    interpolated_cons_reflection = interpolation_settings.get_reflection_interpolation_settings
+    interpolated_cons_transmission = interpolation_settings.get_transmission_interpolation_settings
+    assert interpolated_cons_reflection["380.0"]["0.0"]["half_angle"] == 0.523
+    assert interpolated_cons_reflection["380.0"]["0.0"]["height"] == 0.5
+    assert interpolated_cons_transmission["380.0"]["0.0"]["half_angle"] == 0.523
+    assert interpolated_cons_transmission["380.0"]["0.0"]["height"] == 0.6
+
+    # test if retrieving interpolation settings is correct with same index provided
+    interpolation_settings = saved_bsdf.create_interpolation_enhancement(index_1=1.5, index_2=1.0)
+    interpolated_cons_reflection = interpolation_settings.get_reflection_interpolation_settings
+    interpolated_cons_transmission = interpolation_settings.get_transmission_interpolation_settings
+    assert interpolated_cons_reflection["380.0"]["0.0"]["half_angle"] != 0.523
+    assert interpolated_cons_reflection["380.0"]["0.0"]["height"] != 0.5
+    assert interpolated_cons_transmission["380.0"]["0.0"]["half_angle"] != 0.523
+    assert interpolated_cons_transmission["380.0"]["0.0"]["height"] != 0.6
+
+    # test if retrieving interpolation settings is correct with different index provided
+    interpolation_settings = saved_bsdf.create_interpolation_enhancement(index_1=1, index_2=1.5)
+    interpolated_cons_reflection = interpolation_settings.get_reflection_interpolation_settings
+    interpolated_cons_transmission = interpolation_settings.get_transmission_interpolation_settings
+    assert interpolated_cons_reflection["380.0"]["0.0"]["half_angle"] != 0.523
+    assert interpolated_cons_reflection["380.0"]["0.0"]["height"] != 0.5
+    assert interpolated_cons_transmission["380.0"]["0.0"]["half_angle"] != 0.523
+    assert interpolated_cons_transmission["380.0"]["0.0"]["height"] != 0.6
