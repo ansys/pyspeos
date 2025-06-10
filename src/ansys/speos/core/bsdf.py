@@ -52,6 +52,8 @@ class BaseBSDF:
     speos : ansys.speos.core.speos.Speos
     stub :
         grpc stub to connect to BSDF service
+    namespace :
+        grpc namespace for the bsdf
 
     Notes
     -----
@@ -59,7 +61,7 @@ class BaseBSDF:
 
     """
 
-    def __init__(self, speos: Speos, stub):
+    def __init__(self, speos: Speos, stub, namespace):
         self.client = speos.client
         self._stub = stub
         self._grpcbsdf = None
@@ -67,6 +69,8 @@ class BaseBSDF:
         self.has_reflection = False
         self.anisotropy_vector = [1, 0, 0]
         self.description = ""
+        self.__namespace = namespace
+        self.__interpolation_settings = None
 
     @property
     def has_transmission(self) -> bool:
@@ -169,6 +173,40 @@ class BaseBSDF:
         else:
             r_angle = []
         return [r_angle, t_angle]
+
+    @property
+    def interpolation_settings(self) -> Union[None, InterpolationEnhancement]:
+        """Interpolation enhancement settings of the bsdf file.
+
+        If bsdf file does not have interpolation enhancement settings, return None.
+        if bsdf file has interpolation enhancement settings, return InterpolationEnhancement.
+        """
+        return self.__interpolation_settings
+
+    def create_interpolation_enhancement(
+        self, index_1: float = 1.0, index_2: float = 1.0
+    ) -> InterpolationEnhancement:
+        """Apply automatic interpolation enhancement.
+
+        Return interpolation settings to user if settings need change.
+
+        Parameters
+        ----------
+        index_1 : float
+            outside refractive index
+        index_2 : float
+            inside refractive index
+
+        Returns
+        -------
+        ansys.speos.core.bsdf._InterpolationEnhancement
+            automatic interpolation settings with index_1 = 1 and index_2 = 1 by default.
+        """
+        self._stub.Import(self._grpcbsdf)
+        self.__interpolation_settings = InterpolationEnhancement(
+            bsdf=self, bsdf_namespace=self.__namespace, index_1=index_1, index_2=index_2
+        )
+        return self.__interpolation_settings
 
 
 class InterpolationEnhancement:
@@ -534,7 +572,9 @@ class AnisotropicBSDF(BaseBSDF):
 
     def __init__(self, speos: Speos, file_path: Union[Path, str] = None):
         super().__init__(
-            speos, anisotropic_bsdf__v1__pb2_grpc.AnisotropicBsdfServiceStub(speos.client.channel)
+            speos,
+            anisotropic_bsdf__v1__pb2_grpc.AnisotropicBsdfServiceStub(speos.client.channel),
+            anisotropic_bsdf__v1__pb2,
         )
         self._spectrum_incidence = [0, 0]
         self._spectrum_anisotropy = [0, 0]
@@ -547,7 +587,7 @@ class AnisotropicBSDF(BaseBSDF):
             self._reflection_spectrum, self._transmission_spectrum = self._extract_spectrum()
             try:
                 self._stub.GetSpecularInterpolationEnhancementData(Empty())
-                self.__interpolation_settings = InterpolationEnhancement(
+                self._BaseBSDF__interpolation_settings = InterpolationEnhancement(
                     bsdf=self,
                     bsdf_namespace=anisotropic_bsdf__v1__pb2,
                     index_1=None,
@@ -557,7 +597,6 @@ class AnisotropicBSDF(BaseBSDF):
                 self.__interpolation_settings = None
         else:
             self._transmission_spectrum, self._reflection_spectrum = None, None
-            self.__interpolation_settings = None
 
     def get(self, key=""):
         """Retrieve any information from the BSDF object.
@@ -791,44 +830,10 @@ class AnisotropicBSDF(BaseBSDF):
                         incidence_diag.bsdf_cos_theta[:] = btdf.bxdf.flatten().tolist()
         self._stub.Import(bsdf)
         self._grpcbsdf = bsdf
-        if self.__interpolation_settings is not None:
+        if self._BaseBSDF__interpolation_settings is not None:
             self._stub.SetSpecularInterpolationEnhancementData(
-                self.__interpolation_settings._InterpolationEnhancement__cones_data
+                self._BaseBSDF__interpolation_settings._InterpolationEnhancement__cones_data
             )
-
-    @property
-    def interpolation_settings(self) -> Union[None, InterpolationEnhancement]:
-        """Interpolation enhancement settings of the bsdf file.
-
-        If bsdf file does not have interpolation enhancement settings, return None.
-        if bsdf file has interpolation enhancement settings, return InterpolationEnhancement.
-        """
-        return self.__interpolation_settings
-
-    def create_interpolation_enhancement(
-        self, index_1: float = 1.0, index_2: float = 1.0
-    ) -> InterpolationEnhancement:
-        """Apply automatic interpolation enhancement.
-
-        Return interpolation settings to user if settings need change.
-
-        Parameters
-        ----------
-        index_1 : float
-            outside refractive index
-        index_2 : float
-            inside refractive index
-
-        Returns
-        -------
-        ansys.speos.core.bsdf._InterpolationEnhancement
-            automatic interpolation settings with index_1 = 1 and index_2 = 1 by default.
-        """
-        self._stub.Import(self._grpcbsdf)
-        self.__interpolation_settings = InterpolationEnhancement(
-            bsdf=self, bsdf_namespace=anisotropic_bsdf__v1__pb2, index_1=index_1, index_2=index_2
-        )
-        return self.__interpolation_settings
 
     def save(self, file_path: Union[Path, str], commit: bool = True) -> Path:
         """Save a Speos anistropic bsdf.
@@ -874,7 +879,9 @@ class SpectralBRDF(BaseBSDF):
 
     def __init__(self, speos: Speos, file_path: Union[Path, str] = None):
         super().__init__(
-            speos, spectral_bsdf__v1__pb2_grpc.SpectralBsdfServiceStub(speos.client.channel)
+            speos,
+            spectral_bsdf__v1__pb2_grpc.SpectralBsdfServiceStub(speos.client.channel),
+            spectral_bsdf__v1__pb2,
         )
         self._spectrum_incidence = [0, 0]
         self._spectrum_anisotropy = [0, 0]
@@ -886,7 +893,7 @@ class SpectralBRDF(BaseBSDF):
             self._has_reflection = bool(self._brdf)
             try:
                 self._stub.GetSpecularInterpolationEnhancementData(Empty())
-                self.__interpolation_settings = InterpolationEnhancement(
+                self._BaseBSDF__interpolation_settings = InterpolationEnhancement(
                     bsdf=self,
                     bsdf_namespace=spectral_bsdf__v1__pb2,
                     index_1=None,
@@ -896,7 +903,6 @@ class SpectralBRDF(BaseBSDF):
                 self.__interpolation_settings = None
         else:
             self._transmission_spectrum, self._reflection_spectrum = None, None
-            self.__interpolation_settings = None
 
     @property
     def wavelength(self):
@@ -1126,44 +1132,10 @@ class SpectralBRDF(BaseBSDF):
         spectral_bsdf.wavelength_samples[:] = wl
         self._stub.Import(spectral_bsdf)
         self._grpcbsdf = spectral_bsdf
-        if self.__interpolation_settings is not None:
+        if self._BaseBSDF__interpolation_settings is not None:
             self._stub.SetSpecularInterpolationEnhancementData(
-                self.__interpolation_settings._InterpolationEnhancement__cones_data
+                self._BaseBSDF__interpolation_settings._InterpolationEnhancement__cones_data
             )
-
-    @property
-    def interpolation_settings(self) -> Union[None, InterpolationEnhancement]:
-        """Interpolation enhancement settings of the bsdf file.
-
-        If bsdf file does not have interpolation enhancement settings, return None.
-        if bsdf file has interpolation enhancement settings, return InterpolationEnhancement.
-        """
-        return self.__interpolation_settings
-
-    def create_interpolation_enhancement(
-        self, index_1: float = 1.0, index_2: float = 1.0
-    ) -> InterpolationEnhancement:
-        """Apply automatic interpolation enhancement.
-
-        Return interpolation settings to user if settings need change.
-
-        Parameters
-        ----------
-        index_1 : float
-            outside refractive index
-        index_2 : float
-            inside refractive index
-
-        Returns
-        -------
-        ansys.speos.core.bsdf._InterpolationEnhancement
-            automatic interpolation settings with index_1 = 1 and index_2 = 1 by default.
-        """
-        self._stub.Import(self._grpcbsdf)
-        self.__interpolation_settings = InterpolationEnhancement(
-            bsdf=self, bsdf_namespace=spectral_bsdf__v1__pb2, index_1=index_1, index_2=index_2
-        )
-        return self.__interpolation_settings
 
     def save(self, file_path: Union[Path, str], commit: bool = True) -> Path:
         """Save a Speos anistropic bsdf.
