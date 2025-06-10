@@ -906,15 +906,11 @@ class SpectralBRDF(BaseBSDF):
         if self.has_reflection:
             for brdf in self.brdf:
                 r_wl.append(brdf.wavelength)
-            r_wl = list(set(r_wl))
-            r_wl.sort()
-            return r_wl
+            return list(set(r_wl))
         if self.has_transmission:
             for btdf in self.btdf:
                 t_wl.append(btdf.wavelength)
-            t_wl = list(set(t_wl))
-            t_wl.sort()
-            return t_wl
+            return list(set(t_wl))
         else:
             return []
 
@@ -986,13 +982,9 @@ class SpectralBRDF(BaseBSDF):
                         False, incident_angle, thetas, phis, bsdf, tis, anisotropic_angle, wl
                     )
                 )
-        if brdf:
-            brdf.sort(key=lambda x: (x.anisotropy, x.wavelength, x.incident_angle))
-        else:
+        if not brdf:
             brdf = None
-        if btdf:
-            btdf.sort(key=lambda x: (x.anisotropy, x.wavelength, x.incident_angle))
-        else:
+        if not btdf:
             btdf = None
         return brdf, btdf
 
@@ -1219,6 +1211,8 @@ class BxdfDatapoint:
         nested list of bxdf values in 1/sr
     anisotropy : float
         Anisotropy angle in radian
+    wavelength : float
+        Wavelength in nm
     """
 
     def __init__(
