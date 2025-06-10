@@ -1035,7 +1035,7 @@ class SpectralBRDF(BaseBSDF):
                 if r_inc != t_inc or r_wl != t_wl:
                     error_msg += (
                         "Incidence and/or Wavelength information between reflection and"
-                        "transmission is not identical"
+                        " transmission is not identical. "
                     )
                 test_inc = r_inc
                 test_wl = r_wl
@@ -1067,12 +1067,12 @@ class SpectralBRDF(BaseBSDF):
         if inc_error_l:
             error_msg += (
                 "The bsdf is missing information's for the for the following incidence"
-                " angles one or more wavelengths are missing: {}".format(inc_error_l)
+                " angles one or more wavelengths are missing: {}. ".format(inc_error_l)
             )
         if inc_error_l:
             error_msg += (
                 "The bsdf is missing information's for the for the following wavelength"
-                " one or more incidence angles are missing: {}".format(wl_error_l)
+                " one or more incidence angles are missing: {}. ".format(wl_error_l)
             )
         if raise_error:
             if error_msg:

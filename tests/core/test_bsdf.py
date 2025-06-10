@@ -780,3 +780,56 @@ def test_spectral_bsdf_interpolation_enhancement(speos: Speos):
     assert interpolated_cons_reflection["380.0"]["0.0"]["height"] != 0.5
     assert interpolated_cons_transmission["380.0"]["0.0"]["half_angle"] != 0.523
     assert interpolated_cons_transmission["380.0"]["0.0"]["height"] != 0.6
+
+
+def test_spectral_brdf_error_management(speos: Speos):
+    """Unit test of most bsdf error."""
+    # BXDF datapoint class
+    nb_theta, nb_phi = 5, 5
+    thetas, phis, brdf = create_lambertian_bsdf(False, nb_theta, nb_phi)
+    data_t1 = BxdfDatapoint(False, 0, thetas, phis, brdf)
+    data_t2 = BxdfDatapoint(False, 0.1, thetas, phis, brdf, wavelength=400)
+    thetas, phis, brdf = create_lambertian_bsdf(True, nb_theta, nb_phi)
+    data_r1 = BxdfDatapoint(True, 0, thetas, phis, brdf)
+    data_r2 = BxdfDatapoint(True, 0.1, thetas, phis, brdf, wavelength=400)
+    new_bsdf = SpectralBRDF(speos)
+    new_bsdf.brdf = [data_r1, data_r2]
+    new_bsdf.btdf = [data_t1]
+    err = new_bsdf.sanity_check()
+    assert (
+        err == "Incidence and/or Wavelength information between reflection and transmission"
+        " is not identical. "
+    )
+    with pytest.raises(
+        ValueError,
+        match="Incidence and/or Wavelength information between reflection and transmission"
+        " is not identical",
+    ):
+        new_bsdf.commit()
+    new_bsdf.has_reflection = False
+    new_bsdf.btdf = [data_t1, data_t2]
+    err = new_bsdf.sanity_check()
+    assert err == (
+        "The bsdf is missing information's for the for the following incidence angles one"
+        " or more wavelengths are missing: [0.1, 0]. The bsdf is missing information's for"
+        " the for the following wavelength one or more incidence angles are missing: [400, 555]. "
+    )
+    with pytest.raises(
+        ValueError,
+        match="The bsdf is missing information's for the for the following incidence angles one",
+    ):
+        new_bsdf.commit()
+    new_bsdf.has_reflection = True
+    new_bsdf.has_transmission = False
+    new_bsdf.brdf = [data_r1, data_r2]
+    err = new_bsdf.sanity_check()
+    assert err == (
+        "The bsdf is missing information's for the for the following incidence angles one"
+        " or more wavelengths are missing: [0.1, 0]. The bsdf is missing information's for"
+        " the for the following wavelength one or more incidence angles are missing: [400, 555]. "
+    )
+    with pytest.raises(
+        ValueError,
+        match="The bsdf is missing information's for the for the following incidence angles one",
+    ):
+        new_bsdf.commit()
