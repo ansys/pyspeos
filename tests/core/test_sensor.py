@@ -1026,6 +1026,25 @@ def test_create_3d_irradiance_sensor(speos: Speos):
     assert photometric_info.integration_type_planar.transmission
     assert not photometric_info.integration_type_planar.absorption
 
+    # change layer as source
+    sensor_3d.set_layer_type_source()
+    sensor_3d.commit()
+    assert sensor_3d._sensor_instance.irradiance_3d_properties.HasField("layer_type_source")
+
+    # change rayfile options
+    sensor_3d.set_ray_file_type_classic()
+    sensor_3d.commit()
+    assert sensor_3d._sensor_instance.irradiance_3d_properties.ray_file_type == 1
+    sensor_3d.set_ray_file_type_polarization()
+    sensor_3d.commit()
+    assert sensor_3d._sensor_instance.irradiance_3d_properties.ray_file_type == 2
+    sensor_3d.set_ray_file_type_tm25()
+    sensor_3d.commit()
+    assert sensor_3d._sensor_instance.irradiance_3d_properties.ray_file_type == 3
+    sensor_3d.set_ray_file_type_tm25_no_polarization()
+    sensor_3d.commit()
+    assert sensor_3d._sensor_instance.irradiance_3d_properties.ray_file_type == 4
+
     sim = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
     sim.set_sensor_paths(["Irradiance.1:564", "3d"])
     sim.commit()
