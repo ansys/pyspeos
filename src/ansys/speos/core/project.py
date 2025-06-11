@@ -778,6 +778,14 @@ class Project:
                     source_instance=src_inst,
                     default_values=False,
                 )
+            elif src_inst.HasField("ambient_properties"):
+                if src_inst.ambient_properties.HasField("natural_light_properties"):
+                    src_feat = SourceAmbientNaturalLight(
+                        project=self,
+                        name=src_inst.name,
+                        source_instance=src_inst,
+                        default_values=False,
+                    )
             if src_feat is not None:
                 self._features.append(src_feat)
 
