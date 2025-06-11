@@ -52,6 +52,7 @@ from ansys.speos.core.simulation import (
     SimulationInverse,
 )
 from ansys.speos.core.source import (
+    SourceAmbientNaturalLight,
     SourceLuminaire,
     SourceRayFile,
     SourceSurface,
@@ -154,7 +155,7 @@ class Project:
         description: str = "",
         feature_type: type = SourceSurface,
         metadata: Optional[Mapping[str, str]] = None,
-    ) -> Union[SourceSurface, SourceRayFile, SourceLuminaire]:
+    ) -> Union[SourceSurface, SourceRayFile, SourceLuminaire, SourceAmbientNaturalLight]:
         """Create a new Source feature.
 
         Parameters
@@ -169,7 +170,8 @@ class Project:
             By default, ``ansys.speos.core.source.SourceSurface``.
             Allowed types:
             Union[ansys.speos.core.source.SourceSurface, ansys.speos.core.source.SourceRayFile, \
-            ansys.speos.core.source.SourceLuminaire].
+            ansys.speos.core.source.SourceLuminaire, \
+            ansys.speos.core.source.SourceAmbientNaturalLight].
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
@@ -177,7 +179,7 @@ class Project:
         Returns
         -------
         Union[ansys.speos.core.source.SourceSurface,ansys.speos.core.source.SourceRayFile,\
-        ansys.speos.core.source.SourceLuminaire]
+        ansys.speos.core.source.SourceLuminaire, ansys.speos.core.source.SourceAmbientNaturalLight]
             Source class instance.
         """
         if metadata is None:
@@ -206,6 +208,13 @@ class Project:
             )
         elif feature_type == SourceLuminaire:
             feature = SourceLuminaire(
+                project=self,
+                name=name,
+                description=description,
+                metadata=metadata,
+            )
+        elif feature_type == SourceAmbientNaturalLight:
+            feature = SourceAmbientNaturalLight(
                 project=self,
                 name=name,
                 description=description,
