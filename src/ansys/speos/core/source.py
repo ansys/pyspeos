@@ -24,12 +24,14 @@
 
 from __future__ import annotations
 
+import datetime
 from difflib import SequenceMatcher
 from typing import List, Mapping, Optional, Union
 import uuid
 
 import numpy as np
 
+from ansys.api.speos.scene.v2 import scene_pb2
 from ansys.speos.core import (
     project as project,
     proto_message_utils as proto_message_utils,
@@ -1250,3 +1252,495 @@ class SourceSurface(BaseSource):
         # spectrum & source
         super().delete()
         return self
+
+
+class BaseSourceAmbient(BaseSource):
+    """
+    Super Class for ambient sources.
+
+    Parameters
+    ----------
+    project : ansys.speos.core.project.Project
+        Project in which source shall be created.
+    name : str
+        Name of the source.
+    description : str
+        Description of the source.
+        By default, ``""``.
+    metadata : Optional[Mapping[str, str]]
+        Metadata of the feature.
+        By default, ``{}``.
+    source_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance, optional
+        Source instance to provide if the feature does not have to be created from scratch
+        By default, ``None``, means that the feature is created from scratch by default.
+
+    Notes
+    -----
+    This is a Super class, **Do not instantiate this class yourself**
+    """
+
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        source_instance: Optional[ProtoScene.SourceInstance] = None,
+    ) -> None:
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            source_instance=source_instance,
+        )
+
+    class AutomaticSun:
+        """Sun type Automatic.
+
+        By default, user's current time and Ansys France is used a time zone.
+
+        Parameters
+        ----------
+        sun: ansys.api.speos.scene.v2.scene_pb2.AutomaticSun
+            Wavelengths range protobuf object to modify.
+        default_values : bool
+            Uses default values when True.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use set_sun_automatic method available in
+        source classes.
+        """
+
+        def __init__(
+            self,
+            sun: scene_pb2.AutomaticSun,
+            default_values: bool = True,
+            stable_ctr: bool = False,
+        ) -> None:
+            if not stable_ctr:
+                raise RuntimeError(
+                    "BaseSourceAmbient.AutomaticSun class instantiated outside of class scope"
+                )
+            self._sun = sun
+
+            if default_values:
+                now = datetime.datetime.now()
+                self.set_year(now.year).set_month(now.month).set_day(now.day).set_hour(
+                    now.hour
+                ).set_minute(now.minute)
+                self.set_time_zone().set_longitude().set_latitude()
+
+        def set_year(self, year: int) -> BaseSourceAmbient.AutomaticSun:
+            """Set year info of the automatic sun.
+
+            Parameters
+            ----------
+            year: int
+                year information.
+
+            Returns
+            -------
+            BaseSourceAmbient.AutomaticSun
+            """
+            self._sun.year = year
+            return self
+
+        def set_month(self, month: int) -> BaseSourceAmbient.AutomaticSun:
+            """
+            Set month info of the automatic sun.
+
+            Parameters
+            ----------
+            month: int
+            month information.
+
+            Returns
+            -------
+            BaseSourceAmbient.AutomaticSun
+
+            """
+            self._sun.month = month
+            return self
+
+        def set_day(self, day: int) -> BaseSourceAmbient.AutomaticSun:
+            """
+            Set day info of the automatic sun.
+
+            Parameters
+            ----------
+            day: int
+            day information.
+
+            Returns
+            -------
+            BaseSourceAmbient.AutomaticSun
+            """
+            self._sun.day = day
+            return self
+
+        def set_hour(self, hour: int) -> BaseSourceAmbient.AutomaticSun:
+            """
+            Set hour info of the automatic sun.
+
+            Parameters
+            ----------
+            hour: int
+            hour information.
+
+            Returns
+            -------
+            BaseSourceAmbient.AutomaticSun
+
+            """
+            self._sun.hour = hour
+            return self
+
+        def set_minute(self, minute: int) -> BaseSourceAmbient.AutomaticSun:
+            """
+            Set minute info of the automatic sun.
+
+            Parameters
+            ----------
+            minute: int
+            minute information.
+
+            Returns
+            -------
+            BaseSourceAmbient.AutomaticSun
+
+            """
+            self._sun.minute = minute
+            return self
+
+        def set_longitude(self, longitude: float = 0.0) -> BaseSourceAmbient.AutomaticSun:
+            """
+            Set longitude info of the automatic sun.
+
+            Parameters
+            ----------
+            longitude: float
+            longitude information.
+
+            Returns
+            -------
+            BaseSourceAmbient.AutomaticSun
+            """
+            self._sun.longitude = longitude
+            return self
+
+        def set_latitude(self, latitude: float = 0.0) -> BaseSourceAmbient.AutomaticSun:
+            """
+            Set latitude info of the automatic sun.
+
+            Parameters
+            ----------
+            latitude: float
+            latitude information.
+
+            Returns
+            -------
+            BaseSourceAmbient.AutomaticSun
+            """
+            self._sun.latitude = latitude
+            return self
+
+        def set_time_zone(self, timezone: str = "CET") -> BaseSourceAmbient.AutomaticSun:
+            """
+            Set time zone info of the automatic sun.
+
+            Parameters
+            ----------
+            timezone: str
+            timezone abbreviation.
+
+            Returns
+            -------
+            BaseSourceAmbient.AutomaticSun
+            """
+            self._sun.time_zone_uri = timezone
+            return self
+
+    class Manual:
+        """Sun type Manual>.
+
+        By default, z-axis [0, 0, 1] is used as sun direction.
+
+        Parameters
+        ----------
+        sun: ansys.api.speos.scene.v2.scene_pb2.ManualSun
+            Wavelengths range protobuf object to modify.
+        default_values : bool
+            Uses default values when True.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use set_sun_manual method available in
+        source classes.
+        """
+
+        def __init__(
+            self,
+            sun: scene_pb2.ManualSun,
+            default_values: bool = True,
+            stable_ctr: bool = False,
+        ) -> None:
+            if not stable_ctr:
+                raise RuntimeError(
+                    "BaseSourceAmbient.Manual class instantiated outside of class scope"
+                )
+            self._sun = sun
+
+            if default_values:
+                self.set_direction([0, 0, 1])
+
+        def set_direction(self, direction: List[float]) -> BaseSourceAmbient.Manual:
+            """Set direction of the manual sun.
+
+            Parameters
+            ----------
+            direction: List[float]
+                direction of the sun.
+
+            Returns
+            -------
+            BaseSourceAmbient.Manual
+
+            """
+            self._sun.sun_direction[:] = direction
+            return self
+
+        def reverse_sun(self, value: bool = False) -> BaseSourceAmbient.Manual:
+            """Reverse direction of the manual sun.
+
+            Parameters
+            ----------
+            value: bool
+                True to reverse direction, False to not reverse direction
+
+            Returns
+            -------
+            BaseSourceAmbient.Manual
+
+            """
+            self._sun.reverse_sun = value
+            return self
+
+
+class SourceAmbientNaturalLight(BaseSourceAmbient):
+    """Natural light ambient source.
+
+    By default, turbidity is set to be 3 with Sky.
+    [0, 0, 1] is used as zenith direction, [0, 1, 0] as north direction.
+    Sun type is set to be automatic type.
+
+    Parameters
+    ----------
+    project : ansys.speos.core.project.Project
+        Project that will own the feature.
+    name : str
+        Name of the feature.
+    description : str
+        Description of the feature.
+        By default, ``""``.
+    metadata : Optional[Mapping[str, str]]
+        Metadata of the feature.
+        By default, ``{}``.
+    default_values : bool
+        Uses default values when True.
+    """
+
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        source_instance: Optional[ProtoScene.SourceInstance] = None,
+        default_values: bool = True,
+    ) -> None:
+        if metadata is None:
+            metadata = {}
+
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            source_instance=source_instance,
+        )
+        self._speos_client = self._project.client
+        self._name = name
+        self._type = None
+
+        if default_values:
+            # Default values
+            self.set_zenith_direction().set_north_direction()
+            self.set_turbidity().set_with_sky()
+            self.set_sun_automatic()
+
+    def set_turbidity(self, value: float = 3) -> SourceAmbientNaturalLight:
+        """Set turbidity of the natural light source.
+
+        Parameters
+        ----------
+        value: float
+            set value of Turbidity the measure of the fraction of scattering.
+
+        Returns
+        -------
+        SourceAmbientNaturalLight
+
+        """
+        if not 1.9 <= value <= 9.9:
+            raise ValueError("Varies needs to be between 1.9 and 9.9")
+        self._source_template.ambient.natural_light.turbidity = value
+        return self
+
+    def set_with_sky(self, value: bool = True) -> SourceAmbientNaturalLight:
+        """Activate using sky in the natural light source.
+
+        Parameters
+        ----------
+        value: bool
+            True as using sky, while False as using natural light without the sky.
+
+        Returns
+        -------
+        SourceAmbientNaturalLight
+
+        """
+        self._source_template.ambient.natural_light.with_sky = value
+        return self
+
+    def set_zenith_direction(
+        self, direction: Optional[List[float]] = None
+    ) -> SourceAmbientNaturalLight:
+        """Set zenith direction of the natural light source.
+
+        Parameters
+        ----------
+        direction: Optional[List[float]]
+            direction defines the zenith direction of the natural light.
+
+        Returns
+        -------
+        SourceAmbientNaturalLight
+
+        """
+        if direction is None:
+            direction = [0, 0, 1]
+        self._source_instance.ambient_properties.zenith_direction[:] = direction
+        return self
+
+    def set_reverse_zenith_direction(self, value: bool = False) -> SourceAmbientNaturalLight:
+        """Set reverse zenith direction of the natural light source.
+
+        Parameters
+        ----------
+        value: bool
+            True to reverse zenith direction, False otherwise.
+
+        Returns
+        -------
+        SourceAmbientNaturalLight
+
+        """
+        self._source_instance.ambient_properties.reverse_zenith_direction = value
+        return self
+
+    def set_north_direction(
+        self, direction: Optional[List[float]] = None
+    ) -> SourceAmbientNaturalLight:
+        """Set north direction of the natural light source.
+
+        Parameters
+        ----------
+        direction: Optional[List[float]]
+            direction defines the north direction of the natural light.
+
+        Returns
+        -------
+        SourceAmbientNaturalLight
+
+        """
+        if direction is None:
+            direction = [0, 1, 0]
+        self._source_instance.ambient_properties.natural_light_properties.north_direction[:] = (
+            direction
+        )
+        return self
+
+    def set_reverse_north_direction(self, value: bool = False) -> SourceAmbientNaturalLight:
+        """Set reverse north direction of the natural light source.
+
+        Parameters
+        ----------
+        value: bool
+            True to reverse north direction, False otherwise.
+
+        Returns
+        -------
+        SourceAmbientNaturalLight
+
+        """
+        self._source_instance.ambient_properties.natural_light_properties.reverse_north = value
+        return self
+
+    def set_sun_automatic(self) -> BaseSourceAmbient.AutomaticSun:
+        """Set natural light sun type as automatic.
+
+        Returns
+        -------
+        BaseSourceAmbient.AutomaticSun
+
+        """
+        natural_light_properties = self._source_instance.ambient_properties.natural_light_properties
+        if self._type is None and natural_light_properties.sun_axis_system.HasField(
+            "automatic_sun"
+        ):
+            self._type = BaseSourceAmbient.AutomaticSun(
+                natural_light_properties.sun_axis_system.automatic_sun,
+                default_values=False,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._type, BaseSourceAmbient.AutomaticSun):
+            # if the _type is not Colorimetric then we create a new type.
+            self._type = BaseSourceAmbient.AutomaticSun(
+                natural_light_properties.sun_axis_system.automatic_sun,
+                stable_ctr=True,
+            )
+        elif self._type._sun is not natural_light_properties.sun_axis_system.automatic_sun:
+            # Happens in case of feature reset (to be sure to always modify correct data)
+            self._type._sun = natural_light_properties.sun_axis_system.automatic_sun
+        return self._type
+
+    def set_sun_manual(self) -> BaseSourceAmbient.Manual:
+        """Set natural light sun type as manual.
+
+        Returns
+        -------
+        BaseSourceAmbient.Manual
+        """
+        natural_light_properties = self._source_instance.ambient_properties.natural_light_properties
+        if self._type is None and natural_light_properties.sun_axis_system.HasField("manual_sun"):
+            self._type = BaseSourceAmbient.Manual(
+                natural_light_properties.sun_axis_system.manual_sun,
+                default_values=False,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._type, BaseSourceAmbient.Manual):
+            # if the _type is not Colorimetric then we create a new type.
+            self._type = BaseSourceAmbient.Manual(
+                natural_light_properties.sun_axis_system.manual_sun,
+                stable_ctr=True,
+            )
+        elif self._type._sun is not natural_light_properties.sun_axis_system.manual_sun:
+            # Happens in case of feature reset (to be sure to always modify correct data)
+            self._type._sun = natural_light_properties.sun_axis_system.manual_sun
+        return self._type
