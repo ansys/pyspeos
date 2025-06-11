@@ -365,7 +365,8 @@ class BaseSource:
         ansys.speos.core.source.BaseSource
             Source feature.
         """
-        self._spectrum._commit()
+        if hasattr(self, "_spectrum"):
+            self._spectrum._commit()
         self._commit()
         self._visual_data.updated = False
         return self
@@ -378,7 +379,8 @@ class BaseSource:
         ansys.speos.core.source.BaseSource
             Source feature.
         """
-        self._spectrum._reset()
+        if hasattr(self, "_spectrum"):
+            self._spectrum._reset()
         self._reset()
         return self
 
@@ -392,7 +394,8 @@ class BaseSource:
         ansys.speos.core.source.BaseSource
             Source feature.
         """
-        self._spectrum._delete()
+        if hasattr(self, "_spectrum"):
+            self._spectrum._delete()
         self._delete()
         return self
 
