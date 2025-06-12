@@ -192,22 +192,22 @@ class Project:
             )
             raise ValueError(msg)
         feature = None
-        match feature_type:
-            case SourceSurface():
+        match feature_type.__name__:
+            case "SourceSurface":
                 feature = SourceSurface(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
                 )
-            case SourceRayFile():
+            case "SourceRayFile":
                 feature = SourceRayFile(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
                 )
-            case SourceLuminaire():
+            case "SourceLuminaire":
                 feature = SourceLuminaire(
                     project=self,
                     name=name,
@@ -265,22 +265,22 @@ class Project:
             )
             raise ValueError(msg)
         feature = None
-        match feature_type:
-            case SimulationDirect():
+        match feature_type.__name__:
+            case "SimulationDirect":
                 feature = SimulationDirect(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
                 )
-            case SimulationInverse():
+            case "SimulationInverse":
                 feature = SimulationInverse(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
                 )
-            case SimulationInteractive():
+            case "SimulationInteractive":
                 feature = SimulationInteractive(
                     project=self,
                     name=name,
@@ -344,29 +344,29 @@ class Project:
             )
             raise ValueError(msg)
         feature = None
-        match feature_type:
-            case SensorIrradiance():
+        match feature_type.__name__:
+            case "SensorIrradiance":
                 feature = SensorIrradiance(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
                 )
-            case SensorRadiance():
+            case "SensorRadiance":
                 feature = SensorRadiance(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
                 )
-            case SensorCamera():
+            case "SensorCamera":
                 feature = SensorCamera(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
                 )
-            case Sensor3DIrradiance():
+            case "Sensor3DIrradiance":
                 feature = Sensor3DIrradiance(
                     project=self,
                     name=name,
