@@ -991,7 +991,7 @@ def test_create_3d_irradiance_sensor(speos: Speos):
     # change back to planar
     # reflection, transmission, absorption as default
     # absorption is False after being set
-    sensor_3d.set_type_radiometric().set_integration_planar().set_absorption(False)
+    sensor_3d.set_type_radiometric().set_integration_planar().absorption = False
     sensor_3d.commit()
     backend_radiometric_info = sensor_3d.sensor_template_link.get()
     photometric_info = backend_radiometric_info.irradiance_3d.type_radiometric
