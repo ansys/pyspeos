@@ -192,32 +192,33 @@ class Project:
             )
             raise ValueError(msg)
         feature = None
-        if feature_type == SourceSurface:
-            feature = SourceSurface(
-                project=self,
-                name=name,
-                description=description,
-                metadata=metadata,
-            )
-        elif feature_type == SourceRayFile:
-            feature = SourceRayFile(
-                project=self,
-                name=name,
-                description=description,
-                metadata=metadata,
-            )
-        elif feature_type == SourceLuminaire:
-            feature = SourceLuminaire(
-                project=self,
-                name=name,
-                description=description,
-                metadata=metadata,
-            )
-        else:
-            msg = "Requested feature {} does not exist in supported list {}".format(
-                feature_type, [SourceSurface, SourceLuminaire, SourceRayFile]
-            )
-            raise TypeError(msg)
+        match feature_type:
+            case SourceSurface():
+                feature = SourceSurface(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                )
+            case SourceRayFile():
+                feature = SourceRayFile(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                )
+            case SourceLuminaire():
+                feature = SourceLuminaire(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                )
+            case _:
+                msg = "Requested feature {} does not exist in supported list {}".format(
+                    feature_type, [SourceSurface, SourceLuminaire, SourceRayFile]
+                )
+                raise TypeError(msg)
         self._features.append(feature)
         return feature
 
