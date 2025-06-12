@@ -342,39 +342,41 @@ class Project:
             )
             raise ValueError(msg)
         feature = None
-        if feature_type == SensorIrradiance:
-            feature = SensorIrradiance(
-                project=self,
-                name=name,
-                description=description,
-                metadata=metadata,
-            )
-        elif feature_type == SensorRadiance:
-            feature = SensorRadiance(
-                project=self,
-                name=name,
-                description=description,
-                metadata=metadata,
-            )
-        elif feature_type == SensorCamera:
-            feature = SensorCamera(
-                project=self,
-                name=name,
-                description=description,
-                metadata=metadata,
-            )
-        elif feature_type == Sensor3DIrradiance:
-            feature = Sensor3DIrradiance(
-                project=self,
-                name=name,
-                description=description,
-                metadata=metadata,
-            )
-        else:
-            msg = "Requested feature {} does not exist in supported list {}".format(
-                feature_type, [SensorIrradiance, SensorRadiance, SensorCamera, Sensor3DIrradiance]
-            )
-            raise TypeError(msg)
+        match feature_type:
+            case SensorIrradiance():
+                feature = SensorIrradiance(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                )
+            case SensorRadiance():
+                feature = SensorRadiance(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                )
+            case SensorCamera():
+                feature = SensorCamera(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                )
+            case Sensor3DIrradiance():
+                feature = Sensor3DIrradiance(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                )
+            case _:
+                msg = "Requested feature {} does not exist in supported list {}".format(
+                    feature_type,
+                    [SensorIrradiance, SensorRadiance, SensorCamera, Sensor3DIrradiance],
+                )
+                raise TypeError(msg)
         self._features.append(feature)
         return feature
 
