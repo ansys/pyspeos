@@ -264,37 +264,38 @@ class Project:
             )
             raise ValueError(msg)
         feature = None
-        if feature_type == SimulationDirect:
-            feature = SimulationDirect(
-                project=self,
-                name=name,
-                description=description,
-                metadata=metadata,
-            )
-        elif feature_type == SimulationInverse:
-            feature = SimulationInverse(
-                project=self,
-                name=name,
-                description=description,
-                metadata=metadata,
-            )
-        elif feature_type == SimulationInteractive:
-            feature = SimulationInteractive(
-                project=self,
-                name=name,
-                description=description,
-                metadata=metadata,
-            )
-        else:
-            msg = "Requested feature {} does not exist in supported list {}".format(
-                feature_type,
-                [
-                    SimulationDirect,
-                    SimulationInverse,
-                    SimulationInteractive,
-                ],
-            )
-            raise TypeError(msg)
+        match feature_type:
+            case SimulationDirect():
+                feature = SimulationDirect(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                )
+            case SimulationInverse():
+                feature = SimulationInverse(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                )
+            case SimulationInteractive():
+                feature = SimulationInteractive(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                )
+            case _:
+                msg = "Requested feature {} does not exist in supported list {}".format(
+                    feature_type,
+                    [
+                        SimulationDirect,
+                        SimulationInverse,
+                        SimulationInteractive,
+                    ],
+                )
+                raise TypeError(msg)
         self._features.append(feature)
         return feature
 
