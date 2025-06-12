@@ -3325,9 +3325,23 @@ class Sensor3DIrradiance(BaseSensor):
 
             if default_values:
                 # Default values
-                self.set_reflection().set_transmission().set_absorption()
+                self.reflection = True
+                self.transmission = True
+                self.absorption = True
 
-        def set_reflection(self, value: bool = True) -> Sensor3DIrradiance.Measures:
+        @property
+        def reflection(self) -> bool:
+            """Get reflection settings.
+
+            Returns
+            -------
+            bool
+                True when reflection settings were set, False otherwise.
+            """
+            return self._illuminance_type.reflection
+
+        @reflection.setter
+        def reflection(self, value: bool) -> None:
             """Set reflection.
 
             Parameters
@@ -3342,9 +3356,20 @@ class Sensor3DIrradiance(BaseSensor):
 
             """
             self._illuminance_type.reflection = value
-            return self
 
-        def set_transmission(self, value: bool = True):
+        @property
+        def transmission(self) -> bool:
+            """Get transmission settings.
+
+            Returns
+            -------
+            bool
+                True when transmission settings were set, False otherwise.
+            """
+            return self._illuminance_type.transmission
+
+        @transmission.setter
+        def transmission(self, value: bool) -> None:
             """Set transmission.
 
             Parameters
@@ -3359,9 +3384,20 @@ class Sensor3DIrradiance(BaseSensor):
 
             """
             self._illuminance_type.transmission = value
-            return self
 
-        def set_absorption(self, value: bool = True):
+        @property
+        def absorption(self) -> bool:
+            """Get absorption settings.
+
+            Returns
+            -------
+            bool
+                True when absorption settings were set, False otherwise.
+            """
+            return self._illuminance_type.absorption
+
+        @absorption.setter
+        def absorption(self, value: bool) -> None:
             """Set absorption.
 
             Parameters
@@ -3376,7 +3412,6 @@ class Sensor3DIrradiance(BaseSensor):
 
             """
             self._illuminance_type.absorption = value
-            return self
 
     class Colorimetric:
         """Class computing the color results.
