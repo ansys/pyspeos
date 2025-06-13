@@ -26,7 +26,7 @@ from pathlib import Path
 
 from ansys.speos.core import Body, Face, GeoRef, Part, Project, Speos
 from ansys.speos.core.opt_prop import OptProp
-from ansys.speos.core.sensor import SensorIrradiance, SensorRadiance
+from ansys.speos.core.sensor import Sensor3DIrradiance, SensorIrradiance, SensorRadiance
 from ansys.speos.core.simulation import SimulationDirect
 from ansys.speos.core.source import SourceLuminaire, SourceRayFile, SourceSurface
 from tests.conftest import test_path
@@ -515,3 +515,15 @@ def test_preview_visual_data(speos: Speos):
         path=str(Path(test_path) / "error_data.speos" / "error_data.speos"),
     )
     p4.preview()
+
+    # preview 3d irradiance sensor
+    # test creating 3d irradiance sensor
+    p5 = Project(speos=speos, path=str(Path(test_path) / "Prism.speos" / "Prism.speos"))
+    ssr_3d = p5.create_sensor(name="Sensor3D", feature_type=Sensor3DIrradiance)
+    body = p5.find(name="PrismBody", name_regex=True, feature_type=Body)[0]
+    ssr_3d.set_geometries([body.geo_path])
+    ssr_3d.commit()
+    p5.preview()
+    # test loading 3d irradiance sensor
+    p6 = Project(speos=speos, path=str(Path(test_path) / "Prism.speos" / "Prism_3D.speos"))
+    p6.preview()

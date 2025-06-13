@@ -34,6 +34,7 @@ import numpy as np
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
 from ansys.speos.core.generic.general_methods import graphics_required
+from ansys.speos.core.generic.visualization_methods import local2absolute
 from ansys.speos.core.kernel.body import BodyLink
 from ansys.speos.core.kernel.face import FaceLink
 from ansys.speos.core.kernel.part import ProtoPart
@@ -42,6 +43,7 @@ import ansys.speos.core.opt_prop as opt_prop
 import ansys.speos.core.part as part
 import ansys.speos.core.proto_message_utils as proto_message_utils
 from ansys.speos.core.sensor import (
+    Sensor3DIrradiance,
     SensorCamera,
     SensorIrradiance,
     SensorRadiance,
@@ -190,32 +192,33 @@ class Project:
             )
             raise ValueError(msg)
         feature = None
-        if feature_type == SourceSurface:
-            feature = SourceSurface(
-                project=self,
-                name=name,
-                description=description,
-                metadata=metadata,
-            )
-        elif feature_type == SourceRayFile:
-            feature = SourceRayFile(
-                project=self,
-                name=name,
-                description=description,
-                metadata=metadata,
-            )
-        elif feature_type == SourceLuminaire:
-            feature = SourceLuminaire(
-                project=self,
-                name=name,
-                description=description,
-                metadata=metadata,
-            )
-        else:
-            msg = "Requested feature {} does not exist in supported list {}".format(
-                feature_type, [SourceSurface, SourceLuminaire, SourceRayFile]
-            )
-            raise TypeError(msg)
+        match feature_type.__name__:
+            case "SourceSurface":
+                feature = SourceSurface(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                )
+            case "SourceRayFile":
+                feature = SourceRayFile(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                )
+            case "SourceLuminaire":
+                feature = SourceLuminaire(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                )
+            case _:
+                msg = "Requested feature {} does not exist in supported list {}".format(
+                    feature_type, [SourceSurface, SourceLuminaire, SourceRayFile]
+                )
+                raise TypeError(msg)
         self._features.append(feature)
         return feature
 
@@ -262,37 +265,38 @@ class Project:
             )
             raise ValueError(msg)
         feature = None
-        if feature_type == SimulationDirect:
-            feature = SimulationDirect(
-                project=self,
-                name=name,
-                description=description,
-                metadata=metadata,
-            )
-        elif feature_type == SimulationInverse:
-            feature = SimulationInverse(
-                project=self,
-                name=name,
-                description=description,
-                metadata=metadata,
-            )
-        elif feature_type == SimulationInteractive:
-            feature = SimulationInteractive(
-                project=self,
-                name=name,
-                description=description,
-                metadata=metadata,
-            )
-        else:
-            msg = "Requested feature {} does not exist in supported list {}".format(
-                feature_type,
-                [
-                    SimulationDirect,
-                    SimulationInverse,
-                    SimulationInteractive,
-                ],
-            )
-            raise TypeError(msg)
+        match feature_type.__name__:
+            case "SimulationDirect":
+                feature = SimulationDirect(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                )
+            case "SimulationInverse":
+                feature = SimulationInverse(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                )
+            case "SimulationInteractive":
+                feature = SimulationInteractive(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                )
+            case _:
+                msg = "Requested feature {} does not exist in supported list {}".format(
+                    feature_type,
+                    [
+                        SimulationDirect,
+                        SimulationInverse,
+                        SimulationInteractive,
+                    ],
+                )
+                raise TypeError(msg)
         self._features.append(feature)
         return feature
 
@@ -302,7 +306,7 @@ class Project:
         description: str = "",
         feature_type: type = SensorIrradiance,
         metadata: Optional[Mapping[str, str]] = None,
-    ) -> Union[SensorCamera, SensorRadiance, SensorIrradiance]:
+    ) -> Union[SensorCamera, SensorRadiance, SensorIrradiance, Sensor3DIrradiance]:
         """Create a new Sensor feature.
 
         Parameters
@@ -317,7 +321,8 @@ class Project:
             By default, ``ansys.speos.core.sensor.SensorIrradiance``.
             Allowed types: Union[ansys.speos.core.sensor.SensorCamera,\
             ansys.speos.core.sensor.SensorRadiance, \
-            ansys.speos.core.sensor.SensorIrradiance].
+            ansys.speos.core.sensor.SensorIrradiance, \
+            ansys.speos.core.sensor.Sensor3DIrradiance].
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
@@ -325,7 +330,8 @@ class Project:
         Returns
         -------
         Union[ansys.speos.core.sensor.SensorCamera,\
-        ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance]
+        ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance, \
+        ansys.speos.core.sensor.Sensor3DIrradiance]
             Sensor class instance.
         """
         if metadata is None:
@@ -338,32 +344,41 @@ class Project:
             )
             raise ValueError(msg)
         feature = None
-        if feature_type == SensorIrradiance:
-            feature = SensorIrradiance(
-                project=self,
-                name=name,
-                description=description,
-                metadata=metadata,
-            )
-        elif feature_type == SensorRadiance:
-            feature = SensorRadiance(
-                project=self,
-                name=name,
-                description=description,
-                metadata=metadata,
-            )
-        elif feature_type == SensorCamera:
-            feature = SensorCamera(
-                project=self,
-                name=name,
-                description=description,
-                metadata=metadata,
-            )
-        else:
-            msg = "Requested feature {} does not exist in supported list {}".format(
-                feature_type, [SensorIrradiance, SensorRadiance, SensorCamera]
-            )
-            raise TypeError(msg)
+        match feature_type.__name__:
+            case "SensorIrradiance":
+                feature = SensorIrradiance(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                )
+            case "SensorRadiance":
+                feature = SensorRadiance(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                )
+            case "SensorCamera":
+                feature = SensorCamera(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                )
+            case "Sensor3DIrradiance":
+                feature = Sensor3DIrradiance(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                )
+            case _:
+                msg = "Requested feature {} does not exist in supported list {}".format(
+                    feature_type,
+                    [SensorIrradiance, SensorRadiance, SensorCamera, Sensor3DIrradiance],
+                )
+                raise TypeError(msg)
         self._features.append(feature)
         return feature
 
@@ -795,6 +810,13 @@ class Project:
                     sensor_instance=ssr_inst,
                     default_values=False,
                 )
+            elif ssr_inst.HasField("irradiance_3d_properties"):
+                ssr_feat = Sensor3DIrradiance(
+                    project=self,
+                    name=ssr_inst.name,
+                    sensor_instance=ssr_inst,
+                    default_values=False,
+                )
             self._features.append(ssr_feat)
 
         for sim_inst in scene_data.simulations:
@@ -846,26 +868,6 @@ class Project:
         """
         import pyvista as pv
 
-        def local2absolute(local_vertice: np.ndarray, coordinates) -> np.ndarray:
-            """Convert local coordinate to global coordinate.
-
-            Parameters
-            ----------
-            local_vertice: np.ndarray
-                numpy array includes x, y, z info.
-
-            Returns
-            -------
-            np.ndarray
-                numpy array includes x, y, z info
-
-            """
-            global_origin = np.array(coordinates[:3])
-            global_x = np.array(coordinates[3:6]) * local_vertice[0]
-            global_y = np.array(coordinates[6:9]) * local_vertice[1]
-            global_z = np.array(coordinates[9:]) * local_vertice[2]
-            return global_origin + global_x + global_y + global_z
-
         part_coordinate = [
             0.0,
             0.0,
@@ -911,6 +913,7 @@ class Project:
             SensorCamera,
             SensorRadiance,
             SensorIrradiance,
+            Sensor3DIrradiance,
             SourceLuminaire,
             SourceRayFile,
             SourceLuminaire,
@@ -924,7 +927,7 @@ class Project:
         plotter: Plotter
             ansys.tools.visualization_interface.Plotter
         speos_feature: Union[SensorCamera, SensorRadiance, SensorIrradiance,
-        SourceLuminaire, SourceRayFile, SourceLuminaire]
+        Sensor3DIrradiance, SourceLuminaire, SourceRayFile, SourceLuminaire]
             speos feature whose visual data will be added.
         scene_seize: float
             seize of max scene bounds
@@ -940,6 +943,7 @@ class Project:
                 SensorIrradiance,
                 SensorRadiance,
                 SensorCamera,
+                Sensor3DIrradiance,
                 SourceLuminaire,
                 SourceRayFile,
                 SourceSurface,

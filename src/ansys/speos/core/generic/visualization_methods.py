@@ -371,3 +371,52 @@ class _VisualData:
         None
         """
         self._data.append(line)
+
+    def add_data_mesh(self, vertices: np.ndarray, facets: np.ndarray) -> None:
+        """
+        Add mesh data to Visualization data.
+
+        Parameters
+        ----------
+        vertices: numpy.ndarray
+            The vertices of the mesh.
+        facets: numpy.ndarray
+            The facets of the mesh.
+
+        Returns
+        -------
+        None
+        """
+        import pyvista as pv
+
+        if vertices.shape[1] != 3 or facets.shape[1] != 4:
+            raise ValueError(
+                "mesh vertices is expected to be composed of 3 elements each, and 4 for facets."
+            )
+        self._data = self._data.append_polydata(pv.PolyData(vertices, facets))
+
+
+def local2absolute(local_vertice: np.ndarray, coordinates) -> np.ndarray:
+    """Convert local coordinate to global coordinate.
+
+    Parameters
+    ----------
+    coordinates: list
+        local coordinate in shape [1, 9],
+        coordinates[3:6] as x-axis,
+        coordinates[3:6] as y-axis,
+        coordinates[3:6] as z-axis.
+    local_vertice: np.ndarray
+        numpy array includes x, y, z info.
+
+    Returns
+    -------
+    np.ndarray
+        numpy array includes x, y, z info
+
+    """
+    global_origin = np.array(coordinates[:3])
+    global_x = np.array(coordinates[3:6]) * local_vertice[0]
+    global_y = np.array(coordinates[6:9]) * local_vertice[1]
+    global_z = np.array(coordinates[9:]) * local_vertice[2]
+    return global_origin + global_x + global_y + global_z
