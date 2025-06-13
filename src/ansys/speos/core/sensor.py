@@ -820,7 +820,8 @@ class BaseSensor:
         ansys.speos.core.sensor.BaseSensor
             Sensor feature.
         """
-        self._visual_data.updated = False
+        if general_methods._GRAPHICS_AVAILABLE:
+            self._visual_data.updated = False
 
         # The _unique_id will help to find the correct item in the scene.sensors:
         # the list of SensorInstance

@@ -367,7 +367,8 @@ class BaseSource:
         """
         self._spectrum._commit()
         self._commit()
-        self._visual_data.updated = False
+        if general_methods._GRAPHICS_AVAILABLE:
+            self._visual_data.updated = False
         return self
 
     def reset(self) -> BaseSource:
