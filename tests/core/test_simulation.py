@@ -24,6 +24,8 @@
 
 from pathlib import Path
 
+import pytest
+
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
 from ansys.speos.core import GeoRef, Project, Speos
 from ansys.speos.core.sensor import BaseSensor, SensorIrradiance
@@ -34,6 +36,7 @@ from ansys.speos.core.simulation import (
 )
 from ansys.speos.core.source import SourceLuminaire
 from tests.conftest import test_path
+from tests.helper import does_file_exist
 
 
 def test_create_direct(speos: Speos):
@@ -747,3 +750,23 @@ def test_get_simulation(speos: Speos, capsys):
     stdout, stderr = capsys.readouterr()
     assert get_result3 is None
     assert "Used key: geometry not found in key list" in stdout
+
+
+def test_export(speos: Speos):
+    """Test export of simulation."""
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
+    )
+    sim_first = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
+    sim_second = p.create_simulation(name="Sim.2", feature_type=SimulationInverse)
+    sim_second.set_sensor_paths(["Irradiance.1:564"])
+    sim_second.set_source_paths(["Surface.1:7758"])
+    sim_second.commit()
+    sim_first.export(export_dir=str(test_path))
+    assert does_file_exist(str(Path(test_path) / (sim_first.get(key="name") + ".speos")))
+    with pytest.raises(
+        ValueError,
+        match="Selected simulation is not the first simulation feature, cannot be exported.",
+    ):
+        sim_second.export(export_dir=str(test_path))
