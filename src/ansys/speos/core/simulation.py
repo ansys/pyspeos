@@ -25,12 +25,14 @@
 from __future__ import annotations
 
 from difflib import SequenceMatcher
+from pathlib import Path
 import time
 from typing import List, Mapping, Optional
 import uuid
 import warnings
 
 from ansys.api.speos.job.v2 import job_pb2
+from ansys.api.speos.scene.v2 import scene_pb2 as messages
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
 from ansys.speos.core.generic.general_methods import min_speos_version
 
@@ -225,6 +227,40 @@ class BaseSimulation:
     #         geo_paths = [gr.to_native_link() for gr in geometries]
     #         self._simulation_instance.geometries.geo_paths[:] = geo_paths
     #     return self
+
+    def export(self, export_dir: str) -> None:
+        """Export simulation.
+
+        Parameters
+        ----------
+        export_dir: str
+            directory to export simulation to.
+
+        Returns
+        -------
+        None
+
+        """
+        simulation_features = [
+            _
+            for _ in self._project._features
+            if (isinstance(_, SimulationDirect) or isinstance(_, SimulationInverse))
+        ]
+        if len(simulation_features) > 1:
+            warnings.warn(
+                "only the first simulation of project is "
+                "exported and stop condition is not exported",
+                stacklevel=2,
+            )
+        export_path = Path(export_dir)
+        if not export_path.exists():
+            export_path.mkdir(parents=True, exist_ok=True)
+        self._project.scene_link.stub._actions_stub.SaveFile(
+            messages.SaveFile_Request(
+                guid=self._project.scene_link.key,
+                file_uri=str(export_path / (self._name + ".speos")),
+            )
+        )
 
     def compute_CPU(self, threads_number: Optional[int] = None) -> List[job_pb2.Result]:
         """Compute the simulation on CPU.
