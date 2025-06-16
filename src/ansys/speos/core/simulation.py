@@ -263,9 +263,8 @@ class BaseSimulation:
                 )
             )
         else:
-            warnings.warn(
-                "Selected simulation is not the first simulation feature, cannot be exported.",
-                stacklevel=2,
+            raise ValueError(
+                "Selected simulation is not the first simulation feature, cannot be exported."
             )
 
     def compute_CPU(self, threads_number: Optional[int] = None) -> List[job_pb2.Result]:
