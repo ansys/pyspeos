@@ -248,7 +248,7 @@ class BaseSimulation:
         ]
         if len(simulation_features) > 1:
             warnings.warn(
-                "only the first simulation of project is "
+                "only the first inverse/direct simulation is "
                 "exported and stop condition is not exported",
                 stacklevel=2,
             )
