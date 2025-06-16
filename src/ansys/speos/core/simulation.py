@@ -252,15 +252,21 @@ class BaseSimulation:
                 "exported and stop condition is not exported",
                 stacklevel=2,
             )
-        export_path = Path(export_dir)
-        if not export_path.exists():
-            export_path.mkdir(parents=True, exist_ok=True)
-        self._project.scene_link.stub._actions_stub.SaveFile(
-            messages.SaveFile_Request(
-                guid=self._project.scene_link.key,
-                file_uri=str(export_path / (self._name + ".speos")),
+        if self is simulation_features[0]:
+            export_path = Path(export_dir)
+            if not export_path.exists():
+                export_path.mkdir(parents=True, exist_ok=True)
+            self._project.scene_link.stub._actions_stub.SaveFile(
+                messages.SaveFile_Request(
+                    guid=self._project.scene_link.key,
+                    file_uri=str(export_path / (self._name + ".speos")),
+                )
             )
-        )
+        else:
+            warnings.warn(
+                "Selected simulation is not the first simulation feature, cannot be exported.",
+                stacklevel=2,
+            )
 
     def compute_CPU(self, threads_number: Optional[int] = None) -> List[job_pb2.Result]:
         """Compute the simulation on CPU.
