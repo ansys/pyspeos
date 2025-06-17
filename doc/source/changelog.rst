@@ -9,6 +9,52 @@ This document contains the release notes for the PySpeos project.
 
 .. towncrier release notes start
 
+`0.5.2 <https://github.com/ansys/pyspeos/releases/tag/v0.5.2>`_ - June 17, 2025
+===============================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Spectralbsdf
+          - `#614 <https://github.com/ansys/pyspeos/pull/614>`_
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Adjust missing examples
+          - `#612 <https://github.com/ansys/pyspeos/pull/612>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Only reset the _visual_data when graphics_available is true
+          - `#621 <https://github.com/ansys/pyspeos/pull/621>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump ansys/actions into v10.0.3
+          - `#613 <https://github.com/ansys/pyspeos/pull/613>`_
+
+
 `0.5.1 <https://github.com/ansys/pyspeos/releases/tag/v0.5.1>`_ - May 28, 2025
 ==============================================================================
 
