@@ -254,8 +254,6 @@ class BaseSimulation:
             )
         if self is simulation_features[0]:
             export_path = Path(export_dir)
-            if not export_path.exists():
-                export_path.mkdir(parents=True, exist_ok=True)
             self._project.scene_link.stub._actions_stub.SaveFile(
                 messages.SaveFile_Request(
                     guid=self._project.scene_link.key,
