@@ -130,7 +130,11 @@ def remove_file(path):
     """
     if config.get("SpeosServerOnDocker"):
         subprocess.call(
-            "docker exec " + config.get("SpeosContainerName") + ' rm -rf "' + path + '"',
+            "docker exec "
+            + config.get("SpeosContainerName")
+            + ' rm -rf "'
+            + Path(path).as_posix()
+            + '"',
             shell=True,
         )
     else:

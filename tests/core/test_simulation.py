@@ -36,7 +36,7 @@ from ansys.speos.core.simulation import (
 )
 from ansys.speos.core.source import SourceLuminaire
 from tests.conftest import test_path
-from tests.helper import does_file_exist
+from tests.helper import does_file_exist, remove_file
 
 
 def test_create_direct(speos: Speos):
@@ -777,3 +777,5 @@ def test_export(speos: Speos):
         match="Selected simulation is not the first simulation feature, cannot be exported.",
     ):
         sim_second.export(export_dir=str(Path(test_path) / "export_test"))
+
+    remove_file(str(Path(test_path) / "export_test"))
