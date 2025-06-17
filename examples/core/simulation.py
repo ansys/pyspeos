@@ -13,7 +13,7 @@
 # +
 from pathlib import Path
 
-from ansys.speos.core import Project, Speos
+from ansys.speos.core import Project, Speos, launcher
 from ansys.speos.core.simulation import SimulationInteractive, SimulationInverse
 
 # -
@@ -46,9 +46,13 @@ else:
 # ### Connect to the RPC Server
 # This Python client connects to a server where the Speos engine
 # is running as a service. In this example, the server and
-# client are the same machine.
+# client are the same machine. The launch_local_speos_rpc_method can
+# be used to start a local instance of the service..
 
-speos = Speos(host=HOSTNAME, port=GRPC_PORT)
+if USE_DOCKER:
+    speos = Speos(host=HOSTNAME, port=GRPC_PORT)
+else:
+    speos = launcher.launch_local_speos_rpc_server(port=GRPC_PORT)
 
 # ### Create a new project
 #
@@ -178,3 +182,5 @@ print(simulation3)
 simulation4 = p.create_simulation(name="Simulation.4", feature_type=SimulationInteractive)
 simulation4.set_source_paths(source_paths=[SOURCE_NAME]).commit()
 print(simulation4)
+
+speos.close()

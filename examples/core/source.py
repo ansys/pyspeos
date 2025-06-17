@@ -11,7 +11,7 @@
 # +
 from pathlib import Path
 
-from ansys.speos.core import GeoRef, Project, Speos
+from ansys.speos.core import GeoRef, Project, Speos, launcher
 from ansys.speos.core.source import (
     SourceLuminaire,
     SourceRayFile,
@@ -70,9 +70,13 @@ else:
 # ### Connect to the RPC Server
 # This Python client connects to a server where the Speos engine
 # is running as a service. In this example, the server and
-# client are the same machine.
+# client are the same machine. The launch_local_speos_rpc_method can
+# be used to start a local instance of the service.
 
-speos = Speos(host=HOSTNAME, port=GRPC_PORT)
+if USE_DOCKER:
+    speos = Speos(host=HOSTNAME, port=GRPC_PORT)
+else:
+    speos = launcher.launch_local_speos_rpc_server(port=GRPC_PORT)
 
 # ### Create a new project
 #
@@ -227,3 +231,5 @@ print(source4)
 # +
 for item in speos.client.intensity_templates().list() + speos.client.spectrums().list():
     item.delete()
+
+speos.close()
