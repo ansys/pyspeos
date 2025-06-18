@@ -1012,6 +1012,18 @@ class Project:
 
         from ansys.tools.visualization_interface import Plotter
 
+        def find_all_subparts(target_part):
+            subparts = []
+            current_subparts_found = target_part.find(
+                name=".*", name_regex=True, feature_type=part.Part.SubPart
+            )
+            if not current_subparts_found:
+                return subparts
+            for subpart in current_subparts_found:
+                subparts.append(subpart)
+                subparts.extend(find_all_subparts(subpart))
+            return subparts
+
         if viz_args is None:
             viz_args = {}
         viz_args["show_edges"] = True
@@ -1021,20 +1033,27 @@ class Project:
         if self.scene_link.get().part_guid != "":
             _preview_mesh = pv.PolyData()
             # Retrieve root part
-            root_part_data = self.client[self.scene_link.get().part_guid].get()
-
-            # Loop on all sub parts to retrieve their mesh
-            if len(root_part_data.parts) != 0:
-                for part_idx, part_item in enumerate(root_part_data.parts):
-                    part_item_data = self.client[part_item.part_guid].get()
-                    poly_data = self.__extract_part_mesh_info(
-                        part_data=part_item_data,
-                        part_coordinate_info=part_item.axis_system,
-                    )
-                    if poly_data is not None:
-                        _preview_mesh = _preview_mesh.append_polydata(poly_data)
+            root_part = self.find(name="", feature_type=part.Part)[0]
+            subparts = find_all_subparts(root_part)  # all subpart
+            subparts = [
+                subpart
+                for subpart in subparts
+                if any(
+                    isinstance(_geo_feature, body.Body) for _geo_feature in subpart._geom_features
+                )
+            ]  # filter subpart which contains ansys.speos.core.body.Body
+            for subpart in subparts:
+                subpart_axis = subpart._part_instance.axis_system
+                subpart_guid = subpart._part_instance.part_guid
+                part_mesh_data = self.__extract_part_mesh_info(
+                    part_data=self.client[subpart_guid].get(),
+                    part_coordinate_info=subpart_axis,
+                )
+                if part_mesh_data is not None:
+                    _preview_mesh = _preview_mesh.append_polydata(part_mesh_data)
 
             # Add also the mesh of bodies directly contained in root part
+            root_part_data = self.client[self.scene_link.get().part_guid].get()
             poly_data = self.__extract_part_mesh_info(part_data=root_part_data)
             if poly_data is not None:
                 _preview_mesh = _preview_mesh.append_polydata(poly_data)
