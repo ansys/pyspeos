@@ -530,8 +530,8 @@ def test_preview_visual_data(speos: Speos):
 
     # preview cad meshing
     # test reading mesh which is only inside sub-subpart.
-    p3 = Project(speos=speos)
-    root_part = p3.create_root_part().commit()
+    p7 = Project(speos=speos)
+    root_part = p7.create_root_part().commit()
     child_part1 = (
         root_part.create_sub_part(name="SubPart.1")
         .set_axis_system([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
@@ -546,4 +546,4 @@ def test_preview_visual_data(speos: Speos):
         [0, 1, 2, 0, 2, 2, 1, 2, 2]
     ).set_facets([0, 1, 2]).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
     child_part2.commit()
-    p3.preview()
+    p7.preview()
