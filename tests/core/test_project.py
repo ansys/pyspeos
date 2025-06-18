@@ -527,3 +527,23 @@ def test_preview_visual_data(speos: Speos):
     # test loading 3d irradiance sensor
     p6 = Project(speos=speos, path=str(Path(test_path) / "Prism.speos" / "Prism_3D.speos"))
     p6.preview()
+
+    # preview cad meshing
+    # test reading mesh which is only inside sub-subpart.
+    p7 = Project(speos=speos)
+    root_part = p7.create_root_part().commit()
+    child_part1 = (
+        root_part.create_sub_part(name="SubPart.1")
+        .set_axis_system([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+        .commit()
+    )
+    child_part2 = (
+        child_part1.create_sub_part(name="SubPart.2")
+        .set_axis_system([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+        .commit()
+    )
+    child_part2.create_body(name="Body.1").create_face(name="Face.1").set_vertices(
+        [0, 1, 2, 0, 2, 2, 1, 2, 2]
+    ).set_facets([0, 1, 2]).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    child_part2.commit()
+    p7.preview()
