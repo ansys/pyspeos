@@ -249,7 +249,7 @@ class BaseSimulation:
         if len(simulation_features) > 1:
             warnings.warn(
                 "Limitation : only the first inverse/direct simulation is "
-                "exported and stop condition is not exported",
+                "exported and stop conditions are not exported.",
                 stacklevel=2,
             )
         if self is simulation_features[0]:
