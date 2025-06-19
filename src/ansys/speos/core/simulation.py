@@ -262,7 +262,7 @@ class BaseSimulation:
             )
         else:
             raise ValueError(
-                "Selected simulation is not the first simulation feature, cannot be exported."
+                "Selected simulation is not the first simulation feature, it can't be exported."
             )
 
     def compute_CPU(self, threads_number: Optional[int] = None) -> List[job_pb2.Result]:
