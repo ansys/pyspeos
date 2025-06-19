@@ -25,6 +25,7 @@
 from pathlib import Path
 
 from ansys.speos.core import OptProp, Part, Project, Speos
+from ansys.speos.core.sensor import SensorIrradiance
 from ansys.speos.core.workflow.combine_speos import (
     SpeosFileInstance,
     combine_speos,
@@ -107,6 +108,9 @@ def test_combine_speos(speos: Speos):
     assert isinstance(mat_rc1, OptProp)
     assert len(mat_rc1._material_instance.geometries.geo_paths) > 0
     assert mat_rc1._material_instance.geometries.geo_paths[0].startswith("RedCar/")
+
+    ssr = p.find(name=".*", name_regex=True, feature_type=SensorIrradiance)
+    assert len(ssr) == 0
 
 
 def test_modify_parts_after_combine(speos: Speos):
@@ -259,3 +263,6 @@ def test_insert_speos(speos: Speos):
     assert isinstance(mat_rc1, OptProp)
     assert len(mat_rc1._material_instance.geometries.geo_paths) > 0
     assert mat_rc1._material_instance.geometries.geo_paths[0].startswith("RedCar/")
+
+    ssr = p.find(name=".*", name_regex=True, feature_type=SensorIrradiance)
+    assert len(ssr) == 1
