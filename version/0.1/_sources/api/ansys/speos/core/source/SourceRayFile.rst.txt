@@ -1,0 +1,349 @@
+
+
+
+
+
+
+:class:`SourceRayFile`
+======================
+
+.. py:class:: ansys.speos.core.source.SourceRayFile(project, name, description = '', metadata = None, source_instance = None, default_values = True)
+
+   Bases: :py:obj:`BaseSource`
+
+
+   
+   RayFile Source.
+   By default, flux and spectrum from ray file are selected.
+
+
+   :Parameters:
+
+       **project** : :obj:`ansys.speos.core.project.Project`
+           Project that will own the feature.
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **description** : :class:`python:str`
+           Description of the feature.
+           By default, ``""``.
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]]
+           Metadata of the feature.
+           By default, ``{}``.
+
+       **default_values** : :ref:`bool <python:bltin-boolean-values>`
+           Uses default values when True.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SourceRayFile
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_ray_file_uri`
+            - Set ray file.
+          * - :py:attr:`~set_flux_from_ray_file`
+            - Take flux from ray file provided.
+          * - :py:attr:`~set_flux_luminous`
+            - Set luminous flux.
+          * - :py:attr:`~set_flux_radiant`
+            - Set radiant flux.
+          * - :py:attr:`~set_spectrum_from_ray_file`
+            - Take spectrum from ray file provided.
+          * - :py:attr:`~set_spectrum`
+            - Set spectrum
+          * - :py:attr:`~set_axis_system`
+            - Set position of the source.
+          * - :py:attr:`~set_exit_geometries`
+            - Set exit geometries.
+
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.source import SourceRayFile
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_ray_file_uri(uri)
+
+   
+   Set ray file.
+
+
+   :Parameters:
+
+       **uri** : :class:`python:str`
+           Rayfile format file uri (.ray or .tm25ray files expected).
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceRayFile`
+           RayFile source.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_flux_from_ray_file()
+
+   
+   Take flux from ray file provided.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceRayFile`
+           RayFile source.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_flux_luminous(value = 683)
+
+   
+   Set luminous flux.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Luminous flux in lumens.
+           By default, ``683.0``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceRayFile`
+           RayFile source.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_flux_radiant(value = 1)
+
+   
+   Set radiant flux.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Radiant flux in watts.
+           By default, ``1.0``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceRayFile`
+           RayFile source.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_spectrum_from_ray_file()
+
+   
+   Take spectrum from ray file provided.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceRayFile`
+           RayFile source.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_spectrum()
+
+   
+   Set spectrum
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.spectrum.Spectrum`
+           Spectrum.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_axis_system(axis_system = None)
+
+   
+   Set position of the source.
+
+
+   :Parameters:
+
+       **axis_system** : :obj:`Optional`\[:obj:`List`\[:class:`python:float`]]
+           Position of the source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+           By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceRayFile`
+           RayFile Source.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_exit_geometries(exit_geometries = None)
+
+   
+   Set exit geometries.
+
+
+   :Parameters:
+
+       **exit_geometries** : :obj:`List`\[:obj:`ansys.speos.core.geo_ref.GeoRef`]
+           Exit Geometries that will use this rayfile source.
+           By default, ``[]``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.source.SourceRayFile`
+           RayFile Source.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
