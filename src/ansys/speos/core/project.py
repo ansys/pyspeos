@@ -762,6 +762,8 @@ class Project:
                 op_feature._fill(mat_inst=mat_inst)
 
         for src_inst in scene_data.sources:
+            if src_inst.name in [_._name for _ in self._features]:
+                continue
             src_feat = None
             if src_inst.HasField("rayfile_properties"):
                 src_feat = SourceRayFile(
@@ -788,6 +790,8 @@ class Project:
                 self._features.append(src_feat)
 
         for ssr_inst in scene_data.sensors:
+            if ssr_inst.name in [_._name for _ in self._features]:
+                continue
             ssr_feat = None
             if ssr_inst.HasField("irradiance_properties"):
                 ssr_feat = SensorIrradiance(
@@ -820,6 +824,8 @@ class Project:
             self._features.append(ssr_feat)
 
         for sim_inst in scene_data.simulations:
+            if sim_inst.name in [_._name for _ in self._features]:
+                continue
             sim_feat = None
             simulation_template_link = self.client[sim_inst.simulation_guid].get()
             if simulation_template_link.HasField("direct_mc_simulation_template"):
