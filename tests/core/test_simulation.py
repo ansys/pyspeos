@@ -774,7 +774,7 @@ def test_export(speos: Speos):
     )
     with pytest.raises(
         ValueError,
-        match="Selected simulation is not the first simulation feature, cannot be exported.",
+        match="Selected simulation is not the first simulation feature, it can't be exported.",
     ):
         sim_second.export(export_dir=str(Path(test_path) / "export_test"))
 
