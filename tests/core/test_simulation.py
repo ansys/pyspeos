@@ -776,6 +776,6 @@ def test_export(speos: Speos):
         ValueError,
         match="Selected simulation is not the first simulation feature, it can't be exported.",
     ):
-        sim_second.export(export_dir=str(Path(test_path) / "export_test"))
+        sim_second.export(export_path=str(Path(test_path) / "export_test"))
 
     remove_file(str(Path(test_path) / "export_test"))
