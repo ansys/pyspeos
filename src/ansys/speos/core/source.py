@@ -1601,7 +1601,7 @@ class BaseSourceAmbient(BaseSource):
                 list describing the direction of the manual sun.
 
             """
-            return self._sun.direction
+            return self._sun.sun_direction
 
         @direction.setter
         def direction(self, direction: List[float]) -> None:
