@@ -94,7 +94,7 @@ class Project:
         Link object for the scene in database.
     """
 
-    def __init__(self, speos: Speos, path: Optional[Union[str, Path]] = None):
+    def __init__(self, speos: Speos, path: Optional[Union[str, Path]] = ""):
         self.client = speos.client
         """Speos instance client."""
         self.scene_link = speos.client.scenes().create()
