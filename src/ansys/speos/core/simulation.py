@@ -27,7 +27,7 @@ from __future__ import annotations
 from difflib import SequenceMatcher
 from pathlib import Path
 import time
-from typing import List, Mapping, Optional
+from typing import List, Mapping, Optional, Union
 import uuid
 import warnings
 
@@ -228,12 +228,12 @@ class BaseSimulation:
     #         self._simulation_instance.geometries.geo_paths[:] = geo_paths
     #     return self
 
-    def export(self, export_dir: str) -> None:
+    def export(self, export_path: Union[str, Path]) -> None:
         """Export simulation.
 
         Parameters
         ----------
-        export_dir: str
+        export_path: Union[str, Path]
             directory to export simulation to.
 
         Returns
@@ -253,7 +253,7 @@ class BaseSimulation:
                 stacklevel=2,
             )
         if self is simulation_features[0]:
-            export_path = Path(export_dir)
+            export_path = Path(export_path)
             self._project.scene_link.stub._actions_stub.SaveFile(
                 messages.SaveFile_Request(
                     guid=self._project.scene_link.key,

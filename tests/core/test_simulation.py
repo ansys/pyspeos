@@ -763,7 +763,7 @@ def test_export(speos: Speos):
     sim_second.set_sensor_paths(["Irradiance.1:564"])
     sim_second.set_source_paths(["Surface.1:7758"])
     sim_second.commit()
-    sim_first.export(export_dir=str(Path(test_path) / "export_test"))
+    sim_first.export(export_path=Path(test_path) / "export_test")
     assert does_file_exist(
         str(
             Path(test_path)
