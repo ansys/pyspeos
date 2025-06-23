@@ -1330,12 +1330,28 @@ class BaseSourceAmbient(BaseSource):
 
             if default_values:
                 now = datetime.datetime.now()
-                self.set_year(now.year).set_month(now.month).set_day(now.day).set_hour(
-                    now.hour
-                ).set_minute(now.minute)
-                self.set_time_zone().set_longitude().set_latitude()
+                self.year = now.year
+                self.month = now.month
+                self.day = now.day
+                self.hour = now.hour
+                self.minute = now.minute
+                self.time_zone = "CET"
+                self.longitude = 0.0
+                self.latitude = 0.0
 
-        def set_year(self, year: int) -> BaseSourceAmbient.AutomaticSun:
+        @property
+        def year(self) -> int:
+            """Get year info of the automatic sun.
+
+            Returns
+            -------
+            int
+                year info.
+            """
+            return self._sun.year
+
+        @year.setter
+        def year(self, year: int) -> None:
             """Set year info of the automatic sun.
 
             Parameters
@@ -1345,125 +1361,199 @@ class BaseSourceAmbient(BaseSource):
 
             Returns
             -------
-            BaseSourceAmbient.AutomaticSun
+            None
             """
             self._sun.year = year
-            return self
 
-        def set_month(self, month: int) -> BaseSourceAmbient.AutomaticSun:
+        @property
+        def month(self) -> int:
+            """Get month info of the automatic sun.
+
+            Returns
+            -------
+            int
+                month information.
+
             """
-            Set month info of the automatic sun.
+            return self._sun.month
+
+        @month.setter
+        def month(self, month: int) -> None:
+            """Set month info of the automatic sun.
 
             Parameters
             ----------
             month: int
-            month information.
+                month information.
 
             Returns
             -------
-            BaseSourceAmbient.AutomaticSun
+            None
 
             """
             self._sun.month = month
-            return self
 
-        def set_day(self, day: int) -> BaseSourceAmbient.AutomaticSun:
+        @property
+        def day(self) -> int:
+            """Get day info of the automatic sun.
+
+            Returns
+            -------
+            int
+                day information.
             """
-            Set day info of the automatic sun.
+            return self._sun.day
+
+        @day.setter
+        def day(self, day: int) -> None:
+            """Set day info of the automatic sun.
 
             Parameters
             ----------
             day: int
-            day information.
+                day information.
 
             Returns
             -------
-            BaseSourceAmbient.AutomaticSun
+            None
             """
             self._sun.day = day
-            return self
 
-        def set_hour(self, hour: int) -> BaseSourceAmbient.AutomaticSun:
+        @property
+        def hour(self) -> int:
+            """Get hour info of the automatic sun.
+
+            Returns
+            -------
+            int
+                hour information.
+
             """
-            Set hour info of the automatic sun.
+            return self._sun.hour
+
+        @hour.setter
+        def hour(self, hour: int) -> None:
+            """Set hour info of the automatic sun.
 
             Parameters
             ----------
             hour: int
-            hour information.
+                hour information.
 
             Returns
             -------
-            BaseSourceAmbient.AutomaticSun
+            None
 
             """
             self._sun.hour = hour
-            return self
 
-        def set_minute(self, minute: int) -> BaseSourceAmbient.AutomaticSun:
+        @property
+        def minute(self) -> int:
+            """Get minute info of the automatic sun.
+
+            Returns
+            -------
+            int
+                minute information.
+
             """
-            Set minute info of the automatic sun.
+            return self._sun.minute
+
+        @minute.setter
+        def minute(self, minute: int) -> None:
+            """Set minute info of the automatic sun.
 
             Parameters
             ----------
             minute: int
-            minute information.
+                minute information.
 
             Returns
             -------
-            BaseSourceAmbient.AutomaticSun
+            None
 
             """
             self._sun.minute = minute
-            return self
 
-        def set_longitude(self, longitude: float = 0.0) -> BaseSourceAmbient.AutomaticSun:
+        @property
+        def longitude(self) -> float:
+            """Get longitude info of the automatic sun.
+
+            Returns
+            -------
+            float
+                longitude information.
             """
-            Set longitude info of the automatic sun.
+            return self._sun.longitude
+
+        @longitude.setter
+        def longitude(self, longitude: float) -> None:
+            """Get longitude info of the automatic sun.
 
             Parameters
             ----------
             longitude: float
-            longitude information.
+                longitude information.
 
             Returns
             -------
-            BaseSourceAmbient.AutomaticSun
+            None
             """
             self._sun.longitude = longitude
-            return self
 
-        def set_latitude(self, latitude: float = 0.0) -> BaseSourceAmbient.AutomaticSun:
+        @property
+        def latitude(self) -> float:
+            """Get latitude info of the automatic sun.
+
+            Returns
+            -------
+            float
+                latitude information.
             """
-            Set latitude info of the automatic sun.
+            return self._sun.latitude
+
+        @latitude.setter
+        def latitude(self, latitude: float) -> None:
+            """Set latitude info of the automatic sun.
 
             Parameters
             ----------
             latitude: float
-            latitude information.
+                latitude information.
 
             Returns
             -------
-            BaseSourceAmbient.AutomaticSun
+            None
             """
             self._sun.latitude = latitude
-            return self
 
-        def set_time_zone(self, timezone: str = "CET") -> BaseSourceAmbient.AutomaticSun:
+        @property
+        def time_zone(self) -> str:
+            """Get time zone info of the automatic sun.
+
+            Returns
+            -------
+            str
+                time zone abbreviation.
             """
-            Set time zone info of the automatic sun.
+            return self._sun.time_zone_uri
+
+        @time_zone.setter
+        def time_zone(self, time_zone: str) -> None:
+            """Set time zone info of the automatic sun.
 
             Parameters
             ----------
             timezone: str
-            timezone abbreviation.
+                timezone abbreviation.
 
             Returns
             -------
-            BaseSourceAmbient.AutomaticSun
+            None
             """
-            self._sun.time_zone_uri = timezone
-            return self
+            if time_zone is None:
+                time_zone = "CET"
+            self._sun.time_zone_uri = time_zone
 
     class Manual:
         """Sun type Manual>.
@@ -1498,9 +1588,23 @@ class BaseSourceAmbient(BaseSource):
             self._sun = sun
 
             if default_values:
-                self.set_direction([0, 0, 1])
+                self.direction = [0, 0, 1]
+                self.reverse_sun = False
 
-        def set_direction(self, direction: List[float]) -> BaseSourceAmbient.Manual:
+        @property
+        def direction(self) -> List[float]:
+            """Get direction of the manual sun.
+
+            Returns
+            -------
+            list of float
+                list describing the direction of the manual sun.
+
+            """
+            return self._sun.direction
+
+        @direction.setter
+        def direction(self, direction: List[float]) -> None:
             """Set direction of the manual sun.
 
             Parameters
@@ -1513,10 +1617,24 @@ class BaseSourceAmbient(BaseSource):
             BaseSourceAmbient.Manual
 
             """
+            if direction is None:
+                direction = [0, 0, 1]
             self._sun.sun_direction[:] = direction
-            return self
 
-        def reverse_sun(self, value: bool = False) -> BaseSourceAmbient.Manual:
+        @property
+        def reverse_sun(self) -> bool:
+            """Get whether reverse direction of the manual sun.
+
+            Returns
+            -------
+            bool
+                True to reverse direction, False to not reverse direction
+
+            """
+            return self._sun.reverse_sun
+
+        @reverse_sun.setter
+        def reverse_sun(self, value: bool) -> None:
             """Reverse direction of the manual sun.
 
             Parameters
@@ -1526,11 +1644,12 @@ class BaseSourceAmbient(BaseSource):
 
             Returns
             -------
-            BaseSourceAmbient.Manual
+            None
 
             """
+            if value is None:
+                value = False
             self._sun.reverse_sun = value
-            return self
 
 
 class SourceAmbientNaturalLight(BaseSourceAmbient):
@@ -1581,11 +1700,26 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
 
         if default_values:
             # Default values
-            self.set_zenith_direction().set_north_direction()
-            self.set_turbidity().set_with_sky()
+            self.zenith_direction = [0, 0, 1]
+            self.north_direction = [0, 1, 0]
+            self.turbidity = 3
+            self.with_sky = True
             self.set_sun_automatic()
 
-    def set_turbidity(self, value: float = 3) -> SourceAmbientNaturalLight:
+    @property
+    def turbidity(self) -> float:
+        """Get turbidity of the natural light source.
+
+        Returns
+        -------
+        float
+            value of Turbidity the measure of the fraction of scattering.
+
+        """
+        return self._source_template.ambient.natural_light.turbidity
+
+    @turbidity.setter
+    def turbidity(self, value: float) -> None:
         """Set turbidity of the natural light source.
 
         Parameters
@@ -1595,15 +1729,29 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
 
         Returns
         -------
-        SourceAmbientNaturalLight
+        None
 
         """
+        if value is None:
+            value = 3
         if not 1.9 <= value <= 9.9:
             raise ValueError("Varies needs to be between 1.9 and 9.9")
         self._source_template.ambient.natural_light.turbidity = value
-        return self
 
-    def set_with_sky(self, value: bool = True) -> SourceAmbientNaturalLight:
+    @property
+    def with_sky(self) -> bool:
+        """Bool of whether activated using sky in the natural light source.
+
+        Returns
+        -------
+        bool
+            True as using sky, while False as using natural light without the sky.
+
+        """
+        return self._source_template.ambient.natural_light.with_sky
+
+    @with_sky.setter
+    def with_sky(self, value: bool) -> None:
         """Activate using sky in the natural light source.
 
         Parameters
@@ -1616,12 +1764,24 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
         SourceAmbientNaturalLight
 
         """
+        if value is None:
+            value = True
         self._source_template.ambient.natural_light.with_sky = value
-        return self
 
-    def set_zenith_direction(
-        self, direction: Optional[List[float]] = None
-    ) -> SourceAmbientNaturalLight:
+    @property
+    def zenith_direction(self) -> List[float]:
+        """Get zenith direction of the natural light source.
+
+        Returns
+        -------
+        List[float]
+            direction defines the zenith direction of the natural light.
+
+        """
+        return self._source_instance.ambient_properties.zenith_direction
+
+    @zenith_direction.setter
+    def zenith_direction(self, direction: Optional[List[float]] = None) -> None:
         """Set zenith direction of the natural light source.
 
         Parameters
@@ -1631,15 +1791,28 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
 
         Returns
         -------
-        SourceAmbientNaturalLight
+        None
 
         """
         if direction is None:
             direction = [0, 0, 1]
         self._source_instance.ambient_properties.zenith_direction[:] = direction
-        return self
 
-    def set_reverse_zenith_direction(self, value: bool = False) -> SourceAmbientNaturalLight:
+    @property
+    def reverse_zenith_direction(self) -> bool:
+        """
+        Get whether reverse zenith direction of the natural light source.
+
+        Returns
+        -------
+        bool
+            True to reverse zenith direction, False otherwise.
+
+        """
+        return self._source_instance.ambient_properties.reverse_zenith_direction
+
+    @reverse_zenith_direction.setter
+    def reverse_zenith_direction(self, value: bool) -> None:
         """Set reverse zenith direction of the natural light source.
 
         Parameters
@@ -1649,25 +1822,37 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
 
         Returns
         -------
-        SourceAmbientNaturalLight
+        None
 
         """
+        if value is None:
+            value = False
         self._source_instance.ambient_properties.reverse_zenith_direction = value
-        return self
 
-    def set_north_direction(
-        self, direction: Optional[List[float]] = None
-    ) -> SourceAmbientNaturalLight:
+    @property
+    def north_direction(self) -> List[float]:
+        """Get north direction of the natural light source.
+
+        Returns
+        -------
+        List[float]
+            direction defines the north direction of the natural light.
+
+        """
+        return self._source_instance.ambient_properties.natural_light_properties.north_direction
+
+    @north_direction.setter
+    def north_direction(self, direction: List[float]) -> None:
         """Set north direction of the natural light source.
 
         Parameters
         ----------
-        direction: Optional[List[float]]
+        direction: List[float]
             direction defines the north direction of the natural light.
 
         Returns
         -------
-        SourceAmbientNaturalLight
+        None
 
         """
         if direction is None:
@@ -1675,9 +1860,21 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
         self._source_instance.ambient_properties.natural_light_properties.north_direction[:] = (
             direction
         )
-        return self
 
-    def set_reverse_north_direction(self, value: bool = False) -> SourceAmbientNaturalLight:
+    @property
+    def reverse_north_direction(self) -> bool:
+        """Get whether reverse north direction of the natural light source.
+
+        Returns
+        -------
+        bool
+            True as reverse north direction, False otherwise.
+
+        """
+        return self._source_instance.ambient_properties.natural_light_properties.reverse_north
+
+    @reverse_north_direction.setter
+    def reverse_north_direction(self, value: bool) -> None:
         """Set reverse north direction of the natural light source.
 
         Parameters
@@ -1687,11 +1884,12 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
 
         Returns
         -------
-        SourceAmbientNaturalLight
+        None
 
         """
+        if value is None:
+            value = False
         self._source_instance.ambient_properties.natural_light_properties.reverse_north = value
-        return self
 
     def set_sun_automatic(self) -> BaseSourceAmbient.AutomaticSun:
         """Set natural light sun type as automatic.
