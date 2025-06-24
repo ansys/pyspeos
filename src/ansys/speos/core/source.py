@@ -1542,6 +1542,8 @@ class BaseSourceAmbient(BaseSource):
         def time_zone(self, time_zone: str) -> None:
             """Set time zone info of the automatic sun.
 
+                default value to be "CET".
+
             Parameters
             ----------
             timezone: str
@@ -1551,8 +1553,6 @@ class BaseSourceAmbient(BaseSource):
             -------
             None
             """
-            if time_zone is None:
-                time_zone = "CET"
             self._sun.time_zone_uri = time_zone
 
     class Manual:
@@ -1607,6 +1607,8 @@ class BaseSourceAmbient(BaseSource):
         def direction(self, direction: List[float]) -> None:
             """Set direction of the manual sun.
 
+                default value to be [0, 0, 1].
+
             Parameters
             ----------
             direction: List[float]
@@ -1617,8 +1619,6 @@ class BaseSourceAmbient(BaseSource):
             BaseSourceAmbient.Manual
 
             """
-            if direction is None:
-                direction = [0, 0, 1]
             self._sun.sun_direction[:] = direction
 
         @property
@@ -1637,6 +1637,8 @@ class BaseSourceAmbient(BaseSource):
         def reverse_sun(self, value: bool) -> None:
             """Reverse direction of the manual sun.
 
+                default value to be False.
+
             Parameters
             ----------
             value: bool
@@ -1647,8 +1649,6 @@ class BaseSourceAmbient(BaseSource):
             None
 
             """
-            if value is None:
-                value = False
             self._sun.reverse_sun = value
 
 
@@ -1722,6 +1722,8 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
     def turbidity(self, value: float) -> None:
         """Set turbidity of the natural light source.
 
+            default value to be 3.
+
         Parameters
         ----------
         value: float
@@ -1732,8 +1734,6 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
         None
 
         """
-        if value is None:
-            value = 3
         if not 1.9 <= value <= 9.9:
             raise ValueError("Varies needs to be between 1.9 and 9.9")
         self._source_template.ambient.natural_light.turbidity = value
@@ -1754,6 +1754,8 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
     def with_sky(self, value: bool) -> None:
         """Activate using sky in the natural light source.
 
+            default value to be True.
+
         Parameters
         ----------
         value: bool
@@ -1764,8 +1766,6 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
         SourceAmbientNaturalLight
 
         """
-        if value is None:
-            value = True
         self._source_template.ambient.natural_light.with_sky = value
 
     @property
@@ -1784,6 +1784,8 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
     def zenith_direction(self, direction: Optional[List[float]] = None) -> None:
         """Set zenith direction of the natural light source.
 
+            default value to be [0, 0, 1]
+
         Parameters
         ----------
         direction: Optional[List[float]]
@@ -1794,8 +1796,6 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
         None
 
         """
-        if direction is None:
-            direction = [0, 0, 1]
         self._source_instance.ambient_properties.zenith_direction[:] = direction
 
     @property
@@ -1815,6 +1815,8 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
     def reverse_zenith_direction(self, value: bool) -> None:
         """Set reverse zenith direction of the natural light source.
 
+            default value to be False.
+
         Parameters
         ----------
         value: bool
@@ -1825,8 +1827,6 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
         None
 
         """
-        if value is None:
-            value = False
         self._source_instance.ambient_properties.reverse_zenith_direction = value
 
     @property
@@ -1845,6 +1845,8 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
     def north_direction(self, direction: List[float]) -> None:
         """Set north direction of the natural light source.
 
+            default value to be [0, 1, 0].
+
         Parameters
         ----------
         direction: List[float]
@@ -1855,8 +1857,6 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
         None
 
         """
-        if direction is None:
-            direction = [0, 1, 0]
         self._source_instance.ambient_properties.natural_light_properties.north_direction[:] = (
             direction
         )
@@ -1877,6 +1877,8 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
     def reverse_north_direction(self, value: bool) -> None:
         """Set reverse north direction of the natural light source.
 
+            default value to be False.
+
         Parameters
         ----------
         value: bool
@@ -1887,8 +1889,6 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
         None
 
         """
-        if value is None:
-            value = False
         self._source_instance.ambient_properties.natural_light_properties.reverse_north = value
 
     def set_sun_automatic(self) -> BaseSourceAmbient.AutomaticSun:
