@@ -1702,6 +1702,8 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
             # Default values
             self.zenith_direction = [0, 0, 1]
             self.north_direction = [0, 1, 0]
+            self.reverse_north_direction = False
+            self.reverse_zenith_direction = False
             self.turbidity = 3
             self.with_sky = True
             self.set_sun_automatic()
@@ -1809,7 +1811,7 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
             True to reverse zenith direction, False otherwise.
 
         """
-        return self._source_instance.ambient_properties.reverse_zenith_direction
+        return self._source_instance.ambient_properties.reverse_zenith
 
     @reverse_zenith_direction.setter
     def reverse_zenith_direction(self, value: bool) -> None:
@@ -1827,7 +1829,7 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
         None
 
         """
-        self._source_instance.ambient_properties.reverse_zenith_direction = value
+        self._source_instance.ambient_properties.reverse_zenith = value
 
     @property
     def north_direction(self) -> List[float]:

@@ -408,11 +408,35 @@ def test_create_natural_light_source(speos: Speos):
     assert source1._source_template.ambient.natural_light.turbidity == 3
     assert source1._source_template.ambient.natural_light.with_sky is True
 
+    # Check property method
+    assert source1.zenith_direction == [0, 0, 1]
+    assert source1.reverse_zenith_direction is False
+    assert source1.north_direction == [0, 1, 0]
+    assert source1.reverse_north_direction is False
+
+    source1.zenith_direction = [0, 0, 1]
+    source1.reverse_zenith_direction = True
+    source1.north_direction = [1, 0, 0]
+    source1.reverse_north_direction = True
     source1.turbidity = 4
     source1.with_sky = False
     source1.commit()
     assert source1._source_template.ambient.natural_light.turbidity == 4
     assert source1._source_template.ambient.natural_light.with_sky is False
+    assert source1._source_instance.ambient_properties.zenith_direction == [
+        0,
+        0,
+        1,
+    ]
+    assert source1._source_instance.ambient_properties.natural_light_properties.north_direction == [
+        1,
+        0,
+        0,
+    ]
+    assert (
+        source1._source_instance.ambient_properties.natural_light_properties.reverse_north is True
+    )
+    assert source1._source_instance.ambient_properties.reverse_zenith is True
 
     source1.set_sun_manual().direction = [0, 0, 1]
     source1.commit()
@@ -429,6 +453,7 @@ def test_create_natural_light_source(speos: Speos):
     assert source1.turbidity == 4
     assert source1.with_sky is False
     assert source1.set_sun_manual().direction == [0, 0, 1]
+    assert source1.set_sun_manual().reverse_sun is False
 
     source1.set_sun_automatic().year = 2026
     source1.set_sun_automatic().month = 12
