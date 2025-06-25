@@ -24,23 +24,35 @@
 import os
 from pathlib import Path
 import tempfile
-from typing import Union
+from typing import List, Union
 
 import ansys.api.speos.file.v1.file_transfer as file_transfer_helper__v1
 import ansys.api.speos.file.v1.file_transfer_pb2_grpc as file_transfer__v1__pb2_grpc
+from ansys.api.speos.part.v1 import face_pb2
 
 if os.name == "nt":
     from comtypes.client import CreateObject
 
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
-from numpy import ndarray
+import numpy
 
 from ansys.speos.core.simulation import (
     SimulationDirect,
     SimulationInteractive,
     SimulationInverse,
 )
+
+
+class _Speos3dData:
+    def __init__(self, x, y, z, illuminance=0.0, reflection=0.0, transmission=0.0, absorption=0.0):
+        self.x = float(x)
+        self.y = float(y)
+        self.z = float(z)
+        self.illuminance = float(illuminance)
+        self.reflection = float(reflection)
+        self.transmission = float(transmission)
+        self.absorption = float(absorption)
 
 
 def _find_correct_result(
@@ -77,7 +89,7 @@ def _find_correct_result(
     return file_path
 
 
-def _display_image(img: ndarray):
+def _display_image(img: numpy.ndarray):
     if img is not None:
         plt.imshow(img)
         plt.axis("off")  # turns off axes
@@ -142,3 +154,114 @@ if os.name == "nt":
             dpf_instance = CreateObject("HDRIViewer.Application")
             dpf_instance.OpenFile(file_path)
             dpf_instance.Show(1)
+
+    def export_xmp_vtp(file_path: Union[str, Path]) -> Path:
+        """Export an XMP result into vtp file.
+
+        Parameters
+        ----------
+        file_path: Union[str, Path]
+            file path of an XMP result.
+
+        Returns
+        -------
+        Path
+            file path of exported vtp file.
+
+        """
+        import pyvista as pv
+
+        if not str(file_path).lower().endswith("xmp"):
+            raise ValueError("Please specify a .xmp file.")
+        file_path = Path(file_path)
+        dpf_instance = CreateObject("XMPViewer.Application")
+        dpf_instance.OpenFile(str(file_path))
+        tmp_txt = file_path.with_suffix(".txt")
+        dpf_instance.ExportTXT(str(tmp_txt))
+
+        file = tmp_txt.open("r")
+        content = file.readlines()
+        file.close()
+        dimension_x_min, dimension_x_max, dimension_y_min, dimension_y_max = (
+            content[4].strip().split("\t")
+        )
+        dimension_x = int(float(dimension_x_max)) - int(float(dimension_x_min))
+        dimension_y = int(float(dimension_y_max)) - int(float(dimension_y_min))
+        resolution_x, resolution_y = content[5].strip().split("\t")
+        resolution_x = int(resolution_x)
+        resolution_y = int(resolution_y)
+        xmp_data = numpy.loadtxt(
+            tmp_txt,
+            delimiter="\t",
+            skiprows=9,
+            max_rows=int(resolution_y),
+            usecols=range(0, int(resolution_x)),
+        )
+
+        # Create VTK ImageData structure
+        step_x = float(dimension_x) / resolution_x
+        step_y = float(dimension_y) / resolution_y
+        origin_x = -(resolution_x * step_x) / 2
+        origin_y = -(resolution_y * step_y) / 2
+        grid = pv.ImageData(
+            dimensions=(resolution_x, resolution_y, 1),
+            spacing=(step_x, step_y, 1),
+            origin=(origin_x, origin_y, 0),
+        )
+        grid["Illuminance [lx]"] = numpy.ravel(xmp_data)
+        vtp_meshes = grid.extract_surface()
+        # Export file to VTP
+        vtp_meshes.save(str(file_path.with_suffix(".vtp")))
+        return file_path.with_suffix(".vtp")
+
+    def export_xm3_vtp(geo_faces: List[face_pb2.Face], file_path: Union[str, Path]) -> Path:
+        """Export an XMP result into vtp file.
+
+        Parameters
+        ----------
+        geo_faces: List[face_pb2.Face]
+            list of face geometries.
+        file_path: Union[str, Path]
+            file path of an XMP result.
+
+        Returns
+        -------
+        Path
+            file path of exported vtp file.
+
+        """
+        import pyvista as pv
+
+        if not str(file_path).lower().endswith("xm3"):
+            raise ValueError("Please specify a .xm3 file.")
+
+        dpf_instance = CreateObject("Xm3Viewer.Application")
+        dpf_instance.OpenFile(str(file_path))
+        tmp_txt = file_path.with_suffix(".txt")
+        dpf_instance.Export(str(tmp_txt))
+
+        file = tmp_txt.open("r")
+        xm3_data = []
+        content = file.readlines()
+        if "x" in content[0].split() and "y" in content[0].split() and "z" in content[0].split():
+            for line in content[1:]:
+                xm3_data.append(_Speos3dData(*line.split()))
+        else:
+            print("reading other results")
+
+        vtp_meshes = None
+        for geo in geo_faces:
+            vertices = numpy.array(geo.vertices).reshape(-1, 3)
+            facets = numpy.array(geo.facets).reshape(-1, 3)
+            temp = numpy.full(facets.shape[0], 3)
+            temp = numpy.vstack(temp)
+            facets = numpy.hstack((temp, facets))
+            if vtp_meshes is None:
+                vtp_meshes = pv.PolyData(vertices, facets)
+            else:
+                vtp_meshes = vtp_meshes.append_polydata(pv.PolyData(vertices, facets))
+
+        vtp_meshes["Illuminance [lx]"] = [item.transmission for item in xm3_data]
+        vtp_meshes = vtp_meshes.point_data_to_cell_data()
+        vtp_meshes.save(str(file_path.with_suffix(".vtp")))
+        return file_path.with_suffix(".vtp")
