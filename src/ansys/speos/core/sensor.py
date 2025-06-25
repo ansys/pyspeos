@@ -27,7 +27,9 @@ from __future__ import annotations
 from difflib import SequenceMatcher
 from typing import List, Mapping, Optional, Union
 import uuid
+import warnings
 
+import grpc
 import numpy as np
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2, common_pb2, sensor_pb2
@@ -1939,6 +1941,39 @@ class SensorCamera(BaseSensor):
         if axis_system is None:
             axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
         self._sensor_instance.camera_properties.axis_system[:] = axis_system
+        return self
+
+    def commit(self) -> SensorCamera:
+        """Save feature: send the local data to the speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorCamera
+            Sensor feature.
+        """
+        msg = (
+            "Please note following values {} were over written by the values"
+            " stored in the distortion file"
+        )
+        values_v2 = ["focal_length", "imager_distance", "f_number"]
+        values_v4 = ["focal_length", "imager_distance", "f_number", "Transmittance Spectrum"]
+        try:
+            super().commit()
+        except grpc.RpcError:
+            for value in values_v2:
+                self._sensor_template.camera_sensor_template.ClearField(value)
+            try:
+                super().commit()
+                warnings.warn(msg.format(str(values_v2)), stacklevel=2)
+            except grpc.RpcError:
+                self._sensor_template.camera_sensor_template.sensor_mode_photometric.ClearField(
+                    "transmittance_file_uri"
+                )
+                try:
+                    super().commit()
+                    warnings.warn(msg.format(str(values_v4)), stacklevel=2)
+                except grpc.RpcError as e:
+                    raise (e)
         return self
 
 
