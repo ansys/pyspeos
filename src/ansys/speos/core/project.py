@@ -95,12 +95,13 @@ class Project:
         Link object for the scene in database.
     """
 
-    def __init__(self, speos: Speos, path: str = ""):
+    def __init__(self, speos: Speos, path: Optional[Union[str, Path]] = ""):
         self.client = speos.client
         """Speos instance client."""
         self.scene_link = speos.client.scenes().create()
         """Link object for the scene in database."""
         self._features = []
+        path = str(path)
         if len(path):
             self.scene_link.load_file(path)
             self._fill_features()
