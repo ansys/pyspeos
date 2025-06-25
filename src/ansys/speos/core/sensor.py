@@ -1973,7 +1973,7 @@ class SensorCamera(BaseSensor):
                     super().commit()
                     warnings.warn(msg.format(str(values_v4)), stacklevel=2)
                 except grpc.RpcError as e:
-                    raise (e)
+                    raise e
         return self
 
 
