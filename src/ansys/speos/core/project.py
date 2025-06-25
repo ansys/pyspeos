@@ -54,6 +54,7 @@ from ansys.speos.core.simulation import (
     SimulationInverse,
 )
 from ansys.speos.core.source import (
+    SourceAmbientNaturalLight,
     SourceLuminaire,
     SourceRayFile,
     SourceSurface,
@@ -157,7 +158,7 @@ class Project:
         description: str = "",
         feature_type: type = SourceSurface,
         metadata: Optional[Mapping[str, str]] = None,
-    ) -> Union[SourceSurface, SourceRayFile, SourceLuminaire]:
+    ) -> Union[SourceSurface, SourceRayFile, SourceLuminaire, SourceAmbientNaturalLight]:
         """Create a new Source feature.
 
         Parameters
@@ -172,7 +173,8 @@ class Project:
             By default, ``ansys.speos.core.source.SourceSurface``.
             Allowed types:
             Union[ansys.speos.core.source.SourceSurface, ansys.speos.core.source.SourceRayFile, \
-            ansys.speos.core.source.SourceLuminaire].
+            ansys.speos.core.source.SourceLuminaire, \
+            ansys.speos.core.source.SourceAmbientNaturalLight].
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
@@ -180,7 +182,7 @@ class Project:
         Returns
         -------
         Union[ansys.speos.core.source.SourceSurface,ansys.speos.core.source.SourceRayFile,\
-        ansys.speos.core.source.SourceLuminaire]
+        ansys.speos.core.source.SourceLuminaire, ansys.speos.core.source.SourceAmbientNaturalLight]
             Source class instance.
         """
         if metadata is None:
@@ -210,6 +212,13 @@ class Project:
                 )
             case "SourceLuminaire":
                 feature = SourceLuminaire(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                )
+            case "SourceAmbientNaturalLight":
+                feature = SourceAmbientNaturalLight(
                     project=self,
                     name=name,
                     description=description,
@@ -787,6 +796,14 @@ class Project:
                     source_instance=src_inst,
                     default_values=False,
                 )
+            elif src_inst.HasField("ambient_properties"):
+                if src_inst.ambient_properties.HasField("natural_light_properties"):
+                    src_feat = SourceAmbientNaturalLight(
+                        project=self,
+                        name=src_inst.name,
+                        source_instance=src_inst,
+                        default_values=False,
+                    )
             if src_feat is not None:
                 self._features.append(src_feat)
 
