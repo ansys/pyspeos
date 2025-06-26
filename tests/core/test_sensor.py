@@ -43,6 +43,10 @@ def test_create_camera_sensor(speos: Speos):
 
     # Default value
     sensor1 = p.create_sensor(name="Camera.1", feature_type=SensorCamera)
+    if isinstance(sensor1, SensorCamera):
+        pass
+    else:
+        assert False
     sensor1.set_mode_photometric().set_mode_color().set_red_spectrum_file_uri(
         uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum")
     )
@@ -373,6 +377,42 @@ def test_create_camera_sensor(speos: Speos):
     sensor1.set_mode_photometric().set_layer_type_none()
     sensor1.commit()
     assert sensor1._sensor_instance.camera_properties.HasField("layer_type_none")
+
+    # test distrotion v1,v2,v3
+    sensor1.set_distortion_file_uri(
+        str(Path(test_path) / "CameraInputFiles" / "distortionV{}.OPTDistortion".format(2))
+    )
+    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    assert camera_sensor_template.HasField("f_number")
+    assert camera_sensor_template.HasField("imager_distance")
+    assert camera_sensor_template.HasField("focal_length")
+    sensor1.commit()
+    assert not camera_sensor_template.HasField("f_number")
+    assert not camera_sensor_template.HasField("imager_distance")
+    assert not camera_sensor_template.HasField("focal_length")
+    sensor1.set_distortion_file_uri(
+        str(Path(test_path) / "CameraInputFiles" / "distortionV{}.OPTDistortion".format(1))
+    )
+    sensor1.set_f_number().set_imager_distance().set_focal_length()
+    assert not camera_sensor_template.HasField("f_number")
+    assert not camera_sensor_template.HasField("imager_distance")
+    assert not camera_sensor_template.HasField("focal_length")
+    sensor1.commit()
+    assert camera_sensor_template.HasField("f_number")
+    assert camera_sensor_template.HasField("imager_distance")
+    assert camera_sensor_template.HasField("focal_length")
+    sensor1.set_distortion_file_uri(
+        str(Path(test_path) / "CameraInputFiles" / "distortionV{}.OPTDistortion".format(3))
+    )
+    assert camera_sensor_template.HasField("f_number")
+    assert camera_sensor_template.HasField("imager_distance")
+    assert camera_sensor_template.HasField("focal_length")
+    assert camera_sensor_template.sensor_mode_photometric.HasField("transmittance_file_uri")
+    sensor1.commit()
+    assert not camera_sensor_template.HasField("f_number")
+    assert not camera_sensor_template.HasField("imager_distance")
+    assert not camera_sensor_template.HasField("focal_length")
+    assert not camera_sensor_template.sensor_mode_photometric.HasField("transmittance_file_uri")
 
     sensor1.delete()
 
