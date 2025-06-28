@@ -288,24 +288,27 @@ class BaseSimulation:
             result.path for result in self.result_list if result.path.endswith(".xm3")
         ]
         if len(export_data_xm3) != 0:
-            from ansys.speos.core.sensor import Face, Sensor3DIrradiance
+            from ansys.speos.core import Face
+            from ansys.speos.core.sensor import Sensor3DIrradiance
             from ansys.speos.core.workflow.open_result import export_xm3_vtp
 
-            for sensor in self._project.find(
-                name=".*", name_regex=True, feature_type=Sensor3DIrradiance
-            ):
-                geo_paths = sensor.get(key="geo_paths")
-                geos_faces = [
-                    self._project.find(geo_path, feature_type=Face)[0]._face
-                    for geo_path in geo_paths
-                ]
-                data = [
-                    result
-                    for result in export_data_xm3
-                    if sensor.get(key="result_file_name") in result
-                ][0]
-                exported_vtp = export_xm3_vtp(geos_faces, data)
-                vtp_files.append(exported_vtp)
+            sensor_paths = self.get(key="sensor_paths")
+            for sensor_path in sensor_paths:
+                sensors = self._project.find(name=sensor_path, feature_type=Sensor3DIrradiance)
+                if len(sensors) != 0:
+                    sensor = sensors[0]
+                    geo_paths = sensor.get(key="geo_paths")
+                    geos_faces = [
+                        self._project.find(name=geo_path, feature_type=Face)[0]._face
+                        for geo_path in geo_paths
+                    ]
+                    data = [
+                        result
+                        for result in export_data_xm3
+                        if sensor.get(key="result_file_name") in result
+                    ][0]
+                    exported_vtp = export_xm3_vtp(geos_faces, data)
+                    vtp_files.append(exported_vtp)
         return vtp_files
 
     def compute_CPU(
