@@ -33,6 +33,8 @@ from ansys.api.speos.part.v1 import face_pb2
 if os.name == "nt":
     from comtypes.client import CreateObject
 
+import warnings
+
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 import numpy
@@ -182,6 +184,12 @@ if os.name == "nt":
         file = tmp_txt.open("r")
         content = file.readlines()
         file.close()
+        if "2" in content[0]:
+            warnings.warn(
+                message="Limitation : spectral type of XMP is currently not supported",
+                stacklevel=2,
+            )
+            return Path()
         dimension_x_min, dimension_x_max, dimension_y_min, dimension_y_max = (
             content[4].strip().split("\t")
         )
