@@ -249,6 +249,7 @@ if os.name == "nt":
         if not str(file_path).lower().endswith("xm3"):
             raise ValueError("Please specify a .xm3 file.")
 
+        file_path = Path(file_path)
         dpf_instance = CreateObject("Xm3Viewer.Application")
         dpf_instance.OpenFile(str(file_path))
         tmp_txt = file_path.with_suffix(".txt")
@@ -257,11 +258,19 @@ if os.name == "nt":
         file = tmp_txt.open("r")
         xm3_data = []
         content = file.readlines()
-        if "x" in content[0].split() and "y" in content[0].split() and "z" in content[0].split():
-            for line in content[1:]:
-                xm3_data.append(_Speos3dData(*line.split()))
-        else:
-            print("reading other results")
+        for line in content[1:]:
+            line_content = line.split()
+            xm3_data.append(
+                _Speos3dData(
+                    x=line_content[0],
+                    y=line_content[1],
+                    z=line_content[2],
+                    illuminance=0.0 if "Illuminance" not in content[0] else line_content[3],
+                    reflection=0.0 if "Reflection" not in content[0] else line_content[4],
+                    transmission=0.0 if "Transmission" not in content[0] else line_content[5],
+                    absorption=0.0 if "Absorption" not in content[0] else line_content[6],
+                )
+            )
 
         vtp_meshes = None
         for geo in geo_faces:
@@ -275,7 +284,10 @@ if os.name == "nt":
             else:
                 vtp_meshes = vtp_meshes.append_polydata(pv.PolyData(vertices, facets))
 
-        vtp_meshes["Illuminance [lx]"] = [item.transmission for item in xm3_data]
+        vtp_meshes["Illuminance [lx]"] = [item.illuminance for item in xm3_data]
+        vtp_meshes["Reflection"] = [item.reflection for item in xm3_data]
+        vtp_meshes["Transmission"] = [item.transmission for item in xm3_data]
+        vtp_meshes["Absorption"] = [item.absorption for item in xm3_data]
         vtp_meshes = vtp_meshes.point_data_to_cell_data()
         vtp_meshes.save(str(file_path.with_suffix(".vtp")))
         return file_path.with_suffix(".vtp")
