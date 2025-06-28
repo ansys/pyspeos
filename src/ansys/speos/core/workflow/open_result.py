@@ -190,13 +190,12 @@ if os.name == "nt":
         resolution_x, resolution_y = content[5].strip().split("\t")
         resolution_x = int(resolution_x)
         resolution_y = int(resolution_y)
-        xmp_data = numpy.loadtxt(
-            tmp_txt,
-            delimiter="\t",
-            skiprows=9,
-            max_rows=int(resolution_y),
-            usecols=range(0, int(resolution_x)),
-        )
+        skip_lines = 9 if "SeparatedByLayer" in content[7] else 8
+        xmp_data = []
+        for line in content[skip_lines : skip_lines + resolution_y]:
+            parts = line.strip().split()
+            print(len(parts))
+            xmp_data.append(list(map(float, parts)))
 
         # Create VTK ImageData structure
         step_x = float(dimension_x) / resolution_x
@@ -208,7 +207,14 @@ if os.name == "nt":
             spacing=(step_x, step_y, 1),
             origin=(origin_x, origin_y, 0),
         )
-        grid["Illuminance [lx]"] = numpy.ravel(xmp_data)
+        xmp_data = numpy.array(xmp_data)
+        if xmp_data.shape[1] == resolution_x:
+            grid["Illuminance [lx]"] = numpy.ravel(xmp_data)
+        else:
+            grid["X"] = numpy.ravel(xmp_data[:, 0::4])
+            grid["Illuminance [lx]"] = numpy.ravel(xmp_data[:, 1::4])
+            grid["Radiometric [W/m2]"] = numpy.ravel(xmp_data[:, 2::4])
+            grid["Z"] = numpy.ravel(xmp_data[:, 3::4])
         vtp_meshes = grid.extract_surface()
         # Export file to VTP
         vtp_meshes.save(str(file_path.with_suffix(".vtp")))
