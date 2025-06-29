@@ -177,23 +177,19 @@ if os.name == "nt":
         file_path = Path(file_path)
         dpf_instance = CreateObject("XMPViewer.Application")
         dpf_instance.OpenFile(str(file_path))
+        dimension_x = dpf_instance.XWidth
+        dimension_y = dpf_instance.YHeight
+        resolution_x = dpf_instance.XNb
+        resolution_y = dpf_instance.YNb
         tmp_txt = file_path.with_suffix(".txt")
         dpf_instance.ExportTXT(str(tmp_txt))
 
         file = tmp_txt.open("r")
         content = file.readlines()
         file.close()
-        dimension_x_min, dimension_x_max, dimension_y_min, dimension_y_max = (
-            content[4].strip().split("\t")
-        )
-        dimension_x = int(float(dimension_x_max)) - int(float(dimension_x_min))
-        dimension_y = int(float(dimension_y_max)) - int(float(dimension_y_min))
-        resolution_x, resolution_y = content[5].strip().split("\t")
-        resolution_x = int(resolution_x)
-        resolution_y = int(resolution_y)
         skip_lines = 9 if "SeparatedByLayer" in content[7] else 8
         xmp_data = []
-        if "2" not in content[0]:  # not spectral data
+        if dpf_instance.Maptype == 2:  # not spectral data
             for line in content[skip_lines : skip_lines + resolution_y]:
                 line_content = line.strip().split()
                 xmp_data.append(list(map(float, line_content)))
