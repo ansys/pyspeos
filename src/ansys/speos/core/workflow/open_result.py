@@ -33,7 +33,6 @@ from ansys.api.speos.part.v1 import face_pb2
 if os.name == "nt":
     from comtypes.client import CreateObject
 
-import warnings
 
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
@@ -184,12 +183,6 @@ if os.name == "nt":
         file = tmp_txt.open("r")
         content = file.readlines()
         file.close()
-        if "2" in content[0]:
-            warnings.warn(
-                message="Limitation : spectral type of XMP is currently not supported",
-                stacklevel=2,
-            )
-            return Path()
         dimension_x_min, dimension_x_max, dimension_y_min, dimension_y_max = (
             content[4].strip().split("\t")
         )
@@ -200,10 +193,24 @@ if os.name == "nt":
         resolution_y = int(resolution_y)
         skip_lines = 9 if "SeparatedByLayer" in content[7] else 8
         xmp_data = []
-        for line in content[skip_lines : skip_lines + resolution_y]:
-            parts = line.strip().split()
-            print(len(parts))
-            xmp_data.append(list(map(float, parts)))
+        if "2" not in content[0]:  # not spectral data
+            for line in content[skip_lines : skip_lines + resolution_y]:
+                line_content = line.strip().split()
+                xmp_data.append(list(map(float, line_content)))
+        else:  # spectral data within number of data tables
+            spectral_tables = int(content[6].strip().split()[2])
+            xmp_data = [
+                [0 for _ in range(len(content[skip_lines].strip().split()))]
+                for _ in range(resolution_y)
+            ]
+            for _ in range(spectral_tables):
+                for i in range(resolution_y):
+                    row = list(map(float, content[skip_lines].strip().split()))
+                    for j in range(resolution_x):
+                        xmp_data[i][j] += row[j]
+                    skip_lines += 1
+                # Skip one line between tables
+                skip_lines += 1
 
         # Create VTK ImageData structure
         step_x = float(dimension_x) / resolution_x
