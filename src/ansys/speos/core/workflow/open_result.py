@@ -46,11 +46,22 @@ from ansys.speos.core.simulation import (
 
 
 class _Speos3dData:
-    def __init__(self, x, y, z, illuminance=0.0, reflection=0.0, transmission=0.0, absorption=0.0):
+    def __init__(
+        self,
+        x,
+        y,
+        z,
+        illuminance=0.0,
+        irradiance=0.0,
+        reflection=0.0,
+        transmission=0.0,
+        absorption=0.0,
+    ):
         self.x = float(x)
         self.y = float(y)
         self.z = float(z)
         self.illuminance = float(illuminance)
+        self.irradiance = float(irradiance)
         self.reflection = float(reflection)
         self.transmission = float(transmission)
         self.absorption = float(absorption)
@@ -269,6 +280,7 @@ if os.name == "nt":
                     y=line_content[1],
                     z=line_content[2],
                     illuminance=0.0 if "Illuminance" not in content[0] else line_content[3],
+                    irradiance=0.0 if "Irradiance" not in content[0] else line_content[3],
                     reflection=0.0 if "Reflection" not in content[0] else line_content[4],
                     transmission=0.0 if "Transmission" not in content[0] else line_content[5],
                     absorption=0.0 if "Absorption" not in content[0] else line_content[6],
@@ -288,6 +300,7 @@ if os.name == "nt":
                 vtp_meshes = vtp_meshes.append_polydata(pv.PolyData(vertices, facets))
 
         vtp_meshes["Illuminance [lx]"] = [item.illuminance for item in xm3_data]
+        vtp_meshes["Irradiance [W/m2]"] = [item.irradiance for item in xm3_data]
         vtp_meshes["Reflection"] = [item.reflection for item in xm3_data]
         vtp_meshes["Transmission"] = [item.transmission for item in xm3_data]
         vtp_meshes["Absorption"] = [item.absorption for item in xm3_data]
