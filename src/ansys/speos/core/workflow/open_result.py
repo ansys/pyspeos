@@ -200,7 +200,7 @@ if os.name == "nt":
         file.close()
         skip_lines = 9 if "SeparatedByLayer" in content[7] else 8
         xmp_data = []
-        if dpf_instance.Maptype == 2:  # not spectral data
+        if dpf_instance.Maptype != 2:  # not spectral data
             for line in content[skip_lines : skip_lines + resolution_y]:
                 line_content = line.strip().split()
                 xmp_data.append(list(map(float, line_content)))
@@ -304,6 +304,6 @@ if os.name == "nt":
         vtp_meshes["Reflection"] = [item.reflection for item in xm3_data]
         vtp_meshes["Transmission"] = [item.transmission for item in xm3_data]
         vtp_meshes["Absorption"] = [item.absorption for item in xm3_data]
-        vtp_meshes = vtp_meshes.point_data_to_cell_data()
+        # vtp_meshes = vtp_meshes.point_data_to_cell_data()
         vtp_meshes.save(str(file_path.with_suffix(".vtp")))
         return file_path.with_suffix(".vtp")
