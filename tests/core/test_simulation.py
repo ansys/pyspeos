@@ -805,11 +805,11 @@ def test_export_vtp(speos: Speos):
     speos_results, vtp_results = sim.compute_CPU(export_vtp=True)
     assert does_file_exist(vtp_results[1])
 
-    vtp_data = pv.read(vtp_results[1]).cell_data
-    assert not np.all(vtp_data.get("Reflection") == 0.0)
-    assert not np.all(vtp_data.get("Illuminance [lx]") == 0.0)
-    assert not np.all(vtp_data.get("Transmission") == 0.0)
-    assert np.all(vtp_data.get("Absorption") == 0.0)
+    vtp_data = pv.read(vtp_results[1]).point_data
+    assert np.allclose(vtp_data.get("Reflection"), 0.0) is not True
+    assert np.allclose(vtp_data.get("Illuminance [lx]"), 0.0) is not True
+    assert np.allclose(vtp_data.get("Transmission"), 0.0) is not True
+    assert np.allclose(vtp_data.get("Absorption"), 0.0) is True
 
     export_data_xm3 = [result.path for result in speos_results if result.path.endswith(".xm3")][0]
     export_data_xm3_txt = Path(export_data_xm3).with_suffix(".txt")
@@ -845,10 +845,9 @@ def test_export_vtp(speos: Speos):
     vtp_meshes["Reflection"] = [item.reflection for item in xm3_data]
     vtp_meshes["Transmission"] = [item.transmission for item in xm3_data]
     vtp_meshes["Absorption"] = [item.absorption for item in xm3_data]
-    vtp_meshes = vtp_meshes.point_data_to_cell_data()
     assert all(
         np.isclose(
-            vtp_meshes.cell_data.get("Illuminance [lx]"),
+            vtp_meshes.point_data.get("Illuminance [lx]"),
             vtp_data.get("Illuminance [lx]"),
             rtol=1e-5,
             atol=1e-8,
@@ -856,12 +855,15 @@ def test_export_vtp(speos: Speos):
     )
     assert all(
         np.isclose(
-            vtp_meshes.cell_data.get("Reflection"), vtp_data.get("Reflection"), rtol=1e-5, atol=1e-8
+            vtp_meshes.point_data.get("Reflection"),
+            vtp_data.get("Reflection"),
+            rtol=1e-5,
+            atol=1e-8,
         )
     )
     assert all(
         np.isclose(
-            vtp_meshes.cell_data.get("Transmission"),
+            vtp_meshes.point_data.get("Transmission"),
             vtp_data.get("Transmission"),
             rtol=1e-5,
             atol=1e-8,
@@ -869,7 +871,10 @@ def test_export_vtp(speos: Speos):
     )
     assert all(
         np.isclose(
-            vtp_meshes.cell_data.get("Absorption"), vtp_data.get("Absorption"), rtol=1e-5, atol=1e-8
+            vtp_meshes.point_data.get("Absorption"),
+            vtp_data.get("Absorption"),
+            rtol=1e-5,
+            atol=1e-8,
         )
     )
 
@@ -887,7 +892,7 @@ def test_export_vtp(speos: Speos):
     speos_results, vtp_results = sim.compute_CPU(export_vtp=True)
     assert does_file_exist(vtp_results[1])
 
-    vtp_data = pv.read(vtp_results[1]).cell_data
+    vtp_data = pv.read(vtp_results[1]).point_data
     assert np.allclose(vtp_data.get("Reflection"), 0.0) is True
     assert np.allclose(vtp_data.get("Illuminance [lx]"), 0.0) is not True
     assert np.allclose(vtp_data.get("Irradiance [W/m2]"), 0.0) is True
@@ -911,7 +916,7 @@ def test_export_vtp(speos: Speos):
     speos_results, vtp_results = sim.compute_CPU(export_vtp=True)
     assert does_file_exist(vtp_results[1])
 
-    vtp_data = pv.read(vtp_results[1]).cell_data
+    vtp_data = pv.read(vtp_results[1]).point_data
     assert np.allclose(vtp_data.get("Reflection"), 0.0) is not True
     assert np.allclose(vtp_data.get("Irradiance [W/m2]"), 0.0) is not True
     assert np.allclose(vtp_data.get("Transmission"), 0.0) is not True
@@ -954,10 +959,9 @@ def test_export_vtp(speos: Speos):
     vtp_meshes["Reflection"] = [item.reflection for item in xm3_data]
     vtp_meshes["Transmission"] = [item.transmission for item in xm3_data]
     vtp_meshes["Absorption"] = [item.absorption for item in xm3_data]
-    vtp_meshes = vtp_meshes.point_data_to_cell_data()
     assert all(
         np.isclose(
-            vtp_meshes.cell_data.get("Illuminance [lx]"),
+            vtp_meshes.point_data.get("Illuminance [lx]"),
             vtp_data.get("Illuminance [lx]"),
             rtol=1e-5,
             atol=1e-8,
@@ -965,7 +969,7 @@ def test_export_vtp(speos: Speos):
     )
     assert all(
         np.isclose(
-            vtp_meshes.cell_data.get("Irradiance [W/m2]"),
+            vtp_meshes.point_data.get("Irradiance [W/m2]"),
             vtp_data.get("Irradiance [W/m2]"),
             rtol=1e-5,
             atol=1e-8,
@@ -973,12 +977,15 @@ def test_export_vtp(speos: Speos):
     )
     assert all(
         np.isclose(
-            vtp_meshes.cell_data.get("Reflection"), vtp_data.get("Reflection"), rtol=1e-5, atol=1e-8
+            vtp_meshes.point_data.get("Reflection"),
+            vtp_data.get("Reflection"),
+            rtol=1e-5,
+            atol=1e-8,
         )
     )
     assert all(
         np.isclose(
-            vtp_meshes.cell_data.get("Transmission"),
+            vtp_meshes.point_data.get("Transmission"),
             vtp_data.get("Transmission"),
             rtol=1e-5,
             atol=1e-8,
@@ -986,7 +993,10 @@ def test_export_vtp(speos: Speos):
     )
     assert all(
         np.isclose(
-            vtp_meshes.cell_data.get("Absorption"), vtp_data.get("Absorption"), rtol=1e-5, atol=1e-8
+            vtp_meshes.point_data.get("Absorption"),
+            vtp_data.get("Absorption"),
+            rtol=1e-5,
+            atol=1e-8,
         )
     )
 
@@ -1004,7 +1014,7 @@ def test_export_vtp(speos: Speos):
     speos_results, vtp_results = sim.compute_CPU(export_vtp=True)
     assert does_file_exist(vtp_results[1])
 
-    vtp_data = pv.read(vtp_results[1]).cell_data
+    vtp_data = pv.read(vtp_results[1]).point_data
     assert np.allclose(vtp_data.get("Reflection"), 0.0) is True
     assert np.allclose(vtp_data.get("Illuminance [lx]"), 0.0) is not True
     assert np.allclose(vtp_data.get("Irradiance [W/m2]"), 0.0) is True
