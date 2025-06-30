@@ -35,8 +35,10 @@ from ansys.speos.core.simulation import (
     SimulationInverse,
 )
 from ansys.speos.core.source import SourceLuminaire
-from tests.conftest import test_path
+from tests.conftest import config, test_path
 from tests.helper import does_file_exist, remove_file
+
+IS_DOCKER = config.get("SpeosServerOnDocker")
 
 
 def test_create_direct(speos: Speos):
@@ -781,6 +783,7 @@ def test_export(speos: Speos):
     remove_file(str(Path(test_path) / "export_test"))
 
 
+@pytest.mark.skipif(IS_DOCKER, reason="COMAPI is only available locally")
 def test_export_vtp(speos: Speos):
     """Test export of xm3 and xmp as vtp files."""
     import numpy as np
