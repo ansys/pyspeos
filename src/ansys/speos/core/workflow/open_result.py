@@ -231,11 +231,14 @@ if os.name == "nt":
         )
         xmp_data = numpy.array(xmp_data)
         if xmp_data.shape[1] == resolution_x:
-            grid["Illuminance [lx]"] = numpy.ravel(xmp_data)
+            if dpf_instance.UnitType == 0:
+                grid["Radiometric"] = numpy.ravel(xmp_data)
+            if dpf_instance.UnitType == 1:
+                grid["Photometric"] = numpy.ravel(xmp_data)
         else:
             grid["X"] = numpy.ravel(xmp_data[:, 0::4])
-            grid["Illuminance [lx]"] = numpy.ravel(xmp_data[:, 1::4])
-            grid["Radiometric [W/m2]"] = numpy.ravel(xmp_data[:, 2::4])
+            grid["Photometric"] = numpy.ravel(xmp_data[:, 1::4])
+            grid["Radiometric"] = numpy.ravel(xmp_data[:, 2::4])
             grid["Z"] = numpy.ravel(xmp_data[:, 3::4])
         vtp_meshes = grid.extract_surface()
         # Export file to VTP
