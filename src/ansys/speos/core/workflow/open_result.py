@@ -200,11 +200,8 @@ if os.name == "nt":
         file.close()
         skip_lines = 9 if "SeparatedByLayer" in content[7] else 8
         xmp_data = []
-        if dpf_instance.Maptype != 2:  # not spectral data
-            for line in content[skip_lines : skip_lines + resolution_y]:
-                line_content = line.strip().split()
-                xmp_data.append(list(map(float, line_content)))
-        else:  # spectral data within number of data tables
+        if dpf_instance.Maptype == 2 and len(content[6].strip().split()) == 3:
+            # spectral data within number of data tables
             spectral_tables = int(content[6].strip().split()[2])
             xmp_data = [
                 [0 for _ in range(len(content[skip_lines].strip().split()))]
@@ -218,6 +215,11 @@ if os.name == "nt":
                     skip_lines += 1
                 # Skip one line between tables
                 skip_lines += 1
+        else:
+            # not spectral data
+            for line in content[skip_lines : skip_lines + resolution_y]:
+                line_content = line.strip().split()
+                xmp_data.append(list(map(float, line_content)))
 
         # Create VTK ImageData structure
         step_x = float(dimension_x) / resolution_x
