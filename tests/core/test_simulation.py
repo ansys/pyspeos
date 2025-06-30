@@ -783,7 +783,7 @@ def test_export(speos: Speos):
     remove_file(str(Path(test_path) / "export_test"))
 
 
-@pytest.mark.skipif(IS_DOCKER, reason="COMAPI is only available locally")
+@pytest.mark.skipif(IS_DOCKER, reason="COM API is only available locally")
 def test_export_vtp(speos: Speos):
     """Test export of xm3 and xmp as vtp files."""
     import numpy as np
