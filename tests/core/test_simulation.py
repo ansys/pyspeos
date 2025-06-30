@@ -1000,8 +1000,8 @@ def test_export_vtp(speos: Speos):
         )
     )
 
-    ##  === test 3d sensor colorimetric ===
-    ## verify if only illuminate data is saved in vtp
+    #  === test 3d sensor colorimetric ===
+    # verify if only illuminate data is saved in vtp
     p4 = Project(
         speos=speos,
         path=str(Path(test_path) / "Prism.speos" / "Prism_3D.speos"),
@@ -1020,3 +1020,117 @@ def test_export_vtp(speos: Speos):
     assert np.allclose(vtp_data.get("Irradiance [W/m2]"), 0.0) is True
     assert np.allclose(vtp_data.get("Transmission"), 0.0) is True
     assert np.allclose(vtp_data.get("Absorption"), 0.0) is True
+
+    # === test irradiance xmp photometric ===
+    # verify the result is photometric
+    p5 = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
+    )
+    sim = p5.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
+    sensor_irra = p5.find(name=".*", name_regex=True, feature_type=SensorIrradiance)[0]
+    sensor_irra.set_dimensions().set_x_sampling(10).set_y_sampling(10)
+    sensor_irra.set_type_photometric()
+    sensor_irra.commit()
+    speos_results, vtp_results = sim.compute_CPU(export_vtp=True)
+    assert does_file_exist(vtp_results[0])
+
+    vtp_data = pv.read(vtp_results[0]).point_data
+    assert np.allclose(vtp_data.get("Photometric"), 0.0) is not True
+
+    export_data_xmp = [result.path for result in speos_results if result.path.endswith(".xmp")][0]
+    export_data_xmp_txt = Path(export_data_xmp).with_suffix(".txt")
+    file = export_data_xmp_txt.open("r")
+    content = file.readlines()
+    file.close()
+    skip_lines = 9 if "SeparatedByLayer" in content[7] else 8
+    resolution_x = 10
+    resolution_y = 10
+    xmp_data = []
+    if "2" not in content[0]:  # not spectral data
+        for line in content[skip_lines : skip_lines + resolution_y]:
+            line_content = line.strip().split()
+            xmp_data.append(list(map(float, line_content)))
+    else:  # spectral data within number of data tables
+        spectral_tables = int(content[6].strip().split()[2])
+        xmp_data = [
+            [0 for _ in range(len(content[skip_lines].strip().split()))]
+            for _ in range(resolution_y)
+        ]
+        for _ in range(spectral_tables):
+            for i in range(resolution_y):
+                row = list(map(float, content[skip_lines].strip().split()))
+                for j in range(resolution_x):
+                    xmp_data[i][j] += row[j]
+                skip_lines += 1
+            # Skip one line between tables
+            skip_lines += 1
+    assert np.all(
+        np.isclose(
+            np.array(xmp_data),
+            vtp_data.get("Photometric").reshape((10, 10)).T,
+            rtol=1e-5,
+            atol=1e-8,
+        )
+    )
+
+    ## === test irradiance xmp radiometric ===
+    # verify the result is radiometric
+    p6 = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
+    )
+    sim = p6.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
+    sensor_irra = p6.find(name=".*", name_regex=True, feature_type=SensorIrradiance)[0]
+    sensor_irra.set_dimensions().set_x_sampling(10).set_y_sampling(10)
+    sensor_irra.set_type_radiometric()
+    sensor_irra.commit()
+    speos_results, vtp_results = sim.compute_CPU(export_vtp=True)
+    assert does_file_exist(vtp_results[0])
+
+    vtp_data = pv.read(vtp_results[0]).point_data
+    assert np.allclose(vtp_data.get("Radiometric"), 0.0) is not True
+
+    ## === test irradiance colorimetric ===
+    # verify it has x, photometric, radiometric, z value in vtp file
+    p7 = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
+    )
+    sim = p7.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
+    sensor_irra = p7.find(name=".*", name_regex=True, feature_type=SensorIrradiance)[0]
+    sensor_irra.set_dimensions().set_x_sampling(10).set_y_sampling(10)
+    sensor_irra.set_type_colorimetric()
+    sensor_irra.commit()
+
+    speos_results, vtp_results = sim.compute_CPU(export_vtp=True)
+    assert does_file_exist(vtp_results[0])
+
+    vtp_data = pv.read(vtp_results[0]).point_data
+    assert np.allclose(vtp_data.get("X"), 0.0) is not True
+    assert np.allclose(vtp_data.get("Photometric"), 0.0) is not True
+    assert np.allclose(vtp_data.get("Radiometric"), 0.0) is not True
+    assert np.allclose(vtp_data.get("Z"), 0.0) is not True
+
+    ## === test irradiance spectral ===
+    # verify it has x, photometric, radiometric, z value in vtp file
+    # verify the summing up per spectral layer
+    p8 = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
+    )
+    sim = p8.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
+    sensor_irra = p8.find(name=".*", name_regex=True, feature_type=SensorIrradiance)[0]
+    sensor_irra.set_dimensions().set_x_sampling(10).set_y_sampling(10)
+    sensor_irra.set_type_spectral()
+    sensor_irra.commit()
+    speos_results, vtp_results = sim.compute_CPU(export_vtp=True)
+    assert does_file_exist(vtp_results[0])
+
+    vtp_data = pv.read(vtp_results[0]).point_data
+    assert np.allclose(vtp_data.get("Radiometric"), 0.0) is not True
+
+    # # test radiance photometric
+    # # test radiance radiometric
+    # # test radiance colorimetric
+    # # test radiance spectral
