@@ -27,8 +27,8 @@ from pathlib import Path
 import pytest
 
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
-from ansys.speos.core import GeoRef, Project, Speos
-from ansys.speos.core.sensor import BaseSensor, SensorIrradiance
+from ansys.speos.core import Body, GeoRef, Project, Speos
+from ansys.speos.core.sensor import BaseSensor, Sensor3DIrradiance, SensorIrradiance
 from ansys.speos.core.simulation import (
     SimulationDirect,
     SimulationInteractive,
@@ -779,3 +779,234 @@ def test_export(speos: Speos):
         sim_second.export(export_path=str(Path(test_path) / "export_test"))
 
     remove_file(str(Path(test_path) / "export_test"))
+
+
+def test_export_vtp(speos: Speos):
+    """Test export of xm3 and xmp as vtp files."""
+    import numpy as np
+    import pyvista as pv
+
+    from ansys.speos.core.workflow.open_result import _Speos3dData
+
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism_3D.speos"),
+    )
+    sim = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
+
+    ## ==== test 3d sensor photometric ===
+    # verify illuminance, reflection, transmission, absorption are saved in vtp
+    # verify the vtp data is same as calculated
+    sensor_3d = p.find(name=".*", name_regex=True, feature_type=Sensor3DIrradiance)[0]
+    sensor_3d_geos = p.find(name="PrismBody", name_regex=True, feature_type=Body)[0]._geom_features
+    sensor_3d_mesh = [sensor_3d_geo._face for sensor_3d_geo in sensor_3d_geos]
+    sensor_3d.set_type_photometric()
+    sensor_3d.commit()
+    speos_results, vtp_results = sim.compute_CPU(export_vtp=True)
+    assert does_file_exist(vtp_results[1])
+
+    vtp_data = pv.read(vtp_results[1]).cell_data
+    assert not np.all(vtp_data.get("Reflection") == 0.0)
+    assert not np.all(vtp_data.get("Illuminance [lx]") == 0.0)
+    assert not np.all(vtp_data.get("Transmission") == 0.0)
+    assert np.all(vtp_data.get("Absorption") == 0.0)
+
+    export_data_xm3 = [result.path for result in speos_results if result.path.endswith(".xm3")][0]
+    export_data_xm3_txt = Path(export_data_xm3).with_suffix(".txt")
+    file = export_data_xm3_txt.open("r")
+    xm3_data = []
+    content = file.readlines()
+    for line in content[1:]:
+        line_content = line.split()
+        xm3_data.append(
+            _Speos3dData(
+                x=line_content[0],
+                y=line_content[1],
+                z=line_content[2],
+                illuminance=0.0 if "Illuminance" not in content[0] else line_content[3],
+                reflection=0.0 if "Reflection" not in content[0] else line_content[4],
+                transmission=0.0 if "Transmission" not in content[0] else line_content[5],
+                absorption=0.0 if "Absorption" not in content[0] else line_content[6],
+            )
+        )
+    vtp_meshes = None
+    for geo in sensor_3d_mesh:
+        vertices = np.array(geo.vertices).reshape(-1, 3)
+        facets = np.array(geo.facets).reshape(-1, 3)
+        temp = np.full(facets.shape[0], 3)
+        temp = np.vstack(temp)
+        facets = np.hstack((temp, facets))
+        if vtp_meshes is None:
+            vtp_meshes = pv.PolyData(vertices, facets)
+        else:
+            vtp_meshes = vtp_meshes.append_polydata(pv.PolyData(vertices, facets))
+
+    vtp_meshes["Illuminance [lx]"] = [item.illuminance for item in xm3_data]
+    vtp_meshes["Reflection"] = [item.reflection for item in xm3_data]
+    vtp_meshes["Transmission"] = [item.transmission for item in xm3_data]
+    vtp_meshes["Absorption"] = [item.absorption for item in xm3_data]
+    vtp_meshes = vtp_meshes.point_data_to_cell_data()
+    assert all(
+        np.isclose(
+            vtp_meshes.cell_data.get("Illuminance [lx]"),
+            vtp_data.get("Illuminance [lx]"),
+            rtol=1e-5,
+            atol=1e-8,
+        )
+    )
+    assert all(
+        np.isclose(
+            vtp_meshes.cell_data.get("Reflection"), vtp_data.get("Reflection"), rtol=1e-5, atol=1e-8
+        )
+    )
+    assert all(
+        np.isclose(
+            vtp_meshes.cell_data.get("Transmission"),
+            vtp_data.get("Transmission"),
+            rtol=1e-5,
+            atol=1e-8,
+        )
+    )
+    assert all(
+        np.isclose(
+            vtp_meshes.cell_data.get("Absorption"), vtp_data.get("Absorption"), rtol=1e-5, atol=1e-8
+        )
+    )
+
+    ## === test 3d sensor photometric with radial integration ===
+    # only illuminance value is saved in vtp file
+    p2 = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism_3D.speos"),
+    )
+    sim = p2.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
+
+    sensor_3d = p2.find(name=".*", name_regex=True, feature_type=Sensor3DIrradiance)[0]
+    sensor_3d.set_type_photometric().set_integration_radial()
+    sensor_3d.commit()
+    speos_results, vtp_results = sim.compute_CPU(export_vtp=True)
+    assert does_file_exist(vtp_results[1])
+
+    vtp_data = pv.read(vtp_results[1]).cell_data
+    assert np.allclose(vtp_data.get("Reflection"), 0.0) is True
+    assert np.allclose(vtp_data.get("Illuminance [lx]"), 0.0) is not True
+    assert np.allclose(vtp_data.get("Irradiance [W/m2]"), 0.0) is True
+    assert np.allclose(vtp_data.get("Transmission"), 0.0) is True
+    assert np.allclose(vtp_data.get("Absorption"), 0.0) is True
+
+    ## ===  test 3d sensor radiometric ===
+    # only irradiance, reflection, transmission, absorption value is saved in vtp file
+    # verify the vtp results are the same as calculated ones.
+    p3 = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism_3D.speos"),
+    )
+    sim = p3.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
+
+    sensor_3d = p3.find(name=".*", name_regex=True, feature_type=Sensor3DIrradiance)[0]
+    sensor_3d_geos = p3.find(name="PrismBody", name_regex=True, feature_type=Body)[0]._geom_features
+    sensor_3d_mesh = [sensor_3d_geo._face for sensor_3d_geo in sensor_3d_geos]
+    sensor_3d.set_type_radiometric()
+    sensor_3d.commit()
+    speos_results, vtp_results = sim.compute_CPU(export_vtp=True)
+    assert does_file_exist(vtp_results[1])
+
+    vtp_data = pv.read(vtp_results[1]).cell_data
+    assert np.allclose(vtp_data.get("Reflection"), 0.0) is not True
+    assert np.allclose(vtp_data.get("Irradiance [W/m2]"), 0.0) is not True
+    assert np.allclose(vtp_data.get("Transmission"), 0.0) is not True
+    assert np.allclose(vtp_data.get("Absorption"), 0.0) is True
+    assert np.allclose(vtp_data.get("Illuminance [lx]"), 0.0) is True
+
+    export_data_xm3 = [result.path for result in speos_results if result.path.endswith(".xm3")][0]
+    export_data_xm3_txt = Path(export_data_xm3).with_suffix(".txt")
+    file = export_data_xm3_txt.open("r")
+    xm3_data = []
+    content = file.readlines()
+    for line in content[1:]:
+        line_content = line.split()
+        xm3_data.append(
+            _Speos3dData(
+                x=line_content[0],
+                y=line_content[1],
+                z=line_content[2],
+                illuminance=0.0 if "Illuminance" not in content[0] else line_content[3],
+                irradiance=0.0 if "Irradiance" not in content[0] else line_content[3],
+                reflection=0.0 if "Reflection" not in content[0] else line_content[4],
+                transmission=0.0 if "Transmission" not in content[0] else line_content[5],
+                absorption=0.0 if "Absorption" not in content[0] else line_content[6],
+            )
+        )
+    vtp_meshes = None
+    for geo in sensor_3d_mesh:
+        vertices = np.array(geo.vertices).reshape(-1, 3)
+        facets = np.array(geo.facets).reshape(-1, 3)
+        temp = np.full(facets.shape[0], 3)
+        temp = np.vstack(temp)
+        facets = np.hstack((temp, facets))
+        if vtp_meshes is None:
+            vtp_meshes = pv.PolyData(vertices, facets)
+        else:
+            vtp_meshes = vtp_meshes.append_polydata(pv.PolyData(vertices, facets))
+
+    vtp_meshes["Illuminance [lx]"] = [item.illuminance for item in xm3_data]
+    vtp_meshes["Irradiance [W/m2]"] = [item.irradiance for item in xm3_data]
+    vtp_meshes["Reflection"] = [item.reflection for item in xm3_data]
+    vtp_meshes["Transmission"] = [item.transmission for item in xm3_data]
+    vtp_meshes["Absorption"] = [item.absorption for item in xm3_data]
+    vtp_meshes = vtp_meshes.point_data_to_cell_data()
+    assert all(
+        np.isclose(
+            vtp_meshes.cell_data.get("Illuminance [lx]"),
+            vtp_data.get("Illuminance [lx]"),
+            rtol=1e-5,
+            atol=1e-8,
+        )
+    )
+    assert all(
+        np.isclose(
+            vtp_meshes.cell_data.get("Irradiance [W/m2]"),
+            vtp_data.get("Irradiance [W/m2]"),
+            rtol=1e-5,
+            atol=1e-8,
+        )
+    )
+    assert all(
+        np.isclose(
+            vtp_meshes.cell_data.get("Reflection"), vtp_data.get("Reflection"), rtol=1e-5, atol=1e-8
+        )
+    )
+    assert all(
+        np.isclose(
+            vtp_meshes.cell_data.get("Transmission"),
+            vtp_data.get("Transmission"),
+            rtol=1e-5,
+            atol=1e-8,
+        )
+    )
+    assert all(
+        np.isclose(
+            vtp_meshes.cell_data.get("Absorption"), vtp_data.get("Absorption"), rtol=1e-5, atol=1e-8
+        )
+    )
+
+    ##  === test 3d sensor colorimetric ===
+    ## verify if only illuminate data is saved in vtp
+    p4 = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism_3D.speos"),
+    )
+    sim = p4.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
+
+    sensor_3d = p4.find(name=".*", name_regex=True, feature_type=Sensor3DIrradiance)[0]
+    sensor_3d.set_type_colorimetric()
+    sensor_3d.commit()
+    speos_results, vtp_results = sim.compute_CPU(export_vtp=True)
+    assert does_file_exist(vtp_results[1])
+
+    vtp_data = pv.read(vtp_results[1]).cell_data
+    assert np.allclose(vtp_data.get("Reflection"), 0.0) is True
+    assert np.allclose(vtp_data.get("Illuminance [lx]"), 0.0) is not True
+    assert np.allclose(vtp_data.get("Irradiance [W/m2]"), 0.0) is True
+    assert np.allclose(vtp_data.get("Transmission"), 0.0) is True
+    assert np.allclose(vtp_data.get("Absorption"), 0.0) is True
