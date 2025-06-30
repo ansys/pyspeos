@@ -32,11 +32,10 @@ import uuid
 import warnings
 
 from ansys.api.speos.job.v2 import job_pb2
+from ansys.api.speos.job.v2.job_pb2 import Result
 from ansys.api.speos.scene.v2 import scene_pb2 as messages
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
 from ansys.speos.core.generic.general_methods import min_speos_version
-
-# from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.job import ProtoJob
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 from ansys.speos.core.kernel.scene import ProtoScene
@@ -265,7 +264,53 @@ class BaseSimulation:
                 "Selected simulation is not the first simulation feature, it can't be exported."
             )
 
-    def compute_CPU(self, threads_number: Optional[int] = None) -> List[job_pb2.Result]:
+    def _export_vtp(self) -> List[Path]:
+        """Export the simulation results into vtp files.
+
+        Returns
+        -------
+        List[Path]
+            list of vtp paths.
+
+        """
+        vtp_files = []
+        export_data_xmp = [
+            result.path for result in self.result_list if result.path.endswith(".xmp")
+        ]
+        if len(export_data_xmp) != 0:
+            from ansys.speos.core.workflow.open_result import export_xmp_vtp
+
+            for data in export_data_xmp:
+                exported_vtp = export_xmp_vtp(data)
+                vtp_files.append(exported_vtp)
+
+        export_data_xm3 = [
+            result.path for result in self.result_list if result.path.endswith(".xm3")
+        ]
+        if len(export_data_xm3) != 0:
+            from ansys.speos.core.sensor import Face, Sensor3DIrradiance
+            from ansys.speos.core.workflow.open_result import export_xm3_vtp
+
+            for sensor in self._project.find(
+                name=".*", name_regex=True, feature_type=Sensor3DIrradiance
+            ):
+                geo_paths = sensor.get(key="geo_paths")
+                geos_faces = [
+                    self._project.find(geo_path, feature_type=Face)[0]._face
+                    for geo_path in geo_paths
+                ]
+                data = [
+                    result
+                    for result in export_data_xm3
+                    if sensor.get(key="result_file_name") in result
+                ][0]
+                exported_vtp = export_xm3_vtp(geos_faces, data)
+                vtp_files.append(exported_vtp)
+        return vtp_files
+
+    def compute_CPU(
+        self, threads_number: Optional[int] = None, export_vtp: Optional[bool] = False
+    ) -> tuple[list[Result], list[Path]] | list[Result]:
         """Compute the simulation on CPU.
 
         Parameters
@@ -273,6 +318,8 @@ class BaseSimulation:
         threads_number : int, optional
             The number of threads used.
             By default, ``None``, means the number of processor available.
+        export_vtp: bool, optional
+            True to generate vtp from the simulation results.
 
         Returns
         -------
@@ -287,6 +334,9 @@ class BaseSimulation:
             )
 
         self.result_list = self._run_job()
+        if export_vtp:
+            vtp_files = self._export_vtp()
+            return self.result_list, vtp_files
         return self.result_list
 
     def compute_GPU(self) -> List[job_pb2.Result]:
