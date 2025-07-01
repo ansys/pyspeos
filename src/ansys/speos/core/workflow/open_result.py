@@ -279,18 +279,25 @@ if os.name == "nt":
         content = file.readlines()
         for line in content[1:]:
             line_content = line.split()
-            xm3_data.append(
-                _Speos3dData(
-                    x=line_content[0],
-                    y=line_content[1],
-                    z=line_content[2],
-                    illuminance=0.0 if "Illuminance" not in content[0] else line_content[3],
-                    irradiance=0.0 if "Irradiance" not in content[0] else line_content[3],
-                    reflection=0.0 if "Reflection" not in content[0] else line_content[4],
-                    transmission=0.0 if "Transmission" not in content[0] else line_content[5],
-                    absorption=0.0 if "Absorption" not in content[0] else line_content[6],
-                )
+            xm3_data_point = _Speos3dData(
+                x=float(line_content[0]),
+                y=float(line_content[1]),
+                z=float(line_content[2]),
             )
+            for line_content_item in line_content[3:]:
+                if "Illuminance" in content[0]:
+                    xm3_data_point.illuminance = line_content_item
+                elif "Irradiance" in content[0]:
+                    xm3_data_point.irradiance = line_content_item
+                elif "Reflection" in content[0]:
+                    xm3_data_point.reflection = line_content_item
+                elif "Transmission" in content[0]:
+                    xm3_data_point.transmission = line_content_item
+                elif "Absorption" in content[0]:
+                    xm3_data_point.absorption = line_content_item
+                else:
+                    raise ValueError(".xm3 exported text file contains invalid format.")
+            xm3_data.append(xm3_data_point)
 
         vtp_meshes = None
         for geo in geo_faces:
