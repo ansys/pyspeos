@@ -277,6 +277,7 @@ if os.name == "nt":
         file = tmp_txt.open("r")
         xm3_data = []
         content = file.readlines()
+        header = content[0].strip().split("\t")
         skip_line = 1
         try:
             float(float(content[1].strip().split()[0]))
@@ -284,26 +285,69 @@ if os.name == "nt":
         except ValueError:
             skip_line = 2  # separated layer
         for line in content[skip_line:]:
-            line_content = line.split()
-            xm3_data_point = _Speos3dData(
-                x=float(line_content[0]),
-                y=float(line_content[1]),
-                z=float(line_content[2]),
+            line_content = line.strip().split("\t")
+            illuminance_indices = [
+                i for i, header_item in enumerate(header) if header_item == "Illuminance"
+            ]
+            irradiance_indices = [
+                i for i, header_item in enumerate(header) if header_item == "Irradiance"
+            ]
+            reflection_indices = [
+                i for i, header_item in enumerate(header) if "Reflection" in header_item
+            ]
+            transmission_indices = [
+                i for i, header_item in enumerate(header) if "Transmission" in header_item
+            ]
+            absorption_indices = [
+                i for i, header_item in enumerate(header) if "Absorption" in header_item
+            ]
+            xm3_data.append(
+                _Speos3dData(
+                    x=float(line_content[0]),
+                    y=float(line_content[1]),
+                    z=float(line_content[2]),
+                    illuminance=sum(
+                        [
+                            float(item)
+                            for i, item in enumerate(line_content)
+                            if i in illuminance_indices
+                        ],
+                        0.0,
+                    ),
+                    irradiance=sum(
+                        [
+                            float(item)
+                            for i, item in enumerate(line_content)
+                            if i in irradiance_indices
+                        ],
+                        0.0,
+                    ),
+                    reflection=sum(
+                        [
+                            float(item)
+                            for i, item in enumerate(line_content)
+                            if i in reflection_indices
+                        ],
+                        0.0,
+                    ),
+                    transmission=sum(
+                        [
+                            float(item)
+                            for i, item in enumerate(line_content)
+                            if i in transmission_indices
+                        ],
+                        0.0,
+                    ),
+                    absorption=sum(
+                        [
+                            float(item)
+                            for i, item in enumerate(line_content)
+                            if i in absorption_indices
+                        ],
+                        0.0,
+                    ),
+                )
             )
-            for line_content_item in line_content[3:]:
-                if "Illuminance" in content[0]:
-                    xm3_data_point.illuminance += float(line_content_item)
-                elif "Irradiance" in content[0]:
-                    xm3_data_point.irradiance += float(line_content_item)
-                elif "Reflection" in content[0]:
-                    xm3_data_point.reflection += float(line_content_item)
-                elif "Transmission" in content[0]:
-                    xm3_data_point.transmission += float(line_content_item)
-                elif "Absorption" in content[0]:
-                    xm3_data_point.absorption += float(line_content_item)
-                else:
-                    raise ValueError(".xm3 exported text file contains invalid format.")
-            xm3_data.append(xm3_data_point)
 
         vtp_meshes = None
         for geo in geo_faces:
