@@ -277,7 +277,13 @@ if os.name == "nt":
         file = tmp_txt.open("r")
         xm3_data = []
         content = file.readlines()
-        for line in content[1:]:
+        skip_line = 1
+        try:
+            float(float(content[1].strip().split()[0]))
+            skip_line = 1  # only single layer
+        except ValueError:
+            skip_line = 2  # separated layer
+        for line in content[skip_line:]:
             line_content = line.split()
             xm3_data_point = _Speos3dData(
                 x=float(line_content[0]),
@@ -286,15 +292,15 @@ if os.name == "nt":
             )
             for line_content_item in line_content[3:]:
                 if "Illuminance" in content[0]:
-                    xm3_data_point.illuminance = line_content_item
+                    xm3_data_point.illuminance += float(line_content_item)
                 elif "Irradiance" in content[0]:
-                    xm3_data_point.irradiance = line_content_item
+                    xm3_data_point.irradiance += float(line_content_item)
                 elif "Reflection" in content[0]:
-                    xm3_data_point.reflection = line_content_item
+                    xm3_data_point.reflection += float(line_content_item)
                 elif "Transmission" in content[0]:
-                    xm3_data_point.transmission = line_content_item
+                    xm3_data_point.transmission += float(line_content_item)
                 elif "Absorption" in content[0]:
-                    xm3_data_point.absorption = line_content_item
+                    xm3_data_point.absorption += float(line_content_item)
                 else:
                     raise ValueError(".xm3 exported text file contains invalid format.")
             xm3_data.append(xm3_data_point)
