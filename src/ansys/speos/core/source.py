@@ -1277,13 +1277,13 @@ class SourceThermic(BaseSource):
     """
 
     def __init__(
-            self,
-            project: project.Project,
-            name: str,
-            description: str = "",
-            metadata: Optional[Mapping[str, str]] = None,
-            source_instance: Optional[ProtoScene.SourceInstance] = None,
-            default_values: bool = True,
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        source_instance: Optional[ProtoScene.SourceInstance] = None,
+        default_values: bool = True,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -1309,7 +1309,6 @@ class SourceThermic(BaseSource):
             self.set_emissive_faces(geometries=[])
             self.set_emissive_faces_temp(value=2000)
 
-
     def set_emissive_faces(self, geometries: List[tuple[GeoRef, bool]]) -> SourceThermic:
         """Set existence constant.
 
@@ -1323,11 +1322,7 @@ class SourceThermic(BaseSource):
         ansys.speos.core.source.SourceSurface
             Surface source.
         """
-
-
-        self._source_instance.thermic_properties.emissive_faces_properties.ClearField(
-            "geo_paths"
-        )
+        self._source_instance.thermic_properties.emissive_faces_properties.ClearField("geo_paths")
         if geometries != []:
             my_list = [
                 ProtoScene.GeoPath(geo_path=gr.to_native_link(), reverse_normal=reverse_normal)
@@ -1356,8 +1351,6 @@ class SourceThermic(BaseSource):
     #     # spectrum & source
     #     super().commit()
     #     return self
-
-
 
 
 class BaseSourceAmbient(BaseSource):
