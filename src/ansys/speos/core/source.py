@@ -1335,6 +1335,19 @@ class SourceThermic(BaseSource):
         return self
 
     def set_emissive_faces_temp(self, value: float = 2000) -> SourceThermic:
+        """Set existence constant temperature.
+
+        Parameters
+        ----------
+        value: float
+            temperature to be set on the emissive faces.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceThermic
+            Thermic source
+
+        """
         if not self._source_template.thermic.HasField("temperature_field"):
             self._source_template.thermic.emissives_faces.temperature = value
         return self
