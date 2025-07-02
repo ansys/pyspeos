@@ -159,7 +159,9 @@ class Project:
         description: str = "",
         feature_type: type = SourceSurface,
         metadata: Optional[Mapping[str, str]] = None,
-    ) -> Union[SourceSurface, SourceRayFile, SourceLuminaire, SourceAmbientNaturalLight, SourceThermic]:
+    ) -> Union[
+        SourceSurface, SourceRayFile, SourceLuminaire, SourceAmbientNaturalLight, SourceThermic
+    ]:
         """Create a new Source feature.
 
         Parameters
