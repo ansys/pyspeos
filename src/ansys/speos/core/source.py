@@ -1255,6 +1255,111 @@ class SourceSurface(BaseSource):
         return self
 
 
+class SourceThermic(BaseSource):
+    """ThermicSource.
+
+    By default, a flux from intensity file is chosen, with an incandescent spectrum.
+
+    Parameters
+    ----------
+    project : ansys.speos.core.project.Project
+        Project that will own the feature.
+    name : str
+        Name of the feature.
+    description : str
+        Description of the feature.
+        By default, ``""``.
+    metadata : Optional[Mapping[str, str]]
+        Metadata of the feature.
+        By default, ``{}``.
+    default_values : bool
+        Uses default values when True.
+    """
+
+    def __init__(
+            self,
+            project: project.Project,
+            name: str,
+            description: str = "",
+            metadata: Optional[Mapping[str, str]] = None,
+            source_instance: Optional[ProtoScene.SourceInstance] = None,
+            default_values: bool = True,
+    ) -> None:
+        if metadata is None:
+            metadata = {}
+
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            source_instance=source_instance,
+        )
+        self._speos_client = self._project.client
+        self._name = name
+
+        self._intensity = Intensity(
+            speos_client=self._speos_client,
+            name=name + ".Intensity",
+            key="",
+        )
+
+        if default_values:
+            # Default values
+            self.set_emissive_faces(geometries=[])
+            self.set_emissive_faces_temp(value=2000)
+
+
+    def set_emissive_faces(self, geometries: List[tuple[GeoRef, bool]]) -> SourceThermic:
+        """Set existence constant.
+
+        Parameters
+        ----------
+        geometries : List[tuple[ansys.speos.core.geo_ref.GeoRef, bool]]
+            List of (face, reverseNormal).
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceSurface
+            Surface source.
+        """
+
+
+        self._source_instance.thermic_properties.emissive_faces_properties.ClearField(
+            "geo_paths"
+        )
+        if geometries != []:
+            my_list = [
+                ProtoScene.GeoPath(geo_path=gr.to_native_link(), reverse_normal=reverse_normal)
+                for (gr, reverse_normal) in geometries
+            ]
+            self._source_instance.thermic_properties.emissive_faces_properties.geo_paths.extend(
+                my_list
+            )
+        self._source_template.thermic.emissives_faces.SetInParent()
+        return self
+
+    def set_emissive_faces_temp(self, value: float = 2000) -> SourceThermic:
+        if not self._source_template.thermic.HasField("temperature_field"):
+            self._source_template.thermic.emissives_faces.temperature = value
+        return self
+
+    # def commit(self) -> SourceThermic:
+    #     """Save feature: send the local data to the speos server database.
+    #
+    #     Returns
+    #     -------
+    #     ansys.speos.core.source.SourceSurface
+    #         Source feature.
+    #     """
+    #
+    #     # spectrum & source
+    #     super().commit()
+    #     return self
+
+
+
+
 class BaseSourceAmbient(BaseSource):
     """
     Super Class for ambient sources.
