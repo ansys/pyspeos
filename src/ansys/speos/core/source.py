@@ -1307,10 +1307,10 @@ class SourceThermic(BaseSource):
         if default_values:
             # Default values
             self.set_emissive_faces(geometries=[])
-            self.set_emissive_faces_temp(value=2000)
+            self.emissive_faces_temperature = 2000
 
     def set_emissive_faces(self, geometries: List[tuple[GeoRef, bool]]) -> SourceThermic:
-        """Set existence constant.
+        """Set emssive faces for thermic source.
 
         Parameters
         ----------
@@ -1319,8 +1319,8 @@ class SourceThermic(BaseSource):
 
         Returns
         -------
-        ansys.speos.core.source.SourceSurface
-            Surface source.
+        ansys.speos.core.source.ThermicSource
+            Thermic source.
         """
         self._source_instance.thermic_properties.emissive_faces_properties.ClearField("geo_paths")
         if geometries != []:
@@ -1334,22 +1334,36 @@ class SourceThermic(BaseSource):
         self._source_template.thermic.emissives_faces.SetInParent()
         return self
 
-    def set_emissive_faces_temp(self, value: float = 2000) -> SourceThermic:
-        """Set existence constant temperature.
+    @property
+    def emissive_faces_temperature(self) -> float:
+        """Get temperature settings for emissive faces.
+
+        Returns
+        -------
+        float
+            temperature settings for emissive faces.
+
+        """
+        if self._source_template.thermic.HasField("emissives_faces"):
+            return self._source_template.thermic.emissives_faces.temperature
+        else:
+            raise AttributeError("This feature is not defined as emissive faces.")
+
+    @emissive_faces_temperature.setter
+    def emissive_faces_temperature(self, value: float) -> None:
+        """Set temperature settings for emissive faces.
 
         Parameters
         ----------
         value: float
-            temperature to be set on the emissive faces.
+            temperature settings for emissive faces.
 
         Returns
         -------
-        ansys.speos.core.source.SourceThermic
-            Thermic source
+        None
 
         """
         self._source_template.thermic.emissives_faces.temperature = value
-        return self
 
     def commit(self) -> SourceThermic:
         """Save feature: send the local data to the speos server database.
