@@ -1301,7 +1301,7 @@ class SourceThermic(BaseSource):
         self._intensity = Intensity(
             speos_client=self._speos_client,
             name=name + ".Intensity",
-            key="",
+            key=self._source_template.thermic.intensity_guid,
         )
 
         if default_values:
