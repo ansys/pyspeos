@@ -274,20 +274,16 @@ class BaseSimulation:
 
         """
         vtp_files = []
-        export_data_xmp = [
-            result.path for result in self.result_list if result.path.endswith(".xmp")
-        ]
-        if len(export_data_xmp) != 0:
+        export_data_xmps = [result for result in self.result_list if result.path.endswith(".xmp")]
+        if len(export_data_xmps) != 0:
             from ansys.speos.core.workflow.open_result import export_xmp_vtp
 
-            for data in export_data_xmp:
-                exported_vtp = export_xmp_vtp(data)
+            for data_xmp in export_data_xmps:
+                exported_vtp = export_xmp_vtp(data_xmp.path)
                 vtp_files.append(exported_vtp)
 
-        export_data_xm3 = [
-            result.path for result in self.result_list if result.path.endswith(".xm3")
-        ]
-        if len(export_data_xm3) != 0:
+        export_data_xm3s = [result for result in self.result_list if result.path.endswith(".xm3")]
+        if len(export_data_xm3s) != 0:
             from ansys.speos.core import Face
             from ansys.speos.core.sensor import Sensor3DIrradiance
             from ansys.speos.core.workflow.open_result import export_xm3_vtp
@@ -302,12 +298,12 @@ class BaseSimulation:
                         self._project.find(name=geo_path, feature_type=Face)[0]._face
                         for geo_path in geo_paths
                     ]
-                    data = [
+                    data_xm3 = [
                         result
-                        for result in export_data_xm3
-                        if sensor.get(key="result_file_name") in result
+                        for result in export_data_xm3s
+                        if sensor.get(key="result_file_name") in result.path
                     ][0]
-                    exported_vtp = export_xm3_vtp(geos_faces, data)
+                    exported_vtp = export_xm3_vtp(geos_faces, data_xm3.path)
                     vtp_files.append(exported_vtp)
         return vtp_files
 
@@ -342,8 +338,15 @@ class BaseSimulation:
             return self.result_list, vtp_files
         return self.result_list
 
-    def compute_GPU(self) -> List[job_pb2.Result]:
+    def compute_GPU(
+        self, export_vtp: Optional[bool] = False
+    ) -> tuple[list[Result], list[Path]] | list[Result]:
         """Compute the simulation on GPU.
+
+        Parameters
+        ----------
+        export_vtp: bool, optional
+            True to generate vtp from the simulation results.
 
         Returns
         -------
@@ -352,6 +355,9 @@ class BaseSimulation:
         """
         self._job.job_type = ProtoJob.Type.GPU
         self.result_list = self._run_job()
+        if export_vtp:
+            vtp_files = self._export_vtp()
+            return self.result_list, vtp_files
         return self.result_list
 
     def _run_job(self) -> List[job_pb2.Result]:
