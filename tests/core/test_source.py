@@ -530,10 +530,7 @@ def test_create_thermic_source(speos: Speos):
     """Test creation of thermic source."""
     p = Project(speos=speos)
 
-    source1 = SourceThermic(
-        p,
-        name="Thermmic Source",
-    )
+    source1 = p.create_source(name="Thermic Source", feature_type=SourceThermic)
     # Geometry
     root_part = p.create_root_part().commit()
     body_b1 = root_part.create_body(name="TheBodyB1").commit()
