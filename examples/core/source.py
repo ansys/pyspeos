@@ -17,6 +17,7 @@ from ansys.speos.core.source import (
     SourceLuminaire,
     SourceRayFile,
     SourceSurface,
+    SourceThermic,
 )
 
 # -
@@ -253,6 +254,22 @@ print(source5)
 # +
 source5.delete()
 # -
+
+# ### Thermic source
+
+# +
+source6 = p.create_source(name="Thermic.1", feature_type=SourceThermic)
+source6.set_emissive_faces(geometries=[(GeoRef.from_native_link("TheBodyB/TheFaceF"), False)])
+print(source6)
+
+source6.commit()
+print(source6)
+# -
+
+# +
+source6.delete()
+# -
+
 
 # When creating sources, this creates some intermediate objects (spectrums, intensity templates).
 #
