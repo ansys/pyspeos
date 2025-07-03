@@ -3779,17 +3779,64 @@ class SensorXMPIntensity(BaseSensor):
 
         # Attribute gathering more complex intensity type
         self._type = None
-
-        # Attribute gathering orientation
-        self._orientation = None
-        self._nearfield = None
-        self._viewing_direction = None
+        self._layer_type = None
 
         if default_values:
             # Default values template
-            self.set_type_photometric().set_orientation_XAsMeridian()
+            self.set_type_photometric().set_orientation_x_as_meridian()
             # Default values properties
             self.set_axis_system().set_layer_type_none()
+
+    @property
+    def nearfield(self) -> bool:
+        """Property containing if the sensor is positioned in nearfield or infinity."""
+        if self._sensor_template.intensity_sensor_template.HasField("near_field"):
+            return True
+        else:
+            return False
+
+    @nearfield.setter
+    def nearfield(self, value):
+        if value:
+            self._sensor_template.intensity_sensor_template.near_field.SetInParent()
+        else:
+            if self._sensor_template.intensity_sensor_template.HasField("near_field"):
+                self._sensor_template.intensity_sensor_template.ClearField("near_field")
+
+    @property
+    def cell_distance(self):
+        """Distance of the Detector to origin in mm."""
+        if self.nearfield:
+            return self._sensor_template.intensity_sensor_template.near_field.cell_distance
+        else:
+            return None
+
+    @cell_distance.setter
+    def cell_distance(self, value):
+        if self.nearfield:
+            self._sensor_template.intensity_sensor_template.near_field.cell_distance = value
+        else:
+            raise TypeError("Sensor position is not in nearfield")
+
+    @property
+    def cell_integration_angle(self):
+        """Integration angle of the cell (deg).
+
+        Used with cell_distance to calculate the cell diameter.
+        """
+        if self.nearfield:
+            return self._sensor_template.intensity_sensor_template.near_field.cell_integration_angle
+        else:
+            return None
+
+    @cell_integration_angle.setter
+    def cell_integration_angle(self, value):
+        if self.nearfield:
+            self._sensor_template.intensity_sensor_template.near_field.cell_integration_angle = (
+                value
+            )
+        else:
+            raise TypeError("Sensor position is not in nearfield")
 
     @property
     def type(self) -> str:
@@ -3879,7 +3926,7 @@ class SensorXMPIntensity(BaseSensor):
         """The minimum value on x-axis."""
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
-            raise TypeError("Conoscopic Sensor has no x_start dimension")
+            return None
         elif template.HasField("intensity_orientation_x_as_parallel"):
             return template.intensity_orientation_x_as_parallel.intensity_dimensions.x_start
         elif template.HasField("intensity_orientation_x_as_meridian"):
@@ -3913,7 +3960,7 @@ class SensorXMPIntensity(BaseSensor):
         """The maximum value on x-axis."""
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
-            raise TypeError("Conoscopic Sensor has no x_end dimension")
+            return None
         elif template.HasField("intensity_orientation_x_as_parallel"):
             return template.intensity_orientation_x_as_parallel.intensity_dimensions.x_end
         elif template.HasField("intensity_orientation_x_as_meridian"):
@@ -3947,7 +3994,7 @@ class SensorXMPIntensity(BaseSensor):
         """Pixel sampling along x-Axis."""
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
-            raise TypeError("Conoscopic Sensor has no y_sampling dimension")
+            return None
         elif template.HasField("intensity_orientation_x_as_parallel"):
             return template.intensity_orientation_x_as_parallel.intensity_dimensions.x_sampling
         elif template.HasField("intensity_orientation_x_as_meridian"):
@@ -3976,7 +4023,7 @@ class SensorXMPIntensity(BaseSensor):
         """The maximum value on y-axis."""
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
-            raise TypeError("Conoscopic Sensor has no y_end dimension")
+            return None
         elif template.HasField("intensity_orientation_x_as_parallel"):
             return template.intensity_orientation_x_as_parallel.intensity_dimensions.y_end
         elif template.HasField("intensity_orientation_x_as_meridian"):
@@ -4010,7 +4057,7 @@ class SensorXMPIntensity(BaseSensor):
         """The minimum value on x axis."""
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
-            raise TypeError("Conoscopic Sensor has no y_start dimension")
+            return None
         elif template.HasField("intensity_orientation_x_as_parallel"):
             return template.intensity_orientation_x_as_parallel.intensity_dimensions.y_start
         elif template.HasField("intensity_orientation_x_as_meridian"):
@@ -4044,7 +4091,7 @@ class SensorXMPIntensity(BaseSensor):
         """Sampling along y-axis."""
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
-            raise TypeError("Conoscopic Sensor has no y_sampling dimension")
+            return None
         elif template.HasField("intensity_orientation_x_as_parallel"):
             return template.intensity_orientation_x_as_parallel.intensity_dimensions.y_sampling
         elif template.HasField("intensity_orientation_x_as_meridian"):
@@ -4077,7 +4124,7 @@ class SensorXMPIntensity(BaseSensor):
                 template.intensity_orientation_conoscopic.conoscopic_intensity_dimensions.theta_max
             )
         else:
-            raise TypeError("Only Conoscopic Sensor has theta_max dimension")
+            return None
 
     @theta_max.setter
     def theta_max(self, value: float = 45):
@@ -4099,7 +4146,7 @@ class SensorXMPIntensity(BaseSensor):
                 template.intensity_orientation_conoscopic.conoscopic_intensity_dimensions.sampling
             )
         else:
-            raise TypeError("Only Conoscopic Sensor has theta_max dimension")
+            return None
 
     @theta_max_sampling.setter
     def theta_max_sampling(self, value: int = 90):
@@ -4211,3 +4258,114 @@ class SensorXMPIntensity(BaseSensor):
                 self._sensor_template.intensity_sensor_template.sensor_type_spectral
             )
         return self._type
+
+    def set_layer_type_none(self) -> SensorRadiance:
+        """Define layer separation type as None.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorXMPIntensity
+            Intensity sensor
+
+        """
+        self._sensor_instance.intensity_properties.layer_type_none.SetInParent()
+        self._layer_type = None
+        return self
+
+    def set_layer_type_source(self) -> SensorXMPIntensity:
+        """Define layer separation as by source.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorXMPIntensity
+            Intensity sensor
+
+        """
+        self._sensor_instance.intensity_properties.layer_type_source.SetInParent()
+        self._layer_type = None
+        return self
+
+    def set_layer_type_face(self) -> BaseSensor.LayerTypeFace:
+        """Define layer separation as by face.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.BaseSensor.LayerTypeFace
+            LayerTypeFace property instance
+        """
+        if self._layer_type is None and self._sensor_instance.intensity_properties.HasField(
+            "layer_type_face"
+        ):
+            # Happens in case of project created via load of speos file
+            self._layer_type = BaseSensor.LayerTypeFace(
+                layer_type_face=self._sensor_instance.intensity_properties.layer_type_face,
+                default_values=False,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._layer_type, BaseSensor.LayerTypeFace):
+            # if the _layer_type is not LayerTypeFace then we create a new type.
+            self._layer_type = BaseSensor.LayerTypeFace(
+                layer_type_face=self._sensor_instance.intensity_properties.layer_type_face,
+                stable_ctr=True,
+            )
+        elif (
+            self._layer_type._layer_type_face
+            is not self._sensor_instance.intensity_properties.layer_type_face
+        ):
+            # Happens in case of feature reset (to be sure to always modify correct data)
+            self._layer_type._layer_type_face = (
+                self._sensor_instance.intensity_properties.layer_type_face
+            )
+        return self._layer_type
+
+    def set_layer_type_sequence(self) -> BaseSensor.LayerTypeSequence:
+        """Define layer separation as by sequence.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.BaseSensor.LayerTypeSequence
+            LayerTypeSequence property instance
+        """
+        if self._layer_type is None and self._sensor_instance.intensity_properties.HasField(
+            "layer_type_sequence"
+        ):
+            # Happens in case of project created via load of speos file
+            self._layer_type = BaseSensor.LayerTypeSequence(
+                layer_type_sequence=self._sensor_instance.intensity_properties.layer_type_sequence,
+                default_values=False,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._layer_type, BaseSensor.LayerTypeSequence):
+            # if the _layer_type is not LayerTypeSequence then we create a new type.
+            self._layer_type = BaseSensor.LayerTypeSequence(
+                layer_type_sequence=self._sensor_instance.intensity_properties.layer_type_sequence,
+                stable_ctr=True,
+            )
+        elif (
+            self._layer_type._layer_type_sequence
+            is not self._sensor_instance.intensity_properties.layer_type_sequence
+        ):
+            # Happens in case of feature reset (to be sure to always modify correct data)
+            self._layer_type._layer_type_sequence = (
+                self._sensor_instance.intensity_properties.layer_type_sequence
+            )
+        return self._layer_type
+
+    def set_axis_system(self, axis_system: Optional[List[float]] = None) -> SensorXMPIntensity:
+        """Set position of the sensor.
+
+        Parameters
+        ----------
+        axis_system : Optional[List[float]]
+            Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorXMPIntensity
+            Intensity sensor.
+        """
+        if axis_system is None:
+            axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+        self._sensor_instance.intensity_properties.axis_system[:] = axis_system
+        return self
