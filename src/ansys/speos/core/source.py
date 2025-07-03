@@ -1348,8 +1348,7 @@ class SourceThermic(BaseSource):
             Thermic source
 
         """
-        if not self._source_template.thermic.HasField("temperature_field"):
-            self._source_template.thermic.emissives_faces.temperature = value
+        self._source_template.thermic.emissives_faces.temperature = value
         return self
 
     # def commit(self) -> SourceThermic:
