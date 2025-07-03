@@ -1351,18 +1351,34 @@ class SourceThermic(BaseSource):
         self._source_template.thermic.emissives_faces.temperature = value
         return self
 
-    # def commit(self) -> SourceThermic:
-    #     """Save feature: send the local data to the speos server database.
-    #
-    #     Returns
-    #     -------
-    #     ansys.speos.core.source.SourceSurface
-    #         Source feature.
-    #     """
-    #
-    #     # spectrum & source
-    #     super().commit()
-    #     return self
+    def commit(self) -> SourceThermic:
+        """Save feature: send the local data to the speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceThermic
+            Source feature.
+        """
+        # intensity
+        self._intensity.commit()
+        self._source_template.thermic.intensity_guid = self._intensity.intensity_template_link.key
+
+        # source base
+        super().commit()
+        return self
+
+    def reset(self) -> SourceThermic:
+        """Reset feature: override local data by the one from the speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceThermic
+            Source feature.
+        """
+        self._intensity.reset()
+        # source base
+        super().reset()
+        return self
 
 
 class BaseSourceAmbient(BaseSource):
