@@ -3783,7 +3783,9 @@ class SensorXMPIntensity(BaseSensor):
 
         if default_values:
             # Default values template
-            self.set_type_photometric().set_orientation_x_as_meridian()
+            self.set_type_photometric()
+            self.set_orientation_x_as_meridian()
+            self.set_viewing_direction_from_source()
             # Default values properties
             self.set_axis_system().set_layer_type_none()
 
@@ -3912,18 +3914,52 @@ class SensorXMPIntensity(BaseSensor):
     def set_orientation_x_as_meridian(self):
         """Set Orientation type: X As Meridian, Y as Parallel."""
         self._sensor_template.intensity_sensor_template.intensity_orientation_x_as_meridian.SetInParent()
+        self._set_default_dimension_values()
 
     def set_orientation_x_as_parallel(self):
         """Set Orientation type: X as Parallel, Y As Meridian."""
         self._sensor_template.intensity_sensor_template.intensity_orientation_x_as_parallel.SetInParent()
+        self._set_default_dimension_values()
 
     def set_orientation_conoscopic(self):
         """Set Orientation type: Conoscopic."""
         self._sensor_template.intensity_sensor_template.intensity_orientation_conoscopic.SetInParent()
+        self._set_default_dimension_values()
+
+    def set_viewing_direction_from_source(self):
+        """Set viewing direction from Source Looking At Sensor."""
+        self._sensor_template.intensity_sensor_template.from_source_looking_at_sensor.SetInParent()
+
+    def set_viewing_direction_from_sensor(self):
+        """Set viewing direction from Sensor Looking At Source."""
+        self._sensor_template.intensity_sensor_template.from_sensor_looking_at_source.SetInParent()
+
+    def _set_default_dimension_values(self):
+        template = self._sensor_template.intensity_sensor_template
+        if template.HasField("intensity_orientation_conoscopic"):
+            self.theta_max = 45
+            self.theta_max_sampling = 90
+        elif template.HasField("intensity_orientation_x_as_parallel"):
+            self.x_start = -30
+            self.x_end = 30
+            self.x_sampling = 120
+            self.y_start = -45
+            self.y_end = 45
+            self.y_sampling = 180
+        elif template.HasField("intensity_orientation_x_as_meridian"):
+            self.y_start = -30
+            self.y_end = 30
+            self.y_sampling = 120
+            self.x_start = -45
+            self.x_end = 45
+            self.x_sampling = 180
 
     @property
     def x_start(self) -> float:
-        """The minimum value on x-axis."""
+        """The minimum value on x-axis  (deg).
+
+        By default, ``45``.
+        """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
             return None
@@ -3933,20 +3969,7 @@ class SensorXMPIntensity(BaseSensor):
             return template.intensity_orientation_x_as_meridian.intensity_dimensions.x_start
 
     @x_start.setter
-    def x_start(self, value: float = -45) -> SensorXMPIntensity.Dimensions:
-        """Set the minimum value on x-axis.
-
-        Parameters
-        ----------
-        value : float
-            Minimum value on x axis (deg).
-            By default, ``-45``.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.SensorXMPIntensity.Dimensions
-            Dimensions.
-        """
+    def x_start(self, value: float):
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
             raise TypeError("Conoscopic Sensor has no x_start dimension")
@@ -3957,7 +3980,10 @@ class SensorXMPIntensity(BaseSensor):
 
     @property
     def x_end(self) -> float:
-        """The maximum value on x-axis."""
+        """The maximum value on x-axis  (deg).
+
+        By default, ``45``.
+        """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
             return None
@@ -3967,20 +3993,7 @@ class SensorXMPIntensity(BaseSensor):
             return template.intensity_orientation_x_as_meridian.intensity_dimensions.x_end
 
     @x_end.setter
-    def x_end(self, value: float = 45):
-        """Set the maximum value on x axis.
-
-        Parameters
-        ----------
-        value : float
-            Maximum value on x axis (deg).
-            By default, ``45``.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.SensorXMPIntensity.Dimensions
-            Dimensions.
-        """
+    def x_end(self, value: float):
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
             raise TypeError("Conoscopic Sensor has no x_end dimension")
@@ -3991,7 +4004,10 @@ class SensorXMPIntensity(BaseSensor):
 
     @property
     def x_sampling(self) -> int:
-        """Pixel sampling along x-Axis."""
+        """Pixel sampling along x-Axis.
+
+        By default, ``100``
+        """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
             return None
@@ -4001,15 +4017,7 @@ class SensorXMPIntensity(BaseSensor):
             return template.intensity_orientation_x_as_meridian.intensity_dimensions.x_sampling
 
     @x_sampling.setter
-    def x_sampling(self, value: int = 100):
-        """Set the sampling along x-axis.
-
-        Parameters
-        ----------
-        value : int
-            sampling along x-axis.
-            By default, ``100``.
-        """
+    def x_sampling(self, value: int):
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
             raise TypeError("Conoscopic Sensor has no x_sampling dimension")
@@ -4020,7 +4028,10 @@ class SensorXMPIntensity(BaseSensor):
 
     @property
     def y_end(self) -> float:
-        """The maximum value on y-axis."""
+        """The maximum value on y-axis (deg).
+
+        By default, ``30``.
+        """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
             return None
@@ -4030,20 +4041,7 @@ class SensorXMPIntensity(BaseSensor):
             return template.intensity_orientation_x_as_meridian.intensity_dimensions.y_end
 
     @y_end.setter
-    def y_end(self, value: float = 30):
-        """Set the maximum value on y-axis.
-
-        Parameters
-        ----------
-        value : float
-            Minimum value on x axis (deg).
-            By default, ``30``.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.SensorXMPIntensity.Dimensions
-            Dimensions.
-        """
+    def y_end(self, value: float):
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
             raise TypeError("Conoscopic Sensor has no y_end dimension")
@@ -4054,7 +4052,10 @@ class SensorXMPIntensity(BaseSensor):
 
     @property
     def y_start(self) -> float:
-        """The minimum value on x axis."""
+        """The minimum value on x-axis (deg).
+
+        By default, ``-30``.
+        """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
             return None
@@ -4064,20 +4065,7 @@ class SensorXMPIntensity(BaseSensor):
             return template.intensity_orientation_x_as_meridian.intensity_dimensions.y_start
 
     @y_start.setter
-    def y_start(self, value: float = -30):
-        """Set the minimum value on y axis.
-
-        Parameters
-        ----------
-        value : float
-            Minimum value on y axis (deg).
-            By default, ``-30``.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.SensorXMPIntensity.Dimensions
-            Dimensions.
-        """
+    def y_start(self, value: float):
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
             raise TypeError("Conoscopic Sensor has no y_start dimension")
@@ -4088,7 +4076,10 @@ class SensorXMPIntensity(BaseSensor):
 
     @property
     def y_sampling(self) -> int:
-        """Sampling along y-axis."""
+        """Sampling along y-axis.
+
+        By default, ``100``.
+        """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
             return None
@@ -4098,15 +4089,7 @@ class SensorXMPIntensity(BaseSensor):
             return template.intensity_orientation_x_as_meridian.intensity_dimensions.y_sampling
 
     @y_sampling.setter
-    def y_sampling(self, value: int = 100):
-        """Set the sampling along y-axis.
-
-        Parameters
-        ----------
-        value : int
-            sampling along y-axis.
-            By default, ``100``.
-        """
+    def y_sampling(self, value: int):
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
             raise TypeError("Conoscopic Sensor has no y_sampling dimension")
@@ -4117,7 +4100,10 @@ class SensorXMPIntensity(BaseSensor):
 
     @property
     def theta_max(self) -> float:
-        """Maximum theta angle on consocopic type."""
+        """Maximum theta angle on consocopic type (in deg).
+
+        By default, ``45``.
+        """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
             return (
@@ -4127,8 +4113,7 @@ class SensorXMPIntensity(BaseSensor):
             return None
 
     @theta_max.setter
-    def theta_max(self, value: float = 45):
-        """Set maximum theta angle on consocopic type."""
+    def theta_max(self, value: float):
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
             template.intensity_orientation_conoscopic.conoscopic_intensity_dimensions.theta_max = (
@@ -4139,7 +4124,10 @@ class SensorXMPIntensity(BaseSensor):
 
     @property
     def theta_max_sampling(self) -> int:
-        """Sampling on consocopic type."""
+        """Sampling on conoscopic type.
+
+        By default, ``90``.
+        """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
             return (
@@ -4149,8 +4137,7 @@ class SensorXMPIntensity(BaseSensor):
             return None
 
     @theta_max_sampling.setter
-    def theta_max_sampling(self, value: int = 90):
-        """Set Sampling on consocopic type."""
+    def theta_max_sampling(self, value: int):
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
             template.intensity_orientation_conoscopic.conoscopic_intensity_dimensions.sampling = (
