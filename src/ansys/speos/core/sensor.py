@@ -3838,7 +3838,10 @@ class SensorXMPIntensity(BaseSensor):
     @nearfield.setter
     def nearfield(self, value):
         if value:
-            self._sensor_template.intensity_sensor_template.near_field.SetInParent()
+            if not self._sensor_template.intensity_sensor_template.HasField("near_field"):
+                self._sensor_template.intensity_sensor_template.near_field.SetInParent()
+                self.cell_distance = 10
+                self.cell_diameter = 0.3491
         else:
             if self._sensor_template.intensity_sensor_template.HasField("near_field"):
                 self._sensor_template.intensity_sensor_template.ClearField("near_field")
