@@ -43,6 +43,7 @@ def test_create_camera_sensor(speos: Speos):
 
     # Default value
     sensor1 = p.create_sensor(name="Camera.1", feature_type=SensorCamera)
+    assert isinstance(sensor1, SensorCamera)
     sensor1.set_mode_photometric().set_mode_color().set_red_spectrum_file_uri(
         uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum")
     )
@@ -373,6 +374,49 @@ def test_create_camera_sensor(speos: Speos):
     sensor1.set_mode_photometric().set_layer_type_none()
     sensor1.commit()
     assert sensor1._sensor_instance.camera_properties.HasField("layer_type_none")
+
+    # test distrotion v1,v2,v3
+    sensor1.set_f_number().set_imager_distance().set_focal_length()
+    sensor1.commit()
+    sensor1.set_distortion_file_uri(
+        str(Path(test_path) / "CameraInputFiles" / "distortionV{}.OPTDistortion".format(2))
+    )
+    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    assert camera_sensor_template.f_number == 20.0
+    assert camera_sensor_template.imager_distance == 10.0
+    assert camera_sensor_template.focal_length == 5.0
+    sensor1.commit()
+    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    assert camera_sensor_template.f_number == 0
+    assert camera_sensor_template.imager_distance == 0
+    assert camera_sensor_template.focal_length == 0
+    sensor1.set_distortion_file_uri(
+        str(Path(test_path) / "CameraInputFiles" / "distortionV{}.OPTDistortion".format(1))
+    )
+    sensor1.set_f_number().set_imager_distance().set_focal_length()
+    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    assert camera_sensor_template.f_number == 0
+    assert camera_sensor_template.imager_distance == 0
+    assert camera_sensor_template.focal_length == 0
+    sensor1.commit()
+    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    assert camera_sensor_template.f_number == 20.0
+    assert camera_sensor_template.imager_distance == 10.0
+    assert camera_sensor_template.focal_length == 5.0
+    sensor1.set_distortion_file_uri(
+        str(Path(test_path) / "CameraInputFiles" / "distortionV{}.OPTDistortion".format(4))
+    )
+    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    assert camera_sensor_template.f_number == 20.0
+    assert camera_sensor_template.imager_distance == 10.0
+    assert camera_sensor_template.focal_length == 5.0
+    assert camera_sensor_template.sensor_mode_photometric.transmittance_file_uri != ""
+    sensor1.commit()
+    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    assert camera_sensor_template.f_number == 0
+    assert camera_sensor_template.imager_distance == 0
+    assert camera_sensor_template.focal_length == 0
+    assert camera_sensor_template.sensor_mode_photometric.transmittance_file_uri == ""
 
     sensor1.delete()
 
