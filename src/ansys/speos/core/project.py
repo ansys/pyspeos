@@ -691,14 +691,25 @@ class Project:
             b_feat = feat_host.create_body(name=b_data.name)
             b_feat.body_link = b_link
             b_feat._body = b_data  # instead of b_feat.reset() - this avoid a useless read in server
+
             f_links = self.client.get_items(keys=b_data.face_guids, item_type=FaceLink)
-            for f_link in f_links:
-                f_data = f_link.get()
-                f_feat = b_feat.create_face(name=f_data.name)
-                f_feat.face_link = f_link
-                f_feat._face = (
-                    f_data  # instead of f_feat.reset() - this avoid a useless read in server
-                )
+            face_db = self.client.faces()
+            if face_db._is_batch_available:
+                f_data_list = face_db.read_batch(refs=f_links)
+                for f_data, f_link in zip(f_data_list, f_links):
+                    f_feat = b_feat.create_face(name=f_data.name)
+                    f_feat.face_link = f_link
+                    f_feat._face = (
+                        f_data  # instead of f_feat.reset() - this avoid a useless read in server
+                    )
+            else:
+                for f_link in f_links:
+                    f_data = f_link.get()
+                    f_feat = b_feat.create_face(name=f_data.name)
+                    f_feat.face_link = f_link
+                    f_feat._face = (
+                        f_data  # instead of f_feat.reset() - this avoid a useless read in server
+                    )
 
     def _add_unique_ids(self):
         scene_data = self.scene_link.get()
