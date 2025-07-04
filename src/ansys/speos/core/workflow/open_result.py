@@ -167,12 +167,17 @@ if os.name == "nt":
             dpf_instance.OpenFile(file_path)
             dpf_instance.Show(1)
 
-    def export_xmp_vtp(file_path: Union[str, Path]) -> Path:
+    def export_xmp_vtp(
+        simulation_feature: Union[SimulationDirect, SimulationInverse],
+        result_name: Union[str, Path],
+    ) -> Path:
         """Export an XMP result into vtp file.
 
         Parameters
         ----------
-        file_path: Union[str, Path]
+        simulation_feature : ansys.speos.core.simulation.Simulation
+            The simulation feature.
+        result_name: Union[str, Path]
             file path of an XMP result.
 
         Returns
@@ -183,8 +188,19 @@ if os.name == "nt":
         """
         import pyvista as pv
 
-        if not str(file_path).lower().endswith("xmp"):
-            raise ValueError("Please specify a .xmp file.")
+        result_name = Path(result_name)
+        if not str(result_name).lower().endswith(".xmp"):
+            result_name = result_name.with_name(result_name.name + ".xmp")
+        file_path = _find_correct_result(simulation_feature, str(result_name))
+
+        if file_path == "":
+            raise ValueError(
+                "No result corresponding to "
+                + str(result_name)
+                + " is found in "
+                + simulation_feature._name
+            )
+
         file_path = Path(file_path)
         dpf_instance = CreateObject("XMPViewer.Application")
         dpf_instance.OpenFile(str(file_path))
@@ -247,14 +263,20 @@ if os.name == "nt":
         vtp_meshes.save(str(file_path.with_suffix(".vtp")))
         return file_path.with_suffix(".vtp")
 
-    def export_xm3_vtp(geo_faces: List[face_pb2.Face], file_path: Union[str, Path]) -> Path:
+    def export_xm3_vtp(
+        simulation_feature: Union[SimulationDirect, SimulationInverse],
+        geo_faces: List[face_pb2.Face],
+        result_name: Union[str, Path],
+    ) -> Path:
         """Export an XMP result into vtp file.
 
         Parameters
         ----------
+        simulation_feature : ansys.speos.core.simulation.Simulation
+            The simulation feature.
         geo_faces: List[face_pb2.Face]
             list of face geometries.
-        file_path: Union[str, Path]
+        result_name: Union[str, Path]
             file path of an XMP result.
 
         Returns
@@ -265,8 +287,18 @@ if os.name == "nt":
         """
         import pyvista as pv
 
-        if not str(file_path).lower().endswith("xm3"):
-            raise ValueError("Please specify a .xm3 file.")
+        result_name = Path(result_name)
+        if not str(result_name).lower().endswith(".xm3"):
+            result_name = result_name.with_name(result_name.name + ".xm3")
+        file_path = _find_correct_result(simulation_feature, str(result_name))
+
+        if file_path == "":
+            raise ValueError(
+                "No result corresponding to "
+                + str(result_name)
+                + " is found in "
+                + simulation_feature._name
+            )
 
         file_path = Path(file_path)
         dpf_instance = CreateObject("Xm3Viewer.Application")
@@ -278,6 +310,22 @@ if os.name == "nt":
         xm3_data = []
         content = file.readlines()
         header = content[0].strip().split("\t")
+        illuminance_indices = [
+            i for i, header_item in enumerate(header) if header_item == "Illuminance"
+        ]
+        irradiance_indices = [
+            i for i, header_item in enumerate(header) if header_item == "Irradiance"
+        ]
+        reflection_indices = [
+            i for i, header_item in enumerate(header) if "Reflection" in header_item
+        ]
+        transmission_indices = [
+            i for i, header_item in enumerate(header) if "Transmission" in header_item
+        ]
+        absorption_indices = [
+            i for i, header_item in enumerate(header) if "Absorption" in header_item
+        ]
+
         skip_line = 1
         try:
             float(float(content[1].strip().split()[0]))
@@ -286,21 +334,6 @@ if os.name == "nt":
             skip_line = 2  # separated layer
         for line in content[skip_line:]:
             line_content = line.strip().split("\t")
-            illuminance_indices = [
-                i for i, header_item in enumerate(header) if header_item == "Illuminance"
-            ]
-            irradiance_indices = [
-                i for i, header_item in enumerate(header) if header_item == "Irradiance"
-            ]
-            reflection_indices = [
-                i for i, header_item in enumerate(header) if "Reflection" in header_item
-            ]
-            transmission_indices = [
-                i for i, header_item in enumerate(header) if "Transmission" in header_item
-            ]
-            absorption_indices = [
-                i for i, header_item in enumerate(header) if "Absorption" in header_item
-            ]
             xm3_data.append(
                 _Speos3dData(
                     x=float(line_content[0]),
