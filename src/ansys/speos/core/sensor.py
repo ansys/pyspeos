@@ -25,12 +25,14 @@
 from __future__ import annotations
 
 from difflib import SequenceMatcher
+from math import radians
 from typing import List, Mapping, Optional, Union
 import uuid
 import warnings
 
 import grpc
 import numpy as np
+from win32com.server.util import Collection
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2, common_pb2, sensor_pb2
 import ansys.speos.core as core
@@ -3815,6 +3817,7 @@ class SensorXMPIntensity(BaseSensor):
         # Attribute gathering more complex intensity type
         self._type = None
         self._layer_type = None
+        self._cell_diameter = None
 
         if default_values:
             # Default values template
@@ -3842,7 +3845,10 @@ class SensorXMPIntensity(BaseSensor):
 
     @property
     def cell_distance(self):
-        """Distance of the Detector to origin in mm."""
+        """Distance of the Detector to origin in mm.
+
+        By default, ``10``
+        """
         if self.nearfield:
             return self._sensor_template.intensity_sensor_template.near_field.cell_distance
         else:
@@ -3852,25 +3858,31 @@ class SensorXMPIntensity(BaseSensor):
     def cell_distance(self, value):
         if self.nearfield:
             self._sensor_template.intensity_sensor_template.near_field.cell_distance = value
+
         else:
             raise TypeError("Sensor position is not in nearfield")
 
     @property
-    def cell_integration_angle(self):
-        """Integration angle of the cell (deg).
+    def cell_diameter(self):
+        """Cell diameter in mm.
 
-        Used with cell_distance to calculate the cell diameter.
+        By default, ``0.3491``
         """
         if self.nearfield:
-            return self._sensor_template.intensity_sensor_template.near_field.cell_integration_angle
+            diameter = self.cell_distance * np.tan(
+                radians(
+                    self._sensor_template.intensity_sensor_template.near_field.cell_integration_angle
+                )
+            )
+            return diameter
         else:
             return None
 
-    @cell_integration_angle.setter
-    def cell_integration_angle(self, value):
+    @cell_diameter.setter
+    def cell_diameter(self, value):
         if self.nearfield:
             self._sensor_template.intensity_sensor_template.near_field.cell_integration_angle = (
-                value
+                np.degrees(np.arctan(value / 2 / self.cell_distance))
             )
         else:
             raise TypeError("Sensor position is not in nearfield")
@@ -3973,7 +3985,7 @@ class SensorXMPIntensity(BaseSensor):
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
             self.theta_max = 45
-            self.theta_max_sampling = 90
+            self.theta_sampling = 90
         elif template.HasField("intensity_orientation_x_as_parallel"):
             self.x_start = -30
             self.x_end = 30
@@ -4158,7 +4170,7 @@ class SensorXMPIntensity(BaseSensor):
             raise TypeError("Only Conoscopic Sensor has theta_max dimension")
 
     @property
-    def theta_max_sampling(self) -> int:
+    def theta_sampling(self) -> int:
         """Sampling on conoscopic type.
 
         By default, ``90``.
@@ -4171,8 +4183,8 @@ class SensorXMPIntensity(BaseSensor):
         else:
             return None
 
-    @theta_max_sampling.setter
-    def theta_max_sampling(self, value: int):
+    @theta_sampling.setter
+    def theta_sampling(self, value: int):
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
             template.intensity_orientation_conoscopic.conoscopic_intensity_dimensions.sampling = (
@@ -4373,21 +4385,21 @@ class SensorXMPIntensity(BaseSensor):
             )
         return self._layer_type
 
-    def set_axis_system(self, axis_system: Optional[List[float]] = None) -> SensorXMPIntensity:
-        """Set position of the sensor.
+    @property
+    def axis_system(self) -> np.array:
+        """Position of the sensor.
 
-        Parameters
-        ----------
-        axis_system : Optional[List[float]]
-            Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
-            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+        Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+        By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
         Returns
         -------
-        ansys.speos.core.sensor.SensorXMPIntensity
-            Intensity sensor.
+        np.array[float]
+            Axis system information as np.array.
         """
-        if axis_system is None:
-            axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-        self._sensor_instance.intensity_properties.axis_system[:] = axis_system
-        return self
+        return np.array(self._sensor_instance.intensity_properties.axis_system)
+
+    @axis_system.setter
+    def axis_system(self, value: Collection[float]):
+        value = np.array(value)
+        self._sensor_instance.intensity_properties.axis_system[:] = value.flatten().tolist()
