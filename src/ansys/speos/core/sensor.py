@@ -1952,7 +1952,7 @@ class SensorCamera(BaseSensor):
             Sensor feature.
         """
         msg = (
-            "Please note following values {} were over written by the values"
+            "Please note that the following values {} were over written by the values"
             " stored in the distortion file"
         )
         values_v2 = ["focal_length", "imager_distance", "f_number"]

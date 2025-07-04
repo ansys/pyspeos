@@ -43,10 +43,7 @@ def test_create_camera_sensor(speos: Speos):
 
     # Default value
     sensor1 = p.create_sensor(name="Camera.1", feature_type=SensorCamera)
-    if isinstance(sensor1, SensorCamera):
-        pass
-    else:
-        assert False
+    assert isinstance(sensor1, SensorCamera)
     sensor1.set_mode_photometric().set_mode_color().set_red_spectrum_file_uri(
         uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum")
     )
