@@ -274,37 +274,33 @@ class BaseSimulation:
 
         """
         vtp_files = []
-        export_data_xmps = [result for result in self.result_list if result.path.endswith(".xmp")]
-        if len(export_data_xmps) != 0:
-            from ansys.speos.core.workflow.open_result import export_xmp_vtp
+        from ansys.speos.core import Face
+        from ansys.speos.core.sensor import Sensor3DIrradiance, SensorIrradiance
+        from ansys.speos.core.workflow.open_result import export_xm3_vtp, export_xmp_vtp
 
-            for data_xmp in export_data_xmps:
-                exported_vtp = export_xmp_vtp(data_xmp.path)
-                vtp_files.append(exported_vtp)
-
-        export_data_xm3s = [result for result in self.result_list if result.path.endswith(".xm3")]
-        if len(export_data_xm3s) != 0:
-            from ansys.speos.core import Face
-            from ansys.speos.core.sensor import Sensor3DIrradiance
-            from ansys.speos.core.workflow.open_result import export_xm3_vtp
-
-            sensor_paths = self.get(key="sensor_paths")
-            for sensor_path in sensor_paths:
-                sensors = self._project.find(name=sensor_path, feature_type=Sensor3DIrradiance)
-                if len(sensors) != 0:
-                    sensor = sensors[0]
-                    geo_paths = sensor.get(key="geo_paths")
+        sensor_paths = self.get(key="sensor_paths")
+        for feature in self._project._features:
+            if feature._name not in sensor_paths:
+                continue
+            match feature:
+                case SensorIrradiance():
+                    xmp_data = feature.get(key="result_file_name")
+                    exported_vtp = export_xmp_vtp(self, xmp_data)
+                    vtp_files.append(exported_vtp)
+                case Sensor3DIrradiance():
+                    xm3_data = feature.get(key="result_file_name")
+                    geo_paths = feature.get(key="geo_paths")
                     geos_faces = [
                         self._project.find(name=geo_path, feature_type=Face)[0]._face
                         for geo_path in geo_paths
                     ]
-                    data_xm3 = [
-                        result
-                        for result in export_data_xm3s
-                        if sensor.get(key="result_file_name") in result.path
-                    ][0]
-                    exported_vtp = export_xm3_vtp(geos_faces, data_xm3.path)
+                    exported_vtp = export_xm3_vtp(self, geos_faces, xm3_data)
                     vtp_files.append(exported_vtp)
+                case _:
+                    warnings.warn(
+                        "feature {} result currently not supported".format(feature._name),
+                        stacklevel=2,
+                    )
         return vtp_files
 
     def compute_CPU(
