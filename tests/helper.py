@@ -128,6 +128,15 @@ def remove_file(path):
     ----------
     path (str) - path of the file.
     """
+
+    def rmtree(f: Path):
+        if f.is_file():
+            f.unlink()
+        else:
+            for child in f.iterdir():
+                rmtree(child)
+            f.rmdir()
+
     if config.get("SpeosServerOnDocker"):
         subprocess.call(
             "docker exec "
@@ -138,4 +147,4 @@ def remove_file(path):
             shell=True,
         )
     else:
-        Path(path).unlink()
+        rmtree(Path(path))
