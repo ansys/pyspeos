@@ -890,8 +890,6 @@ class Project:
         pv.PolyData
             mesh data extracted.
         """
-        import pyvista as pv
-
         part_coordinate = [
             0.0,
             0.0,
@@ -909,25 +907,17 @@ class Project:
         if part_coordinate_info is not None:
             part_coordinate = part_coordinate_info
         part_mesh_info = None
-        for body_idx, body_guid in enumerate(part_data.body_guids):
-            body_item_data = self.client[body_guid].get()
-            for face_idx, face_guid in enumerate(body_item_data.face_guids):
-                face_item_data = self.client[face_guid].get()
-                vertices = np.array(face_item_data.vertices)
-                facets = np.array(face_item_data.facets)
-                vertices = vertices.reshape(-1, 3)
-                vertices = np.array(
-                    [local2absolute(vertice, part_coordinate) for vertice in vertices]
-                )
-                facets = facets.reshape(-1, 3)
-                temp = np.full(facets.shape[0], 3)
-                temp = np.vstack(temp)
-                facets = np.hstack((temp, facets))
-                face_mesh_data = pv.PolyData(vertices, facets)
-                if part_mesh_info is None:
-                    part_mesh_info = face_mesh_data
-                else:
-                    part_mesh_info = part_mesh_info.append_polydata(face_mesh_data)
+        for feature in part_data._geom_features:
+            if not isinstance(feature, body.Body):
+                continue
+            body_visual_data = feature.visual_data.data
+            body_visual_data.points = np.array(
+                [local2absolute(vertice, part_coordinate) for vertice in body_visual_data.points]
+            )
+            if part_mesh_info is None:
+                part_mesh_info = body_visual_data
+            else:
+                part_mesh_info = part_mesh_info.append_polydata(body_visual_data)
         return part_mesh_info
 
     def _create_speos_feature_preview(
@@ -1068,16 +1058,15 @@ class Project:
             ]  # filter subpart which contains ansys.speos.core.body.Body
             for subpart in subparts:
                 subpart_axis = subpart._part_instance.axis_system
-                subpart_guid = subpart._part_instance.part_guid
                 part_mesh_data = self.__extract_part_mesh_info(
-                    part_data=self.client[subpart_guid].get(),
+                    part_data=subpart,
                     part_coordinate_info=subpart_axis,
                 )
                 if part_mesh_data is not None:
                     _preview_mesh = _preview_mesh.append_polydata(part_mesh_data)
 
             # Add also the mesh of bodies directly contained in root part
-            root_part_data = self.client[self.scene_link.get().part_guid].get()
+            root_part_data = self.find(name="", feature_type=part.Part)[0]
             poly_data = self.__extract_part_mesh_info(part_data=root_part_data)
             if poly_data is not None:
                 _preview_mesh = _preview_mesh.append_polydata(poly_data)
