@@ -1046,16 +1046,15 @@ class Project:
         # Add cad visual data at the root part
         if self.scene_link.get().part_guid != "":
             _preview_mesh = pv.PolyData()
-            # Retrieve root part
             root_part = self.find(name="", feature_type=part.Part)[0]
-            subparts = find_all_subparts(root_part)  # all subpart
-            subparts = [
-                subpart
-                for subpart in subparts
-                if any(
-                    isinstance(_geo_feature, body.Body) for _geo_feature in subpart._geom_features
-                )
-            ]  # filter subpart which contains ansys.speos.core.body.Body
+
+            # Add mesh of bodies directly contained in root part
+            part_mesh_data = self.__extract_part_mesh_info(part_data=root_part)
+            if part_mesh_data is not None:
+                _preview_mesh = _preview_mesh.append_polydata(part_mesh_data)
+
+            # Add mesh of bodies contained in sub-part
+            subparts = find_all_subparts(root_part)
             for subpart in subparts:
                 subpart_axis = subpart._part_instance.axis_system
                 part_mesh_data = self.__extract_part_mesh_info(
@@ -1065,11 +1064,6 @@ class Project:
                 if part_mesh_data is not None:
                     _preview_mesh = _preview_mesh.append_polydata(part_mesh_data)
 
-            # Add also the mesh of bodies directly contained in root part
-            root_part_data = self.find(name="", feature_type=part.Part)[0]
-            poly_data = self.__extract_part_mesh_info(part_data=root_part_data)
-            if poly_data is not None:
-                _preview_mesh = _preview_mesh.append_polydata(poly_data)
             if _preview_mesh.n_points != 0 and _preview_mesh.n_cells != 0:
                 p.plot(_preview_mesh, **viz_args)
 
