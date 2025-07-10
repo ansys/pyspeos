@@ -25,7 +25,6 @@
 from __future__ import annotations
 
 from difflib import SequenceMatcher
-from math import radians
 from typing import Collection, List, Mapping, Optional, Union
 import uuid
 import warnings
@@ -3872,7 +3871,7 @@ class SensorXMPIntensity(BaseSensor):
         """
         if self.nearfield:
             diameter = self.cell_distance * np.tan(
-                radians(
+                np.radians(
                     self._sensor_template.intensity_sensor_template.near_field.cell_integration_angle
                 )
             )
