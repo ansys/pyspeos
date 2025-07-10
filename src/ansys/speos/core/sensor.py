@@ -26,13 +26,12 @@ from __future__ import annotations
 
 from difflib import SequenceMatcher
 from math import radians
-from typing import List, Mapping, Optional, Union
+from typing import Collection, List, Mapping, Optional, Union
 import uuid
 import warnings
 
 import grpc
 import numpy as np
-from win32com.server.util import Collection
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2, common_pb2, sensor_pb2
 import ansys.speos.core as core
