@@ -295,14 +295,13 @@ class Part:
                     else:
                         update_part = False
                 else:
-                    self._parent_part._part.parts.append(
+                    parent_part_data.parts.append(
                         self._part_instance
                     )  # if no, just add it to the list of part instances
 
-                if self._parent_part.part_link is not None and update_part:
-                    self._parent_part.part_link.set(
-                        data=self._parent_part._part
-                    )  # update parent part
+                if update_part:
+                    self._parent_part._part = parent_part_data
+                    self._parent_part.part_link.set(data=parent_part_data)  # update parent part
 
             return self
 
@@ -360,11 +359,10 @@ class Part:
                     None,
                 )
                 if part_inst is not None:
-                    self._parent_part._part.parts.remove(part_inst)
+                    parent_part_data.parts.remove(part_inst)
+                    self._parent_part._part = parent_part_data
                     if self._parent_part.part_link is not None:
-                        self._parent_part.part_link.set(
-                            data=self._parent_part._part
-                        )  # update parent part
+                        self._parent_part.part_link.set(data=parent_part_data)  # update parent part
 
             # Reset the _unique_id
             self._unique_id = None
