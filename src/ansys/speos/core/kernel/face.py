@@ -24,10 +24,13 @@
 
 from typing import Iterator, List
 
+from grpc import RpcError
+
 from ansys.api.speos.part.v1 import (
     face_pb2 as messages,
     face_pb2_grpc as service,
 )
+from ansys.speos.core.generic.general_methods import min_speos_version
 from ansys.speos.core.kernel.crud import CrudItem, CrudStub
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 
@@ -102,7 +105,19 @@ class FaceStub(CrudStub):
     def __init__(self, channel):
         super().__init__(stub=service.FacesManagerStub(channel=channel))
         self._actions_stub = service.FaceActionsStub(channel=channel)
+        self._is_batch_available = self._check_if_batch_available()
 
+    def _check_if_batch_available(self) -> bool:
+        try:
+            for reserve_faces_res in self._actions_stub.ReserveFaces(
+                FaceStub._reserve_face_iterator([ProtoFace(name="tmp")])
+            ):
+                FaceLink(self, reserve_faces_res.guids[0]).delete()
+            return True
+        except RpcError:
+            return False
+
+    @min_speos_version(25, 2, 0)
     def create_batch(self, message_list: List[ProtoFace]) -> List[FaceLink]:
         """Create new entries.
 
@@ -116,6 +131,9 @@ class FaceStub(CrudStub):
         List[ansys.speos.core.kernel.face.FaceLink]
             List pf link objects created.
         """
+        if not self._is_batch_available:
+            raise NotImplementedError("Please use a Speos Version of 2025 R2 SP0 or higher.")
+
         reserve_faces_res = self._actions_stub.ReserveFaces(
             FaceStub._reserve_face_iterator(message_list)
         )
@@ -145,8 +163,15 @@ class FaceStub(CrudStub):
         ansys.speos.core.kernel.face.FaceLink
             Link object created.
         """
-        return self.create_batch(message_list=[message])[0]
+        resp = CrudStub.create(self, messages.Create_Request(face=ProtoFace(name="tmp")))
 
+        chunk_iterator = FaceStub._faces_to_chunks(
+            guids=[resp.guid], message_list=[message], nb_items=128 * 1024
+        )
+        self._actions_stub.Upload(chunk_iterator)
+        return FaceLink(self, resp.guid)
+
+    @min_speos_version(25, 2, 0)
     def read_batch(self, refs: List[FaceLink]) -> List[ProtoFace]:
         """Get existing entries.
 
@@ -160,6 +185,9 @@ class FaceStub(CrudStub):
         List[face.Face]
             Datamodels of the entries.
         """
+        if not self._is_batch_available:
+            raise NotImplementedError("Please use a Speos Version of 2025 R2 SP0 or higher.")
+
         for ref in refs:
             if not ref.stub == self:
                 raise ValueError("FaceLink is not on current database. Key=" + ref.key)
@@ -181,8 +209,13 @@ class FaceStub(CrudStub):
         face.Face
             Datamodel of the entry.
         """
-        return self.read_batch(refs=[ref])[0]
+        if not ref.stub == self:
+            raise ValueError("FaceLink is not on current database. Key=" + ref.key)
 
+        chunks = self._actions_stub.Download(request=messages.Download_Request(guid=ref.key))
+        return FaceStub._chunks_to_faces(chunks)[0]
+
+    @min_speos_version(25, 2, 0)
     def update_batch(self, refs: List[FaceLink], data: List[ProtoFace]) -> None:
         """Change existing entries.
 
@@ -194,6 +227,9 @@ class FaceStub(CrudStub):
         data : List[face.Face]
             New datamodels for the entries.
         """
+        if not self._is_batch_available:
+            raise NotImplementedError("Please use a Speos Version of 2025 R2 SP0 or higher.")
+
         for ref in refs:
             if not ref.stub == self:
                 raise ValueError("FaceLink is not on current database")
@@ -214,7 +250,13 @@ class FaceStub(CrudStub):
         data : face.Face
             New datamodel for the entry.
         """
-        self.update_batch(refs=[ref], data=[data])
+        if not ref.stub == self:
+            raise ValueError("FaceLink is not on current database")
+
+        chunk_iterator = FaceStub._faces_to_chunks(
+            guids=[ref.key], message_list=[data], nb_items=128 * 1024
+        )
+        self._actions_stub.Upload(chunk_iterator)
 
     def delete(self, ref: FaceLink) -> None:
         """Remove an existing entry.

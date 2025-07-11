@@ -478,6 +478,7 @@ def test_preview_visual_data(speos: Speos):
     p2.preview()
     # preview when there is no cad
     p3 = Project(speos=speos)
+    p3.create_root_part().commit()  # Needed for 251 server.
     sr = p3.create_source(name="Luminaire_source.2", feature_type=SourceLuminaire)
     sr.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
     sr.commit()
