@@ -43,7 +43,7 @@ def dict_to_str(dict: dict) -> str:
     str
         String representation of the dictionary.
     """
-    return json.dumps(dict, indent=4)
+    return json.dumps(dict, indent=4, ensure_ascii=False)
 
 
 def _replace_guids(
