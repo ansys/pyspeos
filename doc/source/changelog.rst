@@ -9,6 +9,171 @@ This document contains the release notes for the PySpeos project.
 
 .. towncrier release notes start
 
+`0.6.0 <https://github.com/ansys/pyspeos/releases/tag/v0.6.0>`_ - July 15, 2025
+===============================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Kernel - facestub - add create_batch and read_batch methods
+          - `#369 <https://github.com/ansys/pyspeos/pull/369>`_
+
+        * - enhance the project preview: luminaire, surface, rayfile
+          - `#561 <https://github.com/ansys/pyspeos/pull/561>`_
+
+        * - lightexpert
+          - `#592 <https://github.com/ansys/pyspeos/pull/592>`_
+
+        * - Add 3d irradiance
+          - `#595 <https://github.com/ansys/pyspeos/pull/595>`_
+
+        * - Add version warnings
+          - `#608 <https://github.com/ansys/pyspeos/pull/608>`_
+
+        * - Spectralbsdf
+          - `#614 <https://github.com/ansys/pyspeos/pull/614>`_
+
+        * - Add method to export simulation
+          - `#629 <https://github.com/ansys/pyspeos/pull/629>`_
+
+        * - Add natural light
+          - `#633 <https://github.com/ansys/pyspeos/pull/633>`_
+
+        * - Add export result as vtp files
+          - `#643 <https://github.com/ansys/pyspeos/pull/643>`_
+
+        * - Add cad visual data property
+          - `#661 <https://github.com/ansys/pyspeos/pull/661>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - bump ansys-api-speos from 0.14.2 to 0.15.2
+          - `#589 <https://github.com/ansys/pyspeos/pull/589>`_
+
+        * - bump the doc-deps group with 3 updates
+          - `#604 <https://github.com/ansys/pyspeos/pull/604>`_
+
+        * - bump notebook from 7.4.2 to 7.4.3 in the jupyter-deps group across 1 directory
+          - `#609 <https://github.com/ansys/pyspeos/pull/609>`_
+
+        * - Bump ansys-sphinx-theme from 1.5.0 to 1.5.2 in the doc-deps group
+          - `#616 <https://github.com/ansys/pyspeos/pull/616>`_
+
+        * - Bump pytest from 8.3.5 to 8.4.0 in the test-deps group
+          - `#618 <https://github.com/ansys/pyspeos/pull/618>`_
+
+        * - Bump pytest-cov from 6.1.1 to 6.2.1 in the test-deps group
+          - `#623 <https://github.com/ansys/pyspeos/pull/623>`_
+
+        * - Bump pytest from 8.4.0 to 8.4.1 in the test-deps group
+          - `#637 <https://github.com/ansys/pyspeos/pull/637>`_
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Add badges into readme.rst
+          - `#610 <https://github.com/ansys/pyspeos/pull/610>`_
+
+        * - Adjust missing examples
+          - `#612 <https://github.com/ansys/pyspeos/pull/612>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - add message size to nighly ci
+          - `#600 <https://github.com/ansys/pyspeos/pull/600>`_
+
+        * - Only reset the _visual_data when graphics_available is true
+          - `#621 <https://github.com/ansys/pyspeos/pull/621>`_
+
+        * - Read empty mesh when no body at root and subpart.1
+          - `#632 <https://github.com/ansys/pyspeos/pull/632>`_
+
+        * - Duplicated feature that is already inside the _features list
+          - `#636 <https://github.com/ansys/pyspeos/pull/636>`_
+
+        * - 640 camera with distortion v2 to v4
+          - `#644 <https://github.com/ansys/pyspeos/pull/644>`_
+
+        * - Sim export_unittest for windows
+          - `#655 <https://github.com/ansys/pyspeos/pull/655>`_
+
+        * - Kernel - faceactions - check if batch is available on server - if available use batch project _fill_bodies
+          - `#656 <https://github.com/ansys/pyspeos/pull/656>`_
+
+        * - Print of protobuf messages containing special characters
+          - `#663 <https://github.com/ansys/pyspeos/pull/663>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - update CHANGELOG for v0.5.0
+          - `#597 <https://github.com/ansys/pyspeos/pull/597>`_
+
+        * - bump dev version into v0.6.dev0
+          - `#598 <https://github.com/ansys/pyspeos/pull/598>`_
+
+        * - pre-commit autoupdate
+          - `#599 <https://github.com/ansys/pyspeos/pull/599>`_
+
+        * - update CHANGELOG for v0.5.1
+          - `#602 <https://github.com/ansys/pyspeos/pull/602>`_
+
+        * - bump ansys/actions from 9.0.11 to 9.0.13
+          - `#606 <https://github.com/ansys/pyspeos/pull/606>`_
+
+        * - Pre-commit autoupdate
+          - `#611 <https://github.com/ansys/pyspeos/pull/611>`_, `#619 <https://github.com/ansys/pyspeos/pull/619>`_
+
+        * - Bump ansys/actions into v10.0.3
+          - `#613 <https://github.com/ansys/pyspeos/pull/613>`_
+
+        * - Bump ansys/actions from 10.0.3 to 10.0.8
+          - `#615 <https://github.com/ansys/pyspeos/pull/615>`_
+
+        * - Bump ansys/actions from 10.0.8 to 10.0.11
+          - `#622 <https://github.com/ansys/pyspeos/pull/622>`_
+
+        * - Update dependabot cfg and code owners
+          - `#627 <https://github.com/ansys/pyspeos/pull/627>`_
+
+        * - Bump ansys/actions from 10.0.11 to 10.0.12
+          - `#649 <https://github.com/ansys/pyspeos/pull/649>`_
+
+
+  .. tab-item:: Test
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Add several tests for file transfer api
+          - `#652 <https://github.com/ansys/pyspeos/pull/652>`_
+
+
 `0.5.1 <https://github.com/ansys/pyspeos/releases/tag/v0.5.1>`_ - May 28, 2025
 ==============================================================================
 
