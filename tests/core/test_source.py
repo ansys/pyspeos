@@ -22,10 +22,12 @@
 
 """Unit test for Source Class."""
 
+import datetime
 from pathlib import Path
 
 from ansys.speos.core import GeoRef, Project, Speos
 from ansys.speos.core.source import (
+    SourceAmbientNaturalLight,
     SourceLuminaire,
     SourceRayFile,
     SourceSurface,
@@ -365,6 +367,162 @@ def test_create_rayfile_source(speos: Speos):
     assert source1._source_instance.rayfile_properties.HasField("exit_geometries") is False
 
     source1.delete()
+
+
+def test_create_natural_light_source(speos: Speos):
+    """Test creation of ambient natural light source."""
+    p = Project(speos=speos)
+
+    # Default value :
+    source1 = SourceAmbientNaturalLight(
+        p,
+        name="NaturalLight.1",
+    )
+    now = datetime.datetime.now()
+    assert source1._source_instance.HasField("ambient_properties")
+    assert source1._source_instance.ambient_properties.zenith_direction == [
+        0,
+        0,
+        1,
+    ]
+    assert source1._source_instance.ambient_properties.HasField("natural_light_properties")
+    tmp_natural_light_property = (
+        source1._source_instance.ambient_properties.natural_light_properties
+    )
+    assert tmp_natural_light_property.north_direction == [
+        0,
+        1,
+        0,
+    ]
+    assert tmp_natural_light_property.HasField("sun_axis_system")
+    assert tmp_natural_light_property.sun_axis_system.HasField("automatic_sun")
+    assert tmp_natural_light_property.sun_axis_system.automatic_sun.year == now.year
+    assert tmp_natural_light_property.sun_axis_system.automatic_sun.month == now.month
+    assert tmp_natural_light_property.sun_axis_system.automatic_sun.day == now.day
+    assert tmp_natural_light_property.sun_axis_system.automatic_sun.hour == now.hour
+    assert tmp_natural_light_property.sun_axis_system.automatic_sun.minute == now.minute
+    assert tmp_natural_light_property.sun_axis_system.automatic_sun.time_zone_uri == "CET"
+
+    assert source1._source_template.HasField("ambient")
+    assert source1._source_template.ambient.HasField("natural_light")
+    assert source1._source_template.ambient.natural_light.turbidity == 3
+    assert source1._source_template.ambient.natural_light.with_sky is True
+
+    # Check property method
+    assert source1.zenith_direction == [0, 0, 1]
+    assert source1.reverse_zenith_direction is False
+    assert source1.north_direction == [0, 1, 0]
+    assert source1.reverse_north_direction is False
+
+    source1.zenith_direction = [0, 0, 1]
+    source1.reverse_zenith_direction = True
+    source1.north_direction = [1, 0, 0]
+    source1.reverse_north_direction = True
+    source1.turbidity = 4
+    source1.with_sky = False
+    source1.commit()
+    assert source1._source_template.ambient.natural_light.turbidity == 4
+    assert source1._source_template.ambient.natural_light.with_sky is False
+    assert source1._source_instance.ambient_properties.zenith_direction == [
+        0,
+        0,
+        1,
+    ]
+    assert source1._source_instance.ambient_properties.natural_light_properties.north_direction == [
+        1,
+        0,
+        0,
+    ]
+    assert (
+        source1._source_instance.ambient_properties.natural_light_properties.reverse_north is True
+    )
+    assert source1._source_instance.ambient_properties.reverse_zenith is True
+
+    source1.set_sun_manual().direction = [0, 0, 1]
+    source1.commit()
+
+    # check the backend
+    tmp_natural_light_property = (
+        source1._source_instance.ambient_properties.natural_light_properties
+    )
+    assert tmp_natural_light_property.sun_axis_system.HasField("manual_sun")
+    assert tmp_natural_light_property.sun_axis_system.manual_sun.sun_direction == [0, 0, 1]
+    assert tmp_natural_light_property.sun_axis_system.manual_sun.reverse_sun is False
+
+    # check the property method
+    assert source1.turbidity == 4
+    assert source1.with_sky is False
+    assert source1.set_sun_manual().direction == [0, 0, 1]
+    assert source1.set_sun_manual().reverse_sun is False
+
+    source1.set_sun_automatic().year = 2026
+    source1.set_sun_automatic().month = 12
+    source1.set_sun_automatic().day = 31
+    source1.set_sun_automatic().hour = 12
+    source1.set_sun_automatic().minute = 23
+    source1.set_sun_automatic().longitude = 10
+    source1.set_sun_automatic().latitude = 45
+    source1.set_sun_automatic().time_zone = "CST"
+    source1.commit()
+
+    # check the backend
+    tmp_natural_light_property = (
+        source1._source_instance.ambient_properties.natural_light_properties
+    )
+    assert tmp_natural_light_property.sun_axis_system.HasField("automatic_sun")
+    assert tmp_natural_light_property.sun_axis_system.automatic_sun.year == 2026
+    assert tmp_natural_light_property.sun_axis_system.automatic_sun.month == 12
+    assert tmp_natural_light_property.sun_axis_system.automatic_sun.day == 31
+    assert tmp_natural_light_property.sun_axis_system.automatic_sun.hour == 12
+    assert tmp_natural_light_property.sun_axis_system.automatic_sun.minute == 23
+    assert tmp_natural_light_property.sun_axis_system.automatic_sun.longitude == 10
+    assert tmp_natural_light_property.sun_axis_system.automatic_sun.latitude == 45
+    assert tmp_natural_light_property.sun_axis_system.automatic_sun.time_zone_uri == "CST"
+
+    # check property methods
+    assert source1.set_sun_automatic().year == 2026
+    assert source1.set_sun_automatic().month == 12
+    assert source1.set_sun_automatic().day == 31
+    assert source1.set_sun_automatic().hour == 12
+    assert source1.set_sun_automatic().minute == 23
+    assert source1.set_sun_automatic().longitude == 10
+    assert source1.set_sun_automatic().latitude == 45
+    assert source1.set_sun_automatic().time_zone == "CST"
+
+    source1.delete()
+
+    source2 = p.create_source(name="NaturalLight.2", feature_type=SourceAmbientNaturalLight)
+    now = datetime.datetime.now()
+    assert source2._source_instance.HasField("ambient_properties")
+    assert source2._source_instance.ambient_properties.zenith_direction == [
+        0,
+        0,
+        1,
+    ]
+    assert source2._source_instance.ambient_properties.HasField("natural_light_properties")
+    tmp_natural_light_property = (
+        source2._source_instance.ambient_properties.natural_light_properties
+    )
+    assert tmp_natural_light_property.north_direction == [
+        0,
+        1,
+        0,
+    ]
+    assert tmp_natural_light_property.HasField("sun_axis_system")
+    assert tmp_natural_light_property.sun_axis_system.HasField("automatic_sun")
+    assert tmp_natural_light_property.sun_axis_system.automatic_sun.year == now.year
+    assert tmp_natural_light_property.sun_axis_system.automatic_sun.month == now.month
+    assert tmp_natural_light_property.sun_axis_system.automatic_sun.day == now.day
+    assert tmp_natural_light_property.sun_axis_system.automatic_sun.hour == now.hour
+    assert tmp_natural_light_property.sun_axis_system.automatic_sun.minute == now.minute
+    assert tmp_natural_light_property.sun_axis_system.automatic_sun.time_zone_uri == "CET"
+
+    assert source2._source_template.HasField("ambient")
+    assert source2._source_template.ambient.HasField("natural_light")
+    assert source2._source_template.ambient.natural_light.turbidity == 3
+    assert source2._source_template.ambient.natural_light.with_sky is True
+
+    source2.delete()
 
 
 def test_keep_same_internal_feature(speos: Speos):

@@ -208,3 +208,5 @@ for feat in features:
 
 root_part.delete()
 print(root_part)
+
+speos.close()

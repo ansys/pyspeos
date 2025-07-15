@@ -203,3 +203,5 @@ cam1.commit()
 run_sim()
 if os.name == "nt":
     open_result_image(simulation_feature=sim, result_name="Camera.1.png")
+
+speos.close()

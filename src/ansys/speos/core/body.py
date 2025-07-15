@@ -29,6 +29,8 @@ from typing import List, Mapping, Optional, Union
 
 from ansys.speos.core import proto_message_utils
 import ansys.speos.core.face as face
+import ansys.speos.core.generic.general_methods as general_methods
+from ansys.speos.core.generic.visualization_methods import _VisualData
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.body import ProtoBody
 from ansys.speos.core.kernel.client import SpeosClient
@@ -72,6 +74,7 @@ class Body:
         self._parent_part = parent_part
         self._name = name
         self.body_link = None
+        self._visual_data = _VisualData() if general_methods._GRAPHICS_AVAILABLE else None
         """Link object for the body in database."""
 
         if metadata is None:
@@ -81,6 +84,30 @@ class Body:
         self._body = ProtoBody(name=name, description=description, metadata=metadata)
 
         self._geom_features = []
+
+    @property
+    def visual_data(self):
+        """Property containing irradiance sensor visualization data.
+
+        Returns
+        -------
+        VisualData
+            Instance of VisualData Class for pyvista.PolyData of feature faces, coordinate_systems.
+
+        """
+        import numpy as np
+
+        if self._visual_data.updated is True:
+            return self._visual_data
+        for feature_face in self._geom_features:
+            vertices = np.array(feature_face._face.vertices).reshape(-1, 3)
+            facets = np.array(feature_face._face.facets).reshape(-1, 3)
+            temp = np.full(facets.shape[0], 3)
+            temp = np.vstack(temp)
+            facets = np.hstack((temp, facets))
+            self._visual_data.add_data_mesh(vertices, facets)
+        self._visual_data.updated = True
+        return self._visual_data
 
     @property
     def geo_path(self) -> GeoRef:
@@ -159,6 +186,9 @@ class Body:
         ansys.speos.core.body.Body
             Body feature.
         """
+        if general_methods._GRAPHICS_AVAILABLE:
+            self._visual_data.updated = False
+
         # Commit faces contained in this body
         for g in self._geom_features:
             g.commit()
