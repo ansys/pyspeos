@@ -1,0 +1,227 @@
+
+
+
+
+
+
+:class:`SourceTemplateLink`
+===========================
+
+
+.. py:class:: ansys.speos.core.kernel.source_template.SourceTemplateLink(db, key)
+
+   Bases: :py:obj:`ansys.speos.core.kernel.crud.CrudItem`
+
+
+   
+   Link object for a source template in database.
+
+
+   :Parameters:
+
+       **db** : :obj:`ansys.speos.core.kernel.source_template.SourceTemplateStub`
+           Database to link to.
+
+       **key** : :class:`python:str`
+           Key of the source template in the database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+.. py:currentmodule:: SourceTemplateLink
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~get`
+            - Get the datamodel from database.
+          * - :py:attr:`~set`
+            - Change datamodel in database.
+          * - :py:attr:`~delete`
+            - Remove datamodel from database.
+          * - :py:attr:`~get_ray_file_info`
+            - Retrieve information about ray file source.
+
+
+
+
+
+   .. tab-item:: Special methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~__str__`
+            - Return the string representation of the source template.
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.kernel.source_template import SourceTemplateLink
+
+
+
+Method detail
+-------------
+
+.. py:method:: __str__()
+
+   
+   Return the string representation of the source template.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: get()
+
+   
+   Get the datamodel from database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`source_template.SourceTemplate`
+           Source template datamodel.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set(data)
+
+   
+   Change datamodel in database.
+
+
+   :Parameters:
+
+       **data** : :obj:`source_template.SourceTemplate`
+           New source template datamodel.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: delete()
+
+   
+   Remove datamodel from database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: get_ray_file_info()
+
+   
+   Retrieve information about ray file source.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.api.speos.source.v1.source_pb2.GetRayFileInfo_Response`
+           Information about ray file source, like flux value.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
