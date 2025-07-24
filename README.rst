@@ -32,7 +32,7 @@ PySpeos library
 
 Project overview
 ----------------
-``PySpeos`` is a Python library that gathers functionalities and tools based on remote API of Ansys software `Speos <https://www.ansys.com/products/optics>`_ .
+``PySpeos`` is a Python library that gathers functionalities and tools based on remote API provided by gRPC server of Ansys software `Speos <https://www.ansys.com/products/optics>`_ .
 
 Installation
 ------------
@@ -202,6 +202,16 @@ Features supported in the latest release can be found at:
 * `Simulations <https://speos.docs.pyansys.com/version/stable/api/ansys/speos/core/simulation/index.html>`_
 * `BSDF Viewer <https://speos.docs.pyansys.com/version/stable/api/ansys/speos/core/bsdf/index.html>`_
 * `Light Path Finder <https://speos.docs.pyansys.com/version/stable/api/ansys/speos/core/lxp/LightPathFinder.html>`_
+
+Speos RPC features
+~~~~~~~~~~~~~~~~~~~~
+
+Speos RPC is based on a gRPC server and provides APIs to interact with Speos solver.
+
+Features supported in the latest Speos RPC can be found at:
+`Ansys Speos for developers Speos RPC <https://developer.ansys.com/docs/speos>`_.
+
+
 
 License
 -------
