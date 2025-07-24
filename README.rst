@@ -191,6 +191,18 @@ Use jupyter notebook
 
 jupyter notebook can be downloaded from the documentations example section.
 
+PySpeos core features
+~~~~~~~~~~~~~~~~~~~~
+
+Features supported in the latest release can be found at:
+
+* `Materials <https://speos.docs.pyansys.com/version/stable/api/ansys/speos/core/opt_prop/OptProp.html>`_
+* `Sources <https://speos.docs.pyansys.com/version/stable/api/ansys/speos/core/source/index.html>`_
+* `Sensors <https://speos.docs.pyansys.com/version/stable/api/ansys/speos/core/sensor/index.html>`_
+* `Simulations <https://speos.docs.pyansys.com/version/stable/api/ansys/speos/core/simulation/index.html>`_
+* `BSDF Viewer <https://speos.docs.pyansys.com/version/stable/api/ansys/speos/core/bsdf/index.html>`_
+* `Light Path Finder <https://speos.docs.pyansys.com/version/stable/api/ansys/speos/core/lxp/LightPathFinder.html>`_
+
 License
 -------
 `PySpeos`_ is licensed under the MIT license.
