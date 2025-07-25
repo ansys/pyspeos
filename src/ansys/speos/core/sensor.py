@@ -3822,8 +3822,10 @@ class SensorXMPIntensity(BaseSensor):
             self.set_type_photometric()
             self.set_orientation_x_as_meridian()
             self.set_viewing_direction_from_source()
+            self._set_default_dimension_values()
             # Default values properties
-            self.set_axis_system().set_layer_type_none()
+            self.set_axis_system()  # .set_layer_type_none()
+            self.set_layer_type_none()
 
     @property
     def nearfield(self) -> bool:
@@ -3958,6 +3960,25 @@ class SensorXMPIntensity(BaseSensor):
             Instance of Layertype Class for this sensor feature
         """
         return self._layer_type
+
+    def set_axis_system(self, axis_system: Optional[List[float]] = None) -> SensorXMPIntensity:
+        """Set position of the sensor.
+
+        Parameters
+        ----------
+        axis_system : Optional[List[float]]
+            Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorXMPIntensity
+            intensity sensor.
+        """
+        if axis_system is None:
+            axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+        self._sensor_instance.intensity_properties.axis_system[:] = axis_system
+        return self
 
     def set_orientation_x_as_meridian(self):
         """Set Orientation type: X As Meridian, Y as Parallel."""
@@ -4294,7 +4315,7 @@ class SensorXMPIntensity(BaseSensor):
             )
         return self._type
 
-    def set_layer_type_none(self) -> SensorRadiance:
+    def set_layer_type_none(self) -> SensorXMPIntensity:
         """Define layer separation type as None.
 
         Returns
