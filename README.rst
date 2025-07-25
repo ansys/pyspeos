@@ -191,8 +191,13 @@ Use jupyter notebook
 
 jupyter notebook can be downloaded from the documentations example section.
 
+Features
+--------
+
+Information of the latest stable release features:
+
 PySpeos core features
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
 
 Features supported in the latest release can be found at:
 
@@ -204,7 +209,7 @@ Features supported in the latest release can be found at:
 * `Light Path Finder <https://speos.docs.pyansys.com/version/stable/api/ansys/speos/core/lxp/LightPathFinder.html>`_
 
 Speos RPC features
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 Speos RPC is based on a gRPC server and provides APIs to interact with Speos solver.
 
