@@ -191,6 +191,18 @@ def test_create_subpart(speos: Speos):
     )  # part contained in a sub part gets same name as the sub part
     assert len(sp2.part_link.get().body_guids) == 0
 
+    # Modify axis system
+    sp1.set_axis_system(axis_system=[20, 20, 20, 1, 0, 0, 0, 1, 0, 0, 0, 1]).commit()
+
+    # Check that the axis system is correctly updated on server data
+    parent_part_data = sp1._parent_part.part_link.get()
+    part_inst = next(
+        (x for x in parent_part_data.parts if x.description == "UniqueId_" + sp1._unique_id),
+        None,
+    )
+    assert part_inst is not None
+    assert part_inst.axis_system == [20, 20, 20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
     # Delete sub parts
     sp1.delete()
     sp2.delete()
