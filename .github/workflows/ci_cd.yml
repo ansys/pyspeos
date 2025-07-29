@@ -15,7 +15,7 @@ env:
   PACKAGE_NAMESPACE: 'ansys.speos.core'
   PACKAGE_NAME: 'ansys-speos-core'
   BUILD_CHEATSHEET: 'true'
-  ON_CI: True
+  ON_CI: true
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

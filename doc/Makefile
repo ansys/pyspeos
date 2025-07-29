@@ -16,7 +16,7 @@ help:
 
 .install-ci-dep:
 	@pip freeze | grep -q "vtk-osmesa" && is_vtk_osmesa_installed="yes" || is_vtk_osmesa_installed="no"
-	@if [ "${ON_CI}" = "True" ] && [ "$$is_vtk_osmesa_installed" != "yes" ]; then \
+	@if [ "${ON_CI}" = "true" ] && [ "$$is_vtk_osmesa_installed" != "yes" ]; then \
 		@echo "Removing package(s) to avoid conflicts with package(s) needed for CI/CD"; \
 		pip uninstall --yes vtk; \
 		@echo "Installing CI/CD required package(s)"; \
