@@ -41,5 +41,5 @@ pdf:
 	(test -f $(BUILDDIR)/latex/*.pdf && echo pdf exists) || exit 1
 
 # Build HTML files and generate examples as .py files
-html: .install-deps
+html: .install-ci-dep
 	@$(SPHINXBUILD) -M html "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
