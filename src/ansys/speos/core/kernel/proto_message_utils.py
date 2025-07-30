@@ -57,6 +57,7 @@ def protobuf_message_to_str(message: Message, with_full_name: bool = True) -> st
             including_default_value_fields=True,
             preserving_proto_field_name=True,
             indent=4,
+            ensure_ascii=False,
         )
     else:
         ret += MessageToJson(
@@ -64,6 +65,7 @@ def protobuf_message_to_str(message: Message, with_full_name: bool = True) -> st
             always_print_fields_with_no_presence=True,
             preserving_proto_field_name=True,
             indent=4,
+            ensure_ascii=False,
         )
     return ret
 
