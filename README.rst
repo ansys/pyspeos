@@ -201,8 +201,8 @@ PySpeos core features
 
 Features supported in the latest release can be found at:
 
-* `Materials <https://speos.docs.pyansys.com/version/stable/api/ansys/speos/core/opt_prop/OptProp.html>`_
-* `Sources <https://speos.docs.pyansys.com/version/stable/api/ansys/speos/core/source/index.html>`_
+* `Optical Materials <https://speos.docs.pyansys.com/version/stable/api/ansys/speos/core/opt_prop/OptProp.html>`_
+* `Light Sources <https://speos.docs.pyansys.com/version/stable/api/ansys/speos/core/source/index.html>`_
 * `Sensors <https://speos.docs.pyansys.com/version/stable/api/ansys/speos/core/sensor/index.html>`_
 * `Simulations <https://speos.docs.pyansys.com/version/stable/api/ansys/speos/core/simulation/index.html>`_
 * `BSDF Viewer <https://speos.docs.pyansys.com/version/stable/api/ansys/speos/core/bsdf/index.html>`_
