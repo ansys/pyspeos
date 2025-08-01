@@ -38,3 +38,41 @@ MAX_CLIENT_MESSAGE_SIZE: int = int(4194304)
 """Maximum message Size accepted by grpc channel,
 By default, 4194304.
 """
+
+
+class SENSOR:
+    """Constant class for Sensors."""
+
+    class WAVELENGTHSRANGE:
+        """Wavelength constants."""
+
+        START = 400
+        """Wavelength start value."""
+        END = 700
+        """Wavelength end value."""
+        SAMPLING = 13
+        """Wavelength sampling."""
+
+    class DIMENSIONS:
+        """Dimension Constants."""
+
+        X_START = -50
+        """Lower bound x axis."""
+        X_END = 50
+        """Upper bound x axis."""
+        X_SAMPLING = 100
+        """Sampling x axis."""
+        Y_START = -50
+        """Lower bound y axis."""
+        Y_END = 50
+        """Upper bound y axis."""
+        Y_SAMPLING = 100
+        """Sampling y axis."""
+
+    class LAYERTYPES:
+        """Layer Separation constants."""
+
+        MAXIMUM_NB_OF_SEQUENCE = 10
+        """Number of sequences stored in sensor."""
+        INCIDENCE_SAMPLING = 9
+        """Number of incidence sampling stored in sensor"""

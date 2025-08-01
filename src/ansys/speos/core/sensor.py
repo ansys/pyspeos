@@ -34,6 +34,7 @@ import numpy as np
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2, common_pb2, sensor_pb2
 import ansys.speos.core as core
+from ansys.speos.core.generic.constants import SENSOR
 import ansys.speos.core.generic.general_methods as general_methods
 from ansys.speos.core.generic.visualization_methods import _VisualData, local2absolute
 from ansys.speos.core.geo_ref import GeoRef
@@ -160,49 +161,68 @@ class BaseSensor:
 
             if default_values:
                 # Default values
-                self.set_start().set_end().set_sampling()
+                self.start = SENSOR.WAVELENGTHSRANGE.START
+                self.end = SENSOR.WAVELENGTHSRANGE.END
+                self.sampling = SENSOR.WAVELENGTHSRANGE.SAMPLING
 
-        def set_start(self, value: float = 400) -> BaseSensor.WavelengthsRange:
+        @property
+        def start(self) -> float:
+            """The minimum wavelength of the range."""
+            if isinstance(self._wavelengths_range, common_pb2.WavelengthsRange):
+                return self._wavelengths_range.w_start
+            else:
+                return self._wavelengths_range.wavelength_start
+
+        @start.setter
+        def start(self, value: float):
             """Set the minimum wavelength of the range.
 
             Parameters
             ----------
             value : float
                 Minimum wavelength (nm).
-                By default, ``400``.
-
-            Returns
-            -------
-            ansys.speos.core.sensor.BaseSensor.WavelengthsRange
-                WavelengthsRange.
             """
             if isinstance(self._wavelengths_range, common_pb2.WavelengthsRange):
                 self._wavelengths_range.w_start = value
             else:
                 self._wavelengths_range.wavelength_start = value
-            return self
 
-        def set_end(self, value: float = 700) -> BaseSensor.WavelengthsRange:
+        @property
+        def end(self) -> float:
+            """Set the maximum wavelength of the range.
+
+            By default, ``700``.
+            """
+            if isinstance(self._wavelengths_range, common_pb2.WavelengthsRange):
+                return self._wavelengths_range.w_end
+            else:
+                return self._wavelengths_range.wavelength_end
+
+        @end.setter
+        def end(self, value: float):
             """Set the maximum wavelength of the range.
 
             Parameters
             ----------
             value : float
                 Maximum wavelength (nm).
-                By default, ``700``.
-
-            Returns
-            -------
-            ansys.speos.core.sensor.BaseSensor.WavelengthsRange
-                WavelengthsRange.
             """
             if isinstance(self._wavelengths_range, common_pb2.WavelengthsRange):
                 self._wavelengths_range.w_end = value
             else:
                 self._wavelengths_range.wavelength_end = value
-            return self
 
-        def set_sampling(self, value: int = 13) -> BaseSensor.WavelengthsRange:
+        @property
+        def sampling(self) -> int:
+            """Set the sampling of wavelengths range.
+
+            By default, ``13``.
+            """
+            if isinstance(self._wavelengths_range, common_pb2.WavelengthsRange):
+                return self._wavelengths_range.w_sampling
+
+        @sampling.setter
+        def sampling(self, value: int = 13):
             """Set the sampling of wavelengths range.
 
             Parameters
@@ -210,16 +230,9 @@ class BaseSensor:
             value : int
                 Number of wavelengths to be taken into account between the minimum and maximum
                 wavelengths range.
-                By default, ``13``.
-
-            Returns
-            -------
-            ansys.speos.core.sensor.BaseSensor.WavelengthsRange
-                WavelengthsRange.
             """
             if isinstance(self._wavelengths_range, common_pb2.WavelengthsRange):
                 self._wavelengths_range.w_sampling = value
-            return self
 
     class Dimensions:
         """Dimensions of the sensor.
@@ -254,109 +267,156 @@ class BaseSensor:
 
             if default_values:
                 # Default values
-                self.set_x_start().set_x_end().set_x_sampling().set_y_start().set_y_end().set_y_sampling()
+                self.x_start = SENSOR.DIMENSIONS.X_START
+                self.y_start = SENSOR.DIMENSIONS.Y_START
+                self.x_end = SENSOR.DIMENSIONS.X_END
+                self.y_end = SENSOR.DIMENSIONS.Y_END
+                self.x_sampling = SENSOR.DIMENSIONS.X_SAMPLING
+                self.y_sampling = SENSOR.DIMENSIONS.Y_SAMPLING
 
-        def set_x_start(self, value: float = -50) -> BaseSensor.Dimensions:
+        @property
+        def x_start(self) -> float:
+            """Set the minimum value on x axis.
+
+            By default, ``-50``.
+
+            Returns
+            -------
+            float
+                minimum value in x axis
+            """
+            return self._sensor_dimensions.x_start
+
+        @x_start.setter
+        def x_start(self, value: float):
             """Set the minimum value on x axis.
 
             Parameters
             ----------
             value : float
                 Minimum value on x axis (mm).
-                By default, ``-50``.
+            """
+            self._sensor_dimensions.x_start = value
+
+        @property
+        def x_end(self) -> float:
+            """Set the maximum value on x axis.
+
+            By default, ``50``.
 
             Returns
             -------
-            ansys.speos.core.sensor.BaseSensor.Dimensions
-                Dimensions.
+            float
+                maximum value on x axis.
             """
-            self._sensor_dimensions.x_start = value
-            return self
+            return self._sensor_dimensions.x_end
 
-        def set_x_end(self, value: float = 50) -> BaseSensor.Dimensions:
+        @x_end.setter
+        def x_end(self, value: float):
             """Set the maximum value on x axis.
 
             Parameters
             ----------
             value : float
                 Maximum value on x axis (mm).
-                By default, ``50``.
+            """
+            self._sensor_dimensions.x_end = value
+
+        @property
+        def x_sampling(self) -> int:
+            """Set the sampling value on x axis.
+
+            By default, ``100``.
 
             Returns
             -------
-            ansys.speos.core.sensor.BaseSensor.Dimensions
-                Dimensions.
+            float
+                 sampling value on x axis.
             """
-            self._sensor_dimensions.x_end = value
-            return self
+            return self._sensor_dimensions.x_sampling
 
-        def set_x_sampling(self, value: int = 100) -> BaseSensor.Dimensions:
+        @x_sampling.setter
+        def x_sampling(self, value: int):
             """Set the sampling value on x axis.
 
             Parameters
             ----------
             value : int
                 The number of pixels of the XMP map on x axis.
-                By default, ``100``.
+            """
+            self._sensor_dimensions.x_sampling = value
+
+        @property
+        def y_start(self) -> float:
+            """Set the minimum value on y axis.
+
+            By default, ``-50``.
 
             Returns
             -------
-            ansys.speos.core.sensor.BaseSensor.Dimensions
-                Dimensions.
+            float
+                minimum value in y axis
             """
-            self._sensor_dimensions.x_sampling = value
-            return self
+            return self._sensor_dimensions.y_start
 
-        def set_y_start(self, value: float = -50) -> BaseSensor.Dimensions:
+        @y_start.setter
+        def y_start(self, value: float):
             """Set the minimum value on y axis.
 
             Parameters
             ----------
             value : float
                 Minimum value on y axis (mm).
-                By default, ``-50``.
+            """
+            self._sensor_dimensions.y_start = value
+
+        @property
+        def y_end(self) -> float:
+            """Set the maximum value on y axis.
+
+            By default, ``50``.
 
             Returns
             -------
-            ansys.speos.core.sensor.BaseSensor.Dimensions
-                Dimensions.
+            float
+                maximum value on y axis.
             """
-            self._sensor_dimensions.y_start = value
-            return self
+            return self._sensor_dimensions.y_end
 
-        def set_y_end(self, value: float = 50) -> BaseSensor.Dimensions:
+        @y_end.setter
+        def y_end(self, value: float):
             """Set the maximum value on y axis.
 
             Parameters
             ----------
             value : float
                 Maximum value on y axis (mm).
-                By default, ``50``.
+            """
+            self._sensor_dimensions.y_end = value
+
+        @property
+        def y_sampling(self) -> int:
+            """Set the sampling value on y axis.
+
+            By default, ``100``.
 
             Returns
             -------
-            ansys.speos.core.sensor.BaseSensor.Dimensions
-                Dimensions.
+            float
+                 sampling value on y axis.
             """
-            self._sensor_dimensions.y_end = value
-            return self
+            return self._sensor_dimensions.y_sampling
 
-        def set_y_sampling(self, value: int = 100) -> BaseSensor.Dimensions:
+        @y_sampling.setter
+        def y_sampling(self, value: int):
             """Set the sampling value on y axis.
 
             Parameters
             ----------
             value : int
                 The number of pixels of the XMP map on y axis.
-                By default, ``100``.
-
-            Returns
-            -------
-            ansys.speos.core.sensor.BaseSensor.Dimensions
-                Dimensions.
             """
             self._sensor_dimensions.y_sampling = value
-            return self
 
     class Colorimetric:
         """Type of sensor : Colorimetric.
@@ -567,6 +627,7 @@ class BaseSensor:
             )
             return self
 
+        # @TODO "refactor to property"
         def set_layers(self, values: List[BaseSensor.FaceLayer]) -> BaseSensor.LayerTypeFace:
             """Set the layers.
 
@@ -629,24 +690,32 @@ class BaseSensor:
 
             if default_values:
                 # Default values
-                self.set_maximum_nb_of_sequence().set_define_sequence_per_geometries()
+                self.maximum_nb_of_sequence = SENSOR.LAYERTYPES.MAXIMUM_NB_OF_SEQUENCE
+                self.set_define_sequence_per_geometries()
 
-        def set_maximum_nb_of_sequence(self, value: int = 10) -> BaseSensor.LayerTypeSequence:
+        @property
+        def maximum_nb_of_sequence(self) -> int:
+            """Set the maximum number of sequences.
+
+            By default, ``10``.
+
+            Returns
+            -------
+            int
+                maximum number of sequences.
+            """
+            return self._layer_type_sequence.maximum_nb_of_sequence
+
+        @maximum_nb_of_sequence.setter
+        def maximum_nb_of_sequence(self, value: int):
             """Set the maximum number of sequences.
 
             Parameters
             ----------
             value : int
                 Maximum number of sequences.
-                By default, ``10``.
-
-            Returns
-            -------
-            ansys.speos.core.sensor.BaseSensor.LayerTypeSequence
-                LayerTypeSequence.
             """
             self._layer_type_sequence.maximum_nb_of_sequence = value
-            return self
 
         def set_define_sequence_per_geometries(
             self,
@@ -714,7 +783,25 @@ class BaseSensor:
                 # Default values
                 self.set_sampling()
 
-        def set_sampling(self, value: int = 9) -> BaseSensor.LayerTypeIncidenceAngle:
+        @property
+        def sampling(self) -> BaseSensor.LayerTypeIncidenceAngle:
+            """Set the sampling for incidence angles.
+
+            Parameters
+            ----------
+            value : int
+                Sampling for incidence angles.
+                By default, ``9``.
+
+            Returns
+            -------
+            ansys.speos.core.sensor.BaseSensor.LayerTypeIncidenceAngle
+                LayerTypeIncidenceAngle.
+            """
+            return self._layer_type_incidence_angle.sampling
+
+        @sampling.setter
+        def sampling(self, value: int) -> BaseSensor.LayerTypeIncidenceAngle:
             """Set the sampling for incidence angles.
 
             Parameters
@@ -729,7 +816,6 @@ class BaseSensor:
                 LayerTypeIncidenceAngle.
             """
             self._layer_type_incidence_angle.sampling = value
-            return self
 
     def _to_dict(self) -> dict:
         out_dict = {}
