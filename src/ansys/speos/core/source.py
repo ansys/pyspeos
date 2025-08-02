@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import datetime
 from difflib import SequenceMatcher
+from pathlib import Path
 from typing import List, Mapping, Optional, Union
 import uuid
 
@@ -455,7 +456,7 @@ class SourceLuminaire(BaseSource):
         if default_values:
             # Default values
             self.set_flux_from_intensity_file().set_spectrum().set_incandescent()
-            self.set_axis_system()
+            self.axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 
     @property
     def visual_data(self) -> _VisualData:
@@ -506,7 +507,19 @@ class SourceLuminaire(BaseSource):
         self._source_template.luminaire.flux_from_intensity_file.SetInParent()
         return self
 
-    def set_flux_luminous(self, value: float = 683) -> SourceLuminaire:
+    @property
+    def flux_luminous(self) -> float:
+        """Get luminous flux.
+
+        Returns
+        -------
+        float
+            Luminaire source luminous flux value.
+        """
+        return self._source_template.luminaire.luminous_flux.luminous_value
+
+    @flux_luminous.setter
+    def flux_luminous(self, value: float) -> None:
         """Set luminous flux.
 
         Parameters
@@ -517,13 +530,23 @@ class SourceLuminaire(BaseSource):
 
         Returns
         -------
-        ansys.speos.core.source.SourceLuminaire
-            Luminaire source.
+        None
         """
         self._source_template.luminaire.luminous_flux.luminous_value = value
-        return self
 
-    def set_flux_radiant(self, value: float = 1) -> SourceLuminaire:
+    @property
+    def flux_radiant(self) -> float:
+        """Get radiant flux.
+
+        Returns
+        -------
+        float
+            Luminous flux in radiant.
+        """
+        return self._source_template.luminaire.radiant_flux.radiant_value
+
+    @flux_radiant.setter
+    def flux_radiant(self, value: float) -> None:
         """Set radiant flux.
 
         Parameters
@@ -534,27 +557,35 @@ class SourceLuminaire(BaseSource):
 
         Returns
         -------
-        ansys.speos.core.source.SourceLuminaire
-            Luminaire source.
+        None
         """
         self._source_template.luminaire.radiant_flux.radiant_value = value
-        return self
 
-    def set_intensity_file_uri(self, uri: str) -> SourceLuminaire:
+    @property
+    def intensity_file_ur(self) -> str:
+        """Get intensity file.
+
+        Returns
+        -------
+        str
+            Intensity file uri.
+        """
+        return self._source_template.luminaire.intensity_file_uri
+
+    @intensity_file_ur.setter
+    def intensity_file_ur(self, uri: Union[str, Path]) -> None:
         """Set intensity file.
 
         Parameters
         ----------
-        uri : str
+        uri : Union[str, Path]
             IES or EULUMDAT format file uri.
 
         Returns
         -------
-        ansys.speos.core.source.SourceLuminaire
-            Luminaire source.
+        None
         """
-        self._source_template.luminaire.intensity_file_uri = uri
-        return self
+        self._source_template.luminaire.intensity_file_uri = str(uri)
 
     def set_spectrum(self) -> Spectrum:
         """Set spectrum.
@@ -569,7 +600,20 @@ class SourceLuminaire(BaseSource):
             self._spectrum._message_to_complete = self._source_template.luminaire
         return self._spectrum._spectrum
 
-    def set_axis_system(self, axis_system: Optional[List[float]] = None) -> SourceLuminaire:
+    @property
+    def axis_system(self) -> list:
+        """Get the position of the source.
+
+        Returns
+        -------
+        List[float]
+            Position of the source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+        """
+        return self._source_instance.luminaire_properties.axis_system[:]
+
+    @axis_system.setter
+    def axis_system(self, axis_system: list) -> None:
         """Set the position of the source.
 
         Parameters
@@ -580,13 +624,9 @@ class SourceLuminaire(BaseSource):
 
         Returns
         -------
-        ansys.speos.core.source.SourceLuminaire
-            Luminaire source.
+        None
         """
-        if axis_system is None:
-            axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
         self._source_instance.luminaire_properties.axis_system[:] = axis_system
-        return self
 
 
 class SourceRayFile(BaseSource):
