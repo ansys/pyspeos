@@ -1,0 +1,207 @@
+
+
+
+
+
+
+:class:`SpectrumLink`
+=====================
+
+
+.. py:class:: ansys.speos.core.kernel.spectrum.SpectrumLink(db, key)
+
+   Bases: :py:obj:`ansys.speos.core.kernel.crud.CrudItem`
+
+
+   
+   Link object for a spectrum in database.
+
+
+   :Parameters:
+
+       **db** : :obj:`ansys.speos.core.kernel.spectrum.SpectrumStub`
+           Database to link to.
+
+       **key** : :class:`python:str`
+           Key of the spectrum in the database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Examples
+
+   >>> from ansys.speos.core.speos import Speos
+   >>> from ansys.speos.core.kernel.spectrum import ProtoSpectrum
+   >>> speos = Speos(host="localhost", port=50098)
+   >>> spe_db = speos.client.spectrums()
+   >>> spe_message = ProtoSpectrum(name="Monochromatic_600")
+   >>> spe_message.monochromatic.wavelength = 600
+   >>> spe_link = spe_db.create(message=spe_message)
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+.. py:currentmodule:: SpectrumLink
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~get`
+            - Get the datamodel from database.
+          * - :py:attr:`~set`
+            - Change datamodel in database.
+          * - :py:attr:`~delete`
+            - Remove datamodel from database.
+
+
+
+
+
+   .. tab-item:: Special methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~__str__`
+            - Return the string representation of the spectrum.
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.kernel.spectrum import SpectrumLink
+
+
+
+Method detail
+-------------
+
+.. py:method:: __str__()
+
+   
+   Return the string representation of the spectrum.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: get()
+
+   
+   Get the datamodel from database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`spectrum.Spectrum`
+           Spectrum datamodel.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set(data)
+
+   
+   Change datamodel in database.
+
+
+   :Parameters:
+
+       **data** : :obj:`spectrum.Spectrum`
+           New spectrum datamodel.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: delete()
+
+   
+   Remove datamodel from database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

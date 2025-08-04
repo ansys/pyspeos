@@ -1,0 +1,194 @@
+
+
+
+
+
+
+:class:`BalanceModeUserWhite`
+=============================
+
+
+.. py:class:: ansys.speos.core.sensor.SensorCamera.Photometric.Color.BalanceModeUserWhite(balance_mode_user_white, default_values = True, stable_ctr = False)
+
+   
+   BalanceMode : UserWhite.
+
+   In addition to the basic treatment, it allows to apply specific coefficients to the
+   red, green, blue images.
+   By default, coefficients of 1 are chosen for red, green and blue images.
+
+   :Parameters:
+
+       **balance_mode_user_white** : ansys.api.speos.sensor.v1.camera_sensor_pb2.
+           ..
+
+       **SensorCameraBalanceModeUserwhite**
+           SensorCameraBalanceModeUserwhite protobuf object to modify.
+
+       **default_values** : :ref:`bool <python:bltin-boolean-values>`
+           Uses default values when True.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_balance_mode_user_white method
+   available in color class.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: BalanceModeUserWhite
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_red_gain`
+            - Set red gain.
+          * - :py:attr:`~set_green_gain`
+            - Set green gain.
+          * - :py:attr:`~set_blue_gain`
+            - Set blue gain.
+
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.sensor.SensorCamera.Photometric.Color import BalanceModeUserWhite
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_red_gain(value = 1)
+
+   
+   Set red gain.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Red gain.
+           By default, ``1``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorCamera.Photometric.Color.BalanceModeUserWhite`
+           BalanceModeUserWhite.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_green_gain(value = 1)
+
+   
+   Set green gain.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Green gain.
+           By default, ``1``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorCamera.Photometric.Color.BalanceModeUserWhite`
+           BalanceModeUserWhite.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_blue_gain(value = 1)
+
+   
+   Set blue gain.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Blue gain.
+           By default, ``1``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorCamera.Photometric.Color.BalanceModeUserWhite`
+           BalanceModeUserWhite.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
