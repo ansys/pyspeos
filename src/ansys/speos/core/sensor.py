@@ -34,12 +34,15 @@ import numpy as np
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2, common_pb2, sensor_pb2
 import ansys.speos.core as core
+import ansys.speos.core.body as body
+import ansys.speos.core.face as face
 from ansys.speos.core.generic.constants import SENSOR
 import ansys.speos.core.generic.general_methods as general_methods
 from ansys.speos.core.generic.visualization_methods import _VisualData, local2absolute
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.scene import ProtoScene
 from ansys.speos.core.kernel.sensor_template import ProtoSensorTemplate
+import ansys.speos.core.part as part
 import ansys.speos.core.project as project
 import ansys.speos.core.proto_message_utils as proto_message_utils
 
@@ -556,8 +559,22 @@ class BaseSensor:
         def __init__(self, name: str, geometries: List[GeoRef]) -> None:
             self.name = name
             """Name of the layer"""
-            self.geometries = geometries
+            self._geometries = geometries
+
+        @property
+        def geometry(self):
             """List of geometries included in this layer."""
+            return self._geometries
+
+        @geometry.setter
+        def geometry(self, value):
+            geo_paths = []
+            for gr in value:
+                if isinstance(gr, GeoRef):
+                    geo_paths.append(gr)
+                elif isinstance(gr, (face.Face, body.Body, part.Part.SubPart)):
+                    geo_paths.append(gr.geo_path)
+            self._geometries = geo_paths
 
     class LayerTypeFace:
         """Type of layer : Face.
@@ -627,7 +644,6 @@ class BaseSensor:
             )
             return self
 
-        # @TODO "refactor to property"
         def set_layers(self, values: List[BaseSensor.FaceLayer]) -> BaseSensor.LayerTypeFace:
             """Set the layers.
 
@@ -1120,64 +1136,64 @@ class SensorCamera(BaseSensor):
 
                     if default_values:
                         # Default values
-                        self.set_red_gain().set_green_gain().set_blue_gain()
+                        self.red_gain = 1
 
-                def set_red_gain(
-                    self, value: float = 1
-                ) -> SensorCamera.Photometric.Color.BalanceModeUserWhite:
+                @property
+                def red_gain(self) -> float:
+                    """The red gain value of the Camera Sensor.
+
+                    By default, ``1``.
+                    """
+                    return self._balance_mode_user_white.red_gain
+
+                @red_gain.setter
+                def red_gain(self, value: float):
                     """Set red gain.
 
                     Parameters
                     ----------
                     value : float
                         Red gain.
-                        By default, ``1``.
-
-                    Returns
-                    -------
-                    ansys.speos.core.sensor.SensorCamera.Photometric.Color.BalanceModeUserWhite
-                        BalanceModeUserWhite.
                     """
                     self._balance_mode_user_white.red_gain = value
-                    return self
 
-                def set_green_gain(
-                    self, value: float = 1
-                ) -> SensorCamera.Photometric.Color.BalanceModeUserWhite:
+                @property
+                def green_gain(self) -> float:
+                    """The green gain value of the Camera Sensor.
+
+                    By default, ``1``.
+                    """
+                    return self._balance_mode_user_white.green_gain
+
+                @green_gain.setter
+                def green_gain(self, value: float):
                     """Set green gain.
 
                     Parameters
                     ----------
                     value : float
-                        Green gain.
-                        By default, ``1``.
-
-                    Returns
-                    -------
-                    ansys.speos.core.sensor.SensorCamera.Photometric.Color.BalanceModeUserWhite
-                        BalanceModeUserWhite.
+                        green gain.
                     """
                     self._balance_mode_user_white.green_gain = value
-                    return self
 
-                def set_blue_gain(
-                    self, value: float = 1
-                ) -> SensorCamera.Photometric.Color.BalanceModeUserWhite:
+                @property
+                def blue_gain(self) -> float:
+                    """The bkue gain value of the Camera Sensor.
+
+                    By default, ``1``.
+                    """
+                    return self._balance_mode_user_white.blue_gain
+
+                @blue_gain.setter
+                def blue_gain(self, value: float):
                     """Set blue gain.
 
                     Parameters
                     ----------
                     value : float
-                        Blue gain.
-                        By default, ``1``.
-
-                    Returns
-                    -------
-                    ansys.speos.core.sensor.SensorCamera.Photometric.Color.BalanceModeUserWhite
-                        BalanceModeUserWhite.
+                        blue gain.
                     """
                     self._balance_mode_user_white.blue_gain = value
-                    return self
 
             class BalanceModeDisplayPrimaries:
                 """BalanceMode : DisplayPrimaries.
