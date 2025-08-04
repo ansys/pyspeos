@@ -1137,6 +1137,8 @@ class SensorCamera(BaseSensor):
                     if default_values:
                         # Default values
                         self.red_gain = 1
+                        self.green_gain = 1
+                        self.blue_gain = 1
 
                 @property
                 def red_gain(self) -> float:
@@ -1236,59 +1238,53 @@ class SensorCamera(BaseSensor):
                         # Default values
                         self._balance_mode_display.SetInParent()
 
-                def set_red_display_file_uri(
-                    self, uri: str
-                ) -> SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries:
+                @property
+                def red_display_file_uri(self) -> str:
+                    """The red display file."""
+                    return self._balance_mode_display.red_display_file_uri
+
+                @red_display_file_uri.setter
+                def red_display_file_uri(self, uri: str):
                     """Set the red display file.
 
                     Parameters
                     ----------
                     uri : str
                         Red display file.
-
-                    Returns
-                    -------
-                    ansys.speos.core.sensor.SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries
-                        BalanceModeDisplayPrimaries.
                     """
                     self._balance_mode_display.red_display_file_uri = uri
-                    return self
 
-                def set_green_display_file_uri(
-                    self, uri: str
-                ) -> SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries:
+                @property
+                def green_display_file_uri(self) -> str:
+                    """The green display file."""
+                    return self._balance_mode_display.green_display_file_uri
+
+                @green_display_file_uri.setter
+                def green_display_file_uri(self, uri: str):
                     """Set the green display file.
 
                     Parameters
                     ----------
                     uri : str
-                        Green display file.
-
-                    Returns
-                    -------
-                    ansys.speos.core.sensor.SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries
-                        BalanceModeDisplayPrimaries.
+                        green display file.
                     """
                     self._balance_mode_display.green_display_file_uri = uri
-                    return self
 
-                def set_blue_display_file_uri(
-                    self, uri: str
-                ) -> SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries:
+                @property
+                def blue_display_file_uri(self) -> str:
+                    """The blue display file."""
+                    return self._balance_mode_display.blue_display_file_uri
+
+                @blue_display_file_uri.setter
+                def blue_display_file_uri(self, uri: str):
                     """Set the blue display file.
 
                     Parameters
                     ----------
                     uri : str
-                        Blue display file.
-
-                    Returns
-                    -------
-                    ansys.speos.core.sensor.SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries
-                        BalanceModeDisplayPrimaries.
+                        blue display file.
                     """
                     self._balance_mode_display.blue_display_file_uri = uri
-                    return self
 
             def __init__(
                 self,
@@ -1308,53 +1304,53 @@ class SensorCamera(BaseSensor):
                     # Default values
                     self.set_balance_mode_none()
 
-            def set_red_spectrum_file_uri(self, uri: str) -> SensorCamera.Photometric.Color:
+            @property
+            def red_spectrum_file_uri(self) -> str:
+                """The red spectrum."""
+                return self._mode_color.red_spectrum_file_uri
+
+            @red_spectrum_file_uri.setter
+            def red_spectrum_file_uri(self, uri: str):
                 """Set the red spectrum.
 
                 Parameters
                 ----------
                 uri : str
                     Red spectrum file. It is expressed in a .spectrum file.
-
-                Returns
-                -------
-                ansys.speos.core.sensor.SensorCamera.Photometric.Color
-                    Color mode.
                 """
                 self._mode_color.red_spectrum_file_uri = uri
-                return self
 
-            def set_green_spectrum_file_uri(self, uri: str) -> SensorCamera.Photometric.Color:
-                """Set the green spectrum.
+            @property
+            def blue_spectrum_file_uri(self) -> str:
+                """The blue spectrum."""
+                return self._mode_color.blue_spectrum_file_uri
 
-                Parameters
-                ----------
-                uri : str
-                    Green spectrum file. It is expressed in a .spectrum file.
-
-                Returns
-                -------
-                ansys.speos.core.sensor.SensorCamera.Photometric.Color
-                    Color mode.
-                """
-                self._mode_color.green_spectrum_file_uri = uri
-                return self
-
-            def set_blue_spectrum_file_uri(self, uri: str) -> SensorCamera.Photometric.Color:
+            @blue_spectrum_file_uri.setter
+            def blue_spectrum_file_uri(self, uri: str):
                 """Set the blue spectrum.
 
                 Parameters
                 ----------
                 uri : str
-                    Blue spectrum file. It is expressed in a .spectrum file.
-
-                Returns
-                -------
-                ansys.speos.core.sensor.SensorCamera.Photometric.Color
-                    Color mode.
+                    blue spectrum file. It is expressed in a .spectrum file.
                 """
                 self._mode_color.blue_spectrum_file_uri = uri
-                return self
+
+            @property
+            def green_spectrum_file_uri(self) -> str:
+                """The green spectrum."""
+                return self._mode_color.green_spectrum_file_uri
+
+            @green_spectrum_file_uri.setter
+            def green_spectrum_file_uri(self, uri: str):
+                """Set the green spectrum.
+
+                Parameters
+                ----------
+                uri : str
+                    green spectrum file. It is expressed in a .spectrum file.
+                """
+                self._mode_color.green_spectrum_file_uri = uri
 
             def set_balance_mode_none(self) -> SensorCamera.Photometric.Color:
                 """Set the balance mode as none.
@@ -1486,12 +1482,23 @@ class SensorCamera(BaseSensor):
 
             if default_values:
                 # Default values
-                self.set_acquisition_integration().set_acquisition_lag_time().set_gamma_correction().set_png_bits_16().set_mode_color()
+                self.acquisition_integration = 0.01
+                self.acquisition_lag_time = 0.0
+                self.set_gamma_correction().set_png_bits_16().set_mode_color()
                 self.set_wavelengths_range()
                 # Default values properties
                 self.set_layer_type_none()
 
-        def set_acquisition_integration(self, value: float = 0.01) -> SensorCamera.Photometric:
+        @property
+        def acquisition_integration(self) -> float:
+            """The acquisition integration value.
+
+            By default, ``0.01``.
+            """
+            return self._mode_photometric.acquisition_integration
+
+        @acquisition_integration.setter
+        def acquisition_integration(self, value: float):
             """Set the acquisition integration value.
 
             Parameters
@@ -1499,16 +1506,19 @@ class SensorCamera(BaseSensor):
             value : float
                 Acquisition integration value (s).
                 By default, ``0.01``.
-
-            Returns
-            -------
-            ansys.speos.core.sensor.SensorCamera.Photometric
-                Photometric mode.
             """
             self._mode_photometric.acquisition_integration = value
-            return self
 
-        def set_acquisition_lag_time(self, value: float = 0.0) -> SensorCamera.Photometric:
+        @property
+        def acquisition_lag_time(self, value: float = 0.0) -> float:
+            """The acquisition lag time value.
+
+            By default, ``0.0``.
+            """
+            return self._mode_photometric.acquisition_lag_time
+
+        @acquisition_lag_time.setter
+        def acquisition_lag_time(self, value: float):
             """Set the acquisition lag time value.
 
             Parameters
@@ -1523,9 +1533,14 @@ class SensorCamera(BaseSensor):
                 Photometric mode.
             """
             self._mode_photometric.acquisition_lag_time = value
-            return self
 
-        def set_transmittance_file_uri(self, uri: str) -> SensorCamera.Photometric:
+        @property
+        def transmittance_file_uri(self) -> str:
+            """The transmittance file."""
+            return self._mode_photometric.transmittance_file_uri
+
+        @transmittance_file_uri.setter
+        def transmittance_file_uri(self, uri: str):
             """Set the transmittance file.
 
             Parameters
@@ -1533,31 +1548,24 @@ class SensorCamera(BaseSensor):
             uri : str
                 Amount of light of the source that passes through the lens and reaches the sensor.
                 The transmittance is expressed in a .spectrum file.
-
-            Returns
-            -------
-            ansys.speos.core.sensor.SensorCamera.Photometric
-                Photometric mode.
             """
             self._mode_photometric.transmittance_file_uri = uri
-            return self
 
-        def set_gamma_correction(self, value: float = 2.2) -> SensorCamera.Photometric:
+        @property
+        def gamma_correction(self) -> float:
             """Set the gamma correction.
 
-            Parameters
-            ----------
-            value : float
-                Compensation of the curve before the display on the screen.
-                By default, ``2.2``.
+            By default, ``2.2``.
+            """
+            return self._mode_photometric.gamma_correction
 
-            Returns
-            -------
-            ansys.speos.core.sensor.SensorCamera.Photometric
-                Photometric mode.
+        @gamma_correction.setter
+        def gamma_correction(self, value: float):
+            """Set the gamma correction.
+
+            By default, ``2.2``.
             """
             self._mode_photometric.gamma_correction = value
-            return self
 
         def set_png_bits_08(self) -> SensorCamera.Photometric:
             """Choose 08-bits for png.
@@ -1668,7 +1676,13 @@ class SensorCamera(BaseSensor):
                 self._mode._mode_color = self._mode_photometric.color_mode_color
             return self._mode
 
-        def set_trajectory_file_uri(self, uri: str) -> SensorCamera.Photometric:
+        @property
+        def trajectory_file_uri(self) -> str:
+            """The trajectory file."""
+            return self._camera_props.trajectory_file_uri
+
+        @trajectory_file_uri.setter
+        def trajectory_file_uri(self, uri: str):
             """Set the trajectory file.
 
             Parameters
@@ -1676,14 +1690,8 @@ class SensorCamera(BaseSensor):
             uri : str
                 Trajectory file, used to define the position and orientations of the Camera sensor
                 in time.
-
-            Returns
-            -------
-            ansys.speos.core.sensor.SensorCamera.Photometric
-                Photometric mode.
             """
             self._camera_props.trajectory_file_uri = uri
-            return self
 
         def set_layer_type_none(self) -> SensorCamera.Photometric:
             """Set no layer separation: includes the simulation's results in one layer.
@@ -1836,7 +1844,16 @@ class SensorCamera(BaseSensor):
         """
         return self._type
 
-    def set_focal_length(self, value: float = 5.0) -> SensorCamera:
+    @property
+    def focal_length(self) -> float:
+        """The focal length.
+
+        By default, ``5.0``.
+        """
+        return self._sensor_template.camera_sensor_template.focal_length
+
+    @focal_length.setter
+    def focal_length(self, value: float) -> SensorCamera:
         """Set the focal length.
 
         Parameters
@@ -1844,16 +1861,19 @@ class SensorCamera(BaseSensor):
         value : float
             Distance between the center of the optical system and the focus. (mm)
             By default, ``5.0``.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.SensorCamera
-            Camera feature
         """
         self._sensor_template.camera_sensor_template.focal_length = value
-        return self
 
-    def set_imager_distance(self, value: float = 10) -> SensorCamera:
+    @property
+    def imager_distance(self, value: float = 10) -> SensorCamera:
+        """Set the imager distance.
+
+        By default, ``10``.
+        """
+        return self._sensor_template.camera_sensor_template.imager_distance
+
+    @imager_distance.setter
+    def imager_distance(self, value: float):
         """Set the imager distance.
 
         Parameters
@@ -1862,16 +1882,19 @@ class SensorCamera(BaseSensor):
             Imager distance (mm). The imager is located at the focal point.
             The Imager distance has no impact on the result.
             By default, ``10``.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.SensorCamera
-            Camera feature
         """
         self._sensor_template.camera_sensor_template.imager_distance = value
-        return self
 
-    def set_f_number(self, value: float = 20) -> SensorCamera:
+    @property
+    def f_number(self) -> float:
+        """Set the f number.
+
+        By default, ``20``.
+        """
+        return self._sensor_template.camera_sensor_template.f_number
+
+    @f_number.setter
+    def f_number(self, value: float = 20):
         """Set the f number.
 
         Parameters
@@ -1880,16 +1903,16 @@ class SensorCamera(BaseSensor):
             F-number represents the aperture of the front lens.
             F number has no impact on the result.
             By default, ``20``.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.SensorCamera
-            Camera feature
         """
         self._sensor_template.camera_sensor_template.f_number = value
-        return self
 
-    def set_distortion_file_uri(self, uri: str) -> SensorCamera:
+    @property
+    def distortion_file_uri(self) -> str:
+        """Set the distortion file."""
+        return self._sensor_template.camera_sensor_template.distortion_file_uri
+
+    @distortion_file_uri.setter
+    def distortion_file_uri(self, uri: str):
         """Set the distortion file.
 
         Parameters
@@ -1897,16 +1920,16 @@ class SensorCamera(BaseSensor):
         uri : str
             Optical aberration that deforms and bends straight lines. The distortion is expressed in
             a .OPTDistortion file.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.SensorCamera
-            Camera feature
         """
         self._sensor_template.camera_sensor_template.distortion_file_uri = uri
-        return self
 
-    def set_horz_pixel(self, value: int = 640) -> SensorCamera:
+    @property
+    def horz_pixel(self) -> int:
+        """The horizontal pixels number corresponding to the camera resolution."""
+        return self._sensor_template.camera_sensor_template.horz_pixel
+
+    @horz_pixel.setter
+    def horz_pixel(self, value: int):
         """Set the horizontal pixels number corresponding to the camera resolution.
 
         Parameters
@@ -1914,16 +1937,19 @@ class SensorCamera(BaseSensor):
         value : int
             The horizontal pixels number corresponding to the camera resolution.
             By default, ``640``.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.SensorCamera
-            Camera feature
         """
         self._sensor_template.camera_sensor_template.horz_pixel = value
-        return self
 
-    def set_vert_pixel(self, value: int = 480) -> SensorCamera:
+    @property
+    def vert_pixel(self) -> int:
+        """The vertical pixels number corresponding to the camera resolution.
+
+        By default, ``480``.
+        """
+        return self._sensor_template.camera_sensor_template.vert_pixel
+
+    @vert_pixel.setter
+    def vert_pixel(self, value: int):
         """Set the vertical pixels number corresponding to the camera resolution.
 
         Parameters
@@ -1931,16 +1957,19 @@ class SensorCamera(BaseSensor):
         value : int
             The vertical pixels number corresponding to the camera resolution.
             By default, ``480``.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.SensorCamera
-            Camera feature
         """
         self._sensor_template.camera_sensor_template.vert_pixel = value
-        return self
 
-    def set_width(self, value: float = 5.0) -> SensorCamera:
+    @property
+    def width(self) -> float:
+        """The width of the sensor.
+
+        By default, ``5.0``.
+        """
+        return self._sensor_template.camera_sensor_template.width
+
+    @width.setter
+    def width(self, value: float):
         """Set the width of the sensor.
 
         Parameters
@@ -1948,16 +1977,23 @@ class SensorCamera(BaseSensor):
         value : float
             Sensor's width (mm).
             By default, ``5.0``.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.SensorCamera
-            Camera feature
         """
         self._sensor_template.camera_sensor_template.width = value
-        return self
 
-    def set_height(self, value: float = 5.0) -> SensorCamera:
+    @property
+    def height(self) -> float:
+        """The height of the sensor.
+
+        Parameters
+        ----------
+        value : float
+            Sensor's height (mm).
+            By default, ``5.0``.
+        """
+        return self._sensor_template.camera_sensor_template.height
+
+    @height.setter
+    def height(self, value: float):
         """Set the height of the sensor.
 
         Parameters
@@ -1965,14 +2001,28 @@ class SensorCamera(BaseSensor):
         value : float
             Sensor's height (mm).
             By default, ``5.0``.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.SensorCamera
-            Camera feature
         """
         self._sensor_template.camera_sensor_template.height = value
-        return self
+
+    @property
+    def axis_system(self, axis_system: List[float]) -> List[float]:
+        """The position of the sensor.
+
+        By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+        """
+        return self._sensor_instance.camera_properties.axis_system
+
+    @axis_system.setter
+    def axis_system(self, axis_system: List[float]):
+        """Set the position of the sensor.
+
+        Parameters
+        ----------
+        axis_system : Optional[List[float]]
+            Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+        """
+        self._sensor_instance.camera_properties.axis_system[:] = axis_system
 
     def set_mode_geometric(self) -> SensorCamera:
         """Set mode geometric for the camera sensor.
@@ -2025,25 +2075,6 @@ class SensorCamera(BaseSensor):
                 self._sensor_template.camera_sensor_template.sensor_mode_photometric
             )
         return self._type
-
-    def set_axis_system(self, axis_system: Optional[List[float]] = None) -> SensorCamera:
-        """Set the position of the sensor.
-
-        Parameters
-        ----------
-        axis_system : Optional[List[float]]
-            Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
-            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.SensorCamera
-            Camera Sensor feature
-        """
-        if axis_system is None:
-            axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-        self._sensor_instance.camera_properties.axis_system[:] = axis_system
-        return self
 
     def commit(self) -> SensorCamera:
         """Save feature: send the local data to the speos server database.
