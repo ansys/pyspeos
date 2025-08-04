@@ -12,9 +12,9 @@
 import os
 from pathlib import Path
 
-from ansys.speos.core import Project, Speos
+from ansys.speos.core import Body, Project, Speos
 from ansys.speos.core.launcher import launch_local_speos_rpc_server
-from ansys.speos.core.sensor import SensorIrradiance
+from ansys.speos.core.sensor import Sensor3DIrradiance, SensorIrradiance
 from ansys.speos.core.simulation import SimulationDirect
 
 # -
@@ -95,6 +95,16 @@ irr_features = p.find(name=".*", name_regex=True, feature_type=SensorIrradiance)
 irr = irr_features[0]
 irr.set_type_spectral().set_wavelengths_range().set_start(500).set_end(600).set_sampling(11)
 irr.commit()
+
+# Create and add a new sensor, e.g. 3d irradiance sensor
+
+body = p.find(name="PrismBody", name_regex=True, feature_type=Body)[0]
+sensor_3d = p.create_sensor(name="3d_irradiance", feature_type=Sensor3DIrradiance)
+sensor_3d.set_geometries([body.geo_path])
+sensor_3d.commit()
+sim.set_sensor_paths(["Irradiance.1:564", "3d_irradiance"])
+sim.commit()
+p.preview()
 
 # ## Re-run the simulation with new sensor definition.
 

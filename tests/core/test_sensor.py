@@ -26,12 +26,14 @@ import math
 from pathlib import Path
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2
-from ansys.speos.core import GeoRef, Project, Speos, sensor
+from ansys.speos.core import Body, GeoRef, Project, Speos, sensor
 from ansys.speos.core.sensor import (
+    Sensor3DIrradiance,
     SensorCamera,
     SensorIrradiance,
     SensorRadiance,
 )
+from ansys.speos.core.simulation import SimulationDirect
 from tests.conftest import test_path
 
 
@@ -41,6 +43,7 @@ def test_create_camera_sensor(speos: Speos):
 
     # Default value
     sensor1 = p.create_sensor(name="Camera.1", feature_type=SensorCamera)
+    assert isinstance(sensor1, SensorCamera)
     sensor1.set_mode_photometric().set_mode_color().set_red_spectrum_file_uri(
         uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum")
     )
@@ -371,6 +374,49 @@ def test_create_camera_sensor(speos: Speos):
     sensor1.set_mode_photometric().set_layer_type_none()
     sensor1.commit()
     assert sensor1._sensor_instance.camera_properties.HasField("layer_type_none")
+
+    # test distrotion v1,v2,v3
+    sensor1.set_f_number().set_imager_distance().set_focal_length()
+    sensor1.commit()
+    sensor1.set_distortion_file_uri(
+        str(Path(test_path) / "CameraInputFiles" / "distortionV{}.OPTDistortion".format(2))
+    )
+    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    assert camera_sensor_template.f_number == 20.0
+    assert camera_sensor_template.imager_distance == 10.0
+    assert camera_sensor_template.focal_length == 5.0
+    sensor1.commit()
+    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    assert camera_sensor_template.f_number == 0
+    assert camera_sensor_template.imager_distance == 0
+    assert camera_sensor_template.focal_length == 0
+    sensor1.set_distortion_file_uri(
+        str(Path(test_path) / "CameraInputFiles" / "distortionV{}.OPTDistortion".format(1))
+    )
+    sensor1.set_f_number().set_imager_distance().set_focal_length()
+    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    assert camera_sensor_template.f_number == 0
+    assert camera_sensor_template.imager_distance == 0
+    assert camera_sensor_template.focal_length == 0
+    sensor1.commit()
+    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    assert camera_sensor_template.f_number == 20.0
+    assert camera_sensor_template.imager_distance == 10.0
+    assert camera_sensor_template.focal_length == 5.0
+    sensor1.set_distortion_file_uri(
+        str(Path(test_path) / "CameraInputFiles" / "distortionV{}.OPTDistortion".format(4))
+    )
+    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    assert camera_sensor_template.f_number == 20.0
+    assert camera_sensor_template.imager_distance == 10.0
+    assert camera_sensor_template.focal_length == 5.0
+    assert camera_sensor_template.sensor_mode_photometric.transmittance_file_uri != ""
+    sensor1.commit()
+    camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
+    assert camera_sensor_template.f_number == 0
+    assert camera_sensor_template.imager_distance == 0
+    assert camera_sensor_template.focal_length == 0
+    assert camera_sensor_template.sensor_mode_photometric.transmittance_file_uri == ""
 
     sensor1.delete()
 
@@ -899,6 +945,155 @@ def test_create_radiance_sensor(speos: Speos):
     sensor1.set_layer_type_none()
     sensor1.commit()
     assert radiance_properties.HasField("layer_type_none")
+
+
+def test_load_3d_irradiance_sensor(speos: Speos):
+    """Test load of 3d irradiance sensor."""
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism_3D.speos"),
+    )
+    sensor_3d = p.find(name=".*", name_regex=True, feature_type=Sensor3DIrradiance)[0]
+    assert sensor_3d is not None
+
+
+def test_create_3d_irradiance_sensor(speos: Speos):
+    """Test creation of 3d irradiance sensor."""
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
+    )
+    body = p.find(name="PrismBody", name_regex=True, feature_type=Body)[0]
+    sensor_3d = p.create_sensor(name="3d", feature_type=Sensor3DIrradiance)
+    sensor_3d.set_geometries([body.geo_path])
+    sensor_3d.commit()
+
+    # when creating 3D irradiance, default properties:
+    # photometric
+    # planar integration
+    # layer type none
+    # measure reflection, transmission, absorption
+
+    backend_photometric_info = sensor_3d.sensor_template_link.get()
+    assert sensor_3d.sensor_template_link is not None
+    assert backend_photometric_info.name == "3d"
+    assert backend_photometric_info.HasField("irradiance_3d")
+    assert backend_photometric_info.irradiance_3d.HasField("type_photometric")
+    assert backend_photometric_info.irradiance_3d.type_photometric.HasField(
+        "integration_type_planar"
+    )
+    photometric_info = backend_photometric_info.irradiance_3d.type_photometric
+    assert photometric_info.integration_type_planar.reflection
+    assert photometric_info.integration_type_planar.transmission
+    assert photometric_info.integration_type_planar.absorption
+    assert sensor_3d._sensor_instance.HasField("irradiance_3d_properties")
+    assert sensor_3d._sensor_instance.irradiance_3d_properties.geometries.geo_paths == [
+        "PrismBody:1130610277"
+    ]
+    assert sensor_3d._sensor_instance.irradiance_3d_properties.HasField("layer_type_none")
+
+    # change integration to radial
+    sensor_3d.set_type_photometric().set_integration_radial()
+    sensor_3d.commit()
+    backend_photometric_info = sensor_3d.sensor_template_link.get()
+    assert backend_photometric_info.irradiance_3d.HasField("type_photometric")
+    assert backend_photometric_info.irradiance_3d.type_photometric.HasField(
+        "integration_type_radial"
+    )
+
+    # change back to planar
+    # reflection, transmission, absorption as default
+    # absorption is False after being set
+    sensor_3d.set_type_photometric().set_integration_planar().absorption = False
+    sensor_3d.commit()
+    backend_photometric_info = sensor_3d.sensor_template_link.get()
+    photometric_info = backend_photometric_info.irradiance_3d.type_photometric
+    assert photometric_info.integration_type_planar.reflection
+    assert photometric_info.integration_type_planar.transmission
+    assert not photometric_info.integration_type_planar.absorption
+
+    # when change type into radiometric, default properties:
+    # radiometric
+    # planar integration
+    # layer type none
+    sensor_3d.set_type_radiometric()
+    sensor_3d.commit()
+    backend_radiometric_info = sensor_3d.sensor_template_link.get()
+    assert backend_radiometric_info.irradiance_3d.HasField("type_radiometric")
+    radiometric_info = backend_radiometric_info.irradiance_3d.type_radiometric
+    assert radiometric_info.HasField("integration_type_planar")
+    assert radiometric_info.integration_type_planar.reflection
+    assert radiometric_info.integration_type_planar.transmission
+    assert radiometric_info.integration_type_planar.absorption
+
+    # change integration type
+    sensor_3d.set_type_radiometric().set_integration_radial()
+    sensor_3d.commit()
+    radiometric_info = sensor_3d.sensor_template_link.get().irradiance_3d.type_radiometric
+    assert radiometric_info.HasField("integration_type_radial")
+
+    # change back to planar
+    # reflection, transmission, absorption as default
+    # absorption is False after being set
+    sensor_3d.set_type_radiometric().set_integration_planar().absorption = False
+    sensor_3d.commit()
+    backend_radiometric_info = sensor_3d.sensor_template_link.get()
+    photometric_info = backend_radiometric_info.irradiance_3d.type_radiometric
+    assert photometric_info.integration_type_planar.reflection
+    assert photometric_info.integration_type_planar.transmission
+    assert not photometric_info.integration_type_planar.absorption
+
+    # when change type into colorimetric, default properties:
+    # colorimetric
+    # wavelength start 400 with end 700
+    # layer type none
+    sensor_3d.set_type_colorimetric()
+    sensor_3d.commit()
+    assert sensor_3d.sensor_template_link.get().irradiance_3d.HasField("type_colorimetric")
+    colorimetric_info = sensor_3d.sensor_template_link.get().irradiance_3d.type_colorimetric
+    assert colorimetric_info.wavelength_start == 400
+    assert colorimetric_info.wavelength_end == 700
+    sensor_3d.set_type_colorimetric().set_wavelengths_range().set_start(500)
+    sensor_3d.commit()
+    colorimetric_info = sensor_3d.sensor_template_link.get().irradiance_3d.type_colorimetric
+    assert sensor_3d.get(key="wavelength_start") == 500
+    assert colorimetric_info.wavelength_start == 500
+
+    # change back to planar
+    # reflection, transmission, absorption as default
+    # absorption is False after being set
+    sensor_3d.set_type_photometric().set_integration_planar().absorption = False
+    sensor_3d.commit()
+    backend_photometric_info = sensor_3d.sensor_template_link.get()
+    photometric_info = backend_photometric_info.irradiance_3d.type_photometric
+    assert photometric_info.integration_type_planar.reflection
+    assert photometric_info.integration_type_planar.transmission
+    assert not photometric_info.integration_type_planar.absorption
+
+    # change layer as source
+    sensor_3d.set_layer_type_source()
+    sensor_3d.commit()
+    assert sensor_3d._sensor_instance.irradiance_3d_properties.HasField("layer_type_source")
+
+    # change rayfile options
+    sensor_3d.set_ray_file_type_classic()
+    sensor_3d.commit()
+    assert sensor_3d._sensor_instance.irradiance_3d_properties.ray_file_type == 1
+    sensor_3d.set_ray_file_type_polarization()
+    sensor_3d.commit()
+    assert sensor_3d._sensor_instance.irradiance_3d_properties.ray_file_type == 2
+    sensor_3d.set_ray_file_type_tm25()
+    sensor_3d.commit()
+    assert sensor_3d._sensor_instance.irradiance_3d_properties.ray_file_type == 3
+    sensor_3d.set_ray_file_type_tm25_no_polarization()
+    sensor_3d.commit()
+    assert sensor_3d._sensor_instance.irradiance_3d_properties.ray_file_type == 4
+
+    sim = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
+    sim.set_sensor_paths(["Irradiance.1:564", "3d"])
+    sim.commit()
+    assert sim._simulation_instance.sensor_paths == ["Irradiance.1:564", "3d"]
+    sim.delete()
 
 
 def test_commit_sensor(speos: Speos):

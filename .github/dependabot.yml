@@ -10,9 +10,6 @@ updates:
     labels:
       - "maintenance"
       - "dependencies"
-    reviewers:
-      - "StefanThoene"
-      - "pluatansys"
     assignees:
       - "pyansys-ci-bot"
     ignore:
