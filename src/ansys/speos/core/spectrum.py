@@ -27,6 +27,8 @@ from __future__ import annotations
 from typing import List, Mapping, Optional
 import warnings
 
+from ansys.api.speos.spectrum.v1 import spectrum_pb2
+from ansys.speos.core.generic.constants import SPECTRUM
 from ansys.speos.core.kernel.client import SpeosClient
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_dict
 from ansys.speos.core.kernel.spectrum import ProtoSpectrum
@@ -59,6 +61,216 @@ class Spectrum:
         Link object for the spectrum in database.
     """
 
+    class Monochromatic:
+        """Monochromatic type of spectrum.
+
+        By default, monochromatic spectrum wavelength is set to be 550.
+
+        Parameters
+        ----------
+        monochromatic : ansys.api.speos.spectrum.v1.spectrum_pb2.Monochromatic
+            Monochromatic protobuf object to modify.
+        default_values : bool
+            Uses default values when True.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use set_monochromatic method available in
+        Spectrum classes.
+        """
+
+        def __init__(
+            self,
+            monochromatic: spectrum_pb2.Monochromatic,
+            default_values: bool = True,
+            stable_ctr: bool = False,
+        ):
+            if not stable_ctr:
+                msg = "WavelengthsRange class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._monochromatic = monochromatic
+
+            if default_values:
+                self.wavelength = SPECTRUM.MONOCHROMATIC.WAVELENGTH
+
+        @property
+        def wavelength(self) -> float:
+            """Get the wavelength of the spectrum.
+
+            Returns
+            -------
+            float
+                Wavelength of the spectrum.
+            """
+            return self._monochromatic.wavelength
+
+        @wavelength.setter
+        def wavelength(self, value: float) -> None:
+            """Set the wavelength of the spectrum.
+
+            Parameters
+            ----------
+            value: float
+            Wavelength of the spectrum.
+
+            Returns
+            -------
+            None
+
+            """
+            self._monochromatic.wavelength = value
+
+    class Blackbody:
+        """Blackbody type of spectrum.
+
+        By default, Blackbody temperature is set to be 2856.
+
+        Parameters
+        ----------
+        blackbody : ansys.api.speos.spectrum.v1.spectrum_pb2.Blackbody
+            Blackbody protobuf object to modify.
+        default_values : bool
+            Uses default values when True.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use set_blackbody method available in
+        Spectrum classes.
+        """
+
+        def __init__(
+            self,
+            blackbody: spectrum_pb2.BlackBody,
+            default_values: bool = True,
+            stable_ctr: bool = False,
+        ):
+            if not stable_ctr:
+                msg = "WavelengthRange class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._blackbody = blackbody
+
+            if default_values:
+                self.temperature = SPECTRUM.BLACKBODY.TEMPERATURE
+
+        @property
+        def temperature(self) -> float:
+            """Get the temperature of the spectrum.
+
+            Returns
+            -------
+            float
+            Temperature of the spectrum.
+
+            """
+            return self._blackbody.temperature
+
+        @temperature.setter
+        def temperature(self, value: float) -> None:
+            """Set the temperature of the spectrum.
+
+            Parameters
+            ----------
+            value: float
+            Temperature of the spectrum.
+
+            Returns
+            -------
+            None
+
+            """
+            self._blackbody.temperature = value
+
+    class Sampled:
+        """Sampled type of spectrum.
+
+        By default, Sampled temperature is set to be 2856.
+
+        Parameters
+        ----------
+        sampled : ansys.api.speos.spectrum.v1.spectrum_pb2.Sampled
+            Sampled protobuf object to modify.
+        default_values : bool
+            Uses default values when True.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use set_sampled method available in
+        Spectrum classes.
+        """
+
+        def __init__(
+            self,
+            sampled: spectrum_pb2.sampled,
+            default_values: bool = True,
+            stable_ctr: bool = False,
+        ):
+            if not stable_ctr:
+                msg = "WavelengthRange class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._sampled = sampled
+            # if default_values:
+            #
+
+        @property
+        def wavelengths(self) -> List[float]:
+            """Get the wavelength values of the spectrum.
+
+            Returns
+            -------
+            List[float]
+            Wavelength values of the spectrum.
+
+            """
+            return self._sampled.wavelengths[:]
+
+        @wavelengths.setter
+        def wavelengths(self, wavelengths: list[float]) -> None:
+            """Set the wavelength values of the spectrum.
+
+            Parameters
+            ----------
+            wavelengths: List[float]
+            Wavelength values of the spectrum.
+
+            Returns
+            -------
+            None
+
+            """
+            self._sampled.wavelengths = wavelengths
+
+        @property
+        def values(self) -> List[float]:
+            """Get the values of the spectrum sampled wavelengths.
+
+            Returns
+            -------
+            List[float]
+                List of values, expected from 0. to 100. in %.
+            """
+            return self._sampled.values
+
+        @values.setter
+        def values(self, values: list[float]) -> None:
+            """Set the values of the spectrum sampled wavelengths.
+
+            Parameters
+            ----------
+            values: List[float]
+            List of values, expected from 0. to 100. in %.
+
+            Returns
+            -------
+            None
+            """
+            self._sampled.values[:] = values
+
     def __init__(
         self,
         speos_client: SpeosClient,
@@ -74,6 +286,9 @@ class Spectrum:
         if metadata is None:
             metadata = {}
 
+        # Attribute gathering more complex spectrun type
+        self._type = None
+
         if key == "":
             # Create Spectrum
             self._spectrum = ProtoSpectrum(name=name, description=description, metadata=metadata)
@@ -85,58 +300,84 @@ class Spectrum:
             self.spectrum_link = speos_client[key]
             self._spectrum = self.spectrum_link.get()
 
-    def set_monochromatic(self, wavelength: float = 555.0) -> Spectrum:
+    def set_monochromatic(self) -> Spectrum.Monochromatic:
         """Set the spectrum as monochromatic.
 
-        Parameters
-        ----------
-        wavelength : float
-            Wavelength of the spectrum, in nm.
-            By default, ``555.0``.
-
         Returns
         -------
-        ansys.speos.core.spectrum.Spectrum
-            Spectrum feature.
+        ansys.speos.core.spectrum.Spectrum.Monochromatic
+            Spectrum Monochromatic feature.
         """
-        self._spectrum.monochromatic.wavelength = wavelength
-        return self
+        if self._type is None and self._spectrum.HasField("monochromatic"):
+            self._type = Spectrum.Monochromatic(
+                monochromatic=self._spectrum.monochromatic,
+                default_values=False,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._type, Spectrum.Monochromatic):
+            self._type = Spectrum.Monochromatic(
+                monochromatic=self._spectrum.monochromatic,
+                default_values=True,
+                stable_ctr=True,
+            )
+        elif self._type._monochromatic is not self._spectrum.monochromatic:
+            self._type._monochromatic = self._spectrum.monochromatic
+        return self._type
+        # self._spectrum.monochromatic.wavelength = wavelength
+        # return self
 
-    def set_blackbody(self, temperature: float = 2856) -> Spectrum:
+    def set_blackbody(self) -> Spectrum.Blackbody:
         """Set the spectrum as blackbody.
 
-        Parameters
-        ----------
-        temperature : float
-            Temperature of the blackbody, in K.
-            By default, ``2856``.
-
         Returns
         -------
-        ansys.speos.core.spectrum.Spectrum
-            Spectrum feature.
+        ansys.speos.core.spectrum.Spectrum.Blackbody
+            Spectrum Blackbody feature.
         """
-        self._spectrum.blackbody.temperature = temperature
-        return self
+        if self._type is None and self._spectrum.HasField("blackbody"):
+            self._type = Spectrum.Blackbody(
+                blackbody=self._spectrum.blackbody,
+                default_values=False,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._type, Spectrum.Blackbody):
+            self._type = Spectrum.Blackbody(
+                blackbody=self._spectrum.blackbody,
+                default_values=True,
+                stable_ctr=True,
+            )
+        elif self._type._blackbody is not self._spectrum.blackbody:
+            self._type._blackbody = self._spectrum.blackbody
+        return self._type
+        # self._spectrum.blackbody.temperature = temperature
+        # return self
 
-    def set_sampled(self, wavelengths: List[float], values: List[float]) -> Spectrum:
+    def set_sampled(self) -> Spectrum.Sampled:
         """Set the spectrum as sampled.
 
-        Parameters
-        ----------
-        wavelengths : List[float]
-            List of wavelengths, in nm
-        values : List[float]
-            List of values, expected from 0. to 100. in %
-
         Returns
         -------
-        ansys.speos.core.spectrum.Spectrum
-            Spectrum feature.
+        ansys.speos.core.spectrum.Spectrum.Sampled
+            Spectrum Sampled feature.
         """
-        self._spectrum.sampled.wavelengths[:] = wavelengths
-        self._spectrum.sampled.values[:] = values
-        return self
+        if self._type is None and self._spectrum.HasField("sampled"):
+            self._type = Spectrum.Sampled(
+                sampled=self._spectrum.sampled,
+                default_values=False,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._type, Spectrum.Sampled):
+            self._type = Spectrum.Sampled(
+                sampled=self._spectrum.sampled,
+                default_values=True,
+                stable_ctr=True,
+            )
+        elif self._type._sampled is not self._spectrum.sampled:
+            self._type._sampled = self._spectrum.sampled
+        return self._type
+        # self._spectrum.sampled.wavelengths[:] = wavelengths
+        # self._spectrum.sampled.values[:] = values
+        # return self
 
     def set_library(self, file_uri: str) -> Spectrum:
         """Set the spectrum as library.
