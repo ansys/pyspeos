@@ -40,6 +40,34 @@ By default, 4194304.
 """
 
 
+class SPECTRUM:
+    """Constant class for Spectrum."""
+
+    class MONOCHROMATIC:
+        """Constant class for Monochromatic."""
+
+        WAVELENGTH = 550
+
+    class BLACKBODY:
+        """Constant class for BlackBody."""
+
+        TEMPERATURE = 2856
+
+
+class SOURCE:
+    """Constant class for Sources."""
+
+    class LUMINOUS:
+        """Constant class for Luminous."""
+
+        VALUE = 683
+
+    class RADIANT:
+        """Constant class for Radiant."""
+
+        VALUE = 1
+
+
 class SENSOR:
     """Constant class for Sensors."""
 
