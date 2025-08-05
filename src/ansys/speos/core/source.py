@@ -109,6 +109,129 @@ class BaseSource:
             self.source_template_link = self._project.client[source_instance.source_guid]
             self._reset()
 
+    class Luminous:
+        """Luminous type of flux.
+
+        By default, Luminous flux value is set to be 683 lm.
+
+        Parameters
+        ----------
+        luminous_flux : ansys.api.speos.source.v1.source_pb2.Luminous
+            Luminous protobuf object to modify.
+        default_values : bool
+            Uses default values when True.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use set_flux_luminous method available in
+        Source classes.
+        """
+
+        def __init__(
+            self,
+            luminous_flux: source_pb2.Luminous,
+            default_values: bool = True,
+            stable_ctr: bool = False,
+        ):
+            if not stable_ctr:
+                msg = "Luminous class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._luminous_flux = luminous_flux
+
+            if default_values:
+                self.value = SOURCE.LUMINOUS.VALUE
+
+        @property
+        def value(self) -> float:
+            """Get luminous flux value.
+
+            Returns
+            -------
+            float
+            Luminous flux value.
+            """
+            return self._luminous_flux.luminous_value
+
+        @value.setter
+        def value(self, value: float) -> None:
+            """Set luminous flux value.
+
+            Parameters
+            ----------
+            value: float
+            Luminous flux value.
+
+            Returns
+            -------
+            None
+
+            """
+            self._luminous_flux.luminous_value = value
+
+    class Radiant:
+        """Radiant type of flux.
+
+        By default, Radiant flux value is set to be 1 W.
+
+        Parameters
+        ----------
+        radiant_flux : ansys.api.speos.source.v1.source_pb2.Radiant
+            Radiant protobuf object to modify.
+        default_values : bool
+            Uses default values when True.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use set_flux_radiant method available in
+        Source classes.
+        """
+
+        def __init__(
+            self,
+            radiant_flux: source_pb2.Radiant,
+            default_values: bool = True,
+            stable_ctr: bool = False,
+        ):
+            if not stable_ctr:
+                msg = "Radiant class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._radiant_flux = radiant_flux
+
+            if default_values:
+                self.value = SOURCE.RADIANT.VALUE
+
+        @property
+        def value(self) -> float:
+            """Get radiant flux value.
+
+            Returns
+            -------
+            float
+            Radiant flux value.
+
+            """
+            return self._radiant_flux.radiant_value
+
+        @value.setter
+        def value(self, value: float) -> None:
+            """Set radiant flux value.
+
+            Parameters
+            ----------
+            value: float
+            Radiant flux value.
+
+            Returns
+            -------
+            None
+
+            """
+            self._radiant_flux.radiant_value = value
+
     class _Spectrum:
         def __init__(
             self,
@@ -427,129 +550,6 @@ class SourceLuminaire(BaseSource):
         Uses default values when True.
     """
 
-    class Luminous:
-        """Luminous type of flux.
-
-        By default, Luminous flux value is set to be 683 lm.
-
-        Parameters
-        ----------
-        luminous_flux : ansys.api.speos.source.v1.source_pb2.Luminous
-            Luminous protobuf object to modify.
-        default_values : bool
-            Uses default values when True.
-        stable_ctr : bool
-            Variable to indicate if usage is inside class scope
-
-        Notes
-        -----
-        **Do not instantiate this class yourself**, use set_flux_luminous method available in
-        SourceLuminaire classes.
-        """
-
-        def __init__(
-            self,
-            luminous_flux: source_pb2.Luminous,
-            default_values: bool = True,
-            stable_ctr: bool = False,
-        ):
-            if not stable_ctr:
-                msg = "Luminous class instantiated outside of class scope"
-                raise RuntimeError(msg)
-            self._luminous_flux = luminous_flux
-
-            if default_values:
-                self.value = SOURCE.LUMINOUS.VALUE
-
-        @property
-        def value(self) -> float:
-            """Get luminous flux value.
-
-            Returns
-            -------
-            float
-            Luminous flux value.
-            """
-            return self._luminous_flux.luminous_value
-
-        @value.setter
-        def value(self, value: float) -> None:
-            """Set luminous flux value.
-
-            Parameters
-            ----------
-            value: float
-            Luminous flux value.
-
-            Returns
-            -------
-            None
-
-            """
-            self._luminous_flux.luminous_value = value
-
-    class Radiant:
-        """Radiant type of flux.
-
-        By default, Radiant flux value is set to be 1 W.
-
-        Parameters
-        ----------
-        radiant_flux : ansys.api.speos.source.v1.source_pb2.Radiant
-            Radiant protobuf object to modify.
-        default_values : bool
-            Uses default values when True.
-        stable_ctr : bool
-            Variable to indicate if usage is inside class scope
-
-        Notes
-        -----
-        **Do not instantiate this class yourself**, use set_flux_radiant method available in
-        SourceLuminaire classes.
-        """
-
-        def __init__(
-            self,
-            radiant_flux: source_pb2.Radiant,
-            default_values: bool = True,
-            stable_ctr: bool = False,
-        ):
-            if not stable_ctr:
-                msg = "Radiant class instantiated outside of class scope"
-                raise RuntimeError(msg)
-            self._radiant_flux = radiant_flux
-
-            if default_values:
-                self.value = SOURCE.RADIANT.VALUE
-
-        @property
-        def value(self) -> float:
-            """Get radiant flux value.
-
-            Returns
-            -------
-            float
-            Radiant flux value.
-
-            """
-            return self._radiant_flux.radiant_value
-
-        @value.setter
-        def value(self, value: float) -> None:
-            """Set radiant flux value.
-
-            Parameters
-            ----------
-            value: float
-            Radiant flux value.
-
-            Returns
-            -------
-            None
-
-            """
-            self._radiant_flux.radiant_value = value
-
     @general_methods.min_speos_version(25, 2, 0)
     def __init__(
         self,
@@ -727,7 +727,7 @@ class SourceLuminaire(BaseSource):
         return self._spectrum._spectrum
 
     @property
-    def axis_system(self) -> list:
+    def axis_system(self) -> list[float]:
         """Get the position of the source.
 
         Returns
@@ -739,12 +739,12 @@ class SourceLuminaire(BaseSource):
         return self._source_instance.luminaire_properties.axis_system[:]
 
     @axis_system.setter
-    def axis_system(self, axis_system: list) -> None:
+    def axis_system(self, axis_system: list[float]) -> None:
         """Set the position of the source.
 
         Parameters
         ----------
-        axis_system : Optional[List[float]]
+        axis_system : List[float]
             Position of the source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
