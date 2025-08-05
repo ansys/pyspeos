@@ -65,7 +65,7 @@ def test_create_luminaire_source(speos: Speos):
     ]
 
     # intensity_file_uri
-    source1.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
+    source1.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     source1.commit()
     assert source1.source_template_link is not None
     assert source1.source_template_link.get().luminaire.intensity_file_uri != ""
@@ -78,14 +78,16 @@ def test_create_luminaire_source(speos: Speos):
     assert spectrum.get().predefined.HasField("halogen")
 
     # flux luminous_flux
-    source1.set_flux_luminous(value=650)
+    source1.set_flux_luminous().value = 650
     source1.commit()
+    assert source1.set_flux_luminous().value == 650
     assert source1.source_template_link.get().luminaire.HasField("luminous_flux")
     assert source1.source_template_link.get().luminaire.luminous_flux.luminous_value == 650
 
     # flux radiant_flux
-    source1.set_flux_radiant(value=1.2)
+    source1.set_flux_radiant().value = 1.2
     source1.commit()
+    assert source1.set_flux_radiant().value == 1.2
     assert source1.source_template_link.get().luminaire.HasField("radiant_flux")
     assert source1.source_template_link.get().luminaire.radiant_flux.radiant_value == 1.2
 
@@ -95,8 +97,10 @@ def test_create_luminaire_source(speos: Speos):
     assert source1.source_template_link.get().luminaire.HasField("flux_from_intensity_file")
 
     # Properties : axis_system
-    source1.set_axis_system(axis_system=[10, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    source1.axis_system = [10, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    # source1.set_axis_system(axis_system=[10, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     source1.commit()
+    assert source1.axis_system == [10, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     assert source1._source_instance.HasField("luminaire_properties")
     assert source1._source_instance.luminaire_properties.axis_system == [
         10,
@@ -559,7 +563,7 @@ def test_keep_same_internal_feature(speos: Speos):
 
     # LUMINAIRE SOURCE
     source2 = SourceLuminaire(project=p, name="Luminaire.1")
-    source2.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
+    source2.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     source2.commit()
     spectrum_guid = source2.source_template_link.get().luminaire.spectrum_guid
 
@@ -653,9 +657,8 @@ def test_luminaire_modify_after_reset(speos: Speos):
 
     # Create + commit
     source = SourceLuminaire(project=p, name="Luminaire.1")
-    source.set_intensity_file_uri(
-        uri=str(Path(test_path) / "IES_C_DETECTOR.ies")
-    ).set_flux_luminous()
+    source.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
+    source.set_flux_luminous()
     source.commit()
 
     # Ask for reset
@@ -663,8 +666,9 @@ def test_luminaire_modify_after_reset(speos: Speos):
 
     # Modify after a reset
     # Template
+    assert source.set_flux_luminous().value == 683
     assert source._source_template.luminaire.luminous_flux.luminous_value == 683
-    source.set_flux_luminous(value=500)
+    source.set_flux_luminous().value = 500
     assert source._source_template.luminaire.luminous_flux.luminous_value == 500
 
     # Intermediate class for spectrum
@@ -687,7 +691,7 @@ def test_luminaire_modify_after_reset(speos: Speos):
         0,
         1,
     ]
-    source.set_axis_system([50, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    source.axis_system = [50, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     assert source._source_instance.luminaire_properties.axis_system == [
         50,
         20,
@@ -866,7 +870,7 @@ def test_print_source(speos: Speos):
     # Create + commit
     # source = p.create_source(name="Luminaire.1")
     source = SourceLuminaire(project=p, name="Luminaire.1")
-    source.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
+    source.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     source.commit()
 
     # Retrieve print
