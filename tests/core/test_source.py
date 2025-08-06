@@ -25,6 +25,8 @@
 import datetime
 from pathlib import Path
 
+import pytest
+
 from ansys.speos.core import GeoRef, Project, Speos
 from ansys.speos.core.source import (
     SourceAmbientNaturalLight,
@@ -133,6 +135,20 @@ def test_create_luminaire_source(speos: Speos):
         0,
         1,
     ]
+
+    with pytest.raises(RuntimeError, match="Luminous class instantiated outside of class scope"):
+        SourceLuminaire.Luminous(
+            luminous_flux=source1._source_template.luminaire.luminous_flux,
+            default_values=True,
+            stable_ctr=False,
+        )
+
+    with pytest.raises(RuntimeError, match="Radiant class instantiated outside of class scope"):
+        SourceLuminaire.Radiant(
+            radiant_flux=source1._source_template.luminaire.radiant_flux,
+            default_values=True,
+            stable_ctr=False,
+        )
 
     source1.delete()
     assert len(p.scene_link.get().sources) == 0
@@ -268,6 +284,33 @@ def test_create_surface_source(speos: Speos):
     source1.set_exitance_constant().geometries = []  # clear geometries
     assert surface_properties.HasField("exitance_constant_properties")
     assert len(surface_properties.exitance_constant_properties.geo_paths) == 0
+
+    with pytest.raises(RuntimeError, match="Intensity class instantiated outside of class scope"):
+        SourceSurface.Intensity(
+            intensity_flux=source1._source_template.surface.luminous_intensity_flux,
+            default_values=True,
+            stable_ctr=False,
+        )
+
+    with pytest.raises(
+        RuntimeError, match="ExitanceConstant class instantiated outside of class scope"
+    ):
+        SourceSurface.ExitanceConstant(
+            exitance_constant=source1._source_template.surface.exitance_constant,
+            exitance_constant_props=source1._source_instance.surface_properties.exitance_constant_properties,
+            default_values=True,
+            stable_ctr=False,
+        )
+
+    with pytest.raises(
+        RuntimeError, match="ExitanceVariable class instantiated outside of class scope"
+    ):
+        SourceSurface.ExitanceVariable(
+            exitance_variable=source1._source_template.surface.exitance_variable,
+            exitance_variable_props=source1._source_instance.surface_properties.exitance_variable_properties,
+            default_values=True,
+            stable_ctr=False,
+        )
 
     source1.delete()
 

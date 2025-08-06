@@ -104,7 +104,7 @@ def test_create_spectrum(speos: Speos):
     assert spectrum1.spectrum_link.get().HasField("predefined")
     assert spectrum1.spectrum_link.get().predefined.HasField("highpressuresodium")
 
-    with pytest.raises(RuntimeError, match="Blackbody class instantiated outside of class scopee"):
+    with pytest.raises(RuntimeError, match="Blackbody class instantiated outside of class scope"):
         Spectrum.Blackbody(
             blackbody=spectrum1._spectrum.blackbody,
             default_values=True,
@@ -112,7 +112,7 @@ def test_create_spectrum(speos: Speos):
         )
 
     with pytest.raises(
-        RuntimeError, match="Monochromatic class instantiated outside of class scopee"
+        RuntimeError, match="Monochromatic class instantiated outside of class scope"
     ):
         Spectrum.Monochromatic(
             monochromatic=spectrum1._spectrum.monochromatic,
@@ -120,7 +120,7 @@ def test_create_spectrum(speos: Speos):
             stable_ctr=False,
         )
 
-    with pytest.raises(RuntimeError, match="Sampled class instantiated outside of class scopee"):
+    with pytest.raises(RuntimeError, match="Sampled class instantiated outside of class scope"):
         Spectrum.Sampled(
             sampled=spectrum1._spectrum.sampled,
             default_values=True,
