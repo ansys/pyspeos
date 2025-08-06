@@ -37,17 +37,21 @@ def test_create_spectrum(speos: Speos):
     assert spectrum1.spectrum_link.get().monochromatic.wavelength == 555
 
     # monochromatic
-    spectrum1.set_monochromatic(wavelength=777).commit()
+    spectrum1.set_monochromatic().wavelength = 777
+    spectrum1.commit()
     assert spectrum1.spectrum_link.get().HasField("monochromatic")
     assert spectrum1.spectrum_link.get().monochromatic.wavelength == 777
 
     # blackbody
-    spectrum1.set_blackbody(temperature=3000).commit()
+    spectrum1.set_blackbody().temperature = 3000
+    spectrum1.commit()
     assert spectrum1.spectrum_link.get().HasField("blackbody")
     assert spectrum1.spectrum_link.get().blackbody.temperature == 3000
 
     # sampled
-    spectrum1.set_sampled(wavelengths=[300, 400, 500], values=[30, 20, 70]).commit()
+    spectrum1.set_sampled().wavelengths = [300, 400, 500]
+    spectrum1.set_sampled().values = [30, 20, 70]
+    spectrum1.commit()
     assert spectrum1.spectrum_link.get().HasField("sampled")
     assert spectrum1.spectrum_link.get().sampled.wavelengths == [300, 400, 500]
     assert spectrum1.spectrum_link.get().sampled.values == [30, 20, 70]
@@ -59,31 +63,38 @@ def test_create_spectrum(speos: Speos):
     assert spectrum1.spectrum_link.get().HasField("library")
 
     # predefined
-    spectrum1.set_incandescent().commit()
+    spectrum1.set_incandescent()
+    spectrum1.commit()
     assert spectrum1.spectrum_link.get().HasField("predefined")
     assert spectrum1.spectrum_link.get().predefined.HasField("incandescent")
 
-    spectrum1.set_warmwhitefluorescent().commit()
+    spectrum1.set_warmwhitefluorescent()
+    spectrum1.commit()
     assert spectrum1.spectrum_link.get().HasField("predefined")
     assert spectrum1.spectrum_link.get().predefined.HasField("warmwhitefluorescent")
 
-    spectrum1.set_daylightfluorescent().commit()
+    spectrum1.set_daylightfluorescent()
+    spectrum1.commit()
     assert spectrum1.spectrum_link.get().HasField("predefined")
     assert spectrum1.spectrum_link.get().predefined.HasField("daylightfluorescent")
 
-    spectrum1.set_white_led().commit()
+    spectrum1.set_white_led()
+    spectrum1.commit()
     assert spectrum1.spectrum_link.get().HasField("predefined")
     assert spectrum1.spectrum_link.get().predefined.HasField("whiteLED")
 
-    spectrum1.set_halogen().commit()
+    spectrum1.set_halogen()
+    spectrum1.commit()
     assert spectrum1.spectrum_link.get().HasField("predefined")
     assert spectrum1.spectrum_link.get().predefined.HasField("halogen")
 
-    spectrum1.set_metalhalide().commit()
+    spectrum1.set_metalhalide()
+    spectrum1.commit()
     assert spectrum1.spectrum_link.get().HasField("predefined")
     assert spectrum1.spectrum_link.get().predefined.HasField("metalhalide")
 
-    spectrum1.set_highpressuresodium().commit()
+    spectrum1.set_highpressuresodium()
+    spectrum1.commit()
     assert spectrum1.spectrum_link.get().HasField("predefined")
     assert spectrum1.spectrum_link.get().predefined.HasField("highpressuresodium")
 
@@ -94,7 +105,7 @@ def test_commit_spectrum(speos: Speos):
     """Test commit of spectrum."""
     # Create
     spectrum1 = Spectrum(speos_client=speos.client, name="Spectrum.1")
-    spectrum1.set_monochromatic(wavelength=777)
+    spectrum1.set_monochromatic().wavelength = 777
     assert spectrum1.spectrum_link is None
 
     # Commit
@@ -109,7 +120,8 @@ def test_reset_spectrum(speos: Speos):
     """Test reset of spectrum."""
     # Create + commit
     spectrum1 = Spectrum(speos_client=speos.client, name="Spectrum.1")
-    spectrum1.set_monochromatic(wavelength=777).commit()
+    spectrum1.set_monochromatic().wavelength = 777
+    spectrum1.commit()
     assert spectrum1.spectrum_link.get().HasField("monochromatic")
 
     # Change local data
@@ -129,7 +141,8 @@ def test_delete_spectrum(speos: Speos):
     """Test delete of spectrum."""
     # Create + commit
     spectrum1 = Spectrum(speos_client=speos.client, name="Spectrum.1")
-    spectrum1.set_monochromatic(wavelength=777).commit()
+    spectrum1.set_monochromatic().wavelength = 777
+    spectrum1.commit()
     assert spectrum1.spectrum_link.get().HasField("monochromatic")
     assert spectrum1._spectrum.HasField("monochromatic")
 

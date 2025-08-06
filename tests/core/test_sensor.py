@@ -333,9 +333,9 @@ def test_create_camera_sensor(speos: Speos):
     assert mode_photometric.color_mode_color.HasField("balance_mode_none")
 
     # wavelengths_range
-    sensor1.set_mode_photometric().set_wavelengths_range().set_start(value=430).set_end(
-        value=750
-    ).set_sampling(value=15)
+    sensor1.set_mode_photometric().set_wavelengths_range().start = 430
+    sensor1.set_mode_photometric().set_wavelengths_range().end = 750
+    sensor1.set_mode_photometric().set_wavelengths_range().sampling = 15
     sensor1.commit()
     camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
     mode_photometric = camera_sensor_template.sensor_mode_photometric
