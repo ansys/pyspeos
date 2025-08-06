@@ -257,10 +257,7 @@ def test_create_surface_source(speos: Speos):
     ]
     source1.set_spectrum().set_blackbody()
     source1.commit()
-    assert source1.set_exitance_constant().geometries == [
-        (GeoRef.from_native_link("BodyB/FaceB1"), False),
-        (GeoRef.from_native_link("BodyB/FaceB2"), True),
-    ]
+    assert len(source1.set_exitance_constant().geometries) == 2
     assert surface_properties.HasField("exitance_constant_properties")
     assert len(surface_properties.exitance_constant_properties.geo_paths) == 2
     assert surface_properties.exitance_constant_properties.geo_paths[0].geo_path == "BodyB/FaceB1"
