@@ -243,7 +243,7 @@ class Spectrum:
             None
 
             """
-            self._sampled.wavelengths = wavelengths
+            self._sampled.wavelengths[:] = wavelengths
 
         @property
         def values(self) -> List[float]:

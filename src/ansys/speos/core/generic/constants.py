@@ -46,7 +46,7 @@ class SPECTRUM:
     class MONOCHROMATIC:
         """Constant class for Monochromatic."""
 
-        WAVELENGTH = 550
+        WAVELENGTH = 555
 
     class BLACKBODY:
         """Constant class for BlackBody."""
