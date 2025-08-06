@@ -39,6 +39,9 @@ MAX_CLIENT_MESSAGE_SIZE: int = int(4194304)
 By default, 4194304.
 """
 
+ORIGIN = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+"""Global Origin"""
+
 
 class SENSOR:
     """Constant class for Sensors."""
@@ -75,4 +78,30 @@ class SENSOR:
         MAXIMUM_NB_OF_SEQUENCE = 10
         """Number of sequences stored in sensor."""
         INCIDENCE_SAMPLING = 9
-        """Number of incidence sampling stored in sensor"""
+        """Number of incidence sampling stored in sensor."""
+
+    class CAMERASENSOR:
+        """Camera Sensor Constants."""
+
+        GAIN = 1
+        """Default gain value of the Camera Sensor."""
+        ACQUISITION_INTEGRATION = 0.01
+        """Default integration Time value for the Camera Sensor."""
+        ACQUISITION_LAG_TIME = 0
+        """Default acquisition lag time for the Camera Sensor."""
+        GAMMA_CORRECTION = 2.2
+        """Default gamma correction Value for the Camera Sensor."""
+        FOCAL_LENGTH = 5
+        """Default focal length of the Camera Sensor."""
+        IMAGER_DISTANCE = 10
+        """Default imager distance of the camera sensor."""
+        F_NUMBER = 20
+        """Default f number of the camera sensor."""
+        HORZ_PIXEL = 640
+        """Default pixel number in horizontal direction."""
+        VERT_PIXEL = 480
+        """Default pixel number in vertical direction."""
+        WIDTH = 5.0
+        """Default width of the camera chip."""
+        HEIGHT = 5.0
+        """Default height of the camera chip."""

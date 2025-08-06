@@ -36,7 +36,7 @@ from ansys.api.speos.sensor.v1 import camera_sensor_pb2, common_pb2, sensor_pb2
 import ansys.speos.core as core
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
-from ansys.speos.core.generic.constants import SENSOR
+from ansys.speos.core.generic.constants import ORIGIN, SENSOR
 import ansys.speos.core.generic.general_methods as general_methods
 from ansys.speos.core.generic.visualization_methods import _VisualData, local2absolute
 from ansys.speos.core.geo_ref import GeoRef
@@ -1136,9 +1136,9 @@ class SensorCamera(BaseSensor):
 
                     if default_values:
                         # Default values
-                        self.red_gain = 1
-                        self.green_gain = 1
-                        self.blue_gain = 1
+                        self.red_gain = SENSOR.CAMERASENSOR.GAIN
+                        self.green_gain = SENSOR.CAMERASENSOR.GAIN
+                        self.blue_gain = SENSOR.CAMERASENSOR.GAIN
 
                 @property
                 def red_gain(self) -> float:
@@ -1482,9 +1482,10 @@ class SensorCamera(BaseSensor):
 
             if default_values:
                 # Default values
-                self.acquisition_integration = 0.01
-                self.acquisition_lag_time = 0.0
-                self.set_gamma_correction().set_png_bits_16().set_mode_color()
+                self.acquisition_integration = SENSOR.CAMERASENSOR.ACQUISITION_INTEGRATION
+                self.acquisition_lag_time = SENSOR.CAMERASENSOR.ACQUISITION_LAG_TIME
+                self.gamma_correction = SENSOR.CAMERASENSOR.GAMMA_CORRECTION
+                self.set_png_bits_16().set_mode_color()
                 self.set_wavelengths_range()
                 # Default values properties
                 self.set_layer_type_none()
@@ -1739,10 +1740,16 @@ class SensorCamera(BaseSensor):
         self._type = None
         if default_values:
             # Default values template
-            self.set_focal_length().set_imager_distance().set_f_number().set_horz_pixel()
-            self.set_vert_pixel().set_width().set_height().set_mode_photometric()
-            # Default values properties
-            self.set_axis_system()
+            self.imager_distance = SENSOR.CAMERASENSOR.IMAGER_DISTANCE
+            self.focal_length = SENSOR.CAMERASENSOR.FOCAL_LENGTH
+            self.f_number = SENSOR.CAMERASENSOR.F_NUMBER
+            self.horz_pixel = SENSOR.CAMERASENSOR.HORZ_PIXEL
+            self.vert_pixel = SENSOR.CAMERASENSOR.VERT_PIXEL
+            self.width = SENSOR.CAMERASENSOR.WIDTH
+            self.height = SENSOR.CAMERASENSOR.HEIGHT
+            self.axis_system = ORIGIN
+
+            self.set_mode_photometric()
 
     @property
     def visual_data(self) -> _VisualData:
@@ -1865,7 +1872,7 @@ class SensorCamera(BaseSensor):
         self._sensor_template.camera_sensor_template.focal_length = value
 
     @property
-    def imager_distance(self, value: float = 10) -> SensorCamera:
+    def imager_distance(self) -> SensorCamera:
         """Set the imager distance.
 
         By default, ``10``.
@@ -2005,7 +2012,7 @@ class SensorCamera(BaseSensor):
         self._sensor_template.camera_sensor_template.height = value
 
     @property
-    def axis_system(self, axis_system: List[float]) -> List[float]:
+    def axis_system(self) -> List[float]:
         """The position of the sensor.
 
         By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
