@@ -2181,7 +2181,8 @@ class SensorIrradiance(BaseSensor):
             # Default values template
             self.set_type_photometric().set_illuminance_type_planar()
             # Default values properties
-            self.set_axis_system().set_ray_file_type_none().set_layer_type_none()
+            self.axis_system = ORIGIN
+            self.set_ray_file_type_none().set_layer_type_none()
 
     @property
     def visual_data(self) -> _VisualData:
@@ -2438,9 +2439,52 @@ class SensorIrradiance(BaseSensor):
             )
         return self._type
 
-    def set_illuminance_type_planar(
-        self, integration_direction: Optional[List[float]] = None
-    ) -> SensorIrradiance:
+    @property
+    def integration_direction(self):
+        """Integration direction of irradiance Sensor.
+
+        Sensor global integration direction [x,y,z], optional (default direction is Z axis of
+        axis_system).
+
+        Note: Contrary to any visualization of integration directions within Speos Software or its
+        documentation the integration direction must be set in the anti-rays direction to integrate
+        their signal.
+        Integration direction is only settable for sensor template with IlluminanceTypePlanar or
+        IlluminanceTypeSemiCylindrical as illuminance_type
+
+        Returns
+        -------
+        List[float]
+            Sensor global integration direction [x,y,z]
+        """
+        return self._sensor_instance.irradiance_properties.integration_direction
+
+    @integration_direction.setter
+    def integration_direction(self, value: List[float]):
+        """Set integration direction.
+
+        Parameters
+        ----------
+        value : List[float]
+            Sensor global integration direction [x,y,z]
+        """
+        if not value:
+            self._sensor_instance.irradiance_properties.ClearField("integration_direction")
+        else:
+            if self._sensor_template.irradiance_sensor_template.HasField(
+                "illuminance_type_semi_cylindrical"
+            ) or self._sensor_template.irradiance_sensor_template.HasField(
+                "illuminance_type_planar"
+            ):
+                self._sensor_instance.irradiance_properties.integration_direction[:] = value
+            else:
+                msg = (
+                    "Integration direction is only settable for sensor template with"
+                    "IlluminanceTypePlanar or IlluminanceTypeSemiCylindrical as illuminance_type."
+                )
+                raise TypeError(msg)
+
+    def set_illuminance_type_planar(self) -> SensorIrradiance:
         """Set illuminance type planar.
 
         Parameters
@@ -2463,12 +2507,7 @@ class SensorIrradiance(BaseSensor):
         their signal.
         """
         self._sensor_template.irradiance_sensor_template.illuminance_type_planar.SetInParent()
-        if not integration_direction:
-            self._sensor_instance.irradiance_properties.ClearField("integration_direction")
-        else:
-            self._sensor_instance.irradiance_properties.integration_direction[:] = (
-                integration_direction
-            )
+        self._sensor_instance.irradiance_properties.ClearField("integration_direction")
         return self
 
     def set_illuminance_type_radial(self) -> SensorIrradiance:
@@ -2504,16 +2543,8 @@ class SensorIrradiance(BaseSensor):
         self._sensor_template.irradiance_sensor_template.illuminance_type_cylindrical.SetInParent()
         return self
 
-    def set_illuminance_type_semi_cylindrical(
-        self, integration_direction: Optional[List[float]] = None
-    ) -> SensorIrradiance:
+    def set_illuminance_type_semi_cylindrical(self) -> SensorIrradiance:
         """Set illuminance type semi cylindrical.
-
-        Parameters
-        ----------
-        integration_direction : List[float], optional
-            Sensor global integration direction [x,y,z].
-            By default, ``None``. None means that the Z axis of axis_system is taken.
 
         Returns
         -------
@@ -2521,32 +2552,28 @@ class SensorIrradiance(BaseSensor):
             Irradiance sensor.
         """
         self._sensor_template.irradiance_sensor_template.illuminance_type_semi_cylindrical.SetInParent()
-        if not integration_direction:
-            self._sensor_instance.irradiance_properties.ClearField("integration_direction")
-        else:
-            self._sensor_instance.irradiance_properties.integration_direction[:] = (
-                integration_direction
-            )
+        self._sensor_instance.irradiance_properties.ClearField("integration_direction")
         return self
 
-    def set_axis_system(self, axis_system: Optional[List[float]] = None) -> SensorIrradiance:
-        """Set position of the sensor.
+    @property
+    def axis_system(self) -> List[float]:
+        """The position of the sensor.
+
+        By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+        """
+        return self._sensor_instance.irradiance_properties.axis_system
+
+    @axis_system.setter
+    def axis_system(self, axis_system: List[float]):
+        """Set the position of the sensor.
 
         Parameters
         ----------
         axis_system : Optional[List[float]]
             Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.SensorIrradiance
-            Irradiance sensor.
         """
-        if axis_system is None:
-            axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
         self._sensor_instance.irradiance_properties.axis_system[:] = axis_system
-        return self
 
     def set_ray_file_type_none(self) -> SensorIrradiance:
         """Set no ray file generation.
@@ -2753,9 +2780,26 @@ class SensorIrradiance(BaseSensor):
             )
         return self._layer_type
 
-    def set_output_face_geometries(
-        self, geometries: Optional[List[GeoRef]] = None
-    ) -> SensorIrradiance:
+    @property
+    def output_face_geometries(self) -> SensorIrradiance:
+        """Select output faces for inverse simulation optimization.
+
+        Parameters
+        ----------
+        geometries : List[ansys.speos.core.geo_ref.GeoRef]
+            List of geometries that will be considered as output faces.
+            By default, ``[]``, ie no output faces.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorIrradiance
+            Irradiance sensor.
+        """
+        if self._sensor_instance.irradiance_properties.HasField("output_face_geometries"):
+            return self._sensor_instance.irradiance_properties.output_face_geometries.geo_paths
+
+    @output_face_geometries.setter
+    def output_face_geometries(self, geometries: Optional[List[GeoRef]] = None) -> SensorIrradiance:
         """Select output faces for inverse simulation optimization.
 
         Parameters
@@ -2772,10 +2816,18 @@ class SensorIrradiance(BaseSensor):
         if not geometries:
             self._sensor_instance.irradiance_properties.ClearField("output_face_geometries")
         else:
+            geo_paths = []
+            for gr in geometries:
+                if isinstance(gr, GeoRef):
+                    geo_paths.append(gr)
+                elif isinstance(gr, (face.Face, body.Body, part.Part.SubPart)):
+                    geo_paths.append(gr.geo_path)
+                else:
+                    msg = f"Type {type(gr)} is not supported as output faces geometry input."
+                    raise TypeError(msg)
             self._sensor_instance.irradiance_properties.output_face_geometries.geo_paths[:] = [
-                gr.to_native_link() for gr in geometries
+                gp.to_native_link() for gp in geo_paths
             ]
-        return self
 
 
 class SensorRadiance(BaseSensor):
