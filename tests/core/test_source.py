@@ -154,8 +154,7 @@ def test_create_surface_source(speos: Speos):
     # Default value
     # source1 = p.create_source(name="Surface.1")
     source1 = SourceSurface(project=p, name="Surface.1")
-    source1.set_exitance_constant(geometries=[(GeoRef.from_native_link("BodyB"), False)])
-    # source1.set_surface()
+    source1.set_exitance_constant().geometries = [(GeoRef.from_native_link("BodyB"), False)]
     source1.commit()
     assert source1.source_template_link is not None
     assert source1.source_template_link.get().HasField("surface")
@@ -186,19 +185,19 @@ def test_create_surface_source(speos: Speos):
     assert surface_properties.intensity_properties.library_properties.HasField("axis_system")
 
     # luminous_flux
-    source1.set_flux_luminous(value=630)
+    source1.set_flux_luminous().value = 630
     source1.commit()
     assert source1.source_template_link.get().surface.HasField("luminous_flux")
     assert source1.source_template_link.get().surface.luminous_flux.luminous_value == 630
 
     # radiant_flux
-    source1.set_flux_radiant(value=1.1)
+    source1.set_flux_radiant().value = 1.1
     source1.commit()
     assert source1.source_template_link.get().surface.HasField("radiant_flux")
     assert source1.source_template_link.get().surface.radiant_flux.radiant_value == 1.1
 
     # luminous_intensity_flux
-    source1.set_flux_luminous_intensity(value=5.5)
+    source1.set_flux_luminous_intensity().value = 5.5
     source1.commit()
     assert source1.source_template_link.get().surface.HasField("luminous_intensity_flux")
     assert (
@@ -207,8 +206,8 @@ def test_create_surface_source(speos: Speos):
     )
 
     # exitance_variable + spectrum_from_xmp_file
-    source1.set_exitance_variable().set_xmp_file_uri(
-        uri=str(Path(test_path) / "PROJECT.Direct-no-Ray.Irradiance Ray Spectral.xmp")
+    source1.set_exitance_variable().xmp_file_uri = (
+        Path(test_path) / "PROJECT.Direct-no-Ray.Irradiance Ray Spectral.xmp"
     )
     source1.set_spectrum_from_xmp_file()
     source1.commit()
@@ -230,7 +229,7 @@ def test_create_surface_source(speos: Speos):
 
     # Properties
     # exitance_variable axis_plane
-    source1.set_exitance_variable().set_axis_plane(axis_plane=[10, 10, 15, 1, 0, 0, 0, 1, 0])
+    source1.set_exitance_variable().axis_plane = [10, 10, 15, 1, 0, 0, 0, 1, 0]
     source1.commit()
     assert surface_properties.HasField("exitance_variable_properties")
     assert surface_properties.exitance_variable_properties.axis_plane == [
@@ -246,12 +245,11 @@ def test_create_surface_source(speos: Speos):
     ]
 
     # exitance_constant geometries
-    source1.set_exitance_constant(
-        geometries=[
-            (GeoRef.from_native_link("BodyB/FaceB1"), False),
-            (GeoRef.from_native_link("BodyB/FaceB2"), True),
-        ]
-    ).set_spectrum().set_blackbody()
+    source1.set_exitance_constant().geometries = [
+        (GeoRef.from_native_link("BodyB/FaceB1"), False),
+        (GeoRef.from_native_link("BodyB/FaceB2"), True),
+    ]
+    source1.set_spectrum().set_blackbody()
     source1.commit()
     assert surface_properties.HasField("exitance_constant_properties")
     assert len(surface_properties.exitance_constant_properties.geo_paths) == 2
@@ -260,7 +258,7 @@ def test_create_surface_source(speos: Speos):
     assert surface_properties.exitance_constant_properties.geo_paths[1].geo_path == "BodyB/FaceB2"
     assert surface_properties.exitance_constant_properties.geo_paths[1].reverse_normal is True
 
-    source1.set_exitance_constant(geometries=[])  # clear geometries
+    source1.set_exitance_constant().geometries = []  # clear geometries
     assert surface_properties.HasField("exitance_constant_properties")
     assert len(surface_properties.exitance_constant_properties.geo_paths) == 0
 
@@ -549,7 +547,7 @@ def test_keep_same_internal_feature(speos: Speos):
 
     # SURFACE SOURCE
     source1 = SourceSurface(project=p, name="Surface.1")
-    source1.set_exitance_constant(geometries=[(body_b, False)])
+    source1.set_exitance_constant().geometries = [(body_b, False)]
     source1.commit()
     spectrum_guid = source1.source_template_link.get().surface.spectrum_guid
     intensity_guid = source1.source_template_link.get().surface.intensity_guid
@@ -780,10 +778,11 @@ def test_surface_modify_after_reset(speos: Speos):
     p = Project(speos=speos)
 
     # Create + commit
-    source = SourceSurface(project=p, name="Surface.2").set_flux_luminous()
+    source = SourceSurface(project=p, name="Surface.2")
+    source.set_flux_luminous()
     source.set_spectrum_from_xmp_file()
-    source.set_exitance_variable().set_xmp_file_uri(
-        uri=str(Path(test_path) / "PROJECT.Direct-no-Ray.Irradiance Ray Spectral.xmp")
+    source.set_exitance_variable().xmp_file_uri = (
+        Path(test_path) / "PROJECT.Direct-no-Ray.Irradiance Ray Spectral.xmp"
     )
     source.commit()
 
@@ -793,7 +792,7 @@ def test_surface_modify_after_reset(speos: Speos):
     # Modify after a reset
     # Template
     assert source._source_template.surface.luminous_flux.luminous_value == 683
-    source.set_flux_luminous(value=500)
+    source.set_flux_luminous().value = 500
     assert source._source_template.surface.luminous_flux.luminous_value == 500
 
     # Intermediate class for spectrum
@@ -818,7 +817,7 @@ def test_surface_modify_after_reset(speos: Speos):
         1,
         0,
     ]
-    source.set_exitance_variable().set_axis_plane([50, 20, 10, 1, 0, 0, 0, 1, 0])
+    source.set_exitance_variable().axis_plane = [50, 20, 10, 1, 0, 0, 0, 1, 0]
     assert source._source_instance.surface_properties.exitance_variable_properties.axis_plane == [
         50,
         20,
@@ -913,7 +912,7 @@ def test_print_source(speos: Speos):
 
     # SURFACE - SPECTRUM
     source = SourceSurface(project=p, name="Surface.1")
-    source.set_exitance_constant(geometries=[(GeoRef.from_native_link("BodyB"), False)])
+    source.set_exitance_constant().geometries = [(GeoRef.from_native_link("BodyB"), False)]
     source.commit()
 
     # Retrieve print

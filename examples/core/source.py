@@ -198,12 +198,10 @@ source3.delete()
 # +
 create_helper_geometries(p)
 source4 = p.create_source(name="Surface.1", feature_type=SourceSurface)
-source4.set_exitance_constant(
-    geometries=[
-        (GeoRef.from_native_link("TheBodyB/TheFaceF"), False),
-        (GeoRef.from_native_link("TheBodyC/TheFaceF"), True),
-    ]
-)
+source4.set_exitance_constant().geometries = [
+    (GeoRef.from_native_link("TheBodyB/TheFaceF"), False),
+    (GeoRef.from_native_link("TheBodyC/TheFaceF"), True),
+]
 source4.commit()
 print(source4)
 # -
