@@ -78,7 +78,7 @@ print(p)
 # #### Source
 
 source1 = p.create_source(name="Source.1", feature_type=SourceLuminaire)
-source1.set_intensity_file_uri(uri=str(assets_data_path / "IES_C_DETECTOR.ies"))
+source1.intensity_file_uri = assets_data_path / "IES_C_DETECTOR.ies"
 source1.commit()
 
 
@@ -193,7 +193,7 @@ src = features[1]
 
 # modify the surface source, e.g. surface source wavelength:
 
-src.set_spectrum().set_monochromatic(wavelength=550)
+src.set_spectrum().set_monochromatic.wavelength = 550
 src.commit()
 
 
