@@ -1091,6 +1091,151 @@ class SourceSurface(BaseSource):
         Uses default values when True.
     """
 
+    class Intensity:
+        """Intensity type of flux.
+
+        By default, Intensity flux value is set to be 5 cd.
+
+        Parameters
+        ----------
+        intensity_flux : ansys.api.speos.source.v1.source_pb2.LuminousIntensity
+            LuminousIntensity protobuf object to modify.
+        default_values : bool
+            Uses default values when True.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use set_flux_luminous_intensity
+        method available in Source classes.
+        """
+
+        def __init__(
+            self,
+            intensity_flux: source_pb2.LuminousIntensity,
+            default_values: bool = True,
+            stable_ctr: bool = False,
+        ):
+            if not stable_ctr:
+                msg = "Intensity class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._intensity_flux = intensity_flux
+
+            if default_values:
+                self.value = SOURCE.INTENSITY.VALUE
+
+        @property
+        def value(self) -> float:
+            """Get intensity flux value.
+
+            Returns
+            -------
+            float
+            Intensity flux value.
+
+            """
+            return self._intensity_flux.luminous_intensity_value
+
+        @value.setter
+        def value(self, value: float) -> None:
+            """Set intensity flux value.
+
+            Parameters
+            ----------
+            value: float
+            Intensity flux value.
+
+            Returns
+            -------
+            None
+
+            """
+            self._intensity_flux.luminous_intensity_value = value
+
+    class ExitanceConstant:
+        """Type of surface source existence : existence constant.
+
+        Parameters
+        ----------
+        exitance_constant : ansys.api.speos.source.v1.source_pb2.SourceTemplate.Surface.
+        ExitanceConstant
+            Existence constant to complete.
+        exitance_constant_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.
+        SurfaceProperties.ExitanceConstantProperties
+            Existence constant properties to complete.
+        default_values : bool
+            Uses default values when True.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use set_exitance_constant method
+        available in Source classes.
+        """
+
+        def __init__(
+            self,
+            exitance_constant,
+            exitance_constant_props,
+            default_values: bool = True,
+            stable_ctr: bool = False,
+        ):
+            if not stable_ctr:
+                msg = "ExitanceConstant class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._exitance_constant = exitance_constant
+            self._exitance_constant_props = exitance_constant_props
+            if default_values:
+                self.geometries = []
+
+        @property
+        def geometries(self) -> List[tuple[GeoRef, bool]]:
+            """Get geometries linked to surface source.
+
+            Returns
+            -------
+            List[tuple[GeoRef, bool]]
+                list of tuple which contains geometry ref and bool for normal direction.
+
+            """
+            return self._exitance_constant_props.geo_paths
+
+        @geometries.setter
+        def geometries(self, geometries: List[tuple[Union[GeoRef, face.Face, body.Body], bool]]):
+            """Set geometries linked to surface source.
+
+            Parameters
+            ----------
+            geometries: List[tuple[GeoRef, bool]]
+                list of tuple which contains geometry ref and bool for normal direction.
+
+            Returns
+            -------
+            None
+
+            """
+            geo_paths = []
+            for gr, reverse_normal in geometries:
+                if isinstance(gr, GeoRef):
+                    geo_paths.append(
+                        ProtoScene.GeoPath(
+                            geo_path=gr.to_native_link(), reverse_normal=reverse_normal
+                        )
+                    )
+                elif isinstance(gr, (face.Face, body.Body)):
+                    geo_paths.append(
+                        ProtoScene.GeoPath(
+                            geo_path=gr.geo_path.to_native_link(), reverse_normal=reverse_normal
+                        )
+                    )
+                else:
+                    msg = f"Type {type(gr)} is not supported as Surface Source geometry input."
+                    raise TypeError(msg)
+            self._exitance_constant_props.ClearField("geo_paths")
+            self._exitance_constant_props.geo_paths.extend(geo_paths)
+
     class ExitanceVariable:
         """Type of surface source existence : existence variable.
 
@@ -1129,44 +1274,65 @@ class SourceSurface(BaseSource):
             if default_values:
                 # Default values
                 self._exitance_variable.SetInParent()
-                self.set_axis_plane()
+                self.axis_plane = [0, 0, 0, 1, 0, 0, 0, 1, 0]
 
-        def set_xmp_file_uri(self, uri: str) -> SourceSurface.ExitanceVariable:
-            """Set existence xmp file.
-
-            Parameters
-            ----------
-            uri : str
-                XMP file describing existence.
+        @property
+        def xmp_file_uri(self) -> str:
+            """Get xmp file uri.
 
             Returns
             -------
-            ansys.speos.core.source.SourceSurface.ExitanceVariable
-                ExitanceVariable of surface source.
-            """
-            self._exitance_variable.exitance_xmp_file_uri = uri
-            return self
+            str
+                xmp file uri.
 
-        def set_axis_plane(
-            self, axis_plane: Optional[List[float]] = None
-        ) -> SourceSurface.ExitanceVariable:
-            """Set position of the existence map.
+            """
+            return self._exitance_variable.exitance_xmp_file_uri
+
+        @xmp_file_uri.setter
+        def xmp_file_uri(self, xmp_file_uri: Union[str, Path]) -> None:
+            """Set xmp file uri.
 
             Parameters
             ----------
-            axis_plane : Optional[List[float]]
+            xmp_file_uri: Union[str, Path]
+                xmp file uri.
+
+            Returns
+            -------
+            None
+
+            """
+            self._exitance_variable.exitance_xmp_file_uri = str(xmp_file_uri)
+
+        @property
+        def axis_plane(self) -> List[float]:
+            """Get axis plane.
+
+            Returns
+            -------
+            List[float]
+                Position of the existence map [Ox Oy Oz Xx Xy Xz Yx Yy Yz].
+                By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0]``.
+
+            """
+            return self._exitance_variable_props.axis_plane
+
+        @axis_plane.setter
+        def axis_plane(self, axis_plane: List[float]) -> None:
+            """Set axis plane.
+
+            Parameters
+            ----------
+            axis_plane: List[float]
                 Position of the existence map [Ox Oy Oz Xx Xy Xz Yx Yy Yz].
                 By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0]``.
 
             Returns
             -------
-            ansys.speos.core.source.SourceSurface.ExitanceVariable
-                ExitanceVariable of surface Source.
+            None
+
             """
-            if axis_plane is None:
-                axis_plane = [0, 0, 0, 1, 0, 0, 0, 1, 0]
             self._exitance_variable_props.axis_plane[:] = axis_plane
-            return self
 
     @general_methods.min_speos_version(25, 2, 0)
     def __init__(
@@ -1210,10 +1376,14 @@ class SourceSurface(BaseSource):
 
         # Attribute gathering more complex existence type
         self._exitance_type = None
+        # Attribute gathering more complex flux type
+        self._flux_type = None
 
         if default_values:
             # Default values
-            self.set_flux_luminous().set_exitance_constant(geometries=[]).set_intensity()
+            self.set_flux_luminous()
+            self.set_exitance_constant().geometries = []
+            self.set_intensity()
             self.set_spectrum()
 
     @property
@@ -1269,56 +1439,88 @@ class SourceSurface(BaseSource):
         self._source_template.surface.flux_from_intensity_file.SetInParent()
         return self
 
-    def set_flux_luminous(self, value: float = 683) -> SourceSurface:
+    def set_flux_luminous(self) -> SourceSurface.Luminous:
         """Set luminous flux.
 
-        Parameters
-        ----------
-        value : float
-            Luminous flux in lumens.
-            By default, ``683.0``.
-
         Returns
         -------
-        ansys.speos.core.source.SourceSurface
-            Surface source.
+        ansys.speos.core.source.SourceSurface.Luminous
+            Luminous flux type source.
         """
-        self._source_template.surface.luminous_flux.luminous_value = value
-        return self
+        if self._flux_type is None and self._source_template.surface.HasField("luminous_flux"):
+            self._flux_type = SourceSurface.Luminous(
+                luminous_flux=self._source_template.surface.luminous_flux,
+                default_values=False,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._flux_type, SourceSurface.Luminous):
+            self._flux_type = SourceSurface.Luminous(
+                luminous_flux=self._source_template.surface.luminous_flux,
+                default_values=True,
+                stable_ctr=True,
+            )
+        elif self._flux_type._luminous_flux is not self._source_template.surface.luminous_flux:
+            self._flux_type._luminous_flux = self._source_template.surface.luminous_flux
+        return self._flux_type
+        # self._source_template.surface.luminous_flux.luminous_value = value
+        # return self
 
-    def set_flux_radiant(self, value: float = 1) -> SourceSurface:
+    def set_flux_radiant(self) -> SourceSurface.Radiant:
         """Set radiant flux.
 
-        Parameters
-        ----------
-        value : float
-            Radiant flux in watts.
-            By default, ``1.0``.
+        Returns
+        -------
+        ansys.speos.core.source.SourceSurface.Radiant
+            Radiant flux type source.
+        """
+        if self._flux_type is None and self._source_template.surface.HasField("radiant_flux"):
+            self._flux_type = SourceSurface.Radiant(
+                radiant_flux=self._source_template.surface.radiant_flux,
+                default_values=False,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._flux_type, SourceSurface.Radiant):
+            self._flux_type = SourceSurface.Radiant(
+                radiant_flux=self._source_template.surface.radiant_flux,
+                default_values=True,
+                stable_ctr=True,
+            )
+        elif self._flux_type._radiant_flux is not self._source_template.surface.radiant_flux:
+            self._flux_type._radiant_flux = self._source_template.surface.radiant_flux
+        return self._flux_type
+        # self._source_template.surface.radiant_flux.radiant_value = value
+        # return self
+
+    def set_flux_luminous_intensity(self) -> SourceSurface.Intensity:
+        """Set intensity flux.
 
         Returns
         -------
-        ansys.speos.core.source.SourceSurface
-            Surface source.
+        ansys.speos.core.source.SourceSurface.Intensity
+            Intensity flux type source.
         """
-        self._source_template.surface.radiant_flux.radiant_value = value
-        return self
-
-    def set_flux_luminous_intensity(self, value: float = 5) -> SourceSurface:
-        """Set luminous intensity flux.
-
-        Parameters
-        ----------
-        value : float
-            Luminous intensity in candelas.
-            By default, ``5.0``.
-
-        Returns
-        -------
-        ansys.speos.core.source.SourceSurface
-            Surface source.
-        """
-        self._source_template.surface.luminous_intensity_flux.luminous_intensity_value = value
-        return self
+        if self._flux_type is None and self._source_template.surface.HasField(
+            "luminous_intensity_flux"
+        ):
+            self._flux_type = SourceSurface.Intensity(
+                intensity_flux=self._source_template.surface.luminous_intensity_flux,
+                default_values=False,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._flux_type, SourceSurface.Intensity):
+            self._flux_type = SourceSurface.Intensity(
+                intensity_flux=self._source_template.surface.luminous_intensity_flux,
+                default_values=True,
+                stable_ctr=True,
+            )
+        elif (
+            self._flux_type._intensity_flux
+            is not self._source_template.surface.luminous_intensity_flux
+        ):
+            self._flux_type._intensity_flux = self._source_template.surface.luminous_intensity_flux
+        return self._flux_type
+        # self._source_template.surface.luminous_intensity_flux.luminous_intensity_value = value
+        # return self
 
     def set_intensity(self) -> Intensity:
         """Set intensity.
@@ -1339,49 +1541,42 @@ class SourceSurface(BaseSource):
 
         return self._intensity
 
-    def set_exitance_constant(
-        self, geometries: List[tuple[Union[GeoRef, face.Face, body.Body], bool]]
-    ) -> SourceSurface:
+    def set_exitance_constant(self) -> SourceSurface.ExitanceConstant:
         """Set existence constant.
-
-        Parameters
-        ----------
-        geometries : List[tuple[ansys.speos.core.geo_ref.GeoRef, bool]]
-            List of (face, reverseNormal).
 
         Returns
         -------
-        ansys.speos.core.source.SourceSurface
-            Surface source.
+        ansys.speos.core.source.SourceSurface.ExitanceConstant
+            ExitanceConstant of surface source.
         """
-        self._exitance_type = None
-
-        self._source_template.surface.exitance_constant.SetInParent()
-        self._source_instance.surface_properties.exitance_constant_properties.ClearField(
-            "geo_paths"
-        )
-        if geometries != []:
-            geo_paths = []
-            for gr, reverse_normal in geometries:
-                if isinstance(gr, GeoRef):
-                    geo_paths.append(
-                        ProtoScene.GeoPath(
-                            geo_path=gr.to_native_link(), reverse_normal=reverse_normal
-                        )
-                    )
-                elif isinstance(gr, (face.Face, body.Body)):
-                    geo_paths.append(
-                        ProtoScene.GeoPath(
-                            geo_path=gr.geo_path.to_native_link(), reverse_normal=reverse_normal
-                        )
-                    )
-                else:
-                    msg = f"Type {type(gr)} is not supported as Surface Source geometry input."
-                    raise TypeError(msg)
-            self._source_instance.surface_properties.exitance_constant_properties.geo_paths.extend(
-                geo_paths
+        if self._exitance_type is None and self._source_template.surface.HasField(
+            "exitance_constant"
+        ):
+            # Happens in case of project created via load of speos file
+            self._exitance_type = SourceSurface.ExitanceConstant(
+                exitance_constant=self._source_template.surface.exitance_constant,
+                exitance_constant_props=self._source_instance.surface_properties.exitance_constant_properties,
+                default_values=False,
+                stable_ctr=True,
             )
-        return self
+        elif not isinstance(self._exitance_type, SourceSurface.ExitanceConstant):
+            # if the _exitance_type is not ExitanceConstant then we create a new type.
+            self._source_template.surface.exitance_constant.SetInParent()
+            self._exitance_type = SourceSurface.ExitanceConstant(
+                exitance_constant=self._source_template.surface.exitance_constant,
+                exitance_constant_props=self._source_instance.surface_properties.exitance_constant_properties,
+                stable_ctr=True,
+            )
+        elif (
+            self._exitance_type._exitance_constant
+            is not self._source_template.surface.exitance_constant
+        ):
+            # Happens in case of feature reset (to be sure to always modify correct data)
+            self._exitance_type._exitance_constant = self._source_template.surface.exitance_constant
+            self._exitance_type.__exitance_constant_props = (
+                self._source_instance.surface_properties.exitance_constant_properties
+            )
+        return self._exitance_type
 
     def set_exitance_variable(self) -> SourceSurface.ExitanceVariable:
         """Set existence variable, taken from XMP map.

@@ -67,6 +67,11 @@ class SOURCE:
 
         VALUE = 1
 
+    class INTENSITY:
+        """Constant class for Intensity."""
+
+        VALUE = 5
+
 
 class SENSOR:
     """Constant class for Sensors."""
