@@ -44,6 +44,7 @@ from ansys.speos.core.generic.constants import SOURCE
 import ansys.speos.core.generic.general_methods as general_methods
 from ansys.speos.core.generic.visualization_methods import _VisualArrow, _VisualData
 from ansys.speos.core.geo_ref import GeoRef
+import ansys.speos.core.intensity as intensity
 from ansys.speos.core.intensity import Intensity
 from ansys.speos.core.kernel.client import SpeosClient
 from ansys.speos.core.kernel.scene import ProtoScene
@@ -1481,7 +1482,7 @@ class SourceSurface(BaseSource):
         # self._source_template.surface.luminous_intensity_flux.luminous_intensity_value = value
         # return self
 
-    def set_intensity(self) -> Intensity:
+    def set_intensity(self) -> intensity.Intensity:
         """Set intensity.
 
         Returns
