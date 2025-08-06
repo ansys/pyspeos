@@ -2799,7 +2799,10 @@ class SensorIrradiance(BaseSensor):
             return self._sensor_instance.irradiance_properties.output_face_geometries.geo_paths
 
     @output_face_geometries.setter
-    def output_face_geometries(self, geometries: Optional[List[GeoRef]] = None) -> SensorIrradiance:
+    def output_face_geometries(
+        self,
+        geometries: Optional[List[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]] = None,
+    ) -> SensorIrradiance:
         """Select output faces for inverse simulation optimization.
 
         Parameters
@@ -2892,7 +2895,9 @@ class SensorRadiance(BaseSensor):
 
         if default_values:
             # Default values template
-            self.set_focal().set_integration_angle().set_type_photometric()
+            self.focal = SENSOR.RADIANCESENSOR.FOCAL_LENGTH
+            self.integration_angle = SENSOR.RADIANCESENSOR.INTEGRATION_ANGLE
+            self.set_type_photometric()
             # Default values properties
             self.set_axis_system().set_layer_type_none()
 
@@ -3149,7 +3154,21 @@ class SensorRadiance(BaseSensor):
             )
         return self._type
 
-    def set_focal(self, value: float = 250) -> SensorRadiance:
+    @property
+    def focal(self) -> float:
+        """The focal value of the Radiance Sensor.
+
+        By default, ``250``.
+
+        Returns
+        -------
+        float
+            Focal length of the sensor
+        """
+        return self._sensor_template.radiance_sensor_template.focal
+
+    @focal.setter
+    def focal(self, value: float):
         """Set the focal value.
 
         Parameters
@@ -3157,16 +3176,24 @@ class SensorRadiance(BaseSensor):
         value : float
             Focal (mm).
             By default, ``250``.
+        """
+        self._sensor_template.radiance_sensor_template.focal = value
+
+    @property
+    def integration_angle(self) -> float:
+        """Set the integration angle.
+
+        By default, ``5``.
 
         Returns
         -------
-        ansys.speos.core.sensor.SensorRadiance
-            Radiance sensor.
+        float
+            integration angle of the Radiance Sensor
         """
-        self._sensor_template.radiance_sensor_template.focal = value
-        return self
+        return self._sensor_template.radiance_sensor_template.integration_angle
 
-    def set_integration_angle(self, value: float = 5) -> SensorRadiance:
+    @integration_angle.setter
+    def integration_angle(self, value: float) -> SensorRadiance:
         """Set the integration angle.
 
         Parameters
@@ -3174,35 +3201,47 @@ class SensorRadiance(BaseSensor):
         value : float
             integration angle (degree)
             By default, ``5``.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.SensorRadiance
-            Radiance sensor.
         """
         self._sensor_template.radiance_sensor_template.integration_angle = value
-        return self
 
-    def set_axis_system(self, axis_system: Optional[List[float]] = None) -> SensorRadiance:
-        """Set position of the sensor.
+    @property
+    def axis_system(self) -> List[float]:
+        """The position of the sensor.
+
+        By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+        """
+        return self._sensor_instance.radiance_properties.axis_system
+
+    @axis_system.setter
+    def axis_system(self, axis_system: List[float]):
+        """Set the position of the sensor.
 
         Parameters
         ----------
         axis_system : Optional[List[float]]
             Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+        """
+        self._sensor_instance.radiance_properties.axis_system[:] = axis_system
+
+    @property
+    def observer_point(self) -> SensorRadiance:
+        """Set the position of the observer point.
+
+        This is optional, because the focal length is used by default.
+        Choosing to set an observer point will make the focal length ignored.
+
+        By default, ``None``. None means that the focal length is used.
 
         Returns
         -------
         ansys.speos.core.sensor.SensorRadiance
             Radiance sensor.
         """
-        if axis_system is None:
-            axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-        self._sensor_instance.radiance_properties.axis_system[:] = axis_system
-        return self
+        return self._sensor_instance.radiance_properties.observer_point
 
-    def set_observer_point(self, value: Optional[List[float]] = None) -> SensorRadiance:
+    @observer_point.setter
+    def observer_point(self, value: Optional[List[float]]):
         """Set the position of the observer point.
 
         This is optional, because the focal length is used by default.
@@ -3213,17 +3252,11 @@ class SensorRadiance(BaseSensor):
         value : List[float], optional
             Position of the observer point [Ox Oy Oz].
             By default, ``None``. None means that the focal length is used.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.SensorRadiance
-            Radiance sensor.
         """
         if not value:
             self._sensor_instance.radiance_properties.ClearField("observer_point")
         else:
             self._sensor_instance.radiance_properties.observer_point[:] = value
-        return self
 
     def set_layer_type_none(self) -> SensorRadiance:
         """Define layer separation type as None.
@@ -3952,7 +3985,21 @@ class Sensor3DIrradiance(BaseSensor):
         self._layer_type = None
         return self
 
-    def set_geometries(self, geometries: [List[GeoRef]]) -> Sensor3DIrradiance:
+    @property
+    def geometries(self) -> List[str]:
+        """Geometry faces/bodies to be defined with 3D irradiance sensor.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.Sensor3DIrradiance
+            3D Irradiance sensor
+        """
+        return self._sensor_instance.irradiance_3d_properties.geometries.geo_paths
+
+    @geometries.setter
+    def geometries(
+        self, geometries: Optional[List[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]]
+    ) -> Sensor3DIrradiance:
         """Select geometry faces to be defined with 3D irradiance sensor.
 
         Parameters
@@ -3965,7 +4012,15 @@ class Sensor3DIrradiance(BaseSensor):
         ansys.speos.core.sensor.Sensor3DIrradiance
             3D Irradiance sensor
         """
+        geo_paths = []
+        for gr in geometries:
+            if isinstance(gr, GeoRef):
+                geo_paths.append(gr)
+            elif isinstance(gr, (face.Face, body.Body, part.Part.SubPart)):
+                geo_paths.append(gr.geo_path)
+            else:
+                msg = f"Type {type(gr)} is not supported as 3D Irradiance Sensor geometry input."
+                raise TypeError(msg)
         self._sensor_instance.irradiance_3d_properties.geometries.geo_paths[:] = [
-            gr.to_native_link() for gr in geometries
+            gp.to_native_link() for gp in geo_paths
         ]
-        return self

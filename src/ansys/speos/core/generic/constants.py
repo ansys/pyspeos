@@ -105,3 +105,9 @@ class SENSOR:
         """Default width of the camera chip."""
         HEIGHT = 5.0
         """Default height of the camera chip."""
+
+    class RADIANCESENSOR:
+        """Radiance Sensor Constants."""
+
+        FOCAL_LENGTH = 250
+        INTEGRATION_ANGLE = 5
