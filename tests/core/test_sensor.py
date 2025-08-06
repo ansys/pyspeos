@@ -489,6 +489,9 @@ def test_create_irradiance_sensor(speos: Speos):
     sensor1.set_type_colorimetric().set_wavelengths_range().end = 800
     sensor1.set_type_colorimetric().set_wavelengths_range().sampling = 15
     sensor1.commit()
+    assert sensor1.set_type_colorimetric().set_wavelengths_range().start == 450
+    assert sensor1.set_type_colorimetric().set_wavelengths_range().end == 800
+    assert sensor1.set_type_colorimetric().set_wavelengths_range().sampling == 15
     sensor_template = sensor1.sensor_template_link.get().irradiance_sensor_template
     assert sensor_template.sensor_type_colorimetric.wavelengths_range.w_start == 450
     assert sensor_template.sensor_type_colorimetric.wavelengths_range.w_end == 800
@@ -691,6 +694,7 @@ def test_create_irradiance_sensor(speos: Speos):
     # layer_type_incidence_angle
     sensor1.set_layer_type_incidence_angle().sampling = 8
     sensor1.commit()
+    assert sensor1.set_layer_type_incidence_angle().sampling == 8
     assert irra_properties.HasField("layer_type_incidence_angle")
     assert irra_properties.layer_type_incidence_angle.sampling == 8
 
@@ -844,6 +848,12 @@ def test_create_radiance_sensor(speos: Speos):
     sensor1.set_dimensions().y_end = 20
     sensor1.set_dimensions().y_sampling = 120
     sensor1.commit()
+    assert sensor1.set_dimensions().x_start == -10
+    assert sensor1.set_dimensions().x_end == 10
+    assert sensor1.set_dimensions().x_sampling == 60
+    assert sensor1.set_dimensions().y_start == -20
+    assert sensor1.set_dimensions().y_end == 20
+    assert sensor1.set_dimensions().y_sampling == 120
     assert sensor1.sensor_template_link.get().radiance_sensor_template.HasField("dimensions")
     assert sensor1.sensor_template_link.get().radiance_sensor_template.dimensions.x_start == -10.0
     assert sensor1.sensor_template_link.get().radiance_sensor_template.dimensions.x_end == 10.0
@@ -931,6 +941,7 @@ def test_create_radiance_sensor(speos: Speos):
     sensor1.set_layer_type_sequence().maximum_nb_of_sequence = 5
     sensor1.set_layer_type_sequence().set_define_sequence_per_faces()
     sensor1.commit()
+    assert sensor1.set_layer_type_sequence().maximum_nb_of_sequence == 5
     assert radiance_properties.HasField("layer_type_sequence")
     assert radiance_properties.layer_type_sequence.maximum_nb_of_sequence == 5
     assert (

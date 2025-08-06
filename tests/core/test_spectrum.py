@@ -52,6 +52,8 @@ def test_create_spectrum(speos: Speos):
     spectrum1.set_sampled().wavelengths = [300, 400, 500]
     spectrum1.set_sampled().values = [30, 20, 70]
     spectrum1.commit()
+    assert spectrum1.set_sampled().wavelengths == [300, 400, 500]
+    assert spectrum1.set_sampled().values == [30, 20, 70]
     assert spectrum1.spectrum_link.get().HasField("sampled")
     assert spectrum1.spectrum_link.get().sampled.wavelengths == [300, 400, 500]
     assert spectrum1.spectrum_link.get().sampled.values == [30, 20, 70]

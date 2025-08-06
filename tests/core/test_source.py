@@ -67,6 +67,7 @@ def test_create_luminaire_source(speos: Speos):
     # intensity_file_uri
     source1.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     source1.commit()
+    assert source1.intensity_file_uri == str(Path(test_path) / "IES_C_DETECTOR.ies")
     assert source1.source_template_link is not None
     assert source1.source_template_link.get().luminaire.intensity_file_uri != ""
 
@@ -199,6 +200,7 @@ def test_create_surface_source(speos: Speos):
     # luminous_intensity_flux
     source1.set_flux_luminous_intensity().value = 5.5
     source1.commit()
+    assert source1.set_flux_luminous_intensity().value == 5.5
     assert source1.source_template_link.get().surface.HasField("luminous_intensity_flux")
     assert (
         source1.source_template_link.get().surface.luminous_intensity_flux.luminous_intensity_value
@@ -211,6 +213,9 @@ def test_create_surface_source(speos: Speos):
     )
     source1.set_spectrum_from_xmp_file()
     source1.commit()
+    assert source1.set_exitance_variable().xmp_file_uri == str(
+        Path(test_path) / "PROJECT.Direct-no-Ray.Irradiance Ray Spectral.xmp"
+    )
     assert source1.source_template_link.get().surface.HasField("exitance_variable")
     assert source1.source_template_link.get().surface.exitance_variable.exitance_xmp_file_uri != ""
     assert source1.source_template_link.get().surface.HasField("spectrum_from_xmp_file")
@@ -231,6 +236,7 @@ def test_create_surface_source(speos: Speos):
     # exitance_variable axis_plane
     source1.set_exitance_variable().axis_plane = [10, 10, 15, 1, 0, 0, 0, 1, 0]
     source1.commit()
+    assert source1.set_exitance_variable().axis_plane == [10, 10, 15, 1, 0, 0, 0, 1, 0]
     assert surface_properties.HasField("exitance_variable_properties")
     assert surface_properties.exitance_variable_properties.axis_plane == [
         10,
@@ -251,6 +257,10 @@ def test_create_surface_source(speos: Speos):
     ]
     source1.set_spectrum().set_blackbody()
     source1.commit()
+    assert source1.set_exitance_constant().geometries == [
+        (GeoRef.from_native_link("BodyB/FaceB1"), False),
+        (GeoRef.from_native_link("BodyB/FaceB2"), True),
+    ]
     assert surface_properties.HasField("exitance_constant_properties")
     assert len(surface_properties.exitance_constant_properties.geo_paths) == 2
     assert surface_properties.exitance_constant_properties.geo_paths[0].geo_path == "BodyB/FaceB1"
@@ -297,6 +307,7 @@ def test_create_rayfile_source(speos: Speos):
     # ray_file_uri
     source1.ray_file_uri = Path(test_path) / "Rays.ray"
     source1.commit()
+    assert source1.ray_file_uri == str(Path(test_path) / "Rays.ray")
     assert source1.source_template_link is not None
     assert source1.source_template_link.get().HasField("rayfile")
     assert source1.source_template_link.get().rayfile.ray_file_uri != ""
@@ -336,6 +347,7 @@ def test_create_rayfile_source(speos: Speos):
     # axis_system
     source1.axis_system = [50, 40, 50, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     source1.commit()
+    assert source1.axis_system == [50, 40, 50, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     assert source1._source_instance.HasField("rayfile_properties")
     assert source1._source_instance.rayfile_properties.axis_system == [
         50,
