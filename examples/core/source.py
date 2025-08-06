@@ -178,7 +178,7 @@ print(p)
 ray_file_path = str(assets_data_path / "Rays.ray")
 
 source3 = p.create_source(name="Ray-file.1", feature_type=SourceRayFile)  # type ray file
-source3.set_ray_file_uri(uri=ray_file_path)
+source3.ray_file_uri = ray_file_path
 source3.commit()
 print(source3)
 # -
