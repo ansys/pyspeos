@@ -2899,7 +2899,8 @@ class SensorRadiance(BaseSensor):
             self.integration_angle = SENSOR.RADIANCESENSOR.INTEGRATION_ANGLE
             self.set_type_photometric()
             # Default values properties
-            self.set_axis_system().set_layer_type_none()
+            self.axis_system = ORIGIN
+            self.set_layer_type_none()
 
     @property
     def visual_data(self) -> _VisualData:
