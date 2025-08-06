@@ -88,7 +88,7 @@ class Spectrum:
             stable_ctr: bool = False,
         ):
             if not stable_ctr:
-                msg = "WavelengthsRange class instantiated outside of class scope"
+                msg = "Monochromatic class instantiated outside of class scope"
                 raise RuntimeError(msg)
             self._monochromatic = monochromatic
 
@@ -149,7 +149,7 @@ class Spectrum:
             stable_ctr: bool = False,
         ):
             if not stable_ctr:
-                msg = "WavelengthRange class instantiated outside of class scope"
+                msg = "Blackbody class instantiated outside of class scope"
                 raise RuntimeError(msg)
             self._blackbody = blackbody
 
@@ -211,7 +211,7 @@ class Spectrum:
             stable_ctr: bool = False,
         ):
             if not stable_ctr:
-                msg = "WavelengthRange class instantiated outside of class scope"
+                msg = "Sampled class instantiated outside of class scope"
                 raise RuntimeError(msg)
             self._sampled = sampled
             # if default_values:
@@ -323,8 +323,6 @@ class Spectrum:
         elif self._type._monochromatic is not self._spectrum.monochromatic:
             self._type._monochromatic = self._spectrum.monochromatic
         return self._type
-        # self._spectrum.monochromatic.wavelength = wavelength
-        # return self
 
     def set_blackbody(self) -> Spectrum.Blackbody:
         """Set the spectrum as blackbody.
@@ -375,9 +373,6 @@ class Spectrum:
         elif self._type._sampled is not self._spectrum.sampled:
             self._type._sampled = self._spectrum.sampled
         return self._type
-        # self._spectrum.sampled.wavelengths[:] = wavelengths
-        # self._spectrum.sampled.values[:] = values
-        # return self
 
     def set_library(self, file_uri: str) -> Spectrum:
         """Set the spectrum as library.

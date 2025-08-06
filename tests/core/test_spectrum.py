@@ -24,6 +24,8 @@
 
 from pathlib import Path
 
+import pytest
+
 from ansys.speos.core import Spectrum, Speos
 from tests.conftest import test_path
 
@@ -39,12 +41,14 @@ def test_create_spectrum(speos: Speos):
     # monochromatic
     spectrum1.set_monochromatic().wavelength = 777
     spectrum1.commit()
+    assert spectrum1.set_monochromatic().wavelength == 777
     assert spectrum1.spectrum_link.get().HasField("monochromatic")
     assert spectrum1.spectrum_link.get().monochromatic.wavelength == 777
 
     # blackbody
     spectrum1.set_blackbody().temperature = 3000
     spectrum1.commit()
+    assert spectrum1.set_blackbody().temperature == 3000
     assert spectrum1.spectrum_link.get().HasField("blackbody")
     assert spectrum1.spectrum_link.get().blackbody.temperature == 3000
 
@@ -100,6 +104,28 @@ def test_create_spectrum(speos: Speos):
     assert spectrum1.spectrum_link.get().HasField("predefined")
     assert spectrum1.spectrum_link.get().predefined.HasField("highpressuresodium")
 
+    with pytest.raises(RuntimeError, match="Blackbody class instantiated outside of class scopee"):
+        Spectrum.Blackbody(
+            blackbody=spectrum1._spectrum.blackbody,
+            default_values=True,
+            stable_ctr=False,
+        )
+
+    with pytest.raises(
+        RuntimeError, match="Monochromatic class instantiated outside of class scopee"
+    ):
+        Spectrum.Monochromatic(
+            monochromatic=spectrum1._spectrum.monochromatic,
+            default_values=True,
+            stable_ctr=False,
+        )
+
+    with pytest.raises(RuntimeError, match="Sampled class instantiated outside of class scopee"):
+        Spectrum.Sampled(
+            sampled=spectrum1._spectrum.sampled,
+            default_values=True,
+            stable_ctr=False,
+        )
     spectrum1.delete()
 
 
