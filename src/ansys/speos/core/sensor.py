@@ -781,7 +781,7 @@ class BaseSensor:
 
             if default_values:
                 # Default values
-                self.set_sampling()
+                self.sampling = SENSOR.LAYERTYPES.INCIDENCE_SAMPLING
 
         @property
         def sampling(self) -> BaseSensor.LayerTypeIncidenceAngle:
