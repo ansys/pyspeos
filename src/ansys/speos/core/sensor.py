@@ -559,7 +559,7 @@ class BaseSensor:
         def __init__(self, name: str, geometries: List[GeoRef]) -> None:
             self.name = name
             """Name of the layer"""
-            self._geometries = geometries
+            self.geometries = geometries
 
         @property
         def geometry(self):
@@ -797,7 +797,7 @@ class BaseSensor:
 
             if default_values:
                 # Default values
-                self.set_sampling()
+                self.sampling = SENSOR.LAYERTYPES.INCIDENCE_SAMPLING
 
         @property
         def sampling(self) -> BaseSensor.LayerTypeIncidenceAngle:
