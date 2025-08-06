@@ -1402,7 +1402,9 @@ class SourceSurface(BaseSource):
             self._visual_data = (
                 _VisualData(
                     ray=True,
-                    coordinate_system=True if self._exitance_type is not None else False,
+                    coordinate_system=True
+                    if isinstance(self._exitance_type, SourceSurface.ExitanceVariable)
+                    else False,
                 )
                 if general_methods._GRAPHICS_AVAILABLE
                 else None
