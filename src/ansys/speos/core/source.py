@@ -641,7 +641,7 @@ class SourceLuminaire(BaseSource):
         Returns
         -------
         ansys.speos.core.source.SourceLuminaire.Luminous
-            Luminaire source.
+            Luminaire luminous flux type source.
         """
         if self._type is None and self._source_template.luminaire.HasField("luminous_flux"):
             self._type = SourceLuminaire.Luminous(
@@ -667,7 +667,7 @@ class SourceLuminaire(BaseSource):
         Returns
         -------
         ansys.speos.core.source.SourceLuminaire.Radiant
-            Luminaire source.
+            Luminaire radiant flux type source.
         """
         if self._type is None and self._source_template.luminaire.HasField("radiant_flux"):
             self._type = SourceLuminaire.Radiant(
@@ -811,11 +811,13 @@ class SourceRayFile(BaseSource):
             self.set_spectrum_from_ray_file()
 
         self._name = name
+        # Attribute gathering more complex flux type
+        self._type = None
 
         if default_values:
             # Default values
             self.set_flux_from_ray_file().set_spectrum_from_ray_file()
-            self.set_axis_system()
+            self.axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 
     @property
     def visual_data(self) -> _VisualData:
@@ -855,21 +857,49 @@ class SourceRayFile(BaseSource):
             self._visual_data.updated = True
             return self._visual_data
 
-    def set_ray_file_uri(self, uri: str) -> SourceRayFile:
-        """Set ray file.
-
-        Parameters
-        ----------
-        uri : str
-            Rayfile format file uri (.ray or .tm25ray files expected).
+    @property
+    def ray_file_uri(self) -> str:
+        """Gets ray file URI.
 
         Returns
         -------
-        ansys.speos.core.source.SourceRayFile
-            RayFile source.
+        str
+            Ray file URI.
+
         """
-        self._source_template.rayfile.ray_file_uri = uri
-        return self
+        return self._source_template.rayfile.ray_file_uri
+
+    @ray_file_uri.setter
+    def ray_file_uri(self, uri: Union[Path, str]) -> None:
+        """Set ray file URI.
+
+        Parameters
+        ----------
+        uri: Union[Path, str]
+            Ray file URI.
+
+        Returns
+        -------
+        None
+
+        """
+        self._source_template.rayfile.ray_file_uri = str(uri)
+
+    # def set_ray_file_uri(self, uri: str) -> SourceRayFile:
+    #     """Set ray file.
+    #
+    #     Parameters
+    #     ----------
+    #     uri : str
+    #         Rayfile format file uri (.ray or .tm25ray files expected).
+    #
+    #     Returns
+    #     -------
+    #     ansys.speos.core.source.SourceRayFile
+    #         RayFile source.
+    #     """
+    #     self._source_template.rayfile.ray_file_uri = uri
+    #     return self
 
     def set_flux_from_ray_file(self) -> SourceRayFile:
         """Take flux from ray file provided.
@@ -882,39 +912,57 @@ class SourceRayFile(BaseSource):
         self._source_template.rayfile.flux_from_ray_file.SetInParent()
         return self
 
-    def set_flux_luminous(self, value: float = 683) -> SourceRayFile:
+    def set_flux_luminous(self) -> SourceRayFile.Luminous:
         """Set luminous flux.
 
-        Parameters
-        ----------
-        value : float
-            Luminous flux in lumens.
-            By default, ``683.0``.
-
         Returns
         -------
-        ansys.speos.core.source.SourceRayFile
-            RayFile source.
+        ansys.speos.core.source.SourceRayFile.Luminous
+            Luminous flux type source.
         """
-        self._source_template.rayfile.luminous_flux.luminous_value = value
-        return self
+        if self._type is None and self._source_template.rayfile.HasField("luminous_flux"):
+            self._type = SourceRayFile.Luminous(
+                luminous_flux=self._source_template.rayfile.luminous_flux,
+                default_values=False,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._type, SourceRayFile.Luminous):
+            self._type = SourceRayFile.Luminous(
+                luminous_flux=self._source_template.rayfile.luminous_flux,
+                default_values=True,
+                stable_ctr=True,
+            )
+        elif self._type._luminous_flux is not self._source_template.rayfile.luminous_flux:
+            self._type._luminous_flux = self._source_template.rayfile.luminous_flux
+        return self._type
+        # self._source_template.rayfile.luminous_flux.luminous_value = value
+        # return self
 
-    def set_flux_radiant(self, value: float = 1) -> SourceRayFile:
+    def set_flux_radiant(self) -> SourceRayFile.Radiant:
         """Set radiant flux.
 
-        Parameters
-        ----------
-        value : float
-            Radiant flux in watts.
-            By default, ``1.0``.
-
         Returns
         -------
-        ansys.speos.core.source.SourceRayFile
-            RayFile source.
+        ansys.speos.core.source.SourceRayFile.Radiant
+            Radiant flux type source.
         """
-        self._source_template.rayfile.radiant_flux.radiant_value = value
-        return self
+        if self._type is None and self._source_template.rayfile.HasField("radiant_flux"):
+            self._type = SourceRayFile.Radiant(
+                radiant_flux=self._source_template.rayfile.radiant_flux,
+                default_values=False,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._type, SourceRayFile.Radiant):
+            self._type = SourceRayFile.Radiant(
+                radiant_flux=self._source_template.rayfile.radiant_flux,
+                default_values=True,
+                stable_ctr=True,
+            )
+        elif self._type._radiant_flux is not self._source_template.rayfile.radiant_flux:
+            self._type._radiant_flux = self._source_template.rayfile.radiant_flux
+        return self._type
+        # self._source_template.rayfile.radiant_flux.radiant_value = value
+        # return self
 
     def set_spectrum_from_ray_file(self) -> SourceRayFile:
         """Take spectrum from ray file provided.
@@ -949,24 +997,55 @@ class SourceRayFile(BaseSource):
         self._spectrum._no_spectrum_local = False
         return self._spectrum._spectrum
 
-    def set_axis_system(self, axis_system: Optional[List[float]] = None) -> SourceRayFile:
-        """Set position of the source.
+    @property
+    def axis_system(self) -> list[float]:
+        """Get the axis system of the Source.
+
+        Returns
+        -------
+        list[float]
+            Position of the rayfile source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+
+        """
+        return self._source_instance.rayfile_properties.axis_system[:]
+
+    @axis_system.setter
+    def axis_system(self, axis_system: list[float]) -> None:
+        """
+        Set the axis system of the Source.
 
         Parameters
         ----------
-        axis_system : Optional[List[float]]
-            Position of the source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+        axis_system: list[float]
+            Position of the rayfile source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
         Returns
         -------
-        ansys.speos.core.source.SourceRayFile
-            RayFile Source.
+        None
+
         """
-        if axis_system is None:
-            axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
         self._source_instance.rayfile_properties.axis_system[:] = axis_system
-        return self
+
+    # def set_axis_system(self, axis_system: Optional[List[float]] = None) -> SourceRayFile:
+    #     """Set position of the source.
+    #
+    #     Parameters
+    #     ----------
+    #     axis_system : Optional[List[float]]
+    #         Position of the source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+    #         By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+    #
+    #     Returns
+    #     -------
+    #     ansys.speos.core.source.SourceRayFile
+    #         RayFile Source.
+    #     """
+    #     if axis_system is None:
+    #         axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    #     self._source_instance.rayfile_properties.axis_system[:] = axis_system
+    #     return self
 
     def set_exit_geometries(self, exit_geometries: Optional[List[GeoRef]] = None) -> SourceRayFile:
         """Set exit geometries.
