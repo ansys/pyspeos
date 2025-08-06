@@ -93,7 +93,9 @@ if os.name == "nt":
 
 irr_features = p.find(name=".*", name_regex=True, feature_type=SensorIrradiance)
 irr = irr_features[0]
-irr.set_type_spectral().set_wavelengths_range().set_start(500).set_end(600).set_sampling(11)
+irr.set_type_spectral().set_wavelengths_range().start = 500
+irr.set_type_spectral().set_wavelengths_range().end = 600
+irr.set_type_spectral().set_wavelengths_range().sampling = 11
 irr.commit()
 
 # Create and add a new sensor, e.g. 3d irradiance sensor
