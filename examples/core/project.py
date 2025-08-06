@@ -193,7 +193,7 @@ src = features[1]
 
 # modify the surface source, e.g. surface source wavelength:
 
-src.set_spectrum().set_monochromatic.wavelength = 550
+src.set_spectrum().set_monochromatic().wavelength = 550
 src.commit()
 
 

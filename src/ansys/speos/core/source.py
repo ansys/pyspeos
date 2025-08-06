@@ -658,8 +658,6 @@ class SourceLuminaire(BaseSource):
         elif self._type._luminous_flux is not self._source_template.luminaire.luminous_flux:
             self._type._luminous_flux = self._source_template.luminaire.luminous_flux
         return self._type
-        # self._source_template.luminaire.luminous_flux.luminous_value = value
-        # return self
 
     def set_flux_radiant(self) -> SourceLuminaire.Radiant:
         """Set radiant flux.
@@ -684,8 +682,6 @@ class SourceLuminaire(BaseSource):
         elif self._type._radiant_flux is not self._source_template.luminaire.radiant_flux:
             self._type._radiant_flux = self._source_template.luminaire.radiant_flux
         return self._type
-        # self._source_template.luminaire.radiant_flux.radiant_value = value
-        # return self
 
     @property
     def intensity_file_uri(self) -> str:
@@ -885,22 +881,6 @@ class SourceRayFile(BaseSource):
         """
         self._source_template.rayfile.ray_file_uri = str(uri)
 
-    # def set_ray_file_uri(self, uri: str) -> SourceRayFile:
-    #     """Set ray file.
-    #
-    #     Parameters
-    #     ----------
-    #     uri : str
-    #         Rayfile format file uri (.ray or .tm25ray files expected).
-    #
-    #     Returns
-    #     -------
-    #     ansys.speos.core.source.SourceRayFile
-    #         RayFile source.
-    #     """
-    #     self._source_template.rayfile.ray_file_uri = uri
-    #     return self
-
     def set_flux_from_ray_file(self) -> SourceRayFile:
         """Take flux from ray file provided.
 
@@ -935,8 +915,6 @@ class SourceRayFile(BaseSource):
         elif self._type._luminous_flux is not self._source_template.rayfile.luminous_flux:
             self._type._luminous_flux = self._source_template.rayfile.luminous_flux
         return self._type
-        # self._source_template.rayfile.luminous_flux.luminous_value = value
-        # return self
 
     def set_flux_radiant(self) -> SourceRayFile.Radiant:
         """Set radiant flux.
@@ -961,8 +939,6 @@ class SourceRayFile(BaseSource):
         elif self._type._radiant_flux is not self._source_template.rayfile.radiant_flux:
             self._type._radiant_flux = self._source_template.rayfile.radiant_flux
         return self._type
-        # self._source_template.rayfile.radiant_flux.radiant_value = value
-        # return self
 
     def set_spectrum_from_ray_file(self) -> SourceRayFile:
         """Take spectrum from ray file provided.
@@ -1027,25 +1003,6 @@ class SourceRayFile(BaseSource):
 
         """
         self._source_instance.rayfile_properties.axis_system[:] = axis_system
-
-    # def set_axis_system(self, axis_system: Optional[List[float]] = None) -> SourceRayFile:
-    #     """Set position of the source.
-    #
-    #     Parameters
-    #     ----------
-    #     axis_system : Optional[List[float]]
-    #         Position of the source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
-    #         By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
-    #
-    #     Returns
-    #     -------
-    #     ansys.speos.core.source.SourceRayFile
-    #         RayFile Source.
-    #     """
-    #     if axis_system is None:
-    #         axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-    #     self._source_instance.rayfile_properties.axis_system[:] = axis_system
-    #     return self
 
     def set_exit_geometries(self, exit_geometries: Optional[List[GeoRef]] = None) -> SourceRayFile:
         """Set exit geometries.
