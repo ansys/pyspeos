@@ -733,7 +733,7 @@ class SourceLuminaire(BaseSource):
             Position of the source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
         """
-        return self._source_instance.luminaire_properties.axis_system[:]
+        return self._source_instance.luminaire_properties.axis_system
 
     @axis_system.setter
     def axis_system(self, axis_system: list[float]) -> None:
