@@ -1422,7 +1422,7 @@ def test_camera_modify_after_reset(speos: Speos):
     sensor1 = p.create_sensor(name="Sensor.1", feature_type=SensorCamera)
     assert isinstance(sensor1, SensorCamera)
     color = sensor1.set_mode_photometric().set_mode_color()
-    white_mode = color.set_balance_mode_user_white()
+    color.set_balance_mode_user_white()
     color.red_spectrum_file_uri = str(
         Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
     )
