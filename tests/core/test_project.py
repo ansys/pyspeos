@@ -355,7 +355,7 @@ def test_from_file(speos: Speos):
     assert type(feat_ssrs[0]) is SensorIrradiance
 
     # And that we can modify it (and that other values are not overridden by default values)
-    feat_ssrs[0].set_type_colorimetric().set_wavelengths_range().set_end(value=800)
+    feat_ssrs[0].set_type_colorimetric().set_wavelengths_range().end = 800
     feat_ssrs[0].commit()
     ssr_link = speos.client[p.scene_link.get().sensors[0].sensor_guid]
     ssr_data = ssr_link.get()
@@ -522,7 +522,7 @@ def test_preview_visual_data(speos: Speos):
     p5 = Project(speos=speos, path=str(Path(test_path) / "Prism.speos" / "Prism.speos"))
     ssr_3d = p5.create_sensor(name="Sensor3D", feature_type=Sensor3DIrradiance)
     body = p5.find(name="PrismBody", name_regex=True, feature_type=Body)[0]
-    ssr_3d.set_geometries([body.geo_path])
+    ssr_3d.geometries = [body.geo_path]
     ssr_3d.commit()
     p5.preview()
     # test loading 3d irradiance sensor
