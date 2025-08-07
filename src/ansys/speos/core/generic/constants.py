@@ -41,6 +41,7 @@ By default, 4194304.
 ORIGIN = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 """Global Origin"""
 
+
 class SPECTRUM:
     """Constant class for Spectrum."""
 
