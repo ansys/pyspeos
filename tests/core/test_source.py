@@ -405,13 +405,12 @@ def test_create_rayfile_source(speos: Speos):
     ]
 
     # exit_geometries
-    source1.set_exit_geometries(
-        exit_geometries=[
-            GeoRef.from_native_link("BodyB"),
-            GeoRef.from_native_link("BodyC"),
-        ]
-    )
+    source1.set_exit_geometries().geometries = [
+        GeoRef.from_native_link("BodyB"),
+        GeoRef.from_native_link("BodyC"),
+    ]
     source1.commit()
+    assert len(source1.set_exit_geometries().geometries) == 2
     assert source1._source_instance.rayfile_properties.HasField("exit_geometries")
     assert len(source1._source_instance.rayfile_properties.exit_geometries.geo_paths) == 2
     assert source1._source_instance.rayfile_properties.exit_geometries.geo_paths == [
@@ -419,7 +418,7 @@ def test_create_rayfile_source(speos: Speos):
         "BodyC",
     ]
 
-    source1.set_exit_geometries()  # use default [] to reset exit geometries
+    source1.set_exit_geometries().geometries = []  # use default [] to reset exit geometries
     source1.commit()
     assert source1._source_instance.rayfile_properties.HasField("exit_geometries") is False
 
@@ -685,9 +684,10 @@ def test_reset_source(speos: Speos):
 
     # Change local data (on template and on instance)
     source1.set_flux_radiant().value = 3.5  # template
-    source1.set_exit_geometries(
-        exit_geometries=[GeoRef.from_native_link("TheBodyB/TheFaceB1")]
-    )  # instance
+    source1.set_exit_geometries().geometries = [
+        GeoRef.from_native_link("TheBodyB/TheFaceB1")
+    ]  # instance
+    assert len(source1.set_exit_geometries().geometries) == 1
     assert source1.source_template_link.get().rayfile.HasField("flux_from_ray_file")
     assert source1._source_template.rayfile.HasField("radiant_flux")  # local template
     assert p.scene_link.get().sources[0].rayfile_properties.exit_geometries.geo_paths == []

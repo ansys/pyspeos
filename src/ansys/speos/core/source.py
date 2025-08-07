@@ -773,6 +773,74 @@ class SourceRayFile(BaseSource):
         Uses default values when True.
     """
 
+    class ExitGeometries:
+        """ExitGeometries of rayfile source.
+
+        By default, ExitGeometries list is set to be empty.
+
+        Parameters
+        ----------
+        rayfile_props : ansys.api.speos.scene.v2.scene_pb2.RayFileProperties
+            protobuf object to modify.
+        default_values : bool
+            Uses default values when True.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use set_exit_geometries
+        method available in Source classes.
+        """
+
+        def __init__(
+            self,
+            rayfile_props: scene_pb2.RayFileProperties,
+            default_values: bool = True,
+            stable_ctr: bool = False,
+        ):
+            if not stable_ctr:
+                msg = "ExitGeometries class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._rayfile_props = rayfile_props
+            if default_values:
+                self.geometries = []
+
+        @property
+        def geometries(self) -> List[GeoRef]:
+            """Get list of exit geometries.
+
+            Returns
+            -------
+            List[GeoRef]
+                Exit Geometries that will use this rayfile source.
+                By default, ``[]``.
+
+            """
+            return self._rayfile_props.exit_geometries.geo_paths
+
+        @geometries.setter
+        def geometries(self, exit_geometries: Optional[List[GeoRef]]) -> None:
+            """Set exit geometries.
+
+            Parameters
+            ----------
+            exit_geometries: List[ansys.speos.core.geo_ref.GeoRef]
+                Exit Geometries that will use this rayfile source.
+                By default, ``[]``.
+
+            Returns
+            -------
+            None
+
+            """
+            if not exit_geometries or len(exit_geometries) == 0:
+                self._rayfile_props.ClearField("exit_geometries")
+            else:
+                self._rayfile_props.exit_geometries.geo_paths[:] = [
+                    gr.to_native_link() for gr in exit_geometries
+                ]
+
     @general_methods.min_speos_version(25, 2, 0)
     def __init__(
         self,
@@ -810,6 +878,8 @@ class SourceRayFile(BaseSource):
         self._name = name
         # Attribute gathering more complex flux type
         self._type = None
+        # Attribute gathering more complex exit geometries settings
+        self._exit_geometry_type = None
 
         if default_values:
             # Default values
@@ -1005,28 +1075,33 @@ class SourceRayFile(BaseSource):
         """
         self._source_instance.rayfile_properties.axis_system[:] = axis_system
 
-    def set_exit_geometries(self, exit_geometries: Optional[List[GeoRef]] = None) -> SourceRayFile:
+    def set_exit_geometries(self) -> SourceRayFile.ExitGeometries:
         """Set exit geometries.
-
-        Parameters
-        ----------
-        exit_geometries : List[ansys.speos.core.geo_ref.GeoRef]
-            Exit Geometries that will use this rayfile source.
-            By default, ``[]``.
 
         Returns
         -------
-        ansys.speos.core.source.SourceRayFile
-            RayFile Source.
+        ansys.speos.core.source.SourceRayFile.ExitGeometries
+            ExitGeometries settings of rayfile source.
         """
-        if not exit_geometries:
-            self._source_instance.rayfile_properties.ClearField("exit_geometries")
-        else:
-            self._source_instance.rayfile_properties.exit_geometries.geo_paths[:] = [
-                gr.to_native_link() for gr in exit_geometries
-            ]
-
-        return self
+        if self._exit_geometry_type is None and self._source_instance.rayfile_properties.HasField(
+            "exit_geometries"
+        ):
+            self._exit_geometry_type = SourceRayFile.ExitGeometries(
+                rayfile_props=self._source_instance.rayfile_properties,
+                default_values=False,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._exit_geometry_type, SourceRayFile.ExitGeometries):
+            self._exit_geometry_type = SourceRayFile.ExitGeometries(
+                rayfile_props=self._source_instance.rayfile_properties,
+                default_values=True,
+                stable_ctr=True,
+            )
+        elif (
+            self._exit_geometry_type._rayfile_props is not self._source_instance.rayfile_properties
+        ):
+            self._exit_geometry_type._rayfile_props = self._source_instance.rayfile_properties
+        return self._exit_geometry_type
 
 
 class SourceSurface(BaseSource):
@@ -1232,7 +1307,7 @@ class SourceSurface(BaseSource):
             if default_values:
                 # Default values
                 self._exitance_variable.SetInParent()
-                self.axis_plane = ORIGIN[0:8]
+                self.axis_plane = ORIGIN[0:9]
 
         @property
         def xmp_file_uri(self) -> str:
