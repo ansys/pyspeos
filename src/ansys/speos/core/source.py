@@ -585,7 +585,7 @@ class SourceLuminaire(BaseSource):
         if default_values:
             # Default values
             self.set_flux_from_intensity_file().set_spectrum().set_incandescent()
-            self.axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+            self.axis_system = ORIGIN
 
     @property
     def visual_data(self) -> _VisualData:
