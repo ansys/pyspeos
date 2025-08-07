@@ -422,6 +422,15 @@ def test_create_rayfile_source(speos: Speos):
     source1.commit()
     assert source1._source_instance.rayfile_properties.HasField("exit_geometries") is False
 
+    with pytest.raises(
+        RuntimeError, match="ExitGeometries class instantiated outside of class scope"
+    ):
+        SourceRayFile.ExitGeometries(
+            rayfile_props=source1._source_instance.rayfile_properties,
+            default_values=True,
+            stable_ctr=False,
+        )
+
     source1.delete()
 
 
