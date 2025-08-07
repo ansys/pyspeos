@@ -48,7 +48,7 @@ def test_replace_guid_elt(speos: Speos):
     root_part.commit()
 
     src_feat = SourceSurface(project=p, name="Surface.1")
-    src_feat.set_exitance_constant(geometries=[(GeoRef.from_native_link("BodyB"), False)])
+    src_feat.set_exitance_constant().geometries = [(GeoRef.from_native_link("BodyB"), False)]
     src_feat.commit()
 
     # Retrieve source template message and transform it into dict
@@ -97,7 +97,7 @@ def test_replace_guid_elt_ignore_simple_key(speos: Speos):
     root_part.commit()
 
     src_feat = SourceSurface(project=p, name="Surface.1")
-    src_feat.set_exitance_constant(geometries=[(GeoRef.from_native_link("BodyB"), False)])
+    src_feat.set_exitance_constant().geometries = [(GeoRef.from_native_link("BodyB"), False)]
     src_feat.commit()
 
     # Retrieve source template message and transform it into dict
@@ -249,7 +249,7 @@ def test_value_finder_key_startswith(speos: Speos):
     root_part.commit()
 
     src_feat = SourceSurface(project=p, name="Surface.1")
-    src_feat.set_exitance_constant(geometries=[(GeoRef.from_native_link("BodyB"), False)])
+    src_feat.set_exitance_constant().geometries = [(GeoRef.from_native_link("BodyB"), False)]
     src_feat.commit()
 
     # Retrieve source instance message and transform it into dict
@@ -278,7 +278,7 @@ def test__value_finder_key_endswith(speos: Speos):
     root_part.commit()
 
     src_feat = SourceSurface(project=p, name="Surface.1")
-    src_feat.set_exitance_constant(geometries=[(GeoRef.from_native_link("BodyB"), False)])
+    src_feat.set_exitance_constant().geometries = [(GeoRef.from_native_link("BodyB"), False)]
     src_feat.commit()
 
     # Retrieve source instance message and transform it into dict
@@ -311,7 +311,7 @@ def test_replace_properties(speos: Speos):
     root_part.commit()
 
     src_feat = SourceSurface(project=p, name="Surface.1")
-    src_feat.set_exitance_constant(geometries=[(GeoRef.from_native_link("BodyB"), False)])
+    src_feat.set_exitance_constant().geometries = [(GeoRef.from_native_link("BodyB"), False)]
     src_feat.set_intensity().set_gaussian().set_axis_system([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     src_feat.commit()
 
