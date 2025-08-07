@@ -32,7 +32,7 @@ PySpeos library
 
 Project overview
 ----------------
-``PySpeos`` is a Python library that gathers functionalities and tools based on remote API of Ansys software `Speos <https://www.ansys.com/products/optics>`_ .
+``PySpeos`` is a Python library that gathers functionalities and tools based on remote API provided by gRPC server of Ansys software `Speos <https://www.ansys.com/products/optics>`_ .
 
 Installation
 ------------
@@ -40,7 +40,6 @@ Installation can be done using the published `package`_ or the repository `sourc
 
 Package
 ~~~~~~~
-.. warning:: Release is in progress. It might take some time before it becomes available. Until then, please use `Sources`_.
 
 This repository is deployed as the Python packages `ansys-speos-core <https://pypi.org/project/ansys-speos-core>`_.
 As usual, installation is done by running:
@@ -191,6 +190,33 @@ Use jupyter notebook
    jupyter notebook
 
 jupyter notebook can be downloaded from the documentations example section.
+
+Features
+--------
+
+Information of the latest stable release features:
+
+PySpeos core features
+~~~~~~~~~~~~~~~~~~~~~
+
+Features supported in the latest release can be found at:
+
+* `Optical Materials <https://speos.docs.pyansys.com/version/stable/api/ansys/speos/core/opt_prop/OptProp.html>`_
+* `Light Sources <https://speos.docs.pyansys.com/version/stable/api/ansys/speos/core/source/index.html>`_
+* `Sensors <https://speos.docs.pyansys.com/version/stable/api/ansys/speos/core/sensor/index.html>`_
+* `Simulations <https://speos.docs.pyansys.com/version/stable/api/ansys/speos/core/simulation/index.html>`_
+* `BSDF Viewer <https://speos.docs.pyansys.com/version/stable/api/ansys/speos/core/bsdf/index.html>`_
+* `Light Path Finder <https://speos.docs.pyansys.com/version/stable/api/ansys/speos/core/lxp/LightPathFinder.html>`_
+
+Speos RPC features
+~~~~~~~~~~~~~~~~~~
+
+Speos RPC is based on a gRPC server and provides APIs to interact with Speos solver.
+
+Features supported in the latest Speos RPC can be found at:
+`Ansys Speos for developers Speos RPC <https://developer.ansys.com/docs/speos>`_.
+
+
 
 License
 -------
