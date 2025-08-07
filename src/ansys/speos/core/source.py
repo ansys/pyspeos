@@ -40,7 +40,7 @@ from ansys.speos.core import (
 )
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
-from ansys.speos.core.generic.constants import SOURCE
+from ansys.speos.core.generic.constants import SOURCE, ORIGIN
 import ansys.speos.core.generic.general_methods as general_methods
 from ansys.speos.core.generic.visualization_methods import _VisualArrow, _VisualData
 from ansys.speos.core.geo_ref import GeoRef
