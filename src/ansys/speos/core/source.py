@@ -1232,7 +1232,7 @@ class SourceSurface(BaseSource):
             if default_values:
                 # Default values
                 self._exitance_variable.SetInParent()
-                self.axis_plane = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+                self.axis_plane = ORIGIN[0:8]
 
         @property
         def xmp_file_uri(self) -> str:
