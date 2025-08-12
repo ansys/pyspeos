@@ -26,21 +26,25 @@ from __future__ import annotations
 
 import datetime
 from difflib import SequenceMatcher
+from pathlib import Path
 from typing import List, Mapping, Optional, Union
 import uuid
 
 import numpy as np
 
 from ansys.api.speos.scene.v2 import scene_pb2
+from ansys.api.speos.source.v1 import source_pb2
 from ansys.speos.core import (
     project as project,
     proto_message_utils as proto_message_utils,
 )
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
+from ansys.speos.core.generic.constants import ORIGIN, SOURCE
 import ansys.speos.core.generic.general_methods as general_methods
 from ansys.speos.core.generic.visualization_methods import _VisualArrow, _VisualData
 from ansys.speos.core.geo_ref import GeoRef
+import ansys.speos.core.intensity as intensity
 from ansys.speos.core.intensity import Intensity
 from ansys.speos.core.kernel.client import SpeosClient
 from ansys.speos.core.kernel.scene import ProtoScene
@@ -105,6 +109,129 @@ class BaseSource:
             self._unique_id = source_instance.metadata["UniqueId"]
             self.source_template_link = self._project.client[source_instance.source_guid]
             self._reset()
+
+    class Luminous:
+        """Luminous type of flux.
+
+        By default, Luminous flux value is set to be 683 lm.
+
+        Parameters
+        ----------
+        luminous_flux : ansys.api.speos.source.v1.source_pb2.Luminous
+            Luminous protobuf object to modify.
+        default_values : bool
+            Uses default values when True.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use set_flux_luminous method available in
+        Source classes.
+        """
+
+        def __init__(
+            self,
+            luminous_flux: source_pb2.Luminous,
+            default_values: bool = True,
+            stable_ctr: bool = False,
+        ):
+            if not stable_ctr:
+                msg = "Luminous class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._luminous_flux = luminous_flux
+
+            if default_values:
+                self.value = SOURCE.LUMINOUS.VALUE
+
+        @property
+        def value(self) -> float:
+            """Get luminous flux value.
+
+            Returns
+            -------
+            float
+            Luminous flux value.
+            """
+            return self._luminous_flux.luminous_value
+
+        @value.setter
+        def value(self, value: float) -> None:
+            """Set luminous flux value.
+
+            Parameters
+            ----------
+            value: float
+            Luminous flux value.
+
+            Returns
+            -------
+            None
+
+            """
+            self._luminous_flux.luminous_value = value
+
+    class Radiant:
+        """Radiant type of flux.
+
+        By default, Radiant flux value is set to be 1 W.
+
+        Parameters
+        ----------
+        radiant_flux : ansys.api.speos.source.v1.source_pb2.Radiant
+            Radiant protobuf object to modify.
+        default_values : bool
+            Uses default values when True.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use set_flux_radiant method available in
+        Source classes.
+        """
+
+        def __init__(
+            self,
+            radiant_flux: source_pb2.Radiant,
+            default_values: bool = True,
+            stable_ctr: bool = False,
+        ):
+            if not stable_ctr:
+                msg = "Radiant class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._radiant_flux = radiant_flux
+
+            if default_values:
+                self.value = SOURCE.RADIANT.VALUE
+
+        @property
+        def value(self) -> float:
+            """Get radiant flux value.
+
+            Returns
+            -------
+            float
+            Radiant flux value.
+
+            """
+            return self._radiant_flux.radiant_value
+
+        @value.setter
+        def value(self, value: float) -> None:
+            """Set radiant flux value.
+
+            Parameters
+            ----------
+            value: float
+            Radiant flux value.
+
+            Returns
+            -------
+            None
+
+            """
+            self._radiant_flux.radiant_value = value
 
     class _Spectrum:
         def __init__(
@@ -445,6 +572,9 @@ class SourceLuminaire(BaseSource):
             source_instance=source_instance,
         )
 
+        # Attribute gathering more complex flux type
+        self._type = None
+
         self._spectrum = self._Spectrum(
             speos_client=self._project.client,
             name=name,
@@ -455,7 +585,7 @@ class SourceLuminaire(BaseSource):
         if default_values:
             # Default values
             self.set_flux_from_intensity_file().set_spectrum().set_incandescent()
-            self.set_axis_system()
+            self.axis_system = ORIGIN
 
     @property
     def visual_data(self) -> _VisualData:
@@ -506,55 +636,79 @@ class SourceLuminaire(BaseSource):
         self._source_template.luminaire.flux_from_intensity_file.SetInParent()
         return self
 
-    def set_flux_luminous(self, value: float = 683) -> SourceLuminaire:
+    def set_flux_luminous(self) -> SourceLuminaire.Luminous:
         """Set luminous flux.
 
-        Parameters
-        ----------
-        value : float
-            Luminous flux in lumens.
-            By default, ``683.0``.
-
         Returns
         -------
-        ansys.speos.core.source.SourceLuminaire
-            Luminaire source.
+        ansys.speos.core.source.SourceLuminaire.Luminous
+            Luminaire luminous flux type source.
         """
-        self._source_template.luminaire.luminous_flux.luminous_value = value
-        return self
+        if self._type is None and self._source_template.luminaire.HasField("luminous_flux"):
+            self._type = SourceLuminaire.Luminous(
+                luminous_flux=self._source_template.luminaire.luminous_flux,
+                default_values=False,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._type, SourceLuminaire.Luminous):
+            self._type = SourceLuminaire.Luminous(
+                luminous_flux=self._source_template.luminaire.luminous_flux,
+                default_values=True,
+                stable_ctr=True,
+            )
+        elif self._type._luminous_flux is not self._source_template.luminaire.luminous_flux:
+            self._type._luminous_flux = self._source_template.luminaire.luminous_flux
+        return self._type
 
-    def set_flux_radiant(self, value: float = 1) -> SourceLuminaire:
+    def set_flux_radiant(self) -> SourceLuminaire.Radiant:
         """Set radiant flux.
 
-        Parameters
-        ----------
-        value : float
-            Radiant flux in watts.
-            By default, ``1.0``.
+        Returns
+        -------
+        ansys.speos.core.source.SourceLuminaire.Radiant
+            Luminaire radiant flux type source.
+        """
+        if self._type is None and self._source_template.luminaire.HasField("radiant_flux"):
+            self._type = SourceLuminaire.Radiant(
+                radiant_flux=self._source_template.luminaire.radiant_flux,
+                default_values=False,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._type, SourceLuminaire.Radiant):
+            self._type = SourceLuminaire.Radiant(
+                radiant_flux=self._source_template.luminaire.radiant_flux,
+                default_values=True,
+                stable_ctr=True,
+            )
+        elif self._type._radiant_flux is not self._source_template.luminaire.radiant_flux:
+            self._type._radiant_flux = self._source_template.luminaire.radiant_flux
+        return self._type
+
+    @property
+    def intensity_file_uri(self) -> str:
+        """Get intensity file.
 
         Returns
         -------
-        ansys.speos.core.source.SourceLuminaire
-            Luminaire source.
+        str
+            Intensity file uri.
         """
-        self._source_template.luminaire.radiant_flux.radiant_value = value
-        return self
+        return self._source_template.luminaire.intensity_file_uri
 
-    def set_intensity_file_uri(self, uri: str) -> SourceLuminaire:
+    @intensity_file_uri.setter
+    def intensity_file_uri(self, uri: Union[str, Path]) -> None:
         """Set intensity file.
 
         Parameters
         ----------
-        uri : str
+        uri : Union[str, Path]
             IES or EULUMDAT format file uri.
 
         Returns
         -------
-        ansys.speos.core.source.SourceLuminaire
-            Luminaire source.
+        None
         """
-        self._source_template.luminaire.intensity_file_uri = uri
-        return self
+        self._source_template.luminaire.intensity_file_uri = str(uri)
 
     def set_spectrum(self) -> Spectrum:
         """Set spectrum.
@@ -569,24 +723,33 @@ class SourceLuminaire(BaseSource):
             self._spectrum._message_to_complete = self._source_template.luminaire
         return self._spectrum._spectrum
 
-    def set_axis_system(self, axis_system: Optional[List[float]] = None) -> SourceLuminaire:
+    @property
+    def axis_system(self) -> list[float]:
+        """Get the position of the source.
+
+        Returns
+        -------
+        List[float]
+            Position of the source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+        """
+        return self._source_instance.luminaire_properties.axis_system
+
+    @axis_system.setter
+    def axis_system(self, axis_system: list[float]) -> None:
         """Set the position of the source.
 
         Parameters
         ----------
-        axis_system : Optional[List[float]]
+        axis_system : List[float]
             Position of the source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
         Returns
         -------
-        ansys.speos.core.source.SourceLuminaire
-            Luminaire source.
+        None
         """
-        if axis_system is None:
-            axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
         self._source_instance.luminaire_properties.axis_system[:] = axis_system
-        return self
 
 
 class SourceRayFile(BaseSource):
@@ -609,6 +772,74 @@ class SourceRayFile(BaseSource):
     default_values : bool
         Uses default values when True.
     """
+
+    class ExitGeometries:
+        """ExitGeometries of rayfile source.
+
+        By default, ExitGeometries list is set to be empty.
+
+        Parameters
+        ----------
+        rayfile_props : ansys.api.speos.scene.v2.scene_pb2.RayFileProperties
+            protobuf object to modify.
+        default_values : bool
+            Uses default values when True.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use set_exit_geometries
+        method available in Source classes.
+        """
+
+        def __init__(
+            self,
+            rayfile_props: scene_pb2.RayFileProperties,
+            default_values: bool = True,
+            stable_ctr: bool = False,
+        ):
+            if not stable_ctr:
+                msg = "ExitGeometries class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._rayfile_props = rayfile_props
+            if default_values:
+                self.geometries = []
+
+        @property
+        def geometries(self) -> List[GeoRef]:
+            """Get list of exit geometries.
+
+            Returns
+            -------
+            List[GeoRef]
+                Exit Geometries that will use this rayfile source.
+                By default, ``[]``.
+
+            """
+            return self._rayfile_props.exit_geometries.geo_paths
+
+        @geometries.setter
+        def geometries(self, exit_geometries: Optional[List[GeoRef]]) -> None:
+            """Set exit geometries.
+
+            Parameters
+            ----------
+            exit_geometries: List[ansys.speos.core.geo_ref.GeoRef]
+                Exit Geometries that will use this rayfile source.
+                By default, ``[]``.
+
+            Returns
+            -------
+            None
+
+            """
+            if not exit_geometries or len(exit_geometries) == 0:
+                self._rayfile_props.ClearField("exit_geometries")
+            else:
+                self._rayfile_props.exit_geometries.geo_paths[:] = [
+                    gr.to_native_link() for gr in exit_geometries
+                ]
 
     @general_methods.min_speos_version(25, 2, 0)
     def __init__(
@@ -645,11 +876,15 @@ class SourceRayFile(BaseSource):
             self.set_spectrum_from_ray_file()
 
         self._name = name
+        # Attribute gathering more complex flux type
+        self._type = None
+        # Attribute gathering more complex exit geometries settings
+        self._exit_geometry_type = None
 
         if default_values:
             # Default values
             self.set_flux_from_ray_file().set_spectrum_from_ray_file()
-            self.set_axis_system()
+            self.axis_system = ORIGIN
 
     @property
     def visual_data(self) -> _VisualData:
@@ -689,21 +924,33 @@ class SourceRayFile(BaseSource):
             self._visual_data.updated = True
             return self._visual_data
 
-    def set_ray_file_uri(self, uri: str) -> SourceRayFile:
-        """Set ray file.
-
-        Parameters
-        ----------
-        uri : str
-            Rayfile format file uri (.ray or .tm25ray files expected).
+    @property
+    def ray_file_uri(self) -> str:
+        """Gets ray file URI.
 
         Returns
         -------
-        ansys.speos.core.source.SourceRayFile
-            RayFile source.
+        str
+            Ray file URI.
+
         """
-        self._source_template.rayfile.ray_file_uri = uri
-        return self
+        return self._source_template.rayfile.ray_file_uri
+
+    @ray_file_uri.setter
+    def ray_file_uri(self, uri: Union[Path, str]) -> None:
+        """Set ray file URI.
+
+        Parameters
+        ----------
+        uri: Union[Path, str]
+            Ray file URI.
+
+        Returns
+        -------
+        None
+
+        """
+        self._source_template.rayfile.ray_file_uri = str(uri)
 
     def set_flux_from_ray_file(self) -> SourceRayFile:
         """Take flux from ray file provided.
@@ -716,39 +963,53 @@ class SourceRayFile(BaseSource):
         self._source_template.rayfile.flux_from_ray_file.SetInParent()
         return self
 
-    def set_flux_luminous(self, value: float = 683) -> SourceRayFile:
+    def set_flux_luminous(self) -> SourceRayFile.Luminous:
         """Set luminous flux.
 
-        Parameters
-        ----------
-        value : float
-            Luminous flux in lumens.
-            By default, ``683.0``.
-
         Returns
         -------
-        ansys.speos.core.source.SourceRayFile
-            RayFile source.
+        ansys.speos.core.source.SourceRayFile.Luminous
+            Luminous flux type source.
         """
-        self._source_template.rayfile.luminous_flux.luminous_value = value
-        return self
+        if self._type is None and self._source_template.rayfile.HasField("luminous_flux"):
+            self._type = SourceRayFile.Luminous(
+                luminous_flux=self._source_template.rayfile.luminous_flux,
+                default_values=False,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._type, SourceRayFile.Luminous):
+            self._type = SourceRayFile.Luminous(
+                luminous_flux=self._source_template.rayfile.luminous_flux,
+                default_values=True,
+                stable_ctr=True,
+            )
+        elif self._type._luminous_flux is not self._source_template.rayfile.luminous_flux:
+            self._type._luminous_flux = self._source_template.rayfile.luminous_flux
+        return self._type
 
-    def set_flux_radiant(self, value: float = 1) -> SourceRayFile:
+    def set_flux_radiant(self) -> SourceRayFile.Radiant:
         """Set radiant flux.
 
-        Parameters
-        ----------
-        value : float
-            Radiant flux in watts.
-            By default, ``1.0``.
-
         Returns
         -------
-        ansys.speos.core.source.SourceRayFile
-            RayFile source.
+        ansys.speos.core.source.SourceRayFile.Radiant
+            Radiant flux type source.
         """
-        self._source_template.rayfile.radiant_flux.radiant_value = value
-        return self
+        if self._type is None and self._source_template.rayfile.HasField("radiant_flux"):
+            self._type = SourceRayFile.Radiant(
+                radiant_flux=self._source_template.rayfile.radiant_flux,
+                default_values=False,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._type, SourceRayFile.Radiant):
+            self._type = SourceRayFile.Radiant(
+                radiant_flux=self._source_template.rayfile.radiant_flux,
+                default_values=True,
+                stable_ctr=True,
+            )
+        elif self._type._radiant_flux is not self._source_template.rayfile.radiant_flux:
+            self._type._radiant_flux = self._source_template.rayfile.radiant_flux
+        return self._type
 
     def set_spectrum_from_ray_file(self) -> SourceRayFile:
         """Take spectrum from ray file provided.
@@ -783,47 +1044,64 @@ class SourceRayFile(BaseSource):
         self._spectrum._no_spectrum_local = False
         return self._spectrum._spectrum
 
-    def set_axis_system(self, axis_system: Optional[List[float]] = None) -> SourceRayFile:
-        """Set position of the source.
+    @property
+    def axis_system(self) -> list[float]:
+        """Get the axis system of the Source.
+
+        Returns
+        -------
+        list[float]
+            Position of the rayfile source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+
+        """
+        return self._source_instance.rayfile_properties.axis_system[:]
+
+    @axis_system.setter
+    def axis_system(self, axis_system: list[float]) -> None:
+        """
+        Set the axis system of the Source.
 
         Parameters
         ----------
-        axis_system : Optional[List[float]]
-            Position of the source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+        axis_system: list[float]
+            Position of the rayfile source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
         Returns
         -------
-        ansys.speos.core.source.SourceRayFile
-            RayFile Source.
+        None
+
         """
-        if axis_system is None:
-            axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
         self._source_instance.rayfile_properties.axis_system[:] = axis_system
-        return self
 
-    def set_exit_geometries(self, exit_geometries: Optional[List[GeoRef]] = None) -> SourceRayFile:
+    def set_exit_geometries(self) -> SourceRayFile.ExitGeometries:
         """Set exit geometries.
-
-        Parameters
-        ----------
-        exit_geometries : List[ansys.speos.core.geo_ref.GeoRef]
-            Exit Geometries that will use this rayfile source.
-            By default, ``[]``.
 
         Returns
         -------
-        ansys.speos.core.source.SourceRayFile
-            RayFile Source.
+        ansys.speos.core.source.SourceRayFile.ExitGeometries
+            ExitGeometries settings of rayfile source.
         """
-        if not exit_geometries:
-            self._source_instance.rayfile_properties.ClearField("exit_geometries")
-        else:
-            self._source_instance.rayfile_properties.exit_geometries.geo_paths[:] = [
-                gr.to_native_link() for gr in exit_geometries
-            ]
-
-        return self
+        if self._exit_geometry_type is None and self._source_instance.rayfile_properties.HasField(
+            "exit_geometries"
+        ):
+            self._exit_geometry_type = SourceRayFile.ExitGeometries(
+                rayfile_props=self._source_instance.rayfile_properties,
+                default_values=False,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._exit_geometry_type, SourceRayFile.ExitGeometries):
+            self._exit_geometry_type = SourceRayFile.ExitGeometries(
+                rayfile_props=self._source_instance.rayfile_properties,
+                default_values=True,
+                stable_ctr=True,
+            )
+        elif (
+            self._exit_geometry_type._rayfile_props is not self._source_instance.rayfile_properties
+        ):
+            self._exit_geometry_type._rayfile_props = self._source_instance.rayfile_properties
+        return self._exit_geometry_type
 
 
 class SourceSurface(BaseSource):
@@ -845,6 +1123,151 @@ class SourceSurface(BaseSource):
     default_values : bool
         Uses default values when True.
     """
+
+    class Intensity:
+        """Intensity type of flux.
+
+        By default, Intensity flux value is set to be 5 cd.
+
+        Parameters
+        ----------
+        intensity_flux : ansys.api.speos.source.v1.source_pb2.LuminousIntensity
+            LuminousIntensity protobuf object to modify.
+        default_values : bool
+            Uses default values when True.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use set_flux_luminous_intensity
+        method available in Source classes.
+        """
+
+        def __init__(
+            self,
+            intensity_flux: source_pb2.LuminousIntensity,
+            default_values: bool = True,
+            stable_ctr: bool = False,
+        ):
+            if not stable_ctr:
+                msg = "Intensity class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._intensity_flux = intensity_flux
+
+            if default_values:
+                self.value = SOURCE.INTENSITY.VALUE
+
+        @property
+        def value(self) -> float:
+            """Get intensity flux value.
+
+            Returns
+            -------
+            float
+            Intensity flux value.
+
+            """
+            return self._intensity_flux.luminous_intensity_value
+
+        @value.setter
+        def value(self, value: float) -> None:
+            """Set intensity flux value.
+
+            Parameters
+            ----------
+            value: float
+            Intensity flux value.
+
+            Returns
+            -------
+            None
+
+            """
+            self._intensity_flux.luminous_intensity_value = value
+
+    class ExitanceConstant:
+        """Type of surface source existence : existence constant.
+
+        Parameters
+        ----------
+        exitance_constant : ansys.api.speos.source.v1.source_pb2.SourceTemplate.Surface.
+        ExitanceConstant
+            Existence constant to complete.
+        exitance_constant_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.
+        SurfaceProperties.ExitanceConstantProperties
+            Existence constant properties to complete.
+        default_values : bool
+            Uses default values when True.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use set_exitance_constant method
+        available in Source classes.
+        """
+
+        def __init__(
+            self,
+            exitance_constant,
+            exitance_constant_props,
+            default_values: bool = True,
+            stable_ctr: bool = False,
+        ):
+            if not stable_ctr:
+                msg = "ExitanceConstant class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._exitance_constant = exitance_constant
+            self._exitance_constant_props = exitance_constant_props
+            if default_values:
+                self.geometries = []
+
+        @property
+        def geometries(self) -> List[tuple[GeoRef, bool]]:
+            """Get geometries linked to surface source.
+
+            Returns
+            -------
+            List[tuple[GeoRef, bool]]
+                list of tuple which contains geometry ref and bool for normal direction.
+
+            """
+            return self._exitance_constant_props.geo_paths
+
+        @geometries.setter
+        def geometries(self, geometries: List[tuple[Union[GeoRef, face.Face, body.Body], bool]]):
+            """Set geometries linked to surface source.
+
+            Parameters
+            ----------
+            geometries: List[tuple[GeoRef, bool]]
+                list of tuple which contains geometry ref and bool for normal direction.
+
+            Returns
+            -------
+            None
+
+            """
+            geo_paths = []
+            for gr, reverse_normal in geometries:
+                if isinstance(gr, GeoRef):
+                    geo_paths.append(
+                        ProtoScene.GeoPath(
+                            geo_path=gr.to_native_link(), reverse_normal=reverse_normal
+                        )
+                    )
+                elif isinstance(gr, (face.Face, body.Body)):
+                    geo_paths.append(
+                        ProtoScene.GeoPath(
+                            geo_path=gr.geo_path.to_native_link(), reverse_normal=reverse_normal
+                        )
+                    )
+                else:
+                    msg = f"Type {type(gr)} is not supported as Surface Source geometry input."
+                    raise TypeError(msg)
+            self._exitance_constant_props.ClearField("geo_paths")
+            self._exitance_constant_props.geo_paths.extend(geo_paths)
 
     class ExitanceVariable:
         """Type of surface source existence : existence variable.
@@ -884,44 +1307,65 @@ class SourceSurface(BaseSource):
             if default_values:
                 # Default values
                 self._exitance_variable.SetInParent()
-                self.set_axis_plane()
+                self.axis_plane = ORIGIN[0:9]
 
-        def set_xmp_file_uri(self, uri: str) -> SourceSurface.ExitanceVariable:
-            """Set existence xmp file.
-
-            Parameters
-            ----------
-            uri : str
-                XMP file describing existence.
+        @property
+        def xmp_file_uri(self) -> str:
+            """Get xmp file uri.
 
             Returns
             -------
-            ansys.speos.core.source.SourceSurface.ExitanceVariable
-                ExitanceVariable of surface source.
-            """
-            self._exitance_variable.exitance_xmp_file_uri = uri
-            return self
+            str
+                xmp file uri.
 
-        def set_axis_plane(
-            self, axis_plane: Optional[List[float]] = None
-        ) -> SourceSurface.ExitanceVariable:
-            """Set position of the existence map.
+            """
+            return self._exitance_variable.exitance_xmp_file_uri
+
+        @xmp_file_uri.setter
+        def xmp_file_uri(self, xmp_file_uri: Union[str, Path]) -> None:
+            """Set xmp file uri.
 
             Parameters
             ----------
-            axis_plane : Optional[List[float]]
+            xmp_file_uri: Union[str, Path]
+                xmp file uri.
+
+            Returns
+            -------
+            None
+
+            """
+            self._exitance_variable.exitance_xmp_file_uri = str(xmp_file_uri)
+
+        @property
+        def axis_plane(self) -> List[float]:
+            """Get axis plane.
+
+            Returns
+            -------
+            List[float]
+                Position of the existence map [Ox Oy Oz Xx Xy Xz Yx Yy Yz].
+                By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0]``.
+
+            """
+            return self._exitance_variable_props.axis_plane
+
+        @axis_plane.setter
+        def axis_plane(self, axis_plane: List[float]) -> None:
+            """Set axis plane.
+
+            Parameters
+            ----------
+            axis_plane: List[float]
                 Position of the existence map [Ox Oy Oz Xx Xy Xz Yx Yy Yz].
                 By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0]``.
 
             Returns
             -------
-            ansys.speos.core.source.SourceSurface.ExitanceVariable
-                ExitanceVariable of surface Source.
+            None
+
             """
-            if axis_plane is None:
-                axis_plane = [0, 0, 0, 1, 0, 0, 0, 1, 0]
             self._exitance_variable_props.axis_plane[:] = axis_plane
-            return self
 
     @general_methods.min_speos_version(25, 2, 0)
     def __init__(
@@ -965,10 +1409,14 @@ class SourceSurface(BaseSource):
 
         # Attribute gathering more complex existence type
         self._exitance_type = None
+        # Attribute gathering more complex flux type
+        self._flux_type = None
 
         if default_values:
             # Default values
-            self.set_flux_luminous().set_exitance_constant(geometries=[]).set_intensity()
+            self.set_flux_luminous()
+            self.set_exitance_constant().geometries = []
+            self.set_intensity()
             self.set_spectrum()
 
     @property
@@ -987,7 +1435,9 @@ class SourceSurface(BaseSource):
             self._visual_data = (
                 _VisualData(
                     ray=True,
-                    coordinate_system=True if self._exitance_type is not None else False,
+                    coordinate_system=True
+                    if isinstance(self._exitance_type, SourceSurface.ExitanceVariable)
+                    else False,
                 )
                 if general_methods._GRAPHICS_AVAILABLE
                 else None
@@ -1024,58 +1474,90 @@ class SourceSurface(BaseSource):
         self._source_template.surface.flux_from_intensity_file.SetInParent()
         return self
 
-    def set_flux_luminous(self, value: float = 683) -> SourceSurface:
+    def set_flux_luminous(self) -> SourceSurface.Luminous:
         """Set luminous flux.
 
-        Parameters
-        ----------
-        value : float
-            Luminous flux in lumens.
-            By default, ``683.0``.
-
         Returns
         -------
-        ansys.speos.core.source.SourceSurface
-            Surface source.
+        ansys.speos.core.source.SourceSurface.Luminous
+            Luminous flux type source.
         """
-        self._source_template.surface.luminous_flux.luminous_value = value
-        return self
+        if self._flux_type is None and self._source_template.surface.HasField("luminous_flux"):
+            self._flux_type = SourceSurface.Luminous(
+                luminous_flux=self._source_template.surface.luminous_flux,
+                default_values=False,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._flux_type, SourceSurface.Luminous):
+            self._flux_type = SourceSurface.Luminous(
+                luminous_flux=self._source_template.surface.luminous_flux,
+                default_values=True,
+                stable_ctr=True,
+            )
+        elif self._flux_type._luminous_flux is not self._source_template.surface.luminous_flux:
+            self._flux_type._luminous_flux = self._source_template.surface.luminous_flux
+        return self._flux_type
+        # self._source_template.surface.luminous_flux.luminous_value = value
+        # return self
 
-    def set_flux_radiant(self, value: float = 1) -> SourceSurface:
+    def set_flux_radiant(self) -> SourceSurface.Radiant:
         """Set radiant flux.
 
-        Parameters
-        ----------
-        value : float
-            Radiant flux in watts.
-            By default, ``1.0``.
+        Returns
+        -------
+        ansys.speos.core.source.SourceSurface.Radiant
+            Radiant flux type source.
+        """
+        if self._flux_type is None and self._source_template.surface.HasField("radiant_flux"):
+            self._flux_type = SourceSurface.Radiant(
+                radiant_flux=self._source_template.surface.radiant_flux,
+                default_values=False,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._flux_type, SourceSurface.Radiant):
+            self._flux_type = SourceSurface.Radiant(
+                radiant_flux=self._source_template.surface.radiant_flux,
+                default_values=True,
+                stable_ctr=True,
+            )
+        elif self._flux_type._radiant_flux is not self._source_template.surface.radiant_flux:
+            self._flux_type._radiant_flux = self._source_template.surface.radiant_flux
+        return self._flux_type
+        # self._source_template.surface.radiant_flux.radiant_value = value
+        # return self
+
+    def set_flux_luminous_intensity(self) -> SourceSurface.Intensity:
+        """Set intensity flux.
 
         Returns
         -------
-        ansys.speos.core.source.SourceSurface
-            Surface source.
+        ansys.speos.core.source.SourceSurface.Intensity
+            Intensity flux type source.
         """
-        self._source_template.surface.radiant_flux.radiant_value = value
-        return self
+        if self._flux_type is None and self._source_template.surface.HasField(
+            "luminous_intensity_flux"
+        ):
+            self._flux_type = SourceSurface.Intensity(
+                intensity_flux=self._source_template.surface.luminous_intensity_flux,
+                default_values=False,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._flux_type, SourceSurface.Intensity):
+            self._flux_type = SourceSurface.Intensity(
+                intensity_flux=self._source_template.surface.luminous_intensity_flux,
+                default_values=True,
+                stable_ctr=True,
+            )
+        elif (
+            self._flux_type._intensity_flux
+            is not self._source_template.surface.luminous_intensity_flux
+        ):
+            self._flux_type._intensity_flux = self._source_template.surface.luminous_intensity_flux
+        return self._flux_type
+        # self._source_template.surface.luminous_intensity_flux.luminous_intensity_value = value
+        # return self
 
-    def set_flux_luminous_intensity(self, value: float = 5) -> SourceSurface:
-        """Set luminous intensity flux.
-
-        Parameters
-        ----------
-        value : float
-            Luminous intensity in candelas.
-            By default, ``5.0``.
-
-        Returns
-        -------
-        ansys.speos.core.source.SourceSurface
-            Surface source.
-        """
-        self._source_template.surface.luminous_intensity_flux.luminous_intensity_value = value
-        return self
-
-    def set_intensity(self) -> Intensity:
+    def set_intensity(self) -> intensity.Intensity:
         """Set intensity.
 
         Returns
@@ -1094,49 +1576,42 @@ class SourceSurface(BaseSource):
 
         return self._intensity
 
-    def set_exitance_constant(
-        self, geometries: List[tuple[Union[GeoRef, face.Face, body.Body], bool]]
-    ) -> SourceSurface:
+    def set_exitance_constant(self) -> SourceSurface.ExitanceConstant:
         """Set existence constant.
-
-        Parameters
-        ----------
-        geometries : List[tuple[ansys.speos.core.geo_ref.GeoRef, bool]]
-            List of (face, reverseNormal).
 
         Returns
         -------
-        ansys.speos.core.source.SourceSurface
-            Surface source.
+        ansys.speos.core.source.SourceSurface.ExitanceConstant
+            ExitanceConstant of surface source.
         """
-        self._exitance_type = None
-
-        self._source_template.surface.exitance_constant.SetInParent()
-        self._source_instance.surface_properties.exitance_constant_properties.ClearField(
-            "geo_paths"
-        )
-        if geometries != []:
-            geo_paths = []
-            for gr, reverse_normal in geometries:
-                if isinstance(gr, GeoRef):
-                    geo_paths.append(
-                        ProtoScene.GeoPath(
-                            geo_path=gr.to_native_link(), reverse_normal=reverse_normal
-                        )
-                    )
-                elif isinstance(gr, (face.Face, body.Body)):
-                    geo_paths.append(
-                        ProtoScene.GeoPath(
-                            geo_path=gr.geo_path.to_native_link(), reverse_normal=reverse_normal
-                        )
-                    )
-                else:
-                    msg = f"Type {type(gr)} is not supported as Surface Source geometry input."
-                    raise TypeError(msg)
-            self._source_instance.surface_properties.exitance_constant_properties.geo_paths.extend(
-                geo_paths
+        if self._exitance_type is None and self._source_template.surface.HasField(
+            "exitance_constant"
+        ):
+            # Happens in case of project created via load of speos file
+            self._exitance_type = SourceSurface.ExitanceConstant(
+                exitance_constant=self._source_template.surface.exitance_constant,
+                exitance_constant_props=self._source_instance.surface_properties.exitance_constant_properties,
+                default_values=False,
+                stable_ctr=True,
             )
-        return self
+        elif not isinstance(self._exitance_type, SourceSurface.ExitanceConstant):
+            # if the _exitance_type is not ExitanceConstant then we create a new type.
+            self._source_template.surface.exitance_constant.SetInParent()
+            self._exitance_type = SourceSurface.ExitanceConstant(
+                exitance_constant=self._source_template.surface.exitance_constant,
+                exitance_constant_props=self._source_instance.surface_properties.exitance_constant_properties,
+                stable_ctr=True,
+            )
+        elif (
+            self._exitance_type._exitance_constant
+            is not self._source_template.surface.exitance_constant
+        ):
+            # Happens in case of feature reset (to be sure to always modify correct data)
+            self._exitance_type._exitance_constant = self._source_template.surface.exitance_constant
+            self._exitance_type.__exitance_constant_props = (
+                self._source_instance.surface_properties.exitance_constant_properties
+            )
+        return self._exitance_type
 
     def set_exitance_variable(self) -> SourceSurface.ExitanceVariable:
         """Set existence variable, taken from XMP map.
