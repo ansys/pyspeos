@@ -28,7 +28,7 @@ classifiers=[
 ]
 dependencies=[
     "protobuf>=3.20,<7",
-    "grpcio>=1.50.0,<1.71",
+    "grpcio>=1.50.0,<1.73",
     "grpcio-health-checking>=1.45.0,<1.68",
     "ansys-api-speos==0.15.2",
     "ansys-tools-path>=0.3.1",
@@ -55,7 +55,7 @@ jupyter = [
     "ipywidgets",
     "pyvista[jupyter]>=0.43,<0.46",
     "ansys-tools-visualization-interface>=0.8.3",
-    "notebook==7.4.3",
+    "notebook==7.4.4",
 ]
 doc = [
     "ansys-sphinx-theme==1.5.2",
@@ -69,7 +69,7 @@ doc = [
     "myst-parser==4.0.1",
     "nbsphinx==0.9.7",
     "jupytext==1.17.2",
-    "jupyterlab==4.4.3",
+    "jupyterlab==4.4.5",
     "jupyter-server==2.16.0",
     "nbconvert==7.16.6",
     "pyvista[jupyter]>=0.43,<0.46",
