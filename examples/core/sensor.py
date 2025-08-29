@@ -137,7 +137,7 @@ red_spectrum_path = str(assets_data_path / FILES / "CameraSensitivityRed.spectru
 sensor2 = p.create_sensor(name="Camera.2", feature_type=SensorCamera)
 sensor2.distortion_file_uri = distortion_file_path
 photometric = sensor2.set_mode_photometric()
-photometric.transmittance_file_uri(uri=transmittance_file_path)
+photometric.transmittance_file_uri = transmittance_file_path
 photometric.set_layer_type_source()
 color = photometric.set_mode_color()
 color.blue_spectrum_file_uri = blue_spectrum_path
