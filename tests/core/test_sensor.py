@@ -513,9 +513,17 @@ def test_create_irradiance_sensor(speos: Speos):
     sensor_template = sensor1.sensor_template_link.get().irradiance_sensor_template
     assert sensor_template.HasField("sensor_type_spectral")
     assert sensor_template.sensor_type_spectral.HasField("wavelengths_range")
-    assert sensor_template.sensor_type_spectral.wavelengths_range.w_start == 400
-    assert sensor_template.sensor_type_spectral.wavelengths_range.w_end == 700
-    assert sensor_template.sensor_type_spectral.wavelengths_range.w_sampling == 13
+    assert (
+        sensor_template.sensor_type_spectral.wavelengths_range.w_start
+        == SENSOR.WAVELENGTHSRANGE.START
+    )
+    assert (
+        sensor_template.sensor_type_spectral.wavelengths_range.w_end == SENSOR.WAVELENGTHSRANGE.END
+    )
+    assert (
+        sensor_template.sensor_type_spectral.wavelengths_range.w_sampling
+        == SENSOR.WAVELENGTHSRANGE.SAMPLING
+    )
     # chosen wavelengths range
     wavelengths_range = sensor1.set_type_spectral().set_wavelengths_range()
     wavelengths_range.start = 450
@@ -680,6 +688,7 @@ def test_create_irradiance_sensor(speos: Speos):
     layer_by_sequence.set_define_sequence_per_faces()
     sensor1.commit()
     assert irra_properties.HasField("layer_type_sequence")
+    assert layer_by_sequence.maximum_nb_of_sequence == 5
     assert irra_properties.layer_type_sequence.maximum_nb_of_sequence == 5
     assert (
         irra_properties.layer_type_sequence.define_sequence_per
@@ -703,6 +712,7 @@ def test_create_irradiance_sensor(speos: Speos):
     sensor1.set_layer_type_incidence_angle().sampling = 8
     sensor1.commit()
     assert irra_properties.HasField("layer_type_incidence_angle")
+    assert sensor1.set_layer_type_incidence_angle().sampling == 8
     assert irra_properties.layer_type_incidence_angle.sampling == 8
 
     # layer_type_none
@@ -755,10 +765,12 @@ def test_create_radiance_sensor(speos: Speos):
         sensor1.sensor_template_link.get().radiance_sensor_template.focal
         == SENSOR.RADIANCESENSOR.FOCAL_LENGTH
     )
+    assert sensor1.focal == SENSOR.RADIANCESENSOR.FOCAL_LENGTH
     assert (
         sensor1.sensor_template_link.get().radiance_sensor_template.integration_angle
         == SENSOR.RADIANCESENSOR.INTEGRATION_ANGLE
     )
+    assert sensor1.integration_angle == SENSOR.RADIANCESENSOR.INTEGRATION_ANGLE
     assert sensor1.sensor_template_link.get().radiance_sensor_template.HasField("dimensions")
     assert (
         sensor1.sensor_template_link.get().radiance_sensor_template.dimensions.x_start
@@ -772,6 +784,7 @@ def test_create_radiance_sensor(speos: Speos):
         sensor1.sensor_template_link.get().radiance_sensor_template.dimensions.x_sampling
         == SENSOR.DIMENSIONS.X_SAMPLING
     )
+    assert sensor1.set_dimensions().x_sampling == SENSOR.DIMENSIONS.X_SAMPLING
     assert (
         sensor1.sensor_template_link.get().radiance_sensor_template.dimensions.y_start
         == SENSOR.DIMENSIONS.Y_START
@@ -784,6 +797,7 @@ def test_create_radiance_sensor(speos: Speos):
         sensor1.sensor_template_link.get().radiance_sensor_template.dimensions.y_sampling
         == SENSOR.DIMENSIONS.Y_SAMPLING
     )
+    assert sensor1.set_dimensions().y_sampling == SENSOR.DIMENSIONS.Y_SAMPLING
     assert sensor1._sensor_instance.HasField("radiance_properties")
     radiance_properties = sensor1._sensor_instance.radiance_properties
     assert radiance_properties.axis_system == ORIGIN
@@ -894,6 +908,11 @@ def test_create_radiance_sensor(speos: Speos):
 
     # observer_point
     sensor1.observer_point = [20, 30, 50]
+    assert sensor1.observer_point == [
+        20,
+        30,
+        50,
+    ]
     sensor1.commit()
     assert radiance_properties.observer_point == [
         20,
@@ -1076,8 +1095,8 @@ def test_create_3d_irradiance_sensor(speos: Speos):
     sensor_3d.commit()
     assert sensor_3d.sensor_template_link.get().irradiance_3d.HasField("type_colorimetric")
     colorimetric_info = sensor_3d.sensor_template_link.get().irradiance_3d.type_colorimetric
-    assert colorimetric_info.wavelength_start == 400
-    assert colorimetric_info.wavelength_end == 700
+    assert colorimetric_info.wavelength_start == SENSOR.WAVELENGTHSRANGE.START
+    assert colorimetric_info.wavelength_end == SENSOR.WAVELENGTHSRANGE.END
     wavelengths_range = sensor_3d.set_type_colorimetric().set_wavelengths_range()
     wavelengths_range.start = 500
     sensor_3d.commit()
@@ -1152,38 +1171,16 @@ def test_reset_sensor(speos: Speos):
     # Create + commit
     sensor1 = p.create_sensor(name="Sensor.1", feature_type=SensorIrradiance)
     sensor1.commit()
-    assert sensor1._sensor_template.irradiance_sensor_template.dimensions.x_start == -50  # local
     assert (
-        sensor1.sensor_template_link.get().irradiance_sensor_template.dimensions.x_start == -50
+        sensor1._sensor_template.irradiance_sensor_template.dimensions.x_start
+        == SENSOR.DIMENSIONS.X_START
+    )  # local
+    assert (
+        sensor1.sensor_template_link.get().irradiance_sensor_template.dimensions.x_start
+        == SENSOR.DIMENSIONS.X_START
     )  # server
-    assert sensor1._sensor_instance.irradiance_properties.axis_system == [
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        1,
-    ]  # local
-    assert p.scene_link.get().sensors[0].irradiance_properties.axis_system == [
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        1,
-    ]  # server
+    assert sensor1._sensor_instance.irradiance_properties.axis_system == ORIGIN  # local
+    assert p.scene_link.get().sensors[0].irradiance_properties.axis_system == ORIGIN  # server
 
     sensor1.dimensions.x_start = 0
     sensor1.axis_system = [1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1]
@@ -1205,55 +1202,20 @@ def test_reset_sensor(speos: Speos):
         0,
         1,
     ]  # local
-    assert p.scene_link.get().sensors[0].irradiance_properties.axis_system == [
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        1,
-    ]  # server
+    assert p.scene_link.get().sensors[0].irradiance_properties.axis_system == ORIGIN  # server
 
     # Ask for reset
     sensor1.reset()
-    assert sensor1._sensor_template.irradiance_sensor_template.dimensions.x_start == -50  # local
     assert (
-        sensor1.sensor_template_link.get().irradiance_sensor_template.dimensions.x_start == -50
+        sensor1._sensor_template.irradiance_sensor_template.dimensions.x_start
+        == SENSOR.DIMENSIONS.X_START
+    )  # local
+    assert (
+        sensor1.sensor_template_link.get().irradiance_sensor_template.dimensions.x_start
+        == SENSOR.DIMENSIONS.X_START
     )  # server
-    assert sensor1._sensor_instance.irradiance_properties.axis_system == [
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        1,
-    ]  # local
-    assert p.scene_link.get().sensors[0].irradiance_properties.axis_system == [
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        1,
-    ]  # server
+    assert sensor1._sensor_instance.irradiance_properties.axis_system == ORIGIN  # local
+    assert p.scene_link.get().sensors[0].irradiance_properties.axis_system == ORIGIN  # server
 
     sensor1.delete()
 
@@ -1280,7 +1242,7 @@ def test_irradiance_modify_after_reset(speos: Speos):
     # Intermediate class for type : spectral
     assert (
         sensor1._sensor_template.irradiance_sensor_template.sensor_type_spectral.wavelengths_range.w_start
-        == 400
+        == SENSOR.WAVELENGTHSRANGE.START
     )
     sensor1.set_type_spectral().set_wavelengths_range().start = 500
     assert (
@@ -1288,25 +1250,15 @@ def test_irradiance_modify_after_reset(speos: Speos):
         == 500
     )
     # Intermediate class for dimensions
-    assert sensor1._sensor_template.irradiance_sensor_template.dimensions.x_start == -50
+    assert (
+        sensor1._sensor_template.irradiance_sensor_template.dimensions.x_start
+        == SENSOR.DIMENSIONS.X_START
+    )
     sensor1.set_dimensions().x_start = -100
     assert sensor1._sensor_template.irradiance_sensor_template.dimensions.x_start == -100
 
     # Props
-    assert sensor1._sensor_instance.irradiance_properties.axis_system == [
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        1,
-    ]
+    assert sensor1._sensor_instance.irradiance_properties.axis_system == ORIGIN
     sensor1.axis_system = [50, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     assert sensor1._sensor_instance.irradiance_properties.axis_system == [
         50,
@@ -1325,7 +1277,7 @@ def test_irradiance_modify_after_reset(speos: Speos):
     # Intermediate class for layer type
     assert (
         sensor1._sensor_instance.irradiance_properties.layer_type_sequence.maximum_nb_of_sequence
-        == 10
+        == SENSOR.LAYERTYPES.MAXIMUM_NB_OF_SEQUENCE
     )
     sensor1.set_layer_type_sequence().maximum_nb_of_sequence = 15
     assert (
@@ -1352,13 +1304,25 @@ def test_radiance_modify_after_reset(speos: Speos):
 
     # Modify after a reset
     # Template
-    assert sensor1._sensor_template.radiance_sensor_template.focal == 250
+    assert (
+        sensor1._sensor_template.radiance_sensor_template.focal
+        == SENSOR.RADIANCESENSOR.FOCAL_LENGTH
+    )
     sensor1.focal = 100
     assert sensor1._sensor_template.radiance_sensor_template.focal == 100
     # Intermediate class for type : colorimetric
     assert (
         sensor1._sensor_template.radiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_start
-        == 400
+        == SENSOR.WAVELENGTHSRANGE.START
+    )
+    sensor1.set_type_colorimetric().set_wavelengths_range().start = 500
+    assert (
+        sensor1._sensor_template.radiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_start
+        == 500
+    )
+    assert (
+        sensor1._sensor_template.radiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_end
+        == SENSOR.WAVELENGTHSRANGE.END
     )
     sensor1.set_type_colorimetric().set_wavelengths_range().start = 500
     assert (
@@ -1366,25 +1330,40 @@ def test_radiance_modify_after_reset(speos: Speos):
         == 500
     )
     # Intermediate class for dimensions
-    assert sensor1._sensor_template.radiance_sensor_template.dimensions.x_start == -50
+    assert (
+        sensor1._sensor_template.radiance_sensor_template.dimensions.x_start
+        == SENSOR.DIMENSIONS.X_START
+    )
     sensor1.set_dimensions().x_start = -100
     assert sensor1._sensor_template.radiance_sensor_template.dimensions.x_start == -100
+    assert sensor1.set_dimensions().x_start == -100
+
+    assert (
+        sensor1._sensor_template.radiance_sensor_template.dimensions.x_end
+        == SENSOR.DIMENSIONS.X_END
+    )
+    sensor1.set_dimensions().x_end = 100
+    assert sensor1._sensor_template.radiance_sensor_template.dimensions.x_end == 100
+    assert sensor1.set_dimensions().x_end == 100
+
+    assert (
+        sensor1._sensor_template.radiance_sensor_template.dimensions.y_start
+        == SENSOR.DIMENSIONS.Y_START
+    )
+    sensor1.set_dimensions().y_start = -100
+    assert sensor1._sensor_template.radiance_sensor_template.dimensions.y_start == -100
+    assert sensor1.set_dimensions().y_start == -100
+
+    assert (
+        sensor1._sensor_template.radiance_sensor_template.dimensions.y_end
+        == SENSOR.DIMENSIONS.Y_END
+    )
+    sensor1.set_dimensions().y_end = 100
+    assert sensor1._sensor_template.radiance_sensor_template.dimensions.y_end == 100
+    assert sensor1.set_dimensions().y_end == 100
 
     ## Props
-    assert sensor1._sensor_instance.radiance_properties.axis_system == [
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        1,
-    ]
+    assert sensor1._sensor_instance.radiance_properties.axis_system == ORIGIN
     sensor1.axis_system = [50, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     assert sensor1._sensor_instance.radiance_properties.axis_system == [
         50,
@@ -1403,7 +1382,7 @@ def test_radiance_modify_after_reset(speos: Speos):
     # Intermediate class for layer type
     assert (
         sensor1._sensor_instance.radiance_properties.layer_type_sequence.maximum_nb_of_sequence
-        == 10
+        == SENSOR.LAYERTYPES.MAXIMUM_NB_OF_SEQUENCE
     )
     sensor1.set_layer_type_sequence().maximum_nb_of_sequence = 15
     assert (
@@ -1440,23 +1419,35 @@ def test_camera_modify_after_reset(speos: Speos):
 
     # Modify after a reset
     # Template
-    assert sensor1._sensor_template.camera_sensor_template.focal_length == 5
+    assert (
+        sensor1._sensor_template.camera_sensor_template.focal_length
+        == SENSOR.CAMERASENSOR.FOCAL_LENGTH
+    )
     sensor1.focal_length = 40
     assert sensor1._sensor_template.camera_sensor_template.focal_length == 40
     # Intermediate class for mode : photometric + wavelengths
     assert (
         sensor1._sensor_template.camera_sensor_template.sensor_mode_photometric.wavelengths_range.w_start
-        == 400
+        == SENSOR.WAVELENGTHSRANGE.START
     )
     sensor1.set_mode_photometric().set_wavelengths_range().start = 500
     assert (
         sensor1._sensor_template.camera_sensor_template.sensor_mode_photometric.wavelengths_range.w_start
         == 500
     )
+    assert (
+        sensor1._sensor_template.camera_sensor_template.sensor_mode_photometric.wavelengths_range.w_end
+        == SENSOR.WAVELENGTHSRANGE.END
+    )
+    sensor1.set_mode_photometric().set_wavelengths_range().end = 800
+    assert (
+        sensor1._sensor_template.camera_sensor_template.sensor_mode_photometric.wavelengths_range.w_end
+        == 800
+    )
     # Intermediate class for color mode + balance mode
     assert (
         sensor1._sensor_template.camera_sensor_template.sensor_mode_photometric.color_mode_color.balance_mode_userwhite.blue_gain
-        == 1
+        == SENSOR.CAMERASENSOR.GAIN
     )
     color = sensor1.set_mode_photometric().set_mode_color()
     white_mode = color.set_balance_mode_user_white()
@@ -1467,20 +1458,7 @@ def test_camera_modify_after_reset(speos: Speos):
     )
 
     # Props
-    assert sensor1._sensor_instance.camera_properties.axis_system == [
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        1,
-    ]
+    assert sensor1._sensor_instance.camera_properties.axis_system == ORIGIN
     sensor1.axis_system = [50, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     assert sensor1._sensor_instance.camera_properties.axis_system == [
         50,
