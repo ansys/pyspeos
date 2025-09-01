@@ -71,7 +71,6 @@ def test_create_camera_sensor(speos: Speos):
     assert mode_photometric.acquisition_integration == SENSOR.CAMERASENSOR.ACQUISITION_INTEGRATION
     assert mode_photometric.acquisition_lag_time == SENSOR.CAMERASENSOR.ACQUISITION_LAG_TIME
     assert mode_photometric.transmittance_file_uri == ""
-    assert mode_photometric.trajectory_file_uri == ""
     assert math.isclose(
         a=mode_photometric.gamma_correction,
         b=SENSOR.CAMERASENSOR.GAMMA_CORRECTION,
@@ -95,6 +94,7 @@ def test_create_camera_sensor(speos: Speos):
     assert mode_photometric.color_mode_color.HasField("balance_mode_none")
     assert sensor1._sensor_instance.camera_properties.axis_system == ORIGIN
     assert sensor1._sensor_instance.camera_properties.trajectory_file_uri == ""
+    assert sensor1.set_mode_photometric().trajectory_file_uri == ""
     assert sensor1._sensor_instance.camera_properties.HasField("layer_type_none")
 
     # focal_length
@@ -276,8 +276,8 @@ def test_create_camera_sensor(speos: Speos):
         "CameraSensitivityBlue.spectrum"
     )
     assert color.red_spectrum_file_uri.endswith("CameraSensitivityRed.spectrum")
-    assert color.green_spectrum_file_uri.endswith("CameraSensitivityRed.spectrum")
-    assert color.blue_spectrum_file_uri.endswith("CameraSensitivityRed.spectrum")
+    assert color.green_spectrum_file_uri.endswith("CameraSensitivityGreen.spectrum")
+    assert color.blue_spectrum_file_uri.endswith("CameraSensitivityBlue.spectrum")
 
     # balance_mode_greyworld
     sensor1.set_mode_photometric().set_mode_color().set_balance_mode_grey_world()
