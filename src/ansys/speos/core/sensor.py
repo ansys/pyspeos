@@ -559,12 +559,12 @@ class BaseSensor:
         def __init__(self, name: str, geometries: List[GeoRef]) -> None:
             self.name = name
             """Name of the layer"""
-            self.geometries = geometries
+            self.geometry = geometries
 
         @property
         def geometry(self):
             """List of geometries included in this layer."""
-            return self._geometries
+            return self._geometry
 
         @geometry.setter
         def geometry(self, value):
@@ -574,7 +574,7 @@ class BaseSensor:
                     geo_paths.append(gr)
                 elif isinstance(gr, (face.Face, body.Body, part.Part.SubPart)):
                     geo_paths.append(gr.geo_path)
-            self._geometries = geo_paths
+            self._geometry = geo_paths
 
     class LayerTypeFace:
         """Type of layer : Face.
@@ -661,7 +661,7 @@ class BaseSensor:
                 ProtoScene.SensorInstance.LayerTypeFace.Layer(
                     name=layer.name,
                     geometries=ProtoScene.GeoPaths(
-                        geo_paths=[gr.to_native_link() for gr in layer.geometries]
+                        geo_paths=[gr.to_native_link() for gr in layer.geometry]
                     ),
                 )
                 for layer in values

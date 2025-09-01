@@ -127,24 +127,28 @@ def test_create_camera_sensor(speos: Speos):
     sensor1.commit()
     camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
     assert camera_sensor_template.horz_pixel == 680
+    assert sensor1.horz_pixel == 680
 
     # vert_pixel
     sensor1.vert_pixel = 500
     sensor1.commit()
     camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
     assert camera_sensor_template.vert_pixel == 500
+    assert sensor1.vert_pixel == 500
 
     # width
     sensor1.width = 5.5
     sensor1.commit()
     camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
     assert camera_sensor_template.width == 5.5
+    assert sensor1.width == 5.5
 
     # height
     sensor1.height = 5.3
     sensor1.commit()
     camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
     assert camera_sensor_template.height == 5.3
+    assert sensor1.height == 5.3
 
     # sensor_mode_geometric
     sensor1.set_mode_geometric()
@@ -173,12 +177,14 @@ def test_create_camera_sensor(speos: Speos):
     sensor1.commit()
     camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
     assert camera_sensor_template.sensor_mode_photometric.acquisition_integration == 0.03
+    assert sensor1.photometric.acquisition_integration == 0.03
 
     # acquisition_lag_time
     sensor1.photometric.acquisition_lag_time = 0.1
     sensor1.commit()
     camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
     assert camera_sensor_template.sensor_mode_photometric.acquisition_lag_time == 0.1
+    assert sensor1.photometric.acquisition_lag_time == 0.1
 
     # transmittance_file_uri
     sensor1.photometric.transmittance_file_uri = str(
@@ -187,12 +193,14 @@ def test_create_camera_sensor(speos: Speos):
     sensor1.commit()
     camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
     assert camera_sensor_template.sensor_mode_photometric.transmittance_file_uri != ""
+    assert sensor1.photometric.transmittance_file_uri != ""
 
     # gamma_correction
     sensor1.photometric.gamma_correction = 2.5
     sensor1.commit()
     camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
     assert camera_sensor_template.sensor_mode_photometric.gamma_correction == 2.5
+    assert sensor1.photometric.gamma_correction == 2.5
 
     # png_bits
     sensor1.photometric.set_png_bits_08()
@@ -301,6 +309,9 @@ def test_create_camera_sensor(speos: Speos):
     assert mode_photometric.color_mode_color.balance_mode_userwhite.red_gain == 2
     assert mode_photometric.color_mode_color.balance_mode_userwhite.green_gain == 3
     assert mode_photometric.color_mode_color.balance_mode_userwhite.blue_gain == 4
+    assert balance_mode_user_white.red_gain == 2
+    assert balance_mode_user_white.green_gain == 3
+    assert balance_mode_user_white.blue_gain == 4
 
     # balance_mode_display
     display_primaries = (
@@ -328,6 +339,15 @@ def test_create_camera_sensor(speos: Speos):
     assert mode_photometric.color_mode_color.balance_mode_display.blue_display_file_uri.endswith(
         "CameraSensitivityBlue.spectrum"
     )
+    assert display_primaries.red_display_file_uri == str(
+        Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
+    )
+    assert display_primaries.green_display_file_uri == str(
+        Path(test_path) / "CameraInputFiles" / "CameraSensitivityGreen.spectrum"
+    )
+    assert display_primaries.blue_display_file_uri == str(
+        Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum"
+    )
 
     # balance_mode_none
     sensor1.set_mode_photometric().set_mode_color().set_balance_mode_none()
@@ -347,6 +367,9 @@ def test_create_camera_sensor(speos: Speos):
     assert mode_photometric.wavelengths_range.w_start == 430
     assert mode_photometric.wavelengths_range.w_end == 750
     assert mode_photometric.wavelengths_range.w_sampling == 15
+    assert wavelengths_range.start == 430
+    assert wavelengths_range.end == 750
+    assert wavelengths_range.sampling == 15
 
     # Properties
 
@@ -367,7 +390,20 @@ def test_create_camera_sensor(speos: Speos):
         0,
         1,
     ]
-
+    assert sensor1.axis_system == [
+        10,
+        50,
+        20,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+    ]
     # Properties for camera photometric
 
     # layer_type_source
@@ -644,22 +680,20 @@ def test_create_irradiance_sensor(speos: Speos):
     assert irra_properties.HasField("layer_type_source")
 
     # layer_type_face
+    layer1 = sensor.BaseSensor.FaceLayer(
+        name="Layer.1", geometries=[GeoRef.from_native_link("TheBodyB")]
+    )
+    layer1.geometry = [body_b]
+    layer2 = sensor.BaseSensor.FaceLayer(
+        name="Layer.2",
+        geometries=[
+            GeoRef.from_native_link("TheBodyC/TheFaceC1"),
+            GeoRef.from_native_link("TheBodyC/TheFaceC2"),
+        ],
+    )
     layer_face = sensor1.set_layer_type_face()
     layer_face.set_sca_filtering_mode_intersected_one_time()
-    layer_face.set_layers(
-        values=[
-            sensor.BaseSensor.FaceLayer(
-                name="Layer.1", geometries=[GeoRef.from_native_link("TheBodyB")]
-            ),
-            sensor.BaseSensor.FaceLayer(
-                name="Layer.2",
-                geometries=[
-                    GeoRef.from_native_link("TheBodyC/TheFaceC1"),
-                    GeoRef.from_native_link("TheBodyC/TheFaceC2"),
-                ],
-            ),
-        ]
-    )
+    layer_face.set_layers(values=[layer1, layer2])
     sensor1.commit()
     assert irra_properties.HasField("layer_type_face")
     assert (
@@ -674,7 +708,10 @@ def test_create_irradiance_sensor(speos: Speos):
         "TheBodyC/TheFaceC1",
         "TheBodyC/TheFaceC2",
     ]
-
+    assert layer1.name == "Layer.1"
+    assert layer2.name == "Layer.2"
+    for geo_path in layer1.geometry:
+        assert isinstance(geo_path, GeoRef)
     layer_face.set_sca_filtering_mode_last_impact()
     sensor1.commit()
     assert (
