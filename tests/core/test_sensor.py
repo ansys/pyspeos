@@ -71,6 +71,7 @@ def test_create_camera_sensor(speos: Speos):
     assert mode_photometric.acquisition_integration == SENSOR.CAMERASENSOR.ACQUISITION_INTEGRATION
     assert mode_photometric.acquisition_lag_time == SENSOR.CAMERASENSOR.ACQUISITION_LAG_TIME
     assert mode_photometric.transmittance_file_uri == ""
+    assert mode_photometric.trajectory_file_uri == ""
     assert math.isclose(
         a=mode_photometric.gamma_correction,
         b=SENSOR.CAMERASENSOR.GAMMA_CORRECTION,
@@ -101,18 +102,21 @@ def test_create_camera_sensor(speos: Speos):
     sensor1.commit()
     camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
     assert camera_sensor_template.focal_length == 5.5
+    assert sensor1.focal_length == 5.5
 
     # imager_distance
     sensor1.imager_distance = 10.5
     sensor1.commit()
     camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
     assert camera_sensor_template.imager_distance == 10.5
+    assert sensor1.imager_distance == 10.5
 
     # f_number
     sensor1.f_number = 20.5
     sensor1.commit()
     camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
     assert camera_sensor_template.f_number == 20.5
+    assert sensor1.f_number == 20.5
 
     # distortion_file_uri
     sensor1.distortion_file_uri = str(
@@ -121,6 +125,7 @@ def test_create_camera_sensor(speos: Speos):
     sensor1.commit()
     camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
     assert camera_sensor_template.distortion_file_uri != ""
+    assert sensor1.distortion_file_uri != ""
 
     # horz_pixel
     sensor1.horz_pixel = 680
@@ -270,6 +275,9 @@ def test_create_camera_sensor(speos: Speos):
     assert mode_photometric.color_mode_color.blue_spectrum_file_uri.endswith(
         "CameraSensitivityBlue.spectrum"
     )
+    assert color.red_spectrum_file_uri.endswith("CameraSensitivityRed.spectrum")
+    assert color.green_spectrum_file_uri.endswith("CameraSensitivityRed.spectrum")
+    assert color.blue_spectrum_file_uri.endswith("CameraSensitivityRed.spectrum")
 
     # balance_mode_greyworld
     sensor1.set_mode_photometric().set_mode_color().set_balance_mode_grey_world()
@@ -535,7 +543,9 @@ def test_create_irradiance_sensor(speos: Speos):
     assert sensor_template.sensor_type_colorimetric.wavelengths_range.w_start == 450
     assert sensor_template.sensor_type_colorimetric.wavelengths_range.w_end == 800
     assert sensor_template.sensor_type_colorimetric.wavelengths_range.w_sampling == 15
-
+    assert wavelengths_range.start == 450
+    assert wavelengths_range.end == 800
+    assert wavelengths_range.sampling == 15
     # sensor_type_radiometric
     sensor1.set_type_radiometric()
     sensor1.commit()
@@ -570,6 +580,9 @@ def test_create_irradiance_sensor(speos: Speos):
     assert sensor_template.sensor_type_spectral.wavelengths_range.w_start == 450
     assert sensor_template.sensor_type_spectral.wavelengths_range.w_end == 800
     assert sensor_template.sensor_type_spectral.wavelengths_range.w_sampling == 15
+    assert wavelengths_range.start == 450
+    assert wavelengths_range.end == 800
+    assert wavelengths_range.sampling == 15
 
     # sensor_type_photometric
     sensor1.set_type_photometric()
@@ -607,9 +620,11 @@ def test_create_irradiance_sensor(speos: Speos):
     sensor1.commit()
     sensor_template = sensor1.sensor_template_link.get().irradiance_sensor_template
     assert sensor_template.HasField("illuminance_type_planar")
+    assert sensor1.integration_direction == [0, 0, -1]
 
     sensor1.integration_direction = None  # cancel integration direction
     assert irra_properties.integration_direction == []
+    assert sensor1.integration_direction == []
 
     # dimensions
     sensor1.dimensions.x_start = -10
@@ -646,7 +661,7 @@ def test_create_irradiance_sensor(speos: Speos):
         0,
         1,
     ]
-
+    assert sensor1.axis_system == [10, 50, 20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     # ray_file_type
     sensor1.set_ray_file_type_classic()
     sensor1.commit()
@@ -760,11 +775,11 @@ def test_create_irradiance_sensor(speos: Speos):
     # output_face_geometries
     sensor1.output_face_geometries = [
         GeoRef.from_native_link(geopath="TheBodyB/TheFaceB1"),
-        GeoRef.from_native_link(geopath="TheBodyB/TheFaceB2"),
+        body_b,
     ]
     assert irra_properties.output_face_geometries.geo_paths == [
         "TheBodyB/TheFaceB1",
-        "TheBodyB/TheFaceB2",
+        "TheBodyB",
     ]
 
     # output_face_geometries
@@ -942,6 +957,7 @@ def test_create_radiance_sensor(speos: Speos):
         0,
         1,
     ]
+    assert sensor1.axis_system == [10, 50, 20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 
     # observer_point
     sensor1.observer_point = [20, 30, 50]
@@ -1047,6 +1063,7 @@ def test_create_3d_irradiance_sensor(speos: Speos):
     body = p.find(name="PrismBody", name_regex=True, feature_type=Body)[0]
     sensor_3d = p.create_sensor(name="3d", feature_type=Sensor3DIrradiance)
     sensor_3d.geometries = [body.geo_path]
+    sensor_3d.geometries = [body]
     sensor_3d.commit()
 
     # when creating 3D irradiance, default properties:
