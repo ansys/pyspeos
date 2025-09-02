@@ -233,6 +233,68 @@ class BaseSource:
             """
             self._radiant_flux.radiant_value = value
 
+    class Intensity:
+        """Intensity type of flux.
+
+        By default, Intensity flux value is set to be 5 cd.
+
+        Parameters
+        ----------
+        intensity_flux : ansys.api.speos.source.v1.source_pb2.LuminousIntensity
+            LuminousIntensity protobuf object to modify.
+        default_values : bool
+            Uses default values when True.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use set_flux_luminous_intensity
+        method available in Source classes.
+        """
+
+        def __init__(
+            self,
+            intensity_flux: source_pb2.LuminousIntensity,
+            default_values: bool = True,
+            stable_ctr: bool = False,
+        ):
+            if not stable_ctr:
+                msg = "Intensity class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._intensity_flux = intensity_flux
+
+            if default_values:
+                self.value = SOURCE.INTENSITY.VALUE
+
+        @property
+        def value(self) -> float:
+            """Get intensity flux value.
+
+            Returns
+            -------
+            float
+            Intensity flux value.
+
+            """
+            return self._intensity_flux.luminous_intensity_value
+
+        @value.setter
+        def value(self, value: float) -> None:
+            """Set intensity flux value.
+
+            Parameters
+            ----------
+            value: float
+            Intensity flux value.
+
+            Returns
+            -------
+            None
+
+            """
+            self._intensity_flux.luminous_intensity_value = value
+
     class _Spectrum:
         def __init__(
             self,
@@ -1123,68 +1185,6 @@ class SourceSurface(BaseSource):
     default_values : bool
         Uses default values when True.
     """
-
-    class Intensity:
-        """Intensity type of flux.
-
-        By default, Intensity flux value is set to be 5 cd.
-
-        Parameters
-        ----------
-        intensity_flux : ansys.api.speos.source.v1.source_pb2.LuminousIntensity
-            LuminousIntensity protobuf object to modify.
-        default_values : bool
-            Uses default values when True.
-        stable_ctr : bool
-            Variable to indicate if usage is inside class scope
-
-        Notes
-        -----
-        **Do not instantiate this class yourself**, use set_flux_luminous_intensity
-        method available in Source classes.
-        """
-
-        def __init__(
-            self,
-            intensity_flux: source_pb2.LuminousIntensity,
-            default_values: bool = True,
-            stable_ctr: bool = False,
-        ):
-            if not stable_ctr:
-                msg = "Intensity class instantiated outside of class scope"
-                raise RuntimeError(msg)
-            self._intensity_flux = intensity_flux
-
-            if default_values:
-                self.value = SOURCE.INTENSITY.VALUE
-
-        @property
-        def value(self) -> float:
-            """Get intensity flux value.
-
-            Returns
-            -------
-            float
-            Intensity flux value.
-
-            """
-            return self._intensity_flux.luminous_intensity_value
-
-        @value.setter
-        def value(self, value: float) -> None:
-            """Set intensity flux value.
-
-            Parameters
-            ----------
-            value: float
-            Intensity flux value.
-
-            Returns
-            -------
-            None
-
-            """
-            self._intensity_flux.luminous_intensity_value = value
 
     class ExitanceConstant:
         """Type of surface source existence : existence constant.
