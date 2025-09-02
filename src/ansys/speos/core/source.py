@@ -110,190 +110,131 @@ class BaseSource:
             self.source_template_link = self._project.client[source_instance.source_guid]
             self._reset()
 
-    class Luminous:
-        """Luminous type of flux.
+    class Flux:
+        """Different types of flux."""
 
-        By default, Luminous flux value is set to be 683 lm.
+        class Luminous:
+            """Luminous type of flux.
 
-        Parameters
-        ----------
-        luminous_flux : ansys.api.speos.source.v1.source_pb2.Luminous
-            Luminous protobuf object to modify.
-        default_values : bool
-            Uses default values when True.
-        stable_ctr : bool
-            Variable to indicate if usage is inside class scope
-
-        Notes
-        -----
-        **Do not instantiate this class yourself**, use set_flux_luminous method available in
-        Source classes.
-        """
-
-        def __init__(
-            self,
-            luminous_flux: source_pb2.Luminous,
-            default_values: bool = True,
-            stable_ctr: bool = False,
-        ):
-            if not stable_ctr:
-                msg = "Luminous class instantiated outside of class scope"
-                raise RuntimeError(msg)
-            self._luminous_flux = luminous_flux
-
-            if default_values:
-                self.value = SOURCE.LUMINOUS.VALUE
-
-        @property
-        def value(self) -> float:
-            """Get luminous flux value.
-
-            Returns
-            -------
-            float
-            Luminous flux value.
-            """
-            return self._luminous_flux.luminous_value
-
-        @value.setter
-        def value(self, value: float) -> None:
-            """Set luminous flux value.
+            By default, Luminous flux value is set to be 683 lm.
 
             Parameters
             ----------
-            value: float
-            Luminous flux value.
+            luminous_flux : ansys.api.speos.source.v1.source_pb2.Luminous
+                Luminous protobuf object to modify.
+            default_values : bool
+                Uses default values when True.
+            stable_ctr : bool
+                Variable to indicate if usage is inside class scope
 
-            Returns
-            -------
-            None
-
+            Notes
+            -----
+            **Do not instantiate this class yourself**, use set_flux_luminous method available in
+            Source classes.
             """
-            self._luminous_flux.luminous_value = value
 
-    class Radiant:
-        """Radiant type of flux.
+            def __init__(
+                self,
+                luminous_flux: source_pb2.Luminous,
+                default_values: bool = True,
+                stable_ctr: bool = False,
+            ):
+                if not stable_ctr:
+                    msg = "Luminous class instantiated outside of class scope"
+                    raise RuntimeError(msg)
+                self._luminous_flux = luminous_flux
 
-        By default, Radiant flux value is set to be 1 W.
+                if default_values:
+                    self.value = SOURCE.LUMINOUS.VALUE
 
-        Parameters
-        ----------
-        radiant_flux : ansys.api.speos.source.v1.source_pb2.Radiant
-            Radiant protobuf object to modify.
-        default_values : bool
-            Uses default values when True.
-        stable_ctr : bool
-            Variable to indicate if usage is inside class scope
+            @property
+            def value(self) -> float:
+                """Get luminous flux value.
 
-        Notes
-        -----
-        **Do not instantiate this class yourself**, use set_flux_radiant method available in
-        Source classes.
-        """
+                Returns
+                -------
+                float
+                Luminous flux value.
+                """
+                return self._luminous_flux.luminous_value
 
-        def __init__(
-            self,
-            radiant_flux: source_pb2.Radiant,
-            default_values: bool = True,
-            stable_ctr: bool = False,
-        ):
-            if not stable_ctr:
-                msg = "Radiant class instantiated outside of class scope"
-                raise RuntimeError(msg)
-            self._radiant_flux = radiant_flux
+            @value.setter
+            def value(self, value: float) -> None:
+                """Set luminous flux value.
 
-            if default_values:
-                self.value = SOURCE.RADIANT.VALUE
+                Parameters
+                ----------
+                value: float
+                Luminous flux value.
 
-        @property
-        def value(self) -> float:
-            """Get radiant flux value.
+                Returns
+                -------
+                None
 
-            Returns
-            -------
-            float
-            Radiant flux value.
+                """
+                self._luminous_flux.luminous_value = value
 
-            """
-            return self._radiant_flux.radiant_value
+        class Radiant:
+            """Radiant type of flux.
 
-        @value.setter
-        def value(self, value: float) -> None:
-            """Set radiant flux value.
+            By default, Radiant flux value is set to be 1 W.
 
             Parameters
             ----------
-            value: float
-            Radiant flux value.
+            radiant_flux : ansys.api.speos.source.v1.source_pb2.Radiant
+                Radiant protobuf object to modify.
+            default_values : bool
+                Uses default values when True.
+            stable_ctr : bool
+                Variable to indicate if usage is inside class scope
 
-            Returns
-            -------
-            None
-
+            Notes
+            -----
+            **Do not instantiate this class yourself**, use set_flux_radiant method available in
+            Source classes.
             """
-            self._radiant_flux.radiant_value = value
 
-    class Intensity:
-        """Intensity type of flux.
+            def __init__(
+                self,
+                radiant_flux: source_pb2.Radiant,
+                default_values: bool = True,
+                stable_ctr: bool = False,
+            ):
+                if not stable_ctr:
+                    msg = "Radiant class instantiated outside of class scope"
+                    raise RuntimeError(msg)
+                self._radiant_flux = radiant_flux
 
-        By default, Intensity flux value is set to be 5 cd.
+                if default_values:
+                    self.value = SOURCE.RADIANT.VALUE
 
-        Parameters
-        ----------
-        intensity_flux : ansys.api.speos.source.v1.source_pb2.LuminousIntensity
-            LuminousIntensity protobuf object to modify.
-        default_values : bool
-            Uses default values when True.
-        stable_ctr : bool
-            Variable to indicate if usage is inside class scope
+            @property
+            def value(self) -> float:
+                """Get radiant flux value.
 
-        Notes
-        -----
-        **Do not instantiate this class yourself**, use set_flux_luminous_intensity
-        method available in Source classes.
-        """
+                Returns
+                -------
+                float
+                Radiant flux value.
 
-        def __init__(
-            self,
-            intensity_flux: source_pb2.LuminousIntensity,
-            default_values: bool = True,
-            stable_ctr: bool = False,
-        ):
-            if not stable_ctr:
-                msg = "Intensity class instantiated outside of class scope"
-                raise RuntimeError(msg)
-            self._intensity_flux = intensity_flux
+                """
+                return self._radiant_flux.radiant_value
 
-            if default_values:
-                self.value = SOURCE.INTENSITY.VALUE
+            @value.setter
+            def value(self, value: float) -> None:
+                """Set radiant flux value.
 
-        @property
-        def value(self) -> float:
-            """Get intensity flux value.
+                Parameters
+                ----------
+                value: float
+                Radiant flux value.
 
-            Returns
-            -------
-            float
-            Intensity flux value.
+                Returns
+                -------
+                None
 
-            """
-            return self._intensity_flux.luminous_intensity_value
-
-        @value.setter
-        def value(self, value: float) -> None:
-            """Set intensity flux value.
-
-            Parameters
-            ----------
-            value: float
-            Intensity flux value.
-
-            Returns
-            -------
-            None
-
-            """
-            self._intensity_flux.luminous_intensity_value = value
+                """
+                self._radiant_flux.radiant_value = value
 
     class _Spectrum:
         def __init__(
@@ -698,7 +639,7 @@ class SourceLuminaire(BaseSource):
         self._source_template.luminaire.flux_from_intensity_file.SetInParent()
         return self
 
-    def set_flux_luminous(self) -> SourceLuminaire.Luminous:
+    def set_flux_luminous(self) -> SourceLuminaire.Flux.Luminous:
         """Set luminous flux.
 
         Returns
@@ -707,13 +648,13 @@ class SourceLuminaire(BaseSource):
             Luminaire luminous flux type source.
         """
         if self._type is None and self._source_template.luminaire.HasField("luminous_flux"):
-            self._type = SourceLuminaire.Luminous(
+            self._type = SourceLuminaire.Flux.Luminous(
                 luminous_flux=self._source_template.luminaire.luminous_flux,
                 default_values=False,
                 stable_ctr=True,
             )
-        elif not isinstance(self._type, SourceLuminaire.Luminous):
-            self._type = SourceLuminaire.Luminous(
+        elif not isinstance(self._type, SourceLuminaire.Flux.Luminous):
+            self._type = SourceLuminaire.Flux.Luminous(
                 luminous_flux=self._source_template.luminaire.luminous_flux,
                 default_values=True,
                 stable_ctr=True,
@@ -722,7 +663,7 @@ class SourceLuminaire(BaseSource):
             self._type._luminous_flux = self._source_template.luminaire.luminous_flux
         return self._type
 
-    def set_flux_radiant(self) -> SourceLuminaire.Radiant:
+    def set_flux_radiant(self) -> SourceLuminaire.Flux.Radiant:
         """Set radiant flux.
 
         Returns
@@ -731,13 +672,13 @@ class SourceLuminaire(BaseSource):
             Luminaire radiant flux type source.
         """
         if self._type is None and self._source_template.luminaire.HasField("radiant_flux"):
-            self._type = SourceLuminaire.Radiant(
+            self._type = SourceLuminaire.Flux.Radiant(
                 radiant_flux=self._source_template.luminaire.radiant_flux,
                 default_values=False,
                 stable_ctr=True,
             )
-        elif not isinstance(self._type, SourceLuminaire.Radiant):
-            self._type = SourceLuminaire.Radiant(
+        elif not isinstance(self._type, SourceLuminaire.Flux.Radiant):
+            self._type = SourceLuminaire.Flux.Radiant(
                 radiant_flux=self._source_template.luminaire.radiant_flux,
                 default_values=True,
                 stable_ctr=True,
@@ -1025,7 +966,7 @@ class SourceRayFile(BaseSource):
         self._source_template.rayfile.flux_from_ray_file.SetInParent()
         return self
 
-    def set_flux_luminous(self) -> SourceRayFile.Luminous:
+    def set_flux_luminous(self) -> SourceRayFile.Flux.Luminous:
         """Set luminous flux.
 
         Returns
@@ -1034,13 +975,13 @@ class SourceRayFile(BaseSource):
             Luminous flux type source.
         """
         if self._type is None and self._source_template.rayfile.HasField("luminous_flux"):
-            self._type = SourceRayFile.Luminous(
+            self._type = SourceRayFile.Flux.Luminous(
                 luminous_flux=self._source_template.rayfile.luminous_flux,
                 default_values=False,
                 stable_ctr=True,
             )
-        elif not isinstance(self._type, SourceRayFile.Luminous):
-            self._type = SourceRayFile.Luminous(
+        elif not isinstance(self._type, SourceRayFile.Flux.Luminous):
+            self._type = SourceRayFile.Flux.Luminous(
                 luminous_flux=self._source_template.rayfile.luminous_flux,
                 default_values=True,
                 stable_ctr=True,
@@ -1049,7 +990,7 @@ class SourceRayFile(BaseSource):
             self._type._luminous_flux = self._source_template.rayfile.luminous_flux
         return self._type
 
-    def set_flux_radiant(self) -> SourceRayFile.Radiant:
+    def set_flux_radiant(self) -> SourceRayFile.Flux.Radiant:
         """Set radiant flux.
 
         Returns
@@ -1058,13 +999,13 @@ class SourceRayFile(BaseSource):
             Radiant flux type source.
         """
         if self._type is None and self._source_template.rayfile.HasField("radiant_flux"):
-            self._type = SourceRayFile.Radiant(
+            self._type = SourceRayFile.Flux.Radiant(
                 radiant_flux=self._source_template.rayfile.radiant_flux,
                 default_values=False,
                 stable_ctr=True,
             )
-        elif not isinstance(self._type, SourceRayFile.Radiant):
-            self._type = SourceRayFile.Radiant(
+        elif not isinstance(self._type, SourceRayFile.Flux.Radiant):
+            self._type = SourceRayFile.Flux.Radiant(
                 radiant_flux=self._source_template.rayfile.radiant_flux,
                 default_values=True,
                 stable_ctr=True,
@@ -1185,6 +1126,71 @@ class SourceSurface(BaseSource):
     default_values : bool
         Uses default values when True.
     """
+
+    class Flux(BaseSource.Flux):
+        """Different types of flux including luminous flux of intensity."""
+
+        class Intensity:
+            """Intensity type of flux.
+
+            By default, Intensity flux value is set to be 5 cd.
+
+            Parameters
+            ----------
+            intensity_flux : ansys.api.speos.source.v1.source_pb2.LuminousIntensity
+                LuminousIntensity protobuf object to modify.
+            default_values : bool
+                Uses default values when True.
+            stable_ctr : bool
+                Variable to indicate if usage is inside class scope
+
+            Notes
+            -----
+            **Do not instantiate this class yourself**, use set_flux_luminous_intensity
+            method available in Source classes.
+            """
+
+            def __init__(
+                self,
+                intensity_flux: source_pb2.LuminousIntensity,
+                default_values: bool = True,
+                stable_ctr: bool = False,
+            ):
+                if not stable_ctr:
+                    msg = "Intensity class instantiated outside of class scope"
+                    raise RuntimeError(msg)
+                self._intensity_flux = intensity_flux
+
+                if default_values:
+                    self.value = SOURCE.INTENSITY.VALUE
+
+            @property
+            def value(self) -> float:
+                """Get intensity flux value.
+
+                Returns
+                -------
+                float
+                Intensity flux value.
+
+                """
+                return self._intensity_flux.luminous_intensity_value
+
+            @value.setter
+            def value(self, value: float) -> None:
+                """Set intensity flux value.
+
+                Parameters
+                ----------
+                value: float
+                Intensity flux value.
+
+                Returns
+                -------
+                None
+
+                """
+                self._intensity_flux.luminous_intensity_value = value
 
     class ExitanceConstant:
         """Type of surface source existence : existence constant.
@@ -1474,7 +1480,7 @@ class SourceSurface(BaseSource):
         self._source_template.surface.flux_from_intensity_file.SetInParent()
         return self
 
-    def set_flux_luminous(self) -> SourceSurface.Luminous:
+    def set_flux_luminous(self) -> SourceSurface.Flux.Luminous:
         """Set luminous flux.
 
         Returns
@@ -1483,13 +1489,13 @@ class SourceSurface(BaseSource):
             Luminous flux type source.
         """
         if self._flux_type is None and self._source_template.surface.HasField("luminous_flux"):
-            self._flux_type = SourceSurface.Luminous(
+            self._flux_type = SourceSurface.Flux.Luminous(
                 luminous_flux=self._source_template.surface.luminous_flux,
                 default_values=False,
                 stable_ctr=True,
             )
-        elif not isinstance(self._flux_type, SourceSurface.Luminous):
-            self._flux_type = SourceSurface.Luminous(
+        elif not isinstance(self._flux_type, SourceSurface.Flux.Luminous):
+            self._flux_type = SourceSurface.Flux.Luminous(
                 luminous_flux=self._source_template.surface.luminous_flux,
                 default_values=True,
                 stable_ctr=True,
@@ -1500,7 +1506,7 @@ class SourceSurface(BaseSource):
         # self._source_template.surface.luminous_flux.luminous_value = value
         # return self
 
-    def set_flux_radiant(self) -> SourceSurface.Radiant:
+    def set_flux_radiant(self) -> SourceSurface.Flux.Radiant:
         """Set radiant flux.
 
         Returns
@@ -1509,13 +1515,13 @@ class SourceSurface(BaseSource):
             Radiant flux type source.
         """
         if self._flux_type is None and self._source_template.surface.HasField("radiant_flux"):
-            self._flux_type = SourceSurface.Radiant(
+            self._flux_type = SourceSurface.Flux.Radiant(
                 radiant_flux=self._source_template.surface.radiant_flux,
                 default_values=False,
                 stable_ctr=True,
             )
-        elif not isinstance(self._flux_type, SourceSurface.Radiant):
-            self._flux_type = SourceSurface.Radiant(
+        elif not isinstance(self._flux_type, SourceSurface.Flux.Radiant):
+            self._flux_type = SourceSurface.Flux.Radiant(
                 radiant_flux=self._source_template.surface.radiant_flux,
                 default_values=True,
                 stable_ctr=True,
@@ -1526,7 +1532,7 @@ class SourceSurface(BaseSource):
         # self._source_template.surface.radiant_flux.radiant_value = value
         # return self
 
-    def set_flux_luminous_intensity(self) -> SourceSurface.Intensity:
+    def set_flux_luminous_intensity(self) -> Flux.Intensity:
         """Set intensity flux.
 
         Returns
@@ -1537,13 +1543,13 @@ class SourceSurface(BaseSource):
         if self._flux_type is None and self._source_template.surface.HasField(
             "luminous_intensity_flux"
         ):
-            self._flux_type = SourceSurface.Intensity(
+            self._flux_type = SourceSurface.Flux.Intensity(
                 intensity_flux=self._source_template.surface.luminous_intensity_flux,
                 default_values=False,
                 stable_ctr=True,
             )
-        elif not isinstance(self._flux_type, SourceSurface.Intensity):
-            self._flux_type = SourceSurface.Intensity(
+        elif not isinstance(self._flux_type, SourceSurface.Flux.Intensity):
+            self._flux_type = SourceSurface.Flux.Intensity(
                 intensity_flux=self._source_template.surface.luminous_intensity_flux,
                 default_values=True,
                 stable_ctr=True,

@@ -125,14 +125,14 @@ def test_create_luminaire_source(speos: Speos):
     ]
 
     with pytest.raises(RuntimeError, match="Luminous class instantiated outside of class scope"):
-        SourceLuminaire.Luminous(
+        SourceLuminaire.Flux.Luminous(
             luminous_flux=source1._source_template.luminaire.luminous_flux,
             default_values=True,
             stable_ctr=False,
         )
 
     with pytest.raises(RuntimeError, match="Radiant class instantiated outside of class scope"):
-        SourceLuminaire.Radiant(
+        SourceLuminaire.Flux.Radiant(
             radiant_flux=source1._source_template.luminaire.radiant_flux,
             default_values=True,
             stable_ctr=False,
@@ -267,7 +267,7 @@ def test_create_surface_source(speos: Speos):
     assert len(surface_properties.exitance_constant_properties.geo_paths) == 0
 
     with pytest.raises(RuntimeError, match="Intensity class instantiated outside of class scope"):
-        SourceSurface.Intensity(
+        SourceSurface.Flux.Intensity(
             intensity_flux=source1._source_template.surface.luminous_intensity_flux,
             default_values=True,
             stable_ctr=False,
