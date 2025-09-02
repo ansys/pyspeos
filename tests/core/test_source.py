@@ -28,6 +28,7 @@ from pathlib import Path
 import pytest
 
 from ansys.speos.core import GeoRef, Project, Speos
+from ansys.speos.core.generic.constants import ORIGIN, SOURCE
 from ansys.speos.core.source import (
     SourceAmbientNaturalLight,
     SourceLuminaire,
@@ -51,20 +52,7 @@ def test_create_luminaire_source(speos: Speos):
     assert source1._spectrum._spectrum._spectrum.predefined.HasField("incandescent")
     assert source1._spectrum._spectrum._spectrum.name == "Luminaire.1.Spectrum"
     assert source1._source_instance.HasField("luminaire_properties")
-    assert source1._source_instance.luminaire_properties.axis_system == [
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        1,
-    ]
+    assert source1._source_instance.luminaire_properties.axis_system == ORIGIN
 
     # intensity_file_uri
     source1.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
@@ -177,7 +165,10 @@ def test_create_surface_source(speos: Speos):
     assert source1.source_template_link.get().HasField("surface")
     assert source1.source_template_link.get().surface.HasField("exitance_constant")
     assert source1.source_template_link.get().surface.HasField("luminous_flux")
-    assert source1.source_template_link.get().surface.luminous_flux.luminous_value == 683
+    assert (
+        source1.source_template_link.get().surface.luminous_flux.luminous_value
+        == SOURCE.LUMINOUS.VALUE
+    )
     assert source1.source_template_link.get().surface.HasField("spectrum_guid")
     spectrum = speos.client[source1.source_template_link.get().surface.spectrum_guid]
     assert spectrum.get().name == "Surface.1.Spectrum"
@@ -236,17 +227,7 @@ def test_create_surface_source(speos: Speos):
     assert source1.source_template_link.get().surface.exitance_variable.exitance_xmp_file_uri != ""
     assert source1.source_template_link.get().surface.HasField("spectrum_from_xmp_file")
     assert surface_properties.HasField("exitance_variable_properties")
-    assert surface_properties.exitance_variable_properties.axis_plane == [
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        1,
-        0,
-    ]
+    assert surface_properties.exitance_variable_properties.axis_plane == ORIGIN[:9]
 
     # Properties
     # exitance_variable axis_plane
@@ -325,20 +306,7 @@ def test_create_rayfile_source(speos: Speos):
         name="Ray-file.1",
     )
     assert source1._source_instance.HasField("rayfile_properties")
-    assert source1._source_instance.rayfile_properties.axis_system == [
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        1,
-    ]
+    assert source1._source_instance.rayfile_properties.axis_system == ORIGIN
     assert source1._source_template.HasField("rayfile")
     assert source1._source_template.rayfile.HasField("flux_from_ray_file")
     assert source1._source_template.rayfile.HasField("spectrum_from_ray_file")
