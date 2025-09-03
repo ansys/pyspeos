@@ -28,7 +28,7 @@ classifiers=[
 ]
 dependencies=[
     "protobuf>=3.20,<7",
-    "grpcio>=1.50.0,<1.73",
+    "grpcio>=1.50.0,<1.75",
     "grpcio-health-checking>=1.45.0,<1.68",
     "ansys-api-speos==0.15.2",
     "ansys-tools-path>=0.3.1",
@@ -38,13 +38,13 @@ dependencies=[
 
 [project.optional-dependencies]
 graphics = [
-    "pyvista>=0.40.0,<0.46",
+    "pyvista>=0.40.0,<0.47",
     "ansys-tools-visualization-interface>=0.8.3",
 ]
 tests = [
     "psutil==7.0.0",
     "pytest==8.4.1",
-    "pyvista>=0.40.0,<0.46",
+    "pyvista>=0.40.0,<0.47",
     "ansys-tools-visualization-interface>=0.8.3",
     "ansys-platform-instancemanagement>=1.0.3",
     "pytest-cov==6.2.1",
@@ -55,7 +55,7 @@ jupyter = [
     "ipywidgets",
     "pyvista[jupyter]>=0.43,<0.46",
     "ansys-tools-visualization-interface>=0.8.3",
-    "notebook==7.4.4",
+    "notebook==7.4.5",
 ]
 doc = [
     "ansys-sphinx-theme==1.5.2",
@@ -69,7 +69,7 @@ doc = [
     "myst-parser==4.0.1",
     "nbsphinx==0.9.7",
     "jupytext==1.17.2",
-    "jupyterlab==4.4.5",
+    "jupyterlab==4.4.6",
     "jupyter-server==2.16.0",
     "nbconvert==7.16.6",
     "pyvista[jupyter]>=0.43,<0.46",
