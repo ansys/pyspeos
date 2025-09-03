@@ -170,7 +170,7 @@ class BaseSensor:
 
         @property
         def start(self) -> float:
-            """The minimum wavelength of the range."""
+            """Minimum wavelength of the range."""
             if isinstance(self._wavelengths_range, common_pb2.WavelengthsRange):
                 return self._wavelengths_range.w_start
             else:
@@ -178,7 +178,7 @@ class BaseSensor:
 
         @start.setter
         def start(self, value: float):
-            """Set the minimum wavelength of the range.
+            """Minimum wavelength of the range.
 
             Parameters
             ----------
@@ -192,7 +192,7 @@ class BaseSensor:
 
         @property
         def end(self) -> float:
-            """Set the maximum wavelength of the range.
+            """Maximum wavelength of the range.
 
             By default, ``700``.
             """
@@ -203,7 +203,7 @@ class BaseSensor:
 
         @end.setter
         def end(self, value: float):
-            """Set the maximum wavelength of the range.
+            """Maximum wavelength of the range.
 
             Parameters
             ----------
@@ -217,7 +217,7 @@ class BaseSensor:
 
         @property
         def sampling(self) -> int:
-            """Set the sampling of wavelengths range.
+            """Wavelength sampling of between start and end value.
 
             By default, ``13``.
             """
@@ -226,7 +226,7 @@ class BaseSensor:
 
         @sampling.setter
         def sampling(self, value: int = 13):
-            """Set the sampling of wavelengths range.
+            """Wavelength sampling of between start and end value.
 
             Parameters
             ----------
@@ -279,7 +279,7 @@ class BaseSensor:
 
         @property
         def x_start(self) -> float:
-            """Set the minimum value on x axis.
+            """Minimum value on x axis.
 
             By default, ``-50``.
 
@@ -292,7 +292,7 @@ class BaseSensor:
 
         @x_start.setter
         def x_start(self, value: float):
-            """Set the minimum value on x axis.
+            """Minimum value on x axis.
 
             Parameters
             ----------
@@ -303,7 +303,7 @@ class BaseSensor:
 
         @property
         def x_end(self) -> float:
-            """Set the maximum value on x axis.
+            """Maximum value on x axis.
 
             By default, ``50``.
 
@@ -316,7 +316,7 @@ class BaseSensor:
 
         @x_end.setter
         def x_end(self, value: float):
-            """Set the maximum value on x axis.
+            """Maximum value on x axis.
 
             Parameters
             ----------
@@ -327,7 +327,7 @@ class BaseSensor:
 
         @property
         def x_sampling(self) -> int:
-            """Set the sampling value on x axis.
+            """Value of the sampling on x axis.
 
             By default, ``100``.
 
@@ -340,7 +340,7 @@ class BaseSensor:
 
         @x_sampling.setter
         def x_sampling(self, value: int):
-            """Set the sampling value on x axis.
+            """Value of the sampling on x axis.
 
             Parameters
             ----------
@@ -351,7 +351,7 @@ class BaseSensor:
 
         @property
         def y_start(self) -> float:
-            """Set the minimum value on y axis.
+            """Minimum value on y axis.
 
             By default, ``-50``.
 
@@ -364,7 +364,7 @@ class BaseSensor:
 
         @y_start.setter
         def y_start(self, value: float):
-            """Set the minimum value on y axis.
+            """Minimum value on y axis.
 
             Parameters
             ----------
@@ -375,7 +375,7 @@ class BaseSensor:
 
         @property
         def y_end(self) -> float:
-            """Set the maximum value on y axis.
+            """Maximum value on y axis.
 
             By default, ``50``.
 
@@ -388,7 +388,7 @@ class BaseSensor:
 
         @y_end.setter
         def y_end(self, value: float):
-            """Set the maximum value on y axis.
+            """Maximum value on y axis.
 
             Parameters
             ----------
@@ -399,7 +399,7 @@ class BaseSensor:
 
         @property
         def y_sampling(self) -> int:
-            """Set the sampling value on y axis.
+            """Value of the sampling on y axis.
 
             By default, ``100``.
 
@@ -412,7 +412,7 @@ class BaseSensor:
 
         @y_sampling.setter
         def y_sampling(self, value: int):
-            """Set the sampling value on y axis.
+            """Value of the sampling on y axis.
 
             Parameters
             ----------
@@ -711,7 +711,7 @@ class BaseSensor:
 
         @property
         def maximum_nb_of_sequence(self) -> int:
-            """Set the maximum number of sequences.
+            """Value of the maximum number of sequences.
 
             By default, ``10``.
 
@@ -724,7 +724,7 @@ class BaseSensor:
 
         @maximum_nb_of_sequence.setter
         def maximum_nb_of_sequence(self, value: int):
-            """Set the maximum number of sequences.
+            """Value of the maximum number of sequences.
 
             Parameters
             ----------
@@ -801,7 +801,7 @@ class BaseSensor:
 
         @property
         def sampling(self) -> BaseSensor.LayerTypeIncidenceAngle:
-            """Set the sampling for incidence angles.
+            """Value of the sampling for incidence angles.
 
             Parameters
             ----------
@@ -818,7 +818,7 @@ class BaseSensor:
 
         @sampling.setter
         def sampling(self, value: int) -> BaseSensor.LayerTypeIncidenceAngle:
-            """Set the sampling for incidence angles.
+            """Value of the sampling for incidence angles.
 
             Parameters
             ----------
@@ -1142,7 +1142,7 @@ class SensorCamera(BaseSensor):
 
                 @property
                 def red_gain(self) -> float:
-                    """The red gain value of the Camera Sensor.
+                    """Value of the red gain of the Camera Sensor.
 
                     By default, ``1``.
                     """
@@ -1161,7 +1161,7 @@ class SensorCamera(BaseSensor):
 
                 @property
                 def green_gain(self) -> float:
-                    """The green gain value of the Camera Sensor.
+                    """Value of the green gain of the Camera Sensor.
 
                     By default, ``1``.
                     """
@@ -1180,7 +1180,7 @@ class SensorCamera(BaseSensor):
 
                 @property
                 def blue_gain(self) -> float:
-                    """The bkue gain value of the Camera Sensor.
+                    """Value of the Blue gain of the Camera Sensor.
 
                     By default, ``1``.
                     """
@@ -1188,7 +1188,7 @@ class SensorCamera(BaseSensor):
 
                 @blue_gain.setter
                 def blue_gain(self, value: float):
-                    """Set blue gain.
+                    """Set blue gain value.
 
                     Parameters
                     ----------
@@ -1240,12 +1240,12 @@ class SensorCamera(BaseSensor):
 
                 @property
                 def red_display_file_uri(self) -> str:
-                    """The red display file."""
+                    """Location of the red display file."""
                     return self._balance_mode_display.red_display_file_uri
 
                 @red_display_file_uri.setter
                 def red_display_file_uri(self, uri: str):
-                    """Set the red display file.
+                    """Location of the red display file.
 
                     Parameters
                     ----------
@@ -1256,12 +1256,12 @@ class SensorCamera(BaseSensor):
 
                 @property
                 def green_display_file_uri(self) -> str:
-                    """The green display file."""
+                    """Location of the green display file."""
                     return self._balance_mode_display.green_display_file_uri
 
                 @green_display_file_uri.setter
                 def green_display_file_uri(self, uri: str):
-                    """Set the green display file.
+                    """Location of the green display file.
 
                     Parameters
                     ----------
@@ -1272,12 +1272,12 @@ class SensorCamera(BaseSensor):
 
                 @property
                 def blue_display_file_uri(self) -> str:
-                    """The blue display file."""
+                    """Location of the blue display file."""
                     return self._balance_mode_display.blue_display_file_uri
 
                 @blue_display_file_uri.setter
                 def blue_display_file_uri(self, uri: str):
-                    """Set the blue display file.
+                    """Location of the blue display file.
 
                     Parameters
                     ----------
@@ -1306,12 +1306,12 @@ class SensorCamera(BaseSensor):
 
             @property
             def red_spectrum_file_uri(self) -> str:
-                """The red spectrum."""
+                """Location of the red spectrum."""
                 return self._mode_color.red_spectrum_file_uri
 
             @red_spectrum_file_uri.setter
             def red_spectrum_file_uri(self, uri: str):
-                """Set the red spectrum.
+                """Location of the red spectrum.
 
                 Parameters
                 ----------
@@ -1322,12 +1322,12 @@ class SensorCamera(BaseSensor):
 
             @property
             def blue_spectrum_file_uri(self) -> str:
-                """The blue spectrum."""
+                """Location of the blue spectrum."""
                 return self._mode_color.blue_spectrum_file_uri
 
             @blue_spectrum_file_uri.setter
             def blue_spectrum_file_uri(self, uri: str):
-                """Set the blue spectrum.
+                """Location of the blue spectrum.
 
                 Parameters
                 ----------
@@ -1338,12 +1338,12 @@ class SensorCamera(BaseSensor):
 
             @property
             def green_spectrum_file_uri(self) -> str:
-                """The green spectrum."""
+                """Location of the green spectrum."""
                 return self._mode_color.green_spectrum_file_uri
 
             @green_spectrum_file_uri.setter
             def green_spectrum_file_uri(self, uri: str):
-                """Set the green spectrum.
+                """Location of the green spectrum.
 
                 Parameters
                 ----------
@@ -1492,7 +1492,7 @@ class SensorCamera(BaseSensor):
 
         @property
         def acquisition_integration(self) -> float:
-            """The acquisition integration value.
+            """Value of the acquisition integration.
 
             By default, ``0.01``.
             """
@@ -1500,7 +1500,7 @@ class SensorCamera(BaseSensor):
 
         @acquisition_integration.setter
         def acquisition_integration(self, value: float):
-            """Set the acquisition integration value.
+            """Value of the acquisition integration.
 
             Parameters
             ----------
@@ -1511,8 +1511,8 @@ class SensorCamera(BaseSensor):
             self._mode_photometric.acquisition_integration = value
 
         @property
-        def acquisition_lag_time(self, value: float = 0.0) -> float:
-            """The acquisition lag time value.
+        def acquisition_lag_time(self) -> float:
+            """Value of the acquisition lag time.
 
             By default, ``0.0``.
             """
@@ -1520,7 +1520,7 @@ class SensorCamera(BaseSensor):
 
         @acquisition_lag_time.setter
         def acquisition_lag_time(self, value: float):
-            """Set the acquisition lag time value.
+            """Value of the acquisition lag time.
 
             Parameters
             ----------
@@ -1537,12 +1537,12 @@ class SensorCamera(BaseSensor):
 
         @property
         def transmittance_file_uri(self) -> str:
-            """The transmittance file."""
+            """Location of the transmittance file."""
             return self._mode_photometric.transmittance_file_uri
 
         @transmittance_file_uri.setter
         def transmittance_file_uri(self, uri: str):
-            """Set the transmittance file.
+            """Location of the transmittance file.
 
             Parameters
             ----------
@@ -1554,7 +1554,7 @@ class SensorCamera(BaseSensor):
 
         @property
         def gamma_correction(self) -> float:
-            """Set the gamma correction.
+            """Value used to apply the gamma correction.
 
             By default, ``2.2``.
             """
@@ -1562,7 +1562,7 @@ class SensorCamera(BaseSensor):
 
         @gamma_correction.setter
         def gamma_correction(self, value: float):
-            """Set the gamma correction.
+            """Value used to apply the gamma correction.
 
             By default, ``2.2``.
             """
@@ -1679,12 +1679,12 @@ class SensorCamera(BaseSensor):
 
         @property
         def trajectory_file_uri(self) -> str:
-            """The trajectory file."""
+            """Location of the trajectory file."""
             return self._camera_props.trajectory_file_uri
 
         @trajectory_file_uri.setter
         def trajectory_file_uri(self, uri: str):
-            """Set the trajectory file.
+            """Location of the trajectory file.
 
             Parameters
             ----------
@@ -1853,7 +1853,7 @@ class SensorCamera(BaseSensor):
 
     @property
     def focal_length(self) -> float:
-        """The focal length.
+        """Focal length of the optical system.
 
         By default, ``5.0``.
         """
@@ -1861,7 +1861,7 @@ class SensorCamera(BaseSensor):
 
     @focal_length.setter
     def focal_length(self, value: float) -> SensorCamera:
-        """Set the focal length.
+        """Focal length of the optical system.
 
         Parameters
         ----------
@@ -1873,7 +1873,7 @@ class SensorCamera(BaseSensor):
 
     @property
     def imager_distance(self) -> SensorCamera:
-        """Set the imager distance.
+        """Imager distance.
 
         By default, ``10``.
         """
@@ -1881,7 +1881,7 @@ class SensorCamera(BaseSensor):
 
     @imager_distance.setter
     def imager_distance(self, value: float):
-        """Set the imager distance.
+        """Imager distance.
 
         Parameters
         ----------
@@ -1894,7 +1894,7 @@ class SensorCamera(BaseSensor):
 
     @property
     def f_number(self) -> float:
-        """Set the f number.
+        """F number of the optical system.
 
         By default, ``20``.
         """
@@ -1902,7 +1902,7 @@ class SensorCamera(BaseSensor):
 
     @f_number.setter
     def f_number(self, value: float = 20):
-        """Set the f number.
+        """F number of the optical system.
 
         Parameters
         ----------
@@ -1915,12 +1915,12 @@ class SensorCamera(BaseSensor):
 
     @property
     def distortion_file_uri(self) -> str:
-        """Set the distortion file."""
+        """Location of the distortion file."""
         return self._sensor_template.camera_sensor_template.distortion_file_uri
 
     @distortion_file_uri.setter
     def distortion_file_uri(self, uri: str):
-        """Set the distortion file.
+        """Location of the distortion file.
 
         Parameters
         ----------
@@ -1932,12 +1932,12 @@ class SensorCamera(BaseSensor):
 
     @property
     def horz_pixel(self) -> int:
-        """The horizontal pixels number corresponding to the camera resolution."""
+        """Horizontal pixels number corresponding to the camera resolution."""
         return self._sensor_template.camera_sensor_template.horz_pixel
 
     @horz_pixel.setter
     def horz_pixel(self, value: int):
-        """Set the horizontal pixels number corresponding to the camera resolution.
+        """Horizontal pixels number corresponding to the camera resolution.
 
         Parameters
         ----------
@@ -1949,7 +1949,7 @@ class SensorCamera(BaseSensor):
 
     @property
     def vert_pixel(self) -> int:
-        """The vertical pixels number corresponding to the camera resolution.
+        """Vertical pixels number corresponding to the camera resolution.
 
         By default, ``480``.
         """
@@ -1957,7 +1957,7 @@ class SensorCamera(BaseSensor):
 
     @vert_pixel.setter
     def vert_pixel(self, value: int):
-        """Set the vertical pixels number corresponding to the camera resolution.
+        """Vertical pixels number corresponding to the camera resolution.
 
         Parameters
         ----------
@@ -1969,7 +1969,7 @@ class SensorCamera(BaseSensor):
 
     @property
     def width(self) -> float:
-        """The width of the sensor.
+        """Width of the imager.
 
         By default, ``5.0``.
         """
@@ -1977,7 +1977,7 @@ class SensorCamera(BaseSensor):
 
     @width.setter
     def width(self, value: float):
-        """Set the width of the sensor.
+        """Width of the imager.
 
         Parameters
         ----------
@@ -1989,7 +1989,7 @@ class SensorCamera(BaseSensor):
 
     @property
     def height(self) -> float:
-        """The height of the sensor.
+        """Height of the imager.
 
         Parameters
         ----------
@@ -2001,7 +2001,7 @@ class SensorCamera(BaseSensor):
 
     @height.setter
     def height(self, value: float):
-        """Set the height of the sensor.
+        """Height of the imager.
 
         Parameters
         ----------
@@ -2021,7 +2021,7 @@ class SensorCamera(BaseSensor):
 
     @axis_system.setter
     def axis_system(self, axis_system: List[float]):
-        """Set the position of the sensor.
+        """Position of the sensor.
 
         Parameters
         ----------
@@ -2557,7 +2557,7 @@ class SensorIrradiance(BaseSensor):
 
     @property
     def axis_system(self) -> List[float]:
-        """The position of the sensor.
+        """Position of the sensor.
 
         By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
         """
@@ -2565,7 +2565,7 @@ class SensorIrradiance(BaseSensor):
 
     @axis_system.setter
     def axis_system(self, axis_system: List[float]):
-        """Set the position of the sensor.
+        """Position of the sensor.
 
         Parameters
         ----------
@@ -3157,7 +3157,7 @@ class SensorRadiance(BaseSensor):
 
     @property
     def focal(self) -> float:
-        """The focal value of the Radiance Sensor.
+        """Focal value of the Radiance Sensor.
 
         By default, ``250``.
 
@@ -3170,7 +3170,7 @@ class SensorRadiance(BaseSensor):
 
     @focal.setter
     def focal(self, value: float):
-        """Set the focal value.
+        """Focal value.
 
         Parameters
         ----------
@@ -3182,7 +3182,7 @@ class SensorRadiance(BaseSensor):
 
     @property
     def integration_angle(self) -> float:
-        """Set the integration angle.
+        """Integration angle.
 
         By default, ``5``.
 
@@ -3195,7 +3195,7 @@ class SensorRadiance(BaseSensor):
 
     @integration_angle.setter
     def integration_angle(self, value: float) -> SensorRadiance:
-        """Set the integration angle.
+        """Integration angle.
 
         Parameters
         ----------
@@ -3207,7 +3207,7 @@ class SensorRadiance(BaseSensor):
 
     @property
     def axis_system(self) -> List[float]:
-        """The position of the sensor.
+        """Position of the sensor.
 
         By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
         """
@@ -3215,7 +3215,7 @@ class SensorRadiance(BaseSensor):
 
     @axis_system.setter
     def axis_system(self, axis_system: List[float]):
-        """Set the position of the sensor.
+        """Position of the sensor.
 
         Parameters
         ----------
@@ -3227,7 +3227,7 @@ class SensorRadiance(BaseSensor):
 
     @property
     def observer_point(self) -> SensorRadiance:
-        """Set the position of the observer point.
+        """The position of the observer point.
 
         This is optional, because the focal length is used by default.
         Choosing to set an observer point will make the focal length ignored.
@@ -3243,7 +3243,7 @@ class SensorRadiance(BaseSensor):
 
     @observer_point.setter
     def observer_point(self, value: Optional[List[float]]):
-        """Set the position of the observer point.
+        """Position of the observer point.
 
         This is optional, because the focal length is used by default.
         Choosing to set an observer point will make the focal length ignored.
@@ -3632,7 +3632,7 @@ class Sensor3DIrradiance(BaseSensor):
 
         @transmission.setter
         def transmission(self, value: bool) -> None:
-            """Set transmission.
+            """Transmission.
 
             Parameters
             ----------
