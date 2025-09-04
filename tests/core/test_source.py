@@ -69,16 +69,22 @@ def test_create_luminaire_source(speos: Speos):
     assert spectrum.get().predefined.HasField("halogen")
 
     # flux luminous_flux
-    source1.set_flux_luminous().value = 650
+    source1.set_flux().set_luminous()
+    source1.set_flux().value = 650
+    # source1.set_flux_luminous().value = 650
     source1.commit()
-    assert source1.set_flux_luminous().value == 650
+    assert source1.set_flux().value == 650
+    # assert source1.set_flux_luminous().value == 650
     assert source1.source_template_link.get().luminaire.HasField("luminous_flux")
     assert source1.source_template_link.get().luminaire.luminous_flux.luminous_value == 650
 
     # flux radiant_flux
-    source1.set_flux_radiant().value = 1.2
+    source1.set_flux().set_radiant()
+    source1.set_flux().value = 1.2
+    # source1.set_flux_radiant().value = 1.2
     source1.commit()
-    assert source1.set_flux_radiant().value == 1.2
+    assert source1.set_flux().value == 1.2
+    # assert source1.set_flux_radiant().value == 1.2
     assert source1.source_template_link.get().luminaire.HasField("radiant_flux")
     assert source1.source_template_link.get().luminaire.radiant_flux.radiant_value == 1.2
 
@@ -124,16 +130,9 @@ def test_create_luminaire_source(speos: Speos):
         1,
     ]
 
-    with pytest.raises(RuntimeError, match="Luminous class instantiated outside of class scope"):
-        SourceLuminaire.Flux.Luminous(
-            luminous_flux=source1._source_template.luminaire.luminous_flux,
-            default_values=True,
-            stable_ctr=False,
-        )
-
-    with pytest.raises(RuntimeError, match="Radiant class instantiated outside of class scope"):
-        SourceLuminaire.Flux.Radiant(
-            radiant_flux=source1._source_template.luminaire.radiant_flux,
+    with pytest.raises(RuntimeError, match="Flux class instantiated outside of class scope"):
+        SourceLuminaire.Flux(
+            flux=source1._source_template.luminaire,
             default_values=True,
             stable_ctr=False,
         )
@@ -193,21 +192,30 @@ def test_create_surface_source(speos: Speos):
     assert surface_properties.intensity_properties.library_properties.HasField("axis_system")
 
     # luminous_flux
-    source1.set_flux_luminous().value = 630
+    source1.set_flux().set_luminous()
+    source1.set_flux().value = 630
+    # source1.set_flux_luminous().value = 630
     source1.commit()
+    assert source1.set_flux().value == 630
     assert source1.source_template_link.get().surface.HasField("luminous_flux")
     assert source1.source_template_link.get().surface.luminous_flux.luminous_value == 630
 
     # radiant_flux
-    source1.set_flux_radiant().value = 1.1
+    source1.set_flux().set_radiant()
+    source1.set_flux().value = 1.1
+    # source1.set_flux_radiant().value = 1.1
     source1.commit()
+    assert source1.set_flux().value == 1.1
     assert source1.source_template_link.get().surface.HasField("radiant_flux")
     assert source1.source_template_link.get().surface.radiant_flux.radiant_value == 1.1
 
     # luminous_intensity_flux
-    source1.set_flux_luminous_intensity().value = 5.5
+    source1.set_flux().set_luminous_intensity()
+    source1.set_flux().value = 5.5
+    # source1.set_flux_luminous_intensity().value = 5.5
     source1.commit()
-    assert source1.set_flux_luminous_intensity().value == 5.5
+    assert source1.set_flux().value == 5.5
+    # assert source1.set_flux_luminous_intensity().value == 5.5
     assert source1.source_template_link.get().surface.HasField("luminous_intensity_flux")
     assert (
         source1.source_template_link.get().surface.luminous_intensity_flux.luminous_intensity_value
@@ -266,9 +274,9 @@ def test_create_surface_source(speos: Speos):
     assert surface_properties.HasField("exitance_constant_properties")
     assert len(surface_properties.exitance_constant_properties.geo_paths) == 0
 
-    with pytest.raises(RuntimeError, match="Intensity class instantiated outside of class scope"):
-        SourceSurface.Flux.Intensity(
-            intensity_flux=source1._source_template.surface.luminous_intensity_flux,
+    with pytest.raises(RuntimeError, match="Flux class instantiated outside of class scope"):
+        SourceSurface.Flux(
+            flux=source1._source_template.surface,
             default_values=True,
             stable_ctr=False,
         )
@@ -323,16 +331,22 @@ def test_create_rayfile_source(speos: Speos):
     assert source1.source_template_link.get().rayfile.HasField("spectrum_from_ray_file")
 
     # luminous_flux
-    source1.set_flux_luminous().value = 641
+    source1.set_flux().set_luminous()
+    source1.set_flux().value = 641
+    # source1.set_flux_luminous().value = 641
     source1.commit()
-    assert source1.set_flux_luminous().value == 641
+    assert source1.set_flux().value == 641
+    # assert source1.set_flux_luminous().value == 641
     assert source1.source_template_link.get().rayfile.HasField("luminous_flux")
     assert source1.source_template_link.get().rayfile.luminous_flux.luminous_value == 641
 
     # radiant_flux
-    source1.set_flux_radiant().value = 1.3
+    source1.set_flux().set_radiant()
+    source1.set_flux().value = 1.3
+    # source1.set_flux_radiant().value = 1.3
     source1.commit()
-    assert source1.set_flux_radiant().value == 1.3
+    assert source1.set_flux().value == 1.3
+    # assert source1.set_flux_radiant().value == 1.3
     assert source1.source_template_link.get().rayfile.HasField("radiant_flux")
     assert source1.source_template_link.get().rayfile.radiant_flux.radiant_value == 1.3
 
@@ -660,7 +674,9 @@ def test_reset_source(speos: Speos):
     assert p.scene_link.get().sources[0].HasField("rayfile_properties")
 
     # Change local data (on template and on instance)
-    source1.set_flux_radiant().value = 3.5  # template
+    source1.set_flux().set_radiant()
+    source1.set_flux().value = 3.5
+    # source1.set_flux_radiant().value = 3.5  # template
     source1.set_exit_geometries().geometries = [
         GeoRef.from_native_link("TheBodyB/TheFaceB1")
     ]  # instance
@@ -691,7 +707,8 @@ def test_luminaire_modify_after_reset(speos: Speos):
     # Create + commit
     source = SourceLuminaire(project=p, name="Luminaire.1")
     source.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
-    source.set_flux_luminous()
+    source.set_flux().set_luminous()
+    # source.set_flux_luminous()
     source.commit()
 
     # Ask for reset
@@ -699,9 +716,12 @@ def test_luminaire_modify_after_reset(speos: Speos):
 
     # Modify after a reset
     # Template
-    assert source.set_flux_luminous().value == 683
+    assert source.set_flux().value == 683
+    # assert source.set_flux_luminous().value == 683
     assert source._source_template.luminaire.luminous_flux.luminous_value == 683
-    source.set_flux_luminous().value = 500
+    source.set_flux().set_luminous()
+    source.set_flux().value = 500
+    # source.set_flux_luminous().value = 500
     assert source._source_template.luminaire.luminous_flux.luminous_value == 500
 
     # Intermediate class for spectrum
@@ -749,7 +769,8 @@ def test_rayfile_modify_after_reset(speos: Speos):
 
     # Create + commit
     source = SourceRayFile(project=p, name="1")
-    source.set_flux_luminous()
+    # source.set_flux_luminous()
+    source.set_flux().set_luminous()
     source.ray_file_uri = Path(test_path) / "RaysWithoutSpectralData.RAY"
     source.set_spectrum()
     source.commit()
@@ -760,7 +781,9 @@ def test_rayfile_modify_after_reset(speos: Speos):
     # Modify after a reset
     # Template
     assert source._source_template.rayfile.luminous_flux.luminous_value == 683
-    source.set_flux_luminous().value = 500
+    source.set_flux().set_luminous()
+    source.set_flux().value = 500
+    # source.set_flux_luminous().value = 500
     assert source._source_template.rayfile.luminous_flux.luminous_value == 500
 
     # Intermediate class for spectrum
@@ -808,7 +831,8 @@ def test_surface_modify_after_reset(speos: Speos):
 
     # Create + commit
     source = SourceSurface(project=p, name="Surface.2")
-    source.set_flux_luminous()
+    # source.set_flux_luminous()
+    source.set_flux().set_luminous()
     source.set_spectrum_from_xmp_file()
     source.set_exitance_variable().xmp_file_uri = (
         Path(test_path) / "PROJECT.Direct-no-Ray.Irradiance Ray Spectral.xmp"
@@ -821,7 +845,9 @@ def test_surface_modify_after_reset(speos: Speos):
     # Modify after a reset
     # Template
     assert source._source_template.surface.luminous_flux.luminous_value == 683
-    source.set_flux_luminous().value = 500
+    source.set_flux().set_luminous()
+    source.set_flux().value = 500
+    # source.set_flux_luminous().value = 500
     assert source._source_template.surface.luminous_flux.luminous_value == 500
 
     # Intermediate class for spectrum
