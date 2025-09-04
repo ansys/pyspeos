@@ -53,7 +53,7 @@ jupyter = [
     "matplotlib",
     "jupyterlab>=3",
     "ipywidgets",
-    "pyvista[jupyter]>=0.43,<0.46",
+    "pyvista[jupyter]>=0.43,<0.47",
     "ansys-tools-visualization-interface>=0.8.3",
     "notebook==7.4.5",
 ]
@@ -72,7 +72,7 @@ doc = [
     "jupyterlab==4.4.6",
     "jupyter-server==2.16.0",
     "nbconvert==7.16.6",
-    "pyvista[jupyter]>=0.43,<0.46",
+    "pyvista[jupyter]>=0.43,<0.47",
     "ansys-tools-visualization-interface>=0.8.3",
 ]
 
