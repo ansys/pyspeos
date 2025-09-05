@@ -45,6 +45,7 @@ from ansys.speos.core.intensity import Intensity
 from ansys.speos.core.kernel.client import SpeosClient
 from ansys.speos.core.kernel.scene import ProtoScene
 from ansys.speos.core.kernel.source_template import ProtoSourceTemplate
+from ansys.speos.core.opt_prop import OptProp
 from ansys.speos.core.spectrum import Spectrum
 
 
@@ -1304,12 +1305,17 @@ class SourceThermic(BaseSource):
             key=self._source_template.thermic.intensity_guid,
         )
 
+        self._sop = OptProp(
+            project=self._project,
+            name=self._name,
+        )
+
         if default_values:
-            # Default values
             self.set_emissive_faces(geometries=[])
             self.emissive_faces_temperature = 2000
+            self._sop.set_surface_mirror(0)
 
-    def set_emissive_faces(self, geometries: List[tuple[GeoRef, bool]]) -> SourceThermic:
+    def set_emissive_faces(self, geometries: List[tuple[Union[GeoRef, face.Face, body.Body], bool]]) -> SourceThermic:
         """Set emssive faces for thermic source.
 
         Parameters
@@ -1319,7 +1325,7 @@ class SourceThermic(BaseSource):
 
         Returns
         -------
-        ansys.speos.core.source.ThermicSource
+        ansys.speos.core.source.SourceThermic
             Thermic source.
         """
         self._source_instance.thermic_properties.emissive_faces_properties.ClearField("geo_paths")
@@ -1365,17 +1371,103 @@ class SourceThermic(BaseSource):
         """
         self._source_template.thermic.emissives_faces.temperature = value
 
+    def set_temperature_field(self) -> SourceThermic:
+        """Set thermic source in temperature field mode.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceThermic
+            Thermic source.
+        """
+        if not self._source_template.thermic.HasField("temperature_field"):
+            self._source_template.thermic.temperature_field.SetInParent()
+        if self._source_instance.thermic_properties.temperature_field_properties.axis_plane is None:
+            axis_plane = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+            self._source_instance.thermic_properties.temperature_field_properties.axis_plane[:] = axis_plane
+        return self
+
+    @property
+    def temperature_field_uri(self) -> str:
+        """Get temperature field file uri.
+
+        Returns
+        -------
+        string
+            temperature field file uri.
+
+        """
+        if self._source_template.thermic.HasField("temperature_field"):
+            return self._source_template.thermic.temperature_field.temperature_field_uri
+        else:
+            raise AttributeError("This feature is not defined with temperature field.")
+
+    def set_temperature_field_uri(self, file: str) -> None:
+        """Set temperature field file path.
+
+        Parameters
+        ----------
+        file: str
+            temperature field file path.
+
+        Returns
+        -------
+        None
+
+        """
+        self._source_template.thermic.temperature_field.temperature_field_uri = file
+
+    @property
+    def sop(self) -> OptProp:
+        """Get SOP for thermic source in temperature field mode.
+
+        Returns
+        -------
+        ansys.speos.core.opt_prop.OptProp
+            Surface Optical property.
+
+        """
+        if self._source_template.thermic.HasField("temperature_field"):
+            return self._sop
+        else:
+            raise AttributeError("This feature is not defined with temperature field.")
+
+    @sop.setter
+    def sop(self, new_sop: OptProp) -> None:
+        """Set SOP for thermic source in temperature field mode.
+
+        Parameters
+        ----------
+        ansys.speos.core.opt_prop.OptProp
+            Surface Optical property.
+
+        Returns
+        -------
+        None
+
+        """
+        self._sop = new_sop
+        self._source_template.thermic.temperature_field.sop_guid = self._sop.sop_template_link.key
+
     def commit(self) -> SourceThermic:
         """Save feature: send the local data to the speos server database.
 
         Returns
         -------
         ansys.speos.core.source.SourceThermic
-            Source feature.
+            Thermic source feature.
         """
         # intensity
         self._intensity.commit()
         self._source_template.thermic.intensity_guid = self._intensity.intensity_template_link.key
+
+        # sop
+        if self._source_template.thermic.HasField("temperature_field"):
+            self._sop.commit()
+            self._source_template.thermic.temperature_field.sop_guid = self._sop.sop_template_link.key
 
         # source base
         super().commit()
@@ -1387,7 +1479,7 @@ class SourceThermic(BaseSource):
         Returns
         -------
         ansys.speos.core.source.SourceThermic
-            Source feature.
+            Thermic source feature.
         """
         self._intensity.reset()
         # source base
@@ -2085,3 +2177,5 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
             # Happens in case of feature reset (to be sure to always modify correct data)
             self._type._sun = natural_light_properties.sun_axis_system.manual_sun
         return self._type
+
+

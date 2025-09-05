@@ -236,7 +236,7 @@ class Project:
                 )
             case _:
                 msg = "Requested feature {} does not exist in supported list {}".format(
-                    feature_type, [SourceSurface, SourceLuminaire, SourceRayFile]
+                    feature_type, [SourceSurface, SourceLuminaire, SourceRayFile, SourceThermic]
                 )
                 raise TypeError(msg)
         self._features.append(feature)

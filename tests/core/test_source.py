@@ -629,9 +629,25 @@ def test_keep_same_internal_feature(speos: Speos):
     source3.commit()
     assert source3.source_template_link.get().rayfile.spectrum_guid == spectrum_guid
 
+    # THERMIC SOURCE
+    source4 = SourceThermic(project=p, name="Thermic.1")
+    source4.emissive_faces_temperature = 2000
+    source4.commit()
+
+    # Modify field type
+    source4.set_temperature_field()
+    uri = str(Path(test_path) / "dummy.OPTTemperatureField")
+    source4.set_temperature_field_uri(uri)
+    sop_guid = source4._source_template.thermic.temperature_field.sop_guid
+    assert source4._source_template.thermic.temperature_field.temperature_field_uri == uri
+    assert source4.temperature_field_uri == uri
+    assert source4._source_template.thermic.temperature_field.sop_guid == sop_guid
+
+
     source1.delete()
     source2.delete()
     source3.delete()
+    source4.delete()
 
 
 def test_commit_source(speos: Speos):
