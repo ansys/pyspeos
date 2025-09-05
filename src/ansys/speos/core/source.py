@@ -1315,7 +1315,9 @@ class SourceThermic(BaseSource):
             self.emissive_faces_temperature = 2000
             self._sop.set_surface_mirror(0)
 
-    def set_emissive_faces(self, geometries: List[tuple[Union[GeoRef, face.Face, body.Body], bool]]) -> SourceThermic:
+    def set_emissive_faces(
+        self, geometries: List[tuple[Union[GeoRef, face.Face, body.Body], bool]]
+    ) -> SourceThermic:
         """Set emssive faces for thermic source.
 
         Parameters
@@ -1387,7 +1389,9 @@ class SourceThermic(BaseSource):
             self._source_template.thermic.temperature_field.SetInParent()
         if self._source_instance.thermic_properties.temperature_field_properties.axis_plane is None:
             axis_plane = [0, 0, 0, 1, 0, 0, 0, 1, 0]
-            self._source_instance.thermic_properties.temperature_field_properties.axis_plane[:] = axis_plane
+            self._source_instance.thermic_properties.temperature_field_properties.axis_plane[:] = (
+                axis_plane
+            )
         return self
 
     @property
@@ -1467,7 +1471,9 @@ class SourceThermic(BaseSource):
         # sop
         if self._source_template.thermic.HasField("temperature_field"):
             self._sop.commit()
-            self._source_template.thermic.temperature_field.sop_guid = self._sop.sop_template_link.key
+            self._source_template.thermic.temperature_field.sop_guid = (
+                self._sop.sop_template_link.key
+            )
 
         # source base
         super().commit()
@@ -2177,5 +2183,3 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
             # Happens in case of feature reset (to be sure to always modify correct data)
             self._type._sun = natural_light_properties.sun_axis_system.manual_sun
         return self._type
-
-

@@ -643,7 +643,6 @@ def test_keep_same_internal_feature(speos: Speos):
     assert source4.temperature_field_uri == uri
     assert source4._source_template.thermic.temperature_field.sop_guid == sop_guid
 
-
     source1.delete()
     source2.delete()
     source3.delete()
