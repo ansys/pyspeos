@@ -391,7 +391,7 @@ def test_commit(speos: Speos):
     ssr2.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
-    src.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
+    src.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     src.commit()
 
     # Create
@@ -445,7 +445,7 @@ def test_reset(speos: Speos):
     ssr2.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
-    src.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
+    src.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     src.commit()
 
     # Create + commit
@@ -499,7 +499,7 @@ def test_direct_modify_after_reset(speos: Speos):
     ssr2.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
-    src.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
+    src.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     src.commit()
 
     # Create + commit
@@ -569,7 +569,7 @@ def test_inverse_modify_after_reset(speos: Speos):
     ssr2.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
-    src.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
+    src.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     src.commit()
 
     # Create + commit
@@ -645,7 +645,7 @@ def test_interactive_modify_after_reset(speos: Speos):
     ssr2.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
-    src.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
+    src.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     src.commit()
 
     # Create + commit
@@ -697,7 +697,7 @@ def test_delete(speos: Speos):
     ssr.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
-    src.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
+    src.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     src.commit()
 
     # Create + commit
@@ -1032,7 +1032,10 @@ def test_export_vtp(speos: Speos):
     )
     sim = p5.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
     sensor_irra = p5.find(name=".*", name_regex=True, feature_type=SensorIrradiance)[0]
-    sensor_irra.set_dimensions().set_x_sampling(10).set_y_sampling(10)
+    resolution_x = 10
+    resolution_y = 10
+    sensor_irra.set_dimensions().x_sampling = resolution_x
+    sensor_irra.set_dimensions().y_sampling = resolution_y
     sensor_irra.set_type_photometric()
     sensor_irra.commit()
     speos_results, vtp_results = sim.compute_CPU(export_vtp=True)
@@ -1047,8 +1050,6 @@ def test_export_vtp(speos: Speos):
     content = file.readlines()
     file.close()
     skip_lines = 9 if "SeparatedByLayer" in content[7] else 8
-    resolution_x = 10
-    resolution_y = 10
     xmp_data = []
     if "2" not in content[0]:  # not spectral data
         for line in content[skip_lines : skip_lines + resolution_y]:
@@ -1085,7 +1086,8 @@ def test_export_vtp(speos: Speos):
     )
     sim = p6.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
     sensor_irra = p6.find(name=".*", name_regex=True, feature_type=SensorIrradiance)[0]
-    sensor_irra.set_dimensions().set_x_sampling(10).set_y_sampling(10)
+    sensor_irra.set_dimensions().x_sampling = 10
+    sensor_irra.set_dimensions().y_sampling = 10
     sensor_irra.set_type_radiometric()
     sensor_irra.commit()
     speos_results, vtp_results = sim.compute_CPU(export_vtp=True)
@@ -1102,7 +1104,8 @@ def test_export_vtp(speos: Speos):
     )
     sim = p7.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
     sensor_irra = p7.find(name=".*", name_regex=True, feature_type=SensorIrradiance)[0]
-    sensor_irra.set_dimensions().set_x_sampling(10).set_y_sampling(10)
+    sensor_irra.set_dimensions().x_sampling = 10
+    sensor_irra.set_dimensions().y_sampling = 10
     sensor_irra.set_type_colorimetric()
     sensor_irra.commit()
 
@@ -1124,7 +1127,8 @@ def test_export_vtp(speos: Speos):
     )
     sim = p8.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
     sensor_irra = p8.find(name=".*", name_regex=True, feature_type=SensorIrradiance)[0]
-    sensor_irra.set_dimensions().set_x_sampling(10).set_y_sampling(10)
+    sensor_irra.set_dimensions().x_sampling = 10
+    sensor_irra.set_dimensions().y_sampling = 10
     sensor_irra.set_type_spectral()
     sensor_irra.commit()
     speos_results, vtp_results = sim.compute_CPU(export_vtp=True)
