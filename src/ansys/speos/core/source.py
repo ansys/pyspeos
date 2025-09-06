@@ -172,7 +172,7 @@ class BaseSource:
             Returns
             -------
             float
-                value of the flux.
+                Flux type value.
 
             """
             match self._flux_type.__name__:
@@ -180,6 +180,8 @@ class BaseSource:
                     return self._flux_type.luminous_value
                 case "Radiant":
                     return self._flux_type.radiant_value
+                case "LuminousIntensity":
+                    return self._flux_type.luminous_intensity_value
                 case _:
                     raise ValueError(f"Unsupported flux type: {self._flux_type.__name__}")
 
@@ -202,6 +204,8 @@ class BaseSource:
                     self._flux_type.luminous_value = value
                 case "Radiant":
                     self._flux_type.radiant_value = value
+                case "LuminousIntensity":
+                    self._flux_type.luminous_intensity_value = value
                 case _:
                     raise ValueError(f"Unsupported flux type: {self._flux_type.__name__}")
 
@@ -1061,50 +1065,6 @@ class SourceSurface(BaseSource):
 
             """
             self._flux_type = self._flux.luminous_intensity_flux
-
-        @property
-        def value(self) -> float:
-            """Get flux type's value.
-
-            Returns
-            -------
-            float
-                Flux type value.
-
-            """
-            match self._flux_type.__name__:
-                case "Luminous":
-                    return self._flux_type.luminous_value
-                case "Radiant":
-                    return self._flux_type.radiant_value
-                case "LuminousIntensity":
-                    return self._flux_type.luminous_intensity_value
-                case _:
-                    raise ValueError(f"Unsupported flux type: {self._flux_type.__name__}")
-
-        @value.setter
-        def value(self, value: float) -> None:
-            """Set flux type's value.
-
-            Parameters
-            ----------
-            value: float
-                Value of the flux.
-
-            Returns
-            -------
-            None
-
-            """
-            match self._flux_type.__name__:
-                case "Luminous":
-                    self._flux_type.luminous_value = value
-                case "Radiant":
-                    self._flux_type.radiant_value = value
-                case "LuminousIntensity":
-                    self._flux_type.luminous_intensity_value = value
-                case _:
-                    raise ValueError(f"Unsupported flux type: {self._flux_type.__name__}")
 
     class ExitanceConstant:
         """Type of surface source existence : existence constant.
