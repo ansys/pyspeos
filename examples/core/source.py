@@ -115,7 +115,8 @@ print(source1)
 intensity_file_path = str(assets_data_path / IES)
 source2 = p.create_source(name="Luminaire.2", feature_type=SourceLuminaire)
 source2.intensity_file_uri = intensity_file_path
-source2.set_flux().set_radiant().value = 1.0  # select flux radiant
+source2.set_flux().set_radiant()
+source2.set_flux().value = 1.0  # select flux radiant
 # choose the source location [Origin, Xvector, Yvector, Zvector]
 source2.axis_system = [20, 50, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 source2.set_spectrum().set_blackbody()  # choose blackbody with default value for the spectrum
@@ -140,7 +141,8 @@ print(p)
 # > changes.
 # > If you don't, you will still only watch what is committed on the server.
 
-source1.set_flux().set_radiant().value = 1.2  # modify radiant flux value
+source1.set_flux().set_radiant()
+source1.set_flux().value = 1.2  # modify radiant flux value
 source1.axis_system = [17, 10, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]  # modify axis system
 source1.set_spectrum().set_halogen()  # modify spectrum by choosing halogen
 source1.commit()  # Push changes to the server

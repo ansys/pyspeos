@@ -145,25 +145,29 @@ class BaseSource:
                 self.set_luminous()
                 self.value = SOURCE.LUMINOUS.VALUE
 
-        def set_luminous(self) -> None:
+        def set_luminous(self) -> BaseSource.Flux:
             """Set flux type luminous.
 
             Returns
             -------
-            None
+            ansys.speos.core.source.BaseSource.Flux
+                Flux object
 
             """
             self._flux_type = self._flux.luminous_flux
+            return self
 
-        def set_radiant(self) -> None:
+        def set_radiant(self) -> BaseSource.Flux:
             """Set flux type radiant.
 
             Returns
             -------
-            None
+            ansys.speos.core.source.BaseSource.Flux
+                Flux object
 
             """
             self._flux_type = self._flux.radiant_flux
+            return self
 
         @property
         def value(self) -> float:
