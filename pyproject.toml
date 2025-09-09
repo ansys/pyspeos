@@ -43,11 +43,11 @@ graphics = [
 ]
 tests = [
     "psutil==7.0.0",
-    "pytest==8.4.1",
+    "pytest==8.4.2",
     "pyvista>=0.40.0,<0.47",
     "ansys-tools-visualization-interface>=0.8.3",
     "ansys-platform-instancemanagement>=1.0.3",
-    "pytest-cov==6.2.1",
+    "pytest-cov==6.3.0",
 ]
 jupyter = [
     "matplotlib",
