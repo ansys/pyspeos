@@ -983,20 +983,18 @@ def test_create_radiance_sensor(speos: Speos):
     assert radiance_properties.HasField("layer_type_source")
 
     # layer_type_face
-    sensor1.set_layer_type_face().set_sca_filtering_mode_intersected_one_time().set_layers(
-        values=[
-            sensor.BaseSensor.FaceLayer(
-                name="Layer.1", geometries=[GeoRef.from_native_link("TheBodyB")]
-            ),
-            sensor.BaseSensor.FaceLayer(
-                name="Layer.2",
-                geometries=[
-                    GeoRef.from_native_link("TheBodyC/TheFaceC1"),
-                    GeoRef.from_native_link("TheBodyC/TheFaceC2"),
-                ],
-            ),
-        ]
-    )
+    sensor1.set_layer_type_face().set_sca_filtering_mode_intersected_one_time().layers = [
+        sensor.BaseSensor.FaceLayer(
+            name="Layer.1", geometries=[GeoRef.from_native_link("TheBodyB")]
+        ),
+        sensor.BaseSensor.FaceLayer(
+            name="Layer.2",
+            geometries=[
+                GeoRef.from_native_link("TheBodyC/TheFaceC1"),
+                GeoRef.from_native_link("TheBodyC/TheFaceC2"),
+            ],
+        ),
+    ]
     sensor1.commit()
     assert radiance_properties.HasField("layer_type_face")
     assert (
