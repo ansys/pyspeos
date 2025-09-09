@@ -24,7 +24,7 @@
 
 import os
 
-from attr import dataclass
+from dataclasses import dataclass
 
 DEFAULT_HOST: str = "localhost"
 """Default host used by Speos RPC server and client """
