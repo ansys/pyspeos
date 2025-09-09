@@ -25,6 +25,7 @@
 from __future__ import annotations
 
 from difflib import SequenceMatcher
+from pathlib import Path
 from typing import List, Mapping, Optional, Union
 import uuid
 import warnings
@@ -1304,15 +1305,15 @@ class SensorCamera(BaseSensor):
                     return self._balance_mode_display.red_display_file_uri
 
                 @red_display_file_uri.setter
-                def red_display_file_uri(self, uri: str):
+                def red_display_file_uri(self, uri: Union[str, Path]):
                     """Location of the red display file.
 
                     Parameters
                     ----------
-                    uri : str
+                    uri : Union[str, Path]
                         Red display file.
                     """
-                    self._balance_mode_display.red_display_file_uri = uri
+                    self._balance_mode_display.red_display_file_uri = str(Path(uri))
 
                 @property
                 def green_display_file_uri(self) -> str:
@@ -1326,15 +1327,15 @@ class SensorCamera(BaseSensor):
                     return self._balance_mode_display.green_display_file_uri
 
                 @green_display_file_uri.setter
-                def green_display_file_uri(self, uri: str):
+                def green_display_file_uri(self, uri: Union[str, Path]):
                     """Location of the green display file.
 
                     Parameters
                     ----------
-                    uri : str
+                    uri : Union[str, Path]
                         green display file.
                     """
-                    self._balance_mode_display.green_display_file_uri = uri
+                    self._balance_mode_display.green_display_file_uri = str(Path(uri))
 
                 @property
                 def blue_display_file_uri(self) -> str:
@@ -1348,15 +1349,15 @@ class SensorCamera(BaseSensor):
                     return self._balance_mode_display.blue_display_file_uri
 
                 @blue_display_file_uri.setter
-                def blue_display_file_uri(self, uri: str):
+                def blue_display_file_uri(self, uri: Union[str, Path]):
                     """Location of the blue display file.
 
                     Parameters
                     ----------
-                    uri : str
+                    uri : Union[str, Path]
                         blue display file.
                     """
-                    self._balance_mode_display.blue_display_file_uri = uri
+                    self._balance_mode_display.blue_display_file_uri = str(Path(uri))
 
             def __init__(
                 self,
@@ -1388,15 +1389,15 @@ class SensorCamera(BaseSensor):
                 return self._mode_color.red_spectrum_file_uri
 
             @red_spectrum_file_uri.setter
-            def red_spectrum_file_uri(self, uri: str):
+            def red_spectrum_file_uri(self, uri: Union[str, Path]):
                 """Location of the red spectrum.
 
                 Parameters
                 ----------
-                uri : str
+                uri : Union[str, Path]
                     Red spectrum file. It is expressed in a .spectrum file.
                 """
-                self._mode_color.red_spectrum_file_uri = uri
+                self._mode_color.red_spectrum_file_uri = str(Path(uri))
 
             @property
             def blue_spectrum_file_uri(self) -> str:
@@ -1410,15 +1411,15 @@ class SensorCamera(BaseSensor):
                 return self._mode_color.blue_spectrum_file_uri
 
             @blue_spectrum_file_uri.setter
-            def blue_spectrum_file_uri(self, uri: str):
+            def blue_spectrum_file_uri(self, uri: Union[str, Path]):
                 """Location of the blue spectrum.
 
                 Parameters
                 ----------
-                uri : str
+                uri : Union[str, Path]
                     blue spectrum file. It is expressed in a .spectrum file.
                 """
-                self._mode_color.blue_spectrum_file_uri = uri
+                self._mode_color.blue_spectrum_file_uri = str(Path(uri))
 
             @property
             def green_spectrum_file_uri(self) -> str:
@@ -1432,15 +1433,15 @@ class SensorCamera(BaseSensor):
                 return self._mode_color.green_spectrum_file_uri
 
             @green_spectrum_file_uri.setter
-            def green_spectrum_file_uri(self, uri: str):
+            def green_spectrum_file_uri(self, uri: Union[str, Path]):
                 """Location of the green spectrum.
 
                 Parameters
                 ----------
-                uri : str
+                uri : Union[str, Path]
                     green spectrum file. It is expressed in a .spectrum file.
                 """
-                self._mode_color.green_spectrum_file_uri = uri
+                self._mode_color.green_spectrum_file_uri = str(Path(uri))
 
             def set_balance_mode_none(self) -> SensorCamera.Photometric.Color:
                 """Set the balance mode as none.
@@ -1647,16 +1648,16 @@ class SensorCamera(BaseSensor):
             return self._mode_photometric.transmittance_file_uri
 
         @transmittance_file_uri.setter
-        def transmittance_file_uri(self, uri: str):
+        def transmittance_file_uri(self, uri: Union[str, Path]):
             """Location of the transmittance file.
 
             Parameters
             ----------
-            uri : str
+            uri : Union[str, Path]
                 Amount of light of the source that passes through the lens and reaches the sensor.
                 The transmittance is expressed in a .spectrum file.
             """
-            self._mode_photometric.transmittance_file_uri = uri
+            self._mode_photometric.transmittance_file_uri = str(Path(uri))
 
         @property
         def gamma_correction(self) -> float:
@@ -1746,14 +1747,16 @@ class SensorCamera(BaseSensor):
                 )
             return self._wavelengths_range
 
-        def set_mode_monochromatic(self, spectrum_file_uri: str) -> SensorCamera.Photometric:
+        def set_mode_monochromatic(
+            self, spectrum_file_uri: Union[str, Path]
+        ) -> SensorCamera.Photometric:
             """Set the monochromatic mode.
 
             Results will be available in grey scale.
 
             Parameters
             ----------
-            spectrum_file_uri : str
+            spectrum_file_uri : Union[str, Path]
                 Spectrum file uri.
 
             Returns
@@ -1762,7 +1765,9 @@ class SensorCamera(BaseSensor):
                 Photometric mode.
             """
             self._mode = None
-            self._mode_photometric.color_mode_monochromatic.spectrum_file_uri = spectrum_file_uri
+            self._mode_photometric.color_mode_monochromatic.spectrum_file_uri = str(
+                Path(spectrum_file_uri)
+            )
             return self
 
         def set_mode_color(self) -> SensorCamera.Photometric.Color:
@@ -1806,16 +1811,16 @@ class SensorCamera(BaseSensor):
             return self._camera_props.trajectory_file_uri
 
         @trajectory_file_uri.setter
-        def trajectory_file_uri(self, uri: str):
+        def trajectory_file_uri(self, uri: Union[str, Path]):
             """Location of the trajectory file.
 
             Parameters
             ----------
-            uri : str
+            uri : Union[str, Path]
                 Trajectory file, used to define the position and orientations of the Camera sensor
                 in time.
             """
-            self._camera_props.trajectory_file_uri = uri
+            self._camera_props.trajectory_file_uri = str(Path(uri))
 
         def set_layer_type_none(self) -> SensorCamera.Photometric:
             """Set no layer separation: includes the simulation's results in one layer.
@@ -2066,16 +2071,16 @@ class SensorCamera(BaseSensor):
         return self._sensor_template.camera_sensor_template.distortion_file_uri
 
     @distortion_file_uri.setter
-    def distortion_file_uri(self, uri: str):
+    def distortion_file_uri(self, uri: Union[str, Path]):
         """Location of the distortion file.
 
         Parameters
         ----------
-        uri : str
+        uri : Union[str, Path]
             Optical aberration that deforms and bends straight lines. The distortion is expressed in
             a .OPTDistortion file.
         """
-        self._sensor_template.camera_sensor_template.distortion_file_uri = uri
+        self._sensor_template.camera_sensor_template.distortion_file_uri = str(Path(uri))
 
     @property
     def horz_pixel(self) -> int:
