@@ -2730,6 +2730,11 @@ class SensorIrradiance(BaseSensor):
         """Position of the sensor.
 
         By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+
+        Returns
+        -------
+        List[float]
+            Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
         """
         return self._sensor_instance.irradiance_properties.axis_system
 
@@ -2739,7 +2744,7 @@ class SensorIrradiance(BaseSensor):
 
         Parameters
         ----------
-        axis_system : Optional[List[float]]
+        axis_system : List[float]
             Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
         """
@@ -3380,6 +3385,11 @@ class SensorRadiance(BaseSensor):
         """Position of the sensor.
 
         By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+
+        Returns
+        -------
+        List[float]
+            Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
         """
         return self._sensor_instance.radiance_properties.axis_system
 
@@ -3389,7 +3399,7 @@ class SensorRadiance(BaseSensor):
 
         Parameters
         ----------
-        axis_system : Optional[List[float]]
+        axis_system : List[float]
             Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
         """
@@ -3406,13 +3416,14 @@ class SensorRadiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.core.sensor.SensorRadiance
-            Radiance sensor.
+        Union[None, List[float]]
+            Position of the observer point [Ox Oy Oz], None means that the
+            focal length is used.
         """
         return self._sensor_instance.radiance_properties.observer_point
 
     @observer_point.setter
-    def observer_point(self, value: Optional[List[float]]):
+    def observer_point(self, value: List[float]):
         """Position of the observer point.
 
         This is optional, because the focal length is used by default.
@@ -3420,7 +3431,7 @@ class SensorRadiance(BaseSensor):
 
         Parameters
         ----------
-        value : List[float], optional
+        value : List[float]
             Position of the observer point [Ox Oy Oz].
             By default, ``None``. None means that the focal length is used.
         """
@@ -4162,26 +4173,21 @@ class Sensor3DIrradiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.core.sensor.Sensor3DIrradiance
-            3D Irradiance sensor
+        List[str]
+            List of geometries that will be considered as Sensor
         """
         return self._sensor_instance.irradiance_3d_properties.geometries.geo_paths
 
     @geometries.setter
     def geometries(
-        self, geometries: Optional[List[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]]
+        self, geometries: List[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]
     ) -> Sensor3DIrradiance:
         """Select geometry faces to be defined with 3D irradiance sensor.
 
         Parameters
         ----------
-        geometries : List[ansys.speos.core.geo_ref.GeoRef]
-            List of geometries that will be considered as output faces.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.Sensor3DIrradiance
-            3D Irradiance sensor
+        geometries : List[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]
+            List of geometries that will be considered as Sensor
         """
         geo_paths = []
         for gr in geometries:
