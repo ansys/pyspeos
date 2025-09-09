@@ -29,6 +29,17 @@ cname = os.getenv("DOCUMENTATION_CNAME", default="speos.docs.pyansys.com")
 html_theme = "ansys_sphinx_theme"
 html_favicon = ansys_favicon
 
+# Specify the location of the github repo
+html_context = {
+    "github_user": "ansys",
+    "github_repo": "pyspeos",
+    "github_version": "main",
+    "doc_path": "doc/source",
+    "pyansys_tags": [
+        "Optics"
+    ]
+}
+
 # specify the location of your github repo
 html_theme_options = {
     "logo": "pyansys",
