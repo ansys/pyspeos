@@ -22,9 +22,8 @@
 
 """Collection of all constants used in pySpeos."""
 
-import os
-
 from dataclasses import dataclass
+import os
 
 DEFAULT_HOST: str = "localhost"
 """Default host used by Speos RPC server and client """
