@@ -35,9 +35,7 @@ html_context = {
     "github_repo": "pyspeos",
     "github_version": "main",
     "doc_path": "doc/source",
-    "pyansys_tags": [
-        "Optics"
-    ]
+    "pyansys_tags": ["Optics"],
 }
 
 # specify the location of your github repo
