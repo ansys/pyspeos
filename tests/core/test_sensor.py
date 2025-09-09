@@ -708,7 +708,7 @@ def test_create_irradiance_sensor(speos: Speos):
     )
     layer_face = sensor1.set_layer_type_face()
     layer_face.set_sca_filtering_mode_intersected_one_time()
-    layer_face.set_layers(values=[layer1, layer2])
+    layer_face.layers = [layer1, layer2]
     sensor1.commit()
     assert irra_properties.HasField("layer_type_face")
     assert (
