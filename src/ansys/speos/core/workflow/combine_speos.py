@@ -151,7 +151,7 @@ def _combine(
         part_data.parts.append(part_inst)
 
         for mat in scene_tmp_data.materials:
-            if len(mat.sop_guids) > 0:
+            if mat.HasField("sop_guid") or mat.HasField("texture") or len(mat.sop_guids) > 0:
                 mat.name = spc.name + "." + mat.name
                 mat.geometries.geo_paths[:] = [spc.name + "/" + x for x in mat.geometries.geo_paths]
                 scene_data.materials.append(mat)
