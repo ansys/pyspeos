@@ -304,7 +304,7 @@ class FaceStub(CrudStub):
                             sizes=[
                                 len(message.vertices),
                                 len(message.facets),
-                                len(message.texture_coordinates_channels),
+                                len(message.vertices_data),
                             ],
                         )
                     )
