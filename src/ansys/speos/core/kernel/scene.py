@@ -188,13 +188,13 @@ class SceneStub(CrudStub):
                 name="checkForTextureAvailability",
                 materials=[
                     ProtoScene.MaterialInstance(
-                        name="checkForTextureAvailability", sop_guids=[sop_t_link.key]
+                        name="checkForTextureAvailability", sop_guid=sop_t_link.key
                     )
                 ],
             )
         )
 
-        # Read scene (aim is to check if the server uses new field for sop_guid or old sop_guids)
+        # Read scene (aim is to see if the server knows the new field sop_guid or just ignored it)
         sce_msg = sce_link.get()
 
         # Don't forget to delete created objects

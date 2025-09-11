@@ -436,11 +436,12 @@ class OptProp:
                 self.sop_template_link = self._project.client.sop_templates().create(
                     message=self._sop_template
                 )
+                # Always clean sop_guids to be sure that we never use both sop_guids and sop_guid
+                self._material_instance.ClearField("sop_guids")
+                # Fill sop_guid(s) field according to the server capability regarding textures
                 if self._project.client.scenes()._is_texture_available:
-                    self._material_instance.ClearField("sop_guid")
                     self._material_instance.sop_guid = self.sop_template_link.key
                 else:
-                    self._material_instance.ClearField("sop_guids")
                     self._material_instance.sop_guids.append(self.sop_template_link.key)
         elif self.sop_template_link.get() != self._sop_template:
             self.sop_template_link.set(
