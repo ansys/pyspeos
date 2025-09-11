@@ -242,6 +242,33 @@ def create_basic_scene(speos: Speos) -> SceneLink:
         )
     )
 
+    material_inst_1 = None
+    material_inst_fop = None
+    if scene_db._is_texture_available:
+        material_inst_1 = ProtoScene.MaterialInstance(
+            name="Material.1",
+            vop_guid=opaque_t.key,
+            sop_guid=mirror_100_t.key,
+            geometries=ProtoScene.GeoPaths(geo_paths=["Body0:1"]),
+        )
+        material_inst_fop = ProtoScene.MaterialInstance(
+            name="FOP.1",
+            sop_guid=mirror_100_t.key,
+            geometries=ProtoScene.GeoPaths(geo_paths=["BodySource:1/FaceSource:1"]),
+        )
+    else:
+        material_inst_1 = ProtoScene.MaterialInstance(
+            name="Material.1",
+            vop_guid=opaque_t.key,
+            sop_guids=[mirror_100_t.key],
+            geometries=ProtoScene.GeoPaths(geo_paths=["Body0:1"]),
+        )
+        material_inst_fop = ProtoScene.MaterialInstance(
+            name="FOP.1",
+            sop_guids=[mirror_100_t.key],
+            geometries=ProtoScene.GeoPaths(geo_paths=["BodySource:1/FaceSource:1"]),
+        )
+
     # Create scene
     scene = scene_db.create(
         message=ProtoScene(
@@ -249,17 +276,8 @@ def create_basic_scene(speos: Speos) -> SceneLink:
             description="scene from scratch",
             part_guid=main_part.key,
             materials=[
-                ProtoScene.MaterialInstance(
-                    name="Material.1",
-                    vop_guid=opaque_t.key,
-                    sop_guids=[mirror_100_t.key],
-                    geometries=ProtoScene.GeoPaths(geo_paths=["Body0:1"]),
-                ),
-                ProtoScene.MaterialInstance(
-                    name="FOP.1",
-                    sop_guids=[mirror_100_t.key],
-                    geometries=ProtoScene.GeoPaths(geo_paths=["BodySource:1/FaceSource:1"]),
-                ),
+                material_inst_1,
+                material_inst_fop,
             ],
             sources=[
                 ProtoScene.SourceInstance(
