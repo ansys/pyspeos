@@ -1,0 +1,107 @@
+
+
+
+
+
+
+The ``speos.py`` module
+=======================
+
+.. py:module:: ansys.speos.core.speos
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: speos
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.speos.Speos`
+            - Allows the Speos session (client) to interact with the SpeosRPC server.
+
+
+
+
+
+
+
+    .. tab-item:: Constants
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~DEFAULT_HOST`
+            - 
+
+
+          * - :py:obj:`~DEFAULT_PORT`
+            - 
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> Speos</api/ansys/speos/core/speos/Speos>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides the ``Speos`` class.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+.. py:data:: DEFAULT_HOST
+   :value: 'localhost'
+
+
+.. py:data:: DEFAULT_PORT
+   :value: '50098'
+
+
+
+
