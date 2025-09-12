@@ -42,21 +42,21 @@ To use another product version, please modify the image label from `251` to the 
         .. code-block:: bash
 
             export LICENSE_SERVER="1055@XXX.XXX.XXX.XXX"
-            docker run --detach --name speos-rpc -p 50098:50098 -e ANSYSLMD_LICENSE_FILE=$LICENSE_SERVER --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:251
+            docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e ANSYSLMD_LICENSE_FILE=$LICENSE_SERVER --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:2025.2.2.32433 --host 0.0.0.0
 
     .. tab-item:: Powershell
 
         .. code-block:: pwsh
 
             $env:LICENSE_SERVER="1055@XXX.XXX.XXX.XXX"
-            docker run --detach --name speos-rpc -p 50098:50098 -e ANSYSLMD_LICENSE_FILE=$env:LICENSE_SERVER --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:251
+            docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e ANSYSLMD_LICENSE_FILE=$env:LICENSE_SERVER --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:2025.2.2.32433 --host 0.0.0.0
 
     .. tab-item:: Windows CMD
 
         .. code-block:: bash
 
             set LICENSE_SERVER="1055@XXX.XXX.XXX.XXX"
-            docker run --detach --name speos-rpc -p 50098:50098 -e ANSYSLMD_LICENSE_FILE=%LICENSE_SERVER% --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:251
+            docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e ANSYSLMD_LICENSE_FILE=%LICENSE_SERVER% --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:2025.2.2.32433 --host 0.0.0.0
 
 Connect to the Speos service
 ----------------------------
