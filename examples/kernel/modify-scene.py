@@ -32,6 +32,7 @@
 from pathlib import Path
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2
+
 from ansys.speos.core import Speos, launcher
 from ansys.speos.core.kernel.scene import ProtoScene
 from ansys.speos.core.kernel.sensor_template import ProtoSensorTemplate
