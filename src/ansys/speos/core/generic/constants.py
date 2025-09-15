@@ -99,7 +99,7 @@ class SourceRayfileParamters:
     """Constant class for SourceRayfileParamters."""
 
     ray_file_uri: Union[str, Path] = Path()
-    flux_type: Union[FluxLuminous, FluxRadiant] = FluxLuminous()
+    flux_type: Union[FluxLuminous, FluxRadiant] = field(default_factory=FluxLuminous)
     axis_system: list[float] = field(default_factory=lambda: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
 
 
