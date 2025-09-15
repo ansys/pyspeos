@@ -24,6 +24,7 @@
 
 from dataclasses import dataclass, field
 import os
+from pathlib import Path
 from typing import Union
 
 DEFAULT_HOST: str = "localhost"
@@ -77,27 +78,28 @@ class SOURCE:
         VALUE = 5
 
 
-@dataclass(frozen=True)
+@dataclass
 class FluxLuminous:
     """Constant class for Luminous type Flux."""
 
     value: float = 683
+    flux_from_ray_file: bool = True
 
 
-@dataclass(frozen=True)
+@dataclass
 class FluxRadiant:
     """Constant class for Radiant type Flux."""
 
     value: float = 1
+    flux_from_ray_file: bool = True
 
 
-@dataclass(frozen=True)
+@dataclass
 class SourceRayfileParamters:
     """Constant class for SourceRayfileParamters."""
 
-    flux_from_ray_file: bool = True
-    flux_luminous: Union[bool, FluxLuminous] = FluxLuminous()
-    flux_radiant: Union[bool, FluxRadiant] = False
+    ray_file_uri: Union[str, Path] = Path()
+    flux_type: Union[FluxLuminous, FluxRadiant] = FluxLuminous()
     axis_system: list[float] = field(default_factory=lambda: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
 
 
