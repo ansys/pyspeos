@@ -22,7 +22,9 @@
 
 """Collection of all constants used in pySpeos."""
 
+from dataclasses import dataclass, field
 import os
+from typing import Union
 
 DEFAULT_HOST: str = "localhost"
 """Default host used by Speos RPC server and client """
@@ -73,6 +75,30 @@ class SOURCE:
         """Constant class for Intensity."""
 
         VALUE = 5
+
+
+@dataclass(frozen=True)
+class FluxLuminous:
+    """Constant class for Luminous type Flux."""
+
+    value: float = 683
+
+
+@dataclass(frozen=True)
+class FluxRadiant:
+    """Constant class for Radiant type Flux."""
+
+    value: float = 1
+
+
+@dataclass(frozen=True)
+class SourceRayfileParamters:
+    """Constant class for SourceRayfileParamters."""
+
+    flux_from_ray_file: bool = True
+    flux_luminous: Union[bool, FluxLuminous] = FluxLuminous()
+    flux_radiant: Union[bool, FluxRadiant] = False
+    axis_system: list[float] = field(default_factory=lambda: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
 
 
 class SENSOR:
