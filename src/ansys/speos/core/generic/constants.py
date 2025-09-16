@@ -25,7 +25,9 @@
 from dataclasses import dataclass, field
 import os
 from pathlib import Path
-from typing import Union
+from typing import Optional, Union
+
+from ansys.speos.core.geo_ref import GeoRef
 
 DEFAULT_HOST: str = "localhost"
 """Default host used by Speos RPC server and client """
@@ -78,12 +80,23 @@ class SOURCE:
         VALUE = 5
 
 
+class FluxFromFile:
+    """Constant class for FluxFromRayFile."""
+
+    pass
+
+
+class FluxIntensity:
+    """Constant class for FluxIntensity."""
+
+    value: float = 5
+
+
 @dataclass
 class FluxLuminous:
     """Constant class for Luminous type Flux."""
 
     value: float = 683
-    flux_from_ray_file: bool = True
 
 
 @dataclass
@@ -91,15 +104,24 @@ class FluxRadiant:
     """Constant class for Radiant type Flux."""
 
     value: float = 1
-    flux_from_ray_file: bool = True
 
 
 @dataclass
-class SourceRayfileParamters:
-    """Constant class for SourceRayfileParamters."""
+class SourceRayfileParameters:
+    """Constant class for SourceRayfileParameters."""
 
-    ray_file_uri: Union[str, Path] = Path()
-    flux_type: Union[FluxLuminous, FluxRadiant] = field(default_factory=FluxLuminous)
+    ray_file_uri: Union[str, Path] = ""
+    flux_type: Union[FluxLuminous, FluxRadiant, FluxFromFile] = field(default_factory=FluxFromFile)
+    axis_system: list[float] = field(default_factory=lambda: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    exit_geometry: Optional[GeoRef] = None
+
+
+@dataclass
+class SourceLuminaireParameters:
+    """Constant class for SourceLuminaireParamters."""
+
+    intensity_file_uri: Union[str, Path] = ""
+    flux_type: Union[FluxLuminous, FluxRadiant, FluxFromFile] = field(default_factory=FluxFromFile)
     axis_system: list[float] = field(default_factory=lambda: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
 
 

@@ -28,7 +28,13 @@ from pathlib import Path
 import pytest
 
 from ansys.speos.core import GeoRef, Project, Speos
-from ansys.speos.core.generic.constants import ORIGIN, SOURCE
+from ansys.speos.core.generic.constants import (
+    ORIGIN,
+    SOURCE,
+    FluxLuminous,
+    SourceLuminaireParameters,
+    SourceRayfileParameters,
+)
 from ansys.speos.core.source import (
     SourceAmbientNaturalLight,
     SourceLuminaire,
@@ -716,6 +722,9 @@ def test_luminaire_modify_after_reset(speos: Speos):
 
     # Modify after a reset
     # Template
+    assert source._source_template.luminaire.HasField("flux_from_intensity_file")
+    new_default_parameters = SourceLuminaireParameters(flux_type=FluxLuminous())
+    source = SourceLuminaire(project=p, name="Luminaire.2", default_values=new_default_parameters)
     assert source.set_flux().value == 683
     # assert source.set_flux_luminous().value == 683
     assert source._source_template.luminaire.luminous_flux.luminous_value == 683
@@ -780,7 +789,10 @@ def test_rayfile_modify_after_reset(speos: Speos):
 
     # Modify after a reset
     # Template
-    assert source._source_template.rayfile.luminous_flux.luminous_value == 683
+    assert source._source_template.rayfile.HasField("flux_from_ray_file")
+    new_default_parameters = SourceRayfileParameters(flux_type=FluxLuminous())
+    source = SourceRayFile(project=p, name="Luminaire.2", default_values=new_default_parameters)
+
     source.set_flux().set_luminous()
     source.set_flux().value = 500
     # source.set_flux_luminous().value = 500
