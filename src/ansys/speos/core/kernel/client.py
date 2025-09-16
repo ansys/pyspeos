@@ -25,9 +25,10 @@
 import logging
 import os
 from pathlib import Path
-import subprocess
+import subprocess  # nosec
 import time
 from typing import TYPE_CHECKING, List, Optional, Union
+import warnings
 
 import grpc
 from grpc._channel import _InactiveRpcError
@@ -504,6 +505,11 @@ List[ansys.speos.core.kernel.face.FaceLink]]
     def close(self):
         """Close the channel.
 
+        .. warning::
+
+            Do not execute this function with untrusted environment variables.
+            See the :ref:`security guide<ref_security_consideration>` for details.
+
         Returns
         -------
         bool
@@ -517,7 +523,7 @@ List[ansys.speos.core.kernel.face.FaceLink]]
         wait_time = 0
         if self._remote_instance:
             self._remote_instance.delete()
-        elif self._host in ["localhost", "0.0.0.0", "127.0.0.1"] and self.__speos_exec:
+        elif self._host in ["localhost", "0.0.0.0", "127.0.0.1"] and self.__speos_exec:  # nosec
             self.__close_local_speos_rpc_server()
             while self.healthy and wait_time < 15:
                 time.sleep(1)
@@ -543,5 +549,21 @@ List[ansys.speos.core.kernel.face.FaceLink]]
             return self._closed
 
     def __close_local_speos_rpc_server(self):
-        command = [self.__speos_exec, "-s{}".format(self._port)]
-        subprocess.run(command, check=True)
+        """Close a locally started Speos RPC server.
+
+        .. warning::
+            Do not execute this function after modifying protected or private
+            attributes of the SpeosClient class or in a context with untrusted
+            environment variables.
+            See the :ref:`security guide<ref_security_consideration>` for details.
+
+        """
+        try:
+            int(self._port)
+        except ValueError:
+            raise RuntimeError("The port of the local server is not a valid integer.")
+        if not Path(self.__speos_exec).is_file() or Path(self.__speos_exec).stem != "SpeosRPC_Server":
+            raise RuntimeError("Unexpected executable path for Speos rpc executable.")
+
+        command = [self.__speos_exec, f"-s{self._port}"]
+        subprocess.run(command, check=True)  # nosec

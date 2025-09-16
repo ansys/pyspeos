@@ -24,7 +24,7 @@
 
 import os
 from pathlib import Path
-import subprocess
+import subprocess  # nosec B404
 import tempfile
 from typing import Optional, Union
 
@@ -116,7 +116,10 @@ def launch_local_speos_rpc_server(
     """Launch Speos RPC server locally.
 
     .. warning::
-        Do not execute this function with untrusted input parameters.
+
+        Do not execute this function with untrusted function argument or environment
+        variables.
+        See the :ref:`security guide<ref_security_consideration>` for details.
 
     Parameters
     ----------
@@ -147,6 +150,15 @@ def launch_local_speos_rpc_server(
     ansys.speos.core.speos.Speos
         An instance of the Speos Service.
     """
+    try:
+        int(port)
+    except ValueError:
+        raise ValueError("The port is not a valid integer.")
+    try:
+        int(server_message_size)
+    except ValueError:
+        raise ValueError("The server message size is not a valid integer.")
+
     speos_rpc_path = retrieve_speos_install_dir(speos_rpc_path, version)
     if os.name == "nt":
         speos_exec = speos_rpc_path / "SpeosRPC_Server.exe"
@@ -164,16 +176,11 @@ def launch_local_speos_rpc_server(
             logfile = logfile_loc / "speos_rpc.log"
     if not logfile_loc.exists():
         logfile_loc.mkdir()
-    command = [
-        str(speos_exec),
-        "-p{}".format(port),
-        "-m{}".format(server_message_size),
-        "-l{}".format(str(logfile)),
-    ]
+    command = [str(speos_exec), f"-p{port}", f"-m{server_message_size}", f"-l{str(logfile)}"]
     out, stdout_file = tempfile.mkstemp(suffix="speos_out.txt", dir=logfile_loc)
     err, stderr_file = tempfile.mkstemp(suffix="speos_err.txt", dir=logfile_loc)
 
-    subprocess.Popen(command, stdout=out, stderr=err)
+    subprocess.Popen(command, stdout=out, stderr=err)  # nosec B603
     return Speos(
         host="localhost",
         port=port,
