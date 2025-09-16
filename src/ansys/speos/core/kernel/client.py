@@ -178,7 +178,7 @@ class SpeosClient:
             if host == "0.0.0.0":  # nosec
                 warnings.warn(
                     "The service is exposed on all network interfaces. This is a security risk.",
-                    stacklevel=2
+                    stacklevel=2,
                 )
 
             self._host = host
@@ -568,7 +568,10 @@ List[ansys.speos.core.kernel.face.FaceLink]]
             int(self._port)
         except ValueError:
             raise RuntimeError("The port of the local server is not a valid integer.")
-        if not Path(self.__speos_exec).is_file() or Path(self.__speos_exec).stem != "SpeosRPC_Server":
+        if (
+            not Path(self.__speos_exec).is_file()
+            or Path(self.__speos_exec).stem != "SpeosRPC_Server"
+        ):
             raise RuntimeError("Unexpected executable path for Speos rpc executable.")
 
         command = [self.__speos_exec, f"-s{self._port}"]
