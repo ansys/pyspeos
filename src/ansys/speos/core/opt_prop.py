@@ -436,8 +436,13 @@ class OptProp:
                 self.sop_template_link = self._project.client.sop_templates().create(
                     message=self._sop_template
                 )
+                # Always clean sop_guids to be sure that we never use both sop_guids and sop_guid
                 self._material_instance.ClearField("sop_guids")
-                self._material_instance.sop_guids.append(self.sop_template_link.key)
+                # Fill sop_guid(s) field according to the server capability regarding textures
+                if self._project.client.scenes()._is_texture_available:
+                    self._material_instance.sop_guid = self.sop_template_link.key
+                else:
+                    self._material_instance.sop_guids.append(self.sop_template_link.key)
         elif self.sop_template_link.get() != self._sop_template:
             self.sop_template_link.set(
                 data=self._sop_template
@@ -519,7 +524,8 @@ class OptProp:
             self.sop_template_link.delete()
             self.sop_template_link = None
 
-        # Reset then the sop_guids (as the sop template was deleted just above)
+        # Reset then the sop_guid/sop_guids fields (as the sop template was deleted just above)
+        self._material_instance.ClearField("sop_guid")
         self._material_instance.ClearField("sop_guids")
 
         # Remove the material instance from the scene
@@ -537,11 +543,13 @@ class OptProp:
         self._material_instance.metadata.pop("UniqueId")
         return self
 
-    def _fill(self, mat_inst):
+    def _fill(self, mat_inst: ProtoScene.MaterialInstance):
         self._unique_id = mat_inst.metadata["UniqueId"]
         self._material_instance = mat_inst
         self.vop_template_link = self._project.client[mat_inst.vop_guid]
-        if len(mat_inst.sop_guids) > 0:
+        if mat_inst.HasField("sop_guid"):
+            self.sop_template_link = self._project.client[mat_inst.sop_guid]
+        elif len(mat_inst.sop_guids) > 0:
             self.sop_template_link = self._project.client[mat_inst.sop_guids[0]]
         else:  # Specific case for ambient material
             self._sop_template = None
