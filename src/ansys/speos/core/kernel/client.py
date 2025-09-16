@@ -175,6 +175,12 @@ class SpeosClient:
             self._channel = channel
             self._target = str(channel)
         else:
+            if host == "0.0.0.0":  # nosec
+                warnings.warn(
+                    "The service is exposed on all network interfaces. This is a security risk.",
+                    stacklevel=2
+                )
+
             self._host = host
             self._port = port
             self._target = f"{host}:{port}"
