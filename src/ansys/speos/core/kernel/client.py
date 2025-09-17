@@ -29,10 +29,10 @@ import subprocess
 import time
 from typing import TYPE_CHECKING, List, Optional, Union
 
+from ansys.api.speos.part.v1 import body_pb2, face_pb2, part_pb2
 import grpc
 from grpc._channel import _InactiveRpcError
 
-from ansys.api.speos.part.v1 import body_pb2, face_pb2, part_pb2
 from ansys.speos.core.generic.constants import (
     DEFAULT_HOST,
     DEFAULT_PORT,

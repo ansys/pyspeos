@@ -25,10 +25,10 @@
 from pathlib import Path
 from typing import List, Mapping, Optional
 
-import numpy as np
-
 from ansys.api.speos.sensor.v1 import common_pb2, irradiance_sensor_pb2
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
+import numpy as np
+
 from ansys.speos.core.kernel.body import ProtoBody
 from ansys.speos.core.kernel.face import FaceStub, ProtoFace
 from ansys.speos.core.kernel.intensity_template import ProtoIntensityTemplate

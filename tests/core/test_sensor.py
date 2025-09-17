@@ -26,6 +26,7 @@ import math
 from pathlib import Path
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2
+
 from ansys.speos.core import Body, GeoRef, Project, Speos, sensor
 from ansys.speos.core.sensor import (
     Sensor3DIrradiance,
