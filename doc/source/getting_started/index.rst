@@ -77,7 +77,7 @@ and follow the principle of least privilege when developing with PySpeos.
 Launching local Speos RPC server
 --------------------------------
 
-The :py:func:`.local_speos_rpc_server` function can be used to launch Speos RPC
+The :py:func:`.launch_local_speos_rpc_server` function can be used to launch Speos RPC
 server locally. The executable which is launched is configured with the function
 parameters and environment variables. This may allow an attacker to launch
 arbitrary executables on the system. When exposing the launch function to
