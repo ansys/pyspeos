@@ -40,6 +40,8 @@ import ansys.speos.core.face as face
 from ansys.speos.core.generic.constants import (
     ORIGIN,
     SENSOR,
+    BalanceModeDisplayPrimariesParameters,
+    BalanceModeUserWhiteParameters,
     CameraSensorParameters,
     ColorParameters,
     MonoChromaticParameters,
@@ -1174,7 +1176,7 @@ class SensorCamera(BaseSensor):
                 def __init__(
                     self,
                     balance_mode_user_white: camera_sensor_pb2.SensorCameraBalanceModeUserwhite,
-                    default_values: bool = True,
+                    default_parameters: Union[None, BalanceModeUserWhiteParameters] = None,
                     stable_ctr: bool = False,
                 ) -> None:
                     if not stable_ctr:
@@ -1182,11 +1184,12 @@ class SensorCamera(BaseSensor):
                         raise RuntimeError(msg)
                     self._balance_mode_user_white = balance_mode_user_white
 
-                    if default_values:
+                    if default_parameters:
                         # Default values
-                        self.red_gain = SENSOR.CAMERASENSOR.GAIN
-                        self.green_gain = SENSOR.CAMERASENSOR.GAIN
-                        self.blue_gain = SENSOR.CAMERASENSOR.GAIN
+                        self._balance_mode_user_white.SetInParent()
+                        self.red_gain = default_parameters.red_gain
+                        self.green_gain = default_parameters.green_gain
+                        self.blue_gain = default_parameters.blue_gain
 
                 @property
                 def red_gain(self) -> float:
@@ -1286,7 +1289,7 @@ class SensorCamera(BaseSensor):
                 def __init__(
                     self,
                     balance_mode_display: camera_sensor_pb2.SensorCameraBalanceModeDisplay,
-                    default_values: bool = True,
+                    default_parameters: Union[None, BalanceModeDisplayPrimariesParameters] = None,
                     stable_ctr: bool = False,
                 ) -> None:
                     if not stable_ctr:
@@ -1297,9 +1300,12 @@ class SensorCamera(BaseSensor):
 
                     self._balance_mode_display = balance_mode_display
 
-                    if default_values:
+                    if default_parameters:
                         # Default values
                         self._balance_mode_display.SetInParent()
+                        self.red_display_file_uri = default_parameters.red_display_file_uri
+                        self.green_display_file_uri = default_parameters.green_display_file_uri
+                        self.blue_display_file_uri = default_parameters.blue_display_file_uri
 
                 @property
                 def red_display_file_uri(self) -> str:
@@ -1370,7 +1376,7 @@ class SensorCamera(BaseSensor):
             def __init__(
                 self,
                 mode_color: camera_sensor_pb2.SensorCameraColorModeColor,
-                default_values: bool = True,
+                default_parameters: Union[None, ColorParameters] = None,
                 stable_ctr: bool = False,
             ) -> None:
                 if not stable_ctr:
@@ -1381,9 +1387,29 @@ class SensorCamera(BaseSensor):
                 # Attribute gathering more complex camera balance mode
                 self._mode = None
 
-                if default_values:
+                if default_parameters:
                     # Default values
-                    self.set_balance_mode_none()
+                    if isinstance(default_parameters.balance_mode, BalanceModeUserWhiteParameters):
+                        self._mode = SensorCamera.Photometric.Color.BalanceModeUserWhite(
+                            balance_mode_user_white=self._mode_color.balance_mode_userwhite,
+                            default_parameters=default_parameters.balance_mode,
+                            stable_ctr=True,
+                        )
+                    elif isinstance(
+                        default_parameters.balance_mode, BalanceModeDisplayPrimariesParameters
+                    ):
+                        self._mode = SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries(
+                            balance_mode_display=self._mode_color.balance_mode_display,
+                            default_parameters=default_parameters.balance_mode,
+                            stable_ctr=True,
+                        )
+                    elif default_parameters.balance_mode == "grey_world":
+                        self.set_balance_mode_grey_world()
+                    elif default_parameters.balance_mode == "none":
+                        self.set_balance_mode_none()
+                    self.red_spectrum_file_uri = default_parameters.red_spectrum_file_uri
+                    self.green_spectrum_file_uri = default_parameters.green_spectrum_file_uri
+                    self.blue_spectrum_file_uri = default_parameters.blue_spectrum_file_uri
 
             @property
             def red_spectrum_file_uri(self) -> str:
@@ -1503,7 +1529,7 @@ class SensorCamera(BaseSensor):
                     # Happens in case of project created via load of speos file
                     self._mode = SensorCamera.Photometric.Color.BalanceModeUserWhite(
                         balance_mode_user_white=self._mode_color.balance_mode_userwhite,
-                        default_values=False,
+                        default_parameters=None,
                         stable_ctr=True,
                     )
                 elif not isinstance(
@@ -1512,6 +1538,7 @@ class SensorCamera(BaseSensor):
                     # if the _mode is not BalanceModeUserWhite then we create a new type.
                     self._mode = SensorCamera.Photometric.Color.BalanceModeUserWhite(
                         balance_mode_user_white=self._mode_color.balance_mode_userwhite,
+                        default_parameters=BalanceModeUserWhiteParameters(),
                         stable_ctr=True,
                     )
                 elif (
@@ -1541,7 +1568,7 @@ class SensorCamera(BaseSensor):
                     # Happens in case of project created via load of speos file
                     self._mode = SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries(
                         balance_mode_display=self._mode_color.balance_mode_display,
-                        default_values=False,
+                        default_parameters=None,
                         stable_ctr=True,
                     )
                 elif not isinstance(
@@ -1550,6 +1577,7 @@ class SensorCamera(BaseSensor):
                     # if the _mode is not BalanceModeDisplayPrimaries then we create a new type.
                     self._mode = SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries(
                         balance_mode_display=self._mode_color.balance_mode_display,
+                        default_parameters=BalanceModeDisplayPrimariesParameters(),
                         stable_ctr=True,
                     )
                 elif self._mode._balance_mode_display is not self._mode_color.balance_mode_display:
@@ -1602,7 +1630,11 @@ class SensorCamera(BaseSensor):
                 if isinstance(default_parameters.color_mode, MonoChromaticParameters):
                     self.set_mode_monochromatic(default_parameters.color_mode.sensitivity)
                 elif isinstance(default_parameters.color_mode, ColorParameters):
-                    pass
+                    self._mode = SensorCamera.Photometric.Color(
+                        mode_color=self._mode_photometric.color_mode_color,
+                        default_parameters=default_parameters.color_mode,
+                        stable_ctr=True,
+                    )
             elif default_parameters is None:
                 self._wavelengths_range = SensorCamera.WavelengthsRange(
                     wavelengths_range=self._mode_photometric.wavelengths_range,
