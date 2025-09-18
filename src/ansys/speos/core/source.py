@@ -43,9 +43,7 @@ import ansys.speos.core.face as face
 from ansys.speos.core.generic.constants import (
     ORIGIN,
     SOURCE,
-    FluxFromFile,
-    FluxLuminous,
-    FluxRadiant,
+    FluxType,
     SourceLuminaireParameters,
     SourceRayfileParameters,
 )
@@ -140,7 +138,7 @@ class BaseSource:
         def __init__(
             self,
             flux: source_pb2,
-            default_values: Union[bool, SourceRayfileParameters],
+            default_values: Union[bool, SourceRayfileParameters, SourceLuminaireParameters],
             stable_ctr: bool = False,
         ):
             if not stable_ctr:
@@ -149,15 +147,15 @@ class BaseSource:
             self._flux = flux
             self._flux_type = None
 
-            if isinstance(default_values, SourceRayfileParameters):
+            if isinstance(default_values, (SourceRayfileParameters, SourceLuminaireParameters)):
                 match default_values.flux_type:
-                    case FluxLuminous():
+                    case FluxType.LUMINOUS:
                         self.set_luminous()
-                        self.value = default_values.flux_type.value
-                    case FluxRadiant():
+                        self.value = default_values.flux_value
+                    case FluxType.RADIANT:
                         self.set_radiant()
-                        self.value = default_values.flux_type.value
-                    case FluxFromFile():
+                        self.value = default_values.flux_value
+                    case FluxType.FROM_FILE:
                         pass
                     case _:
                         raise ValueError(
@@ -564,7 +562,7 @@ class SourceLuminaire(BaseSource):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         source_instance: Optional[ProtoScene.SourceInstance] = None,
-        default_values: SourceLuminaireParameters = SourceLuminaireParameters(),
+        default_values: Optional[bool, SourceLuminaireParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -587,19 +585,21 @@ class SourceLuminaire(BaseSource):
             spectrum_guid=self._source_template.luminaire.spectrum_guid,
         )
 
-        if isinstance(default_values, SourceLuminaireParameters):
-            # Default values
+        if default_values is not False:
+            if not isinstance(default_values, SourceLuminaireParameters):
+                default_values = SourceLuminaireParameters()  # customized default values
+            # New Default values
             self.intensity_file_uri = default_values.intensity_file_uri
             self.axis_system = default_values.axis_system
             match default_values.flux_type:
-                case FluxFromFile():
+                case FluxType.FROM_FILE:
                     self.set_flux_from_intensity_file()
-                case FluxLuminous():
+                case FluxType.LUMINOUS:
                     self.set_flux().set_luminous()
-                    self.set_flux().value = default_values.flux_type.value
-                case FluxRadiant():
+                    self.set_flux().value = default_values.flux_value
+                case FluxType.RADIANT:
                     self.set_flux().set_radiant()
-                    self.set_flux().value = default_values.flux_type.value
+                    self.set_flux().value = default_values.flux_value
                 case _:
                     raise ValueError(
                         f"Unsupported flux type: {type(default_values.flux_type).__name__}"
@@ -786,7 +786,7 @@ class SourceRayFile(BaseSource):
         def __init__(
             self,
             rayfile_props: scene_pb2.RayFileProperties,
-            default_values: SourceRayfileParameters,
+            default_values: Optional[bool, SourceRayfileParameters],
             stable_ctr: bool = False,
         ):
             if not stable_ctr:
@@ -794,7 +794,9 @@ class SourceRayFile(BaseSource):
                 raise RuntimeError(msg)
             self._rayfile_props = rayfile_props
 
-            if isinstance(default_values, SourceRayfileParameters):
+            if default_values is not False:
+                if not isinstance(default_values, SourceRayfileParameters):
+                    default_values = SourceRayfileParameters()
                 self.geometries = default_values.exit_geometry
 
         @property
@@ -840,7 +842,7 @@ class SourceRayFile(BaseSource):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         source_instance: Optional[ProtoScene.SourceInstance] = None,
-        default_values: SourceRayfileParameters = SourceRayfileParameters(),
+        default_values: Optional[bool, SourceRayfileParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -872,18 +874,20 @@ class SourceRayFile(BaseSource):
         # Attribute gathering more complex exit geometries settings
         self._exit_geometry_type = None
 
-        if default_values:
-            # Default values
+        if default_values is not False:  # True, SourceRayfileParameters as default
+            if not isinstance(default_values, SourceRayfileParameters):  # True as default
+                default_values = SourceRayfileParameters()
+                # Default values
             self.set_spectrum_from_ray_file()
             self.ray_file_uri = default_values.ray_file_uri
             match default_values.flux_type:
-                case FluxLuminous():
+                case FluxType.LUMINOUS:
                     self.set_flux().set_luminous()
-                    self.set_flux().value = default_values.flux_type.value
-                case FluxRadiant():
+                    self.set_flux().value = default_values.flux_value
+                case FluxType.RADIANT:
                     self.set_flux().set_radiant()
-                    self.set_flux().value = default_values.flux_type.value
-                case FluxFromFile():
+                    self.set_flux().value = default_values.flux_value
+                case FluxType.FROM_FILE:
                     self.set_flux_from_ray_file()
                 case _:
                     raise ValueError(
@@ -979,15 +983,12 @@ class SourceRayFile(BaseSource):
 
         """
         if self._type is None:
-            print("case1")
             self._type = self.Flux(
                 flux=self._source_template.rayfile,
                 default_values=SourceRayfileParameters(),
                 stable_ctr=True,
             )
-            print(self._source_template.rayfile)
         elif self._type._flux is not self._source_template.rayfile:
-            print("case2")
             self._type._flux = self._source_template.rayfile
         return self._type
 
@@ -1074,7 +1075,7 @@ class SourceRayFile(BaseSource):
         elif not isinstance(self._exit_geometry_type, SourceRayFile.ExitGeometries):
             self._exit_geometry_type = SourceRayFile.ExitGeometries(
                 rayfile_props=self._source_instance.rayfile_properties,
-                default_values=SourceRayfileParameters,
+                default_values=SourceRayfileParameters(),
                 stable_ctr=True,
             )
         elif (

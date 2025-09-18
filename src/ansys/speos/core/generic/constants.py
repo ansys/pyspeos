@@ -23,6 +23,7 @@
 """Collection of all constants used in pySpeos."""
 
 from dataclasses import dataclass, field
+from enum import Enum
 import os
 from pathlib import Path
 from typing import Optional, Union
@@ -80,30 +81,13 @@ class SOURCE:
         VALUE = 5
 
 
-class FluxFromFile:
-    """Constant class for FluxFromRayFile."""
+class FluxType(Enum):
+    """Enum representing the type of flux."""
 
-    pass
-
-
-class FluxIntensity:
-    """Constant class for FluxIntensity."""
-
-    value: float = 5
-
-
-@dataclass
-class FluxLuminous:
-    """Constant class for Luminous type Flux."""
-
-    value: float = 683
-
-
-@dataclass
-class FluxRadiant:
-    """Constant class for Radiant type Flux."""
-
-    value: float = 1
+    LUMINOUS = "luminous"
+    RADIANT = "radiant"
+    FROM_FILE = "from_file"
+    INTENSITY = "intensity"
 
 
 @dataclass
@@ -111,9 +95,28 @@ class SourceRayfileParameters:
     """Constant class for SourceRayfileParameters."""
 
     ray_file_uri: Union[str, Path] = ""
-    flux_type: Union[FluxLuminous, FluxRadiant, FluxFromFile] = field(default_factory=FluxFromFile)
+    flux_type: FluxType = FluxType.FROM_FILE
+    flux_value: Optional[float] = None
     axis_system: list[float] = field(default_factory=lambda: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     exit_geometry: Optional[GeoRef] = None
+
+    def __post_init__(self):
+        """Verify the dataclass initiation."""
+        # Validation: restrict flux_type
+        if self.flux_type not in {FluxType.FROM_FILE, FluxType.LUMINOUS, FluxType.RADIANT}:
+            raise ValueError(
+                f"Invalid flux_type '{self.flux_type}'. Must be FROM_FILE, LUMINOUS, or RADIANT."
+            )
+
+        # Set default flux_value based on flux_type (only if not manually provided)
+        if self.flux_value is None:
+            match self.flux_type:
+                case FluxType.LUMINOUS:
+                    self.flux_value = 683
+                case FluxType.RADIANT:
+                    self.flux_value = 1
+                case FluxType.FROM_FILE:
+                    self.flux_value = 0.0
 
 
 @dataclass
@@ -121,8 +124,27 @@ class SourceLuminaireParameters:
     """Constant class for SourceLuminaireParamters."""
 
     intensity_file_uri: Union[str, Path] = ""
-    flux_type: Union[FluxLuminous, FluxRadiant, FluxFromFile] = field(default_factory=FluxFromFile)
+    flux_type: FluxType = FluxType.FROM_FILE
+    flux_value: Optional[float] = None
     axis_system: list[float] = field(default_factory=lambda: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+
+    def __post_init__(self) -> None:
+        """Verify the dataclass initiation."""
+        # Validation: restrict flux_type
+        if self.flux_type not in {FluxType.FROM_FILE, FluxType.LUMINOUS, FluxType.RADIANT}:
+            raise ValueError(
+                f"Invalid flux_type '{self.flux_type}'. Must be FROM_FILE, LUMINOUS, or RADIANT."
+            )
+
+        # Set default flux_value based on flux_type (only if not manually provided)
+        if self.flux_value is None:
+            match self.flux_type:
+                case FluxType.LUMINOUS:
+                    self.flux_value = 683
+                case FluxType.RADIANT:
+                    self.flux_value = 1
+                case FluxType.FROM_FILE:
+                    self.flux_value = 0.0
 
 
 class SENSOR:

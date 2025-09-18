@@ -31,7 +31,7 @@ from ansys.speos.core import GeoRef, Project, Speos
 from ansys.speos.core.generic.constants import (
     ORIGIN,
     SOURCE,
-    FluxLuminous,
+    FluxType,
     SourceLuminaireParameters,
     SourceRayfileParameters,
 )
@@ -723,7 +723,7 @@ def test_luminaire_modify_after_reset(speos: Speos):
     # Modify after a reset
     # Template
     assert source._source_template.luminaire.HasField("flux_from_intensity_file")
-    new_default_parameters = SourceLuminaireParameters(flux_type=FluxLuminous())
+    new_default_parameters = SourceLuminaireParameters(flux_type=FluxType.LUMINOUS)
     source = SourceLuminaire(project=p, name="Luminaire.2", default_values=new_default_parameters)
     assert source.set_flux().value == 683
     # assert source.set_flux_luminous().value == 683
@@ -790,8 +790,9 @@ def test_rayfile_modify_after_reset(speos: Speos):
     # Modify after a reset
     # Template
     assert source._source_template.rayfile.HasField("flux_from_ray_file")
-    new_default_parameters = SourceRayfileParameters(flux_type=FluxLuminous())
+    new_default_parameters = SourceRayfileParameters(flux_type=FluxType.LUMINOUS)
     source = SourceRayFile(project=p, name="Luminaire.2", default_values=new_default_parameters)
+    assert source.set_flux().value == 683
 
     source.set_flux().set_luminous()
     source.set_flux().value = 500
