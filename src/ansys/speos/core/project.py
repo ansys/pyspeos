@@ -850,7 +850,8 @@ class Project:
                     sensor_instance=ssr_inst,
                     default_values=False,
                 )
-            self._features.append(ssr_feat)
+            if ssr_feat is not None:
+                self._features.append(ssr_feat)
 
         for sim_inst in scene_data.simulations:
             if sim_inst.name in [_._name for _ in self._features]:
@@ -878,7 +879,8 @@ class Project:
                     simulation_instance=sim_inst,
                     default_values=False,
                 )
-            self._features.append(sim_feat)
+            if sim_feat is not None:
+                self._features.append(sim_feat)
 
     def __extract_part_mesh_info(
         self,
