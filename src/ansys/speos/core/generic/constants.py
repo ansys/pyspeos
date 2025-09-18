@@ -22,6 +22,7 @@
 
 """Collection of all constants used in pySpeos."""
 
+from dataclasses import dataclass
 import os
 
 DEFAULT_HOST: str = "localhost"
@@ -38,3 +39,93 @@ MAX_CLIENT_MESSAGE_SIZE: int = int(4194304)
 """Maximum message Size accepted by grpc channel,
 By default, 4194304.
 """
+
+ORIGIN = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+"""Global Origin"""
+
+
+@dataclass(frozen=True)
+class WavelengthsRange:
+    """Wavelength constants."""
+
+    START = 400
+    """Wavelength start value."""
+    END = 700
+    """Wavelength end value."""
+    SAMPLING = 13
+    """Wavelength sampling."""
+
+
+@dataclass(frozen=True)
+class Dimensions:
+    """Dimension Constants."""
+
+    X_START = -50
+    """Lower bound x axis."""
+    X_END = 50
+    """Upper bound x axis."""
+    X_SAMPLING = 100
+    """Sampling x axis."""
+    Y_START = -50
+    """Lower bound y axis."""
+    Y_END = 50
+    """Upper bound y axis."""
+    Y_SAMPLING = 100
+    """Sampling y axis."""
+
+
+@dataclass(frozen=True)
+class LayerTypes:
+    """Layer Separation constants."""
+
+    MAXIMUM_NB_OF_SEQUENCE = 10
+    """Number of sequences stored in sensor."""
+    INCIDENCE_SAMPLING = 9
+    """Number of incidence sampling stored in sensor."""
+
+
+@dataclass(frozen=True)
+class CameraSensor:
+    """Camera Sensor Constants."""
+
+    GAIN = 1
+    """Default gain value of the Camera Sensor."""
+    ACQUISITION_INTEGRATION = 0.01
+    """Default integration Time value for the Camera Sensor."""
+    ACQUISITION_LAG_TIME = 0
+    """Default acquisition lag time for the Camera Sensor."""
+    GAMMA_CORRECTION = 2.2
+    """Default gamma correction Value for the Camera Sensor."""
+    FOCAL_LENGTH = 5
+    """Default focal length of the Camera Sensor."""
+    IMAGER_DISTANCE = 10
+    """Default imager distance of the camera sensor."""
+    F_NUMBER = 20
+    """Default f number of the camera sensor."""
+    HORZ_PIXEL = 640
+    """Default pixel number in horizontal direction."""
+    VERT_PIXEL = 480
+    """Default pixel number in vertical direction."""
+    WIDTH = 5.0
+    """Default width of the camera chip."""
+    HEIGHT = 5.0
+    """Default height of the camera chip."""
+
+
+@dataclass(frozen=True)
+class RadianceSensor:
+    """Radiance Sensor Constants."""
+
+    FOCAL_LENGTH = 250
+    INTEGRATION_ANGLE = 5
+
+
+@dataclass(frozen=True)
+class SENSOR:
+    """Constant class for Sensors."""
+
+    WAVELENGTHSRANGE = WavelengthsRange()
+    DIMENSIONS = Dimensions()
+    LAYERTYPES = LayerTypes()
+    CAMERASENSOR = CameraSensor()
+    RADIANCESENSOR = RadianceSensor()
