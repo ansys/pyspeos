@@ -9,6 +9,41 @@ This document contains the release notes for the PySpeos project.
 
 .. towncrier release notes start
 
+`0.6.3 <https://github.com/ansys/pyspeos/releases/tag/v0.6.3>`_ - September 18, 2025
+====================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Append not supported scene data instance
+          - `#727 <https://github.com/ansys/pyspeos/pull/727>`_
+
+        * - Append not supported scene data instance (#727)
+          - `#730 <https://github.com/ansys/pyspeos/pull/730>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Adapt docker run command for 25R2 sp2
+          - `#722 <https://github.com/ansys/pyspeos/pull/722>`_
+
+        * - Adapt docker run 25 r2sp2
+          - `#729 <https://github.com/ansys/pyspeos/pull/729>`_
+
+        * - Adapt docker run 25 r2sp2 (#729)
+          - `#731 <https://github.com/ansys/pyspeos/pull/731>`_
+
+
 `0.6.2 <https://github.com/ansys/pyspeos/releases/tag/v0.6.2>`_ - September 11, 2025
 ====================================================================================
 
