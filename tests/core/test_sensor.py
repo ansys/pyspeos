@@ -58,14 +58,14 @@ def test_create_camera_sensor(speos: Speos):
     assert sensor1.sensor_template_link is not None
     assert sensor1.sensor_template_link.get().HasField("camera_sensor_template")
     camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    assert camera_sensor_template.focal_length == SENSOR.CAMERASENSOR.FOCAL_LENGTH
-    assert camera_sensor_template.imager_distance == SENSOR.CAMERASENSOR.IMAGER_DISTANCE
+    assert camera_sensor_template.focal_length == SENSOR.CAMERASENSOR.focal_length
+    assert camera_sensor_template.imager_distance == SENSOR.CAMERASENSOR.imager_distance
     assert camera_sensor_template.distortion_file_uri == ""
-    assert camera_sensor_template.f_number == SENSOR.CAMERASENSOR.F_NUMBER
-    assert camera_sensor_template.horz_pixel == SENSOR.CAMERASENSOR.HORZ_PIXEL
-    assert camera_sensor_template.vert_pixel == SENSOR.CAMERASENSOR.VERT_PIXEL
-    assert camera_sensor_template.width == SENSOR.CAMERASENSOR.WIDTH
-    assert camera_sensor_template.height == SENSOR.CAMERASENSOR.HEIGHT
+    assert camera_sensor_template.f_number == SENSOR.CAMERASENSOR.f_number
+    assert camera_sensor_template.horz_pixel == SENSOR.CAMERASENSOR.horz_pixel
+    assert camera_sensor_template.vert_pixel == SENSOR.CAMERASENSOR.vert_pixel
+    assert camera_sensor_template.width == SENSOR.CAMERASENSOR.width
+    assert camera_sensor_template.height == SENSOR.CAMERASENSOR.height
     assert camera_sensor_template.HasField("sensor_mode_photometric")
     mode_photometric = camera_sensor_template.sensor_mode_photometric
     assert mode_photometric.acquisition_integration == SENSOR.CAMERASENSOR.ACQUISITION_INTEGRATION
@@ -815,9 +815,9 @@ def test_create_radiance_sensor(speos: Speos):
     )
     assert (
         sensor1.sensor_template_link.get().radiance_sensor_template.focal
-        == SENSOR.RADIANCESENSOR.FOCAL_LENGTH
+        == SENSOR.RADIANCESENSOR.focal_length
     )
-    assert sensor1.focal == SENSOR.RADIANCESENSOR.FOCAL_LENGTH
+    assert sensor1.focal == SENSOR.RADIANCESENSOR.focal_length
     assert (
         sensor1.sensor_template_link.get().radiance_sensor_template.integration_angle
         == SENSOR.RADIANCESENSOR.INTEGRATION_ANGLE
@@ -1358,7 +1358,7 @@ def test_radiance_modify_after_reset(speos: Speos):
     # Template
     assert (
         sensor1._sensor_template.radiance_sensor_template.focal
-        == SENSOR.RADIANCESENSOR.FOCAL_LENGTH
+        == SENSOR.RADIANCESENSOR.focal_length
     )
     sensor1.focal = 100
     assert sensor1._sensor_template.radiance_sensor_template.focal == 100
@@ -1473,7 +1473,7 @@ def test_camera_modify_after_reset(speos: Speos):
     # Template
     assert (
         sensor1._sensor_template.camera_sensor_template.focal_length
-        == SENSOR.CAMERASENSOR.FOCAL_LENGTH
+        == SENSOR.CAMERASENSOR.focal_length
     )
     sensor1.focal_length = 40
     assert sensor1._sensor_template.camera_sensor_template.focal_length == 40

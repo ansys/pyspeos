@@ -37,7 +37,15 @@ from ansys.api.speos.sensor.v1 import camera_sensor_pb2, common_pb2, sensor_pb2
 import ansys.speos.core as core
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
-from ansys.speos.core.generic.constants import ORIGIN, SENSOR
+from ansys.speos.core.generic.constants import (
+    ORIGIN,
+    SENSOR,
+    CameraSensorParameters,
+    ColorParameters,
+    MonoChromaticParameters,
+    PhotometricCameraParameters,
+    WavelengthsRange,
+)
 import ansys.speos.core.generic.general_methods as general_methods
 from ansys.speos.core.generic.visualization_methods import _VisualData, local2absolute
 from ansys.speos.core.geo_ref import GeoRef
@@ -161,7 +169,7 @@ class BaseSensor:
         def __init__(
             self,
             wavelengths_range: Union[common_pb2.WavelengthsRange, sensor_pb2.TypeColorimetric],
-            default_values: bool = True,
+            default_parameters: Union[None, WavelengthsRange] = None,
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
@@ -169,11 +177,11 @@ class BaseSensor:
                 raise RuntimeError(msg)
             self._wavelengths_range = wavelengths_range
 
-            if default_values:
+            if default_parameters:
                 # Default values
-                self.start = SENSOR.WAVELENGTHSRANGE.START
-                self.end = SENSOR.WAVELENGTHSRANGE.END
-                self.sampling = SENSOR.WAVELENGTHSRANGE.SAMPLING
+                self.start = default_parameters.start
+                self.end = default_parameters.end
+                self.sampling = default_parameters.sampling
 
         @property
         def start(self) -> float:
@@ -581,7 +589,7 @@ class BaseSensor:
 
         """
 
-        def __init__(self, name: str, geometries: List[GeoRef]) -> None:
+        def __init__(self, name: str, geometries: list[GeoRef]) -> None:
             self.name = name
             """Name of the layer"""
             self.geometry = geometries
@@ -592,20 +600,20 @@ class BaseSensor:
 
             Returns
             -------
-            List[GeoRef]
+            list[GeoRef]
                 List of the Geometries contained in the FaceLayer group
             """
             return self._geometry
 
         @geometry.setter
         def geometry(
-            self, value: Optional[List[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]]
+            self, value: Optional[list[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]]
         ):
             """Set the geometry for this Face Layer group.
 
             Parameters
             ----------
-            value : Optional[List[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]]
+            value : Optional[list[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]]
                 Geometry within the Face Layer group
             """
             geo_paths = []
@@ -685,13 +693,13 @@ class BaseSensor:
             return self
 
         @property
-        def layers(self) -> List[BaseSensor.FaceLayer]:
+        def layers(self) -> list[BaseSensor.FaceLayer]:
             """List of Face layer Groups of this sensor.
 
             Returns
             -------
-            List[ansys.speos.core.sensor.BaseSensor.FaceLayer]
-                List of FaceLayer Classes
+            list[ansys.speos.core.sensor.BaseSensor.FaceLayer]
+                list of FaceLayer Classes
             """
             layer_data = []
             for layer in self._layer_type_face.layers:
@@ -1553,7 +1561,7 @@ class SensorCamera(BaseSensor):
             self,
             mode_photometric: camera_sensor_pb2.SensorCameraModePhotometric,
             camera_props: ProtoScene.SensorInstance.CameraProperties,
-            default_values: bool = True,
+            default_parameters: Union[None, PhotometricCameraParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
@@ -1566,20 +1574,43 @@ class SensorCamera(BaseSensor):
             self._mode = None
 
             # Attribute to keep track of wavelength range object
-            self._wavelengths_range = SensorCamera.WavelengthsRange(
-                wavelengths_range=self._mode_photometric.wavelengths_range,
-                stable_ctr=stable_ctr,
-            )
 
-            if default_values:
+            if isinstance(default_parameters, PhotometricCameraParameters):
                 # Default values
-                self.acquisition_integration = SENSOR.CAMERASENSOR.ACQUISITION_INTEGRATION
-                self.acquisition_lag_time = SENSOR.CAMERASENSOR.ACQUISITION_LAG_TIME
-                self.gamma_correction = SENSOR.CAMERASENSOR.GAMMA_CORRECTION
-                self.set_png_bits_16().set_mode_color()
-                self.set_wavelengths_range()
-                # Default values properties
-                self.set_layer_type_none()
+                self.acquisition_integration = default_parameters.ACQUISITION_INTEGRATION
+                self.acquisition_lag_time = default_parameters.ACQUISITION_LAG_TIME
+                self.gamma_correction = default_parameters.GAMMA_CORRECTION
+                match default_parameters.png_bits:
+                    case "png_08":
+                        self.set_png_bits_08()
+                    case "png_10":
+                        self.set_png_bits_10()
+                    case "png_12":
+                        self.set_png_bits_12()
+                    case "png_16":
+                        self.set_png_bits_16()
+                match default_parameters.layer_type:
+                    case "none":
+                        self.set_layer_type_none()
+                    case "by_source":
+                        self.set_layer_type_source()
+                self._wavelengths_range = SensorCamera.WavelengthsRange(
+                    wavelengths_range=self._mode_photometric.wavelengths_range,
+                    default_parameters=default_parameters.wavelength_range,
+                    stable_ctr=stable_ctr,
+                )
+                if isinstance(default_parameters.color_mode, MonoChromaticParameters):
+                    self.set_mode_monochromatic(default_parameters.color_mode.sensitivity)
+                elif isinstance(default_parameters.color_mode, ColorParameters):
+                    pass
+            elif default_parameters is None:
+                self._wavelengths_range = SensorCamera.WavelengthsRange(
+                    wavelengths_range=self._mode_photometric.wavelengths_range,
+                    default_parameters=None,
+                    stable_ctr=stable_ctr,
+                )
+            else:
+                raise TypeError("Default Photometric Parameters are incorrect")
 
         @property
         def acquisition_integration(self) -> float:
@@ -1851,7 +1882,7 @@ class SensorCamera(BaseSensor):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         sensor_instance: Optional[ProtoScene.SensorInstance] = None,
-        default_values: bool = True,
+        default_parameters: Union[None, CameraSensorParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -1866,18 +1897,27 @@ class SensorCamera(BaseSensor):
 
         # Attribute gathering more complex camera mode
         self._type = None
-        if default_values:
-            # Default values template
-            self.imager_distance = SENSOR.CAMERASENSOR.IMAGER_DISTANCE
-            self.focal_length = SENSOR.CAMERASENSOR.FOCAL_LENGTH
-            self.f_number = SENSOR.CAMERASENSOR.F_NUMBER
-            self.horz_pixel = SENSOR.CAMERASENSOR.HORZ_PIXEL
-            self.vert_pixel = SENSOR.CAMERASENSOR.VERT_PIXEL
-            self.width = SENSOR.CAMERASENSOR.WIDTH
-            self.height = SENSOR.CAMERASENSOR.HEIGHT
-            self.axis_system = ORIGIN
+        if sensor_instance is None:
+            if not default_parameters:
+                default_parameters = CameraSensorParameters()
+            self.imager_distance = default_parameters.imager_distance
+            self.focal_length = default_parameters.focal_length
+            self.f_number = default_parameters.f_number
+            self.horz_pixel = default_parameters.horz_pixel
+            self.vert_pixel = default_parameters.vert_pixel
+            self.width = default_parameters.width
+            self.height = default_parameters.height
+            self.axis_system = default_parameters.axis_system
 
-            self.set_mode_photometric()
+            if isinstance(default_parameters.sensor_type_parameters, PhotometricCameraParameters):
+                self._type = SensorCamera.Photometric(
+                    mode_photometric=self._sensor_template.camera_sensor_template.sensor_mode_photometric,
+                    camera_props=self._sensor_instance.camera_properties,
+                    default_parameters=default_parameters.sensor_type_parameters,
+                    stable_ctr=True,
+                )
+            else:
+                self.set_mode_geometric()
 
     @property
     def visual_data(self) -> _VisualData:
@@ -2238,7 +2278,7 @@ class SensorCamera(BaseSensor):
             self._type = SensorCamera.Photometric(
                 mode_photometric=self._sensor_template.camera_sensor_template.sensor_mode_photometric,
                 camera_props=self._sensor_instance.camera_properties,
-                default_values=False,
+                default_parameters=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._type, SensorCamera.Photometric):
@@ -2246,6 +2286,7 @@ class SensorCamera(BaseSensor):
             self._type = SensorCamera.Photometric(
                 mode_photometric=self._sensor_template.camera_sensor_template.sensor_mode_photometric,
                 camera_props=self._sensor_instance.camera_properties,
+                default_parameters=PhotometricCameraParameters(),
                 stable_ctr=True,
             )
         elif (
@@ -3075,7 +3116,7 @@ class SensorRadiance(BaseSensor):
 
         if default_values:
             # Default values template
-            self.focal = SENSOR.RADIANCESENSOR.FOCAL_LENGTH
+            self.focal = SENSOR.RADIANCESENSOR.focal_length
             self.integration_angle = SENSOR.RADIANCESENSOR.INTEGRATION_ANGLE
             self.set_type_photometric()
             # Default values properties
