@@ -28,8 +28,6 @@ import os
 from pathlib import Path
 from typing import Union
 
-from ansys.speos.core import GeoRef, body, face, part
-
 DEFAULT_HOST: str = "localhost"
 """Default host used by Speos RPC server and client """
 DEFAULT_PORT: str = "50098"
@@ -50,8 +48,8 @@ ORIGIN = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 
 
 @dataclass
-class WavelengthsRange:
-    """Wavelength constants."""
+class WavelengthsRangeParameters:
+    """Wavelength parameters."""
 
     start: int = 400
     """Wavelength start value."""
@@ -62,8 +60,8 @@ class WavelengthsRange:
 
 
 @dataclass
-class Dimensions:
-    """Dimension Constants."""
+class DimensionsParameters:
+    """Dimension Parameters."""
 
     x_start: float = -50
     """Lower bound x axis."""
@@ -102,7 +100,7 @@ class SequenceTypes(str, Enum):
 
 
 @dataclass
-class LayerBySequence:
+class LayerBySequenceParameters:
     """Layer separation type Parameters  for Sequence separation."""
 
     maximum_nb_of_sequence: int = 10
@@ -112,17 +110,25 @@ class LayerBySequence:
 
 
 @dataclass
-class LayerByFace:
+class GeometryLayerParameters:
+    """Geometry layer parameters."""
+
+    name: str
+    geometry: list
+
+
+@dataclass
+class LayerByFaceParameters:
     """Layer separation type Parameters  for Face separation."""
 
-    geometries: list[list[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]] = None
+    geometries: list[GeometryLayerParameters] = None
     sca_filtering_types: Union[
         SCAFilteringTypes.intersected_one_time, SCAFilteringTypes.last_impact
     ] = SCAFilteringTypes.last_impact
 
 
 @dataclass
-class LayerbyIncidenceAngle:
+class LayerByIncidenceAngleParameters:
     """Layer separation type Parameters for Incidence angle separation."""
 
     incidence_sampling: int = 9
@@ -137,7 +143,7 @@ class PngBits(str, Enum):
     png_16 = "png_16"
 
 
-class ColorBalanceMode(str, Enum):
+class ColorBalanceModeTypes(str, Enum):
     """Color Balance Mode types without parameters."""
 
     none = "none"
@@ -173,11 +179,11 @@ class ColorParameters:
     """Color mode Camera Parameter."""
 
     balance_mode: Union[
-        ColorBalanceMode.none,
-        ColorBalanceMode.grey_world,
+        ColorBalanceModeTypes.none,
+        ColorBalanceModeTypes.grey_world,
         BalanceModeUserWhiteParameters,
         BalanceModeDisplayPrimariesParameters,
-    ] = ColorBalanceMode.none
+    ] = ColorBalanceModeTypes.none
     """Camera Balance mode."""
     red_spectrum_file_uri: str = ""
     """Path to sensitivity spectrum of red Channel."""
@@ -205,7 +211,7 @@ class PhotometricCameraParameters:
     """Layer separation parameter."""
     png_bits: Union[PngBits.png_08, PngBits.png_10, PngBits.png_12, PngBits.png_16] = PngBits.png_16
     """PNG bit resolution of the Camera Sensor."""
-    wavelength_range = WavelengthsRange()
+    wavelength_range = WavelengthsRangeParameters()
     """Wavelength range of the Camera Sensor."""
     ACQUISITION_INTEGRATION: float = 0.01
     """Integration Time value for the Camera Sensor."""
@@ -221,7 +227,7 @@ class CameraSensorParameters:
 
     sensor_type_parameters: Union[None, PhotometricCameraParameters] = PhotometricCameraParameters()
     """Camera sensor type None means geometric sensor"""
-    axis_system: list[float] = field(default_factory=lambda: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
     """Location of the sensor Origin"""
     focal_length: float = 5
     """Default focal length of the Camera Sensor."""
@@ -238,6 +244,80 @@ class CameraSensorParameters:
     height: float = 5.0
     """Default height of the camera chip."""
     trajectory_fil_uri: Union[str, Path] = ""
+    """Trajectory file information."""
+    lxp_path_number: Union[None, int] = None
+
+
+@dataclass
+class ColorimetricParameters:
+    """Colorimetric settings of the Sensor."""
+
+    wavelength_range = WavelengthsRangeParameters()
+    """Wavelength range of the Sensor."""
+
+
+@dataclass
+class SpectralParameters:
+    """Colorimetric settings of the Sensor."""
+
+    wavelength_range = WavelengthsRangeParameters()
+    """Wavelength range of the Sensor."""
+
+
+class IntegrationTypes(str, Enum):
+    """Integration types without parameters."""
+
+    planar = "planar"
+    radial = "radial"
+    hemispherical = "hemispherical"
+    cylindrical = "cylindrical"
+    semi_cylindrical = "semi_cylindrical"
+
+
+class RayfileTypes(str, Enum):
+    """Rayfile types without parameters."""
+
+    none = "none"
+    classic = "classic"
+    polarization = "polarization"
+    tm25 = "tm25"
+    tm25_no_polarization = "tm25_no_polarization"
+
+
+class SensorTypes(str, Enum):
+    """Sensor types without parameters."""
+
+    photometric = "photometric"
+    radiometric = "radiometric"
+
+
+@dataclass
+class IrradianceSensorParameters:
+    """Irradiance Sensor Parameters."""
+
+    dimensions: DimensionsParameters = DimensionsParameters()
+    """Dimensions of the sensor."""
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+    """Position of the sensor."""
+    sensor_type: Union[
+        SensorTypes.photometric, ColorimetricParameters, SpectralParameters, SensorTypes.radiometric
+    ] = SensorTypes.photometric
+    """Type of the sensor."""
+    integration_type: Union[IntegrationTypes] = IntegrationTypes.planar
+    """Integration type of the sensor."""
+    integration_direction: Union[None, list[float]] = None
+    """Integration direction of the sensor."""
+    rayfile_type: Union[RayfileTypes] = RayfileTypes.none
+    """Type of rayfile stored by the sensor."""
+    layer_type: Union[
+        LayerTypes,
+        LayerByFaceParameters,
+        LayerBySequenceParameters,
+        LayerByIncidenceAngleParameters,
+    ] = LayerTypes.none
+    """Type of layer separation used by the sensor."""
+    outpath_face_geometry: list = None
+    """Outpath face used by the sensor"""
 
 
 @dataclass(frozen=True)
@@ -252,8 +332,6 @@ class RadianceSensor:
 class SENSOR:
     """Constant class for Sensors."""
 
-    WAVELENGTHSRANGE = WavelengthsRange()
-    DIMENSIONS = Dimensions()
-    LAYERTYPES = LayerTypes()
+    WAVELENGTHSRANGE = WavelengthsRangeParameters()
     CAMERASENSOR = ""
     RADIANCESENSOR = RadianceSensor()

@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from difflib import SequenceMatcher
 from pathlib import Path
-from typing import List, Mapping, Optional, Union
+from typing import Mapping, Optional, Union
 import uuid
 import warnings
 
@@ -43,10 +43,16 @@ from ansys.speos.core.generic.constants import (
     BalanceModeDisplayPrimariesParameters,
     BalanceModeUserWhiteParameters,
     CameraSensorParameters,
+    ColorimetricParameters,
     ColorParameters,
+    IrradianceSensorParameters,
+    LayerByFaceParameters,
+    LayerByIncidenceAngleParameters,
+    LayerBySequenceParameters,
     MonoChromaticParameters,
     PhotometricCameraParameters,
-    WavelengthsRange,
+    SpectralParameters,
+    WavelengthsRangeParameters,
 )
 import ansys.speos.core.generic.general_methods as general_methods
 from ansys.speos.core.generic.visualization_methods import _VisualData, local2absolute
@@ -122,7 +128,7 @@ class BaseSensor:
             self.reset()
 
     @property
-    def lxp_path_number(self) -> int:
+    def lxp_path_number(self) -> Union[None, int]:
         """Number of LXP rays simulated for the Sensor.
 
         Returns
@@ -171,7 +177,7 @@ class BaseSensor:
         def __init__(
             self,
             wavelengths_range: Union[common_pb2.WavelengthsRange, sensor_pb2.TypeColorimetric],
-            default_parameters: Union[None, WavelengthsRange] = None,
+            default_parameters: Union[None, WavelengthsRangeParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
@@ -467,7 +473,7 @@ class BaseSensor:
         ----------
         sensor_type_colorimetric : ansys.api.speos.sensor.v1.common_pb2.SensorTypeColorimetric
             SensorTypeColorimetric protobuf object to modify.
-        default_values : bool
+        default_parameters : bool
             Uses default values when True.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
@@ -481,7 +487,7 @@ class BaseSensor:
         def __init__(
             self,
             sensor_type_colorimetric: common_pb2.SensorTypeColorimetric,
-            default_values: bool = True,
+            default_parameters: Union[None, ColorimetricParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
@@ -489,16 +495,19 @@ class BaseSensor:
                 raise RuntimeError(msg)
             self._sensor_type_colorimetric = sensor_type_colorimetric
 
-            # Attribute to keep track of wavelength range object
-            self._wavelengths_range = BaseSensor.WavelengthsRange(
-                wavelengths_range=self._sensor_type_colorimetric.wavelengths_range,
-                default_values=default_values,
-                stable_ctr=stable_ctr,
-            )
-
-            if default_values:
+            if default_parameters:
                 # Default values
-                self.set_wavelengths_range()
+                self._wavelengths_range = BaseSensor.WavelengthsRange(
+                    wavelengths_range=self._sensor_type_colorimetric.wavelengths_range,
+                    default_parameters=default_parameters.wavelength_range,
+                    stable_ctr=stable_ctr,
+                )
+            else:
+                self._wavelengths_range = BaseSensor.WavelengthsRange(
+                    wavelengths_range=self._sensor_type_colorimetric.wavelengths_range,
+                    default_parameters=None,
+                    stable_ctr=stable_ctr,
+                )
 
         def set_wavelengths_range(self) -> BaseSensor.WavelengthsRange:
             """Set the range of wavelengths.
@@ -543,7 +552,7 @@ class BaseSensor:
         def __init__(
             self,
             sensor_type_spectral: common_pb2.SensorTypeSpectral,
-            default_values: bool = True,
+            default_parameters: Union[None, SpectralParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
@@ -551,16 +560,19 @@ class BaseSensor:
                 raise RuntimeError(msg)
             self._sensor_type_spectral = sensor_type_spectral
 
-            # Attribute to keep track of wavelength range object
-            self._wavelengths_range = BaseSensor.WavelengthsRange(
-                wavelengths_range=self._sensor_type_spectral.wavelengths_range,
-                default_values=default_values,
-                stable_ctr=stable_ctr,
-            )
-
-            if default_values:
+            if default_parameters:
                 # Default values
-                self.set_wavelengths_range()
+                self._wavelengths_range = BaseSensor.WavelengthsRange(
+                    wavelengths_range=self._sensor_type_spectral.wavelengths_range,
+                    default_parameters=default_parameters.wavelength_range,
+                    stable_ctr=stable_ctr,
+                )
+            else:
+                self._wavelengths_range = BaseSensor.WavelengthsRange(
+                    wavelengths_range=self._sensor_type_spectral.wavelengths_range,
+                    default_parameters=None,
+                    stable_ctr=stable_ctr,
+                )
 
         def set_wavelengths_range(self) -> BaseSensor.WavelengthsRange:
             """Set the range of wavelengths.
@@ -586,7 +598,7 @@ class BaseSensor:
         ----------
         name : str
             Name of the layer.
-        geometries : List[ansys.speos.core.geo_ref.GeoRef]
+        geometries : list[ansys.speos.core.geo_ref.GeoRef]
             List of geometries included in this layer.
 
         """
@@ -637,7 +649,7 @@ class BaseSensor:
         layer_type_face : \
         ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance.LayerTypeFace
             LayerTypeFace protobuf object to modify.
-        default_values : bool
+        default_parameters : bool
             Uses default values when True.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
@@ -651,7 +663,7 @@ class BaseSensor:
         def __init__(
             self,
             layer_type_face: ProtoScene.SensorInstance.LayerTypeFace,
-            default_values: bool = True,
+            default_parameters: Union[None, LayerByFaceParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
@@ -660,9 +672,16 @@ class BaseSensor:
 
             self._layer_type_face = layer_type_face
 
-            if default_values:
+            if default_parameters:
                 # Default values
-                self.set_sca_filtering_mode_last_impact()
+                match default_parameters.sca_filtering_types:
+                    case "last_impact":
+                        self.set_sca_filtering_mode_last_impact()
+                    case "intersected_one_time":
+                        self.set_sca_filtering_mode_intersected_one_time()
+                if default_parameters.geometries:
+                    for item in default_parameters.geometries:
+                        self.layers.append(BaseSensor.FaceLayer(item.name, item.geometry))
 
         def set_sca_filtering_mode_intersected_one_time(
             self,
@@ -709,12 +728,12 @@ class BaseSensor:
             return layer_data
 
         @layers.setter
-        def layers(self, values: List[BaseSensor.FaceLayer]):
+        def layers(self, values: list[BaseSensor.FaceLayer]):
             """Set the layers.
 
             Parameters
             ----------
-            values : List[ansys.speos.core.sensor.BaseSensor.FaceLayer]
+            values : list[ansys.speos.core.sensor.BaseSensor.FaceLayer]
                 List of layers
             """
             my_list = [
@@ -740,7 +759,7 @@ class BaseSensor:
         layer_type_sequence : \
         ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance.LayerTypeSequence
             LayerTypeSequence protobuf object to modify.
-        default_values : bool
+        default_parameters : bool
             Uses default values when True.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
@@ -754,7 +773,7 @@ class BaseSensor:
         def __init__(
             self,
             layer_type_sequence: ProtoScene.SensorInstance.LayerTypeSequence,
-            default_values: bool = True,
+            default_parameters: Union[None, LayerBySequenceParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
@@ -763,10 +782,14 @@ class BaseSensor:
 
             self._layer_type_sequence = layer_type_sequence
 
-            if default_values:
+            if default_parameters:
                 # Default values
-                self.maximum_nb_of_sequence = SENSOR.LAYERTYPES.MAXIMUM_NB_OF_SEQUENCE
-                self.set_define_sequence_per_geometries()
+                self.maximum_nb_of_sequence = default_parameters.maximum_nb_of_sequence
+                match default_parameters.sequence_type:
+                    case "by_face":
+                        self.set_define_sequence_per_faces()
+                    case "by_geometry":
+                        self.set_define_sequence_per_geometries()
 
         @property
         def maximum_nb_of_sequence(self) -> int:
@@ -831,7 +854,7 @@ class BaseSensor:
         layer_type_incidence_angle : \
         ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance.LayerTypeIncidenceAngle
             LayerTypeIncidenceAngle protobuf object to modify.
-        default_values : bool
+        default_parameters : bool
             Uses default values when True.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
@@ -845,7 +868,7 @@ class BaseSensor:
         def __init__(
             self,
             layer_type_incidence_angle: ProtoScene.SensorInstance.LayerTypeIncidenceAngle,
-            default_values: bool = True,
+            default_parameters: Union[None, LayerByIncidenceAngleParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
@@ -854,9 +877,9 @@ class BaseSensor:
 
             self._layer_type_incidence_angle = layer_type_incidence_angle
 
-            if default_values:
+            if default_parameters:
                 # Default values
-                self.sampling = SENSOR.LAYERTYPES.INCIDENCE_SAMPLING
+                self.sampling = default_parameters.incidence_sampling
 
         @property
         def sampling(self) -> BaseSensor.LayerTypeIncidenceAngle:
@@ -1940,6 +1963,7 @@ class SensorCamera(BaseSensor):
             self.width = default_parameters.width
             self.height = default_parameters.height
             self.axis_system = default_parameters.axis_system
+            self.lxp_path_number = default_parameters.lxp_path_number
 
             if isinstance(default_parameters.sensor_type_parameters, PhotometricCameraParameters):
                 self._type = SensorCamera.Photometric(
@@ -2254,25 +2278,25 @@ class SensorCamera(BaseSensor):
         self._sensor_template.camera_sensor_template.height = value
 
     @property
-    def axis_system(self) -> List[float]:
+    def axis_system(self) -> list[float]:
         """The position of the sensor.
 
         By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
         Returns
         -------
-        List[float]
+        list[float]
             Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
         """
         return self._sensor_instance.camera_properties.axis_system
 
     @axis_system.setter
-    def axis_system(self, axis_system: List[float]):
+    def axis_system(self, axis_system: list[float]):
         """Position of the sensor.
 
         Parameters
         ----------
-        axis_system : List[float]
+        axis_system : list[float]
             Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
         """
@@ -2387,7 +2411,7 @@ class SensorIrradiance(BaseSensor):
     sensor_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance, optional
         Sensor instance to provide if the feature does not has to be created from scratch
         By default, ``None``, means that the feature is created from scratch by default.
-    default_values : bool
+    default_parameters : bool
         Uses default values when True.
         By default, ``True``.
     """
@@ -2399,7 +2423,7 @@ class SensorIrradiance(BaseSensor):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         sensor_instance: Optional[ProtoScene.SensorInstance] = None,
-        default_values: bool = True,
+        default_parameters: Union[None, IrradianceSensorParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -2418,19 +2442,87 @@ class SensorIrradiance(BaseSensor):
         # Attribute gathering more complex layer type
         self._layer_type = None
 
-        # Attribute to keep track of sensor dimensions object
-        self._sensor_dimensions = self.Dimensions(
-            sensor_dimensions=self._sensor_template.irradiance_sensor_template.dimensions,
-            default_values=default_values,
-            stable_ctr=True,
-        )
-
-        if default_values:
+        if sensor_instance is None:
+            if default_parameters is None:
+                default_parameters = IrradianceSensorParameters()
             # Default values template
-            self.set_type_photometric().set_illuminance_type_planar()
+
+            if isinstance(default_parameters.sensor_type, ColorimetricParameters):
+                self._type = BaseSensor.Colorimetric(
+                    sensor_type_colorimetric=self._sensor_template.irradiance_sensor_template.sensor_type_colorimetric,
+                    default_parameters=default_parameters.sensor_type,
+                    stable_ctr=True,
+                )
+            elif isinstance(default_parameters.sensor_type, SpectralParameters):
+                self._type = BaseSensor.Spectral(
+                    sensor_type_spectral=self._sensor_template.irradiance_sensor_template.sensor_type_spectral,
+                    default_parameters=default_parameters.sensor_type,
+                    stable_ctr=True,
+                )
+            elif default_parameters == "radiometric":
+                self.set_type_radiometric()
+            elif default_parameters == "photometric":
+                self.set_type_photometric()
+
+            match default_parameters.integration_type:
+                case "planar":
+                    self.set_illuminance_type_planar()
+                    self.integration_direction = default_parameters.integration_direction
+                case "radial":
+                    self.set_illuminance_type_radial()
+                case "hemispherical":
+                    self.set_illuminance_type_hemispherical()
+                case "cylindrical":
+                    self.set_illuminance_type_cylindrical()
+                case "semi_cylindrical":
+                    self.set_illuminance_type_semi_cylindrical()
+                    self.integration_direction = default_parameters.integration_direction
+
+            match default_parameters.rayfile_type:
+                case "none":
+                    self.set_ray_file_type_none()
+                case "classic":
+                    self.set_ray_file_type_classic()
+                case "polarization":
+                    self.set_ray_file_type_polarization()
+                case "tm25":
+                    self.set_ray_file_type_tm25()
+                case "tm25_no_polarization":
+                    self.set_ray_file_type_tm25_no_polarization()
+
+            if default_parameters.layer_type == "none":
+                self.set_layer_type_none()
+            elif default_parameters.layer_type == "by_source":
+                self.set_layer_type_source()
+            elif default_parameters.layer_type == "by_polarization":
+                self.set_layer_type_polarization()
+            elif isinstance(default_parameters.layer_type, LayerByFaceParameters):
+                self._layer_type = BaseSensor.LayerTypeFace(
+                    layer_type_face=self._sensor_instance.irradiance_properties.layer_type_face,
+                    default_parameters=default_parameters.layer_type,
+                    stable_ctr=True,
+                )
+            elif isinstance(default_parameters.layer_type, LayerBySequenceParameters):
+                self._layer_type = BaseSensor.LayerTypeSequence(
+                    layer_type_sequence=self._sensor_instance.irradiance_properties.layer_type_sequence,
+                    default_parameters=default_parameters.layer_type,
+                    stable_ctr=True,
+                )
+            elif isinstance(default_parameters.layer_type, LayerByIncidenceAngleParameters):
+                self._layer_type = BaseSensor.LayerTypeIncidenceAngle(
+                    layer_type_incidence_angle=self._sensor_instance.irradiance_properties.layer_type_incidence_angle,
+                    default_parameters=default_parameters.layer_type,
+                    stable_ctr=True,
+                )
             # Default values properties
-            self.axis_system = ORIGIN
-            self.set_ray_file_type_none().set_layer_type_none()
+            self.axis_system = default_parameters.axis_system
+            self.output_face_geometries = default_parameters.outpath_face_geometry
+        else:
+            self._sensor_dimensions = self.Dimensions(
+                sensor_dimensions=self._sensor_template.irradiance_sensor_template.dimensions,
+                default_parameters=None,
+                stable_ctr=True,
+            )
 
     @property
     def visual_data(self) -> _VisualData:
@@ -2618,7 +2710,7 @@ class SensorIrradiance(BaseSensor):
             # Happens in case of project created via load of speos file
             self._type = BaseSensor.Colorimetric(
                 sensor_type_colorimetric=self._sensor_template.irradiance_sensor_template.sensor_type_colorimetric,
-                default_values=False,
+                default_parameters=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._type, BaseSensor.Colorimetric):
@@ -2702,18 +2794,18 @@ class SensorIrradiance(BaseSensor):
 
         Returns
         -------
-        List[float]
+        list[float]
             Sensor global integration direction [x,y,z]
         """
         return self._sensor_instance.irradiance_properties.integration_direction
 
     @integration_direction.setter
-    def integration_direction(self, value: List[float]):
+    def integration_direction(self, value: list[float]):
         """Set integration direction.
 
         Parameters
         ----------
-        value : List[float]
+        value : list[float]
             Sensor global integration direction [x,y,z]
         """
         if not value:
@@ -2737,7 +2829,7 @@ class SensorIrradiance(BaseSensor):
 
         Parameters
         ----------
-        integration_direction : List[float], optional
+        integration_direction : list[float], optional
             Sensor global integration direction [x,y,z].
             The integration direction must be set in the anti-rays direction to integrate their
             signal.
@@ -2804,25 +2896,25 @@ class SensorIrradiance(BaseSensor):
         return self
 
     @property
-    def axis_system(self) -> List[float]:
+    def axis_system(self) -> list[float]:
         """Position of the sensor.
 
         By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
         Returns
         -------
-        List[float]
+        list[float]
             Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
         """
         return self._sensor_instance.irradiance_properties.axis_system
 
     @axis_system.setter
-    def axis_system(self, axis_system: List[float]):
+    def axis_system(self, axis_system: list[float]):
         """Position of the sensor.
 
         Parameters
         ----------
-        axis_system : List[float]
+        axis_system : list[float]
             Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
         """
@@ -2934,7 +3026,7 @@ class SensorIrradiance(BaseSensor):
             # Happens in case of project created via load of speos file
             self._layer_type = BaseSensor.LayerTypeFace(
                 layer_type_face=self._sensor_instance.irradiance_properties.layer_type_face,
-                default_values=False,
+                default_parameters=False,
                 stable_ctr=True,
             )
         elif not isinstance(self._layer_type, BaseSensor.LayerTypeFace):
@@ -2967,7 +3059,7 @@ class SensorIrradiance(BaseSensor):
             # Happens in case of project created via load of speos file
             self._layer_type = BaseSensor.LayerTypeSequence(
                 layer_type_sequence=self._sensor_instance.irradiance_properties.layer_type_sequence,
-                default_values=False,
+                default_parameters=False,
                 stable_ctr=True,
             )
         elif not isinstance(self._layer_type, BaseSensor.LayerTypeSequence):
@@ -3014,7 +3106,7 @@ class SensorIrradiance(BaseSensor):
             # Happens in case of project created via load of speos file
             self._layer_type = BaseSensor.LayerTypeIncidenceAngle(
                 layer_type_incidence_angle=self._sensor_instance.irradiance_properties.layer_type_incidence_angle,
-                default_values=False,
+                default_parameters=False,
                 stable_ctr=True,
             )
         elif not isinstance(self._layer_type, BaseSensor.LayerTypeIncidenceAngle):
@@ -3039,8 +3131,8 @@ class SensorIrradiance(BaseSensor):
 
         Parameters
         ----------
-        geometries : List[ansys.speos.core.geo_ref.GeoRef]
-            List of geometries that will be considered as output faces.
+        geometries : list[ansys.speos.core.geo_ref.GeoRef]
+            list of geometries that will be considered as output faces.
             By default, ``[]``, ie no output faces.
 
         Returns
@@ -3054,13 +3146,13 @@ class SensorIrradiance(BaseSensor):
     @output_face_geometries.setter
     def output_face_geometries(
         self,
-        geometries: Optional[List[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]] = None,
+        geometries: Optional[list[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]] = None,
     ) -> SensorIrradiance:
         """Select output faces for inverse simulation optimization.
 
         Parameters
         ----------
-        geometries : List[ansys.speos.core.geo_ref.GeoRef]
+        geometries : list[ansys.speos.core.geo_ref.GeoRef]
             List of geometries that will be considered as output faces.
             By default, ``[]``, ie no output faces.
 
@@ -3339,7 +3431,7 @@ class SensorRadiance(BaseSensor):
             # Happens in case of project created via load of speos file
             self._type = BaseSensor.Colorimetric(
                 sensor_type_colorimetric=self._sensor_template.radiance_sensor_template.sensor_type_colorimetric,
-                default_values=False,
+                default_parameters=False,
                 stable_ctr=True,
             )
         elif not isinstance(self._type, BaseSensor.Colorimetric):
@@ -3459,25 +3551,25 @@ class SensorRadiance(BaseSensor):
         self._sensor_template.radiance_sensor_template.integration_angle = value
 
     @property
-    def axis_system(self) -> List[float]:
+    def axis_system(self) -> list[float]:
         """Position of the sensor.
 
         By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
         Returns
         -------
-        List[float]
+        list[float]
             Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
         """
         return self._sensor_instance.radiance_properties.axis_system
 
     @axis_system.setter
-    def axis_system(self, axis_system: List[float]):
+    def axis_system(self, axis_system: list[float]):
         """Position of the sensor.
 
         Parameters
         ----------
-        axis_system : List[float]
+        axis_system : list[float]
             Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
         """
@@ -3494,14 +3586,14 @@ class SensorRadiance(BaseSensor):
 
         Returns
         -------
-        Union[None, List[float]]
+        Union[None, list[float]]
             Position of the observer point [Ox Oy Oz], None means that the
             focal length is used.
         """
         return self._sensor_instance.radiance_properties.observer_point
 
     @observer_point.setter
-    def observer_point(self, value: List[float]):
+    def observer_point(self, value: list[float]):
         """Position of the observer point.
 
         This is optional, because the focal length is used by default.
@@ -3509,7 +3601,7 @@ class SensorRadiance(BaseSensor):
 
         Parameters
         ----------
-        value : List[float]
+        value : list[float]
             Position of the observer point [Ox Oy Oz].
             By default, ``None``. None means that the focal length is used.
         """
@@ -3558,7 +3650,7 @@ class SensorRadiance(BaseSensor):
             # Happens in case of project created via load of speos file
             self._layer_type = BaseSensor.LayerTypeFace(
                 layer_type_face=self._sensor_instance.radiance_properties.layer_type_face,
-                default_values=False,
+                default_parameters=False,
                 stable_ctr=True,
             )
         elif not isinstance(self._layer_type, BaseSensor.LayerTypeFace):
@@ -3591,7 +3683,7 @@ class SensorRadiance(BaseSensor):
             # Happens in case of project created via load of speos file
             self._layer_type = BaseSensor.LayerTypeSequence(
                 layer_type_sequence=self._sensor_instance.radiance_properties.layer_type_sequence,
-                default_values=False,
+                default_parameters=False,
                 stable_ctr=True,
             )
         elif not isinstance(self._layer_type, BaseSensor.LayerTypeSequence):
@@ -4246,25 +4338,25 @@ class Sensor3DIrradiance(BaseSensor):
         return self
 
     @property
-    def geometries(self) -> List[str]:
+    def geometries(self) -> list[str]:
         """Geometry faces/bodies to be defined with 3D irradiance sensor.
 
         Returns
         -------
-        List[str]
+        list[str]
             List of geometries that will be considered as Sensor
         """
         return self._sensor_instance.irradiance_3d_properties.geometries.geo_paths
 
     @geometries.setter
     def geometries(
-        self, geometries: List[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]
+        self, geometries: list[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]
     ) -> Sensor3DIrradiance:
         """Select geometry faces to be defined with 3D irradiance sensor.
 
         Parameters
         ----------
-        geometries : List[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]
+        geometries : list[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]
             List of geometries that will be considered as Sensor
         """
         geo_paths = []
