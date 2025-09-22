@@ -18,6 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.10", "3.11", "3.12", "3.13"]
+        grpc-version:   ["1.75.0", "1.74.0", "1.73.0"]
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
@@ -45,6 +46,12 @@ jobs:
           pip install --upgrade build wheel
           pip install .[tests]
 
+      - name: Install gRPC ${{ matrix.grpc-version }} version
+        run: |
+          . .venv/bin/activate
+          pip uninstall -y grpcio
+          pip install grpcio==${{ matrix.grpc-version }}
+
       - name: Login to GitHub Packages
         uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3.5.0
         with:
@@ -68,7 +75,7 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           path: .cov/html
-          name: coverage-html-ubuntu-${{ matrix.python-version }}
+          name: coverage-html-ubuntu-${{ matrix.python-version }}-${{ matrix.grpc-version }}
           retention-days: 7
 
       - name: Upload coverage to Codecov
@@ -77,7 +84,7 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           files: .cov/xml
-          name: coverage-html-ubuntu-${{ matrix.python-version }}
+          name: coverage-html-ubuntu-${{ matrix.python-version }}-${{ matrix.grpc-version }}
 
       - name: Stop container
         run: |
