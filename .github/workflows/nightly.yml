@@ -75,7 +75,7 @@ jobs:
       - name: Run pytest
         run: |
           . .venv/bin/activate
-          xvfb-run pytest -xs
+          xvfb-run pytest -s
 
       - name: Upload Coverage Results
         if: always()
