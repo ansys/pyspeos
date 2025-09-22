@@ -45,6 +45,7 @@ from ansys.speos.core.generic.constants import (
     CameraSensorParameters,
     ColorimetricParameters,
     ColorParameters,
+    DimensionsParameters,
     IrradianceSensorParameters,
     LayerByFaceParameters,
     LayerByIncidenceAngleParameters,
@@ -301,7 +302,7 @@ class BaseSensor:
         def __init__(
             self,
             sensor_dimensions: common_pb2.SensorDimensions,
-            default_values: bool = True,
+            default_parameters: Union[None, DimensionsParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
@@ -309,14 +310,14 @@ class BaseSensor:
                 raise RuntimeError(msg)
             self._sensor_dimensions = sensor_dimensions
 
-            if default_values:
+            if default_parameters:
                 # Default values
-                self.x_start = SENSOR.DIMENSIONS.X_START
-                self.y_start = SENSOR.DIMENSIONS.Y_START
-                self.x_end = SENSOR.DIMENSIONS.X_END
-                self.y_end = SENSOR.DIMENSIONS.Y_END
-                self.x_sampling = SENSOR.DIMENSIONS.X_SAMPLING
-                self.y_sampling = SENSOR.DIMENSIONS.Y_SAMPLING
+                self.x_start = default_parameters.x_start
+                self.y_start = default_parameters.y_start
+                self.x_end = default_parameters.x_end
+                self.y_end = default_parameters.y_end
+                self.x_sampling = default_parameters.x_sampling
+                self.y_sampling = default_parameters.y_sampling
 
         @property
         def x_start(self) -> float:
@@ -2760,13 +2761,14 @@ class SensorIrradiance(BaseSensor):
             # Happens in case of project created via load of speos file
             self._type = BaseSensor.Spectral(
                 sensor_type_spectral=self._sensor_template.irradiance_sensor_template.sensor_type_spectral,
-                default_values=False,
+                default_parameters=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._type, BaseSensor.Spectral):
             # if the _type is not Spectral then we create a new type.
             self._type = BaseSensor.Spectral(
                 sensor_type_spectral=self._sensor_template.irradiance_sensor_template.sensor_type_spectral,
+                default_parameters=SpectralParameters(),
                 stable_ctr=True,
             )
         elif (
@@ -3026,13 +3028,14 @@ class SensorIrradiance(BaseSensor):
             # Happens in case of project created via load of speos file
             self._layer_type = BaseSensor.LayerTypeFace(
                 layer_type_face=self._sensor_instance.irradiance_properties.layer_type_face,
-                default_parameters=False,
+                default_parameters=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._layer_type, BaseSensor.LayerTypeFace):
             # if the _layer_type is not LayerTypeFace then we create a new type.
             self._layer_type = BaseSensor.LayerTypeFace(
                 layer_type_face=self._sensor_instance.irradiance_properties.layer_type_face,
+                default_parameters=LayerByFaceParameters(),
                 stable_ctr=True,
             )
         elif (
@@ -3059,13 +3062,14 @@ class SensorIrradiance(BaseSensor):
             # Happens in case of project created via load of speos file
             self._layer_type = BaseSensor.LayerTypeSequence(
                 layer_type_sequence=self._sensor_instance.irradiance_properties.layer_type_sequence,
-                default_parameters=False,
+                default_parameters=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._layer_type, BaseSensor.LayerTypeSequence):
             # if the _type is not LayerTypeSequence then we create a new type.
             self._layer_type = BaseSensor.LayerTypeSequence(
                 layer_type_sequence=self._sensor_instance.irradiance_properties.layer_type_sequence,
+                default_parameters=LayerBySequenceParameters(),
                 stable_ctr=True,
             )
         elif (
@@ -3106,13 +3110,14 @@ class SensorIrradiance(BaseSensor):
             # Happens in case of project created via load of speos file
             self._layer_type = BaseSensor.LayerTypeIncidenceAngle(
                 layer_type_incidence_angle=self._sensor_instance.irradiance_properties.layer_type_incidence_angle,
-                default_parameters=False,
+                default_parameters=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._layer_type, BaseSensor.LayerTypeIncidenceAngle):
             # if the _layer_type is not LayerTypeIncidenceAngle then we create a new type.
             self._layer_type = BaseSensor.LayerTypeIncidenceAngle(
                 layer_type_incidence_angle=self._sensor_instance.irradiance_properties.layer_type_incidence_angle,
+                default_parameters=LayerByIncidenceAngleParameters(),
                 stable_ctr=True,
             )
         elif (
