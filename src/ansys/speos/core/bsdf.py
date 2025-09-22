@@ -30,16 +30,16 @@ from pathlib import Path
 from typing import Union
 import warnings
 
-from google.protobuf.empty_pb2 import Empty
-import grpc
-import numpy as np
-
 import ansys.api.speos.bsdf.v1.anisotropic_bsdf_pb2 as anisotropic_bsdf__v1__pb2
 import ansys.api.speos.bsdf.v1.anisotropic_bsdf_pb2_grpc as anisotropic_bsdf__v1__pb2_grpc
 import ansys.api.speos.bsdf.v1.bsdf_creation_pb2 as bsdf_creation__v1__pb2
 import ansys.api.speos.bsdf.v1.bsdf_creation_pb2_grpc as bsdf_creation__v1__pb2_grpc
 import ansys.api.speos.bsdf.v1.spectral_bsdf_pb2 as spectral_bsdf__v1__pb2
 import ansys.api.speos.bsdf.v1.spectral_bsdf_pb2_grpc as spectral_bsdf__v1__pb2_grpc
+from google.protobuf.empty_pb2 import Empty
+import grpc
+import numpy as np
+
 import ansys.speos.core
 from ansys.speos.core.speos import Speos
 
