@@ -25,6 +25,7 @@
 from typing import List
 
 from ansys.api.speos.sop.v1 import sop_pb2 as messages, sop_pb2_grpc as service
+
 from ansys.speos.core.kernel.crud import CrudItem, CrudStub
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 

@@ -31,6 +31,7 @@ from ansys.api.speos.intensity_distributions.v1 import (
     xmp_pb2,
     xmp_pb2_grpc,
 )
+
 from ansys.speos.core.speos import Speos
 from tests.conftest import test_path
 import tests.helper as helper

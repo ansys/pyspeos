@@ -26,6 +26,7 @@ from typing import Iterator, List
 
 from ansys.api.speos.job.v2 import job_pb2 as messages, job_pb2_grpc as service
 from ansys.api.speos.results.v1.ray_path_pb2 import RayPath
+
 from ansys.speos.core.kernel.crud import CrudItem, CrudStub
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 

@@ -29,6 +29,7 @@ from ansys.api.speos.scene.v2 import (
     scene_pb2 as messages,
     scene_pb2_grpc as service,
 )
+
 from ansys.speos.core.kernel.crud import CrudItem, CrudStub
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 from ansys.speos.core.kernel.sop_template import ProtoSOPTemplate, SOPTemplateStub
