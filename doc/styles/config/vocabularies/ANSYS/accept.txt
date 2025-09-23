@@ -8,5 +8,6 @@ Lumerical
 pytest
 Solver
 (?i)Speos
+untrusted
 Zemax
 SpeosRPC
