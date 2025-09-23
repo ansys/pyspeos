@@ -38,20 +38,21 @@ import ansys.speos.core as core
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
 from ansys.speos.core.generic.constants import (
-    ORIGIN,
-    SENSOR,
     BalanceModeDisplayPrimariesParameters,
     BalanceModeUserWhiteParameters,
     CameraSensorParameters,
     ColorimetricParameters,
     ColorParameters,
     DimensionsParameters,
+    Irradiance3DSensorParameters,
     IrradianceSensorParameters,
     LayerByFaceParameters,
     LayerByIncidenceAngleParameters,
     LayerBySequenceParameters,
+    MeasuresParameters,
     MonoChromaticParameters,
     PhotometricCameraParameters,
+    RadianceSensorParameters,
     SpectralParameters,
     WavelengthsRangeParameters,
 )
@@ -3205,7 +3206,7 @@ class SensorRadiance(BaseSensor):
     sensor_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance, optional
         Sensor instance to provide if the feature does not has to be created from scratch
         By default, ``None``, means that the feature is created from scratch by default.
-    default_values : bool
+    default_parameters : bool
         Uses default values when True.
         By default, ``True``.
     """
@@ -3217,7 +3218,7 @@ class SensorRadiance(BaseSensor):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         sensor_instance: Optional[ProtoScene.SensorInstance] = None,
-        default_values: bool = True,
+        default_parameters: Union[None, RadianceSensorParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -3239,18 +3240,61 @@ class SensorRadiance(BaseSensor):
         # Attribute to keep track of sensor dimensions object
         self._sensor_dimensions = self.Dimensions(
             sensor_dimensions=self._sensor_template.radiance_sensor_template.dimensions,
-            default_values=default_values,
+            default_parameters=None,
             stable_ctr=True,
         )
-
-        if default_values:
+        if sensor_instance is None:
+            if default_parameters is None:
+                default_parameters = RadianceSensorParameters()
             # Default values template
-            self.focal = SENSOR.RADIANCESENSOR.focal_length
-            self.integration_angle = SENSOR.RADIANCESENSOR.INTEGRATION_ANGLE
-            self.set_type_photometric()
-            # Default values properties
-            self.axis_system = ORIGIN
-            self.set_layer_type_none()
+            self.focal = default_parameters.focal_length
+            self.integration_angle = default_parameters.integration_angle
+            self.axis_system = default_parameters.axis_system
+            self.observer_point = default_parameters.observer
+            self._sensor_dimensions = self.Dimensions(
+                sensor_dimensions=self._sensor_template.radiance_sensor_template.dimensions,
+                default_parameters=default_parameters.dimensions,
+                stable_ctr=True,
+            )
+            if isinstance(default_parameters.sensor_type, ColorimetricParameters):
+                self._type = BaseSensor.Colorimetric(
+                    sensor_type_colorimetric=self._sensor_template.radiance_sensor_template.sensor_type_colorimetric,
+                    default_parameters=default_parameters.sensor_type,
+                    stable_ctr=True,
+                )
+            elif isinstance(default_parameters.sensor_type, SpectralParameters):
+                self._type = BaseSensor.Spectral(
+                    sensor_type_spectral=self._sensor_template.radiance_sensor_template.sensor_type_spectral,
+                    default_parameters=default_parameters.sensor_type,
+                    stable_ctr=True,
+                )
+            elif default_parameters == "radiometric":
+                self.set_type_radiometric()
+            elif default_parameters == "photometric":
+                self.set_type_photometric()
+
+            if default_parameters.layer_type == "none":
+                self.set_layer_type_none()
+            elif default_parameters.layer_type == "by_source":
+                self.set_layer_type_source()
+            elif isinstance(default_parameters.layer_type, LayerByFaceParameters):
+                self._layer_type = BaseSensor.LayerTypeFace(
+                    layer_type_face=self._sensor_instance.radiance_properties.layer_type_face,
+                    default_parameters=default_parameters.layer_type,
+                    stable_ctr=True,
+                )
+            elif isinstance(default_parameters.layer_type, LayerBySequenceParameters):
+                self._layer_type = BaseSensor.LayerTypeSequence(
+                    layer_type_sequence=self._sensor_instance.radiance_properties.layer_type_sequence,
+                    default_parameters=default_parameters.layer_type,
+                    stable_ctr=True,
+                )
+        else:
+            self._sensor_dimensions = self.Dimensions(
+                sensor_dimensions=self._sensor_template.radiance_sensor_template.dimensions,
+                default_parameters=None,
+                stable_ctr=True,
+            )
 
     @property
     def visual_data(self) -> _VisualData:
@@ -3436,13 +3480,14 @@ class SensorRadiance(BaseSensor):
             # Happens in case of project created via load of speos file
             self._type = BaseSensor.Colorimetric(
                 sensor_type_colorimetric=self._sensor_template.radiance_sensor_template.sensor_type_colorimetric,
-                default_parameters=False,
+                default_parameters=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._type, BaseSensor.Colorimetric):
             # if the _type is not Colorimetric then we create a new type.
             self._type = BaseSensor.Colorimetric(
                 sensor_type_colorimetric=self._sensor_template.radiance_sensor_template.sensor_type_colorimetric,
+                default_parameters=ColorimetricParameters(),
                 stable_ctr=True,
             )
         elif (
@@ -3486,13 +3531,14 @@ class SensorRadiance(BaseSensor):
             # Happens in case of project created via load of speos file
             self._type = BaseSensor.Spectral(
                 sensor_type_spectral=self._sensor_template.radiance_sensor_template.sensor_type_spectral,
-                default_values=False,
+                default_parameters=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._type, BaseSensor.Spectral):
             # if the _type is not Spectral then we create a new type.
             self._type = BaseSensor.Spectral(
                 sensor_type_spectral=self._sensor_template.radiance_sensor_template.sensor_type_spectral,
+                default_parameters=SpectralParameters(),
                 stable_ctr=True,
             )
         elif (
@@ -3655,13 +3701,14 @@ class SensorRadiance(BaseSensor):
             # Happens in case of project created via load of speos file
             self._layer_type = BaseSensor.LayerTypeFace(
                 layer_type_face=self._sensor_instance.radiance_properties.layer_type_face,
-                default_parameters=False,
+                default_parameters=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._layer_type, BaseSensor.LayerTypeFace):
             # if the _layer_type is not LayerTypeFace then we create a new type.
             self._layer_type = BaseSensor.LayerTypeFace(
                 layer_type_face=self._sensor_instance.radiance_properties.layer_type_face,
+                default_parameters=LayerByFaceParameters(),
                 stable_ctr=True,
             )
         elif (
@@ -3688,13 +3735,14 @@ class SensorRadiance(BaseSensor):
             # Happens in case of project created via load of speos file
             self._layer_type = BaseSensor.LayerTypeSequence(
                 layer_type_sequence=self._sensor_instance.radiance_properties.layer_type_sequence,
-                default_parameters=False,
+                default_parameters=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._layer_type, BaseSensor.LayerTypeSequence):
             # if the _layer_type is not LayerTypeSequence then we create a new type.
             self._layer_type = BaseSensor.LayerTypeSequence(
                 layer_type_sequence=self._sensor_instance.radiance_properties.layer_type_sequence,
+                default_parameters=LayerBySequenceParameters(),
                 stable_ctr=True,
             )
         elif (
@@ -3731,7 +3779,7 @@ class Sensor3DIrradiance(BaseSensor):
     sensor_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance, optional
         Sensor instance to provide if the feature does not has to be created from scratch
         By default, ``None``, means that the feature is created from scratch by default.
-    default_values : bool
+    default_parameters : bool
         Uses default values when True.
         By default, ``True``.
     """
@@ -3743,7 +3791,7 @@ class Sensor3DIrradiance(BaseSensor):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         sensor_instance: Optional[ProtoScene.SensorInstance] = None,
-        default_values: bool = True,
+        default_parameters: Union[None, Irradiance3DSensorParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -3762,11 +3810,45 @@ class Sensor3DIrradiance(BaseSensor):
         # Attribute gathering more complex layer type
         self._layer_type = None
 
-        if default_values:
-            # Default values template
-            self.set_type_photometric().set_integration_planar()
-            # Default values properties
-            self.set_ray_file_type_none().set_layer_type_none()
+        if sensor_instance is None:
+            if default_parameters is None:
+                default_parameters = Irradiance3DSensorParameters()
+
+            if isinstance(default_parameters.sensor_type, ColorimetricParameters):
+                self._type = Sensor3DIrradiance.Colorimetric(
+                    sensor_type_colorimetric=self._sensor_template.irradiance_3d.type_colorimetric,
+                    default_parameters=default_parameters.sensor_type,
+                    stable_ctr=True,
+                )
+            elif default_parameters == "radiometric":
+                self._type = Sensor3DIrradiance.Radiometric(
+                    sensor_type_radiometric=self._sensor_template.irradiance_3d.type_radiometric,
+                    default_parameters=default_parameters,
+                    stable_ctr=True,
+                )
+            elif default_parameters == "photometric":
+                self._type = Sensor3DIrradiance.Photometric(
+                    sensor_type_photometric=self._sensor_template.irradiance_3d.type_radiometric,
+                    default_parameters=default_parameters,
+                    stable_ctr=True,
+                )
+            if default_parameters.geometries:
+                self.geometries = default_parameters.geometries
+            if default_parameters.layer_type == "none":
+                self.set_layer_type_none()
+            elif default_parameters.layer_type == "by_source":
+                self.set_layer_type_source()
+            match default_parameters.rayfile_type:
+                case "none":
+                    self.set_ray_file_type_none()
+                case "classic":
+                    self.set_ray_file_type_classic()
+                case "polarization":
+                    self.set_ray_file_type_polarization()
+                case "tm25":
+                    self.set_ray_file_type_tm25()
+                case "tm25_no_polarization":
+                    self.set_ray_file_type_tm25_no_polarization()
 
     class Radiometric:
         """Class computing the radiant intensity (in W.sr-1).
@@ -3777,7 +3859,7 @@ class Sensor3DIrradiance(BaseSensor):
         ----------
         illuminance_type : ansys.api.speos.sensor.v1.sensor_pb2.TypeRadiometric
             SensorTypeColorimetric protobuf object to modify.
-        default_values : bool
+        default_parameters : bool
             Uses default values when True.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
@@ -3791,7 +3873,7 @@ class Sensor3DIrradiance(BaseSensor):
         def __init__(
             self,
             sensor_type_radiometric: sensor_pb2.TypeRadiometric,
-            default_values: bool = True,
+            default_parameters: Union[None, Irradiance3DSensorParameters] = None,
             stable_ctr: bool = True,
         ) -> None:
             if not stable_ctr:
@@ -3799,14 +3881,23 @@ class Sensor3DIrradiance(BaseSensor):
 
             self._sensor_type_radiometric = sensor_type_radiometric
 
-            self._integration_type = Sensor3DIrradiance.Measures(
-                illuminance_type=self._sensor_type_radiometric.integration_type_planar,
-                default_values=default_values,
-                stable_ctr=stable_ctr,
-            )
-
-            if default_values:
-                self.set_integration_planar()
+            if default_parameters:
+                match default_parameters.integration_type:
+                    case "planar":
+                        self.set_integration_planar()
+                    case "radial":
+                        self.set_integration_radial()
+                self._integration_type = Sensor3DIrradiance.Measures(
+                    illuminance_type=self._sensor_type_radiometric.integration_type_planar,
+                    default_parameters=default_parameters.measures,
+                    stable_ctr=stable_ctr,
+                )
+            else:
+                self._integration_type = Sensor3DIrradiance.Measures(
+                    illuminance_type=self._sensor_type_radiometric.integration_type_planar,
+                    default_parameters=None,
+                    stable_ctr=stable_ctr,
+                )
 
         def set_integration_planar(self) -> Sensor3DIrradiance.Measures:
             """Set integration planar.
@@ -3820,7 +3911,7 @@ class Sensor3DIrradiance(BaseSensor):
             if not isinstance(self._integration_type, Sensor3DIrradiance.Measures):
                 self._integration_type = Sensor3DIrradiance.Measures(
                     illuminance_type=self._sensor_type_radiometric.integration_type_planar,
-                    default_values=True,
+                    default_parameters=True,
                     stable_ctr=True,
                 )
             elif (
@@ -3847,7 +3938,7 @@ class Sensor3DIrradiance(BaseSensor):
         ----------
         illuminance_type : ansys.api.speos.sensor.v1.sensor_pb2.TypePhotometric
             SensorTypeColorimetric protobuf object to modify.
-        default_values : bool
+        default_parameters : bool
             Uses default values when True.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
@@ -3861,22 +3952,31 @@ class Sensor3DIrradiance(BaseSensor):
         def __init__(
             self,
             sensor_type_photometric: sensor_pb2.TypePhotometric,
-            default_values: bool = True,
+            default_parameters: Union[None, Irradiance3DSensorParameters] = None,
             stable_ctr: bool = True,
         ) -> None:
             if not stable_ctr:
-                raise RuntimeError("Radiometric class instantiated outside of class scope")
+                raise RuntimeError("Photometric class instantiated outside of class scope")
 
             self._sensor_type_photometric = sensor_type_photometric
 
-            self._integration_type = Sensor3DIrradiance.Measures(
-                illuminance_type=self._sensor_type_photometric.integration_type_planar,
-                default_values=default_values,
-                stable_ctr=stable_ctr,
-            )
-
-            if default_values:
-                self.set_integration_planar()
+            if default_parameters:
+                match default_parameters.integration_type:
+                    case "planar":
+                        self.set_integration_planar()
+                    case "radial":
+                        self.set_integration_radial()
+                self._integration_type = Sensor3DIrradiance.Measures(
+                    illuminance_type=self._sensor_type_photometric.integration_type_planar,
+                    default_parameters=default_parameters.measures,
+                    stable_ctr=stable_ctr,
+                )
+            else:
+                self._integration_type = Sensor3DIrradiance.Measures(
+                    illuminance_type=self._sensor_type_photometric.integration_type_planar,
+                    default_parameters=None,
+                    stable_ctr=stable_ctr,
+                )
 
         def set_integration_planar(self) -> Sensor3DIrradiance.Measures:
             """Set integration planar.
@@ -3890,7 +3990,7 @@ class Sensor3DIrradiance(BaseSensor):
             if not isinstance(self._integration_type, Sensor3DIrradiance.Measures):
                 self._integration_type = Sensor3DIrradiance.Measures(
                     illuminance_type=self._sensor_type_photometric.integration_type_planar,
-                    default_values=True,
+                    default_parameters=True,
                     stable_ctr=True,
                 )
             elif (
@@ -3919,7 +4019,7 @@ class Sensor3DIrradiance(BaseSensor):
         ----------
         illuminance_type : ansys.api.speos.sensor.v1.sensor_pb2.IntegrationTypePlanar
             SensorTypeColorimetric protobuf object to modify.
-        default_values : bool
+        default_parameters : bool
             Uses default values when True.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
@@ -3933,19 +4033,19 @@ class Sensor3DIrradiance(BaseSensor):
         def __init__(
             self,
             illuminance_type: sensor_pb2.IntegrationTypePlanar,
-            default_values: bool = True,
+            default_parameters: Union[None, MeasuresParameters] = None,
             stable_ctr: bool = False,
         ):
             if not stable_ctr:
-                msg = "WavelengthsRange class instantiated outside of class scope"
+                msg = "Measures class instantiated outside of class scope"
                 raise RuntimeError(msg)
             self._illuminance_type = illuminance_type
 
-            if default_values:
+            if default_parameters:
                 # Default values
-                self.reflection = True
-                self.transmission = True
-                self.absorption = True
+                self.reflection = default_parameters.reflection
+                self.transmission = default_parameters.transmission
+                self.absorption = default_parameters.absorption
 
         @property
         def reflection(self) -> bool:
@@ -4040,7 +4140,7 @@ class Sensor3DIrradiance(BaseSensor):
         ----------
         illuminance_type : ansys.api.speos.sensor.v1.sensor_pb2.TypeColorimetric
             SensorTypeColorimetric protobuf object to modify.
-        default_values : bool
+        default_parameters : bool
             Uses default values when True.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
@@ -4054,7 +4154,7 @@ class Sensor3DIrradiance(BaseSensor):
         def __init__(
             self,
             sensor_type_colorimetric: sensor_pb2.TypeColorimetric,
-            default_values: bool = True,
+            default_parameters: Union[None, ColorimetricParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
@@ -4063,15 +4163,20 @@ class Sensor3DIrradiance(BaseSensor):
             self._sensor_type_colorimetric = sensor_type_colorimetric
 
             # Attribute to keep track of wavelength range object
-            self._wavelengths_range = BaseSensor.WavelengthsRange(
-                wavelengths_range=self._sensor_type_colorimetric,
-                default_values=default_values,
-                stable_ctr=stable_ctr,
-            )
 
-            if default_values:
+            if default_parameters:
                 # Default values
-                self.set_wavelengths_range()
+                self._wavelengths_range = BaseSensor.WavelengthsRange(
+                    wavelengths_range=self._sensor_type_colorimetric,
+                    default_parameters=default_parameters.wavelength_range,
+                    stable_ctr=stable_ctr,
+                )
+            else:
+                self._wavelengths_range = BaseSensor.WavelengthsRange(
+                    wavelengths_range=self._sensor_type_colorimetric,
+                    default_parameters=default_parameters,
+                    stable_ctr=stable_ctr,
+                )
 
         def set_wavelengths_range(self) -> BaseSensor.WavelengthsRange:
             """Set the range of wavelengths.
@@ -4164,13 +4269,14 @@ class Sensor3DIrradiance(BaseSensor):
             # Happens in case of project created via load of speos file
             self._type = Sensor3DIrradiance.Photometric(
                 self._sensor_template.irradiance_3d.type_photometric,
-                default_values=False,
+                default_parameters=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._type, Sensor3DIrradiance.Photometric):
             # if the _type is not Colorimetric then we create a new type.
             self._type = Sensor3DIrradiance.Photometric(
                 self._sensor_template.irradiance_3d.type_photometric,
+                default_parameters=None,
                 stable_ctr=True,
             )
         elif (
@@ -4197,13 +4303,14 @@ class Sensor3DIrradiance(BaseSensor):
             # Happens in case of project created via load of speos file
             self._type = Sensor3DIrradiance.Radiometric(
                 sensor_type_radiometric=self._sensor_template.irradiance_3d.type_radiometric,
-                default_values=False,
+                default_parameters=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._type, Sensor3DIrradiance.Radiometric):
             # if the _type is not Colorimetric then we create a new type.
             self._type = Sensor3DIrradiance.Radiometric(
                 sensor_type_radiometric=self._sensor_template.irradiance_3d.type_radiometric,
+                default_parameters=None,
                 stable_ctr=True,
             )
         elif (
@@ -4231,13 +4338,14 @@ class Sensor3DIrradiance(BaseSensor):
             # Happens in case of project created via load of speos file
             self._type = Sensor3DIrradiance.Colorimetric(
                 sensor_type_colorimetric=self._sensor_template.irradiance_3d.type_colorimetric,
-                default_values=False,
+                default_parameters=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._type, BaseSensor.Colorimetric):
             # if the _type is not Colorimetric then we create a new type.
             self._type = Sensor3DIrradiance.Colorimetric(
                 sensor_type_colorimetric=self._sensor_template.irradiance_3d.type_colorimetric,
+                default_parameters=None,
                 stable_ctr=True,
             )
         elif (

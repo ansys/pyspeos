@@ -292,6 +292,18 @@ class SensorTypes(str, Enum):
 
 
 @dataclass
+class MeasuresParameters:
+    """Measurements for 3d Irradiance Sensor."""
+
+    reflection: bool = True
+    """Reflection measure activation state."""
+    transmission: bool = True
+    """Transmission measure activation state."""
+    absorption: bool = True
+    """Ansorption measure activation state."""
+
+
+@dataclass
 class IrradianceSensorParameters:
     """Irradiance Sensor Parameters."""
 
@@ -320,18 +332,53 @@ class IrradianceSensorParameters:
     """Outpath face used by the sensor"""
 
 
-@dataclass(frozen=True)
-class RadianceSensor:
+@dataclass
+class RadianceSensorParameters:
     """Radiance Sensor Constants."""
 
-    FOCAL_LENGTH = 250
-    INTEGRATION_ANGLE = 5
+    dimensions: DimensionsParameters = DimensionsParameters()
+    """Dimensions of the sensor."""
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+    """Position of the sensor."""
+    sensor_type: Union[
+        SensorTypes.photometric, ColorimetricParameters, SpectralParameters, SensorTypes.radiometric
+    ] = SensorTypes.photometric
+    """Type of the sensor."""
+    focal_length: float = 250.0
+    """Distance between observer point and sensor and axis-system,
+    will be ignored if observer is used."""
+    integration_angle: float = 5
+    """Integration angle."""
+    observer: Union[None, list[float]] = None
+    """The position of the observer point."""
+    layer_type: Union[
+        LayerTypes.none,
+        LayerTypes.by_source,
+        LayerByFaceParameters,
+        LayerBySequenceParameters,
+    ] = LayerTypes.none
+    """Type of layer separation used by the sensor."""
 
 
-@dataclass(frozen=True)
-class SENSOR:
-    """Constant class for Sensors."""
+@dataclass
+class Irradiance3DSensorParameters:
+    """Parameters class for 3D Irradiance Sensor."""
 
-    WAVELENGTHSRANGE = WavelengthsRangeParameters()
-    CAMERASENSOR = ""
-    RADIANCESENSOR = RadianceSensor()
+    sensor_type: Union[SensorTypes.photometric, ColorimetricParameters, SensorTypes.radiometric] = (
+        SensorTypes.photometric
+    )
+    """Type of the sensor."""
+    measures = MeasuresParameters()
+    """Measurement activation state."""
+    integration_type: Union[IntegrationTypes.planar, IntegrationTypes.radial] = (
+        IntegrationTypes.planar
+    )
+    """Integration type."""
+    rayfile_type: Union[RayfileTypes] = RayfileTypes.none
+    """Rayfile type stored."""
+    layer_type: Union[LayerTypes.none, LayerTypes.by_source] = LayerTypes.none
+    """Layer separation type."""
+    geometries: list = None
+    """Sensor geometry."""
+
+    pass
