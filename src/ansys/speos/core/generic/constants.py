@@ -97,7 +97,7 @@ class SourceRayfileParameters:
     ray_file_uri: Union[str, Path] = ""
     flux_type: FluxType = FluxType.FROM_FILE
     flux_value: Optional[float] = None
-    axis_system: list[float] = field(default_factory=lambda: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
     exit_geometry: Optional[GeoRef] = None
 
     def __post_init__(self):
@@ -126,7 +126,7 @@ class SourceLuminaireParameters:
     intensity_file_uri: Union[str, Path] = ""
     flux_type: FluxType = FluxType.FROM_FILE
     flux_value: Optional[float] = None
-    axis_system: list[float] = field(default_factory=lambda: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
 
     def __post_init__(self) -> None:
         """Verify the dataclass initiation."""
