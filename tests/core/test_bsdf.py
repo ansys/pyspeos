@@ -235,6 +235,7 @@ def compare_spectral_bsdf(bsdf1: SpectralBRDF, bsdf2: SpectralBRDF):
         return False
 
 
+@pytest.mark.version("25.1.0")
 def test_anisotropic_bsdf(speos: Speos):
     """Unit test for anisotropic bsdf class."""
     initial_bsdf = create_anisotropic_bsdf(speos)
@@ -291,6 +292,7 @@ def test_anisotropic_bsdf(speos: Speos):
     remove_file(str(bsdf_path3))
 
 
+@pytest.mark.version("25.2.0")
 def test_anisotropic_bsdf_interpolation_enhancement(speos: Speos):
     """Unit test for anisotropic bsdf interpolation class."""
     # test automatic interpolation enhancement
