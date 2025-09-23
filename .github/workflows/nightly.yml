@@ -58,12 +58,14 @@ jobs:
         env:
           ANSYSLMD_LICENSE_FILE: 1055@${{ secrets.LICENSE_SERVER }}
         run: |
-          if [[ "${{ matrix.speos-major-version }}${{ matrix.speos-minor-version }}" == "251" ]]; then
+          speos_version=${{ matrix.speos-major-version }}${{ matrix.speos-minor-version }}
+
+          if [[ "$speos_version" == "251" ]]; then
             echo "Running without --host flag"
-            docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e SPEOS_LOG_LEVEL=2 -e ANSYSLMD_LICENSE_FILE=${{ env.ANSYSLMD_LICENSE_FILE }} -v "${{ github.workspace }}/tests/assets:/app/assets" --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:${{ matrix.speos-major-version }}${{ matrix.speos-minor-version }} -m 25000000
+            docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e SPEOS_LOG_LEVEL=2 -e ANSYSLMD_LICENSE_FILE=${{ env.ANSYSLMD_LICENSE_FILE }} -v "${{ github.workspace }}/tests/assets:/app/assets" --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:$speos_version -m 25000000
           else
             echo "Running with --host 0.0.0.0"
-            docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e SPEOS_LOG_LEVEL=2 -e ANSYSLMD_LICENSE_FILE=${{ env.ANSYSLMD_LICENSE_FILE }} -v "${{ github.workspace }}/tests/assets:/app/assets" --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:${{ matrix.speos-major-version }}${{ matrix.speos-minor-version }} -m 25000000 --host 0.0.0.0
+            docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e SPEOS_LOG_LEVEL=2 -e ANSYSLMD_LICENSE_FILE=${{ env.ANSYSLMD_LICENSE_FILE }} -v "${{ github.workspace }}/tests/assets:/app/assets" --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:$speos_version -m 25000000 --host 0.0.0.0
           fi
 
       - name: Run pytest UAT
@@ -72,15 +74,23 @@ jobs:
           echo "Running pytest UAT"
           xvfb-run pytest -s -k SPEOS_UAT
 
-      - name: Run pytest
+      - name: Run pytest Backwards Compatibility
         run: |
           . .venv/bin/activate
-          if [[ "${{ matrix.speos-major-version }}${{ matrix.speos-minor-version }}" == "251" ]]; then
-              echo "Running pytest Speos ${{ matrix.speos-major-version }}${{ matrix.speos-minor-version }} version"
-            	xvfb-run pytest -s -k SPEOS_25_1_0_MIN
-          else
-            	xvfb-run pytest -s
-          fi
+
+          for major in 25; do
+            if [ ${{ matrix.speos-major-version }} -ge "$major" ]; then
+              for minor in 1, 2; do
+                if [ ${{ matrix.speos-minor-version }} -ge "$minor" ]; then
+                  xvfb-run pytest -s -k SPEOS_$major_$minor_0
+                else
+                  echo "pytest for Speos $major_$minor skipped"
+                fi
+              done
+            else
+              echo "pytest for Speos ${{ matrix.speos-major-version }}${{ matrix.speos-minor-version }}"
+            fi
+          done
 
       - name: Upload Coverage Results
         if: always()
