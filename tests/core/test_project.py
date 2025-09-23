@@ -462,7 +462,7 @@ def test_find_geom(speos: Speos):
     assert len(all_faces) == 11
 
 
-@pytest.mark.SPEOS_UAT
+@pytest.mark.SPEOS_25_2_0_MIN
 def test_preview_visual_data(speos: Speos):
     """Test preview visualization data inside a project."""
     # preview irradiance sensor data

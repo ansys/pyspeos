@@ -189,7 +189,7 @@ def test_modify_parts_after_combine(speos: Speos):
             ]
 
 
-@pytest.mark.SPEOS_UAT
+@pytest.mark.SPEOS_25_2_0_MIN
 def test_insert_speos(speos: Speos):
     """Test inserting several speos files in an existing project."""
     # Create a project from a speos file

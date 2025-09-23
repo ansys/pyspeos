@@ -374,7 +374,7 @@ def test_create_rayfile_source(speos: Speos):
     source1.delete()
 
 
-@pytest.mark.SPEOS_UAT
+@pytest.mark.SPEOS_25_2_0_MIN
 def test_create_natural_light_source(speos: Speos):
     """Test creation of ambient natural light source."""
     p = Project(speos=speos)
