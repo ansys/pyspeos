@@ -148,8 +148,10 @@ minversion = "7.1"
 addopts = "-vvv --color=yes -ra --durations=25 --cov=ansys.speos --cov-report html:.cov/html --cov-report xml:.cov/xml --cov-report term"
 testpaths = ["tests"]
 markers = [
-    "SPEOS_25_2_0: Minimal required version Speos RPC 25R2 Service Pack 0.",
-    "SPEOS_25_1_0: Minimal required version Speos RPC 25R1 Service Pack 0."
+    "SPEOS_UAT: Supported on all Speos versions, User Acceptance Test.",
+    "SPEOS_25_2_0_MIN_MAX: Maximal Speos supported version, Speos 25R2 Service Pack 0.",
+    "SPEOS_25_2_0_MIN_MIN: Minimal Speos required version, Speos 25R2 Service Pack 0.",
+    "SPEOS_25_1_0_MIN_MIN: Minimal Speos required version, Speos 25R1 Service Pack 0."
 ]
 
 [tool.mypy]
