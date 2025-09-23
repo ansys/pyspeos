@@ -96,7 +96,7 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           path: .cov/html
-          name: coverage-html-ubuntu-${{ matrix.python-version }}-${{ matrix.grpc-version }}
+          name: coverage-html-ubuntu-${{ matrix.python-version }}-${{ matrix.speos-major-version }}-${{ matrix.speos-minor-version }}
           retention-days: 7
 
       - name: Upload coverage to Codecov
@@ -105,7 +105,7 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           files: .cov/xml
-          name: coverage-html-ubuntu-${{ matrix.python-version }}-${{ matrix.grpc-version }}
+          name: coverage-html-ubuntu-${{ matrix.python-version }}-${{ matrix.speos-major-version }}-${{ matrix.speos-minor-version }}
 
       - name: Stop container
         run: |
