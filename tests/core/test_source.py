@@ -50,15 +50,21 @@ def test_create_luminaire_source(speos: Speos):
 
     # Default value
     # source1 = p.create_source(name="Luminaire.1")
+    default_parameter = SourceLuminaireParameters()
     source1 = SourceLuminaire(p, "Luminaire.1")
     assert source1._source_template.HasField("luminaire")
-    assert source1._source_template.luminaire.intensity_file_uri == ""
+    assert (
+        source1._source_template.luminaire.intensity_file_uri
+        == default_parameter.intensity_file_uri
+    )
     assert source1._source_template.luminaire.HasField("flux_from_intensity_file")
     assert source1._spectrum._spectrum._spectrum.HasField("predefined")
     assert source1._spectrum._spectrum._spectrum.predefined.HasField("incandescent")
     assert source1._spectrum._spectrum._spectrum.name == "Luminaire.1.Spectrum"
     assert source1._source_instance.HasField("luminaire_properties")
-    assert source1._source_instance.luminaire_properties.axis_system == ORIGIN
+    assert (
+        source1._source_instance.luminaire_properties.axis_system == default_parameter.axis_system
+    )
 
     # intensity_file_uri
     source1.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
@@ -319,12 +325,13 @@ def test_create_rayfile_source(speos: Speos):
         p,
         name="Ray-file.1",
     )
+    default_parameter = SourceRayfileParameters()
     assert source1._source_instance.HasField("rayfile_properties")
-    assert source1._source_instance.rayfile_properties.axis_system == ORIGIN
+    assert source1._source_instance.rayfile_properties.axis_system == default_parameter.axis_system
     assert source1._source_template.HasField("rayfile")
     assert source1._source_template.rayfile.HasField("flux_from_ray_file")
     assert source1._source_template.rayfile.HasField("spectrum_from_ray_file")
-    assert source1._source_template.rayfile.ray_file_uri == ""
+    assert source1._source_template.rayfile.ray_file_uri == default_parameter.ray_file_uri
 
     # ray_file_uri
     source1.ray_file_uri = Path(test_path) / "Rays.ray"
@@ -725,9 +732,17 @@ def test_luminaire_modify_after_reset(speos: Speos):
     assert source._source_template.luminaire.HasField("flux_from_intensity_file")
     new_default_parameters = SourceLuminaireParameters(flux_type=FluxType.LUMINOUS)
     source = SourceLuminaire(project=p, name="Luminaire.2", default_values=new_default_parameters)
-    assert source.set_flux().value == 683
-    # assert source.set_flux_luminous().value == 683
-    assert source._source_template.luminaire.luminous_flux.luminous_value == 683
+    assert source.set_flux().value == new_default_parameters.flux_value
+    assert source.axis_system == new_default_parameters.axis_system
+    assert (
+        source._source_template.luminaire.luminous_flux.luminous_value
+        == new_default_parameters.flux_value
+    )
+    assert (
+        source._source_instance.luminaire_properties.axis_system
+        == new_default_parameters.axis_system
+    )
+
     source.set_flux().set_luminous()
     source.set_flux().value = 500
     # source.set_flux_luminous().value = 500
@@ -792,7 +807,15 @@ def test_rayfile_modify_after_reset(speos: Speos):
     assert source._source_template.rayfile.HasField("flux_from_ray_file")
     new_default_parameters = SourceRayfileParameters(flux_type=FluxType.LUMINOUS)
     source = SourceRayFile(project=p, name="Luminaire.2", default_values=new_default_parameters)
-    assert source.set_flux().value == 683
+    assert source.axis_system == new_default_parameters.axis_system
+    assert source.set_flux().value == new_default_parameters.flux_value
+    assert (
+        source._source_instance.rayfile_properties.axis_system == new_default_parameters.axis_system
+    )
+    assert (
+        source._source_template.rayfile.luminous_flux.luminous_value
+        == new_default_parameters.flux_value
+    )
 
     source.set_flux().set_luminous()
     source.set_flux().value = 500
