@@ -76,7 +76,7 @@ jobs:
         run: |
           . .venv/bin/activate
           if [[ "${{ matrix.speos-version }}" == "251" ]]; then
-            	xvfb-run pytest -s -k "version==25.1.0"
+            	xvfb-run pytest -s -k SPEOS_25_1_0
           else
             	xvfb-run pytest -s
           fi
