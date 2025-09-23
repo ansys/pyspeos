@@ -1630,9 +1630,10 @@ class SensorCamera(BaseSensor):
 
             if isinstance(default_parameters, PhotometricCameraParameters):
                 # Default values
-                self.acquisition_integration = default_parameters.ACQUISITION_INTEGRATION
-                self.acquisition_lag_time = default_parameters.ACQUISITION_LAG_TIME
-                self.gamma_correction = default_parameters.GAMMA_CORRECTION
+                self.acquisition_integration = default_parameters.acquisition_integration_time
+                self.acquisition_lag_time = default_parameters.acquisition_lag_time
+                self.gamma_correction = default_parameters.gamma_correction
+                self.transmittance_file_uri = default_parameters.transmittance_file_uri
                 match default_parameters.png_bits:
                     case "png_08":
                         self.set_png_bits_08()

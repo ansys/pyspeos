@@ -213,12 +213,14 @@ class PhotometricCameraParameters:
     """PNG bit resolution of the Camera Sensor."""
     wavelength_range = WavelengthsRangeParameters()
     """Wavelength range of the Camera Sensor."""
-    ACQUISITION_INTEGRATION: float = 0.01
+    acquisition_integration_time: float = 0.01
     """Integration Time value for the Camera Sensor."""
-    ACQUISITION_LAG_TIME: float = 0
+    acquisition_lag_time: float = 0
     """Acquisition lag time for the Camera Sensor."""
-    GAMMA_CORRECTION: float = 2.2
+    gamma_correction: float = 2.2
     """Gamma correction Value for the Camera Sensor."""
+    transmittance_file_uri: str = ""
+    """Transmittance spectrum location"""
 
 
 @dataclass
