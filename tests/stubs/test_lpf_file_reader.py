@@ -35,7 +35,7 @@ from ansys.speos.core.speos import Speos
 from tests.conftest import local_test_path, test_path
 
 
-@pytest.mark.SPEOS_25_1_0_MIN
+@pytest.mark.supported_speos_versions(min=251)
 def test_lpf_file_reader_mono_v2_direct_simu(speos: Speos):
     """Test to check lpf reader for direct simulation."""
     # Lpf file reader creation
@@ -93,7 +93,7 @@ def test_lpf_file_reader_mono_v2_direct_simu(speos: Speos):
     stub.CloseLpfFileName(lpf_file_reader__v2__pb2.CloseLpfFileName_Request_Mono())
 
 
-@pytest.mark.SPEOS_25_1_0_MIN
+@pytest.mark.supported_speos_versions(min=251)
 def test_lpf_file_reader_mono_v2_inverse_simu(speos: Speos):
     """Test to check lpf service for inverse simulation."""
     # Lpf file reader creation
@@ -132,7 +132,7 @@ def test_lpf_file_reader_mono_v2_inverse_simu(speos: Speos):
     stub.CloseLpfFileName(lpf_file_reader__v2__pb2.CloseLpfFileName_Request_Mono())
 
 
-@pytest.mark.SPEOS_25_1_0_MIN
+@pytest.mark.supported_speos_versions(min=251)
 def test_lpf_file_reader_multi_v2(speos: Speos):
     """Test to check multifile lpf service."""
     # Lpf file reader multi creation
@@ -217,7 +217,7 @@ def test_lpf_file_reader_multi_v2(speos: Speos):
     stub.Delete(lpf_file_reader__v2__pb2.Delete_Request_Multi(lpf_reader_guid=guid))
 
 
-@pytest.mark.SPEOS_25_1_0_MIN
+@pytest.mark.supported_speos_versions(min=251)
 def test_lpf_file_reader_mono_v2_direct_simu_with_file_transfer(speos: Speos):
     """Test to check lpf service with file transfer service."""
     # local file upload to the server

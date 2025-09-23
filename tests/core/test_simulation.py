@@ -41,7 +41,7 @@ from tests.helper import does_file_exist, remove_file
 IS_DOCKER = config.get("SpeosServerOnDocker")
 
 
-@pytest.mark.SPEOS_25_1_0_MIN
+@pytest.mark.supported_speos_versions(min=251)
 def test_create_direct(speos: Speos):
     """Test creation of Direct Simulation."""
     p = Project(speos=speos)
@@ -136,7 +136,7 @@ def test_create_direct(speos: Speos):
     sim1.delete()
 
 
-@pytest.mark.SPEOS_25_1_0_MIN
+@pytest.mark.supported_speos_versions(min=251)
 def test_create_inverse(speos: Speos):
     """Test creation of Inverse Simulation."""
     p = Project(speos=speos)
@@ -255,7 +255,7 @@ def test_create_inverse(speos: Speos):
     sim1.delete()
 
 
-@pytest.mark.SPEOS_25_1_0_MIN
+@pytest.mark.supported_speos_versions(min=251)
 def test_create_interactive(speos: Speos):
     """Test creation of Interactive Simulation."""
     p = Project(speos=speos)
@@ -479,7 +479,7 @@ def test_reset(speos: Speos):
     sim1.delete()
 
 
-@pytest.mark.SPEOS_25_1_0_MIN
+@pytest.mark.supported_speos_versions(min=251)
 def test_direct_modify_after_reset(speos: Speos):
     """Test reset of direct simulation, and then modify."""
     p = Project(speos=speos)
@@ -550,7 +550,7 @@ def test_direct_modify_after_reset(speos: Speos):
     p.delete()
 
 
-@pytest.mark.SPEOS_25_1_0_MIN
+@pytest.mark.supported_speos_versions(min=251)
 def test_inverse_modify_after_reset(speos: Speos):
     """Test reset of inverse simulation, and then modify."""
     p = Project(speos=speos)
@@ -627,7 +627,7 @@ def test_inverse_modify_after_reset(speos: Speos):
     p.delete()
 
 
-@pytest.mark.SPEOS_25_1_0_MIN
+@pytest.mark.supported_speos_versions(min=251)
 def test_interactive_modify_after_reset(speos: Speos):
     """Test reset of interactive simulation, and then modify."""
     p = Project(speos=speos)

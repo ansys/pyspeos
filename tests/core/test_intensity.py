@@ -30,7 +30,7 @@ from ansys.speos.core import GeoRef, Intensity, Speos
 from tests.conftest import test_path
 
 
-@pytest.mark.SPEOS_25_2_0_MIN
+@pytest.mark.supported_speos_versions(min=252)
 def test_create_intensity(speos: Speos):
     """Test creation of intensity."""
     # Default value
@@ -118,7 +118,7 @@ def test_create_intensity(speos: Speos):
     intensity1.delete()
 
 
-@pytest.mark.SPEOS_25_2_0_MIN
+@pytest.mark.supported_speos_versions(min=252)
 def test_switch_intensity(speos: Speos):
     """Test switch of intensity : from one with properties to one without.
 
@@ -137,7 +137,7 @@ def test_switch_intensity(speos: Speos):
     assert intensity1._intensity_properties.HasField("properties") is False
 
 
-@pytest.mark.SPEOS_25_2_0_MIN
+@pytest.mark.supported_speos_versions(min=252)
 def test_commit_intensity(speos: Speos):
     """Test commit of intensity."""
     # Create
@@ -155,7 +155,7 @@ def test_commit_intensity(speos: Speos):
     intensity1.delete()
 
 
-@pytest.mark.SPEOS_25_2_0_MIN
+@pytest.mark.supported_speos_versions(min=252)
 def test_reset_intensity(speos: Speos):
     """Test reset of intensity."""
     # Create + commit
@@ -177,7 +177,7 @@ def test_reset_intensity(speos: Speos):
     intensity1.delete()
 
 
-@pytest.mark.SPEOS_25_2_0_MIN
+@pytest.mark.supported_speos_versions(min=252)
 def test_library_modify_after_reset(speos: Speos):
     """Test modify library intensity feature after reset."""
     # Create + commit
@@ -216,7 +216,7 @@ def test_library_modify_after_reset(speos: Speos):
     intensity1.delete()
 
 
-@pytest.mark.SPEOS_25_2_0_MIN
+@pytest.mark.supported_speos_versions(min=252)
 def test_gaussian_modify_after_reset(speos: Speos):
     """Test modify gaussian intensity feature after reset."""
     # Create + commit
@@ -249,7 +249,7 @@ def test_gaussian_modify_after_reset(speos: Speos):
     ]
 
 
-@pytest.mark.SPEOS_25_2_0_MIN
+@pytest.mark.supported_speos_versions(min=252)
 def test_delete_intensity(speos: Speos):
     """Test delete of intensity."""
     # Create + commit

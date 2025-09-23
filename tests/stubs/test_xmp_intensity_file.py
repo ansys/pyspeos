@@ -152,7 +152,7 @@ def compare_xmp_intensity_distributions(xmp1, xmp2):
     return True
 
 
-@pytest.mark.SPEOS_25_2_0_MIN
+@pytest.mark.supported_speos_versions(min=252)
 def test_grpc_xmp_intensity(speos: Speos):
     """Test to check intensity xmp service."""
     stub = xmp_pb2_grpc.XmpIntensityServiceStub(speos.client.channel)

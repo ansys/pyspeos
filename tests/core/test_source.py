@@ -37,7 +37,7 @@ from ansys.speos.core.source import (
 from tests.conftest import test_path
 
 
-@pytest.mark.SPEOS_25_1_0_MIN
+@pytest.mark.supported_speos_versions(min=251)
 def test_create_luminaire_source(speos: Speos):
     """Test creation of luminaire source."""
     p = Project(speos=speos)
@@ -136,7 +136,7 @@ def test_create_luminaire_source(speos: Speos):
     assert len(p.scene_link.get().sources) == 0
 
 
-@pytest.mark.SPEOS_25_1_0_MIN
+@pytest.mark.supported_speos_versions(min=251)
 def test_create_surface_source(speos: Speos):
     """Test creation of surface source."""
     p = Project(speos=speos)
@@ -267,7 +267,7 @@ def test_create_surface_source(speos: Speos):
     source1.delete()
 
 
-@pytest.mark.SPEOS_25_1_0_MIN
+@pytest.mark.supported_speos_versions(min=251)
 def test_create_rayfile_source(speos: Speos):
     """Test creation of ray file."""
     p = Project(speos=speos)
@@ -374,7 +374,7 @@ def test_create_rayfile_source(speos: Speos):
     source1.delete()
 
 
-@pytest.mark.SPEOS_25_2_0_MIN
+@pytest.mark.supported_speos_versions(min=252)
 def test_create_natural_light_source(speos: Speos):
     """Test creation of ambient natural light source."""
     p = Project(speos=speos)
@@ -656,7 +656,7 @@ def test_reset_source(speos: Speos):
     source1.delete()
 
 
-@pytest.mark.SPEOS_25_1_0_MIN
+@pytest.mark.supported_speos_versions(min=251)
 def test_luminaire_modify_after_reset(speos: Speos):
     """Test reset of luminaire source, and then modify."""
     p = Project(speos=speos)
@@ -716,7 +716,7 @@ def test_luminaire_modify_after_reset(speos: Speos):
     source.delete()
 
 
-@pytest.mark.SPEOS_25_1_0_MIN
+@pytest.mark.supported_speos_versions(min=251)
 def test_rayfile_modify_after_reset(speos: Speos):
     """Test reset of ray file source, and then modify."""
     p = Project(speos=speos)
@@ -776,7 +776,7 @@ def test_rayfile_modify_after_reset(speos: Speos):
     source.delete()
 
 
-@pytest.mark.SPEOS_25_1_0_MIN
+@pytest.mark.supported_speos_versions(min=251)
 def test_surface_modify_after_reset(speos: Speos):
     """Test reset of surface source, and then modify."""
     p = Project(speos=speos)

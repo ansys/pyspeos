@@ -646,7 +646,7 @@ def test_scene_actions_load_modify(speos: Speos):
     clean_all_dbs(speos.client)
 
 
-@pytest.mark.SPEOS_25_2_0_MIN
+@pytest.mark.supported_speos_versions(min=252)
 def test_scene_actions_get_source_ray_paths(speos: Speos):
     """Test the scene action: load file and modify sensors."""
     assert speos.client.healthy is True

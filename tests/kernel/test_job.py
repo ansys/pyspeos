@@ -123,7 +123,7 @@ def test_job_actions(speos: Speos):
     clean_all_dbs(speos.client)
 
 
-@pytest.mark.SPEOS_25_1_0_MIN
+@pytest.mark.supported_speos_versions(min=251)
 def test_job_actions_interactive_simu(speos: Speos):
     """Test the job actions with interactive simulation."""
     assert speos.client.healthy is True

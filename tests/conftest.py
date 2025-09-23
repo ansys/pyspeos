@@ -181,3 +181,34 @@ def fake_record():
         return handler.format(record)
 
     return inner_fake_record
+
+
+def pytest_addoption(parser):
+    """
+    Add '--supported-features' command line option.
+
+    Option allow to filter tests based and the minimum and maximum supported Speos versions.
+    """
+    parser.addoption(
+        "--supported-features",
+        action="store",
+        help="Filters tests according to Speos version. '251' denotes Speos 25R1 version",
+    )
+
+
+def pytest_runtest_setup(item):
+    """Filter tests during setup if '--supported-features' option is passed."""
+    requested_version = item.config.getoption("--supported-features")
+    if requested_version is None:
+        return
+
+    supported_versions = item.get_closest_marker("supported_speos_versions")
+    if supported_versions:
+        min_version = supported_versions.kwargs.get("min", 0)
+        max_version = supported_versions.kwargs.get("max", 999)
+
+        if not (min_version <= int(requested_version) <= max_version):
+            pytest.skip(
+                f"Test support versions between {min_version} and {max_version} \
+                but not {requested_version} as requested."
+            )

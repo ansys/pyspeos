@@ -32,7 +32,7 @@ from ansys.speos.core.speos import Speos
 from tests.conftest import test_path
 
 
-@pytest.mark.SPEOS_25_2_0_MIN
+@pytest.mark.supported_speos_versions(min=252)
 def test_intensity_template(speos: Speos):
     """Test the intensity template."""
     assert speos.client.healthy is True

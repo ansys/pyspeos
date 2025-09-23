@@ -32,7 +32,7 @@ from ansys.speos.core.speos import Speos
 from tests.conftest import IMAGE_RESULTS_DIR, test_path
 
 
-@pytest.mark.SPEOS_25_2_0_MIN
+@pytest.mark.supported_speos_versions(min=252)
 def test_light_path_finder_direct(speos: Speos):
     """Test for direct simulation lpf."""
     path = str(Path(test_path) / "basic_DirectSimu.lpf")
@@ -74,7 +74,7 @@ def test_light_path_finder_direct(speos: Speos):
     assert lpf.rays[50].get() == expected_ray
 
 
-@pytest.mark.SPEOS_25_2_0_MIN
+@pytest.mark.supported_speos_versions(min=252)
 def test_light_path_finder_inverse(speos: Speos):
     """Test for inverse simulation lpf."""
     path = str(Path(test_path) / "basic_InverseSimu.lpf")
@@ -134,7 +134,7 @@ def test_light_path_finder_inverse(speos: Speos):
     assert lpf.rays[50].get() == expected_ray
 
 
-@pytest.mark.SPEOS_25_2_0_MIN
+@pytest.mark.supported_speos_versions(min=252)
 def test_lpf_preview_with_project(speos: Speos):
     """Test for visualizing lpf data."""
     path = str(Path(test_path) / "basic_DirectSimu.lpf")
@@ -151,7 +151,7 @@ def test_lpf_preview_with_project(speos: Speos):
     assert screenshot.stat().st_size > 0
 
 
-@pytest.mark.SPEOS_25_2_0_MIN
+@pytest.mark.supported_speos_versions(min=252)
 def test_lpf_preview_without_project(speos: Speos):
     """Test for visualizing lpf data."""
     path = str(Path(test_path) / "basic_DirectSimu.lpf")
