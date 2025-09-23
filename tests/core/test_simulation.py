@@ -383,11 +383,11 @@ def test_commit(speos: Speos):
     opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
-    ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    ssr.axis_system = [0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     ssr.commit()
 
     ssr2 = p.create_sensor(name="Irradiance.2", feature_type=SensorIrradiance)
-    ssr2.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    ssr2.axis_system = [0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     ssr2.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
@@ -437,11 +437,11 @@ def test_reset(speos: Speos):
     opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
-    ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    ssr.axis_system = [0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     ssr.commit()
 
     ssr2 = p.create_sensor(name="Irradiance.2", feature_type=SensorIrradiance)
-    ssr2.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    ssr2.axis_system = [0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     ssr2.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
@@ -491,11 +491,11 @@ def test_direct_modify_after_reset(speos: Speos):
     opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
-    ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    ssr.axis_system = [0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     ssr.commit()
 
     ssr2 = p.create_sensor(name="Irradiance.2", feature_type=SensorIrradiance)
-    ssr2.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    ssr2.axis_system = [0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     ssr2.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
@@ -561,11 +561,13 @@ def test_inverse_modify_after_reset(speos: Speos):
     opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
-    ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]).set_type_colorimetric()
+    ssr.axis_system = [0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    ssr.set_type_colorimetric()
     ssr.commit()
 
     ssr2 = p.create_sensor(name="Irradiance.2", feature_type=SensorIrradiance)
-    ssr2.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]).set_type_colorimetric()
+    ssr2.axis_system = [0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    ssr2.set_type_colorimetric()
     ssr2.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
@@ -637,11 +639,13 @@ def test_interactive_modify_after_reset(speos: Speos):
     opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
-    ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]).set_type_colorimetric()
+    ssr.axis_system = [0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    ssr.set_type_colorimetric()
     ssr.commit()
 
     ssr2 = p.create_sensor(name="Irradiance.2", feature_type=SensorIrradiance)
-    ssr2.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]).set_type_colorimetric()
+    ssr2.axis_system = [0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    ssr2.set_type_colorimetric()
     ssr2.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
@@ -693,7 +697,7 @@ def test_delete(speos: Speos):
     opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
-    ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    ssr.axis_system = [0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     ssr.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
@@ -1032,7 +1036,9 @@ def test_export_vtp(speos: Speos):
     )
     sim = p5.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
     sensor_irra = p5.find(name=".*", name_regex=True, feature_type=SensorIrradiance)[0]
-    sensor_irra.set_dimensions().set_x_sampling(10).set_y_sampling(10)
+    dim = sensor_irra.set_dimensions()
+    dim.x_sampling = 10
+    dim.y_sampling = 10
     sensor_irra.set_type_photometric()
     sensor_irra.commit()
     speos_results, vtp_results = sim.compute_CPU(export_vtp=True)
@@ -1085,7 +1091,9 @@ def test_export_vtp(speos: Speos):
     )
     sim = p6.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
     sensor_irra = p6.find(name=".*", name_regex=True, feature_type=SensorIrradiance)[0]
-    sensor_irra.set_dimensions().set_x_sampling(10).set_y_sampling(10)
+    dim = sensor_irra.set_dimensions()
+    dim.x_sampling = 10
+    dim.y_sampling = 10
     sensor_irra.set_type_radiometric()
     sensor_irra.commit()
     speos_results, vtp_results = sim.compute_CPU(export_vtp=True)
@@ -1102,7 +1110,9 @@ def test_export_vtp(speos: Speos):
     )
     sim = p7.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
     sensor_irra = p7.find(name=".*", name_regex=True, feature_type=SensorIrradiance)[0]
-    sensor_irra.set_dimensions().set_x_sampling(10).set_y_sampling(10)
+    dim = sensor_irra.set_dimensions()
+    dim.x_sampling = 10
+    dim.y_sampling = 10
     sensor_irra.set_type_colorimetric()
     sensor_irra.commit()
 
@@ -1124,7 +1134,9 @@ def test_export_vtp(speos: Speos):
     )
     sim = p8.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
     sensor_irra = p8.find(name=".*", name_regex=True, feature_type=SensorIrradiance)[0]
-    sensor_irra.set_dimensions().set_x_sampling(10).set_y_sampling(10)
+    dim = sensor_irra.set_dimensions()
+    dim.x_sampling = 10
+    dim.y_sampling = 10
     sensor_irra.set_type_spectral()
     sensor_irra.commit()
     speos_results, vtp_results = sim.compute_CPU(export_vtp=True)
