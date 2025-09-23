@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.10", "3.11", "3.12", "3.13"]
-        speos-version:   ["242", "2025.1.0", "252"]
+        speos-version:   ["242", "251", "252"]
         # grpc-version:   ["1.75.0", "1.74.0", "1.73.0"]
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -64,7 +64,7 @@ jobs:
         env:
           ANSYSLMD_LICENSE_FILE: 1055@${{ secrets.LICENSE_SERVER }}
         run: |
-          if [[ "${{ matrix.speos-version }}" == "2025.1.0" ]]; then
+          if [[ "${{ matrix.speos-version }}" == "251" ]]; then
             echo "Running without --host flag"
             docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e SPEOS_LOG_LEVEL=2 -e ANSYSLMD_LICENSE_FILE=${{ env.ANSYSLMD_LICENSE_FILE }} -v "${{ github.workspace }}/tests/assets:/app/assets" --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:${{ matrix.speos-version }} -m 25000000
           else
@@ -75,7 +75,7 @@ jobs:
       - name: Run pytest
         run: |
           . .venv/bin/activate
-          if [[ "${{ matrix.speos-version }}" == "2025.1.0" ]]; then
+          if [[ "${{ matrix.speos-version }}" == "251" ]]; then
             	xvfb-run pytest -s -k SPEOS_25_1_0
           else
             	xvfb-run pytest -s
