@@ -39,7 +39,7 @@ from ansys.speos.core.simulation import SimulationDirect
 from tests.conftest import test_path
 
 
-@pytest.mark.SPEOS_25_1_0_MIN
+@pytest.mark.SPEOS_25_2_0_MIN
 def test_create_camera_sensor(speos: Speos):
     """Test creation of camera sensor."""
     p = Project(speos=speos)
