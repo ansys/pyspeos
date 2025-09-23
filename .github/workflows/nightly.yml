@@ -74,18 +74,20 @@ jobs:
       - name: Run pytest Backwards Compatibility
         run: |
           . .venv/bin/activate
+          major_version=${{ matrix.speos-major-version }}
+          minor_version=${{ matrix.speos-minor-version }}
 
           for major in 25; do
-            if [ ${{ matrix.speos-major-version }} -ge "$major" ]; then
-              for minor in 1, 2; do
-                if [ ${{ matrix.speos-minor-version }} -ge "$minor" ]; then
-                  xvfb-run pytest -s -k SPEOS_$major_$minor_0
+            if [ "$major_version" -ge "$major" ]; then
+              for minor in 1 2; do
+                if [ "$minor_version" -ge "$minor" ]; then
+                  xvfb-run pytest -s -k SPEOS_${major}_${minor}_0_MIN
                 else
-                  echo "pytest for Speos $major_$minor skipped"
+                  echo "pytest for Speos ${major}_${minor} skipped"
                 fi
               done
             else
-              echo "pytest for Speos ${{ matrix.speos-major-version }}${{ matrix.speos-minor-version }}"
+              echo "pytest for Speos ${major_version}_${minor_version} undefined"
             fi
           done
 
