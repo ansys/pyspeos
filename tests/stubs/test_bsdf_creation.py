@@ -25,6 +25,8 @@
 import math
 from pathlib import Path
 
+import pytest
+
 import ansys.api.speos.bsdf.v1.bsdf_creation_pb2 as bsdf_creation__v1__pb2
 import ansys.api.speos.bsdf.v1.bsdf_creation_pb2_grpc as bsdf_creation__v1__pb2_grpc
 from ansys.speos.core.speos import Speos
@@ -32,6 +34,7 @@ from tests.conftest import test_path
 import tests.helper as helper
 
 
+@pytest.mark.SPEOS_UAT
 def test_grpc_spectral_bsdf(speos: Speos):
     """Test for spectral bsdf service (*.BRDF)."""
     stub = bsdf_creation__v1__pb2_grpc.BsdfCreationServiceStub(speos.client.channel)

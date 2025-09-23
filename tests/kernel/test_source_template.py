@@ -36,6 +36,7 @@ from ansys.speos.core.speos import Speos
 from tests.conftest import test_path
 
 
+@pytest.mark.SPEOS_UAT
 def test_source_template(speos: Speos):
     """Test the source template creation."""
     assert speos.client.healthy is True
@@ -139,6 +140,7 @@ def test_source_template(speos: Speos):
     intens_t_lamb.delete()
 
 
+@pytest.mark.SPEOS_25_2_0_MIN
 def test_action_get_ray_file_info(speos: Speos):
     """Test the source template action : get_ray_file_info."""
     assert speos.client.healthy is True

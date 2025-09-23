@@ -24,10 +24,13 @@
 
 from pathlib import Path
 
+import pytest
+
 from ansys.speos.core import Spectrum, Speos
 from tests.conftest import test_path
 
 
+@pytest.mark.SPEOS_UAT
 def test_create_spectrum(speos: Speos):
     """Test creation of spectrum."""
     # Default value
@@ -90,6 +93,7 @@ def test_create_spectrum(speos: Speos):
     spectrum1.delete()
 
 
+@pytest.mark.SPEOS_UAT
 def test_commit_spectrum(speos: Speos):
     """Test commit of spectrum."""
     # Create
@@ -105,6 +109,7 @@ def test_commit_spectrum(speos: Speos):
     spectrum1.delete()
 
 
+@pytest.mark.SPEOS_UAT
 def test_reset_spectrum(speos: Speos):
     """Test reset of spectrum."""
     # Create + commit
@@ -125,6 +130,7 @@ def test_reset_spectrum(speos: Speos):
     spectrum1.delete()
 
 
+@pytest.mark.SPEOS_UAT
 def test_delete_spectrum(speos: Speos):
     """Test delete of spectrum."""
     # Create + commit

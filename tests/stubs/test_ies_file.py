@@ -25,6 +25,8 @@
 import logging
 from pathlib import Path
 
+import pytest
+
 from ansys.api.speos.intensity_distributions.v1 import ies_pb2, ies_pb2_grpc
 from ansys.speos.core.speos import Speos
 from tests.conftest import test_path
@@ -136,6 +138,7 @@ def compare_ies_intensities(ies1, ies2):
     return True
 
 
+@pytest.mark.SPEOS_UAT
 def test_grpc_ies_intensity(speos: Speos):
     """Test to check ies intensity service."""
     stub = ies_pb2_grpc.IesIntensityServiceStub(speos.client.channel)

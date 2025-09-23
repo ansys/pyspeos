@@ -24,6 +24,8 @@
 
 from pathlib import Path
 
+import pytest
+
 from ansys.speos.core import Body, Face, GeoRef, Part, Project, Speos
 from ansys.speos.core.opt_prop import OptProp
 from ansys.speos.core.sensor import Sensor3DIrradiance, SensorIrradiance, SensorRadiance
@@ -32,6 +34,7 @@ from ansys.speos.core.source import SourceLuminaire, SourceRayFile, SourceSurfac
 from tests.conftest import test_path
 
 
+@pytest.mark.SPEOS_UAT
 def test_find_feature(speos: Speos):
     """Test find a feature in project."""
     # Create an empty project
@@ -113,6 +116,7 @@ def test_find_feature(speos: Speos):
     assert features[0] == sensor3
 
 
+@pytest.mark.SPEOS_UAT
 def test_find_feature_geom(speos: Speos):
     """Test find a geometry feature in project loaded from speos file."""
     # Create a project from a file
@@ -242,6 +246,7 @@ def test_find_feature_geom(speos: Speos):
     assert found_feats[1] == face_112
 
 
+@pytest.mark.SPEOS_UAT
 def test_find_after_load(speos: Speos):
     """Test find feature in project loaded from speos file."""
     # Create a project from a file
@@ -269,6 +274,7 @@ def test_find_after_load(speos: Speos):
     assert sim_feats[0]._name == "ASSEMBLY1.DS (0)"
 
 
+@pytest.mark.SPEOS_UAT
 def test_create_root_part_after_load(speos: Speos):
     """Test create_root_part feature in project loaded from speos file."""
     # Create a project from a file
@@ -290,6 +296,7 @@ def test_create_root_part_after_load(speos: Speos):
     assert rp is rp2
 
 
+@pytest.mark.SPEOS_UAT
 def test_delete(speos: Speos):
     """Test delete a project."""
     # Create an empty project
@@ -314,6 +321,7 @@ def test_delete(speos: Speos):
     assert len(p._features) == 0
 
 
+@pytest.mark.SPEOS_UAT
 def test_from_file(speos: Speos):
     """Test create a project from file."""
     # Create a project from a file
@@ -376,6 +384,7 @@ def test_from_file(speos: Speos):
     assert ssr_data.irradiance_sensor_template.dimensions.x_sampling == 500
 
 
+@pytest.mark.SPEOS_UAT
 def test_from_file_threads_limited(speos: Speos):
     """Test change Number of threads used."""
     # Create a project from a file
@@ -401,6 +410,7 @@ def test_from_file_threads_limited(speos: Speos):
     ] == "int::" + str(threads_nb)
 
 
+@pytest.mark.SPEOS_UAT
 def test_find_geom(speos: Speos):
     """Test find geometry feature in a project."""
     # Create a project from a file
@@ -452,6 +462,7 @@ def test_find_geom(speos: Speos):
     assert len(all_faces) == 11
 
 
+@pytest.mark.SPEOS_UAT
 def test_preview_visual_data(speos: Speos):
     """Test preview visualization data inside a project."""
     # preview irradiance sensor data

@@ -24,12 +24,15 @@
 
 from pathlib import Path
 
+import pytest
+
 from ansys.api.speos.common.v1 import data_pb2
 from ansys.speos.core.kernel.intensity_template import ProtoIntensityTemplate
 from ansys.speos.core.speos import Speos
 from tests.conftest import test_path
 
 
+@pytest.mark.SPEOS_25_2_0_MIN
 def test_intensity_template(speos: Speos):
     """Test the intensity template."""
     assert speos.client.healthy is True
@@ -100,6 +103,7 @@ def test_intensity_template(speos: Speos):
         intens_t.delete()
 
 
+@pytest.mark.SPEOS_UAT
 def test_action_get_library_type_info(speos: Speos):
     """Test the intensity template action : get_library_type_info."""
     assert speos.client.healthy is True

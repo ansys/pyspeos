@@ -24,6 +24,8 @@
 
 from pathlib import Path
 
+import pytest
+
 from ansys.api.speos.sensor.v1 import (
     camera_sensor_pb2,
     common_pb2,
@@ -34,6 +36,7 @@ from ansys.speos.core.speos import Speos
 from tests.conftest import test_path
 
 
+@pytest.mark.SPEOS_UAT
 def test_sensor_template(speos: Speos):
     """Test the sensor template."""
     assert speos.client.healthy is True

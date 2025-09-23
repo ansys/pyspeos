@@ -24,6 +24,8 @@
 
 from pathlib import Path
 
+import pytest
+
 from ansys.speos.core import OptProp, Part, Project, Speos
 from ansys.speos.core.sensor import SensorIrradiance
 from ansys.speos.core.workflow.combine_speos import (
@@ -34,6 +36,7 @@ from ansys.speos.core.workflow.combine_speos import (
 from tests.conftest import test_path
 
 
+@pytest.mark.SPEOS_UAT
 def test_combine_speos(speos: Speos):
     """Test combining several speos files."""
     # Combine several speos files into a new project - only geometries + materials are retrieved
@@ -113,6 +116,7 @@ def test_combine_speos(speos: Speos):
     assert len(ssr) == 0
 
 
+@pytest.mark.SPEOS_UAT
 def test_modify_parts_after_combine(speos: Speos):
     """Test combining several speos files, and modify parts after that."""
     # Combine several speos files into a new project - only geometries + materials are retrieved
@@ -185,6 +189,7 @@ def test_modify_parts_after_combine(speos: Speos):
             ]
 
 
+@pytest.mark.SPEOS_UAT
 def test_insert_speos(speos: Speos):
     """Test inserting several speos files in an existing project."""
     # Create a project from a speos file

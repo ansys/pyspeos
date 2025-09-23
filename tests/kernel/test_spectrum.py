@@ -24,11 +24,14 @@
 
 from pathlib import Path
 
+import pytest
+
 from ansys.speos.core.kernel.spectrum import ProtoSpectrum
 from ansys.speos.core.speos import Speos
 from tests.conftest import test_path
 
 
+@pytest.mark.SPEOS_UAT
 def test_client_spectrum_init(speos: Speos):
     """Test the abstraction layer for spectrums. How to use SpectrumLink objects."""
     assert speos.client.healthy is True
@@ -84,6 +87,7 @@ def test_client_spectrum_init(speos: Speos):
         spec.delete()
 
 
+@pytest.mark.SPEOS_UAT
 def test_spectrum(speos: Speos):
     """Test spectrum."""
     assert speos.client.healthy is True

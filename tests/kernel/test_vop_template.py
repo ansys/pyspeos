@@ -33,6 +33,7 @@ from ansys.speos.core.speos import Speos
 from tests.conftest import test_path
 
 
+@pytest.mark.SPEOS_UAT
 def test_vop_template(speos: Speos):
     """Test the vop template creation."""
     assert speos.client.healthy is True

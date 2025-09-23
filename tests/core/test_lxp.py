@@ -24,12 +24,15 @@
 
 from pathlib import Path
 
+import pytest
+
 import ansys.speos.core.lxp as lxp
 from ansys.speos.core.project import Project
 from ansys.speos.core.speos import Speos
 from tests.conftest import IMAGE_RESULTS_DIR, test_path
 
 
+@pytest.mark.SPEOS_25_2_0_MIN
 def test_light_path_finder_direct(speos: Speos):
     """Test for direct simulation lpf."""
     path = str(Path(test_path) / "basic_DirectSimu.lpf")
@@ -57,7 +60,8 @@ def test_light_path_finder_direct(speos: Speos):
     }
     assert lpf.nb_traces == 24817
     assert lpf.nb_xmps == 3
-    assert lpf.has_sensor_contributions is False  # No contributions stored in Direct simu
+    # No contributions stored in Direct simu
+    assert lpf.has_sensor_contributions is False
     assert len(lpf.sensor_names) == 3
     assert lpf.sensor_names[0] == "Irradiance Sensor (0)"
     assert lpf.sensor_names[2] == "Irradiance Sensor (2)"
@@ -70,6 +74,7 @@ def test_light_path_finder_direct(speos: Speos):
     assert lpf.rays[50].get() == expected_ray
 
 
+@pytest.mark.SPEOS_25_2_0_MIN
 def test_light_path_finder_inverse(speos: Speos):
     """Test for inverse simulation lpf."""
     path = str(Path(test_path) / "basic_InverseSimu.lpf")
@@ -116,7 +121,8 @@ def test_light_path_finder_inverse(speos: Speos):
 
     assert lpf.nb_traces == 21044
     assert lpf.nb_xmps == 1
-    assert lpf.has_sensor_contributions is True  # No contributions stored in Direct simu
+    # No contributions stored in Direct simu
+    assert lpf.has_sensor_contributions is True
     assert len(lpf.sensor_names) == 1
     assert lpf.sensor_names[0] == "Camera_Perfect_Lens_System_V2:3"
     lpf.filter_by_body_ids([3744252339])
@@ -128,6 +134,7 @@ def test_light_path_finder_inverse(speos: Speos):
     assert lpf.rays[50].get() == expected_ray
 
 
+@pytest.mark.SPEOS_25_2_0_MIN
 def test_lpf_preview_with_project(speos: Speos):
     """Test for visualizing lpf data."""
     path = str(Path(test_path) / "basic_DirectSimu.lpf")
@@ -144,6 +151,7 @@ def test_lpf_preview_with_project(speos: Speos):
     assert screenshot.stat().st_size > 0
 
 
+@pytest.mark.SPEOS_25_2_0_MIN
 def test_lpf_preview_without_project(speos: Speos):
     """Test for visualizing lpf data."""
     path = str(Path(test_path) / "basic_DirectSimu.lpf")

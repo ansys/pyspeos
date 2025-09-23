@@ -25,6 +25,8 @@
 import logging
 from pathlib import Path
 
+import pytest
+
 from ansys.api.speos.intensity_distributions.v1 import (
     base_map_template_pb2,
     extended_map_template_pb2,
@@ -150,6 +152,7 @@ def compare_xmp_intensity_distributions(xmp1, xmp2):
     return True
 
 
+@pytest.mark.SPEOS_25_2_0_MIN
 def test_grpc_xmp_intensity(speos: Speos):
     """Test to check intensity xmp service."""
     stub = xmp_pb2_grpc.XmpIntensityServiceStub(speos.client.channel)

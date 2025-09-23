@@ -235,7 +235,7 @@ def compare_spectral_bsdf(bsdf1: SpectralBRDF, bsdf2: SpectralBRDF):
         return False
 
 
-@pytest.mark.SPEOS_25_1_0
+@pytest.mark.SPEOS_UAT
 def test_anisotropic_bsdf(speos: Speos):
     """Unit test for anisotropic bsdf class."""
     initial_bsdf = create_anisotropic_bsdf(speos)
@@ -292,7 +292,7 @@ def test_anisotropic_bsdf(speos: Speos):
     remove_file(str(bsdf_path3))
 
 
-@pytest.mark.SPEOS_25_1_0
+@pytest.mark.SPEOS_UAT
 def test_anisotropic_bsdf_interpolation_enhancement(speos: Speos):
     """Unit test for anisotropic bsdf interpolation class."""
     # test automatic interpolation enhancement
@@ -445,6 +445,7 @@ def test_anisotropic_bsdf_interpolation_enhancement(speos: Speos):
     assert interpolated_cons_transmission["0.0"]["0.0"]["height"] != 0.6
 
 
+@pytest.mark.SPEOS_UAT
 def test_bsdf180_creation(speos: Speos):
     """Unit test for create bsdf180 method."""
     input_file = Path(test_path) / "Gaussian Fresnel 10 deg.anisotropicbsdf"
@@ -458,6 +459,7 @@ def test_bsdf180_creation(speos: Speos):
     remove_file(str(output_file_2))
 
 
+@pytest.mark.SPEOS_UAT
 def test_spectral_brdf_creation(speos: Speos):
     """Unit test for create spectral brdf method."""
     input_file = [
@@ -475,6 +477,7 @@ def test_spectral_brdf_creation(speos: Speos):
     remove_file(str(output_file_2))
 
 
+@pytest.mark.SPEOS_UAT
 def test_anisotropic_bsdf_creation(speos: Speos):
     """Unit test for create anisotropic bsdf method."""
     input_file = [
@@ -493,6 +496,7 @@ def test_anisotropic_bsdf_creation(speos: Speos):
     remove_file(str(output_file_2))
 
 
+@pytest.mark.SPEOS_UAT
 def test_bsdf_error_management(speos: Speos):
     """Unit test of most bsdf error."""
     # BXDF datapoint class
@@ -552,6 +556,7 @@ def test_bsdf_error_management(speos: Speos):
         new_bsdf.transmission_spectrum = [[1, 2, 3], [1, 2]]
 
 
+@pytest.mark.SPEOS_UAT
 def test_spectral_brdf(speos: Speos):
     """Unit test for anisotropic bsdf class."""
     initial_bsdf = create_spectral_brdf(speos)
@@ -639,6 +644,7 @@ def test_spectral_brdf(speos: Speos):
     remove_file(str(bsdf_path5))
 
 
+@pytest.mark.SPEOS_UAT
 def test_spectral_bsdf_interpolation_enhancement(speos: Speos):
     """Unit test for anisotropic bsdf interpolation class."""
     # test automatic interpolation enhancement
@@ -784,6 +790,7 @@ def test_spectral_bsdf_interpolation_enhancement(speos: Speos):
     assert interpolated_cons_transmission["380.0"]["0.0"]["height"] != 0.6
 
 
+@pytest.mark.SPEOS_UAT
 def test_spectral_brdf_error_management(speos: Speos):
     """Unit test of most bsdf error."""
     # BXDF datapoint class

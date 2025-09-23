@@ -22,9 +22,12 @@
 
 """Test basic using part/body/face."""
 
+import pytest
+
 from ansys.speos.core import Project, Speos
 
 
+@pytest.mark.SPEOS_UAT
 def test_create_root_part(speos: Speos):
     """Test create root part in project."""
     # Create an empty project
@@ -40,6 +43,7 @@ def test_create_root_part(speos: Speos):
     assert len(root_part.part_link.get().parts) == 0
 
 
+@pytest.mark.SPEOS_UAT
 def test_create_body(speos: Speos):
     """Test create bodies in root part."""
     # Create an empty project with a root part
@@ -69,6 +73,7 @@ def test_create_body(speos: Speos):
     assert len(root_part.part_link.get().body_guids) == 0
 
 
+@pytest.mark.SPEOS_UAT
 def test_create_face(speos: Speos):
     """Test create faces in body."""
     # Create an empty project with a root part containing a body
@@ -124,6 +129,7 @@ def test_create_face(speos: Speos):
     assert len(body1.body_link.get().face_guids) == 0
 
 
+@pytest.mark.SPEOS_UAT
 def test_create_subpart(speos: Speos):
     """Test create sub part in root part."""
     # Create an empty project with a root part
@@ -209,6 +215,7 @@ def test_create_subpart(speos: Speos):
     assert len(root_part.part_link.get().parts) == 0
 
 
+@pytest.mark.SPEOS_UAT
 def test_create_subpart_body(speos: Speos):
     """Test create body in sub part."""
     # Create an empty project with a root part and sub part
@@ -243,6 +250,7 @@ def test_create_subpart_body(speos: Speos):
     assert len(sp1.part_link.get().body_guids) == 0
 
 
+@pytest.mark.SPEOS_UAT
 def test_create_subpart_subpart(speos: Speos):
     """Test create sub part in sub part."""
     # Create an empty project with a root part and sub part
@@ -321,6 +329,7 @@ def test_create_subpart_subpart(speos: Speos):
     assert len(sp1.part_link.get().parts) == 0
 
 
+@pytest.mark.SPEOS_UAT
 def test_commit_part(speos: Speos):
     """Test commit of part."""
     p = Project(speos=speos)
@@ -355,6 +364,7 @@ def test_commit_part(speos: Speos):
     root_part.delete()
 
 
+@pytest.mark.SPEOS_UAT
 def test_reset_part(speos: Speos):
     """Test reset of part."""
     p = Project(speos=speos)
@@ -385,6 +395,7 @@ def test_reset_part(speos: Speos):
     root_part.delete()
 
 
+@pytest.mark.SPEOS_UAT
 def test_delete_part(speos: Speos):
     """Test delete of part."""
     p = Project(speos=speos)

@@ -22,6 +22,8 @@
 
 """Test basic geometry database connection."""
 
+import pytest
+
 from ansys.speos.core.kernel.body import BodyLink, ProtoBody
 from ansys.speos.core.kernel.face import FaceLink, ProtoFace
 from ansys.speos.core.kernel.part import ProtoPart
@@ -29,6 +31,7 @@ from ansys.speos.core.speos import Speos
 from tests.kernel.test_scene import create_face_rectangle
 
 
+@pytest.mark.SPEOS_UAT
 def test_create_big_face(speos: Speos):
     """Test create big face."""
     assert speos.client.healthy is True
@@ -64,6 +67,7 @@ def test_create_big_face(speos: Speos):
     face_link.delete()
 
 
+@pytest.mark.SPEOS_UAT
 def test_create_big_faces(speos: Speos):
     """Test create big faces using batch. Only available from SpeosRPC_Server 25.2."""
     assert speos.client.healthy is True
@@ -123,6 +127,7 @@ def test_create_big_faces(speos: Speos):
         face_link.delete()
 
 
+@pytest.mark.SPEOS_UAT
 def test_update_big_face(speos: Speos):
     """Test update big face. Bug on SpeosRPC_Server 25.1. Fixed from SpeosRPC_Server 25.2."""
     assert speos.client.healthy is True
@@ -174,6 +179,7 @@ def test_update_big_face(speos: Speos):
     face_link.delete()
 
 
+@pytest.mark.SPEOS_UAT
 def test_update_big_faces(speos: Speos):
     """Test update big faces using batch. Only available from SpeosRPC_Server 25.2."""
     assert speos.client.healthy is True
@@ -265,6 +271,7 @@ def test_update_big_faces(speos: Speos):
         face_link.delete()
 
 
+@pytest.mark.SPEOS_UAT
 def test_face(speos: Speos):
     """Test face creation."""
     assert speos.client.healthy is True
@@ -301,6 +308,7 @@ def test_face(speos: Speos):
     rectangle1.delete()
 
 
+@pytest.mark.SPEOS_UAT
 def test_body(speos: Speos):
     """Test body creation."""
     assert speos.client.healthy is True
@@ -334,6 +342,7 @@ def test_body(speos: Speos):
         face.delete()
 
 
+@pytest.mark.SPEOS_UAT
 def test_part(speos: Speos):
     """Test part creation."""
     assert speos.client.healthy is True

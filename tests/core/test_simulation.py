@@ -41,6 +41,7 @@ from tests.helper import does_file_exist, remove_file
 IS_DOCKER = config.get("SpeosServerOnDocker")
 
 
+@pytest.mark.SPEOS_25_1_0_MIN
 def test_create_direct(speos: Speos):
     """Test creation of Direct Simulation."""
     p = Project(speos=speos)
@@ -135,6 +136,7 @@ def test_create_direct(speos: Speos):
     sim1.delete()
 
 
+@pytest.mark.SPEOS_25_1_0_MIN
 def test_create_inverse(speos: Speos):
     """Test creation of Inverse Simulation."""
     p = Project(speos=speos)
@@ -253,6 +255,7 @@ def test_create_inverse(speos: Speos):
     sim1.delete()
 
 
+@pytest.mark.SPEOS_25_1_0_MIN
 def test_create_interactive(speos: Speos):
     """Test creation of Interactive Simulation."""
     p = Project(speos=speos)
@@ -366,6 +369,7 @@ def test_create_interactive(speos: Speos):
     sim1.delete()
 
 
+@pytest.mark.SPEOS_UAT
 def test_commit(speos: Speos):
     """Test commit of simulation."""
     p = Project(speos=speos)
@@ -420,6 +424,7 @@ def test_commit(speos: Speos):
     sim1.delete()
 
 
+@pytest.mark.SPEOS_UAT
 def test_reset(speos: Speos):
     """Test reset of simulation."""
     p = Project(speos=speos)
@@ -474,6 +479,7 @@ def test_reset(speos: Speos):
     sim1.delete()
 
 
+@pytest.mark.SPEOS_25_1_0_MIN
 def test_direct_modify_after_reset(speos: Speos):
     """Test reset of direct simulation, and then modify."""
     p = Project(speos=speos)
@@ -544,6 +550,7 @@ def test_direct_modify_after_reset(speos: Speos):
     p.delete()
 
 
+@pytest.mark.SPEOS_25_1_0_MIN
 def test_inverse_modify_after_reset(speos: Speos):
     """Test reset of inverse simulation, and then modify."""
     p = Project(speos=speos)
@@ -620,6 +627,7 @@ def test_inverse_modify_after_reset(speos: Speos):
     p.delete()
 
 
+@pytest.mark.SPEOS_25_1_0_MIN
 def test_interactive_modify_after_reset(speos: Speos):
     """Test reset of interactive simulation, and then modify."""
     p = Project(speos=speos)
@@ -676,6 +684,7 @@ def test_interactive_modify_after_reset(speos: Speos):
     p.delete()
 
 
+@pytest.mark.SPEOS_UAT
 def test_delete(speos: Speos):
     """Test delete of simulation."""
     p = Project(speos=speos)
@@ -725,6 +734,7 @@ def test_delete(speos: Speos):
     assert len(sim1._simulation_instance.sensor_paths) == 1  # local
 
 
+@pytest.mark.SPEOS_UAT
 def test_get_simulation(speos: Speos, capsys):
     """Test get of a simulation."""
     p = Project(speos=speos)
@@ -754,6 +764,7 @@ def test_get_simulation(speos: Speos, capsys):
     assert "Used key: geometry not found in key list" in stdout
 
 
+@pytest.mark.SPEOS_UAT
 def test_export(speos: Speos):
     """Test export of simulation."""
     p = Project(
@@ -784,6 +795,7 @@ def test_export(speos: Speos):
 
 
 @pytest.mark.skipif(IS_DOCKER, reason="COM API is only available locally")
+@pytest.mark.SPEOS_UAT
 def test_export_vtp(speos: Speos):
     """Test export of xm3 and xmp as vtp files."""
     import numpy as np
@@ -797,7 +809,7 @@ def test_export_vtp(speos: Speos):
     )
     sim = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
 
-    ## ==== test 3d sensor photometric ===
+    # ==== test 3d sensor photometric ===
     # verify illuminance, reflection, transmission, absorption are saved in vtp
     # verify the vtp data is same as calculated
     sensor_3d = p.find(name=".*", name_regex=True, feature_type=Sensor3DIrradiance)[0]
@@ -881,7 +893,7 @@ def test_export_vtp(speos: Speos):
         )
     )
 
-    ## === test 3d sensor photometric with radial integration ===
+    # === test 3d sensor photometric with radial integration ===
     # only illuminance value is saved in vtp file
     p2 = Project(
         speos=speos,
@@ -902,7 +914,7 @@ def test_export_vtp(speos: Speos):
     assert np.allclose(vtp_data.get("Transmission"), 0.0) is True
     assert np.allclose(vtp_data.get("Absorption"), 0.0) is True
 
-    ## ===  test 3d sensor radiometric ===
+    # ===  test 3d sensor radiometric ===
     # only irradiance, reflection, transmission, absorption value is saved in vtp file
     # verify the vtp results are the same as calculated ones.
     p3 = Project(
@@ -1077,7 +1089,7 @@ def test_export_vtp(speos: Speos):
         )
     )
 
-    ## === test irradiance xmp radiometric ===
+    # === test irradiance xmp radiometric ===
     # verify the result is radiometric
     p6 = Project(
         speos=speos,
@@ -1094,7 +1106,7 @@ def test_export_vtp(speos: Speos):
     vtp_data = pv.read(vtp_results[0]).point_data
     assert np.allclose(vtp_data.get("Radiometric"), 0.0) is not True
 
-    ## === test irradiance colorimetric ===
+    # === test irradiance colorimetric ===
     # verify it has x, photometric, radiometric, z value in vtp file
     p7 = Project(
         speos=speos,
@@ -1115,7 +1127,7 @@ def test_export_vtp(speos: Speos):
     assert np.allclose(vtp_data.get("Radiometric"), 0.0) is not True
     assert np.allclose(vtp_data.get("Z"), 0.0) is not True
 
-    ## === test irradiance spectral ===
+    # === test irradiance spectral ===
     # verify it has x, photometric, radiometric, z value in vtp file
     # verify the summing up per spectral layer
     p8 = Project(
