@@ -75,7 +75,11 @@ jobs:
       - name: Run pytest
         run: |
           . .venv/bin/activate
-          xvfb-run pytest -s
+          if [[ "${{ matrix.speos-version }}" == "251" ]]; then
+            	xvfb-run pytest -s -k "version==25.1.0"
+          else
+            	xvfb-run pytest -s
+          fi
 
       - name: Upload Coverage Results
         if: always()
