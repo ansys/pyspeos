@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.10", "3.11", "3.12", "3.13"]
-        speos-version: ["251", "252"]
+        speos-version: ["251", "252", "dev"]
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
@@ -68,15 +68,21 @@ jobs:
       - name: Run pytest UAT
         run: |
           . .venv/bin/activate
-          xvfb-run pytest -s -k SPEOS_UAT
+          xvfb-run pytest -s -m SPEOS_UAT
 
       - name: Run pytest Backwards Compatibility for Speos ${{ matrix.speos-version }}
         run: |
           . .venv/bin/activate
           speos_version=${{ matrix.speos-version }}
+          maximal_absolute=999
 
-          echo "run pytest for Speos ${speos_version}"
-          xvfb-run pytest -s --supported-features=$speos_version
+          if [[ "$speos_version" == "dev" ]]; then
+            echo "run pytest for all available features"
+            xvfb-run pytest -s --supported-features=$maximal_absolute
+          else
+            echo "run pytest for Speos ${speos_version} supported features"
+            xvfb-run pytest -s --supported-features=$speos_version
+          fi
 
       - name: Upload Coverage Results
         if: always()
