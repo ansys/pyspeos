@@ -198,17 +198,25 @@ def pytest_addoption(parser):
 
 def pytest_runtest_setup(item):
     """Filter tests during setup if '--supported-features' option is passed."""
+    minimal_absolute = 0
+    maximal_absolute = 999
+
     requested_version = item.config.getoption("--supported-features")
     if requested_version is None:
         return
 
     supported_versions = item.get_closest_marker("supported_speos_versions")
     if supported_versions:
-        min_version = supported_versions.kwargs.get("min", 0)
-        max_version = supported_versions.kwargs.get("max", 999)
+        min_version = supported_versions.kwargs.get("min", minimal_absolute)
+        max_version = supported_versions.kwargs.get("max", maximal_absolute)
 
         if not (min_version <= int(requested_version) <= max_version):
-            pytest.skip(
-                f"Test support versions between {min_version} and {max_version} \
-                but not {requested_version} as requested."
-            )
+            message = f"Feature not supported on Speos {requested_version}."
+
+            if min_version != minimal_absolute:
+                message += f" Requires at least version {min_version} or higher."
+
+            if max_version != maximal_absolute:
+                message += f" Discontinued since version {max_version} and higher."
+
+            pytest.skip(message)
