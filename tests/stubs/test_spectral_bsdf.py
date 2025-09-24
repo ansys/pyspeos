@@ -26,6 +26,7 @@ import math
 from pathlib import Path
 
 from google.protobuf.empty_pb2 import Empty
+import pytest
 
 import ansys.api.speos.bsdf.v1.spectral_bsdf_pb2 as spectral_bsdf__v1__pb2
 import ansys.api.speos.bsdf.v1.spectral_bsdf_pb2_grpc as spectral_bsdf__v1__pb2_grpc
@@ -148,6 +149,7 @@ def compare_specular_enhancement_data(c1, c2):
     return True
 
 
+@pytest.mark.SPEOS_UAT
 def test_grpc_spectral_bsdf(speos: Speos):
     """Test to check Spectral bsdf service."""
     stub = spectral_bsdf__v1__pb2_grpc.SpectralBsdfServiceStub(speos.client.channel)

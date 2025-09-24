@@ -24,6 +24,8 @@
 
 from pathlib import Path
 
+import pytest
+
 from ansys.speos.core import GeoRef, OptProp, Project, Speos, proto_message_utils
 from ansys.speos.core.kernel import scene
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_dict
@@ -32,6 +34,7 @@ from ansys.speos.core.source import SourceSurface
 from tests.conftest import test_path
 
 
+@pytest.mark.SPEOS_UAT
 def test_replace_guid_elt(speos: Speos):
     """Test _replace_guid_elt."""
     # Example with surface source : spectrum guid + intensity guid
@@ -81,6 +84,7 @@ def test_replace_guid_elt(speos: Speos):
     assert find[0][1]["name"] == "Surface.1.Spectrum"
 
 
+@pytest.mark.SPEOS_UAT
 def test_replace_guid_elt_ignore_simple_key(speos: Speos):
     """Test _replace_guid_elt with parameter ignore_simple_key."""
     # Example with surface source : spectrum guid + intensity guid
@@ -118,6 +122,7 @@ def test_replace_guid_elt_ignore_simple_key(speos: Speos):
     assert proto_message_utils._finder_by_key(dict_var=src_t_dict, key="intensity") == []
 
 
+@pytest.mark.SPEOS_UAT
 def test_replace_guid_elt_list(speos: Speos):
     """Test _replace_guid_elt in a specific case : list of guids like sop_guids (before v252.1)."""
     # Example with material : vop guid + sop guids
@@ -182,6 +187,7 @@ def test_replace_guid_elt_list(speos: Speos):
         assert find[0][1]["reflectance"] == 100.0
 
 
+@pytest.mark.SPEOS_UAT
 def test_replace_guid_elt_complex(speos: Speos):
     """Test _replace_guid_elt in a bigger message like scene."""
     scene_link = speos.client.scenes().create(message=scene.ProtoScene())
@@ -256,6 +262,7 @@ def test_replace_guid_elt_complex(speos: Speos):
         assert len(find) == 3
 
 
+@pytest.mark.SPEOS_UAT
 def test_value_finder_key_startswith(speos: Speos):
     """Test _value_finder_key_startswith."""
     p = Project(speos=speos)
@@ -285,6 +292,7 @@ def test_value_finder_key_startswith(speos: Speos):
     assert keys == ["surface_properties"]
 
 
+@pytest.mark.SPEOS_UAT
 def test__value_finder_key_endswith(speos: Speos):
     """Test _value_finder_key_endswith."""
     p = Project(speos=speos)
@@ -318,6 +326,7 @@ def test__value_finder_key_endswith(speos: Speos):
     ]
 
 
+@pytest.mark.SPEOS_UAT
 def test_replace_properties(speos: Speos):
     """Test _replace_properties."""
     p = Project(speos=speos)
@@ -363,6 +372,7 @@ def test_replace_properties(speos: Speos):
     assert find[0][0] == ".source.surface.exitance_constant.geo_paths"
 
 
+@pytest.mark.SPEOS_UAT
 def test_replace_special_props(speos: Speos):
     """Test _replace_properties with a property that shouldn't be replaced."""
     p = Project(speos=speos)
@@ -385,6 +395,7 @@ def test_replace_special_props(speos: Speos):
     assert find[0][0] == ".lxp_properties.nb_max_paths"
 
 
+@pytest.mark.SPEOS_UAT
 def test_finder_by_key(speos: Speos):
     """Test _finder_by_key."""
     p = Project(
@@ -434,6 +445,7 @@ def test_finder_by_key(speos: Speos):
     assert res[1][1] == "Solid Body in SOURCE1:2494956811/Face in SOURCE1:187"
 
 
+@pytest.mark.SPEOS_UAT
 def test_flatten_dict(speos: Speos):
     """proto_message_utils test of '_flatten_dict' method."""
     p = Project(

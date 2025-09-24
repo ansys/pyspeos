@@ -39,6 +39,7 @@ IS_DOCKER = config.get("SpeosServerOnDocker")
 
 
 @pytest.mark.skipif(IS_DOCKER, reason="launcher only works without Docker image")
+@pytest.mark.SPEOS_UAT
 def test_local_session(*args):
     """Test local session launch and close."""
     port = config.get("SpeosServerPort") + 1
@@ -62,6 +63,7 @@ def test_local_session(*args):
 
 @patch.object(subprocess, "Popen")
 @patch.object(subprocess, "run")
+@pytest.mark.SPEOS_UAT
 def test_coverage_launcher_speosdocker(*args):
     """Test local session launch on remote server to improve coverage."""
     port = config.get("SpeosServerPort")

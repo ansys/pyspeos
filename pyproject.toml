@@ -147,6 +147,10 @@ show_missing = true
 minversion = "7.1"
 addopts = "-vvv --color=yes -ra --durations=25 --cov=ansys.speos --cov-report html:.cov/html --cov-report xml:.cov/xml --cov-report term"
 testpaths = ["tests"]
+markers = [
+    "SPEOS_UAT: Supported on all Speos versions, User Acceptance Test.",
+    "supported_speos_versions(min, max): Feature supported on respective Speos versions."
+]
 
 [tool.mypy]
 python_version = "3.10"

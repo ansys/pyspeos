@@ -26,6 +26,7 @@ from pathlib import Path
 from typing import List, Mapping, Optional
 
 import numpy as np
+import pytest
 
 from ansys.api.speos.sensor.v1 import common_pb2, irradiance_sensor_pb2
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
@@ -45,6 +46,7 @@ from tests.conftest import test_path
 from tests.helper import clean_all_dbs
 
 
+@pytest.mark.SPEOS_UAT
 def create_basic_scene(speos: Speos) -> SceneLink:
     """Create basic scene."""
     assert speos.client.healthy is True
@@ -369,6 +371,7 @@ def create_basic_scene(speos: Speos) -> SceneLink:
     return scene
 
 
+@pytest.mark.SPEOS_UAT
 def create_face_rectangle(
     name: str,
     description: str = "",
@@ -433,6 +436,7 @@ def create_face_rectangle(
     return face
 
 
+@pytest.mark.SPEOS_UAT
 def create_body_box(
     name: str,
     face_stub: FaceStub,
@@ -566,6 +570,7 @@ def create_body_box(
     return body
 
 
+@pytest.mark.SPEOS_UAT
 def test_scene(speos: Speos):
     """Test the scene creation."""
     assert speos.client.healthy is True
@@ -576,6 +581,7 @@ def test_scene(speos: Speos):
     clean_all_dbs(speos.client)
 
 
+@pytest.mark.SPEOS_UAT
 def test_scene_actions_load(speos: Speos):
     """Test the scene action: load file."""
     assert speos.client.healthy is True
@@ -595,6 +601,7 @@ def test_scene_actions_load(speos: Speos):
     clean_all_dbs(speos.client)
 
 
+@pytest.mark.SPEOS_UAT
 def test_scene_actions_load_modify(speos: Speos):
     """Test the scene action: load file and modify sensors."""
     assert speos.client.healthy is True
@@ -639,6 +646,7 @@ def test_scene_actions_load_modify(speos: Speos):
     clean_all_dbs(speos.client)
 
 
+@pytest.mark.supported_speos_versions(min=252)
 def test_scene_actions_get_source_ray_paths(speos: Speos):
     """Test the scene action: load file and modify sensors."""
     assert speos.client.healthy is True

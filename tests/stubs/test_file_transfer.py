@@ -24,6 +24,8 @@
 
 from pathlib import Path
 
+import pytest
+
 import ansys.api.speos.file.v1.file_transfer as file_transfer_helper__v1
 import ansys.api.speos.file.v1.file_transfer_pb2 as file_transfer__v1__pb2
 import ansys.api.speos.file.v1.file_transfer_pb2_grpc as file_transfer__v1__pb2_grpc
@@ -31,6 +33,7 @@ from ansys.speos.core.speos import Speos
 from tests.conftest import local_test_path
 
 
+@pytest.mark.SPEOS_UAT
 def test_transfer_file(speos: Speos):
     """Test to check file transfer."""
     file_transfer_stub = file_transfer__v1__pb2_grpc.FileTransferServiceStub(speos.client.channel)
@@ -106,6 +109,7 @@ def _check_downloaded_files(download_responses, expected_file_names, download_lo
     assert len(expected_file_names) == 0
 
 
+@pytest.mark.SPEOS_UAT
 def test_transfer_folder(speos: Speos):
     """Test to check folder transfer."""
     file_transfer_stub = file_transfer__v1__pb2_grpc.FileTransferServiceStub(speos.client.channel)

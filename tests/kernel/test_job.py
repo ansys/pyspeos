@@ -24,6 +24,8 @@
 
 import time
 
+import pytest
+
 from ansys.speos.core import LOG  # Global logger
 from ansys.speos.core.kernel.job import ProtoJob, messages as job_messages
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
@@ -32,6 +34,7 @@ from tests.helper import clean_all_dbs, run_job_and_check_state
 from tests.kernel.test_scene import create_basic_scene
 
 
+@pytest.mark.SPEOS_UAT
 def test_job(speos: Speos):
     """Test the job creation."""
     assert speos.client.healthy is True
@@ -78,6 +81,7 @@ def test_job(speos: Speos):
     clean_all_dbs(speos.client)
 
 
+@pytest.mark.SPEOS_UAT
 def test_job_actions(speos: Speos):
     """Test the job actions."""
     assert speos.client.healthy is True
@@ -119,6 +123,7 @@ def test_job_actions(speos: Speos):
     clean_all_dbs(speos.client)
 
 
+@pytest.mark.supported_speos_versions(min=251)
 def test_job_actions_interactive_simu(speos: Speos):
     """Test the job actions with interactive simulation."""
     assert speos.client.healthy is True

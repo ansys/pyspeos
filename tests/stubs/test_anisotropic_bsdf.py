@@ -26,6 +26,7 @@ import math
 from pathlib import Path
 
 from google.protobuf.empty_pb2 import Empty
+import pytest
 
 import ansys.api.speos.bsdf.v1.anisotropic_bsdf_pb2 as anisotropic_bsdf__v1__pb2
 import ansys.api.speos.bsdf.v1.anisotropic_bsdf_pb2_grpc as anisotropic_bsdf__v1__pb2_grpc
@@ -34,6 +35,7 @@ from tests.conftest import test_path
 import tests.helper as helper
 
 
+@pytest.mark.SPEOS_UAT
 def create_anisotropic_bsdf():
     """Create a lambertian bsdf."""
     bsdf = anisotropic_bsdf__v1__pb2.AnisotropicBsdfData()
@@ -110,11 +112,13 @@ def create_anisotropic_bsdf():
     return bsdf
 
 
+@pytest.mark.SPEOS_UAT
 def approx_cmp(a, b):
     """Approximated comparison of two numbers."""
     return math.fabs(a - b) < 1e-6
 
 
+@pytest.mark.SPEOS_UAT
 def compare_anisotropic_bsdf(bsdf1, bsdf2):
     """Compare 2 bsdf."""
     # description
@@ -264,6 +268,7 @@ def compare_anisotropic_bsdf(bsdf1, bsdf2):
     return True
 
 
+@pytest.mark.SPEOS_UAT
 def compare_enhancement_data(cones1, cones2):
     """Compare enhancement cones."""
     if len(cones1.anisotropic_samples) != len(cones2.anisotropic_samples):
@@ -281,6 +286,7 @@ def compare_enhancement_data(cones1, cones2):
     return True
 
 
+@pytest.mark.SPEOS_UAT
 def compare_specular_enhancement_data(data1, data2):
     """Compare specular enhancement information."""
     if (
@@ -294,6 +300,7 @@ def compare_specular_enhancement_data(data1, data2):
     ) and compare_enhancement_data(data1.transmission, data2.transmission)
 
 
+@pytest.mark.SPEOS_UAT
 def test_grpc_anisotropic_bsdf(speos: Speos):
     """Test for anisotropic bsdf service."""
     stub = anisotropic_bsdf__v1__pb2_grpc.AnisotropicBsdfServiceStub(speos.client.channel)

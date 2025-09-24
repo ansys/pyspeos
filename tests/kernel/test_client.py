@@ -23,17 +23,20 @@
 """Test basic client connection."""
 
 from grpc import insecure_channel
+import pytest
 
 from ansys.speos.core.kernel.client import SpeosClient
 from ansys.speos.core.speos import Speos
 from tests.conftest import config
 
 
+@pytest.mark.SPEOS_UAT
 def test_client_init(speos: Speos):
     """Test the instantiation of a client from the default constructor."""
     assert speos._client.healthy is True
 
 
+@pytest.mark.SPEOS_UAT
 def test_client_through_channel():
     """Test the instantiation of a client from a gRPC channel."""
     target = "dns:///localhost:" + str(config.get("SpeosServerPort"))

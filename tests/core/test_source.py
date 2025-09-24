@@ -25,6 +25,8 @@
 import datetime
 from pathlib import Path
 
+import pytest
+
 from ansys.speos.core import GeoRef, Project, Speos
 from ansys.speos.core.source import (
     SourceAmbientNaturalLight,
@@ -35,6 +37,7 @@ from ansys.speos.core.source import (
 from tests.conftest import test_path
 
 
+@pytest.mark.supported_speos_versions(min=251)
 def test_create_luminaire_source(speos: Speos):
     """Test creation of luminaire source."""
     p = Project(speos=speos)
@@ -133,6 +136,7 @@ def test_create_luminaire_source(speos: Speos):
     assert len(p.scene_link.get().sources) == 0
 
 
+@pytest.mark.supported_speos_versions(min=251)
 def test_create_surface_source(speos: Speos):
     """Test creation of surface source."""
     p = Project(speos=speos)
@@ -263,6 +267,7 @@ def test_create_surface_source(speos: Speos):
     source1.delete()
 
 
+@pytest.mark.supported_speos_versions(min=251)
 def test_create_rayfile_source(speos: Speos):
     """Test creation of ray file."""
     p = Project(speos=speos)
@@ -369,6 +374,7 @@ def test_create_rayfile_source(speos: Speos):
     source1.delete()
 
 
+@pytest.mark.supported_speos_versions(min=252)
 def test_create_natural_light_source(speos: Speos):
     """Test creation of ambient natural light source."""
     p = Project(speos=speos)
@@ -525,6 +531,7 @@ def test_create_natural_light_source(speos: Speos):
     source2.delete()
 
 
+@pytest.mark.SPEOS_UAT
 def test_keep_same_internal_feature(speos: Speos):
     """Test regarding source internal features (like spectrum, intensity).
 
@@ -586,6 +593,7 @@ def test_keep_same_internal_feature(speos: Speos):
     source3.delete()
 
 
+@pytest.mark.SPEOS_UAT
 def test_commit_source(speos: Speos):
     """Test commit of source."""
     p = Project(speos=speos)
@@ -610,6 +618,7 @@ def test_commit_source(speos: Speos):
     source1.delete()
 
 
+@pytest.mark.SPEOS_UAT
 def test_reset_source(speos: Speos):
     """Test reset of a source."""
     p = Project(speos=speos)
@@ -647,6 +656,7 @@ def test_reset_source(speos: Speos):
     source1.delete()
 
 
+@pytest.mark.supported_speos_versions(min=251)
 def test_luminaire_modify_after_reset(speos: Speos):
     """Test reset of luminaire source, and then modify."""
     p = Project(speos=speos)
@@ -706,6 +716,7 @@ def test_luminaire_modify_after_reset(speos: Speos):
     source.delete()
 
 
+@pytest.mark.supported_speos_versions(min=251)
 def test_rayfile_modify_after_reset(speos: Speos):
     """Test reset of ray file source, and then modify."""
     p = Project(speos=speos)
@@ -765,6 +776,7 @@ def test_rayfile_modify_after_reset(speos: Speos):
     source.delete()
 
 
+@pytest.mark.supported_speos_versions(min=251)
 def test_surface_modify_after_reset(speos: Speos):
     """Test reset of surface source, and then modify."""
     p = Project(speos=speos)
@@ -824,6 +836,7 @@ def test_surface_modify_after_reset(speos: Speos):
     source.delete()
 
 
+@pytest.mark.SPEOS_UAT
 def test_delete_source(speos: Speos):
     """Test delete of source."""
     p = Project(speos=speos)
@@ -851,6 +864,7 @@ def test_delete_source(speos: Speos):
     assert source1._source_instance.HasField("rayfile_properties")  # local
 
 
+@pytest.mark.SPEOS_UAT
 def test_print_source(speos: Speos):
     """Test delete of source."""
     p = Project(speos=speos)
@@ -918,6 +932,7 @@ def test_print_source(speos: Speos):
     source.delete()
 
 
+@pytest.mark.SPEOS_UAT
 def test_get_source(speos: Speos, capsys):
     """Test get method of the source class."""
     p = Project(speos=speos)
