@@ -24,8 +24,6 @@
 
 from pathlib import Path
 
-import pytest
-
 from ansys.speos.core import GeoRef, Project, Speos
 from tests.conftest import test_path
 
@@ -89,11 +87,9 @@ def test_create_optical_property(speos: Speos):
     assert op1.sop_template_link.get().HasField("optical_polished")
 
     # SOP library
-    op1.set_surface_library(
-        path=str(Path(test_path) / "R_test.anisotropicbsdf")).commit()
+    op1.set_surface_library(path=str(Path(test_path) / "R_test.anisotropicbsdf")).commit()
     assert op1.sop_template_link.get().HasField("library")
-    assert op1.sop_template_link.get().library.sop_file_uri.endswith(
-        "R_test.anisotropicbsdf")
+    assert op1.sop_template_link.get().library.sop_file_uri.endswith("R_test.anisotropicbsdf")
 
     # SOP mirror
     op1.set_surface_mirror(reflectance=80).commit()
@@ -181,8 +177,7 @@ def test_reset_optical_property(speos: Speos):
     assert op1.sop_template_link.get().HasField("mirror")
     assert op1._sop_template.HasField("optical_polished")  # local template
     assert p.scene_link.get().materials[0].HasField("geometries")
-    assert op1._material_instance.HasField(
-        "geometries") is False  # local instance
+    assert op1._material_instance.HasField("geometries") is False  # local instance
 
     # Ask for reset
     op1.reset()

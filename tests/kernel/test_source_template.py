@@ -87,8 +87,7 @@ def test_source_template(speos: Speos):
             name="surface_0",
             description="Surface source template",
             surface=ProtoSourceTemplate.Surface(
-                luminous_flux=ProtoSourceTemplate.Luminous(
-                    luminous_value=683.0),
+                luminous_flux=ProtoSourceTemplate.Luminous(luminous_value=683.0),
                 intensity_guid=intens_t_lamb.key,
                 exitance_constant=ProtoSourceTemplate.Surface.ExitanceConstant(),
                 spectrum_guid=spec_bb_2500.key,
@@ -124,8 +123,7 @@ def test_source_template(speos: Speos):
                 name="surface_err1",
                 description="Surface source template in error",
                 surface=ProtoSourceTemplate.Surface(
-                    luminous_flux=ProtoSourceTemplate.Luminous(
-                        luminous_value=683.0),
+                    luminous_flux=ProtoSourceTemplate.Luminous(luminous_value=683.0),
                     intensity_guid=intens_t_lamb.key,
                     exitance_constant=ProtoSourceTemplate.Surface.ExitanceConstant(),
                     spectrum_from_xmp_file=ProtoSourceTemplate.Surface.SpectrumFromXMPFile(),

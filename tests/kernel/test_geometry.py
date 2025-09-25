@@ -294,8 +294,7 @@ def test_face(speos: Speos):
 
     # default rectangle
     rectangle1 = face_db.create(
-        message=create_face_rectangle(
-            name="rectangle_1", description="rectangle face - default")
+        message=create_face_rectangle(name="rectangle_1", description="rectangle face - default")
     )
     assert rectangle1.key != ""
     assert rectangle1.get().vertices[0:3] == [-100, -50, 0]

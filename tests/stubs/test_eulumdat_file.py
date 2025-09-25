@@ -25,8 +25,6 @@
 import logging
 from pathlib import Path
 
-import pytest
-
 from ansys.api.speos.intensity_distributions.v1 import (
     eulumdat_pb2,
     eulumdat_pb2_grpc,

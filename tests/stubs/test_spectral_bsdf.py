@@ -26,7 +26,6 @@ import math
 from pathlib import Path
 
 from google.protobuf.empty_pb2 import Empty
-import pytest
 
 import ansys.api.speos.bsdf.v1.spectral_bsdf_pb2 as spectral_bsdf__v1__pb2
 import ansys.api.speos.bsdf.v1.spectral_bsdf_pb2_grpc as spectral_bsdf__v1__pb2_grpc
@@ -37,8 +36,7 @@ import tests.helper as helper
 
 def create_spectral_bsdf() -> spectral_bsdf__v1__pb2.SpectralBsdfData:
     """Create simple spectral bsdf."""
-    bsdf = spectral_bsdf__v1__pb2.SpectralBsdfData(
-        description="test description")
+    bsdf = spectral_bsdf__v1__pb2.SpectralBsdfData(description="test description")
     nbw = 7
     nbi = 10
     for i in range(nbi):
@@ -53,15 +51,12 @@ def create_spectral_bsdf() -> spectral_bsdf__v1__pb2.SpectralBsdfData:
             nb_phi = 37
             iw.reflection.integral = 0.5
             for p in range(nb_phi):
-                iw.reflection.phi_samples.append(
-                    p * 2 * math.pi / (nb_phi - 1))
+                iw.reflection.phi_samples.append(p * 2 * math.pi / (nb_phi - 1))
             for t in range(nb_theta):
-                iw.reflection.theta_samples.append(
-                    t * math.pi * 0.5 / (nb_theta - 1))
+                iw.reflection.theta_samples.append(t * math.pi * 0.5 / (nb_theta - 1))
                 for p in range(nb_phi):
                     iw.reflection.bsdf_cos_theta.append(
-                        0.5 *
-                        math.cos(iw.reflection.theta_samples[t]) / math.pi
+                        0.5 * math.cos(iw.reflection.theta_samples[t]) / math.pi
                     )
 
             # iw.transmission
@@ -69,16 +64,12 @@ def create_spectral_bsdf() -> spectral_bsdf__v1__pb2.SpectralBsdfData:
             nb_phi = 37
             iw.transmission.integral = 0.5
             for p in range(nb_phi):
-                iw.transmission.phi_samples.append(
-                    p * 2 * math.pi / (nb_phi - 1))
+                iw.transmission.phi_samples.append(p * 2 * math.pi / (nb_phi - 1))
             for t in range(nb_theta):
-                iw.transmission.theta_samples.append(
-                    math.pi * 0.5 * (1 + t / (nb_theta - 1)))
+                iw.transmission.theta_samples.append(math.pi * 0.5 * (1 + t / (nb_theta - 1)))
                 for p in range(nb_phi):
                     iw.transmission.bsdf_cos_theta.append(
-                        0.5 *
-                        abs(math.cos(
-                            iw.transmission.theta_samples[t])) / math.pi
+                        0.5 * abs(math.cos(iw.transmission.theta_samples[t])) / math.pi
                     )
 
     return bsdf
@@ -159,8 +150,7 @@ def compare_specular_enhancement_data(c1, c2):
 
 def test_grpc_spectral_bsdf(speos: Speos):
     """Test to check Spectral bsdf service."""
-    stub = spectral_bsdf__v1__pb2_grpc.SpectralBsdfServiceStub(
-        speos.client.channel)
+    stub = spectral_bsdf__v1__pb2_grpc.SpectralBsdfServiceStub(speos.client.channel)
 
     file_name = spectral_bsdf__v1__pb2.FileName()
 

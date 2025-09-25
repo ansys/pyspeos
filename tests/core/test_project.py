@@ -42,8 +42,7 @@ def test_find_feature(speos: Speos):
 
     # Create a luminaire source in the project
     source1 = p.create_source(name="Source.1", feature_type=SourceLuminaire)
-    source1.set_intensity_file_uri(
-        uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
+    source1.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
     assert len(p._features) == 1
     source1.commit()
     assert len(p.scene_link.get().sources) == 1
@@ -111,8 +110,7 @@ def test_find_feature(speos: Speos):
     assert features[0] == sensor3
 
     # Good combination name-type specialized + regex
-    features = p.find(name=r".*sor\.3", name_regex=True,
-                      feature_type=SensorRadiance)
+    features = p.find(name=r".*sor\.3", name_regex=True, feature_type=SensorRadiance)
     assert len(features) == 1
     assert features[0] == sensor3
 
@@ -123,8 +121,7 @@ def test_find_feature_geom(speos: Speos):
     p = Project(
         speos=speos,
         path=str(
-            Path(test_path) / "LG_50M_Colorimetric_short.sv5" /
-            "LG_50M_Colorimetric_short.sv5"
+            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
         ),
     )
 
@@ -133,8 +130,7 @@ def test_find_feature_geom(speos: Speos):
     assert len(feats) == 1
 
     # Retrieve body with regex
-    feats = p.find(name="Solid Body in SOURCE2.*",
-                   name_regex=True, feature_type=Part)
+    feats = p.find(name="Solid Body in SOURCE2.*", name_regex=True, feature_type=Part)
     assert len(feats) == 1
 
     # Retrieve face
@@ -145,8 +141,7 @@ def test_find_feature_geom(speos: Speos):
     assert len(feats) == 1
 
     # Retrieve face with regex (regex at body and at face level)
-    feats = p.find(name="Solid Body in GUIDE:.*/.*166",
-                   name_regex=True, feature_type=Part)
+    feats = p.find(name="Solid Body in GUIDE:.*/.*166", name_regex=True, feature_type=Part)
     assert len(feats) == 1
 
     # RootPart
@@ -202,8 +197,7 @@ def test_find_feature_geom(speos: Speos):
     assert len(found_feats) == 2  # 2 Bodies
     assert found_feats[0] == body_01
 
-    found_feats = p2.find(name=".*", name_regex=True,
-                          feature_type=Part.SubPart)
+    found_feats = p2.find(name=".*", name_regex=True, feature_type=Part.SubPart)
     assert len(found_feats) == 2  # 2 SubParts
     assert found_feats[1] == sub_part_2
 
@@ -223,8 +217,7 @@ def test_find_feature_geom(speos: Speos):
     assert len(found_feats) == 2  # 2 Bodies
     assert found_feats[0] == body_1
 
-    found_feats = p2.find(name=".*/.*", name_regex=True,
-                          feature_type=Part.SubPart)
+    found_feats = p2.find(name=".*/.*", name_regex=True, feature_type=Part.SubPart)
     assert len(found_feats) == 1  # 1 SubPart
     assert found_feats[0] == sub_part_11
 
@@ -242,13 +235,11 @@ def test_find_feature_geom(speos: Speos):
     assert found_feats[0] == body_11
 
     # Look at fourth level : 2 Faces
-    found_feats = p2.find(name=".*/.*/.*/.*",
-                          name_regex=True, feature_type=Part)
+    found_feats = p2.find(name=".*/.*/.*/.*", name_regex=True, feature_type=Part)
     assert len(found_feats) == 2
     assert found_feats[0] == face_111
 
-    found_feats = p2.find(name=".*/.*/.*/.*",
-                          name_regex=True, feature_type=Face)
+    found_feats = p2.find(name=".*/.*/.*/.*", name_regex=True, feature_type=Face)
     assert len(found_feats) == 2
     assert found_feats[1] == face_112
 
@@ -259,8 +250,7 @@ def test_find_after_load(speos: Speos):
     p = Project(
         speos=speos,
         path=str(
-            Path(test_path) / "LG_50M_Colorimetric_short.sv5" /
-            "LG_50M_Colorimetric_short.sv5"
+            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
         ),
     )
 
@@ -271,14 +261,12 @@ def test_find_after_load(speos: Speos):
     assert src_feats[1]._name == "Surface Source (0) in SOURCE1"
 
     # Retrieve all irradiance sensors
-    ssr_feats = p.find(name=".*", name_regex=True,
-                       feature_type=SensorIrradiance)
+    ssr_feats = p.find(name=".*", name_regex=True, feature_type=SensorIrradiance)
     assert len(ssr_feats) == 1
     assert ssr_feats[0]._name == "Dom Irradiance Sensor (0)"
 
     # Retrieve all direct simulations
-    sim_feats = p.find(name=".*", name_regex=True,
-                       feature_type=SimulationDirect)
+    sim_feats = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)
     assert len(sim_feats) == 1
     assert sim_feats[0]._name == "ASSEMBLY1.DS (0)"
 
@@ -289,8 +277,7 @@ def test_create_root_part_after_load(speos: Speos):
     p = Project(
         speos=speos,
         path=str(
-            Path(test_path) / "LG_50M_Colorimetric_short.sv5" /
-            "LG_50M_Colorimetric_short.sv5"
+            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
         ),
     )
 
@@ -313,8 +300,7 @@ def test_delete(speos: Speos):
 
     # Create a surface source in the project
     source1 = p.create_source(name="Source.1", feature_type=SourceLuminaire)
-    source1.set_intensity_file_uri(
-        uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
+    source1.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
     assert len(p._features) == 1
     source1.commit()
     assert len(p.scene_link.get().sources) == 1
@@ -336,8 +322,7 @@ def test_from_file(speos: Speos):
     p = Project(
         speos=speos,
         path=str(
-            Path(test_path) / "LG_50M_Colorimetric_short.sv5" /
-            "LG_50M_Colorimetric_short.sv5"
+            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
         ),
     )
 
@@ -377,14 +362,12 @@ def test_from_file(speos: Speos):
     assert type(feat_ssrs[0]) is SensorIrradiance
 
     # And that we can modify it (and that other values are not overridden by default values)
-    feat_ssrs[0].set_type_colorimetric(
-    ).set_wavelengths_range().set_end(value=800)
+    feat_ssrs[0].set_type_colorimetric().set_wavelengths_range().set_end(value=800)
     feat_ssrs[0].commit()
     ssr_link = speos.client[p.scene_link.get().sensors[0].sensor_guid]
     ssr_data = ssr_link.get()
     assert ssr_data.HasField("irradiance_sensor_template")
-    assert ssr_data.irradiance_sensor_template.HasField(
-        "sensor_type_colorimetric")
+    assert ssr_data.irradiance_sensor_template.HasField("sensor_type_colorimetric")
     assert (
         ssr_data.irradiance_sensor_template.sensor_type_colorimetric.wavelengths_range.w_end == 800
     )
@@ -401,8 +384,7 @@ def test_from_file_threads_limited(speos: Speos):
     p = Project(
         speos=speos,
         path=str(
-            Path(test_path) / "LG_50M_Colorimetric_short.sv5" /
-            "LG_50M_Colorimetric_short.sv5"
+            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
         ),
     )
 
@@ -427,8 +409,7 @@ def test_find_geom(speos: Speos):
     p = Project(
         speos=speos,
         path=str(
-            Path(test_path) / "LG_50M_Colorimetric_short.sv5" /
-            "LG_50M_Colorimetric_short.sv5"
+            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
         ),
     )
 
@@ -451,8 +432,7 @@ def test_find_geom(speos: Speos):
     # Check that face can be retrieved
     assert len(body1_data.face_guids) > 4
     face2_data = speos.client[body1_data.face_guids[2]].get()
-    feat_faces = p.find(name=body1_data.name + "/" +
-                        face2_data.name, feature_type=Part)
+    feat_faces = p.find(name=body1_data.name + "/" + face2_data.name, feature_type=Part)
     assert len(feat_faces) == 1
     assert type(feat_faces[0]) is Face
 
@@ -470,8 +450,7 @@ def test_find_geom(speos: Speos):
     assert len(all_faces) == 23
 
     # All faces of specific body
-    all_faces = p.find(name="Solid Body in GUIDE.*/.*",
-                       name_regex=True, feature_type=Part)
+    all_faces = p.find(name="Solid Body in GUIDE.*/.*", name_regex=True, feature_type=Part)
     assert len(all_faces) == 11
 
 
@@ -482,8 +461,7 @@ def test_preview_visual_data(speos: Speos):
     p1 = Project(
         speos=speos,
         path=str(
-            Path(test_path) / "LG_50M_Colorimetric_short.sv5" /
-            "LG_50M_Colorimetric_short.sv5"
+            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
         ),
     )
     p1.preview()
@@ -491,8 +469,7 @@ def test_preview_visual_data(speos: Speos):
     # preview irradiance sensor visual data and camera sensor visual data
     p2 = Project(
         speos=speos,
-        path=str(Path(test_path) / "Inverse_SeveralSensors.speos" /
-                 "Inverse_SeveralSensors.speos"),
+        path=str(Path(test_path) / "Inverse_SeveralSensors.speos" / "Inverse_SeveralSensors.speos"),
     )
     p2.preview()
 
@@ -502,8 +479,7 @@ def test_preview_visual_data(speos: Speos):
 
     # preview luminaire source
     # preview when there is cad
-    sr = p2.create_source(name="Luminaire_source",
-                          feature_type=SourceLuminaire)
+    sr = p2.create_source(name="Luminaire_source", feature_type=SourceLuminaire)
     sr.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
     sr.set_spectrum().set_halogen()
     sr.commit()
@@ -511,8 +487,7 @@ def test_preview_visual_data(speos: Speos):
     # preview when there is no cad
     p3 = Project(speos=speos)
     p3.create_root_part().commit()  # Needed for 251 server.
-    sr = p3.create_source(name="Luminaire_source.2",
-                          feature_type=SourceLuminaire)
+    sr = p3.create_source(name="Luminaire_source.2", feature_type=SourceLuminaire)
     sr.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
     sr.commit()
     p3.preview()
@@ -533,15 +508,13 @@ def test_preview_visual_data(speos: Speos):
     ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1]).commit()
     sr = p2.create_source(name="Surface.1", feature_type=SourceSurface)
 
-    sr.set_exitance_constant(
-        geometries=[(GeoRef.from_native_link("TheBodyB/TheFaceF"), False)])
+    sr.set_exitance_constant(geometries=[(GeoRef.from_native_link("TheBodyB/TheFaceF"), False)])
     sr.commit()
     p2.preview()
     # variable exitance
     sr.set_spectrum_from_xmp_file()
     sr.set_exitance_variable().set_xmp_file_uri(
-        uri=str(Path(test_path) /
-                "PROJECT.Direct-no-Ray.Irradiance Ray Spectral.xmp")
+        uri=str(Path(test_path) / "PROJECT.Direct-no-Ray.Irradiance Ray Spectral.xmp")
     )
     sr.commit()
     p2.preview()
@@ -554,16 +527,14 @@ def test_preview_visual_data(speos: Speos):
 
     # preview 3d irradiance sensor
     # test creating 3d irradiance sensor
-    p5 = Project(speos=speos, path=str(
-        Path(test_path) / "Prism.speos" / "Prism.speos"))
+    p5 = Project(speos=speos, path=str(Path(test_path) / "Prism.speos" / "Prism.speos"))
     ssr_3d = p5.create_sensor(name="Sensor3D", feature_type=Sensor3DIrradiance)
     body = p5.find(name="PrismBody", name_regex=True, feature_type=Body)[0]
     ssr_3d.set_geometries([body.geo_path])
     ssr_3d.commit()
     p5.preview()
     # test loading 3d irradiance sensor
-    p6 = Project(speos=speos, path=str(
-        Path(test_path) / "Prism.speos" / "Prism_3D.speos"))
+    p6 = Project(speos=speos, path=str(Path(test_path) / "Prism.speos" / "Prism_3D.speos"))
     p6.preview()
 
     # preview cad meshing

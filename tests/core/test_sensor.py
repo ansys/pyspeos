@@ -48,16 +48,13 @@ def test_create_camera_sensor(speos: Speos):
     sensor1 = p.create_sensor(name="Camera.1", feature_type=SensorCamera)
     assert isinstance(sensor1, SensorCamera)
     sensor1.set_mode_photometric().set_mode_color().set_red_spectrum_file_uri(
-        uri=str(Path(test_path) / "CameraInputFiles" /
-                "CameraSensitivityRed.spectrum")
+        uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum")
     )
     sensor1.set_mode_photometric().set_mode_color().set_green_spectrum_file_uri(
-        uri=str(Path(test_path) / "CameraInputFiles" /
-                "CameraSensitivityGreen.spectrum")
+        uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityGreen.spectrum")
     )
     sensor1.set_mode_photometric().set_mode_color().set_blue_spectrum_file_uri(
-        uri=str(Path(test_path) / "CameraInputFiles" /
-                "CameraSensitivityBlue.spectrum")
+        uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum")
     )
     sensor1.commit()
     assert sensor1.sensor_template_link is not None
@@ -112,8 +109,7 @@ def test_create_camera_sensor(speos: Speos):
         1,
     ]
     assert sensor1._sensor_instance.camera_properties.trajectory_file_uri == ""
-    assert sensor1._sensor_instance.camera_properties.HasField(
-        "layer_type_none")
+    assert sensor1._sensor_instance.camera_properties.HasField("layer_type_none")
 
     # focal_length
     sensor1.set_focal_length(value=5.5)
@@ -135,8 +131,7 @@ def test_create_camera_sensor(speos: Speos):
 
     # distortion_file_uri
     sensor1.set_distortion_file_uri(
-        uri=str(Path(test_path) / "CameraInputFiles" /
-                "CameraDistortion_130deg.OPTDistortion")
+        uri=str(Path(test_path) / "CameraInputFiles" / "CameraDistortion_130deg.OPTDistortion")
     )
     sensor1.commit()
     camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
@@ -175,16 +170,13 @@ def test_create_camera_sensor(speos: Speos):
     # sensor_mode_photometric
     sensor1.set_mode_photometric()
     sensor1.set_mode_photometric().set_mode_color().set_red_spectrum_file_uri(
-        uri=str(Path(test_path) / "CameraInputFiles" /
-                "CameraSensitivityRed.spectrum")
+        uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum")
     )
     sensor1.set_mode_photometric().set_mode_color().set_green_spectrum_file_uri(
-        uri=str(Path(test_path) / "CameraInputFiles" /
-                "CameraSensitivityGreen.spectrum")
+        uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityGreen.spectrum")
     )
     sensor1.set_mode_photometric().set_mode_color().set_blue_spectrum_file_uri(
-        uri=str(Path(test_path) / "CameraInputFiles" /
-                "CameraSensitivityBlue.spectrum")
+        uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum")
     )
     sensor1.commit()
     camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
@@ -204,8 +196,7 @@ def test_create_camera_sensor(speos: Speos):
 
     # transmittance_file_uri
     sensor1.set_mode_photometric().set_transmittance_file_uri(
-        uri=str(Path(test_path) / "CameraInputFiles" /
-                "CameraTransmittance.spectrum")
+        uri=str(Path(test_path) / "CameraInputFiles" / "CameraTransmittance.spectrum")
     )
     sensor1.commit()
     camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
@@ -250,8 +241,7 @@ def test_create_camera_sensor(speos: Speos):
     # color_mode_monochromatic
     sensor1.set_mode_photometric().set_mode_monochromatic(
         spectrum_file_uri=str(
-            Path(test_path) / "CameraInputFiles" /
-            "CameraSensitivityBlue.spectrum"
+            Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum"
         )
     )
     sensor1.commit()
@@ -264,23 +254,19 @@ def test_create_camera_sensor(speos: Speos):
     sensor1.set_mode_photometric().set_mode_color()
     # red_spectrum_file_uri
     sensor1.set_mode_photometric().set_mode_color().set_red_spectrum_file_uri(
-        uri=str(Path(test_path) / "CameraInputFiles" /
-                "CameraSensitivityRed.spectrum")
+        uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum")
     )
     # green_spectrum_file_uri
     sensor1.set_mode_photometric().set_mode_color().set_green_spectrum_file_uri(
-        uri=str(Path(test_path) / "CameraInputFiles" /
-                "CameraSensitivityGreen.spectrum")
+        uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityGreen.spectrum")
     )
     # blue_spectrum_file_uri
     sensor1.set_mode_photometric().set_mode_color().set_blue_spectrum_file_uri(
-        uri=str(Path(test_path) / "CameraInputFiles" /
-                "CameraSensitivityBlue.spectrum")
+        uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum")
     )
     sensor1.commit()
     camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
-    assert camera_sensor_template.sensor_mode_photometric.HasField(
-        "color_mode_color")
+    assert camera_sensor_template.sensor_mode_photometric.HasField("color_mode_color")
 
     mode_photometric = camera_sensor_template.sensor_mode_photometric
     assert mode_photometric.color_mode_color.red_spectrum_file_uri.endswith(
@@ -322,14 +308,11 @@ def test_create_camera_sensor(speos: Speos):
 
     # balance_mode_display
     sensor1.set_mode_photometric().set_mode_color().set_balance_mode_display_primaries().set_red_display_file_uri(
-        uri=str(Path(test_path) / "CameraInputFiles" /
-                "CameraSensitivityRed.spectrum")
+        uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum")
     ).set_green_display_file_uri(
-        uri=str(Path(test_path) / "CameraInputFiles" /
-                "CameraSensitivityGreen.spectrum")
+        uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityGreen.spectrum")
     ).set_blue_display_file_uri(
-        uri=str(Path(test_path) / "CameraInputFiles" /
-                "CameraSensitivityBlue.spectrum")
+        uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum")
     )
     sensor1.commit()
     camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
@@ -366,8 +349,7 @@ def test_create_camera_sensor(speos: Speos):
     # Properties
 
     # axis_system
-    sensor1.set_axis_system(
-        axis_system=[10, 50, 20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    sensor1.set_axis_system(axis_system=[10, 50, 20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
     sensor1.commit()
     assert sensor1._sensor_instance.camera_properties.axis_system == [
         10,
@@ -389,21 +371,18 @@ def test_create_camera_sensor(speos: Speos):
     # layer_type_source
     sensor1.set_mode_photometric().set_layer_type_source()
     sensor1.commit()
-    assert sensor1._sensor_instance.camera_properties.HasField(
-        "layer_type_source")
+    assert sensor1._sensor_instance.camera_properties.HasField("layer_type_source")
 
     # layer_type_none
     sensor1.set_mode_photometric().set_layer_type_none()
     sensor1.commit()
-    assert sensor1._sensor_instance.camera_properties.HasField(
-        "layer_type_none")
+    assert sensor1._sensor_instance.camera_properties.HasField("layer_type_none")
 
     # test distrotion v1,v2,v3
     sensor1.set_f_number().set_imager_distance().set_focal_length()
     sensor1.commit()
     sensor1.set_distortion_file_uri(
-        str(Path(test_path) / "CameraInputFiles" /
-            "distortionV{}.OPTDistortion".format(2))
+        str(Path(test_path) / "CameraInputFiles" / "distortionV{}.OPTDistortion".format(2))
     )
     camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
     assert camera_sensor_template.f_number == 20.0
@@ -415,8 +394,7 @@ def test_create_camera_sensor(speos: Speos):
     assert camera_sensor_template.imager_distance == 0
     assert camera_sensor_template.focal_length == 0
     sensor1.set_distortion_file_uri(
-        str(Path(test_path) / "CameraInputFiles" /
-            "distortionV{}.OPTDistortion".format(1))
+        str(Path(test_path) / "CameraInputFiles" / "distortionV{}.OPTDistortion".format(1))
     )
     sensor1.set_f_number().set_imager_distance().set_focal_length()
     camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
@@ -429,8 +407,7 @@ def test_create_camera_sensor(speos: Speos):
     assert camera_sensor_template.imager_distance == 10.0
     assert camera_sensor_template.focal_length == 5.0
     sensor1.set_distortion_file_uri(
-        str(Path(test_path) / "CameraInputFiles" /
-            "distortionV{}.OPTDistortion".format(4))
+        str(Path(test_path) / "CameraInputFiles" / "distortionV{}.OPTDistortion".format(4))
     )
     camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
     assert camera_sensor_template.f_number == 20.0
@@ -467,8 +444,7 @@ def test_create_irradiance_sensor(speos: Speos):
     root_part.commit()
 
     # Default value
-    sensor1 = p.create_sensor(
-        name="Irradiance.1", feature_type=SensorIrradiance)
+    sensor1 = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
     sensor1.commit()
     assert sensor1.sensor_template_link is not None
     assert sensor1.sensor_template_link.get().HasField("irradiance_sensor_template")
@@ -508,8 +484,7 @@ def test_create_irradiance_sensor(speos: Speos):
     sensor1.commit()
     sensor_template = sensor1.sensor_template_link.get().irradiance_sensor_template
     assert sensor_template.HasField("sensor_type_colorimetric")
-    assert sensor_template.sensor_type_colorimetric.HasField(
-        "wavelengths_range")
+    assert sensor_template.sensor_type_colorimetric.HasField("wavelengths_range")
     assert sensor_template.sensor_type_colorimetric.wavelengths_range.w_start == 400
     assert sensor_template.sensor_type_colorimetric.wavelengths_range.w_end == 700
     assert sensor_template.sensor_type_colorimetric.wavelengths_range.w_sampling == 13
@@ -585,8 +560,7 @@ def test_create_irradiance_sensor(speos: Speos):
     sensor_template = sensor1.sensor_template_link.get().irradiance_sensor_template
     assert sensor_template.HasField("illuminance_type_planar")
 
-    sensor1.set_illuminance_type_planar(
-        integration_direction=None)  # cancel integration direction
+    sensor1.set_illuminance_type_planar(integration_direction=None)  # cancel integration direction
     assert irra_properties.integration_direction == []
 
     # dimensions
@@ -677,8 +651,7 @@ def test_create_irradiance_sensor(speos: Speos):
     )
     assert len(irra_properties.layer_type_face.layers) == 2
     assert irra_properties.layer_type_face.layers[0].name == "Layer.1"
-    assert irra_properties.layer_type_face.layers[0].geometries.geo_paths == [
-        "TheBodyB"]
+    assert irra_properties.layer_type_face.layers[0].geometries.geo_paths == ["TheBodyB"]
     assert irra_properties.layer_type_face.layers[1].name == "Layer.2"
     assert irra_properties.layer_type_face.layers[1].geometries.geo_paths == [
         "TheBodyC/TheFaceC1",
@@ -773,22 +746,14 @@ def test_create_radiance_sensor(speos: Speos):
         "sensor_type_photometric"
     )
     assert sensor1.sensor_template_link.get().radiance_sensor_template.focal == 250
-    assert sensor1.sensor_template_link.get(
-    ).radiance_sensor_template.integration_angle == 5
-    assert sensor1.sensor_template_link.get(
-    ).radiance_sensor_template.HasField("dimensions")
-    assert sensor1.sensor_template_link.get(
-    ).radiance_sensor_template.dimensions.x_start == -50.0
-    assert sensor1.sensor_template_link.get(
-    ).radiance_sensor_template.dimensions.x_end == 50.0
-    assert sensor1.sensor_template_link.get(
-    ).radiance_sensor_template.dimensions.x_sampling == 100
-    assert sensor1.sensor_template_link.get(
-    ).radiance_sensor_template.dimensions.y_start == -50.0
-    assert sensor1.sensor_template_link.get(
-    ).radiance_sensor_template.dimensions.y_end == 50.0
-    assert sensor1.sensor_template_link.get(
-    ).radiance_sensor_template.dimensions.y_sampling == 100
+    assert sensor1.sensor_template_link.get().radiance_sensor_template.integration_angle == 5
+    assert sensor1.sensor_template_link.get().radiance_sensor_template.HasField("dimensions")
+    assert sensor1.sensor_template_link.get().radiance_sensor_template.dimensions.x_start == -50.0
+    assert sensor1.sensor_template_link.get().radiance_sensor_template.dimensions.x_end == 50.0
+    assert sensor1.sensor_template_link.get().radiance_sensor_template.dimensions.x_sampling == 100
+    assert sensor1.sensor_template_link.get().radiance_sensor_template.dimensions.y_start == -50.0
+    assert sensor1.sensor_template_link.get().radiance_sensor_template.dimensions.y_end == 50.0
+    assert sensor1.sensor_template_link.get().radiance_sensor_template.dimensions.y_sampling == 100
     assert sensor1._sensor_instance.HasField("radiance_properties")
     radiance_properties = sensor1._sensor_instance.radiance_properties
     assert radiance_properties.axis_system == [
@@ -828,18 +793,15 @@ def test_create_radiance_sensor(speos: Speos):
         )
     )
     assert (
-        sensor1.sensor_template_link.get(
-        ).radiance_sensor_template.sensor_type_spectral.wavelengths_range.w_start
+        sensor1.sensor_template_link.get().radiance_sensor_template.sensor_type_spectral.wavelengths_range.w_start
         == 400
     )
     assert (
-        sensor1.sensor_template_link.get(
-        ).radiance_sensor_template.sensor_type_spectral.wavelengths_range.w_end
+        sensor1.sensor_template_link.get().radiance_sensor_template.sensor_type_spectral.wavelengths_range.w_end
         == 700
     )
     assert (
-        sensor1.sensor_template_link.get(
-        ).radiance_sensor_template.sensor_type_spectral.wavelengths_range.w_sampling
+        sensor1.sensor_template_link.get().radiance_sensor_template.sensor_type_spectral.wavelengths_range.w_sampling
         == 13
     )
     # chosen wavelengths range
@@ -848,18 +810,15 @@ def test_create_radiance_sensor(speos: Speos):
     ).set_sampling(value=15)
     sensor1.commit()
     assert (
-        sensor1.sensor_template_link.get(
-        ).radiance_sensor_template.sensor_type_spectral.wavelengths_range.w_start
+        sensor1.sensor_template_link.get().radiance_sensor_template.sensor_type_spectral.wavelengths_range.w_start
         == 450
     )
     assert (
-        sensor1.sensor_template_link.get(
-        ).radiance_sensor_template.sensor_type_spectral.wavelengths_range.w_end
+        sensor1.sensor_template_link.get().radiance_sensor_template.sensor_type_spectral.wavelengths_range.w_end
         == 800
     )
     assert (
-        sensor1.sensor_template_link.get(
-        ).radiance_sensor_template.sensor_type_spectral.wavelengths_range.w_sampling
+        sensor1.sensor_template_link.get().radiance_sensor_template.sensor_type_spectral.wavelengths_range.w_sampling
         == 15
     )
 
@@ -878,28 +837,20 @@ def test_create_radiance_sensor(speos: Speos):
     # integration_angle
     sensor1.set_integration_angle(value=4.5)
     sensor1.commit()
-    assert sensor1.sensor_template_link.get(
-    ).radiance_sensor_template.integration_angle == 4.5
+    assert sensor1.sensor_template_link.get().radiance_sensor_template.integration_angle == 4.5
 
     # dimensions
     sensor1.set_dimensions().set_x_start(value=-10).set_x_end(value=10).set_x_sampling(
         value=60
     ).set_y_start(value=-20).set_y_end(value=20).set_y_sampling(value=120)
     sensor1.commit()
-    assert sensor1.sensor_template_link.get(
-    ).radiance_sensor_template.HasField("dimensions")
-    assert sensor1.sensor_template_link.get(
-    ).radiance_sensor_template.dimensions.x_start == -10.0
-    assert sensor1.sensor_template_link.get(
-    ).radiance_sensor_template.dimensions.x_end == 10.0
-    assert sensor1.sensor_template_link.get(
-    ).radiance_sensor_template.dimensions.x_sampling == 60
-    assert sensor1.sensor_template_link.get(
-    ).radiance_sensor_template.dimensions.y_start == -20.0
-    assert sensor1.sensor_template_link.get(
-    ).radiance_sensor_template.dimensions.y_end == 20.0
-    assert sensor1.sensor_template_link.get(
-    ).radiance_sensor_template.dimensions.y_sampling == 120
+    assert sensor1.sensor_template_link.get().radiance_sensor_template.HasField("dimensions")
+    assert sensor1.sensor_template_link.get().radiance_sensor_template.dimensions.x_start == -10.0
+    assert sensor1.sensor_template_link.get().radiance_sensor_template.dimensions.x_end == 10.0
+    assert sensor1.sensor_template_link.get().radiance_sensor_template.dimensions.x_sampling == 60
+    assert sensor1.sensor_template_link.get().radiance_sensor_template.dimensions.y_start == -20.0
+    assert sensor1.sensor_template_link.get().radiance_sensor_template.dimensions.y_end == 20.0
+    assert sensor1.sensor_template_link.get().radiance_sensor_template.dimensions.y_sampling == 120
 
     # properties
     # axis_system
@@ -962,8 +913,7 @@ def test_create_radiance_sensor(speos: Speos):
     )
     assert len(radiance_properties.layer_type_face.layers) == 2
     assert radiance_properties.layer_type_face.layers[0].name == "Layer.1"
-    assert radiance_properties.layer_type_face.layers[0].geometries.geo_paths == [
-        "TheBodyB"]
+    assert radiance_properties.layer_type_face.layers[0].geometries.geo_paths == ["TheBodyB"]
     assert radiance_properties.layer_type_face.layers[1].name == "Layer.2"
     assert radiance_properties.layer_type_face.layers[1].geometries.geo_paths == [
         "TheBodyC/TheFaceC1",
@@ -1010,8 +960,7 @@ def test_load_3d_irradiance_sensor(speos: Speos):
         speos=speos,
         path=str(Path(test_path) / "Prism.speos" / "Prism_3D.speos"),
     )
-    sensor_3d = p.find(name=".*", name_regex=True,
-                       feature_type=Sensor3DIrradiance)[0]
+    sensor_3d = p.find(name=".*", name_regex=True, feature_type=Sensor3DIrradiance)[0]
     assert sensor_3d is not None
 
 
@@ -1049,8 +998,7 @@ def test_create_3d_irradiance_sensor(speos: Speos):
     assert sensor_3d._sensor_instance.irradiance_3d_properties.geometries.geo_paths == [
         "PrismBody:1130610277"
     ]
-    assert sensor_3d._sensor_instance.irradiance_3d_properties.HasField(
-        "layer_type_none")
+    assert sensor_3d._sensor_instance.irradiance_3d_properties.HasField("layer_type_none")
 
     # change integration to radial
     sensor_3d.set_type_photometric().set_integration_radial()
@@ -1109,8 +1057,7 @@ def test_create_3d_irradiance_sensor(speos: Speos):
     # layer type none
     sensor_3d.set_type_colorimetric()
     sensor_3d.commit()
-    assert sensor_3d.sensor_template_link.get(
-    ).irradiance_3d.HasField("type_colorimetric")
+    assert sensor_3d.sensor_template_link.get().irradiance_3d.HasField("type_colorimetric")
     colorimetric_info = sensor_3d.sensor_template_link.get().irradiance_3d.type_colorimetric
     assert colorimetric_info.wavelength_start == 400
     assert colorimetric_info.wavelength_end == 700
@@ -1134,8 +1081,7 @@ def test_create_3d_irradiance_sensor(speos: Speos):
     # change layer as source
     sensor_3d.set_layer_type_source()
     sensor_3d.commit()
-    assert sensor_3d._sensor_instance.irradiance_3d_properties.HasField(
-        "layer_type_source")
+    assert sensor_3d._sensor_instance.irradiance_3d_properties.HasField("layer_type_source")
 
     # change rayfile options
     sensor_3d.set_ray_file_type_classic()
@@ -1163,8 +1109,7 @@ def test_commit_sensor(speos: Speos):
     p = Project(speos=speos)
 
     # Create
-    sensor1 = p.create_sensor(
-        name="Irradiance.1", feature_type=SensorIrradiance)
+    sensor1 = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
     assert sensor1.sensor_template_link is None
     assert len(p.scene_link.get().sensors) == 0
 
@@ -1312,11 +1257,9 @@ def test_irradiance_modify_after_reset(speos: Speos):
 
     # Modify after a reset
     # Template
-    assert sensor1._sensor_template.irradiance_sensor_template.HasField(
-        "illuminance_type_planar")
+    assert sensor1._sensor_template.irradiance_sensor_template.HasField("illuminance_type_planar")
     sensor1.set_illuminance_type_radial()
-    assert sensor1._sensor_template.irradiance_sensor_template.HasField(
-        "illuminance_type_radial")
+    assert sensor1._sensor_template.irradiance_sensor_template.HasField("illuminance_type_radial")
     # Intermediate class for type : spectral
     assert (
         sensor1._sensor_template.irradiance_sensor_template.sensor_type_spectral.wavelengths_range.w_start
@@ -1465,16 +1408,13 @@ def test_camera_modify_after_reset(speos: Speos):
     assert isinstance(sensor1, SensorCamera)
     sensor1.set_mode_photometric().set_mode_color().set_balance_mode_user_white()
     sensor1.set_mode_photometric().set_mode_color().set_red_spectrum_file_uri(
-        uri=str(Path(test_path) / "CameraInputFiles" /
-                "CameraSensitivityRed.spectrum")
+        uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityRed.spectrum")
     )
     sensor1.set_mode_photometric().set_mode_color().set_green_spectrum_file_uri(
-        uri=str(Path(test_path) / "CameraInputFiles" /
-                "CameraSensitivityGreen.spectrum")
+        uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityGreen.spectrum")
     )
     sensor1.set_mode_photometric().set_mode_color().set_blue_spectrum_file_uri(
-        uri=str(Path(test_path) / "CameraInputFiles" /
-                "CameraSensitivityBlue.spectrum")
+        uri=str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum")
     )
     sensor1.set_mode_photometric().set_layer_type_source()
     sensor1.commit()
@@ -1552,8 +1492,7 @@ def test_delete_sensor(speos: Speos):
     sensor1 = p.create_sensor(name="Sensor.1", feature_type=SensorIrradiance)
     sensor1.commit()
     assert sensor1.sensor_template_link.get().HasField("irradiance_sensor_template")
-    assert sensor1._sensor_template.HasField(
-        "irradiance_sensor_template")  # local
+    assert sensor1._sensor_template.HasField("irradiance_sensor_template")  # local
     assert len(p.scene_link.get().sensors) == 1
     assert p.scene_link.get().sensors[0].HasField("irradiance_properties")
     assert sensor1._sensor_instance.HasField("irradiance_properties")  # local
@@ -1564,8 +1503,7 @@ def test_delete_sensor(speos: Speos):
     assert len(sensor1._sensor_instance.metadata) == 0
 
     assert sensor1.sensor_template_link is None
-    assert sensor1._sensor_template.HasField(
-        "irradiance_sensor_template")  # local
+    assert sensor1._sensor_template.HasField("irradiance_sensor_template")  # local
 
     assert len(p.scene_link.get().sensors) == 0
     assert sensor1._sensor_instance.HasField("irradiance_properties")  # local

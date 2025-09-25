@@ -72,8 +72,7 @@ def create_bsdf_data_point(is_brdf, incident_angle, anisotropy, wavelength=555.0
             for p in range(nb_phi):
                 phis[p] = p * 2 * np.pi / (nb_phi - 1)
                 bxdf[t, p] = abs(np.cos(thetas[t]) / np.pi)
-    datapoint = bsdf.BxdfDatapoint(
-        is_brdf, 0, thetas, phis, bxdf, 0.5, anisotropy, wavelength)
+    datapoint = bsdf.BxdfDatapoint(is_brdf, 0, thetas, phis, bxdf, 0.5, anisotropy, wavelength)
     datapoint.set_incident_angle(0, False)
     datapoint.set_incident_angle(incident_angle)
     return datapoint
@@ -141,12 +140,10 @@ def compare_bsdf_data_point(bsdfdata1: BxdfDatapoint, bsdfdata2: BxdfDatapoint):
     # test_list.append(bsdfdata1.tis == bsdfdata2.tis)
     test_list.append(bsdfdata1.wavelength == bsdfdata2.wavelength)
     test_list.append(bsdfdata1.anisotropy == bsdfdata2.anisotropy)
-    test_list.append(approx_arrays(
-        bsdfdata1.theta_values, bsdfdata2.theta_values))
+    test_list.append(approx_arrays(bsdfdata1.theta_values, bsdfdata2.theta_values))
     test_list.append(approx_arrays(bsdfdata1.phi_values, bsdfdata2.phi_values))
     test_list.append(approx_arrays(bsdfdata1.bxdf, bsdfdata2.bxdf))
-    test_list.append(approx_comparison(
-        bsdfdata1.incident_angle, bsdfdata2.incident_angle))
+    test_list.append(approx_comparison(bsdfdata1.incident_angle, bsdfdata2.incident_angle))
     test_list.append(bsdfdata1.is_brdf == bsdfdata2.is_brdf)
     if all(test_list):
         return True
@@ -192,13 +189,11 @@ def compare_anisotropic_bsdf(bsdf1: AnisotropicBSDF, bsdf2: AnisotropicBSDF):
     for item1, item2 in zip(bsdf1_data, bsdf2_data):
         test_list.append(item1 == item2)
     if bsdf1.has_reflection and bsdf2.has_reflection:
-        test_list.append(approx_arrays(
-            bsdf1.reflection_spectrum, bsdf2.reflection_spectrum))
+        test_list.append(approx_arrays(bsdf1.reflection_spectrum, bsdf2.reflection_spectrum))
         for brdf1data, brdf2data in zip(bsdf1.brdf, bsdf2.brdf):
             test_list.append(compare_bsdf_data_point(brdf1data, brdf2data))
     if bsdf1.has_transmission and bsdf2.has_transmission:
-        test_list.append(approx_arrays(
-            bsdf1.transmission_spectrum, bsdf2.transmission_spectrum))
+        test_list.append(approx_arrays(bsdf1.transmission_spectrum, bsdf2.transmission_spectrum))
         for btdf1data, btdf2data in zip(bsdf1.btdf, bsdf2.btdf):
             test_list.append(compare_bsdf_data_point(btdf1data, btdf2data))
     if all(test_list):
@@ -300,8 +295,7 @@ def test_anisotropic_bsdf_interpolation_enhancement(speos: Speos):
     """Unit test for anisotropic bsdf interpolation class."""
     # test automatic interpolation enhancement
     input_file = Path(test_path) / "Gaussian Fresnel 10 deg.anisotropicbsdf"
-    output_file = Path(
-        test_path) / "Gaussian Fresnel 10 deg interpolation test.anisotropicbsdf"
+    output_file = Path(test_path) / "Gaussian Fresnel 10 deg interpolation test.anisotropicbsdf"
     initial_bsdf = AnisotropicBSDF(speos=speos, file_path=input_file)
     assert initial_bsdf.interpolation_settings is None
 
@@ -395,8 +389,7 @@ def test_anisotropic_bsdf_interpolation_enhancement(speos: Speos):
     assert saved_bsdf.interpolation_settings is not None
 
     # test if the backend data is correct
-    saved_cons_data = saved_bsdf._stub.GetSpecularInterpolationEnhancementData(
-        Empty())
+    saved_cons_data = saved_bsdf._stub.GetSpecularInterpolationEnhancementData(Empty())
     assert (
         saved_cons_data.reflection.anisotropic_samples[0].incidence_samples[0].cone_half_angle
         == 0.523
@@ -432,8 +425,7 @@ def test_anisotropic_bsdf_interpolation_enhancement(speos: Speos):
     assert interpolated_cons_transmission["0.0"]["0.0"]["height"] == 0.6
 
     # test if retrieving interpolation settings is correct with same index provided
-    interpolation_settings = saved_bsdf.create_interpolation_enhancement(
-        index_1=1.5, index_2=1.0)
+    interpolation_settings = saved_bsdf.create_interpolation_enhancement(index_1=1.5, index_2=1.0)
     interpolated_cons_reflection = interpolation_settings.get_reflection_interpolation_settings
     interpolated_cons_transmission = interpolation_settings.get_transmission_interpolation_settings
     assert interpolated_cons_reflection["0.0"]["0.0"]["half_angle"] != 0.523
@@ -442,8 +434,7 @@ def test_anisotropic_bsdf_interpolation_enhancement(speos: Speos):
     assert interpolated_cons_transmission["0.0"]["0.0"]["height"] != 0.6
 
     # test if retrieving interpolation settings is correct with different index provided
-    interpolation_settings = saved_bsdf.create_interpolation_enhancement(
-        index_1=1, index_2=1.5)
+    interpolation_settings = saved_bsdf.create_interpolation_enhancement(index_1=1, index_2=1.5)
     interpolated_cons_reflection = interpolation_settings.get_reflection_interpolation_settings
     interpolated_cons_transmission = interpolation_settings.get_transmission_interpolation_settings
     assert interpolated_cons_reflection["0.0"]["0.0"]["half_angle"] != 0.523
@@ -457,8 +448,7 @@ def test_bsdf180_creation(speos: Speos):
     input_file = Path(test_path) / "Gaussian Fresnel 10 deg.anisotropicbsdf"
     output_file_1 = Path(test_path) / "Test_bsdf180_1"
     output_file_2 = Path(test_path) / "Test_bsdf180_2.bsdf180"
-    output_file_1 = bsdf.create_bsdf180(
-        speos, output_file_1, input_file, input_file)
+    output_file_1 = bsdf.create_bsdf180(speos, output_file_1, input_file, input_file)
     assert does_file_exist(str(output_file_1))
     bsdf.create_bsdf180(speos, output_file_2, input_file, input_file)
     assert does_file_exist(str(output_file_2))
@@ -475,8 +465,7 @@ def test_spectral_brdf_creation(speos: Speos):
     wl_list = [400.0, 700.0]
     output_file_1 = Path(test_path) / "Test_brdf_1"
     output_file_2 = Path(test_path) / "Test_brdf_2.brdf"
-    output_file_1 = bsdf.create_spectral_brdf(
-        speos, output_file_1, wl_list, input_file)
+    output_file_1 = bsdf.create_spectral_brdf(speos, output_file_1, wl_list, input_file)
     assert does_file_exist(str(output_file_1))
     bsdf.create_spectral_brdf(speos, output_file_2, wl_list, input_file)
     assert does_file_exist(str(output_file_2))
@@ -494,11 +483,9 @@ def test_anisotropic_bsdf_creation(speos: Speos):
     ani_list = [np.radians(0), np.radians(90), np.radians(180)]
     output_file_1 = Path(test_path) / "Test_brdf_1"
     output_file_2 = Path(test_path) / "Test_brdf_2.anisotropicbsdf"
-    output_file_1 = bsdf.create_anisotropic_bsdf(
-        speos, output_file_1, ani_list, input_file)
+    output_file_1 = bsdf.create_anisotropic_bsdf(speos, output_file_1, ani_list, input_file)
     assert does_file_exist(str(output_file_1))
-    bsdf.create_anisotropic_bsdf(
-        speos, output_file_2, ani_list, input_file, fix_disparity=True)
+    bsdf.create_anisotropic_bsdf(speos, output_file_2, ani_list, input_file, fix_disparity=True)
     assert does_file_exist(str(output_file_2))
     remove_file(str(output_file_1))
     remove_file(str(output_file_2))
@@ -748,8 +735,7 @@ def test_spectral_bsdf_interpolation_enhancement(speos: Speos):
     assert saved_bsdf.interpolation_settings is not None
 
     # test if the backend data is correct
-    saved_cons_data = saved_bsdf._stub.GetSpecularInterpolationEnhancementData(
-        Empty())
+    saved_cons_data = saved_bsdf._stub.GetSpecularInterpolationEnhancementData(Empty())
     assert saved_cons_data.wavelength_incidence_samples[0].reflection.cone_half_angle == 0.523
     assert approx_comparison(
         value1=saved_cons_data.wavelength_incidence_samples[0].reflection.cone_half_angle,
@@ -778,8 +764,7 @@ def test_spectral_bsdf_interpolation_enhancement(speos: Speos):
     assert interpolated_cons_transmission["380.0"]["0.0"]["height"] == 0.6
 
     # test if retrieving interpolation settings is correct with same index provided
-    interpolation_settings = saved_bsdf.create_interpolation_enhancement(
-        index_1=1.5, index_2=1.0)
+    interpolation_settings = saved_bsdf.create_interpolation_enhancement(index_1=1.5, index_2=1.0)
     interpolated_cons_reflection = interpolation_settings.get_reflection_interpolation_settings
     interpolated_cons_transmission = interpolation_settings.get_transmission_interpolation_settings
     assert interpolated_cons_reflection["380.0"]["0.0"]["half_angle"] != 0.523
@@ -788,8 +773,7 @@ def test_spectral_bsdf_interpolation_enhancement(speos: Speos):
     assert interpolated_cons_transmission["380.0"]["0.0"]["height"] != 0.6
 
     # test if retrieving interpolation settings is correct with different index provided
-    interpolation_settings = saved_bsdf.create_interpolation_enhancement(
-        index_1=1, index_2=1.5)
+    interpolation_settings = saved_bsdf.create_interpolation_enhancement(index_1=1, index_2=1.5)
     interpolated_cons_reflection = interpolation_settings.get_reflection_interpolation_settings
     interpolated_cons_transmission = interpolation_settings.get_transmission_interpolation_settings
     assert interpolated_cons_reflection["380.0"]["0.0"]["half_angle"] != 0.523

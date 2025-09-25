@@ -64,11 +64,9 @@ def test_create_direct(speos: Speos):
     assert len(sim1._simulation_instance.source_paths) == 0
     assert len(sim1._simulation_instance.geometries.geo_paths) == 0
     assert sim1._job.HasField("direct_mc_simulation_properties")
-    assert sim1._job.direct_mc_simulation_properties.HasField(
-        "stop_condition_rays_number")
+    assert sim1._job.direct_mc_simulation_properties.HasField("stop_condition_rays_number")
     assert sim1._job.direct_mc_simulation_properties.stop_condition_rays_number == 200000
-    assert sim1._job.direct_mc_simulation_properties.HasField(
-        "stop_condition_duration") is False
+    assert sim1._job.direct_mc_simulation_properties.HasField("stop_condition_duration") is False
     assert sim1._job.direct_mc_simulation_properties.automatic_save_frequency == 1800
 
     # Change value
@@ -101,19 +99,16 @@ def test_create_direct(speos: Speos):
     # assert simulation_template.fast_transmission_gathering is True
 
     # ambient_material_uri
-    sim1.set_ambient_material_file_uri(
-        uri=str(Path(test_path) / "AIR.material"))
+    sim1.set_ambient_material_file_uri(uri=str(Path(test_path) / "AIR.material"))
     assert simulation_template.ambient_material_uri.endswith("AIR.material")
 
     # stop_condition_rays_number
     sim1.set_stop_condition_rays_number(value=None)
-    assert sim1._job.direct_mc_simulation_properties.HasField(
-        "stop_condition_rays_number") is False
+    assert sim1._job.direct_mc_simulation_properties.HasField("stop_condition_rays_number") is False
 
     # stop_condition_duration
     sim1.set_stop_condition_duration(value=600)
-    assert sim1._job.direct_mc_simulation_properties.HasField(
-        "stop_condition_duration")
+    assert sim1._job.direct_mc_simulation_properties.HasField("stop_condition_duration")
     assert sim1._job.direct_mc_simulation_properties.stop_condition_duration == 600
 
     # automatic_save_frequency
@@ -167,14 +162,12 @@ def test_create_inverse(speos: Speos):
     assert len(sim1._simulation_instance.source_paths) == 0
     assert len(sim1._simulation_instance.geometries.geo_paths) == 0
     assert sim1._job.HasField("inverse_mc_simulation_properties")
-    assert sim1._job.inverse_mc_simulation_properties.HasField(
-        "optimized_propagation_none")
+    assert sim1._job.inverse_mc_simulation_properties.HasField("optimized_propagation_none")
     assert (
         sim1._job.inverse_mc_simulation_properties.optimized_propagation_none.stop_condition_passes_number
         == 5
     )
-    assert sim1._job.inverse_mc_simulation_properties.HasField(
-        "stop_condition_duration") is False
+    assert sim1._job.inverse_mc_simulation_properties.HasField("stop_condition_duration") is False
     assert sim1._job.inverse_mc_simulation_properties.automatic_save_frequency == 1800
 
     # Change value
@@ -219,14 +212,12 @@ def test_create_inverse(speos: Speos):
     # assert simulation_template.fast_transmission_gathering == True
 
     # ambient_material_uri
-    sim1.set_ambient_material_file_uri(
-        uri=str(Path(test_path) / "AIR.material"))
+    sim1.set_ambient_material_file_uri(uri=str(Path(test_path) / "AIR.material"))
     assert simulation_template.ambient_material_uri.endswith("AIR.material")
 
     # stop_condition_passes_number
     sim1.set_stop_condition_passes_number(value=None)
-    assert sim1._job.inverse_mc_simulation_properties.HasField(
-        "optimized_propagation_none") is True
+    assert sim1._job.inverse_mc_simulation_properties.HasField("optimized_propagation_none") is True
     assert (
         sim1._job.inverse_mc_simulation_properties.optimized_propagation_none.HasField(
             "stop_condition_passes_number"
@@ -236,8 +227,7 @@ def test_create_inverse(speos: Speos):
 
     # stop_condition_duration
     sim1.set_stop_condition_duration(value=50)
-    assert sim1._job.inverse_mc_simulation_properties.HasField(
-        "stop_condition_duration")
+    assert sim1._job.inverse_mc_simulation_properties.HasField("stop_condition_duration")
     assert sim1._job.inverse_mc_simulation_properties.stop_condition_duration == 50
 
     # automatic_save_frequency
@@ -274,16 +264,14 @@ def test_create_interactive(speos: Speos):
     sim1 = p.create_simulation(name="Interactive.1")
     sim1 = SimulationInteractive(project=p, name="Interactive.1")
     # sim1.set_interactive()  # do not commit to avoid issues about No sensor in simulation
-    assert sim1._simulation_template.HasField(
-        "interactive_simulation_template")
+    assert sim1._simulation_template.HasField("interactive_simulation_template")
     assert sim1._simulation_template.interactive_simulation_template.geom_distance_tolerance == 0.01
     assert sim1._simulation_template.interactive_simulation_template.max_impact == 100
     assert (
         sim1._simulation_template.interactive_simulation_template.colorimetric_standard
         == simulation_template_pb2.CIE_1931
     )
-    assert sim1._simulation_template.interactive_simulation_template.HasField(
-        "weight")
+    assert sim1._simulation_template.interactive_simulation_template.HasField("weight")
     assert (
         sim1._simulation_template.interactive_simulation_template.weight.minimum_energy_percentage
         == 0.005
@@ -293,8 +281,7 @@ def test_create_interactive(speos: Speos):
     assert len(sim1._simulation_instance.source_paths) == 0
     assert len(sim1._simulation_instance.geometries.geo_paths) == 0
     assert sim1._job.HasField("interactive_simulation_properties")
-    assert len(
-        sim1._job.interactive_simulation_properties.rays_number_per_sources) == 0
+    assert len(sim1._job.interactive_simulation_properties.rays_number_per_sources) == 0
     assert sim1._job.interactive_simulation_properties.light_expert is False
     assert sim1._job.interactive_simulation_properties.impact_report is False
 
@@ -309,12 +296,10 @@ def test_create_interactive(speos: Speos):
 
     # weight - minimum_energy_percentage
     sim1.set_weight_none()
-    assert sim1._simulation_template.interactive_simulation_template.HasField(
-        "weight") is False
+    assert sim1._simulation_template.interactive_simulation_template.HasField("weight") is False
 
     sim1.set_weight().set_minimum_energy_percentage(value=0.7)
-    assert sim1._simulation_template.interactive_simulation_template.HasField(
-        "weight")
+    assert sim1._simulation_template.interactive_simulation_template.HasField("weight")
     assert (
         sim1._simulation_template.interactive_simulation_template.weight.minimum_energy_percentage
         == 0.7
@@ -328,8 +313,7 @@ def test_create_interactive(speos: Speos):
     )
 
     # ambient_material_uri
-    sim1.set_ambient_material_file_uri(
-        uri=str(Path(test_path) / "AIR.material"))
+    sim1.set_ambient_material_file_uri(uri=str(Path(test_path) / "AIR.material"))
     assert sim1._simulation_template.interactive_simulation_template.ambient_material_uri.endswith(
         "AIR.material"
     )
@@ -337,30 +321,24 @@ def test_create_interactive(speos: Speos):
     # rays_number_per_sources
     sim1.set_rays_number_per_sources(
         values=[
-            SimulationInteractive.RaysNumberPerSource(
-                source_path="Source.1", rays_nb=50),
-            SimulationInteractive.RaysNumberPerSource(
-                source_path="Source.2", rays_nb=150),
+            SimulationInteractive.RaysNumberPerSource(source_path="Source.1", rays_nb=50),
+            SimulationInteractive.RaysNumberPerSource(source_path="Source.2", rays_nb=150),
         ]
     )
-    assert len(
-        sim1._job.interactive_simulation_properties.rays_number_per_sources) == 2
+    assert len(sim1._job.interactive_simulation_properties.rays_number_per_sources) == 2
     assert (
         sim1._job.interactive_simulation_properties.rays_number_per_sources[0].source_path
         == "Source.1"
     )
-    assert sim1._job.interactive_simulation_properties.rays_number_per_sources[
-        0].rays_nb == 50
+    assert sim1._job.interactive_simulation_properties.rays_number_per_sources[0].rays_nb == 50
     assert (
         sim1._job.interactive_simulation_properties.rays_number_per_sources[1].source_path
         == "Source.2"
     )
-    assert sim1._job.interactive_simulation_properties.rays_number_per_sources[
-        1].rays_nb == 150
+    assert sim1._job.interactive_simulation_properties.rays_number_per_sources[1].rays_nb == 150
 
     sim1.set_rays_number_per_sources(values=[])
-    assert len(
-        sim1._job.interactive_simulation_properties.rays_number_per_sources) == 0
+    assert len(sim1._job.interactive_simulation_properties.rays_number_per_sources) == 0
 
     # light_expert
     sim1.set_light_expert(value=True)
@@ -404,8 +382,7 @@ def test_commit(speos: Speos):
 
     opt_prop = p.create_optical_property(name="Material.1")
     opt_prop.set_volume_none().set_surface_mirror()
-    opt_prop.set_geometries(
-        geometries=[GeoRef.from_native_link(geopath="Body.1")])
+    opt_prop.set_geometries(geometries=[GeoRef.from_native_link(geopath="Body.1")])
     opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
@@ -422,8 +399,7 @@ def test_commit(speos: Speos):
 
     # Create
     sim1 = SimulationDirect(project=p, name="Direct.1")
-    sim1.set_sensor_paths(sensor_paths=[ssr._name]).set_source_paths(
-        source_paths=[src._name])
+    sim1.set_sensor_paths(sensor_paths=[ssr._name]).set_source_paths(source_paths=[src._name])
     assert sim1.simulation_template_link is None
     assert len(p.scene_link.get().simulations) == 0
     assert sim1.job_link is None
@@ -432,8 +408,7 @@ def test_commit(speos: Speos):
     # Commit
     sim1.commit()
     assert sim1.simulation_template_link is not None
-    assert sim1.simulation_template_link.get().HasField(
-        "direct_mc_simulation_template")
+    assert sim1.simulation_template_link.get().HasField("direct_mc_simulation_template")
     assert sim1.job_link is None  # Job will be committed only at compute time
 
     assert len(p.scene_link.get().simulations) == 1
@@ -461,8 +436,7 @@ def test_reset(speos: Speos):
 
     opt_prop = p.create_optical_property(name="Material.1")
     opt_prop.set_volume_none().set_surface_mirror()
-    opt_prop.set_geometries(
-        geometries=[GeoRef.from_native_link(geopath="Body.1")])
+    opt_prop.set_geometries(geometries=[GeoRef.from_native_link(geopath="Body.1")])
     opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
@@ -484,8 +458,7 @@ def test_reset(speos: Speos):
         source_paths=[src._name]
     ).commit()
     assert sim1.simulation_template_link is not None
-    assert sim1.simulation_template_link.get().HasField(
-        "direct_mc_simulation_template")
+    assert sim1.simulation_template_link.get().HasField("direct_mc_simulation_template")
     assert len(p.scene_link.get().simulations) == 1
     assert sim1.job_link is None  # Job will be committed only at compute time
     assert sim1._job.HasField("direct_mc_simulation_properties")  # local
@@ -518,8 +491,7 @@ def test_direct_modify_after_reset(speos: Speos):
 
     opt_prop = p.create_optical_property(name="Material.1")
     opt_prop.set_volume_none().set_surface_mirror()
-    opt_prop.set_geometries(
-        geometries=[GeoRef.from_native_link(geopath="Body.1")])
+    opt_prop.set_geometries(geometries=[GeoRef.from_native_link(geopath="Body.1")])
     opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
@@ -590,18 +562,15 @@ def test_inverse_modify_after_reset(speos: Speos):
 
     opt_prop = p.create_optical_property(name="Material.1")
     opt_prop.set_volume_none().set_surface_mirror()
-    opt_prop.set_geometries(
-        geometries=[GeoRef.from_native_link(geopath="Body.1")])
+    opt_prop.set_geometries(geometries=[GeoRef.from_native_link(geopath="Body.1")])
     opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
-    ssr.set_axis_system(
-        axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]).set_type_colorimetric()
+    ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]).set_type_colorimetric()
     ssr.commit()
 
     ssr2 = p.create_sensor(name="Irradiance.2", feature_type=SensorIrradiance)
-    ssr2.set_axis_system(
-        axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]).set_type_colorimetric()
+    ssr2.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]).set_type_colorimetric()
     ssr2.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
@@ -609,8 +578,7 @@ def test_inverse_modify_after_reset(speos: Speos):
     src.commit()
 
     # Create + commit
-    sim1 = p.create_simulation(
-        name="Inverse.1", feature_type=SimulationInverse)
+    sim1 = p.create_simulation(name="Inverse.1", feature_type=SimulationInverse)
     sim1.set_sensor_paths(sensor_paths=[ssr._name]).set_source_paths(
         source_paths=[src._name]
     ).commit()
@@ -671,18 +639,15 @@ def test_interactive_modify_after_reset(speos: Speos):
 
     opt_prop = p.create_optical_property(name="Material.1")
     opt_prop.set_volume_none().set_surface_mirror()
-    opt_prop.set_geometries(
-        geometries=[GeoRef.from_native_link(geopath="Body.1")])
+    opt_prop.set_geometries(geometries=[GeoRef.from_native_link(geopath="Body.1")])
     opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
-    ssr.set_axis_system(
-        axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]).set_type_colorimetric()
+    ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]).set_type_colorimetric()
     ssr.commit()
 
     ssr2 = p.create_sensor(name="Irradiance.2", feature_type=SensorIrradiance)
-    ssr2.set_axis_system(
-        axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]).set_type_colorimetric()
+    ssr2.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]).set_type_colorimetric()
     ssr2.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
@@ -690,8 +655,7 @@ def test_interactive_modify_after_reset(speos: Speos):
     src.commit()
 
     # Create + commit
-    sim1 = p.create_simulation(
-        name="Interactive.1", feature_type=SimulationInteractive)
+    sim1 = p.create_simulation(name="Interactive.1", feature_type=SimulationInteractive)
     sim1.set_sensor_paths(sensor_paths=[ssr._name]).set_source_paths(
         source_paths=[src._name]
     ).commit()
@@ -731,8 +695,7 @@ def test_delete(speos: Speos):
 
     opt_prop = p.create_optical_property(name="Material.1")
     opt_prop.set_volume_none().set_surface_mirror()
-    opt_prop.set_geometries(
-        geometries=[GeoRef.from_native_link(geopath="Body.1")])
+    opt_prop.set_geometries(geometries=[GeoRef.from_native_link(geopath="Body.1")])
     opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
@@ -748,10 +711,8 @@ def test_delete(speos: Speos):
     sim1.set_sensor_paths(sensor_paths=[ssr._name]).set_source_paths(
         source_paths=[src._name]
     ).commit()
-    assert sim1.simulation_template_link.get().HasField(
-        "direct_mc_simulation_template")
-    assert sim1._simulation_template.HasField(
-        "direct_mc_simulation_template")  # local template
+    assert sim1.simulation_template_link.get().HasField("direct_mc_simulation_template")
+    assert sim1._simulation_template.HasField("direct_mc_simulation_template")  # local template
     assert len(p.scene_link.get().simulations) == 1
     assert len(p.scene_link.get().simulations[0].sensor_paths) == 1
     assert len(sim1._simulation_instance.sensor_paths) == 1  # local
@@ -764,8 +725,7 @@ def test_delete(speos: Speos):
     assert len(sim1._simulation_instance.metadata) == 0
 
     assert sim1.simulation_template_link is None
-    assert sim1._simulation_template.HasField(
-        "direct_mc_simulation_template")  # local
+    assert sim1._simulation_template.HasField("direct_mc_simulation_template")  # local
 
     assert len(p.scene_link.get().simulations) == 0
     assert len(sim1._simulation_instance.sensor_paths) == 1  # local
@@ -775,8 +735,7 @@ def test_get_simulation(speos: Speos, capsys):
     """Test get of a simulation."""
     p = Project(speos=speos)
     sim1 = p.create_simulation(name="Sim.1", feature_type=SimulationDirect)
-    sim2 = p.create_simulation(
-        name="Sim.2", feature_type=SimulationInteractive)
+    sim2 = p.create_simulation(name="Sim.2", feature_type=SimulationInteractive)
     sim3 = p.create_simulation(name="Sim.3", feature_type=SimulationInverse)
     # test when key exists
     name1 = sim1.get(key="name")
@@ -807,10 +766,8 @@ def test_export(speos: Speos):
         speos=speos,
         path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
     )
-    sim_first = p.find(name=".*", name_regex=True,
-                       feature_type=SimulationDirect)[0]
-    sim_second = p.create_simulation(
-        name="Sim.2", feature_type=SimulationInverse)
+    sim_first = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
+    sim_second = p.create_simulation(name="Sim.2", feature_type=SimulationInverse)
     sim_second.set_sensor_paths(["Irradiance.1:564"])
     sim_second.set_source_paths(["Surface.1:7758"])
     sim_second.commit()
@@ -850,10 +807,8 @@ def test_export_vtp(speos: Speos):
     # ==== test 3d sensor photometric ===
     # verify illuminance, reflection, transmission, absorption are saved in vtp
     # verify the vtp data is same as calculated
-    sensor_3d = p.find(name=".*", name_regex=True,
-                       feature_type=Sensor3DIrradiance)[0]
-    sensor_3d_geos = p.find(name="PrismBody", name_regex=True, feature_type=Body)[
-        0]._geom_features
+    sensor_3d = p.find(name=".*", name_regex=True, feature_type=Sensor3DIrradiance)[0]
+    sensor_3d_geos = p.find(name="PrismBody", name_regex=True, feature_type=Body)[0]._geom_features
     sensor_3d_mesh = [sensor_3d_geo._face for sensor_3d_geo in sensor_3d_geos]
     sensor_3d.set_type_photometric()
     sensor_3d.commit()
@@ -866,8 +821,7 @@ def test_export_vtp(speos: Speos):
     assert np.allclose(vtp_data.get("Transmission"), 0.0) is not True
     assert np.allclose(vtp_data.get("Absorption"), 0.0) is True
 
-    export_data_xm3 = [
-        result.path for result in speos_results if result.path.endswith(".xm3")][0]
+    export_data_xm3 = [result.path for result in speos_results if result.path.endswith(".xm3")][0]
     export_data_xm3_txt = Path(export_data_xm3).with_suffix(".txt")
     file = export_data_xm3_txt.open("r")
     xm3_data = []
@@ -895,8 +849,7 @@ def test_export_vtp(speos: Speos):
         if vtp_meshes is None:
             vtp_meshes = pv.PolyData(vertices, facets)
         else:
-            vtp_meshes = vtp_meshes.append_polydata(
-                pv.PolyData(vertices, facets))
+            vtp_meshes = vtp_meshes.append_polydata(pv.PolyData(vertices, facets))
 
     vtp_meshes["Illuminance [lx]"] = [item.illuminance for item in xm3_data]
     vtp_meshes["Reflection"] = [item.reflection for item in xm3_data]
@@ -943,8 +896,7 @@ def test_export_vtp(speos: Speos):
     )
     sim = p2.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
 
-    sensor_3d = p2.find(name=".*", name_regex=True,
-                        feature_type=Sensor3DIrradiance)[0]
+    sensor_3d = p2.find(name=".*", name_regex=True, feature_type=Sensor3DIrradiance)[0]
     sensor_3d.set_type_photometric().set_integration_radial()
     sensor_3d.commit()
     speos_results, vtp_results = sim.compute_CPU(export_vtp=True)
@@ -966,10 +918,8 @@ def test_export_vtp(speos: Speos):
     )
     sim = p3.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
 
-    sensor_3d = p3.find(name=".*", name_regex=True,
-                        feature_type=Sensor3DIrradiance)[0]
-    sensor_3d_geos = p3.find(name="PrismBody", name_regex=True, feature_type=Body)[
-        0]._geom_features
+    sensor_3d = p3.find(name=".*", name_regex=True, feature_type=Sensor3DIrradiance)[0]
+    sensor_3d_geos = p3.find(name="PrismBody", name_regex=True, feature_type=Body)[0]._geom_features
     sensor_3d_mesh = [sensor_3d_geo._face for sensor_3d_geo in sensor_3d_geos]
     sensor_3d.set_type_radiometric()
     sensor_3d.commit()
@@ -983,8 +933,7 @@ def test_export_vtp(speos: Speos):
     assert np.allclose(vtp_data.get("Absorption"), 0.0) is True
     assert np.allclose(vtp_data.get("Illuminance [lx]"), 0.0) is True
 
-    export_data_xm3 = [
-        result.path for result in speos_results if result.path.endswith(".xm3")][0]
+    export_data_xm3 = [result.path for result in speos_results if result.path.endswith(".xm3")][0]
     export_data_xm3_txt = Path(export_data_xm3).with_suffix(".txt")
     file = export_data_xm3_txt.open("r")
     xm3_data = []
@@ -1013,8 +962,7 @@ def test_export_vtp(speos: Speos):
         if vtp_meshes is None:
             vtp_meshes = pv.PolyData(vertices, facets)
         else:
-            vtp_meshes = vtp_meshes.append_polydata(
-                pv.PolyData(vertices, facets))
+            vtp_meshes = vtp_meshes.append_polydata(pv.PolyData(vertices, facets))
 
     vtp_meshes["Illuminance [lx]"] = [item.illuminance for item in xm3_data]
     vtp_meshes["Irradiance [W/m2]"] = [item.irradiance for item in xm3_data]
@@ -1070,8 +1018,7 @@ def test_export_vtp(speos: Speos):
     )
     sim = p4.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
 
-    sensor_3d = p4.find(name=".*", name_regex=True,
-                        feature_type=Sensor3DIrradiance)[0]
+    sensor_3d = p4.find(name=".*", name_regex=True, feature_type=Sensor3DIrradiance)[0]
     sensor_3d.set_type_colorimetric()
     sensor_3d.commit()
     speos_results, vtp_results = sim.compute_CPU(export_vtp=True)
@@ -1091,8 +1038,7 @@ def test_export_vtp(speos: Speos):
         path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
     )
     sim = p5.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
-    sensor_irra = p5.find(name=".*", name_regex=True,
-                          feature_type=SensorIrradiance)[0]
+    sensor_irra = p5.find(name=".*", name_regex=True, feature_type=SensorIrradiance)[0]
     sensor_irra.set_dimensions().set_x_sampling(10).set_y_sampling(10)
     sensor_irra.set_type_photometric()
     sensor_irra.commit()
@@ -1102,8 +1048,7 @@ def test_export_vtp(speos: Speos):
     vtp_data = pv.read(vtp_results[0]).point_data
     assert np.allclose(vtp_data.get("Photometric"), 0.0) is not True
 
-    export_data_xmp = [
-        result.path for result in speos_results if result.path.endswith(".xmp")][0]
+    export_data_xmp = [result.path for result in speos_results if result.path.endswith(".xmp")][0]
     export_data_xmp_txt = Path(export_data_xmp).with_suffix(".txt")
     file = export_data_xmp_txt.open("r")
     content = file.readlines()
@@ -1113,7 +1058,7 @@ def test_export_vtp(speos: Speos):
     resolution_y = 10
     xmp_data = []
     if "2" not in content[0]:  # not spectral data
-        for line in content[skip_lines: skip_lines + resolution_y]:
+        for line in content[skip_lines : skip_lines + resolution_y]:
             line_content = line.strip().split()
             xmp_data.append(list(map(float, line_content)))
     else:  # spectral data within number of data tables
@@ -1146,8 +1091,7 @@ def test_export_vtp(speos: Speos):
         path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
     )
     sim = p6.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
-    sensor_irra = p6.find(name=".*", name_regex=True,
-                          feature_type=SensorIrradiance)[0]
+    sensor_irra = p6.find(name=".*", name_regex=True, feature_type=SensorIrradiance)[0]
     sensor_irra.set_dimensions().set_x_sampling(10).set_y_sampling(10)
     sensor_irra.set_type_radiometric()
     sensor_irra.commit()
@@ -1164,8 +1108,7 @@ def test_export_vtp(speos: Speos):
         path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
     )
     sim = p7.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
-    sensor_irra = p7.find(name=".*", name_regex=True,
-                          feature_type=SensorIrradiance)[0]
+    sensor_irra = p7.find(name=".*", name_regex=True, feature_type=SensorIrradiance)[0]
     sensor_irra.set_dimensions().set_x_sampling(10).set_y_sampling(10)
     sensor_irra.set_type_colorimetric()
     sensor_irra.commit()
@@ -1187,8 +1130,7 @@ def test_export_vtp(speos: Speos):
         path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
     )
     sim = p8.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
-    sensor_irra = p8.find(name=".*", name_regex=True,
-                          feature_type=SensorIrradiance)[0]
+    sensor_irra = p8.find(name=".*", name_regex=True, feature_type=SensorIrradiance)[0]
     sensor_irra.set_dimensions().set_x_sampling(10).set_y_sampling(10)
     sensor_irra.set_type_spectral()
     sensor_irra.commit()

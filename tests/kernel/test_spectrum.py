@@ -24,8 +24,6 @@
 
 from pathlib import Path
 
-import pytest
-
 from ansys.speos.core.kernel.spectrum import ProtoSpectrum
 from ansys.speos.core.speos import Speos
 from tests.conftest import test_path
@@ -127,8 +125,7 @@ def test_spectrum(speos: Speos):
     assert s_sampled.key != ""
 
     # Library
-    spectrum_path = str(Path(test_path) / "CameraInputFiles" /
-                        "CameraSensitivityBlue.spectrum")
+    spectrum_path = str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum")
     s_lib = spec_db.create(
         message=ProtoSpectrum(
             name="library_1",
@@ -143,8 +140,7 @@ def test_spectrum(speos: Speos):
         ProtoSpectrum(
             name="predefined_1",
             description="Predefined incandescent spectrum",
-            predefined=ProtoSpectrum.Predefined(
-                incandescent=ProtoSpectrum.Incandescent()),
+            predefined=ProtoSpectrum.Predefined(incandescent=ProtoSpectrum.Incandescent()),
         )
     )
     assert s_predefined_incandescent.key != ""

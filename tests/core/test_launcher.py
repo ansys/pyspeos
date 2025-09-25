@@ -50,8 +50,7 @@ def test_local_session(*args):
         name = "SpeosRPC_Server.x"
     p_list = [p.name() for p in psutil.process_iter()]
     nb_process = p_list.count(name)
-    test_speos = launch_local_speos_rpc_server(
-        port=port, speos_rpc_path=speos_loc)
+    test_speos = launch_local_speos_rpc_server(port=port, speos_rpc_path=speos_loc)
     p_list = [p.name() for p in psutil.process_iter()]
     running = p_list.count(name) > nb_process
     assert running is test_speos.client.healthy

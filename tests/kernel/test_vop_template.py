@@ -65,8 +65,7 @@ def test_vop_template(speos: Speos):
         ProtoVOPTemplate(
             name="optic_1",
             description="Optic vop template with constringence",
-            optic=ProtoVOPTemplate.Optic(
-                index=1.5, absorption=0.0, constringence=60.0),
+            optic=ProtoVOPTemplate.Optic(index=1.5, absorption=0.0, constringence=60.0),
         )
     )
     assert vop_t_optic1.key != ""
@@ -90,8 +89,7 @@ def test_vop_template(speos: Speos):
             description="Non Homogeneous vop template",
             non_homogeneous=ProtoVOPTemplate.NonHomogeneous(
                 gradedmaterial_file_uri=str(
-                    Path(test_path) /
-                    "Index_1.5_Gradient_0.499_Abs_0.gradedmaterial"
+                    Path(test_path) / "Index_1.5_Gradient_0.499_Abs_0.gradedmaterial"
                 )
             ),
         )
@@ -116,8 +114,7 @@ def test_vop_template(speos: Speos):
             ProtoVOPTemplate(
                 name="optic_3",
                 description="Optic vop template with constringence < 20",
-                optic=ProtoVOPTemplate.Optic(
-                    index=1.5, absorption=0.0, constringence=10.0),
+                optic=ProtoVOPTemplate.Optic(index=1.5, absorption=0.0, constringence=10.0),
             )
         )
     error_details = json.loads(exc_info.value.details())

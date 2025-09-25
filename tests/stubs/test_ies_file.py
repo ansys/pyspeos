@@ -25,8 +25,6 @@
 import logging
 from pathlib import Path
 
-import pytest
-
 from ansys.api.speos.intensity_distributions.v1 import ies_pb2, ies_pb2_grpc
 from ansys.speos.core.speos import Speos
 from tests.conftest import test_path
@@ -64,8 +62,7 @@ def create_ies_intensity():
     for i in range(int(ies.nb_vertical_angle)):
         ies.vertical_angle.append(0 + i * 180 / (ies.nb_vertical_angle - 1))
     for i in range(int(ies.nb_horizontal_angle)):
-        ies.horizontal_angle.append(
-            0 + i * 360 / (ies.nb_horizontal_angle - 1))
+        ies.horizontal_angle.append(0 + i * 360 / (ies.nb_horizontal_angle - 1))
         for j in range(int(ies.nb_vertical_angle)):
             ies.candela_value.append(1000)
     for i in range(int(ies.tilt_nb_pair_angle)):

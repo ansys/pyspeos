@@ -26,7 +26,6 @@ import math
 from pathlib import Path
 
 from google.protobuf.empty_pb2 import Empty
-import pytest
 
 import ansys.api.speos.bsdf.v1.anisotropic_bsdf_pb2 as anisotropic_bsdf__v1__pb2
 import ansys.api.speos.bsdf.v1.anisotropic_bsdf_pb2_grpc as anisotropic_bsdf__v1__pb2_grpc
@@ -66,17 +65,14 @@ def create_anisotropic_bsdf():
         nb_incidence = 10
         for i in range(nb_incidence):
             incidence_diag = slice.incidence_samples.add()
-            incidence_diag.incidence_sample = i * \
-                math.pi * 0.5 / (nb_incidence - 1)
+            incidence_diag.incidence_sample = i * math.pi * 0.5 / (nb_incidence - 1)
             # intensity diagrams
             nb_theta = 10
             nb_phi = 37
             for p in range(nb_phi):
-                incidence_diag.phi_samples.append(
-                    p * 2 * math.pi / (nb_phi - 1))
+                incidence_diag.phi_samples.append(p * 2 * math.pi / (nb_phi - 1))
             for t in range(nb_theta):
-                incidence_diag.theta_samples.append(
-                    t * math.pi * 0.5 / (nb_theta - 1))
+                incidence_diag.theta_samples.append(t * math.pi * 0.5 / (nb_theta - 1))
                 for p in range(nb_phi):
                     incidence_diag.bsdf_cos_theta.append(
                         math.cos(incidence_diag.theta_samples[t]) / math.pi
@@ -99,21 +95,17 @@ def create_anisotropic_bsdf():
         nb_incidence = 10
         for i in range(nb_incidence):
             incidence_diag = slice.incidence_samples.add()
-            incidence_diag.incidence_sample = i * \
-                math.pi * 0.5 / (nb_incidence - 1)
+            incidence_diag.incidence_sample = i * math.pi * 0.5 / (nb_incidence - 1)
             # intensity diagrams
             nb_theta = 10
             nb_phi = 37
             for p in range(nb_phi):
-                incidence_diag.phi_samples.append(
-                    p * 2 * math.pi / (nb_phi - 1))
+                incidence_diag.phi_samples.append(p * 2 * math.pi / (nb_phi - 1))
             for t in range(nb_theta):
-                incidence_diag.theta_samples.append(
-                    math.pi * 0.5 * (1 + t / (nb_theta - 1)))
+                incidence_diag.theta_samples.append(math.pi * 0.5 * (1 + t / (nb_theta - 1)))
                 for p in range(nb_phi):
                     incidence_diag.bsdf_cos_theta.append(
-                        abs(math.cos(
-                            incidence_diag.theta_samples[t])) / math.pi
+                        abs(math.cos(incidence_diag.theta_samples[t])) / math.pi
                     )
     return bsdf
 
@@ -196,10 +188,8 @@ def compare_anisotropic_bsdf(bsdf1, bsdf2):
                     return False
                 for p in range(len(incidence_diag1.phi_samples)):
                     if not approx_cmp(
-                        incidence_diag1.bsdf_cos_theta[t *
-                                                       len(incidence_diag1.phi_samples) + p],
-                        incidence_diag2.bsdf_cos_theta[t *
-                                                       len(incidence_diag1.phi_samples) + p],
+                        incidence_diag1.bsdf_cos_theta[t * len(incidence_diag1.phi_samples) + p],
+                        incidence_diag2.bsdf_cos_theta[t * len(incidence_diag1.phi_samples) + p],
                     ):
                         return False
 
@@ -266,10 +256,8 @@ def compare_anisotropic_bsdf(bsdf1, bsdf2):
                     return False
                 for p in range(len(incidence_diag1.phi_samples)):
                     if not approx_cmp(
-                        incidence_diag1.bsdf_cos_theta[t *
-                                                       len(incidence_diag1.phi_samples) + p],
-                        incidence_diag2.bsdf_cos_theta[t *
-                                                       len(incidence_diag1.phi_samples) + p],
+                        incidence_diag1.bsdf_cos_theta[t * len(incidence_diag1.phi_samples) + p],
+                        incidence_diag2.bsdf_cos_theta[t * len(incidence_diag1.phi_samples) + p],
                     ):
                         return False
 
@@ -308,8 +296,7 @@ def compare_specular_enhancement_data(data1, data2):
 
 def test_grpc_anisotropic_bsdf(speos: Speos):
     """Test for anisotropic bsdf service."""
-    stub = anisotropic_bsdf__v1__pb2_grpc.AnisotropicBsdfServiceStub(
-        speos.client.channel)
+    stub = anisotropic_bsdf__v1__pb2_grpc.AnisotropicBsdfServiceStub(speos.client.channel)
 
     # anisotropic bsdf
     file_name = anisotropic_bsdf__v1__pb2.FileName()
@@ -348,15 +335,13 @@ def test_grpc_anisotropic_bsdf(speos: Speos):
 
     assert compare_anisotropic_bsdf(bsdf, bsdf3)
 
-    file_name.file_name = str(
-        Path(test_path) / "Gaussian Fresnel 10 deg.anisotropicbsdf")
+    file_name.file_name = str(Path(test_path) / "Gaussian Fresnel 10 deg.anisotropicbsdf")
     # loading {file_name.file_name}
     stub.Load(file_name)
 
     # conoscopic map
     cm = anisotropic_bsdf__v1__pb2.ConoscopicMap()
-    cm.output_file_name = str(
-        Path(test_path) / "test_conoscopic_anisotropic.xmp")
+    cm.output_file_name = str(Path(test_path) / "test_conoscopic_anisotropic.xmp")
     cm.wavelength = 555.0
     cm.anisotropic_angle = 0.0
     cm.side = anisotropic_bsdf__v1__pb2.ConoscopicMap.TRANSMISSION
@@ -383,8 +368,7 @@ def test_grpc_anisotropic_bsdf(speos: Speos):
     # setting cones back
     stub.SetSpecularInterpolationEnhancementData(cones)
 
-    file_name.file_name = str(
-        Path(test_path) / "Gaussian Fresnel 10 deg_autocut.anisotropicbsdf")
+    file_name.file_name = str(Path(test_path) / "Gaussian Fresnel 10 deg_autocut.anisotropicbsdf")
     # writing result in {file_name.file_name}
     stub.Save(file_name)
 
