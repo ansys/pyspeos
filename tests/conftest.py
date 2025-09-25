@@ -196,33 +196,15 @@ def pytest_addoption(parser):
     )
 
 
-def pytest_addoption(parser):
-    """
-    Add '--all_speos_versions' command line option.
-
-    Option allow to filter tests supported on all Speos versions.
-
-    Note:
-        Unmarked tests are consider as supported on all Speos versions.
-    """
-    parser.addoption(
-        "--all_speos_versions",
-        action="store_true",
-        default=False,
-        help="Filters tests supported on all Speos versions."
-    )
-
-
 def pytest_collection_modifyitems(config, items):
     """
     Add 'all_speos_versions' marker to unmarked test.
 
     Unless specified, every test is applicable to all Speos versions.
     """
-    if config.getoption("--all_speos_versions"):
-        items[:] = [
-            item for item in items if not item.get_closest_marker("supported_speos_versions")
-        ]
+    for item in items:
+        if not item.own_markers:
+            item.add_marker(pytest.mark.all_speos_versions)
 
 
 def pytest_runtest_setup(item):
