@@ -717,7 +717,7 @@ def test_create_irradiance_sensor(speos: Speos):
     sensor1.delete()
 
 
-@pytest.mark.supported_speos_versions(min=252)
+@pytest.mark.supported_speos_versions(min=251)
 def test_create_radiance_sensor(speos: Speos):
     """Test creation of radiance sensor."""
     p = Project(speos=speos)
