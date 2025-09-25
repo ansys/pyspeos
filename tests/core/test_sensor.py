@@ -39,7 +39,7 @@ from ansys.speos.core.simulation import SimulationDirect
 from tests.conftest import test_path
 
 
-@pytest.mark.supported_speos_versions(min=252)
+@pytest.mark.supported_speos_versions(min=251)
 def test_create_camera_sensor(speos: Speos):
     """Test creation of camera sensor."""
     p = Project(speos=speos)
