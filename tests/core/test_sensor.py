@@ -1321,7 +1321,7 @@ def test_irradiance_modify_after_reset(speos: Speos):
     sensor1.delete()
 
 
-@pytest.mark.supported_speos_versions(min=252)
+@pytest.mark.supported_speos_versions(min=251)
 def test_radiance_modify_after_reset(speos: Speos):
     """Test reset of radiance sensor, and then modify."""
     p = Project(speos=speos)
