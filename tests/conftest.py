@@ -187,7 +187,7 @@ def pytest_addoption(parser):
     """
     Add '--supported-features' command line option.
 
-    Option allow to filter tests based and the minimum and maximum supported Speos versions.
+    Allow to filter tests based on the minimum and maximum supported Speos versions.
     """
     parser.addoption(
         "--supported-features",
