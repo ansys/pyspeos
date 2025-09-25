@@ -34,7 +34,6 @@ from tests.helper import clean_all_dbs, run_job_and_check_state
 from tests.kernel.test_scene import create_basic_scene
 
 
-@pytest.mark.SPEOS_UAT
 def test_job(speos: Speos):
     """Test the job creation."""
     assert speos.client.healthy is True
@@ -81,7 +80,6 @@ def test_job(speos: Speos):
     clean_all_dbs(speos.client)
 
 
-@pytest.mark.SPEOS_UAT
 def test_job_actions(speos: Speos):
     """Test the job actions."""
     assert speos.client.healthy is True

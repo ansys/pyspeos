@@ -31,7 +31,6 @@ from ansys.speos.core.speos import Speos
 from tests.conftest import test_path
 
 
-@pytest.mark.SPEOS_UAT
 def test_client_spectrum_init(speos: Speos):
     """Test the abstraction layer for spectrums. How to use SpectrumLink objects."""
     assert speos.client.healthy is True
@@ -43,7 +42,8 @@ def test_client_spectrum_init(speos: Speos):
     s_ph_data.name = "predefined_halogen_0"
     s_ph_data.description = "Predefined spectrum"
     s_ph_data.predefined.halogen.SetInParent()
-    s_ph = spec_db.create(message=s_ph_data)  # at this step the spectrum is stored in DB
+    # at this step the spectrum is stored in DB
+    s_ph = spec_db.create(message=s_ph_data)
     assert s_ph.key != ""
     assert s_ph.stub is not None
 
@@ -59,7 +59,8 @@ def test_client_spectrum_init(speos: Speos):
     s_bb_5321_data = s_bb_5321.get()
     assert s_bb_5321_data.blackbody.temperature == 5321
     # Update data
-    s_bb_5321_data.blackbody.temperature = 5326  # data modified only locally, not in DB
+    # data modified only locally, not in DB
+    s_bb_5321_data.blackbody.temperature = 5326
     s_bb_5321.set(s_bb_5321_data)  # data modified in DB thanks to set method
     s_bb_5321_data = (
         s_bb_5321.get()
@@ -87,7 +88,6 @@ def test_client_spectrum_init(speos: Speos):
         spec.delete()
 
 
-@pytest.mark.SPEOS_UAT
 def test_spectrum(speos: Speos):
     """Test spectrum."""
     assert speos.client.healthy is True
@@ -127,7 +127,8 @@ def test_spectrum(speos: Speos):
     assert s_sampled.key != ""
 
     # Library
-    spectrum_path = str(Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum")
+    spectrum_path = str(Path(test_path) / "CameraInputFiles" /
+                        "CameraSensitivityBlue.spectrum")
     s_lib = spec_db.create(
         message=ProtoSpectrum(
             name="library_1",
@@ -142,7 +143,8 @@ def test_spectrum(speos: Speos):
         ProtoSpectrum(
             name="predefined_1",
             description="Predefined incandescent spectrum",
-            predefined=ProtoSpectrum.Predefined(incandescent=ProtoSpectrum.Incandescent()),
+            predefined=ProtoSpectrum.Predefined(
+                incandescent=ProtoSpectrum.Incandescent()),
         )
     )
     assert s_predefined_incandescent.key != ""

@@ -33,21 +33,23 @@ from ansys.speos.core.speos import Speos
 from tests.conftest import local_test_path
 
 
-@pytest.mark.SPEOS_UAT
 def test_transfer_file(speos: Speos):
     """Test to check file transfer."""
-    file_transfer_stub = file_transfer__v1__pb2_grpc.FileTransferServiceStub(speos.client.channel)
+    file_transfer_stub = file_transfer__v1__pb2_grpc.FileTransferServiceStub(
+        speos.client.channel)
 
     # local file upload to the server
     brdf_path = Path(local_test_path) / "Test_not_interpolated.brdf"
-    upload_response = file_transfer_helper__v1.upload_file(file_transfer_stub, str(brdf_path))
+    upload_response = file_transfer_helper__v1.upload_file(
+        file_transfer_stub, str(brdf_path))
     file_uri0 = upload_response.info.uri
     assert upload_response.info.uri != ""
     assert upload_response.info.file_name == "Test_not_interpolated.brdf"
     assert upload_response.info.file_size == brdf_path.stat().st_size
 
     # Upload but to a reserved file item
-    reserved_uri1 = file_transfer_stub.Reserve(request=file_transfer__v1__pb2.Reserve_Request()).uri
+    reserved_uri1 = file_transfer_stub.Reserve(
+        request=file_transfer__v1__pb2.Reserve_Request()).uri
     upload_response = file_transfer_helper__v1.upload_file(
         file_transfer_stub, str(brdf_path), reserved_uri1
     )
@@ -70,8 +72,10 @@ def test_transfer_file(speos: Speos):
     downloaded_file.unlink()
 
     # Delete files on server
-    file_transfer_stub.Delete(file_transfer__v1__pb2.Delete_Request(uri=file_uri0))
-    file_transfer_stub.Delete(file_transfer__v1__pb2.Delete_Request(uri=reserved_uri1))
+    file_transfer_stub.Delete(
+        file_transfer__v1__pb2.Delete_Request(uri=file_uri0))
+    file_transfer_stub.Delete(
+        file_transfer__v1__pb2.Delete_Request(uri=reserved_uri1))
     # Delete new folder created for this test
     download_location.rmdir()
 
@@ -109,16 +113,17 @@ def _check_downloaded_files(download_responses, expected_file_names, download_lo
     assert len(expected_file_names) == 0
 
 
-@pytest.mark.SPEOS_UAT
 def test_transfer_folder(speos: Speos):
     """Test to check folder transfer."""
-    file_transfer_stub = file_transfer__v1__pb2_grpc.FileTransferServiceStub(speos.client.channel)
+    file_transfer_stub = file_transfer__v1__pb2_grpc.FileTransferServiceStub(
+        speos.client.channel)
 
     # local file upload to the server
     speos_folder_path = Path(local_test_path) / "LG_50M_Colorimetric_short.sv5"
     speos_file_path = speos_folder_path / "LG_50M_Colorimetric_short.sv5"
     upload_responses = file_transfer_helper__v1.upload_folder(
-        file_transfer_stub, str(speos_folder_path), "LG_50M_Colorimetric_short.sv5"
+        file_transfer_stub, str(
+            speos_folder_path), "LG_50M_Colorimetric_short.sv5"
     )
 
     expected_file_names = [
@@ -131,9 +136,11 @@ def test_transfer_folder(speos: Speos):
     )
 
     # Upload but to a reserved file item
-    reserved_uri1 = file_transfer_stub.Reserve(request=file_transfer__v1__pb2.Reserve_Request()).uri
+    reserved_uri1 = file_transfer_stub.Reserve(
+        request=file_transfer__v1__pb2.Reserve_Request()).uri
     upload_responses = file_transfer_helper__v1.upload_folder(
-        file_transfer_stub, str(speos_folder_path), "LG_50M_Colorimetric_short.sv5", reserved_uri1
+        file_transfer_stub, str(
+            speos_folder_path), "LG_50M_Colorimetric_short.sv5", reserved_uri1
     )
 
     expected_file_names = [
@@ -149,7 +156,8 @@ def test_transfer_folder(speos: Speos):
     download_location = Path(local_test_path) / "file_transfer_tests_download2"
     download_location.mkdir(exist_ok=True)
     download_responses = file_transfer_helper__v1.download_folder(
-        file_transfer_stub, speos_file_upload_res.info.uri, str(download_location)
+        file_transfer_stub, speos_file_upload_res.info.uri, str(
+            download_location)
     )
 
     expected_file_names = [
@@ -157,12 +165,15 @@ def test_transfer_folder(speos: Speos):
         "Blue Spectrum.spectrum",
         "Red Spectrum.spectrum",
     ]
-    _check_downloaded_files(download_responses, expected_file_names, download_location)
+    _check_downloaded_files(
+        download_responses, expected_file_names, download_location)
 
     # Delete speos files and all their dependencies
     file_transfer_stub.Delete(
-        file_transfer__v1__pb2.Delete_Request(uri=speos_file_upload_res.info.uri)
+        file_transfer__v1__pb2.Delete_Request(
+            uri=speos_file_upload_res.info.uri)
     )
-    file_transfer_stub.Delete(file_transfer__v1__pb2.Delete_Request(uri=reserved_uri1))
+    file_transfer_stub.Delete(
+        file_transfer__v1__pb2.Delete_Request(uri=reserved_uri1))
     # Delete new folder created for this test
     download_location.rmdir()

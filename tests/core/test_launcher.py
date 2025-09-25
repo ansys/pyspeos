@@ -39,7 +39,6 @@ IS_DOCKER = config.get("SpeosServerOnDocker")
 
 
 @pytest.mark.skipif(IS_DOCKER, reason="launcher only works without Docker image")
-@pytest.mark.SPEOS_UAT
 def test_local_session(*args):
     """Test local session launch and close."""
     port = config.get("SpeosServerPort") + 1
@@ -51,7 +50,8 @@ def test_local_session(*args):
         name = "SpeosRPC_Server.x"
     p_list = [p.name() for p in psutil.process_iter()]
     nb_process = p_list.count(name)
-    test_speos = launch_local_speos_rpc_server(port=port, speos_rpc_path=speos_loc)
+    test_speos = launch_local_speos_rpc_server(
+        port=port, speos_rpc_path=speos_loc)
     p_list = [p.name() for p in psutil.process_iter()]
     running = p_list.count(name) > nb_process
     assert running is test_speos.client.healthy
@@ -63,7 +63,6 @@ def test_local_session(*args):
 
 @patch.object(subprocess, "Popen")
 @patch.object(subprocess, "run")
-@pytest.mark.SPEOS_UAT
 def test_coverage_launcher_speosdocker(*args):
     """Test local session launch on remote server to improve coverage."""
     port = config.get("SpeosServerPort")

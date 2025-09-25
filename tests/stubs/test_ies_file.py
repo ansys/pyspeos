@@ -64,7 +64,8 @@ def create_ies_intensity():
     for i in range(int(ies.nb_vertical_angle)):
         ies.vertical_angle.append(0 + i * 180 / (ies.nb_vertical_angle - 1))
     for i in range(int(ies.nb_horizontal_angle)):
-        ies.horizontal_angle.append(0 + i * 360 / (ies.nb_horizontal_angle - 1))
+        ies.horizontal_angle.append(
+            0 + i * 360 / (ies.nb_horizontal_angle - 1))
         for j in range(int(ies.nb_vertical_angle)):
             ies.candela_value.append(1000)
     for i in range(int(ies.tilt_nb_pair_angle)):
@@ -138,7 +139,6 @@ def compare_ies_intensities(ies1, ies2):
     return True
 
 
-@pytest.mark.SPEOS_UAT
 def test_grpc_ies_intensity(speos: Speos):
     """Test to check ies intensity service."""
     stub = ies_pb2_grpc.IesIntensityServiceStub(speos.client.channel)

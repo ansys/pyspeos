@@ -31,7 +31,6 @@ from ansys.speos.core.speos import Speos
 from tests.kernel.test_scene import create_face_rectangle
 
 
-@pytest.mark.SPEOS_UAT
 def test_create_big_face(speos: Speos):
     """Test create big face."""
     assert speos.client.healthy is True
@@ -271,7 +270,6 @@ def test_update_big_faces(speos: Speos):
         face_link.delete()
 
 
-@pytest.mark.SPEOS_UAT
 def test_face(speos: Speos):
     """Test face creation."""
     assert speos.client.healthy is True
@@ -296,7 +294,8 @@ def test_face(speos: Speos):
 
     # default rectangle
     rectangle1 = face_db.create(
-        message=create_face_rectangle(name="rectangle_1", description="rectangle face - default")
+        message=create_face_rectangle(
+            name="rectangle_1", description="rectangle face - default")
     )
     assert rectangle1.key != ""
     assert rectangle1.get().vertices[0:3] == [-100, -50, 0]
@@ -308,7 +307,6 @@ def test_face(speos: Speos):
     rectangle1.delete()
 
 
-@pytest.mark.SPEOS_UAT
 def test_body(speos: Speos):
     """Test body creation."""
     assert speos.client.healthy is True
@@ -342,7 +340,6 @@ def test_body(speos: Speos):
         face.delete()
 
 
-@pytest.mark.SPEOS_UAT
 def test_part(speos: Speos):
     """Test part creation."""
     assert speos.client.healthy is True

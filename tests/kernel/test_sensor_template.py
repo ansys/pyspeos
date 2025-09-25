@@ -36,7 +36,6 @@ from ansys.speos.core.speos import Speos
 from tests.conftest import test_path
 
 
-@pytest.mark.SPEOS_UAT
 def test_sensor_template(speos: Speos):
     """Test the sensor template."""
     assert speos.client.healthy is True
@@ -47,11 +46,16 @@ def test_sensor_template(speos: Speos):
     )  # Create sensor_templates stub from client channel
 
     camera_input_files_path = Path(test_path) / "CameraInputFiles"
-    red_spectrum = str(camera_input_files_path / "CameraSensitivityRed.spectrum")
-    green_spectrum = str(camera_input_files_path / "CameraSensitivityGreen.spectrum")
-    blue_spectrum = str(camera_input_files_path / "CameraSensitivityBlue.spectrum")
-    transmittance = str(camera_input_files_path / "CameraTransmittance.spectrum")
-    distortion = str(camera_input_files_path / "CameraDistortion_130deg.OPTDistortion")
+    red_spectrum = str(camera_input_files_path /
+                       "CameraSensitivityRed.spectrum")
+    green_spectrum = str(camera_input_files_path /
+                         "CameraSensitivityGreen.spectrum")
+    blue_spectrum = str(camera_input_files_path /
+                        "CameraSensitivityBlue.spectrum")
+    transmittance = str(camera_input_files_path /
+                        "CameraTransmittance.spectrum")
+    distortion = str(camera_input_files_path /
+                     "CameraDistortion_130deg.OPTDistortion")
 
     # Camera sensor template mode monochrome
     camera_t0 = sensor_t_db.create(

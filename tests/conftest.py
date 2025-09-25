@@ -196,6 +196,17 @@ def pytest_addoption(parser):
     )
 
 
+def pytest_collection_modifyitems(config, items):
+    """
+    Add 'all_speos_versions' marker to unmarked test.
+
+    Unless specified, every test is applicable to all Speos versions.
+    """
+    for item in items:
+        if not item.own_markers:
+            item.add_marker(pytest.mark.all_speos_versions)
+
+
 def pytest_runtest_setup(item):
     """Filter tests during setup if '--supported-features' option is passed."""
     minimal_absolute = 0

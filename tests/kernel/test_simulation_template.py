@@ -29,7 +29,6 @@ from ansys.speos.core.kernel.simulation_template import ProtoSimulationTemplate
 from ansys.speos.core.speos import Speos
 
 
-@pytest.mark.SPEOS_UAT
 def test_simulation_template(speos: Speos):
     """Test the simulation template."""
     assert speos.client.healthy is True
@@ -47,7 +46,8 @@ def test_simulation_template(speos: Speos):
             direct_mc_simulation_template=simulation_template_pb2.DirectMCSimulationTemplate(
                 geom_distance_tolerance=0.01,
                 max_impact=100,
-                weight=simulation_template_pb2.Weight(minimum_energy_percentage=0.005),
+                weight=simulation_template_pb2.Weight(
+                    minimum_energy_percentage=0.005),
                 colorimetric_standard=simulation_template_pb2.CIE_1931,
                 dispersion=True,
             ),
@@ -63,7 +63,8 @@ def test_simulation_template(speos: Speos):
             inverse_mc_simulation_template=simulation_template_pb2.InverseMCSimulationTemplate(
                 geom_distance_tolerance=0.01,
                 max_impact=100,
-                weight=simulation_template_pb2.Weight(minimum_energy_percentage=0.005),
+                weight=simulation_template_pb2.Weight(
+                    minimum_energy_percentage=0.005),
                 colorimetric_standard=simulation_template_pb2.CIE_1931,
                 dispersion=False,
                 splitting=False,
@@ -82,7 +83,8 @@ def test_simulation_template(speos: Speos):
             interactive_simulation_template=ProtoSimulationTemplate.Interactive(
                 geom_distance_tolerance=0.01,
                 max_impact=100,
-                weight=simulation_template_pb2.Weight(minimum_energy_percentage=0.005),
+                weight=simulation_template_pb2.Weight(
+                    minimum_energy_percentage=0.005),
                 colorimetric_standard=simulation_template_pb2.CIE_1931,
             ),
         )

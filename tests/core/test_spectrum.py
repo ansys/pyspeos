@@ -30,7 +30,6 @@ from ansys.speos.core import Spectrum, Speos
 from tests.conftest import test_path
 
 
-@pytest.mark.SPEOS_UAT
 def test_create_spectrum(speos: Speos):
     """Test creation of spectrum."""
     # Default value
@@ -50,14 +49,16 @@ def test_create_spectrum(speos: Speos):
     assert spectrum1.spectrum_link.get().blackbody.temperature == 3000
 
     # sampled
-    spectrum1.set_sampled(wavelengths=[300, 400, 500], values=[30, 20, 70]).commit()
+    spectrum1.set_sampled(wavelengths=[300, 400, 500], values=[
+                          30, 20, 70]).commit()
     assert spectrum1.spectrum_link.get().HasField("sampled")
     assert spectrum1.spectrum_link.get().sampled.wavelengths == [300, 400, 500]
     assert spectrum1.spectrum_link.get().sampled.values == [30, 20, 70]
 
     # library
     spectrum1.set_library(
-        file_uri=str(Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "Blue Spectrum.spectrum")
+        file_uri=str(Path(test_path) /
+                     "LG_50M_Colorimetric_short.sv5" / "Blue Spectrum.spectrum")
     ).commit()
     assert spectrum1.spectrum_link.get().HasField("library")
 
@@ -93,7 +94,6 @@ def test_create_spectrum(speos: Speos):
     spectrum1.delete()
 
 
-@pytest.mark.SPEOS_UAT
 def test_commit_spectrum(speos: Speos):
     """Test commit of spectrum."""
     # Create
@@ -109,7 +109,6 @@ def test_commit_spectrum(speos: Speos):
     spectrum1.delete()
 
 
-@pytest.mark.SPEOS_UAT
 def test_reset_spectrum(speos: Speos):
     """Test reset of spectrum."""
     # Create + commit
@@ -130,7 +129,6 @@ def test_reset_spectrum(speos: Speos):
     spectrum1.delete()
 
 
-@pytest.mark.SPEOS_UAT
 def test_delete_spectrum(speos: Speos):
     """Test delete of spectrum."""
     # Create + commit

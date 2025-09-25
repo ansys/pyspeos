@@ -103,7 +103,6 @@ def test_intensity_template(speos: Speos):
         intens_t.delete()
 
 
-@pytest.mark.SPEOS_UAT
 def test_action_get_library_type_info(speos: Speos):
     """Test the intensity template action : get_library_type_info."""
     assert speos.client.healthy is True

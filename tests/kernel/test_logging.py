@@ -32,7 +32,7 @@ import pytest
 from ansys.speos.core import LOG  # Global logger
 import ansys.speos.core.logger as logger
 
-## Notes
+# Notes
 # Use the next fixtures for:
 # - capfd: for testing console printing.
 # - caplog: for testing logging printing.
@@ -46,7 +46,6 @@ LOG_LEVELS = {
 }
 
 
-@pytest.mark.SPEOS_UAT
 def test_stdout_reading(capfd: pytest.CaptureFixture):
     """Test for checking simple standard output reading by pytest.
 
@@ -61,7 +60,6 @@ def test_stdout_reading(capfd: pytest.CaptureFixture):
     assert out == "This is a test\n"
 
 
-@pytest.mark.SPEOS_UAT
 def test_only_logger(caplog: pytest.LogCaptureFixture):
     """Test for checking that the logging capabilities are working fine.
 
@@ -77,14 +75,12 @@ def test_only_logger(caplog: pytest.LogCaptureFixture):
     assert "This is another test" in caplog.text
 
 
-@pytest.mark.SPEOS_UAT
 def test_global_logger_exist():
     """Test for checking the accurate naming of the general Logger instance."""
     assert isinstance(LOG.logger, deflogging.Logger)
     assert LOG.logger.name == "pyspeos_global"
 
 
-@pytest.mark.SPEOS_UAT
 def test_global_logger_has_handlers():
     """Test for checking that the general Logger has file_handlers \
 
@@ -96,7 +92,6 @@ def test_global_logger_has_handlers():
     assert LOG.file_handler or LOG.std_out_handler  # at least a handler is not empty
 
 
-@pytest.mark.SPEOS_UAT
 def test_global_logger_logging(caplog: pytest.LogCaptureFixture):
     """Testing the global PySpeos logger capabilities.
 
@@ -125,7 +120,6 @@ def test_global_logger_logging(caplog: pytest.LogCaptureFixture):
     LOG.std_out_handler.setLevel("ERROR")
 
 
-@pytest.mark.SPEOS_UAT
 def test_global_logger_level_mode():
     """Checking that the Logger levels are stored as integer values \
 
@@ -135,7 +129,6 @@ def test_global_logger_level_mode():
     assert LOG.logger.level == logger.ERROR
 
 
-@pytest.mark.SPEOS_UAT
 def test_global_logger_exception_handling(caplog: pytest.LogCaptureFixture):
     """Test for checking that Errors are also raised in the logger as ERROR type.
 
@@ -167,7 +160,6 @@ def test_global_logger_exception_handling(caplog: pytest.LogCaptureFixture):
         deflogging.CRITICAL,
     ],
 )
-@pytest.mark.SPEOS_UAT
 def test_global_logger_debug_levels(level: int, caplog: pytest.LogCaptureFixture):
     """Testing for all the possible logging level that the output is recorded properly.
 
@@ -199,7 +191,6 @@ def test_global_logger_debug_levels(level: int, caplog: pytest.LogCaptureFixture
                 )
 
 
-@pytest.mark.SPEOS_UAT
 def test_global_logger_format(fake_record: Callable):
     """Test for checking the global logger formatter aspect.
 
@@ -229,7 +220,6 @@ def test_global_logger_format(fake_record: Callable):
     assert "This is a message" in logging
 
 
-@pytest.mark.SPEOS_UAT
 def test_global_methods(caplog: pytest.LogCaptureFixture):
     """Testing global logger methods for printing out different log messages.
 
@@ -270,7 +260,6 @@ def test_global_methods(caplog: pytest.LogCaptureFixture):
     LOG.std_out_handler.setLevel("INFO")
 
 
-@pytest.mark.SPEOS_UAT
 def test_log_to_file(tmp_path_factory: pytest.TempPathFactory):
     """
     Testing writing to log file.
