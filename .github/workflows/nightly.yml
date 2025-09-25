@@ -68,7 +68,7 @@ jobs:
       - name: Run pytest for all Speos versions
         run: |
           . .venv/bin/activate
-          xvfb-run pytest -s -m all_speos_version
+          xvfb-run pytest -s -m all_speos_versions
 
       - name: Run pytest for Speos ${{ matrix.speos-version }} version
         run: |
