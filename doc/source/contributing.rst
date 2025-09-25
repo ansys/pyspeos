@@ -152,30 +152,25 @@ To run all available the tests, you need to first navigate to the root directory
   The tests fail if the service is not running. It is recommended for the SpeosRPC server
   to be running as a Docker container.
 
-If you want to run only the **User Acceptance Tests (UAT)**, use the following::
+If you want to run only the supported features tests of all Speos versions, use the following::
 
-  pytest -m SPEOS_UAT
+  pytest -m all_speos_versions
 
 If you want to run only the supported features tests of a specific Speos version, use the following::
 
   pytest --supported-features=<speos_version>
 
-Where ``speos_version`` will be **251** for Speos 25R1, **252** for Speos 25R2, and so on. Each version considers the **latest available** Service Pack.
+Where ``speos_version`` is **251** for Speos 25R1, **252** for Speos 25R2, and so on. Each version considers the **latest available** Service Pack.
 
 
 Creating tests
 ^^^^^^^^^^^^^^
 
-When a new feature is developed, new unittest **have** to be created and correctly marked. There are 2 available markers:
+When a new feature is developed, new test **have** to be created and correctly marked if necessary as follows:
 
-1. ``SPEOS_UAT``: Feature supported on all Speos versions.
-2. ``supported_speos_versions(min, max)``: Feature only supported from minimal to maximal Speos versions.
+1. ``supported_speos_versions(min, max)``: Feature only supported from minimal to maximal Speos versions.
 
 You can mark a test as follows::
-
-  @pytest.mark.SPEOS_UAT
-  def test_new_feature_direct(speos: Speos)
-    ...
 
   @pytest.mark.supported_speos_versions(min=252)
   def test_new_feature_inverse(speos: Speos)
@@ -183,7 +178,7 @@ You can mark a test as follows::
 
 .. note::
 
-  The minimal supported version of Speos is **required** for the ``supported_speos_versions()`` marker.
+  The minimal supported version of Speos is **required** for the ``supported_speos_versions()`` marker. If test has no markers, it is considered supported on all Speos versions.
 
 
 Discontinuing tests
@@ -199,12 +194,12 @@ If a feature is discontinued, update the respective tests maximal supported vers
   def test_discontinued_feature(speos: Speos)
     ...
 
-If this feature was an UAT, change the markers and keep the minimal version undefined::
+If this feature was supported on all Speos versions, add the marker and keep the minimal version undefined::
 
-  @pytest.mark.SPEOS_UAT                                  # before
+                                                  # before
   def test_discontinued_feature(speos: Speos)
     ...
 
-  @pytest.mark.supported_speos_versions(max=252)          # after
+  @pytest.mark.supported_speos_versions(max=252)  # after
   def test_discontinued_feature(speos: Speos)
     ...

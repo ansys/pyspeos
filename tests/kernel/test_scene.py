@@ -46,7 +46,6 @@ from tests.conftest import test_path
 from tests.helper import clean_all_dbs
 
 
-@pytest.mark.SPEOS_UAT
 def create_basic_scene(speos: Speos) -> SceneLink:
     """Create basic scene."""
     assert speos.client.healthy is True
@@ -191,7 +190,8 @@ def create_basic_scene(speos: Speos) -> SceneLink:
             direct_mc_simulation_template=simulation_template_pb2.DirectMCSimulationTemplate(
                 geom_distance_tolerance=0.01,
                 max_impact=100,
-                weight=simulation_template_pb2.Weight(minimum_energy_percentage=0.005),
+                weight=simulation_template_pb2.Weight(
+                    minimum_energy_percentage=0.005),
                 colorimetric_standard=simulation_template_pb2.CIE_1931,
                 dispersion=True,
             ),
@@ -204,7 +204,8 @@ def create_basic_scene(speos: Speos) -> SceneLink:
             inverse_mc_simulation_template=simulation_template_pb2.InverseMCSimulationTemplate(
                 geom_distance_tolerance=0.01,
                 max_impact=100,
-                weight=simulation_template_pb2.Weight(minimum_energy_percentage=0.005),
+                weight=simulation_template_pb2.Weight(
+                    minimum_energy_percentage=0.005),
                 colorimetric_standard=simulation_template_pb2.CIE_1931,
                 dispersion=False,
                 splitting=False,
@@ -220,7 +221,8 @@ def create_basic_scene(speos: Speos) -> SceneLink:
             interactive_simulation_template=ProtoSimulationTemplate.Interactive(
                 geom_distance_tolerance=0.01,
                 max_impact=100,
-                weight=simulation_template_pb2.Weight(minimum_energy_percentage=0.005),
+                weight=simulation_template_pb2.Weight(
+                    minimum_energy_percentage=0.005),
                 colorimetric_standard=simulation_template_pb2.CIE_1931,
             ),
         )
@@ -256,7 +258,8 @@ def create_basic_scene(speos: Speos) -> SceneLink:
         material_inst_fop = ProtoScene.MaterialInstance(
             name="FOP.1",
             sop_guid=mirror_100_t.key,
-            geometries=ProtoScene.GeoPaths(geo_paths=["BodySource:1/FaceSource:1"]),
+            geometries=ProtoScene.GeoPaths(
+                geo_paths=["BodySource:1/FaceSource:1"]),
         )
     else:
         material_inst_1 = ProtoScene.MaterialInstance(
@@ -268,7 +271,8 @@ def create_basic_scene(speos: Speos) -> SceneLink:
         material_inst_fop = ProtoScene.MaterialInstance(
             name="FOP.1",
             sop_guids=[mirror_100_t.key],
-            geometries=ProtoScene.GeoPaths(geo_paths=["BodySource:1/FaceSource:1"]),
+            geometries=ProtoScene.GeoPaths(
+                geo_paths=["BodySource:1/FaceSource:1"]),
         )
 
     # Create scene
@@ -371,7 +375,6 @@ def create_basic_scene(speos: Speos) -> SceneLink:
     return scene
 
 
-@pytest.mark.SPEOS_UAT
 def create_face_rectangle(
     name: str,
     description: str = "",
@@ -415,16 +418,20 @@ def create_face_rectangle(
     face = ProtoFace(name=name, description=description, metadata=metadata)
 
     face.vertices.extend(
-        base[:3] - np.multiply(0.5 * x_size, base[3:6]) - np.multiply(0.5 * y_size, base[6:9])
+        base[:3] - np.multiply(0.5 * x_size, base[3:6]) -
+        np.multiply(0.5 * y_size, base[6:9])
     )
     face.vertices.extend(
-        base[:3] + np.multiply(0.5 * x_size, base[3:6]) - np.multiply(0.5 * y_size, base[6:9])
+        base[:3] + np.multiply(0.5 * x_size, base[3:6]) -
+        np.multiply(0.5 * y_size, base[6:9])
     )
     face.vertices.extend(
-        base[:3] + np.multiply(0.5 * x_size, base[3:6]) + np.multiply(0.5 * y_size, base[6:9])
+        base[:3] + np.multiply(0.5 * x_size, base[3:6]) +
+        np.multiply(0.5 * y_size, base[6:9])
     )
     face.vertices.extend(
-        base[:3] - np.multiply(0.5 * x_size, base[3:6]) + np.multiply(0.5 * y_size, base[6:9])
+        base[:3] - np.multiply(0.5 * x_size, base[3:6]) +
+        np.multiply(0.5 * y_size, base[6:9])
     )
 
     normal = np.cross(base[3:6], base[6:9])
@@ -436,7 +443,6 @@ def create_face_rectangle(
     return face
 
 
-@pytest.mark.SPEOS_UAT
 def create_body_box(
     name: str,
     face_stub: FaceStub,
@@ -566,11 +572,11 @@ def create_body_box(
         )
     )
 
-    body.face_guids.extend([face0.key, face1.key, face2.key, face3.key, face4.key, face5.key])
+    body.face_guids.extend(
+        [face0.key, face1.key, face2.key, face3.key, face4.key, face5.key])
     return body
 
 
-@pytest.mark.SPEOS_UAT
 def test_scene(speos: Speos):
     """Test the scene creation."""
     assert speos.client.healthy is True
@@ -581,12 +587,12 @@ def test_scene(speos: Speos):
     clean_all_dbs(speos.client)
 
 
-@pytest.mark.SPEOS_UAT
 def test_scene_actions_load(speos: Speos):
     """Test the scene action: load file."""
     assert speos.client.healthy is True
     speos_file_path = str(
-        Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
+        Path(test_path) / "LG_50M_Colorimetric_short.sv5" /
+        "LG_50M_Colorimetric_short.sv5"
     )
 
     # Create empty scene + load_file
@@ -601,12 +607,12 @@ def test_scene_actions_load(speos: Speos):
     clean_all_dbs(speos.client)
 
 
-@pytest.mark.SPEOS_UAT
 def test_scene_actions_load_modify(speos: Speos):
     """Test the scene action: load file and modify sensors."""
     assert speos.client.healthy is True
     speos_file_path = str(
-        Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
+        Path(test_path) / "LG_50M_Colorimetric_short.sv5" /
+        "LG_50M_Colorimetric_short.sv5"
     )
 
     # Create empty scene + load_file
@@ -617,14 +623,16 @@ def test_scene_actions_load_modify(speos: Speos):
     scene_dm = scene.get()  # Retrieve scene data from DB
     assert len(scene_dm.sensors) == 1
     assert scene_dm.sensors[0].HasField("irradiance_properties")
-    assert scene_dm.sensors[0].irradiance_properties.HasField("layer_type_source")
+    assert scene_dm.sensors[0].irradiance_properties.HasField(
+        "layer_type_source")
     scene_dm.sensors[0].irradiance_properties.layer_type_none.SetInParent()
     scene.set(data=scene_dm)  # Update the scene in DB
 
     # Retrieve scene data from DB
     scene_dm = scene.get()
     # Check that our change was effective layer_type_source -> layer_type_none
-    assert scene_dm.sensors[0].irradiance_properties.HasField("layer_type_none")
+    assert scene_dm.sensors[0].irradiance_properties.HasField(
+        "layer_type_none")
 
     # Adding a sensor
     scene_dm.sensors.append(
@@ -652,7 +660,8 @@ def test_scene_actions_get_source_ray_paths(speos: Speos):
     assert speos.client.healthy is True
 
     # Creation of a basic scene with a luminaire source
-    main_part = speos.client.parts().create(message=ProtoPart(name="MainPart", body_guids=[]))
+    main_part = speos.client.parts().create(
+        message=ProtoPart(name="MainPart", body_guids=[]))
 
     blackbody_2856 = speos.client.spectrums().create(
         message=ProtoSpectrum(

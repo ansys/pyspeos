@@ -36,7 +36,6 @@ from tests.conftest import test_path
 import tests.helper as helper
 
 
-@pytest.mark.SPEOS_UAT
 def create_eulumdat_intensity():
     """Create simple eulumdat file."""
     eulumdat = eulumdat_pb2.EulumdatIntensityDistribution()
@@ -108,7 +107,6 @@ def create_eulumdat_intensity():
     return eulumdat
 
 
-@pytest.mark.SPEOS_UAT
 def compare_eulumdat_intensities(eulumdat1, eulumdat2):
     """Compare 2 eulumdat files."""
     # file information
@@ -226,7 +224,6 @@ def compare_eulumdat_intensities(eulumdat1, eulumdat2):
     return True
 
 
-@pytest.mark.SPEOS_UAT
 def test_grpc_eulumdat_intensity(speos: Speos):
     """Test for eulumdat intensity service."""
     stub = eulumdat_pb2_grpc.EulumdatIntensityServiceStub(speos.client.channel)

@@ -34,10 +34,10 @@ from tests.conftest import test_path
 import tests.helper as helper
 
 
-@pytest.mark.SPEOS_UAT
 def test_grpc_spectral_bsdf(speos: Speos):
     """Test for spectral bsdf service (*.BRDF)."""
-    stub = bsdf_creation__v1__pb2_grpc.BsdfCreationServiceStub(speos.client.channel)
+    stub = bsdf_creation__v1__pb2_grpc.BsdfCreationServiceStub(
+        speos.client.channel)
 
     # BSDF180
     bsdf180_request = bsdf_creation__v1__pb2.Bsdf180InputData()
@@ -74,7 +74,8 @@ def test_grpc_spectral_bsdf(speos: Speos):
     temp.anisotropic_angle = math.pi / 2
     temp.file_name = str(Path(test_path) / "R_test.anisotropicbsdf")
     anisotropic_request.fix_disparity = False
-    anisotropic_request.output_file_name = str(Path(test_path) / "Assembled.anisotropicbsdf")
+    anisotropic_request.output_file_name = str(
+        Path(test_path) / "Assembled.anisotropicbsdf")
     stub.BuildAnisotropicBsdf(anisotropic_request)
     assert helper.does_file_exist(anisotropic_request.output_file_name)
     helper.remove_file(anisotropic_request.output_file_name)

@@ -33,12 +33,12 @@ from ansys.speos.core.speos import Speos
 from tests.conftest import test_path
 
 
-@pytest.mark.SPEOS_UAT
 def test_sop_template(speos: Speos):
     """Test the sop template creation."""
     assert speos.client.healthy is True
     # Get DB
-    sop_t_db = speos.client.sop_templates()  # Create sop_template stub from client channel
+    # Create sop_template stub from client channel
+    sop_t_db = speos.client.sop_templates()
 
     # Mirror
     sop_t_mirror = sop_t_db.create(
@@ -66,7 +66,8 @@ def test_sop_template(speos: Speos):
             name="library_0",
             description="library sop template",
             library=ProtoSOPTemplate.Library(
-                sop_file_uri=str(Path(test_path) / "Gaussian Fresnel 10 deg.anisotropicbsdf")
+                sop_file_uri=str(Path(test_path) /
+                                 "Gaussian Fresnel 10 deg.anisotropicbsdf")
             ),
         )
     )

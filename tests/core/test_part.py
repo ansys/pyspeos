@@ -27,7 +27,6 @@ import pytest
 from ansys.speos.core import Project, Speos
 
 
-@pytest.mark.SPEOS_UAT
 def test_create_root_part(speos: Speos):
     """Test create root part in project."""
     # Create an empty project
@@ -43,7 +42,6 @@ def test_create_root_part(speos: Speos):
     assert len(root_part.part_link.get().parts) == 0
 
 
-@pytest.mark.SPEOS_UAT
 def test_create_body(speos: Speos):
     """Test create bodies in root part."""
     # Create an empty project with a root part
@@ -73,7 +71,6 @@ def test_create_body(speos: Speos):
     assert len(root_part.part_link.get().body_guids) == 0
 
 
-@pytest.mark.SPEOS_UAT
 def test_create_face(speos: Speos):
     """Test create faces in body."""
     # Create an empty project with a root part containing a body
@@ -129,7 +126,6 @@ def test_create_face(speos: Speos):
     assert len(body1.body_link.get().face_guids) == 0
 
 
-@pytest.mark.SPEOS_UAT
 def test_create_subpart(speos: Speos):
     """Test create sub part in root part."""
     # Create an empty project with a root part
@@ -198,12 +194,14 @@ def test_create_subpart(speos: Speos):
     assert len(sp2.part_link.get().body_guids) == 0
 
     # Modify axis system
-    sp1.set_axis_system(axis_system=[20, 20, 20, 1, 0, 0, 0, 1, 0, 0, 0, 1]).commit()
+    sp1.set_axis_system(
+        axis_system=[20, 20, 20, 1, 0, 0, 0, 1, 0, 0, 0, 1]).commit()
 
     # Check that the axis system is correctly updated on server data
     parent_part_data = sp1._parent_part.part_link.get()
     part_inst = next(
-        (x for x in parent_part_data.parts if x.description == "UniqueId_" + sp1._unique_id),
+        (x for x in parent_part_data.parts if x.description ==
+         "UniqueId_" + sp1._unique_id),
         None,
     )
     assert part_inst is not None
@@ -215,7 +213,6 @@ def test_create_subpart(speos: Speos):
     assert len(root_part.part_link.get().parts) == 0
 
 
-@pytest.mark.SPEOS_UAT
 def test_create_subpart_body(speos: Speos):
     """Test create body in sub part."""
     # Create an empty project with a root part and sub part
@@ -250,7 +247,6 @@ def test_create_subpart_body(speos: Speos):
     assert len(sp1.part_link.get().body_guids) == 0
 
 
-@pytest.mark.SPEOS_UAT
 def test_create_subpart_subpart(speos: Speos):
     """Test create sub part in sub part."""
     # Create an empty project with a root part and sub part
@@ -329,7 +325,6 @@ def test_create_subpart_subpart(speos: Speos):
     assert len(sp1.part_link.get().parts) == 0
 
 
-@pytest.mark.SPEOS_UAT
 def test_commit_part(speos: Speos):
     """Test commit of part."""
     p = Project(speos=speos)
@@ -354,7 +349,8 @@ def test_commit_part(speos: Speos):
     assert root_part.part_link is not None
     assert p.scene_link.get().part_guid == root_part.part_link.key
     assert len(root_part.part_link.get().parts) == 1
-    assert len(speos.client[root_part.part_link.get().parts[0].part_guid].get().parts) == 1
+    assert len(
+        speos.client[root_part.part_link.get().parts[0].part_guid].get().parts) == 1
     assert len(root_part.part_link.get().body_guids) == 1
 
     # Change only in local not committed
@@ -364,7 +360,6 @@ def test_commit_part(speos: Speos):
     root_part.delete()
 
 
-@pytest.mark.SPEOS_UAT
 def test_reset_part(speos: Speos):
     """Test reset of part."""
     p = Project(speos=speos)
@@ -395,7 +390,6 @@ def test_reset_part(speos: Speos):
     root_part.delete()
 
 
-@pytest.mark.SPEOS_UAT
 def test_delete_part(speos: Speos):
     """Test delete of part."""
     p = Project(speos=speos)
