@@ -833,6 +833,7 @@ def test_export(speos: Speos):
 
 
 @pytest.mark.skipif(IS_DOCKER, reason="COM API is only available locally")
+@pytest.mark.supported_speos_versions(min=252)
 def test_export_vtp(speos: Speos):
     """Test export of xm3 and xmp as vtp files."""
     import numpy as np
