@@ -382,5 +382,3 @@ class Irradiance3DSensorParameters:
     """Layer separation type."""
     geometries: list = None
     """Sensor geometry."""
-
-    pass

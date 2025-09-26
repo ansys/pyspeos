@@ -1328,9 +1328,12 @@ class SensorCamera(BaseSensor):
                     if default_parameters:
                         # Default values
                         self._balance_mode_display.SetInParent()
-                        self.red_display_file_uri = default_parameters.red_display_file_uri
-                        self.green_display_file_uri = default_parameters.green_display_file_uri
-                        self.blue_display_file_uri = default_parameters.blue_display_file_uri
+                        if default_parameters.red_display_file_uri:
+                            self.red_display_file_uri = default_parameters.red_display_file_uri
+                        if default_parameters.green_display_file_uri:
+                            self.green_display_file_uri = default_parameters.green_display_file_uri
+                        if default_parameters.green_display_file_uri:
+                            self.blue_display_file_uri = default_parameters.blue_display_file_uri
 
                 @property
                 def red_display_file_uri(self) -> str:
@@ -1432,9 +1435,12 @@ class SensorCamera(BaseSensor):
                         self.set_balance_mode_grey_world()
                     elif default_parameters.balance_mode == "none":
                         self.set_balance_mode_none()
-                    self.red_spectrum_file_uri = default_parameters.red_spectrum_file_uri
-                    self.green_spectrum_file_uri = default_parameters.green_spectrum_file_uri
-                    self.blue_spectrum_file_uri = default_parameters.blue_spectrum_file_uri
+                    if default_parameters.red_spectrum_file_uri:
+                        self.red_spectrum_file_uri = default_parameters.red_spectrum_file_uri
+                    if default_parameters.green_spectrum_file_uri:
+                        self.green_spectrum_file_uri = default_parameters.green_spectrum_file_uri
+                    if default_parameters.blue_spectrum_file_uri:
+                        self.blue_spectrum_file_uri = default_parameters.blue_spectrum_file_uri
 
             @property
             def red_spectrum_file_uri(self) -> str:
@@ -1628,12 +1634,13 @@ class SensorCamera(BaseSensor):
 
             # Attribute to keep track of wavelength range object
 
-            if isinstance(default_parameters, PhotometricCameraParameters):
+            if default_parameters:
                 # Default values
                 self.acquisition_integration = default_parameters.acquisition_integration_time
                 self.acquisition_lag_time = default_parameters.acquisition_lag_time
                 self.gamma_correction = default_parameters.gamma_correction
-                self.transmittance_file_uri = default_parameters.transmittance_file_uri
+                if default_parameters.transmittance_file_uri:
+                    self.transmittance_file_uri = default_parameters.transmittance_file_uri
                 match default_parameters.png_bits:
                     case "png_08":
                         self.set_png_bits_08()
@@ -1667,8 +1674,6 @@ class SensorCamera(BaseSensor):
                     default_parameters=None,
                     stable_ctr=stable_ctr,
                 )
-            else:
-                raise TypeError("Default Photometric Parameters are incorrect")
 
         @property
         def acquisition_integration(self) -> float:
@@ -1873,13 +1878,14 @@ class SensorCamera(BaseSensor):
                 # Happens in case of project created via load of speos file
                 self._mode = SensorCamera.Photometric.Color(
                     mode_color=self._mode_photometric.color_mode_color,
-                    default_values=False,
+                    default_parameters=None,
                     stable_ctr=True,
                 )
             elif not isinstance(self._mode, SensorCamera.Photometric.Color):
                 # if the _mode is not Color then we create a new type.
                 self._mode = SensorCamera.Photometric.Color(
                     mode_color=self._mode_photometric.color_mode_color,
+                    default_parameters=None,
                     stable_ctr=True,
                 )
             elif self._mode._mode_color is not self._mode_photometric.color_mode_color:
@@ -1958,16 +1964,6 @@ class SensorCamera(BaseSensor):
         if sensor_instance is None:
             if not default_parameters:
                 default_parameters = CameraSensorParameters()
-            self.imager_distance = default_parameters.imager_distance
-            self.focal_length = default_parameters.focal_length
-            self.f_number = default_parameters.f_number
-            self.horz_pixel = default_parameters.horz_pixel
-            self.vert_pixel = default_parameters.vert_pixel
-            self.width = default_parameters.width
-            self.height = default_parameters.height
-            self.axis_system = default_parameters.axis_system
-            self.lxp_path_number = default_parameters.lxp_path_number
-
             if isinstance(default_parameters.sensor_type_parameters, PhotometricCameraParameters):
                 self._type = SensorCamera.Photometric(
                     mode_photometric=self._sensor_template.camera_sensor_template.sensor_mode_photometric,
@@ -1977,6 +1973,15 @@ class SensorCamera(BaseSensor):
                 )
             else:
                 self.set_mode_geometric()
+            self.imager_distance = default_parameters.imager_distance
+            self.focal_length = default_parameters.focal_length
+            self.f_number = default_parameters.f_number
+            self.horz_pixel = default_parameters.horz_pixel
+            self.vert_pixel = default_parameters.vert_pixel
+            self.width = default_parameters.width
+            self.height = default_parameters.height
+            self.axis_system = default_parameters.axis_system
+            self.lxp_path_number = default_parameters.lxp_path_number
 
     @property
     def visual_data(self) -> _VisualData:
@@ -2449,6 +2454,11 @@ class SensorIrradiance(BaseSensor):
             if default_parameters is None:
                 default_parameters = IrradianceSensorParameters()
             # Default values template
+            self._sensor_dimensions = self.Dimensions(
+                sensor_dimensions=self._sensor_template.irradiance_sensor_template.dimensions,
+                default_parameters=default_parameters.dimensions,
+                stable_ctr=True,
+            )
 
             if isinstance(default_parameters.sensor_type, ColorimetricParameters):
                 self._type = BaseSensor.Colorimetric(
@@ -2462,9 +2472,9 @@ class SensorIrradiance(BaseSensor):
                     default_parameters=default_parameters.sensor_type,
                     stable_ctr=True,
                 )
-            elif default_parameters == "radiometric":
+            elif default_parameters.sensor_type == "radiometric":
                 self.set_type_radiometric()
-            elif default_parameters == "photometric":
+            elif default_parameters.sensor_type == "photometric":
                 self.set_type_photometric()
 
             match default_parameters.integration_type:
@@ -2720,6 +2730,7 @@ class SensorIrradiance(BaseSensor):
             # if the _type is not Colorimetric then we create a new type.
             self._type = BaseSensor.Colorimetric(
                 sensor_type_colorimetric=self._sensor_template.irradiance_sensor_template.sensor_type_colorimetric,
+                default_parameters=ColorimetricParameters(),
                 stable_ctr=True,
             )
         elif (
@@ -3269,9 +3280,9 @@ class SensorRadiance(BaseSensor):
                     default_parameters=default_parameters.sensor_type,
                     stable_ctr=True,
                 )
-            elif default_parameters == "radiometric":
+            elif default_parameters.sensor_type == "radiometric":
                 self.set_type_radiometric()
-            elif default_parameters == "photometric":
+            elif default_parameters.sensor_type == "photometric":
                 self.set_type_photometric()
 
             if default_parameters.layer_type == "none":
@@ -3821,15 +3832,15 @@ class Sensor3DIrradiance(BaseSensor):
                     default_parameters=default_parameters.sensor_type,
                     stable_ctr=True,
                 )
-            elif default_parameters == "radiometric":
+            elif default_parameters.sensor_type == "radiometric":
                 self._type = Sensor3DIrradiance.Radiometric(
                     sensor_type_radiometric=self._sensor_template.irradiance_3d.type_radiometric,
                     default_parameters=default_parameters,
                     stable_ctr=True,
                 )
-            elif default_parameters == "photometric":
+            elif default_parameters.sensor_type == "photometric":
                 self._type = Sensor3DIrradiance.Photometric(
-                    sensor_type_photometric=self._sensor_template.irradiance_3d.type_radiometric,
+                    sensor_type_photometric=self._sensor_template.irradiance_3d.type_photometric,
                     default_parameters=default_parameters,
                     stable_ctr=True,
                 )
@@ -3881,7 +3892,7 @@ class Sensor3DIrradiance(BaseSensor):
                 raise RuntimeError("Radiometric class instantiated outside of class scope")
 
             self._sensor_type_radiometric = sensor_type_radiometric
-
+            self._integration_type = None
             if default_parameters:
                 match default_parameters.integration_type:
                     case "planar":
@@ -3912,7 +3923,7 @@ class Sensor3DIrradiance(BaseSensor):
             if not isinstance(self._integration_type, Sensor3DIrradiance.Measures):
                 self._integration_type = Sensor3DIrradiance.Measures(
                     illuminance_type=self._sensor_type_radiometric.integration_type_planar,
-                    default_parameters=True,
+                    default_parameters=MeasuresParameters(),
                     stable_ctr=True,
                 )
             elif (
@@ -3960,7 +3971,7 @@ class Sensor3DIrradiance(BaseSensor):
                 raise RuntimeError("Photometric class instantiated outside of class scope")
 
             self._sensor_type_photometric = sensor_type_photometric
-
+            self._integration_type = None
             if default_parameters:
                 match default_parameters.integration_type:
                     case "planar":
@@ -3991,7 +4002,7 @@ class Sensor3DIrradiance(BaseSensor):
             if not isinstance(self._integration_type, Sensor3DIrradiance.Measures):
                 self._integration_type = Sensor3DIrradiance.Measures(
                     illuminance_type=self._sensor_type_photometric.integration_type_planar,
-                    default_parameters=True,
+                    default_parameters=MeasuresParameters(),
                     stable_ctr=True,
                 )
             elif (
@@ -4277,7 +4288,7 @@ class Sensor3DIrradiance(BaseSensor):
             # if the _type is not Colorimetric then we create a new type.
             self._type = Sensor3DIrradiance.Photometric(
                 self._sensor_template.irradiance_3d.type_photometric,
-                default_parameters=None,
+                default_parameters=Irradiance3DSensorParameters(),
                 stable_ctr=True,
             )
         elif (
@@ -4311,7 +4322,7 @@ class Sensor3DIrradiance(BaseSensor):
             # if the _type is not Colorimetric then we create a new type.
             self._type = Sensor3DIrradiance.Radiometric(
                 sensor_type_radiometric=self._sensor_template.irradiance_3d.type_radiometric,
-                default_parameters=None,
+                default_parameters=Irradiance3DSensorParameters(),
                 stable_ctr=True,
             )
         elif (
@@ -4346,7 +4357,7 @@ class Sensor3DIrradiance(BaseSensor):
             # if the _type is not Colorimetric then we create a new type.
             self._type = Sensor3DIrradiance.Colorimetric(
                 sensor_type_colorimetric=self._sensor_template.irradiance_3d.type_colorimetric,
-                default_parameters=None,
+                default_parameters=ColorimetricParameters(),
                 stable_ctr=True,
             )
         elif (
