@@ -181,3 +181,53 @@ def fake_record():
         return handler.format(record)
 
     return inner_fake_record
+
+
+def pytest_addoption(parser):
+    """
+    Add '--supported-features' command line option.
+
+    Allow to filter tests based on the minimum and maximum supported Speos versions.
+    """
+    parser.addoption(
+        "--supported-features",
+        action="store",
+        help="Filters tests according to Speos version. '251' denotes Speos 25R1 version",
+    )
+
+
+def pytest_collection_modifyitems(config, items):
+    """
+    Add 'all_speos_versions' marker to unmarked test.
+
+    Unless specified, every test is applicable to all Speos versions.
+    """
+    for item in items:
+        if not item.own_markers:
+            item.add_marker(pytest.mark.all_speos_versions)
+
+
+def pytest_runtest_setup(item):
+    """Filter tests during setup if '--supported-features' option is passed."""
+    minimal_absolute = 0
+    maximal_absolute = 999
+
+    requested_version = item.config.getoption("--supported-features")
+    if requested_version is None:
+        return
+
+    supported_versions = item.get_closest_marker("supported_speos_versions")
+    if supported_versions:
+        min_version = supported_versions.kwargs.get("min", minimal_absolute)
+        max_version = supported_versions.kwargs.get("max", maximal_absolute)
+
+        if not (min_version <= int(requested_version) <= max_version):
+            message = f"Feature not supported on Speos {requested_version}."
+
+            if min_version != minimal_absolute:
+                message += f" Requires at least version {min_version} or higher."
+
+            if max_version != maximal_absolute:
+                message += f" Discontinued since version {max_version} and higher."
+
+            pytest.skip(message)
