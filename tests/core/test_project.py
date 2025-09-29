@@ -24,6 +24,8 @@
 
 from pathlib import Path
 
+import pytest
+
 from ansys.speos.core import Body, Face, GeoRef, Part, Project, Speos
 from ansys.speos.core.opt_prop import OptProp
 from ansys.speos.core.sensor import Sensor3DIrradiance, SensorIrradiance, SensorRadiance
@@ -452,6 +454,7 @@ def test_find_geom(speos: Speos):
     assert len(all_faces) == 11
 
 
+@pytest.mark.supported_speos_versions(min=252)
 def test_preview_visual_data(speos: Speos):
     """Test preview visualization data inside a project."""
     # preview irradiance sensor data

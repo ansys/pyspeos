@@ -18,6 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.10", "3.11", "3.12", "3.13"]
+        speos-version: ["251", "252", "dev"]
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
@@ -52,23 +53,38 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Start container
+      - name: Start container for Speos ${{ matrix.speos-version }}
         env:
           ANSYSLMD_LICENSE_FILE: 1055@${{ secrets.LICENSE_SERVER }}
         run: |
-          docker run --detach --name speos-rpc -p 50098:50098 -e SPEOS_LOG_LEVEL=2 -e ANSYSLMD_LICENSE_FILE=${{ env.ANSYSLMD_LICENSE_FILE }} -v "${{ github.workspace }}/tests/assets:/app/assets" --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:dev -m 25000000
+          speos_version=${{ matrix.speos-version }}
 
-      - name: Run pytest
+          if [[ "$speos_version" == "251" ]]; then
+            docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e SPEOS_LOG_LEVEL=2 -e ANSYSLMD_LICENSE_FILE=${{ env.ANSYSLMD_LICENSE_FILE }} -v "${{ github.workspace }}/tests/assets:/app/assets" --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:$speos_version -m 25000000
+          else
+            docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e SPEOS_LOG_LEVEL=2 -e ANSYSLMD_LICENSE_FILE=${{ env.ANSYSLMD_LICENSE_FILE }} -v "${{ github.workspace }}/tests/assets:/app/assets" --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:$speos_version -m 25000000 --host 0.0.0.0
+          fi
+
+      - name: Run pytest for Speos ${{ matrix.speos-version }}
         run: |
           . .venv/bin/activate
-          xvfb-run pytest -xs
+          speos_version=${{ matrix.speos-version }}
+          maximal_absolute=999
+
+          if [[ "$speos_version" == "dev" ]]; then
+            echo "run pytest for all available features"
+            xvfb-run pytest -s --supported-features=$maximal_absolute
+          else
+            echo "run pytest for Speos ${speos_version} supported features"
+            xvfb-run pytest -s --supported-features=$speos_version
+          fi
 
       - name: Upload Coverage Results
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           path: .cov/html
-          name: coverage-html-ubuntu-${{ matrix.python-version }}
+          name: coverage-html-ubuntu-${{ matrix.python-version }}-${{ matrix.speos-version }}
           retention-days: 7
 
       - name: Upload coverage to Codecov
@@ -77,7 +93,7 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           files: .cov/xml
-          name: coverage-html-ubuntu-${{ matrix.python-version }}
+          name: coverage-html-ubuntu-${{ matrix.python-version }}-${{ matrix.speos-version }}
 
       - name: Stop container
         run: |

@@ -25,6 +25,8 @@
 import math
 from pathlib import Path
 
+import pytest
+
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2
 from ansys.speos.core import Body, GeoRef, Project, Speos, sensor
 from ansys.speos.core.generic.constants import (
@@ -48,6 +50,7 @@ from ansys.speos.core.simulation import SimulationDirect
 from tests.conftest import test_path
 
 
+@pytest.mark.supported_speos_versions(min=252)
 def test_create_camera_sensor(speos: Speos):
     """Test creation of camera sensor."""
     p = Project(speos=speos)
@@ -510,6 +513,7 @@ def test_create_camera_sensor(speos: Speos):
     sensor1.delete()
 
 
+@pytest.mark.supported_speos_versions(min=251)
 def test_create_irradiance_sensor(speos: Speos):
     """Test creation of irradiance sensor."""
     p = Project(speos=speos)
@@ -824,6 +828,7 @@ def test_create_irradiance_sensor(speos: Speos):
     sensor1.delete()
 
 
+@pytest.mark.supported_speos_versions(min=251)
 def test_create_radiance_sensor(speos: Speos):
     """Test creation of radiance sensor."""
     p = Project(speos=speos)
@@ -1066,6 +1071,7 @@ def test_create_radiance_sensor(speos: Speos):
     assert radiance_properties.HasField("layer_type_none")
 
 
+@pytest.mark.supported_speos_versions(min=252)
 def test_load_3d_irradiance_sensor(speos: Speos):
     """Test load of 3d irradiance sensor."""
     p = Project(
@@ -1076,6 +1082,7 @@ def test_load_3d_irradiance_sensor(speos: Speos):
     assert sensor_3d is not None
 
 
+@pytest.mark.supported_speos_versions(min=252)
 def test_create_3d_irradiance_sensor(speos: Speos):
     """Test creation of 3d irradiance sensor."""
     p = Project(
@@ -1297,6 +1304,7 @@ def test_reset_sensor(speos: Speos):
     sensor1.delete()
 
 
+@pytest.mark.supported_speos_versions(min=251)
 def test_irradiance_modify_after_reset(speos: Speos):
     """Test reset of irradiance sensor, and then modify."""
     p = Project(speos=speos)
@@ -1367,6 +1375,7 @@ def test_irradiance_modify_after_reset(speos: Speos):
     sensor1.delete()
 
 
+@pytest.mark.supported_speos_versions(min=251)
 def test_radiance_modify_after_reset(speos: Speos):
     """Test reset of radiance sensor, and then modify."""
     p = Project(speos=speos)
@@ -1471,6 +1480,7 @@ def test_radiance_modify_after_reset(speos: Speos):
     sensor1.delete()
 
 
+@pytest.mark.supported_speos_versions(min=251)
 def test_camera_modify_after_reset(speos: Speos):
     """Test reset of camera sensor, and then modify."""
     p = Project(speos=speos)

@@ -24,6 +24,8 @@
 
 from pathlib import Path
 
+import pytest
+
 from ansys.speos.core import OptProp, Part, Project, Speos
 from ansys.speos.core.sensor import SensorIrradiance
 from ansys.speos.core.workflow.combine_speos import (
@@ -185,6 +187,7 @@ def test_modify_parts_after_combine(speos: Speos):
             ]
 
 
+@pytest.mark.supported_speos_versions(min=252)
 def test_insert_speos(speos: Speos):
     """Test inserting several speos files in an existing project."""
     # Create a project from a speos file
