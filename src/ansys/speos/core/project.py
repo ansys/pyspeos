@@ -69,9 +69,8 @@ except ImportError as err:  # pragma: no cover
     raise err
 
 if TYPE_CHECKING:  # pragma: no cover
-    import pyvista as pv
-
     from ansys.tools.visualization_interface import Plotter
+    import pyvista as pv
 
 
 class Project:
@@ -1035,9 +1034,8 @@ class Project:
             - {'style': 'surface', 'color':'white'},
             - {'opacity': 0.7, 'color':'white', 'show_edges': False},
         """
-        import pyvista as pv
-
         from ansys.tools.visualization_interface import Plotter
+        import pyvista as pv
 
         def find_all_subparts(target_part):
             subparts = []
