@@ -139,6 +139,7 @@ def test_source_template(speos: Speos):
     intens_t_lamb.delete()
 
 
+@pytest.mark.supported_speos_versions(min=252)
 def test_action_get_ray_file_info(speos: Speos):
     """Test the source template action : get_ray_file_info."""
     assert speos.client.healthy is True
