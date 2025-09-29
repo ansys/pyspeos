@@ -205,13 +205,15 @@ class MonoChromaticParameters:
 class PhotometricCameraParameters:
     """Photometric Parameters for Camera."""
 
-    color_mode: Union[MonoChromaticParameters, ColorParameters] = ColorParameters()
+    color_mode: Union[MonoChromaticParameters, ColorParameters] = field(
+        default_factory=ColorParameters
+    )
     """Color mode of the Camera Sensor."""
     layer_type: Union[LayerTypes.none, LayerTypes.by_source] = LayerTypes.none
     """Layer separation parameter."""
-    png_bits: Union[PngBits.png_08, PngBits.png_10, PngBits.png_12, PngBits.png_16] = PngBits.png_16
+    png_bits: PngBits = PngBits.png_16
     """PNG bit resolution of the Camera Sensor."""
-    wavelength_range = WavelengthsRangeParameters()
+    wavelength_range = field(default_factory=WavelengthsRangeParameters)
     """Wavelength range of the Camera Sensor."""
     acquisition_integration_time: float = 0.01
     """Integration Time value for the Camera Sensor."""
@@ -227,7 +229,9 @@ class PhotometricCameraParameters:
 class CameraSensorParameters:
     """Camera Sensor Parameters."""
 
-    sensor_type_parameters: Union[None, PhotometricCameraParameters] = PhotometricCameraParameters()
+    sensor_type_parameters: Union[None, PhotometricCameraParameters] = field(
+        default_factory=PhotometricCameraParameters
+    )
     """Camera sensor type None means geometric sensor"""
     axis_system: list[float] = field(default_factory=lambda: ORIGIN)
     """Location of the sensor Origin"""
@@ -254,7 +258,7 @@ class CameraSensorParameters:
 class ColorimetricParameters:
     """Colorimetric settings of the Sensor."""
 
-    wavelength_range = WavelengthsRangeParameters()
+    wavelength_range = field(default_factory=WavelengthsRangeParameters)
     """Wavelength range of the Sensor."""
 
 
@@ -262,7 +266,7 @@ class ColorimetricParameters:
 class SpectralParameters:
     """Colorimetric settings of the Sensor."""
 
-    wavelength_range = WavelengthsRangeParameters()
+    wavelength_range = field(default_factory=WavelengthsRangeParameters)
     """Wavelength range of the Sensor."""
 
 
@@ -309,7 +313,7 @@ class MeasuresParameters:
 class IrradianceSensorParameters:
     """Irradiance Sensor Parameters."""
 
-    dimensions: DimensionsParameters = DimensionsParameters()
+    dimensions: DimensionsParameters = field(default_factory=DimensionsParameters)
     """Dimensions of the sensor."""
     axis_system: list[float] = field(default_factory=lambda: ORIGIN)
     """Position of the sensor."""
@@ -338,7 +342,7 @@ class IrradianceSensorParameters:
 class RadianceSensorParameters:
     """Radiance Sensor Constants."""
 
-    dimensions: DimensionsParameters = DimensionsParameters()
+    dimensions: DimensionsParameters = field(default_factory=DimensionsParameters)
     """Dimensions of the sensor."""
     axis_system: list[float] = field(default_factory=lambda: ORIGIN)
     """Position of the sensor."""
@@ -370,7 +374,7 @@ class Irradiance3DSensorParameters:
         SensorTypes.photometric
     )
     """Type of the sensor."""
-    measures = MeasuresParameters()
+    measures = field(default_factory=MeasuresParameters)
     """Measurement activation state."""
     integration_type: Union[IntegrationTypes.planar, IntegrationTypes.radial] = (
         IntegrationTypes.planar
