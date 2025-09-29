@@ -65,9 +65,6 @@ def test_create_camera_sensor(speos: Speos):
     sensor1.set_mode_photometric().set_mode_color().blue_spectrum_file_uri = str(
         Path(test_path) / "CameraInputFiles" / "CameraSensitivityBlue.spectrum"
     )
-    sensor1.distortion_file_uri = str(
-        Path(test_path) / "CameraInputFiles" / "CameraDistortion_130deg.OPTDistortion"
-    )
 
     sensor1.commit()
     assert sensor1.sensor_template_link is not None
@@ -330,17 +327,18 @@ def test_create_camera_sensor(speos: Speos):
     camera_sensor_template = sensor1.sensor_template_link.get().camera_sensor_template
     mode_photometric = camera_sensor_template.sensor_mode_photometric
     assert mode_photometric.color_mode_color.HasField("balance_mode_userwhite")
+    default_userwhites = BalanceModeUserWhiteParameters()
     assert (
         mode_photometric.color_mode_color.balance_mode_userwhite.red_gain
-        == sensor_parameters.sensor_type_parameters.color_mode.balance_mode.red_gain
+        == default_userwhites.red_gain
     )
     assert (
         mode_photometric.color_mode_color.balance_mode_userwhite.green_gain
-        == sensor_parameters.sensor_type_parameters.color_mode.balance_mode.green_gain
+        == default_userwhites.green_gain
     )
     assert (
         mode_photometric.color_mode_color.balance_mode_userwhite.blue_gain
-        == sensor_parameters.sensor_type_parameters.color_mode.balance_mode.blue_gain
+        == default_userwhites.blue_gain
     )
 
     balance_mode_user_white = (
