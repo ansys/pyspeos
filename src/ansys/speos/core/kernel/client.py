@@ -25,15 +25,21 @@
 import logging
 import os
 from pathlib import Path
-import subprocess
+import subprocess  # nosec
 import time
 from typing import TYPE_CHECKING, List, Optional, Union
+import warnings
 
 import grpc
 from grpc._channel import _InactiveRpcError
 
 from ansys.api.speos.part.v1 import body_pb2, face_pb2, part_pb2
-from ansys.speos.core.generic.constants import DEFAULT_HOST, DEFAULT_PORT, DEFAULT_VERSION
+from ansys.speos.core.generic.constants import (
+    DEFAULT_HOST,
+    DEFAULT_PORT,
+    DEFAULT_VERSION,
+    MAX_CLIENT_MESSAGE_SIZE,
+)
 from ansys.speos.core.generic.general_methods import retrieve_speos_install_dir
 from ansys.speos.core.kernel.body import BodyLink, BodyStub
 from ansys.speos.core.kernel.face import FaceLink, FaceStub
@@ -117,6 +123,9 @@ class SpeosClient:
     channel : ~grpc.Channel, optional
         gRPC channel for server communication.
         By default, ``None``.
+    message_size: int
+        Maximum Message size of a newly generated channel
+        By default, ``MAX_CLIENT_MESSAGE_SIZE``.
     remote_instance : ansys.platform.instancemanagement.Instance
         The corresponding remote instance when the Speos Service
         is launched through PyPIM. This instance will be deleted when calling
@@ -139,6 +148,7 @@ class SpeosClient:
         port: Union[str, int] = DEFAULT_PORT,
         version: str = DEFAULT_VERSION,
         channel: Optional[grpc.Channel] = None,
+        message_size: int = MAX_CLIENT_MESSAGE_SIZE,
         remote_instance: Optional["Instance"] = None,
         timeout: Optional[int] = 60,
         logging_level: Optional[int] = logging.INFO,
@@ -165,10 +175,19 @@ class SpeosClient:
             self._channel = channel
             self._target = str(channel)
         else:
+            if host == "0.0.0.0":  # nosec
+                warnings.warn(
+                    "The service is exposed on all network interfaces. This is a security risk.",
+                    stacklevel=2,
+                )
+
             self._host = host
             self._port = port
             self._target = f"{host}:{port}"
-            self._channel = grpc.insecure_channel(self._target)
+            self._channel = grpc.insecure_channel(
+                self._target,
+                options=[("grpc.max_receive_message_length", message_size)],
+            )
         # do not finish initialization until channel is healthy
         wait_until_healthy(self._channel, timeout)
 
@@ -492,6 +511,11 @@ List[ansys.speos.core.kernel.face.FaceLink]]
     def close(self):
         """Close the channel.
 
+        .. warning::
+
+            Do not execute this function with untrusted environment variables.
+            See the :ref:`security guide<ref_security_consideration>` for details.
+
         Returns
         -------
         bool
@@ -505,7 +529,7 @@ List[ansys.speos.core.kernel.face.FaceLink]]
         wait_time = 0
         if self._remote_instance:
             self._remote_instance.delete()
-        elif self._host in ["localhost", "0.0.0.0", "127.0.0.1"] and self.__speos_exec:
+        elif self._host in ["localhost", "0.0.0.0", "127.0.0.1"] and self.__speos_exec:  # nosec
             self.__close_local_speos_rpc_server()
             while self.healthy and wait_time < 15:
                 time.sleep(1)
@@ -531,5 +555,24 @@ List[ansys.speos.core.kernel.face.FaceLink]]
             return self._closed
 
     def __close_local_speos_rpc_server(self):
-        command = [self.__speos_exec, "-s{}".format(self._port)]
-        subprocess.run(command, check=True)
+        """Close a locally started Speos RPC server.
+
+        .. warning::
+            Do not execute this function after modifying protected or private
+            attributes of the SpeosClient class or in a context with untrusted
+            environment variables.
+            See the :ref:`security guide<ref_security_consideration>` for details.
+
+        """
+        try:
+            int(self._port)
+        except ValueError:
+            raise RuntimeError("The port of the local server is not a valid integer.")
+        if (
+            not Path(self.__speos_exec).is_file()
+            or Path(self.__speos_exec).stem != "SpeosRPC_Server"
+        ):
+            raise RuntimeError("Unexpected executable path for Speos rpc executable.")
+
+        command = [self.__speos_exec, f"-s{self._port}"]
+        subprocess.run(command, check=True)  # nosec

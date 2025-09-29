@@ -24,12 +24,17 @@
 
 import os
 from pathlib import Path
-import subprocess
+import subprocess  # nosec B404
 import tempfile
 from typing import Optional, Union
 
 from ansys.speos.core import LOG as LOGGER
-from ansys.speos.core.generic.constants import DEFAULT_PORT, DEFAULT_VERSION, MAX_MESSAGE_LENGTH
+from ansys.speos.core.generic.constants import (
+    DEFAULT_PORT,
+    DEFAULT_VERSION,
+    MAX_CLIENT_MESSAGE_SIZE,
+    MAX_SERVER_MESSAGE_LENGTH,
+)
 from ansys.speos.core.generic.general_methods import retrieve_speos_install_dir
 from ansys.speos.core.speos import Speos
 
@@ -102,7 +107,8 @@ def launch_remote_speos(
 def launch_local_speos_rpc_server(
     version: str = DEFAULT_VERSION,
     port: Union[str, int] = DEFAULT_PORT,
-    message_size: int = MAX_MESSAGE_LENGTH,
+    server_message_size: int = MAX_SERVER_MESSAGE_LENGTH,
+    client_message_size: int = MAX_CLIENT_MESSAGE_SIZE,
     logfile_loc: str = None,
     log_level: int = 20,
     speos_rpc_path: Optional[Union[Path, str]] = None,
@@ -110,7 +116,10 @@ def launch_local_speos_rpc_server(
     """Launch Speos RPC server locally.
 
     .. warning::
-        Do not execute this function with untrusted input parameters.
+
+        Do not execute this function with untrusted function argument or environment
+        variables.
+        See the :ref:`security guide<ref_security_consideration>` for details.
 
     Parameters
     ----------
@@ -121,9 +130,12 @@ def launch_local_speos_rpc_server(
     port : Union[str, int], optional
         Port number where the server is running.
         By default, ``ansys.speos.core.kernel.client.DEFAULT_PORT``.
-    message_size : int
+    server_message_size : int
         Maximum message length value accepted by the Speos RPC server,
         By default, value stored in environment variable SPEOS_MAX_MESSAGE_LENGTH or 268 435 456.
+    client_message_size: int
+        Maximum Message size of a newly generated channel
+        By default, ``MAX_CLIENT_MESSAGE_SIZE``.
     logfile_loc : str
         location for the logfile to be created in.
     log_level : int
@@ -138,6 +150,15 @@ def launch_local_speos_rpc_server(
     ansys.speos.core.speos.Speos
         An instance of the Speos Service.
     """
+    try:
+        int(port)
+    except ValueError:
+        raise ValueError("The port is not a valid integer.")
+    try:
+        int(server_message_size)
+    except ValueError:
+        raise ValueError("The server message size is not a valid integer.")
+
     speos_rpc_path = retrieve_speos_install_dir(speos_rpc_path, version)
     if os.name == "nt":
         speos_exec = speos_rpc_path / "SpeosRPC_Server.exe"
@@ -155,19 +176,15 @@ def launch_local_speos_rpc_server(
             logfile = logfile_loc / "speos_rpc.log"
     if not logfile_loc.exists():
         logfile_loc.mkdir()
-    command = [
-        str(speos_exec),
-        "-p{}".format(port),
-        "-m{}".format(message_size),
-        "-l{}".format(str(logfile)),
-    ]
+    command = [str(speos_exec), f"-p{port}", f"-m{server_message_size}", f"-l{str(logfile)}"]
     out, stdout_file = tempfile.mkstemp(suffix="speos_out.txt", dir=logfile_loc)
     err, stderr_file = tempfile.mkstemp(suffix="speos_err.txt", dir=logfile_loc)
 
-    subprocess.Popen(command, stdout=out, stderr=err)
+    subprocess.Popen(command, stdout=out, stderr=err)  # nosec B603
     return Speos(
         host="localhost",
         port=port,
+        message_size=client_message_size,
         logging_level=log_level,
         logging_file=logfile,
         speos_install_path=speos_rpc_path,

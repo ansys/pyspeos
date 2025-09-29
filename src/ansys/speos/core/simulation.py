@@ -25,14 +25,17 @@
 from __future__ import annotations
 
 from difflib import SequenceMatcher
+from pathlib import Path
 import time
-from typing import List, Mapping, Optional
+from typing import List, Mapping, Optional, Union
 import uuid
+import warnings
 
 from ansys.api.speos.job.v2 import job_pb2
+from ansys.api.speos.job.v2.job_pb2 import Result
+from ansys.api.speos.scene.v2 import scene_pb2 as messages
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
-
-# from ansys.speos.core.geo_ref import GeoRef
+from ansys.speos.core.generic.general_methods import min_speos_version
 from ansys.speos.core.kernel.job import ProtoJob
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 from ansys.speos.core.kernel.scene import ProtoScene
@@ -40,6 +43,7 @@ from ansys.speos.core.kernel.simulation_template import ProtoSimulationTemplate
 from ansys.speos.core.logger import LOG
 import ansys.speos.core.project as project
 import ansys.speos.core.proto_message_utils as proto_message_utils
+from ansys.speos.core.sensor import BaseSensor
 
 
 class BaseSimulation:
@@ -142,6 +146,7 @@ class BaseSimulation:
             metadata = {}
         # Attribute representing the kind of simulation.
         self._type = None
+        self._light_expert_changed = False
 
         if simulation_instance is None:
             # Create local SimulationTemplate
@@ -222,7 +227,85 @@ class BaseSimulation:
     #         self._simulation_instance.geometries.geo_paths[:] = geo_paths
     #     return self
 
-    def compute_CPU(self, threads_number: Optional[int] = None) -> List[job_pb2.Result]:
+    def export(self, export_path: Union[str, Path]) -> None:
+        """Export simulation.
+
+        Parameters
+        ----------
+        export_path: Union[str, Path]
+            directory to export simulation to.
+
+        Returns
+        -------
+        None
+
+        """
+        simulation_features = [
+            _
+            for _ in self._project._features
+            if isinstance(_, (SimulationDirect, SimulationInverse))
+        ]
+        if len(simulation_features) > 1:
+            warnings.warn(
+                "Limitation : only the first inverse/direct simulation is "
+                "exported and stop conditions are not exported.",
+                stacklevel=2,
+            )
+        if self is simulation_features[0]:
+            export_path = Path(export_path)
+            self._project.scene_link.stub._actions_stub.SaveFile(
+                messages.SaveFile_Request(
+                    guid=self._project.scene_link.key,
+                    file_uri=str(export_path / (self._name + ".speos")),
+                )
+            )
+        else:
+            raise ValueError(
+                "Selected simulation is not the first simulation feature, it can't be exported."
+            )
+
+    def _export_vtp(self) -> List[Path]:
+        """Export the simulation results into vtp files.
+
+        Returns
+        -------
+        List[Path]
+            list of vtp paths.
+
+        """
+        vtp_files = []
+        from ansys.speos.core import Face
+        from ansys.speos.core.sensor import Sensor3DIrradiance, SensorIrradiance
+        from ansys.speos.core.workflow.open_result import export_xm3_vtp, export_xmp_vtp
+
+        sensor_paths = self.get(key="sensor_paths")
+        for feature in self._project._features:
+            if feature._name not in sensor_paths:
+                continue
+            match feature:
+                case SensorIrradiance():
+                    xmp_data = feature.get(key="result_file_name")
+                    exported_vtp = export_xmp_vtp(self, xmp_data)
+                    vtp_files.append(exported_vtp)
+                case Sensor3DIrradiance():
+                    xm3_data = feature.get(key="result_file_name")
+                    geo_paths = feature.get(key="geo_paths")
+                    geos_faces = [
+                        self._project.find(name=geo_path, feature_type=Face)[0]._face
+                        for geo_path in geo_paths
+                    ]
+                    exported_vtp = export_xm3_vtp(self, geos_faces, xm3_data)
+                    vtp_files.append(exported_vtp)
+                case _:
+                    warnings.warn(
+                        "feature {} result currently not supported".format(feature._name),
+                        stacklevel=2,
+                    )
+        return vtp_files
+
+    def compute_CPU(
+        self, threads_number: Optional[int] = None, export_vtp: Optional[bool] = False
+    ) -> tuple[list[Result], list[Path]] | list[Result]:
         """Compute the simulation on CPU.
 
         Parameters
@@ -230,6 +313,8 @@ class BaseSimulation:
         threads_number : int, optional
             The number of threads used.
             By default, ``None``, means the number of processor available.
+        export_vtp: bool, optional
+            True to generate vtp from the simulation results.
 
         Returns
         -------
@@ -244,10 +329,20 @@ class BaseSimulation:
             )
 
         self.result_list = self._run_job()
+        if export_vtp:
+            vtp_files = self._export_vtp()
+            return self.result_list, vtp_files
         return self.result_list
 
-    def compute_GPU(self) -> List[job_pb2.Result]:
+    def compute_GPU(
+        self, export_vtp: Optional[bool] = False
+    ) -> tuple[list[Result], list[Path]] | list[Result]:
         """Compute the simulation on GPU.
+
+        Parameters
+        ----------
+        export_vtp: bool, optional
+            True to generate vtp from the simulation results.
 
         Returns
         -------
@@ -256,6 +351,9 @@ class BaseSimulation:
         """
         self._job.job_type = ProtoJob.Type.GPU
         self.result_list = self._run_job()
+        if export_vtp:
+            vtp_files = self._export_vtp()
+            return self.result_list, vtp_files
         return self.result_list
 
     def _run_job(self) -> List[job_pb2.Result]:
@@ -546,6 +644,7 @@ class SimulationDirect(BaseSimulation):
         Uses default values when True.
     """
 
+    @min_speos_version(25, 2, 0)
     def __init__(
         self,
         project: project.Project,
@@ -575,6 +674,7 @@ class SimulationDirect(BaseSimulation):
             # self.set_fast_transmission_gathering()
             self.set_ambient_material_file_uri()
             self.set_weight()
+            self.set_light_expert()
             # Default job properties
             self.set_stop_condition_rays_number().set_stop_condition_duration().set_automatic_save_frequency()
 
@@ -788,6 +888,55 @@ class SimulationDirect(BaseSimulation):
         self._job.direct_mc_simulation_properties.automatic_save_frequency = value
         return self
 
+    def set_light_expert(self, value: bool = False, ray_number: int = 10e6) -> SimulationDirect:
+        """Activate/Deactivate the generation of light expert file.
+
+        Parameters
+        ----------
+        value : bool
+            Activate/Deactivate.
+            By default, ``False``, means deactivate.
+        ray_number : int
+            number of rays stored in lpf file
+            By default, ``10e6``
+
+        Returns
+        -------
+        ansys.speos.core.simulation.SimulationDirect
+            Interactive simulation
+        """
+        self._light_expert_changed = True
+        warnings.warn(
+            "Please note that setting a value for light expert option forces a sensor"
+            "commit when committing the Simulation class",
+            stacklevel=2,
+        )
+        if value:
+            for item in self._project._features:
+                if isinstance(item, BaseSensor):
+                    item.lxp_path_number = ray_number
+        else:
+            for item in self._project._features:
+                if isinstance(item, BaseSensor):
+                    item.lxp_path_number = None
+        return self
+
+    def commit(self) -> SimulationDirect:
+        """Save feature: send the local data to the speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.simulation.SimulationDirect
+            Simulation feature.
+        """
+        if self._light_expert_changed:
+            for item in self._project._features:
+                if isinstance(item, BaseSensor):
+                    item.commit()
+            self._light_expert_changed = False
+        super().commit()
+        return self
+
 
 class SimulationInverse(BaseSimulation):
     """Type of simulation : Inverse.
@@ -824,6 +973,7 @@ class SimulationInverse(BaseSimulation):
         Uses default values when True.
     """
 
+    @min_speos_version(25, 2, 0)
     def __init__(
         self,
         project: project.Project,
@@ -1122,6 +1272,55 @@ class SimulationInverse(BaseSimulation):
             Inverse simulation
         """
         self._job.inverse_mc_simulation_properties.automatic_save_frequency = value
+        return self
+
+    def set_light_expert(self, value: bool = False, ray_number: int = 10e6) -> SimulationInverse:
+        """Activate/Deactivate the generation of light expert file.
+
+        Parameters
+        ----------
+        value : bool
+            Activate/Deactivate.
+            By default, ``False``, means deactivate.
+        ray_number : int
+            number of rays stored in lpf file
+            By default, ``10e6``
+
+        Returns
+        -------
+        ansys.speos.core.simulation.SimulationInverse
+            Interactive simulation
+        """
+        self._light_expert_changed = True
+        warnings.warn(
+            "Please note that setting a value for light expert option forces a sensor"
+            "commit when committing the Simulation class",
+            stacklevel=2,
+        )
+        if value:
+            for item in self._project._features:
+                if isinstance(item, BaseSensor):
+                    item.lxp_path_number = ray_number
+        else:
+            for item in self._project._features:
+                if isinstance(item, BaseSensor):
+                    item.lxp_path_number = None
+        return self
+
+    def commit(self) -> SimulationInverse:
+        """Save feature: send the local data to the speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.simulation.SimulationInverse
+            Simulation feature.
+        """
+        if self._light_expert_changed:
+            for item in self._project._features:
+                if isinstance(item, BaseSensor):
+                    item.commit()
+            self._light_expert_changed = False
+        super().commit()
         return self
 
 

@@ -24,16 +24,22 @@
 
 from __future__ import annotations
 
+import datetime
 from difflib import SequenceMatcher
 from typing import List, Mapping, Optional, Union
 import uuid
 
+import numpy as np
+
+from ansys.api.speos.scene.v2 import scene_pb2
 from ansys.speos.core import (
     project as project,
     proto_message_utils as proto_message_utils,
 )
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
+import ansys.speos.core.generic.general_methods as general_methods
+from ansys.speos.core.generic.visualization_methods import _VisualArrow, _VisualData
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.intensity import Intensity
 from ansys.speos.core.kernel.client import SpeosClient
@@ -78,6 +84,7 @@ class BaseSource:
         self._project = project
         self._name = name
         self._unique_id = None
+        self._visual_data = _VisualData(ray=True) if general_methods._GRAPHICS_AVAILABLE else None
         self.source_template_link = None
         """Link object for the source template in database."""
 
@@ -360,8 +367,11 @@ class BaseSource:
         ansys.speos.core.source.BaseSource
             Source feature.
         """
-        self._spectrum._commit()
+        if hasattr(self, "_spectrum"):
+            self._spectrum._commit()
         self._commit()
+        if general_methods._GRAPHICS_AVAILABLE:
+            self._visual_data.updated = False
         return self
 
     def reset(self) -> BaseSource:
@@ -372,7 +382,8 @@ class BaseSource:
         ansys.speos.core.source.BaseSource
             Source feature.
         """
-        self._spectrum._reset()
+        if hasattr(self, "_spectrum"):
+            self._spectrum._reset()
         self._reset()
         return self
 
@@ -386,7 +397,8 @@ class BaseSource:
         ansys.speos.core.source.BaseSource
             Source feature.
         """
-        self._spectrum._delete()
+        if hasattr(self, "_spectrum"):
+            self._spectrum._delete()
         self._delete()
         return self
 
@@ -412,6 +424,7 @@ class SourceLuminaire(BaseSource):
         Uses default values when True.
     """
 
+    @general_methods.min_speos_version(25, 2, 0)
     def __init__(
         self,
         project: project.Project,
@@ -443,6 +456,44 @@ class SourceLuminaire(BaseSource):
             # Default values
             self.set_flux_from_intensity_file().set_spectrum().set_incandescent()
             self.set_axis_system()
+
+    @property
+    def visual_data(self) -> _VisualData:
+        """Property containing Luminaire source visualization data.
+
+        Returns
+        -------
+        _VisualData
+            Instance of VisualData Class for pyvista.PolyData of feature rays, coordinate_systems.
+
+        """
+        if self._visual_data.updated:
+            return self._visual_data
+        else:
+            self._visual_data = (
+                _VisualData(ray=True) if general_methods._GRAPHICS_AVAILABLE else None
+            )
+            for ray_path in self._project.scene_link.get_source_ray_paths(
+                self._name, rays_nb=100, raw_data=True, display_data=True
+            ):
+                self._visual_data.add_data_line(
+                    _VisualArrow(
+                        line_vertices=[ray_path.impacts_coordinates, ray_path.last_direction],
+                        color=tuple(ray_path.colors.values),
+                        arrow=False,
+                    )
+                )
+            feature_pos_info = self.get(key="axis_system")
+            feature_luminaire_pos = np.array(feature_pos_info[:3])
+            feature_luminaire_x_dir = np.array(feature_pos_info[3:6])
+            feature_luminaire_y_dir = np.array(feature_pos_info[6:9])
+            feature_luminaire_z_dir = np.array(feature_pos_info[9:12])
+            self._visual_data.coordinates.origin = feature_luminaire_pos
+            self._visual_data.coordinates.x_axis = feature_luminaire_x_dir
+            self._visual_data.coordinates.y_axis = feature_luminaire_y_dir
+            self._visual_data.coordinates.z_axis = feature_luminaire_z_dir
+            self._visual_data.updated = True
+            return self._visual_data
 
     def set_flux_from_intensity_file(self) -> SourceLuminaire:
         """Take flux from intensity file provided.
@@ -559,6 +610,7 @@ class SourceRayFile(BaseSource):
         Uses default values when True.
     """
 
+    @general_methods.min_speos_version(25, 2, 0)
     def __init__(
         self,
         project: project.Project,
@@ -598,6 +650,44 @@ class SourceRayFile(BaseSource):
             # Default values
             self.set_flux_from_ray_file().set_spectrum_from_ray_file()
             self.set_axis_system()
+
+    @property
+    def visual_data(self) -> _VisualData:
+        """Property containing Rayfile source visualization data.
+
+        Returns
+        -------
+        _VisualData
+            Instance of VisualData Class for pyvista.PolyData of feature rays, coordinate_systems.
+
+        """
+        if self._visual_data.updated:
+            return self._visual_data
+        else:
+            self._visual_data = (
+                _VisualData(ray=True) if general_methods._GRAPHICS_AVAILABLE else None
+            )
+            for ray_path in self._project.scene_link.get_source_ray_paths(
+                self._name, rays_nb=100, raw_data=True, display_data=True
+            ):
+                self._visual_data.add_data_line(
+                    _VisualArrow(
+                        line_vertices=[ray_path.impacts_coordinates, ray_path.last_direction],
+                        color=tuple(ray_path.colors.values),
+                        arrow=False,
+                    )
+                )
+            feature_pos_info = self.get(key="axis_system")
+            feature_rayfile_pos = np.array(feature_pos_info[:3])
+            feature_rayfile_x_dir = np.array(feature_pos_info[3:6])
+            feature_rayfile_y_dir = np.array(feature_pos_info[6:9])
+            feature_rayfile_z_dir = np.array(feature_pos_info[9:12])
+            self._visual_data.coordinates.origin = feature_rayfile_pos
+            self._visual_data.coordinates.x_axis = feature_rayfile_x_dir
+            self._visual_data.coordinates.y_axis = feature_rayfile_y_dir
+            self._visual_data.coordinates.z_axis = feature_rayfile_z_dir
+            self._visual_data.updated = True
+            return self._visual_data
 
     def set_ray_file_uri(self, uri: str) -> SourceRayFile:
         """Set ray file.
@@ -833,6 +923,7 @@ class SourceSurface(BaseSource):
             self._exitance_variable_props.axis_plane[:] = axis_plane
             return self
 
+    @general_methods.min_speos_version(25, 2, 0)
     def __init__(
         self,
         project: project.Project,
@@ -879,6 +970,48 @@ class SourceSurface(BaseSource):
             # Default values
             self.set_flux_luminous().set_exitance_constant(geometries=[]).set_intensity()
             self.set_spectrum()
+
+    @property
+    def visual_data(self) -> _VisualData:
+        """Property containing Surface source visualization data.
+
+        Returns
+        -------
+        _VisualData
+            Instance of VisualData Class for pyvista.PolyData of feature rays, coordinate_systems.
+
+        """
+        if self._visual_data.updated:
+            return self._visual_data
+        else:
+            self._visual_data = (
+                _VisualData(
+                    ray=True,
+                    coordinate_system=True if self._exitance_type is not None else False,
+                )
+                if general_methods._GRAPHICS_AVAILABLE
+                else None
+            )
+            for ray_path in self._project.scene_link.get_source_ray_paths(
+                self._name, rays_nb=100, raw_data=True, display_data=True
+            ):
+                self._visual_data.add_data_line(
+                    _VisualArrow(
+                        line_vertices=[ray_path.impacts_coordinates, ray_path.last_direction],
+                        color=tuple(ray_path.colors.values),
+                        arrow=False,
+                    )
+                )
+            if self._visual_data.coordinates is not None:
+                feature_pos_info = self.get(key="axis_plane")
+                feature_surface_pos = np.array(feature_pos_info[:3])
+                feature_surface_x_dir = np.array(feature_pos_info[3:6])
+                feature_surface_y_dir = np.array(feature_pos_info[6:9])
+                self._visual_data.coordinates.origin = feature_surface_pos
+                self._visual_data.coordinates.x_axis = feature_surface_x_dir
+                self._visual_data.coordinates.y_axis = feature_surface_y_dir
+            self._visual_data.updated = True
+            return self._visual_data
 
     def set_flux_from_intensity_file(self) -> SourceSurface:
         """Take flux from intensity file provided.
@@ -1120,3 +1253,695 @@ class SourceSurface(BaseSource):
         # spectrum & source
         super().delete()
         return self
+
+
+class BaseSourceAmbient(BaseSource):
+    """
+    Super Class for ambient sources.
+
+    Parameters
+    ----------
+    project : ansys.speos.core.project.Project
+        Project in which source shall be created.
+    name : str
+        Name of the source.
+    description : str
+        Description of the source.
+        By default, ``""``.
+    metadata : Optional[Mapping[str, str]]
+        Metadata of the feature.
+        By default, ``{}``.
+    source_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance, optional
+        Source instance to provide if the feature does not have to be created from scratch
+        By default, ``None``, means that the feature is created from scratch by default.
+
+    Notes
+    -----
+    This is a Super class, **Do not instantiate this class yourself**
+    """
+
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        source_instance: Optional[ProtoScene.SourceInstance] = None,
+    ) -> None:
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            source_instance=source_instance,
+        )
+
+    class AutomaticSun:
+        """Sun type Automatic.
+
+        By default, user's current time and Ansys France is used a time zone.
+
+        Parameters
+        ----------
+        sun: ansys.api.speos.scene.v2.scene_pb2.AutomaticSun
+            Wavelengths range protobuf object to modify.
+        default_values : bool
+            Uses default values when True.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use set_sun_automatic method available in
+        source classes.
+        """
+
+        def __init__(
+            self,
+            sun: scene_pb2.AutomaticSun,
+            default_values: bool = True,
+            stable_ctr: bool = False,
+        ) -> None:
+            if not stable_ctr:
+                raise RuntimeError(
+                    "BaseSourceAmbient.AutomaticSun class instantiated outside of class scope"
+                )
+            self._sun = sun
+
+            if default_values:
+                now = datetime.datetime.now()
+                self.year = now.year
+                self.month = now.month
+                self.day = now.day
+                self.hour = now.hour
+                self.minute = now.minute
+                self.time_zone = "CET"
+                self.longitude = 0.0
+                self.latitude = 0.0
+
+        @property
+        def year(self) -> int:
+            """Get year info of the automatic sun.
+
+            Returns
+            -------
+            int
+                year info.
+            """
+            return self._sun.year
+
+        @year.setter
+        def year(self, year: int) -> None:
+            """Set year info of the automatic sun.
+
+            Parameters
+            ----------
+            year: int
+                year information.
+
+            Returns
+            -------
+            None
+            """
+            self._sun.year = year
+
+        @property
+        def month(self) -> int:
+            """Get month info of the automatic sun.
+
+            Returns
+            -------
+            int
+                month information.
+
+            """
+            return self._sun.month
+
+        @month.setter
+        def month(self, month: int) -> None:
+            """Set month info of the automatic sun.
+
+            Parameters
+            ----------
+            month: int
+                month information.
+
+            Returns
+            -------
+            None
+
+            """
+            self._sun.month = month
+
+        @property
+        def day(self) -> int:
+            """Get day info of the automatic sun.
+
+            Returns
+            -------
+            int
+                day information.
+            """
+            return self._sun.day
+
+        @day.setter
+        def day(self, day: int) -> None:
+            """Set day info of the automatic sun.
+
+            Parameters
+            ----------
+            day: int
+                day information.
+
+            Returns
+            -------
+            None
+            """
+            self._sun.day = day
+
+        @property
+        def hour(self) -> int:
+            """Get hour info of the automatic sun.
+
+            Returns
+            -------
+            int
+                hour information.
+
+            """
+            return self._sun.hour
+
+        @hour.setter
+        def hour(self, hour: int) -> None:
+            """Set hour info of the automatic sun.
+
+            Parameters
+            ----------
+            hour: int
+                hour information.
+
+            Returns
+            -------
+            None
+
+            """
+            self._sun.hour = hour
+
+        @property
+        def minute(self) -> int:
+            """Get minute info of the automatic sun.
+
+            Returns
+            -------
+            int
+                minute information.
+
+            """
+            return self._sun.minute
+
+        @minute.setter
+        def minute(self, minute: int) -> None:
+            """Set minute info of the automatic sun.
+
+            Parameters
+            ----------
+            minute: int
+                minute information.
+
+            Returns
+            -------
+            None
+
+            """
+            self._sun.minute = minute
+
+        @property
+        def longitude(self) -> float:
+            """Get longitude info of the automatic sun.
+
+            Returns
+            -------
+            float
+                longitude information.
+            """
+            return self._sun.longitude
+
+        @longitude.setter
+        def longitude(self, longitude: float) -> None:
+            """Get longitude info of the automatic sun.
+
+            Parameters
+            ----------
+            longitude: float
+                longitude information.
+
+            Returns
+            -------
+            None
+            """
+            self._sun.longitude = longitude
+
+        @property
+        def latitude(self) -> float:
+            """Get latitude info of the automatic sun.
+
+            Returns
+            -------
+            float
+                latitude information.
+            """
+            return self._sun.latitude
+
+        @latitude.setter
+        def latitude(self, latitude: float) -> None:
+            """Set latitude info of the automatic sun.
+
+            Parameters
+            ----------
+            latitude: float
+                latitude information.
+
+            Returns
+            -------
+            None
+            """
+            self._sun.latitude = latitude
+
+        @property
+        def time_zone(self) -> str:
+            """Get time zone info of the automatic sun.
+
+            Returns
+            -------
+            str
+                time zone abbreviation.
+            """
+            return self._sun.time_zone_uri
+
+        @time_zone.setter
+        def time_zone(self, time_zone: str) -> None:
+            """Set time zone info of the automatic sun.
+
+                default value to be "CET".
+
+            Parameters
+            ----------
+            timezone: str
+                timezone abbreviation.
+
+            Returns
+            -------
+            None
+            """
+            self._sun.time_zone_uri = time_zone
+
+    class Manual:
+        """Sun type Manual>.
+
+        By default, z-axis [0, 0, 1] is used as sun direction.
+
+        Parameters
+        ----------
+        sun: ansys.api.speos.scene.v2.scene_pb2.ManualSun
+            Wavelengths range protobuf object to modify.
+        default_values : bool
+            Uses default values when True.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use set_sun_manual method available in
+        source classes.
+        """
+
+        def __init__(
+            self,
+            sun: scene_pb2.ManualSun,
+            default_values: bool = True,
+            stable_ctr: bool = False,
+        ) -> None:
+            if not stable_ctr:
+                raise RuntimeError(
+                    "BaseSourceAmbient.Manual class instantiated outside of class scope"
+                )
+            self._sun = sun
+
+            if default_values:
+                self.direction = [0, 0, 1]
+                self.reverse_sun = False
+
+        @property
+        def direction(self) -> List[float]:
+            """Get direction of the manual sun.
+
+            Returns
+            -------
+            list of float
+                list describing the direction of the manual sun.
+
+            """
+            return self._sun.sun_direction
+
+        @direction.setter
+        def direction(self, direction: List[float]) -> None:
+            """Set direction of the manual sun.
+
+                default value to be [0, 0, 1].
+
+            Parameters
+            ----------
+            direction: List[float]
+                direction of the sun.
+
+            Returns
+            -------
+            BaseSourceAmbient.Manual
+
+            """
+            self._sun.sun_direction[:] = direction
+
+        @property
+        def reverse_sun(self) -> bool:
+            """Get whether reverse direction of the manual sun.
+
+            Returns
+            -------
+            bool
+                True to reverse direction, False to not reverse direction
+
+            """
+            return self._sun.reverse_sun
+
+        @reverse_sun.setter
+        def reverse_sun(self, value: bool) -> None:
+            """Reverse direction of the manual sun.
+
+                default value to be False.
+
+            Parameters
+            ----------
+            value: bool
+                True to reverse direction, False to not reverse direction
+
+            Returns
+            -------
+            None
+
+            """
+            self._sun.reverse_sun = value
+
+
+class SourceAmbientNaturalLight(BaseSourceAmbient):
+    """Natural light ambient source.
+
+    By default, turbidity is set to be 3 with Sky.
+    [0, 0, 1] is used as zenith direction, [0, 1, 0] as north direction.
+    Sun type is set to be automatic type.
+
+    Parameters
+    ----------
+    project : ansys.speos.core.project.Project
+        Project that will own the feature.
+    name : str
+        Name of the feature.
+    description : str
+        Description of the feature.
+        By default, ``""``.
+    metadata : Optional[Mapping[str, str]]
+        Metadata of the feature.
+        By default, ``{}``.
+    default_values : bool
+        Uses default values when True.
+    """
+
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        source_instance: Optional[ProtoScene.SourceInstance] = None,
+        default_values: bool = True,
+    ) -> None:
+        if metadata is None:
+            metadata = {}
+
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            source_instance=source_instance,
+        )
+        self._speos_client = self._project.client
+        self._name = name
+        self._type = None
+
+        if default_values:
+            # Default values
+            self.zenith_direction = [0, 0, 1]
+            self.north_direction = [0, 1, 0]
+            self.reverse_north_direction = False
+            self.reverse_zenith_direction = False
+            self.turbidity = 3
+            self.with_sky = True
+            self.set_sun_automatic()
+
+    @property
+    def turbidity(self) -> float:
+        """Get turbidity of the natural light source.
+
+        Returns
+        -------
+        float
+            value of Turbidity the measure of the fraction of scattering.
+
+        """
+        return self._source_template.ambient.natural_light.turbidity
+
+    @turbidity.setter
+    def turbidity(self, value: float) -> None:
+        """Set turbidity of the natural light source.
+
+            default value to be 3.
+
+        Parameters
+        ----------
+        value: float
+            set value of Turbidity the measure of the fraction of scattering.
+
+        Returns
+        -------
+        None
+
+        """
+        if not 1.9 <= value <= 9.9:
+            raise ValueError("Varies needs to be between 1.9 and 9.9")
+        self._source_template.ambient.natural_light.turbidity = value
+
+    @property
+    def with_sky(self) -> bool:
+        """Bool of whether activated using sky in the natural light source.
+
+        Returns
+        -------
+        bool
+            True as using sky, while False as using natural light without the sky.
+
+        """
+        return self._source_template.ambient.natural_light.with_sky
+
+    @with_sky.setter
+    def with_sky(self, value: bool) -> None:
+        """Activate using sky in the natural light source.
+
+            default value to be True.
+
+        Parameters
+        ----------
+        value: bool
+            True as using sky, while False as using natural light without the sky.
+
+        Returns
+        -------
+        SourceAmbientNaturalLight
+
+        """
+        self._source_template.ambient.natural_light.with_sky = value
+
+    @property
+    def zenith_direction(self) -> List[float]:
+        """Get zenith direction of the natural light source.
+
+        Returns
+        -------
+        List[float]
+            direction defines the zenith direction of the natural light.
+
+        """
+        return self._source_instance.ambient_properties.zenith_direction
+
+    @zenith_direction.setter
+    def zenith_direction(self, direction: Optional[List[float]] = None) -> None:
+        """Set zenith direction of the natural light source.
+
+            default value to be [0, 0, 1]
+
+        Parameters
+        ----------
+        direction: Optional[List[float]]
+            direction defines the zenith direction of the natural light.
+
+        Returns
+        -------
+        None
+
+        """
+        self._source_instance.ambient_properties.zenith_direction[:] = direction
+
+    @property
+    def reverse_zenith_direction(self) -> bool:
+        """
+        Get whether reverse zenith direction of the natural light source.
+
+        Returns
+        -------
+        bool
+            True to reverse zenith direction, False otherwise.
+
+        """
+        return self._source_instance.ambient_properties.reverse_zenith
+
+    @reverse_zenith_direction.setter
+    def reverse_zenith_direction(self, value: bool) -> None:
+        """Set reverse zenith direction of the natural light source.
+
+            default value to be False.
+
+        Parameters
+        ----------
+        value: bool
+            True to reverse zenith direction, False otherwise.
+
+        Returns
+        -------
+        None
+
+        """
+        self._source_instance.ambient_properties.reverse_zenith = value
+
+    @property
+    def north_direction(self) -> List[float]:
+        """Get north direction of the natural light source.
+
+        Returns
+        -------
+        List[float]
+            direction defines the north direction of the natural light.
+
+        """
+        return self._source_instance.ambient_properties.natural_light_properties.north_direction
+
+    @north_direction.setter
+    def north_direction(self, direction: List[float]) -> None:
+        """Set north direction of the natural light source.
+
+            default value to be [0, 1, 0].
+
+        Parameters
+        ----------
+        direction: List[float]
+            direction defines the north direction of the natural light.
+
+        Returns
+        -------
+        None
+
+        """
+        self._source_instance.ambient_properties.natural_light_properties.north_direction[:] = (
+            direction
+        )
+
+    @property
+    def reverse_north_direction(self) -> bool:
+        """Get whether reverse north direction of the natural light source.
+
+        Returns
+        -------
+        bool
+            True as reverse north direction, False otherwise.
+
+        """
+        return self._source_instance.ambient_properties.natural_light_properties.reverse_north
+
+    @reverse_north_direction.setter
+    def reverse_north_direction(self, value: bool) -> None:
+        """Set reverse north direction of the natural light source.
+
+            default value to be False.
+
+        Parameters
+        ----------
+        value: bool
+            True to reverse north direction, False otherwise.
+
+        Returns
+        -------
+        None
+
+        """
+        self._source_instance.ambient_properties.natural_light_properties.reverse_north = value
+
+    def set_sun_automatic(self) -> BaseSourceAmbient.AutomaticSun:
+        """Set natural light sun type as automatic.
+
+        Returns
+        -------
+        BaseSourceAmbient.AutomaticSun
+
+        """
+        natural_light_properties = self._source_instance.ambient_properties.natural_light_properties
+        if self._type is None and natural_light_properties.sun_axis_system.HasField(
+            "automatic_sun"
+        ):
+            self._type = BaseSourceAmbient.AutomaticSun(
+                natural_light_properties.sun_axis_system.automatic_sun,
+                default_values=False,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._type, BaseSourceAmbient.AutomaticSun):
+            # if the _type is not Colorimetric then we create a new type.
+            self._type = BaseSourceAmbient.AutomaticSun(
+                natural_light_properties.sun_axis_system.automatic_sun,
+                stable_ctr=True,
+            )
+        elif self._type._sun is not natural_light_properties.sun_axis_system.automatic_sun:
+            # Happens in case of feature reset (to be sure to always modify correct data)
+            self._type._sun = natural_light_properties.sun_axis_system.automatic_sun
+        return self._type
+
+    def set_sun_manual(self) -> BaseSourceAmbient.Manual:
+        """Set natural light sun type as manual.
+
+        Returns
+        -------
+        BaseSourceAmbient.Manual
+        """
+        natural_light_properties = self._source_instance.ambient_properties.natural_light_properties
+        if self._type is None and natural_light_properties.sun_axis_system.HasField("manual_sun"):
+            self._type = BaseSourceAmbient.Manual(
+                natural_light_properties.sun_axis_system.manual_sun,
+                default_values=False,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._type, BaseSourceAmbient.Manual):
+            # if the _type is not Colorimetric then we create a new type.
+            self._type = BaseSourceAmbient.Manual(
+                natural_light_properties.sun_axis_system.manual_sun,
+                stable_ctr=True,
+            )
+        elif self._type._sun is not natural_light_properties.sun_axis_system.manual_sun:
+            # Happens in case of feature reset (to be sure to always modify correct data)
+            self._type._sun = natural_light_properties.sun_axis_system.manual_sun
+        return self._type

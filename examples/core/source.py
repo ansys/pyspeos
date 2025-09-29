@@ -11,8 +11,9 @@
 # +
 from pathlib import Path
 
-from ansys.speos.core import GeoRef, Project, Speos
+from ansys.speos.core import GeoRef, Project, Speos, launcher
 from ansys.speos.core.source import (
+    SourceAmbientNaturalLight,
     SourceLuminaire,
     SourceRayFile,
     SourceSurface,
@@ -70,9 +71,13 @@ else:
 # ### Connect to the RPC Server
 # This Python client connects to a server where the Speos engine
 # is running as a service. In this example, the server and
-# client are the same machine.
+# client are the same machine. The launch_local_speos_rpc_method can
+# be used to start a local instance of the service.
 
-speos = Speos(host=HOSTNAME, port=GRPC_PORT)
+if USE_DOCKER:
+    speos = Speos(host=HOSTNAME, port=GRPC_PORT)
+else:
+    speos = launcher.launch_local_speos_rpc_server(port=GRPC_PORT)
 
 # ### Create a new project
 #
@@ -217,6 +222,38 @@ source4.delete()
 print(source4)
 # -
 
+# ### Ambient natural light source
+
+# +
+source5 = p.create_source(name="NaturalLight.1", feature_type=SourceAmbientNaturalLight)
+source5.turbidity = 4
+source5.with_sky = True
+print(source5.zenith_direction)  # default zenith direction
+print(source5.north_direction)  # default north direction
+source5.reverse_north_direction = True
+print(source5)
+
+source5.commit()
+print(source5)
+# -
+
+# +
+source5.set_sun_automatic().year = 2026
+source5.set_sun_automatic().month = 12
+source5.set_sun_automatic().day = 31
+source5.set_sun_automatic().hour = 12
+source5.set_sun_automatic().minute = 23
+source5.set_sun_automatic().longitude = 10
+source5.set_sun_automatic().latitude = 45
+source5.set_sun_automatic().time_zone = "CST"
+source5.commit()
+print(source5)
+# -
+
+# +
+source5.delete()
+# -
+
 # When creating sources, this creates some intermediate objects (spectrums, intensity templates).
 #
 # Deleting a source does not delete in cascade those objects
@@ -227,3 +264,5 @@ print(source4)
 # +
 for item in speos.client.intensity_templates().list() + speos.client.spectrums().list():
     item.delete()
+
+speos.close()

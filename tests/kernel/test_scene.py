@@ -26,6 +26,7 @@ from pathlib import Path
 from typing import List, Mapping, Optional
 
 import numpy as np
+import pytest
 
 from ansys.api.speos.sensor.v1 import common_pb2, irradiance_sensor_pb2
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
@@ -242,6 +243,33 @@ def create_basic_scene(speos: Speos) -> SceneLink:
         )
     )
 
+    material_inst_1 = None
+    material_inst_fop = None
+    if scene_db._is_texture_available:
+        material_inst_1 = ProtoScene.MaterialInstance(
+            name="Material.1",
+            vop_guid=opaque_t.key,
+            sop_guid=mirror_100_t.key,
+            geometries=ProtoScene.GeoPaths(geo_paths=["Body0:1"]),
+        )
+        material_inst_fop = ProtoScene.MaterialInstance(
+            name="FOP.1",
+            sop_guid=mirror_100_t.key,
+            geometries=ProtoScene.GeoPaths(geo_paths=["BodySource:1/FaceSource:1"]),
+        )
+    else:
+        material_inst_1 = ProtoScene.MaterialInstance(
+            name="Material.1",
+            vop_guid=opaque_t.key,
+            sop_guids=[mirror_100_t.key],
+            geometries=ProtoScene.GeoPaths(geo_paths=["Body0:1"]),
+        )
+        material_inst_fop = ProtoScene.MaterialInstance(
+            name="FOP.1",
+            sop_guids=[mirror_100_t.key],
+            geometries=ProtoScene.GeoPaths(geo_paths=["BodySource:1/FaceSource:1"]),
+        )
+
     # Create scene
     scene = scene_db.create(
         message=ProtoScene(
@@ -249,17 +277,8 @@ def create_basic_scene(speos: Speos) -> SceneLink:
             description="scene from scratch",
             part_guid=main_part.key,
             materials=[
-                ProtoScene.MaterialInstance(
-                    name="Material.1",
-                    vop_guid=opaque_t.key,
-                    sop_guids=[mirror_100_t.key],
-                    geometries=ProtoScene.GeoPaths(geo_paths=["Body0:1"]),
-                ),
-                ProtoScene.MaterialInstance(
-                    name="FOP.1",
-                    sop_guids=[mirror_100_t.key],
-                    geometries=ProtoScene.GeoPaths(geo_paths=["BodySource:1/FaceSource:1"]),
-                ),
+                material_inst_1,
+                material_inst_fop,
             ],
             sources=[
                 ProtoScene.SourceInstance(
@@ -621,6 +640,7 @@ def test_scene_actions_load_modify(speos: Speos):
     clean_all_dbs(speos.client)
 
 
+@pytest.mark.supported_speos_versions(min=252)
 def test_scene_actions_get_source_ray_paths(speos: Speos):
     """Test the scene action: load file and modify sensors."""
     assert speos.client.healthy is True

@@ -27,6 +27,7 @@ from pathlib import Path
 from ansys.speos.core import GeoRef, OptProp, Project, Speos, proto_message_utils
 from ansys.speos.core.kernel import scene
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_dict
+from ansys.speos.core.sensor import SensorIrradiance
 from ansys.speos.core.source import SourceSurface
 from tests.conftest import test_path
 
@@ -118,7 +119,7 @@ def test_replace_guid_elt_ignore_simple_key(speos: Speos):
 
 
 def test_replace_guid_elt_list(speos: Speos):
-    """Test _replace_guid_elt in a specific case : list of guids like sop_guids."""
+    """Test _replace_guid_elt in a specific case : list of guids like sop_guids (before v252.1)."""
     # Example with material : vop guid + sop guids
     p = Project(speos=speos)
     mat_feat = OptProp(project=p, name="Material.1")
@@ -133,12 +134,20 @@ def test_replace_guid_elt_list(speos: Speos):
     # Check that expected guids are present
     assert mat_i_msg.HasField("vop_guid")
     assert mat_i_msg.vop_guid != ""
-    assert len(mat_i_msg.sop_guids) == 1
-    assert mat_i_msg.sop_guids[0] != ""
+
+    if len(mat_i_msg.sop_guids) > 0:
+        assert len(mat_i_msg.sop_guids) == 1
+        assert mat_i_msg.sop_guids[0] != ""
+    else:
+        assert mat_i_msg.HasField("sop_guid")
+        assert mat_i_msg.sop_guid != ""
 
     # Check that the new keys are not already present before calling _replace_guid_elt
     assert proto_message_utils._finder_by_key(dict_var=mat_i_dict, key="vop") == []
-    assert proto_message_utils._finder_by_key(dict_var=mat_i_dict, key="sops") == []
+    if len(mat_i_msg.sop_guids) > 0:
+        assert proto_message_utils._finder_by_key(dict_var=mat_i_dict, key="sops") == []
+    else:
+        assert proto_message_utils._finder_by_key(dict_var=mat_i_dict, key="sop") == []
 
     # Replace guid elements for this message,
     # by adding new key to the dict with value corresponding to database item
@@ -150,16 +159,27 @@ def test_replace_guid_elt_list(speos: Speos):
     assert find[0][0] == ".vop"
     assert find[0][1]["name"] == "Material.1.VOP"
 
-    find = proto_message_utils._finder_by_key(dict_var=mat_i_dict, key="sops")
-    assert len(find) == 1
-    assert find[0][0] == ".sops"
-    assert len(find[0][1]) == 1
-    assert find[0][1][0]["name"] == "Material.1.SOP"
+    if len(mat_i_msg.sop_guids) > 0:
+        find = proto_message_utils._finder_by_key(dict_var=mat_i_dict, key="sops")
+        assert len(find) == 1
+        assert find[0][0] == ".sops"
+        assert len(find[0][1]) == 1
+        assert find[0][1][0]["name"] == "Material.1.SOP"
 
-    find = proto_message_utils._finder_by_key(dict_var=mat_i_dict, key="mirror")
-    assert len(find) == 1
-    assert find[0][0] == ".sops[.name='Material.1.SOP'].mirror"
-    assert find[0][1]["reflectance"] == 100.0
+        find = proto_message_utils._finder_by_key(dict_var=mat_i_dict, key="mirror")
+        assert len(find) == 1
+        assert find[0][0] == ".sops[.name='Material.1.SOP'].mirror"
+        assert find[0][1]["reflectance"] == 100.0
+    else:
+        find = proto_message_utils._finder_by_key(dict_var=mat_i_dict, key="sop")
+        assert len(find) == 1
+        assert find[0][0] == ".sop"
+        assert find[0][1]["name"] == "Material.1.SOP"
+
+        find = proto_message_utils._finder_by_key(dict_var=mat_i_dict, key="mirror")
+        assert len(find) == 1
+        assert find[0][0] == ".sop.mirror"
+        assert find[0][1]["reflectance"] == 100.0
 
 
 def test_replace_guid_elt_complex(speos: Speos):
@@ -181,6 +201,7 @@ def test_replace_guid_elt_complex(speos: Speos):
     assert proto_message_utils._finder_by_key(dict_var=scene_dict, key="simulation") == []
     assert proto_message_utils._finder_by_key(dict_var=scene_dict, key="vop") == []
     assert proto_message_utils._finder_by_key(dict_var=scene_dict, key="sops") == []
+    assert proto_message_utils._finder_by_key(dict_var=scene_dict, key="sop") == []
 
     # To avoid a lot of replacements (part->bodies->faces), part_guid is set as ignore_simple_key
     proto_message_utils._replace_guid_elt(
@@ -230,7 +251,9 @@ def test_replace_guid_elt_complex(speos: Speos):
     find = proto_message_utils._finder_by_key(dict_var=scene_dict, key="vop")
     assert len(find) == 3
     find = proto_message_utils._finder_by_key(dict_var=scene_dict, key="sops")
-    assert len(find) == 3
+    if len(find) != 3:
+        find = proto_message_utils._finder_by_key(dict_var=scene_dict, key="sop")
+        assert len(find) == 3
 
 
 def test_value_finder_key_startswith(speos: Speos):
@@ -338,6 +361,28 @@ def test_replace_properties(speos: Speos):
     find = proto_message_utils._finder_by_key(dict_var=src_i_dict, key="geo_paths")
     assert len(find) == 1
     assert find[0][0] == ".source.surface.exitance_constant.geo_paths"
+
+
+def test_replace_special_props(speos: Speos):
+    """Test _replace_properties with a property that shouldn't be replaced."""
+    p = Project(speos=speos)
+
+    # Create a sensor with light expert activated
+    ssr_feat = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
+    ssr_feat.lxp_path_number = 150
+
+    # First replace guids
+    ssr_i_dict = proto_message_utils._replace_guids(
+        speos_client=speos.client, message=ssr_feat._sensor_instance
+    )
+
+    # Then replace properties in correct elements
+    proto_message_utils._replace_properties(json_dict=ssr_i_dict)
+
+    # Check that lxp_properties and nb_max_paths are still there
+    find = proto_message_utils._finder_by_key(dict_var=ssr_i_dict, key="nb_max_paths")
+    assert len(find) == 1
+    assert find[0][0] == ".lxp_properties.nb_max_paths"
 
 
 def test_finder_by_key(speos: Speos):

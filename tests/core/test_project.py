@@ -24,11 +24,13 @@
 
 from pathlib import Path
 
-from ansys.speos.core import Body, Face, Part, Project, Speos
+import pytest
+
+from ansys.speos.core import Body, Face, GeoRef, Part, Project, Speos
 from ansys.speos.core.opt_prop import OptProp
-from ansys.speos.core.sensor import SensorIrradiance, SensorRadiance
+from ansys.speos.core.sensor import Sensor3DIrradiance, SensorIrradiance, SensorRadiance
 from ansys.speos.core.simulation import SimulationDirect
-from ansys.speos.core.source import SourceLuminaire, SourceSurface
+from ansys.speos.core.source import SourceLuminaire, SourceRayFile, SourceSurface
 from tests.conftest import test_path
 
 
@@ -341,8 +343,13 @@ def test_from_file(speos: Speos):
 
     # And that the feature retrieved has a real impact on the project
     feat_ops[0].set_surface_mirror(reflectance=60).commit()
-    assert speos.client[p.scene_link.get().materials[2].sop_guids[0]].get().HasField("mirror")
-    assert speos.client[p.scene_link.get().materials[2].sop_guids[0]].get().mirror.reflectance == 60
+    mat2 = p.scene_link.get().materials[2]
+    if mat2.HasField("sop_guid"):
+        assert speos.client[mat2.sop_guid].get().HasField("mirror")
+        assert speos.client[mat2.sop_guid].get().mirror.reflectance == 60
+    else:
+        assert speos.client[mat2.sop_guids[0]].get().HasField("mirror")
+        assert speos.client[mat2.sop_guids[0]].get().mirror.reflectance == 60
 
     # Check that ambient mat has no sop
     feat_op_ambients = p.find(name=p.scene_link.get().materials[-1].name)
@@ -447,6 +454,7 @@ def test_find_geom(speos: Speos):
     assert len(all_faces) == 11
 
 
+@pytest.mark.supported_speos_versions(min=252)
 def test_preview_visual_data(speos: Speos):
     """Test preview visualization data inside a project."""
     # preview irradiance sensor data
@@ -468,3 +476,83 @@ def test_preview_visual_data(speos: Speos):
     # preview radiance sensor visual data
     p2.create_sensor(name="radiance_sensor", feature_type=SensorRadiance)
     p2.preview()
+
+    # preview luminaire source
+    # preview when there is cad
+    sr = p2.create_source(name="Luminaire_source", feature_type=SourceLuminaire)
+    sr.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
+    sr.set_spectrum().set_halogen()
+    sr.commit()
+    p2.preview()
+    # preview when there is no cad
+    p3 = Project(speos=speos)
+    p3.create_root_part().commit()  # Needed for 251 server.
+    sr = p3.create_source(name="Luminaire_source.2", feature_type=SourceLuminaire)
+    sr.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
+    sr.commit()
+    p3.preview()
+
+    # preview rayfile source
+    sr = p2.create_source(name="Rayfile_source", feature_type=SourceRayFile)
+    sr.set_ray_file_uri(uri=str(Path(test_path) / "Rays.ray"))
+    sr.commit()
+    p2.preview()
+
+    # preview surface
+    # preview from direct creation
+    # constant exitance
+    p2_root_part = p2.find(name="", feature_type=Part)[0]
+    p2_body1 = p2_root_part.create_body(name="TheBodyB").commit()
+    p2_body1.create_face(name="TheFaceF").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
+        [0, 1, 2]
+    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1]).commit()
+    sr = p2.create_source(name="Surface.1", feature_type=SourceSurface)
+
+    sr.set_exitance_constant(geometries=[(GeoRef.from_native_link("TheBodyB/TheFaceF"), False)])
+    sr.commit()
+    p2.preview()
+    # variable exitance
+    sr.set_spectrum_from_xmp_file()
+    sr.set_exitance_variable().set_xmp_file_uri(
+        uri=str(Path(test_path) / "PROJECT.Direct-no-Ray.Irradiance Ray Spectral.xmp")
+    )
+    sr.commit()
+    p2.preview()
+    # preview from loaded file
+    p4 = Project(
+        speos=speos,
+        path=str(Path(test_path) / "error_data.speos" / "error_data.speos"),
+    )
+    p4.preview()
+
+    # preview 3d irradiance sensor
+    # test creating 3d irradiance sensor
+    p5 = Project(speos=speos, path=str(Path(test_path) / "Prism.speos" / "Prism.speos"))
+    ssr_3d = p5.create_sensor(name="Sensor3D", feature_type=Sensor3DIrradiance)
+    body = p5.find(name="PrismBody", name_regex=True, feature_type=Body)[0]
+    ssr_3d.set_geometries([body.geo_path])
+    ssr_3d.commit()
+    p5.preview()
+    # test loading 3d irradiance sensor
+    p6 = Project(speos=speos, path=str(Path(test_path) / "Prism.speos" / "Prism_3D.speos"))
+    p6.preview()
+
+    # preview cad meshing
+    # test reading mesh which is only inside sub-subpart.
+    p7 = Project(speos=speos)
+    root_part = p7.create_root_part().commit()
+    child_part1 = (
+        root_part.create_sub_part(name="SubPart.1")
+        .set_axis_system([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+        .commit()
+    )
+    child_part2 = (
+        child_part1.create_sub_part(name="SubPart.2")
+        .set_axis_system([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+        .commit()
+    )
+    child_part2.create_body(name="Body.1").create_face(name="Face.1").set_vertices(
+        [0, 1, 2, 0, 2, 2, 1, 2, 2]
+    ).set_facets([0, 1, 2]).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    child_part2.commit()
+    p7.preview()

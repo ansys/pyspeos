@@ -22,6 +22,8 @@
 
 """Test basic geometry database connection."""
 
+import pytest
+
 from ansys.speos.core.kernel.body import BodyLink, ProtoBody
 from ansys.speos.core.kernel.face import FaceLink, ProtoFace
 from ansys.speos.core.kernel.part import ProtoPart
@@ -64,8 +66,69 @@ def test_create_big_face(speos: Speos):
     face_link.delete()
 
 
+@pytest.mark.supported_speos_versions(min=252)
+def test_create_big_faces(speos: Speos):
+    """Test create big faces using batch. Only available from SpeosRPC_Server 25.2."""
+    assert speos.client.healthy is True
+    # Get DB
+    face_db = speos.client.faces()  # Create face stub from client channel
+
+    size = 3 * 1024 * 1024
+    vertices = [10.0] * size
+    facets = [20] * size
+    size_2 = 9 * 1024
+    vertices_2 = [9.5] * size_2
+    facets_2 = [15] * size_2
+
+    # Create batch of faces
+    face_links = face_db.create_batch(
+        message_list=[
+            ProtoFace(
+                name="Face.1",
+                description="Face one",
+                metadata={"key_0": "val_0", "key_1": "val_1"},
+                vertices=vertices,
+                facets=facets,
+                normals=vertices,
+            ),
+            ProtoFace(
+                name="Face.2",
+                description="Face two",
+                metadata={"key_0": "val_00", "key_1": "val_11"},
+                vertices=vertices_2,
+                facets=facets_2,
+                normals=vertices_2,
+            ),
+        ]
+    )
+    assert len(face_links) == 2
+    for face_link in face_links:
+        assert face_link.key != ""
+
+    # Read batch of faces
+    faces_read = face_db.read_batch(refs=face_links)
+    assert len(faces_read) == 2
+    assert faces_read[0].name == "Face.1"
+    assert faces_read[0].description == "Face one"
+    assert faces_read[0].metadata == {"key_0": "val_0", "key_1": "val_1"}
+    assert faces_read[0].vertices == vertices
+    assert faces_read[0].facets == facets
+    assert faces_read[0].normals == vertices
+
+    assert faces_read[1].name == "Face.2"
+    assert faces_read[1].description == "Face two"
+    assert faces_read[1].metadata == {"key_0": "val_00", "key_1": "val_11"}
+    assert faces_read[1].vertices == vertices_2
+    assert faces_read[1].facets == facets_2
+    assert faces_read[1].normals == vertices_2
+
+    for face_link in face_links:
+        face_link.delete()
+
+
+@pytest.mark.supported_speos_versions(min=252)
 def test_update_big_face(speos: Speos):
-    """Test create big face."""
+    """Test update big face. Bug on SpeosRPC_Server 25.1. Fixed from SpeosRPC_Server 25.2."""
     assert speos.client.healthy is True
     # Get DB
     face_db = speos.client.faces()  # Create face stub from client channel
@@ -113,6 +176,98 @@ def test_update_big_face(speos: Speos):
     assert face_read.normals == vertices_2
 
     face_link.delete()
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_update_big_faces(speos: Speos):
+    """Test update big faces using batch. Only available from SpeosRPC_Server 25.2."""
+    assert speos.client.healthy is True
+    # Get DB
+    face_db = speos.client.faces()  # Create face stub from client channel
+
+    size = 3 * 1024 * 1024
+    vertices = [10.0] * size
+    facets = [20] * size
+
+    size_2 = 9 * 1024
+    vertices_2 = [9.5] * size_2
+    facets_2 = [15] * size_2
+
+    size_3 = 9 * 1024
+    vertices_3 = [8.0] * size_3
+    facets_3 = [17] * size_3
+
+    size_4 = 3 * 1024 * 1024
+    vertices_4 = [15.0] * size_4
+    facets_4 = [25] * size_4
+
+    # Create batch of faces
+    face_links = face_db.create_batch(
+        message_list=[
+            ProtoFace(
+                name="Face.1",
+                description="Face one",
+                metadata={"key_0": "val_0", "key_1": "val_1"},
+                vertices=vertices,
+                facets=facets,
+                normals=vertices,
+            ),
+            ProtoFace(
+                name="Face.2",
+                description="Face two",
+                metadata={"key_0": "val_00", "key_1": "val_11"},
+                vertices=vertices_2,
+                facets=facets_2,
+                normals=vertices_2,
+            ),
+        ]
+    )
+    assert len(face_links) == 2
+    for face_link in face_links:
+        assert face_link.key != ""
+
+    # Update using batch
+    face_db.update_batch(
+        refs=face_links,
+        data=[
+            ProtoFace(
+                name="Face.3",
+                description="Face three",
+                metadata={"key_0": "val_000", "key_1": "val_111"},
+                vertices=vertices_3,
+                facets=facets_3,
+                normals=vertices_3,
+            ),
+            ProtoFace(
+                name="Face.4",
+                description="Face four",
+                metadata={"key_0": "val_0000", "key_1": "val_1111"},
+                vertices=vertices_4,
+                facets=facets_4,
+                normals=vertices_4,
+            ),
+        ],
+    )
+
+    # Read batch of faces
+    faces_read = face_db.read_batch(refs=face_links)
+    assert len(faces_read) == 2
+    assert faces_read[0].name == "Face.3"
+    assert faces_read[0].description == "Face three"
+    assert faces_read[0].metadata == {"key_0": "val_000", "key_1": "val_111"}
+    assert faces_read[0].vertices == vertices_3
+    assert faces_read[0].facets == facets_3
+    assert faces_read[0].normals == vertices_3
+
+    assert faces_read[1].name == "Face.4"
+    assert faces_read[1].description == "Face four"
+    assert faces_read[1].metadata == {"key_0": "val_0000", "key_1": "val_1111"}
+    assert faces_read[1].vertices == vertices_4
+    assert faces_read[1].facets == facets_4
+    assert faces_read[1].normals == vertices_4
+
+    for face_link in face_links:
+        face_link.delete()
 
 
 def test_face(speos: Speos):

@@ -1,10 +1,22 @@
 PySpeos library
 ================
-|pyansys| |GH-CI| |MIT| |ruff|
+|pyansys| |python| |pypi| |codecov| |GH-CI| |MIT| |ruff|
 
 .. |pyansys| image:: https://img.shields.io/badge/Py-Ansys-ffc107.svg?logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAABDklEQVQ4jWNgoDfg5mD8vE7q/3bpVyskbW0sMRUwofHD7Dh5OBkZGBgW7/3W2tZpa2tLQEOyOzeEsfumlK2tbVpaGj4N6jIs1lpsDAwMJ278sveMY2BgCA0NFRISwqkhyQ1q/Nyd3zg4OBgYGNjZ2ePi4rB5loGBhZnhxTLJ/9ulv26Q4uVk1NXV/f///////69du4Zdg78lx//t0v+3S88rFISInD59GqIH2esIJ8G9O2/XVwhjzpw5EAam1xkkBJn/bJX+v1365hxxuCAfH9+3b9/+////48cPuNehNsS7cDEzMTAwMMzb+Q2u4dOnT2vWrMHu9ZtzxP9vl/69RVpCkBlZ3N7enoDXBwEAAA+YYitOilMVAAAAAElFTkSuQmCC
    :target: https://docs.pyansys.com/
    :alt: PyAnsys
+
+.. |python| image:: https://img.shields.io/pypi/pyversions/ansys-speos-core?logo=pypi
+   :target: https://pypi.org/project/ansys-speos-core/
+   :alt: Python
+
+.. |pypi| image:: https://img.shields.io/pypi/v/ansys-speos-core.svg?logo=python&logoColor=white&label=PyPI
+   :target: https://pypi.org/project/ansys-speos-core
+   :alt: PyPI
+
+.. |codecov| image:: https://codecov.io/github/ansys/pyspeos/graph/badge.svg?token=34FKDS6ZKJ
+   :target: https://codecov.io/github/ansys/pyspeos
+   :alt: Codecov
 
 .. |GH-CI| image:: https://github.com/ansys/pyspeos/actions/workflows/ci_cd.yml/badge.svg
    :target: https://github.com/ansys/pyspeos/actions/workflows/ci_cd.yml
@@ -20,7 +32,7 @@ PySpeos library
 
 Project overview
 ----------------
-``PySpeos`` is a Python library that gathers functionalities and tools based on remote API of Ansys software `Speos <https://www.ansys.com/products/optics>`_ .
+``PySpeos`` is a Python library that gathers functionalities and tools based on remote API provided by gRPC server of Ansys software `Speos <https://www.ansys.com/products/optics>`_ .
 
 Installation
 ------------
@@ -28,7 +40,6 @@ Installation can be done using the published `package`_ or the repository `sourc
 
 Package
 ~~~~~~~
-.. warning:: Release is in progress. It might take some time before it becomes available. Until then, please use `Sources`_.
 
 This repository is deployed as the Python packages `ansys-speos-core <https://pypi.org/project/ansys-speos-core>`_.
 As usual, installation is done by running:
@@ -132,7 +143,7 @@ Then, to launch SpeosRPC server with product version 2025.1, you can run:
 
    cat GH_TOKEN.txt | docker login ghcr.io -u "$GH_USERNAME" --password-stdin
    docker pull ghcr.io/ansys/speos-rpc:251
-   docker run --detach --name speos-rpc -p 50098:50098 -e ANSYSLMD_LICENSE_FILE=$LICENSE_SERVER --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:251
+   docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e ANSYSLMD_LICENSE_FILE=$LICENSE_SERVER --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:251
 
 .. note::
 
@@ -179,6 +190,33 @@ Use jupyter notebook
    jupyter notebook
 
 jupyter notebook can be downloaded from the documentations example section.
+
+Features
+--------
+
+Information of the latest stable release features:
+
+PySpeos core features
+~~~~~~~~~~~~~~~~~~~~~
+
+Features supported in the latest release can be found at:
+
+* `Optical Materials <https://speos.docs.pyansys.com/version/stable/api/ansys/speos/core/opt_prop/OptProp.html>`_
+* `Light Sources <https://speos.docs.pyansys.com/version/stable/api/ansys/speos/core/source/index.html>`_
+* `Sensors <https://speos.docs.pyansys.com/version/stable/api/ansys/speos/core/sensor/index.html>`_
+* `Simulations <https://speos.docs.pyansys.com/version/stable/api/ansys/speos/core/simulation/index.html>`_
+* `BSDF Viewer <https://speos.docs.pyansys.com/version/stable/api/ansys/speos/core/bsdf/index.html>`_
+* `Light Path Finder <https://speos.docs.pyansys.com/version/stable/api/ansys/speos/core/lxp/LightPathFinder.html>`_
+
+Speos RPC features
+~~~~~~~~~~~~~~~~~~
+
+Speos RPC is based on a gRPC server and provides APIs to interact with Speos solver.
+
+Features supported in the latest Speos RPC can be found at:
+`Ansys Speos for developers Speos RPC <https://developer.ansys.com/docs/speos>`_.
+
+
 
 License
 -------

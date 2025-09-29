@@ -29,6 +29,15 @@ cname = os.getenv("DOCUMENTATION_CNAME", default="speos.docs.pyansys.com")
 html_theme = "ansys_sphinx_theme"
 html_favicon = ansys_favicon
 
+# Specify the location of the github repo
+html_context = {
+    "github_user": "ansys",
+    "github_repo": "pyspeos",
+    "github_version": "main",
+    "doc_path": "doc/source",
+    "pyansys_tags": ["Optics"],
+}
+
 # specify the location of your github repo
 html_theme_options = {
     "logo": "pyansys",
@@ -122,6 +131,7 @@ if BUILD_EXAMPLES:
         ".py": ["jupytext.reads", {"fmt": ""}],
     }
     nbsphinx_thumbnails = {
+        "examples/core/bsdf": "_static/thumbnails/bsdf.png",
         "examples/core/opt-prop": "_static/thumbnails/property_520x520.png",
         "examples/core/source": "_static/thumbnails/source_520x520.png",
         "examples/core/sensor": "_static/thumbnails/sensor_520x520.png",
