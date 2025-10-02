@@ -374,7 +374,7 @@ class Irradiance3DSensorParameters:
         SensorTypes.photometric
     )
     """Type of the sensor."""
-    measures = field(default_factory=MeasuresParameters)
+    measures: MeasuresParameters = field(default_factory=MeasuresParameters)
     """Measurement activation state."""
     integration_type: Union[IntegrationTypes.planar, IntegrationTypes.radial] = (
         IntegrationTypes.planar
