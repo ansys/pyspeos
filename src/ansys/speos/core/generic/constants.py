@@ -213,7 +213,7 @@ class PhotometricCameraParameters:
     """Layer separation parameter."""
     png_bits: PngBits = PngBits.png_16
     """PNG bit resolution of the Camera Sensor."""
-    wavelength_range = field(default_factory=WavelengthsRangeParameters)
+    wavelength_range: WavelengthsRangeParameters = field(default_factory=WavelengthsRangeParameters)
     """Wavelength range of the Camera Sensor."""
     acquisition_integration_time: float = 0.01
     """Integration Time value for the Camera Sensor."""
@@ -258,7 +258,7 @@ class CameraSensorParameters:
 class ColorimetricParameters:
     """Colorimetric settings of the Sensor."""
 
-    wavelength_range = field(default_factory=WavelengthsRangeParameters)
+    wavelength_range: WavelengthsRangeParameters = field(default_factory=WavelengthsRangeParameters)
     """Wavelength range of the Sensor."""
 
 
@@ -266,7 +266,7 @@ class ColorimetricParameters:
 class SpectralParameters:
     """Colorimetric settings of the Sensor."""
 
-    wavelength_range = field(default_factory=WavelengthsRangeParameters)
+    wavelength_range: WavelengthsRangeParameters = field(default_factory=WavelengthsRangeParameters)
     """Wavelength range of the Sensor."""
 
 
