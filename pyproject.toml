@@ -58,7 +58,7 @@ jupyter = [
     "notebook==7.4.5",
 ]
 doc = [
-    "astroid<4", # Temporary bound to avoid sphinx-autoapi issue
+    "asteroid<4", # Temporary bound to avoid sphinx-autoapi issue
     "ansys-sphinx-theme==1.6.1",
     "numpydoc==1.8.0",
     "Sphinx==8.1.3",
