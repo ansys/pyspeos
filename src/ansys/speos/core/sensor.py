@@ -29,10 +29,10 @@ from typing import List, Mapping, Optional, Union
 import uuid
 import warnings
 
+from ansys.api.speos.sensor.v1 import camera_sensor_pb2, common_pb2, sensor_pb2
 import grpc
 import numpy as np
 
-from ansys.api.speos.sensor.v1 import camera_sensor_pb2, common_pb2, sensor_pb2
 import ansys.speos.core as core
 import ansys.speos.core.generic.general_methods as general_methods
 from ansys.speos.core.generic.visualization_methods import _VisualData, local2absolute

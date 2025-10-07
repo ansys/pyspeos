@@ -28,6 +28,7 @@ from ansys.api.speos.part.v1 import (
     part_pb2 as messages,
     part_pb2_grpc as service,
 )
+
 from ansys.speos.core.kernel.crud import CrudItem, CrudStub
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 

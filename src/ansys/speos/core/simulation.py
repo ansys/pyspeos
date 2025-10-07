@@ -35,6 +35,7 @@ from ansys.api.speos.job.v2 import job_pb2
 from ansys.api.speos.job.v2.job_pb2 import Result
 from ansys.api.speos.scene.v2 import scene_pb2 as messages
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
+
 from ansys.speos.core.generic.general_methods import min_speos_version
 from ansys.speos.core.kernel.job import ProtoJob
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str

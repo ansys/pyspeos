@@ -24,9 +24,9 @@
 
 from pathlib import Path
 
+from ansys.api.speos.simulation.v1 import simulation_template_pb2
 import pytest
 
-from ansys.api.speos.simulation.v1 import simulation_template_pb2
 from ansys.speos.core import Body, GeoRef, Project, Speos
 from ansys.speos.core.sensor import BaseSensor, Sensor3DIrradiance, SensorIrradiance
 from ansys.speos.core.simulation import (
