@@ -26,7 +26,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 import os
 from pathlib import Path
-from typing import Union
+from typing import Union, Optional
 
 DEFAULT_HOST: str = "localhost"
 """Default host used by Speos RPC server and client """
