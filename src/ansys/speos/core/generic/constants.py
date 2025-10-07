@@ -185,11 +185,11 @@ class ColorParameters:
         BalanceModeDisplayPrimariesParameters,
     ] = ColorBalanceModeTypes.none
     """Camera Balance mode."""
-    red_spectrum_file_uri:  Union[str, Path] = ""
+    red_spectrum_file_uri: Union[str, Path] = ""
     """Path to sensitivity spectrum of red Channel."""
-    green_spectrum_file_uri:  Union[str, Path] = ""
+    green_spectrum_file_uri: Union[str, Path] = ""
     """Path to sensitivity spectrum of green Channel."""
-    blue_spectrum_file_uri:  Union[str, Path] = ""
+    blue_spectrum_file_uri: Union[str, Path] = ""
     """Path to sensitivity spectrum of blue Channel."""
 
 
