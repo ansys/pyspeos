@@ -113,15 +113,15 @@ class LayerBySequenceParameters:
 class GeometryLayerParameters:
     """Geometry layer parameters."""
 
-    name: str
-    geometry: list
+    name: Optional[str] = None
+    geometry: Optional[list] = None
 
 
 @dataclass
 class LayerByFaceParameters:
     """Layer separation type Parameters  for Face separation."""
 
-    geometries: list[GeometryLayerParameters] = None
+    geometries: Optional[list[GeometryLayerParameters]] = None
     sca_filtering_types: Union[
         SCAFilteringTypes.intersected_one_time, SCAFilteringTypes.last_impact
     ] = SCAFilteringTypes.last_impact
@@ -185,11 +185,11 @@ class ColorParameters:
         BalanceModeDisplayPrimariesParameters,
     ] = ColorBalanceModeTypes.none
     """Camera Balance mode."""
-    red_spectrum_file_uri: str = ""
+    red_spectrum_file_uri:  Union[str, Path] = ""
     """Path to sensitivity spectrum of red Channel."""
-    green_spectrum_file_uri: str = ""
+    green_spectrum_file_uri:  Union[str, Path] = ""
     """Path to sensitivity spectrum of green Channel."""
-    blue_spectrum_file_uri: str = ""
+    blue_spectrum_file_uri:  Union[str, Path] = ""
     """Path to sensitivity spectrum of blue Channel."""
 
 
@@ -197,7 +197,7 @@ class ColorParameters:
 class MonoChromaticParameters:
     """Monochromatic Camera Parameters."""
 
-    sensitivity: str = ""
+    sensitivity: Union[str, Path] = ""
     """Path to Sensitivity Spectrum."""
 
 
@@ -251,7 +251,7 @@ class CameraSensorParameters:
     """Default height of the camera chip."""
     trajectory_fil_uri: Union[str, Path] = ""
     """Trajectory file information."""
-    lxp_path_number: Union[None, int] = None
+    lxp_path_number: Optional[int] = None
 
 
 @dataclass
@@ -321,9 +321,9 @@ class IrradianceSensorParameters:
         SensorTypes.photometric, ColorimetricParameters, SpectralParameters, SensorTypes.radiometric
     ] = SensorTypes.photometric
     """Type of the sensor."""
-    integration_type: Union[IntegrationTypes] = IntegrationTypes.planar
+    integration_type: IntegrationTypes = IntegrationTypes.planar
     """Integration type of the sensor."""
-    integration_direction: Union[None, list[float]] = None
+    integration_direction: Optional[list[float]] = None
     """Integration direction of the sensor."""
     rayfile_type: Union[RayfileTypes] = RayfileTypes.none
     """Type of rayfile stored by the sensor."""
@@ -334,7 +334,7 @@ class IrradianceSensorParameters:
         LayerByIncidenceAngleParameters,
     ] = LayerTypes.none
     """Type of layer separation used by the sensor."""
-    outpath_face_geometry: list = None
+    outpath_face_geometry: Optional[list] = None
     """Outpath face used by the sensor"""
 
 
@@ -384,5 +384,5 @@ class Irradiance3DSensorParameters:
     """Rayfile type stored."""
     layer_type: Union[LayerTypes.none, LayerTypes.by_source] = LayerTypes.none
     """Layer separation type."""
-    geometries: list = None
+    geometries: Optional[list] = None
     """Sensor geometry."""
