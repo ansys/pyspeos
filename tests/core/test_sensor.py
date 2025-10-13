@@ -25,9 +25,9 @@
 import math
 from pathlib import Path
 
+from ansys.api.speos.sensor.v1 import camera_sensor_pb2
 import pytest
 
-from ansys.api.speos.sensor.v1 import camera_sensor_pb2
 from ansys.speos.core import Body, GeoRef, Project, Speos, sensor
 from ansys.speos.core.generic.constants import (
     ORIGIN,
