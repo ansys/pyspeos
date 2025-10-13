@@ -29,6 +29,7 @@ from ansys.api.speos.intensity_distributions.v1 import (
     eulumdat_pb2,
     eulumdat_pb2_grpc,
 )
+
 from ansys.speos.core.speos import Speos
 from tests.conftest import test_path
 import tests.helper as helper

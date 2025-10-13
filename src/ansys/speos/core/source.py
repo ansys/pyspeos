@@ -29,9 +29,9 @@ from difflib import SequenceMatcher
 from typing import List, Mapping, Optional, Union
 import uuid
 
+from ansys.api.speos.scene.v2 import scene_pb2
 import numpy as np
 
-from ansys.api.speos.scene.v2 import scene_pb2
 from ansys.speos.core import (
     project as project,
     proto_message_utils as proto_message_utils,

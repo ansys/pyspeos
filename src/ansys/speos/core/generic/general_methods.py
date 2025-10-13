@@ -34,10 +34,10 @@ from pathlib import Path
 from typing import List, Optional, Union, cast
 import warnings
 
+from ansys.tools.path import get_available_ansys_installations
 import numpy as np
 
 from ansys.speos.core.generic.constants import DEFAULT_VERSION
-from ansys.tools.path import get_available_ansys_installations
 
 _GRAPHICS_AVAILABLE = None
 
@@ -90,9 +90,8 @@ def run_if_graphics_required(warning=False):
     global _GRAPHICS_AVAILABLE
     if _GRAPHICS_AVAILABLE is None:
         try:
-            import pyvista as pv  # noqa: F401
-
             from ansys.tools.visualization_interface import Plotter  # noqa: F401
+            import pyvista as pv  # noqa: F401
 
             _GRAPHICS_AVAILABLE = True
         except ImportError:  # pragma: no cover
