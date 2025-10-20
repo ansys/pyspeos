@@ -267,6 +267,7 @@ class OptProp:
         self._vop_template.library.material_file_uri = path
         return self
 
+    @property
     def set_geometries(
         self,
         geometries: Optional[List[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]] = None,
