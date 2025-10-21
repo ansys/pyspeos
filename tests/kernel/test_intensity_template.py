@@ -25,11 +25,14 @@
 from pathlib import Path
 
 from ansys.api.speos.common.v1 import data_pb2
+import pytest
+
 from ansys.speos.core.kernel.intensity_template import ProtoIntensityTemplate
 from ansys.speos.core.speos import Speos
 from tests.conftest import test_path
 
 
+@pytest.mark.supported_speos_versions(min=252)
 def test_intensity_template(speos: Speos):
     """Test the intensity template."""
     assert speos.client.healthy is True

@@ -32,7 +32,7 @@ import pytest
 from ansys.speos.core import LOG  # Global logger
 import ansys.speos.core.logger as logger
 
-## Notes
+# Notes
 # Use the next fixtures for:
 # - capfd: for testing console printing.
 # - caplog: for testing logging printing.

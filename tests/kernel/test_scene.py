@@ -25,10 +25,11 @@
 from pathlib import Path
 from typing import List, Mapping, Optional
 
-import numpy as np
-
 from ansys.api.speos.sensor.v1 import common_pb2, irradiance_sensor_pb2
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
+import numpy as np
+import pytest
+
 from ansys.speos.core.kernel.body import ProtoBody
 from ansys.speos.core.kernel.face import FaceStub, ProtoFace
 from ansys.speos.core.kernel.intensity_template import ProtoIntensityTemplate
@@ -639,6 +640,7 @@ def test_scene_actions_load_modify(speos: Speos):
     clean_all_dbs(speos.client)
 
 
+@pytest.mark.supported_speos_versions(min=252)
 def test_scene_actions_get_source_ray_paths(speos: Speos):
     """Test the scene action: load file and modify sensors."""
     assert speos.client.healthy is True

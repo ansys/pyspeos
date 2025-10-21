@@ -17,6 +17,7 @@
 * [Devin](https://github.com/Devin-Crawford)
 * [EricHumbertAnsys](https://github.com/EricHumbertAnsys)
 * [Etienne Lesage](https://github.com/elesage)
+* [Guilherme Nunes Trofino](https://github.com/gtrofino)
 * [Jorge Martínez](https://github.com/jorgepiloto)
 * [Marouan Nefzaoui](https://github.com/mnefzaou)
 * [Maxime Rey](https://github.com/MaxJPRey)

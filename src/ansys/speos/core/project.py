@@ -69,9 +69,8 @@ except ImportError as err:  # pragma: no cover
     raise err
 
 if TYPE_CHECKING:  # pragma: no cover
-    import pyvista as pv
-
     from ansys.tools.visualization_interface import Plotter
+    import pyvista as pv
 
 
 class Project:
@@ -850,7 +849,8 @@ class Project:
                     sensor_instance=ssr_inst,
                     default_values=False,
                 )
-            self._features.append(ssr_feat)
+            if ssr_feat is not None:
+                self._features.append(ssr_feat)
 
         for sim_inst in scene_data.simulations:
             if sim_inst.name in [_._name for _ in self._features]:
@@ -878,7 +878,8 @@ class Project:
                     simulation_instance=sim_inst,
                     default_values=False,
                 )
-            self._features.append(sim_feat)
+            if sim_feat is not None:
+                self._features.append(sim_feat)
 
     def __extract_part_mesh_info(
         self,
@@ -1033,9 +1034,8 @@ class Project:
             - {'style': 'surface', 'color':'white'},
             - {'opacity': 0.7, 'color':'white', 'show_edges': False},
         """
-        import pyvista as pv
-
         from ansys.tools.visualization_interface import Plotter
+        import pyvista as pv
 
         def find_all_subparts(target_part):
             subparts = []
