@@ -268,7 +268,7 @@ class OptProp:
         return self
 
     @property
-    def set_geometries(
+    def geometries(
         self,
         geometries: Optional[List[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]] = None,
     ) -> OptProp:
