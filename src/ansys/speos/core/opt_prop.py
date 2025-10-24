@@ -297,10 +297,46 @@ class OptProp:
                 else:
                     msg = f"Type {type(gr)} is not supported as Optical property geometry input."
                     raise TypeError(msg)
+
+            # I a lost here as to how to return this property  correctly
             self._material_instance.geometries.geo_paths[:] = [
                 gp.to_native_link() for gp in geo_paths
             ]
         return self
+
+    @geometries.setter
+    def geometries(
+        self,
+        geometries: Optional[List[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]] = None,
+    ) -> OptProp:
+        """Select geometries on which the optical properties will be applied.
+
+        Parameters
+        ----------
+        geometries : List[ansys.speos.core.geo_ref.GeoRef], optional
+            List of geometries. Giving an empty list means "All geometries"
+            By default, ``None``, means "no geometry".
+
+        Returns
+        -------
+        ansys.speos.core.opt_prop.OptProp
+            Optical property.
+        """
+        if geometries is None:
+            self._material_instance.ClearField("geometries")
+        else:
+            geo_paths = []
+            for gr in geometries:
+                if isinstance(gr, GeoRef):
+                    geo_paths.append(gr)
+                elif isinstance(gr, (face.Face, body.Body, part.Part.SubPart)):
+                    geo_paths.append(gr.geo_path)
+                else:
+                    msg = f"Type {type(gr)} is not supported as Optical property geometry input."
+                    raise TypeError(msg)
+            self._material_instance.geometries.geo_paths[:] = [
+                gp.to_native_link() for gp in geo_paths
+            ]
 
     def _to_dict(self) -> dict:
         out_dict = {}
