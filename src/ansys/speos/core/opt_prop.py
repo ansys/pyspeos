@@ -169,7 +169,8 @@ class OptProp:
         self._vop_template.opaque.SetInParent()
         return self
 
-    def set_volume_optic(
+    @property
+    def volume_optic(
         self,
         index: float = 1.5,
         absorption: float = 0,
@@ -207,7 +208,47 @@ class OptProp:
             self._vop_template.optic.constringence = constringence
         else:
             self._vop_template.optic.ClearField("constringence")
-        return self
+        return self.volume_optic
+
+    @volume_optic.setter
+    def volume_optic(
+        self,
+        index: float = 1.5,
+        absorption: float = 0,
+        constringence: Optional[float] = None,
+    ) -> OptProp:
+        """
+        Transparent colorless material without bulk scattering.
+
+        Parameters
+        ----------
+        index : float
+            Refractive index.
+            By default, ``1.5``.
+        absorption : float
+            Absorption coefficient value. mm-1.
+            By default, ``0``.
+        constringence : float, optional
+            Abbe number.
+            By default, ``None``, means no constringence.
+
+        Returns
+        -------
+        ansys.speos.core.opt_prop.OptProp
+            Optical property.
+        """
+        if self._vop_template is None:
+            self._vop_template = ProtoVOPTemplate(
+                name=self._name + ".VOP",
+                description=self._sop_template.description,
+                metadata=self._sop_template.metadata,
+            )
+        self._vop_template.optic.index = index
+        self._vop_template.optic.absorption = absorption
+        if constringence is not None:
+            self._vop_template.optic.constringence = constringence
+        else:
+            self._vop_template.optic.ClearField("constringence")
 
     # Deactivated due to a bug on SpeosRPC server side
     # def set_volume_nonhomogeneous(
