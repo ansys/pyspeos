@@ -72,6 +72,164 @@ class BaseSimulation:
     This is a Super class, **Do not instantiate this class yourself**
     """
 
+    class _SourceSampling:
+        """Source sampling mode.
+
+        Parameters
+        ----------
+        source_sampling : Union[
+                simulation_template_pb2.RoughnessOnly,
+                simulation_template_pb2.Iridescence,
+                simulation_template_pb2.Isotropic,
+                simulation_template_pb2.Anisotropic] to complete.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use set_weight method available in simulation
+        classes.
+
+        """
+
+        class _Adaptive:
+            """Adaptive sampling mode.
+
+            Parameters
+            ----------
+            uniform : simulation_template_pb2.SourceSamplingAdaptive
+                uniform settings to complete.
+            stable_ctr : bool
+                Variable to indicate if usage is inside class scope
+
+            """
+
+            def __init__(
+                self, adaptive: simulation_template_pb2.SourceSamplingAdaptive, stable_ctr: bool
+            ) -> None:
+                if not stable_ctr:
+                    msg = "_Adaptive class instantiated outside the class scope"
+                    raise RuntimeError(msg)
+                self._adaptive = adaptive
+                # Default setting
+                self.adaptive_uri = ""
+
+            @property
+            def adaptive_uri(self) -> str:
+                """Get adaptive uri.
+
+                Returns
+                -------
+                str:
+                    Adaptive sampling file uri.
+
+                """
+                return self._adaptive.file_uri
+
+            @adaptive_uri.setter
+            def adaptive_uri(self, uri: Union[Path | str]) -> None:
+                """Set adaptive uri.
+
+                Parameters
+                ----------
+                uri: Union[Path | str]
+                    Adaptive sampling file uri.
+
+                Returns
+                -------
+                None
+
+                """
+                self._adaptive.file_uri = str(uri)
+
+        class _Uniform:
+            """Uniform sampling mode.
+
+            Parameters
+            ----------
+            uniform : simulation_template_pb2.SourceSamplingUniformIsotropic to complete.
+            stable_ctr : bool
+                Variable to indicate if usage is inside class scope
+
+            """
+
+            def __init__(
+                self,
+                uniform: simulation_template_pb2.SourceSamplingUniformIsotropic,
+                stable_ctr: bool,
+            ) -> None:
+                if not stable_ctr:
+                    msg = "_Uniform class instantiated outside the class scope"
+                    raise RuntimeError(msg)
+                self._uniform = uniform
+                # Default setting
+                self.theta_sampling = 2
+
+            @property
+            def theta_sampling(self) -> int:
+                """Get theta sampling.
+
+                Returns
+                -------
+                int
+                    theta sampling.
+                """
+                return self._uniform.theta_sampling
+
+            @theta_sampling.setter
+            def theta_sampling(self, theta_sampling: int) -> None:
+                """Set theta sampling.
+
+                Parameters
+                ----------
+                theta_sampling: int
+                    theta sampling.
+
+                Returns
+                -------
+                None
+
+                """
+                self._uniform.theta_sampling = theta_sampling
+
+        def __init__(
+            self,
+            source_sampling: Union[
+                simulation_template_pb2.RoughnessOnly,
+                simulation_template_pb2.Iridescence,
+                simulation_template_pb2.Isotropic,
+                simulation_template_pb2.Anisotropic,
+            ],
+            stable_ctr: bool = False,
+        ) -> None:
+            if not stable_ctr:
+                msg = "_SourceSampling class instantiated outside of the class scope"
+                raise RuntimeError(msg)
+            self._source_sampling = source_sampling
+
+        def set_uniform(self) -> BaseSimulation._SourceSampling._Uniform:
+            """Set uniform type of source sampling.
+
+            Returns
+            -------
+            BaseSimulation._SourceSampling._Uniform
+
+            """
+            return self._Uniform(
+                self._source_sampling.uniform_isotropic,
+                stable_ctr=True,
+            )
+
+        def set_adaptive(self) -> BaseSimulation._SourceSampling._Adaptive:
+            """Set adaptive type of source sampling.
+
+            Returns
+            -------
+            BaseSimulation._SourceSampling._Adaptive
+
+            """
+            return self._Adaptive(self._source_sampling.adaptive, stable_ctr=True)
+
     class Weight:
         """The Weight represents the ray energy.
 
@@ -1574,4 +1732,970 @@ class SimulationInteractive(BaseSimulation):
             Interactive simulation
         """
         self._job.interactive_simulation_properties.impact_report = value
+        return self
+
+
+class SimulationVirtualBSDF(BaseSimulation):
+    """Type of simulation : Virtual BSDF Bench.
+
+    By default,
+    geometry distance tolerance is set to 0.01,
+    maximum number of impacts is set to 100,
+    a colorimetric standard is set to CIE 1931,
+    and weight's minimum energy percentage is set to 0.005.
+
+    Parameters
+    ----------
+    project : ansys.speos.core.project.Project
+        Project in which simulation shall be created.
+    name : str
+        Name of the simulation.
+    description : str
+        Description of the Simulation.
+        By default, ``""``.
+    metadata : Optional[Mapping[str, str]]
+        Metadata of the feature.
+        By default, ``{}``.
+    simulation_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SimulationInstance, optional
+        Simulation instance to provide if the feature does not have to be created from scratch
+        By default, ``None``, means that the feature is created from scratch by default.
+    default_values : bool
+        Uses default values when True.
+    """
+
+    class RoughnessOnly(BaseSimulation._SourceSampling):
+        """Roughness only mode of BSDF bench measurement.
+
+        By default,
+        2 degrees uniform type sampling is set
+
+        Parameters
+        ----------
+        mode_template : simulation_template_pb2.RoughnessOnly
+            roughness settings to complete.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+        """
+
+        def __init__(
+            self,
+            mode_template: simulation_template_pb2.RoughnessOnly,
+            stable_ctr: bool = False,
+        ) -> None:
+            if not stable_ctr:
+                msg = "RoughnessOnly class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            super().__init__(source_sampling=mode_template, stable_ctr=True)
+
+    class AllCharacteristics:
+        """BSDF depends on all properties mode of BSDF bench measurement.
+
+        By default,
+        is_bsdf180 is true
+        reflection_and_transmission is true
+        Color does not depend on viewing direction is set
+        Source sampling is set to be isotropic
+
+        Parameters
+        ----------
+        mode_template : simulation_template_pb2.AllCharacteristics
+            all properties dependent BSDF settings to complete.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+        """
+
+        class Iridescence(BaseSimulation._SourceSampling):
+            """Color depends on viewing direction of BSDF measurement settings.
+
+            By default,
+            2 degrees uniform type sampling is set
+
+            Parameters
+            ----------
+            mode_template : simulation_template_pb2.Iridescence
+                Iridescence settings to complete.
+            stable_ctr : bool
+                Variable to indicate if usage is inside class scope
+            """
+
+            def __init__(
+                self,
+                iridescence_mode: simulation_template_pb2.Iridescence,
+                stable_ctr: bool = False,
+            ) -> None:
+                if not stable_ctr:
+                    msg = "AllCharacteristics class instantiated outside of class scope"
+                    raise RuntimeError(msg)
+                super().__init__(source_sampling=iridescence_mode, stable_ctr=True)
+
+        class NonIridescence:
+            """Color does not depend on viewing direction of BSDF measurement settings.
+
+            By default,
+            2 degrees set_isotropic uniform type source sampling is set
+
+            Parameters
+            ----------
+            non_iridescence_mode : simulation_template_pb2.NoIridescence
+                NonIridescence settings to complete.
+            stable_ctr : bool
+                Variable to indicate if usage is inside class scope
+            """
+
+            class Isotropic(BaseSimulation._SourceSampling):
+                """Uniform Isotropic source sampling.
+
+                By default,
+                2 degrees uniform type source sampling is set
+
+                Parameters
+                ----------
+                non_iridescence_isotropic : simulation_template_pb2.Isotropic
+                    Isotropic settings to complete.
+                stable_ctr : bool
+                    Variable to indicate if usage is inside class scope
+                """
+
+                def __init__(
+                    self,
+                    non_iridescence_isotropic: simulation_template_pb2.Isotropic,
+                    stable_ctr: bool = False,
+                ):
+                    if not stable_ctr:
+                        msg = "Isotropic class instantiated outside of class scope"
+                        raise RuntimeError(msg)
+                    super().__init__(source_sampling=non_iridescence_isotropic, stable_ctr=True)
+
+            class Anisotropic(BaseSimulation._SourceSampling):
+                """Anisotropic source sampling.
+
+                Parameters
+                ----------
+                non_iridescence_anisotropic : simulation_template_pb2.Anisotropic
+                    Anisotropic settings to complete.
+                stable_ctr : bool
+                    Variable to indicate if usage is inside class scope
+                """
+
+                def __init__(
+                    self,
+                    non_iridescence_anisotropic: simulation_template_pb2.Anisotropic,
+                    stable_ctr: bool = False,
+                ):
+                    if not stable_ctr:
+                        msg = "Anisotropic class instantiated outside of class scope"
+                        raise RuntimeError(msg)
+                    super().__init__(source_sampling=non_iridescence_anisotropic, stable_ctr=True)
+
+                class _Uniform:
+                    """Anisotorpic Uniform sampling mode.
+
+                    Parameters
+                    ----------
+                    uniform : simulation_template_pb2.SourceSamplingUniformAnisotropic to complete.
+                    stable_ctr : bool
+                        Variable to indicate if usage is inside class scope
+
+                    """
+
+                    def __init__(
+                        self,
+                        uniform: simulation_template_pb2.SourceSamplingUniformAnisotropic,
+                        stable_ctr: bool = False,
+                    ) -> None:
+                        if not stable_ctr:
+                            msg = "_Uniform class instantiated outside of class scope"
+                            raise RuntimeError(msg)
+                        self._uniform = uniform
+
+                    @property
+                    def theta_sampling(self) -> int:
+                        """Get theta_sampling.
+
+                        Returns
+                        -------
+                        int
+                            theta sampling.
+
+                        """
+                        return self._uniform.theta_sampling
+
+                    @theta_sampling.setter
+                    def theta_sampling(self, theta_sampling: int) -> None:
+                        """Set theta_sampling.
+
+                        Parameters
+                        ----------
+                        theta_sampling: int
+                            theta sampling.
+
+                        Returns
+                        -------
+                        None
+
+                        """
+                        self._uniform.theta_sampling = theta_sampling
+
+                    @property
+                    def phi_sampling(self) -> int:
+                        """Get phi_sampling.
+
+                        Returns
+                        -------
+                        int
+                            phi sampling.
+
+                        """
+                        return self._uniform.phi_sampling
+
+                    @phi_sampling.setter
+                    def phi_sampling(self, phi_sampling: int) -> None:
+                        """Set phi_sampling.
+
+                        Parameters
+                        ----------
+                        phi_sampling: int
+                            phi sampling.
+
+                        Returns
+                        -------
+                        None
+
+                        """
+                        self._uniform.phi_sampling = phi_sampling
+
+                    def set_symmetric_unspecified(
+                        self,
+                    ) -> (
+                        SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic._Uniform
+                    ):
+                        """Set symmetric type as unspecified.
+
+                        Returns
+                        -------
+                        SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic._Uniform
+
+                        """
+                        self._uniform.symmetry_type = 0
+                        return self
+
+                    def set_semmetric_none(
+                        self,
+                    ) -> (
+                        SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic._Uniform
+                    ):
+                        """Set symmetric type as non-specified.
+
+                        Returns
+                        -------
+                        SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic._Uniform
+
+                        """
+                        self._uniform.symmetry_type = 1
+                        return self
+
+                    def set_symmetric_1_plane_symmetric(
+                        self,
+                    ) -> (
+                        SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic._Uniform
+                    ):
+                        """Set symmetric type as plane symmetric.
+
+                        Returns
+                        -------
+                        SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic._Uniform
+
+                        """
+                        self._uniform.symmetry_type = 2
+                        return self
+
+                    def set_symmetric_2_plane_symmetric(
+                        self,
+                    ) -> (
+                        SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic._Uniform
+                    ):
+                        """Set symmetric type as 2 planes symmetric.
+
+                        Returns
+                        -------
+                        SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic._Uniform
+
+                        """
+                        self._uniform.symmetry_type = 3
+                        return self
+
+                def set_uniform(
+                    self,
+                ) -> SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic._Uniform:
+                    """Set anisotropic uniform type.
+
+                    Returns
+                    -------
+                    SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic._Uniform
+
+                    """
+                    return self._Uniform(self._source_sampling.uniform_anisotropic, stable_ctr=True)
+
+            def __init__(
+                self,
+                non_iridescence_mode,
+                stable_ctr: bool = False,
+            ):
+                if not stable_ctr:
+                    msg = "NonIridescence class instantiated outside of class scope"
+                    raise RuntimeError(msg)
+                self._non_iridescence = non_iridescence_mode
+                self.set_isotropic()
+
+            def set_isotropic(
+                self,
+            ) -> SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Isotropic:
+                """Set isotropic type of uniform source.
+
+                Returns
+                -------
+                SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Isotropic
+                    Isotropic source settings
+
+                """
+                return self.Isotropic(
+                    self._non_iridescence.isotropic,
+                    stable_ctr=True,
+                )
+
+            def set_anisotropic(
+                self,
+            ) -> SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic:
+                """Set anisotropic type of uniform source.
+
+                Returns
+                -------
+                SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic
+                    Anisotropic source settings
+
+                """
+                return self.Anisotropic(
+                    self._non_iridescence.anisotropic,
+                    stable_ctr=True,
+                )
+
+        def __init__(
+            self,
+            mode_template: simulation_template_pb2.VirtualBSDFBench,
+            stable_ctr: bool = False,
+        ) -> None:
+            if not stable_ctr:
+                msg = "AllCharacteristics class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._mode = mode_template
+            # Default values
+            self.is_bsdf180 = True
+            self.reflection_and_transmission = True
+            self.set_non_iridescence()
+
+        @property
+        def is_bsdf180(self) -> bool:
+            """Get settings if bsdf is bsdf180.
+
+            Returns
+            -------
+            bool
+                True if bsdf180 is to be generated, False otherwise.
+
+            """
+            return self._mode.is_bsdf180
+
+        @is_bsdf180.setter
+        def is_bsdf180(self, value: bool) -> None:
+            """Set settings if bsdf180.
+
+            Parameters
+            ----------
+            value: bool
+                True if bsdf180 is to be generated, False otherwise.
+
+            Returns
+            -------
+            None
+
+            """
+            self._mode.is_bsdf180 = value
+
+        @property
+        def reflection_and_transmission(self) -> bool:
+            """Get settings if reflection and transmission is to be generated.
+
+            Returns
+            -------
+            bool
+                True if reflection and transmission is to be generated, False otherwise.
+
+            """
+            return self._mode.sensor_reflection_and_transmission
+
+        @reflection_and_transmission.setter
+        def reflection_and_transmission(self, value: bool) -> None:
+            """Set settings if reflection and transmission is to be generated.
+
+            Parameters
+            ----------
+            value: bool
+                True if reflection and transmission is to be generated, False otherwise.
+
+            Returns
+            -------
+            None
+
+            """
+            self._mode.sensor_reflection_and_transmission = value
+
+        def set_non_iridescence(self) -> SimulationVirtualBSDF.AllCharacteristics.NonIridescence:
+            """Set bsdf color does not depend on viewing direction.
+
+            Returns
+            -------
+            SimulationVirtualBSDF.AllCharacteristics.NonIridescence
+                NonIridescence settings to be complete
+            """
+            return self.NonIridescence(
+                non_iridescence_mode=self._mode.no_iridescence,
+                stable_ctr=True,
+            )
+
+        def set_iridescence(self) -> SimulationVirtualBSDF.AllCharacteristics.Iridescence:
+            """Set bsdf color depends on viewing direction.
+
+            Returns
+            -------
+            SimulationVirtualBSDF.AllCharacteristics.Iridescence
+                Iridescence settings to be complete
+            """
+            return self.Iridescence(
+                iridescence_mode=self._mode.iridescence,
+                stable_ctr=True,
+            )
+
+    class WavelengthsRange:
+        """Range of wavelengths.
+
+        By default, a range from 400nm to 700nm is chosen, with a sampling of 13.
+
+        Parameters
+        ----------
+        wavelengths_range : ansys.api.speos.sensor.v1.common_pb2.WavelengthsRange
+            Wavelengths range protobuf object to modify.
+        default_values : bool
+            Uses default values when True.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use set_wavelengths_range method available in
+        sensor classes.
+        """
+
+        def __init__(
+            self,
+            wavelengths_range,
+            default_values: bool = True,
+            stable_ctr: bool = False,
+        ) -> None:
+            if not stable_ctr:
+                msg = "WavelengthsRange class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._wavelengths_range = wavelengths_range
+
+            if default_values:
+                # Default values
+                self.set_start().set_end().set_sampling()
+
+        @property
+        def start(self) -> float:
+            """Return start wavelength.
+
+            Returns
+            -------
+            float
+            Start wavelength.
+
+            """
+            return self._wavelengths_range.w_start
+
+        @start.setter
+        def start(self, value: float) -> None:
+            """Set start wavelength.
+
+            Parameters
+            ----------
+            value: float
+            Start wavelength.
+
+            Returns
+            -------
+            None
+            """
+            self._wavelengths_range.w_start = value
+
+        @property
+        def end(self) -> float:
+            """
+            Return end wavelength.
+
+            Returns
+            -------
+            float
+            End wavelength.
+
+            """
+            return self._wavelengths_range.w_end
+
+        @end.setter
+        def end(self, value: float) -> None:
+            """
+            Set end wavelength.
+
+            Parameters
+            ----------
+            value: float
+            End wavelength.
+
+            Returns
+            -------
+            None
+
+            """
+            self._wavelengths_range.w_end = value
+
+        @property
+        def sampling(self) -> int:
+            """
+            Return sampling.
+
+            Returns
+            -------
+            int
+                Wavelength sampling.
+
+            """
+            return self._wavelengths_range.w_sampling
+
+        @sampling.setter
+        def sampling(self, value: int) -> None:
+            """
+            Set sampling.
+
+            Parameters
+            ----------
+            value: int
+                wavelength sampling.
+
+            Returns
+            -------
+            None
+
+            """
+            self._wavelengths_range.w_sampling = value
+
+    class SensorUniform:
+        """BSDF bench sensor settings."""
+
+        def __init__(
+            self,
+            sensor_uniform_mode,
+            stable_ctr: bool = False,
+        ):
+            if not stable_ctr:
+                msg = "SensorUniform class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._sensor_uniform_mode = sensor_uniform_mode
+
+        @property
+        def theta_sampling(self) -> int:
+            """Get theta sampling.
+
+            Returns
+            -------
+            int
+                theta sampling.
+
+            """
+            return self._sensor_uniform_mode.theta_sampling
+
+        @theta_sampling.setter
+        def theta_sampling(self, value: int) -> None:
+            """
+            Set theta sampling.
+
+            Parameters
+            ----------
+            value: int
+                theta sampling.
+
+            Returns
+            -------
+            None
+
+            """
+            self._sensor_uniform_mode.theta_sampling = value
+
+        @property
+        def phi_sampling(self) -> int:
+            """
+            Get phi sampling.
+
+            Returns
+            -------
+            int
+                phi sampling.
+
+            """
+            return self._sensor_uniform_mode.phi_sampling
+
+        @phi_sampling.setter
+        def phi_sampling(self, value: int) -> None:
+            """
+            Set phi sampling.
+
+            Parameters
+            ----------
+            value: int
+            phi sampling.
+
+            Returns
+            -------
+            None
+
+            """
+            self._sensor_uniform_mode.phi_sampling = value
+
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        simulation_instance: Optional[ProtoScene.SimulationInstance] = None,
+        default_values: bool = True,
+    ) -> None:
+        if metadata is None:
+            metadata = {}
+
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            simulation_instance=simulation_instance,
+        )
+
+        self._wavelengths_range = self.set_wavelengths_range()
+        self._sensor_sampling_mode = self.set_sensor_sampling_uniform()
+
+        if default_values:
+            self.geom_distance_tolerance = 0.01
+            self.max_impact = 100
+            self.set_weight()
+            self.set_colorimetric_standard_CIE_1931()
+            self.axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+    @property
+    def geom_distance_tolerance(self) -> float:
+        """Return the geometry distance tolerance.
+
+        Returns
+        -------
+        float
+            Maximum distance in mm to consider two faces as tangent.
+        """
+        return (
+            self._simulation_template.virtual_bsdf_bench_simulation_template.geom_distance_tolerance
+        )
+
+    @geom_distance_tolerance.setter
+    def geom_distance_tolerance(self, value: float) -> None:
+        """Set the geometry distance tolerance.
+
+        Parameters
+        ----------
+        value : float
+            Maximum distance in mm to consider two faces as tangent.
+            By default, ``0.01``
+
+        Returns
+        -------
+        None
+        """
+        self._simulation_template.virtual_bsdf_bench_simulation_template.geom_distance_tolerance = (
+            value
+        )
+
+    @property
+    def max_impact(self) -> int:
+        """Return the maximum number of impacts.
+
+        Returns
+        -------
+        int
+            The maximum number of impacts.
+        """
+        return self._simulation_template.virtual_bsdf_bench_simulation_template.max_impact
+
+    @max_impact.setter
+    def max_impact(self, value: int) -> None:
+        """Define a value to determine the maximum number of ray impacts during propagation.
+
+        When a ray has interacted N times with the geometry, the propagation of the ray stops.
+
+        Parameters
+        ----------
+        value : int
+            The maximum number of impacts.
+            By default, ``100``.
+
+        Returns
+        -------
+        None
+        """
+        self._simulation_template.virtual_bsdf_bench_simulation_template.max_impact = value
+
+    @property
+    def integration_angle(self) -> float:
+        """Return the sensor integration angle.
+
+        Returns
+        -------
+        float
+            The sensor integration angle.
+
+        """
+        tmp_sensor = self._simulation_template.virtual_bsdf_bench_simulation_template.sensor
+        return tmp_sensor.integration_angle
+
+    @integration_angle.setter
+    def integration_angle(self, angle: float) -> None:
+        """Set the sensor integration angle.
+
+        Parameters
+        ----------
+        angle: float
+            The sensor integration angle.
+
+        Returns
+        -------
+        None
+
+        """
+        tmp_sensor = self._simulation_template.virtual_bsdf_bench_simulation_template.sensor
+        tmp_sensor.integration_angle = angle
+
+    @property
+    def axis_system(self) -> List[float]:
+        """Get axis system of the bsdf bench.
+
+        Returns
+        -------
+        List[float]
+            The axis system of the bsdf bench.
+
+        """
+        return self._simulation_instance.vbb_properties.axis_system
+
+    @axis_system.setter
+    def axis_system(self, value: List[float]) -> None:
+        """Set axis system of the bsdf bench.
+
+        Parameters
+        ----------
+        value: List[float]
+        The axis system of the bsdf bench.
+
+        Returns
+        -------
+        None
+
+        """
+        self._simulation_instance.vbb_properties.axis_system[:] = value
+
+    @property
+    def analysis_x_ratio(self) -> float:
+        """Get analysis x ratio, value must be in range [0., 100.].
+
+        Returns
+        -------
+        float
+            Ratio to reduce the analysis area following x
+
+        """
+        return self._simulation_instance.vbb_properties.analysis_x_ratio
+
+    @analysis_x_ratio.setter
+    def analysis_x_ratio(self, value: float) -> None:
+        """Set analysis x ratio, value must be in range [0., 100.].
+
+        Parameters
+        ----------
+        value: float
+        The analysis x ratio in range [0., 100.]
+
+        Returns
+        -------
+        None
+
+        """
+        self._simulation_instance.vbb_properties.analysis_x_ratio = value
+
+    @property
+    def analysis_y_ratio(self) -> float:
+        """Get analysis y ratio, value must be in range [0., 100.].
+
+        Returns
+        -------
+        float
+            Ratio to reduce the analysis area following y
+
+        """
+        return self._simulation_instance.vbb_properties.analysis_y_ratio
+
+    @analysis_y_ratio.setter
+    def analysis_y_ratio(self, value: float) -> None:
+        """Set analysis y ratio, value must be in range [0., 100.].
+
+        Parameters
+        ----------
+        value: float
+            The analysis y ratio in range [0., 100.]
+
+        Returns
+        -------
+        None
+
+        """
+        self._simulation_instance.vbb_properties.analysis_y_ratio = value
+
+    def set_weight(self) -> BaseSimulation.Weight:
+        """Activate weight. Highly recommended to fill.
+
+        Returns
+        -------
+        ansys.speos.core.simulation.BaseSimulation.Weight
+            Simulation.Weight
+        """
+        return BaseSimulation.Weight(
+            self._simulation_template.virtual_bsdf_bench_simulation_template.weight,
+            stable_ctr=True,
+        )
+
+    def set_weight_none(self) -> SimulationVirtualBSDF:
+        """Deactivate weight.
+
+        Returns
+        -------
+        ansys.speos.core.simulation.SimulationVirtualBSDF
+            Inverse simulation
+        """
+        self._simulation_template.virtual_bsdf_bench_simulation_template.ClearField("weight")
+        return self
+
+    def set_colorimetric_standard_CIE_1931(self) -> SimulationVirtualBSDF:
+        """Set the colorimetric standard to CIE 1931.
+
+        2 degrees CIE Standard Colorimetric Observer Data.
+
+        Returns
+        -------
+        ansys.speos.core.simulation.SimulationVirtualBSDF
+            Inverse simulation
+        """
+        self._simulation_template.virtual_bsdf_bench_simulation_template.colorimetric_standard = (
+            simulation_template_pb2.CIE_1931
+        )
+        return self
+
+    def set_colorimetric_standard_CIE_1964(self) -> SimulationVirtualBSDF:
+        """Set the colorimetric standard to CIE 1964.
+
+        10 degrees CIE Standard Colorimetric Observer Data.
+
+        Returns
+        -------
+        ansys.speos.core.simulation.SimulationVirtualBSDF
+            Inverse simulation
+        """
+        self._simulation_template.virtual_bsdf_bench_simulation_template.colorimetric_standard = (
+            simulation_template_pb2.CIE_1964
+        )
+        return self
+
+    def set_mode_roughness_only(self) -> SimulationVirtualBSDF.RoughnessOnly:
+        """Set BSDF depends on surface roughness only.
+
+        Returns
+        -------
+        SimulationVirtualBSDF.RoughnessOnly
+            roughness only settings
+        """
+        return SimulationVirtualBSDF.RoughnessOnly(
+            self._simulation_template.virtual_bsdf_bench_simulation_template.roughness_only,
+            stable_ctr=True,
+        )
+
+    def set_mode_all_characteristics(self) -> SimulationVirtualBSDF.AllCharacteristics:
+        """Set BSDF depends on all properties.
+
+        Returns
+        -------
+        SimulationVirtualBSDF.AllCharacteristics
+            all properties settings
+        """
+        return SimulationVirtualBSDF.AllCharacteristics(
+            self._simulation_template.virtual_bsdf_bench_simulation_template.all_characteristics,
+            stable_ctr=True,
+        )
+
+    def set_wavelengths_range(self) -> SimulationVirtualBSDF.WavelengthsRange:
+        """Set the range of wavelengths.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.BaseSensor.WavelengthsRange
+            Wavelengths range.
+        """
+        if self._wavelengths_range._wavelengths_range is not (
+            self._simulation_template.virtual_bsdf_bench_simulation_template.wavelengths_range
+        ):
+            # Happens in case of feature reset (to be sure to always modify correct data)
+            self._wavelengths_range._wavelengths_range = (
+                self._simulation_template.virtual_bsdf_bench_simulation_template.wavelengths_range
+            )
+        return self._wavelengths_range
+
+    def set_sensor_sampling_uniform(self) -> SimulationVirtualBSDF.SensorUniform:
+        """Set sensor sampling uniform.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.BaseSensor.SensorUniform
+            uniform type of sensor settings
+
+        """
+        if (
+            self._sensor_sampling_mode._sensor_uniform_mode
+            is not self._simulation_template.virtual_bsdf_bench_simulation_template.sensor
+        ):
+            # Happens in case of feature reset (to be sure to always modify correct data)
+            self._sensor_sampling_mode._sensor_uniform_mode = (
+                self._simulation_template.virtual_bsdf_bench_simulation_template.sensor
+            )
+        return self._sensor_sampling_mode
+
+    def set_sensor_sampling_automatic(self) -> SimulationVirtualBSDF:
+        """Set sensor sampling automatic.
+
+        Returns
+        -------
+        SimulationVirtualBSDF
+
+        """
+        self._simulation_template.virtual_bsdf_bench_simulation_template.sensor.automatic.SetInParent()
         return self
