@@ -24,12 +24,12 @@
 
 from typing import Iterator, List
 
-from grpc import RpcError
-
 from ansys.api.speos.part.v1 import (
     face_pb2 as messages,
     face_pb2_grpc as service,
 )
+from grpc import RpcError
+
 from ansys.speos.core.generic.general_methods import min_speos_version
 from ansys.speos.core.kernel.crud import CrudItem, CrudStub
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
@@ -304,7 +304,7 @@ class FaceStub(CrudStub):
                             sizes=[
                                 len(message.vertices),
                                 len(message.facets),
-                                len(message.texture_coordinates_channels),
+                                len(message.vertices_data),
                             ],
                         )
                     )

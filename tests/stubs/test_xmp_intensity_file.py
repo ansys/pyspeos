@@ -31,6 +31,8 @@ from ansys.api.speos.intensity_distributions.v1 import (
     xmp_pb2,
     xmp_pb2_grpc,
 )
+import pytest
+
 from ansys.speos.core.speos import Speos
 from tests.conftest import test_path
 import tests.helper as helper
@@ -150,6 +152,7 @@ def compare_xmp_intensity_distributions(xmp1, xmp2):
     return True
 
 
+@pytest.mark.supported_speos_versions(min=252)
 def test_grpc_xmp_intensity(speos: Speos):
     """Test to check intensity xmp service."""
     stub = xmp_pb2_grpc.XmpIntensityServiceStub(speos.client.channel)

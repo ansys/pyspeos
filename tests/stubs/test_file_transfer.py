@@ -27,6 +27,7 @@ from pathlib import Path
 import ansys.api.speos.file.v1.file_transfer as file_transfer_helper__v1
 import ansys.api.speos.file.v1.file_transfer_pb2 as file_transfer__v1__pb2
 import ansys.api.speos.file.v1.file_transfer_pb2_grpc as file_transfer__v1__pb2_grpc
+
 from ansys.speos.core.speos import Speos
 from tests.conftest import local_test_path
 

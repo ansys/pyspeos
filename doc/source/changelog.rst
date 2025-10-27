@@ -9,6 +9,195 @@ This document contains the release notes for the PySpeos project.
 
 .. towncrier release notes start
 
+`0.6.3 <https://github.com/ansys/pyspeos/releases/tag/v0.6.3>`_ - September 18, 2025
+====================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Append not supported scene data instance
+          - `#727 <https://github.com/ansys/pyspeos/pull/727>`_
+
+        * - Append not supported scene data instance (#727)
+          - `#730 <https://github.com/ansys/pyspeos/pull/730>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Adapt docker run command for 25R2 sp2
+          - `#722 <https://github.com/ansys/pyspeos/pull/722>`_
+
+        * - Adapt docker run 25 r2sp2
+          - `#729 <https://github.com/ansys/pyspeos/pull/729>`_
+
+        * - Adapt docker run 25 r2sp2 (#729)
+          - `#731 <https://github.com/ansys/pyspeos/pull/731>`_
+
+
+`0.6.2 <https://github.com/ansys/pyspeos/releases/tag/v0.6.2>`_ - September 11, 2025
+====================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Add HTML context metadata
+          - `#718 <https://github.com/ansys/pyspeos/pull/718>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Pre-commit autoupdate
+          - `#716 <https://github.com/ansys/pyspeos/pull/716>`_
+
+        * - Update CHANGELOG for v0.6.1
+          - `#720 <https://github.com/ansys/pyspeos/pull/720>`_
+
+
+`0.6.1 <https://github.com/ansys/pyspeos/releases/tag/v0.6.1>`_ - September 11, 2025
+====================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Update grpcio requirement from <1.71,>=1.50.0 to >=1.50.0,<1.73 in the grpc-deps group
+          - `#617 <https://github.com/ansys/pyspeos/pull/617>`_
+
+        * - Bump the jupyter-deps group across 1 directory with 2 updates
+          - `#659 <https://github.com/ansys/pyspeos/pull/659>`_, `#700 <https://github.com/ansys/pyspeos/pull/700>`_
+
+        * - Update pyvista requirement from <0.46,>=0.40.0 to >=0.40.0,<0.47 in the graphics-deps group
+          - `#695 <https://github.com/ansys/pyspeos/pull/695>`_
+
+        * - Update pyvista[jupyter] requirement from <0.46,>=0.43 to >=0.43,<0.47
+          - `#697 <https://github.com/ansys/pyspeos/pull/697>`_
+
+        * - Update grpcio requirement from <1.73,>=1.50.0 to >=1.50.0,<1.75 in the grpc-deps group
+          - `#698 <https://github.com/ansys/pyspeos/pull/698>`_
+
+        * - Install comtypes only for windows
+          - `#704 <https://github.com/ansys/pyspeos/pull/704>`_
+
+        * - Bump the test-deps group with 2 updates
+          - `#714 <https://github.com/ansys/pyspeos/pull/714>`_
+
+        * - Bump the doc-deps group across 1 directory with 5 updates
+          - `#715 <https://github.com/ansys/pyspeos/pull/715>`_
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Update readme, support features info
+          - `#670 <https://github.com/ansys/pyspeos/pull/670>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Subpart commit modified to work when updating an existing subpart
+          - `#664 <https://github.com/ansys/pyspeos/pull/664>`_
+
+        * - Change default version to 252
+          - `#687 <https://github.com/ansys/pyspeos/pull/687>`_
+
+        * - Handle specificities of new server 25R2 SP1 and backward compatibility with previous servers.
+          - `#717 <https://github.com/ansys/pyspeos/pull/717>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Pre-commit autoupdate
+          - `#638 <https://github.com/ansys/pyspeos/pull/638>`_, `#689 <https://github.com/ansys/pyspeos/pull/689>`_, `#707 <https://github.com/ansys/pyspeos/pull/707>`_
+
+        * - Update changelog for v0.6.0
+          - `#665 <https://github.com/ansys/pyspeos/pull/665>`_
+
+        * - Update docker tag to 252 for doc stage
+          - `#668 <https://github.com/ansys/pyspeos/pull/668>`_
+
+        * - Bump ansys/actions from 10.0.12 to 10.0.13
+          - `#674 <https://github.com/ansys/pyspeos/pull/674>`_
+
+        * - Pin vtk-osmesa version
+          - `#675 <https://github.com/ansys/pyspeos/pull/675>`_
+
+        * - Bump docker/login-action from 3.4.0 to 3.5.0
+          - `#692 <https://github.com/ansys/pyspeos/pull/692>`_
+
+        * - Bump ansys/actions from 10.0.13 to 10.0.14
+          - `#693 <https://github.com/ansys/pyspeos/pull/693>`_
+
+        * - Bump actions/download-artifact from 4.3.0 to 5.0.0
+          - `#694 <https://github.com/ansys/pyspeos/pull/694>`_
+
+        * - Bump actions/checkout from 4.2.2 to 5.0.0
+          - `#701 <https://github.com/ansys/pyspeos/pull/701>`_
+
+        * - Bump codecov/codecov-action from 5.4.3 to 5.5.0
+          - `#702 <https://github.com/ansys/pyspeos/pull/702>`_
+
+        * - Bump pypa/gh-action-pypi-publish from 1.12.4 to 1.13.0
+          - `#709 <https://github.com/ansys/pyspeos/pull/709>`_
+
+        * - Bump actions/labeler from 5.0.0 to 6.0.1
+          - `#710 <https://github.com/ansys/pyspeos/pull/710>`_
+
+        * - Bump actions/setup-python from 5.6.0 to 6.0.0
+          - `#711 <https://github.com/ansys/pyspeos/pull/711>`_
+
+        * - Bump codecov/codecov-action from 5.5.0 to 5.5.1
+          - `#712 <https://github.com/ansys/pyspeos/pull/712>`_
+
+        * - Bump ansys/actions from 10.0.14 to 10.0.20
+          - `#713 <https://github.com/ansys/pyspeos/pull/713>`_
+
+
+  .. tab-item:: Test
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Core - sub part - check that modifying sub part's axis system i…
+          - `#671 <https://github.com/ansys/pyspeos/pull/671>`_
+
+
 `0.6.0 <https://github.com/ansys/pyspeos/releases/tag/v0.6.0>`_ - July 15, 2025
 ===============================================================================
 

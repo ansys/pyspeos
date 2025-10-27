@@ -22,6 +22,8 @@
 
 """Test basic geometry database connection."""
 
+import pytest
+
 from ansys.speos.core.kernel.body import BodyLink, ProtoBody
 from ansys.speos.core.kernel.face import FaceLink, ProtoFace
 from ansys.speos.core.kernel.part import ProtoPart
@@ -64,6 +66,7 @@ def test_create_big_face(speos: Speos):
     face_link.delete()
 
 
+@pytest.mark.supported_speos_versions(min=252)
 def test_create_big_faces(speos: Speos):
     """Test create big faces using batch. Only available from SpeosRPC_Server 25.2."""
     assert speos.client.healthy is True
@@ -123,6 +126,7 @@ def test_create_big_faces(speos: Speos):
         face_link.delete()
 
 
+@pytest.mark.supported_speos_versions(min=252)
 def test_update_big_face(speos: Speos):
     """Test update big face. Bug on SpeosRPC_Server 25.1. Fixed from SpeosRPC_Server 25.2."""
     assert speos.client.healthy is True
@@ -174,6 +178,7 @@ def test_update_big_face(speos: Speos):
     face_link.delete()
 
 
+@pytest.mark.supported_speos_versions(min=252)
 def test_update_big_faces(speos: Speos):
     """Test update big faces using batch. Only available from SpeosRPC_Server 25.2."""
     assert speos.client.healthy is True

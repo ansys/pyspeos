@@ -23,6 +23,7 @@
 """Test basic sop template database connection."""
 
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
+
 from ansys.speos.core.kernel.simulation_template import ProtoSimulationTemplate
 from ansys.speos.core.speos import Speos
 

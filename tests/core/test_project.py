@@ -24,6 +24,8 @@
 
 from pathlib import Path
 
+import pytest
+
 from ansys.speos.core import Body, Face, GeoRef, Part, Project, Speos
 from ansys.speos.core.opt_prop import OptProp
 from ansys.speos.core.sensor import Sensor3DIrradiance, SensorIrradiance, SensorRadiance
@@ -341,8 +343,13 @@ def test_from_file(speos: Speos):
 
     # And that the feature retrieved has a real impact on the project
     feat_ops[0].set_surface_mirror(reflectance=60).commit()
-    assert speos.client[p.scene_link.get().materials[2].sop_guids[0]].get().HasField("mirror")
-    assert speos.client[p.scene_link.get().materials[2].sop_guids[0]].get().mirror.reflectance == 60
+    mat2 = p.scene_link.get().materials[2]
+    if mat2.HasField("sop_guid"):
+        assert speos.client[mat2.sop_guid].get().HasField("mirror")
+        assert speos.client[mat2.sop_guid].get().mirror.reflectance == 60
+    else:
+        assert speos.client[mat2.sop_guids[0]].get().HasField("mirror")
+        assert speos.client[mat2.sop_guids[0]].get().mirror.reflectance == 60
 
     # Check that ambient mat has no sop
     feat_op_ambients = p.find(name=p.scene_link.get().materials[-1].name)
@@ -447,6 +454,7 @@ def test_find_geom(speos: Speos):
     assert len(all_faces) == 11
 
 
+@pytest.mark.supported_speos_versions(min=252)
 def test_preview_visual_data(speos: Speos):
     """Test preview visualization data inside a project."""
     # preview irradiance sensor data

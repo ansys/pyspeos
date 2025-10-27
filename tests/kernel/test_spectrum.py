@@ -40,7 +40,8 @@ def test_client_spectrum_init(speos: Speos):
     s_ph_data.name = "predefined_halogen_0"
     s_ph_data.description = "Predefined spectrum"
     s_ph_data.predefined.halogen.SetInParent()
-    s_ph = spec_db.create(message=s_ph_data)  # at this step the spectrum is stored in DB
+    # at this step the spectrum is stored in DB
+    s_ph = spec_db.create(message=s_ph_data)
     assert s_ph.key != ""
     assert s_ph.stub is not None
 
@@ -56,7 +57,8 @@ def test_client_spectrum_init(speos: Speos):
     s_bb_5321_data = s_bb_5321.get()
     assert s_bb_5321_data.blackbody.temperature == 5321
     # Update data
-    s_bb_5321_data.blackbody.temperature = 5326  # data modified only locally, not in DB
+    # data modified only locally, not in DB
+    s_bb_5321_data.blackbody.temperature = 5326
     s_bb_5321.set(s_bb_5321_data)  # data modified in DB thanks to set method
     s_bb_5321_data = (
         s_bb_5321.get()

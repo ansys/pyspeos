@@ -29,8 +29,10 @@ from ansys.api.speos.scene.v2 import (
     scene_pb2 as messages,
     scene_pb2_grpc as service,
 )
+
 from ansys.speos.core.kernel.crud import CrudItem, CrudStub
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
+from ansys.speos.core.kernel.sop_template import ProtoSOPTemplate, SOPTemplateStub
 
 ProtoScene = messages.Scene
 """Scene protobuf class : ansys.api.speos.scene.v2.scene_pb2.Scene"""
@@ -171,6 +173,39 @@ class SceneStub(CrudStub):
     def __init__(self, channel):
         super().__init__(stub=service.ScenesManagerStub(channel=channel))
         self._actions_stub = service.SceneActionsStub(channel=channel)
+        self._is_texture_available = self._check_if_texture_available(channel=channel)
+
+    def _check_if_texture_available(self, channel) -> bool:
+        sop_t_stub = SOPTemplateStub(channel=channel)
+        # Create SOPTemplate then scene
+        sop_t_link = sop_t_stub.create(
+            message=ProtoSOPTemplate(
+                name="checkForTextureAvailability",
+                optical_polished=ProtoSOPTemplate.OpticalPolished(),
+            )
+        )
+        sce_link = self.create(
+            ProtoScene(
+                name="checkForTextureAvailability",
+                materials=[
+                    ProtoScene.MaterialInstance(
+                        name="checkForTextureAvailability", sop_guid=sop_t_link.key
+                    )
+                ],
+            )
+        )
+
+        # Read scene (aim is to see if the server knows the new field sop_guid or just ignored it)
+        sce_msg = sce_link.get()
+
+        # Don't forget to delete created objects
+        sop_t_link.delete()
+        sce_link.delete()
+
+        # Check presence of sop_guid field -> if yes then texture is available
+        if sce_msg.materials[0].HasField("sop_guid"):
+            return True
+        return False
 
     def create(self, message: ProtoScene = None) -> SceneLink:
         """Create a new entry.
