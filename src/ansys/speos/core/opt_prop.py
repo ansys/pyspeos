@@ -340,8 +340,7 @@ class OptProp:
                 else:
                     msg = f"Type {type(gr)} is not supported as Optical property geometry input."
                     raise TypeError(msg)
-
-            # I a lost here as to how to return this property  correctly
+            return self._material_instance.geometries.geo_paths
             self._material_instance.geometries.geo_paths[:] = [
                 gp.to_native_link() for gp in geo_paths
             ]
