@@ -349,7 +349,7 @@ class OptProp:
     def geometries(
         self,
         geometries: Optional[List[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]] = None,
-    ) -> OptProp:
+    ) -> None:
         """Select geometries on which the optical properties will be applied.
 
         Parameters
