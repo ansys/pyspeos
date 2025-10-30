@@ -987,6 +987,7 @@ class Project:
                 SensorRadiance,
                 SensorCamera,
                 Sensor3DIrradiance,
+                SensorXMPIntensity,
                 SourceLuminaire,
                 SourceRayFile,
                 SourceSurface,
@@ -994,7 +995,7 @@ class Project:
         ):
             return plotter
 
-        ray_path_scale_factor = 0.0
+        ray_path_scale_factor = 0.2
 
         match speos_feature:
             case SourceRayFile() | SourceLuminaire() | SourceSurface():
