@@ -2182,7 +2182,7 @@ class SimulationVirtualBSDF(BaseSimulation):
 
             # Default values
             if default_values:
-                self.is_bsdf180 = True
+                self.is_bsdf180 = False
                 self.reflection_and_transmission = False
 
         @property
@@ -2539,6 +2539,7 @@ class SimulationVirtualBSDF(BaseSimulation):
             self.analysis_y_ratio = 100
             self.axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
             self.integration_angle = 2
+            self.stop_condition_ray_number = 100000
 
     @property
     def geom_distance_tolerance(self) -> float:
@@ -2713,6 +2714,34 @@ class SimulationVirtualBSDF(BaseSimulation):
 
         """
         self._simulation_instance.vbb_properties.analysis_y_ratio = value
+
+    @property
+    def stop_condition_ray_number(self) -> int:
+        """Get ray stop condition ray number.
+
+        Returns
+        -------
+        float
+        The ray stop condition ray number.
+
+        """
+        return self._job.virtualbsdfbench_simulation_properties.stop_condition_rays_number
+
+    @stop_condition_ray_number.setter
+    def stop_condition_ray_number(self, value: int) -> None:
+        """Set ray stop condition ray number.
+
+        Parameters
+        ----------
+        value: int
+            The ray stop condition ray number.
+
+        Returns
+        -------
+        None
+
+        """
+        self._job.virtualbsdfbench_simulation_properties.stop_condition_rays_number = value
 
     def set_weight(self) -> BaseSimulation.Weight:
         """Activate weight. Highly recommended to fill.

@@ -370,6 +370,7 @@ def test_create_interactive(speos: Speos):
     sim1.delete()
 
 
+@pytest.mark.supported_speos_versions(min=252)
 def test_create_virtual_bsdf_bench(speos: Speos):
     """Test creation of Virtual BSDF Bench Simulation."""
     p = Project(speos=speos)
@@ -624,6 +625,7 @@ def test_create_virtual_bsdf_bench(speos: Speos):
     assert vbb._simulation_template.virtual_bsdf_bench_simulation_template.sensor.HasField(
         "automatic"
     )
+    vbb.delete()
 
 
 def test_commit(speos: Speos):

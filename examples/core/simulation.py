@@ -14,7 +14,11 @@
 from pathlib import Path
 
 from ansys.speos.core import Project, Speos, launcher
-from ansys.speos.core.simulation import SimulationInteractive, SimulationInverse
+from ansys.speos.core.simulation import (
+    SimulationInteractive,
+    SimulationInverse,
+    SimulationVirtualBSDF,
+)
 
 # -
 
@@ -182,5 +186,10 @@ print(simulation3)
 simulation4 = p.create_simulation(name="Simulation.4", feature_type=SimulationInteractive)
 simulation4.set_source_paths(source_paths=[SOURCE_NAME]).commit()
 print(simulation4)
+
+# ### Virtual BSDF Bench simulation
+
+vbb = p.create_simulation(name="virtual_BSDF", feature_type=SimulationVirtualBSDF)
+vbb.compute_CPU()
 
 speos.close()
