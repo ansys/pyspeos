@@ -628,6 +628,16 @@ def test_create_virtual_bsdf_bench(speos: Speos):
     vbb.delete()
 
 
+def test_load_virtual_bsdf_bench(speos: Speos):
+    """Test load of a exported virtual bsdf bench simulation."""
+    p = Project(
+        speos=speos, path=str(Path(test_path) / "nx_vbb_export.speos" / "nx_vbb_export.speos")
+    )
+    assert p is not None
+    sims = p.find(name=".*", name_regex=True, feature_type=SimulationVirtualBSDF)
+    assert len(sims) > 0
+
+
 def test_commit(speos: Speos):
     """Test commit of simulation."""
     p = Project(speos=speos)

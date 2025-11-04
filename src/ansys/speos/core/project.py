@@ -643,6 +643,11 @@ class Project:
                                 name=inside_dict["name"],
                                 feature_type=SimulationInteractive,
                             )
+                        if len(sim_feat) == 0:
+                            sim_feat = self.find(
+                                name=inside_dict["name"],
+                                feature_type=SimulationVirtualBSDF,
+                            )
                         sim_feat = sim_feat[0]
                         if sim_feat.job_link is None:
                             inside_dict["simulation_properties"] = (
@@ -881,6 +886,13 @@ class Project:
                 )
             elif simulation_template_link.HasField("interactive_simulation_template"):
                 sim_feat = SimulationInteractive(
+                    project=self,
+                    name=sim_inst.name,
+                    simulation_instance=sim_inst,
+                    default_values=False,
+                )
+            elif simulation_template_link.HasField("virtual_bsdf_bench_simulation_template"):
+                sim_feat = SimulationVirtualBSDF(
                     project=self,
                     name=sim_inst.name,
                     simulation_instance=sim_inst,
