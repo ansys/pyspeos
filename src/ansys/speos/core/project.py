@@ -52,6 +52,7 @@ from ansys.speos.core.simulation import (
     SimulationDirect,
     SimulationInteractive,
     SimulationInverse,
+    SimulationVirtualBSDF,
 )
 from ansys.speos.core.source import (
     SourceAmbientNaturalLight,
@@ -291,6 +292,13 @@ class Project:
                 )
             case "SimulationInteractive":
                 feature = SimulationInteractive(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                )
+            case "SimulationVirtualBSDF":
+                feature = SimulationVirtualBSDF(
                     project=self,
                     name=name,
                     description=description,

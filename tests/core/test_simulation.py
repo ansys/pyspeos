@@ -33,6 +33,7 @@ from ansys.speos.core.simulation import (
     SimulationDirect,
     SimulationInteractive,
     SimulationInverse,
+    SimulationVirtualBSDF,
 )
 from ansys.speos.core.source import SourceLuminaire
 from tests.conftest import config, test_path
@@ -367,6 +368,262 @@ def test_create_interactive(speos: Speos):
     # assert sim1._simulation_instance.geometries.geo_paths == ["mybody1", "mybody2", "mybody3"]
 
     sim1.delete()
+
+
+def test_create_virtual_bsdf_bench(speos: Speos):
+    """Test creation of Virtual BSDF Bench Simulation."""
+    p = Project(speos=speos)
+    vbb = p.create_simulation("virtual_bsdf_bench_1", feature_type=SimulationVirtualBSDF)
+
+    # Check default properties
+    # Check backend property
+    assert vbb._simulation_template.HasField("virtual_bsdf_bench_simulation_template")
+    assert (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.geom_distance_tolerance
+        == 0.01
+    )
+    assert vbb._simulation_template.virtual_bsdf_bench_simulation_template.max_impact == 100
+    assert vbb._simulation_template.virtual_bsdf_bench_simulation_template.HasField("weight")
+    assert (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.weight.minimum_energy_percentage
+        == 0.005
+    )
+    assert (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.colorimetric_standard
+        is simulation_template_pb2.CIE_1931
+    )
+    assert (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.wavelengths_range.w_start
+        == 400
+    )
+    assert (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.wavelengths_range.w_end
+        == 700
+    )
+    assert (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.wavelengths_range.w_sampling
+        == 13
+    )
+    assert vbb._simulation_instance.vbb_properties.axis_system[:] == [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+    ]
+    assert vbb._simulation_instance.vbb_properties.analysis_x_ratio == 100
+    assert vbb._simulation_instance.vbb_properties.analysis_y_ratio == 100
+
+    # Check mode and source settings
+    assert vbb._simulation_template.virtual_bsdf_bench_simulation_template.HasField(
+        "all_characteristics"
+    )
+    backend_properties = (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.all_characteristics
+    )
+    assert backend_properties.is_bsdf180 is True
+    assert backend_properties.sensor_reflection_and_transmission is False
+    assert backend_properties.HasField("no_iridescence")
+    assert backend_properties.no_iridescence.HasField("isotropic")
+    assert backend_properties.no_iridescence.isotropic.HasField("uniform_isotropic")
+    assert backend_properties.no_iridescence.isotropic.uniform_isotropic.theta_sampling == 18
+
+    # Check sensor settings
+    assert (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.sensor.integration_angle
+        == 2
+    )
+    assert vbb._simulation_template.virtual_bsdf_bench_simulation_template.sensor.HasField(
+        "uniform"
+    )
+    assert (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.sensor.uniform.theta_sampling
+        == 45
+    )
+    assert (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.sensor.uniform.phi_sampling
+        == 180
+    )
+
+    # Check frontend property
+    assert vbb.geom_distance_tolerance == 0.01
+    assert vbb.max_impact == 100
+    assert vbb.integration_angle == 2
+    assert vbb.axis_system == [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    assert vbb.analysis_x_ratio == 100
+    assert vbb.analysis_y_ratio == 100
+    assert vbb.set_wavelengths_range().start == 400
+    assert vbb.set_wavelengths_range().end == 700
+    assert vbb.set_wavelengths_range().sampling == 13
+    assert vbb.set_mode_all_characteristics().is_bsdf180 is True
+    assert vbb.set_mode_all_characteristics().reflection_and_transmission is False
+    assert (
+        vbb.set_mode_all_characteristics()
+        .set_non_iridescence()
+        .set_isotropic()
+        .set_uniform()
+        .theta_sampling
+        == 18
+    )
+    assert vbb.set_sensor_sampling_uniform().theta_sampling == 45
+    assert vbb.set_sensor_sampling_uniform().phi_sampling == 180
+
+    # Change isotropic adaptive source sampling
+    vbb.set_mode_all_characteristics().set_non_iridescence().set_isotropic().set_adaptive()
+    # Check backend properties
+    backend_properties = (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.all_characteristics
+    )
+    assert backend_properties.no_iridescence.isotropic.HasField("adaptive")
+    assert backend_properties.no_iridescence.isotropic.adaptive.file_uri == ""
+    # Check frontend properties
+    assert (
+        vbb.set_mode_all_characteristics()
+        .set_non_iridescence()
+        .set_isotropic()
+        .set_adaptive()
+        .adaptive_uri
+        == ""
+    )
+
+    # Check if properties are saved
+    vbb.set_mode_all_characteristics().set_non_iridescence().set_isotropic()
+    # Check backend properties
+    backend_properties = (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.all_characteristics
+    )
+    assert backend_properties.no_iridescence.isotropic.HasField("adaptive")
+    assert backend_properties.no_iridescence.isotropic.adaptive.file_uri == ""
+    # Check frontend properties
+    assert (
+        vbb.set_mode_all_characteristics()
+        .set_non_iridescence()
+        .set_isotropic()
+        .set_adaptive()
+        .adaptive_uri
+        == ""
+    )
+
+    # Change back to isotropic uniform source sampling
+    vbb.set_mode_all_characteristics().set_non_iridescence().set_isotropic().set_uniform()
+    # Check backend properties
+    backend_properties = (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.all_characteristics
+    )
+    assert backend_properties.no_iridescence.isotropic.HasField("uniform_isotropic")
+    # Check frontend properties
+    assert backend_properties.no_iridescence.isotropic.uniform_isotropic.theta_sampling == 18
+
+    # Change anisotropic uniform
+    vbb.set_mode_all_characteristics().set_non_iridescence().set_anisotropic()
+    # Check backend properties
+    backend_properties = (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.all_characteristics
+    )
+    assert backend_properties.no_iridescence.HasField("anisotropic")
+    assert backend_properties.no_iridescence.anisotropic.HasField("uniform_anisotropic")
+    assert backend_properties.no_iridescence.anisotropic.uniform_anisotropic.theta_sampling == 18
+    assert backend_properties.no_iridescence.anisotropic.uniform_anisotropic.phi_sampling == 36
+    assert backend_properties.no_iridescence.anisotropic.uniform_anisotropic.symmetry_type == 1
+    # Check frontend properties
+    assert (
+        vbb.set_mode_all_characteristics()
+        .set_non_iridescence()
+        .set_anisotropic()
+        .set_uniform()
+        .theta_sampling
+        == 18
+    )
+    assert (
+        vbb.set_mode_all_characteristics()
+        .set_non_iridescence()
+        .set_anisotropic()
+        .set_uniform()
+        .phi_sampling
+        == 36
+    )
+
+    # Change anisotropic adaptive
+    vbb.set_mode_all_characteristics().set_non_iridescence().set_anisotropic().set_adaptive()
+    # Check backend properties
+    backend_properties = (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.all_characteristics
+    )
+    assert backend_properties.no_iridescence.anisotropic.HasField("adaptive")
+    assert backend_properties.no_iridescence.anisotropic.adaptive.file_uri == ""
+    # Check frontend properties
+    assert (
+        vbb.set_mode_all_characteristics()
+        .set_non_iridescence()
+        .set_anisotropic()
+        .set_adaptive()
+        .adaptive_uri
+        == ""
+    )
+
+    # Change color depending on viewing angle
+    vbb.set_mode_all_characteristics().set_iridescence()
+    # Check backend properties
+    backend_properties = (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.all_characteristics
+    )
+    assert backend_properties.HasField("iridescence")
+    assert backend_properties.iridescence.HasField("uniform_isotropic")
+    assert backend_properties.iridescence.uniform_isotropic.theta_sampling == 18
+    # Check frontend properties
+    assert vbb.set_mode_all_characteristics().set_iridescence().set_uniform().theta_sampling == 18
+
+    # Change color depending on viewing angle with adaptive source sampling
+    vbb.set_mode_all_characteristics().set_iridescence().set_adaptive()
+    # Check backend properties
+    backend_properties = (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.all_characteristics
+    )
+    assert backend_properties.iridescence.HasField("adaptive")
+    assert backend_properties.iridescence.adaptive.file_uri == ""
+    # Check frontend properties
+    assert vbb.set_mode_all_characteristics().set_iridescence().set_adaptive().adaptive_uri == ""
+
+    # Change mode to surface roughness only
+    vbb.set_mode_roughness_only()
+    # Check backend property
+    assert not vbb._simulation_template.virtual_bsdf_bench_simulation_template.HasField(
+        "all_characteristics"
+    )
+    assert vbb._simulation_template.virtual_bsdf_bench_simulation_template.HasField(
+        "roughness_only"
+    )
+    backend_properties = (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.roughness_only
+    )
+    assert backend_properties.HasField("uniform_isotropic")
+    assert backend_properties.uniform_isotropic.theta_sampling == 18
+    # Check frontend properties
+    assert vbb.set_mode_roughness_only().set_uniform().theta_sampling == 18
+
+    # Change to adaptive source sampling
+    vbb.set_mode_roughness_only().set_adaptive()
+    # Check backend properties
+    backend_properties = (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.roughness_only
+    )
+    assert backend_properties.HasField("adaptive")
+    assert backend_properties.adaptive.file_uri == ""
+    # Check frontend properties
+    assert vbb.set_mode_roughness_only().set_adaptive().adaptive_uri == ""
+
+    # Change sensor to automatic
+    vbb.set_sensor_sampling_automatic()
+    assert vbb._simulation_template.virtual_bsdf_bench_simulation_template.sensor.HasField(
+        "automatic"
+    )
 
 
 def test_commit(speos: Speos):
