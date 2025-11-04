@@ -429,7 +429,7 @@ def test_create_virtual_bsdf_bench(speos: Speos):
     backend_properties = (
         vbb._simulation_template.virtual_bsdf_bench_simulation_template.all_characteristics
     )
-    assert backend_properties.is_bsdf180 is True
+    assert backend_properties.is_bsdf180 is False
     assert backend_properties.sensor_reflection_and_transmission is False
     assert backend_properties.HasField("no_iridescence")
     assert backend_properties.no_iridescence.HasField("isotropic")
