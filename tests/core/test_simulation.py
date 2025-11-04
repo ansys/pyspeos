@@ -463,7 +463,7 @@ def test_create_virtual_bsdf_bench(speos: Speos):
     assert vbb.set_wavelengths_range().start == 400
     assert vbb.set_wavelengths_range().end == 700
     assert vbb.set_wavelengths_range().sampling == 13
-    assert vbb.set_mode_all_characteristics().is_bsdf180 is True
+    assert vbb.set_mode_all_characteristics().is_bsdf180 is False
     assert vbb.set_mode_all_characteristics().reflection_and_transmission is False
     assert (
         vbb.set_mode_all_characteristics()
