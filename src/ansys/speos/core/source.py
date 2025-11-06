@@ -45,6 +45,7 @@ from ansys.speos.core.intensity import Intensity
 from ansys.speos.core.kernel.client import SpeosClient
 from ansys.speos.core.kernel.scene import ProtoScene
 from ansys.speos.core.kernel.source_template import ProtoSourceTemplate
+from ansys.speos.core.opt_prop import OptProp
 from ansys.speos.core.spectrum import Spectrum
 
 
@@ -1252,6 +1253,243 @@ class SourceSurface(BaseSource):
 
         # spectrum & source
         super().delete()
+        return self
+
+
+class SourceThermic(BaseSource):
+    """ThermicSource.
+
+    By default, a flux from intensity file is chosen, with an incandescent spectrum.
+
+    Parameters
+    ----------
+    project : ansys.speos.core.project.Project
+        Project that will own the feature.
+    name : str
+        Name of the feature.
+    description : str
+        Description of the feature.
+        By default, ``""``.
+    metadata : Optional[Mapping[str, str]]
+        Metadata of the feature.
+        By default, ``{}``.
+    default_values : bool
+        Uses default values when True.
+    """
+
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        source_instance: Optional[ProtoScene.SourceInstance] = None,
+        default_values: bool = True,
+    ) -> None:
+        if metadata is None:
+            metadata = {}
+
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            source_instance=source_instance,
+        )
+        self._speos_client = self._project.client
+        self._name = name
+
+        self._intensity = Intensity(
+            speos_client=self._speos_client,
+            name=name + ".Intensity",
+            key=self._source_template.thermic.intensity_guid,
+        )
+
+        self._sop = OptProp(
+            project=self._project,
+            name=self._name,
+        )
+
+        if default_values:
+            self.set_emissive_faces(geometries=[])
+            self.emissive_faces_temperature = 2000
+            self._sop.set_surface_mirror(0)
+
+    def set_emissive_faces(
+        self, geometries: List[tuple[Union[GeoRef, face.Face, body.Body], bool]]
+    ) -> SourceThermic:
+        """Set emssive faces for thermic source.
+
+        Parameters
+        ----------
+        geometries : List[tuple[ansys.speos.core.geo_ref.GeoRef, bool]]
+            List of (face, reverseNormal).
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceThermic
+            Thermic source.
+        """
+        self._source_instance.thermic_properties.emissive_faces_properties.ClearField("geo_paths")
+        if geometries != []:
+            my_list = [
+                ProtoScene.GeoPath(geo_path=gr.to_native_link(), reverse_normal=reverse_normal)
+                for (gr, reverse_normal) in geometries
+            ]
+            self._source_instance.thermic_properties.emissive_faces_properties.geo_paths.extend(
+                my_list
+            )
+        self._source_template.thermic.emissives_faces.SetInParent()
+        return self
+
+    @property
+    def emissive_faces_temperature(self) -> float:
+        """Get temperature settings for emissive faces.
+
+        Returns
+        -------
+        float
+            temperature settings for emissive faces.
+
+        """
+        if self._source_template.thermic.HasField("emissives_faces"):
+            return self._source_template.thermic.emissives_faces.temperature
+        else:
+            raise AttributeError("This feature is not defined as emissive faces.")
+
+    @emissive_faces_temperature.setter
+    def emissive_faces_temperature(self, value: float) -> None:
+        """Set temperature settings for emissive faces.
+
+        Parameters
+        ----------
+        value: float
+            temperature settings for emissive faces.
+
+        Returns
+        -------
+        None
+
+        """
+        self._source_template.thermic.emissives_faces.temperature = value
+
+    def set_temperature_field(self) -> SourceThermic:
+        """Set thermic source in temperature field mode.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceThermic
+            Thermic source.
+        """
+        if not self._source_template.thermic.HasField("temperature_field"):
+            self._source_template.thermic.temperature_field.SetInParent()
+        if self._source_instance.thermic_properties.temperature_field_properties.axis_plane is None:
+            axis_plane = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+            self._source_instance.thermic_properties.temperature_field_properties.axis_plane[:] = (
+                axis_plane
+            )
+        return self
+
+    @property
+    def temperature_field_uri(self) -> str:
+        """Get temperature field file uri.
+
+        Returns
+        -------
+        string
+            temperature field file uri.
+
+        """
+        if self._source_template.thermic.HasField("temperature_field"):
+            return self._source_template.thermic.temperature_field.temperature_field_uri
+        else:
+            raise AttributeError("This feature is not defined with temperature field.")
+
+    def set_temperature_field_uri(self, file: str) -> None:
+        """Set temperature field file path.
+
+        Parameters
+        ----------
+        file: str
+            temperature field file path.
+
+        Returns
+        -------
+        None
+
+        """
+        self._source_template.thermic.temperature_field.temperature_field_uri = file
+
+    @property
+    def sop(self) -> OptProp:
+        """Get SOP for thermic source in temperature field mode.
+
+        Returns
+        -------
+        ansys.speos.core.opt_prop.OptProp
+            Surface Optical property.
+
+        """
+        if self._source_template.thermic.HasField("temperature_field"):
+            return self._sop
+        else:
+            raise AttributeError("This feature is not defined with temperature field.")
+
+    @sop.setter
+    def sop(self, new_sop: OptProp) -> None:
+        """Set SOP for thermic source in temperature field mode.
+
+        Parameters
+        ----------
+        ansys.speos.core.opt_prop.OptProp
+            Surface Optical property.
+
+        Returns
+        -------
+        None
+
+        """
+        self._sop = new_sop
+        self._source_template.thermic.temperature_field.sop_guid = self._sop.sop_template_link.key
+
+    def commit(self) -> SourceThermic:
+        """Save feature: send the local data to the speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceThermic
+            Thermic source feature.
+        """
+        # intensity
+        self._intensity.commit()
+        self._source_template.thermic.intensity_guid = self._intensity.intensity_template_link.key
+
+        # sop
+        if self._source_template.thermic.HasField("temperature_field"):
+            self._sop.commit()
+            self._source_template.thermic.temperature_field.sop_guid = (
+                self._sop.sop_template_link.key
+            )
+
+        # source base
+        super().commit()
+        return self
+
+    def reset(self) -> SourceThermic:
+        """Reset feature: override local data by the one from the speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceThermic
+            Thermic source feature.
+        """
+        self._intensity.reset()
+        # source base
+        super().reset()
         return self
 
 

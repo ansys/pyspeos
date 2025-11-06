@@ -58,6 +58,7 @@ from ansys.speos.core.source import (
     SourceLuminaire,
     SourceRayFile,
     SourceSurface,
+    SourceThermic,
 )
 from ansys.speos.core.speos import Speos
 
@@ -157,7 +158,9 @@ class Project:
         description: str = "",
         feature_type: type = SourceSurface,
         metadata: Optional[Mapping[str, str]] = None,
-    ) -> Union[SourceSurface, SourceRayFile, SourceLuminaire, SourceAmbientNaturalLight]:
+    ) -> Union[
+        SourceSurface, SourceRayFile, SourceLuminaire, SourceAmbientNaturalLight, SourceThermic
+    ]:
         """Create a new Source feature.
 
         Parameters
@@ -223,9 +226,16 @@ class Project:
                     description=description,
                     metadata=metadata,
                 )
+            case "SourceThermic":
+                feature = SourceThermic(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                )
             case _:
                 msg = "Requested feature {} does not exist in supported list {}".format(
-                    feature_type, [SourceSurface, SourceLuminaire, SourceRayFile]
+                    feature_type, [SourceSurface, SourceLuminaire, SourceRayFile, SourceThermic]
                 )
                 raise TypeError(msg)
         self._features.append(feature)
@@ -437,6 +447,7 @@ class Project:
             SourceSurface,
             SourceLuminaire,
             SourceRayFile,
+            SourceThermic,
             SensorIrradiance,
             SensorRadiance,
             SensorCamera,
@@ -814,6 +825,13 @@ class Project:
                         source_instance=src_inst,
                         default_values=False,
                     )
+            elif src_inst.HasField("thermic_properties"):
+                src_feat = SourceThermic(
+                    project=self,
+                    name=src_inst.name,
+                    source_instance=src_inst,
+                    default_values=False,
+                )
             if src_feat is not None:
                 self._features.append(src_feat)
 

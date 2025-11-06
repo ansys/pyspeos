@@ -33,6 +33,7 @@ from ansys.speos.core.source import (
     SourceLuminaire,
     SourceRayFile,
     SourceSurface,
+    SourceThermic,
 )
 from tests.conftest import test_path
 
@@ -531,6 +532,53 @@ def test_create_natural_light_source(speos: Speos):
     source2.delete()
 
 
+def test_create_thermic_source(speos: Speos):
+    """Test creation of thermic source."""
+    p = Project(speos=speos)
+
+    source1 = p.create_source(name="Thermic Source", feature_type=SourceThermic)
+    # Geometry
+    root_part = p.create_root_part().commit()
+    body_b1 = root_part.create_body(name="TheBodyB1").commit()
+    face_b1_f1 = (
+        body_b1.create_face(name="TheFaceF1")
+        .set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0])
+        .set_facets([0, 1, 2])
+        .set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+        .commit()
+    )
+    # Optical Property
+    p.create_optical_property("OpaqueMirror50").set_volume_opaque().set_surface_mirror(
+        reflectance=50
+    ).set_geometries(geometries=[body_b1.geo_path]).commit()
+
+    source1.set_emissive_faces(geometries=[(face_b1_f1.geo_path, False)])
+    source1.commit()
+
+    assert source1._source_template.thermic.HasField("emissives_faces")
+    assert source1._source_template.thermic.emissives_faces.temperature == 2000
+    assert source1._source_instance.HasField("thermic_properties")
+    assert source1._source_instance.thermic_properties.HasField("emissive_faces_properties")
+    assert (
+        source1._source_instance.thermic_properties.emissive_faces_properties.geo_paths[0].geo_path
+        == "TheBodyB1/TheFaceF1"
+    )
+    assert (
+        source1._source_instance.thermic_properties.emissive_faces_properties.geo_paths[
+            0
+        ].reverse_normal
+        is False
+    )
+
+    intensity = speos.client[source1.source_template_link.get().thermic.intensity_guid]
+    assert intensity.get().HasField("cos")
+    assert intensity.get().cos.N == 1
+
+    source1.emissive_faces_temperature = 3500
+    assert source1._source_template.thermic.emissives_faces.temperature == 3500
+    assert source1.emissive_faces_temperature == 3500
+
+
 def test_keep_same_internal_feature(speos: Speos):
     """Test regarding source internal features (like spectrum, intensity).
 
@@ -587,9 +635,24 @@ def test_keep_same_internal_feature(speos: Speos):
     source3.commit()
     assert source3.source_template_link.get().rayfile.spectrum_guid == spectrum_guid
 
+    # THERMIC SOURCE
+    source4 = SourceThermic(project=p, name="Thermic.1")
+    source4.emissive_faces_temperature = 2000
+    source4.commit()
+
+    # Modify field type
+    source4.set_temperature_field()
+    uri = str(Path(test_path) / "dummy.OPTTemperatureField")
+    source4.set_temperature_field_uri(uri)
+    sop_guid = source4._source_template.thermic.temperature_field.sop_guid
+    assert source4._source_template.thermic.temperature_field.temperature_field_uri == uri
+    assert source4.temperature_field_uri == uri
+    assert source4._source_template.thermic.temperature_field.sop_guid == sop_guid
+
     source1.delete()
     source2.delete()
     source3.delete()
+    source4.delete()
 
 
 def test_commit_source(speos: Speos):
