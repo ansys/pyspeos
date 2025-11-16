@@ -2094,7 +2094,30 @@ class SimulationVirtualBSDF(BaseSimulation):
                     SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic._Uniform
 
                     """
-                    return self._Uniform(self._mode.uniform_anisotropic, stable_ctr=True)
+                    if self._sampling_type is None and self._mode.HasField("uniform_anisotropic"):
+                        _non_iridescence_cls = (
+                            SimulationVirtualBSDF.AllCharacteristics.NonIridescence
+                        )  # done to pass PEP8 E501
+                        self._sampling_type = _non_iridescence_cls.Anisotropic._Uniform(
+                            self._mode.uniform_anisotropic,
+                            default_values=False,
+                            stable_ctr=True,
+                        )
+                    if not isinstance(
+                        self._sampling_type,
+                        SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic._Uniform,
+                    ):
+                        _non_iridescence_cls = (
+                            SimulationVirtualBSDF.AllCharacteristics.NonIridescence
+                        )  # done to pass PEP8 E501
+                        self._sampling_type = _non_iridescence_cls.Anisotropic._Uniform(
+                            self._mode.uniform_anisotropic,
+                            default_values=True,
+                            stable_ctr=True,
+                        )
+                    if self._sampling_type._uniform is not self._mode.uniform_anisotropic:
+                        self._sampling_type = self._mode.uniform_anisotropic
+                    return self._sampling_type
 
             def __init__(
                 self,
