@@ -2766,6 +2766,56 @@ class SimulationVirtualBSDF(BaseSimulation):
         """
         self._job.virtualbsdfbench_simulation_properties.stop_condition_rays_number = value
 
+    def set_sensor_paths(self, sensor_paths: List[str]) -> None:
+        """
+        Disable setting sensor  paths for this subclass.
+
+        This method is intentionally not supported in ``SimulationVirtualBSDF``.
+        It exists only to satisfy the interface defined in the base class and
+        will always raise a ``NotImplementedError`` when called.
+
+        Parameters
+        ----------
+        sensor_paths : list of str
+            Ignored. Present only for compatibility with the base class.
+
+        Returns
+        -------
+        None
+            This method does not return anything. It always raises an exception.
+
+        Raises
+        ------
+        NotImplementedError
+            Always raised, since this method is disabled in this subclass.
+        """
+        raise NotImplementedError("This method is disabled in SimulationVirtualBSDF")
+
+    def set_source_paths(self, source_paths: List[str]) -> None:
+        """
+        Disable setting source paths for this subclass.
+
+        This method is intentionally not supported in ``SimulationVirtualBSDF``.
+        It exists only to satisfy the interface defined in the base class and
+        will always raise a ``NotImplementedError`` when called.
+
+        Parameters
+        ----------
+        source_paths : list of str
+            Ignored. Present only for compatibility with the base class.
+
+        Returns
+        -------
+        None
+            This method does not return anything. It always raises an exception.
+
+        Raises
+        ------
+        NotImplementedError
+            Always raised, since this method is disabled in this subclass.
+        """
+        raise NotImplementedError("This method is disabled in SimulationVirtualBSDF")
+
     def set_weight(self) -> BaseSimulation.Weight:
         """Activate weight. Highly recommended to fill.
 
