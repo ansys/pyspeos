@@ -424,6 +424,54 @@ class BaseSimulation:
     #         geo_paths = [gr.to_native_link() for gr in geometries]
     #         self._simulation_instance.geometries.geo_paths[:] = geo_paths
     #     return self
+    @property
+    def geom_distance_tolerance(self) -> float:
+        """Return the geometry distance tolerance.
+
+        Returns
+        -------
+        float
+            Maximum distance in mm to consider two faces as tangent.
+        """
+        tmpl = self._simulation_template
+        match tmpl:
+            case _ if tmpl.HasField("virtual_bsdf_bench_simulation_template"):
+                return tmpl.virtual_bsdf_bench_simulation_template.geom_distance_tolerance
+            case _ if tmpl.HasField("direct_mc_simulation_template"):
+                return tmpl.direct_mc_simulation_template.geom_distance_tolerance
+            case _ if tmpl.HasField("inverse_mc_simulation_template"):
+                return tmpl.inverse_mc_simulation_template.geom_distance_tolerance
+            case _ if tmpl.HasField("interactive_simulation_template"):
+                return tmpl.interactive_simulation_template.geom_distance_tolerance
+            case _:
+                raise TypeError(f"Unknown simulation template type: {tmpl}")
+
+    @geom_distance_tolerance.setter
+    def geom_distance_tolerance(self, value: float) -> None:
+        """Set the geometry distance tolerance.
+
+        Parameters
+        ----------
+        value : float
+            Maximum distance in mm to consider two faces as tangent.
+            By default, ``0.01``
+
+        Returns
+        -------
+        None
+        """
+        tmpl = self._simulation_template
+        match tmpl:
+            case _ if tmpl.HasField("virtual_bsdf_bench_simulation_template"):
+                tmpl.virtual_bsdf_bench_simulation_template.geom_distance_tolerance = value
+            case _ if tmpl.HasField("direct_mc_simulation_template"):
+                tmpl.direct_mc_simulation_template.geom_distance_tolerance = value
+            case _ if tmpl.HasField("inverse_mc_simulation_template"):
+                tmpl.inverse_mc_simulation_template.geom_distance_tolerance = value
+            case _ if tmpl.HasField("interactive_simulation_template"):
+                tmpl.interactive_simulation_template.geom_distance_tolerance = value
+            case _:
+                raise TypeError(f"Unknown simulation template type: {tmpl}")
 
     def export(self, export_path: Union[str, Path]) -> None:
         """Export simulation.
@@ -864,34 +912,17 @@ class SimulationDirect(BaseSimulation):
         )
 
         if default_values:
-            # Default values
-            self.set_geom_distance_tolerance()
-            self.set_max_impact()
-            self.set_colorimetric_standard_CIE_1931()
-            self.set_dispersion()
             # self.set_fast_transmission_gathering()
             self.set_ambient_material_file_uri()
             self.set_weight()
             self.set_light_expert()
             # Default job properties
             self.set_stop_condition_rays_number().set_stop_condition_duration().set_automatic_save_frequency()
-
-    def set_geom_distance_tolerance(self, value: float = 0.01) -> SimulationDirect:
-        """Set the geometry distance tolerance.
-
-        Parameters
-        ----------
-        value : float
-            Maximum distance in mm to consider two faces as tangent.
-            By default, ``0.01``.
-
-        Returns
-        -------
-        ansys.speos.core.simulation.SimulationDirect
-            Direct simulation
-        """
-        self._simulation_template.direct_mc_simulation_template.geom_distance_tolerance = value
-        return self
+            # Default values
+            self.set_max_impact()
+            self.set_colorimetric_standard_CIE_1931()
+            self.set_dispersion()
+            self.geom_distance_tolerance = 0.01
 
     def set_max_impact(self, value: int = 100) -> SimulationDirect:
         """Define a value to determine the maximum number of ray impacts during propagation.
@@ -1193,8 +1224,12 @@ class SimulationInverse(BaseSimulation):
         )
 
         if default_values:
+            # self.set_fast_transmission_gathering()
+            self.set_ambient_material_file_uri()
+            # Default job properties
+            self.set_stop_condition_duration().set_stop_condition_passes_number().set_automatic_save_frequency()
             # Default values
-            self.set_geom_distance_tolerance()
+            self.geom_distance_tolerance = 0.01
             self.set_max_impact()
             self.set_weight()
             self.set_colorimetric_standard_CIE_1931()
@@ -1202,27 +1237,6 @@ class SimulationInverse(BaseSimulation):
             self.set_splitting()
             self.set_number_of_gathering_rays_per_source()
             self.set_maximum_gathering_error()
-            # self.set_fast_transmission_gathering()
-            self.set_ambient_material_file_uri()
-            # Default job properties
-            self.set_stop_condition_duration().set_stop_condition_passes_number().set_automatic_save_frequency()
-
-    def set_geom_distance_tolerance(self, value: float = 0.01) -> SimulationInverse:
-        """Set the geometry distance tolerance.
-
-        Parameters
-        ----------
-        value : float
-            Maximum distance in mm to consider two faces as tangent.
-            By default, ``0.01``
-
-        Returns
-        -------
-        ansys.speos.core.simulation.SimulationInverse
-            Inverse simulation
-        """
-        self._simulation_template.inverse_mc_simulation_template.geom_distance_tolerance = value
-        return self
 
     def set_max_impact(self, value: int = 100) -> SimulationInverse:
         """Define a value to determine the maximum number of ray impacts during propagation.
@@ -1592,31 +1606,14 @@ class SimulationInteractive(BaseSimulation):
         )
 
         if default_values:
-            # Default values
-            self.set_geom_distance_tolerance()
-            self.set_max_impact()
-            self.set_weight()
-            self.set_colorimetric_standard_CIE_1931()
             self.set_ambient_material_file_uri()
             # Default job parameters
             self.set_light_expert().set_impact_report()
-
-    def set_geom_distance_tolerance(self, value: float = 0.01) -> SimulationInteractive:
-        """Set the geometry distance tolerance.
-
-        Parameters
-        ----------
-        value : float
-            Maximum distance in mm to consider two faces as tangent.
-            By default, ``0.01``
-
-        Returns
-        -------
-        ansys.speos.core.simulation.SimulationInteractive
-            Interactive simulation
-        """
-        self._simulation_template.interactive_simulation_template.geom_distance_tolerance = value
-        return self
+            # Default values
+            self.geom_distance_tolerance = 0.01
+            self.set_max_impact()
+            self.set_weight()
+            self.set_colorimetric_standard_CIE_1931()
 
     def set_max_impact(self, value: int = 100) -> SimulationInteractive:
         """Define a value to determine the maximum number of ray impacts during propagation.
@@ -2563,37 +2560,6 @@ class SimulationVirtualBSDF(BaseSimulation):
             self.axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
             self.integration_angle = 2
             self.stop_condition_ray_number = 100000
-
-    @property
-    def geom_distance_tolerance(self) -> float:
-        """Return the geometry distance tolerance.
-
-        Returns
-        -------
-        float
-            Maximum distance in mm to consider two faces as tangent.
-        """
-        return (
-            self._simulation_template.virtual_bsdf_bench_simulation_template.geom_distance_tolerance
-        )
-
-    @geom_distance_tolerance.setter
-    def geom_distance_tolerance(self, value: float) -> None:
-        """Set the geometry distance tolerance.
-
-        Parameters
-        ----------
-        value : float
-            Maximum distance in mm to consider two faces as tangent.
-            By default, ``0.01``
-
-        Returns
-        -------
-        None
-        """
-        self._simulation_template.virtual_bsdf_bench_simulation_template.geom_distance_tolerance = (
-            value
-        )
 
     @property
     def max_impact(self) -> int:

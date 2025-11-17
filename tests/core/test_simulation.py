@@ -72,7 +72,7 @@ def test_create_direct(speos: Speos):
 
     # Change value
     # geom_distance_tolerance
-    sim1.set_geom_distance_tolerance(value=0.1)
+    sim1.geom_distance_tolerance = 0.1
     assert simulation_template.geom_distance_tolerance == 0.1
 
     # max_impact
@@ -173,7 +173,7 @@ def test_create_inverse(speos: Speos):
 
     # Change value
     # geom_distance_tolerance
-    sim1.set_geom_distance_tolerance(value=0.1)
+    sim1.geom_distance_tolerance = 0.1
     assert simulation_template.geom_distance_tolerance == 0.1
 
     # max_impact
@@ -288,7 +288,7 @@ def test_create_interactive(speos: Speos):
 
     # Change value
     # geom_distance_tolerance
-    sim1.set_geom_distance_tolerance(value=0.1)
+    sim1.geom_distance_tolerance = 0.1
     assert sim1._simulation_template.interactive_simulation_template.geom_distance_tolerance == 0.1
 
     # max_impact
@@ -684,7 +684,7 @@ def test_commit(speos: Speos):
     assert p.scene_link.get().simulations[0] == sim1._simulation_instance
 
     # Change only in local not committed (on template, on instance)
-    sim1.set_geom_distance_tolerance(value=0.1)
+    sim1.geom_distance_tolerance = 0.1
     assert sim1.simulation_template_link.get() != sim1._simulation_template
     sim1.set_sensor_paths(["Irradiance.1, Irradiance.2"])
     assert p.scene_link.get().simulations[0] != sim1._simulation_instance
@@ -733,7 +733,7 @@ def test_reset(speos: Speos):
     assert sim1._job.HasField("direct_mc_simulation_properties")  # local
 
     # Change local data (on template, on instance)
-    sim1.set_geom_distance_tolerance(value=0.1)
+    sim1.geom_distance_tolerance = 0.1
     assert sim1.simulation_template_link.get() != sim1._simulation_template
     sim1.set_sensor_paths(["Irradiance.1, Irradiance.2"])
     assert p.scene_link.get().simulations[0] != sim1._simulation_instance
@@ -801,7 +801,7 @@ def test_direct_modify_after_reset(speos: Speos):
     # Modify after a reset
     # Template
     assert sim1._simulation_template.direct_mc_simulation_template.geom_distance_tolerance == 0.01
-    sim1.set_geom_distance_tolerance(value=0.05)
+    sim1.geom_distance_tolerance = 0.05
     assert sim1._simulation_template.direct_mc_simulation_template.geom_distance_tolerance == 0.05
 
     # Props
@@ -872,7 +872,7 @@ def test_inverse_modify_after_reset(speos: Speos):
     # Modify after a reset
     # Template
     assert sim1._simulation_template.inverse_mc_simulation_template.geom_distance_tolerance == 0.01
-    sim1.set_geom_distance_tolerance(value=0.05)
+    sim1.geom_distance_tolerance = 0.05
     assert sim1._simulation_template.inverse_mc_simulation_template.geom_distance_tolerance == 0.05
 
     # Props
@@ -935,7 +935,7 @@ def test_interactive_modify_after_reset(speos: Speos):
     # Modify after a reset
     # Template
     assert sim1._simulation_template.interactive_simulation_template.geom_distance_tolerance == 0.01
-    sim1.set_geom_distance_tolerance(value=0.05)
+    sim1.geom_distance_tolerance = 0.05
     assert sim1._simulation_template.interactive_simulation_template.geom_distance_tolerance == 0.05
 
     # Props
