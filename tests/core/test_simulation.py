@@ -76,7 +76,7 @@ def test_create_direct(speos: Speos):
     assert simulation_template.geom_distance_tolerance == 0.1
 
     # max_impact
-    sim1.set_max_impact(value=200)
+    sim1.max_impact = 200
     assert simulation_template.max_impact == 200
 
     # weight - minimum_energy_percentage
@@ -177,7 +177,7 @@ def test_create_inverse(speos: Speos):
     assert simulation_template.geom_distance_tolerance == 0.1
 
     # max_impact
-    sim1.set_max_impact(value=200)
+    sim1.max_impact = 200
     assert simulation_template.max_impact == 200
 
     # weight - minimum_energy_percentage
@@ -292,7 +292,7 @@ def test_create_interactive(speos: Speos):
     assert sim1._simulation_template.interactive_simulation_template.geom_distance_tolerance == 0.1
 
     # max_impact
-    sim1.set_max_impact(value=200)
+    sim1.max_impact = 200
     assert sim1._simulation_template.interactive_simulation_template.max_impact == 200
 
     # weight - minimum_energy_percentage

@@ -473,6 +473,57 @@ class BaseSimulation:
             case _:
                 raise TypeError(f"Unknown simulation template type: {tmpl}")
 
+    @property
+    def max_impact(self) -> int:
+        """Return the maximum number of impacts.
+
+        Returns
+        -------
+        int
+            The maximum number of impacts.
+        """
+        tmpl = self._simulation_template
+        match tmpl:
+            case _ if tmpl.HasField("virtual_bsdf_bench_simulation_template"):
+                return tmpl.virtual_bsdf_bench_simulation_template.max_impact
+            case _ if tmpl.HasField("direct_mc_simulation_template"):
+                return tmpl.direct_mc_simulation_template.max_impact
+            case _ if tmpl.HasField("inverse_mc_simulation_template"):
+                return tmpl.inverse_mc_simulation_template.max_impact
+            case _ if tmpl.HasField("interactive_simulation_template"):
+                return tmpl.interactive_simulation_template.max_impact
+            case _:
+                raise TypeError(f"Unknown simulation template type: {tmpl}")
+
+    @max_impact.setter
+    def max_impact(self, value: int) -> None:
+        """Define a value to determine the maximum number of ray impacts during propagation.
+
+        When a ray has interacted N times with the geometry, the propagation of the ray stops.
+
+        Parameters
+        ----------
+        value : int
+            The maximum number of impacts.
+            By default, ``100``.
+
+        Returns
+        -------
+        None
+        """
+        tmpl = self._simulation_template
+        match tmpl:
+            case _ if tmpl.HasField("virtual_bsdf_bench_simulation_template"):
+                tmpl.virtual_bsdf_bench_simulation_template.max_impact = value
+            case _ if tmpl.HasField("direct_mc_simulation_template"):
+                tmpl.direct_mc_simulation_template.max_impact = value
+            case _ if tmpl.HasField("inverse_mc_simulation_template"):
+                tmpl.inverse_mc_simulation_template.max_impact = value
+            case _ if tmpl.HasField("interactive_simulation_template"):
+                tmpl.interactive_simulation_template.max_impact = value
+            case _:
+                raise TypeError(f"Unknown simulation template type: {tmpl}")
+
     def export(self, export_path: Union[str, Path]) -> None:
         """Export simulation.
 
@@ -919,29 +970,10 @@ class SimulationDirect(BaseSimulation):
             # Default job properties
             self.set_stop_condition_rays_number().set_stop_condition_duration().set_automatic_save_frequency()
             # Default values
-            self.set_max_impact()
             self.set_colorimetric_standard_CIE_1931()
             self.set_dispersion()
             self.geom_distance_tolerance = 0.01
-
-    def set_max_impact(self, value: int = 100) -> SimulationDirect:
-        """Define a value to determine the maximum number of ray impacts during propagation.
-
-        When a ray has interacted N times with the geometry, the propagation of the ray stops.
-
-        Parameters
-        ----------
-        value : int
-            The maximum number of impacts.
-            By default, ``100``.
-
-        Returns
-        -------
-        ansys.speos.core.simulation.SimulationDirect
-            Direct simulation
-        """
-        self._simulation_template.direct_mc_simulation_template.max_impact = value
-        return self
+            self.max_impact = 100
 
     def set_weight(self) -> BaseSimulation.Weight:
         """Activate weight. Highly recommended to fill.
@@ -1230,32 +1262,13 @@ class SimulationInverse(BaseSimulation):
             self.set_stop_condition_duration().set_stop_condition_passes_number().set_automatic_save_frequency()
             # Default values
             self.geom_distance_tolerance = 0.01
-            self.set_max_impact()
+            self.max_impact = 100
             self.set_weight()
             self.set_colorimetric_standard_CIE_1931()
             self.set_dispersion()
             self.set_splitting()
             self.set_number_of_gathering_rays_per_source()
             self.set_maximum_gathering_error()
-
-    def set_max_impact(self, value: int = 100) -> SimulationInverse:
-        """Define a value to determine the maximum number of ray impacts during propagation.
-
-        When a ray has interacted N times with the geometry, the propagation of the ray stops.
-
-        Parameters
-        ----------
-        value : int
-            The maximum number of impacts.
-            By default, ``100``.
-
-        Returns
-        -------
-        ansys.speos.core.simulation.SimulationInverse
-            Inverse simulation
-        """
-        self._simulation_template.inverse_mc_simulation_template.max_impact = value
-        return self
 
     def set_weight(self) -> BaseSimulation.Weight:
         """Activate weight. Highly recommended to fill.
@@ -1611,28 +1624,9 @@ class SimulationInteractive(BaseSimulation):
             self.set_light_expert().set_impact_report()
             # Default values
             self.geom_distance_tolerance = 0.01
-            self.set_max_impact()
+            self.max_impact = 100
             self.set_weight()
             self.set_colorimetric_standard_CIE_1931()
-
-    def set_max_impact(self, value: int = 100) -> SimulationInteractive:
-        """Define a value to determine the maximum number of ray impacts during propagation.
-
-        When a ray has interacted N times with the geometry, the propagation of the ray stops.
-
-        Parameters
-        ----------
-        value : int
-            The maximum number of impacts.
-            By default, ``100``.
-
-        Returns
-        -------
-        ansys.speos.core.simulation.SimulationInteractive
-            Interactive simulation
-        """
-        self._simulation_template.interactive_simulation_template.max_impact = value
-        return self
 
     def set_weight(self) -> BaseSimulation.Weight:
         """Activate weight. Highly recommended to fill.
@@ -2551,44 +2545,16 @@ class SimulationVirtualBSDF(BaseSimulation):
         self._mode = self.set_mode_all_characteristics()
 
         if default_values:
-            self.geom_distance_tolerance = 0.01
-            self.max_impact = 100
-            self.set_weight()
-            self.set_colorimetric_standard_CIE_1931()
             self.analysis_x_ratio = 100
             self.analysis_y_ratio = 100
             self.axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
             self.integration_angle = 2
             self.stop_condition_ray_number = 100000
-
-    @property
-    def max_impact(self) -> int:
-        """Return the maximum number of impacts.
-
-        Returns
-        -------
-        int
-            The maximum number of impacts.
-        """
-        return self._simulation_template.virtual_bsdf_bench_simulation_template.max_impact
-
-    @max_impact.setter
-    def max_impact(self, value: int) -> None:
-        """Define a value to determine the maximum number of ray impacts during propagation.
-
-        When a ray has interacted N times with the geometry, the propagation of the ray stops.
-
-        Parameters
-        ----------
-        value : int
-            The maximum number of impacts.
-            By default, ``100``.
-
-        Returns
-        -------
-        None
-        """
-        self._simulation_template.virtual_bsdf_bench_simulation_template.max_impact = value
+            # default simulation properties
+            self.geom_distance_tolerance = 0.01
+            self.max_impact = 100
+            self.set_weight()
+            self.set_colorimetric_standard_CIE_1931()
 
     @property
     def integration_angle(self) -> float:
