@@ -434,14 +434,14 @@ class BaseSimulation:
             Maximum distance in mm to consider two faces as tangent.
         """
         tmpl = self._simulation_template
-        match tmpl:
-            case _ if tmpl.HasField("virtual_bsdf_bench_simulation_template"):
+        match self._type.__name__:
+            case "SimulationVirtualBSDF":
                 return tmpl.virtual_bsdf_bench_simulation_template.geom_distance_tolerance
-            case _ if tmpl.HasField("direct_mc_simulation_template"):
+            case "SimulationDirect":
                 return tmpl.direct_mc_simulation_template.geom_distance_tolerance
-            case _ if tmpl.HasField("inverse_mc_simulation_template"):
+            case "SimulationInverse":
                 return tmpl.inverse_mc_simulation_template.geom_distance_tolerance
-            case _ if tmpl.HasField("interactive_simulation_template"):
+            case "SimulationInteractive":
                 return tmpl.interactive_simulation_template.geom_distance_tolerance
             case _:
                 raise TypeError(f"Unknown simulation template type: {tmpl}")
@@ -461,14 +461,14 @@ class BaseSimulation:
         None
         """
         tmpl = self._simulation_template
-        match tmpl:
-            case _ if tmpl.HasField("virtual_bsdf_bench_simulation_template"):
+        match self._type.__name__:
+            case "SimulationVirtualBSDF":
                 tmpl.virtual_bsdf_bench_simulation_template.geom_distance_tolerance = value
-            case _ if tmpl.HasField("direct_mc_simulation_template"):
+            case "SimulationDirect":
                 tmpl.direct_mc_simulation_template.geom_distance_tolerance = value
-            case _ if tmpl.HasField("inverse_mc_simulation_template"):
+            case "SimulationInverse":
                 tmpl.inverse_mc_simulation_template.geom_distance_tolerance = value
-            case _ if tmpl.HasField("interactive_simulation_template"):
+            case "SimulationInteractive":
                 tmpl.interactive_simulation_template.geom_distance_tolerance = value
             case _:
                 raise TypeError(f"Unknown simulation template type: {tmpl}")
@@ -961,6 +961,7 @@ class SimulationDirect(BaseSimulation):
             metadata=metadata,
             simulation_instance=simulation_instance,
         )
+        self._type = type(self)
 
         if default_values:
             # self.set_fast_transmission_gathering()
@@ -1254,6 +1255,7 @@ class SimulationInverse(BaseSimulation):
             metadata=metadata,
             simulation_instance=simulation_instance,
         )
+        self._type = type(self)
 
         if default_values:
             # self.set_fast_transmission_gathering()
@@ -1617,6 +1619,7 @@ class SimulationInteractive(BaseSimulation):
             metadata=metadata,
             simulation_instance=simulation_instance,
         )
+        self._type = type(self)
 
         if default_values:
             self.set_ambient_material_file_uri()
@@ -2535,6 +2538,7 @@ class SimulationVirtualBSDF(BaseSimulation):
             metadata=metadata,
             simulation_instance=simulation_instance,
         )
+        self._type = type(self)
 
         self._wavelengths_range = None
         self._sensor_sampling_mode = None
