@@ -344,6 +344,7 @@ class BaseSimulation:
             metadata = {}
         # Attribute representing the kind of simulation.
         self._type = None
+        self._template_class = None
         self._light_expert_changed = False
 
         if simulation_instance is None:
@@ -433,18 +434,10 @@ class BaseSimulation:
         float
             Maximum distance in mm to consider two faces as tangent.
         """
-        tmpl = self._simulation_template
-        match self._type.__name__:
-            case "SimulationVirtualBSDF":
-                return tmpl.virtual_bsdf_bench_simulation_template.geom_distance_tolerance
-            case "SimulationDirect":
-                return tmpl.direct_mc_simulation_template.geom_distance_tolerance
-            case "SimulationInverse":
-                return tmpl.inverse_mc_simulation_template.geom_distance_tolerance
-            case "SimulationInteractive":
-                return tmpl.interactive_simulation_template.geom_distance_tolerance
-            case _:
-                raise TypeError(f"Unknown simulation template type: {tmpl}")
+        if self._template_class is not None:
+            return getattr(self._simulation_template, self._template_class).geom_distance_tolerance
+        else:
+            raise TypeError(f"Unknown simulation template type: {self._template_class}")
 
     @geom_distance_tolerance.setter
     def geom_distance_tolerance(self, value: float) -> None:
@@ -460,18 +453,10 @@ class BaseSimulation:
         -------
         None
         """
-        tmpl = self._simulation_template
-        match self._type.__name__:
-            case "SimulationVirtualBSDF":
-                tmpl.virtual_bsdf_bench_simulation_template.geom_distance_tolerance = value
-            case "SimulationDirect":
-                tmpl.direct_mc_simulation_template.geom_distance_tolerance = value
-            case "SimulationInverse":
-                tmpl.inverse_mc_simulation_template.geom_distance_tolerance = value
-            case "SimulationInteractive":
-                tmpl.interactive_simulation_template.geom_distance_tolerance = value
-            case _:
-                raise TypeError(f"Unknown simulation template type: {tmpl}")
+        if self._template_class is not None:
+            getattr(self._simulation_template, self._template_class).geom_distance_tolerance = value
+        else:
+            raise TypeError(f"Unknown simulation template type: {self._template_class}")
 
     @property
     def max_impact(self) -> int:
@@ -482,18 +467,10 @@ class BaseSimulation:
         int
             The maximum number of impacts.
         """
-        tmpl = self._simulation_template
-        match tmpl:
-            case _ if tmpl.HasField("virtual_bsdf_bench_simulation_template"):
-                return tmpl.virtual_bsdf_bench_simulation_template.max_impact
-            case _ if tmpl.HasField("direct_mc_simulation_template"):
-                return tmpl.direct_mc_simulation_template.max_impact
-            case _ if tmpl.HasField("inverse_mc_simulation_template"):
-                return tmpl.inverse_mc_simulation_template.max_impact
-            case _ if tmpl.HasField("interactive_simulation_template"):
-                return tmpl.interactive_simulation_template.max_impact
-            case _:
-                raise TypeError(f"Unknown simulation template type: {tmpl}")
+        if self._template_class is not None:
+            return getattr(self._simulation_template, self._template_class).max_impact
+        else:
+            raise TypeError(f"Unknown simulation template type: {self._template_class}")
 
     @max_impact.setter
     def max_impact(self, value: int) -> None:
@@ -511,18 +488,10 @@ class BaseSimulation:
         -------
         None
         """
-        tmpl = self._simulation_template
-        match tmpl:
-            case _ if tmpl.HasField("virtual_bsdf_bench_simulation_template"):
-                tmpl.virtual_bsdf_bench_simulation_template.max_impact = value
-            case _ if tmpl.HasField("direct_mc_simulation_template"):
-                tmpl.direct_mc_simulation_template.max_impact = value
-            case _ if tmpl.HasField("inverse_mc_simulation_template"):
-                tmpl.inverse_mc_simulation_template.max_impact = value
-            case _ if tmpl.HasField("interactive_simulation_template"):
-                tmpl.interactive_simulation_template.max_impact = value
-            case _:
-                raise TypeError(f"Unknown simulation template type: {tmpl}")
+        if self._template_class is not None:
+            getattr(self._simulation_template, self._template_class).max_impact = value
+        else:
+            raise TypeError(f"Unknown simulation template type: {self._template_class}")
 
     def export(self, export_path: Union[str, Path]) -> None:
         """Export simulation.
@@ -961,7 +930,7 @@ class SimulationDirect(BaseSimulation):
             metadata=metadata,
             simulation_instance=simulation_instance,
         )
-        self._type = type(self)
+        self._template_class = "direct_mc_simulation_template"
 
         if default_values:
             # self.set_fast_transmission_gathering()
@@ -1255,7 +1224,7 @@ class SimulationInverse(BaseSimulation):
             metadata=metadata,
             simulation_instance=simulation_instance,
         )
-        self._type = type(self)
+        self._template_class = "inverse_mc_simulation_template"
 
         if default_values:
             # self.set_fast_transmission_gathering()
@@ -1619,7 +1588,7 @@ class SimulationInteractive(BaseSimulation):
             metadata=metadata,
             simulation_instance=simulation_instance,
         )
-        self._type = type(self)
+        self._template_class = "interactive_simulation_template"
 
         if default_values:
             self.set_ambient_material_file_uri()
@@ -2538,7 +2507,7 @@ class SimulationVirtualBSDF(BaseSimulation):
             metadata=metadata,
             simulation_instance=simulation_instance,
         )
-        self._type = type(self)
+        self._template_class = "virtual_bsdf_bench_simulation_template"
 
         self._wavelengths_range = None
         self._sensor_sampling_mode = None
