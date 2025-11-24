@@ -1,0 +1,188 @@
+
+
+
+
+
+
+:class:`BalanceModeDisplayPrimaries`
+====================================
+
+.. py:class:: ansys.speos.core.sensor.SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries(balance_mode_display, default_values = True, stable_ctr = False)
+
+   
+   BalanceMode : DisplayPrimaries.
+
+   Spectral results are converted in a three-channel result.
+   Then a post-treatment is realized to take the distortion induced by the display
+   devices into account.
+   With this method, displayed results are similar to what the camera really gets.
+
+   :Parameters:
+
+       **balance_mode_display** : ansys.api.speos.sensor.v1.camera_sensor_pb2.
+           ..
+
+       **SensorCameraBalanceModeDisplay**
+           SensorCameraBalanceModeDisplay protobuf object to modify.
+
+       **default_values** : :ref:`bool <python:bltin-boolean-values>`
+           Uses default values when True.
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_balance_mode_display_primaries
+   method available in color class.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: BalanceModeDisplayPrimaries
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_red_display_file_uri`
+            - Set the red display file.
+          * - :py:attr:`~set_green_display_file_uri`
+            - Set the green display file.
+          * - :py:attr:`~set_blue_display_file_uri`
+            - Set the blue display file.
+
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.sensor.SensorCamera.Photometric.Color import BalanceModeDisplayPrimaries
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_red_display_file_uri(uri)
+
+   
+   Set the red display file.
+
+
+   :Parameters:
+
+       **uri** : :class:`python:str`
+           Red display file.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries`
+           BalanceModeDisplayPrimaries.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_green_display_file_uri(uri)
+
+   
+   Set the green display file.
+
+
+   :Parameters:
+
+       **uri** : :class:`python:str`
+           Green display file.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries`
+           BalanceModeDisplayPrimaries.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_blue_display_file_uri(uri)
+
+   
+   Set the blue display file.
+
+
+   :Parameters:
+
+       **uri** : :class:`python:str`
+           Blue display file.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries`
+           BalanceModeDisplayPrimaries.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
