@@ -37,6 +37,7 @@ from ansys.speos.core.generic.constants import (
 )
 from ansys.speos.core.generic.general_methods import retrieve_speos_install_dir
 from ansys.speos.core.speos import Speos
+from ansys.speos.core.kernel.client import default_local_channel
 
 try:
     import ansys.platform.instancemanagement as pypim
@@ -182,9 +183,7 @@ def launch_local_speos_rpc_server(
 
     subprocess.Popen(command, stdout=out, stderr=err)  # nosec B603
     return Speos(
-        host="localhost",
-        port=port,
-        message_size=client_message_size,
+        channel=default_local_channel(port=port, message_size=client_message_size),
         logging_level=log_level,
         logging_file=logfile,
         speos_install_path=speos_rpc_path,

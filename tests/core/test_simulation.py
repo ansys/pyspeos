@@ -35,10 +35,8 @@ from ansys.speos.core.simulation import (
     SimulationInverse,
 )
 from ansys.speos.core.source import SourceLuminaire
-from tests.conftest import config, test_path
+from tests.conftest import config, test_path, IS_DOCKER
 from tests.helper import does_file_exist, remove_file
-
-IS_DOCKER = config.get("SpeosServerOnDocker")
 
 
 @pytest.mark.supported_speos_versions(min=251)

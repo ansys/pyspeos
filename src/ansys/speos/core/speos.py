@@ -45,22 +45,14 @@ class Speos:
 
     Parameters
     ----------
-    host : str, optional
-        Host where the server is running.
-        By default, ``ansys.speos.core.kernel.client.DEFAULT_HOST``.
-    port : Union[str, int], optional
-        Port number where the server is running.
-        By default, ``ansys.speos.core.kernel.client.DEFAULT_PORT``.
     version : str
         The Speos server version to run, in the 3 digits format, such as "242".
         If unspecified, the version will be chosen as
         ``ansys.speos.core.kernel.client.LATEST_VERSION``.
-    channel : ~grpc.Channel, optional
+    channel : grpc.Channel, optional
         gRPC channel for server communication.
+        Can be created with ``ansys.speos.core.kernel.grpc.transportoptions`` and ``ansys.speos.core.kernel.grpc.cyberchannel``
         By default, ``None``.
-    message_size: int
-        Maximum Message size of a newly generated channel
-        By default, ``MAX_CLIENT_MESSAGE_SIZE``.
     remote_instance : ansys.platform.instancemanagement.Instance
         The corresponding remote instance when the Speos Service
         is launched through PyPIM. This instance will be deleted when calling
@@ -77,11 +69,8 @@ class Speos:
 
     def __init__(
         self,
-        host: str = DEFAULT_HOST,
-        port: Union[str, int] = DEFAULT_PORT,
         version: str = DEFAULT_VERSION,
         channel: Optional[Channel] = None,
-        message_size: int = MAX_CLIENT_MESSAGE_SIZE,
         remote_instance: Optional["Instance"] = None,
         timeout: Optional[int] = 60,
         logging_level: Optional[int] = logging.INFO,
@@ -89,11 +78,8 @@ class Speos:
         speos_install_path: Optional[Union[Path, str]] = None,
     ):
         self._client = SpeosClient(
-            host=host,
-            port=port,
             version=version,
             channel=channel,
-            message_size=message_size,
             remote_instance=remote_instance,
             timeout=timeout,
             logging_level=logging_level,

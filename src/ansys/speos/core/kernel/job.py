@@ -162,7 +162,7 @@ class JobStub(CrudStub):
     Like in the following example:
 
     >>> from ansys.speos.core.speos import Speos
-    >>> speos = Speos(host="localhost", port=50098)
+    >>> speos = Speos()
     >>> job_db = speos.client.jobs()
 
     """

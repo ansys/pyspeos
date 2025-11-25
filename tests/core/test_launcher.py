@@ -27,21 +27,28 @@ from pathlib import Path
 import subprocess
 import tempfile
 from unittest.mock import patch
+from unittest import TestCase 
 
 import psutil
 import pytest
 
 from ansys.speos.core.generic.constants import DEFAULT_VERSION
-from ansys.speos.core.launcher import launch_local_speos_rpc_server
-from tests.conftest import IS_WINDOWS, config
+from ansys.speos.core.launcher import launch_local_speos_rpc_server, retrieve_speos_install_dir
+from tests.conftest import IS_WINDOWS, IS_DOCKER, SERVER_PORT, config
 
-IS_DOCKER = config.get("SpeosServerOnDocker")
+# Check local installation
+try:
+    _ = retrieve_speos_install_dir(None, DEFAULT_VERSION)
+    HAS_LOCAL_SPEOS_SERVER = True
+except FileNotFoundError:
+    HAS_LOCAL_SPEOS_SERVER = False
 
-
-@pytest.mark.skipif(IS_DOCKER, reason="launcher only works without Docker image")
+@pytest.mark.skipif(
+        not HAS_LOCAL_SPEOS_SERVER,
+        reason="requires Speos server to be installed locally")
 def test_local_session(*args):
     """Test local session launch and close."""
-    port = config.get("SpeosServerPort") + 1
+    port = SERVER_PORT + 1
     if IS_WINDOWS:
         speos_loc = None
         name = "SpeosRPC_Server.exe"
@@ -59,12 +66,14 @@ def test_local_session(*args):
     running = p_list.count(name) > nb_process
     assert running is not closed
 
-
 @patch.object(subprocess, "Popen")
 @patch.object(subprocess, "run")
+@pytest.mark.skipif(
+        not IS_DOCKER,
+        reason="requires Speos server to be installed locally")
 def test_coverage_launcher_speosdocker(*args):
     """Test local session launch on remote server to improve coverage."""
-    port = config.get("SpeosServerPort")
+    port = SERVER_PORT
     tmp_file = tempfile.gettempdir()
     if IS_WINDOWS:
         name = "SpeosRPC_Server.exe"

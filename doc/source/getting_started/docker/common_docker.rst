@@ -42,21 +42,21 @@ To use another product version, please modify the image label from `251` to the 
         .. code-block:: bash
 
             export LICENSE_SERVER="1055@XXX.XXX.XXX.XXX"
-            docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e ANSYSLMD_LICENSE_FILE=$LICENSE_SERVER --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:251
+            docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e ANSYSLMD_LICENSE_FILE=$LICENSE_SERVER --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:252 --transport_insecure
 
     .. tab-item:: Powershell
 
         .. code-block:: pwsh
 
             $env:LICENSE_SERVER="1055@XXX.XXX.XXX.XXX"
-            docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e ANSYSLMD_LICENSE_FILE=$env:LICENSE_SERVER --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:251
+            docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e ANSYSLMD_LICENSE_FILE=$env:LICENSE_SERVER --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:252 --transport_insecure
 
     .. tab-item:: Windows CMD
 
         .. code-block:: bash
 
             set LICENSE_SERVER="1055@XXX.XXX.XXX.XXX"
-            docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e ANSYSLMD_LICENSE_FILE=%LICENSE_SERVER% --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:251
+            docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e ANSYSLMD_LICENSE_FILE=%LICENSE_SERVER% --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:252 --transport_insecure
 
 Connect to the Speos service
 ----------------------------
@@ -65,22 +65,6 @@ After the Speos service is launched, connect to it with these commands:
 
 .. code:: python
 
-   from ansys.speos.core import Speos
+   from ansys.speos.core import Speos, default_docker_channel
 
-   speos = Speos()
-
-By default, the ``Speos`` instance connects to ``127.0.0.1`` (``"localhost"``) on
-port ``50098``.
-
-You can change this by modifying the ``host`` and ``port``
-parameters of the ``Speos`` object, but note that you must also modify
-your ``docker run`` command by changing the ``<HOST-PORT>-50098`` argument.
-
-The following tabs show the commands that set the environment variables and ``Speos``
-function.
-
-.. code:: python
-
-    from ansys.speos.core import Speos
-
-    speos = Speos(host="127.0.0.1", port=50098)
+   speos = Speos(channel = default_docker_channel())

@@ -40,6 +40,8 @@ from ansys.speos.core.generic.constants import (
     DEFAULT_VERSION,
     MAX_CLIENT_MESSAGE_SIZE,
 )
+from ansys.speos.core.kernel.grpc.transportoptions import TransportOptions, TransportMode, UDSOptions, InsecureOptions, WNUAOptions
+from ansys.speos.core.kernel.grpc.cyberchannel import create_channel
 from ansys.speos.core.generic.general_methods import retrieve_speos_install_dir
 from ansys.speos.core.kernel.body import BodyLink, BodyStub
 from ansys.speos.core.kernel.face import FaceLink, FaceStub
@@ -83,7 +85,7 @@ def wait_until_healthy(channel: grpc.Channel, timeout: float):
 
     Parameters
     ----------
-    channel : ~grpc.Channel
+    channel : grpc.Channel
         Channel to wait until established and healthy.
     timeout : float
         Timeout in seconds. One attempt will be made each 100 milliseconds
@@ -107,6 +109,33 @@ def wait_until_healthy(channel: grpc.Channel, timeout: float):
             f"Channel health check to target '{target_str}' timed out after {timeout} seconds."
         )
 
+def default_docker_channel(
+        host: Optional[str] = DEFAULT_HOST,
+        port: Union[str, int] = DEFAULT_PORT,
+        message_size: int = MAX_CLIENT_MESSAGE_SIZE
+        ) -> grpc.Channel:
+    return TransportOptions(
+        mode=TransportMode.INSECURE, 
+        options=InsecureOptions(host=host, port=port, allow_remote_host=True)
+        ).create_channel(grpc_options=[("grpc.max_receive_message_length", message_size)])
+
+def default_local_channel(
+        port: Union[str, int] = DEFAULT_PORT,
+        message_size: int = MAX_CLIENT_MESSAGE_SIZE
+        ) -> grpc.Channel:
+    """Create default transport options, WNUA on Windows, UDS on Linux"""
+    # Otherwise use default based on OS
+    if os.name == "nt":
+        transport = TransportOptions(
+            mode=TransportMode.WNUA, 
+            options=WNUAOptions(host=DEFAULT_HOST, port=port)
+            )
+    else:
+        transport = TransportOptions(
+            mode=TransportMode.UDS, 
+            options=UDSOptions(uds_dir=f"/tmp/speosrpc_sock_{port}", uds_id="ansys_tools_filetransfer")
+            )
+    return transport.create_channel(grpc_options=[("grpc.max_receive_message_length", message_size)])
 
 class SpeosClient:
     """
@@ -114,18 +143,9 @@ class SpeosClient:
 
     Parameters
     ----------
-    host : str, optional
-        Host where the server is running.
-        By default, ``DEFAULT_HOST``.
-    port : Union[str, int], optional
-        Port number where the server is running.
-        By default, ``DEFAULT_PORT``.
-    channel : ~grpc.Channel, optional
+    channel : grpc.Channel, optional
         gRPC channel for server communication.
         By default, ``None``.
-    message_size: int
-        Maximum Message size of a newly generated channel
-        By default, ``MAX_CLIENT_MESSAGE_SIZE``.
     remote_instance : ansys.platform.instancemanagement.Instance
         The corresponding remote instance when the Speos Service
         is launched through PyPIM. This instance will be deleted when calling
@@ -144,11 +164,8 @@ class SpeosClient:
 
     def __init__(
         self,
-        host: Optional[str] = DEFAULT_HOST,
-        port: Union[str, int] = DEFAULT_PORT,
         version: str = DEFAULT_VERSION,
         channel: Optional[grpc.Channel] = None,
-        message_size: int = MAX_CLIENT_MESSAGE_SIZE,
         remote_instance: Optional["Instance"] = None,
         timeout: Optional[int] = 60,
         logging_level: Optional[int] = logging.INFO,
@@ -171,27 +188,16 @@ class SpeosClient:
         else:
             self._version = version
         if channel:
-            # Used for PyPIM when directly providing a channel
+            # grpc channel is provided by caller, used by PyPIM or Docker server
             self._channel = channel
-            self._target = str(channel)
         else:
-            if host == "0.0.0.0":  # nosec
-                warnings.warn(
-                    "The service is exposed on all network interfaces. This is a security risk.",
-                    stacklevel=2,
-                )
-
-            self._host = host
-            self._port = port
-            self._target = f"{host}:{port}"
-            self._channel = grpc.insecure_channel(
-                self._target,
-                options=[("grpc.max_receive_message_length", message_size)],
-            )
+            self._channel = default_local_channel()
+            
         # do not finish initialization until channel is healthy
         wait_until_healthy(self._channel, timeout)
 
         # once connection with the client is established, create a logger
+        self._target = self._channel._channel.target().decode()
         self._log = LOGGER.add_instance_logger(
             name=self._target, client_instance=self, level=logging_level
         )

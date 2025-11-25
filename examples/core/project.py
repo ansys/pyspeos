@@ -23,6 +23,7 @@ from ansys.speos.core.launcher import launch_local_speos_rpc_server
 from ansys.speos.core.sensor import SensorIrradiance
 from ansys.speos.core.simulation import SimulationDirect
 from ansys.speos.core.source import SourceLuminaire, SourceSurface
+from ansys.speos.core.kernel.client import SpeosClient, default_docker_channel, default_local_channel
 
 # -
 
@@ -57,7 +58,7 @@ else:
 # be used to start a local instance of the service.
 
 if USE_DOCKER:
-    speos = Speos(host=HOSTNAME, port=GRPC_PORT)
+    speos = Speos(channel = default_docker_channel())
 else:
     speos = launch_local_speos_rpc_server(port=GRPC_PORT)
 
