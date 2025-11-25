@@ -26,11 +26,12 @@ This module provides classes and enumerations to configure and manage
 different transport modes (UDS, mTLS, Insecure) for the FileTransfer Tool.
 """
 
-from dataclasses import dataclass, field
-import os
-from pathlib import Path
+from dataclasses import dataclass
 import enum
+from pathlib import Path
+
 from .cyberchannel import create_channel
+
 
 class TransportMode(enum.Enum):
     """Enumeration of transport modes supported by the FileTransfer Tool."""
@@ -99,6 +100,7 @@ class InsecureOptions:
             "port": self.port,
         }
 
+
 @dataclass(kw_only=True)
 class WNUAOptions:
     """Options for Windows Named User Authentication transport mode."""
@@ -111,6 +113,7 @@ class WNUAOptions:
             "host": self.host,
             "port": self.port,
         }
+
 
 @dataclass(kw_only=True)
 class TransportOptions:
@@ -145,9 +148,7 @@ class TransportOptions:
                 )
         elif mode == TransportMode.WNUA:
             if not isinstance(options, WNUAOptions):
-                raise TypeError(
-                    "For WNUA transport mode, options must be of type WNUAOptions."
-                )
+                raise TypeError("For WNUA transport mode, options must be of type WNUAOptions.")
         else:
             raise ValueError(f"Unsupported transport mode: {mode}")
 
@@ -160,12 +161,9 @@ class TransportOptions:
             "transport_mode": self.mode.value,
             **self.options._to_cyberchannel_kwargs(),
         }
-    
+
     def create_channel(self, grpc_options):
         """
         Create a gRPC channel based on the transport options.
         """
-        return create_channel(
-                **self._to_cyberchannel_kwargs(), 
-                grpc_options=grpc_options
-                )
+        return create_channel(**self._to_cyberchannel_kwargs(), grpc_options=grpc_options)

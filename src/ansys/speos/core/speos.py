@@ -29,10 +29,7 @@ from typing import TYPE_CHECKING, Optional, Union
 from grpc import Channel
 
 from ansys.speos.core.generic.constants import (
-    DEFAULT_HOST,
-    DEFAULT_PORT,
     DEFAULT_VERSION,
-    MAX_CLIENT_MESSAGE_SIZE,
 )
 from ansys.speos.core.kernel.client import SpeosClient
 

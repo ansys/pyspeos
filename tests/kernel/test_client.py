@@ -22,11 +22,13 @@
 
 """Test basic client connection."""
 
-from ansys.speos.core.kernel.grpc.cyberchannel import create_channel
-
-from ansys.speos.core.kernel.client import SpeosClient, default_local_channel, default_docker_channel
+from ansys.speos.core.kernel.client import (
+    SpeosClient,
+    default_docker_channel,
+    default_local_channel,
+)
 from ansys.speos.core.speos import Speos
-from tests.conftest import SERVER_PORT, IS_DOCKER
+from tests.conftest import IS_DOCKER, SERVER_PORT
 
 
 def test_client_init(speos: Speos):

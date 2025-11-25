@@ -28,8 +28,12 @@ import numpy as np
 
 from ansys.speos.core import Speos
 from ansys.speos.core.bsdf import AnisotropicBSDF, BxdfDatapoint
+from ansys.speos.core.kernel.client import (
+    SpeosClient,
+    default_docker_channel,
+)
 from ansys.speos.core.launcher import launch_local_speos_rpc_server
-from ansys.speos.core.kernel.client import SpeosClient, default_docker_channel, default_local_channel
+
 # -
 
 # ### Define constants
@@ -159,8 +163,8 @@ else:
 # be used to start a local instance of the service.
 
 if USE_DOCKER:
-    speos = Speos(channel = default_docker_channel())
-else:  
+    speos = Speos(channel=default_docker_channel())
+else:
     speos = launch_local_speos_rpc_server()
 
 # ### Create a BXDFDatapoint

@@ -37,8 +37,8 @@ import pytest
 
 from ansys.speos.core import LOG
 from ansys.speos.core.generic.constants import MAX_CLIENT_MESSAGE_SIZE
+from ansys.speos.core.kernel.client import default_docker_channel, default_local_channel
 from ansys.speos.core.speos import Speos
-from ansys.speos.core.kernel.client import default_local_channel, default_docker_channel
 
 try:
     import pyvista as pv
@@ -65,6 +65,7 @@ IS_DOCKER = config.get("SpeosServerOnDocker")
 if IS_DOCKER:
     DOCKER_CONTAINER_NAME = config.get("SpeosContainerName")
 SERVER_PORT = config.get("SpeosServerPort")
+
 
 @pytest.fixture(scope="session")
 def speos():
@@ -95,6 +96,7 @@ def speos():
     )
 
     yield speos
+
 
 # set test_path var depending on if we are using the servers in a docker container or not
 local_test_path = local_path / "assets"

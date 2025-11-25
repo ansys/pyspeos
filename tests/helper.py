@@ -35,7 +35,7 @@ from ansys.speos.core import LOG  # Global logger
 from ansys.speos.core.kernel.job import JobLink, messages as job_messages
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 from ansys.speos.core.speos import SpeosClient
-from tests.conftest import IS_DOCKER, DOCKER_CONTAINER_NAME
+from tests.conftest import DOCKER_CONTAINER_NAME, IS_DOCKER
 
 
 def clean_all_dbs(speos_client: SpeosClient):
@@ -108,11 +108,7 @@ def does_file_exist(path):
     if IS_DOCKER:
         return (
             subprocess.call(
-                "docker exec "
-                + DOCKER_CONTAINER_NAME
-                + ' test -f "'
-                + Path(path).as_posix()
-                + '"',
+                "docker exec " + DOCKER_CONTAINER_NAME + ' test -f "' + Path(path).as_posix() + '"',
                 shell=True,
             )
             == 0
@@ -139,11 +135,7 @@ def remove_file(path):
 
     if IS_DOCKER:
         subprocess.call(
-            "docker exec "
-            + DOCKER_CONTAINER_NAME
-            + ' rm -rf "'
-            + Path(path).as_posix()
-            + '"',
+            "docker exec " + DOCKER_CONTAINER_NAME + ' rm -rf "' + Path(path).as_posix() + '"',
             shell=True,
         )
     else:

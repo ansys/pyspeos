@@ -36,8 +36,8 @@ from ansys.speos.core.generic.constants import (
     MAX_SERVER_MESSAGE_LENGTH,
 )
 from ansys.speos.core.generic.general_methods import retrieve_speos_install_dir
-from ansys.speos.core.speos import Speos
 from ansys.speos.core.kernel.client import default_local_channel
+from ansys.speos.core.speos import Speos
 
 try:
     import ansys.platform.instancemanagement as pypim

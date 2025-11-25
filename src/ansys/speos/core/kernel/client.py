@@ -28,7 +28,6 @@ from pathlib import Path
 import subprocess  # nosec
 import time
 from typing import TYPE_CHECKING, List, Optional, Union
-import warnings
 
 from ansys.api.speos.part.v1 import body_pb2, face_pb2, part_pb2
 import grpc
@@ -40,11 +39,16 @@ from ansys.speos.core.generic.constants import (
     DEFAULT_VERSION,
     MAX_CLIENT_MESSAGE_SIZE,
 )
-from ansys.speos.core.kernel.grpc.transportoptions import TransportOptions, TransportMode, UDSOptions, InsecureOptions, WNUAOptions
-from ansys.speos.core.kernel.grpc.cyberchannel import create_channel
 from ansys.speos.core.generic.general_methods import retrieve_speos_install_dir
 from ansys.speos.core.kernel.body import BodyLink, BodyStub
 from ansys.speos.core.kernel.face import FaceLink, FaceStub
+from ansys.speos.core.kernel.grpc.transportoptions import (
+    InsecureOptions,
+    TransportMode,
+    TransportOptions,
+    UDSOptions,
+    WNUAOptions,
+)
 from ansys.speos.core.kernel.intensity_template import (
     IntensityTemplateLink,
     IntensityTemplateStub,
@@ -109,33 +113,38 @@ def wait_until_healthy(channel: grpc.Channel, timeout: float):
             f"Channel health check to target '{target_str}' timed out after {timeout} seconds."
         )
 
+
 def default_docker_channel(
-        host: Optional[str] = DEFAULT_HOST,
-        port: Union[str, int] = DEFAULT_PORT,
-        message_size: int = MAX_CLIENT_MESSAGE_SIZE
-        ) -> grpc.Channel:
+    host: Optional[str] = DEFAULT_HOST,
+    port: Union[str, int] = DEFAULT_PORT,
+    message_size: int = MAX_CLIENT_MESSAGE_SIZE,
+) -> grpc.Channel:
     return TransportOptions(
-        mode=TransportMode.INSECURE, 
-        options=InsecureOptions(host=host, port=port, allow_remote_host=True)
-        ).create_channel(grpc_options=[("grpc.max_receive_message_length", message_size)])
+        mode=TransportMode.INSECURE,
+        options=InsecureOptions(host=host, port=port, allow_remote_host=True),
+    ).create_channel(grpc_options=[("grpc.max_receive_message_length", message_size)])
+
 
 def default_local_channel(
-        port: Union[str, int] = DEFAULT_PORT,
-        message_size: int = MAX_CLIENT_MESSAGE_SIZE
-        ) -> grpc.Channel:
+    port: Union[str, int] = DEFAULT_PORT, message_size: int = MAX_CLIENT_MESSAGE_SIZE
+) -> grpc.Channel:
     """Create default transport options, WNUA on Windows, UDS on Linux"""
     # Otherwise use default based on OS
     if os.name == "nt":
         transport = TransportOptions(
-            mode=TransportMode.WNUA, 
-            options=WNUAOptions(host=DEFAULT_HOST, port=port)
-            )
+            mode=TransportMode.WNUA, options=WNUAOptions(host=DEFAULT_HOST, port=port)
+        )
     else:
         transport = TransportOptions(
-            mode=TransportMode.UDS, 
-            options=UDSOptions(uds_dir=f"/tmp/speosrpc_sock_{port}", uds_id="ansys_tools_filetransfer")
-            )
-    return transport.create_channel(grpc_options=[("grpc.max_receive_message_length", message_size)])
+            mode=TransportMode.UDS,
+            options=UDSOptions(
+                uds_dir=f"/tmp/speosrpc_sock_{port}", uds_id="ansys_tools_filetransfer"
+            ),
+        )
+    return transport.create_channel(
+        grpc_options=[("grpc.max_receive_message_length", message_size)]
+    )
+
 
 class SpeosClient:
     """
@@ -192,7 +201,7 @@ class SpeosClient:
             self._channel = channel
         else:
             self._channel = default_local_channel()
-            
+
         # do not finish initialization until channel is healthy
         wait_until_healthy(self._channel, timeout)
 

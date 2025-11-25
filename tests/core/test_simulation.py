@@ -35,7 +35,7 @@ from ansys.speos.core.simulation import (
     SimulationInverse,
 )
 from ansys.speos.core.source import SourceLuminaire
-from tests.conftest import config, test_path, IS_DOCKER
+from tests.conftest import IS_DOCKER, test_path
 from tests.helper import does_file_exist, remove_file
 
 

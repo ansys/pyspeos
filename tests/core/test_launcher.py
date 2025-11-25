@@ -27,14 +27,13 @@ from pathlib import Path
 import subprocess
 import tempfile
 from unittest.mock import patch
-from unittest import TestCase 
 
 import psutil
 import pytest
 
 from ansys.speos.core.generic.constants import DEFAULT_VERSION
 from ansys.speos.core.launcher import launch_local_speos_rpc_server, retrieve_speos_install_dir
-from tests.conftest import IS_WINDOWS, IS_DOCKER, SERVER_PORT, config
+from tests.conftest import IS_DOCKER, IS_WINDOWS, SERVER_PORT
 
 # Check local installation
 try:
@@ -43,9 +42,10 @@ try:
 except FileNotFoundError:
     HAS_LOCAL_SPEOS_SERVER = False
 
+
 @pytest.mark.skipif(
-        not HAS_LOCAL_SPEOS_SERVER,
-        reason="requires Speos server to be installed locally")
+    not HAS_LOCAL_SPEOS_SERVER, reason="requires Speos server to be installed locally"
+)
 def test_local_session(*args):
     """Test local session launch and close."""
     port = SERVER_PORT + 1
@@ -66,11 +66,10 @@ def test_local_session(*args):
     running = p_list.count(name) > nb_process
     assert running is not closed
 
+
 @patch.object(subprocess, "Popen")
 @patch.object(subprocess, "run")
-@pytest.mark.skipif(
-        not IS_DOCKER,
-        reason="requires Speos server to be installed locally")
+@pytest.mark.skipif(not IS_DOCKER, reason="requires Speos server to be installed locally")
 def test_coverage_launcher_speosdocker(*args):
     """Test local session launch on remote server to improve coverage."""
     port = SERVER_PORT
