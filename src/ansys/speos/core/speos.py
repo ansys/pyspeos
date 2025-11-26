@@ -48,7 +48,8 @@ class Speos:
         ``ansys.speos.core.kernel.client.LATEST_VERSION``.
     channel : grpc.Channel, optional
         gRPC channel for server communication.
-        Can be created with ``ansys.speos.core.kernel.grpc.transportoptions`` and ``ansys.speos.core.kernel.grpc.cyberchannel``
+        Can be created with ``ansys.speos.core.kernel.grpc.transportoptions``
+        and ``ansys.speos.core.kernel.grpc.cyberchannel``
         By default, ``None``.
     remote_instance : ansys.platform.instancemanagement.Instance
         The corresponding remote instance when the Speos Service

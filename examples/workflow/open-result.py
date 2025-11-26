@@ -10,7 +10,7 @@
 import os
 from pathlib import Path
 
-from ansys.speos.core import Project, Speos
+from ansys.speos.core import Project, Speos, launcher
 from ansys.speos.core.kernel.client import (
     default_docker_channel,
 )
