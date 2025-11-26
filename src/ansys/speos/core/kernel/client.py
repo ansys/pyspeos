@@ -207,9 +207,8 @@ class SpeosClient:
         wait_until_healthy(self._channel, timeout)
 
         # once connection with the client is established, create a logger
-        self._target = self._channel._channel.target().decode()
         self._log = LOGGER.add_instance_logger(
-            name=self._target, client_instance=self, level=logging_level
+            name=self.target(), client_instance=self, level=logging_level
         )
         if logging_file:
             if isinstance(logging_file, Path):
@@ -246,7 +245,7 @@ class SpeosClient:
         if self._closed:
             return False
         try:
-            grpc.channel_ready_future(self.channel).result(timeout=60)
+            grpc.channel_ready_future(self.channel).result(timeout=10)
             return True
         except BaseException:
             return False
@@ -515,7 +514,7 @@ List[ansys.speos.core.kernel.face.FaceLink]]
         """Represent the client as a string."""
         lines = []
         lines.append(f"Ansys Speos client ({hex(id(self))})")
-        lines.append(f"  Target:     {self._target}")
+        lines.append(f"  Target:     {self.target()}")
         if self._closed:
             lines.append("  Connection: Closed")
         elif self.healthy:
@@ -545,9 +544,9 @@ List[ansys.speos.core.kernel.face.FaceLink]]
         wait_time = 0
         if self._remote_instance:
             self._remote_instance.delete()
-        elif self._host in ["localhost", "0.0.0.0", "127.0.0.1"] and self.__speos_exec:  # nosec
+        elif self.__speos_exec and any(d in self.target() for d in ["localhost", "0.0.0.0", "127.0.0.1"]):
             self.__close_local_speos_rpc_server()
-            while self.healthy and wait_time < 15:
+            while self.healthy() and wait_time < 15:
                 time.sleep(1)
                 wait_time += 1  # takes some seconds to close rpc server
         self._channel.close()
@@ -581,7 +580,13 @@ List[ansys.speos.core.kernel.face.FaceLink]]
 
         """
         try:
-            int(self._port)
+            # Extract port number at end of target string 
+            target = self.target()
+            if ":" in target:
+                port = target.split(":")[-1]
+            else:
+                port = target.split("_")[-1]
+            int(port)
         except ValueError:
             raise RuntimeError("The port of the local server is not a valid integer.")
         if (
@@ -590,5 +595,5 @@ List[ansys.speos.core.kernel.face.FaceLink]]
         ):
             raise RuntimeError("Unexpected executable path for Speos rpc executable.")
 
-        command = [self.__speos_exec, f"-s{self._port}"]
+        command = [self.__speos_exec, f"-s{port}"]
         subprocess.run(command, check=True)  # nosec
