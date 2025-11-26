@@ -22,6 +22,8 @@
 
 """Test basic client connection."""
 
+import platform
+
 from ansys.speos.core.kernel.client import (
     SpeosClient,
     default_docker_channel,
@@ -38,7 +40,10 @@ def test_client_init(speos: Speos):
 
 def test_client_through_channel():
     """Test the instantiation of a client from a gRPC channel."""
-    target = "dns:///localhost:" + str(SERVER_PORT)
+    if platform.system() == "Linux" and not IS_DOCKER:
+        target = "unix:/tmp/speosrpc_sock_" + str(SERVER_PORT)
+    else:
+        target = "dns:///localhost:" + str(SERVER_PORT)
     if IS_DOCKER:
         channel = default_docker_channel(port=SERVER_PORT)
     else:

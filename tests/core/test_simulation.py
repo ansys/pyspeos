@@ -23,6 +23,7 @@
 """Test basic using simulation."""
 
 from pathlib import Path
+import platform
 
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
 import pytest
@@ -787,7 +788,9 @@ def test_export(speos: Speos):
     remove_file(str(Path(test_path) / "export_test"))
 
 
-@pytest.mark.skipif(IS_DOCKER, reason="COM API is only available locally")
+@pytest.mark.skipif(
+    IS_DOCKER or platform.system() == "Linux", reason="COM API is only available locally on Windows"
+)
 @pytest.mark.supported_speos_versions(min=252)
 def test_export_vtp(speos: Speos):
     """Test export of xm3 and xmp as vtp files."""

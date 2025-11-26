@@ -28,12 +28,15 @@ Authentication (WNUA), and Mutual TLS (mTLS).
 
 Example
 -------
+
+.. code-block:: python
+
     channel = create_channel(
         host="localhost",
         port=50051,
         transport_mode="mtls",
         certs_dir="path/to/certs",
-        grpc_options=[('grpc.max_receive_message_length', 50 * 1024 * 1024)],
+        grpc_options=[("grpc.max_receive_message_length", 50 * 1024 * 1024)],
     )
     stub = hello_pb2_grpc.GreeterStub(channel)
 
@@ -49,7 +52,14 @@ from pathlib import Path
 from typing import cast
 from warnings import warn
 
-import grpc
+try:
+    import grpc
+except ImportError:  # pragma: no cover
+    warn(
+        "grpc module is not available - "
+        "reach out to the library maintainers to include it into their dependencies"
+    )
+
 
 _IS_WINDOWS = os.name == "nt"
 LOOPBACK_HOSTS = ("localhost", "127.0.0.1")
@@ -68,6 +78,7 @@ def create_channel(
     transport_mode: str,
     host: str | None = None,
     port: int | str | None = None,
+    uds_fullpath: str | Path | None = None,
     uds_service: str | None = None,
     uds_dir: str | Path | None = None,
     uds_id: str | None = None,
@@ -90,6 +101,9 @@ def create_channel(
         Port in which the server is running.
         By default `None` - however, if not using UDS transport mode,
         it will be requested.
+    uds_fullpath : str | Path | None
+        Full path to the UDS socket file.
+        By default `None` and thus it will use the `uds_service`, `uds_dir` and `uds_id` parameters.
     uds_service : str | None
         Optional service name for the UDS socket.
         By default `None` - however, if UDS is selected, it will
@@ -138,7 +152,7 @@ def create_channel(
             transport_mode, host, port = check_host_port(transport_mode, host, port)
             return create_insecure_channel(host, port, grpc_options)
         case "uds":
-            return create_uds_channel(uds_service, uds_dir, uds_id, grpc_options)
+            return create_uds_channel(uds_fullpath, uds_service, uds_dir, uds_id, grpc_options)
         case "wnua":
             transport_mode, host, port = check_host_port(transport_mode, host, port)
             return create_wnua_channel(host, port, grpc_options)
@@ -147,8 +161,8 @@ def create_channel(
             return create_mtls_channel(host, port, certs_dir, cert_files, grpc_options)
         case _:
             raise ValueError(
-                f"Unknown transport mode: {transport_mode}. "
-                "Valid options are: 'insecure', 'uds', 'wnua', 'mtls'."
+                f"Unknown transport mode: {transport_mode}."
+                " Valid options are: 'insecure', 'uds', 'wnua', 'mtls'."
             )
 
 
@@ -179,15 +193,16 @@ def create_insecure_channel(
     """
     target = f"{host}:{port}"
     warn(
-        f"Starting gRPC client without TLS on {target}. This is INSECURE. "
-        "Consider using a secure connection."
+        f"Starting gRPC client without TLS on {target}."
+        " This is INSECURE. Consider using a secure connection."
     )
     logger.info(f"Connecting using INSECURE -> {target}")
     return grpc.insecure_channel(target, options=grpc_options)
 
 
 def create_uds_channel(
-    uds_service: str | None,
+    uds_fullpath: str | Path | None = None,
+    uds_service: str | None = None,
     uds_dir: str | Path | None = None,
     uds_id: str | None = None,
     grpc_options: list[tuple[str, object]] | None = None,
@@ -196,7 +211,10 @@ def create_uds_channel(
 
     Parameters
     ----------
-    uds_service : str
+    uds_fullpath : str | Path | None
+        Full path to the UDS socket file.
+        By default `None` and thus it will use the `uds_service`, `uds_dir` and `uds_id` parameters.
+    uds_service : str | None
         Service name for the UDS socket.
     uds_dir : str | Path | None
         Directory to use for Unix Domain Sockets (UDS) transport mode.
@@ -221,18 +239,24 @@ def create_uds_channel(
             "Unix Domain Sockets are not supported on this platform or gRPC version."
         )
 
-    if not uds_service:
-        raise ValueError("When using UDS transport mode, 'uds_service' must be provided.")
+    if uds_fullpath:
+        # Ensure the parent directory exists
+        Path(uds_fullpath).parent.mkdir(parents=True, exist_ok=True)
+        target = f"unix:{uds_fullpath}"
+    else:
+        if not uds_service:
+            raise ValueError("When using UDS transport mode, 'uds_service' must be provided.")
 
-    # Determine UDS folder
-    uds_folder = determine_uds_folder(uds_dir)
+        # Determine UDS folder
+        uds_folder = determine_uds_folder(uds_dir)
 
-    # Make sure the folder exists
-    uds_folder.mkdir(parents=True, exist_ok=True)
+        # Make sure the folder exists
+        uds_folder.mkdir(parents=True, exist_ok=True)
 
-    # Generate socket filename with optional ID
-    socket_filename = f"{uds_service}-{uds_id}.sock" if uds_id else f"{uds_service}.sock"
-    target = f"unix:{uds_folder / socket_filename}"
+        # Generate socket filename with optional ID
+        socket_filename = f"{uds_service}-{uds_id}.sock" if uds_id else f"{uds_service}.sock"
+        target = f"unix:{uds_folder / socket_filename}"
+
     # Set default authority to "localhost" for UDS connection
     # This is needed to avoid issues with some gRPC implementations,
     # see https://github.com/grpc/grpc/issues/34305
@@ -242,6 +266,7 @@ def create_uds_channel(
     if grpc_options:
         options.extend(grpc_options)
     logger.info(f"Connecting using UDS -> {target}")
+
     return grpc.insecure_channel(target, options=options)
 
 
@@ -478,12 +503,15 @@ def verify_transport_mode(transport_mode: str, mode: str | None = None) -> None:
     if transport_mode.lower() not in valid_modes:
         raise ValueError(
             f"Invalid transport mode: {transport_mode}. "
-            f"Valid options are: {', '.join(valid_modes)}."
+            f" Valid options are: {', '.join(valid_modes)}."
         )
 
 
 def verify_uds_socket(
-    uds_service: str, uds_dir: Path | None = None, uds_id: str | None = None
+    uds_fullpath: str | Path | None = None,
+    uds_service: str | None = None,
+    uds_dir: Path | None = None,
+    uds_id: str | None = None,
 ) -> bool:
     """Verify that the UDS socket file has been created.
 
@@ -504,11 +532,18 @@ def verify_uds_socket(
     bool
         True if the UDS socket file exists, False otherwise.
     """
-    # Generate socket filename with optional ID
-    uds_filename = f"{uds_service}-{uds_id}.sock" if uds_id else f"{uds_service}.sock"
+    if uds_fullpath:
+        return Path(uds_fullpath).exists()
 
-    # Full path to the UDS socket file
-    uds_socket_path = determine_uds_folder(uds_dir) / uds_filename
+    else:
+        if not uds_service:
+            raise ValueError("When using UDS transport mode, 'uds_service' must be provided.")
 
-    # Check if the UDS socket file exists
-    return uds_socket_path.exists()
+        # Generate socket filename with optional ID
+        uds_filename = f"{uds_service}-{uds_id}.sock" if uds_id else f"{uds_service}.sock"
+
+        # Full path to the UDS socket file
+        uds_socket_path = determine_uds_folder(uds_dir) / uds_filename
+
+        # Check if the UDS socket file exists
+        return uds_socket_path.exists()

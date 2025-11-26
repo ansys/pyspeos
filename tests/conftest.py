@@ -62,6 +62,7 @@ else:
 
 # Check if server is on docker
 IS_DOCKER = config.get("SpeosServerOnDocker")
+DOCKER_CONTAINER_NAME = ""
 if IS_DOCKER:
     DOCKER_CONTAINER_NAME = config.get("SpeosContainerName")
 SERVER_PORT = config.get("SpeosServerPort")

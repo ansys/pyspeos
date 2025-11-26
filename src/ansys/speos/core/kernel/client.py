@@ -119,6 +119,7 @@ def default_docker_channel(
     port: Union[str, int] = DEFAULT_PORT,
     message_size: int = MAX_CLIENT_MESSAGE_SIZE,
 ) -> grpc.Channel:
+    """Create default transport options for docker on CI."""
     return TransportOptions(
         mode=TransportMode.INSECURE,
         options=InsecureOptions(host=host, port=port, allow_remote_host=True),
@@ -128,7 +129,7 @@ def default_docker_channel(
 def default_local_channel(
     port: Union[str, int] = DEFAULT_PORT, message_size: int = MAX_CLIENT_MESSAGE_SIZE
 ) -> grpc.Channel:
-    """Create default transport options, WNUA on Windows, UDS on Linux"""
+    """Create default transport options, WNUA on Windows, UDS on Linux."""
     # Otherwise use default based on OS
     if os.name == "nt":
         transport = TransportOptions(
@@ -138,7 +139,7 @@ def default_local_channel(
         transport = TransportOptions(
             mode=TransportMode.UDS,
             options=UDSOptions(
-                uds_dir=f"/tmp/speosrpc_sock_{port}", uds_id="ansys_tools_filetransfer"
+                uds_fullpath=f"/tmp/speosrpc_sock_{port}", uds_id="ansys_tools_filetransfer"
             ),
         )
     return transport.create_channel(

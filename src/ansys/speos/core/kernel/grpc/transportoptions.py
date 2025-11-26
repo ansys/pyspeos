@@ -46,11 +46,13 @@ class TransportMode(enum.Enum):
 class UDSOptions:
     """Options for UDS transport mode."""
 
+    uds_fullpath: str | Path | None = None
     uds_dir: str | Path | None = None
     uds_id: str | None = None
 
     def _to_cyberchannel_kwargs(self):
         return {
+            "uds_fullpath": self.uds_fullpath,
             "uds_dir": self.uds_dir,
             "uds_id": self.uds_id,
             "uds_service": "ansys_tools_filetransfer",
@@ -132,7 +134,8 @@ class TransportOptions:
         if options is None:
             if mode != TransportMode.UDS:
                 raise RuntimeError("TransportOptions must be provided for modes other than UDS.")
-            # The default cannot be set in the constructor signature since '_get_uds_dir_default' may raise.
+            # The default cannot be set in the constructor signature
+            # since '_get_uds_dir_default' may raise.
             options = UDSOptions()
 
         if mode == TransportMode.UDS:
@@ -163,7 +166,5 @@ class TransportOptions:
         }
 
     def create_channel(self, grpc_options):
-        """
-        Create a gRPC channel based on the transport options.
-        """
+        """Create a gRPC channel based on the transport options."""
         return create_channel(**self._to_cyberchannel_kwargs(), grpc_options=grpc_options)
