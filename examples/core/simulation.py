@@ -14,7 +14,11 @@
 from pathlib import Path
 
 from ansys.speos.core import Project, Speos, launcher
-from ansys.speos.core.simulation import SimulationInteractive, SimulationInverse
+from ansys.speos.core.simulation import (
+    SimulationInteractive,
+    SimulationInverse,
+    SimulationVirtualBSDF,
+)
 
 # -
 
@@ -182,5 +186,29 @@ print(simulation3)
 simulation4 = p.create_simulation(name="Simulation.4", feature_type=SimulationInteractive)
 simulation4.set_source_paths(source_paths=[SOURCE_NAME]).commit()
 print(simulation4)
+
+# ### Virtual BSDF Bench simulation
+
+vbb = p.create_simulation(name="virtual_BSDF", feature_type=SimulationVirtualBSDF)
+opt_prop.set_surface_library(
+    path=str(assets_data_path / "R_test.anisotropicbsdf")
+).commit()  # change the material property from mirror to bsdf type
+vbb.axis_system = [
+    0.36,
+    1.73,
+    2.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+]  # change the coordinate VBSDF to body center
+vbb.commit()
+results = vbb.compute_CPU()
+print(results)
 
 speos.close()
