@@ -177,7 +177,18 @@ def launch_local_speos_rpc_server(
             logfile = logfile_loc / "speos_rpc.log"
     if not logfile_loc.exists():
         logfile_loc.mkdir()
-    command = [str(speos_exec), f"-p{port}", f"-m{server_message_size}", f"-l{str(logfile)}"]
+
+    if os.name == "nt":
+        transport_option = "--transport_wnua"
+    else:
+        transport_option = "--transport_uds"
+    command = [
+        str(speos_exec),
+        f"-p{port}",
+        f"-m{server_message_size}",
+        f"-l{str(logfile)}",
+        transport_option,
+    ]
     out, stdout_file = tempfile.mkstemp(suffix="speos_out.txt", dir=logfile_loc)
     err, stderr_file = tempfile.mkstemp(suffix="speos_err.txt", dir=logfile_loc)
 
