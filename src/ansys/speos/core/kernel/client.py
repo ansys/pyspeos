@@ -544,7 +544,9 @@ List[ansys.speos.core.kernel.face.FaceLink]]
         wait_time = 0
         if self._remote_instance:
             self._remote_instance.delete()
-        elif self.__speos_exec and any(d in self.target() for d in ["localhost", "0.0.0.0", "127.0.0.1"]):
+        elif self.__speos_exec and any(
+            d in self.target() for d in ["localhost", "0.0.0.0", "127.0.0.1"]
+        ):
             self.__close_local_speos_rpc_server()
             while self.healthy and wait_time < 15:
                 time.sleep(1)
@@ -580,7 +582,7 @@ List[ansys.speos.core.kernel.face.FaceLink]]
 
         """
         try:
-            # Extract port number at end of target string 
+            # Extract port number at end of target string
             target = self.target()
             if ":" in target:
                 port = target.split(":")[-1]
