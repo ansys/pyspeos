@@ -34,7 +34,7 @@ from pathlib import Path
 from typing import List, Optional, Union, cast
 import warnings
 
-from ansys.tools.path import get_available_ansys_installations
+from ansys.tools.common.path import get_available_ansys_installations
 import numpy as np
 
 from ansys.speos.core.generic.constants import DEFAULT_VERSION

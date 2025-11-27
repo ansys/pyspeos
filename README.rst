@@ -181,9 +181,6 @@ Launch unit tests
    pip install .[tests]
    pytest -vx
 
-`-e` option allows to install the package in "editable" mode.
-Can be very useful during new development and debugging.
-
 Use jupyter notebook
 ~~~~~~~~~~~~~~~~~~~~
 
