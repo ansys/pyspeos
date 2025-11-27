@@ -38,6 +38,7 @@ _autosummary
 
 
 # Testing
+.cov/
 .coverage
 .tox/
 *,cover

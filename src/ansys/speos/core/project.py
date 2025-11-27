@@ -47,6 +47,7 @@ from ansys.speos.core.sensor import (
     SensorCamera,
     SensorIrradiance,
     SensorRadiance,
+    SensorXMPIntensity,
 )
 from ansys.speos.core.simulation import (
     SimulationDirect,
@@ -315,7 +316,9 @@ class Project:
         description: str = "",
         feature_type: type = SensorIrradiance,
         metadata: Optional[Mapping[str, str]] = None,
-    ) -> Union[SensorCamera, SensorRadiance, SensorIrradiance, Sensor3DIrradiance]:
+    ) -> Union[
+        SensorCamera, SensorRadiance, SensorIrradiance, Sensor3DIrradiance, SensorXMPIntensity
+    ]:
         """Create a new Sensor feature.
 
         Parameters
@@ -356,6 +359,13 @@ class Project:
         match feature_type.__name__:
             case "SensorIrradiance":
                 feature = SensorIrradiance(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                )
+            case "SensorXMPIntensity":
+                feature = SensorXMPIntensity(
                     project=self,
                     name=name,
                     description=description,
@@ -835,6 +845,13 @@ class Project:
                     sensor_instance=ssr_inst,
                     default_values=False,
                 )
+            elif ssr_inst.HasField("intensity_properties"):
+                ssr_feat = SensorXMPIntensity(
+                    project=self,
+                    name=ssr_inst.name,
+                    sensor_instance=ssr_inst,
+                    default_values=False,
+                )
             elif ssr_inst.HasField("camera_properties"):
                 ssr_feat = SensorCamera(
                     project=self,
@@ -970,6 +987,7 @@ class Project:
                 SensorRadiance,
                 SensorCamera,
                 Sensor3DIrradiance,
+                SensorXMPIntensity,
                 SourceLuminaire,
                 SourceRayFile,
                 SourceSurface,
