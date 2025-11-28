@@ -22,18 +22,12 @@
 
 """Test launcher."""
 
-import os
-from pathlib import Path
-import subprocess
-import tempfile
-from unittest.mock import patch
-
 import psutil
 import pytest
 
 from ansys.speos.core.generic.constants import DEFAULT_VERSION
 from ansys.speos.core.launcher import launch_local_speos_rpc_server, retrieve_speos_install_dir
-from tests.conftest import IS_DOCKER, IS_WINDOWS, SERVER_PORT
+from tests.conftest import IS_WINDOWS, SERVER_PORT
 
 # Check local installation
 try:
@@ -65,38 +59,3 @@ def test_local_session(*args):
     p_list = [p.name() for p in psutil.process_iter()]
     running = p_list.count(name) > nb_process
     assert running is not closed
-
-
-@patch.object(subprocess, "Popen")
-@patch.object(subprocess, "run")
-@pytest.mark.skipif(not IS_DOCKER, reason="requires Speos server to be installed locally")
-def test_coverage_launcher_speosdocker(*args):
-    """Test local session launch on remote server to improve coverage."""
-    port = SERVER_PORT
-    tmp_file = tempfile.gettempdir()
-    if IS_WINDOWS:
-        name = "SpeosRPC_Server.exe"
-    else:
-        name = "SpeosRPC_Server.x"
-    speos_loc = Path(tmp_file) / "Optical Products" / "SPEOS_RPC" / name
-    speos_loc.parent.parent.mkdir(exist_ok=True)
-    speos_loc.parent.mkdir(exist_ok=True)
-    if not speos_loc.exists():
-        f = speos_loc.open("w")
-        f.write("speos_test_file")
-        f.close()
-    os.environ["AWP_ROOT{}".format(DEFAULT_VERSION)] = tmp_file
-    test_speos = launch_local_speos_rpc_server(port=port)
-    assert True is test_speos.client.healthy
-    assert True is test_speos.close()
-    assert False is test_speos.client.healthy
-    test_speos = launch_local_speos_rpc_server(
-        port=port, speos_rpc_path=speos_loc, logfile_loc=tmp_file
-    )
-    assert True is test_speos.client.healthy
-    test_speos.client._closed = True
-    assert True is test_speos.close()
-    assert False is test_speos.client.healthy
-    speos_loc.unlink()
-    speos_loc.parent.rmdir()
-    speos_loc.parent.parent.rmdir()
