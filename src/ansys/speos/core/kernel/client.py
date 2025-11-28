@@ -139,8 +139,7 @@ def default_local_channel(
     else:
         sock_file = Path(tempfile.gettempdir()) / f"speosrpc_sock_{port}"
         transport = TransportOptions(
-            mode=TransportMode.UDS,
-            options=UDSOptions(uds_fullpath=str(sock_file), uds_id="ansys_tools_filetransfer"),
+            mode=TransportMode.UDS, options=UDSOptions(uds_fullpath=str(sock_file))
         )
     return transport.create_channel(
         grpc_options=[("grpc.max_receive_message_length", message_size)]

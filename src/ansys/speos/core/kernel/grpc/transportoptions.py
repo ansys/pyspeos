@@ -30,7 +30,7 @@ from dataclasses import dataclass
 import enum
 from pathlib import Path
 
-from .cyberchannel import create_channel
+from ansys.tools.common.cyberchannel import create_channel
 
 
 class TransportMode(enum.Enum):
@@ -46,16 +46,17 @@ class TransportMode(enum.Enum):
 class UDSOptions:
     """Options for UDS transport mode."""
 
-    uds_fullpath: str | Path | None = None
+    uds_service: str | None = None
     uds_dir: str | Path | None = None
     uds_id: str | None = None
+    uds_fullpath: str | Path | None = None
 
     def _to_cyberchannel_kwargs(self):
         return {
-            "uds_fullpath": self.uds_fullpath,
+            "uds_service": self.uds_service,
             "uds_dir": self.uds_dir,
             "uds_id": self.uds_id,
-            "uds_service": "ansys_tools_filetransfer",
+            "uds_fullpath": self.uds_fullpath,
         }
 
 
