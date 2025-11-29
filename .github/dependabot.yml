@@ -20,7 +20,7 @@ updates:
     groups:
       core-deps:
         patterns:
-          - "ansys-tools-path"
+          - "ansys-tools-common"
           - "numpy"
           - "comtypes"
       grpc-deps:

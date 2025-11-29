@@ -45,13 +45,12 @@ speos_server = launch_local_speos_rpc_server()
 # returns a connected speos instance
 ```
 
-Connect to an existing instance:
+Connect to the existing server instance:
 
 ```{python}
 #| eval: false
 from ansys.speos.core import Speos
-host_ip = '127.0.0.1' # localhost here
-speos_server = Speos(host=host_ip, port=50098)
+speos_server = Speos()
 ```
 
 # Speos Solver files

@@ -59,7 +59,7 @@ class SceneLink(CrudItem):
     --------
     >>> from ansys.speos.core.speos import Speos
     >>> from ansys.speos.core.kernel.scene import ProtoScene
-    >>> speos = Speos(host="localhost", port=50098)
+    >>> speos = Speos()
     >>> sce_db = speos.client.scenes()
     >>> sce_link = sce_db.create(message=ProtoScene(name="Empty_Scene"))
 
@@ -165,7 +165,7 @@ class SceneStub(CrudStub):
     Like in the following example:
 
     >>> from ansys.speos.core.speos import Speos
-    >>> speos = Speos(host="localhost", port=50098)
+    >>> speos = Speos()
     >>> sce_db = speos.client.scenes()
 
     """

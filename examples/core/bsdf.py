@@ -28,16 +28,16 @@ import numpy as np
 
 from ansys.speos.core import Speos
 from ansys.speos.core.bsdf import AnisotropicBSDF, BxdfDatapoint
+from ansys.speos.core.kernel.client import (
+    SpeosClient,
+    default_docker_channel,
+)
 from ansys.speos.core.launcher import launch_local_speos_rpc_server
-from ansys.speos.core.speos import SpeosClient
 
 # -
 
 # ### Define constants
 # Constants help ensure consistency and avoid repetition throughout the example.
-
-HOSTNAME = "localhost"
-GRPC_PORT = 50098  # Be sure the Speos GRPC Server has been started on this port.
 USE_DOCKER = True  # Set to False if you're running this example locally as a Notebook.
 
 # ### Define helper functions
@@ -163,9 +163,9 @@ else:
 # be used to start a local instance of the service.
 
 if USE_DOCKER:
-    speos = Speos(host=HOSTNAME, port=GRPC_PORT)
+    speos = Speos(channel=default_docker_channel())
 else:
-    speos = launch_local_speos_rpc_server(port=GRPC_PORT)
+    speos = launch_local_speos_rpc_server()
 
 # ### Create a BXDFDatapoint
 # to create a bsdf we need the bsdf for multiple incident angles.
