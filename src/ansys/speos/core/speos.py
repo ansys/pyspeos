@@ -63,6 +63,30 @@ class Speos:
         By default, ``INFO``.
     logging_file : Optional[str, Path]
         The file to output the log, if requested. By default, ``None``.
+
+    Examples
+    --------
+    >>> # Create default channel (to use when server was started with `SpeosRPC_Server.exe`)
+    >>> speos = Speos()
+    >>> # which is also equivalent to:
+    >>> from ansys.speos.core.kernel.client import default_local_channel
+    >>> speos = Speos(channel=default_local_channel())
+    >>> # Create channel with custom port and message size:
+    >>> # use when server was started with `SpeosRPC_Server.exe --port 53123`
+    >>> speos = Speos(channel=default_local_channel(port=53123, message_size=20000000))
+    >>> # Create insecure channel, to use when server was started with:
+    >>> # `SpeosRPC_Server.exe --transport-insecure`
+    >>> from ansys.speos.core.kernel.grpc.transportoptions import (
+    ...     TransportOptions,
+    ...     InsecureOptions,
+    ...     TransportMode,
+    ... )
+    >>> transport = TransportOptions(
+    ...     mode=TransportMode.INSECURE,
+    ...     options=InsecureOptions(host=host, port=port, allow_remote_host=True),
+    ... )
+    >>> grpc_options = [("grpc.max_receive_message_length", message_size)]
+    >>> speos = Speos(channel=transport.create_channel(grpc_options))
     """
 
     def __init__(

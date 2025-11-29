@@ -106,7 +106,7 @@ def launch_remote_speos(
 
 
 def launch_local_speos_rpc_server(
-    version: str = DEFAULT_VERSION,
+    version: Union[str, int] = DEFAULT_VERSION,
     port: Union[str, int] = DEFAULT_PORT,
     server_message_size: int = MAX_SERVER_MESSAGE_LENGTH,
     client_message_size: int = MAX_CLIENT_MESSAGE_SIZE,
@@ -152,6 +152,10 @@ def launch_local_speos_rpc_server(
         An instance of the Speos Service.
     """
     try:
+        int(version)
+    except ValueError:
+        raise ValueError("The version is not a valid integer.")
+    try:
         int(port)
     except ValueError:
         raise ValueError("The port is not a valid integer.")
@@ -160,7 +164,7 @@ def launch_local_speos_rpc_server(
     except ValueError:
         raise ValueError("The server message size is not a valid integer.")
 
-    speos_rpc_path = retrieve_speos_install_dir(speos_rpc_path, version)
+    speos_rpc_path = retrieve_speos_install_dir(speos_rpc_path, str(version))
     if os.name == "nt":
         speos_exec = speos_rpc_path / "SpeosRPC_Server.exe"
     else:
