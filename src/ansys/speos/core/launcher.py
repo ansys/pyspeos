@@ -36,6 +36,7 @@ from ansys.speos.core.generic.constants import (
     MAX_SERVER_MESSAGE_LENGTH,
 )
 from ansys.speos.core.generic.general_methods import retrieve_speos_install_dir
+from ansys.speos.core.kernel.client import default_local_channel
 from ansys.speos.core.speos import Speos
 
 try:
@@ -105,7 +106,7 @@ def launch_remote_speos(
 
 
 def launch_local_speos_rpc_server(
-    version: str = DEFAULT_VERSION,
+    version: Union[str, int] = DEFAULT_VERSION,
     port: Union[str, int] = DEFAULT_PORT,
     server_message_size: int = MAX_SERVER_MESSAGE_LENGTH,
     client_message_size: int = MAX_CLIENT_MESSAGE_SIZE,
@@ -151,6 +152,10 @@ def launch_local_speos_rpc_server(
         An instance of the Speos Service.
     """
     try:
+        int(version)
+    except ValueError:
+        raise ValueError("The version is not a valid integer.")
+    try:
         int(port)
     except ValueError:
         raise ValueError("The port is not a valid integer.")
@@ -159,7 +164,7 @@ def launch_local_speos_rpc_server(
     except ValueError:
         raise ValueError("The server message size is not a valid integer.")
 
-    speos_rpc_path = retrieve_speos_install_dir(speos_rpc_path, version)
+    speos_rpc_path = retrieve_speos_install_dir(speos_rpc_path, str(version))
     if os.name == "nt":
         speos_exec = speos_rpc_path / "SpeosRPC_Server.exe"
     else:
@@ -176,15 +181,24 @@ def launch_local_speos_rpc_server(
             logfile = logfile_loc / "speos_rpc.log"
     if not logfile_loc.exists():
         logfile_loc.mkdir()
-    command = [str(speos_exec), f"-p{port}", f"-m{server_message_size}", f"-l{str(logfile)}"]
+
+    if os.name == "nt":
+        transport_option = "--transport_wnua"
+    else:
+        transport_option = "--transport_uds"
+    command = [
+        str(speos_exec),
+        f"-p{port}",
+        f"-m{server_message_size}",
+        f"-l{str(logfile)}",
+        transport_option,
+    ]
     out, stdout_file = tempfile.mkstemp(suffix="speos_out.txt", dir=logfile_loc)
     err, stderr_file = tempfile.mkstemp(suffix="speos_err.txt", dir=logfile_loc)
 
     subprocess.Popen(command, stdout=out, stderr=err)  # nosec B603
     return Speos(
-        host="localhost",
-        port=port,
-        message_size=client_message_size,
+        channel=default_local_channel(port=port, message_size=client_message_size),
         logging_level=log_level,
         logging_file=logfile,
         speos_install_path=speos_rpc_path,

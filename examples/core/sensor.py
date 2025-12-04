@@ -11,6 +11,9 @@
 from pathlib import Path
 
 from ansys.speos.core import GeoRef, Project, Speos, launcher
+from ansys.speos.core.kernel.client import (
+    default_docker_channel,
+)
 from ansys.speos.core.sensor import (
     Sensor3DIrradiance,
     SensorCamera,
@@ -73,7 +76,7 @@ else:
 # be used to start a local instance of the service.
 
 if USE_DOCKER:
-    speos = Speos(host=HOSTNAME, port=GRPC_PORT)
+    speos = Speos(channel=default_docker_channel())
 else:
     speos = launcher.launch_local_speos_rpc_server(port=GRPC_PORT)
 
