@@ -68,7 +68,7 @@ After the Speos service is launched, connect to it with these commands:
    from ansys.speos.core import Speos, default_docker_channel
 
    speos = Speos()
-   
+
 Be aware that such docker is launched via insecure channel
 
 By default, the ``Speos`` instance connects to ``"localhost"`` on
