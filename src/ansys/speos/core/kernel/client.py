@@ -244,7 +244,7 @@ class SpeosClient:
         if self._closed:
             return False
         try:
-            grpc.channel_ready_future(self.channel).result(timeout=10)
+            grpc.channel_ready_future(self.channel).result(timeout=60)
             return True
         except BaseException:
             return False

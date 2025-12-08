@@ -116,6 +116,11 @@ def launch_local_speos_rpc_server(
 ) -> Speos:
     """Launch Speos RPC server locally.
 
+    This method only work for SpeosRPC server supporting UDS or WNUA transport.
+    For release 251, minimal requirement is 2025.1.4.
+    For release 252, minimal requirement is 2025.2.4.
+    From release 261, grpc transport is always supported.
+
     .. warning::
 
         Do not execute this function with untrusted function argument or environment
