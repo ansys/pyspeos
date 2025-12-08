@@ -26,6 +26,14 @@ import psutil
 import pytest
 
 from ansys.speos.core.generic.constants import DEFAULT_VERSION
+from ansys.speos.core.kernel.grpc.transportoptions import (
+    InsecureOptions,
+    MTLSOptions,
+    TransportMode,
+    TransportOptions,
+    UDSOptions,
+    WNUAOptions,
+)
 from ansys.speos.core.launcher import launch_local_speos_rpc_server, retrieve_speos_install_dir
 from tests.conftest import IS_WINDOWS, SERVER_PORT
 
@@ -59,3 +67,29 @@ def test_local_session(*args):
     p_list = [p.name() for p in psutil.process_iter()]
     running = p_list.count(name) > nb_process
     assert running is not closed
+
+
+@pytest.mark.skipif(False, reason="transport options test")
+def test_transport_options():
+    """Test transport options."""
+    to = TransportOptions()
+    assert to.mode == TransportMode.UDS
+    assert to.options == UDSOptions()
+    to_uds = UDSOptions(uds_service="test_service", uds_dir="/uds", uds_id="1234")
+    kwargs_uds = to_uds._to_cyberchannel_kwargs()
+    assert kwargs_uds["uds_service"] == "test_service"
+    assert kwargs_uds["uds_dir"] == "/uds"
+    assert kwargs_uds["uds_id"] == "1234"
+    to_mtls = MTLSOptions(certs_dir="/certs", host="localhost", port=50051)
+    kwargs_mtls = to_mtls._to_cyberchannel_kwargs()
+    assert kwargs_mtls["certs_dir"] == "/certs"
+    assert kwargs_mtls["host"] == "localhost"
+    assert kwargs_mtls["port"] == 50051
+    to_insecure = InsecureOptions(host="localhost", port=50051)
+    kwargs_insecure = to_insecure._to_cyberchannel_kwargs()
+    assert kwargs_insecure["host"] == "localhost"
+    assert kwargs_insecure["port"] == 50051
+    to_wnua = WNUAOptions(host="localhost", port=50051)
+    kwargs_wnua = to_wnua._to_cyberchannel_kwargs()
+    assert kwargs_wnua["host"] == "localhost"
+    assert kwargs_wnua["port"] == 50051
