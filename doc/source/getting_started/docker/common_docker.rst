@@ -63,7 +63,7 @@ Connect to the Speos service
 
 After the Speos service is launched, connect to it with these commands:
 
-.. code:: python
+.. code-block:: python
 
    from ansys.speos.core import Speos, default_docker_channel
 
@@ -81,6 +81,7 @@ your ``docker run`` command by changing the ``<HOST-PORT>-50098`` argument.
 The following tabs show the commands that set the ``host`` and ``port``
 parameters of ``default_docker_channel``.
 
-.. code:: python
+.. code-block:: python
+
     from ansys.speos.core import Speos, default_docker_channel
     speos = Speos(channel = default_docker_channel(host="127.0.0.1", port=50098))
