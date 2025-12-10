@@ -48,7 +48,7 @@ class Speos:
         ``ansys.speos.core.kernel.client.LATEST_VERSION``.
     channel : grpc.Channel, optional
         gRPC channel for server communication.
-        Can be created with ``ansys.speos.core.kernel.grpc.transportoptions``
+        Can be created with ``ansys.speos.core.kernel.grpc.transport_options``
         and ``ansys.speos.core.kernel.grpc.cyberchannel``
         By default, ``None``.
     remote_instance : ansys.platform.instancemanagement.Instance
@@ -70,13 +70,14 @@ class Speos:
     >>> speos = Speos()
     >>> # which is also equivalent to:
     >>> from ansys.speos.core.kernel.client import default_local_channel
-    >>> speos = Speos(channel=default_local_channel())
+    >>> channel = default_local_channel()
+    >>> speos = Speos(channel=channel)
     >>> # Create channel with custom port and message size:
     >>> # use when server was started with `SpeosRPC_Server.exe --port 53123`
     >>> speos = Speos(channel=default_local_channel(port=53123, message_size=20000000))
     >>> # Create insecure channel, to use when server was started with:
     >>> # `SpeosRPC_Server.exe --transport-insecure`
-    >>> from ansys.speos.core.kernel.grpc.transportoptions import (
+    >>> from ansys.speos.core.kernel.grpc.transport_options import (
     ...     TransportOptions,
     ...     InsecureOptions,
     ...     TransportMode,

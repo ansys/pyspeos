@@ -108,8 +108,7 @@ def does_file_exist(path):
     if IS_DOCKER:
         return (
             subprocess.call(
-                "docker exec " + DOCKER_CONTAINER_NAME + ' test -f "' + Path(path).as_posix() + '"',
-                shell=True,
+                ["docker", "exec", DOCKER_CONTAINER_NAME, "test", "-f", Path(path).as_posix()]
             )
             == 0
         )
@@ -135,8 +134,7 @@ def remove_file(path):
 
     if IS_DOCKER:
         subprocess.call(
-            "docker exec " + DOCKER_CONTAINER_NAME + ' rm -rf "' + Path(path).as_posix() + '"',
-            shell=True,
+            ["docker", "exec", DOCKER_CONTAINER_NAME, "rm", "-rf", Path(path).as_posix()]
         )
     else:
         rmtree(Path(path))

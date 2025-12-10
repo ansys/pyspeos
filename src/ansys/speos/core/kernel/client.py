@@ -43,7 +43,7 @@ from ansys.speos.core.generic.constants import (
 from ansys.speos.core.generic.general_methods import retrieve_speos_install_dir
 from ansys.speos.core.kernel.body import BodyLink, BodyStub
 from ansys.speos.core.kernel.face import FaceLink, FaceStub
-from ansys.speos.core.kernel.grpc.transportoptions import (
+from ansys.speos.core.kernel.grpc.transport_options import (
     InsecureOptions,
     TransportMode,
     TransportOptions,
@@ -131,7 +131,6 @@ def default_local_channel(
     port: Union[str, int] = DEFAULT_PORT, message_size: int = MAX_CLIENT_MESSAGE_SIZE
 ) -> grpc.Channel:
     """Create default transport options, WNUA on Windows, UDS on Linux."""
-    # Otherwise use default based on OS
     if os.name == "nt":
         transport = TransportOptions(
             mode=TransportMode.WNUA, options=WNUAOptions(host=DEFAULT_HOST, port=port)

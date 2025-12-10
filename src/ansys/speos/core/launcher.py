@@ -113,6 +113,7 @@ def launch_local_speos_rpc_server(
     logfile_loc: str = None,
     log_level: int = 20,
     speos_rpc_path: Optional[Union[Path, str]] = None,
+    use_insecure: bool = False,
 ) -> Speos:
     """Launch Speos RPC server locally.
 
@@ -150,6 +151,9 @@ def launch_local_speos_rpc_server(
         By default, ``logging.WARNING`` = 20.
     speos_rpc_path : Optional[str, Path]
         location of Speos rpc executable
+    use_insecure: bool
+        Whether to use insecure transport mode for the Speos RPC server.
+        By default, ``False``.
 
     Returns
     -------
@@ -187,7 +191,9 @@ def launch_local_speos_rpc_server(
     if not logfile_loc.exists():
         logfile_loc.mkdir()
 
-    if os.name == "nt":
+    if use_insecure:
+        transport_option = "--transport_insecure"
+    elif os.name == "nt":
         transport_option = "--transport_wnua"
     else:
         transport_option = "--transport_uds"
