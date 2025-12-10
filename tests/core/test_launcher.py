@@ -26,7 +26,7 @@ import psutil
 import pytest
 
 from ansys.speos.core.generic.constants import DEFAULT_VERSION
-from ansys.speos.core.kernel.grpc.transportoptions import (
+from ansys.speos.core.kernel.grpc.transport_options import (
     InsecureOptions,
     MTLSOptions,
     TransportMode,
@@ -69,7 +69,6 @@ def test_local_session(*args):
     assert running is not closed
 
 
-@pytest.mark.skipif(False, reason="transport options test")
 def test_transport_options():
     """Test transport options."""
     to = TransportOptions()

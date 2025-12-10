@@ -55,3 +55,5 @@ def test_client_through_channel():
     assert client.healthy is True
     assert client.target() == target
     assert client.channel
+    assert client.close()
+    assert client.healthy is False
