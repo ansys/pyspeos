@@ -88,11 +88,11 @@ Use secure transport channel
 ----------------------------
 
 Whether with a local server or a Docker image, you can configure the transport mode to use Mutual TLS, Unix Domain Socket, Windows Named User Authentication or Insecure.
-Of course, server and client must be aligned on the transport mode.
+Of course both server and client must be aligned on the transport mode.
 On server side, transport is defined by command line option:
 
 * ``--transport_tls SERVER_KEY,SERVER_CERTIFICATE,SERVER_CLIENT_CA``
-gRPC transport, using TLS encryption, must provide paths to the server's private key, certificate and server/client Certificate Authority files.
+gRPC transport, using TLS encryption, must provide paths to the server's private key, certificate, and server/client Certificate Authority files.
 
 * ``--transport_uds UDSPATH(=C:\tmp\speosrpc_sock_50098)``
 Unix Domain Socket transport for local server/client communications, can pass an optional path for the socket.
@@ -103,7 +103,7 @@ Run the server with Windows named user authentication, only available on Windows
 * ``--transport_insecure``
 Run the server in gRPC insecure mode.
 
-On client side, please use ``ansys.speos.core.kernel.grpc.transport_options`` to create the grpc channel with same mode than the server.
+On client side, please use ``ansys.speos.core.kernel.grpc.transport_options`` to create the transport channel with same mode than the server.
 Here is an example with WNUA transport mode:
 
 .. code-block:: python
