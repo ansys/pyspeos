@@ -29,10 +29,7 @@ from typing import TYPE_CHECKING, Optional, Union
 from grpc import Channel
 
 from ansys.speos.core.generic.constants import (
-    DEFAULT_HOST,
-    DEFAULT_PORT,
     DEFAULT_VERSION,
-    MAX_CLIENT_MESSAGE_SIZE,
 )
 from ansys.speos.core.kernel.client import SpeosClient
 
@@ -45,22 +42,15 @@ class Speos:
 
     Parameters
     ----------
-    host : str, optional
-        Host where the server is running.
-        By default, ``ansys.speos.core.kernel.client.DEFAULT_HOST``.
-    port : Union[str, int], optional
-        Port number where the server is running.
-        By default, ``ansys.speos.core.kernel.client.DEFAULT_PORT``.
     version : str
         The Speos server version to run, in the 3 digits format, such as "242".
         If unspecified, the version will be chosen as
         ``ansys.speos.core.kernel.client.LATEST_VERSION``.
-    channel : ~grpc.Channel, optional
+    channel : grpc.Channel, optional
         gRPC channel for server communication.
+        Can be created with ``ansys.speos.core.kernel.grpc.transport_options``
+        and ``ansys.speos.core.kernel.grpc.cyberchannel``
         By default, ``None``.
-    message_size: int
-        Maximum Message size of a newly generated channel
-        By default, ``MAX_CLIENT_MESSAGE_SIZE``.
     remote_instance : ansys.platform.instancemanagement.Instance
         The corresponding remote instance when the Speos Service
         is launched through PyPIM. This instance will be deleted when calling
@@ -73,15 +63,37 @@ class Speos:
         By default, ``INFO``.
     logging_file : Optional[str, Path]
         The file to output the log, if requested. By default, ``None``.
+
+    Examples
+    --------
+    >>> # Create default channel (to use when server was started with `SpeosRPC_Server.exe`)
+    >>> speos = Speos()
+    >>> # which is also equivalent to:
+    >>> from ansys.speos.core.kernel.client import default_local_channel
+    >>> channel = default_local_channel()
+    >>> speos = Speos(channel=channel)
+    >>> # Create channel with custom port and message size:
+    >>> # use when server was started with `SpeosRPC_Server.exe --port 53123`
+    >>> speos = Speos(channel=default_local_channel(port=53123, message_size=20000000))
+    >>> # Create insecure channel, to use when server was started with:
+    >>> # `SpeosRPC_Server.exe --transport-insecure`
+    >>> from ansys.speos.core.kernel.grpc.transport_options import (
+    ...     TransportOptions,
+    ...     InsecureOptions,
+    ...     TransportMode,
+    ... )
+    >>> transport = TransportOptions(
+    ...     mode=TransportMode.INSECURE,
+    ...     options=InsecureOptions(host=host, port=port, allow_remote_host=True),
+    ... )
+    >>> grpc_options = [("grpc.max_receive_message_length", message_size)]
+    >>> speos = Speos(channel=transport.create_channel(grpc_options))
     """
 
     def __init__(
         self,
-        host: str = DEFAULT_HOST,
-        port: Union[str, int] = DEFAULT_PORT,
         version: str = DEFAULT_VERSION,
         channel: Optional[Channel] = None,
-        message_size: int = MAX_CLIENT_MESSAGE_SIZE,
         remote_instance: Optional["Instance"] = None,
         timeout: Optional[int] = 60,
         logging_level: Optional[int] = logging.INFO,
@@ -89,11 +101,8 @@ class Speos:
         speos_install_path: Optional[Union[Path, str]] = None,
     ):
         self._client = SpeosClient(
-            host=host,
-            port=port,
             version=version,
             channel=channel,
-            message_size=message_size,
             remote_instance=remote_instance,
             timeout=timeout,
             logging_level=logging_level,
