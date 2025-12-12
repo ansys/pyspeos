@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "ansys-speos-core"
-version = "0.6.dev0"
+version = "0.7.0"
 description = "A Python wrapper for Ansys Speos"
 readme = "README.rst"
 requires-python = ">=3.10"
