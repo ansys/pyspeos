@@ -1,0 +1,125 @@
+
+
+
+
+
+
+The ``job.py`` module
+=====================
+
+.. py:module:: ansys.speos.core.kernel.job
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: job
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.job.JobLink`
+            - Link object for job in database.
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.job.JobStub`
+            - Database interactions for job.
+
+
+
+
+
+
+    .. tab-item:: Attributes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ProtoJob`
+            - Job protobuf class : ansys.api.speos.job.v2.job_pb2.Job
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> JobLink</api/ansys/speos/core/kernel/job/JobLink>
+    <span class="nf nf-cod-symbol_class"></span> JobStub</api/ansys/speos/core/kernel/job/JobStub>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides a wrapped abstraction of the gRPC proto API definition and stubs.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+.. py:data:: ProtoJob
+
+   
+   Job protobuf class : ansys.api.speos.job.v2.job_pb2.Job
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
