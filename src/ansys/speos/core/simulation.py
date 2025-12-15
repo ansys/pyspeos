@@ -1929,7 +1929,7 @@ class SimulationVirtualBSDF(BaseSimulation):
                         if default_values:
                             self.theta_sampling = 18
                             self.phi_sampling = 36
-                            self.set_semmetric_none()
+                            self.set_symmetric_none()
 
                     @property
                     def theta_sampling(self) -> int:
@@ -1987,22 +1987,7 @@ class SimulationVirtualBSDF(BaseSimulation):
                         """
                         self._uniform.phi_sampling = phi_sampling
 
-                    def set_symmetric_unspecified(
-                        self,
-                    ) -> (
-                        SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic._Uniform
-                    ):
-                        """Set symmetric type as unspecified.
-
-                        Returns
-                        -------
-                        SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic._Uniform
-
-                        """
-                        self._uniform.symmetry_type = 0
-                        return self
-
-                    def set_semmetric_none(
+                    def set_symmetric_none(
                         self,
                     ) -> (
                         SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic._Uniform
