@@ -52,7 +52,7 @@ class SensorTemplateLink(CrudItem):
     --------
     >>> from ansys.speos.core.speos import Speos
     >>> from ansys.speos.core.kernel.sensor_template import ProtoSensorTemplate
-    >>> speos = Speos(host="localhost", port=50098)
+    >>> speos = Speos()
     >>> ssr_t_db = speos.client.sensor_templates()
     >>> ssr_t_message = ProtoSensorTemplate(name="Irradiance")
     >>> ssr_t_message.irradiance_sensor_template.sensor_type_photometric.SetInParent()
@@ -114,7 +114,7 @@ class SensorTemplateStub(CrudStub):
     sensor_templates() method. Like in the following example:
 
     >>> from ansys.speos.core.speos import Speos
-    >>> speos = Speos(host="localhost", port=50098)
+    >>> speos = Speos()
     >>> ssr_t_db = speos.client.sensor_templates()
 
     """
