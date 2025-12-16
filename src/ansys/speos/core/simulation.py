@@ -1817,7 +1817,7 @@ class SimulationVirtualBSDF(BaseSimulation):
 
             Parameters
             ----------
-            mode_template : simulation_template_pb2.Iridescence
+            iridescence_mode : simulation_template_pb2.Iridescence
                 Iridescence settings to complete.
             stable_ctr : bool
                 Variable to indicate if usage is inside class scope
