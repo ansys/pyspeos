@@ -298,9 +298,11 @@ def copy_assets_to_output_dir(app: sphinx.application.Sphinx, exception: Excepti
     if app.builder.name == "html":
         SOURCE_ASSETS = pathlib.Path(app.outdir) / "_static" / "assets" / "download"
         ASSETS_DIRECTORY = pathlib.Path(app.outdir).parent.parent.parent / "tests" / "assets"
-        SOURCE_ASSETS.mkdir(exist_ok=True)
+        SOURCE_ASSETS.mkdir(parents=True, exist_ok=True)
         logger.info("Extracting assets to output directory...")
+        logger.info(f"Folder created: {str(SOURCE_ASSETS.exists())}")
         zip_path = pathlib.Path(shutil.make_archive("assets", "zip", ASSETS_DIRECTORY))
+        logger.info("ZIP created")
         zip_path = shutil.move(zip_path, SOURCE_ASSETS / zip_path.name)
         logger.info(f"Extracted assets to {zip_path}.")
     else:
