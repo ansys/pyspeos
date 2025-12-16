@@ -136,9 +136,9 @@ print(simulation1)
 simulation2_direct = p.create_simulation(name="Simulation.2")
 simulation2_direct.set_ambient_material_file_uri(
     uri=str(assets_data_path / "AIR.material")
-).set_colorimetric_standard_CIE_1964().set_weight_none().set_geom_distance_tolerance(
-    0.01
-).set_max_impact(200).set_dispersion(False)
+).set_colorimetric_standard_CIE_1964().set_weight_none().set_dispersion(False)
+simulation2_direct.geom_distance_tolerance = 0.01
+simulation2_direct.max_impact = 200
 simulation2_direct.set_sensor_paths([SENSOR_NAME]).set_source_paths([SOURCE_NAME]).commit()
 print(simulation2_direct)
 
@@ -168,7 +168,7 @@ print(simulation1)
 #
 # Possibility to reset local values from the one available in the server.
 
-simulation1.set_max_impact(1000)  # adjust max impact but no commit
+simulation1.max_impact = 1000  # adjust max impact but no commit
 simulation1.reset()  # reset -> this will apply the server value to the local value
 simulation1.delete()  # delete (to display the local value with the below print)
 print(simulation1)
