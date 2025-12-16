@@ -10,7 +10,10 @@
 import os
 from pathlib import Path
 
-from ansys.speos.core import Project, Speos
+from ansys.speos.core import Project, Speos, launcher
+from ansys.speos.core.kernel.client import (
+    default_docker_channel,
+)
 from ansys.speos.core.simulation import SimulationDirect
 
 # -
@@ -46,7 +49,10 @@ else:
 # client are the same
 # machine.
 
-speos = Speos(host=HOSTNAME, port=GRPC_PORT)
+if USE_DOCKER:
+    speos = Speos(channel=default_docker_channel())
+else:
+    speos = launcher.launch_local_speos_rpc_server(port=GRPC_PORT)
 
 # ### Create project from a Speos file
 #

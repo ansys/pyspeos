@@ -22,11 +22,15 @@
 
 """Test basic client connection."""
 
-from grpc import insecure_channel
+import platform
 
-from ansys.speos.core.kernel.client import SpeosClient
+from ansys.speos.core.kernel.client import (
+    SpeosClient,
+    default_docker_channel,
+    default_local_channel,
+)
 from ansys.speos.core.speos import Speos
-from tests.conftest import config
+from tests.conftest import IS_DOCKER, SERVER_PORT
 
 
 def test_client_init(speos: Speos):
@@ -36,8 +40,14 @@ def test_client_init(speos: Speos):
 
 def test_client_through_channel():
     """Test the instantiation of a client from a gRPC channel."""
-    target = "dns:///localhost:" + str(config.get("SpeosServerPort"))
-    channel = insecure_channel(target)
+    if platform.system() == "Linux" and not IS_DOCKER:
+        target = "unix:/tmp/speosrpc_sock_" + str(SERVER_PORT)
+    else:
+        target = "dns:///localhost:" + str(SERVER_PORT)
+    if IS_DOCKER:
+        channel = default_docker_channel(port=SERVER_PORT)
+    else:
+        channel = default_local_channel(port=SERVER_PORT)
     client = SpeosClient(channel=channel)
     client_repr = repr(client)
     assert "Target" in client_repr
@@ -45,3 +55,5 @@ def test_client_through_channel():
     assert client.healthy is True
     assert client.target() == target
     assert client.channel
+    assert client.close()
+    assert client.healthy is False

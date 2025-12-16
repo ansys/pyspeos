@@ -95,7 +95,7 @@ class BodyStub(CrudStub):
     Like in the following example:
 
     >>> from ansys.speos.core.speos import Speos
-    >>> speos = Speos(host="localhost", port=50098)
+    >>> speos = Speos()
     >>> body_db = speos.client.bodies()
 
     """
