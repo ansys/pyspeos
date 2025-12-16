@@ -178,11 +178,8 @@ def error_no_install(install_path: Union[Path, str], version: Union[int, str]):
     version : Union[int, str]
         Version
     """
-    install_loc_msg = ""
-    if install_path:
-        install_loc_msg = f"at {Path(install_path).parent}"
     raise FileNotFoundError(
-        f"Ansys Speos RPC server installation not found{install_loc_msg}. "
+        f"Ansys Speos RPC server installation not found at {install_path}. "
         f"Please define AWP_ROOT{version} environment variable"
     )
 
