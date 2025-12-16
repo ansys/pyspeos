@@ -192,10 +192,11 @@ print(simulation4)
 
 # ### Virtual BSDF Bench simulation
 
-vbb = p.create_simulation(name="virtual_BSDF", feature_type=SimulationVirtualBSDF)
+# Change the material property from mirror to bsdf type
 opt_prop.set_surface_library(
     path=str(assets_data_path / "R_test.anisotropicbsdf")
-).commit()  # change the material property from mirror to bsdf type
+).commit() 
+vbb = p.create_simulation(name="virtual_BSDF", feature_type=SimulationVirtualBSDF)
 vbb.axis_system = [
     0.36,
     1.73,
