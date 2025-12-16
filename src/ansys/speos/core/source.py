@@ -30,6 +30,7 @@ from typing import List, Mapping, Optional, Union
 import uuid
 
 from ansys.api.speos.scene.v2 import scene_pb2
+from ansys.api.speos.source.v1 import source_pb2
 import numpy as np
 
 from ansys.speos.core import (
@@ -1944,4 +1945,319 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
         elif self._type._sun is not natural_light_properties.sun_axis_system.manual_sun:
             # Happens in case of feature reset (to be sure to always modify correct data)
             self._type._sun = natural_light_properties.sun_axis_system.manual_sun
+        return self._type
+
+
+class SourceAmbientEnvironment(BaseSourceAmbient):
+    """Environment ambient source.
+
+    By default [0, 0, 1] is used as zenith direction, [0, 1, 0] as north direction.
+
+    Parameters
+    ----------
+    project : ansys.speos.core.project.Project
+        Project that will own the feature.
+    name : str
+        Name of the feature.
+    description : str
+        Description of the feature.
+        By default, ``""``.
+    metadata : Optional[Mapping[str, str]]
+        Metadata of the feature.
+        By default, ``{}``.
+    default_values : bool
+        Uses default values when True.
+    """
+
+    class PredefinedColorSpace:
+        """Type of color space is predefined value.
+
+        Parameters
+        ----------
+        predefined_color_space :
+            ansys.api.speos.source.v1.source_pb2.SourceTemplate.PredefinedColorSpace
+        default_values : bool
+            Uses default values when True.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use set_predefined_color_space() method.
+        """
+
+        def __init__(
+            self,
+            predefined_color_space: source_pb2.SourceTemplate.PredefinedColorSpace,
+            default_values: bool = True,
+            stable_ctr: bool = False,
+        ) -> None:
+            if not stable_ctr:
+                msg = "PredefinedColorSpace class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._predefined_color_space = predefined_color_space
+
+            if default_values:
+                # Default values
+                self.set_color_space_srgb()
+
+        def set_color_space_srgb(self) -> SourceAmbientEnvironment.PredefinedColorSpace:
+            """Set the color space to the srgb preset.
+
+            Returns
+            -------
+            ansys.speos.core.source.SourceAmbientEnvironment
+                Environment source.
+            """
+            self._predefined_color_space.color_space_type = (
+                source_pb2.SourceTemplate.PredefinedColorSpace.sRGB
+            )
+            return self
+
+        def set_color_space_adobergb(self) -> SourceAmbientEnvironment.PredefinedColorSpace:
+            """Set the color space to the Adobe RGB preset.
+
+            Returns
+            -------
+            ansys.speos.core.source.SourceAmbientEnvironment
+                Environment source.
+            """
+            self._predefined_color_space.color_space_type = (
+                source_pb2.SourceTemplate.PredefinedColorSpace.AdobeRGB
+            )
+            return self
+
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        source_instance: Optional[ProtoScene.SourceInstance] = None,
+        default_values: bool = True,
+    ) -> None:
+        if metadata is None:
+            metadata = {}
+
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            source_instance=source_instance,
+        )
+        self._speos_client = self._project.client
+        self._name = name
+        self._type = None
+
+        if default_values:
+            # Default values
+            self.zenith_direction = [0, 0, 1]
+            self.north_direction = [0, 1, 0]
+            self.reverse_north_direction = False
+            self.reverse_zenith_direction = False
+            self.luminance = 1000
+            self.set_predefined_color_space()  # defaults to sRGB
+
+    @property
+    def zenith_direction(self) -> List[float]:
+        """Get zenith direction of the natural light source.
+
+        Returns
+        -------
+        List[float]
+            direction defines the zenith direction of the natural light.
+
+        """
+        return self._source_instance.ambient_properties.zenith_direction
+
+    @zenith_direction.setter
+    def zenith_direction(self, direction: Optional[List[float]] = None) -> None:
+        """Set zenith direction of the natural light source.
+
+            default value to be [0, 0, 1]
+
+        Parameters
+        ----------
+        direction: Optional[List[float]]
+            direction defines the zenith direction of the natural light.
+
+        Returns
+        -------
+        None
+
+        """
+        self._source_instance.ambient_properties.zenith_direction[:] = direction
+
+    @property
+    def reverse_zenith_direction(self) -> bool:
+        """
+        Get whether reverse zenith direction of the natural light source.
+
+        Returns
+        -------
+        bool
+            True to reverse zenith direction, False otherwise.
+
+        """
+        return self._source_instance.ambient_properties.reverse_zenith
+
+    @reverse_zenith_direction.setter
+    def reverse_zenith_direction(self, value: bool) -> None:
+        """Set reverse zenith direction of the environment source.
+
+            default value to be False.
+
+        Parameters
+        ----------
+        value: bool
+            True to reverse zenith direction, False otherwise.
+
+        Returns
+        -------
+        None
+
+        """
+        self._source_instance.ambient_properties.reverse_zenith = value
+
+    @property
+    def north_direction(self) -> List[float]:
+        """Get north direction of the environment source.
+
+        Returns
+        -------
+        List[float]
+            direction defines the north direction of the environment source.
+
+        """
+        return self._source_instance.ambient_properties.environment_map_properties.north_direction
+
+    @north_direction.setter
+    def north_direction(self, direction: List[float]) -> None:
+        """Set north direction of the environment source.
+
+            default value to be [0, 1, 0].
+
+        Parameters
+        ----------
+        direction: List[float]
+            direction defines the north direction of the environment source.
+
+        Returns
+        -------
+        None
+
+        """
+        self._source_instance.ambient_properties.environment_map_properties.north_direction[:] = (
+            direction
+        )
+
+    @property
+    def reverse_north_direction(self) -> bool:
+        """Get whether reverse north direction of the environment source.
+
+        Returns
+        -------
+        bool
+            True as reverse north direction, False otherwise.
+
+        """
+        return self._source_instance.ambient_properties.environment_map_properties.reverse_north
+
+    @reverse_north_direction.setter
+    def reverse_north_direction(self, value: bool) -> None:
+        """Set reverse north direction of the environment source.
+
+            default value to be False.
+
+        Parameters
+        ----------
+        value: bool
+            True to reverse north direction, False otherwise.
+
+        Returns
+        -------
+        None
+
+        """
+        self._source_instance.ambient_properties.environment_map_properties.reverse_north = value
+
+    @property
+    def luminance(self) -> float:
+        """Get luminance of the ambient light source.
+
+        Returns
+        -------
+        float
+            value of Luminance setting (cd/m^2).
+
+        """
+        return self._source_template.ambient.environment_map.luminance
+
+    @luminance.setter
+    def luminance(self, value: float) -> None:
+        """Set lumimance of the environment light source.
+
+            default value to be 1000 cd/m^2.
+
+        Parameters
+        ----------
+        value: float
+            set value of Luminance (cd/m^2).
+
+        Returns
+        -------
+        None
+
+        """
+        self._source_template.ambient.environment_map.luminance = value
+
+    def set_image_file_uri(self, uri: str) -> SourceAmbientEnvironment:
+        """Set environment image file.
+
+        Parameters
+        ----------
+        uri : str
+            format file uri (hdr, exr, png, bmp, jpg, tiff, rgb).
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceAmbientEnvironment
+            Environment source.
+        """
+        self._source_template.ambient.environment_map.image_uri = uri
+        return self
+
+    @property
+    def color_space(self) -> Union[None, SourceAmbientEnvironment.PredefinedColorSpace]:
+        """Property containing all options in regard to the color space properties.
+
+        Returns
+        -------
+        Union[None, ansys.speos.core.source.SourceAmbientEnvironment.PredefinedColorSpace]
+            Instance of Predefined Color Space class
+        """
+        if isinstance(self._type, SourceAmbientEnvironment.PredefinedColorSpace):
+            return self._type
+        else:
+            return None
+
+    def set_predefined_color_space(self) -> SourceAmbientEnvironment.PredefinedColorSpace:
+        """Set the color space to use one of the presets.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceAmbientEnvironment.PredefinedColorSpace
+            Environment source color space subclass
+        """
+        # self._source_template.ambient.environment_map.predefined_color_space.SetInParent()
+
+        if not isinstance(self._type, SourceAmbientEnvironment.PredefinedColorSpace):
+            # if the _type is not Photometric then we create a new type.
+            self._type = SourceAmbientEnvironment.PredefinedColorSpace(
+                predefined_color_space=self._source_template.ambient.environment_map.predefined_color_space,
+                default_values=True,
+                stable_ctr=True,
+            )
+
         return self._type

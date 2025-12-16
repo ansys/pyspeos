@@ -54,6 +54,7 @@ from ansys.speos.core.simulation import (
     SimulationInverse,
 )
 from ansys.speos.core.source import (
+    SourceAmbientEnvironment,
     SourceAmbientNaturalLight,
     SourceLuminaire,
     SourceRayFile,
@@ -157,7 +158,13 @@ class Project:
         description: str = "",
         feature_type: type = SourceSurface,
         metadata: Optional[Mapping[str, str]] = None,
-    ) -> Union[SourceSurface, SourceRayFile, SourceLuminaire, SourceAmbientNaturalLight]:
+    ) -> Union[
+        SourceSurface,
+        SourceRayFile,
+        SourceLuminaire,
+        SourceAmbientNaturalLight,
+        SourceAmbientEnvironment,
+    ]:
         """Create a new Source feature.
 
         Parameters
@@ -173,7 +180,8 @@ class Project:
             Allowed types:
             Union[ansys.speos.core.source.SourceSurface, ansys.speos.core.source.SourceRayFile, \
             ansys.speos.core.source.SourceLuminaire, \
-            ansys.speos.core.source.SourceAmbientNaturalLight].
+            ansys.speos.core.source.SourceAmbientNaturalLight, \
+            ansys.speos.core.source.SourceAmbientEnvironment].
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
@@ -181,7 +189,8 @@ class Project:
         Returns
         -------
         Union[ansys.speos.core.source.SourceSurface,ansys.speos.core.source.SourceRayFile,\
-        ansys.speos.core.source.SourceLuminaire, ansys.speos.core.source.SourceAmbientNaturalLight]
+        ansys.speos.core.source.SourceLuminaire, ansys.speos.core.source.SourceAmbientNaturalLight,\
+        ansys.speos.core.source.SourceAmbientEnvironment]
             Source class instance.
         """
         if metadata is None:
@@ -223,9 +232,20 @@ class Project:
                     description=description,
                     metadata=metadata,
                 )
+            case "SourceAmbientEnvironment":
+                feature = SourceAmbientEnvironment(
+                    project=self, name=name, description=description, metadata=metadata
+                )
             case _:
                 msg = "Requested feature {} does not exist in supported list {}".format(
-                    feature_type, [SourceSurface, SourceLuminaire, SourceRayFile]
+                    feature_type,
+                    [
+                        SourceSurface,
+                        SourceLuminaire,
+                        SourceRayFile,
+                        SourceAmbientNaturalLight,
+                        SourceAmbientEnvironment,
+                    ],
                 )
                 raise TypeError(msg)
         self._features.append(feature)
@@ -809,6 +829,13 @@ class Project:
             elif src_inst.HasField("ambient_properties"):
                 if src_inst.ambient_properties.HasField("natural_light_properties"):
                     src_feat = SourceAmbientNaturalLight(
+                        project=self,
+                        name=src_inst.name,
+                        source_instance=src_inst,
+                        default_values=False,
+                    )
+                elif src_inst.ambient_properties.HasField("environment_map_properties"):
+                    src_feat = SourceAmbientEnvironment(
                         project=self,
                         name=src_inst.name,
                         source_instance=src_inst,
