@@ -210,7 +210,7 @@ class BaseSimulation:
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
-                msg = "_SourceSampling class instantiated outside of the class scope"
+                msg = "SourceSampling class instantiated outside of the class scope"
                 raise RuntimeError(msg)
 
             self._mode = source_sampling
@@ -1779,7 +1779,7 @@ class SimulationVirtualBSDF(BaseSimulation):
         """Roughness only mode of BSDF bench measurement.
 
         By default,
-        2 degrees uniform type sampling is set
+        Uniform source theta sampling 18 is used.
 
         Parameters
         ----------
@@ -1808,8 +1808,8 @@ class SimulationVirtualBSDF(BaseSimulation):
         """BSDF depends on all properties mode of BSDF bench measurement.
 
         By default,
-        is_bsdf180 is true
-        reflection_and_transmission is true
+        is_bsdf180 is false
+        reflection_and_transmission is false
         Color does not depend on viewing direction is set
         Source sampling is set to be isotropic
 
@@ -1872,7 +1872,7 @@ class SimulationVirtualBSDF(BaseSimulation):
                 """Uniform Isotropic source sampling.
 
                 By default,
-                2 degrees uniform type source sampling is set
+                Uniform source theta sampling value 18 is set
 
                 Parameters
                 ----------
