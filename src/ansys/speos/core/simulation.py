@@ -2336,6 +2336,19 @@ class SimulationVirtualBSDF(BaseSimulation):
 
         @sampling.setter
         def sampling(self, value: int) -> None:
+            """
+            Set sampling.
+
+            Parameters
+            ----------
+            value: int
+                wavelength sampling.
+
+            Returns
+            -------
+            None
+
+            """
             self._wavelengths_range.w_sampling = value
 
     class SensorUniform:
@@ -2570,7 +2583,7 @@ class SimulationVirtualBSDF(BaseSimulation):
 
         Parameters
         ----------
-        sensor_paths : List[str]
+        sensor_paths : list of str
             Ignored. Present only for compatibility with the base class.
 
         Returns
@@ -2595,7 +2608,7 @@ class SimulationVirtualBSDF(BaseSimulation):
 
         Parameters
         ----------
-        source_paths : List[str]
+        source_paths : list of str
             Ignored. Present only for compatibility with the base class.
 
         Returns
