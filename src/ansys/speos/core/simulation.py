@@ -2583,7 +2583,7 @@ class SimulationVirtualBSDF(BaseSimulation):
 
         Parameters
         ----------
-        sensor_paths : list of str
+        sensor_paths : List[str]
             Ignored. Present only for compatibility with the base class.
 
         Returns
@@ -2608,7 +2608,7 @@ class SimulationVirtualBSDF(BaseSimulation):
 
         Parameters
         ----------
-        source_paths : list of str
+        source_paths : List[str]
             Ignored. Present only for compatibility with the base class.
 
         Returns
