@@ -58,7 +58,7 @@ jupyter = [
     "notebook==7.5.0",
 ]
 doc = [
-    "ansys-sphinx-theme[autoapi]==1.6.3",
+    "ansys-sphinx-theme[autoapi]==1.6.4",
     "ansys-tools-visualization-interface>=0.8.3",
     "numpydoc==1.10.0",
     "Sphinx==8.1.3",
