@@ -121,30 +121,26 @@ class BaseSimulation:
 
             @property
             def adaptive_uri(self) -> str:
-                """Get adaptive uri.
+                """
+                File uri for adaptive sampling.
+
+                This property gets or sets the file uri used for defining the
+                source sampling.
+
+                Parameters
+                ----------
+                uri: Union[Path | str]
+                    Adaptive sampling file uri to assign.
 
                 Returns
                 -------
-                str:
+                str
                     Adaptive sampling file uri.
-
                 """
                 return self._adaptive.file_uri
 
             @adaptive_uri.setter
             def adaptive_uri(self, uri: Union[Path | str]) -> None:
-                """Set adaptive uri.
-
-                Parameters
-                ----------
-                uri: Union[Path | str]
-                    Adaptive sampling file uri.
-
-                Returns
-                -------
-                None
-
-                """
                 self._adaptive.file_uri = str(uri)
 
         class _Uniform:
@@ -174,7 +170,15 @@ class BaseSimulation:
 
             @property
             def theta_sampling(self) -> int:
-                """Get theta sampling.
+                """
+                Theta source sampling.
+
+                This property gets or sets the source sampling in theta direction.
+
+                Parameters
+                ----------
+                theta_sampling: int
+                    theta sampling to assign.
 
                 Returns
                 -------
@@ -185,18 +189,6 @@ class BaseSimulation:
 
             @theta_sampling.setter
             def theta_sampling(self, theta_sampling: int) -> None:
-                """Set theta sampling.
-
-                Parameters
-                ----------
-                theta_sampling: int
-                    theta sampling.
-
-                Returns
-                -------
-                None
-
-                """
                 self._uniform.theta_sampling = theta_sampling
 
         def __init__(
@@ -427,7 +419,17 @@ class BaseSimulation:
     #     return self
     @property
     def geom_distance_tolerance(self) -> float:
-        """Return the geometry distance tolerance.
+        """
+        Geometry distance tolerance.
+
+        This property gets or sets the geometry distance tolerance
+        used by the virtual bsdf bench simulation.
+
+        Parameters
+        ----------
+        value : float
+            Maximum distance in mm to consider two faces as tangent to assign.
+            By default, ``0.01``
 
         Returns
         -------
@@ -441,18 +443,6 @@ class BaseSimulation:
 
     @geom_distance_tolerance.setter
     def geom_distance_tolerance(self, value: float) -> None:
-        """Set the geometry distance tolerance.
-
-        Parameters
-        ----------
-        value : float
-            Maximum distance in mm to consider two faces as tangent.
-            By default, ``0.01``
-
-        Returns
-        -------
-        None
-        """
         if self._template_class is not None:
             getattr(self._simulation_template, self._template_class).geom_distance_tolerance = value
         else:
@@ -460,7 +450,17 @@ class BaseSimulation:
 
     @property
     def max_impact(self) -> int:
-        """Return the maximum number of impacts.
+        """
+        Maximum number of impacts.
+
+        This property gets or sets the maximum number of impacts
+        used by the virtual bsdf bench simulation.
+
+        Parameters
+        ----------
+        value : int
+            The maximum number of impacts to assign.
+            By default, ``100``.
 
         Returns
         -------
@@ -474,20 +474,6 @@ class BaseSimulation:
 
     @max_impact.setter
     def max_impact(self, value: int) -> None:
-        """Define a value to determine the maximum number of ray impacts during propagation.
-
-        When a ray has interacted N times with the geometry, the propagation of the ray stops.
-
-        Parameters
-        ----------
-        value : int
-            The maximum number of impacts.
-            By default, ``100``.
-
-        Returns
-        -------
-        None
-        """
         if self._template_class is not None:
             getattr(self._simulation_template, self._template_class).max_impact = value
         else:
@@ -1933,7 +1919,12 @@ class SimulationVirtualBSDF(BaseSimulation):
 
                     @property
                     def theta_sampling(self) -> int:
-                        """Get theta_sampling.
+                        """Theta sampling of uniform sampling mode.
+
+                        Parameters
+                        ----------
+                        theta_sampling: int
+                            theta sampling to assign.
 
                         Returns
                         -------
@@ -1945,23 +1936,16 @@ class SimulationVirtualBSDF(BaseSimulation):
 
                     @theta_sampling.setter
                     def theta_sampling(self, theta_sampling: int) -> None:
-                        """Set theta_sampling.
-
-                        Parameters
-                        ----------
-                        theta_sampling: int
-                            theta sampling.
-
-                        Returns
-                        -------
-                        None
-
-                        """
                         self._uniform.theta_sampling = theta_sampling
 
                     @property
                     def phi_sampling(self) -> int:
-                        """Get phi_sampling.
+                        """Phi sampling of uniform sampling mode.
+
+                        Parameters
+                        ----------
+                        phi_sampling: int
+                            phi sampling to assign.
 
                         Returns
                         -------
@@ -1973,18 +1957,6 @@ class SimulationVirtualBSDF(BaseSimulation):
 
                     @phi_sampling.setter
                     def phi_sampling(self, phi_sampling: int) -> None:
-                        """Set phi_sampling.
-
-                        Parameters
-                        ----------
-                        phi_sampling: int
-                            phi sampling.
-
-                        Returns
-                        -------
-                        None
-
-                        """
                         self._uniform.phi_sampling = phi_sampling
 
                     def set_symmetric_none(
@@ -2158,7 +2130,15 @@ class SimulationVirtualBSDF(BaseSimulation):
 
         @property
         def is_bsdf180(self) -> bool:
-            """Get settings if bsdf is bsdf180.
+            """Boolean value if bsdf to be generated is bsdf180 or not.
+
+            This property gets or sets the boolean if the virtual bsdf
+            bench is going to generate one bsdf180 file or not.
+
+            Parameters
+            ----------
+            value: bool
+                True if bsdf180 is to be generated, False otherwise.
 
             Returns
             -------
@@ -2170,23 +2150,20 @@ class SimulationVirtualBSDF(BaseSimulation):
 
         @is_bsdf180.setter
         def is_bsdf180(self, value: bool) -> None:
-            """Set settings if bsdf180.
-
-            Parameters
-            ----------
-            value: bool
-                True if bsdf180 is to be generated, False otherwise.
-
-            Returns
-            -------
-            None
-
-            """
             self._all_characteristics_mode.is_bsdf180 = value
 
         @property
         def reflection_and_transmission(self) -> bool:
-            """Get settings if reflection and transmission is to be generated.
+            """Boolean value if bsdf to be generated is bsdf180 or not.
+
+            This property gets or sets the boolean if the virtual bsdf
+            bench is going to generate both reflection and transmission
+            or only reflection bsdf.
+
+            Parameters
+            ----------
+            value: bool
+                True if reflection and transmission is to be generated, False otherwise.
 
             Returns
             -------
@@ -2198,18 +2175,6 @@ class SimulationVirtualBSDF(BaseSimulation):
 
         @reflection_and_transmission.setter
         def reflection_and_transmission(self, value: bool) -> None:
-            """Set settings if reflection and transmission is to be generated.
-
-            Parameters
-            ----------
-            value: bool
-                True if reflection and transmission is to be generated, False otherwise.
-
-            Returns
-            -------
-            None
-
-            """
             self._all_characteristics_mode.sensor_reflection_and_transmission = value
 
         def set_non_iridescence(self) -> SimulationVirtualBSDF.AllCharacteristics.NonIridescence:
@@ -2312,89 +2277,65 @@ class SimulationVirtualBSDF(BaseSimulation):
 
         @property
         def start(self) -> float:
-            """Return start wavelength.
+            """Start value of wavelength.
+
+            Parameters
+            ----------
+            value: float
+                Start wavelength to assign.
 
             Returns
             -------
             float
-            Start wavelength.
+                Start wavelength.
 
             """
             return self._wavelengths_range.w_start
 
         @start.setter
         def start(self, value: float) -> None:
-            """Set start wavelength.
-
-            Parameters
-            ----------
-            value: float
-            Start wavelength.
-
-            Returns
-            -------
-            None
-            """
             self._wavelengths_range.w_start = value
 
         @property
         def end(self) -> float:
-            """
-            Return end wavelength.
+            """End value of wavelength.
+
+            Parameters
+            ----------
+            value: float
+                End wavelength to assign.
 
             Returns
             -------
             float
-            End wavelength.
+                End wavelength.
 
             """
             return self._wavelengths_range.w_end
 
         @end.setter
         def end(self, value: float) -> None:
-            """
-            Set end wavelength.
-
-            Parameters
-            ----------
-            value: float
-            End wavelength.
-
-            Returns
-            -------
-            None
-
-            """
             self._wavelengths_range.w_end = value
 
         @property
         def sampling(self) -> int:
-            """
-            Return sampling.
+            """Wavelength sampling.
+
+            Parameters
+            ----------
+            value: int
+                wavelength sampling to assign.
 
             Returns
             -------
-            int
-                Wavelength sampling.
+            value: int
+                wavelength sampling.
 
             """
             return self._wavelengths_range.w_sampling
 
         @sampling.setter
         def sampling(self, value: int) -> None:
-            """
-            Set sampling.
-
-            Parameters
-            ----------
-            value: int
-                wavelength sampling.
-
-            Returns
-            -------
-            None
-
-            """
             self._wavelengths_range.w_sampling = value
 
     class SensorUniform:
@@ -2416,7 +2357,12 @@ class SimulationVirtualBSDF(BaseSimulation):
 
         @property
         def theta_sampling(self) -> int:
-            """Get theta sampling.
+            """Sampling value of theta direction.
+
+            Parameters
+            ----------
+            value: int
+                theta sampling value to assign.
 
             Returns
             -------
@@ -2428,25 +2374,16 @@ class SimulationVirtualBSDF(BaseSimulation):
 
         @theta_sampling.setter
         def theta_sampling(self, value: int) -> None:
-            """
-            Set theta sampling.
-
-            Parameters
-            ----------
-            value: int
-                theta sampling.
-
-            Returns
-            -------
-            None
-
-            """
             self._sensor_uniform_mode.theta_sampling = value
 
         @property
         def phi_sampling(self) -> int:
-            """
-            Get phi sampling.
+            """Sampling value of phi direction.
+
+            Parameters
+            ----------
+            value: int
+                phi sampling value to assign.
 
             Returns
             -------
@@ -2458,19 +2395,6 @@ class SimulationVirtualBSDF(BaseSimulation):
 
         @phi_sampling.setter
         def phi_sampling(self, value: int) -> None:
-            """
-            Set phi sampling.
-
-            Parameters
-            ----------
-            value: int
-            phi sampling.
-
-            Returns
-            -------
-            None
-
-            """
             self._sensor_uniform_mode.phi_sampling = value
 
     def __init__(
@@ -2516,37 +2440,41 @@ class SimulationVirtualBSDF(BaseSimulation):
 
     @property
     def integration_angle(self) -> float:
-        """Return the sensor integration angle.
+        """
+        Sensor integration angle.
+
+        This property gets or sets the sensor integration angle used by the
+        virtual BSDF bench simulation.
+
+        Parameters
+        ----------
+        angle : float
+            The sensor integration angle to assign.
 
         Returns
         -------
         float
-            The sensor integration angle.
-
+            The current sensor integration angle.
         """
         tmp_sensor = self._simulation_template.virtual_bsdf_bench_simulation_template.sensor
         return tmp_sensor.integration_angle
 
     @integration_angle.setter
     def integration_angle(self, angle: float) -> None:
-        """Set the sensor integration angle.
-
-        Parameters
-        ----------
-        angle: float
-            The sensor integration angle.
-
-        Returns
-        -------
-        None
-
-        """
         tmp_sensor = self._simulation_template.virtual_bsdf_bench_simulation_template.sensor
         tmp_sensor.integration_angle = angle
 
     @property
     def axis_system(self) -> List[float]:
-        """Get axis system of the bsdf bench.
+        """Axis system of the bsdf bench.
+
+        This property gets or sets the axis system used by the
+        virtual BSDF bench simulation.
+
+        Parameters
+        ----------
+        value : List[float]
+            The axis coordinate system to assign.
 
         Returns
         -------
@@ -2558,23 +2486,19 @@ class SimulationVirtualBSDF(BaseSimulation):
 
     @axis_system.setter
     def axis_system(self, value: List[float]) -> None:
-        """Set axis system of the bsdf bench.
-
-        Parameters
-        ----------
-        value: List[float]
-        The axis system of the bsdf bench.
-
-        Returns
-        -------
-        None
-
-        """
         self._simulation_instance.vbb_properties.axis_system[:] = value
 
     @property
     def analysis_x_ratio(self) -> float:
-        """Get analysis x ratio, value must be in range [0., 100.].
+        """Analysis x ratio.
+
+        This property gets or sets the analysis ratio in range [0., 100.]
+        in x direction used by the virtual BSDF bench simulation
+
+        Parameters
+        ----------
+        value: float
+            The analysis x ratio to assign.
 
         Returns
         -------
@@ -2586,23 +2510,19 @@ class SimulationVirtualBSDF(BaseSimulation):
 
     @analysis_x_ratio.setter
     def analysis_x_ratio(self, value: float) -> None:
-        """Set analysis x ratio, value must be in range [0., 100.].
-
-        Parameters
-        ----------
-        value: float
-        The analysis x ratio in range [0., 100.]
-
-        Returns
-        -------
-        None
-
-        """
         self._simulation_instance.vbb_properties.analysis_x_ratio = value
 
     @property
     def analysis_y_ratio(self) -> float:
-        """Get analysis y ratio, value must be in range [0., 100.].
+        """Analysis y ratio.
+
+        This property gets or sets the analysis ratio in range [0., 100.]
+        in y direction used by the virtual BSDF bench simulation
+
+        Parameters
+        ----------
+        value: float
+            The analysis y ratio to assign.
 
         Returns
         -------
@@ -2614,51 +2534,35 @@ class SimulationVirtualBSDF(BaseSimulation):
 
     @analysis_y_ratio.setter
     def analysis_y_ratio(self, value: float) -> None:
-        """Set analysis y ratio, value must be in range [0., 100.].
-
-        Parameters
-        ----------
-        value: float
-            The analysis y ratio in range [0., 100.]
-
-        Returns
-        -------
-        None
-
-        """
         self._simulation_instance.vbb_properties.analysis_y_ratio = value
 
     @property
     def stop_condition_ray_number(self) -> int:
-        """Get ray stop condition ray number.
+        """Stop condition as ray number.
+
+        This property gets or sets the ray number stop condition
+        used by the virtual BSDF bench simulation.
+
+        Parameters
+        ----------
+        value: int
+            The ray stop condition ray number to assign.
 
         Returns
         -------
-        float
-        The ray stop condition ray number.
+        int
+            The ray stop condition ray number.
 
         """
         return self._job.virtualbsdfbench_simulation_properties.stop_condition_rays_number
 
     @stop_condition_ray_number.setter
     def stop_condition_ray_number(self, value: int) -> None:
-        """Set ray stop condition ray number.
-
-        Parameters
-        ----------
-        value: int
-            The ray stop condition ray number.
-
-        Returns
-        -------
-        None
-
-        """
         self._job.virtualbsdfbench_simulation_properties.stop_condition_rays_number = value
 
     def set_sensor_paths(self, sensor_paths: List[str]) -> None:
         """
-        Disable setting sensor  paths for this subclass.
+        Disabled - Setting sensor paths is not available for this simulation type.
 
         This method is intentionally not supported in ``SimulationVirtualBSDF``.
         It exists only to satisfy the interface defined in the base class and
@@ -2666,7 +2570,7 @@ class SimulationVirtualBSDF(BaseSimulation):
 
         Parameters
         ----------
-        sensor_paths : list of str
+        sensor_paths : List[str]
             Ignored. Present only for compatibility with the base class.
 
         Returns
@@ -2683,7 +2587,7 @@ class SimulationVirtualBSDF(BaseSimulation):
 
     def set_source_paths(self, source_paths: List[str]) -> None:
         """
-        Disable setting source paths for this subclass.
+        Disabled - Setting source paths is not available for this simulation type.
 
         This method is intentionally not supported in ``SimulationVirtualBSDF``.
         It exists only to satisfy the interface defined in the base class and
@@ -2691,7 +2595,7 @@ class SimulationVirtualBSDF(BaseSimulation):
 
         Parameters
         ----------
-        source_paths : list of str
+        source_paths : List[str]
             Ignored. Present only for compatibility with the base class.
 
         Returns
