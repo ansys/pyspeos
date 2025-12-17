@@ -72,7 +72,7 @@ class BaseSimulation:
     This is a Super class, **Do not instantiate this class yourself**
     """
 
-    class _SourceSampling:
+    class SourceSampling:
         """Source sampling mode.
 
         Parameters
@@ -92,7 +92,7 @@ class BaseSimulation:
 
         """
 
-        class _Adaptive:
+        class Adaptive:
             """Adaptive sampling mode.
 
             Parameters
@@ -111,7 +111,7 @@ class BaseSimulation:
                 stable_ctr: bool = False,
             ) -> None:
                 if not stable_ctr:
-                    msg = "_Adaptive class instantiated outside the class scope"
+                    msg = "Adaptive class instantiated outside the class scope"
                     raise RuntimeError(msg)
                 self._adaptive = adaptive
                 # Default setting
@@ -143,7 +143,7 @@ class BaseSimulation:
             def adaptive_uri(self, uri: Union[Path | str]) -> None:
                 self._adaptive.file_uri = str(uri)
 
-        class _Uniform:
+        class Uniform:
             """Uniform sampling mode.
 
             Parameters
@@ -161,7 +161,7 @@ class BaseSimulation:
                 stable_ctr: bool = False,
             ) -> None:
                 if not stable_ctr:
-                    msg = "_Uniform class instantiated outside the class scope"
+                    msg = "Uniform class instantiated outside the class scope"
                     raise RuntimeError(msg)
                 self._uniform = uniform
                 # Default setting
@@ -213,22 +213,23 @@ class BaseSimulation:
             if default_values:
                 self._sampling_type = self.set_uniform()
 
-        def set_uniform(self) -> BaseSimulation._SourceSampling._Uniform:
+        def set_uniform(self) -> BaseSimulation.SourceSampling.Uniform:
             """Set uniform type of source sampling.
 
             Returns
             -------
-            BaseSimulation._SourceSampling._Uniform
+            ansys.speos.core.simulation.BaseSimulation.SourceSampling.Uniform
+                Uniform source sampling settings to be set
 
             """
             if self._sampling_type is None and self._mode.HasField("uniform_isotropic"):
-                self._sampling_type = self._Uniform(
+                self._sampling_type = self.Uniform(
                     self._mode.uniform_isotropic,
                     default_values=False,
                     stable_ctr=True,
                 )
-            if not isinstance(self._sampling_type, BaseSimulation._SourceSampling._Uniform):
-                self._sampling_type = self._Uniform(
+            if not isinstance(self._sampling_type, BaseSimulation.SourceSampling.Uniform):
+                self._sampling_type = self.Uniform(
                     self._mode.uniform_isotropic,
                     default_values=True,
                     stable_ctr=True,
@@ -237,22 +238,23 @@ class BaseSimulation:
                 self._sampling_type = self._mode.uniform_isotropic
             return self._sampling_type
 
-        def set_adaptive(self) -> BaseSimulation._SourceSampling._Adaptive:
+        def set_adaptive(self) -> BaseSimulation.SourceSampling.Adaptive:
             """Set adaptive type of source sampling.
 
             Returns
             -------
-            BaseSimulation._SourceSampling._Adaptive
+            ansys.speos.core.simulation.BaseSimulation.SourceSampling.Adaptive
+                Adaptive source sampling settings to be set
 
             """
             if self._sampling_type is None and self._mode.HasField("adaptive"):
-                self._sampling_type = self._Adaptive(
+                self._sampling_type = self.Adaptive(
                     self._mode.adaptive,
                     default_values=False,
                     stable_ctr=True,
                 )
-            if not isinstance(self._sampling_type, BaseSimulation._SourceSampling._Adaptive):
-                self._sampling_type = self._Adaptive(
+            if not isinstance(self._sampling_type, BaseSimulation.SourceSampling.Adaptive):
+                self._sampling_type = self.Adaptive(
                     self._mode.adaptive,
                     default_values=True,
                     stable_ctr=True,
@@ -896,6 +898,11 @@ class SimulationDirect(BaseSimulation):
         Uses default values when True.
     """
 
+    class SourceSampling:
+        """Disabled - Setting source sampling is not available for this simulation type."""
+
+        pass
+
     @min_speos_version(25, 2, 0)
     def __init__(
         self,
@@ -1190,6 +1197,11 @@ class SimulationInverse(BaseSimulation):
         Uses default values when True.
     """
 
+    class SourceSampling:
+        """Disabled - Setting source sampling is not available for this simulation type."""
+
+        pass
+
     @min_speos_version(25, 2, 0)
     def __init__(
         self,
@@ -1233,7 +1245,7 @@ class SimulationInverse(BaseSimulation):
         Returns
         -------
         ansys.speos.core.simulation.BaseSimulation.Weight
-            Simulation.Weight
+            Weight
         """
         return BaseSimulation.Weight(
             self._simulation_template.inverse_mc_simulation_template.weight,
@@ -1555,6 +1567,11 @@ class SimulationInteractive(BaseSimulation):
             self.rays_nb = rays_nb
             """Number of rays to be emitted by the source. If None, it means 100 rays."""
 
+    class SourceSampling:
+        """Disabled - Setting source sampling is not available for this simulation type."""
+
+        pass
+
     def __init__(
         self,
         project: project.Project,
@@ -1592,7 +1609,7 @@ class SimulationInteractive(BaseSimulation):
         Returns
         -------
         ansys.speos.core.simulation.BaseSimulation.Weight
-            Simulation.Weight
+            Weight
         """
         return BaseSimulation.Weight(
             self._simulation_template.interactive_simulation_template.weight,
@@ -1751,7 +1768,7 @@ class SimulationVirtualBSDF(BaseSimulation):
         Uses default values when True.
     """
 
-    class RoughnessOnly(BaseSimulation._SourceSampling):
+    class RoughnessOnly(BaseSimulation.SourceSampling):
         """Roughness only mode of BSDF bench measurement.
 
         By default,
@@ -1795,7 +1812,7 @@ class SimulationVirtualBSDF(BaseSimulation):
             Variable to indicate if usage is inside class scope
         """
 
-        class Iridescence(BaseSimulation._SourceSampling):
+        class Iridescence(BaseSimulation.SourceSampling):
             """Color depends on viewing direction of BSDF measurement settings.
 
             By default,
@@ -1836,7 +1853,7 @@ class SimulationVirtualBSDF(BaseSimulation):
                 Variable to indicate if usage is inside class scope
             """
 
-            class Isotropic(BaseSimulation._SourceSampling):
+            class Isotropic(BaseSimulation.SourceSampling):
                 """Uniform Isotropic source sampling.
 
                 By default,
@@ -1865,7 +1882,7 @@ class SimulationVirtualBSDF(BaseSimulation):
                         stable_ctr=True,
                     )
 
-            class Anisotropic(BaseSimulation._SourceSampling):
+            class Anisotropic(BaseSimulation.SourceSampling):
                 """Anisotropic source sampling.
 
                 Parameters
@@ -1891,7 +1908,7 @@ class SimulationVirtualBSDF(BaseSimulation):
                         stable_ctr=True,
                     )
 
-                class _Uniform:
+                class Uniform:
                     """Anisotorpic Uniform sampling mode.
 
                     Parameters
@@ -1909,7 +1926,7 @@ class SimulationVirtualBSDF(BaseSimulation):
                         stable_ctr: bool = False,
                     ) -> None:
                         if not stable_ctr:
-                            msg = "_Uniform class instantiated outside of class scope"
+                            msg = "Uniform class instantiated outside of class scope"
                             raise RuntimeError(msg)
                         self._uniform = uniform
                         if default_values:
@@ -1962,14 +1979,14 @@ class SimulationVirtualBSDF(BaseSimulation):
                     def set_symmetric_none(
                         self,
                     ) -> (
-                        SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic._Uniform
+                        SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic.Uniform
                     ):
                         """Set symmetric type as non-specified.
 
                         Returns
                         -------
-                        SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic._Uniform
-
+                        ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic.Uniform
+                            Anisotropic type uniform source sampling settings
                         """
                         self._uniform.symmetry_type = 1
                         return self
@@ -1977,14 +1994,14 @@ class SimulationVirtualBSDF(BaseSimulation):
                     def set_symmetric_1_plane_symmetric(
                         self,
                     ) -> (
-                        SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic._Uniform
+                        SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic.Uniform
                     ):
                         """Set symmetric type as plane symmetric.
 
                         Returns
                         -------
-                        SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic._Uniform
-
+                        ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic.Uniform
+                            Anisotropic type uniform source sampling settings
                         """
                         self._uniform.symmetry_type = 2
                         return self
@@ -1992,13 +2009,14 @@ class SimulationVirtualBSDF(BaseSimulation):
                     def set_symmetric_2_plane_symmetric(
                         self,
                     ) -> (
-                        SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic._Uniform
+                        SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic.Uniform
                     ):
                         """Set symmetric type as 2 planes symmetric.
 
                         Returns
                         -------
-                        SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic._Uniform
+                        ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic.Uniform
+                            Anisotropic type uniform source sampling settings
 
                         """
                         self._uniform.symmetry_type = 3
@@ -2006,31 +2024,32 @@ class SimulationVirtualBSDF(BaseSimulation):
 
                 def set_uniform(
                     self,
-                ) -> SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic._Uniform:
+                ) -> SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic.Uniform:
                     """Set anisotropic uniform type.
 
                     Returns
                     -------
-                    SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic._Uniform
+                    ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic.Uniform
+                        Anisotropic type uniform source sampling settings to be set.
 
                     """
                     if self._sampling_type is None and self._mode.HasField("uniform_anisotropic"):
                         _non_iridescence_cls = (
                             SimulationVirtualBSDF.AllCharacteristics.NonIridescence
                         )  # done to pass PEP8 E501
-                        self._sampling_type = _non_iridescence_cls.Anisotropic._Uniform(
+                        self._sampling_type = _non_iridescence_cls.Anisotropic.Uniform(
                             self._mode.uniform_anisotropic,
                             default_values=False,
                             stable_ctr=True,
                         )
                     if not isinstance(
                         self._sampling_type,
-                        SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic._Uniform,
+                        SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic.Uniform,
                     ):
                         _non_iridescence_cls = (
                             SimulationVirtualBSDF.AllCharacteristics.NonIridescence
                         )  # done to pass PEP8 E501
-                        self._sampling_type = _non_iridescence_cls.Anisotropic._Uniform(
+                        self._sampling_type = _non_iridescence_cls.Anisotropic.Uniform(
                             self._mode.uniform_anisotropic,
                             default_values=True,
                             stable_ctr=True,
@@ -2061,7 +2080,7 @@ class SimulationVirtualBSDF(BaseSimulation):
 
                 Returns
                 -------
-                SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Isotropic
+                ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Isotropic
                     Isotropic source settings
 
                 """
@@ -2091,7 +2110,7 @@ class SimulationVirtualBSDF(BaseSimulation):
 
                 Returns
                 -------
-                SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic
+                ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic
                     Anisotropic source settings
 
                 """
@@ -2182,7 +2201,7 @@ class SimulationVirtualBSDF(BaseSimulation):
 
             Returns
             -------
-            SimulationVirtualBSDF.AllCharacteristics.NonIridescence
+            ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.NonIridescence
                 NonIridescence settings to be complete
             """
             if self._iridescence_mode is None and self._all_characteristics_mode.HasField(
@@ -2215,7 +2234,7 @@ class SimulationVirtualBSDF(BaseSimulation):
 
             Returns
             -------
-            SimulationVirtualBSDF.AllCharacteristics.Iridescence
+            ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.Iridescence
                 Iridescence settings to be complete
             """
             if self._iridescence_mode is None and self._all_characteristics_mode.HasField(
@@ -2328,27 +2347,14 @@ class SimulationVirtualBSDF(BaseSimulation):
 
             Returns
             -------
-            value: int
-                wavelength sampling.
+            int
+                Wavelength sampling.
 
             """
             return self._wavelengths_range.w_sampling
 
         @sampling.setter
         def sampling(self, value: int) -> None:
-            """
-            Set sampling.
-
-            Parameters
-            ----------
-            value: int
-                wavelength sampling.
-
-            Returns
-            -------
-            None
-
-            """
             self._wavelengths_range.w_sampling = value
 
     class SensorUniform:
@@ -2629,7 +2635,7 @@ class SimulationVirtualBSDF(BaseSimulation):
         Returns
         -------
         ansys.speos.core.simulation.BaseSimulation.Weight
-            Simulation.Weight
+            Weight
         """
         return BaseSimulation.Weight(
             self._simulation_template.virtual_bsdf_bench_simulation_template.weight,
@@ -2642,7 +2648,7 @@ class SimulationVirtualBSDF(BaseSimulation):
         Returns
         -------
         ansys.speos.core.simulation.SimulationVirtualBSDF
-            Inverse simulation
+            SimulationVirtualBSDF simulation
         """
         self._simulation_template.virtual_bsdf_bench_simulation_template.ClearField("weight")
         return self
@@ -2655,7 +2661,7 @@ class SimulationVirtualBSDF(BaseSimulation):
         Returns
         -------
         ansys.speos.core.simulation.SimulationVirtualBSDF
-            Inverse simulation
+            SimulationVirtualBSDF simulation
         """
         self._simulation_template.virtual_bsdf_bench_simulation_template.colorimetric_standard = (
             simulation_template_pb2.CIE_1931
@@ -2670,7 +2676,7 @@ class SimulationVirtualBSDF(BaseSimulation):
         Returns
         -------
         ansys.speos.core.simulation.SimulationVirtualBSDF
-            Inverse simulation
+            SimulationVirtualBSDF simulation
         """
         self._simulation_template.virtual_bsdf_bench_simulation_template.colorimetric_standard = (
             simulation_template_pb2.CIE_1964
@@ -2682,7 +2688,7 @@ class SimulationVirtualBSDF(BaseSimulation):
 
         Returns
         -------
-        SimulationVirtualBSDF.RoughnessOnly
+        ansys.speos.core.simulation.SimulationVirtualBSDF.RoughnessOnly
             roughness only settings
         """
         if (
@@ -2716,7 +2722,7 @@ class SimulationVirtualBSDF(BaseSimulation):
 
         Returns
         -------
-        SimulationVirtualBSDF.AllCharacteristics
+        ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics
             all properties settings
         """
         if (
@@ -2750,8 +2756,8 @@ class SimulationVirtualBSDF(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.core.sensor.BaseSensor.WavelengthsRange
-            Wavelengths range.
+        ansys.speos.core.simulation.SimulationVirtualBSDF.WavelengthsRange
+            Wavelengths range settings for SimulationVirtualBSDF
         """
         if self._wavelengths_range is None:
             return SimulationVirtualBSDF.WavelengthsRange(
@@ -2773,7 +2779,7 @@ class SimulationVirtualBSDF(BaseSimulation):
 
         Returns
         -------
-        ansys.speos.core.sensor.BaseSensor.SensorUniform
+        ansys.speos.core.simulation.SimulationVirtualBSDF.SensorUniform
             uniform type of sensor settings
 
         """
@@ -2809,7 +2815,8 @@ class SimulationVirtualBSDF(BaseSimulation):
 
         Returns
         -------
-        SimulationVirtualBSDF
+        ansys.speos.core.simulation.SimulationVirtualBSDF
+             SimulationVirtualBSDF simulation
 
         """
         self._simulation_template.virtual_bsdf_bench_simulation_template.sensor.automatic.SetInParent()
