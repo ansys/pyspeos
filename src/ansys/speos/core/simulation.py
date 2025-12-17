@@ -82,6 +82,8 @@ class BaseSimulation:
                 simulation_template_pb2.Iridescence,
                 simulation_template_pb2.Isotropic,
                 simulation_template_pb2.Anisotropic] to complete.
+        default_values: bool
+            True to use the default values as uniform source sampling.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -97,8 +99,10 @@ class BaseSimulation:
 
             Parameters
             ----------
-            uniform : simulation_template_pb2.SourceSamplingAdaptive
-                uniform settings to complete.
+            adaptive : simulation_template_pb2.SourceSamplingAdaptive
+                Adaptive settings to complete.
+            default_values: bool
+                True to use the default adaptive file uri values as "".
             stable_ctr : bool
                 Variable to indicate if usage is inside class scope
 
@@ -148,7 +152,10 @@ class BaseSimulation:
 
             Parameters
             ----------
-            uniform : simulation_template_pb2.SourceSamplingUniformIsotropic to complete.
+            uniform : simulation_template_pb2.SourceSamplingUniformIsotropic
+                uniform settings to complete.
+            default_values: bool
+                True to use the default uniform settings.
             stable_ctr : bool
                 Variable to indicate if usage is inside class scope
 
@@ -1778,6 +1785,8 @@ class SimulationVirtualBSDF(BaseSimulation):
         ----------
         mode_template : simulation_template_pb2.RoughnessOnly
             roughness settings to complete.
+        default_values : bool
+            Uses default source sampling values when True.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
         """
@@ -1808,6 +1817,8 @@ class SimulationVirtualBSDF(BaseSimulation):
         ----------
         mode_template : simulation_template_pb2.AllCharacteristics
             all properties dependent BSDF settings to complete.
+        default_values : bool
+            Uses default values when True as not bsdf180 and reflection only.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
         """
@@ -1822,6 +1833,8 @@ class SimulationVirtualBSDF(BaseSimulation):
             ----------
             iridescence_mode : simulation_template_pb2.Iridescence
                 Iridescence settings to complete.
+            default_values : bool
+                Uses default source sampling values when True.
             stable_ctr : bool
                 Variable to indicate if usage is inside class scope
             """
@@ -1849,6 +1862,8 @@ class SimulationVirtualBSDF(BaseSimulation):
             ----------
             non_iridescence_mode : simulation_template_pb2.NoIridescence
                 NonIridescence settings to complete.
+            default_values : bool
+                Uses default settings when True as isotropic source.
             stable_ctr : bool
                 Variable to indicate if usage is inside class scope
             """
@@ -1863,6 +1878,8 @@ class SimulationVirtualBSDF(BaseSimulation):
                 ----------
                 non_iridescence_isotropic : simulation_template_pb2.Isotropic
                     Isotropic settings to complete.
+                default_values : bool
+                    Uses default source sampling values when True.
                 stable_ctr : bool
                     Variable to indicate if usage is inside class scope
                 """
@@ -1889,6 +1906,8 @@ class SimulationVirtualBSDF(BaseSimulation):
                 ----------
                 non_iridescence_anisotropic : simulation_template_pb2.Anisotropic
                     Anisotropic settings to complete.
+                default_values : bool
+                    Uses default source sampling values when True.
                 stable_ctr : bool
                     Variable to indicate if usage is inside class scope
                 """
@@ -1914,6 +1933,8 @@ class SimulationVirtualBSDF(BaseSimulation):
                     Parameters
                     ----------
                     uniform : simulation_template_pb2.SourceSamplingUniformAnisotropic to complete.
+                    default_values : bool
+                        True to uses default source sampling values for theta, phi and symmetric.
                     stable_ctr : bool
                         Variable to indicate if usage is inside class scope
 
