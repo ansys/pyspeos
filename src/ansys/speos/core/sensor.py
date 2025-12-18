@@ -37,26 +37,31 @@ import numpy as np
 import ansys.speos.core as core
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
-from ansys.speos.core.generic.constants import (
+import ansys.speos.core.generic.general_methods as general_methods
+from ansys.speos.core.generic.parameters import (
     BalanceModeDisplayPrimariesParameters,
     BalanceModeUserWhiteParameters,
     CameraSensorParameters,
+    ColorBalanceModeTypes,
     ColorimetricParameters,
     ColorParameters,
     DimensionsParameters,
+    IntegrationTypes,
     Irradiance3DSensorParameters,
     IrradianceSensorParameters,
     LayerByFaceParameters,
     LayerByIncidenceAngleParameters,
     LayerBySequenceParameters,
+    LayerTypes,
     MeasuresParameters,
     MonoChromaticParameters,
     PhotometricCameraParameters,
     RadianceSensorParameters,
+    RayfileTypes,
+    SensorTypes,
     SpectralParameters,
     WavelengthsRangeParameters,
 )
-import ansys.speos.core.generic.general_methods as general_methods
 from ansys.speos.core.generic.visualization_methods import _VisualData, local2absolute
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.scene import ProtoScene
@@ -1431,9 +1436,9 @@ class SensorCamera(BaseSensor):
                             default_parameters=default_parameters.balance_mode,
                             stable_ctr=True,
                         )
-                    elif default_parameters.balance_mode == "grey_world":
+                    elif default_parameters.balance_mode == ColorBalanceModeTypes.grey_world:
                         self.set_balance_mode_grey_world()
-                    elif default_parameters.balance_mode == "none":
+                    elif default_parameters.balance_mode == ColorBalanceModeTypes.none:
                         self.set_balance_mode_none()
                     if default_parameters.red_spectrum_file_uri:
                         self.red_spectrum_file_uri = default_parameters.red_spectrum_file_uri
@@ -2472,42 +2477,42 @@ class SensorIrradiance(BaseSensor):
                     default_parameters=default_parameters.sensor_type,
                     stable_ctr=True,
                 )
-            elif default_parameters.sensor_type == "radiometric":
+            elif default_parameters.sensor_type == SensorTypes.radiometric:
                 self.set_type_radiometric()
-            elif default_parameters.sensor_type == "photometric":
+            elif default_parameters.sensor_type == SensorTypes.photometric:
                 self.set_type_photometric()
 
             match default_parameters.integration_type:
-                case "planar":
+                case IntegrationTypes.planar:
                     self.set_illuminance_type_planar()
                     self.integration_direction = default_parameters.integration_direction
-                case "radial":
+                case IntegrationTypes.radial:
                     self.set_illuminance_type_radial()
-                case "hemispherical":
+                case IntegrationTypes.hemispherical:
                     self.set_illuminance_type_hemispherical()
-                case "cylindrical":
+                case IntegrationTypes.cylindrical:
                     self.set_illuminance_type_cylindrical()
-                case "semi_cylindrical":
+                case IntegrationTypes.semi_cylindrical:
                     self.set_illuminance_type_semi_cylindrical()
                     self.integration_direction = default_parameters.integration_direction
 
             match default_parameters.rayfile_type:
-                case "none":
+                case RayfileTypes.none:
                     self.set_ray_file_type_none()
-                case "classic":
+                case RayfileTypes.classic:
                     self.set_ray_file_type_classic()
-                case "polarization":
+                case RayfileTypes.polarization:
                     self.set_ray_file_type_polarization()
-                case "tm25":
+                case RayfileTypes.tm25:
                     self.set_ray_file_type_tm25()
-                case "tm25_no_polarization":
+                case RayfileTypes.tm25_no_polarization:
                     self.set_ray_file_type_tm25_no_polarization()
 
-            if default_parameters.layer_type == "none":
+            if default_parameters.layer_type == LayerTypes.none:
                 self.set_layer_type_none()
-            elif default_parameters.layer_type == "by_source":
+            elif default_parameters.layer_type == LayerTypes.by_source:
                 self.set_layer_type_source()
-            elif default_parameters.layer_type == "by_polarization":
+            elif default_parameters.layer_type == LayerTypes.by_polarization:
                 self.set_layer_type_polarization()
             elif isinstance(default_parameters.layer_type, LayerByFaceParameters):
                 self._layer_type = BaseSensor.LayerTypeFace(
@@ -3280,14 +3285,14 @@ class SensorRadiance(BaseSensor):
                     default_parameters=default_parameters.sensor_type,
                     stable_ctr=True,
                 )
-            elif default_parameters.sensor_type == "radiometric":
+            elif default_parameters.sensor_type == SensorTypes.radiometric:
                 self.set_type_radiometric()
-            elif default_parameters.sensor_type == "photometric":
+            elif default_parameters.sensor_type == SensorTypes.photometric:
                 self.set_type_photometric()
 
-            if default_parameters.layer_type == "none":
+            if default_parameters.layer_type == LayerTypes.none:
                 self.set_layer_type_none()
-            elif default_parameters.layer_type == "by_source":
+            elif default_parameters.layer_type == LayerTypes.by_source:
                 self.set_layer_type_source()
             elif isinstance(default_parameters.layer_type, LayerByFaceParameters):
                 self._layer_type = BaseSensor.LayerTypeFace(
@@ -3832,13 +3837,13 @@ class Sensor3DIrradiance(BaseSensor):
                     default_parameters=default_parameters.sensor_type,
                     stable_ctr=True,
                 )
-            elif default_parameters.sensor_type == "radiometric":
+            elif default_parameters.sensor_type == SensorTypes.radiometric:
                 self._type = Sensor3DIrradiance.Radiometric(
                     sensor_type_radiometric=self._sensor_template.irradiance_3d.type_radiometric,
                     default_parameters=default_parameters,
                     stable_ctr=True,
                 )
-            elif default_parameters.sensor_type == "photometric":
+            elif default_parameters.sensor_type == SensorTypes.photometric:
                 self._type = Sensor3DIrradiance.Photometric(
                     sensor_type_photometric=self._sensor_template.irradiance_3d.type_photometric,
                     default_parameters=default_parameters,
@@ -3846,20 +3851,20 @@ class Sensor3DIrradiance(BaseSensor):
                 )
             if default_parameters.geometries:
                 self.geometries = default_parameters.geometries
-            if default_parameters.layer_type == "none":
+            if default_parameters.layer_type == LayerTypes.none:
                 self.set_layer_type_none()
-            elif default_parameters.layer_type == "by_source":
+            elif default_parameters.layer_type == LayerTypes.by_source:
                 self.set_layer_type_source()
             match default_parameters.rayfile_type:
-                case "none":
+                case RayfileTypes.none:
                     self.set_ray_file_type_none()
-                case "classic":
+                case RayfileTypes.classic:
                     self.set_ray_file_type_classic()
-                case "polarization":
+                case RayfileTypes.polarization:
                     self.set_ray_file_type_polarization()
-                case "tm25":
+                case RayfileTypes.tm25:
                     self.set_ray_file_type_tm25()
-                case "tm25_no_polarization":
+                case RayfileTypes.tm25_no_polarization:
                     self.set_ray_file_type_tm25_no_polarization()
 
     class Radiometric:
@@ -3895,9 +3900,9 @@ class Sensor3DIrradiance(BaseSensor):
             self._integration_type = None
             if default_parameters:
                 match default_parameters.integration_type:
-                    case "planar":
+                    case IntegrationTypes.planar:
                         self.set_integration_planar()
-                    case "radial":
+                    case IntegrationTypes.radial:
                         self.set_integration_radial()
                 self._integration_type = Sensor3DIrradiance.Measures(
                     illuminance_type=self._sensor_type_radiometric.integration_type_planar,
@@ -3974,9 +3979,9 @@ class Sensor3DIrradiance(BaseSensor):
             self._integration_type = None
             if default_parameters:
                 match default_parameters.integration_type:
-                    case "planar":
+                    case IntegrationTypes.planar:
                         self.set_integration_planar()
-                    case "radial":
+                    case IntegrationTypes.radial:
                         self.set_integration_radial()
                 self._integration_type = Sensor3DIrradiance.Measures(
                     illuminance_type=self._sensor_type_photometric.integration_type_planar,

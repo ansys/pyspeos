@@ -31,6 +31,8 @@ import pytest
 from ansys.speos.core import Body, GeoRef, Project, Speos, sensor
 from ansys.speos.core.generic.constants import (
     ORIGIN,
+)
+from ansys.speos.core.generic.parameters import (
     BalanceModeUserWhiteParameters,
     CameraSensorParameters,
     ColorimetricParameters,
