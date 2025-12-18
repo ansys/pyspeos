@@ -204,7 +204,7 @@ class PhotometricCameraParameters:
     """Acquisition lag time for the Camera Sensor."""
     gamma_correction: float = 2.2
     """Gamma correction Value for the Camera Sensor."""
-    transmittance_file_uri: str = ""
+    transmittance_file_uri: Union[str, Path] = ""
     """Transmittance spectrum location"""
 
 
