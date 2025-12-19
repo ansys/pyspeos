@@ -627,6 +627,7 @@ def test_create_virtual_bsdf_bench(speos: Speos):
     vbb.delete()
 
 
+@pytest.mark.supported_speos_versions(min=252)
 def test_load_virtual_bsdf_bench(speos: Speos):
     """Test load of a exported virtual bsdf bench simulation."""
     p = Project(
