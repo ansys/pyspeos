@@ -848,28 +848,28 @@ class Project:
                     project=self,
                     name=ssr_inst.name,
                     sensor_instance=ssr_inst,
-                    default_values=False,
+                    default_parameters=None,
                 )
             elif ssr_inst.HasField("radiance_properties"):
                 ssr_feat = SensorRadiance(
                     project=self,
                     name=ssr_inst.name,
                     sensor_instance=ssr_inst,
-                    default_values=False,
+                    default_parameters=None,
                 )
             elif ssr_inst.HasField("camera_properties"):
                 ssr_feat = SensorCamera(
                     project=self,
                     name=ssr_inst.name,
                     sensor_instance=ssr_inst,
-                    default_values=False,
+                    default_parameters=None,
                 )
             elif ssr_inst.HasField("irradiance_3d_properties"):
                 ssr_feat = Sensor3DIrradiance(
                     project=self,
                     name=ssr_inst.name,
                     sensor_instance=ssr_inst,
-                    default_values=False,
+                    default_parameters=None,
                 )
             if ssr_feat is not None:
                 self._features.append(ssr_feat)

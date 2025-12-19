@@ -20,24 +20,4 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Collection of all constants used in pySpeos."""
-
-import os
-
-DEFAULT_HOST: str = "localhost"
-"""Default host used by Speos RPC server and client """
-DEFAULT_PORT: str = "50098"
-"""Default port used by Speos RPC server and client """
-DEFAULT_VERSION: str = "252"
-"""Latest supported Speos version of the current PySpeos Package"""
-MAX_SERVER_MESSAGE_LENGTH: int = int(os.environ.get("SPEOS_MAX_MESSAGE_LENGTH", 256 * 1024**2))
-"""Maximum message length value accepted by the Speos RPC server,
-By default, value stored in environment variable SPEOS_MAX_MESSAGE_LENGTH or 268 435 456.
-"""
-MAX_CLIENT_MESSAGE_SIZE: int = int(4194304)
-"""Maximum message Size accepted by grpc channel,
-By default, 4194304.
-"""
-
-ORIGIN = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-"""Global Origin"""
+"""Package with generic function constants and parameters."""
