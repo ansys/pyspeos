@@ -170,8 +170,9 @@ class BaseSensor:
         ----------
         wavelengths_range : ansys.api.speos.sensor.v1.common_pb2.WavelengthsRange
             Wavelengths range protobuf object to modify.
-        default_values : bool
-            Uses default values when True.
+        default_parameters : \
+        ansys.speos.core.generic.parameters.WavelengthsRangeParameters, optional
+            If not defined default parameters will be used
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -294,8 +295,8 @@ class BaseSensor:
         ----------
         sensor_dimensions : ansys.api.speos.sensor.v1.common_pb2.SensorDimensions
             SensorDimensions protobuf object to modify.
-        default_values : bool
-            Uses default values when True.
+        default_parameters : ansys.speos.core.generic.parameters.DimensionsParameters, optional
+            If not defined default parameters will be used
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -480,8 +481,8 @@ class BaseSensor:
         ----------
         sensor_type_colorimetric : ansys.api.speos.sensor.v1.common_pb2.SensorTypeColorimetric
             SensorTypeColorimetric protobuf object to modify.
-        default_parameters : bool
-            Uses default values when True.
+        default_parameters : ansys.speos.core.generic.parameters.ColorimetricParameters, optional
+            If not defined default parameters will be used
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -545,8 +546,8 @@ class BaseSensor:
         ----------
         sensor_type_spectral : ansys.api.speos.sensor.v1.common_pb2.SensorTypeSpectral
             SensorTypeSpectral protobuf object to modify.
-        default_values : bool
-            Uses default values when True.
+        default_parameters : ansys.speos.core.generic.parameters.SpectralParameters, optional
+            If not defined default parameters will be used
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -656,8 +657,8 @@ class BaseSensor:
         layer_type_face : \
         ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance.LayerTypeFace
             LayerTypeFace protobuf object to modify.
-        default_parameters : bool
-            Uses default values when True.
+        default_parameters : ansys.speos.core.generic.parameters.LayerByFaceParameters, optional
+            If not defined default parameters will be used
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -766,8 +767,8 @@ class BaseSensor:
         layer_type_sequence : \
         ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance.LayerTypeSequence
             LayerTypeSequence protobuf object to modify.
-        default_parameters : bool
-            Uses default values when True.
+        default_parameters : ansys.speos.core.generic.parameters.LayerBySequenceParameters, optional
+            If not defined default parameters will be used
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -861,8 +862,9 @@ class BaseSensor:
         layer_type_incidence_angle : \
         ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance.LayerTypeIncidenceAngle
             LayerTypeIncidenceAngle protobuf object to modify.
-        default_parameters : bool
-            Uses default values when True.
+        default_parameters : \
+        ansys.speos.core.generic.parameters.LayerByIncidenceAngleParameters, optional
+            If not defined default parameters will be used
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -889,7 +891,7 @@ class BaseSensor:
                 self.sampling = default_parameters.incidence_sampling
 
         @property
-        def sampling(self) -> BaseSensor.LayerTypeIncidenceAngle:
+        def sampling(self) -> int:
             """Value of the sampling for incidence angles.
 
             By default, ``9``.
@@ -902,7 +904,7 @@ class BaseSensor:
             return self._layer_type_incidence_angle.sampling
 
         @sampling.setter
-        def sampling(self, value: int) -> BaseSensor.LayerTypeIncidenceAngle:
+        def sampling(self, value: int):
             """Value of the sampling for incidence angles.
 
             Parameters
@@ -1129,9 +1131,8 @@ class SensorCamera(BaseSensor):
     sensor_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance, optional
         Sensor instance to provide if the feature does not has to be created from scratch
         By default, ``None``, means that the feature is created from scratch by default.
-    default_values : bool
-        Uses default values when True.
-        By default, ``True``.
+    default_parameters : ansys.speos.core.generic.parameters.CameraSensorParameters, optional
+        If not defined default parameters will be used
     """
 
     class Photometric:
@@ -1145,8 +1146,8 @@ class SensorCamera(BaseSensor):
         ----------
         mode_photometric : ansys.api.speos.sensor.v1.camera_sensor_pb2.SensorCameraModePhotometric
             SensorCameraModePhotometric protobuf object to modify.
-        default_values : bool
-            Uses default values when True.
+        default_parameters : ansys.speos.core.generic.parameters.PhotometricCameraParameters
+            If not defined default parameters will be used, optional
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -1167,8 +1168,8 @@ class SensorCamera(BaseSensor):
             ----------
             mode_color : ansys.api.speos.sensor.v1.camera_sensor_pb2.SensorCameraColorModeColor
                 SensorCameraColorModeColor protobuf object to modify.
-            default_values : bool
-                Uses default values when True.
+            default_parameters : ansys.speos.core.generic.parameters.ColorParameters
+                If not defined default parameters will be used, optional
             stable_ctr : bool
                 Variable to indicate if usage is inside class scope
 
@@ -1191,8 +1192,9 @@ class SensorCamera(BaseSensor):
                 balance_mode_user_white : ansys.api.speos.sensor.v1.camera_sensor_pb2.
                 SensorCameraBalanceModeUserwhite
                     SensorCameraBalanceModeUserwhite protobuf object to modify.
-                default_values : bool
-                    Uses default values when True.
+                default_parameters : \
+                ansys.speos.core.generic.parameters.BalanceModeUserWhiteParameters, optional
+                    If not defined default parameters will be used, optional
                 stable_ctr : bool
                     Variable to indicate if usage is inside class scope
 
@@ -1306,8 +1308,9 @@ class SensorCamera(BaseSensor):
                 balance_mode_display : ansys.api.speos.sensor.v1.camera_sensor_pb2.
                 SensorCameraBalanceModeDisplay
                     SensorCameraBalanceModeDisplay protobuf object to modify.
-                default_values : bool
-                    Uses default values when True.
+                default_parameters : \
+                ansys.speos.core.generic.parameters.BalanceModeDisplayPrimariesParameters, optional
+                    If not defined default parameters will be used, optional
 
                 Notes
                 -----
@@ -2424,9 +2427,8 @@ class SensorIrradiance(BaseSensor):
     sensor_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance, optional
         Sensor instance to provide if the feature does not has to be created from scratch
         By default, ``None``, means that the feature is created from scratch by default.
-    default_parameters : bool
-        Uses default values when True.
-        By default, ``True``.
+    default_parameters : ansys.speos.core.generic.parameters.IrradianceSensorParameters, optional
+        If not defined default parameters will be used
     """
 
     def __init__(
@@ -3223,9 +3225,8 @@ class SensorRadiance(BaseSensor):
     sensor_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance, optional
         Sensor instance to provide if the feature does not has to be created from scratch
         By default, ``None``, means that the feature is created from scratch by default.
-    default_parameters : bool
-        Uses default values when True.
-        By default, ``True``.
+    default_parameters : ansys.speos.core.generic.parameters.RadianceSensorParameters, optional
+        If not defined default parameters will be used
     """
 
     def __init__(
@@ -3796,9 +3797,8 @@ class Sensor3DIrradiance(BaseSensor):
     sensor_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance, optional
         Sensor instance to provide if the feature does not has to be created from scratch
         By default, ``None``, means that the feature is created from scratch by default.
-    default_parameters : bool
-        Uses default values when True.
-        By default, ``True``.
+    default_parameters : ansys.speos.core.generic.parameters.Irradiance3DSensorParameters, optional
+        If not defined default parameters will be used
     """
 
     def __init__(
