@@ -97,7 +97,7 @@ class FaceStub(CrudStub):
     Like in the following example:
 
     >>> from ansys.speos.core.speos import Speos
-    >>> speos = Speos(host="localhost", port=50098)
+    >>> speos = Speos()
     >>> face_db = speos.client.faces()
 
     """

@@ -22,26 +22,35 @@
 
 """Test launcher."""
 
-import os
-from pathlib import Path
-import subprocess
-import tempfile
-from unittest.mock import patch
-
 import psutil
 import pytest
 
 from ansys.speos.core.generic.constants import DEFAULT_VERSION
-from ansys.speos.core.launcher import launch_local_speos_rpc_server
-from tests.conftest import IS_WINDOWS, config
+from ansys.speos.core.kernel.grpc.transport_options import (
+    InsecureOptions,
+    MTLSOptions,
+    TransportMode,
+    TransportOptions,
+    UDSOptions,
+    WNUAOptions,
+)
+from ansys.speos.core.launcher import launch_local_speos_rpc_server, retrieve_speos_install_dir
+from tests.conftest import IS_WINDOWS, SERVER_PORT
 
-IS_DOCKER = config.get("SpeosServerOnDocker")
+# Check local installation
+try:
+    _ = retrieve_speos_install_dir(None, DEFAULT_VERSION)
+    HAS_LOCAL_SPEOS_SERVER = True
+except FileNotFoundError:
+    HAS_LOCAL_SPEOS_SERVER = False
 
 
-@pytest.mark.skipif(IS_DOCKER, reason="launcher only works without Docker image")
+@pytest.mark.skipif(
+    not HAS_LOCAL_SPEOS_SERVER, reason="requires Speos server to be installed locally"
+)
 def test_local_session(*args):
     """Test local session launch and close."""
-    port = config.get("SpeosServerPort") + 1
+    port = SERVER_PORT + 1
     if IS_WINDOWS:
         speos_loc = None
         name = "SpeosRPC_Server.exe"
@@ -60,35 +69,26 @@ def test_local_session(*args):
     assert running is not closed
 
 
-@patch.object(subprocess, "Popen")
-@patch.object(subprocess, "run")
-def test_coverage_launcher_speosdocker(*args):
-    """Test local session launch on remote server to improve coverage."""
-    port = config.get("SpeosServerPort")
-    tmp_file = tempfile.gettempdir()
-    if IS_WINDOWS:
-        name = "SpeosRPC_Server.exe"
-    else:
-        name = "SpeosRPC_Server.x"
-    speos_loc = Path(tmp_file) / "Optical Products" / "SPEOS_RPC" / name
-    speos_loc.parent.parent.mkdir(exist_ok=True)
-    speos_loc.parent.mkdir(exist_ok=True)
-    if not speos_loc.exists():
-        f = speos_loc.open("w")
-        f.write("speos_test_file")
-        f.close()
-    os.environ["AWP_ROOT{}".format(DEFAULT_VERSION)] = tmp_file
-    test_speos = launch_local_speos_rpc_server(port=port)
-    assert True is test_speos.client.healthy
-    assert True is test_speos.close()
-    assert False is test_speos.client.healthy
-    test_speos = launch_local_speos_rpc_server(
-        port=port, speos_rpc_path=speos_loc, logfile_loc=tmp_file
-    )
-    assert True is test_speos.client.healthy
-    test_speos.client._closed = True
-    assert True is test_speos.close()
-    assert False is test_speos.client.healthy
-    speos_loc.unlink()
-    speos_loc.parent.rmdir()
-    speos_loc.parent.parent.rmdir()
+def test_transport_options():
+    """Test transport options."""
+    to = TransportOptions()
+    assert to.mode == TransportMode.UDS
+    assert to.options == UDSOptions()
+    to_uds = UDSOptions(uds_service="test_service", uds_dir="/uds", uds_id="1234")
+    kwargs_uds = to_uds._to_cyberchannel_kwargs()
+    assert kwargs_uds["uds_service"] == "test_service"
+    assert kwargs_uds["uds_dir"] == "/uds"
+    assert kwargs_uds["uds_id"] == "1234"
+    to_mtls = MTLSOptions(certs_dir="/certs", host="localhost", port=50051)
+    kwargs_mtls = to_mtls._to_cyberchannel_kwargs()
+    assert kwargs_mtls["certs_dir"] == "/certs"
+    assert kwargs_mtls["host"] == "localhost"
+    assert kwargs_mtls["port"] == 50051
+    to_insecure = InsecureOptions(host="localhost", port=50051)
+    kwargs_insecure = to_insecure._to_cyberchannel_kwargs()
+    assert kwargs_insecure["host"] == "localhost"
+    assert kwargs_insecure["port"] == 50051
+    to_wnua = WNUAOptions(host="localhost", port=50051)
+    kwargs_wnua = to_wnua._to_cyberchannel_kwargs()
+    assert kwargs_wnua["host"] == "localhost"
+    assert kwargs_wnua["port"] == 50051
