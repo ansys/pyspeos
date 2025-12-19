@@ -87,9 +87,11 @@ class LayerBySequenceParameters:
     """Layer separation type Parameters  for Sequence separation."""
 
     maximum_nb_of_sequence: int = 10
+    """Maximum number of sequencese stored in Speos Result file"""
     sequence_type: Union[SequenceTypes.by_face, SequenceTypes.by_geometry] = (
         SequenceTypes.by_geometry
     )
+    """Defines how sequences are calculated"""
 
 
 @dataclass
@@ -97,7 +99,9 @@ class GeometryLayerParameters:
     """Geometry layer parameters."""
 
     name: Optional[str] = None
+    """Layer name stored in result file"""
     geometry: Optional[list] = None
+    """List of Geometries of the Layer"""
 
 
 @dataclass
@@ -105,9 +109,11 @@ class LayerByFaceParameters:
     """Layer separation type Parameters  for Face separation."""
 
     geometries: Optional[list[GeometryLayerParameters]] = None
+    """List of Geometry Layers"""
     sca_filtering_types: Union[
         SCAFilteringTypes.intersected_one_time, SCAFilteringTypes.last_impact
     ] = SCAFilteringTypes.last_impact
+    """Defines how data result data is filtered"""
 
 
 @dataclass
@@ -115,6 +121,7 @@ class LayerByIncidenceAngleParameters:
     """Layer separation type Parameters for Incidence angle separation."""
 
     incidence_sampling: int = 9
+    """Define Number of incidence angle layers"""
 
 
 class PngBits(str, Enum):
