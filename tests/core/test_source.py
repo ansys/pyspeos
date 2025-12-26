@@ -29,6 +29,7 @@ import pytest
 
 from ansys.speos.core import GeoRef, Project, Speos
 from ansys.speos.core.source import (
+    SourceAmbientEnvironment,
     SourceAmbientNaturalLight,
     SourceLuminaire,
     SourceRayFile,
@@ -531,6 +532,91 @@ def test_create_natural_light_source(speos: Speos):
     source2.delete()
 
 
+@pytest.mark.supported_speos_versions(min=252)
+def test_create_environment_source(speos: Speos):
+    """Test creation of ambient environment source."""
+    p = Project(speos=speos)
+
+    # Default value :
+    source1 = SourceAmbientEnvironment(
+        p,
+        name="Environment.1",
+    )
+
+    #
+    assert source1._source_template.ambient.environment_map.image_uri == ""
+    assert source1._source_instance.HasField("ambient_properties")
+    assert source1._source_instance.ambient_properties.zenith_direction == [
+        0,
+        0,
+        1,
+    ]
+    assert source1._source_instance.ambient_properties.HasField("environment_map_properties")
+    tmp_environment_property = (
+        source1._source_instance.ambient_properties.environment_map_properties
+    )
+    assert tmp_environment_property.north_direction == [
+        0,
+        1,
+        0,
+    ]
+
+    # Check property method
+    assert source1.image_file_uri == ""
+    assert source1.zenith_direction == [0, 0, 1]
+    assert source1.reverse_zenith_direction is False
+    assert source1.north_direction == [0, 1, 0]
+    assert source1.reverse_north_direction is False
+
+    image_file_uri = str(Path(test_path) / "stars.exr")
+    source1.image_file_uri = image_file_uri
+    source1.zenith_direction = [0, 0, 1]
+    source1.reverse_zenith_direction = True
+    source1.north_direction = [1, 0, 0]
+    source1.reverse_north_direction = True
+    source1.commit()
+
+    assert source1._source_template.ambient.environment_map.image_uri == image_file_uri
+    assert source1._source_instance.ambient_properties.reverse_zenith is True
+    assert source1._source_instance.ambient_properties.zenith_direction == [
+        0,
+        0,
+        1,
+    ]
+    assert (
+        source1._source_instance.ambient_properties.environment_map_properties.reverse_north is True
+    )
+    assert (
+        source1._source_instance.ambient_properties.environment_map_properties.north_direction
+        == [
+            1,
+            0,
+            0,
+        ]
+    )
+
+    source1.delete()
+
+    source2 = p.create_source(name="Environment.2", feature_type=SourceAmbientEnvironment)
+    assert source2._source_instance.HasField("ambient_properties")
+    assert source2._source_instance.ambient_properties.zenith_direction == [
+        0,
+        0,
+        1,
+    ]
+    assert source2._source_instance.ambient_properties.HasField("environment_map_properties")
+    tmp_environment_property = (
+        source2._source_instance.ambient_properties.environment_map_properties
+    )
+    assert tmp_environment_property.north_direction == [
+        0,
+        1,
+        0,
+    ]
+
+    source2.delete()
+
+
 def test_keep_same_internal_feature(speos: Speos):
     """Test regarding source internal features (like spectrum, intensity).
 
@@ -933,12 +1019,15 @@ def test_get_source(speos: Speos, capsys):
     source1 = p.create_source(name="rayfile_source", feature_type=SourceRayFile)
     source2 = p.create_source(name="source2", feature_type=SourceLuminaire)
     source3 = p.create_source(name="source4", feature_type=SourceSurface)
+    source4 = p.create_source(name="environment_source", feature_type=SourceAmbientEnvironment)
     # test when key exists
     name = source1.get(key="name")
     assert name == "rayfile_source"
     property_info = source2.get(key="axis_system")
     assert property_info is not None
     property_info = source3.get(key="geo_path")
+    assert property_info is not None
+    property_info = source4.get(key="predefined_color_space")
     assert property_info is not None
 
     # test when key does not exist
@@ -953,4 +1042,8 @@ def test_get_source(speos: Speos, capsys):
     get_result3 = source3.get(key="geometry")
     stdout, stderr = capsys.readouterr()
     assert get_result3 is None
+    assert "Used key: geometry not found in key list" in stdout
+    get_result4 = source4.get(key="geometry")
+    stdout, stderr = capsys.readouterr()
+    assert get_result4 is None
     assert "Used key: geometry not found in key list" in stdout

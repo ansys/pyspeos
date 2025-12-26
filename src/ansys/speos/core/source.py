@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import datetime
 from difflib import SequenceMatcher
+from pathlib import Path
 from typing import List, Mapping, Optional, Union
 import uuid
 
@@ -91,6 +92,9 @@ class BaseSource:
 
         if metadata is None:
             metadata = {}
+
+        # if "_is_abstract" in self.__class__.__dict__ and self.__class__._is_abstract:
+        #    return None
 
         if source_instance is None:
             # Create local SourceTemplate
@@ -1281,6 +1285,10 @@ class BaseSourceAmbient(BaseSource):
     This is a Super class, **Do not instantiate this class yourself**
     """
 
+    # specify abstract class
+    # _is_abstract = True
+    # source_type = None
+
     def __init__(
         self,
         project: project.Project,
@@ -1676,6 +1684,9 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
         Uses default values when True.
     """
 
+    # _is_abstract = False
+    # source_type = "SourceAmbientNaturalLight"
+
     def __init__(
         self,
         project: project.Project,
@@ -1989,7 +2000,7 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
         def __init__(
             self,
             predefined_color_space: source_pb2.SourceTemplate.PredefinedColorSpace,
-            default_values: bool = True,
+            apply_default: bool = True,
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
@@ -1997,7 +2008,7 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
                 raise RuntimeError(msg)
             self._predefined_color_space = predefined_color_space
 
-            if default_values:
+            if apply_default:
                 # Default values
                 self.set_color_space_srgb()
 
@@ -2006,8 +2017,7 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
 
             Returns
             -------
-            ansys.speos.core.source.SourceAmbientEnvironment
-                Environment source.
+            ansys.speos.core.source.SourceAmbientEnvironment.PredefinedColorSpace
             """
             self._predefined_color_space.color_space_type = (
                 source_pb2.SourceTemplate.PredefinedColorSpace.sRGB
@@ -2019,14 +2029,14 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
 
             Returns
             -------
-            ansys.speos.core.source.SourceAmbientEnvironment
-                Environment source.
+            ansys.speos.core.source.SourceAmbientEnvironment.PredefinedColorSpace
             """
             self._predefined_color_space.color_space_type = (
                 source_pb2.SourceTemplate.PredefinedColorSpace.AdobeRGB
             )
             return self
 
+    # source_type = "SourceAmbientEnvironment"
     def __init__(
         self,
         project: project.Project,
@@ -2212,24 +2222,51 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
         """
         self._source_template.ambient.environment_map.luminance = value
 
-    def set_image_file_uri(self, uri: str) -> SourceAmbientEnvironment:
-        """Set environment image file.
-
-        Parameters
-        ----------
-        uri : str
-            format file uri (hdr, exr, png, bmp, jpg, tiff, rgb).
+    @property
+    def image_file_uri(self) -> str:
+        """Location of the environment image file.
 
         Returns
         -------
-        ansys.speos.core.source.SourceAmbientEnvironment
-            Environment source.
+        uri : str
+            format file uri (hdr, exr, png, bmp, jpg, tiff, rgb).
         """
-        self._source_template.ambient.environment_map.image_uri = uri
-        return self
+        return self._source_template.ambient.environment_map.image_uri
+
+    @image_file_uri.setter
+    def image_file_uri(self, uri: Union[str, Path]):
+        """Location of the environment image file.
+
+        Returns
+        -------
+        uri : str
+            format file uri (hdr, exr, png, bmp, jpg, tiff, rgb).
+        """
+        self._source_template.ambient.environment_map.image_uri = str(Path(uri))
+
+    # def image_file_uri(self, uri: str) -> SourceAmbientEnvironment:
+    #    """Set environment image file.
+    #
+    #    Parameters
+    #    ----------
+    #    uri : str
+    #        format file uri (hdr, exr, png, bmp, jpg, tiff, rgb).
+    #    Returns
+    #    -------
+    #    ansys.speos.core.source.SourceAmbientEnvironment
+    #        Environment source.
+    #    """
+    #    self._source_template.ambient.environment_map.image_uri = uri
+    #    return self
 
     @property
-    def color_space(self) -> Union[None, SourceAmbientEnvironment.PredefinedColorSpace]:
+    def color_space(
+        self,
+    ) -> Union[
+        None,
+        SourceAmbientEnvironment.PredefinedColorSpace,
+        SourceAmbientEnvironment.UserDefinedColorSpace,
+    ]:
         """Property containing all options in regard to the color space properties.
 
         Returns
@@ -2238,6 +2275,8 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
             Instance of Predefined Color Space class
         """
         if isinstance(self._type, SourceAmbientEnvironment.PredefinedColorSpace):
+            return self._type
+        elif isinstance(self._type, SourceAmbientEnvironment.UserDefinedColorSpace):
             return self._type
         else:
             return None
@@ -2251,12 +2290,11 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
             Environment source color space subclass
         """
         # self._source_template.ambient.environment_map.predefined_color_space.SetInParent()
-
         if not isinstance(self._type, SourceAmbientEnvironment.PredefinedColorSpace):
             # if the _type is not Photometric then we create a new type.
             self._type = SourceAmbientEnvironment.PredefinedColorSpace(
                 predefined_color_space=self._source_template.ambient.environment_map.predefined_color_space,
-                default_values=True,
+                apply_default=True,
                 stable_ctr=True,
             )
 
