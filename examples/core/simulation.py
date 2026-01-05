@@ -17,7 +17,11 @@ from ansys.speos.core import Project, Speos, launcher
 from ansys.speos.core.kernel.client import (
     default_docker_channel,
 )
-from ansys.speos.core.simulation import SimulationInteractive, SimulationInverse
+from ansys.speos.core.simulation import (
+    SimulationInteractive,
+    SimulationInverse,
+    SimulationVirtualBSDF,
+)
 
 # -
 
@@ -132,9 +136,9 @@ print(simulation1)
 simulation2_direct = p.create_simulation(name="Simulation.2")
 simulation2_direct.set_ambient_material_file_uri(
     uri=str(assets_data_path / "AIR.material")
-).set_colorimetric_standard_CIE_1964().set_weight_none().set_geom_distance_tolerance(
-    0.01
-).set_max_impact(200).set_dispersion(False)
+).set_colorimetric_standard_CIE_1964().set_weight_none().set_dispersion(False)
+simulation2_direct.geom_distance_tolerance = 0.01
+simulation2_direct.max_impact = 200
 simulation2_direct.set_sensor_paths([SENSOR_NAME]).set_source_paths([SOURCE_NAME]).commit()
 print(simulation2_direct)
 
@@ -164,7 +168,7 @@ print(simulation1)
 #
 # Possibility to reset local values from the one available in the server.
 
-simulation1.set_max_impact(1000)  # adjust max impact but no commit
+simulation1.max_impact = 1000  # adjust max impact but no commit
 simulation1.reset()  # reset -> this will apply the server value to the local value
 simulation1.delete()  # delete (to display the local value with the below print)
 print(simulation1)
@@ -185,5 +189,28 @@ print(simulation3)
 simulation4 = p.create_simulation(name="Simulation.4", feature_type=SimulationInteractive)
 simulation4.set_source_paths(source_paths=[SOURCE_NAME]).commit()
 print(simulation4)
+
+# ### Virtual BSDF Bench simulation
+
+# Change the material property from mirror to bsdf type
+opt_prop.set_surface_library(path=str(assets_data_path / "R_test.anisotropicbsdf")).commit()
+vbb = p.create_simulation(name="virtual_BSDF", feature_type=SimulationVirtualBSDF)
+vbb.axis_system = [
+    0.36,
+    1.73,
+    2.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+]  # change the coordinate VBSDF to body center
+vbb.commit()
+results = vbb.compute_CPU()
+print(results)
 
 speos.close()
