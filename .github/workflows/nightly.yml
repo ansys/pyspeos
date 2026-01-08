@@ -65,10 +65,10 @@ jobs:
 
           if [[ "$speos_version" == "dev" ]]; then
             echo "run pytest for all available features"
-            xvfb-run pytest -s --supported-features=$maximal_absolute
+            pytest -s --supported-features=$maximal_absolute
           else
             echo "run pytest for Speos ${speos_version} supported features"
-            xvfb-run pytest -s --supported-features=$speos_version
+            pytest -s --supported-features=$speos_version
           fi
 
       - name: Upload Coverage Results
