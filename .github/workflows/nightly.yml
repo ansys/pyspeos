@@ -22,11 +22,8 @@ jobs:
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
-      - name: Installing OS packages
-        shell: bash
-        run: |
-          sudo apt-get update
-          sudo apt install -y libgl1 libglx-mesa0 xvfb libgomp1
+      - name: Set up headless display
+        uses: pyvista/setup-headless-display-action@7d84ae825e6d9297a8e99bdbbae20d1b919a0b19 # v4.2
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
@@ -68,10 +65,10 @@ jobs:
 
           if [[ "$speos_version" == "dev" ]]; then
             echo "run pytest for all available features"
-            xvfb-run pytest -s --supported-features=$maximal_absolute
+            pytest -s --supported-features=$maximal_absolute
           else
             echo "run pytest for Speos ${speos_version} supported features"
-            xvfb-run pytest -s --supported-features=$speos_version
+            pytest -s --supported-features=$speos_version
           fi
 
       - name: Upload Coverage Results
