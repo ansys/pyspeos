@@ -1282,10 +1282,6 @@ class BaseSourceAmbient(BaseSource):
     This is a Super class, **Do not instantiate this class yourself**
     """
 
-    # specify abstract class
-    # _is_abstract = True
-    # source_type = None
-
     def __init__(
         self,
         project: project.Project,
