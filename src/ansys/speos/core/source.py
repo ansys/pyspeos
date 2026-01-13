@@ -93,9 +93,6 @@ class BaseSource:
         if metadata is None:
             metadata = {}
 
-        # if "_is_abstract" in self.__class__.__dict__ and self.__class__._is_abstract:
-        #    return None
-
         if source_instance is None:
             # Create local SourceTemplate
             self._source_template = ProtoSourceTemplate(
