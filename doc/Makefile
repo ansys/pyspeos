@@ -14,18 +14,9 @@ help:
 
 .PHONY: help Makefile
 
-.install-ci-dep:
-	@pip freeze | grep -q "vtk-osmesa" && is_vtk_osmesa_installed="yes" || is_vtk_osmesa_installed="no"
-	@if [ "${ON_CI}" = "true" ] && [ "$$is_vtk_osmesa_installed" != "yes" ]; then \
-		@echo "Removing package(s) to avoid conflicts with package(s) needed for CI/CD"; \
-		pip uninstall --yes vtk; \
-		@echo "Installing CI/CD required package(s)"; \
-		pip install --index-url https://wheels.vtk.org vtk-osmesa==9.3.1; \
-	fi
-
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
-%: .install-ci-dep Makefile
+%:
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
 
@@ -41,5 +32,5 @@ pdf:
 	(test -f $(BUILDDIR)/latex/*.pdf && echo pdf exists) || exit 1
 
 # Build HTML files and generate examples as .py files
-html: .install-ci-dep
+html:
 	@$(SPHINXBUILD) -M html "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)

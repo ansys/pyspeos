@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -52,6 +52,7 @@ from ansys.speos.core.simulation import (
     SimulationDirect,
     SimulationInteractive,
     SimulationInverse,
+    SimulationVirtualBSDF,
 )
 from ansys.speos.core.source import (
     SourceAmbientNaturalLight,
@@ -225,7 +226,8 @@ class Project:
                 )
             case _:
                 msg = "Requested feature {} does not exist in supported list {}".format(
-                    feature_type, [SourceSurface, SourceLuminaire, SourceRayFile]
+                    feature_type,
+                    [SourceSurface, SourceLuminaire, SourceRayFile, SourceAmbientNaturalLight],
                 )
                 raise TypeError(msg)
         self._features.append(feature)
@@ -237,7 +239,7 @@ class Project:
         description: str = "",
         feature_type: type = SimulationDirect,
         metadata: Optional[Mapping[str, str]] = None,
-    ) -> Union[SimulationDirect, SimulationInteractive, SimulationInverse]:
+    ) -> Union[SimulationDirect, SimulationInteractive, SimulationInverse, SimulationVirtualBSDF]:
         """Create a new Simulation feature.
 
         Parameters
@@ -261,7 +263,8 @@ class Project:
         -------
         Union[ansys.speos.core.simulation.SimulationDirect,\
         ansys.speos.core.simulation.SimulationInteractive,\
-        ansys.speos.core.simulation.SimulationInverse]
+        ansys.speos.core.simulation.SimulationInverse, \
+        ansys.speos.core.simulation.SimulationVirtualBSDF]
             Simulation class instance
         """
         if metadata is None:
@@ -296,6 +299,13 @@ class Project:
                     description=description,
                     metadata=metadata,
                 )
+            case "SimulationVirtualBSDF":
+                feature = SimulationVirtualBSDF(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                )
             case _:
                 msg = "Requested feature {} does not exist in supported list {}".format(
                     feature_type,
@@ -303,6 +313,7 @@ class Project:
                         SimulationDirect,
                         SimulationInverse,
                         SimulationInteractive,
+                        SimulationVirtualBSDF,
                     ],
                 )
                 raise TypeError(msg)
@@ -437,12 +448,15 @@ class Project:
             SourceSurface,
             SourceLuminaire,
             SourceRayFile,
+            SourceAmbientNaturalLight,
             SensorIrradiance,
             SensorRadiance,
             SensorCamera,
+            Sensor3DIrradiance,
             SimulationDirect,
             SimulationInverse,
             SimulationInteractive,
+            SimulationVirtualBSDF,
             part.Part,
             body.Body,
             face.Face,
@@ -466,12 +480,15 @@ class Project:
 
         Returns
         -------
-        List[Union[ansys.speos.core.opt_prop.OptProp, ansys.speos.core.source.Surface, \
-        ansys.speos.core.source.RayFile, ansys.speos.core.source.Luminaire, \
-        ansys.speos.core.sensor.Camera, \
-        ansys.speos.core.sensor.Radiance, ansys.speos.core.sensor.Irradiance, \
-        ansys.speos.core.simulation.Direct, ansys.speos.core.simulation.Interactive, \
-        ansys.speos.core.simulation.Inverse, ansys.speos.core.part.Part, \
+        List[Union[ansys.speos.core.opt_prop.OptProp, ansys.speos.core.source.SourceSurface, \
+        ansys.speos.core.source.SourceRayFile, ansys.speos.core.source.SourceLuminaire, \
+        ansys.speos.core.source.SourceAmbientNaturalLight, ansys.speos.core.sensor.SensorCamera, \
+        ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance, \
+        ansys.speos.core.sensor.Sensor3DIrradiance, \
+        ansys.speos.core.simulation.SimulationVirtualBSDF, \
+        ansys.speos.core.simulation.SimulationDirect, \
+        ansys.speos.core.simulation.SimulationInteractive, \
+        ansys.speos.core.simulation.SimulationInverse, ansys.speos.core.part.Part, \
         ansys.speos.core.body.Body, \
         ansys.speos.core.face.Face, ansys.speos.core.part.Part.SubPart]]
             Found features.
@@ -634,6 +651,11 @@ class Project:
                             sim_feat = self.find(
                                 name=inside_dict["name"],
                                 feature_type=SimulationInteractive,
+                            )
+                        if len(sim_feat) == 0:
+                            sim_feat = self.find(
+                                name=inside_dict["name"],
+                                feature_type=SimulationVirtualBSDF,
                             )
                         sim_feat = sim_feat[0]
                         if sim_feat.job_link is None:
@@ -873,6 +895,13 @@ class Project:
                 )
             elif simulation_template_link.HasField("interactive_simulation_template"):
                 sim_feat = SimulationInteractive(
+                    project=self,
+                    name=sim_inst.name,
+                    simulation_instance=sim_inst,
+                    default_values=False,
+                )
+            elif simulation_template_link.HasField("virtual_bsdf_bench_simulation_template"):
+                sim_feat = SimulationVirtualBSDF(
                     project=self,
                     name=sim_inst.name,
                     simulation_instance=sim_inst,
