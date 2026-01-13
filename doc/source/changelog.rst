@@ -9,6 +9,91 @@ This document contains the release notes for the PySpeos project.
 
 .. towncrier release notes start
 
+`0.7.1 <https://github.com/ansys/pyspeos/releases/tag/v0.7.1>`_ - January 13, 2026
+==================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Add supporting virtual bsdf bench
+          - `#763 <https://github.com/ansys/pyspeos/pull/763>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump ansys-sphinx-theme[autoapi] from 1.6.3 to 1.6.4 in the doc-deps group
+          - `#793 <https://github.com/ansys/pyspeos/pull/793>`_
+
+        * - Bump pytest from 9.0.1 to 9.0.2 in the test-deps group
+          - `#795 <https://github.com/ansys/pyspeos/pull/795>`_
+
+        * - Bump the jupyter-deps group across 1 directory with 2 updates
+          - `#807 <https://github.com/ansys/pyspeos/pull/807>`_
+
+        * - Bump psutil from 7.1.3 to 7.2.1
+          - `#809 <https://github.com/ansys/pyspeos/pull/809>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Exclude vbb test from nightly run with 251
+          - `#801 <https://github.com/ansys/pyspeos/pull/801>`_
+
+        * - Nightly run
+          - `#811 <https://github.com/ansys/pyspeos/pull/811>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Rework logic around vtk-osmesa
+          - `#774 <https://github.com/ansys/pyspeos/pull/774>`_
+
+        * - Bump ansys/actions from 10.2.2 to 10.2.3
+          - `#791 <https://github.com/ansys/pyspeos/pull/791>`_
+
+        * - Bump actions/checkout from 6.0.0 to 6.0.1
+          - `#792 <https://github.com/ansys/pyspeos/pull/792>`_
+
+        * - Bump codecov/codecov-action from 5.5.1 to 5.5.2
+          - `#794 <https://github.com/ansys/pyspeos/pull/794>`_
+
+        * - Update CHANGELOG for v0.7.0
+          - `#796 <https://github.com/ansys/pyspeos/pull/796>`_
+
+        * - Bump dev version into v0.7.dev0
+          - `#797 <https://github.com/ansys/pyspeos/pull/797>`_
+
+        * - Bump actions/download-artifact from 6.0.0 to 7.0.0
+          - `#798 <https://github.com/ansys/pyspeos/pull/798>`_
+
+        * - Bump actions/upload-artifact from 5.0.0 to 6.0.0
+          - `#799 <https://github.com/ansys/pyspeos/pull/799>`_
+
+        * - Pre-commit autoupdate
+          - `#800 <https://github.com/ansys/pyspeos/pull/800>`_, `#805 <https://github.com/ansys/pyspeos/pull/805>`_
+
+        * - Update year in headers
+          - `#810 <https://github.com/ansys/pyspeos/pull/810>`_
+
+
 `0.7.0 <https://github.com/ansys/pyspeos/releases/tag/v0.7.0>`_ - December 12, 2025
 ===================================================================================
 
