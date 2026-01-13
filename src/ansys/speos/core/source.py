@@ -1977,9 +1977,6 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
         Uses default values when True.
     """
 
-    # _is_abstract = False
-    # source_type = "SourceAmbientNaturalLight"
-
     def __init__(
         self,
         project: project.Project,
