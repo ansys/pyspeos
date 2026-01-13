@@ -2218,10 +2218,10 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
     @property
     def image_file_uri(self) -> str:
         """Location of the environment image file.
-        
+
         This property gets or sets the environment image file used by the
         ambient environment source.
-        
+
         Parameters
         ----------
          uri : Union[str, Path]
@@ -2237,7 +2237,6 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
     @image_file_uri.setter
     def image_file_uri(self, uri: Union[str, Path]) -> None:
         self._source_template.ambient.environment_map.image_uri = str(uri)
-
 
     @property
     def color_space(
