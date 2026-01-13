@@ -25,7 +25,7 @@
 from __future__ import annotations
 
 from difflib import SequenceMatcher
-from typing import List, Mapping, Optional, Union
+from typing import Collection, List, Mapping, Optional, Union
 import uuid
 import warnings
 
@@ -3777,3 +3777,787 @@ class Sensor3DIrradiance(BaseSensor):
             gr.to_native_link() for gr in geometries
         ]
         return self
+
+
+class SensorXMPIntensity(BaseSensor):
+    """Class for XMP intensity sensor.
+
+    Parameters
+    ----------
+    project
+    name
+    description
+    metadata
+    sensor_instance
+    default_values
+    """
+
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        sensor_instance: Optional[ProtoScene.SensorInstance] = None,
+        default_values: bool = True,
+    ) -> None:
+        if metadata is None:
+            metadata = {}
+
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            sensor_instance=sensor_instance,
+        )
+
+        # Attribute gathering more complex intensity type
+        self._type = None
+        self._layer_type = None
+        self._cell_diameter = None
+
+        if default_values:
+            # Default values template
+            self.set_type_photometric()
+            self.set_orientation_x_as_meridian()
+            self.set_viewing_direction_from_source()
+            self._set_default_dimension_values()
+            # Default values properties
+            self.set_axis_system()
+            self.set_layer_type_none()
+
+    @property
+    def visual_data(self) -> _VisualData:
+        """Property containing intensity sensor visualization data.
+
+        Returns
+        -------
+        _VisualData
+            Instance of VisualData Class for pyvista.PolyData of feature faces, coordinate_systems.
+        """
+
+        def rm(theta, u):
+            # make sure u is normalized
+            norm = np.linalg.norm(u)
+            ux, uy, uz = u / norm
+
+            # build and return the rotation matrix
+            r11 = np.cos(theta) + ux * ux * (1 - np.cos(theta))
+            r12 = ux * uy * (1 - np.cos(theta)) - uz * np.sin(theta)
+            r13 = ux * uz * (1 - np.cos(theta)) + uy * np.sin(theta)
+            r21 = ux * uy * (1 - np.cos(theta)) + uz * np.sin(theta)
+            r22 = np.cos(theta) + uy * uy * (1 - np.cos(theta))
+            r23 = uy * uz * (1 - np.cos(theta)) - ux * np.sin(theta)
+            r31 = ux * uz * (1 - np.cos(theta)) - uy * np.sin(theta)
+            r32 = uy * uz * (1 - np.cos(theta)) + ux * np.sin(theta)
+            r33 = np.cos(theta) + uz * uz * (1 - np.cos(theta))
+            return np.array([[r11, r12, r13], [r21, r22, r23], [r31, r32, r33]])
+
+        if self._visual_data.updated:
+            return self._visual_data
+
+        feature_pos_info = self.get(key="axis_system")
+        feature_pos = np.array(feature_pos_info[:3])
+        feature_x_dir = np.array(feature_pos_info[3:6])
+        feature_y_dir = np.array(feature_pos_info[6:9])
+        feature_z_dir = np.array(feature_pos_info[9:12])
+        feature_vis_radius = 5
+
+        if self._sensor_template.intensity_sensor_template.HasField(
+            "intensity_orientation_conoscopic"
+        ):
+            # intensity sensor; non-conoscopic case
+            # simply fix vis sampling to 15 (radial) x 30 (azimuth)
+            # determine the set of visualization triangles vertices
+            feature_theta = float(self.get(key="theta_max"))
+            coord_transform = np.transpose(np.array([feature_x_dir, feature_y_dir, feature_z_dir]))
+            samp_1 = 30  # azimuth sampling
+            samp_2 = 15  # radial sampling
+            vertices = np.zeros(((samp_2 * samp_1), 3))
+            thetas = (np.pi / 180) * np.linspace(0, feature_theta, num=samp_2, endpoint=False)
+            phis = np.linspace(0, 2 * np.pi, num=samp_1, endpoint=False)
+
+            # compute all the vertices
+            iter = 0
+            for theta in thetas:
+                for phi in phis:
+                    # spherical to cartesian
+                    x = feature_vis_radius * np.sin(theta) * np.cos(phi)
+                    y = feature_vis_radius * np.sin(theta) * np.sin(phi)
+                    z = feature_vis_radius * np.cos(theta)
+                    # transform to intensity sensor coords
+                    vertices[iter, :] = np.matmul(coord_transform, [x, y, z])
+                    iter += 1
+
+            # shift all vertices by the intensity sensor origin
+            vertices = vertices + feature_pos
+
+            # add "wrap around" squares to the visualizer
+            for j in range(0, (samp_2 - 1)):
+                p1 = vertices[j * samp_1 + (samp_1 - 1), :]
+                p2 = vertices[j * samp_1, :]
+                p3 = vertices[(j + 1) * samp_1 + (samp_1 - 1), :]
+                p4 = vertices[(j + 1) * samp_1, :]
+                self._visual_data.add_data_triangle([p1, p2, p3])
+                self._visual_data.add_data_triangle([p2, p3, p4])
+
+        else:
+            # intensity sensor; non-conoscopic case
+            # simply fix the number of vertices to 15x15
+            # determine the set of visualization squares' vertices
+            feature_x_start = float(self.get(key="x_start"))
+            feature_x_end = float(self.get(key="x_end"))
+            feature_y_start = float(self.get(key="y_start"))
+            feature_y_end = float(self.get(key="y_end"))
+            samp_1 = 15  # x sampling
+            samp_2 = 15  # y sampling
+            x_tilts = (np.pi / 180) * np.linspace(
+                feature_y_start, feature_y_end, num=samp_1, endpoint=True
+            )
+            y_tilts = (np.pi / 180) * np.linspace(
+                feature_x_start, feature_x_end, num=samp_2, endpoint=True
+            )
+            vertices = np.zeros((int(samp_1 * samp_2), 3))
+            u = feature_vis_radius * feature_z_dir
+
+            # compute all the vertices
+            iter = 0
+            if self._sensor_template.intensity_sensor_template.HasField(
+                "intensity_orientation_x_as_meridian"
+            ):
+                for x_tilt in x_tilts:
+                    tilted_x = np.matmul(rm(x_tilt, feature_x_dir), u)
+                    for y_tilt in y_tilts:
+                        vertices[iter, :] = np.matmul(rm(y_tilt, feature_y_dir), tilted_x)
+                        iter += 1
+            else:
+                for y_tilt in y_tilts:
+                    tilted_y = np.matmul(rm(y_tilt, feature_y_dir), u)
+                    for x_tilt in x_tilts:
+                        vertices[iter, :] = np.matmul(rm(x_tilt, feature_x_dir), tilted_y)
+                        iter += 1
+
+            # shift all vertices by the intensity sensor origin
+            vertices = vertices + feature_pos
+
+        # add squares to the visualizer
+        for j in range(0, (samp_2 - 1)):
+            for i in range(0, (samp_1 - 1)):
+                index1 = j * samp_1 + i
+                index2 = j * samp_1 + (i + 1)
+                index3 = (j + 1) * samp_1 + i
+                index4 = (j + 1) * samp_1 + (i + 1)
+                p1 = vertices[index1, :]
+                p2 = vertices[index2, :]
+                p3 = vertices[index3, :]
+                p4 = vertices[index4, :]
+                self._visual_data.add_data_triangle([p1, p2, p3])
+                self._visual_data.add_data_triangle([p2, p3, p4])
+
+        # intensity direction
+        self._visual_data.coordinates.origin = feature_pos
+        self._visual_data.coordinates.x_axis = feature_x_dir
+        self._visual_data.coordinates.y_axis = feature_y_dir
+
+        self._visual_data.updated = True
+        return self._visual_data
+
+    @property
+    def near_field(self) -> bool:
+        """Property containing if the sensor is positioned in nearfield or infinity."""
+        if self._sensor_template.intensity_sensor_template.HasField("near_field"):
+            return True
+        else:
+            return False
+
+    @near_field.setter
+    def near_field(self, value):
+        if value:
+            if not self._sensor_template.intensity_sensor_template.HasField("near_field"):
+                self._sensor_template.intensity_sensor_template.near_field.SetInParent()
+                self.cell_distance = 10
+                self.cell_diameter = 0.3491
+        else:
+            if self._sensor_template.intensity_sensor_template.HasField("near_field"):
+                self._sensor_template.intensity_sensor_template.ClearField("near_field")
+
+    @property
+    def cell_distance(self):
+        """Distance of the Detector to origin in mm.
+
+        By default, ``10``
+        """
+        if self.near_field:
+            return self._sensor_template.intensity_sensor_template.near_field.cell_distance
+        else:
+            return None
+
+    @cell_distance.setter
+    def cell_distance(self, value):
+        if self.near_field:
+            self._sensor_template.intensity_sensor_template.near_field.cell_distance = value
+
+        else:
+            raise TypeError("Sensor position is not in nearfield")
+
+    @property
+    def cell_diameter(self):
+        """Cell diameter in mm.
+
+        By default, ``0.3491``
+        """
+        if self.near_field:
+            diameter = self.cell_distance * np.tan(
+                np.radians(
+                    self._sensor_template.intensity_sensor_template.near_field.cell_integration_angle
+                )
+            )
+            return diameter
+        else:
+            return None
+
+    @cell_diameter.setter
+    def cell_diameter(self, value):
+        if self.near_field:
+            self._sensor_template.intensity_sensor_template.near_field.cell_integration_angle = (
+                np.degrees(np.arctan(value / 2 / self.cell_distance))
+            )
+        else:
+            raise TypeError("Sensor position is not in nearfield")
+
+    @property
+    def type(self) -> str:
+        """Type of sensor.
+
+        Returns
+        -------
+        str
+            Sensor type as string
+        """
+        if type(self._type) is str:
+            return self._type
+        elif isinstance(self._type, BaseSensor.Colorimetric):
+            return "Colorimetric"
+        elif isinstance(self._type, BaseSensor.Spectral):
+            return "Spectral"
+        else:
+            return self._type
+
+    @property
+    def colorimetric(self) -> Union[None, BaseSensor.Colorimetric]:
+        """Property containing all options in regard to the Colorimetric sensor properties.
+
+        Returns
+        -------
+        Union[None, ansys.speos.core.sensor.BaseSensor.Colorimetric]
+            Instance of Colorimetric Class for this sensor feature
+        """
+        if isinstance(self._type, BaseSensor.Colorimetric):
+            return self._type
+        else:
+            return None
+
+    @property
+    def spectral(self) -> Union[None, BaseSensor.Spectral]:
+        """Property containing all options in regard to the Spectral sensor properties.
+
+        Returns
+        -------
+        Union[None, ansys.speos.core.sensor.BaseSensor.Spectral]
+            Instance of Spectral Class for this sensor feature
+        """
+        if isinstance(self._type, BaseSensor.Spectral):
+            return self._type
+        else:
+            return None
+
+    @property
+    def layer(
+        self,
+    ) -> Union[
+        None,
+        SensorIrradiance,
+        BaseSensor.LayerTypeFace,
+        BaseSensor.LayerTypeSequence,
+        BaseSensor.LayerTypeIncidenceAngle,
+    ]:
+        """Property containing all options in regard to the layer separation properties.
+
+        Returns
+        -------
+        Union[\
+            None,\
+            ansys.speos.core.sensor.SensorIrradiance,\
+            ansys.speos.core.sensor.BaseSensor.LayerTypeFace,\
+            ansys.speos.core.sensor.BaseSensor.LayerTypeSequence,\
+            ansys.speos.core.sensor.BaseSensor.LayerTypeIncidenceAngle\
+        ]
+            Instance of Layertype Class for this sensor feature
+        """
+        return self._layer_type
+
+    def set_axis_system(self, axis_system: Optional[List[float]] = None) -> SensorXMPIntensity:
+        """Set position of the sensor.
+
+        Parameters
+        ----------
+        axis_system : Optional[List[float]]
+            Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorXMPIntensity
+            intensity sensor.
+        """
+        if axis_system is None:
+            axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+        self._sensor_instance.intensity_properties.axis_system[:] = axis_system
+        return self
+
+    def set_orientation_x_as_meridian(self):
+        """Set Orientation type: X As Meridian, Y as Parallel."""
+        self._sensor_template.intensity_sensor_template.intensity_orientation_x_as_meridian.SetInParent()
+        self._set_default_dimension_values()
+
+    def set_orientation_x_as_parallel(self):
+        """Set Orientation type: X as Parallel, Y As Meridian."""
+        self._sensor_template.intensity_sensor_template.intensity_orientation_x_as_parallel.SetInParent()
+        self._set_default_dimension_values()
+
+    def set_orientation_conoscopic(self):
+        """Set Orientation type: Conoscopic."""
+        self._sensor_template.intensity_sensor_template.intensity_orientation_conoscopic.SetInParent()
+        self._set_default_dimension_values()
+
+    def set_viewing_direction_from_source(self):
+        """Set viewing direction from Source Looking At Sensor."""
+        self._sensor_template.intensity_sensor_template.from_source_looking_at_sensor.SetInParent()
+
+    def set_viewing_direction_from_sensor(self):
+        """Set viewing direction from Sensor Looking At Source."""
+        self._sensor_template.intensity_sensor_template.from_sensor_looking_at_source.SetInParent()
+
+    def _set_default_dimension_values(self):
+        template = self._sensor_template.intensity_sensor_template
+        if template.HasField("intensity_orientation_conoscopic"):
+            self.theta_max = 45
+            self.theta_sampling = 90
+        elif template.HasField("intensity_orientation_x_as_parallel"):
+            self.x_start = -30
+            self.x_end = 30
+            self.x_sampling = 120
+            self.y_start = -45
+            self.y_end = 45
+            self.y_sampling = 180
+        elif template.HasField("intensity_orientation_x_as_meridian"):
+            self.y_start = -30
+            self.y_end = 30
+            self.y_sampling = 120
+            self.x_start = -45
+            self.x_end = 45
+            self.x_sampling = 180
+
+    @property
+    def x_start(self) -> float:
+        """The minimum value on x-axis  (deg).
+
+        By default, ``45``.
+        """
+        template = self._sensor_template.intensity_sensor_template
+        if template.HasField("intensity_orientation_conoscopic"):
+            return None
+        elif template.HasField("intensity_orientation_x_as_parallel"):
+            return template.intensity_orientation_x_as_parallel.intensity_dimensions.x_start
+        elif template.HasField("intensity_orientation_x_as_meridian"):
+            return template.intensity_orientation_x_as_meridian.intensity_dimensions.x_start
+
+    @x_start.setter
+    def x_start(self, value: float):
+        template = self._sensor_template.intensity_sensor_template
+        if template.HasField("intensity_orientation_conoscopic"):
+            raise TypeError("Conoscopic Sensor has no x_start dimension")
+        elif template.HasField("intensity_orientation_x_as_parallel"):
+            template.intensity_orientation_x_as_parallel.intensity_dimensions.x_start = value
+        elif template.HasField("intensity_orientation_x_as_meridian"):
+            template.intensity_orientation_x_as_meridian.intensity_dimensions.x_start = value
+
+    @property
+    def x_end(self) -> float:
+        """The maximum value on x-axis  (deg).
+
+        By default, ``45``.
+        """
+        template = self._sensor_template.intensity_sensor_template
+        if template.HasField("intensity_orientation_conoscopic"):
+            return None
+        elif template.HasField("intensity_orientation_x_as_parallel"):
+            return template.intensity_orientation_x_as_parallel.intensity_dimensions.x_end
+        elif template.HasField("intensity_orientation_x_as_meridian"):
+            return template.intensity_orientation_x_as_meridian.intensity_dimensions.x_end
+
+    @x_end.setter
+    def x_end(self, value: float):
+        template = self._sensor_template.intensity_sensor_template
+        if template.HasField("intensity_orientation_conoscopic"):
+            raise TypeError("Conoscopic Sensor has no x_end dimension")
+        elif template.HasField("intensity_orientation_x_as_parallel"):
+            template.intensity_orientation_x_as_parallel.intensity_dimensions.x_end = value
+        elif template.HasField("intensity_orientation_x_as_meridian"):
+            template.intensity_orientation_x_as_meridian.intensity_dimensions.x_end = value
+
+    @property
+    def x_sampling(self) -> int:
+        """Pixel sampling along x-Axis.
+
+        By default, ``100``
+        """
+        template = self._sensor_template.intensity_sensor_template
+        if template.HasField("intensity_orientation_conoscopic"):
+            return None
+        elif template.HasField("intensity_orientation_x_as_parallel"):
+            return template.intensity_orientation_x_as_parallel.intensity_dimensions.x_sampling
+        elif template.HasField("intensity_orientation_x_as_meridian"):
+            return template.intensity_orientation_x_as_meridian.intensity_dimensions.x_sampling
+
+    @x_sampling.setter
+    def x_sampling(self, value: int):
+        template = self._sensor_template.intensity_sensor_template
+        if template.HasField("intensity_orientation_conoscopic"):
+            raise TypeError("Conoscopic Sensor has no x_sampling dimension")
+        elif template.HasField("intensity_orientation_x_as_parallel"):
+            template.intensity_orientation_x_as_parallel.intensity_dimensions.x_sampling = value
+        elif template.HasField("intensity_orientation_x_as_meridian"):
+            template.intensity_orientation_x_as_meridian.intensity_dimensions.x_sampling = value
+
+    @property
+    def y_end(self) -> float:
+        """The maximum value on y-axis (deg).
+
+        By default, ``30``.
+        """
+        template = self._sensor_template.intensity_sensor_template
+        if template.HasField("intensity_orientation_conoscopic"):
+            return None
+        elif template.HasField("intensity_orientation_x_as_parallel"):
+            return template.intensity_orientation_x_as_parallel.intensity_dimensions.y_end
+        elif template.HasField("intensity_orientation_x_as_meridian"):
+            return template.intensity_orientation_x_as_meridian.intensity_dimensions.y_end
+
+    @y_end.setter
+    def y_end(self, value: float):
+        template = self._sensor_template.intensity_sensor_template
+        if template.HasField("intensity_orientation_conoscopic"):
+            raise TypeError("Conoscopic Sensor has no y_end dimension")
+        elif template.HasField("intensity_orientation_x_as_parallel"):
+            template.intensity_orientation_x_as_parallel.intensity_dimensions.y_end = value
+        elif template.HasField("intensity_orientation_x_as_meridian"):
+            template.intensity_orientation_x_as_meridian.intensity_dimensions.y_end = value
+
+    @property
+    def y_start(self) -> float:
+        """The minimum value on x-axis (deg).
+
+        By default, ``-30``.
+        """
+        template = self._sensor_template.intensity_sensor_template
+        if template.HasField("intensity_orientation_conoscopic"):
+            return None
+        elif template.HasField("intensity_orientation_x_as_parallel"):
+            return template.intensity_orientation_x_as_parallel.intensity_dimensions.y_start
+        elif template.HasField("intensity_orientation_x_as_meridian"):
+            return template.intensity_orientation_x_as_meridian.intensity_dimensions.y_start
+
+    @y_start.setter
+    def y_start(self, value: float):
+        template = self._sensor_template.intensity_sensor_template
+        if template.HasField("intensity_orientation_conoscopic"):
+            raise TypeError("Conoscopic Sensor has no y_start dimension")
+        elif template.HasField("intensity_orientation_x_as_parallel"):
+            template.intensity_orientation_x_as_parallel.intensity_dimensions.y_start = value
+        elif template.HasField("intensity_orientation_x_as_meridian"):
+            template.intensity_orientation_x_as_meridian.intensity_dimensions.y_start = value
+
+    @property
+    def y_sampling(self) -> int:
+        """Sampling along y-axis.
+
+        By default, ``100``.
+        """
+        template = self._sensor_template.intensity_sensor_template
+        if template.HasField("intensity_orientation_conoscopic"):
+            return None
+        elif template.HasField("intensity_orientation_x_as_parallel"):
+            return template.intensity_orientation_x_as_parallel.intensity_dimensions.y_sampling
+        elif template.HasField("intensity_orientation_x_as_meridian"):
+            return template.intensity_orientation_x_as_meridian.intensity_dimensions.y_sampling
+
+    @y_sampling.setter
+    def y_sampling(self, value: int):
+        template = self._sensor_template.intensity_sensor_template
+        if template.HasField("intensity_orientation_conoscopic"):
+            raise TypeError("Conoscopic Sensor has no y_sampling dimension")
+        elif template.HasField("intensity_orientation_x_as_parallel"):
+            template.intensity_orientation_x_as_parallel.intensity_dimensions.y_sampling = value
+        elif template.HasField("intensity_orientation_x_as_meridian"):
+            template.intensity_orientation_x_as_meridian.intensity_dimensions.y_sampling = value
+
+    @property
+    def theta_max(self) -> float:
+        """Maximum theta angle on consocopic type (in deg).
+
+        By default, ``45``.
+        """
+        template = self._sensor_template.intensity_sensor_template
+        if template.HasField("intensity_orientation_conoscopic"):
+            return (
+                template.intensity_orientation_conoscopic.conoscopic_intensity_dimensions.theta_max
+            )
+        else:
+            return None
+
+    @theta_max.setter
+    def theta_max(self, value: float):
+        template = self._sensor_template.intensity_sensor_template
+        if template.HasField("intensity_orientation_conoscopic"):
+            template.intensity_orientation_conoscopic.conoscopic_intensity_dimensions.theta_max = (
+                value
+            )
+        else:
+            raise TypeError("Only Conoscopic Sensor has theta_max dimension")
+
+    @property
+    def theta_sampling(self) -> int:
+        """Sampling on conoscopic type.
+
+        By default, ``90``.
+        """
+        template = self._sensor_template.intensity_sensor_template
+        if template.HasField("intensity_orientation_conoscopic"):
+            return (
+                template.intensity_orientation_conoscopic.conoscopic_intensity_dimensions.sampling
+            )
+        else:
+            return None
+
+    @theta_sampling.setter
+    def theta_sampling(self, value: int):
+        template = self._sensor_template.intensity_sensor_template
+        if template.HasField("intensity_orientation_conoscopic"):
+            template.intensity_orientation_conoscopic.conoscopic_intensity_dimensions.sampling = (
+                value
+            )
+        else:
+            raise TypeError("Only Conoscopic Sensor has theta_max dimension")
+
+    def set_type_photometric(self) -> SensorXMPIntensity:
+        """Set type photometric.
+
+        The sensor considers the visible spectrum and gets the results in lm/m2 or lx.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorIrradiance
+            Irradiance sensor
+        """
+        self._sensor_template.intensity_sensor_template.sensor_type_photometric.SetInParent()
+        self._type = "Photometric"
+        return self
+
+    def set_type_colorimetric(self) -> BaseSensor.Colorimetric:
+        """Set type colorimetric.
+
+        The sensor will generate color results without any spectral data or layer separation
+        in lx or W//m2.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.BaseSensor.Colorimetric
+            Colorimetric type.
+        """
+        if self._type is None and self._sensor_template.intensity_sensor_template.HasField(
+            "sensor_type_colorimetric"
+        ):
+            # Happens in case of project created via load of speos file
+            self._type = BaseSensor.Colorimetric(
+                sensor_type_colorimetric=self._sensor_template.intensity_sensor_template.sensor_type_colorimetric,
+                default_values=False,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._type, BaseSensor.Colorimetric):
+            # if the _type is not Colorimetric then we create a new type.
+            self._type = BaseSensor.Colorimetric(
+                sensor_type_colorimetric=self._sensor_template.intensity_sensor_template.sensor_type_colorimetric,
+                stable_ctr=True,
+            )
+        elif (
+            self._type._sensor_type_colorimetric
+            is not self._sensor_template.intensity_sensor_template.sensor_type_colorimetric
+        ):
+            # Happens in case of feature reset (to be sure to always modify correct data)
+            self._type._sensor_type_colorimetric = (
+                self._sensor_template.intensity_sensor_template.sensor_type_colorimetric
+            )
+        return self._type
+
+    def set_type_radiometric(self) -> SensorXMPIntensity:
+        """Set type radiometric.
+
+        The sensor considers the entire spectrum and gets the results in W/m2.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorIrradiance
+            Irradiance sensor.
+        """
+        self._sensor_template.intensity_sensor_template.sensor_type_radiometric.SetInParent()
+        self._type = "Radiometric"
+        return self
+
+    def set_type_spectral(self) -> BaseSensor.Spectral:
+        """Set type spectral.
+
+        The sensor will generate color results and spectral data separated by wavelength
+        in lx or W/m2.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.BaseSensor.Spectral
+            Spectral type.
+        """
+        if self._type is None and self._sensor_template.intensity_sensor_template.HasField(
+            "sensor_type_spectral"
+        ):
+            # Happens in case of project created via load of speos file
+            self._type = BaseSensor.Spectral(
+                sensor_type_spectral=self._sensor_template.intensity_sensor_template.sensor_type_spectral,
+                default_values=False,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._type, BaseSensor.Spectral):
+            # if the _type is not Spectral then we create a new type.
+            self._type = BaseSensor.Spectral(
+                sensor_type_spectral=self._sensor_template.intensity_sensor_template.sensor_type_spectral,
+                stable_ctr=True,
+            )
+        elif (
+            self._type._sensor_type_spectral
+            is not self._sensor_template.intensity_sensor_template.sensor_type_spectral
+        ):
+            # Happens in case of feature reset (to be sure to always modify correct data)
+            self._type._sensor_type_spectral = (
+                self._sensor_template.intensity_sensor_template.sensor_type_spectral
+            )
+        return self._type
+
+    def set_layer_type_none(self) -> SensorXMPIntensity:
+        """Define layer separation type as None.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorXMPIntensity
+            Intensity sensor
+
+        """
+        self._sensor_instance.intensity_properties.layer_type_none.SetInParent()
+        self._layer_type = None
+        return self
+
+    def set_layer_type_source(self) -> SensorXMPIntensity:
+        """Define layer separation as by source.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.SensorXMPIntensity
+            Intensity sensor
+
+        """
+        self._sensor_instance.intensity_properties.layer_type_source.SetInParent()
+        self._layer_type = None
+        return self
+
+    def set_layer_type_face(self) -> BaseSensor.LayerTypeFace:
+        """Define layer separation as by face.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.BaseSensor.LayerTypeFace
+            LayerTypeFace property instance
+        """
+        if self._layer_type is None and self._sensor_instance.intensity_properties.HasField(
+            "layer_type_face"
+        ):
+            # Happens in case of project created via load of speos file
+            self._layer_type = BaseSensor.LayerTypeFace(
+                layer_type_face=self._sensor_instance.intensity_properties.layer_type_face,
+                default_values=False,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._layer_type, BaseSensor.LayerTypeFace):
+            # if the _layer_type is not LayerTypeFace then we create a new type.
+            self._layer_type = BaseSensor.LayerTypeFace(
+                layer_type_face=self._sensor_instance.intensity_properties.layer_type_face,
+                stable_ctr=True,
+            )
+        elif (
+            self._layer_type._layer_type_face
+            is not self._sensor_instance.intensity_properties.layer_type_face
+        ):
+            # Happens in case of feature reset (to be sure to always modify correct data)
+            self._layer_type._layer_type_face = (
+                self._sensor_instance.intensity_properties.layer_type_face
+            )
+        return self._layer_type
+
+    def set_layer_type_sequence(self) -> BaseSensor.LayerTypeSequence:
+        """Define layer separation as by sequence.
+
+        Returns
+        -------
+        ansys.speos.core.sensor.BaseSensor.LayerTypeSequence
+            LayerTypeSequence property instance
+        """
+        if self._layer_type is None and self._sensor_instance.intensity_properties.HasField(
+            "layer_type_sequence"
+        ):
+            # Happens in case of project created via load of speos file
+            self._layer_type = BaseSensor.LayerTypeSequence(
+                layer_type_sequence=self._sensor_instance.intensity_properties.layer_type_sequence,
+                default_values=False,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._layer_type, BaseSensor.LayerTypeSequence):
+            # if the _layer_type is not LayerTypeSequence then we create a new type.
+            self._layer_type = BaseSensor.LayerTypeSequence(
+                layer_type_sequence=self._sensor_instance.intensity_properties.layer_type_sequence,
+                stable_ctr=True,
+            )
+        elif (
+            self._layer_type._layer_type_sequence
+            is not self._sensor_instance.intensity_properties.layer_type_sequence
+        ):
+            # Happens in case of feature reset (to be sure to always modify correct data)
+            self._layer_type._layer_type_sequence = (
+                self._sensor_instance.intensity_properties.layer_type_sequence
+            )
+        return self._layer_type
+
+    @property
+    def axis_system(self) -> np.array:
+        """Position of the sensor.
+
+        Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+        By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+
+        Returns
+        -------
+        np.array[float]
+            Axis system information as np.array.
+        """
+        return np.array(self._sensor_instance.intensity_properties.axis_system)
+
+    @axis_system.setter
+    def axis_system(self, value: Collection[float]):
+        value = np.array(value)
+        self._sensor_instance.intensity_properties.axis_system[:] = value.flatten().tolist()
