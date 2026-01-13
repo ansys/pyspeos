@@ -138,6 +138,11 @@ class BaseSensor:
     def lxp_path_number(self) -> Union[None, int]:
         """Number of LXP rays simulated for the Sensor.
 
+        Parameters
+        ----------
+        value : int
+            Integer value to define number of rays stored
+
         Returns
         -------
         int
@@ -149,13 +154,6 @@ class BaseSensor:
 
     @lxp_path_number.setter
     def lxp_path_number(self, value: int):
-        """Setter for lxp_path_number property.
-
-        Parameters
-        ----------
-        value : int
-            Integer value to define number of rays stored
-        """
         if value:
             self._sensor_instance.lxp_properties.nb_max_paths = int(value)
         else:
@@ -203,7 +201,10 @@ class BaseSensor:
         def start(self) -> float:
             """Minimum wavelength of the range.
 
-            By default, ``400``.
+            Parameters
+            ----------
+            value : float
+                Minimum wavelength (nm). By default, ``400``.
 
             Returns
             -------
@@ -217,13 +218,6 @@ class BaseSensor:
 
         @start.setter
         def start(self, value: float):
-            """Minimum wavelength of the range.
-
-            Parameters
-            ----------
-            value : float
-                Minimum wavelength (nm).
-            """
             if isinstance(self._wavelengths_range, common_pb2.WavelengthsRange):
                 self._wavelengths_range.w_start = value
             else:
@@ -233,7 +227,10 @@ class BaseSensor:
         def end(self) -> float:
             """Maximum wavelength of the range.
 
-            By default, ``700``.
+            Parameters
+            ----------
+            value : float
+                Maximum wavelength (nm). By default, ``700``.
 
             Returns
             -------
@@ -247,13 +244,6 @@ class BaseSensor:
 
         @end.setter
         def end(self, value: float):
-            """Maximum wavelength of the range.
-
-            Parameters
-            ----------
-            value : float
-                Maximum wavelength (nm).
-            """
             if isinstance(self._wavelengths_range, common_pb2.WavelengthsRange):
                 self._wavelengths_range.w_end = value
             else:
@@ -263,7 +253,11 @@ class BaseSensor:
         def sampling(self) -> int:
             """Wavelength sampling of between start and end value.
 
-            By default, ``13``.
+            Parameters
+            ----------
+            value : int
+                Number of wavelengths to be taken into account between the minimum and maximum
+                wavelengths range. By default, ``13``.
 
             Returns
             -------
@@ -275,14 +269,6 @@ class BaseSensor:
 
         @sampling.setter
         def sampling(self, value):
-            """Wavelength sampling of between start and end value.
-
-            Parameters
-            ----------
-            value : int
-                Number of wavelengths to be taken into account between the minimum and maximum
-                wavelengths range.
-            """
             if isinstance(self._wavelengths_range, common_pb2.WavelengthsRange):
                 self._wavelengths_range.w_sampling = value
 
@@ -330,7 +316,10 @@ class BaseSensor:
         def x_start(self) -> float:
             """Minimum value on x axis.
 
-            By default, ``-50``.
+            Parameters
+            ----------
+            value : float
+                Minimum value on x axis (mm). By default, ``-50``.
 
             Returns
             -------
@@ -341,20 +330,16 @@ class BaseSensor:
 
         @x_start.setter
         def x_start(self, value: float):
-            """Minimum value on x axis.
-
-            Parameters
-            ----------
-            value : float
-                Minimum value on x axis (mm).
-            """
             self._sensor_dimensions.x_start = value
 
         @property
         def x_end(self) -> float:
             """Maximum value on x axis.
 
-            By default, ``50``.
+            Parameters
+            ----------
+            value : float
+                Maximum value on x axis (mm). By default, ``50``.
 
             Returns
             -------
@@ -365,20 +350,16 @@ class BaseSensor:
 
         @x_end.setter
         def x_end(self, value: float):
-            """Maximum value on x axis.
-
-            Parameters
-            ----------
-            value : float
-                Maximum value on x axis (mm).
-            """
             self._sensor_dimensions.x_end = value
 
         @property
         def x_sampling(self) -> int:
             """Value of the sampling on x axis.
 
-            By default, ``100``.
+            Parameters
+            ----------
+            value : int
+                The number of pixels of the XMP map on x axis. By default, ``100``.
 
             Returns
             -------
@@ -389,20 +370,16 @@ class BaseSensor:
 
         @x_sampling.setter
         def x_sampling(self, value: int):
-            """Value of the sampling on x axis.
-
-            Parameters
-            ----------
-            value : int
-                The number of pixels of the XMP map on x axis.
-            """
             self._sensor_dimensions.x_sampling = value
 
         @property
         def y_start(self) -> float:
             """Minimum value on y axis.
 
-            By default, ``-50``.
+            Parameters
+            ----------
+            value : float
+                Minimum value on y axis (mm). By default, ``-50``.
 
             Returns
             -------
@@ -413,20 +390,16 @@ class BaseSensor:
 
         @y_start.setter
         def y_start(self, value: float):
-            """Minimum value on y axis.
-
-            Parameters
-            ----------
-            value : float
-                Minimum value on y axis (mm).
-            """
             self._sensor_dimensions.y_start = value
 
         @property
         def y_end(self) -> float:
             """Maximum value on y axis.
 
-            By default, ``50``.
+            Parameters
+            ----------
+            value : float
+                Maximum value on y axis (mm). By default, ``50``.
 
             Returns
             -------
@@ -437,20 +410,16 @@ class BaseSensor:
 
         @y_end.setter
         def y_end(self, value: float):
-            """Maximum value on y axis.
-
-            Parameters
-            ----------
-            value : float
-                Maximum value on y axis (mm).
-            """
             self._sensor_dimensions.y_end = value
 
         @property
         def y_sampling(self) -> int:
             """Value of the sampling on y axis.
 
-            By default, ``100``.
+            Parameters
+            ----------
+            value : int
+                The number of pixels of the XMP map on y axis. By default, ``100``.
 
             Returns
             -------
@@ -461,13 +430,6 @@ class BaseSensor:
 
         @y_sampling.setter
         def y_sampling(self, value: int):
-            """Value of the sampling on y axis.
-
-            Parameters
-            ----------
-            value : int
-                The number of pixels of the XMP map on y axis.
-            """
             self._sensor_dimensions.y_sampling = value
 
     class Colorimetric:
@@ -620,6 +582,11 @@ class BaseSensor:
         def geometry(self):
             """List of geometries included in this layer.
 
+            Parameters
+            ----------
+            value : Optional[list[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]]
+                Geometry within the Face Layer group
+
             Returns
             -------
             list[GeoRef]
@@ -631,13 +598,6 @@ class BaseSensor:
         def geometry(
             self, value: Optional[list[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]]
         ):
-            """Set the geometry for this Face Layer group.
-
-            Parameters
-            ----------
-            value : Optional[list[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]]
-                Geometry within the Face Layer group
-            """
             geo_paths = []
             for gr in value:
                 if isinstance(gr, GeoRef):
@@ -725,6 +685,11 @@ class BaseSensor:
         def layers(self) -> list[BaseSensor.FaceLayer]:
             """List of Face layer Groups of this sensor.
 
+            Parameters
+            ----------
+            values : list[ansys.speos.core.sensor.BaseSensor.FaceLayer]
+                List of layers
+
             Returns
             -------
             list[ansys.speos.core.sensor.BaseSensor.FaceLayer]
@@ -737,13 +702,6 @@ class BaseSensor:
 
         @layers.setter
         def layers(self, values: list[BaseSensor.FaceLayer]):
-            """Set the layers.
-
-            Parameters
-            ----------
-            values : list[ansys.speos.core.sensor.BaseSensor.FaceLayer]
-                List of layers
-            """
             my_list = [
                 ProtoScene.SensorInstance.LayerTypeFace.Layer(
                     name=layer.name,
@@ -803,7 +761,10 @@ class BaseSensor:
         def maximum_nb_of_sequence(self) -> int:
             """Value of the maximum number of sequences.
 
-            By default, ``10``.
+            Parameters
+            ----------
+            value : int
+                Maximum number of sequences. By default, ``10``.
 
             Returns
             -------
@@ -814,13 +775,6 @@ class BaseSensor:
 
         @maximum_nb_of_sequence.setter
         def maximum_nb_of_sequence(self, value: int):
-            """Value of the maximum number of sequences.
-
-            Parameters
-            ----------
-            value : int
-                Maximum number of sequences.
-            """
             self._layer_type_sequence.maximum_nb_of_sequence = value
 
         def set_define_sequence_per_geometries(
@@ -894,7 +848,10 @@ class BaseSensor:
         def sampling(self) -> int:
             """Value of the sampling for incidence angles.
 
-            By default, ``9``.
+            Parameters
+            ----------
+            value : int
+                Sampling for incidence angles. By default, ``9``.
 
             Returns
             -------
@@ -905,14 +862,6 @@ class BaseSensor:
 
         @sampling.setter
         def sampling(self, value: int):
-            """Value of the sampling for incidence angles.
-
-            Parameters
-            ----------
-            value : int
-                Sampling for incidence angles.
-                By default, ``9``.
-            """
             self._layer_type_incidence_angle.sampling = value
 
     def _to_dict(self) -> dict:
@@ -1227,7 +1176,10 @@ class SensorCamera(BaseSensor):
                 def red_gain(self) -> float:
                     """Value of the red gain of the Camera Sensor.
 
-                    By default, ``1``.
+                    Parameters
+                    ----------
+                    value : float
+                        Red gain. By default, ``1``.
 
                     Returns
                     -------
@@ -1238,20 +1190,16 @@ class SensorCamera(BaseSensor):
 
                 @red_gain.setter
                 def red_gain(self, value: float):
-                    """Set red gain.
-
-                    Parameters
-                    ----------
-                    value : float
-                        Red gain.
-                    """
                     self._balance_mode_user_white.red_gain = value
 
                 @property
                 def green_gain(self) -> float:
                     """Value of the green gain of the Camera Sensor.
 
-                    By default, ``1``.
+                    Parameters
+                    ----------
+                    value : float
+                        green gain. By default, ``1``.
 
                     Returns
                     -------
@@ -1262,20 +1210,16 @@ class SensorCamera(BaseSensor):
 
                 @green_gain.setter
                 def green_gain(self, value: float):
-                    """Set green gain.
-
-                    Parameters
-                    ----------
-                    value : float
-                        green gain.
-                    """
                     self._balance_mode_user_white.green_gain = value
 
                 @property
                 def blue_gain(self) -> float:
                     """Value of the Blue gain of the Camera Sensor.
 
-                    By default, ``1``.
+                    Parameters
+                    ----------
+                    value : float
+                        blue gain. By default, ``1``.
 
                     Returns
                     -------
@@ -1286,13 +1230,6 @@ class SensorCamera(BaseSensor):
 
                 @blue_gain.setter
                 def blue_gain(self, value: float):
-                    """Set blue gain value.
-
-                    Parameters
-                    ----------
-                    value : float
-                        blue gain.
-                    """
                     self._balance_mode_user_white.blue_gain = value
 
             class BalanceModeDisplayPrimaries:
@@ -1347,6 +1284,11 @@ class SensorCamera(BaseSensor):
                 def red_display_file_uri(self) -> str:
                     """Location of the red display file.
 
+                    Parameters
+                    ----------
+                    uri : Union[str, Path]
+                        Red display file.
+
                     Returns
                     -------
                     str
@@ -1356,18 +1298,16 @@ class SensorCamera(BaseSensor):
 
                 @red_display_file_uri.setter
                 def red_display_file_uri(self, uri: Union[str, Path]):
-                    """Location of the red display file.
-
-                    Parameters
-                    ----------
-                    uri : Union[str, Path]
-                        Red display file.
-                    """
                     self._balance_mode_display.red_display_file_uri = str(Path(uri))
 
                 @property
                 def green_display_file_uri(self) -> str:
                     """Location of the green display file.
+
+                    Parameters
+                    ----------
+                    uri : Union[str, Path]
+                        green display file.
 
                     Returns
                     -------
@@ -1378,18 +1318,16 @@ class SensorCamera(BaseSensor):
 
                 @green_display_file_uri.setter
                 def green_display_file_uri(self, uri: Union[str, Path]):
-                    """Location of the green display file.
-
-                    Parameters
-                    ----------
-                    uri : Union[str, Path]
-                        green display file.
-                    """
                     self._balance_mode_display.green_display_file_uri = str(Path(uri))
 
                 @property
                 def blue_display_file_uri(self) -> str:
                     """Location of the blue display file.
+
+                    Parameters
+                    ----------
+                    uri : Union[str, Path]
+                        blue display file.
 
                     Returns
                     -------
@@ -1400,13 +1338,6 @@ class SensorCamera(BaseSensor):
 
                 @blue_display_file_uri.setter
                 def blue_display_file_uri(self, uri: Union[str, Path]):
-                    """Location of the blue display file.
-
-                    Parameters
-                    ----------
-                    uri : Union[str, Path]
-                        blue display file.
-                    """
                     self._balance_mode_display.blue_display_file_uri = str(Path(uri))
 
             def __init__(
@@ -1454,6 +1385,11 @@ class SensorCamera(BaseSensor):
             def red_spectrum_file_uri(self) -> str:
                 """Location of the red spectrum.
 
+                Parameters
+                ----------
+                uri : Union[str, Path]
+                    Red spectrum file. It is expressed in a .spectrum file.
+
                 Returns
                 -------
                 str
@@ -1463,18 +1399,16 @@ class SensorCamera(BaseSensor):
 
             @red_spectrum_file_uri.setter
             def red_spectrum_file_uri(self, uri: Union[str, Path]):
-                """Location of the red spectrum.
-
-                Parameters
-                ----------
-                uri : Union[str, Path]
-                    Red spectrum file. It is expressed in a .spectrum file.
-                """
                 self._mode_color.red_spectrum_file_uri = str(Path(uri))
 
             @property
             def blue_spectrum_file_uri(self) -> str:
                 """Location of the blue spectrum.
+
+                Parameters
+                ----------
+                uri : Union[str, Path]
+                    blue spectrum file. It is expressed in a .spectrum file.
 
                 Returns
                 -------
@@ -1485,18 +1419,16 @@ class SensorCamera(BaseSensor):
 
             @blue_spectrum_file_uri.setter
             def blue_spectrum_file_uri(self, uri: Union[str, Path]):
-                """Location of the blue spectrum.
-
-                Parameters
-                ----------
-                uri : Union[str, Path]
-                    blue spectrum file. It is expressed in a .spectrum file.
-                """
                 self._mode_color.blue_spectrum_file_uri = str(Path(uri))
 
             @property
             def green_spectrum_file_uri(self) -> str:
                 """Location of the green spectrum.
+
+                Parameters
+                ----------
+                uri : Union[str, Path]
+                    green spectrum file. It is expressed in a .spectrum file.
 
                 Returns
                 -------
@@ -1507,13 +1439,6 @@ class SensorCamera(BaseSensor):
 
             @green_spectrum_file_uri.setter
             def green_spectrum_file_uri(self, uri: Union[str, Path]):
-                """Location of the green spectrum.
-
-                Parameters
-                ----------
-                uri : Union[str, Path]
-                    green spectrum file. It is expressed in a .spectrum file.
-                """
                 self._mode_color.green_spectrum_file_uri = str(Path(uri))
 
             def set_balance_mode_none(self) -> SensorCamera.Photometric.Color:
@@ -1687,7 +1612,10 @@ class SensorCamera(BaseSensor):
         def acquisition_integration(self) -> float:
             """Value of the acquisition integration.
 
-            By default, ``0.01``.
+            Parameters
+            ----------
+            value : float
+                Acquisition integration value (s). By default, ``0.01``.
 
             Returns
             -------
@@ -1698,21 +1626,16 @@ class SensorCamera(BaseSensor):
 
         @acquisition_integration.setter
         def acquisition_integration(self, value: float):
-            """Value of the acquisition integration.
-
-            Parameters
-            ----------
-            value : float
-                Acquisition integration value (s).
-                By default, ``0.01``.
-            """
             self._mode_photometric.acquisition_integration = value
 
         @property
         def acquisition_lag_time(self) -> float:
             """Value of the acquisition lag time.
 
-            By default, ``0.0``.
+            Parameters
+            ----------
+            value : float
+                Acquisition lag time value (s). By default, ``0.0``.
 
             Returns
             -------
@@ -1723,24 +1646,17 @@ class SensorCamera(BaseSensor):
 
         @acquisition_lag_time.setter
         def acquisition_lag_time(self, value: float):
-            """Value of the acquisition lag time.
-
-            Parameters
-            ----------
-            value : float
-                Acquisition lag time value (s).
-                By default, ``0.0``.
-
-            Returns
-            -------
-            ansys.speos.core.sensor.SensorCamera.Photometric
-                Photometric mode.
-            """
             self._mode_photometric.acquisition_lag_time = value
 
         @property
         def transmittance_file_uri(self) -> str:
             """Location of the transmittance file.
+
+            Parameters
+            ----------
+            uri : Union[str, Path]
+                Amount of light of the source that passes through the lens and reaches the sensor.
+                The transmittance is expressed in a .spectrum file.
 
             Returns
             -------
@@ -1751,21 +1667,16 @@ class SensorCamera(BaseSensor):
 
         @transmittance_file_uri.setter
         def transmittance_file_uri(self, uri: Union[str, Path]):
-            """Location of the transmittance file.
-
-            Parameters
-            ----------
-            uri : Union[str, Path]
-                Amount of light of the source that passes through the lens and reaches the sensor.
-                The transmittance is expressed in a .spectrum file.
-            """
             self._mode_photometric.transmittance_file_uri = str(Path(uri))
 
         @property
         def gamma_correction(self) -> float:
             """Value used to apply the gamma correction.
 
-            By default, ``2.2``.
+            Parameters
+            ----------
+            value : float
+                Gamma Correction value. By default, ``2.2``.
 
             Returns
             -------
@@ -1776,15 +1687,6 @@ class SensorCamera(BaseSensor):
 
         @gamma_correction.setter
         def gamma_correction(self, value: float):
-            """Value used to apply the gamma correction.
-
-            By default, ``2.2``.
-
-            Parameters
-            ----------
-            value : float
-                Gamma Correction value
-            """
             self._mode_photometric.gamma_correction = value
 
         def set_png_bits_08(self) -> SensorCamera.Photometric:
@@ -1905,6 +1807,12 @@ class SensorCamera(BaseSensor):
         def trajectory_file_uri(self) -> str:
             """Location of the trajectory file.
 
+            Parameters
+            ----------
+            uri : Union[str, Path]
+                Trajectory file, used to define the position and orientations of the Camera sensor
+                in time.
+
             Returns
             -------
             str
@@ -1915,14 +1823,6 @@ class SensorCamera(BaseSensor):
 
         @trajectory_file_uri.setter
         def trajectory_file_uri(self, uri: Union[str, Path]):
-            """Location of the trajectory file.
-
-            Parameters
-            ----------
-            uri : Union[str, Path]
-                Trajectory file, used to define the position and orientations of the Camera sensor
-                in time.
-            """
             self._camera_props.trajectory_file_uri = str(Path(uri))
 
         def set_layer_type_none(self) -> SensorCamera.Photometric:
@@ -2095,7 +1995,11 @@ class SensorCamera(BaseSensor):
     def focal_length(self) -> float:
         """Focal length of the optical system.
 
-        By default, ``5.0``.
+        Parameters
+        ----------
+        value : float
+            Distance between the center of the optical system and the focus. (mm)
+            By default, ``5.0``.
 
         Returns
         -------
@@ -2106,21 +2010,17 @@ class SensorCamera(BaseSensor):
 
     @focal_length.setter
     def focal_length(self, value: float) -> SensorCamera:
-        """Focal length of the optical system.
-
-        Parameters
-        ----------
-        value : float
-            Distance between the center of the optical system and the focus. (mm)
-            By default, ``5.0``.
-        """
         self._sensor_template.camera_sensor_template.focal_length = value
 
     @property
     def imager_distance(self) -> SensorCamera:
         """Imager distance.
 
-        By default, ``10``.
+        Parameters
+        ----------
+        value : float
+            Imager distance (mm). The imager is located at the focal point.
+            The Imager distance has no impact on the result. By default, ``10``.
 
         Returns
         -------
@@ -2132,22 +2032,17 @@ class SensorCamera(BaseSensor):
 
     @imager_distance.setter
     def imager_distance(self, value: float):
-        """Imager distance.
-
-        Parameters
-        ----------
-        value : float
-            Imager distance (mm). The imager is located at the focal point.
-            The Imager distance has no impact on the result.
-            By default, ``10``.
-        """
         self._sensor_template.camera_sensor_template.imager_distance = value
 
     @property
     def f_number(self) -> float:
         """F number of the optical system.
 
-        By default, ``20``.
+        Parameters
+        ----------
+        value : float
+            F-number represents the aperture of the front lens.
+            F number has no impact on the result. By default, ``20``.
 
         Returns
         -------
@@ -2159,20 +2054,17 @@ class SensorCamera(BaseSensor):
 
     @f_number.setter
     def f_number(self, value: float = 20):
-        """F number of the optical system.
-
-        Parameters
-        ----------
-        value : float
-            F-number represents the aperture of the front lens.
-            F number has no impact on the result.
-            By default, ``20``.
-        """
         self._sensor_template.camera_sensor_template.f_number = value
 
     @property
     def distortion_file_uri(self) -> str:
         """Location of the distortion file.
+
+        Parameters
+        ----------
+        uri : Union[str, Path]
+            Optical aberration that deforms and bends straight lines. The distortion is expressed in
+            a .OPTDistortion file.
 
         Returns
         -------
@@ -2184,19 +2076,17 @@ class SensorCamera(BaseSensor):
 
     @distortion_file_uri.setter
     def distortion_file_uri(self, uri: Union[str, Path]):
-        """Location of the distortion file.
-
-        Parameters
-        ----------
-        uri : Union[str, Path]
-            Optical aberration that deforms and bends straight lines. The distortion is expressed in
-            a .OPTDistortion file.
-        """
         self._sensor_template.camera_sensor_template.distortion_file_uri = str(Path(uri))
 
     @property
     def horz_pixel(self) -> int:
         """Horizontal pixels number corresponding to the camera resolution.
+
+        Parameters
+        ----------
+        value : int
+            The horizontal pixels number corresponding to the camera resolution.
+            By default, ``640``.
 
         Returns
         -------
@@ -2207,21 +2097,17 @@ class SensorCamera(BaseSensor):
 
     @horz_pixel.setter
     def horz_pixel(self, value: int):
-        """Horizontal pixels number corresponding to the camera resolution.
-
-        Parameters
-        ----------
-        value : int
-            The horizontal pixels number corresponding to the camera resolution.
-            By default, ``640``.
-        """
         self._sensor_template.camera_sensor_template.horz_pixel = value
 
     @property
     def vert_pixel(self) -> int:
         """Vertical pixels number corresponding to the camera resolution.
 
-        By default, ``480``.
+        Parameters
+        ----------
+        value : int
+            The vertical pixels number corresponding to the camera resolution.
+            By default, ``480``.
 
         Returns
         -------
@@ -2232,21 +2118,16 @@ class SensorCamera(BaseSensor):
 
     @vert_pixel.setter
     def vert_pixel(self, value: int):
-        """Vertical pixels number corresponding to the camera resolution.
-
-        Parameters
-        ----------
-        value : int
-            The vertical pixels number corresponding to the camera resolution.
-            By default, ``480``.
-        """
         self._sensor_template.camera_sensor_template.vert_pixel = value
 
     @property
     def width(self) -> float:
         """Width of the imager.
 
-        By default, ``5.0``.
+        Parameters
+        ----------
+        value : float
+            Sensor's width (mm). By default, ``5.0``.
 
         Returns
         -------
@@ -2257,21 +2138,16 @@ class SensorCamera(BaseSensor):
 
     @width.setter
     def width(self, value: float):
-        """Width of the imager.
-
-        Parameters
-        ----------
-        value : float
-            Sensor's width (mm).
-            By default, ``5.0``.
-        """
         self._sensor_template.camera_sensor_template.width = value
 
     @property
     def height(self) -> float:
         """Height of the imager.
 
-        By default, ``5.0``
+        Parameters
+        ----------
+        value : float
+            Sensor's height (mm). By default, ``5.0``
 
         Returns
         -------
@@ -2283,21 +2159,17 @@ class SensorCamera(BaseSensor):
 
     @height.setter
     def height(self, value: float):
-        """Height of the imager.
-
-        Parameters
-        ----------
-        value : float
-            Sensor's height (mm).
-            By default, ``5.0``.
-        """
         self._sensor_template.camera_sensor_template.height = value
 
     @property
     def axis_system(self) -> list[float]:
         """The position of the sensor.
 
-        By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+        Parameters
+        ----------
+        axis_system : list[float]
+            Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
         Returns
         -------
@@ -2308,14 +2180,6 @@ class SensorCamera(BaseSensor):
 
     @axis_system.setter
     def axis_system(self, axis_system: list[float]):
-        """Position of the sensor.
-
-        Parameters
-        ----------
-        axis_system : list[float]
-            Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
-            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
-        """
         self._sensor_instance.camera_properties.axis_system[:] = axis_system
 
     def set_mode_geometric(self) -> SensorCamera:
@@ -2814,6 +2678,11 @@ class SensorIrradiance(BaseSensor):
         Integration direction is only settable for sensor template with IlluminanceTypePlanar or
         IlluminanceTypeSemiCylindrical as illuminance_type
 
+        Parameters
+        ----------
+        value : list[float]
+            Sensor global integration direction [x,y,z]
+
         Returns
         -------
         list[float]
@@ -2823,13 +2692,6 @@ class SensorIrradiance(BaseSensor):
 
     @integration_direction.setter
     def integration_direction(self, value: list[float]):
-        """Set integration direction.
-
-        Parameters
-        ----------
-        value : list[float]
-            Sensor global integration direction [x,y,z]
-        """
         if not value:
             self._sensor_instance.irradiance_properties.ClearField("integration_direction")
         else:
@@ -2921,7 +2783,11 @@ class SensorIrradiance(BaseSensor):
     def axis_system(self) -> list[float]:
         """Position of the sensor.
 
-        By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+        Parameters
+        ----------
+        axis_system : list[float]
+            Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
         Returns
         -------
@@ -2932,14 +2798,6 @@ class SensorIrradiance(BaseSensor):
 
     @axis_system.setter
     def axis_system(self, axis_system: list[float]):
-        """Position of the sensor.
-
-        Parameters
-        ----------
-        axis_system : list[float]
-            Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
-            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
-        """
         self._sensor_instance.irradiance_properties.axis_system[:] = axis_system
 
     def set_ray_file_type_none(self) -> SensorIrradiance:
@@ -3151,19 +3009,19 @@ class SensorIrradiance(BaseSensor):
         return self._layer_type
 
     @property
-    def output_face_geometries(self) -> SensorIrradiance:
+    def output_face_geometries(self):
         """Select output faces for inverse simulation optimization.
 
         Parameters
         ----------
-        geometries : list[ansys.speos.core.geo_ref.GeoRef]
-            list of geometries that will be considered as output faces.
+        geometries : Optional[list[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]]
+            List of geometries that will be considered as output faces.
             By default, ``[]``, ie no output faces.
 
         Returns
         -------
-        ansys.speos.core.sensor.SensorIrradiance
-            Irradiance sensor.
+        list[str]
+            list of Output faces geo-path's
         """
         if self._sensor_instance.irradiance_properties.HasField("output_face_geometries"):
             return self._sensor_instance.irradiance_properties.output_face_geometries.geo_paths
@@ -3172,20 +3030,7 @@ class SensorIrradiance(BaseSensor):
     def output_face_geometries(
         self,
         geometries: Optional[list[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]] = None,
-    ) -> SensorIrradiance:
-        """Select output faces for inverse simulation optimization.
-
-        Parameters
-        ----------
-        geometries : list[ansys.speos.core.geo_ref.GeoRef]
-            List of geometries that will be considered as output faces.
-            By default, ``[]``, ie no output faces.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.SensorIrradiance
-            Irradiance sensor.
-        """
+    ):
         if not geometries:
             self._sensor_instance.irradiance_properties.ClearField("output_face_geometries")
         else:
@@ -3573,7 +3418,10 @@ class SensorRadiance(BaseSensor):
     def focal(self) -> float:
         """Focal value of the Radiance Sensor.
 
-        By default, ``250``.
+        Parameters
+        ----------
+        value : float
+            Focal (mm). By default, ``250``.
 
         Returns
         -------
@@ -3584,21 +3432,16 @@ class SensorRadiance(BaseSensor):
 
     @focal.setter
     def focal(self, value: float):
-        """Focal value.
-
-        Parameters
-        ----------
-        value : float
-            Focal (mm).
-            By default, ``250``.
-        """
         self._sensor_template.radiance_sensor_template.focal = value
 
     @property
     def integration_angle(self) -> float:
         """Integration angle.
 
-        By default, ``5``.
+        Parameters
+        ----------
+        value : float
+            integration angle (degree). By default, ``5``.
 
         Returns
         -------
@@ -3608,22 +3451,18 @@ class SensorRadiance(BaseSensor):
         return self._sensor_template.radiance_sensor_template.integration_angle
 
     @integration_angle.setter
-    def integration_angle(self, value: float) -> SensorRadiance:
-        """Integration angle.
-
-        Parameters
-        ----------
-        value : float
-            integration angle (degree)
-            By default, ``5``.
-        """
+    def integration_angle(self, value: float):
         self._sensor_template.radiance_sensor_template.integration_angle = value
 
     @property
     def axis_system(self) -> list[float]:
         """Position of the sensor.
 
-        By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+        Parameters
+        ----------
+        axis_system : list[float]
+            Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
         Returns
         -------
@@ -3634,14 +3473,6 @@ class SensorRadiance(BaseSensor):
 
     @axis_system.setter
     def axis_system(self, axis_system: list[float]):
-        """Position of the sensor.
-
-        Parameters
-        ----------
-        axis_system : list[float]
-            Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
-            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
-        """
         self._sensor_instance.radiance_properties.axis_system[:] = axis_system
 
     @property
@@ -3651,7 +3482,11 @@ class SensorRadiance(BaseSensor):
         This is optional, because the focal length is used by default.
         Choosing to set an observer point will make the focal length ignored.
 
-        By default, ``None``. None means that the focal length is used.
+        Parameters
+        ----------
+        value : list[float]
+            Position of the observer point [Ox Oy Oz].
+            By default, ``None``. None means that the focal length is used.
 
         Returns
         -------
@@ -3663,17 +3498,6 @@ class SensorRadiance(BaseSensor):
 
     @observer_point.setter
     def observer_point(self, value: list[float]):
-        """Position of the observer point.
-
-        This is optional, because the focal length is used by default.
-        Choosing to set an observer point will make the focal length ignored.
-
-        Parameters
-        ----------
-        value : list[float]
-            Position of the observer point [Ox Oy Oz].
-            By default, ``None``. None means that the focal length is used.
-        """
         if not value:
             self._sensor_instance.radiance_properties.ClearField("observer_point")
         else:
@@ -4068,6 +3892,11 @@ class Sensor3DIrradiance(BaseSensor):
         def reflection(self) -> bool:
             """Get reflection settings.
 
+            Parameters
+            ----------
+            value: bool
+                True to activate measuring reflection, False to deactivate reflection.
+
             Returns
             -------
             bool
@@ -4076,25 +3905,17 @@ class Sensor3DIrradiance(BaseSensor):
             return self._illuminance_type.reflection
 
         @reflection.setter
-        def reflection(self, value: bool) -> None:
-            """Set reflection.
-
-            Parameters
-            ----------
-            value: bool
-                True to activate measuring reflection, False to deactivate reflection.
-
-            Returns
-            -------
-            Sensor3DIrradiance.Measures
-                Measured of reflection, transmission, absorption settings.
-
-            """
+        def reflection(self, value: bool):
             self._illuminance_type.reflection = value
 
         @property
         def transmission(self) -> bool:
             """Get transmission settings.
+
+            Parameters
+            ----------
+            value: bool
+                True to activate measuring transmission, False to deactivate transmission.
 
             Returns
             -------
@@ -4104,25 +3925,17 @@ class Sensor3DIrradiance(BaseSensor):
             return self._illuminance_type.transmission
 
         @transmission.setter
-        def transmission(self, value: bool) -> None:
-            """Transmission.
-
-            Parameters
-            ----------
-            value: bool
-                True to activate measuring transmission, False to deactivate transmission.
-
-            Returns
-            -------
-            Sensor3DIrradiance.Measures
-                Measured of reflection, transmission, absorption settings.
-
-            """
+        def transmission(self, value: bool):
             self._illuminance_type.transmission = value
 
         @property
         def absorption(self) -> bool:
             """Get absorption settings.
+
+            Parameters
+            ----------
+            value: bool
+                True to activate measuring absorption, False to deactivate absorption.
 
             Returns
             -------
@@ -4132,20 +3945,7 @@ class Sensor3DIrradiance(BaseSensor):
             return self._illuminance_type.absorption
 
         @absorption.setter
-        def absorption(self, value: bool) -> None:
-            """Set absorption.
-
-            Parameters
-            ----------
-            value: bool
-                True to activate measuring absorption, False to deactivate absorption.
-
-            Returns
-            -------
-            Sensor3DIrradiance.Measures
-                Measured of reflection, transmission, absorption settings.
-
-            """
+        def absorption(self, value: bool):
             self._illuminance_type.absorption = value
 
     class Colorimetric:
@@ -4471,6 +4271,11 @@ class Sensor3DIrradiance(BaseSensor):
     def geometries(self) -> list[str]:
         """Geometry faces/bodies to be defined with 3D irradiance sensor.
 
+        Parameters
+        ----------
+        geometries : list[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]
+            List of geometries that will be considered as Sensor
+
         Returns
         -------
         list[str]
@@ -4479,16 +4284,7 @@ class Sensor3DIrradiance(BaseSensor):
         return self._sensor_instance.irradiance_3d_properties.geometries.geo_paths
 
     @geometries.setter
-    def geometries(
-        self, geometries: list[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]
-    ) -> Sensor3DIrradiance:
-        """Select geometry faces to be defined with 3D irradiance sensor.
-
-        Parameters
-        ----------
-        geometries : list[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]
-            List of geometries that will be considered as Sensor
-        """
+    def geometries(self, geometries: list[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]):
         geo_paths = []
         for gr in geometries:
             if isinstance(gr, GeoRef):
