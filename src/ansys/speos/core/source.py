@@ -2218,6 +2218,14 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
     @property
     def image_file_uri(self) -> str:
         """Location of the environment image file.
+        
+        This property gets or sets the environment image file used by the
+        ambient environment source.
+        
+        Parameters
+        ----------
+         uri : Union[str, Path]
+            format file uri (hdr, exr, png, bmp, jpg, tiff, rgb).
 
         Returns
         -------
@@ -2227,30 +2235,9 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
         return self._source_template.ambient.environment_map.image_uri
 
     @image_file_uri.setter
-    def image_file_uri(self, uri: Union[str, Path]):
-        """Location of the environment image file.
+    def image_file_uri(self, uri: Union[str, Path]) -> None:
+        self._source_template.ambient.environment_map.image_uri = str(uri)
 
-        Returns
-        -------
-        uri : str
-            format file uri (hdr, exr, png, bmp, jpg, tiff, rgb).
-        """
-        self._source_template.ambient.environment_map.image_uri = str(Path(uri))
-
-    # def image_file_uri(self, uri: str) -> SourceAmbientEnvironment:
-    #    """Set environment image file.
-    #
-    #    Parameters
-    #    ----------
-    #    uri : str
-    #        format file uri (hdr, exr, png, bmp, jpg, tiff, rgb).
-    #    Returns
-    #    -------
-    #    ansys.speos.core.source.SourceAmbientEnvironment
-    #        Environment source.
-    #    """
-    #    self._source_template.ambient.environment_map.image_uri = uri
-    #    return self
 
     @property
     def color_space(
@@ -2264,15 +2251,10 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
 
         Returns
         -------
-        Union[None, ansys.speos.core.source.SourceAmbientEnvironment.PredefinedColorSpace]
+        Union[None, ansys.speos.core.source.SourceAmbientEnvironment.PredefinedColorSpace,  ansys.speos.core.source.SourceAmbientEnvironment.UserDefinedColorSpace]
             Instance of Predefined Color Space class
         """
-        if isinstance(self._type, SourceAmbientEnvironment.PredefinedColorSpace):
-            return self._type
-        elif isinstance(self._type, SourceAmbientEnvironment.UserDefinedColorSpace):
-            return self._type
-        else:
-            return None
+        return self._type
 
     def set_predefined_color_space(self) -> SourceAmbientEnvironment.PredefinedColorSpace:
         """Set the color space to use one of the presets.
