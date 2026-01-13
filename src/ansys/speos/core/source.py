@@ -75,6 +75,306 @@ class BaseSource:
     This is a Super class, **Do not instantiate this class yourself**
     """
 
+    class UserDefinedColorSpace:
+        """Type of color space is user defined.
+
+        Parameters
+        ----------
+        userdefined_color_space : source_pb2.SourceTemplate.UserDefinedRGBSpace
+            source_pb2.SourceTemplate.UserDefinedRGBSpace
+        default_values : bool
+            Uses default values when True.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use set_userdefined_color_space() method.
+        """
+
+        class UserDefinedWhitePoint:
+            """Type of white point is user defined.
+
+            Parameters
+            ----------
+            userdefined_white_point : source_pb2.SourceTemplate.UserDefinedWhitePoint
+                source_pb2.SourceTemplate.UserDefinedWhitePoint
+            default_values : bool
+                Uses default values when True.
+            stable_ctr : bool
+                Variable to indicate if usage is inside class scope
+
+            Notes
+            -----
+            **Do not instantiate this class yourself**,
+            use set_white_point_type_user_defined() method.
+            """
+
+            def __init__(
+                self,
+                userdefined_white_point: source_pb2.SourceTemplate.UserDefinedWhitePoint,
+                default_values: bool = True,
+                stable_ctr: bool = True,
+            ):
+                if not stable_ctr:
+                    msg = "UserDefinedWhitePoint class instantiated outside of class scope"
+                    raise RuntimeError(msg)
+                self._userdefined_white_point = userdefined_white_point
+
+                if default_values:
+                    self.white_point = [0.31271, 0.32902]
+
+            @property
+            def white_point(self):
+                """White point coordinate.
+
+                This property gets or sets the white point coordinate [x, y]
+
+                Parameters
+                ----------
+                value: List[float]
+                    The white point coordinate, [0.31271, 0.32902] by default.
+
+                Returns
+                -------
+                List[float]
+                    User defined white point coordinate
+
+                """
+                return self._userdefined_white_point.white_point
+
+            @white_point.setter
+            def white_point(self, value: List[float]):
+                self._userdefined_white_point.white_point[:] = value
+
+        def __init__(
+            self,
+            userdefined_color_space: source_pb2.SourceTemplate.UserDefinedRGBSpace,
+            default_values: bool = True,
+            stable_ctr: bool = True,
+        ):
+            if not stable_ctr:
+                msg = "UserDefinedColorSpace class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._userdefined_color_space = userdefined_color_space
+            self._white_point_type = None
+
+            if default_values:
+                # Default values
+                self.set_white_point_type_d65()
+
+        @property
+        def red_spectrum(self) -> str:
+            """Get red spectrum.
+
+            Returns
+            -------
+            str
+                Red spectrum guid
+
+            """
+            return self._userdefined_color_space.red_spectrum_guid
+
+        @property
+        def green_spectrum(self):
+            """Get green spectrum.
+
+            Returns
+            -------
+            str
+                Green spectrum guid
+
+            """
+            return self._userdefined_color_space.green_spectrum_guid
+
+        @property
+        def blue_spectrum(self):
+            """Get blue spectrum.
+
+            Returns
+            -------
+            str
+                Blue spectrum guid
+
+            """
+            return self._userdefined_color_space.blue_spectrum_guid
+
+        @property
+        def white_point_type(
+            self,
+        ) -> Union[
+            None,
+            source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.D65,
+            source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.D50,
+            source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.C,
+            source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.E,
+            UserDefinedWhitePoint,
+        ]:
+            """Get the white point type.
+
+            Returns
+            -------
+            Union
+            [
+                None,
+                source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.D65,
+                source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.D50,
+                source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.C,
+                source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.E,
+                UserDefinedWhitePoint,
+            ]
+            Predefined White Point Type or User Defined White Point Type.
+
+            """
+            return self._white_point_type
+
+        def set_white_point_type_d65(self) -> None:
+            """Set white point type to D65.
+
+            Returns
+            -------
+            None
+
+            """
+            self._userdefined_color_space.pre_defined_white_point.white_point_type = (
+                source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.D65
+            )
+            self._white_point_type = (
+                source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.D65
+            )
+
+        def set_white_point_type_c(self) -> None:
+            """Set white point type to C.
+
+            Returns
+            -------
+            None
+
+            """
+            self._userdefined_color_space.pre_defined_white_point.white_point_type = (
+                source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.C
+            )
+            self._white_point_type = source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.C
+
+        def set_white_point_type_d50(self) -> None:
+            """Set white point type to D50.
+
+            Returns
+            -------
+            None
+
+            """
+            self._userdefined_color_space.pre_defined_white_point.white_point_type = (
+                source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.D50
+            )
+            self._white_point_type = (
+                source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.D50
+            )
+
+        def set_white_point_type_e(self) -> None:
+            """Set white point type to E.
+
+            Returns
+            -------
+            None
+
+            """
+            self._userdefined_color_space.pre_defined_white_point.white_point_type = (
+                source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.E
+            )
+            self._white_point_type = source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.E
+
+        def set_white_point_type_user_defined(self) -> UserDefinedWhitePoint:
+            """Set white point type to user_defined.
+
+            Returns
+            -------
+            UserDefinedWhitePoint
+                User defined white point settings.
+
+            """
+            if self._white_point_type is None and self._userdefined_color_space.HasField(
+                "user_defined_white_point"
+            ):
+                self._white_point_type = BaseSource.UserDefinedColorSpace.UserDefinedWhitePoint(
+                    userdefined_white_point=self._userdefined_color_space.user_defined_white_point,
+                    default_values=False,
+                    stable_ctr=True,
+                )
+            if not isinstance(
+                self._white_point_type, BaseSource.UserDefinedColorSpace.UserDefinedWhitePoint
+            ):
+                # if the _type is not UserDefinedWhitePoint then we create a new type.
+                self._white_point_type = BaseSource.UserDefinedColorSpace.UserDefinedWhitePoint(
+                    userdefined_white_point=self._userdefined_color_space.user_defined_white_point,
+                    stable_ctr=True,
+                )
+            elif (
+                self._white_point_type._userdefined_white_point
+                is not self._userdefined_color_space.user_defined_white_point
+            ):
+                # Happens in case of feature reset (to be sure to always modify correct data)
+                self._white_point_type._userdefined_white_point = (
+                    self._userdefined_color_space.user_defined_white_point
+                )
+            return self._white_point_type
+
+    class PredefinedColorSpace:
+        """Type of color space is predefined value.
+
+        Parameters
+        ----------
+        predefined_color_space :
+            ansys.api.speos.source.v1.source_pb2.SourceTemplate.PredefinedColorSpace
+        default_values : bool
+            Uses default values when True.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use set_predefined_color_space() method.
+        """
+
+        def __init__(
+            self,
+            predefined_color_space: source_pb2.SourceTemplate.PredefinedColorSpace,
+            default_values: bool = True,
+            stable_ctr: bool = False,
+        ) -> None:
+            if not stable_ctr:
+                msg = "PredefinedColorSpace class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._predefined_color_space = predefined_color_space
+
+            if default_values:
+                # Default values
+                self.set_color_space_srgb()
+
+        def set_color_space_srgb(self) -> SourceAmbientEnvironment.PredefinedColorSpace:
+            """Set the color space to the srgb preset.
+
+            Returns
+            -------
+            ansys.speos.core.source.SourceAmbientEnvironment.PredefinedColorSpace
+            """
+            self._predefined_color_space.color_space_type = (
+                source_pb2.SourceTemplate.PredefinedColorSpace.sRGB
+            )
+            return self
+
+        def set_color_space_adobergb(self) -> SourceAmbientEnvironment.PredefinedColorSpace:
+            """Set the color space to the Adobe RGB preset.
+
+            Returns
+            -------
+            ansys.speos.core.source.SourceAmbientEnvironment.PredefinedColorSpace
+            """
+            self._predefined_color_space.color_space_type = (
+                source_pb2.SourceTemplate.PredefinedColorSpace.AdobeRGB
+            )
+            return self
+
     def __init__(
         self,
         project: project.Project,
@@ -1973,62 +2273,6 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
         Uses default values when True.
     """
 
-    class PredefinedColorSpace:
-        """Type of color space is predefined value.
-
-        Parameters
-        ----------
-        predefined_color_space :
-            ansys.api.speos.source.v1.source_pb2.SourceTemplate.PredefinedColorSpace
-        default_values : bool
-            Uses default values when True.
-        stable_ctr : bool
-            Variable to indicate if usage is inside class scope
-
-        Notes
-        -----
-        **Do not instantiate this class yourself**, use set_predefined_color_space() method.
-        """
-
-        def __init__(
-            self,
-            predefined_color_space: source_pb2.SourceTemplate.PredefinedColorSpace,
-            apply_default: bool = True,
-            stable_ctr: bool = False,
-        ) -> None:
-            if not stable_ctr:
-                msg = "PredefinedColorSpace class instantiated outside of class scope"
-                raise RuntimeError(msg)
-            self._predefined_color_space = predefined_color_space
-
-            if apply_default:
-                # Default values
-                self.set_color_space_srgb()
-
-        def set_color_space_srgb(self) -> SourceAmbientEnvironment.PredefinedColorSpace:
-            """Set the color space to the srgb preset.
-
-            Returns
-            -------
-            ansys.speos.core.source.SourceAmbientEnvironment.PredefinedColorSpace
-            """
-            self._predefined_color_space.color_space_type = (
-                source_pb2.SourceTemplate.PredefinedColorSpace.sRGB
-            )
-            return self
-
-        def set_color_space_adobergb(self) -> SourceAmbientEnvironment.PredefinedColorSpace:
-            """Set the color space to the Adobe RGB preset.
-
-            Returns
-            -------
-            ansys.speos.core.source.SourceAmbientEnvironment.PredefinedColorSpace
-            """
-            self._predefined_color_space.color_space_type = (
-                source_pb2.SourceTemplate.PredefinedColorSpace.AdobeRGB
-            )
-            return self
-
     # source_type = "SourceAmbientEnvironment"
     def __init__(
         self,
@@ -2222,6 +2466,39 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
             ]
             Instance of Predefined Color Space class
         """
+        return self._type
+
+    def set_userdefined_color_space(self) -> SourceAmbientEnvironment.UserDefinedColorSpace:
+        """Set the color space to user-defined.
+
+        Returns
+        -------
+        SourceAmbientEnvironment.UserDefinedColorSpace
+            Settings for user defined color space.
+
+        """
+        if self._type is None and self._source_template.ambient.environment_map.HasField(
+            "user_defined_rgb_space"
+        ):
+            self._type = SourceAmbientEnvironment.UserDefinedColorSpace(
+                userdefined_color_space=self._source_template.ambient.environment_map.user_defined_rgb_space,
+                default_values=False,
+                stable_ctr=True,
+            )
+        if not isinstance(self._type, SourceAmbientEnvironment.UserDefinedColorSpace):
+            # if the _type is not UserDefinedColorSpace then we create a new type.
+            self._type = SourceAmbientEnvironment.UserDefinedColorSpace(
+                userdefined_color_space=self._source_template.ambient.environment_map.user_defined_rgb_space,
+                stable_ctr=True,
+            )
+        elif (
+            self._type._userdefined_color_space
+            is not self._source_template.ambient.environment_map.user_defined_rgb_space
+        ):
+            # Happens in case of feature reset (to be sure to always modify correct data)
+            self._type._userdefined_color_space = (
+                self._source_template.ambient.environment_map.user_defined_rgb_space
+            )
         return self._type
 
     def set_predefined_color_space(self) -> SourceAmbientEnvironment.PredefinedColorSpace:
