@@ -1,0 +1,341 @@
+
+
+
+
+
+
+:class:`FaceStub`
+=================
+
+
+.. py:class:: ansys.speos.core.kernel.face.FaceStub(channel)
+
+   Bases: :py:obj:`ansys.speos.core.kernel.crud.CrudStub`
+
+
+   
+   Database interactions for face.
+
+
+   :Parameters:
+
+       **channel** : :obj:`grpc.Channel`
+           Channel to use for the stub.
+
+
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Examples
+
+   The best way to get a FaceStub is to retrieve it from SpeosClient via faces() method.
+   Like in the following example:
+
+   >>> from ansys.speos.core.speos import Speos
+   >>> speos = Speos(host="localhost", port=50098)
+   >>> face_db = speos.client.faces()
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: FaceStub
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~create_batch`
+            - Create new entries.
+          * - :py:attr:`~create`
+            - Create a new entry.
+          * - :py:attr:`~read_batch`
+            - Get existing entries.
+          * - :py:attr:`~read`
+            - Get an existing entry.
+          * - :py:attr:`~update_batch`
+            - Change existing entries.
+          * - :py:attr:`~update`
+            - Change an existing entry.
+          * - :py:attr:`~delete`
+            - Remove an existing entry.
+          * - :py:attr:`~list`
+            - List existing entries.
+
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.kernel.face import FaceStub
+
+
+
+Method detail
+-------------
+
+.. py:method:: create_batch(message_list)
+
+   
+   Create new entries.
+
+
+   :Parameters:
+
+       **message_list** : :obj:`List`\[:obj:`face.Face`]
+           List of datamodels for the new entries.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:obj:`ansys.speos.core.kernel.face.FaceLink`]
+           List pf link objects created.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: create(message)
+
+   
+   Create a new entry.
+
+
+   :Parameters:
+
+       **message** : :obj:`face.Face`
+           Datamodel for the new entry.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.kernel.face.FaceLink`
+           Link object created.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: read_batch(refs)
+
+   
+   Get existing entries.
+
+
+   :Parameters:
+
+       **refs** : :obj:`List`\[:obj:`ansys.speos.core.kernel.face.FaceLink`]
+           List of link objects to read.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:obj:`face.Face`]
+           Datamodels of the entries.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: read(ref)
+
+   
+   Get an existing entry.
+
+
+   :Parameters:
+
+       **ref** : :obj:`ansys.speos.core.kernel.face.FaceLink`
+           Link object to read.
+
+
+
+   :Returns:
+
+       :obj:`face.Face`
+           Datamodel of the entry.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: update_batch(refs, data)
+
+   
+   Change existing entries.
+
+
+   :Parameters:
+
+       **ref** : :obj:`List`\[:obj:`ansys.speos.core.kernel.face.FaceLink`]
+           Link objects to update.
+
+       **data** : :obj:`List`\[:obj:`face.Face`]
+           New datamodels for the entries.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: update(ref, data)
+
+   
+   Change an existing entry.
+
+
+   :Parameters:
+
+       **ref** : :obj:`ansys.speos.core.kernel.face.FaceLink`
+           Link object to update.
+
+       **data** : :obj:`face.Face`
+           New datamodel for the entry.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: delete(ref)
+
+   
+   Remove an existing entry.
+
+
+   :Parameters:
+
+       **ref** : :obj:`ansys.speos.core.kernel.face.FaceLink`
+           Link object to delete.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: list()
+
+   
+   List existing entries.
+
+
+
+
+
+   :Returns:
+
+       :obj:`List`\[:obj:`ansys.speos.core.kernel.face.FaceLink`]
+           Link objects.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

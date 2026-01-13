@@ -1,0 +1,119 @@
+
+
+
+
+
+
+:class:`Adaptive`
+=================
+
+
+.. py:class:: ansys.speos.core.simulation.BaseSimulation.SourceSampling.Adaptive(adaptive, default_values = True, stable_ctr = False)
+
+   
+   Adaptive sampling mode.
+
+
+   :Parameters:
+
+       **adaptive** : :obj:`simulation_template_pb2.SourceSamplingAdaptive`
+           Adaptive settings to complete.
+
+       **default_values: bool**
+           True to use the default adaptive file uri values as "".
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: Adaptive
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~adaptive_uri`
+            - File uri for adaptive sampling.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.simulation.BaseSimulation.SourceSampling import Adaptive
+
+Property detail
+---------------
+
+.. py:property:: adaptive_uri
+   :type: str
+
+
+   
+   File uri for adaptive sampling.
+
+   This property gets or sets the file uri used for defining the
+   source sampling.
+
+   :Parameters:
+
+       **uri: Union[Path | str]**
+           Adaptive sampling file uri to assign.
+
+
+
+   :Returns:
+
+       :class:`python:str`
+           Adaptive sampling file uri.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+
