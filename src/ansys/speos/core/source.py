@@ -2064,38 +2064,38 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
 
     @property
     def zenith_direction(self) -> List[float]:
-        """Get zenith direction of the natural light source.
+        """Zenith direction of the environment light source.
+
+        This property get and set the zenith direction of the environment source.
+
+        Parameters
+        ----------
+        direction: Optional[List[float]]
+            direction defines the zenith direction of the environment light source.
 
         Returns
         -------
         List[float]
-            direction defines the zenith direction of the natural light.
+            direction defines the zenith direction of the environment light source.
 
         """
         return self._source_instance.ambient_properties.zenith_direction
 
     @zenith_direction.setter
-    def zenith_direction(self, direction: Optional[List[float]] = None) -> None:
-        """Set zenith direction of the natural light source.
-
-            default value to be [0, 0, 1]
-
-        Parameters
-        ----------
-        direction: Optional[List[float]]
-            direction defines the zenith direction of the natural light.
-
-        Returns
-        -------
-        None
-
-        """
+    def zenith_direction(self, direction: Optional[List[float]]) -> None:
         self._source_instance.ambient_properties.zenith_direction[:] = direction
 
     @property
     def reverse_zenith_direction(self) -> bool:
-        """
-        Get whether reverse zenith direction of the natural light source.
+        """Reverse zenith direction of the environment light source.
+
+        This property get and set if reverse zenith direction is True.
+
+
+        Parameters
+        ----------
+        value: bool
+            True to reverse zenith direction, False otherwise.
 
         Returns
         -------
@@ -2107,25 +2107,18 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
 
     @reverse_zenith_direction.setter
     def reverse_zenith_direction(self, value: bool) -> None:
-        """Set reverse zenith direction of the environment source.
-
-            default value to be False.
-
-        Parameters
-        ----------
-        value: bool
-            True to reverse zenith direction, False otherwise.
-
-        Returns
-        -------
-        None
-
-        """
         self._source_instance.ambient_properties.reverse_zenith = value
 
     @property
     def north_direction(self) -> List[float]:
-        """Get north direction of the environment source.
+        """North direction of the environment light source.
+
+        This property get and set the north direction of the environment source.
+
+        Parameters
+        ----------
+        direction: List[float]
+            direction defines the north direction, default value to be [0, 1, 0].
 
         Returns
         -------
@@ -2137,27 +2130,20 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
 
     @north_direction.setter
     def north_direction(self, direction: List[float]) -> None:
-        """Set north direction of the environment source.
-
-            default value to be [0, 1, 0].
-
-        Parameters
-        ----------
-        direction: List[float]
-            direction defines the north direction of the environment source.
-
-        Returns
-        -------
-        None
-
-        """
         self._source_instance.ambient_properties.environment_map_properties.north_direction[:] = (
             direction
         )
 
     @property
     def reverse_north_direction(self) -> bool:
-        """Get whether reverse north direction of the environment source.
+        """Reverse north direction of the environment light source.
+
+        This property get and set if reverse north direction is True.
+
+        Parameters
+        ----------
+        value: bool
+            True to reverse north direction, False otherwise.
 
         Returns
         -------
@@ -2169,25 +2155,18 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
 
     @reverse_north_direction.setter
     def reverse_north_direction(self, value: bool) -> None:
-        """Set reverse north direction of the environment source.
-
-            default value to be False.
-
-        Parameters
-        ----------
-        value: bool
-            True to reverse north direction, False otherwise.
-
-        Returns
-        -------
-        None
-
-        """
         self._source_instance.ambient_properties.environment_map_properties.reverse_north = value
 
     @property
     def luminance(self) -> float:
-        """Get luminance of the ambient light source.
+        """Luminance of the environment light source.
+
+        This property get and set the Luminance value of the source.
+
+        Parameters
+        ----------
+        value: float
+            set value of Luminance (cd/m^2).
 
         Returns
         -------
@@ -2199,20 +2178,6 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
 
     @luminance.setter
     def luminance(self, value: float) -> None:
-        """Set lumimance of the environment light source.
-
-            default value to be 1000 cd/m^2.
-
-        Parameters
-        ----------
-        value: float
-            set value of Luminance (cd/m^2).
-
-        Returns
-        -------
-        None
-
-        """
         self._source_template.ambient.environment_map.luminance = value
 
     @property
@@ -2250,7 +2215,11 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
 
         Returns
         -------
-        Union[None, ansys.speos.core.source.SourceAmbientEnvironment.PredefinedColorSpace,  ansys.speos.core.source.SourceAmbientEnvironment.UserDefinedColorSpace]
+        Union[
+            None,
+            ansys.speos.core.source.SourceAmbientEnvironment.PredefinedColorSpace,
+            ansys.speos.core.source.SourceAmbientEnvironment.UserDefinedColorSpace
+            ]
             Instance of Predefined Color Space class
         """
         return self._type
@@ -2261,15 +2230,28 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
         Returns
         -------
         ansys.speos.core.source.SourceAmbientEnvironment.PredefinedColorSpace
-            Environment source color space subclass
+            Environment source color space for sRGB or AdobeRGB
         """
-        # self._source_template.ambient.environment_map.predefined_color_space.SetInParent()
-        if not isinstance(self._type, SourceAmbientEnvironment.PredefinedColorSpace):
-            # if the _type is not Photometric then we create a new type.
+        if self._type is None and self._source_template.ambient.environment_map.HasField(
+            "predefined_color_space"
+        ):
             self._type = SourceAmbientEnvironment.PredefinedColorSpace(
                 predefined_color_space=self._source_template.ambient.environment_map.predefined_color_space,
-                apply_default=True,
+                default_values=False,
                 stable_ctr=True,
             )
-
+        if not isinstance(self._type, SourceAmbientEnvironment.PredefinedColorSpace):
+            # if the _type is not PredefinedColorSpace then we create a new type.
+            self._type = SourceAmbientEnvironment.PredefinedColorSpace(
+                predefined_color_space=self._source_template.ambient.environment_map.predefined_color_space,
+                stable_ctr=True,
+            )
+        elif (
+            self._type._predefined_color_space
+            is not self._source_template.ambient.environment_map.predefined_color_space
+        ):
+            # Happens in case of feature reset (to be sure to always modify correct data)
+            self._type._predefined_color_space = (
+                self._source_template.ambient.environment_map.predefined_color_space
+            )
         return self._type
