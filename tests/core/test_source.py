@@ -599,6 +599,7 @@ def test_create_environment_source(speos: Speos):
     source1.delete()
 
     source2 = p.create_source(name="Environment.2", feature_type=SourceAmbientEnvironment)
+    source2.image_file_uri = image_file_uri
     assert source2._source_instance.HasField("ambient_properties")
     assert source2._source_instance.ambient_properties.zenith_direction == [
         0,
