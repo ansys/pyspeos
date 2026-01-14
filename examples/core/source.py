@@ -272,7 +272,7 @@ source6.set_predefined_color_space().set_color_space_adobergb()
 source6.set_predefined_color_space().set_color_space_srgb()
 print(source6.color_space)
 source6.set_userdefined_color_space().set_white_point_type_d50()
-print(source6.source6.set_userdefined_color_space().white_point_type)
+print(source6.set_userdefined_color_space().white_point_type)
 source6.set_userdefined_color_space().red_spectrum = str(
     assets_data_path / "LG_50M_Colorimetric_short.sv5" / "Red Spectrum.spectrum"
 )
@@ -282,8 +282,6 @@ source6.set_userdefined_color_space().blue_spectrum = str(
 source6.set_userdefined_color_space().green_spectrum = str(
     assets_data_path / "LG_50M_Colorimetric_short.sv5" / "Blue Spectrum.spectrum"
 )
-print(source6)
-
 source6.commit()
 print(source6)
 # -
