@@ -614,6 +614,34 @@ def test_create_environment_source(speos: Speos):
         0,
     ]
 
+    source2.set_predefined_color_space().set_color_space_adobergb()
+    assert source2.color_space is not None
+    assert isinstance(source2.color_space, SourceAmbientEnvironment.PredefinedColorSpace)
+    tmp_environment_property = source2._source_template.ambient.environment_map
+    assert tmp_environment_property.predefined_color_space.color_space_type == 1
+
+    source2.set_predefined_color_space().set_color_space_srgb()
+    assert tmp_environment_property.predefined_color_space.color_space_type == 0
+
+    source2.set_userdefined_color_space().set_white_point_type_d50()
+    assert (
+        tmp_environment_property.user_defined_rgb_space.pre_defined_white_point.white_point_type
+        == 1
+    )
+    assert isinstance(source2.set_userdefined_color_space().red_spectrum, dict)
+    assert isinstance(source2.set_userdefined_color_space().green_spectrum, dict)
+    assert isinstance(source2.set_userdefined_color_space().blue_spectrum, dict)
+    source2.set_userdefined_color_space().set_white_point_type_d65()
+    assert (
+        tmp_environment_property.user_defined_rgb_space.pre_defined_white_point.white_point_type
+        == 2
+    )
+    source2.set_userdefined_color_space().set_white_point_type_user_defined()
+    assert (
+        source2.set_userdefined_color_space().set_white_point_type_user_defined().white_point
+        == [0.31271, 0.32902]
+    )
+
     source2.delete()
 
 
