@@ -262,6 +262,8 @@ source5.delete()
 
 # +
 source6 = p.create_source(name="Environment.1", feature_type=SourceAmbientEnvironment)
+image_file_uri = str(assets_data_path / "stars.exr")
+source6.image_file_uri = image_file_uri
 print(source6.zenith_direction)  # default zenith direction
 print(source6.north_direction)  # default north direction
 source6.reverse_north_direction = True
@@ -271,27 +273,23 @@ source6.set_predefined_color_space().set_color_space_srgb()
 print(source6.color_space)
 source6.set_userdefined_color_space().set_white_point_type_d50()
 print(source6.source6.set_userdefined_color_space().white_point_type)
+source6.set_userdefined_color_space().red_spectrum = str(
+    assets_data_path / "LG_50M_Colorimetric_short.sv5" / "Red Spectrum.spectrum"
+)
+source6.set_userdefined_color_space().blue_spectrum = str(
+    assets_data_path / "LG_50M_Colorimetric_short.sv5" / "Blue Spectrum.spectrum"
+)
+source6.set_userdefined_color_space().green_spectrum = str(
+    assets_data_path / "LG_50M_Colorimetric_short.sv5" / "Blue Spectrum.spectrum"
+)
 print(source6)
 
-source5.commit()
-print(source5)
+source6.commit()
+print(source6)
 # -
 
 # +
-source5.set_sun_automatic().year = 2026
-source5.set_sun_automatic().month = 12
-source5.set_sun_automatic().day = 31
-source5.set_sun_automatic().hour = 12
-source5.set_sun_automatic().minute = 23
-source5.set_sun_automatic().longitude = 10
-source5.set_sun_automatic().latitude = 45
-source5.set_sun_automatic().time_zone = "CST"
-source5.commit()
-print(source5)
-# -
-
-# +
-source5.delete()
+source6.delete()
 # -
 
 # When creating sources, this creates some intermediate objects (spectrums, intensity templates).
