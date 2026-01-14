@@ -149,55 +149,144 @@ class BaseSource:
 
         def __init__(
             self,
+            project: project.Project,
             userdefined_color_space: source_pb2.SourceTemplate.UserDefinedRGBSpace,
             default_values: bool = True,
             stable_ctr: bool = True,
         ):
+            self._project = project
             if not stable_ctr:
                 msg = "UserDefinedColorSpace class instantiated outside of class scope"
                 raise RuntimeError(msg)
             self._userdefined_color_space = userdefined_color_space
             self._white_point_type = None
 
+            self._red_spectrum = BaseSource._Spectrum(
+                speos_client=self._project.client,
+                name="",
+                message_to_complete=self._userdefined_color_space,
+                field_name_to_complete="red_spectrum_guid",
+                spectrum_guid=self._userdefined_color_space.red_spectrum_guid,
+            )
+
+            self._green_spectrum = BaseSource._Spectrum(
+                speos_client=self._project.client,
+                name="",
+                message_to_complete=self._userdefined_color_space,
+                field_name_to_complete="green_spectrum_guid",
+                spectrum_guid=self._userdefined_color_space.green_spectrum_guid,
+            )
+
+            self._blue_spectrum = BaseSource._Spectrum(
+                speos_client=self._project.client,
+                name="",
+                message_to_complete=self._userdefined_color_space,
+                field_name_to_complete="blue_spectrum_guid",
+                spectrum_guid=self._userdefined_color_space.blue_spectrum_guid,
+            )
+
             if default_values:
                 # Default values
                 self.set_white_point_type_d65()
 
         @property
-        def red_spectrum(self) -> str:
+        def red_spectrum(self) -> dict:
             """Get red spectrum.
 
             Returns
             -------
-            str
-                Red spectrum guid
+            dict
+                Red spectrum dictionary
 
             """
-            return self._userdefined_color_space.red_spectrum_guid
+            return self._red_spectrum._spectrum._to_dict()
+
+        @red_spectrum.setter
+        def red_spectrum(self, red_spectrum_file_uri: str) -> None:
+            """Set red spectrum.
+
+            Parameters
+            ----------
+            red_spectrum_file_uri: str
+                Red spectrum file uri.
+
+            Returns
+            -------
+            None
+            """
+            if self._red_spectrum._message_to_complete is not self._userdefined_color_space:
+                # Happens in case of feature reset (to be sure to always modify correct data)
+                self._red_spectrum._message_to_complete = self._userdefined_color_space
+
+            # name for the spectrum chosen: <file_uri>.Spectrum
+            self._red_spectrum._spectrum._spectrum.name = Path(red_spectrum_file_uri).name
+            self._red_spectrum._spectrum.set_library(file_uri=red_spectrum_file_uri)
 
         @property
-        def green_spectrum(self):
+        def green_spectrum(self) -> dict:
             """Get green spectrum.
 
             Returns
             -------
-            str
-                Green spectrum guid
+            dict
+                Green spectrum dictionary
 
             """
-            return self._userdefined_color_space.green_spectrum_guid
+            return self._green_spectrum._spectrum._to_dict()
+
+        @green_spectrum.setter
+        def green_spectrum(self, green_spectrum_file_uri: str) -> None:
+            """Set green spectrum.
+
+            Parameters
+            ----------
+            green_spectrum_file_uri: str
+                Green spectrum file uri.
+
+            Returns
+            -------
+            None
+            """
+            if self._green_spectrum._message_to_complete is not self._userdefined_color_space:
+                # Happens in case of feature reset (to be sure to always modify correct data)
+                self._green_spectrum._message_to_complete = self._userdefined_color_space
+
+            # name for the spectrum chosen: <file_uri>.Spectrum
+            self._green_spectrum._spectrum._spectrum.name = Path(green_spectrum_file_uri).name
+            self._green_spectrum._spectrum.set_library(file_uri=green_spectrum_file_uri)
 
         @property
-        def blue_spectrum(self):
+        def blue_spectrum(self) -> dict:
             """Get blue spectrum.
 
             Returns
             -------
-            str
-                Blue spectrum guid
+            dict
+                Blue spectrum dictionary
 
             """
-            return self._userdefined_color_space.blue_spectrum_guid
+            return self._blue_spectrum._spectrum._to_dict()
+
+        @blue_spectrum.setter
+        def blue_spectrum(self, blue_spectrum_file_uri: str) -> None:
+            """Set blue spectrum.
+
+            Parameters
+            ----------
+            blue_spectrum_file_uri: str
+                Blue spectrum file uri.
+
+            Returns
+            -------
+            None
+            """
+            if self._blue_spectrum._message_to_complete is not self._userdefined_color_space:
+                # Happens in case of feature reset (to be sure to always modify correct data)
+                self._blue_spectrum._message_to_complete = self._userdefined_color_space
+
+            # name for the spectrum chosen: <file_uri>.Spectrum
+            self._blue_spectrum._spectrum._spectrum.name = Path(blue_spectrum_file_uri).name
+            self._blue_spectrum._spectrum.set_library(file_uri=blue_spectrum_file_uri)
 
         @property
         def white_point_type(
@@ -418,9 +507,11 @@ class BaseSource:
                 ProtoSourceTemplate.Surface,
                 ProtoSourceTemplate.Luminaire,
             ],
+            field_name_to_complete="",
             spectrum_guid: str = "",
         ) -> None:
             self._message_to_complete = message_to_complete
+            self._field_name_to_complete = field_name_to_complete
             if spectrum_guid != "":
                 self._spectrum = Spectrum(
                     speos_client=speos_client,
@@ -445,7 +536,14 @@ class BaseSource:
         def _commit(self) -> BaseSource._Spectrum:
             if not self._no_spectrum_local:
                 self._spectrum.commit()
-                self._message_to_complete.spectrum_guid = self._spectrum.spectrum_link.key
+                if self._field_name_to_complete == "":
+                    self._message_to_complete.spectrum_guid = self._spectrum.spectrum_link.key
+                elif self._field_name_to_complete == "red_spectrum_guid":
+                    self._message_to_complete.red_spectrum_guid = self._spectrum.spectrum_link.key
+                elif self._field_name_to_complete == "green_spectrum_guid":
+                    self._message_to_complete.green_spectrum_guid = self._spectrum.spectrum_link.key
+                elif self._field_name_to_complete == "blue_spectrum_guid":
+                    self._message_to_complete.blue_spectrum_guid = self._spectrum.spectrum_link.key
                 self._no_spectrum = self._no_spectrum_local
             return self
 
@@ -2478,6 +2576,7 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
             "user_defined_rgb_space"
         ):
             self._type = SourceAmbientEnvironment.UserDefinedColorSpace(
+                project=self._project,
                 userdefined_color_space=self._source_template.ambient.environment_map.user_defined_rgb_space,
                 default_values=False,
                 stable_ctr=True,
@@ -2485,6 +2584,7 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
         if not isinstance(self._type, SourceAmbientEnvironment.UserDefinedColorSpace):
             # if the _type is not UserDefinedColorSpace then we create a new type.
             self._type = SourceAmbientEnvironment.UserDefinedColorSpace(
+                project=self._project,
                 userdefined_color_space=self._source_template.ambient.environment_map.user_defined_rgb_space,
                 stable_ctr=True,
             )
@@ -2529,3 +2629,47 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
                 self._source_template.ambient.environment_map.predefined_color_space
             )
         return self._type
+
+    def commit(self) -> SourceAmbientEnvironment:
+        """Save feature: send the local data to the speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceAmbientEnvironment
+            Ambient environment Source feature.
+        """
+        if isinstance(self._type, BaseSource.UserDefinedColorSpace):
+            self._type._red_spectrum._commit()
+            self._type._green_spectrum._commit()
+            self._type._blue_spectrum._commit()
+        super().commit()
+
+    def reset(self) -> SourceAmbientEnvironment:
+        """Reset feature: override local data by the one from the speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceAmbientEnvironment
+            Ambient environment Source feature.
+        """
+        if isinstance(self._type, BaseSource.UserDefinedColorSpace):
+            self._type._red_spectrum._reset()
+            self._type._green_spectrum._reset()
+            self._type._blue_spectrum._reset()
+        super().reset()
+
+    def delete(self) -> SourceAmbientEnvironment:
+        """Delete feature: delete data from the speos server database.
+
+        The local data are still available
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceAmbientEnvironment
+            Ambient environment Source feature.
+        """
+        if isinstance(self._type, BaseSource.UserDefinedColorSpace):
+            self._type._red_spectrum._delete()
+            self._type._green_spectrum._delete()
+            self._type._blue_spectrum._delete()
+        super().delete()
