@@ -16,6 +16,7 @@ from ansys.speos.core.kernel.client import (
     default_docker_channel,
 )
 from ansys.speos.core.source import (
+    SourceAmbientEnvironment,
     SourceAmbientNaturalLight,
     SourceLuminaire,
     SourceRayFile,
@@ -235,6 +236,42 @@ print(source5.zenith_direction)  # default zenith direction
 print(source5.north_direction)  # default north direction
 source5.reverse_north_direction = True
 print(source5)
+
+source5.commit()
+print(source5)
+# -
+
+# +
+source5.set_sun_automatic().year = 2026
+source5.set_sun_automatic().month = 12
+source5.set_sun_automatic().day = 31
+source5.set_sun_automatic().hour = 12
+source5.set_sun_automatic().minute = 23
+source5.set_sun_automatic().longitude = 10
+source5.set_sun_automatic().latitude = 45
+source5.set_sun_automatic().time_zone = "CST"
+source5.commit()
+print(source5)
+# -
+
+# +
+source5.delete()
+# -
+
+# ### Ambient environment light source
+
+# +
+source6 = p.create_source(name="Environment.1", feature_type=SourceAmbientEnvironment)
+print(source6.zenith_direction)  # default zenith direction
+print(source6.north_direction)  # default north direction
+source6.reverse_north_direction = True
+print(source6.luminance)  # default luminance value
+source6.set_predefined_color_space().set_color_space_adobergb()
+source6.set_predefined_color_space().set_color_space_srgb()
+print(source6.color_space)
+source6.set_userdefined_color_space().set_white_point_type_d50()
+print(source6.source6.set_userdefined_color_space().white_point_type)
+print(source6)
 
 source5.commit()
 print(source5)
