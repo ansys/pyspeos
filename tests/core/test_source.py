@@ -633,13 +633,13 @@ def test_create_environment_source(speos: Speos):
     assert isinstance(source2.set_userdefined_color_space().green_spectrum, dict)
     assert isinstance(source2.set_userdefined_color_space().blue_spectrum, dict)
     source2.set_userdefined_color_space().red_spectrum = str(
-        test_path / "LG_50M_Colorimetric_short.sv5" / "Red Spectrum.spectrum"
+        Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "Red Spectrum.spectrum"
     )
     source2.set_userdefined_color_space().blue_spectrum = str(
-        test_path / "LG_50M_Colorimetric_short.sv5" / "Blue Spectrum.spectrum"
+        Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "Blue Spectrum.spectrum"
     )
     source2.set_userdefined_color_space().green_spectrum = str(
-        test_path / "LG_50M_Colorimetric_short.sv5" / "Blue Spectrum.spectrum"
+        Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "Blue Spectrum.spectrum"
     )
     source2.commit()
     source2.set_userdefined_color_space().set_white_point_type_d65()
