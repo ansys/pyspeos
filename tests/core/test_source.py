@@ -567,6 +567,7 @@ def test_create_environment_source(speos: Speos):
     assert source1.reverse_zenith_direction is False
     assert source1.north_direction == [0, 1, 0]
     assert source1.reverse_north_direction is False
+    assert source1.luminance == 1000
 
     image_file_uri = str(Path(test_path) / "stars.exr")
     source1.image_file_uri = image_file_uri
@@ -632,10 +633,13 @@ def test_create_environment_source(speos: Speos):
     assert isinstance(source2.set_userdefined_color_space().green_spectrum, dict)
     assert isinstance(source2.set_userdefined_color_space().blue_spectrum, dict)
     source2.set_userdefined_color_space().set_white_point_type_d65()
+    assert source2.set_userdefined_color_space().white_point_type is not None
     assert (
         tmp_environment_property.user_defined_rgb_space.pre_defined_white_point.white_point_type
         == 2
     )
+    source2.set_userdefined_color_space().set_white_point_type_c()
+    source2.set_userdefined_color_space().set_white_point_type_e()
     source2.set_userdefined_color_space().set_white_point_type_user_defined()
     assert (
         source2.set_userdefined_color_space().set_white_point_type_user_defined().white_point
