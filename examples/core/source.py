@@ -287,6 +287,22 @@ print(source6)
 # -
 
 # +
+ground_plane = (
+    p.create_ground_plane()
+)  #  Only usable when there is at least one Ambient Environment Source
+ground_plane.ground_zenith = [0, 0, 1]
+ground_plane.ground_origin = [10, 0, 0]
+ground_plane.ground_height = 1000
+ground_plane.commit()
+print(p)
+
+ground_plane2 = p.create_ground_plane()
+ground_plane2.ground_height = 2000
+ground_plane2.commit()
+print(p)  # only 1 ground plane is taken per project, the second overwrites the previous one.
+# -
+
+# +
 source6.delete()
 # -
 
