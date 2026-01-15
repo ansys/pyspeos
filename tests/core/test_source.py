@@ -658,6 +658,32 @@ def test_create_environment_source(speos: Speos):
     )
     source2.reset()
 
+    gp = p.create_ground_plane()
+    assert gp._ground.zenith_direction == [0, 0, 1]
+    assert gp._ground.ground_origin == [0, 0, 0]
+    assert gp._ground.ground_height == 1000
+    assert gp.ground_zenith == [0, 0, 1]
+    assert gp.ground_origin == [0, 0, 0]
+    assert gp.ground_height == 1000
+    gp.commit()
+    assert p.scene_link.get().HasField("ground")
+    assert p.scene_link.get().ground.ground_height == 1000
+    gp2 = p.create_ground_plane()
+    gp2.ground_height = 2000
+    gp2.commit()
+    assert (
+        p.scene_link.get().ground.ground_height == 2000
+    )  # overwrite the previous ground plane value
+
+    gp2.ground_origin = [50, 50, 50]
+    assert gp2._ground.ground_origin == [50, 50, 50]
+    assert gp2.ground_origin == [50, 50, 50]
+    gp2.reset()
+    assert gp2.ground_origin == [0, 0, 0]  # expected [2, 1, 2]
+    assert gp2._ground.ground_origin == [0, 0, 0]  # expected [2, 1, 2]
+
+    gp2.delete()
+
     source2.delete()
 
 

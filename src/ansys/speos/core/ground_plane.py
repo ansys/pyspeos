@@ -49,6 +49,9 @@ class GroundPlane:
         if ground is None:
             # Create local ground
             self._ground = ProtoScene.GroundPlane()
+            self.ground_origin = [0.0, 0.0, 0.0]
+            self.ground_zenith = [0.0, 0.0, 1.0]
+            self.ground_height = 1000.0
             self._committed = False
         else:
             # Retrieve ground from input
@@ -57,7 +60,15 @@ class GroundPlane:
 
     @property
     def ground_origin(self) -> List[float]:
-        """Get ground origin.
+        """Ground origin.
+
+        This property gets and sets the origin of the ground plane.
+        Default as [0, 0, 0]
+
+        Parameters
+        ----------
+        value: List[float]
+            Ground origin.
 
         Returns
         -------
@@ -68,21 +79,53 @@ class GroundPlane:
 
     @ground_origin.setter
     def ground_origin(self, value: List[float]) -> None:
-        """Set ground origin.
+        self._ground.ground_origin[:] = value
+
+    @property
+    def ground_zenith(self) -> List[float]:
+        """Zenith direction.
+
+        This property gets and sets the zenith direction of the ground plane.
+        Default as [0, 0, 1]
 
         Parameters
         ----------
         value: List[float]
-            Ground origin.
+            Zenith direction.
 
         Returns
         -------
-        None
-
+        List[float]
+            Zenith direction.
         """
-        self._ground.ground_origin[:] = value
-        self._ground.ground_height = 20
-        self._ground.zenith_direction[:] = [1.0, 0.0, 0.0]
+        return self._ground.zenith_direction
+
+    @ground_zenith.setter
+    def ground_zenith(self, value: List[float]) -> None:
+        self._ground.zenith_direction[:] = value
+
+    @property
+    def ground_height(self) -> float:
+        """Ground height.
+
+        This property gets and sets the height of the ground plane.
+        Default as 1000.0
+
+        Parameters
+        ----------
+        value: float
+            Ground height.
+
+        Returns
+        -------
+        float
+            Ground height.
+        """
+        return self._ground.ground_height
+
+    @ground_height.setter
+    def ground_height(self, value: float) -> None:
+        self._ground.ground_height = value
 
     def _to_dict(self) -> dict:
         out_dict = {}
