@@ -303,6 +303,7 @@ print(p)  # only 1 ground plane is taken per project, the second overwrites the 
 # -
 
 # +
+ground_plane.delete()
 source6.delete()
 # -
 
