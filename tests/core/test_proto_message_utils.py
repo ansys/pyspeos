@@ -455,5 +455,6 @@ def test_flatten_dict(speos: Speos):
         "materials",
         "metadata",
         "scenes",
+        "sub_scene_anchor_axis_system",
     ]
     assert all(True if key in expected_keys else False for key in res.keys())
