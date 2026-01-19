@@ -385,17 +385,43 @@ def test_import_lightbox(speos: Speos):
     p.import_lightbox(
         lightboxes=[
             SpeosFileInstance(
-                file=str(Path(test_path) / "Box_Password_123456.SPEOSLightBox"),
+                file=str(Path(test_path) / "lightbox" / "Box_Password_123456.SPEOSLightBox"),
                 axis_system=[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
                 password="123456",
             ),
             SpeosFileInstance(
-                file=str(Path(test_path) / "Box.SPEOSLightBox"),
+                file=str(Path(test_path) / "lightbox" / "Box.SPEOSLightBox"),
             ),
         ]
     )
     assert len(p.scene_link.get().materials) == 2
     assert len(p.scene_link.get().sources) == 2
+
+    p.import_lightbox(
+        lightboxes=[
+            SpeosFileInstance(
+                file=str(Path(test_path) / "lightbox" / "Light Box Export.1.SPEOSLightBox"),
+            ),
+            SpeosFileInstance(
+                file=str(Path(test_path) / "lightbox" / "Light Box Export.2.SPEOSLightBox"),
+            ),
+        ]
+    )
+    assert len(p.scene_link.get().materials) == 4
+    assert len(p.scene_link.get().sources) == 4
+
+    with pytest.raises(
+        ValueError,
+        match="Lightbox Light Box Export.1: Light Box Export.1.Ray-file.1:181 "
+        "has a conflict name with an existing feature.",
+    ):
+        p.import_lightbox(
+            lightboxes=[
+                SpeosFileInstance(
+                    file=str(Path(test_path) / "lightbox" / "Light Box Export.1.SPEOSLightBox"),
+                ),
+            ]
+        )
 
 
 def test_from_file_threads_limited(speos: Speos):
