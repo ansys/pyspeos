@@ -23,6 +23,8 @@
 
 from typing import List
 
+from ansys.api.speos.scene.v2.scene_pb2 import Scene
+
 from ansys.speos.core.kernel.part import PartLink, ProtoPart
 from ansys.speos.core.project import Project, SpeosFileInstance
 from ansys.speos.core.speos import Speos
@@ -36,7 +38,7 @@ def insert_speos(project: Project, speos_to_insert: List[SpeosFileInstance]) -> 
 
     Notes
     -----
-    Sources, Sensors and Simulations are not imported to the project.
+    Sensors and Simulations are not imported to the project.
 
     Parameters
     ----------
@@ -65,7 +67,7 @@ def combine_speos(speos: Speos, speos_to_combine: List[SpeosFileInstance]) -> Pr
 
     Notes
     -----
-        Sources, Sensors and Simulations are not imported to the project.
+        Sensors and Simulations are not imported to the project.
 
     Parameters
     ----------
@@ -112,6 +114,35 @@ def _combine(
                 mat.name = spc.name + "." + mat.name
                 mat.geometries.geo_paths[:] = [spc.name + "/" + x for x in mat.geometries.geo_paths]
                 scene_data.materials.append(mat)
+
+        for src in scene_tmp_data.sources:
+            src.name = spc.name + "." + src.name
+            if src.name in [source.name for source in scene_data.sources]:
+                msg = "Lightbox {}: {} has a conflict name with an existing feature.".format(
+                    spc.name, src.name
+                )
+                raise ValueError(msg)
+            if src.HasField("surface_properties"):
+                if src.surface_properties.HasField("exitance_constant_properties"):
+                    paths = src.surface_properties.exitance_constant_properties.geo_paths
+                    src.surface_properties.exitance_constant_properties.ClearField("geo_paths")
+                    geo_paths = []
+                    for path in paths:
+                        geo_paths.append(
+                            Scene.GeoPath(
+                                geo_path=spc.name + "/" + path.geo_path,
+                                reverse_normal=path.reverse_normal,
+                            )
+                        )
+                    src.surface_properties.exitance_constant_properties.geo_paths.extend(geo_paths)
+            if src.HasField("rayfile_properties"):
+                if src.rayfile_properties.HasField("exit_geometries"):
+                    paths = src.rayfile_properties.exit_geometries.geo_paths
+                    src.rayfile_properties.ClearField("exit_geometries")
+                    src.rayfile_properties.exit_geometries.geo_paths[:] = [
+                        spc.name + "/" + gr for gr in paths
+                    ]
+            scene_data.sources.append(src)
 
     part_link.set(data=part_data)
     scene_data.part_guid = part_link.key
