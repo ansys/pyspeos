@@ -32,6 +32,8 @@ from typing import TYPE_CHECKING, List, Optional, Union
 
 from ansys.api.speos.part.v1 import body_pb2, face_pb2, part_pb2
 
+from ansys.speos.core.generic.version_checker import server_version_checker
+
 try:
     from ansys.api.speos.server_info.v1 import server_info_pb2, server_info_pb2_grpc
 
@@ -213,10 +215,9 @@ class SpeosClient:
         # do not finish initialization until channel is healthy
         wait_until_healthy(self._channel, timeout)
 
-        self._server_version = None
         try:
             if SERVER_INFO_API:
-                self._server_version = (
+                server_version_checker.set_version(
                     server_info_pb2_grpc.ServerInfoStub(channel=self._channel)
                     .GetVersion(server_info_pb2.GetVersion_Request())
                     .version
@@ -367,7 +368,7 @@ class SpeosClient:
         self.__closed_error()
         # connect to database
         if self._jobDB is None:
-            self._jobDB = JobStub(self._channel, self._server_version)
+            self._jobDB = JobStub(self._channel)
         return self._jobDB
 
     def __closed_error(self):

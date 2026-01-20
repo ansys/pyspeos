@@ -27,7 +27,7 @@ from pathlib import Path
 from ansys.api.speos import __version__ as ansys_api_speos_version
 
 from ansys.speos.core import GeoRef, OptProp, Project, Speos, proto_message_utils
-from ansys.speos.core.generic.general_methods import check_version_gte
+from ansys.speos.core.generic.version_checker import check_version_gte
 from ansys.speos.core.kernel import scene
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_dict
 from ansys.speos.core.sensor import SensorIrradiance

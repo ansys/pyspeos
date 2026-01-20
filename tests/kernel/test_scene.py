@@ -30,7 +30,7 @@ from ansys.api.speos.simulation.v1 import simulation_template_pb2
 import numpy as np
 import pytest
 
-from ansys.speos.core.generic.general_methods import check_version_gte
+from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.kernel.body import ProtoBody
 from ansys.speos.core.kernel.face import FaceStub, ProtoFace
 from ansys.speos.core.kernel.intensity_template import ProtoIntensityTemplate
@@ -271,9 +271,7 @@ def create_basic_scene(speos: Speos) -> SceneLink:
             geometries=ProtoScene.GeoPaths(geo_paths=["BodySource:1/FaceSource:1"]),
         )
 
-    if speos.client._server_version is not None and check_version_gte(
-        speos.client._server_version, 26, 1, 0
-    ):
+    if server_version_checker.is_version_supported(2026, 1, 0):
         geometries = ProtoScene.GeoPaths(geo_paths=[])
     else:
         # Before 26r1, the convention about GeoPaths was wrongly handled

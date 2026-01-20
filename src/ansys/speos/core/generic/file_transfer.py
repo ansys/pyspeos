@@ -33,7 +33,7 @@ import ansys.api.speos.file.v1.file_transfer_pb2 as file_transfer__v1__pb2
 import ansys.api.speos.file.v1.file_transfer_pb2_grpc as file_transfer__v1__pb2_grpc
 import grpc
 
-from ansys.speos.core.generic.general_methods import check_version_gte
+from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.kernel.client import SpeosClient
 
 
@@ -54,9 +54,7 @@ class FileTransfer:
         self._file_transfer_service_stub = file_transfer__v1__pb2_grpc.FileTransferServiceStub(
             channel=speos_client.channel
         )
-        self._is_gte_26r1 = False
-        if self._speos_client._server_version is not None:
-            self._is_gte_26r1 = check_version_gte(self._speos_client._server_version, 2026, 1, 0)
+        self._is_gte_26r1 = server_version_checker.is_version_supported(2026, 1, 0)
 
     def _raise_incompatibility(self):
         raise NotImplementedError(
@@ -228,7 +226,7 @@ class FileTransfer:
         server_initial_metadata = dict(chunks.initial_metadata())
 
         if (
-            self._speos_client._server_version is None
+            server_version_checker._version is None
             and "file-name" not in server_initial_metadata.keys()
         ):
             self._raise_incompatibility()
