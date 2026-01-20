@@ -86,9 +86,9 @@ def _find_correct_result(
             if res.upload_response.info.file_name == result_name:
                 if download_if_distant:
                     file_transfer_helper.download_file(
-                        client=simulation_feature._project.client,
+                        speos_client=simulation_feature._project.client,
                         file_uri=res.upload_response.info.uri,
-                        download_location=tempfile.gettempdir(),
+                        download_location=Path(tempfile.gettempdir()),
                     )
                     file_path = str(
                         Path(tempfile.gettempdir()) / res.upload_response.info.file_name
