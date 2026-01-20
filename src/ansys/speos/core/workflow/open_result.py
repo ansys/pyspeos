@@ -26,9 +26,9 @@ from pathlib import Path
 import tempfile
 from typing import List, Union
 
-import ansys.api.speos.file.v1.file_transfer as file_transfer_helper__v1
-import ansys.api.speos.file.v1.file_transfer_pb2_grpc as file_transfer__v1__pb2_grpc
 from ansys.api.speos.part.v1 import face_pb2
+
+import ansys.speos.core.file_transfer as file_transfer_helper
 
 if os.name == "nt":
     from comtypes.client import CreateObject
@@ -85,10 +85,8 @@ def _find_correct_result(
         elif res.HasField("upload_response"):
             if res.upload_response.info.file_name == result_name:
                 if download_if_distant:
-                    file_transfer_helper__v1.download_file(
-                        file_transfer_service_stub=file_transfer__v1__pb2_grpc.FileTransferServiceStub(
-                            simulation_feature._project.client.channel
-                        ),
+                    file_transfer_helper.download_file(
+                        client=simulation_feature._project.client,
                         file_uri=res.upload_response.info.uri,
                         download_location=tempfile.gettempdir(),
                     )

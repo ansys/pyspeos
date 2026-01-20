@@ -36,7 +36,7 @@ from ansys.api.speos.job.v2.job_pb2 import Result
 from ansys.api.speos.scene.v2 import scene_pb2 as messages
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
 
-from ansys.speos.core.generic.general_methods import min_speos_version
+from ansys.speos.core.generic.general_methods import check_version_gte, min_speos_version
 from ansys.speos.core.kernel.job import ProtoJob
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 from ansys.speos.core.kernel.scene import ProtoScene
@@ -358,6 +358,10 @@ class BaseSimulation:
             self._simulation_instance = ProtoScene.SimulationInstance(
                 name=name, description=description, metadata=metadata
             )
+            if self._project.client._server_version is not None and check_version_gte(
+                self._project.client._server_version, 26, 1, 0
+            ):
+                self._simulation_instance.geometries.geo_paths[:] = []
         else:
             self._unique_id = simulation_instance.metadata["UniqueId"]
             self.simulation_template_link = self._project.client[

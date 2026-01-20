@@ -309,3 +309,37 @@ def min_speos_version(major: int, minor: int, service_pack: int):
         return wrapper
 
     return decorator
+
+
+def check_version_gte(input_version: str, major: int, minor: int, patch: int) -> bool:
+    """Check that the input version is greater than or equal to the major.minor.patch.
+
+    Parameters
+    ----------
+    input_version: str
+        Input version written as "major.minor.patch", e.g. "2026.1.0"
+    major : int
+        Major release version, e.g. 25
+    minor : int
+        Minor release version e.g. 2
+    patch : int
+        Service Pack version e.g. 3
+
+    Returns
+    -------
+    bool
+        True if the input version is >= to the major.minor.patch
+    """
+    input_major, input_minor, input_patch = input_version.split(".")
+    if "-" in input_patch:
+        input_patch = input_patch.split("-")[0]
+    if int(input_major) > major:
+        return True
+    elif int(input_major) == major:
+        if int(input_minor) > minor:
+            return True
+        elif int(input_minor) == minor:
+            if int(input_patch) >= patch:
+                return True
+
+    return False

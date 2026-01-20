@@ -24,7 +24,10 @@
 
 from pathlib import Path
 
+from ansys.api.speos import __version__ as ansys_api_speos_version
+
 from ansys.speos.core import GeoRef, OptProp, Project, Speos, proto_message_utils
+from ansys.speos.core.generic.general_methods import check_version_gte
 from ansys.speos.core.kernel import scene
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_dict
 from ansys.speos.core.sensor import SensorIrradiance
@@ -456,4 +459,6 @@ def test_flatten_dict(speos: Speos):
         "metadata",
         "scenes",
     ]
+    if check_version_gte(ansys_api_speos_version, 0, 16, 0):
+        expected_keys.append("sub_scene_anchor_axis_system")
     assert all(True if key in expected_keys else False for key in res.keys())

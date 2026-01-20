@@ -24,13 +24,13 @@
 
 from pathlib import Path
 
-import ansys.api.speos.file.v1.file_transfer as file_transfer_helper__v1
 import ansys.api.speos.file.v1.file_transfer_pb2 as file_transfer__v1__pb2
 import ansys.api.speos.file.v1.file_transfer_pb2_grpc as file_transfer__v1__pb2_grpc
 import ansys.api.speos.lpf.v2.lpf_file_reader_pb2 as lpf_file_reader__v2__pb2
 import ansys.api.speos.lpf.v2.lpf_file_reader_pb2_grpc as lpf_file_reader__v2__pb2_grpc
 import pytest
 
+from ansys.speos.core import file_transfer
 from ansys.speos.core.speos import Speos
 from tests.conftest import local_test_path, test_path
 
@@ -221,9 +221,9 @@ def test_lpf_file_reader_multi_v2(speos: Speos):
 def test_lpf_file_reader_mono_v2_direct_simu_with_file_transfer(speos: Speos):
     """Test to check lpf service with file transfer service."""
     # local file upload to the server
-    path = str(Path(local_test_path) / "basic_DirectSimu.lpf")
+    path = Path(local_test_path) / "basic_DirectSimu.lpf"
     file_transfer_stub = file_transfer__v1__pb2_grpc.FileTransferServiceStub(speos.client.channel)
-    upload_response = file_transfer_helper__v1.upload_file(file_transfer_stub, path)
+    upload_response = file_transfer.upload_file(speos.client, path)
 
     # Lpf file reader creation
     stub = lpf_file_reader__v2__pb2_grpc.LpfFileReader_MonoStub(speos.client.channel)

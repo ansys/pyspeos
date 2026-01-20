@@ -30,6 +30,7 @@ from ansys.api.speos.simulation.v1 import simulation_template_pb2
 import numpy as np
 import pytest
 
+from ansys.speos.core.generic.general_methods import check_version_gte
 from ansys.speos.core.kernel.body import ProtoBody
 from ansys.speos.core.kernel.face import FaceStub, ProtoFace
 from ansys.speos.core.kernel.intensity_template import ProtoIntensityTemplate
@@ -270,6 +271,15 @@ def create_basic_scene(speos: Speos) -> SceneLink:
             geometries=ProtoScene.GeoPaths(geo_paths=["BodySource:1/FaceSource:1"]),
         )
 
+    if speos.client._server_version is not None and check_version_gte(
+        speos.client._server_version, 26, 1, 0
+    ):
+        geometries = ProtoScene.GeoPaths(geo_paths=[])
+    else:
+        # Before 26r1, the convention about GeoPaths was wrongly handled
+        # by the server for SimulationInstance.geometries
+        geometries = None
+
     # Create scene
     scene = scene_db.create(
         message=ProtoScene(
@@ -335,6 +345,7 @@ def create_basic_scene(speos: Speos) -> SceneLink:
                         "irradiance_photometric.1",
                         "irradiance_colorimetric.1",
                     ],
+                    geometries=geometries,
                 ),
                 ProtoScene.SimulationInstance(
                     name="direct_simu.2",
@@ -344,12 +355,14 @@ def create_basic_scene(speos: Speos) -> SceneLink:
                         "irradiance_photometric.1",
                         "irradiance_colorimetric.1",
                     ],
+                    geometries=geometries,
                 ),
                 ProtoScene.SimulationInstance(
                     name="inverse_simu.1",
                     simulation_guid=inverse_t.key,
                     source_paths=["surface_with_blackbody.1"],
                     sensor_paths=["irradiance_colorimetric.1"],
+                    geometries=geometries,
                 ),
                 ProtoScene.SimulationInstance(
                     name="interactive_simu.1",
@@ -363,6 +376,7 @@ def create_basic_scene(speos: Speos) -> SceneLink:
                         "irradiance_photometric.1",
                         "irradiance_colorimetric.1",
                     ],
+                    geometries=geometries,
                 ),
             ],
         )

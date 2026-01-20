@@ -31,7 +31,16 @@ import time
 from typing import TYPE_CHECKING, List, Optional, Union
 
 from ansys.api.speos.part.v1 import body_pb2, face_pb2, part_pb2
+
+try:
+    from ansys.api.speos.server_info.v1 import server_info_pb2, server_info_pb2_grpc
+
+    SERVER_INFO_API = True
+except ModuleNotFoundError:
+    SERVER_INFO_API = False
+
 import grpc
+from grpc import RpcError
 from grpc._channel import _InactiveRpcError
 
 from ansys.speos.core.generic.constants import (
@@ -203,6 +212,17 @@ class SpeosClient:
 
         # do not finish initialization until channel is healthy
         wait_until_healthy(self._channel, timeout)
+
+        self._server_version = None
+        try:
+            if SERVER_INFO_API:
+                self._server_version = (
+                    server_info_pb2_grpc.ServerInfoStub(channel=self._channel)
+                    .GetVersion(server_info_pb2.GetVersion_Request())
+                    .version
+                )
+        except RpcError:
+            pass
 
         # once connection with the client is established, create a logger
         self._log = LOGGER.add_instance_logger(
