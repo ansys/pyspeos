@@ -30,6 +30,7 @@ from typing import Iterator, List
 from ansys.api.speos.job.v2 import job_pb2 as messages, job_pb2_grpc as service
 from ansys.api.speos.results.v1.ray_path_pb2 import RayPath
 
+from ansys.speos.core.generic.general_methods import check_version_gte
 from ansys.speos.core.kernel.crud import CrudItem, CrudStub
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 
@@ -71,6 +72,7 @@ class JobLink(CrudItem):
         super().__init__(db, key)
         self._actions_stub = db._actions_stub
         self._is_uds = db._is_uds
+        self._is_gte_26r1 = db._is_gte_26r1
         self._timestamp_start = None
 
     def __str__(self) -> str:
@@ -142,8 +144,8 @@ class JobLink(CrudItem):
         ansys.api.speos.job.v2.job_pb2.GetResults_Response
             Results of the job.
         """
-        if self._is_uds and self._timestamp_start is not None:
-            # Get results manually due to bug in uds GetResults implementation
+        if not self._is_gte_26r1 and self._is_uds and self._timestamp_start is not None:
+            # Get results manually due to bug in uds GetResults implementation in server < 26R1.
             results_folder = Path(tempfile.gettempdir()).joinpath("jobs", self.key)
             files = _list_files_newer_than(results_folder, self._timestamp_start)
             results = []
@@ -190,6 +192,8 @@ class JobStub(CrudStub):
     ----------
     channel : grpc.Channel
         Channel to use for the stub.
+    server_version : Union[str, None]
+        Version of the server.
 
     Examples
     --------
@@ -202,10 +206,13 @@ class JobStub(CrudStub):
 
     """
 
-    def __init__(self, channel):
+    def __init__(self, channel, server_version):
         super().__init__(stub=service.JobsManagerStub(channel=channel))
         self._actions_stub = service.JobActionsStub(channel=channel)
         self._is_uds = _is_uds_channel(channel)
+        self._is_gte_26r1 = False
+        if server_version is not None:
+            self._is_gte_26r1 = check_version_gte(server_version, 2026, 1, 0)
 
     def create(self, message: ProtoJob) -> JobLink:
         """Create a new entry.

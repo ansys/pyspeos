@@ -367,7 +367,7 @@ class SpeosClient:
         self.__closed_error()
         # connect to database
         if self._jobDB is None:
-            self._jobDB = JobStub(self._channel)
+            self._jobDB = JobStub(self._channel, self._server_version)
         return self._jobDB
 
     def __closed_error(self):
