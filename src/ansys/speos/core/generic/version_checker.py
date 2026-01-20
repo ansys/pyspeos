@@ -22,7 +22,7 @@
 """Module to ease version checks."""
 
 
-def check_version_gte(input_version: str, major: int, minor: int, patch: int) -> bool:
+def check_version(input_version: str, major: int, minor: int, patch: int) -> bool:
     """Check that the input version is greater than or equal to the major.minor.patch.
 
     Parameters
@@ -90,7 +90,7 @@ class VersionChecker:
             True if the input version is >= to the major.minor.patch
         """
         if self._version is not None:
-            return check_version_gte(self._version, major, minor, patch)
+            return check_version(self._version, major, minor, patch)
         return False
 
 
