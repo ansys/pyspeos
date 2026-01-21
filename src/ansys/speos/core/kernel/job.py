@@ -30,6 +30,7 @@ from typing import Iterator, List
 from ansys.api.speos.job.v2 import job_pb2 as messages, job_pb2_grpc as service
 from ansys.api.speos.results.v1.ray_path_pb2 import RayPath
 
+from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.kernel.crud import CrudItem, CrudStub
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 
@@ -142,8 +143,12 @@ class JobLink(CrudItem):
         ansys.api.speos.job.v2.job_pb2.GetResults_Response
             Results of the job.
         """
-        if self._is_uds and self._timestamp_start is not None:
-            # Get results manually due to bug in uds GetResults implementation
+        if (
+            not server_version_checker.is_version_supported(2026, 1, 0)
+            and self._is_uds
+            and self._timestamp_start is not None
+        ):
+            # Get results manually due to bug in uds GetResults implementation in server < 26R1.
             results_folder = Path(tempfile.gettempdir()).joinpath("jobs", self.key)
             files = _list_files_newer_than(results_folder, self._timestamp_start)
             results = []
