@@ -620,6 +620,11 @@ class BaseSimulation:
             return self.result_list, vtp_files
         return self.result_list
 
+    def stop_computation(self) -> None:
+        """Stop the simulation computation."""
+        if self.job_link is not None:
+            self.job_link.stop()
+
     def _run_job(self) -> List[job_pb2.Result]:
         if self.job_link is not None:
             job_state_res = self.job_link.get_state()
