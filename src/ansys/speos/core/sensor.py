@@ -1881,6 +1881,7 @@ class SensorCamera(BaseSensor):
                 )
             else:
                 self.set_mode_geometric()
+            self.distortion_file_uri = default_parameters.distortion_file_uri
             self.imager_distance = default_parameters.imager_distance
             self.focal_length = default_parameters.focal_length
             self.f_number = default_parameters.f_number

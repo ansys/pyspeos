@@ -225,6 +225,8 @@ class CameraSensorParameters:
     """Camera sensor type None means geometric sensor"""
     axis_system: list[float] = field(default_factory=lambda: ORIGIN)
     """Location of the sensor Origin"""
+    distortion_file_uri: Union[str, Path] = ""
+    """distortion file location"""
     focal_length: float = 5
     """Default focal length of the Camera Sensor."""
     imager_distance: float = 10

@@ -11,6 +11,11 @@
 from pathlib import Path
 
 from ansys.speos.core import GeoRef, Project, Speos, launcher
+from ansys.speos.core.generic.parameters import (
+    CameraSensorParameters,
+    ColorParameters,
+    PhotometricCameraParameters,
+)
 from ansys.speos.core.kernel.client import (
     default_docker_channel,
 )
@@ -123,7 +128,7 @@ print(sensor1)
 
 # ## Another example
 #
-# Set more characteristics.
+# Set more characteristics. and use Parameters Class
 #
 # Camera feature is created with the same default values as the GUI speos.
 #
@@ -137,20 +142,25 @@ blue_spectrum_path = str(assets_data_path / FILES / "CameraSensitivityBlue.spect
 green_spectrum_path = str(assets_data_path / FILES / "CameraSensitivityGreen.spectrum")
 red_spectrum_path = str(assets_data_path / FILES / "CameraSensitivityRed.spectrum")
 
-sensor2 = p.create_sensor(name="Camera.2", feature_type=SensorCamera)
-sensor2.distortion_file_uri = distortion_file_path
-photometric = sensor2.set_mode_photometric()
-photometric.transmittance_file_uri = transmittance_file_path
-photometric.set_layer_type_source()
-color = photometric.set_mode_color()
-color.blue_spectrum_file_uri = blue_spectrum_path
-color.green_spectrum_file_uri = green_spectrum_path
-color.red_spectrum_file_uri = red_spectrum_path
-sensor2.focal_length = 5.5
-sensor2.height = 6
-sensor2.width = 6  # dimensions
-sensor2.axis_system = [20, 10, 40, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-# camera location [Origin, Xvector, Yvector, Zvector]
+color_params = ColorParameters(
+    blue_spectrum_file_uri=blue_spectrum_path,
+    green_spectrum_file_uri=green_spectrum_path,
+    red_spectrum_file_uri=red_spectrum_path,
+)
+photo_params = PhotometricCameraParameters(
+    color_mode=color_params, layer_type="by_source", transmittance_file_uri=transmittance_file_path
+)
+param = CameraSensorParameters(
+    sensor_type_parameters=photo_params,
+    distortion_file_uri=distortion_file_path,
+    axis_system=[20, 10, 40, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+    # camera location [Origin, Xvector, Yvector, Zvector]
+    focal_length=5.5,
+    height=6,  # dimensions
+    width=6,
+)
+
+sensor2 = SensorCamera(p, "Camera_Parameter", default_parameters=param)
 sensor2.commit()
 
 print(sensor2)
