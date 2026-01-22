@@ -213,4 +213,23 @@ vbb.commit()
 results = vbb.compute_CPU()
 print(results)
 
+# ## Simulation compute and stop
+#
+# The compute_CPU, compute_GPU calls are blocking.
+# Thus it will return only once the simulation compute is finished.
+#
+# If you want to have the possibility to stop it before it is finished, here an example.
+
+from threading import Thread
+from time import sleep
+
+# Launch the compute_CPU in a thread and start the thread.
+compute_thread = Thread(target=vbb.compute_CPU)
+compute_thread.start()
+# Wait 2 seconds then stop_computation
+sleep(2)
+vbb.stop_computation()
+# Join the compute_thread
+compute_thread.join()
+
 speos.close()
