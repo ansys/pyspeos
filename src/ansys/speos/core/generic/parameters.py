@@ -323,7 +323,6 @@ class IrradianceSensorParameters:
         LayerTypes.none,
         LayerTypes.by_source,
         LayerTypes.by_polarization,
-        
         LayerByFaceParameters,
         LayerBySequenceParameters,
         LayerByIncidenceAngleParameters,
