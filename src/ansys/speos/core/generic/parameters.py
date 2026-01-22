@@ -320,7 +320,9 @@ class IrradianceSensorParameters:
     rayfile_type: Union[RayfileTypes] = RayfileTypes.none
     """Type of rayfile stored by the sensor."""
     layer_type: Union[
-        LayerTypes,
+        LayerTypes.none,
+        LayerTypes.by_source,
+        LayerTypes.by_polarization,
         LayerByFaceParameters,
         LayerBySequenceParameters,
         LayerByIncidenceAngleParameters,
