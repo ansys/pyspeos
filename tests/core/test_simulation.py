@@ -22,8 +22,11 @@
 
 """Test basic using simulation."""
 
+import datetime
 from pathlib import Path
 import platform
+from threading import Thread
+from time import sleep
 
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
 import pytest
@@ -1031,6 +1034,44 @@ def test_get_simulation(speos: Speos, capsys):
     stdout, stderr = capsys.readouterr()
     assert get_result3 is None
     assert "Used key: geometry not found in key list" in stdout
+
+
+def test_stop_computation(speos: Speos):
+    """Test stop of simulation computation."""
+    # Create project from a speos file
+    p = Project(
+        speos=speos,
+        path=str(
+            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
+        ),
+    )
+
+    # Retrieve simulation feature
+    sim_feature = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
+
+    # Choose the stop condition of 60 s
+    sim_feature.set_stop_condition_duration(value=60)
+    sim_feature.set_stop_condition_rays_number(value=None)  # No condition about rays number
+    sim_feature.commit()
+
+    # Note time now
+    before = datetime.datetime.now()
+
+    # Launch the simulation compute in a thread
+    compute_thread = Thread(target=sim_feature.compute_CPU)
+    compute_thread.start()
+
+    # Wait only 15s
+    sleep(15)
+
+    # Ask to interrupt the computation
+    sim_feature.stop_computation()
+    compute_thread.join()  # join thread
+
+    # Check that the thread is joined much before 60s (due to computation stop)
+    after = datetime.datetime.now()
+    difference = after - before
+    assert difference.seconds < 25
 
 
 def test_export(speos: Speos):
