@@ -1255,6 +1255,350 @@ class SourceSurface(BaseSource):
         return self
 
 
+class SourceDisplay(BaseSource):
+    """Type of Source : Display.
+
+    By default, a display source with sRGB color space and lambertian intensity is chosen.
+
+    Parameters
+    ----------
+    project : ansys.speos.core.project.Project
+        Project that will own the feature.
+    name : str
+        Name of the feature.
+    description : str
+        Description of the feature.
+        By default, ``""``.
+    metadata : Optional[Mapping[str, str]]
+        Metadata of the feature.
+        By default, ``{}``.
+    source_instance : Optional[ProtoScene.SourceInstance], optional
+        Source instance to provide if the feature does not have to be created from scratch
+        By default, ``None``, means that the feature is created from scratch by default.
+    default_values : bool
+        Uses default values when True.
+    """
+
+    @general_methods.min_speos_version(25, 2, 0)
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        source_instance: Optional[ProtoScene.SourceInstance] = None,
+        default_values: bool = True,
+    ) -> None:
+        if metadata is None:
+            metadata = {}
+
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            source_instance=source_instance,
+        )
+        self._speos_client = self._project.client
+        self._name = name
+
+        self._intensity = Intensity(
+            speos_client=self._speos_client,
+            name=name + ".Intensity",
+            intensity_props_to_complete=self._source_instance.display_properties.intensity_properties,
+            key=self._source_template.display.intensity_guid,
+        )
+
+        if default_values:
+            # Default values as in SCDM Speos
+            self.set_luminous_flux(value=100.0)
+            self.set_source_dimensions(x_start=0.0, x_end=100.0, y_start=0.0, y_end=100.0)
+            self.set_color_space_srgb()
+            self.set_intensity()
+            self.set_axis_system()
+
+    @property
+    def visual_data(self) -> _VisualData:
+        """Property containing Display source visualization data.
+
+        Returns
+        -------
+        _VisualData
+            Instance of VisualData Class for pyvista.PolyData of feature rays, coordinate_systems.
+
+        """
+        if self._visual_data.updated:
+            return self._visual_data
+        else:
+            self._visual_data = (
+                _VisualData(ray=True, coordinate_system=True)
+                if general_methods._GRAPHICS_AVAILABLE
+                else None
+            )
+            for ray_path in self._project.scene_link.get_source_ray_paths(
+                self._name, rays_nb=100, raw_data=True, display_data=True
+            ):
+                self._visual_data.add_data_line(
+                    _VisualArrow(
+                        line_vertices=[ray_path.impacts_coordinates, ray_path.last_direction],
+                        color=tuple(ray_path.colors.values),
+                        arrow=False,
+                    )
+                )
+            feature_pos_info = self.get(key="axis_system")
+            feature_display_pos = np.array(feature_pos_info[:3])
+            feature_display_x_dir = np.array(feature_pos_info[3:6])
+            feature_display_y_dir = np.array(feature_pos_info[6:9])
+            feature_display_z_dir = np.array(feature_pos_info[9:12])
+            self._visual_data.coordinates.origin = feature_display_pos
+            self._visual_data.coordinates.x_axis = feature_display_x_dir
+            self._visual_data.coordinates.y_axis = feature_display_y_dir
+            self._visual_data.coordinates.z_axis = feature_display_z_dir
+            self._visual_data.updated = True
+            return self._visual_data
+
+    def set_image_file_uri(self, uri: str) -> SourceDisplay:
+        """Set image file for display source.
+
+        Parameters
+        ----------
+        uri : str
+            Path to image file (PNG, JPEG, BMP, TIFF, or RGB format).
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceDisplay
+            Display source.
+        """
+        self._source_template.display.image_file_uri = uri
+        return self
+
+    def set_source_dimensions(
+        self,
+        x_start: float = 0.0,
+        x_end: float = 100.0,
+        y_start: float = 0.0,
+        y_end: float = 100.0,
+    ) -> SourceDisplay:
+        """Set horizontal and vertical dimensions of the display source.
+
+        Parameters
+        ----------
+        x_start : float
+            Start position in X direction in mm.
+            By default, ``0.0``.
+        x_end : float
+            End position in X direction in mm.
+            By default, ``100.0``.
+        y_start : float
+            Start position in Y direction in mm.
+            By default, ``0.0``.
+        y_end : float
+            End position in Y direction in mm.
+            By default, ``100.0``.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceDisplay
+            Display source.
+        """
+        self._source_template.display.source_dimensions.x_start = x_start
+        self._source_template.display.source_dimensions.x_end = x_end
+        self._source_template.display.source_dimensions.y_start = y_start
+        self._source_template.display.source_dimensions.y_end = y_end
+        return self
+
+    def set_luminous_flux(self, value: float = 100.0) -> SourceDisplay:
+        """Set luminous flux (luminance) of the display source.
+
+        Parameters
+        ----------
+        value : float
+            Luminous flux in cd/m².
+            By default, ``100.0``.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceDisplay
+            Display source.
+        """
+        self._source_template.display.luminous_flux = value
+        return self
+
+    def set_contrast_ratio(self, value: int) -> SourceDisplay:
+        """Set contrast ratio of the display source.
+
+        Parameters
+        ----------
+        value : int
+            Contrast ratio value. If not set, contrast ratio is considered infinite.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceDisplay
+            Display source.
+        """
+        self._source_template.display.contrast_ratio = value
+        return self
+
+    def clear_contrast_ratio(self) -> SourceDisplay:
+        """Clear contrast ratio (set to infinite).
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceDisplay
+            Display source.
+        """
+        self._source_template.display.ClearField("contrast_ratio")
+        return self
+
+    def set_color_space_srgb(self) -> SourceDisplay:
+        """Set color space to sRGB.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceDisplay
+            Display source.
+        """
+        self._source_template.display.pre_defined_color_space.srgb.SetInParent()
+        return self
+
+    def set_color_space_adobe_rgb(self) -> SourceDisplay:
+        """Set color space to Adobe RGB.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceDisplay
+            Display source.
+        """
+        self._source_template.display.pre_defined_color_space.adobe_rgb.SetInParent()
+        return self
+
+    def set_custom_color_space(
+        self,
+        red_x: float,
+        red_y: float,
+        green_x: float,
+        green_y: float,
+        blue_x: float,
+        blue_y: float,
+        white_x: float,
+        white_y: float,
+    ) -> SourceDisplay:
+        """Set custom RGB color space.
+
+        Parameters
+        ----------
+        red_x : float
+            Red chromaticity x coordinate.
+        red_y : float
+            Red chromaticity y coordinate.
+        green_x : float
+            Green chromaticity x coordinate.
+        green_y : float
+            Green chromaticity y coordinate.
+        blue_x : float
+            Blue chromaticity x coordinate.
+        blue_y : float
+            Blue chromaticity y coordinate.
+        white_x : float
+            White point chromaticity x coordinate.
+        white_y : float
+            White point chromaticity y coordinate.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceDisplay
+            Display source.
+        """
+        user_defined = self._source_template.display.user_defined_rbg_space
+        user_defined.red_chromaticity_coordinates.x = red_x
+        user_defined.red_chromaticity_coordinates.y = red_y
+        user_defined.green_chromaticity_coordinates.x = green_x
+        user_defined.green_chromaticity_coordinates.y = green_y
+        user_defined.blue_chromaticity_coordinates.x = blue_x
+        user_defined.blue_chromaticity_coordinates.y = blue_y
+        user_defined.white_point_chromaticity_coordinates.x = white_x
+        user_defined.white_point_chromaticity_coordinates.y = white_y
+        return self
+
+    def set_intensity(self) -> Intensity:
+        """Set intensity distribution.
+
+        Returns
+        -------
+        ansys.speos.core.intensity.Intensity
+            Intensity.
+        """
+        return self._intensity
+
+    def set_axis_system(self, axis_system: Optional[List[float]] = None) -> SourceDisplay:
+        """Set the position and orientation of the display source.
+
+        Parameters
+        ----------
+        axis_system : Optional[List[float]]
+            Position of the source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceDisplay
+            Display source.
+        """
+        if axis_system is None:
+            axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+        self._source_instance.display_properties.axis_system[:] = axis_system
+        return self
+
+    def commit(self) -> SourceDisplay:
+        """Save feature: send the local data to the speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceDisplay
+            Source feature.
+        """
+        # intensity
+        self._intensity.commit()
+        self._source_template.display.intensity_guid = self._intensity.intensity_template_link.key
+
+        # source
+        super().commit()
+        return self
+
+    def reset(self) -> SourceDisplay:
+        """Reset feature: override local data by the one from the speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceDisplay
+            Source feature.
+        """
+        self._intensity.reset()
+        # source
+        super().reset()
+        return self
+
+    def delete(self) -> SourceDisplay:
+        """Delete feature: delete data from the speos server database.
+
+        The local data are still available
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceDisplay
+            Source feature.
+        """
+        # Currently we don't perform delete in cascade,
+        # so deleting a display source does not delete the intensity template used
+        # self._intensity.delete()
+
+        # source
+        super().delete()
+        return self
+
+
 class BaseSourceAmbient(BaseSource):
     """
     Super Class for ambient sources.
