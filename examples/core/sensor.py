@@ -160,7 +160,7 @@ param = CameraSensorParameters(
     width=6,
 )
 
-sensor2 = SensorCamera(p, "Camera_Parameter", default_parameters=param)
+sensor2 = p.create_sensor("Camera_Parameter", feature_type=SensorCamera, parameters=param)
 sensor2.commit()
 
 print(sensor2)
