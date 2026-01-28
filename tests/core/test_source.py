@@ -30,6 +30,7 @@ import pytest
 from ansys.speos.core import GeoRef, Project, Speos
 from ansys.speos.core.source import (
     SourceAmbientNaturalLight,
+    SourceDisplay,
     SourceLuminaire,
     SourceRayFile,
     SourceSurface,
@@ -954,3 +955,221 @@ def test_get_source(speos: Speos, capsys):
     stdout, stderr = capsys.readouterr()
     assert get_result3 is None
     assert "Used key: geometry not found in key list" in stdout
+
+
+@pytest.mark.supported_speos_versions(min=251)
+def test_create_display_source(speos: Speos):
+    """Test creation of display source."""
+    p = Project(speos=speos)
+
+    # Default value
+    source1 = SourceDisplay(p, "Display.1")
+    assert source1._source_template.HasField("display")
+    assert source1._source_template.display.image_file_uri == ""
+    assert source1._source_template.display.luminous_flux == 100.0
+    assert source1._source_template.display.source_dimensions.x_start == 0.0
+    assert source1._source_template.display.source_dimensions.x_end == 100.0
+    assert source1._source_template.display.source_dimensions.y_start == 0.0
+    assert source1._source_template.display.source_dimensions.y_end == 100.0
+    assert source1._source_template.display.HasField("pre_defined_color_space")
+    assert source1._source_template.display.pre_defined_color_space.HasField("srgb")
+    assert source1._source_instance.HasField("display_properties")
+    assert source1._source_instance.display_properties.axis_system == [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+    ]
+
+    # Test commit
+    source1.commit()
+    assert source1.source_template_link is not None
+    assert source1.source_template_link.get().HasField("display")
+
+    # image_file_uri
+    test_image_uri = "test_image.png"
+    source1.set_image_file_uri(uri=test_image_uri)
+    source1.commit()
+    assert source1.source_template_link.get().display.image_file_uri == test_image_uri
+
+    # source_dimensions
+    source1.set_source_dimensions(x_start=10.0, x_end=200.0, y_start=20.0, y_end=150.0)
+    source1.commit()
+    assert source1.source_template_link.get().display.source_dimensions.x_start == 10.0
+    assert source1.source_template_link.get().display.source_dimensions.x_end == 200.0
+    assert source1.source_template_link.get().display.source_dimensions.y_start == 20.0
+    assert source1.source_template_link.get().display.source_dimensions.y_end == 150.0
+
+    # luminous_flux
+    source1.set_luminous_flux(value=250.0)
+    source1.commit()
+    assert source1.source_template_link.get().display.luminous_flux == 250.0
+
+    # contrast_ratio
+    source1.set_contrast_ratio(value=1000)
+    source1.commit()
+    assert source1.source_template_link.get().display.HasField("contrast_ratio")
+    assert source1.source_template_link.get().display.contrast_ratio == 1000
+
+    # clear contrast_ratio (set to infinite)
+    source1.clear_contrast_ratio()
+    source1.commit()
+    assert not source1.source_template_link.get().display.HasField("contrast_ratio")
+
+    # color space Adobe RGB
+    source1.set_color_space_adobe_rgb()
+    source1.commit()
+    assert source1.source_template_link.get().display.HasField("pre_defined_color_space")
+    assert source1.source_template_link.get().display.pre_defined_color_space.HasField("adobe_rgb")
+
+    # color space sRGB
+    source1.set_color_space_srgb()
+    source1.commit()
+    assert source1.source_template_link.get().display.HasField("pre_defined_color_space")
+    assert source1.source_template_link.get().display.pre_defined_color_space.HasField("srgb")
+
+    # custom color space
+    source1.set_custom_color_space(
+        red_x=0.64,
+        red_y=0.33,
+        green_x=0.30,
+        green_y=0.60,
+        blue_x=0.15,
+        blue_y=0.06,
+        white_x=0.3127,
+        white_y=0.3290,
+    )
+    source1.commit()
+    assert source1.source_template_link.get().display.HasField("user_defined_rbg_space")
+    custom_space = source1.source_template_link.get().display.user_defined_rbg_space
+    assert custom_space.red_chromaticity_coordinates.x == 0.64
+    assert custom_space.red_chromaticity_coordinates.y == 0.33
+    assert custom_space.green_chromaticity_coordinates.x == 0.30
+    assert custom_space.green_chromaticity_coordinates.y == 0.60
+    assert custom_space.blue_chromaticity_coordinates.x == 0.15
+    assert custom_space.blue_chromaticity_coordinates.y == 0.06
+    assert custom_space.white_point_chromaticity_coordinates.x == 0.3127
+    assert custom_space.white_point_chromaticity_coordinates.y == 0.3290
+
+    # intensity
+    assert source1._source_template.display.intensity_guid != ""
+    intensity = speos.client[source1._source_template.display.intensity_guid]
+    assert intensity.get().HasField("cos")
+
+    # test intensity set methods
+    source1.set_intensity().set_lambertian(exponent=2.0)
+    source1.commit()
+    intensity = speos.client[source1._source_template.display.intensity_guid]
+    assert intensity.get().HasField("cos")
+    assert source1._source_instance.display_properties.intensity_properties.HasField(
+        "cos_properties"
+    )
+    assert source1._source_instance.display_properties.intensity_properties.cos_properties.n == 2.0
+
+    # Properties : axis_system
+    source1.set_axis_system(axis_system=[5, 10, 15, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    source1.commit()
+    assert source1._source_instance.HasField("display_properties")
+    assert source1._source_instance.display_properties.axis_system == [
+        5,
+        10,
+        15,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+    ]
+
+    assert len(p.scene_link.get().sources) == 1
+    assert p.scene_link.get().sources[0].display_properties.axis_system == [
+        5,
+        10,
+        15,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+    ]
+
+    # Test reset
+    source1.set_luminous_flux(value=500.0)
+    assert source1._source_template.display.luminous_flux == 500.0
+    source1.reset()
+    assert source1._source_template.display.luminous_flux == 250.0
+
+    # Test delete
+    source1.delete()
+    assert len(p.scene_link.get().sources) == 0
+
+
+@pytest.mark.supported_speos_versions(min=251)
+def test_display_source_default_creation(speos: Speos):
+    """Test default creation of display source matches SCDM defaults."""
+    p = Project(speos=speos)
+
+    # Create with default values
+    source = SourceDisplay(p, "Display.Default")
+
+    # Check default values match SCDM Speos defaults
+    assert source._source_template.display.luminous_flux == 100.0
+    assert source._source_template.display.source_dimensions.x_start == 0.0
+    assert source._source_template.display.source_dimensions.x_end == 100.0
+    assert source._source_template.display.source_dimensions.y_start == 0.0
+    assert source._source_template.display.source_dimensions.y_end == 100.0
+    assert source._source_template.display.pre_defined_color_space.HasField("srgb")
+    assert source._source_instance.display_properties.axis_system == [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+    ]
+
+    source.commit()
+    assert source.source_template_link is not None
+
+
+@pytest.mark.supported_speos_versions(min=251)
+def test_display_source_no_defaults(speos: Speos):
+    """Test creation of display source without default values."""
+    p = Project(speos=speos)
+
+    # Create without default values
+    source = SourceDisplay(p, "Display.NoDefaults", default_values=False)
+
+    # Manually set required fields
+    source.set_luminous_flux(value=150.0)
+    source.set_source_dimensions(x_start=-50.0, x_end=50.0, y_start=-30.0, y_end=30.0)
+    source.set_color_space_adobe_rgb()
+    source.set_axis_system(axis_system=[100, 200, 300, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    source.commit()
+
+    assert source._source_template.display.luminous_flux == 150.0
+    assert source._source_template.display.source_dimensions.x_start == -50.0
+    assert source._source_template.display.source_dimensions.x_end == 50.0
+    assert source._source_template.display.pre_defined_color_space.HasField("adobe_rgb")
