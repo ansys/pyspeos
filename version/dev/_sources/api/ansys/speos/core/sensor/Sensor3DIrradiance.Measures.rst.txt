@@ -1,0 +1,182 @@
+
+
+
+
+
+
+:class:`Measures`
+=================
+
+
+.. py:class:: ansys.speos.core.sensor.Sensor3DIrradiance.Measures(illuminance_type, default_values = True, stable_ctr = False)
+
+   
+   Measures settings of 3D irradiance sensor : Additional Measures.
+
+   If you selected Photometric or Radiometric, in the Additional measures section,
+   define which type of contributions (transmission, absorption, reflection)
+   need to be taken into account for the integrating faces of the sensor.
+
+   :Parameters:
+
+       **illuminance_type** : :obj:`ansys.api.speos.sensor.v1.sensor_pb2.IntegrationTypePlanar`
+           SensorTypeColorimetric protobuf object to modify.
+
+       **default_values** : :ref:`bool <python:bltin-boolean-values>`
+           Uses default values when True.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_type_colorimetric method available in
+   sensor classes.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: Measures
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~reflection`
+            - Get reflection settings.
+          * - :py:attr:`~transmission`
+            - Get transmission settings.
+          * - :py:attr:`~absorption`
+            - Get absorption settings.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.sensor.Sensor3DIrradiance import Measures
+
+Property detail
+---------------
+
+.. py:property:: reflection
+   :type: bool
+
+
+   
+   Get reflection settings.
+
+
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           True when reflection settings were set, False otherwise.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: transmission
+   :type: bool
+
+
+   
+   Get transmission settings.
+
+
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           True when transmission settings were set, False otherwise.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: absorption
+   :type: bool
+
+
+   
+   Get absorption settings.
+
+
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           True when absorption settings were set, False otherwise.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+
