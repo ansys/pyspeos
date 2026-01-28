@@ -29,6 +29,7 @@ import pytest
 
 from ansys.speos.core import GeoRef, Project, Speos
 from ansys.speos.core.source import (
+    SourceAmbientEnvironment,
     SourceAmbientNaturalLight,
     SourceLuminaire,
     SourceRayFile,
@@ -531,6 +532,161 @@ def test_create_natural_light_source(speos: Speos):
     source2.delete()
 
 
+@pytest.mark.supported_speos_versions(min=252)
+def test_create_environment_source(speos: Speos):
+    """Test creation of ambient environment source."""
+    p = Project(speos=speos)
+
+    # Default value :
+    source1 = SourceAmbientEnvironment(
+        p,
+        name="Environment.1",
+    )
+
+    #
+    assert source1._source_template.ambient.environment_map.image_uri == ""
+    assert source1._source_instance.HasField("ambient_properties")
+    assert source1._source_instance.ambient_properties.zenith_direction == [
+        0,
+        0,
+        1,
+    ]
+    assert source1._source_instance.ambient_properties.HasField("environment_map_properties")
+    tmp_environment_property = (
+        source1._source_instance.ambient_properties.environment_map_properties
+    )
+    assert tmp_environment_property.north_direction == [
+        0,
+        1,
+        0,
+    ]
+
+    # Check property method
+    assert source1.image_file_uri == ""
+    assert source1.zenith_direction == [0, 0, 1]
+    assert source1.reverse_zenith_direction is False
+    assert source1.north_direction == [0, 1, 0]
+    assert source1.reverse_north_direction is False
+    assert source1.luminance == 1000
+
+    image_file_uri = str(Path(test_path) / "stars.exr")
+    source1.image_file_uri = image_file_uri
+    source1.zenith_direction = [0, 0, 1]
+    source1.reverse_zenith_direction = True
+    source1.north_direction = [1, 0, 0]
+    source1.reverse_north_direction = True
+    source1.commit()
+
+    assert source1._source_template.ambient.environment_map.image_uri == image_file_uri
+    assert source1._source_instance.ambient_properties.reverse_zenith is True
+    assert source1._source_instance.ambient_properties.zenith_direction == [
+        0,
+        0,
+        1,
+    ]
+    assert (
+        source1._source_instance.ambient_properties.environment_map_properties.reverse_north is True
+    )
+    assert (
+        source1._source_instance.ambient_properties.environment_map_properties.north_direction
+        == [
+            1,
+            0,
+            0,
+        ]
+    )
+
+    source1.delete()
+
+    source2 = p.create_source(name="Environment.2", feature_type=SourceAmbientEnvironment)
+    source2.image_file_uri = image_file_uri
+    assert source2._source_instance.HasField("ambient_properties")
+    assert source2._source_instance.ambient_properties.zenith_direction == [
+        0,
+        0,
+        1,
+    ]
+    assert source2._source_instance.ambient_properties.HasField("environment_map_properties")
+    tmp_environment_property = (
+        source2._source_instance.ambient_properties.environment_map_properties
+    )
+    assert tmp_environment_property.north_direction == [
+        0,
+        1,
+        0,
+    ]
+
+    source2.set_predefined_color_space().set_color_space_adobergb()
+    assert source2.color_space is not None
+    assert isinstance(source2.color_space, SourceAmbientEnvironment.PredefinedColorSpace)
+    tmp_environment_property = source2._source_template.ambient.environment_map
+    assert tmp_environment_property.predefined_color_space.color_space_type == 1
+
+    source2.set_predefined_color_space().set_color_space_srgb()
+    assert tmp_environment_property.predefined_color_space.color_space_type == 0
+
+    source2.set_userdefined_color_space().set_white_point_type_d50()
+    assert (
+        tmp_environment_property.user_defined_rgb_space.pre_defined_white_point.white_point_type
+        == 1
+    )
+    assert isinstance(source2.set_userdefined_color_space().red_spectrum, dict)
+    assert isinstance(source2.set_userdefined_color_space().green_spectrum, dict)
+    assert isinstance(source2.set_userdefined_color_space().blue_spectrum, dict)
+    source2.set_userdefined_color_space().red_spectrum = str(
+        Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "Red Spectrum.spectrum"
+    )
+    source2.set_userdefined_color_space().blue_spectrum = str(
+        Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "Blue Spectrum.spectrum"
+    )
+    source2.set_userdefined_color_space().green_spectrum = str(
+        Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "Blue Spectrum.spectrum"
+    )
+    source2.commit()
+    source2.set_userdefined_color_space().set_white_point_type_d65()
+    assert source2.set_userdefined_color_space().white_point_type is not None
+    assert (
+        tmp_environment_property.user_defined_rgb_space.pre_defined_white_point.white_point_type
+        == 2
+    )
+    source2.set_userdefined_color_space().set_white_point_type_c()
+    source2.set_userdefined_color_space().set_white_point_type_e()
+    source2.set_userdefined_color_space().set_white_point_type_user_defined()
+    assert (
+        source2.set_userdefined_color_space().set_white_point_type_user_defined().white_point
+        == [0.31271, 0.32902]
+    )
+    source2.reset()
+
+    gp = p.create_ground_plane()
+    assert gp._ground.zenith_direction == [0, 0, 1]
+    assert gp._ground.ground_origin == [0, 0, 0]
+    assert gp._ground.ground_height == 1000
+    assert gp.ground_zenith == [0, 0, 1]
+    assert gp.ground_origin == [0, 0, 0]
+    assert gp.ground_height == 1000
+    gp.commit()
+    assert p.scene_link.get().HasField("ground")
+    assert p.scene_link.get().ground.ground_height == 1000
+    gp2 = p.create_ground_plane()
+    gp2.ground_height = 2000
+    gp2.commit()
+    assert (
+        p.scene_link.get().ground.ground_height == 2000
+    )  # overwrite the previous ground plane value
+
+    gp2.ground_origin = [50, 50, 50]
+    assert gp2._ground.ground_origin == [50, 50, 50]
+    assert gp2.ground_origin == [50, 50, 50]
+    gp2.reset()
+    assert gp2.ground_origin == [0, 0, 0]  # expected [2, 1, 2]
+    assert gp2._ground.ground_origin == [0, 0, 0]  # expected [2, 1, 2]
+
+    gp2.delete()
+
+    source2.delete()
+
+
 def test_keep_same_internal_feature(speos: Speos):
     """Test regarding source internal features (like spectrum, intensity).
 
@@ -933,12 +1089,15 @@ def test_get_source(speos: Speos, capsys):
     source1 = p.create_source(name="rayfile_source", feature_type=SourceRayFile)
     source2 = p.create_source(name="source2", feature_type=SourceLuminaire)
     source3 = p.create_source(name="source4", feature_type=SourceSurface)
+    source4 = p.create_source(name="environment_source", feature_type=SourceAmbientEnvironment)
     # test when key exists
     name = source1.get(key="name")
     assert name == "rayfile_source"
     property_info = source2.get(key="axis_system")
     assert property_info is not None
     property_info = source3.get(key="geo_path")
+    assert property_info is not None
+    property_info = source4.get(key="predefined_color_space")
     assert property_info is not None
 
     # test when key does not exist
@@ -953,4 +1112,8 @@ def test_get_source(speos: Speos, capsys):
     get_result3 = source3.get(key="geometry")
     stdout, stderr = capsys.readouterr()
     assert get_result3 is None
+    assert "Used key: geometry not found in key list" in stdout
+    get_result4 = source4.get(key="geometry")
+    stdout, stderr = capsys.readouterr()
+    assert get_result4 is None
     assert "Used key: geometry not found in key list" in stdout
