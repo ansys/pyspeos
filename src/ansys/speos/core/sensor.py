@@ -468,19 +468,13 @@ class BaseSensor:
                 raise RuntimeError(msg)
             self._sensor_type_colorimetric = sensor_type_colorimetric
 
-            if default_parameters:
-                # Default values
-                self._wavelengths_range = BaseSensor.WavelengthsRange(
-                    wavelengths_range=self._sensor_type_colorimetric.wavelengths_range,
-                    default_parameters=default_parameters.wavelength_range,
-                    stable_ctr=stable_ctr,
-                )
-            else:
-                self._wavelengths_range = BaseSensor.WavelengthsRange(
-                    wavelengths_range=self._sensor_type_colorimetric.wavelengths_range,
-                    default_parameters=None,
-                    stable_ctr=stable_ctr,
-                )
+            self._wavelengths_range = BaseSensor.WavelengthsRange(
+                wavelengths_range=self._sensor_type_colorimetric.wavelengths_range,
+                default_parameters=default_parameters.wavelength_range
+                if default_parameters
+                else None,
+                stable_ctr=stable_ctr,
+            )
 
         def set_wavelengths_range(self) -> BaseSensor.WavelengthsRange:
             """Set the range of wavelengths.
@@ -534,19 +528,13 @@ class BaseSensor:
                 raise RuntimeError(msg)
             self._sensor_type_spectral = sensor_type_spectral
 
-            if default_parameters:
-                # Default values
-                self._wavelengths_range = BaseSensor.WavelengthsRange(
-                    wavelengths_range=self._sensor_type_spectral.wavelengths_range,
-                    default_parameters=default_parameters.wavelength_range,
-                    stable_ctr=stable_ctr,
-                )
-            else:
-                self._wavelengths_range = BaseSensor.WavelengthsRange(
-                    wavelengths_range=self._sensor_type_spectral.wavelengths_range,
-                    default_parameters=None,
-                    stable_ctr=stable_ctr,
-                )
+            self._wavelengths_range = BaseSensor.WavelengthsRange(
+                wavelengths_range=self._sensor_type_spectral.wavelengths_range,
+                default_parameters=default_parameters.wavelength_range
+                if default_parameters
+                else None,
+                stable_ctr=stable_ctr,
+            )
 
         def set_wavelengths_range(self) -> BaseSensor.WavelengthsRange:
             """Set the range of wavelengths.
@@ -3984,19 +3972,13 @@ class Sensor3DIrradiance(BaseSensor):
 
             # Attribute to keep track of wavelength range object
 
-            if default_parameters:
-                # Default values
-                self._wavelengths_range = BaseSensor.WavelengthsRange(
-                    wavelengths_range=self._sensor_type_colorimetric,
-                    default_parameters=default_parameters.wavelength_range,
-                    stable_ctr=stable_ctr,
-                )
-            else:
-                self._wavelengths_range = BaseSensor.WavelengthsRange(
-                    wavelengths_range=self._sensor_type_colorimetric,
-                    default_parameters=default_parameters,
-                    stable_ctr=stable_ctr,
-                )
+            self._wavelengths_range = BaseSensor.WavelengthsRange(
+                wavelengths_range=self._sensor_type_colorimetric,
+                default_parameters=default_parameters.wavelength_range
+                if default_parameters
+                else None,
+                stable_ctr=stable_ctr,
+            )
 
         def set_wavelengths_range(self) -> BaseSensor.WavelengthsRange:
             """Set the range of wavelengths.

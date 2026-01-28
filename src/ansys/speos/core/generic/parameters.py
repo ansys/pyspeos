@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Collection of all parameter dataclasses used in pySpeos."""
+"""Collection of all parameter dataclasses used in PySpeos."""
 
 from dataclasses import dataclass, field
 from enum import Enum

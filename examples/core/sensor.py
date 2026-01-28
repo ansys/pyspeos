@@ -128,7 +128,7 @@ print(sensor1)
 
 # ## Another example
 #
-# Set more characteristics. and use Parameters Class
+# Set more characteristics, and use parameters classes.
 #
 # Camera feature is created with the same default values as the GUI speos.
 #
