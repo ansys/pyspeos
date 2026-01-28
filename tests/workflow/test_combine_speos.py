@@ -27,9 +27,9 @@ from pathlib import Path
 import pytest
 
 from ansys.speos.core import OptProp, Part, Project, Speos
+from ansys.speos.core.project import SpeosFileInstance
 from ansys.speos.core.sensor import SensorIrradiance
 from ansys.speos.core.workflow.combine_speos import (
-    SpeosFileInstance,
     combine_speos,
     insert_speos,
 )
@@ -43,11 +43,11 @@ def test_combine_speos(speos: Speos):
         speos=speos,
         speos_to_combine=[
             SpeosFileInstance(
-                speos_file=str(Path(test_path) / "Env_Simplified.speos" / "Env_Simplified.speos"),
+                file=str(Path(test_path) / "Env_Simplified.speos" / "Env_Simplified.speos"),
                 axis_system=[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
             ),
             SpeosFileInstance(
-                speos_file=str(Path(test_path) / "BlueCar.speos" / "BlueCar.speos"),
+                file=str(Path(test_path) / "BlueCar.speos" / "BlueCar.speos"),
                 axis_system=[
                     2000,
                     0,
@@ -64,7 +64,7 @@ def test_combine_speos(speos: Speos):
                 ],
             ),
             SpeosFileInstance(
-                speos_file=str(Path(test_path) / "RedCar.speos" / "RedCar.speos"),
+                file=str(Path(test_path) / "RedCar.speos" / "RedCar.speos"),
                 axis_system=[
                     -4000,
                     0,
@@ -86,7 +86,7 @@ def test_combine_speos(speos: Speos):
     # Check that scene is filled
     assert len(p.scene_link.get().materials) == 11
     assert len(p.scene_link.get().sensors) == 0
-    assert len(p.scene_link.get().sources) == 0
+    assert len(p.scene_link.get().sources) == 4
     assert len(p.scene_link.get().simulations) == 0
 
     # Check that the root part contains one part per speos to combine
@@ -122,11 +122,11 @@ def test_modify_parts_after_combine(speos: Speos):
         speos=speos,
         speos_to_combine=[
             SpeosFileInstance(
-                speos_file=str(Path(test_path) / "Env_Simplified.speos" / "Env_Simplified.speos"),
+                file=str(Path(test_path) / "Env_Simplified.speos" / "Env_Simplified.speos"),
                 axis_system=[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
             ),
             SpeosFileInstance(
-                speos_file=str(Path(test_path) / "BlueCar.speos" / "BlueCar.speos"),
+                file=str(Path(test_path) / "BlueCar.speos" / "BlueCar.speos"),
                 axis_system=[
                     2000,
                     0,
@@ -143,7 +143,7 @@ def test_modify_parts_after_combine(speos: Speos):
                 ],
             ),
             SpeosFileInstance(
-                speos_file=str(Path(test_path) / "RedCar.speos" / "RedCar.speos"),
+                file=str(Path(test_path) / "RedCar.speos" / "RedCar.speos"),
                 axis_system=[
                     -4000,
                     0,
@@ -208,7 +208,7 @@ def test_insert_speos(speos: Speos):
         project=p,
         speos_to_insert=[
             SpeosFileInstance(
-                speos_file=str(Path(test_path) / "BlueCar.speos" / "BlueCar.speos"),
+                file=str(Path(test_path) / "BlueCar.speos" / "BlueCar.speos"),
                 axis_system=[
                     2000,
                     0,
@@ -225,7 +225,7 @@ def test_insert_speos(speos: Speos):
                 ],
             ),
             SpeosFileInstance(
-                speos_file=str(Path(test_path) / "RedCar.speos" / "RedCar.speos"),
+                file=str(Path(test_path) / "RedCar.speos" / "RedCar.speos"),
                 axis_system=[
                     -4000,
                     0,
@@ -246,7 +246,7 @@ def test_insert_speos(speos: Speos):
 
     assert len(p.scene_link.get().materials) == 12  # 11 + 1 (ambient material)
     assert len(p.scene_link.get().sensors) == 1
-    assert len(p.scene_link.get().sources) == 2
+    assert len(p.scene_link.get().sources) == 4
     assert len(p.scene_link.get().simulations) == 1
     assert len(p.find(name=".*", name_regex=True, feature_type=OptProp)) == 12
 
