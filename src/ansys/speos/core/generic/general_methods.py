@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -34,7 +34,7 @@ from pathlib import Path
 from typing import List, Optional, Union, cast
 import warnings
 
-from ansys.tools.path import get_available_ansys_installations
+from ansys.tools.common.path import get_available_ansys_installations
 import numpy as np
 
 from ansys.speos.core.generic.constants import DEFAULT_VERSION
@@ -178,11 +178,8 @@ def error_no_install(install_path: Union[Path, str], version: Union[int, str]):
     version : Union[int, str]
         Version
     """
-    install_loc_msg = ""
-    if install_path:
-        install_loc_msg = f"at {Path(install_path).parent}"
     raise FileNotFoundError(
-        f"Ansys Speos RPC server installation not found{install_loc_msg}. "
+        f"Ansys Speos RPC server installation not found at {install_path}. "
         f"Please define AWP_ROOT{version} environment variable"
     )
 

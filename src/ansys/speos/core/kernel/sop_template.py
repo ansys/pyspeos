@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -49,7 +49,7 @@ class SOPTemplateLink(CrudItem):
     --------
     >>> from ansys.speos.core.speos import Speos
     >>> from ansys.speos.core.kernel.sop_template import ProtoSOPTemplate
-    >>> speos = Speos(host="localhost", port=50098)
+    >>> speos = Speos()
     >>> sop_t_db = speos.client.sop_templates()
     >>> sop_t_message = ProtoSOPTemplate(name="Mirror_50")
     >>> sop_t_message.mirror.reflectance = 50
@@ -104,7 +104,7 @@ class SOPTemplateStub(CrudStub):
     method. Like in the following example:
 
     >>> from ansys.speos.core.speos import Speos
-    >>> speos = Speos(host="localhost", port=50098)
+    >>> speos = Speos()
     >>> sop_t_db = speos.client.sop_templates()
 
     """

@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -38,3 +38,6 @@ MAX_CLIENT_MESSAGE_SIZE: int = int(4194304)
 """Maximum message Size accepted by grpc channel,
 By default, 4194304.
 """
+
+ORIGIN = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+"""Global Origin"""

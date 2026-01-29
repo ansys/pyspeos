@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -37,6 +37,7 @@ import pytest
 
 from ansys.speos.core import LOG
 from ansys.speos.core.generic.constants import MAX_CLIENT_MESSAGE_SIZE
+from ansys.speos.core.kernel.client import default_docker_channel, default_local_channel
 from ansys.speos.core.speos import Speos
 
 try:
@@ -50,10 +51,26 @@ except ImportError:
 IMAGE_RESULTS_DIR = Path(Path(__file__).parent, "image_results")
 IS_WINDOWS = os.name == "nt"
 
+# Load the local config file
+local_path = Path(os.path.realpath(__file__)).parent
+local_config_file = local_path / "local_config.json"
+if local_config_file.exists():
+    with local_config_file.open() as f:
+        config = json.load(f)
+else:
+    raise ValueError("Missing local_config.json file")
+
+# Check if server is on docker
+IS_DOCKER = config.get("SpeosServerOnDocker")
+DOCKER_CONTAINER_NAME = ""
+if IS_DOCKER:
+    DOCKER_CONTAINER_NAME = config.get("SpeosContainerName")
+SERVER_PORT = config.get("SpeosServerPort")
+
 
 @pytest.fixture(scope="session")
 def speos():
-    """Pytest ficture to create Speos objects for all unit, integration and workflow tests.
+    """Pytest fixture to create Speos objects for all unit, integration and workflow tests.
 
     Yields
     ------
@@ -68,30 +85,23 @@ def speos():
     log_file_path = Path(__file__).absolute().parent / "logs" / "integration_tests_logs.txt"
     Path(log_file_path).unlink(missing_ok=True)
 
+    message_size = MAX_CLIENT_MESSAGE_SIZE * 128
+    if IS_DOCKER:
+        channel = default_docker_channel(port=SERVER_PORT, message_size=message_size)
+    else:
+        channel = default_local_channel(port=SERVER_PORT, message_size=message_size)
     speos = Speos(
         logging_level=logging.DEBUG,
         logging_file=log_file_path,
-        port=str(config.get("SpeosServerPort")),
-        message_size=MAX_CLIENT_MESSAGE_SIZE * 128,
+        channel=channel,
     )
 
     yield speos
 
 
-local_path = Path(os.path.realpath(__file__)).parent
-
-# Load the local config file
-local_config_file = local_path / "local_config.json"
-if local_config_file.exists():
-    with local_config_file.open() as f:
-        config = json.load(f)
-else:
-    raise ValueError("Missing local_config.json file")
-
-
 # set test_path var depending on if we are using the servers in a docker container or not
 local_test_path = local_path / "assets"
-if config.get("SpeosServerOnDocker"):
+if IS_DOCKER:
     test_path = "/app/assets/"
 else:
     test_path = local_test_path

@@ -9,7 +9,10 @@
 import os
 from pathlib import Path
 
-from ansys.speos.core import Part, Speos
+from ansys.speos.core import Part, Speos, launcher
+from ansys.speos.core.kernel.client import (
+    default_docker_channel,
+)
 from ansys.speos.core.sensor import SensorCamera
 from ansys.speos.core.simulation import SimulationInverse
 from ansys.speos.core.source import SourceLuminaire
@@ -65,8 +68,10 @@ else:
     assets_data_path = Path("/path/to/your/download/assets/directory")
 
 # ## Create connection with speos rpc server
-
-speos = Speos(host=HOSTNAME, port=GRPC_PORT)
+if USE_DOCKER:
+    speos = Speos(channel=default_docker_channel())
+else:
+    speos = launcher.launch_local_speos_rpc_server(port=GRPC_PORT)
 
 # ## Combine several speos files into one project
 #
@@ -113,18 +118,24 @@ p.preview()
 # ### Create a sensor
 
 ssr = p.create_sensor(name="Camera.1", feature_type=SensorCamera)
-ssr.set_distortion_file_uri(
-    uri=str(assets_data_path / "CameraInputFiles" / "CameraDistortion_190deg.OPTDistortion")
-).set_mode_photometric().set_transmittance_file_uri(
-    uri=str(assets_data_path / "CameraInputFiles" / "CameraTransmittance.spectrum")
-).set_mode_color().set_red_spectrum_file_uri(
-    uri=str(assets_data_path / "CameraInputFiles" / "CameraSensitivityRed.spectrum")
-).set_blue_spectrum_file_uri(
-    uri=str(assets_data_path / "CameraInputFiles" / "CameraSensitivityBlue.spectrum")
-).set_green_spectrum_file_uri(
-    uri=str(assets_data_path / "CameraInputFiles" / "CameraSensitivityGreen.spectrum")
+ssr.distortion_file_uri = str(
+    assets_data_path / "CameraInputFiles" / "CameraDistortion_190deg.OPTDistortion"
 )
-ssr.set_axis_system([-2000, 1500, 11000, -1, 0, 0, 0, 1, 0, 0, 0, -1])
+ssr.set_mode_photometric().transmittance_file_uri = str(
+    assets_data_path / "CameraInputFiles" / "CameraTransmittance.spectrum"
+)
+color_mode = ssr.set_mode_photometric().set_mode_color()
+color_mode.red_spectrum_file_uri = str(
+    assets_data_path / "CameraInputFiles" / "CameraSensitivityRed.spectrum"
+)
+color_mode.blue_spectrum_file_uri = str(
+    assets_data_path / "CameraInputFiles" / "CameraSensitivityBlue.spectrum"
+)
+color_mode.green_spectrum_file_uri = str(
+    assets_data_path / "CameraInputFiles" / "CameraSensitivityGreen.spectrum"
+)
+
+ssr.axis_system = [-2000, 1500, 11000, -1, 0, 0, 0, 1, 0, 0, 0, -1]
 ssr.commit()
 
 # ### Create a source
@@ -195,7 +206,7 @@ if os.name == "nt":
 # Modify the camera, e.g. focal length to 10
 
 cam1 = p.find(name="Camera.1", feature_type=SensorCamera)[0]
-cam1.set_focal_length(value=10)
+cam1.focal_length = 10
 cam1.commit()
 
 # Re-run the simulation and review result

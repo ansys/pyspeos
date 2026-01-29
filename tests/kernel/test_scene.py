@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -30,6 +30,7 @@ from ansys.api.speos.simulation.v1 import simulation_template_pb2
 import numpy as np
 import pytest
 
+from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.kernel.body import ProtoBody
 from ansys.speos.core.kernel.face import FaceStub, ProtoFace
 from ansys.speos.core.kernel.intensity_template import ProtoIntensityTemplate
@@ -270,6 +271,13 @@ def create_basic_scene(speos: Speos) -> SceneLink:
             geometries=ProtoScene.GeoPaths(geo_paths=["BodySource:1/FaceSource:1"]),
         )
 
+    if server_version_checker.is_version_supported(2026, 1, 0):
+        geometries = ProtoScene.GeoPaths(geo_paths=[])
+    else:
+        # Before 26r1, the convention about GeoPaths was wrongly handled
+        # by the server for SimulationInstance.geometries
+        geometries = None
+
     # Create scene
     scene = scene_db.create(
         message=ProtoScene(
@@ -335,6 +343,7 @@ def create_basic_scene(speos: Speos) -> SceneLink:
                         "irradiance_photometric.1",
                         "irradiance_colorimetric.1",
                     ],
+                    geometries=geometries,
                 ),
                 ProtoScene.SimulationInstance(
                     name="direct_simu.2",
@@ -344,12 +353,14 @@ def create_basic_scene(speos: Speos) -> SceneLink:
                         "irradiance_photometric.1",
                         "irradiance_colorimetric.1",
                     ],
+                    geometries=geometries,
                 ),
                 ProtoScene.SimulationInstance(
                     name="inverse_simu.1",
                     simulation_guid=inverse_t.key,
                     source_paths=["surface_with_blackbody.1"],
                     sensor_paths=["irradiance_colorimetric.1"],
+                    geometries=geometries,
                 ),
                 ProtoScene.SimulationInstance(
                     name="interactive_simu.1",
@@ -363,6 +374,7 @@ def create_basic_scene(speos: Speos) -> SceneLink:
                         "irradiance_photometric.1",
                         "irradiance_colorimetric.1",
                     ],
+                    geometries=geometries,
                 ),
             ],
         )
