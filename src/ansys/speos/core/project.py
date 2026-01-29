@@ -34,6 +34,12 @@ import numpy as np
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
 from ansys.speos.core.generic.general_methods import graphics_required
+from ansys.speos.core.generic.parameters import (
+    CameraSensorParameters,
+    Irradiance3DSensorParameters,
+    IrradianceSensorParameters,
+    RadianceSensorParameters,
+)
 from ansys.speos.core.generic.visualization_methods import local2absolute
 from ansys.speos.core.kernel.body import BodyLink
 from ansys.speos.core.kernel.face import FaceLink
@@ -326,6 +332,12 @@ class Project:
         description: str = "",
         feature_type: type = SensorIrradiance,
         metadata: Optional[Mapping[str, str]] = None,
+        parameters: Optional[
+            IrradianceSensorParameters,
+            RadianceSensorParameters,
+            CameraSensorParameters,
+            Irradiance3DSensorParameters,
+        ] = None,
     ) -> Union[SensorCamera, SensorRadiance, SensorIrradiance, Sensor3DIrradiance]:
         """Create a new Sensor feature.
 
@@ -346,6 +358,13 @@ class Project:
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
+        parameters :  Optional[
+            IrradianceSensorParameters,
+            RadianceSensorParameters,
+            CameraSensorParameters,
+            Irradiance3DSensorParameters
+        ]
+            Allows to provide parameters to overwrite default parameters
 
         Returns
         -------
@@ -366,32 +385,64 @@ class Project:
         feature = None
         match feature_type.__name__:
             case "SensorIrradiance":
+                if parameters is None:
+                    parameters = IrradianceSensorParameters()
+                elif not isinstance(parameters, IrradianceSensorParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of IrradianceSensorParameters"
+                    )
                 feature = SensorIrradiance(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
+                    default_parameters=parameters,
                 )
             case "SensorRadiance":
+                if parameters is None:
+                    parameters = RadianceSensorParameters()
+                elif not isinstance(parameters, RadianceSensorParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of RadianceSensorParameters"
+                    )
                 feature = SensorRadiance(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
+                    default_parameters=parameters,
                 )
             case "SensorCamera":
+                if parameters is None:
+                    parameters = CameraSensorParameters()
+                elif not isinstance(parameters, CameraSensorParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of CameraSensorParameters"
+                    )
                 feature = SensorCamera(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
+                    default_parameters=parameters,
                 )
             case "Sensor3DIrradiance":
+                if parameters is None:
+                    parameters = Irradiance3DSensorParameters()
+                elif not isinstance(parameters, Irradiance3DSensorParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of Irradiance3DSensorParameters"
+                    )
                 feature = Sensor3DIrradiance(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
+                    default_parameters=parameters,
                 )
             case _:
                 msg = "Requested feature {} does not exist in supported list {}".format(
@@ -848,28 +899,28 @@ class Project:
                     project=self,
                     name=ssr_inst.name,
                     sensor_instance=ssr_inst,
-                    default_values=False,
+                    default_parameters=None,
                 )
             elif ssr_inst.HasField("radiance_properties"):
                 ssr_feat = SensorRadiance(
                     project=self,
                     name=ssr_inst.name,
                     sensor_instance=ssr_inst,
-                    default_values=False,
+                    default_parameters=None,
                 )
             elif ssr_inst.HasField("camera_properties"):
                 ssr_feat = SensorCamera(
                     project=self,
                     name=ssr_inst.name,
                     sensor_instance=ssr_inst,
-                    default_values=False,
+                    default_parameters=None,
                 )
             elif ssr_inst.HasField("irradiance_3d_properties"):
                 ssr_feat = Sensor3DIrradiance(
                     project=self,
                     name=ssr_inst.name,
                     sensor_instance=ssr_inst,
-                    default_values=False,
+                    default_parameters=None,
                 )
             if ssr_feat is not None:
                 self._features.append(ssr_feat)
