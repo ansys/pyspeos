@@ -101,7 +101,10 @@ def launch_remote_speos(
     pim = pypim.connect()
     instance = pim.create_instance(product_name="speos", product_version=version)
     instance.wait_for_ready()
-    channel = instance.build_grpc_channel()
+    # build_grpc_channel() returns an grpc._interceptor._Channel
+    # As we need a grpc.Channel in Speos object -> build_grpc_channel()._channel
+    # Not doing that was leading to issue when trying to find the target() of the channel.
+    channel = instance.build_grpc_channel()._channel
     return Speos(channel=channel, remote_instance=instance)
 
 
