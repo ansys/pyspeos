@@ -60,6 +60,52 @@ class DimensionsParameters:
     """Sampling y axis."""
 
 
+@dataclass
+class IntensitySensorDimensionsConoscopic:
+    """Dataclass for Intensity Sensor dimension in case of conoscopic."""
+
+    theta_max: float = 45
+    """Maximum theta angle on consocopic type (in deg)."""
+    theta_sampling: float = 90
+    """Sampling for consocopic type for theta."""
+
+
+@dataclass
+class IntensitySensorDimensionsXAsMeridian:
+    """Dataclass for Intensity Sensor dimension in case of x_as_meridian."""
+
+    y_start = -30
+    """Lower bound y axis."""
+    y_end = 30
+    """Upper bound y axis."""
+    y_sampling = 120
+    """Sampling y axis."""
+    x_start = -45
+    """Lower bound x axis."""
+    x_end = 45
+    """Upper bound x axis."""
+    x_sampling = 180
+    """Sampling x axis."""
+
+
+@dataclass
+class IntensitySensorDimensionsXAsParallel:
+    """Dataclass for Intensity Sensor dimension in case of x_as_parallel."""
+
+    x_start = -30
+    """Lower bound y axis."""
+    x_end = 30
+    """Upper bound y axis."""
+    x_sampling = 120
+    """Sampling y axis."""
+    y_start = -45
+    """Lower bound x axis."""
+    y_end = 45
+    """Upper bound x axis."""
+    y_sampling = 180
+    """Sampling x axis."""
+
+
 class LayerTypes(str, Enum):
     """Layer Separation types without parameters."""
 
@@ -289,6 +335,21 @@ class SensorTypes(str, Enum):
     radiometric = "radiometric"
 
 
+class IntensitySensorOrientationTypes(str, Enum):
+    """Intensity sensor orientation types."""
+
+    conoscopic = "conoscopic"
+    x_as_parallel = "x_as_parallel"
+    x_as_meridian = "x_as_meridian"
+
+
+class IntensitySensorViewingTypes(str, Enum):
+    """Intensity sensor viewing types."""
+
+    from_source = "from_source"
+    from_sensor = "from_sensor"
+
+
 @dataclass
 class MeasuresParameters:
     """Measurements for 3d Irradiance Sensor."""
@@ -380,3 +441,32 @@ class Irradiance3DSensorParameters:
     """Layer separation type."""
     geometries: Optional[list] = None
     """Sensor geometry."""
+
+
+@dataclass
+class IntensityXMPSensorParameters:
+    """Parameters data clas for intensity Sensor."""
+
+    dimensions: Union[
+        IntensitySensorDimensionsXAsMeridian,
+        IntensitySensorDimensionsXAsParallel,
+        IntensitySensorDimensionsConoscopic,
+    ] = field(default_factory=IntensitySensorDimensionsXAsMeridian)
+    """Dimensions of the sensor."""
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+    """Position of the sensor."""
+    sensor_type: Union[SensorTypes.photometric, ColorimetricParameters, SensorTypes.radiometric] = (
+        SensorTypes.photometric
+    )
+    """Type of the sensor."""
+    orientation: IntensitySensorOrientationTypes = IntensitySensorOrientationTypes.x_as_meridian
+    """Sensor orientation."""
+    viewing_direction: IntensitySensorViewingTypes = IntensitySensorViewingTypes.from_source
+    """Viewing Direction onto the result."""
+    layer_type: Union[
+        LayerTypes.none,
+        LayerTypes.by_source,
+        LayerByFaceParameters,
+        LayerBySequenceParameters,
+    ] = LayerTypes.none
+    """Layer separation type."""

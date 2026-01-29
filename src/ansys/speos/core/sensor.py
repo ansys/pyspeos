@@ -47,6 +47,12 @@ from ansys.speos.core.generic.parameters import (
     ColorParameters,
     DimensionsParameters,
     IntegrationTypes,
+    IntensitySensorDimensionsConoscopic,
+    IntensitySensorDimensionsXAsMeridian,
+    IntensitySensorDimensionsXAsParallel,
+    IntensitySensorOrientationTypes,
+    IntensitySensorViewingTypes,
+    IntensityXMPSensorParameters,
     Irradiance3DSensorParameters,
     IrradianceSensorParameters,
     LayerByFaceParameters,
@@ -4304,7 +4310,7 @@ class SensorXMPIntensity(BaseSensor):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         sensor_instance: Optional[ProtoScene.SensorInstance] = None,
-        default_values: bool = True,
+        default_parameters: Union[None, IntensityXMPSensorParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -4322,15 +4328,60 @@ class SensorXMPIntensity(BaseSensor):
         self._layer_type = None
         self._cell_diameter = None
 
-        if default_values:
+        if default_parameters:
+            match default_parameters.orientation:
+                case IntensitySensorOrientationTypes.conoscopic:
+                    self.set_orientation_conoscopic()
+                case IntensitySensorOrientationTypes.x_as_meridian:
+                    self.set_orientation_x_as_meridian()
+                case IntensitySensorOrientationTypes.x_as_parallel:
+                    self.set_orientation_x_as_parallel()
+
+            self._set_dimension_values(default_parameters.dimensions)
             # Default values template
-            self.set_type_photometric()
-            self.set_orientation_x_as_meridian()
-            self.set_viewing_direction_from_source()
-            self._set_default_dimension_values()
+            self.axis_system = default_parameters.axis_system
+
+            match default_parameters.viewing_direction:
+                case IntensitySensorViewingTypes.from_sensor:
+                    self.set_viewing_direction_from_sensor()
+                case IntensitySensorViewingTypes.from_source:
+                    self.set_viewing_direction_from_source()
+
+            if isinstance(default_parameters.sensor_type, ColorimetricParameters):
+                self._type = BaseSensor.Colorimetric(
+                    sensor_type_colorimetric=self._sensor_template.intensity_sensor_template.sensor_type_colorimetric,
+                    default_parameters=default_parameters.sensor_type,
+                    stable_ctr=True,
+                )
+            elif isinstance(default_parameters.sensor_type, SpectralParameters):
+                self._type = BaseSensor.Spectral(
+                    sensor_type_spectral=self._sensor_template.intensity_sensor_template.sensor_type_spectral,
+                    default_parameters=default_parameters.sensor_type,
+                    stable_ctr=True,
+                )
+            elif default_parameters.sensor_type == SensorTypes.radiometric:
+                self.set_type_radiometric()
+            elif default_parameters.sensor_type == SensorTypes.photometric:
+                self.set_type_photometric()
+
+            if default_parameters.layer_type == LayerTypes.none:
+                self.set_layer_type_none()
+            elif default_parameters.layer_type == LayerTypes.by_source:
+                self.set_layer_type_source()
+            elif isinstance(default_parameters.layer_type, LayerByFaceParameters):
+                self._layer_type = BaseSensor.LayerTypeFace(
+                    layer_type_face=self._sensor_instance.intensity_properties.layer_type_face,
+                    default_parameters=default_parameters.layer_type,
+                    stable_ctr=True,
+                )
+            elif isinstance(default_parameters.layer_type, LayerBySequenceParameters):
+                self._layer_type = BaseSensor.LayerTypeSequence(
+                    layer_type_sequence=self._sensor_instance.intensity_properties.layer_type_sequence,
+                    default_parameters=default_parameters.layer_type,
+                    stable_ctr=True,
+                )
+
             # Default values properties
-            self.set_axis_system()
-            self.set_layer_type_none()
 
     @property
     def visual_data(self) -> _VisualData:
@@ -4470,11 +4521,8 @@ class SensorXMPIntensity(BaseSensor):
 
     @property
     def near_field(self) -> bool:
-        """Property containing if the sensor is positioned in nearfield or infinity."""
-        if self._sensor_template.intensity_sensor_template.HasField("near_field"):
-            return True
-        else:
-            return False
+        """Return True if the sensor is positioned in nearfield, otherwise False."""
+        return self._sensor_template.intensity_sensor_template.HasField("near_field")
 
     @near_field.setter
     def near_field(self, value):
@@ -4483,9 +4531,8 @@ class SensorXMPIntensity(BaseSensor):
                 self._sensor_template.intensity_sensor_template.near_field.SetInParent()
                 self.cell_distance = 10
                 self.cell_diameter = 0.3491
-        else:
-            if self._sensor_template.intensity_sensor_template.HasField("near_field"):
-                self._sensor_template.intensity_sensor_template.ClearField("near_field")
+        elif self._sensor_template.intensity_sensor_template.HasField("near_field"):
+            self._sensor_template.intensity_sensor_template.ClearField("near_field")
 
     @property
     def cell_distance(self):
@@ -4502,9 +4549,8 @@ class SensorXMPIntensity(BaseSensor):
     def cell_distance(self, value):
         if self.near_field:
             self._sensor_template.intensity_sensor_template.near_field.cell_distance = value
-
         else:
-            raise TypeError("Sensor position is not in nearfield")
+            raise TypeError("Sensor position is not in near field")
 
     @property
     def cell_diameter(self):
@@ -4513,9 +4559,13 @@ class SensorXMPIntensity(BaseSensor):
         By default, ``0.3491``
         """
         if self.near_field:
-            diameter = self.cell_distance * np.tan(
-                np.radians(
-                    self._sensor_template.intensity_sensor_template.near_field.cell_integration_angle
+            diameter = (
+                2
+                * self.cell_distance
+                * np.tan(
+                    np.radians(
+                        self._sensor_template.intensity_sensor_template.near_field.cell_integration_angle
+                    )
                 )
             )
             return diameter
@@ -4540,9 +4590,7 @@ class SensorXMPIntensity(BaseSensor):
         str
             Sensor type as string
         """
-        if type(self._type) is str:
-            return self._type
-        elif isinstance(self._type, BaseSensor.Colorimetric):
+        if isinstance(self._type, BaseSensor.Colorimetric):
             return "Colorimetric"
         elif isinstance(self._type, BaseSensor.Spectral):
             return "Spectral"
@@ -4582,10 +4630,8 @@ class SensorXMPIntensity(BaseSensor):
         self,
     ) -> Union[
         None,
-        SensorIrradiance,
         BaseSensor.LayerTypeFace,
         BaseSensor.LayerTypeSequence,
-        BaseSensor.LayerTypeIncidenceAngle,
     ]:
         """Property containing all options in regard to the layer separation properties.
 
@@ -4593,10 +4639,8 @@ class SensorXMPIntensity(BaseSensor):
         -------
         Union[\
             None,\
-            ansys.speos.core.sensor.SensorIrradiance,\
             ansys.speos.core.sensor.BaseSensor.LayerTypeFace,\
             ansys.speos.core.sensor.BaseSensor.LayerTypeSequence,\
-            ansys.speos.core.sensor.BaseSensor.LayerTypeIncidenceAngle\
         ]
             Instance of Layertype Class for this sensor feature
         """
@@ -4624,17 +4668,17 @@ class SensorXMPIntensity(BaseSensor):
     def set_orientation_x_as_meridian(self):
         """Set Orientation type: X As Meridian, Y as Parallel."""
         self._sensor_template.intensity_sensor_template.intensity_orientation_x_as_meridian.SetInParent()
-        self._set_default_dimension_values()
+        self._set_dimension_values()
 
     def set_orientation_x_as_parallel(self):
         """Set Orientation type: X as Parallel, Y As Meridian."""
         self._sensor_template.intensity_sensor_template.intensity_orientation_x_as_parallel.SetInParent()
-        self._set_default_dimension_values()
+        self._set_dimension_values()
 
     def set_orientation_conoscopic(self):
         """Set Orientation type: Conoscopic."""
         self._sensor_template.intensity_sensor_template.intensity_orientation_conoscopic.SetInParent()
-        self._set_default_dimension_values()
+        self._set_dimension_values()
 
     def set_viewing_direction_from_source(self):
         """Set viewing direction from Source Looking At Sensor."""
@@ -4644,25 +4688,40 @@ class SensorXMPIntensity(BaseSensor):
         """Set viewing direction from Sensor Looking At Source."""
         self._sensor_template.intensity_sensor_template.from_sensor_looking_at_source.SetInParent()
 
-    def _set_default_dimension_values(self):
+    def _set_dimension_values(
+        self,
+        dimension: Union[
+            IntensitySensorDimensionsXAsMeridian,
+            IntensitySensorDimensionsXAsParallel,
+            IntensitySensorDimensionsConoscopic,
+        ],
+    ):
         template = self._sensor_template.intensity_sensor_template
+        warning_msg = (
+            "Mismatch of dimensions and sensor orientation was detected. "
+            "The sensor dimension are reset to the orientation types default values"
+        )
         if template.HasField("intensity_orientation_conoscopic"):
-            self.theta_max = 45
-            self.theta_sampling = 90
-        elif template.HasField("intensity_orientation_x_as_parallel"):
-            self.x_start = -30
-            self.x_end = 30
-            self.x_sampling = 120
-            self.y_start = -45
-            self.y_end = 45
-            self.y_sampling = 180
-        elif template.HasField("intensity_orientation_x_as_meridian"):
-            self.y_start = -30
-            self.y_end = 30
-            self.y_sampling = 120
-            self.x_start = -45
-            self.x_end = 45
-            self.x_sampling = 180
+            if not isinstance(dimension, IntensitySensorDimensionsConoscopic):
+                warnings.warn(warning_msg)
+                dimension = IntensitySensorDimensionsConoscopic()
+            self.theta_max = dimension.theta_max
+            self.theta_sampling = dimension.theta_sampling
+        else:
+            if template.HasField("intensity_orientation_conoscopic"):
+                if not isinstance(dimension, IntensitySensorDimensionsXAsParallel):
+                    warnings.warn(warning_msg)
+                    dimension = IntensitySensorDimensionsXAsParallel()
+            elif template.HasField("intensity_orientation_x_as_meridian"):
+                if not isinstance(dimension, IntensitySensorDimensionsXAsMeridian):
+                    warnings.warn(warning_msg)
+                    dimension = IntensitySensorDimensionsXAsMeridian()
+            self.x_start = dimension.x_start
+            self.x_end = dimension.x_end
+            self.x_sampling = dimension.x_sampling
+            self.y_start = dimension.y_start
+            self.y_end = dimension.y_end
+            self.y_sampling = dimension.y_sampling
 
     @property
     def x_start(self) -> float:
@@ -4672,6 +4731,7 @@ class SensorXMPIntensity(BaseSensor):
         """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
+            warnings.warn("This property doesn't exist with the current orientation")
             return None
         elif template.HasField("intensity_orientation_x_as_parallel"):
             return template.intensity_orientation_x_as_parallel.intensity_dimensions.x_start
@@ -4696,6 +4756,7 @@ class SensorXMPIntensity(BaseSensor):
         """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
+            warnings.warn("This property doesn't exist with the current orientation")
             return None
         elif template.HasField("intensity_orientation_x_as_parallel"):
             return template.intensity_orientation_x_as_parallel.intensity_dimensions.x_end
@@ -4720,6 +4781,7 @@ class SensorXMPIntensity(BaseSensor):
         """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
+            warnings.warn("This property doesn't exist with the current orientation")
             return None
         elif template.HasField("intensity_orientation_x_as_parallel"):
             return template.intensity_orientation_x_as_parallel.intensity_dimensions.x_sampling
@@ -4744,6 +4806,7 @@ class SensorXMPIntensity(BaseSensor):
         """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
+            warnings.warn("This property doesn't exist with the current orientation")
             return None
         elif template.HasField("intensity_orientation_x_as_parallel"):
             return template.intensity_orientation_x_as_parallel.intensity_dimensions.y_end
@@ -4768,6 +4831,7 @@ class SensorXMPIntensity(BaseSensor):
         """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
+            warnings.warn("This property doesn't exist with the current orientation")
             return None
         elif template.HasField("intensity_orientation_x_as_parallel"):
             return template.intensity_orientation_x_as_parallel.intensity_dimensions.y_start
@@ -4792,6 +4856,7 @@ class SensorXMPIntensity(BaseSensor):
         """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
+            warnings.warn("This property doesn't exist with the current orientation")
             return None
         elif template.HasField("intensity_orientation_x_as_parallel"):
             return template.intensity_orientation_x_as_parallel.intensity_dimensions.y_sampling
@@ -4820,6 +4885,7 @@ class SensorXMPIntensity(BaseSensor):
                 template.intensity_orientation_conoscopic.conoscopic_intensity_dimensions.theta_max
             )
         else:
+            warnings.warn("This property doesn't exist with the current orientation")
             return None
 
     @theta_max.setter
@@ -4844,6 +4910,7 @@ class SensorXMPIntensity(BaseSensor):
                 template.intensity_orientation_conoscopic.conoscopic_intensity_dimensions.sampling
             )
         else:
+            warnings.warn("This property doesn't exist with the current orientation")
             return None
 
     @theta_sampling.setter
