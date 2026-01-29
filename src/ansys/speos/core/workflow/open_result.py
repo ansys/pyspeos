@@ -212,30 +212,18 @@ if os.name == "nt":
         file = tmp_txt.open("r")
         content = file.readlines()
         file.close()
-        skip_lines = 9 if "SeparatedByLayer" in content[7] else 8
-        xmp_data = []
-        if dpf_instance.Maptype == 2 and len(content[6].strip().split()) == 3:
-            # spectral data within number of data tables
-            spectral_tables = int(content[6].strip().split()[2])
-            xmp_data = [
-                [0 for _ in range(len(content[skip_lines].strip().split()))]
-                for _ in range(resolution_y)
-            ]
-            for _ in range(spectral_tables):
-                for i in range(resolution_y):
-                    row = list(map(float, content[skip_lines].strip().split()))
-                    for j in range(resolution_x):
-                        xmp_data[i][j] += row[j]
-                    skip_lines += 1
-                # Skip one line between tables
-                skip_lines += 1
-        else:
-            # not spectral data
-            for line in content[skip_lines : skip_lines + resolution_y]:
-                line_content = line.strip().split()
-                xmp_data.append(list(map(float, line_content)))
 
-        # Create VTK ImageData structure
+        xmp_data = []
+        content = [line.rstrip() for line in content]
+        marker = "X\tY\tValue"
+        start_idx = content.index(marker) + 1
+        for line in content[start_idx:]:
+            x, y, value = line.split("\t")
+            xmp_data.append(float(value))
+        xmp_data = numpy.array(xmp_data).reshape((resolution_x, resolution_y))
+        xmp_data = numpy.flip(xmp_data, axis=0)
+
+        # Create VTP ImageData structure
         step_x = float(dimension_x) / resolution_x
         step_y = float(dimension_y) / resolution_y
         origin_x = -(resolution_x * step_x) / 2
@@ -245,17 +233,10 @@ if os.name == "nt":
             spacing=(step_x, step_y, 1),
             origin=(origin_x, origin_y, 0),
         )
-        xmp_data = numpy.array(xmp_data)
-        if xmp_data.shape[1] == resolution_x:
-            if dpf_instance.UnitType == 0:
-                grid["Radiometric"] = numpy.ravel(xmp_data)
-            if dpf_instance.UnitType == 1:
-                grid["Photometric"] = numpy.ravel(xmp_data)
-        else:
-            grid["X"] = numpy.ravel(xmp_data[:, 0::4])
-            grid["Photometric"] = numpy.ravel(xmp_data[:, 1::4])
-            grid["Radiometric"] = numpy.ravel(xmp_data[:, 2::4])
-            grid["Z"] = numpy.ravel(xmp_data[:, 3::4])
+        if dpf_instance.UnitType == 0:
+            grid["Radiometric"] = numpy.ravel(xmp_data)
+        if dpf_instance.UnitType == 1:
+            grid["Photometric"] = numpy.ravel(xmp_data)
         vtp_meshes = grid.extract_surface()
         # Export file to VTP
         vtp_meshes.save(str(file_path.with_suffix(".vtp")))
