@@ -11,6 +11,11 @@
 from pathlib import Path
 
 from ansys.speos.core import GeoRef, Project, Speos, launcher
+from ansys.speos.core.generic.parameters import (
+    CameraSensorParameters,
+    ColorParameters,
+    PhotometricCameraParameters,
+)
 from ansys.speos.core.kernel.client import (
     default_docker_channel,
 )
@@ -102,13 +107,14 @@ green_spectrum_path = str(assets_data_path / FILES / "CameraSensitivityGreen.spe
 red_spectrum_path = str(assets_data_path / FILES / "CameraSensitivityRed.spectrum")
 
 sensor1 = p.create_sensor(name="Camera.1", feature_type=SensorCamera)
-sensor1.set_distortion_file_uri(uri=distortion_file_path)
+sensor1.distortion_file_uri = distortion_file_path
 # Choose photometric mode
-sensor1.set_mode_photometric().set_transmittance_file_uri(uri=transmittance_file_path)
+sensor1.set_mode_photometric().transmittance_file_uri = transmittance_file_path
 # Choose color mode (will imply to give spectrum file for blue, green and red)
-sensor1.set_mode_photometric().set_mode_color().set_blue_spectrum_file_uri(uri=blue_spectrum_path)
-sensor1.set_mode_photometric().set_mode_color().set_green_spectrum_file_uri(uri=green_spectrum_path)
-sensor1.set_mode_photometric().set_mode_color().set_red_spectrum_file_uri(uri=red_spectrum_path)
+mode_color = sensor1.photometric.set_mode_color()
+mode_color.blue_spectrum_file_uri = blue_spectrum_path
+mode_color.green_spectrum_file_uri = green_spectrum_path
+mode_color.red_spectrum_file_uri = red_spectrum_path
 print(sensor1)
 # -
 
@@ -122,7 +128,7 @@ print(sensor1)
 
 # ## Another example
 #
-# Set more characteristics.
+# Set more characteristics, and use parameters classes.
 #
 # Camera feature is created with the same default values as the GUI speos.
 #
@@ -136,18 +142,25 @@ blue_spectrum_path = str(assets_data_path / FILES / "CameraSensitivityBlue.spect
 green_spectrum_path = str(assets_data_path / FILES / "CameraSensitivityGreen.spectrum")
 red_spectrum_path = str(assets_data_path / FILES / "CameraSensitivityRed.spectrum")
 
-sensor2 = p.create_sensor(name="Camera.2", feature_type=SensorCamera)
-sensor2.set_distortion_file_uri(uri=distortion_file_path)
-sensor2.set_mode_photometric().set_transmittance_file_uri(uri=transmittance_file_path)
-sensor2.set_mode_photometric().set_layer_type_source()
-sensor2.set_mode_photometric().set_mode_color().set_blue_spectrum_file_uri(uri=blue_spectrum_path)
-sensor2.set_mode_photometric().set_mode_color().set_green_spectrum_file_uri(uri=green_spectrum_path)
-sensor2.set_mode_photometric().set_mode_color().set_red_spectrum_file_uri(uri=red_spectrum_path)
-sensor2.set_focal_length(5.5)
-sensor2.set_height(value=6).set_width(value=6)  # dimensions
-sensor2.set_axis_system(
-    [20, 10, 40, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-)  # camera location [Origin, Xvector, Yvector, Zvector]
+color_params = ColorParameters(
+    blue_spectrum_file_uri=blue_spectrum_path,
+    green_spectrum_file_uri=green_spectrum_path,
+    red_spectrum_file_uri=red_spectrum_path,
+)
+photo_params = PhotometricCameraParameters(
+    color_mode=color_params, layer_type="by_source", transmittance_file_uri=transmittance_file_path
+)
+param = CameraSensorParameters(
+    sensor_type_parameters=photo_params,
+    distortion_file_uri=distortion_file_path,
+    axis_system=[20, 10, 40, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+    # camera location [Origin, Xvector, Yvector, Zvector]
+    focal_length=5.5,
+    height=6,  # dimensions
+    width=6,
+)
+
+sensor2 = p.create_sensor("Camera_Parameter", feature_type=SensorCamera, parameters=param)
 sensor2.commit()
 
 print(sensor2)
@@ -175,7 +188,8 @@ print(p)
 # If you don't, you will still only watch what is committed on the server.
 
 # modify f number and axis system
-sensor1.set_f_number(value=11).set_axis_system([17, 10, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+sensor1.f_number = 11
+sensor1.axis_system = [17, 10, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 sensor1.commit()
 print(sensor1)
 
@@ -220,7 +234,8 @@ sensor4 = p.create_sensor(name="Radiance.1", feature_type=SensorRadiance)
 sensor4.commit()
 print(sensor4)
 
-sensor4.set_focal(value=200).set_type_spectral()
+sensor4.focal = 200
+sensor4.set_type_spectral()
 sensor4.set_layer_type_source()
 sensor4.commit()
 print(sensor4)
@@ -232,7 +247,7 @@ print(sensor4)
 
 create_helper_geometries(p)
 sensor5 = p.create_sensor(name="3D_Irradiance.2", feature_type=Sensor3DIrradiance)
-sensor5.set_geometries([GeoRef.from_native_link("TheBodyB/TheFaceF")])
+sensor5.geometries = [GeoRef.from_native_link("TheBodyB/TheFaceF")]
 sensor5.commit()
 print(sensor5)
 

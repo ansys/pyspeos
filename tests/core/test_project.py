@@ -27,8 +27,14 @@ from pathlib import Path
 import pytest
 
 from ansys.speos.core import Body, Face, GeoRef, Part, Project, Speos
+from ansys.speos.core.generic.parameters import IrradianceSensorParameters, RadianceSensorParameters
 from ansys.speos.core.opt_prop import OptProp
-from ansys.speos.core.sensor import Sensor3DIrradiance, SensorIrradiance, SensorRadiance
+from ansys.speos.core.sensor import (
+    Sensor3DIrradiance,
+    SensorCamera,
+    SensorIrradiance,
+    SensorRadiance,
+)
 from ansys.speos.core.simulation import SimulationDirect
 from ansys.speos.core.source import SourceLuminaire, SourceRayFile, SourceSurface
 from tests.conftest import test_path
@@ -362,7 +368,7 @@ def test_from_file(speos: Speos):
     assert type(feat_ssrs[0]) is SensorIrradiance
 
     # And that we can modify it (and that other values are not overridden by default values)
-    feat_ssrs[0].set_type_colorimetric().set_wavelengths_range().set_end(value=800)
+    feat_ssrs[0].set_type_colorimetric().set_wavelengths_range().end = 800
     feat_ssrs[0].commit()
     ssr_link = speos.client[p.scene_link.get().sensors[0].sensor_guid]
     ssr_data = ssr_link.get()
@@ -530,7 +536,7 @@ def test_preview_visual_data(speos: Speos):
     p5 = Project(speos=speos, path=str(Path(test_path) / "Prism.speos" / "Prism.speos"))
     ssr_3d = p5.create_sensor(name="Sensor3D", feature_type=Sensor3DIrradiance)
     body = p5.find(name="PrismBody", name_regex=True, feature_type=Body)[0]
-    ssr_3d.set_geometries([body.geo_path])
+    ssr_3d.geometries = [body.geo_path]
     ssr_3d.commit()
     p5.preview()
     # test loading 3d irradiance sensor
@@ -556,3 +562,36 @@ def test_preview_visual_data(speos: Speos):
     ).set_facets([0, 1, 2]).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
     child_part2.commit()
     p7.preview()
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_sensor_creation_errors(speos: Speos):
+    """Test to validate errors on sensor creation."""
+    p = Project(
+        speos=speos,
+        path=str(
+            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
+        ),
+    )
+    with pytest.raises(TypeError, match="Irradiance3DSensorParameters"):
+        p.create_sensor(
+            name="Sensor3D", feature_type=Sensor3DIrradiance, parameters=RadianceSensorParameters()
+        )
+    with pytest.raises(TypeError, match="RadianceSensorParameters"):
+        p.create_sensor(
+            name="radiance_sensor",
+            feature_type=SensorRadiance,
+            parameters=IrradianceSensorParameters(),
+        )
+    with pytest.raises(TypeError, match="IrradianceSensorParameters"):
+        p.create_sensor(
+            name="irradiance_sensor",
+            feature_type=SensorIrradiance,
+            parameters=RadianceSensorParameters(),
+        )
+    with pytest.raises(TypeError, match="CameraSensorParameters"):
+        p.create_sensor(
+            name="irradiance_sensor",
+            feature_type=SensorCamera,
+            parameters=RadianceSensorParameters(),
+        )
