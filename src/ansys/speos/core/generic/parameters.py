@@ -444,6 +444,16 @@ class Irradiance3DSensorParameters:
 
 
 @dataclass
+class NearfieldParameters:
+    """Parameters data class for Nearfield."""
+
+    cell_distance: float = 10
+    """Distance of cell from origin of the sensor."""
+    cell_diameter: float = 0.3491
+    """Diameter of cell."""
+
+
+@dataclass
 class IntensityXMPSensorParameters:
     """Parameters data clas for intensity Sensor."""
 
@@ -470,3 +480,5 @@ class IntensityXMPSensorParameters:
         LayerBySequenceParameters,
     ] = LayerTypes.none
     """Layer separation type."""
+    near_field_parameters: Optional[NearfieldParameters] = None
+    """Parameters in case sensor is nearfield"""

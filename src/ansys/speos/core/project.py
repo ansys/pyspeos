@@ -36,6 +36,7 @@ import ansys.speos.core.face as face
 from ansys.speos.core.generic.general_methods import graphics_required
 from ansys.speos.core.generic.parameters import (
     CameraSensorParameters,
+    IntensityXMPSensorParameters,
     Irradiance3DSensorParameters,
     IrradianceSensorParameters,
     RadianceSensorParameters,
@@ -338,6 +339,7 @@ class Project:
             RadianceSensorParameters,
             CameraSensorParameters,
             Irradiance3DSensorParameters,
+            IntensityXMPSensorParameters,
         ] = None,
     ) -> Union[SensorCamera, SensorRadiance, SensorIrradiance, Sensor3DIrradiance]:
         """Create a new Sensor feature.
@@ -360,11 +362,11 @@ class Project:
             Metadata of the feature.
             By default, ``{}``.
         parameters :  Optional[
-            IrradianceSensorParameters,
-            RadianceSensorParameters,
-            CameraSensorParameters,
-            Irradiance3DSensorParameters
-        ]
+            IrradianceSensorParameters,\
+            RadianceSensorParameters,\
+            CameraSensorParameters,\
+            Irradiance3DSensorParameters,\
+            IntensityXMPSensorParameters]
             Allows to provide parameters to overwrite default parameters
 
         Returns
@@ -401,6 +403,13 @@ class Project:
                     default_parameters=parameters,
                 )
             case "SensorXMPIntensity":
+                if parameters is None:
+                    parameters = IntensityXMPSensorParameters()
+                elif not isinstance(parameters, IntensityXMPSensorParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of IrradianceSensorParameters"
+                    )
                 feature = SensorXMPIntensity(
                     project=self,
                     name=name,
@@ -456,7 +465,13 @@ class Project:
             case _:
                 msg = "Requested feature {} does not exist in supported list {}".format(
                     feature_type,
-                    [SensorIrradiance, SensorRadiance, SensorCamera, Sensor3DIrradiance],
+                    [
+                        SensorIrradiance,
+                        SensorRadiance,
+                        SensorCamera,
+                        Sensor3DIrradiance,
+                        SensorXMPIntensity,
+                    ],
                 )
                 raise TypeError(msg)
         self._features.append(feature)

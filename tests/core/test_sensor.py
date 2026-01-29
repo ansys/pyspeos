@@ -43,6 +43,7 @@ from ansys.speos.core.generic.parameters import (
     WavelengthsRangeParameters,
 )
 from ansys.speos.core.sensor import (
+    BaseSensor,
     Sensor3DIrradiance,
     SensorCamera,
     SensorIrradiance,
@@ -1144,9 +1145,10 @@ def test_create_xmpintensity_sensor(speos: Speos):
     assert sensor_template.sensor_type_colorimetric.wavelengths_range.w_end == 700
     assert sensor_template.sensor_type_colorimetric.wavelengths_range.w_sampling == 13
     # chosen wavelengths range
-    sensor1.set_type_colorimetric().set_wavelengths_range().set_start(value=450).set_end(
-        value=800
-    ).set_sampling(value=15)
+    wl_range = sensor1.set_type_colorimetric().set_wavelengths_range()
+    wl_range.start = 450
+    wl_range.end = 800
+    wl_range.sampling = 15
     sensor1.commit()
     sensor_template = sensor1.sensor_template_link.get().intensity_sensor_template
     assert sensor_template.sensor_type_colorimetric.wavelengths_range.w_start == 450
@@ -1170,9 +1172,10 @@ def test_create_xmpintensity_sensor(speos: Speos):
     assert sensor_template.sensor_type_spectral.wavelengths_range.w_end == 700
     assert sensor_template.sensor_type_spectral.wavelengths_range.w_sampling == 13
     # chosen wavelengths range
-    sensor1.set_type_spectral().set_wavelengths_range().set_start(value=450).set_end(
-        value=800
-    ).set_sampling(value=15)
+    wl_range = sensor1.set_type_spectral().set_wavelengths_range()
+    wl_range.start = 450
+    wl_range.end = 800
+    wl_range.sampling = 15
     sensor1.commit()
     sensor_template = sensor1.sensor_template_link.get().intensity_sensor_template
     assert sensor_template.sensor_type_spectral.wavelengths_range.w_start == 450
@@ -1255,7 +1258,7 @@ def test_create_xmpintensity_sensor(speos: Speos):
 
     # properties
     # axis_system
-    sensor1.set_axis_system([10, 50, 20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    sensor1.axis_system = [10, 50, 20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     sensor1.commit()
     assert inte_properties.axis_system == [
         10,
@@ -1309,20 +1312,21 @@ def test_create_xmpintensity_sensor(speos: Speos):
     assert inte_properties.HasField("layer_type_source")
 
     # layer_type_face
-    sensor1.set_layer_type_face().set_sca_filtering_mode_intersected_one_time().set_layers(
-        values=[
-            sensor.BaseSensor.FaceLayer(
-                name="Layer.1", geometries=[GeoRef.from_native_link("TheBodyB")]
-            ),
-            sensor.BaseSensor.FaceLayer(
-                name="Layer.2",
-                geometries=[
-                    GeoRef.from_native_link("TheBodyC/TheFaceC1"),
-                    GeoRef.from_native_link("TheBodyC/TheFaceC2"),
-                ],
-            ),
-        ]
-    )
+    layer_type = sensor1.set_layer_type_face().set_sca_filtering_mode_intersected_one_time()
+    if isinstance(layer_type, BaseSensor.LayerTypeFace):
+        pass
+    layer_type.layers = [
+        sensor.BaseSensor.FaceLayer(
+            name="Layer.1", geometries=[GeoRef.from_native_link("TheBodyB")]
+        ),
+        sensor.BaseSensor.FaceLayer(
+            name="Layer.2",
+            geometries=[
+                GeoRef.from_native_link("TheBodyC/TheFaceC1"),
+                GeoRef.from_native_link("TheBodyC/TheFaceC2"),
+            ],
+        ),
+    ]
     sensor1.commit()
     assert inte_properties.HasField("layer_type_face")
     assert (
@@ -1346,9 +1350,9 @@ def test_create_xmpintensity_sensor(speos: Speos):
     )
 
     # layer_type_sequence
-    sensor1.set_layer_type_sequence().set_maximum_nb_of_sequence(
-        value=5
-    ).set_define_sequence_per_faces()
+    layer_type = sensor1.set_layer_type_sequence()
+    layer_type.maximum_nb_of_sequence = 5
+    layer_type.set_define_sequence_per_faces()
     sensor1.commit()
     assert inte_properties.HasField("layer_type_sequence")
     assert inte_properties.layer_type_sequence.maximum_nb_of_sequence == 5
@@ -1357,7 +1361,7 @@ def test_create_xmpintensity_sensor(speos: Speos):
         == inte_properties.layer_type_sequence.EnumSequenceType.Faces
     )
 
-    sensor1.set_layer_type_sequence().set_define_sequence_per_geometries()
+    layer_type.set_define_sequence_per_geometries()
     sensor1.commit()
     assert (
         inte_properties.layer_type_sequence.define_sequence_per
@@ -1898,7 +1902,7 @@ def test_xmpintensity_modify_after_reset(speos: Speos):
         sensor1._sensor_template.intensity_sensor_template.sensor_type_spectral.wavelengths_range.w_start
         == 400
     )
-    sensor1.set_type_spectral().set_wavelengths_range().set_start(value=500)
+    sensor1.set_type_spectral().set_wavelengths_range().start = 500
     assert (
         sensor1._sensor_template.intensity_sensor_template.sensor_type_spectral.wavelengths_range.w_start
         == 500
@@ -1929,7 +1933,7 @@ def test_xmpintensity_modify_after_reset(speos: Speos):
         0,
         1,
     ]
-    sensor1.set_axis_system([50, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    sensor1.axis_system = [50, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     assert sensor1._sensor_instance.intensity_properties.axis_system == [
         50,
         20,
@@ -1949,7 +1953,7 @@ def test_xmpintensity_modify_after_reset(speos: Speos):
         sensor1._sensor_instance.intensity_properties.layer_type_sequence.maximum_nb_of_sequence
         == 10
     )
-    sensor1.set_layer_type_sequence().set_maximum_nb_of_sequence(value=15)
+    sensor1.set_layer_type_sequence().maximum_nb_of_sequence = 15
     assert (
         sensor1._sensor_instance.intensity_properties.layer_type_sequence.maximum_nb_of_sequence
         == 15

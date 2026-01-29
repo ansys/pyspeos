@@ -61,6 +61,7 @@ from ansys.speos.core.generic.parameters import (
     LayerTypes,
     MeasuresParameters,
     MonoChromaticParameters,
+    NearfieldParameters,
     PhotometricCameraParameters,
     RadianceSensorParameters,
     RayfileTypes,
@@ -2508,8 +2509,6 @@ class SensorIrradiance(BaseSensor):
         """
         if isinstance(self._type, BaseSensor.Colorimetric):
             return self._type
-        else:
-            return None
 
     @property
     def spectral(self) -> Union[None, BaseSensor.Spectral]:
@@ -2522,8 +2521,6 @@ class SensorIrradiance(BaseSensor):
         """
         if isinstance(self._type, BaseSensor.Spectral):
             return self._type
-        else:
-            return None
 
     @property
     def layer(
@@ -3259,8 +3256,6 @@ class SensorRadiance(BaseSensor):
         """
         if isinstance(self._type, BaseSensor.Colorimetric):
             return self._type
-        else:
-            return None
 
     @property
     def spectral(self) -> Union[None, BaseSensor.Spectral]:
@@ -3273,8 +3268,6 @@ class SensorRadiance(BaseSensor):
         """
         if isinstance(self._type, BaseSensor.Spectral):
             return self._type
-        else:
-            return None
 
     @property
     def layer(
@@ -4380,7 +4373,10 @@ class SensorXMPIntensity(BaseSensor):
                     default_parameters=default_parameters.layer_type,
                     stable_ctr=True,
                 )
-
+            if default_parameters.near_field_parameters:
+                self.near_field = True
+                self.cell_distance = default_parameters.near_field_parameters.cell_distance
+                self.cell_diameter = default_parameters.near_field_parameters.cell_diameter
             # Default values properties
 
     @property
@@ -4529,8 +4525,9 @@ class SensorXMPIntensity(BaseSensor):
         if value:
             if not self._sensor_template.intensity_sensor_template.HasField("near_field"):
                 self._sensor_template.intensity_sensor_template.near_field.SetInParent()
-                self.cell_distance = 10
-                self.cell_diameter = 0.3491
+                near_field = NearfieldParameters()
+                self.cell_distance = near_field.cell_distance
+                self.cell_diameter = near_field.cell_diameter
         elif self._sensor_template.intensity_sensor_template.HasField("near_field"):
             self._sensor_template.intensity_sensor_template.ClearField("near_field")
 
@@ -4542,8 +4539,6 @@ class SensorXMPIntensity(BaseSensor):
         """
         if self.near_field:
             return self._sensor_template.intensity_sensor_template.near_field.cell_distance
-        else:
-            return None
 
     @cell_distance.setter
     def cell_distance(self, value):
@@ -4569,8 +4564,6 @@ class SensorXMPIntensity(BaseSensor):
                 )
             )
             return diameter
-        else:
-            return None
 
     @cell_diameter.setter
     def cell_diameter(self, value):
@@ -4608,8 +4601,6 @@ class SensorXMPIntensity(BaseSensor):
         """
         if isinstance(self._type, BaseSensor.Colorimetric):
             return self._type
-        else:
-            return None
 
     @property
     def spectral(self) -> Union[None, BaseSensor.Spectral]:
@@ -4622,8 +4613,6 @@ class SensorXMPIntensity(BaseSensor):
         """
         if isinstance(self._type, BaseSensor.Spectral):
             return self._type
-        else:
-            return None
 
     @property
     def layer(
@@ -4668,24 +4657,24 @@ class SensorXMPIntensity(BaseSensor):
     def set_orientation_x_as_meridian(self):
         """Set Orientation type: X As Meridian, Y as Parallel."""
         self._sensor_template.intensity_sensor_template.intensity_orientation_x_as_meridian.SetInParent()
-        self._set_dimension_values()
+        self._set_dimension_values(IntensitySensorDimensionsXAsMeridian())
 
     def set_orientation_x_as_parallel(self):
-        """Set Orientation type: X as Parallel, Y As Meridian."""
+        """Set Orientation type: X as Parallel, Y as Meridian."""
         self._sensor_template.intensity_sensor_template.intensity_orientation_x_as_parallel.SetInParent()
-        self._set_dimension_values()
+        self._set_dimension_values(IntensitySensorDimensionsXAsParallel())
 
     def set_orientation_conoscopic(self):
-        """Set Orientation type: Conoscopic."""
+        """Set Orientation type to conoscopic."""
         self._sensor_template.intensity_sensor_template.intensity_orientation_conoscopic.SetInParent()
-        self._set_dimension_values()
+        self._set_dimension_values(IntensitySensorDimensionsConoscopic())
 
     def set_viewing_direction_from_source(self):
-        """Set viewing direction from Source Looking At Sensor."""
+        """Set viewing direction from source looking at sensor."""
         self._sensor_template.intensity_sensor_template.from_source_looking_at_sensor.SetInParent()
 
     def set_viewing_direction_from_sensor(self):
-        """Set viewing direction from Sensor Looking At Source."""
+        """Set viewing direction from sensor looking at source."""
         self._sensor_template.intensity_sensor_template.from_sensor_looking_at_source.SetInParent()
 
     def _set_dimension_values(
@@ -4727,7 +4716,15 @@ class SensorXMPIntensity(BaseSensor):
     def x_start(self) -> float:
         """The minimum value on x-axis  (deg).
 
-        By default, ``45``.
+        Parameters
+        ----------
+        value : float
+            Start value for x-axis (degree).
+
+        Returns
+        -------
+        float
+            Minimum of x-axis in degree.
         """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
@@ -4752,7 +4749,15 @@ class SensorXMPIntensity(BaseSensor):
     def x_end(self) -> float:
         """The maximum value on x-axis  (deg).
 
-        By default, ``45``.
+        Parameters
+        ----------
+        value : float
+            End value for x-axis (degree).
+
+        Returns
+        -------
+        float
+            Maximum of x-axis in degree.
         """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
@@ -4777,7 +4782,15 @@ class SensorXMPIntensity(BaseSensor):
     def x_sampling(self) -> int:
         """Pixel sampling along x-Axis.
 
-        By default, ``100``
+        Parameters
+        ----------
+        value : int
+            Sampling for x-axis.
+
+        Returns
+        -------
+        int
+            Number of Pixels along x-Axis.
         """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
@@ -4802,7 +4815,15 @@ class SensorXMPIntensity(BaseSensor):
     def y_end(self) -> float:
         """The maximum value on y-axis (deg).
 
-        By default, ``30``.
+        Parameters
+        ----------
+        value : float
+            End value for y-axis (degree).
+
+        Returns
+        -------
+        float
+            Maximum of y-axis in degree.
         """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
@@ -4827,7 +4848,15 @@ class SensorXMPIntensity(BaseSensor):
     def y_start(self) -> float:
         """The minimum value on x-axis (deg).
 
-        By default, ``-30``.
+        Parameters
+        ----------
+        value : float
+            End value for y-axis (degree).
+
+        Returns
+        -------
+        float
+            Minimum of y-axis in degree.
         """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
@@ -4852,7 +4881,15 @@ class SensorXMPIntensity(BaseSensor):
     def y_sampling(self) -> int:
         """Sampling along y-axis.
 
-        By default, ``100``.
+        Parameters
+        ----------
+        value : int
+            Sampling along the y-axis.
+
+        Returns
+        -------
+        float
+            Number of Pixels along the y-axis.
         """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
@@ -4877,7 +4914,15 @@ class SensorXMPIntensity(BaseSensor):
     def theta_max(self) -> float:
         """Maximum theta angle on consocopic type (in deg).
 
-        By default, ``45``.
+        Parameters
+        ----------
+        value : float
+            Maximum value for Theta in a conoscopic map. (degree).
+
+        Returns
+        -------
+        float
+            Maximum value for Theta angle.
         """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
@@ -4902,7 +4947,16 @@ class SensorXMPIntensity(BaseSensor):
     def theta_sampling(self) -> int:
         """Sampling on conoscopic type.
 
-        By default, ``90``.
+        Parameters
+        ----------
+        value : int
+            Sampling along theta axis in a conoscopic map. (degree).
+            Speos ensure that equal resolution along phi is maintained.
+
+        Returns
+        -------
+        float
+            Sampling along theta axis in a conoscopic map.
         """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
@@ -4954,7 +5008,6 @@ class SensorXMPIntensity(BaseSensor):
             # Happens in case of project created via load of speos file
             self._type = BaseSensor.Colorimetric(
                 sensor_type_colorimetric=self._sensor_template.intensity_sensor_template.sensor_type_colorimetric,
-                default_values=False,
                 stable_ctr=True,
             )
         elif not isinstance(self._type, BaseSensor.Colorimetric):
@@ -4962,6 +5015,7 @@ class SensorXMPIntensity(BaseSensor):
             self._type = BaseSensor.Colorimetric(
                 sensor_type_colorimetric=self._sensor_template.intensity_sensor_template.sensor_type_colorimetric,
                 stable_ctr=True,
+                default_parameters=ColorimetricParameters(),
             )
         elif (
             self._type._sensor_type_colorimetric
@@ -5004,7 +5058,6 @@ class SensorXMPIntensity(BaseSensor):
             # Happens in case of project created via load of speos file
             self._type = BaseSensor.Spectral(
                 sensor_type_spectral=self._sensor_template.intensity_sensor_template.sensor_type_spectral,
-                default_values=False,
                 stable_ctr=True,
             )
         elif not isinstance(self._type, BaseSensor.Spectral):
@@ -5012,6 +5065,7 @@ class SensorXMPIntensity(BaseSensor):
             self._type = BaseSensor.Spectral(
                 sensor_type_spectral=self._sensor_template.intensity_sensor_template.sensor_type_spectral,
                 stable_ctr=True,
+                default_parameters=SpectralParameters(),
             )
         elif (
             self._type._sensor_type_spectral
@@ -5046,7 +5100,7 @@ class SensorXMPIntensity(BaseSensor):
 
         """
         self._sensor_instance.intensity_properties.layer_type_source.SetInParent()
-        self._layer_type = None
+        self._layer_type = LayerTypes.by_source
         return self
 
     def set_layer_type_face(self) -> BaseSensor.LayerTypeFace:
@@ -5063,7 +5117,6 @@ class SensorXMPIntensity(BaseSensor):
             # Happens in case of project created via load of speos file
             self._layer_type = BaseSensor.LayerTypeFace(
                 layer_type_face=self._sensor_instance.intensity_properties.layer_type_face,
-                default_values=False,
                 stable_ctr=True,
             )
         elif not isinstance(self._layer_type, BaseSensor.LayerTypeFace):
@@ -5071,6 +5124,7 @@ class SensorXMPIntensity(BaseSensor):
             self._layer_type = BaseSensor.LayerTypeFace(
                 layer_type_face=self._sensor_instance.intensity_properties.layer_type_face,
                 stable_ctr=True,
+                default_parameters=LayerByFaceParameters(),
             )
         elif (
             self._layer_type._layer_type_face
@@ -5096,7 +5150,6 @@ class SensorXMPIntensity(BaseSensor):
             # Happens in case of project created via load of speos file
             self._layer_type = BaseSensor.LayerTypeSequence(
                 layer_type_sequence=self._sensor_instance.intensity_properties.layer_type_sequence,
-                default_values=False,
                 stable_ctr=True,
             )
         elif not isinstance(self._layer_type, BaseSensor.LayerTypeSequence):
@@ -5104,6 +5157,7 @@ class SensorXMPIntensity(BaseSensor):
             self._layer_type = BaseSensor.LayerTypeSequence(
                 layer_type_sequence=self._sensor_instance.intensity_properties.layer_type_sequence,
                 stable_ctr=True,
+                default_parameters=LayerBySequenceParameters(),
             )
         elif (
             self._layer_type._layer_type_sequence
