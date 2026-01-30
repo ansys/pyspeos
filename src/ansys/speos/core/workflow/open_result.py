@@ -241,10 +241,12 @@ if os.name == "nt":
         file_path = Path(file_path)
         dpf_instance = CreateObject("XMPViewer.Application")
         dpf_instance.OpenFile(str(file_path))
-        dimension_x = dpf_instance.XWidth
-        dimension_y = dpf_instance.YHeight
         resolution_x = dpf_instance.XNb
         resolution_y = dpf_instance.YNb
+        step_x = dpf_instance.XSampleWidth
+        step_y = dpf_instance.YSampleHeight
+        bottom_left_x = dpf_instance.XMin
+        bottom_left_y = dpf_instance.YMin
         tmp_txt = file_path.with_suffix(".txt")
         dpf_instance.ExportTXT(str(tmp_txt))
 
@@ -262,14 +264,10 @@ if os.name == "nt":
         xmp_data = numpy.array(xmp_data).reshape((resolution_x, resolution_y))
 
         # Create VTP ImageData structure
-        step_x = float(dimension_x) / resolution_x
-        step_y = float(dimension_y) / resolution_y
-        origin_x = -(resolution_x * step_x) / 2
-        origin_y = -(resolution_y * step_y) / 2
         grid = pv.ImageData(
             dimensions=(resolution_x, resolution_y, 1),
             spacing=(step_x, step_y, 1),
-            origin=(origin_x, origin_y, 0),
+            origin=(bottom_left_x, bottom_left_y, 0),
         )
         if dpf_instance.UnitType == 0:
             grid["Radiometric"] = numpy.ravel(xmp_data)
