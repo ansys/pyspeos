@@ -38,6 +38,7 @@ from ansys.speos.core.generic.parameters import (
     ColorimetricParameters,
     IrradianceSensorParameters,
     LayerBySequenceParameters,
+    LayerTypes,
     RadianceSensorParameters,
     SpectralParameters,
     WavelengthsRangeParameters,
@@ -1375,6 +1376,61 @@ def test_create_xmpintensity_sensor(speos: Speos):
 
     # output_face_geometries
     sensor1.delete()
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_load_intensity_sensor(speos: Speos):
+    """Test load of Intensity sensor."""
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Intensity_test.speos" / "Intensity_test.speos"),
+    )
+    sensors = p.find(name=".*", name_regex=True, feature_type=SensorXMPIntensity)
+    assert len(sensors) == 4
+    sensor_color = sensors[0]
+    sensor_photo = sensors[2]
+    sensor_spectral = sensors[1]
+    sensor_radio = sensors[3]
+    assert isinstance(sensor_color, SensorXMPIntensity)
+    assert isinstance(sensor_photo, SensorXMPIntensity)
+    assert isinstance(sensor_spectral, SensorXMPIntensity)
+    assert isinstance(sensor_radio, SensorXMPIntensity)
+    assert sensor_color.x_start == -13
+    assert sensor_color.x_end == 13
+    assert sensor_color.x_sampling == 26
+    assert sensor_color.y_start == -14
+    assert sensor_color.y_end == 14
+    assert sensor_color.y_sampling == 28
+    assert sensor_color.type == "Colorimetric"
+    assert sensor_photo.type == "Photometric"
+    assert sensor_spectral.type == "Spectral"
+    assert sensor_radio.type == "Radiometric"
+    seq_layer = sensor_spectral.layer
+    face_layer = sensor_color.layer
+    assert isinstance(face_layer, BaseSensor.LayerTypeFace)
+    assert sensor_photo.layer == LayerTypes.by_source
+    assert isinstance(seq_layer, BaseSensor.LayerTypeSequence)
+    assert sensor_radio.layer == "none"
+    assert seq_layer.maximum_nb_of_sequence == 5
+    assert isinstance(face_layer.layers[0], BaseSensor.FaceLayer)
+    wl_range = sensor_color.set_type_colorimetric().set_wavelengths_range()
+    assert wl_range.start == 400
+    assert wl_range.end == 700
+    assert wl_range.sampling == 16
+    assert sensor_color._sensor_template.intensity_sensor_template.HasField(
+        "intensity_orientation_x_as_meridian"
+    )
+    assert sensor_photo._sensor_template.intensity_sensor_template.HasField(
+        "intensity_orientation_x_as_parallel"
+    )
+    assert sensor_radio._sensor_template.intensity_sensor_template.HasField(
+        "intensity_orientation_conoscopic"
+    )
+    assert sensor_photo.near_field
+    assert sensor_photo.cell_diameter == 1
+    assert sensor_photo.cell_distance == 15
+    assert sensor_photo.axis_system.tolist() == [0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0]
+    assert sensor_radio.axis_system.tolist() == ORIGIN
 
 
 @pytest.mark.supported_speos_versions(min=252)

@@ -697,7 +697,10 @@ class BaseSensor:
             """
             layer_data = []
             for layer in self._layer_type_face.layers:
-                layer_data.append(BaseSensor.FaceLayer(layer.name, layer.geometries))
+                if isinstance(layer.geometries, list):
+                    layer_data.append(BaseSensor.FaceLayer(layer.name, layer.geometries))
+                else:
+                    layer_data.append(BaseSensor.FaceLayer(layer.name, [layer.geometries]))
             return layer_data
 
         @layers.setter
@@ -2413,6 +2416,28 @@ class SensorIrradiance(BaseSensor):
                 default_parameters=None,
                 stable_ctr=True,
             )
+            template = self._sensor_template.irradiance_sensor_template
+            if template.HasField("sensor_type_photometric"):
+                self.set_type_photometric()
+            elif template.HasField("sensor_type_colorimetric"):
+                self.set_type_colorimetric()
+            elif template.HasField("sensor_type_radiometric"):
+                self.set_type_radiometric()
+            elif template.HasField("sensor_type_spectral"):
+                self.set_type_spectral()
+            properties = self._sensor_instance.irradiance_properties
+            if properties.HasField("layer_type_none"):
+                self._layer_type = LayerTypes.none
+            elif properties.HasField("layer_type_source"):
+                self._layer_type = LayerTypes.by_source
+            elif properties.HasField("layer_type_polarization"):
+                self._layer_type = LayerTypes.by_polarization
+            elif properties.HasField("layer_type_incidence_angle"):
+                self.set_layer_type_incidence_angle()
+            elif properties.HasField("layer_type_sequence"):
+                self.set_layer_type_sequence()
+            elif properties.HasField("layer_type_face"):
+                self.set_layer_type_face()
 
     @property
     def visual_data(self) -> _VisualData:
@@ -3154,6 +3179,24 @@ class SensorRadiance(BaseSensor):
                 default_parameters=None,
                 stable_ctr=True,
             )
+            template = self._sensor_template.radiance_sensor_template
+            if template.HasField("sensor_type_photometric"):
+                self.set_type_photometric()
+            elif template.HasField("sensor_type_colorimetric"):
+                self.set_type_colorimetric()
+            elif template.HasField("sensor_type_radiometric"):
+                self.set_type_radiometric()
+            elif template.HasField("sensor_type_spectral"):
+                self.set_type_spectral()
+            properties = self._sensor_instance.radiance_properties
+            if properties.HasField("layer_type_none"):
+                self._layer_type = LayerTypes.none
+            elif properties.HasField("layer_type_source"):
+                self._layer_type = LayerTypes.by_source
+            elif properties.HasField("layer_type_sequence"):
+                self.set_layer_type_sequence()
+            elif properties.HasField("layer_type_face"):
+                self.set_layer_type_face()
 
     @property
     def visual_data(self) -> _VisualData:
@@ -3284,7 +3327,7 @@ class SensorRadiance(BaseSensor):
         ]
             Instance of Layer type Class for this sensor feature
         """
-        return self._layer_type
+        return self._layer_typee
 
     def set_dimensions(self) -> BaseSensor.Dimensions:
         """Set the dimensions of the sensor.
@@ -3680,6 +3723,19 @@ class Sensor3DIrradiance(BaseSensor):
                     self.set_ray_file_type_tm25()
                 case RayfileTypes.tm25_no_polarization:
                     self.set_ray_file_type_tm25_no_polarization()
+        else:
+            template = self._sensor_template.irradiance_3d
+            if template.HasField("type_photometric"):
+                self.set_type_photometric()
+            elif template.HasField("type_colorimetric"):
+                self.set_type_colorimetric()
+            elif template.HasField("type_radiometric"):
+                self.set_type_radiometric()
+            properties = self._sensor_instance.irradiance_3d_properties
+            if properties.HasField("layer_type_none"):
+                self._layer_type = LayerTypes.none
+            elif properties.HasField("layer_type_source"):
+                self._layer_type = LayerTypes.by_source
 
     class Radiometric:
         """Class computing the radiant intensity (in W.sr-1).
@@ -4378,6 +4434,25 @@ class SensorXMPIntensity(BaseSensor):
                 self.cell_distance = default_parameters.near_field_parameters.cell_distance
                 self.cell_diameter = default_parameters.near_field_parameters.cell_diameter
             # Default values properties
+        else:
+            template = self._sensor_template.intensity_sensor_template
+            if template.HasField("sensor_type_photometric"):
+                self.set_type_photometric()
+            elif template.HasField("sensor_type_colorimetric"):
+                self.set_type_colorimetric()
+            elif template.HasField("sensor_type_radiometric"):
+                self.set_type_radiometric()
+            elif template.HasField("sensor_type_spectral"):
+                self.set_type_spectral()
+            properties = self._sensor_instance.intensity_properties
+            if properties.HasField("layer_type_none"):
+                self._layer_type = LayerTypes.none
+            elif properties.HasField("layer_type_source"):
+                self._layer_type = LayerTypes.by_source
+            elif properties.HasField("layer_type_sequence"):
+                self.set_layer_type_sequence()
+            elif properties.HasField("layer_type_face"):
+                self.set_layer_type_face()
 
     @property
     def visual_data(self) -> _VisualData:
@@ -4626,8 +4701,8 @@ class SensorXMPIntensity(BaseSensor):
 
         Returns
         -------
-        Union[\
-            None,\
+        Union[
+            LayerTypes,\
             ansys.speos.core.sensor.BaseSensor.LayerTypeFace,\
             ansys.speos.core.sensor.BaseSensor.LayerTypeSequence,\
         ]
