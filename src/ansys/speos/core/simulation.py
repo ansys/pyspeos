@@ -538,7 +538,7 @@ class BaseSimulation:
 
         """
         vtp_files = []
-        from ansys.speos.core import Face
+        from ansys.speos.core import Body, Face
         from ansys.speos.core.sensor import Sensor3DIrradiance, SensorIrradiance, SensorRadiance
         from ansys.speos.core.workflow.open_result import export_xm3_vtp, export_xmp_vtp, merge_vtp
 
@@ -558,10 +558,23 @@ class BaseSimulation:
                     if not xm3_data:
                         xm3_data = feature.get(key="name")
                     geo_paths = feature.get(key="geo_paths")
-                    geos_faces = [
-                        self._project.find(name=geo_path, feature_type=Face)[0]._face
-                        for geo_path in geo_paths
-                    ]
+                    geos_faces = []
+                    for geo_path in geo_paths:
+                        if self._project.find(name=geo_path, feature_type=Face):
+                            geos_faces.append(
+                                self._project.find(name=geo_path, feature_type=Face)[0]._face
+                            )
+                        elif self._project.find(name=geo_path, feature_type=Body):
+                            geos_faces.extend(
+                                [
+                                    geom_feature._face
+                                    for geom_feature in self._project.find(
+                                        name=geo_path, feature_type=Body
+                                    )[0]._geom_features
+                                ]
+                            )
+                        else:
+                            raise ValueError("geometry {} not found in project".format(geo_path))
                     exported_vtp = export_xm3_vtp(self, geos_faces, xm3_data)
                     vtp_files.append(exported_vtp)
                 case _:
