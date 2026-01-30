@@ -47,7 +47,7 @@ jobs:
           python-package-name: ${{ env.PACKAGE_NAME }}
           token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
           dev-mode: ${{ github.ref != 'refs/heads/main' }}
-          extra-targets: 'graphics'
+          extra-targets: 'graphics,jupyter'
 
   pr-name:
     if: github.event_name == 'pull_request'
