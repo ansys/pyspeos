@@ -549,10 +549,14 @@ class BaseSimulation:
             match feature:
                 case SensorIrradiance() | SensorRadiance():
                     xmp_data = feature.get(key="result_file_name")
+                    if not xmp_data:
+                        xmp_data = feature.get(key="name")
                     exported_vtp = export_xmp_vtp(self, feature, xmp_data)
                     vtp_files.append(exported_vtp)
                 case Sensor3DIrradiance():
                     xm3_data = feature.get(key="result_file_name")
+                    if not xm3_data:
+                        xm3_data = feature.get(key="name")
                     geo_paths = feature.get(key="geo_paths")
                     geos_faces = [
                         self._project.find(name=geo_path, feature_type=Face)[0]._face
