@@ -42,6 +42,7 @@ from ansys.speos.core.generic.parameters import (
     RadianceSensorParameters,
 )
 from ansys.speos.core.generic.visualization_methods import local2absolute
+from ansys.speos.core.ground_plane import GroundPlane
 from ansys.speos.core.kernel.body import BodyLink
 from ansys.speos.core.kernel.face import FaceLink
 from ansys.speos.core.kernel.part import ProtoPart
@@ -63,6 +64,7 @@ from ansys.speos.core.simulation import (
     SimulationVirtualBSDF,
 )
 from ansys.speos.core.source import (
+    SourceAmbientEnvironment,
     SourceAmbientNaturalLight,
     SourceLuminaire,
     SourceRayFile,
@@ -166,7 +168,13 @@ class Project:
         description: str = "",
         feature_type: type = SourceSurface,
         metadata: Optional[Mapping[str, str]] = None,
-    ) -> Union[SourceSurface, SourceRayFile, SourceLuminaire, SourceAmbientNaturalLight]:
+    ) -> Union[
+        SourceSurface,
+        SourceRayFile,
+        SourceLuminaire,
+        SourceAmbientNaturalLight,
+        SourceAmbientEnvironment,
+    ]:
         """Create a new Source feature.
 
         Parameters
@@ -182,7 +190,8 @@ class Project:
             Allowed types:
             Union[ansys.speos.core.source.SourceSurface, ansys.speos.core.source.SourceRayFile, \
             ansys.speos.core.source.SourceLuminaire, \
-            ansys.speos.core.source.SourceAmbientNaturalLight].
+            ansys.speos.core.source.SourceAmbientNaturalLight, \
+            ansys.speos.core.source.SourceAmbientEnvironment].
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
@@ -190,7 +199,8 @@ class Project:
         Returns
         -------
         Union[ansys.speos.core.source.SourceSurface,ansys.speos.core.source.SourceRayFile,\
-        ansys.speos.core.source.SourceLuminaire, ansys.speos.core.source.SourceAmbientNaturalLight]
+        ansys.speos.core.source.SourceLuminaire, ansys.speos.core.source.SourceAmbientNaturalLight,\
+        ansys.speos.core.source.SourceAmbientEnvironment]
             Source class instance.
         """
         if metadata is None:
@@ -232,10 +242,20 @@ class Project:
                     description=description,
                     metadata=metadata,
                 )
+            case "SourceAmbientEnvironment":
+                feature = SourceAmbientEnvironment(
+                    project=self, name=name, description=description, metadata=metadata
+                )
             case _:
                 msg = "Requested feature {} does not exist in supported list {}".format(
                     feature_type,
-                    [SourceSurface, SourceLuminaire, SourceRayFile, SourceAmbientNaturalLight],
+                    [
+                        SourceSurface,
+                        SourceLuminaire,
+                        SourceRayFile,
+                        SourceAmbientNaturalLight,
+                        SourceAmbientEnvironment,
+                    ],
                 )
                 raise TypeError(msg)
         self._features.append(feature)
@@ -512,6 +532,25 @@ class Project:
         self._features.append(feature)
         return feature
 
+    def create_ground_plane(self) -> GroundPlane:
+        """Create ground plane feature.
+
+        Only one ground plane per project.
+        Only usable when there is at least one Ambient Environment Source in the project.
+
+        Returns
+        -------
+        ansys.speos.core.ground_plane.GroundPlane
+            Ground plane feature.
+        """
+        existing_features = self.find(name="", feature_type=GroundPlane)
+        if len(existing_features) != 0:
+            return existing_features[0]
+
+        feature = GroundPlane(project=self)
+        self._features.append(feature)
+        return feature
+
     def find(
         self,
         name: str,
@@ -536,6 +575,7 @@ class Project:
             body.Body,
             face.Face,
             part.Part.SubPart,
+            GroundPlane,
         ]
     ]:
         """Find feature(s) by name (possibility to use regex) and by feature type.
@@ -565,7 +605,8 @@ class Project:
         ansys.speos.core.simulation.SimulationInteractive, \
         ansys.speos.core.simulation.SimulationInverse, ansys.speos.core.part.Part, \
         ansys.speos.core.body.Body, \
-        ansys.speos.core.face.Face, ansys.speos.core.part.Part.SubPart]]
+        ansys.speos.core.face.Face, ansys.speos.core.part.Part.SubPart, \
+        ansys.speos.core.ground_plane.GroundPlane]]
             Found features.
 
         Examples
@@ -911,8 +952,22 @@ class Project:
                         source_instance=src_inst,
                         default_values=False,
                     )
+                elif src_inst.ambient_properties.HasField("environment_map_properties"):
+                    src_feat = SourceAmbientEnvironment(
+                        project=self,
+                        name=src_inst.name,
+                        source_instance=src_inst,
+                        default_values=False,
+                    )
             if src_feat is not None:
                 self._features.append(src_feat)
+
+        # ground plane
+        if scene_data.HasField("ground"):
+            ground_feat = GroundPlane(project=self, ground=scene_data.ground)
+
+            if ground_feat is not None:
+                self._features.append(ground_feat)
 
         for ssr_inst in scene_data.sensors:
             if ssr_inst.name in [_._name for _ in self._features]:
