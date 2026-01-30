@@ -539,17 +539,17 @@ class BaseSimulation:
         """
         vtp_files = []
         from ansys.speos.core import Face
-        from ansys.speos.core.sensor import Sensor3DIrradiance, SensorIrradiance
-        from ansys.speos.core.workflow.open_result import export_xm3_vtp, export_xmp_vtp
+        from ansys.speos.core.sensor import Sensor3DIrradiance, SensorIrradiance, SensorRadiance
+        from ansys.speos.core.workflow.open_result import export_xm3_vtp, export_xmp_vtp, merge_vtp
 
         sensor_paths = self.get(key="sensor_paths")
         for feature in self._project._features:
             if feature._name not in sensor_paths:
                 continue
             match feature:
-                case SensorIrradiance():
+                case SensorIrradiance() | SensorRadiance():
                     xmp_data = feature.get(key="result_file_name")
-                    exported_vtp = export_xmp_vtp(self, xmp_data)
+                    exported_vtp = export_xmp_vtp(self, feature, xmp_data)
                     vtp_files.append(exported_vtp)
                 case Sensor3DIrradiance():
                     xm3_data = feature.get(key="result_file_name")
@@ -565,6 +565,8 @@ class BaseSimulation:
                         "feature {} result currently not supported".format(feature._name),
                         stacklevel=2,
                     )
+        if len(vtp_files) > 1:
+            vtp_files.append(merge_vtp(vtp_paths=vtp_files))
         return vtp_files
 
     def compute_CPU(
