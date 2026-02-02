@@ -273,20 +273,20 @@ print(new_bsdf)
 clean_all_dbs(speos.client)  # clean all the database entries
 
 incident_angles = [np.radians(5), np.radians(25), np.radians(40), np.radians(65), np.radians(85)]
-all_bxdfs_R = []
-all_bxdfs_T = []
+all_bxdfs_reflexion = []
+all_bxdfs_transmission = []
 
 for inc in incident_angles:
     thetas, phis, brdf = create_gaussian_bsdf(
         True, inc, nb_theta=91, nb_phi=361, fwhm=np.radians(20)
     )
-    all_bxdfs_R.append(BxdfDatapoint(True, inc, thetas, phis, brdf))
+    all_bxdfs_reflexion.append(BxdfDatapoint(True, inc, thetas, phis, brdf))
 
 for inc in incident_angles:
     thetas, phis, brdf = create_gaussian_bsdf(
         False, inc, nb_theta=91, nb_phi=361, fwhm=np.radians(40)
     )
-    all_bxdfs_T.append(BxdfDatapoint(False, inc, thetas, phis, brdf))
+    all_bxdfs_transmission.append(BxdfDatapoint(False, inc, thetas, phis, brdf))
 
 # ### Create Anisotropic BSDF class instance
 new_bsdf_gaussian = AnisotropicBSDF(speos)
@@ -301,8 +301,8 @@ new_bsdf_gaussian.has_reflection = True
 new_bsdf_gaussian.has_transmission = False
 new_bsdf_gaussian.reflection_spectrum = create_spectrum(0.5)
 new_bsdf_gaussian.transmission_spectrum = create_spectrum(0.4)
-new_bsdf_gaussian.brdf = all_bxdfs_R
-new_bsdf_gaussian.btdf = all_bxdfs_T
+new_bsdf_gaussian.brdf = all_bxdfs_reflexion
+new_bsdf_gaussian.btdf = all_bxdfs_transmission
 
 save_path = assets_data_path / "example_bsdf_gaussian.anisotropicbsdf"
 new_bsdf_gaussian.save(save_path)
