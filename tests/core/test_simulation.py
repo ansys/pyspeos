@@ -1371,32 +1371,20 @@ def test_export_vtp(speos: Speos):
     file = export_data_xmp_txt.open("r")
     content = file.readlines()
     file.close()
-    skip_lines = 9 if "SeparatedByLayer" in content[7] else 8
     resolution_x = 10
     resolution_y = 10
     xmp_data = []
-    if "2" not in content[0]:  # not spectral data
-        for line in content[skip_lines : skip_lines + resolution_y]:
-            line_content = line.strip().split()
-            xmp_data.append(list(map(float, line_content)))
-    else:  # spectral data within number of data tables
-        spectral_tables = int(content[6].strip().split()[2])
-        xmp_data = [
-            [0 for _ in range(len(content[skip_lines].strip().split()))]
-            for _ in range(resolution_y)
-        ]
-        for _ in range(spectral_tables):
-            for i in range(resolution_y):
-                row = list(map(float, content[skip_lines].strip().split()))
-                for j in range(resolution_x):
-                    xmp_data[i][j] += row[j]
-                skip_lines += 1
-            # Skip one line between tables
-            skip_lines += 1
+    content = [line.rstrip() for line in content]
+    marker = "X\tY\tValue"
+    start_idx = content.index(marker) + 1
+    for line in content[start_idx:]:
+        x, y, value = line.split("\t")
+        xmp_data.append(float(value))
+
     assert np.all(
         np.isclose(
-            np.array(xmp_data),
-            vtp_data.get("Photometric").reshape((10, 10)).T,
+            np.array(xmp_data).reshape((resolution_x, resolution_y)),
+            vtp_data.get("Photometric").reshape((resolution_x, resolution_y)).T,
             rtol=1e-5,
             atol=1e-8,
         )
