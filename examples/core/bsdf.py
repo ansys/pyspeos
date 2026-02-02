@@ -117,7 +117,7 @@ def create_lambertian_bsdf(is_brdf, nb_theta=5, nb_phi=5):
 
 def create_gaussian_bsdf(is_brdf, inc, nb_theta=91, nb_phi=361, fwhm=np.radians(40)):
     """
-    Create a Gaussian distribution as np.array.
+    Create a gaussian distribution as np.array.
 
     Parameters
     ----------
@@ -217,7 +217,6 @@ if USE_DOCKER:  # Running on the remote server.
 else:
     assets_data_path = Path("/path/to/your/download/assets/directory")
 
-
 # ### Create Anisotropic BSDF from datapoints
 # To create and save a bsdf we need to first create a connection to the SpeosRPC server
 # ### Connect to the RPC Server
@@ -231,54 +230,84 @@ if USE_DOCKER:
 else:
     speos = launch_local_speos_rpc_server()
 
-# ### Create a BXDFDatapoint
+# ### Create a BXDFDatapoint - Example of a lambertian BRDF
 # to create a bsdf we need the bsdf for multiple incident angles.
-# In this example we assume the color doesn't change over the icnident
+# In this example we assume the color doesn't change over the incident
 # angles so we can use anisotropic bsdf and we assume the data has no
 # anisotropy
 
 clean_all_dbs(speos.client)  # clean all the database entries
 
-is_brdf = True  # BRDF if True BTDF if False
-
 incident_angles = [np.radians(5), np.radians(25), np.radians(40), np.radians(65), np.radians(85)]
 all_bxdfs = []
 for inc in incident_angles:
-    # thetas, phis, brdf = create_lambertian_bsdf(is_brdf)
-    thetas, phis, brdf = create_gaussian_bsdf(
-        is_brdf, inc, nb_theta=91, nb_phi=361, FWMH=np.radians(40)
-    )
-    all_bxdfs.append(BxdfDatapoint(is_brdf, inc, thetas, phis, brdf))
-
+    thetas, phis, brdf = create_lambertian_bsdf(True)
+    all_bxdfs.append(BxdfDatapoint(True, inc, thetas, phis, brdf))
 print("all brdf", all_bxdfs[0])
 
 # ### Create Anisotropic BSDF class instance
-
 new_bsdf = AnisotropicBSDF(speos)
 new_bsdf.description = "PySpeos BSDF Example"
 new_bsdf.anisotropy_vector = [1, 0, 0]
 
 # Create Spectrum with 80% reflectivity
-
 spectrum = create_spectrum(0.8)
 
 # Assign reflection spectrum to bsdf
 new_bsdf.spectrum_incidence = np.radians(5)
 new_bsdf.spectrum_anisotropy = np.radians(0)
-if is_brdf:
-    new_bsdf.has_reflection = True
-    new_bsdf.has_transmission = False
-    new_bsdf.reflection_spectrum = spectrum
-    new_bsdf.brdf = all_bxdfs
-else:
-    new_bsdf.has_reflection = False
-    new_bsdf.has_transmission = True
-    new_bsdf.transmission_spectrum = spectrum
-    new_bsdf.btdf = all_bxdfs
+new_bsdf.has_reflection = True
+new_bsdf.reflection_spectrum = spectrum
+new_bsdf.brdf = all_bxdfs
 
-save_path = assets_data_path / "example_bsdf.anisotropicbsdf"
+save_path = assets_data_path / "example_bsdf_lambertian.anisotropicbsdf"
 new_bsdf.save(save_path)
 print(new_bsdf)
+
+# ### Create a BXDFDatapoint - Example of a gaussian BRDF and BTDF
+# to create a bsdf we need the bsdf for multiple incident angles.
+# In this example we assume the color doesn't change over the incident
+# angles so we can use anisotropic bsdf and we assume the data has no
+# anisotropy
+
+clean_all_dbs(speos.client)  # clean all the database entries
+
+incident_angles = [np.radians(5), np.radians(25), np.radians(40), np.radians(65), np.radians(85)]
+all_bxdfs_R = []
+all_bxdfs_T = []
+
+for inc in incident_angles:
+    thetas, phis, brdf = create_gaussian_bsdf(
+        True, inc, nb_theta=91, nb_phi=361, fwhm=np.radians(20)
+    )
+    all_bxdfs_R.append(BxdfDatapoint(True, inc, thetas, phis, brdf))
+
+for inc in incident_angles:
+    thetas, phis, brdf = create_gaussian_bsdf(
+        False, inc, nb_theta=91, nb_phi=361, fwhm=np.radians(40)
+    )
+    all_bxdfs_T.append(BxdfDatapoint(False, inc, thetas, phis, brdf))
+
+# ### Create Anisotropic BSDF class instance
+new_bsdf_gaussian = AnisotropicBSDF(speos)
+new_bsdf_gaussian.description = "PySpeos BSDF Example"
+new_bsdf_gaussian.anisotropy_vector = [1, 0, 0]
+
+# Assign reflection spectrum to bsdf
+new_bsdf_gaussian.spectrum_incidence = np.radians(5)
+new_bsdf_gaussian.spectrum_anisotropy = np.radians(0)
+
+new_bsdf_gaussian.has_reflection = True
+new_bsdf_gaussian.has_transmission = False
+new_bsdf_gaussian.reflection_spectrum = create_spectrum(0.5)
+new_bsdf_gaussian.transmission_spectrum = create_spectrum(0.4)
+new_bsdf_gaussian.brdf = all_bxdfs_R
+new_bsdf_gaussian.btdf = all_bxdfs_T
+
+save_path = assets_data_path / "example_bsdf_gaussian.anisotropicbsdf"
+new_bsdf_gaussian.save(save_path)
+print(new_bsdf_gaussian)
+
 
 # ### BSDF Interpolation Enhancement
 # This section shows:
@@ -288,15 +317,15 @@ print(new_bsdf)
 # - How to re-load a bsdf file has interpolation enhanced and retrieve the interpolation settings.
 
 print(
-    new_bsdf.interpolation_settings
+    new_bsdf_gaussian.interpolation_settings
 )  # user can check if there was interpolation settings, here is None
-new_bsdf.create_interpolation_enhancement(index_1=1.0, index_2=1.4)
-print(new_bsdf.interpolation_settings)  # Now interpolation settings is not None
-new_bsdf.save(file_path=assets_data_path / "example_bsdf_automatic_interpolation.anisotropicbsdf")
+new_bsdf_gaussian.create_interpolation_enhancement(index_1=1.0, index_2=1.4)
+print(new_bsdf_gaussian.interpolation_settings)  # Now interpolation settings is not None
+new_bsdf_gaussian.save(file_path=assets_data_path / "example_bsdf_gaussian_automatic_interpolation.anisotropicbsdf")
 
 # Apply user defined interpolation enhancement
 
-interpolation_settings = new_bsdf.create_interpolation_enhancement(index_1=1.0, index_2=1.4)
+interpolation_settings = new_bsdf_gaussian.create_interpolation_enhancement(index_1=1.0, index_2=1.4)
 interpolation_settings_reflection = (
     interpolation_settings.get_reflection_interpolation_settings
 )  # return as fixed dictionary, user cannot add/remove item
@@ -312,13 +341,13 @@ interpolation_settings_reflection["0"][str(np.radians(5))]["height"] = 0.5
 interpolation_settings.set_interpolation_settings(
     is_brdf=True, settings=interpolation_settings_reflection
 )
-new_bsdf.save(file_path=assets_data_path / "example_bsdf_user_interpolation.anisotropicbsdf")
+new_bsdf_gaussian.save(file_path=assets_data_path / "example_bsdf_gaussian_user_interpolation.anisotropicbsdf")
 
 # Load a bsdf file with interpolation enhanced
 
 clean_all_dbs(speos.client)
 saved_bsdf = AnisotropicBSDF(
-    speos=speos, file_path=assets_data_path / "example_bsdf_user_interpolation.anisotropicbsdf"
+    speos=speos, file_path=assets_data_path / "example_bsdf_gaussian_user_interpolation.anisotropicbsdf"
 )
 print(
     saved_bsdf.interpolation_settings
