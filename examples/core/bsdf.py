@@ -109,8 +109,11 @@ def create_lambertian_bsdf(is_brdf, nb_theta=5, nb_phi=5):
             thetas[t] = np.pi * 0.5 * (1 + t / (nb_theta - 1))
             for p in range(nb_phi):
                 phis[p] = p * 2 * np.pi / (nb_phi - 1)
-                bxdf[t, p] = -np.cos(thetas[t]) / np.pi if -np.cos(thetas[t]) / np.pi > 0.0000000001 else 0
+                bxdf[t, p] = (
+                    -np.cos(thetas[t]) / np.pi if -np.cos(thetas[t]) / np.pi > 0.0000000001 else 0
+                )
     return thetas, phis, bxdf
+
 
 def create_gaussian_bsdf(is_brdf, inc, nb_theta=91, nb_phi=361, FWMH=np.radians(40)):
     """
@@ -128,6 +131,7 @@ def create_gaussian_bsdf(is_brdf, inc, nb_theta=91, nb_phi=361, FWMH=np.radians(
         number of phi samplings
     FWMH: float
         Gaussian width in radians
+
     Returns
     -------
     thetas: np.array,
@@ -147,21 +151,30 @@ def create_gaussian_bsdf(is_brdf, inc, nb_theta=91, nb_phi=361, FWMH=np.radians(
             thetas[t] = t * np.pi * 0.5 / (nb_theta - 1)
             for p in range(nb_phi):
                 phis[p] = p * 2 * np.pi / (nb_phi - 1)
-                vector_direction = [np.sin(thetas[t]) * np.cos(phis[p]), np.sin(thetas[t]) * np.sin(phis[p]), np.cos(thetas[t])]
+                vector_direction = [
+                    np.sin(thetas[t]) * np.cos(phis[p]),
+                    np.sin(thetas[t]) * np.sin(phis[p]),
+                    np.cos(thetas[t]),
+                ]
                 alpha = np.arccos(np.dot(vector_specular_direction, vector_direction))
-                sigma = FWMH/(2*np.sqrt(2*np.log(2)))
-                bxdf[t, p] = np.exp(-0.5*(alpha/sigma)**2)
+                sigma = FWMH / (2 * np.sqrt(2 * np.log(2)))
+                bxdf[t, p] = np.exp(-0.5 * (alpha / sigma) ** 2)
     else:
         vector_specular_direction = [np.sin(inc), 0.0, -np.cos(inc)]
         for t in range(nb_theta):
             thetas[t] = np.pi * 0.5 * (1 + t / (nb_theta - 1))
             for p in range(nb_phi):
                 phis[p] = p * 2 * np.pi / (nb_phi - 1)
-                vector_direction = [np.sin(thetas[t]) * np.cos(phis[p]), np.sin(thetas[t]) * np.sin(phis[p]), np.cos(thetas[t])]
+                vector_direction = [
+                    np.sin(thetas[t]) * np.cos(phis[p]),
+                    np.sin(thetas[t]) * np.sin(phis[p]),
+                    np.cos(thetas[t]),
+                ]
                 alpha = np.arccos(np.dot(vector_specular_direction, vector_direction))
-                sigma = FWMH/(2*np.sqrt(2*np.log(2)))
-                bxdf[t, p] = np.exp(-0.5*(alpha/sigma)**2)
+                sigma = FWMH / (2 * np.sqrt(2 * np.log(2)))
+                bxdf[t, p] = np.exp(-0.5 * (alpha / sigma) ** 2)
     return thetas, phis, bxdf
+
 
 def create_spectrum(value, w_start=380.0, w_end=780.0, w_step=10):
     """
@@ -226,13 +239,15 @@ else:
 
 clean_all_dbs(speos.client)  # clean all the database entries
 
-is_brdf = True # BRDF if True BTDF if False
+is_brdf = True  # BRDF if True BTDF if False
 
 incident_angles = [np.radians(5), np.radians(25), np.radians(40), np.radians(65), np.radians(85)]
 all_bxdfs = []
 for inc in incident_angles:
-    #thetas, phis, brdf = create_lambertian_bsdf(is_brdf)
-    thetas, phis, brdf = create_gaussian_bsdf(is_brdf, inc, nb_theta=91, nb_phi=361, FWMH=np.radians(40))
+    # thetas, phis, brdf = create_lambertian_bsdf(is_brdf)
+    thetas, phis, brdf = create_gaussian_bsdf(
+        is_brdf, inc, nb_theta=91, nb_phi=361, FWMH=np.radians(40)
+    )
     all_bxdfs.append(BxdfDatapoint(is_brdf, inc, thetas, phis, brdf))
 
 print("all brdf", all_bxdfs[0])
