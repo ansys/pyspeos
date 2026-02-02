@@ -74,7 +74,7 @@ def clean_all_dbs(speos_client: SpeosClient):
 
 def create_lambertian_bsdf(is_brdf, nb_theta=5, nb_phi=5):
     """
-    Create a Lambertian distribution as np.array.
+    Create a lambertian distribution as np.array.
 
     Parameters
     ----------
@@ -115,7 +115,7 @@ def create_lambertian_bsdf(is_brdf, nb_theta=5, nb_phi=5):
     return thetas, phis, bxdf
 
 
-def create_gaussian_bsdf(is_brdf, inc, nb_theta=91, nb_phi=361, FWMH=np.radians(40)):
+def create_gaussian_bsdf(is_brdf, inc, nb_theta=91, nb_phi=361, fwhm=np.radians(40)):
     """
     Create a Gaussian distribution as np.array.
 
@@ -129,7 +129,7 @@ def create_gaussian_bsdf(is_brdf, inc, nb_theta=91, nb_phi=361, FWMH=np.radians(
         number of theta samplings
     nb_phi: int
         number of phi samplings
-    FWMH: float
+    fwhm: float
         Gaussian width in radians
 
     Returns
@@ -157,7 +157,7 @@ def create_gaussian_bsdf(is_brdf, inc, nb_theta=91, nb_phi=361, FWMH=np.radians(
                     np.cos(thetas[t]),
                 ]
                 alpha = np.arccos(np.dot(vector_specular_direction, vector_direction))
-                sigma = FWMH / (2 * np.sqrt(2 * np.log(2)))
+                sigma = fwhm / (2 * np.sqrt(2 * np.log(2)))
                 bxdf[t, p] = np.exp(-0.5 * (alpha / sigma) ** 2)
     else:
         vector_specular_direction = [np.sin(inc), 0.0, -np.cos(inc)]
@@ -171,7 +171,7 @@ def create_gaussian_bsdf(is_brdf, inc, nb_theta=91, nb_phi=361, FWMH=np.radians(
                     np.cos(thetas[t]),
                 ]
                 alpha = np.arccos(np.dot(vector_specular_direction, vector_direction))
-                sigma = FWMH / (2 * np.sqrt(2 * np.log(2)))
+                sigma = fwhm / (2 * np.sqrt(2 * np.log(2)))
                 bxdf[t, p] = np.exp(-0.5 * (alpha / sigma) ** 2)
     return thetas, phis, bxdf
 
