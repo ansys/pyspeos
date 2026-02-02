@@ -12,8 +12,8 @@
 # The first allows for each wavelength to store a full bsdf description with
 # this it allows for great color representation.
 # the second uses spectral modulation to represent the color but allows for
-# anisotropic behaviour by taking a BSDF for each anistropic angle.
-# Both formats need an interpolation between incident/anistropic angles and wavelength
+# anisotropic behaviour by taking a BSDF for each anisotropic angle.
+# Both formats need an interpolation between incident/anisotropic angles and wavelength
 # In many cases the data comes from measurements and need coordinate transformations
 # to be used
 
@@ -74,7 +74,7 @@ def clean_all_dbs(speos_client: SpeosClient):
 
 def create_lambertian_bsdf(is_brdf, nb_theta=5, nb_phi=5):
     """
-    Create a lambertian Distribution as np.array.
+    Create a Lambertian distribution as np.array.
 
     Parameters
     ----------
@@ -87,11 +87,11 @@ def create_lambertian_bsdf(is_brdf, nb_theta=5, nb_phi=5):
 
     Returns
     -------
-    theta: np.array,
-        shape (nb_theta, 3)
-    phi: np.array,
-        shape (nb_phi, 3)
-    brdf: np.array,
+    thetas: np.array,
+        shape (nb_theta)
+    phis: np.array,
+        shape (nb_phi)
+    bxdf: np.array,
         shape (nb_theta, nb_phi)
 
     """
@@ -109,8 +109,59 @@ def create_lambertian_bsdf(is_brdf, nb_theta=5, nb_phi=5):
             thetas[t] = np.pi * 0.5 * (1 + t / (nb_theta - 1))
             for p in range(nb_phi):
                 phis[p] = p * 2 * np.pi / (nb_phi - 1)
+                bxdf[t, p] = -np.cos(thetas[t]) / np.pi if -np.cos(thetas[t]) / np.pi > 0.0000000001 else 0
     return thetas, phis, bxdf
 
+def create_gaussian_bsdf(is_brdf, inc, nb_theta=91, nb_phi=361, FWMH=np.radians(40)):
+    """
+    Create a Gaussian distribution as np.array.
+
+    Parameters
+    ----------
+    is_brdf: bool
+        True if generating brdf data, False btdf data
+    inc: float
+        incident angle in radians
+    nb_theta: int
+        number of theta samplings
+    nb_phi: int
+        number of phi samplings
+    FWMH: float
+        Gaussian width in radians
+    Returns
+    -------
+    thetas: np.array,
+        shape (nb_theta)
+    phis: np.array,
+        shape (nb_phi)
+    bxdf: np.array,
+        shape (nb_theta, nb_phi)
+
+    """
+    thetas = np.zeros(nb_theta)
+    phis = np.zeros(nb_phi)
+    bxdf = np.zeros((nb_theta, nb_phi))
+    if is_brdf:
+        vector_specular_direction = [np.sin(inc), 0.0, np.cos(inc)]
+        for t in range(nb_theta):
+            thetas[t] = t * np.pi * 0.5 / (nb_theta - 1)
+            for p in range(nb_phi):
+                phis[p] = p * 2 * np.pi / (nb_phi - 1)
+                vector_direction = [np.sin(thetas[t]) * np.cos(phis[p]), np.sin(thetas[t]) * np.sin(phis[p]), np.cos(thetas[t])]
+                alpha = np.arccos(np.dot(vector_specular_direction, vector_direction))
+                sigma = FWMH/(2*np.sqrt(2*np.log(2)))
+                bxdf[t, p] = np.exp(-0.5*(alpha/sigma)**2)
+    else:
+        vector_specular_direction = [np.sin(inc), 0.0, -np.cos(inc)]
+        for t in range(nb_theta):
+            thetas[t] = np.pi * 0.5 * (1 + t / (nb_theta - 1))
+            for p in range(nb_phi):
+                phis[p] = p * 2 * np.pi / (nb_phi - 1)
+                vector_direction = [np.sin(thetas[t]) * np.cos(phis[p]), np.sin(thetas[t]) * np.sin(phis[p]), np.cos(thetas[t])]
+                alpha = np.arccos(np.dot(vector_specular_direction, vector_direction))
+                sigma = FWMH/(2*np.sqrt(2*np.log(2)))
+                bxdf[t, p] = np.exp(-0.5*(alpha/sigma)**2)
+    return thetas, phis, bxdf
 
 def create_spectrum(value, w_start=380.0, w_end=780.0, w_step=10):
     """
@@ -174,14 +225,19 @@ else:
 # anisotropy
 
 clean_all_dbs(speos.client)  # clean all the database entries
-incident_angles = [np.radians(5), np.radians(25), np.radians(45), np.radians(65), np.radians(85)]
-all_brdfs = []
-for inc in incident_angles:
-    thetas, phis, brdf = create_lambertian_bsdf(True)
-    all_brdfs.append(BxdfDatapoint(True, inc, thetas, phis, brdf))
-print(all_brdfs[0])
 
-# ### Create Anistropic BSDF class instance
+is_brdf = True # BRDF if True BTDF if False
+
+incident_angles = [np.radians(5), np.radians(25), np.radians(40), np.radians(65), np.radians(85)]
+all_bxdfs = []
+for inc in incident_angles:
+    #thetas, phis, brdf = create_lambertian_bsdf(is_brdf)
+    thetas, phis, brdf = create_gaussian_bsdf(is_brdf, inc, nb_theta=91, nb_phi=361, FWMH=np.radians(40))
+    all_bxdfs.append(BxdfDatapoint(is_brdf, inc, thetas, phis, brdf))
+
+print("all brdf", all_bxdfs[0])
+
+# ### Create Anisotropic BSDF class instance
 
 new_bsdf = AnisotropicBSDF(speos)
 new_bsdf.description = "PySpeos BSDF Example"
@@ -192,15 +248,19 @@ new_bsdf.anisotropy_vector = [1, 0, 0]
 spectrum = create_spectrum(0.8)
 
 # Assign reflection spectrum to bsdf
-
-new_bsdf.has_reflection = True
-new_bsdf.spectrum_incidence = np.radians(0)
+new_bsdf.spectrum_incidence = np.radians(5)
 new_bsdf.spectrum_anisotropy = np.radians(0)
-new_bsdf.reflection_spectrum = spectrum
+if is_brdf:
+    new_bsdf.has_reflection = True
+    new_bsdf.has_transmission = False
+    new_bsdf.reflection_spectrum = spectrum
+    new_bsdf.brdf = all_bxdfs
+else:
+    new_bsdf.has_reflection = False
+    new_bsdf.has_transmission = True
+    new_bsdf.transmission_spectrum = spectrum
+    new_bsdf.btdf = all_bxdfs
 
-# Assign brdf data
-
-new_bsdf.brdf = all_brdfs
 save_path = assets_data_path / "example_bsdf.anisotropicbsdf"
 new_bsdf.save(save_path)
 print(new_bsdf)
