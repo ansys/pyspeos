@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -24,9 +24,9 @@
 
 from pathlib import Path
 
+from ansys.api.speos.common.v1 import data_pb2
 import pytest
 
-from ansys.api.speos.common.v1 import data_pb2
 from ansys.speos.core.kernel.intensity_template import ProtoIntensityTemplate
 from ansys.speos.core.speos import Speos
 from tests.conftest import test_path

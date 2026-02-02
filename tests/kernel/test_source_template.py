@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -25,10 +25,10 @@
 import json
 from pathlib import Path
 
+from ansys.api.speos.common.v1 import data_pb2
 import grpc
 import pytest
 
-from ansys.api.speos.common.v1 import data_pb2
 from ansys.speos.core.kernel.intensity_template import ProtoIntensityTemplate
 from ansys.speos.core.kernel.source_template import ProtoSourceTemplate
 from ansys.speos.core.kernel.spectrum import ProtoSpectrum

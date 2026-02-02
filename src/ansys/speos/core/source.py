@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -26,12 +26,14 @@ from __future__ import annotations
 
 import datetime
 from difflib import SequenceMatcher
+from pathlib import Path
 from typing import List, Mapping, Optional, Union
 import uuid
 
+from ansys.api.speos.scene.v2 import scene_pb2
+from ansys.api.speos.source.v1 import source_pb2
 import numpy as np
 
-from ansys.api.speos.scene.v2 import scene_pb2
 from ansys.speos.core import (
     project as project,
     proto_message_utils as proto_message_utils,
@@ -72,6 +74,395 @@ class BaseSource:
     -----
     This is a Super class, **Do not instantiate this class yourself**
     """
+
+    class UserDefinedColorSpace:
+        """Type of color space is user defined.
+
+        Parameters
+        ----------
+        userdefined_color_space : source_pb2.SourceTemplate.UserDefinedRGBSpace
+            source_pb2.SourceTemplate.UserDefinedRGBSpace
+        default_values : bool
+            Uses default values when True.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use set_userdefined_color_space() method.
+        """
+
+        class UserDefinedWhitePoint:
+            """Type of white point is user defined.
+
+            Parameters
+            ----------
+            userdefined_white_point : source_pb2.SourceTemplate.UserDefinedWhitePoint
+                source_pb2.SourceTemplate.UserDefinedWhitePoint
+            default_values : bool
+                Uses default values when True.
+            stable_ctr : bool
+                Variable to indicate if usage is inside class scope
+
+            Notes
+            -----
+            **Do not instantiate this class yourself**,
+            use set_white_point_type_user_defined() method.
+            """
+
+            def __init__(
+                self,
+                userdefined_white_point: source_pb2.SourceTemplate.UserDefinedWhitePoint,
+                default_values: bool = True,
+                stable_ctr: bool = True,
+            ):
+                if not stable_ctr:
+                    msg = "UserDefinedWhitePoint class instantiated outside of class scope"
+                    raise RuntimeError(msg)
+                self._userdefined_white_point = userdefined_white_point
+
+                if default_values:
+                    self.white_point = [0.31271, 0.32902]
+
+            @property
+            def white_point(self):
+                """White point coordinate.
+
+                This property gets or sets the white point coordinate [x, y]
+
+                Parameters
+                ----------
+                value: List[float]
+                    The white point coordinate, [0.31271, 0.32902] by default.
+
+                Returns
+                -------
+                List[float]
+                    User defined white point coordinate
+
+                """
+                return self._userdefined_white_point.white_point
+
+            @white_point.setter
+            def white_point(self, value: List[float]):
+                self._userdefined_white_point.white_point[:] = value
+
+        def __init__(
+            self,
+            project: project.Project,
+            userdefined_color_space: source_pb2.SourceTemplate.UserDefinedRGBSpace,
+            default_values: bool = True,
+            stable_ctr: bool = True,
+        ):
+            self._project = project
+            if not stable_ctr:
+                msg = "UserDefinedColorSpace class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._userdefined_color_space = userdefined_color_space
+            self._white_point_type = None
+
+            self._red_spectrum = BaseSource._Spectrum(
+                speos_client=self._project.client,
+                name="",
+                message_to_complete=self._userdefined_color_space,
+                field_name_to_complete="red_spectrum_guid",
+                spectrum_guid=self._userdefined_color_space.red_spectrum_guid,
+            )
+
+            self._green_spectrum = BaseSource._Spectrum(
+                speos_client=self._project.client,
+                name="",
+                message_to_complete=self._userdefined_color_space,
+                field_name_to_complete="green_spectrum_guid",
+                spectrum_guid=self._userdefined_color_space.green_spectrum_guid,
+            )
+
+            self._blue_spectrum = BaseSource._Spectrum(
+                speos_client=self._project.client,
+                name="",
+                message_to_complete=self._userdefined_color_space,
+                field_name_to_complete="blue_spectrum_guid",
+                spectrum_guid=self._userdefined_color_space.blue_spectrum_guid,
+            )
+
+            if default_values:
+                # Default values
+                self.set_white_point_type_d65()
+
+        @property
+        def red_spectrum(self) -> dict:
+            """Get red spectrum.
+
+            Returns
+            -------
+            dict
+                Red spectrum dictionary
+
+            """
+            return self._red_spectrum._spectrum._to_dict()
+
+        @red_spectrum.setter
+        def red_spectrum(self, red_spectrum_file_uri: str) -> None:
+            """Set red spectrum.
+
+            Parameters
+            ----------
+            red_spectrum_file_uri: str
+                Red spectrum file uri.
+
+            Returns
+            -------
+            None
+            """
+            if self._red_spectrum._message_to_complete is not self._userdefined_color_space:
+                # Happens in case of feature reset (to be sure to always modify correct data)
+                self._red_spectrum._message_to_complete = self._userdefined_color_space
+
+            # name for the spectrum chosen: <file_uri>.Spectrum
+            self._red_spectrum._spectrum._spectrum.name = Path(red_spectrum_file_uri).name
+            self._red_spectrum._spectrum.set_library(file_uri=red_spectrum_file_uri)
+
+        @property
+        def green_spectrum(self) -> dict:
+            """Get green spectrum.
+
+            Returns
+            -------
+            dict
+                Green spectrum dictionary
+
+            """
+            return self._green_spectrum._spectrum._to_dict()
+
+        @green_spectrum.setter
+        def green_spectrum(self, green_spectrum_file_uri: str) -> None:
+            """Set green spectrum.
+
+            Parameters
+            ----------
+            green_spectrum_file_uri: str
+                Green spectrum file uri.
+
+            Returns
+            -------
+            None
+            """
+            if self._green_spectrum._message_to_complete is not self._userdefined_color_space:
+                # Happens in case of feature reset (to be sure to always modify correct data)
+                self._green_spectrum._message_to_complete = self._userdefined_color_space
+
+            # name for the spectrum chosen: <file_uri>.Spectrum
+            self._green_spectrum._spectrum._spectrum.name = Path(green_spectrum_file_uri).name
+            self._green_spectrum._spectrum.set_library(file_uri=green_spectrum_file_uri)
+
+        @property
+        def blue_spectrum(self) -> dict:
+            """Get blue spectrum.
+
+            Returns
+            -------
+            dict
+                Blue spectrum dictionary
+
+            """
+            return self._blue_spectrum._spectrum._to_dict()
+
+        @blue_spectrum.setter
+        def blue_spectrum(self, blue_spectrum_file_uri: str) -> None:
+            """Set blue spectrum.
+
+            Parameters
+            ----------
+            blue_spectrum_file_uri: str
+                Blue spectrum file uri.
+
+            Returns
+            -------
+            None
+            """
+            if self._blue_spectrum._message_to_complete is not self._userdefined_color_space:
+                # Happens in case of feature reset (to be sure to always modify correct data)
+                self._blue_spectrum._message_to_complete = self._userdefined_color_space
+
+            # name for the spectrum chosen: <file_uri>.Spectrum
+            self._blue_spectrum._spectrum._spectrum.name = Path(blue_spectrum_file_uri).name
+            self._blue_spectrum._spectrum.set_library(file_uri=blue_spectrum_file_uri)
+
+        @property
+        def white_point_type(
+            self,
+        ) -> Union[
+            None,
+            source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.D65,
+            source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.D50,
+            source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.C,
+            source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.E,
+            UserDefinedWhitePoint,
+        ]:
+            """Get the white point type.
+
+            Returns
+            -------
+            Union
+            [
+                None,
+                source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.D65,
+                source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.D50,
+                source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.C,
+                source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.E,
+                UserDefinedWhitePoint,
+            ]
+            Predefined White Point Type or User Defined White Point Type.
+
+            """
+            return self._white_point_type
+
+        def set_white_point_type_d65(self) -> None:
+            """Set white point type to D65.
+
+            Returns
+            -------
+            None
+
+            """
+            self._userdefined_color_space.pre_defined_white_point.white_point_type = (
+                source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.D65
+            )
+            self._white_point_type = (
+                source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.D65
+            )
+
+        def set_white_point_type_c(self) -> None:
+            """Set white point type to C.
+
+            Returns
+            -------
+            None
+
+            """
+            self._userdefined_color_space.pre_defined_white_point.white_point_type = (
+                source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.C
+            )
+            self._white_point_type = source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.C
+
+        def set_white_point_type_d50(self) -> None:
+            """Set white point type to D50.
+
+            Returns
+            -------
+            None
+
+            """
+            self._userdefined_color_space.pre_defined_white_point.white_point_type = (
+                source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.D50
+            )
+            self._white_point_type = (
+                source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.D50
+            )
+
+        def set_white_point_type_e(self) -> None:
+            """Set white point type to E.
+
+            Returns
+            -------
+            None
+
+            """
+            self._userdefined_color_space.pre_defined_white_point.white_point_type = (
+                source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.E
+            )
+            self._white_point_type = source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.E
+
+        def set_white_point_type_user_defined(self) -> UserDefinedWhitePoint:
+            """Set white point type to user_defined.
+
+            Returns
+            -------
+            UserDefinedWhitePoint
+                User defined white point settings.
+
+            """
+            if self._white_point_type is None and self._userdefined_color_space.HasField(
+                "user_defined_white_point"
+            ):
+                self._white_point_type = BaseSource.UserDefinedColorSpace.UserDefinedWhitePoint(
+                    userdefined_white_point=self._userdefined_color_space.user_defined_white_point,
+                    default_values=False,
+                    stable_ctr=True,
+                )
+            if not isinstance(
+                self._white_point_type, BaseSource.UserDefinedColorSpace.UserDefinedWhitePoint
+            ):
+                # if the _type is not UserDefinedWhitePoint then we create a new type.
+                self._white_point_type = BaseSource.UserDefinedColorSpace.UserDefinedWhitePoint(
+                    userdefined_white_point=self._userdefined_color_space.user_defined_white_point,
+                    stable_ctr=True,
+                )
+            elif (
+                self._white_point_type._userdefined_white_point
+                is not self._userdefined_color_space.user_defined_white_point
+            ):
+                # Happens in case of feature reset (to be sure to always modify correct data)
+                self._white_point_type._userdefined_white_point = (
+                    self._userdefined_color_space.user_defined_white_point
+                )
+            return self._white_point_type
+
+    class PredefinedColorSpace:
+        """Type of color space is predefined value.
+
+        Parameters
+        ----------
+        predefined_color_space :
+            ansys.api.speos.source.v1.source_pb2.SourceTemplate.PredefinedColorSpace
+        default_values : bool
+            Uses default values when True.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use set_predefined_color_space() method.
+        """
+
+        def __init__(
+            self,
+            predefined_color_space: source_pb2.SourceTemplate.PredefinedColorSpace,
+            default_values: bool = True,
+            stable_ctr: bool = False,
+        ) -> None:
+            if not stable_ctr:
+                msg = "PredefinedColorSpace class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._predefined_color_space = predefined_color_space
+
+            if default_values:
+                # Default values
+                self.set_color_space_srgb()
+
+        def set_color_space_srgb(self) -> SourceAmbientEnvironment.PredefinedColorSpace:
+            """Set the color space to the srgb preset.
+
+            Returns
+            -------
+            ansys.speos.core.source.SourceAmbientEnvironment.PredefinedColorSpace
+            """
+            self._predefined_color_space.color_space_type = (
+                source_pb2.SourceTemplate.PredefinedColorSpace.sRGB
+            )
+            return self
+
+        def set_color_space_adobergb(self) -> SourceAmbientEnvironment.PredefinedColorSpace:
+            """Set the color space to the Adobe RGB preset.
+
+            Returns
+            -------
+            ansys.speos.core.source.SourceAmbientEnvironment.PredefinedColorSpace
+            """
+            self._predefined_color_space.color_space_type = (
+                source_pb2.SourceTemplate.PredefinedColorSpace.AdobeRGB
+            )
+            return self
 
     def __init__(
         self,
@@ -116,9 +507,11 @@ class BaseSource:
                 ProtoSourceTemplate.Surface,
                 ProtoSourceTemplate.Luminaire,
             ],
+            field_name_to_complete="",
             spectrum_guid: str = "",
         ) -> None:
             self._message_to_complete = message_to_complete
+            self._field_name_to_complete = field_name_to_complete
             if spectrum_guid != "":
                 self._spectrum = Spectrum(
                     speos_client=speos_client,
@@ -143,7 +536,14 @@ class BaseSource:
         def _commit(self) -> BaseSource._Spectrum:
             if not self._no_spectrum_local:
                 self._spectrum.commit()
-                self._message_to_complete.spectrum_guid = self._spectrum.spectrum_link.key
+                if self._field_name_to_complete == "":
+                    self._message_to_complete.spectrum_guid = self._spectrum.spectrum_link.key
+                elif self._field_name_to_complete == "red_spectrum_guid":
+                    self._message_to_complete.red_spectrum_guid = self._spectrum.spectrum_link.key
+                elif self._field_name_to_complete == "green_spectrum_guid":
+                    self._message_to_complete.green_spectrum_guid = self._spectrum.spectrum_link.key
+                elif self._field_name_to_complete == "blue_spectrum_guid":
+                    self._message_to_complete.blue_spectrum_guid = self._spectrum.spectrum_link.key
                 self._no_spectrum = self._no_spectrum_local
             return self
 
@@ -1945,3 +2345,331 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
             # Happens in case of feature reset (to be sure to always modify correct data)
             self._type._sun = natural_light_properties.sun_axis_system.manual_sun
         return self._type
+
+
+class SourceAmbientEnvironment(BaseSourceAmbient):
+    """Environment ambient source.
+
+    By default [0, 0, 1] is used as zenith direction, [0, 1, 0] as north direction.
+
+    Parameters
+    ----------
+    project : ansys.speos.core.project.Project
+        Project that will own the feature.
+    name : str
+        Name of the feature.
+    description : str
+        Description of the feature.
+        By default, ``""``.
+    metadata : Optional[Mapping[str, str]]
+        Metadata of the feature.
+        By default, ``{}``.
+    default_values : bool
+        Uses default values when True.
+    """
+
+    # source_type = "SourceAmbientEnvironment"
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        source_instance: Optional[ProtoScene.SourceInstance] = None,
+        default_values: bool = True,
+    ) -> None:
+        if metadata is None:
+            metadata = {}
+
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            source_instance=source_instance,
+        )
+        self._speos_client = self._project.client
+        self._name = name
+        self._type = None
+
+        if default_values:
+            # Default values
+            self.zenith_direction = [0, 0, 1]
+            self.north_direction = [0, 1, 0]
+            self.reverse_north_direction = False
+            self.reverse_zenith_direction = False
+            self.luminance = 1000
+            self.set_predefined_color_space()  # defaults to sRGB
+
+    @property
+    def zenith_direction(self) -> List[float]:
+        """Zenith direction of the environment light source.
+
+        This property get and set the zenith direction of the environment source.
+
+        Parameters
+        ----------
+        direction: Optional[List[float]]
+            direction defines the zenith direction of the environment light source.
+
+        Returns
+        -------
+        List[float]
+            direction defines the zenith direction of the environment light source.
+
+        """
+        return self._source_instance.ambient_properties.zenith_direction
+
+    @zenith_direction.setter
+    def zenith_direction(self, direction: Optional[List[float]]) -> None:
+        self._source_instance.ambient_properties.zenith_direction[:] = direction
+
+    @property
+    def reverse_zenith_direction(self) -> bool:
+        """Reverse zenith direction of the environment light source.
+
+        This property get and set if reverse zenith direction is True.
+
+
+        Parameters
+        ----------
+        value: bool
+            True to reverse zenith direction, False otherwise.
+
+        Returns
+        -------
+        bool
+            True to reverse zenith direction, False otherwise.
+
+        """
+        return self._source_instance.ambient_properties.reverse_zenith
+
+    @reverse_zenith_direction.setter
+    def reverse_zenith_direction(self, value: bool) -> None:
+        self._source_instance.ambient_properties.reverse_zenith = value
+
+    @property
+    def north_direction(self) -> List[float]:
+        """North direction of the environment light source.
+
+        This property get and set the north direction of the environment source.
+
+        Parameters
+        ----------
+        direction: List[float]
+            direction defines the north direction, default value to be [0, 1, 0].
+
+        Returns
+        -------
+        List[float]
+            direction defines the north direction of the environment source.
+
+        """
+        return self._source_instance.ambient_properties.environment_map_properties.north_direction
+
+    @north_direction.setter
+    def north_direction(self, direction: List[float]) -> None:
+        self._source_instance.ambient_properties.environment_map_properties.north_direction[:] = (
+            direction
+        )
+
+    @property
+    def reverse_north_direction(self) -> bool:
+        """Reverse north direction of the environment light source.
+
+        This property get and set if reverse north direction is True.
+
+        Parameters
+        ----------
+        value: bool
+            True to reverse north direction, False otherwise.
+
+        Returns
+        -------
+        bool
+            True as reverse north direction, False otherwise.
+
+        """
+        return self._source_instance.ambient_properties.environment_map_properties.reverse_north
+
+    @reverse_north_direction.setter
+    def reverse_north_direction(self, value: bool) -> None:
+        self._source_instance.ambient_properties.environment_map_properties.reverse_north = value
+
+    @property
+    def luminance(self) -> float:
+        """Luminance of the environment light source.
+
+        This property get and set the Luminance value of the source.
+
+        Parameters
+        ----------
+        value: float
+            set value of Luminance (cd/m^2).
+
+        Returns
+        -------
+        float
+            value of Luminance setting (cd/m^2).
+
+        """
+        return self._source_template.ambient.environment_map.luminance
+
+    @luminance.setter
+    def luminance(self, value: float) -> None:
+        self._source_template.ambient.environment_map.luminance = value
+
+    @property
+    def image_file_uri(self) -> str:
+        """Location of the environment image file.
+
+        This property gets or sets the environment image file used by the
+        ambient environment source.
+
+        Parameters
+        ----------
+         uri : Union[str, Path]
+            format file uri (hdr, exr, png, bmp, jpg, tiff, rgb).
+
+        Returns
+        -------
+        uri : str
+            format file uri (hdr, exr, png, bmp, jpg, tiff, rgb).
+        """
+        return self._source_template.ambient.environment_map.image_uri
+
+    @image_file_uri.setter
+    def image_file_uri(self, uri: Union[str, Path]) -> None:
+        self._source_template.ambient.environment_map.image_uri = str(uri)
+
+    @property
+    def color_space(
+        self,
+    ) -> Union[
+        None,
+        SourceAmbientEnvironment.PredefinedColorSpace,
+        SourceAmbientEnvironment.UserDefinedColorSpace,
+    ]:
+        """Property containing all options in regard to the color space properties.
+
+        Returns
+        -------
+        Union[
+            None,
+            ansys.speos.core.source.SourceAmbientEnvironment.PredefinedColorSpace,
+            ansys.speos.core.source.SourceAmbientEnvironment.UserDefinedColorSpace
+            ]
+            Instance of Predefined Color Space class
+        """
+        return self._type
+
+    def set_userdefined_color_space(self) -> SourceAmbientEnvironment.UserDefinedColorSpace:
+        """Set the color space to user-defined.
+
+        Returns
+        -------
+        SourceAmbientEnvironment.UserDefinedColorSpace
+            Settings for user defined color space.
+
+        """
+        if self._type is None and self._source_template.ambient.environment_map.HasField(
+            "user_defined_rgb_space"
+        ):
+            self._type = SourceAmbientEnvironment.UserDefinedColorSpace(
+                project=self._project,
+                userdefined_color_space=self._source_template.ambient.environment_map.user_defined_rgb_space,
+                default_values=False,
+                stable_ctr=True,
+            )
+        if not isinstance(self._type, SourceAmbientEnvironment.UserDefinedColorSpace):
+            # if the _type is not UserDefinedColorSpace then we create a new type.
+            self._type = SourceAmbientEnvironment.UserDefinedColorSpace(
+                project=self._project,
+                userdefined_color_space=self._source_template.ambient.environment_map.user_defined_rgb_space,
+                stable_ctr=True,
+            )
+        elif (
+            self._type._userdefined_color_space
+            is not self._source_template.ambient.environment_map.user_defined_rgb_space
+        ):
+            # Happens in case of feature reset (to be sure to always modify correct data)
+            self._type._userdefined_color_space = (
+                self._source_template.ambient.environment_map.user_defined_rgb_space
+            )
+        return self._type
+
+    def set_predefined_color_space(self) -> SourceAmbientEnvironment.PredefinedColorSpace:
+        """Set the color space to use one of the presets.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceAmbientEnvironment.PredefinedColorSpace
+            Environment source color space for sRGB or AdobeRGB
+        """
+        if self._type is None and self._source_template.ambient.environment_map.HasField(
+            "predefined_color_space"
+        ):
+            self._type = SourceAmbientEnvironment.PredefinedColorSpace(
+                predefined_color_space=self._source_template.ambient.environment_map.predefined_color_space,
+                default_values=False,
+                stable_ctr=True,
+            )
+        if not isinstance(self._type, SourceAmbientEnvironment.PredefinedColorSpace):
+            # if the _type is not PredefinedColorSpace then we create a new type.
+            self._type = SourceAmbientEnvironment.PredefinedColorSpace(
+                predefined_color_space=self._source_template.ambient.environment_map.predefined_color_space,
+                stable_ctr=True,
+            )
+        elif (
+            self._type._predefined_color_space
+            is not self._source_template.ambient.environment_map.predefined_color_space
+        ):
+            # Happens in case of feature reset (to be sure to always modify correct data)
+            self._type._predefined_color_space = (
+                self._source_template.ambient.environment_map.predefined_color_space
+            )
+        return self._type
+
+    def commit(self) -> SourceAmbientEnvironment:
+        """Save feature: send the local data to the speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceAmbientEnvironment
+            Ambient environment Source feature.
+        """
+        if isinstance(self._type, BaseSource.UserDefinedColorSpace):
+            self._type._red_spectrum._commit()
+            self._type._green_spectrum._commit()
+            self._type._blue_spectrum._commit()
+        super().commit()
+
+    def reset(self) -> SourceAmbientEnvironment:
+        """Reset feature: override local data by the one from the speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceAmbientEnvironment
+            Ambient environment Source feature.
+        """
+        if isinstance(self._type, BaseSource.UserDefinedColorSpace):
+            self._type._red_spectrum._reset()
+            self._type._green_spectrum._reset()
+            self._type._blue_spectrum._reset()
+        super().reset()
+
+    def delete(self) -> SourceAmbientEnvironment:
+        """Delete feature: delete data from the speos server database.
+
+        The local data are still available
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceAmbientEnvironment
+            Ambient environment Source feature.
+        """
+        if isinstance(self._type, BaseSource.UserDefinedColorSpace):
+            self._type._red_spectrum._delete()
+            self._type._green_spectrum._delete()
+            self._type._blue_spectrum._delete()
+        super().delete()

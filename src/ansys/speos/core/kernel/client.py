@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -26,14 +26,25 @@ import logging
 import os
 from pathlib import Path
 import subprocess  # nosec
+import tempfile
 import time
 from typing import TYPE_CHECKING, List, Optional, Union
-import warnings
-
-import grpc
-from grpc._channel import _InactiveRpcError
 
 from ansys.api.speos.part.v1 import body_pb2, face_pb2, part_pb2
+
+from ansys.speos.core.generic.version_checker import server_version_checker
+
+try:
+    from ansys.api.speos.server_info.v1 import server_info_pb2, server_info_pb2_grpc
+
+    SERVER_INFO_API = True
+except ModuleNotFoundError:
+    SERVER_INFO_API = False
+
+import grpc
+from grpc import RpcError
+from grpc._channel import _InactiveRpcError
+
 from ansys.speos.core.generic.constants import (
     DEFAULT_HOST,
     DEFAULT_PORT,
@@ -43,6 +54,13 @@ from ansys.speos.core.generic.constants import (
 from ansys.speos.core.generic.general_methods import retrieve_speos_install_dir
 from ansys.speos.core.kernel.body import BodyLink, BodyStub
 from ansys.speos.core.kernel.face import FaceLink, FaceStub
+from ansys.speos.core.kernel.grpc.transport_options import (
+    InsecureOptions,
+    TransportMode,
+    TransportOptions,
+    UDSOptions,
+    WNUAOptions,
+)
 from ansys.speos.core.kernel.intensity_template import (
     IntensityTemplateLink,
     IntensityTemplateStub,
@@ -83,7 +101,7 @@ def wait_until_healthy(channel: grpc.Channel, timeout: float):
 
     Parameters
     ----------
-    channel : ~grpc.Channel
+    channel : grpc.Channel
         Channel to wait until established and healthy.
     timeout : float
         Timeout in seconds. One attempt will be made each 100 milliseconds
@@ -108,24 +126,45 @@ def wait_until_healthy(channel: grpc.Channel, timeout: float):
         )
 
 
+def default_docker_channel(
+    host: Optional[str] = DEFAULT_HOST,
+    port: Union[str, int] = DEFAULT_PORT,
+    message_size: int = MAX_CLIENT_MESSAGE_SIZE,
+) -> grpc.Channel:
+    """Create default transport options for docker on CI."""
+    return TransportOptions(
+        mode=TransportMode.INSECURE,
+        options=InsecureOptions(host=host, port=port, allow_remote_host=True),
+    ).create_channel(grpc_options=[("grpc.max_receive_message_length", message_size)])
+
+
+def default_local_channel(
+    port: Union[str, int] = DEFAULT_PORT, message_size: int = MAX_CLIENT_MESSAGE_SIZE
+) -> grpc.Channel:
+    """Create default transport options, WNUA on Windows, UDS on Linux."""
+    if os.name == "nt":
+        transport = TransportOptions(
+            mode=TransportMode.WNUA, options=WNUAOptions(host=DEFAULT_HOST, port=port)
+        )
+    else:
+        sock_file = Path(tempfile.gettempdir()) / f"speosrpc_sock_{port}"
+        transport = TransportOptions(
+            mode=TransportMode.UDS, options=UDSOptions(uds_fullpath=str(sock_file))
+        )
+    return transport.create_channel(
+        grpc_options=[("grpc.max_receive_message_length", message_size)]
+    )
+
+
 class SpeosClient:
     """
     Wraps a speos gRPC connection.
 
     Parameters
     ----------
-    host : str, optional
-        Host where the server is running.
-        By default, ``DEFAULT_HOST``.
-    port : Union[str, int], optional
-        Port number where the server is running.
-        By default, ``DEFAULT_PORT``.
-    channel : ~grpc.Channel, optional
+    channel : grpc.Channel, optional
         gRPC channel for server communication.
         By default, ``None``.
-    message_size: int
-        Maximum Message size of a newly generated channel
-        By default, ``MAX_CLIENT_MESSAGE_SIZE``.
     remote_instance : ansys.platform.instancemanagement.Instance
         The corresponding remote instance when the Speos Service
         is launched through PyPIM. This instance will be deleted when calling
@@ -144,11 +183,8 @@ class SpeosClient:
 
     def __init__(
         self,
-        host: Optional[str] = DEFAULT_HOST,
-        port: Union[str, int] = DEFAULT_PORT,
         version: str = DEFAULT_VERSION,
         channel: Optional[grpc.Channel] = None,
-        message_size: int = MAX_CLIENT_MESSAGE_SIZE,
         remote_instance: Optional["Instance"] = None,
         timeout: Optional[int] = 60,
         logging_level: Optional[int] = logging.INFO,
@@ -171,29 +207,27 @@ class SpeosClient:
         else:
             self._version = version
         if channel:
-            # Used for PyPIM when directly providing a channel
+            # grpc channel is provided by caller, used by PyPIM or Docker server
             self._channel = channel
-            self._target = str(channel)
         else:
-            if host == "0.0.0.0":  # nosec
-                warnings.warn(
-                    "The service is exposed on all network interfaces. This is a security risk.",
-                    stacklevel=2,
-                )
+            self._channel = default_local_channel()
 
-            self._host = host
-            self._port = port
-            self._target = f"{host}:{port}"
-            self._channel = grpc.insecure_channel(
-                self._target,
-                options=[("grpc.max_receive_message_length", message_size)],
-            )
         # do not finish initialization until channel is healthy
         wait_until_healthy(self._channel, timeout)
 
+        try:
+            if SERVER_INFO_API:
+                server_version_checker.set_version(
+                    server_info_pb2_grpc.ServerInfoStub(channel=self._channel)
+                    .GetVersion(server_info_pb2.GetVersion_Request())
+                    .version
+                )
+        except RpcError:
+            pass
+
         # once connection with the client is established, create a logger
         self._log = LOGGER.add_instance_logger(
-            name=self._target, client_instance=self, level=logging_level
+            name=self.target(), client_instance=self, level=logging_level
         )
         if logging_file:
             if isinstance(logging_file, Path):
@@ -499,7 +533,7 @@ List[ansys.speos.core.kernel.face.FaceLink]]
         """Represent the client as a string."""
         lines = []
         lines.append(f"Ansys Speos client ({hex(id(self))})")
-        lines.append(f"  Target:     {self._target}")
+        lines.append(f"  Target:     {self.target()}")
         if self._closed:
             lines.append("  Connection: Closed")
         elif self.healthy:
@@ -529,7 +563,7 @@ List[ansys.speos.core.kernel.face.FaceLink]]
         wait_time = 0
         if self._remote_instance:
             self._remote_instance.delete()
-        elif self._host in ["localhost", "0.0.0.0", "127.0.0.1"] and self.__speos_exec:  # nosec
+        elif self.__speos_exec:
             self.__close_local_speos_rpc_server()
             while self.healthy and wait_time < 15:
                 time.sleep(1)
@@ -565,7 +599,13 @@ List[ansys.speos.core.kernel.face.FaceLink]]
 
         """
         try:
-            int(self._port)
+            # Extract port number at end of target string
+            target = self.target()
+            if ":" in target:
+                port = target.split(":")[-1]
+            else:
+                port = target.split("_")[-1]
+            int(port)
         except ValueError:
             raise RuntimeError("The port of the local server is not a valid integer.")
         if (
@@ -574,5 +614,5 @@ List[ansys.speos.core.kernel.face.FaceLink]]
         ):
             raise RuntimeError("Unexpected executable path for Speos rpc executable.")
 
-        command = [self.__speos_exec, f"-s{self._port}"]
+        command = [self.__speos_exec, f"-s{port}"]
         subprocess.run(command, check=True)  # nosec

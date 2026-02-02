@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -25,14 +25,14 @@
 import logging
 from pathlib import Path
 
-import pytest
-
 from ansys.api.speos.intensity_distributions.v1 import (
     base_map_template_pb2,
     extended_map_template_pb2,
     xmp_pb2,
     xmp_pb2_grpc,
 )
+import pytest
+
 from ansys.speos.core.speos import Speos
 from tests.conftest import test_path
 import tests.helper as helper
