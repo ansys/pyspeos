@@ -32,7 +32,8 @@ from ansys.api.speos.simulation.v1 import simulation_template_pb2
 import pytest
 
 from ansys.speos.core import Body, GeoRef, Project, Speos
-from ansys.speos.core.sensor import BaseSensor, Sensor3DIrradiance, SensorIrradiance
+from ansys.speos.core.generic.general_methods import normalize_vector
+from ansys.speos.core.sensor import BaseSensor, Sensor3DIrradiance, SensorIrradiance, SensorRadiance
 from ansys.speos.core.simulation import (
     SimulationDirect,
     SimulationInteractive,
@@ -1453,6 +1454,77 @@ def test_export_vtp(speos: Speos):
     assert np.allclose(vtp_data.get("Radiometric"), 0.0) is not True
 
     # # test radiance photometric
+    p9 = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism.speos"),
+    )
+    sim = p9.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
+    sensor_irra = p9.find(name=".*", name_regex=True, feature_type=SensorIrradiance)[0]
+    sensor_rad = p9.create_sensor("radiance", feature_type=SensorRadiance)
+    coord_info = sensor_irra.axis_system
+    origin = coord_info[:3]
+    x_dir = normalize_vector(coord_info[3:6])
+    y_dir = normalize_vector(coord_info[6:9])
+    z_dir = normalize_vector(coord_info[9:12])
+    sensor_rad.axis_system = [
+        origin[0],
+        origin[1],
+        origin[2],
+        -x_dir[0],
+        -x_dir[1],
+        -x_dir[2],
+        y_dir[0],
+        y_dir[1],
+        y_dir[2],
+        z_dir[0],
+        z_dir[1],
+        z_dir[2],
+    ]
+    dim = sensor_rad.set_dimensions()
+    dim.x_sampling = 10
+    dim.y_sampling = 10
+    sensor_rad.commit()
+    sim.set_sensor_paths(["radiance"])
+    sim.commit()
+    speos_results, vtp_results = sim.compute_CPU(export_vtp=True)
+
+    vtp_data = pv.read(vtp_results[0]).point_data
+    assert np.allclose(vtp_data.get("Photometric"), 0.0) is not True
+
     # # test radiance radiometric
+    sensor_rad.set_type_radiometric()
+    sensor_rad.commit()
+    speos_results, vtp_results = sim.compute_CPU(export_vtp=True)
+
+    vtp_data = pv.read(vtp_results[0]).point_data
+    assert vtp_data.get("Photometric") is None
+    assert np.allclose(vtp_data.get("Radiometric"), 0.0) is not True
+
     # # test radiance colorimetric
+    sensor_rad.set_type_colorimetric()
+    sensor_rad.commit()
+    speos_results, vtp_results = sim.compute_CPU(export_vtp=True)
+
+    vtp_data = pv.read(vtp_results[0]).point_data
+    assert vtp_data.get("Photometric") is None
+    assert np.allclose(vtp_data.get("Radiometric"), 0.0) is not True
+
     # # test radiance spectral
+    sensor_rad.set_type_spectral()
+    sensor_rad.commit()
+    speos_results, vtp_results = sim.compute_CPU(export_vtp=True)
+
+    vtp_data = pv.read(vtp_results[0]).point_data
+    assert vtp_data.get("Photometric") is None
+    assert np.allclose(vtp_data.get("Radiometric"), 0.0) is not True
+
+    # # test multiple vtp merge
+    sim.set_sensor_paths(["radiance"])
+    p10 = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Prism.speos" / "Prism_3D.speos"),
+    )
+    sim = p10.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
+    speos_results, vtp_results = sim.compute_CPU(export_vtp=True)
+    assert len(vtp_results) == 3
+    assert vtp_results[2].name == "merged.vtp"
