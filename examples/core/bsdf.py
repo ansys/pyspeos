@@ -321,11 +321,15 @@ print(
 )  # user can check if there was interpolation settings, here is None
 new_bsdf_gaussian.create_interpolation_enhancement(index_1=1.0, index_2=1.4)
 print(new_bsdf_gaussian.interpolation_settings)  # Now interpolation settings is not None
-new_bsdf_gaussian.save(file_path=assets_data_path / "example_bsdf_gaussian_automatic_interpolation.anisotropicbsdf")
+new_bsdf_gaussian.save(
+    file_path=assets_data_path / "example_bsdf_gaussian_automatic_interpolation.anisotropicbsdf"
+)
 
 # Apply user defined interpolation enhancement
 
-interpolation_settings = new_bsdf_gaussian.create_interpolation_enhancement(index_1=1.0, index_2=1.4)
+interpolation_settings = new_bsdf_gaussian.create_interpolation_enhancement(
+    index_1=1.0, index_2=1.4
+)
 interpolation_settings_reflection = (
     interpolation_settings.get_reflection_interpolation_settings
 )  # return as fixed dictionary, user cannot add/remove item
@@ -341,13 +345,16 @@ interpolation_settings_reflection["0"][str(np.radians(5))]["height"] = 0.5
 interpolation_settings.set_interpolation_settings(
     is_brdf=True, settings=interpolation_settings_reflection
 )
-new_bsdf_gaussian.save(file_path=assets_data_path / "example_bsdf_gaussian_user_interpolation.anisotropicbsdf")
+new_bsdf_gaussian.save(
+    file_path=assets_data_path / "example_bsdf_gaussian_user_interpolation.anisotropicbsdf"
+)
 
 # Load a bsdf file with interpolation enhanced
 
 clean_all_dbs(speos.client)
 saved_bsdf = AnisotropicBSDF(
-    speos=speos, file_path=assets_data_path / "example_bsdf_gaussian_user_interpolation.anisotropicbsdf"
+    speos=speos,
+    file_path=assets_data_path / "example_bsdf_gaussian_user_interpolation.anisotropicbsdf",
 )
 print(
     saved_bsdf.interpolation_settings
