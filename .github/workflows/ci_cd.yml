@@ -31,11 +31,23 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      - uses: ansys/actions/doc-deploy-changelog@33399106dc8b62d83c8aad1fb2c333c8055df180 # v10.0.20
+      - uses: ansys/actions/doc-deploy-changelog@41f86da4c9ead510db9135e428e33df9cc6f92e1 # v10.2.3
         with:
           token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
           bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
           bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
+
+  vulnerabilities:
+    name: Vulnerabilities
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ansys/actions/check-vulnerabilities@41f86da4c9ead510db9135e428e33df9cc6f92e1 # v10.2.3
+        with:
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          python-package-name: ${{ env.PACKAGE_NAME }}
+          token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
+          dev-mode: ${{ github.ref != 'refs/heads/main' }}
+          extra-targets: 'graphics,jupyter'
 
   pr-name:
     if: github.event_name == 'pull_request'
@@ -43,7 +55,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check commit name
-        uses: ansys/actions/check-pr-title@33399106dc8b62d83c8aad1fb2c333c8055df180 # v10.0.20
+        uses: ansys/actions/check-pr-title@41f86da4c9ead510db9135e428e33df9cc6f92e1 # v10.2.3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -52,7 +64,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: PyAnsys documentation style checks
-        uses: ansys/actions/doc-style@33399106dc8b62d83c8aad1fb2c333c8055df180 # v10.0.20
+        uses: ansys/actions/doc-style@41f86da4c9ead510db9135e428e33df9cc6f92e1 # v10.2.3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -66,7 +78,7 @@ jobs:
         python-version: ['3.10', '3.11', '3.12', '3.13']
     steps:
       - name: Build wheelhouse and perform smoke test
-        uses: ansys/actions/build-wheelhouse@33399106dc8b62d83c8aad1fb2c333c8055df180 # v10.0.20
+        uses: ansys/actions/build-wheelhouse@41f86da4c9ead510db9135e428e33df9cc6f92e1 # v10.2.3
         with:
           library-name: ${{ env.PACKAGE_NAME }}
           operating-system: ${{ matrix.os }}
@@ -78,21 +90,27 @@ jobs:
     needs: [doc-style]
     steps:
       - name: Checkout
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up headless display
+        uses: pyvista/setup-headless-display-action@7d84ae825e6d9297a8e99bdbbae20d1b919a0b19 # v4.2
+
       - name: Login to GitHub Packages
-        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3.5.0
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
         with:
           registry: ghcr.io/ansys
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Start container
         shell: bash
         env:
           ANSYSLMD_LICENSE_FILE: 1055@${{ secrets.LICENSE_SERVER }}
         run: |
-          docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e SPEOS_LOG_LEVEL=2 -e ANSYSLMD_LICENSE_FILE=${{ env.ANSYSLMD_LICENSE_FILE }} -v "${{ github.workspace }}/tests/assets:/app/assets" --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:dev --host 0.0.0.0
+          docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e SPEOS_LOG_LEVEL=2 -e ANSYSLMD_LICENSE_FILE=${{ env.ANSYSLMD_LICENSE_FILE }} -v "${{ github.workspace }}/tests/assets:/app/assets" --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:dev --transport_insecure --host 0.0.0.0
+
       - name: "Run Ansys documentation building action"
-        uses: ansys/actions/doc-build@33399106dc8b62d83c8aad1fb2c333c8055df180 # v10.0.20
+        uses: ansys/actions/doc-build@41f86da4c9ead510db9135e428e33df9cc6f92e1 # v10.2.3
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           check-links: false
@@ -100,6 +118,7 @@ jobs:
           checkout: false
           dependencies: "pandoc"
           needs-quarto: true
+
       - name: Stop container
         shell: bash
         run: |
@@ -113,16 +132,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Installing OS packages
-        shell: bash
-        run: |
-          sudo apt-get update
-          sudo apt install -y libgl1 libglx-mesa0 xvfb libgomp1
+      - name: Set up headless display
+        uses: pyvista/setup-headless-display-action@7d84ae825e6d9297a8e99bdbbae20d1b919a0b19 # v4.2
 
       - name: Set up Python
-        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
 
@@ -142,7 +158,7 @@ jobs:
           pip install .[tests]
 
       - name: Login to GitHub Packages
-        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3.5.0
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
         with:
           registry: ghcr.io/ansys
           username: ${{ github.actor }}
@@ -153,24 +169,24 @@ jobs:
           ANSYSLMD_LICENSE_FILE: 1055@${{ secrets.LICENSE_SERVER }}
         shell: bash
         run: |
-          docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e SPEOS_LOG_LEVEL=2 -e ANSYSLMD_LICENSE_FILE=${{ env.ANSYSLMD_LICENSE_FILE }} -v "${{ github.workspace }}/tests/assets:/app/assets" --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:dev -m 25000000 --host 0.0.0.0
+          docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e SPEOS_LOG_LEVEL=2 -e ANSYSLMD_LICENSE_FILE=${{ env.ANSYSLMD_LICENSE_FILE }} -v "${{ github.workspace }}/tests/assets:/app/assets" --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:dev --transport_insecure -m 25000000 --host 0.0.0.0
 
       - name: Run pytest
         shell: bash
         run: |
           . .venv/bin/activate
-          xvfb-run pytest -xs
+          pytest -xs
 
       - name: Upload Coverage Results
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: coverage-html-ubuntu
           path: .cov/html
           retention-days: 7
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
+        uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
@@ -188,7 +204,7 @@ jobs:
     needs: [doc-build, testing]
     steps:
       - name: "Build library source and wheel artifacts"
-        uses: ansys/actions/build-library@33399106dc8b62d83c8aad1fb2c333c8055df180 # v10.0.20
+        uses: ansys/actions/build-library@41f86da4c9ead510db9135e428e33df9cc6f92e1 # v10.2.3
         with:
           library-name: ${{ env.PACKAGE_NAME }}
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
@@ -200,7 +216,7 @@ jobs:
     needs: [build-library]
     steps:
       - name: "Deploy developers documentation"
-        uses: ansys/actions/doc-deploy-dev@33399106dc8b62d83c8aad1fb2c333c8055df180 # v10.0.20
+        uses: ansys/actions/doc-deploy-dev@41f86da4c9ead510db9135e428e33df9cc6f92e1 # v10.2.3
         with:
           cname: ${{ env.DOCUMENTATION_CNAME }}
           token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
@@ -214,7 +230,7 @@ jobs:
     needs: [release]
     steps:
       - name: Deploy the stable documentation
-        uses: ansys/actions/doc-deploy-stable@33399106dc8b62d83c8aad1fb2c333c8055df180 # v10.0.20
+        uses: ansys/actions/doc-deploy-stable@41f86da4c9ead510db9135e428e33df9cc6f92e1 # v10.2.3
         with:
           cname: ${{ env.DOCUMENTATION_CNAME }}
           token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
@@ -233,7 +249,7 @@ jobs:
       contents: write
     steps:
       - name: Download the library artifacts from build-library step
-        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           name: ${{ env.PACKAGE_NAME }}-artifacts
           path: ${{ env.PACKAGE_NAME }}-artifacts
@@ -247,7 +263,7 @@ jobs:
           skip-existing: false
 
       - name: Release to GitHub
-        uses: ansys/actions/release-github@33399106dc8b62d83c8aad1fb2c333c8055df180 # v10.0.20
+        uses: ansys/actions/release-github@41f86da4c9ead510db9135e428e33df9cc6f92e1 # v10.2.3
         with:
           library-name: ${{ env.PACKAGE_NAME }}
           token: ${{ secrets.GITHUB_TOKEN }}

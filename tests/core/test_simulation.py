@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -22,25 +22,29 @@
 
 """Test basic using simulation."""
 
+import datetime
 from pathlib import Path
-
-import pytest
+import platform
+from threading import Thread
+from time import sleep
 
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
+import pytest
+
 from ansys.speos.core import Body, GeoRef, Project, Speos
 from ansys.speos.core.sensor import BaseSensor, Sensor3DIrradiance, SensorIrradiance
 from ansys.speos.core.simulation import (
     SimulationDirect,
     SimulationInteractive,
     SimulationInverse,
+    SimulationVirtualBSDF,
 )
 from ansys.speos.core.source import SourceLuminaire
-from tests.conftest import config, test_path
+from tests.conftest import IS_DOCKER, test_path
 from tests.helper import does_file_exist, remove_file
 
-IS_DOCKER = config.get("SpeosServerOnDocker")
 
-
+@pytest.mark.supported_speos_versions(min=251)
 def test_create_direct(speos: Speos):
     """Test creation of Direct Simulation."""
     p = Project(speos=speos)
@@ -70,11 +74,11 @@ def test_create_direct(speos: Speos):
 
     # Change value
     # geom_distance_tolerance
-    sim1.set_geom_distance_tolerance(value=0.1)
+    sim1.geom_distance_tolerance = 0.1
     assert simulation_template.geom_distance_tolerance == 0.1
 
     # max_impact
-    sim1.set_max_impact(value=200)
+    sim1.max_impact = 200
     assert simulation_template.max_impact == 200
 
     # weight - minimum_energy_percentage
@@ -135,6 +139,7 @@ def test_create_direct(speos: Speos):
     sim1.delete()
 
 
+@pytest.mark.supported_speos_versions(min=251)
 def test_create_inverse(speos: Speos):
     """Test creation of Inverse Simulation."""
     p = Project(speos=speos)
@@ -170,11 +175,11 @@ def test_create_inverse(speos: Speos):
 
     # Change value
     # geom_distance_tolerance
-    sim1.set_geom_distance_tolerance(value=0.1)
+    sim1.geom_distance_tolerance = 0.1
     assert simulation_template.geom_distance_tolerance == 0.1
 
     # max_impact
-    sim1.set_max_impact(value=200)
+    sim1.max_impact = 200
     assert simulation_template.max_impact == 200
 
     # weight - minimum_energy_percentage
@@ -253,6 +258,7 @@ def test_create_inverse(speos: Speos):
     sim1.delete()
 
 
+@pytest.mark.supported_speos_versions(min=251)
 def test_create_interactive(speos: Speos):
     """Test creation of Interactive Simulation."""
     p = Project(speos=speos)
@@ -284,11 +290,11 @@ def test_create_interactive(speos: Speos):
 
     # Change value
     # geom_distance_tolerance
-    sim1.set_geom_distance_tolerance(value=0.1)
+    sim1.geom_distance_tolerance = 0.1
     assert sim1._simulation_template.interactive_simulation_template.geom_distance_tolerance == 0.1
 
     # max_impact
-    sim1.set_max_impact(value=200)
+    sim1.max_impact = 200
     assert sim1._simulation_template.interactive_simulation_template.max_impact == 200
 
     # weight - minimum_energy_percentage
@@ -366,6 +372,275 @@ def test_create_interactive(speos: Speos):
     sim1.delete()
 
 
+@pytest.mark.supported_speos_versions(min=252)
+def test_create_virtual_bsdf_bench(speos: Speos):
+    """Test creation of Virtual BSDF Bench Simulation."""
+    p = Project(speos=speos)
+    vbb = p.create_simulation("virtual_bsdf_bench_1", feature_type=SimulationVirtualBSDF)
+
+    # Check default properties
+    # Check backend property
+    assert vbb._simulation_template.HasField("virtual_bsdf_bench_simulation_template")
+    assert (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.geom_distance_tolerance
+        == 0.01
+    )
+    assert vbb._simulation_template.virtual_bsdf_bench_simulation_template.max_impact == 100
+    assert vbb._simulation_template.virtual_bsdf_bench_simulation_template.HasField("weight")
+    assert (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.weight.minimum_energy_percentage
+        == 0.005
+    )
+    assert (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.colorimetric_standard
+        is simulation_template_pb2.CIE_1931
+    )
+    assert (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.wavelengths_range.w_start
+        == 400
+    )
+    assert (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.wavelengths_range.w_end
+        == 700
+    )
+    assert (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.wavelengths_range.w_sampling
+        == 13
+    )
+    assert vbb._simulation_instance.vbb_properties.axis_system[:] == [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+    ]
+    assert vbb._simulation_instance.vbb_properties.analysis_x_ratio == 100
+    assert vbb._simulation_instance.vbb_properties.analysis_y_ratio == 100
+
+    # Check mode and source settings
+    assert vbb._simulation_template.virtual_bsdf_bench_simulation_template.HasField(
+        "all_characteristics"
+    )
+    backend_properties = (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.all_characteristics
+    )
+    assert backend_properties.is_bsdf180 is False
+    assert backend_properties.sensor_reflection_and_transmission is False
+    assert backend_properties.HasField("no_iridescence")
+    assert backend_properties.no_iridescence.HasField("isotropic")
+    assert backend_properties.no_iridescence.isotropic.HasField("uniform_isotropic")
+    assert backend_properties.no_iridescence.isotropic.uniform_isotropic.theta_sampling == 18
+
+    # Check sensor settings
+    assert (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.sensor.integration_angle
+        == 2
+    )
+    assert vbb._simulation_template.virtual_bsdf_bench_simulation_template.sensor.HasField(
+        "uniform"
+    )
+    assert (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.sensor.uniform.theta_sampling
+        == 45
+    )
+    assert (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.sensor.uniform.phi_sampling
+        == 180
+    )
+
+    # Check frontend property
+    assert vbb.geom_distance_tolerance == 0.01
+    assert vbb.max_impact == 100
+    assert vbb.integration_angle == 2
+    assert vbb.axis_system == [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    assert vbb.analysis_x_ratio == 100
+    assert vbb.analysis_y_ratio == 100
+    assert vbb.set_wavelengths_range().start == 400
+    assert vbb.set_wavelengths_range().end == 700
+    assert vbb.set_wavelengths_range().sampling == 13
+    assert vbb.set_mode_all_characteristics().is_bsdf180 is False
+    assert vbb.set_mode_all_characteristics().reflection_and_transmission is False
+    assert (
+        vbb.set_mode_all_characteristics()
+        .set_non_iridescence()
+        .set_isotropic()
+        .set_uniform()
+        .theta_sampling
+        == 18
+    )
+    assert vbb.set_sensor_sampling_uniform().theta_sampling == 45
+    assert vbb.set_sensor_sampling_uniform().phi_sampling == 180
+
+    # Change isotropic adaptive source sampling
+    vbb.set_mode_all_characteristics().set_non_iridescence().set_isotropic().set_adaptive()
+    # Check backend properties
+    backend_properties = (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.all_characteristics
+    )
+    assert backend_properties.no_iridescence.isotropic.HasField("adaptive")
+    assert backend_properties.no_iridescence.isotropic.adaptive.file_uri == ""
+    # Check frontend properties
+    assert (
+        vbb.set_mode_all_characteristics()
+        .set_non_iridescence()
+        .set_isotropic()
+        .set_adaptive()
+        .adaptive_uri
+        == ""
+    )
+
+    # Check if properties are saved
+    vbb.set_mode_all_characteristics().set_non_iridescence().set_isotropic()
+    # Check backend properties
+    backend_properties = (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.all_characteristics
+    )
+    assert backend_properties.no_iridescence.isotropic.HasField("adaptive")
+    assert backend_properties.no_iridescence.isotropic.adaptive.file_uri == ""
+    # Check frontend properties
+    assert (
+        vbb.set_mode_all_characteristics()
+        .set_non_iridescence()
+        .set_isotropic()
+        .set_adaptive()
+        .adaptive_uri
+        == ""
+    )
+
+    # Change back to isotropic uniform source sampling
+    vbb.set_mode_all_characteristics().set_non_iridescence().set_isotropic().set_uniform()
+    # Check backend properties
+    backend_properties = (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.all_characteristics
+    )
+    assert backend_properties.no_iridescence.isotropic.HasField("uniform_isotropic")
+    # Check frontend properties
+    assert backend_properties.no_iridescence.isotropic.uniform_isotropic.theta_sampling == 18
+
+    # Change anisotropic uniform
+    vbb.set_mode_all_characteristics().set_non_iridescence().set_anisotropic()
+    # Check backend properties
+    backend_properties = (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.all_characteristics
+    )
+    assert backend_properties.no_iridescence.HasField("anisotropic")
+    assert backend_properties.no_iridescence.anisotropic.HasField("uniform_anisotropic")
+    assert backend_properties.no_iridescence.anisotropic.uniform_anisotropic.theta_sampling == 18
+    assert backend_properties.no_iridescence.anisotropic.uniform_anisotropic.phi_sampling == 36
+    assert backend_properties.no_iridescence.anisotropic.uniform_anisotropic.symmetry_type == 1
+    # Check frontend properties
+    assert (
+        vbb.set_mode_all_characteristics()
+        .set_non_iridescence()
+        .set_anisotropic()
+        .set_uniform()
+        .theta_sampling
+        == 18
+    )
+    assert (
+        vbb.set_mode_all_characteristics()
+        .set_non_iridescence()
+        .set_anisotropic()
+        .set_uniform()
+        .phi_sampling
+        == 36
+    )
+
+    # Change anisotropic adaptive
+    vbb.set_mode_all_characteristics().set_non_iridescence().set_anisotropic().set_adaptive()
+    # Check backend properties
+    backend_properties = (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.all_characteristics
+    )
+    assert backend_properties.no_iridescence.anisotropic.HasField("adaptive")
+    assert backend_properties.no_iridescence.anisotropic.adaptive.file_uri == ""
+    # Check frontend properties
+    assert (
+        vbb.set_mode_all_characteristics()
+        .set_non_iridescence()
+        .set_anisotropic()
+        .set_adaptive()
+        .adaptive_uri
+        == ""
+    )
+
+    # Change color depending on viewing angle
+    vbb.set_mode_all_characteristics().set_iridescence()
+    # Check backend properties
+    backend_properties = (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.all_characteristics
+    )
+    assert backend_properties.HasField("iridescence")
+    assert backend_properties.iridescence.HasField("uniform_isotropic")
+    assert backend_properties.iridescence.uniform_isotropic.theta_sampling == 18
+    # Check frontend properties
+    assert vbb.set_mode_all_characteristics().set_iridescence().set_uniform().theta_sampling == 18
+
+    # Change color depending on viewing angle with adaptive source sampling
+    vbb.set_mode_all_characteristics().set_iridescence().set_adaptive()
+    # Check backend properties
+    backend_properties = (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.all_characteristics
+    )
+    assert backend_properties.iridescence.HasField("adaptive")
+    assert backend_properties.iridescence.adaptive.file_uri == ""
+    # Check frontend properties
+    assert vbb.set_mode_all_characteristics().set_iridescence().set_adaptive().adaptive_uri == ""
+
+    # Change mode to surface roughness only
+    vbb.set_mode_roughness_only()
+    # Check backend property
+    assert not vbb._simulation_template.virtual_bsdf_bench_simulation_template.HasField(
+        "all_characteristics"
+    )
+    assert vbb._simulation_template.virtual_bsdf_bench_simulation_template.HasField(
+        "roughness_only"
+    )
+    backend_properties = (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.roughness_only
+    )
+    assert backend_properties.HasField("uniform_isotropic")
+    assert backend_properties.uniform_isotropic.theta_sampling == 18
+    # Check frontend properties
+    assert vbb.set_mode_roughness_only().set_uniform().theta_sampling == 18
+
+    # Change to adaptive source sampling
+    vbb.set_mode_roughness_only().set_adaptive()
+    # Check backend properties
+    backend_properties = (
+        vbb._simulation_template.virtual_bsdf_bench_simulation_template.roughness_only
+    )
+    assert backend_properties.HasField("adaptive")
+    assert backend_properties.adaptive.file_uri == ""
+    # Check frontend properties
+    assert vbb.set_mode_roughness_only().set_adaptive().adaptive_uri == ""
+
+    # Change sensor to automatic
+    vbb.set_sensor_sampling_automatic()
+    assert vbb._simulation_template.virtual_bsdf_bench_simulation_template.sensor.HasField(
+        "automatic"
+    )
+    vbb.delete()
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_load_virtual_bsdf_bench(speos: Speos):
+    """Test load of a exported virtual bsdf bench simulation."""
+    p = Project(
+        speos=speos, path=str(Path(test_path) / "nx_vbb_export.speos" / "nx_vbb_export.speos")
+    )
+    assert p is not None
+    sims = p.find(name=".*", name_regex=True, feature_type=SimulationVirtualBSDF)
+    assert len(sims) > 0
+
+
 def test_commit(speos: Speos):
     """Test commit of simulation."""
     p = Project(speos=speos)
@@ -383,11 +658,11 @@ def test_commit(speos: Speos):
     opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
-    ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    ssr.axis_system = [0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     ssr.commit()
 
     ssr2 = p.create_sensor(name="Irradiance.2", feature_type=SensorIrradiance)
-    ssr2.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    ssr2.axis_system = [0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     ssr2.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
@@ -412,7 +687,7 @@ def test_commit(speos: Speos):
     assert p.scene_link.get().simulations[0] == sim1._simulation_instance
 
     # Change only in local not committed (on template, on instance)
-    sim1.set_geom_distance_tolerance(value=0.1)
+    sim1.geom_distance_tolerance = 0.1
     assert sim1.simulation_template_link.get() != sim1._simulation_template
     sim1.set_sensor_paths(["Irradiance.1, Irradiance.2"])
     assert p.scene_link.get().simulations[0] != sim1._simulation_instance
@@ -437,11 +712,11 @@ def test_reset(speos: Speos):
     opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
-    ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    ssr.axis_system = [0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     ssr.commit()
 
     ssr2 = p.create_sensor(name="Irradiance.2", feature_type=SensorIrradiance)
-    ssr2.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    ssr2.axis_system = [0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     ssr2.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
@@ -461,7 +736,7 @@ def test_reset(speos: Speos):
     assert sim1._job.HasField("direct_mc_simulation_properties")  # local
 
     # Change local data (on template, on instance)
-    sim1.set_geom_distance_tolerance(value=0.1)
+    sim1.geom_distance_tolerance = 0.1
     assert sim1.simulation_template_link.get() != sim1._simulation_template
     sim1.set_sensor_paths(["Irradiance.1, Irradiance.2"])
     assert p.scene_link.get().simulations[0] != sim1._simulation_instance
@@ -474,6 +749,7 @@ def test_reset(speos: Speos):
     sim1.delete()
 
 
+@pytest.mark.supported_speos_versions(min=251)
 def test_direct_modify_after_reset(speos: Speos):
     """Test reset of direct simulation, and then modify."""
     p = Project(speos=speos)
@@ -491,11 +767,11 @@ def test_direct_modify_after_reset(speos: Speos):
     opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
-    ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    ssr.axis_system = [0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     ssr.commit()
 
     ssr2 = p.create_sensor(name="Irradiance.2", feature_type=SensorIrradiance)
-    ssr2.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    ssr2.axis_system = [0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     ssr2.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
@@ -528,7 +804,7 @@ def test_direct_modify_after_reset(speos: Speos):
     # Modify after a reset
     # Template
     assert sim1._simulation_template.direct_mc_simulation_template.geom_distance_tolerance == 0.01
-    sim1.set_geom_distance_tolerance(value=0.05)
+    sim1.geom_distance_tolerance = 0.05
     assert sim1._simulation_template.direct_mc_simulation_template.geom_distance_tolerance == 0.05
 
     # Props
@@ -544,6 +820,7 @@ def test_direct_modify_after_reset(speos: Speos):
     p.delete()
 
 
+@pytest.mark.supported_speos_versions(min=251)
 def test_inverse_modify_after_reset(speos: Speos):
     """Test reset of inverse simulation, and then modify."""
     p = Project(speos=speos)
@@ -561,11 +838,13 @@ def test_inverse_modify_after_reset(speos: Speos):
     opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
-    ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]).set_type_colorimetric()
+    ssr.axis_system = [0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    ssr.set_type_colorimetric()
     ssr.commit()
 
     ssr2 = p.create_sensor(name="Irradiance.2", feature_type=SensorIrradiance)
-    ssr2.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]).set_type_colorimetric()
+    ssr2.axis_system = [0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    ssr2.set_type_colorimetric()
     ssr2.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
@@ -598,7 +877,7 @@ def test_inverse_modify_after_reset(speos: Speos):
     # Modify after a reset
     # Template
     assert sim1._simulation_template.inverse_mc_simulation_template.geom_distance_tolerance == 0.01
-    sim1.set_geom_distance_tolerance(value=0.05)
+    sim1.geom_distance_tolerance = 0.05
     assert sim1._simulation_template.inverse_mc_simulation_template.geom_distance_tolerance == 0.05
 
     # Props
@@ -620,6 +899,7 @@ def test_inverse_modify_after_reset(speos: Speos):
     p.delete()
 
 
+@pytest.mark.supported_speos_versions(min=251)
 def test_interactive_modify_after_reset(speos: Speos):
     """Test reset of interactive simulation, and then modify."""
     p = Project(speos=speos)
@@ -637,11 +917,13 @@ def test_interactive_modify_after_reset(speos: Speos):
     opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
-    ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]).set_type_colorimetric()
+    ssr.axis_system = [0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    ssr.set_type_colorimetric()
     ssr.commit()
 
     ssr2 = p.create_sensor(name="Irradiance.2", feature_type=SensorIrradiance)
-    ssr2.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]).set_type_colorimetric()
+    ssr2.axis_system = [0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    ssr2.set_type_colorimetric()
     ssr2.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
@@ -660,7 +942,7 @@ def test_interactive_modify_after_reset(speos: Speos):
     # Modify after a reset
     # Template
     assert sim1._simulation_template.interactive_simulation_template.geom_distance_tolerance == 0.01
-    sim1.set_geom_distance_tolerance(value=0.05)
+    sim1.geom_distance_tolerance = 0.05
     assert sim1._simulation_template.interactive_simulation_template.geom_distance_tolerance == 0.05
 
     # Props
@@ -693,7 +975,7 @@ def test_delete(speos: Speos):
     opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
-    ssr.set_axis_system(axis_system=[0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    ssr.axis_system = [0, 0, -20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     ssr.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
@@ -754,6 +1036,44 @@ def test_get_simulation(speos: Speos, capsys):
     assert "Used key: geometry not found in key list" in stdout
 
 
+def test_stop_computation(speos: Speos):
+    """Test stop of simulation computation."""
+    # Create project from a speos file
+    p = Project(
+        speos=speos,
+        path=str(
+            Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "LG_50M_Colorimetric_short.sv5"
+        ),
+    )
+
+    # Retrieve simulation feature
+    sim_feature = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
+
+    # Choose the stop condition of 60 s
+    sim_feature.set_stop_condition_duration(value=60)
+    sim_feature.set_stop_condition_rays_number(value=None)  # No condition about rays number
+    sim_feature.commit()
+
+    # Note time now
+    before = datetime.datetime.now()
+
+    # Launch the simulation compute in a thread
+    compute_thread = Thread(target=sim_feature.compute_CPU)
+    compute_thread.start()
+
+    # Wait only 15s
+    sleep(15)
+
+    # Ask to interrupt the computation
+    sim_feature.stop_computation()
+    compute_thread.join()  # join thread
+
+    # Check that the thread is joined much before 60s (due to computation stop)
+    after = datetime.datetime.now()
+    difference = after - before
+    assert difference.seconds < 25
+
+
 def test_export(speos: Speos):
     """Test export of simulation."""
     p = Project(
@@ -783,7 +1103,10 @@ def test_export(speos: Speos):
     remove_file(str(Path(test_path) / "export_test"))
 
 
-@pytest.mark.skipif(IS_DOCKER, reason="COM API is only available locally")
+@pytest.mark.skipif(
+    IS_DOCKER or platform.system() == "Linux", reason="COM API is only available locally on Windows"
+)
+@pytest.mark.supported_speos_versions(min=252)
 def test_export_vtp(speos: Speos):
     """Test export of xm3 and xmp as vtp files."""
     import numpy as np
@@ -797,7 +1120,7 @@ def test_export_vtp(speos: Speos):
     )
     sim = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
 
-    ## ==== test 3d sensor photometric ===
+    # ==== test 3d sensor photometric ===
     # verify illuminance, reflection, transmission, absorption are saved in vtp
     # verify the vtp data is same as calculated
     sensor_3d = p.find(name=".*", name_regex=True, feature_type=Sensor3DIrradiance)[0]
@@ -881,7 +1204,7 @@ def test_export_vtp(speos: Speos):
         )
     )
 
-    ## === test 3d sensor photometric with radial integration ===
+    # === test 3d sensor photometric with radial integration ===
     # only illuminance value is saved in vtp file
     p2 = Project(
         speos=speos,
@@ -902,7 +1225,7 @@ def test_export_vtp(speos: Speos):
     assert np.allclose(vtp_data.get("Transmission"), 0.0) is True
     assert np.allclose(vtp_data.get("Absorption"), 0.0) is True
 
-    ## ===  test 3d sensor radiometric ===
+    # ===  test 3d sensor radiometric ===
     # only irradiance, reflection, transmission, absorption value is saved in vtp file
     # verify the vtp results are the same as calculated ones.
     p3 = Project(
@@ -1032,10 +1355,9 @@ def test_export_vtp(speos: Speos):
     )
     sim = p5.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
     sensor_irra = p5.find(name=".*", name_regex=True, feature_type=SensorIrradiance)[0]
-    resolution_x = 10
-    resolution_y = 10
-    sensor_irra.set_dimensions().x_sampling = resolution_x
-    sensor_irra.set_dimensions().y_sampling = resolution_y
+    dim = sensor_irra.set_dimensions()
+    dim.x_sampling = 10
+    dim.y_sampling = 10
     sensor_irra.set_type_photometric()
     sensor_irra.commit()
     speos_results, vtp_results = sim.compute_CPU(export_vtp=True)
@@ -1078,7 +1400,7 @@ def test_export_vtp(speos: Speos):
         )
     )
 
-    ## === test irradiance xmp radiometric ===
+    # === test irradiance xmp radiometric ===
     # verify the result is radiometric
     p6 = Project(
         speos=speos,
@@ -1086,8 +1408,9 @@ def test_export_vtp(speos: Speos):
     )
     sim = p6.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
     sensor_irra = p6.find(name=".*", name_regex=True, feature_type=SensorIrradiance)[0]
-    sensor_irra.set_dimensions().x_sampling = 10
-    sensor_irra.set_dimensions().y_sampling = 10
+    dim = sensor_irra.set_dimensions()
+    dim.x_sampling = 10
+    dim.y_sampling = 10
     sensor_irra.set_type_radiometric()
     sensor_irra.commit()
     speos_results, vtp_results = sim.compute_CPU(export_vtp=True)
@@ -1096,7 +1419,7 @@ def test_export_vtp(speos: Speos):
     vtp_data = pv.read(vtp_results[0]).point_data
     assert np.allclose(vtp_data.get("Radiometric"), 0.0) is not True
 
-    ## === test irradiance colorimetric ===
+    # === test irradiance colorimetric ===
     # verify it has x, photometric, radiometric, z value in vtp file
     p7 = Project(
         speos=speos,
@@ -1104,8 +1427,9 @@ def test_export_vtp(speos: Speos):
     )
     sim = p7.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
     sensor_irra = p7.find(name=".*", name_regex=True, feature_type=SensorIrradiance)[0]
-    sensor_irra.set_dimensions().x_sampling = 10
-    sensor_irra.set_dimensions().y_sampling = 10
+    dim = sensor_irra.set_dimensions()
+    dim.x_sampling = 10
+    dim.y_sampling = 10
     sensor_irra.set_type_colorimetric()
     sensor_irra.commit()
 
@@ -1118,7 +1442,7 @@ def test_export_vtp(speos: Speos):
     assert np.allclose(vtp_data.get("Radiometric"), 0.0) is not True
     assert np.allclose(vtp_data.get("Z"), 0.0) is not True
 
-    ## === test irradiance spectral ===
+    # === test irradiance spectral ===
     # verify it has x, photometric, radiometric, z value in vtp file
     # verify the summing up per spectral layer
     p8 = Project(
@@ -1127,8 +1451,9 @@ def test_export_vtp(speos: Speos):
     )
     sim = p8.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
     sensor_irra = p8.find(name=".*", name_regex=True, feature_type=SensorIrradiance)[0]
-    sensor_irra.set_dimensions().x_sampling = 10
-    sensor_irra.set_dimensions().y_sampling = 10
+    dim = sensor_irra.set_dimensions()
+    dim.x_sampling = 10
+    dim.y_sampling = 10
     sensor_irra.set_type_spectral()
     sensor_irra.commit()
     speos_results, vtp_results = sim.compute_CPU(export_vtp=True)

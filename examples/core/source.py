@@ -12,7 +12,11 @@
 from pathlib import Path
 
 from ansys.speos.core import GeoRef, Project, Speos, launcher
+from ansys.speos.core.kernel.client import (
+    default_docker_channel,
+)
 from ansys.speos.core.source import (
+    SourceAmbientEnvironment,
     SourceAmbientNaturalLight,
     SourceLuminaire,
     SourceRayFile,
@@ -75,7 +79,7 @@ else:
 # be used to start a local instance of the service.
 
 if USE_DOCKER:
-    speos = Speos(host=HOSTNAME, port=GRPC_PORT)
+    speos = Speos(channel=default_docker_channel())
 else:
     speos = launcher.launch_local_speos_rpc_server(port=GRPC_PORT)
 
@@ -252,6 +256,55 @@ print(source5)
 
 # +
 source5.delete()
+# -
+
+# ### Ambient environment light source
+
+# +
+source6 = p.create_source(name="Environment.1", feature_type=SourceAmbientEnvironment)
+image_file_uri = str(assets_data_path / "stars.exr")
+source6.image_file_uri = image_file_uri
+print(source6.zenith_direction)  # default zenith direction
+print(source6.north_direction)  # default north direction
+source6.reverse_north_direction = True
+print(source6.luminance)  # default luminance value
+source6.set_predefined_color_space().set_color_space_adobergb()
+source6.set_predefined_color_space().set_color_space_srgb()
+print(source6.color_space)
+source6.set_userdefined_color_space().set_white_point_type_d50()
+print(source6.set_userdefined_color_space().white_point_type)
+source6.set_userdefined_color_space().red_spectrum = str(
+    assets_data_path / "LG_50M_Colorimetric_short.sv5" / "Red Spectrum.spectrum"
+)
+source6.set_userdefined_color_space().blue_spectrum = str(
+    assets_data_path / "LG_50M_Colorimetric_short.sv5" / "Blue Spectrum.spectrum"
+)
+source6.set_userdefined_color_space().green_spectrum = str(
+    assets_data_path / "LG_50M_Colorimetric_short.sv5" / "Blue Spectrum.spectrum"
+)
+source6.commit()
+print(source6)
+# -
+
+# +
+ground_plane = (
+    p.create_ground_plane()
+)  #  Only usable when there is at least one Ambient Environment Source
+ground_plane.ground_zenith = [0, 0, 1]
+ground_plane.ground_origin = [10, 0, 0]
+ground_plane.ground_height = 1000
+ground_plane.commit()
+print(p)
+
+ground_plane2 = p.create_ground_plane()
+ground_plane2.ground_height = 2000
+ground_plane2.commit()
+print(p)  # only 1 ground plane is taken per project, the second overwrites the previous one.
+# -
+
+# +
+ground_plane.delete()
+source6.delete()
 # -
 
 # When creating sources, this creates some intermediate objects (spectrums, intensity templates).

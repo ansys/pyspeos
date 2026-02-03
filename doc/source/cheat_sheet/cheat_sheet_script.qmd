@@ -45,13 +45,12 @@ speos_server = launch_local_speos_rpc_server()
 # returns a connected speos instance
 ```
 
-Connect to an existing instance:
+Connect to the existing server instance:
 
 ```{python}
 #| eval: false
 from ansys.speos.core import Speos
-host_ip = '127.0.0.1' # localhost here
-speos_server = Speos(host=host_ip, port=50098)
+speos_server = Speos()
 ```
 
 # Speos Solver files
@@ -213,13 +212,18 @@ from ansys.speos.core.sensor import SensorRadiance
 r_sensor = project.create_sensor(name='Radiance.1', feature_type=SensorRadiance)
 # define size
 dim = r_sensor.set_dimensions()
-dim.set_x_start(-5).set_x_end(5).set_x_sampling(10)
-dim.set_y_start(-5).set_y_end(5).set_y_sampling(10)
+dim.x_start = -5
+dim.x_end = 5
+dim.x_sampling = 10
+dim.y_start = -5
+dim.y_end = 5
+dim.y_sampling = 10
 # define type and Wavelength range
 col = r_sensor.set_type_colorimetric()
 wl = col.set_wavelengths_range()
-wl.set_start(380).set_end(780)
-wl.set_sampling(50)
+wl.start = 380
+wl.end = 780
+wl.sampling = 50
 # define Layer separation
 r_sensor.set_layer_type_source()
 r_sensor.commit()
@@ -247,12 +251,10 @@ c_sensor.set_distortion_file_uri(
     'distortion_file_path')
 # Choose photometric mode
 photo_cam = c_sensor.set_mode_photometric()
-photo_cam.set_transmittance_file_uri(
-    'transmittance_file_path')
+photo_cam.transmittance_file_uri = 'transmittance_file_path'
 # Choose color mode
 c_mode = photo_cam.set_mode_color()
-c_mode.set_blue_spectrum_file_uri(
-    'blue_spectrum_path')
+c_mode.blue_spectrum_file_uri = 'blue_spectrum_path'
 # same method for red and green spectrum
 c_sensor.commit()
 ```

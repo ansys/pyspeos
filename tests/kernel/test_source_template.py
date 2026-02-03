@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -25,10 +25,10 @@
 import json
 from pathlib import Path
 
+from ansys.api.speos.common.v1 import data_pb2
 import grpc
 import pytest
 
-from ansys.api.speos.common.v1 import data_pb2
 from ansys.speos.core.kernel.intensity_template import ProtoIntensityTemplate
 from ansys.speos.core.kernel.source_template import ProtoSourceTemplate
 from ansys.speos.core.kernel.spectrum import ProtoSpectrum
@@ -139,6 +139,7 @@ def test_source_template(speos: Speos):
     intens_t_lamb.delete()
 
 
+@pytest.mark.supported_speos_versions(min=252)
 def test_action_get_ray_file_info(speos: Speos):
     """Test the source template action : get_ray_file_info."""
     assert speos.client.healthy is True

@@ -13,6 +13,9 @@ import os
 from pathlib import Path
 
 from ansys.speos.core import Body, Project, Speos
+from ansys.speos.core.kernel.client import (
+    default_docker_channel,
+)
 from ansys.speos.core.launcher import launch_local_speos_rpc_server
 from ansys.speos.core.sensor import Sensor3DIrradiance, SensorIrradiance
 from ansys.speos.core.simulation import SimulationDirect
@@ -50,7 +53,7 @@ else:
 # be used to start a local instance of the service.
 
 if USE_DOCKER:
-    speos = Speos(host=HOSTNAME, port=GRPC_PORT)
+    speos = Speos(channel=default_docker_channel())
 else:
     speos = launch_local_speos_rpc_server(port=GRPC_PORT)
 
@@ -93,16 +96,17 @@ if os.name == "nt":
 
 irr_features = p.find(name=".*", name_regex=True, feature_type=SensorIrradiance)
 irr = irr_features[0]
-irr.set_type_spectral().set_wavelengths_range().start = 500
-irr.set_type_spectral().set_wavelengths_range().end = 600
-irr.set_type_spectral().set_wavelengths_range().sampling = 11
+wl = irr.set_type_spectral().set_wavelengths_range()
+wl.start = 500
+wl.end = 600
+wl.sampling = 11
 irr.commit()
 
 # Create and add a new sensor, e.g. 3d irradiance sensor
 
 body = p.find(name="PrismBody", name_regex=True, feature_type=Body)[0]
 sensor_3d = p.create_sensor(name="3d_irradiance", feature_type=Sensor3DIrradiance)
-sensor_3d.set_geometries([body.geo_path])
+sensor_3d.geometries = [body.geo_path]
 sensor_3d.commit()
 sim.set_sensor_paths(["Irradiance.1:564", "3d_irradiance"])
 sim.commit()

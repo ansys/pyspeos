@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -28,6 +28,7 @@ from ansys.api.speos.intensity.v1 import (
     intensity_pb2 as messages,
     intensity_pb2_grpc as service,
 )
+
 from ansys.speos.core.kernel.crud import CrudItem, CrudStub
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 
@@ -55,7 +56,7 @@ class IntensityTemplateLink(CrudItem):
     >>> from ansys.speos.core.kernel.intensity_template import (
     ...     ProtoIntensityTemplate,
     ... )
-    >>> speos = Speos(host="localhost", port=50098)
+    >>> speos = Speos()
     >>> int_t_db = speos.client.intensity_templates()
     >>> int_t_message = ProtoIntensityTemplate(name="Cos_3_170")
     >>> int_t_message.cos.N = 3.0
@@ -126,7 +127,7 @@ class IntensityTemplateStub(CrudStub):
     intensity_templates() method. Like in the following example:
 
     >>> from ansys.speos.core.speos import Speos
-    >>> speos = Speos(host="localhost", port=50098)
+    >>> speos = Speos()
     >>> int_t_db = speos.client.intensity_templates()
 
     """

@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -23,6 +23,8 @@
 """Test using combine_speos module in workflow layer."""
 
 from pathlib import Path
+
+import pytest
 
 from ansys.speos.core import OptProp, Part, Project, Speos
 from ansys.speos.core.sensor import SensorIrradiance
@@ -185,6 +187,7 @@ def test_modify_parts_after_combine(speos: Speos):
             ]
 
 
+@pytest.mark.supported_speos_versions(min=252)
 def test_insert_speos(speos: Speos):
     """Test inserting several speos files in an existing project."""
     # Create a project from a speos file

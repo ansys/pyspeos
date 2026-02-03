@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -23,6 +23,8 @@
 """Test job."""
 
 import time
+
+import pytest
 
 from ansys.speos.core import LOG  # Global logger
 from ansys.speos.core.kernel.job import ProtoJob, messages as job_messages
@@ -119,6 +121,7 @@ def test_job_actions(speos: Speos):
     clean_all_dbs(speos.client)
 
 
+@pytest.mark.supported_speos_versions(min=251)
 def test_job_actions_interactive_simu(speos: Speos):
     """Test the job actions with interactive simulation."""
     assert speos.client.healthy is True

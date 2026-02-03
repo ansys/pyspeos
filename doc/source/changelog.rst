@@ -9,6 +9,231 @@ This document contains the release notes for the PySpeos project.
 
 .. towncrier release notes start
 
+`0.7.1 <https://github.com/ansys/pyspeos/releases/tag/v0.7.1>`_ - January 13, 2026
+==================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Add supporting virtual bsdf bench
+          - `#763 <https://github.com/ansys/pyspeos/pull/763>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump ansys-sphinx-theme[autoapi] from 1.6.3 to 1.6.4 in the doc-deps group
+          - `#793 <https://github.com/ansys/pyspeos/pull/793>`_
+
+        * - Bump pytest from 9.0.1 to 9.0.2 in the test-deps group
+          - `#795 <https://github.com/ansys/pyspeos/pull/795>`_
+
+        * - Bump the jupyter-deps group across 1 directory with 2 updates
+          - `#807 <https://github.com/ansys/pyspeos/pull/807>`_
+
+        * - Bump psutil from 7.1.3 to 7.2.1
+          - `#809 <https://github.com/ansys/pyspeos/pull/809>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Exclude vbb test from nightly run with 251
+          - `#801 <https://github.com/ansys/pyspeos/pull/801>`_
+
+        * - Nightly run
+          - `#811 <https://github.com/ansys/pyspeos/pull/811>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Rework logic around vtk-osmesa
+          - `#774 <https://github.com/ansys/pyspeos/pull/774>`_
+
+        * - Bump ansys/actions from 10.2.2 to 10.2.3
+          - `#791 <https://github.com/ansys/pyspeos/pull/791>`_
+
+        * - Bump actions/checkout from 6.0.0 to 6.0.1
+          - `#792 <https://github.com/ansys/pyspeos/pull/792>`_
+
+        * - Bump codecov/codecov-action from 5.5.1 to 5.5.2
+          - `#794 <https://github.com/ansys/pyspeos/pull/794>`_
+
+        * - Update CHANGELOG for v0.7.0
+          - `#796 <https://github.com/ansys/pyspeos/pull/796>`_
+
+        * - Bump dev version into v0.7.dev0
+          - `#797 <https://github.com/ansys/pyspeos/pull/797>`_
+
+        * - Bump actions/download-artifact from 6.0.0 to 7.0.0
+          - `#798 <https://github.com/ansys/pyspeos/pull/798>`_
+
+        * - Bump actions/upload-artifact from 5.0.0 to 6.0.0
+          - `#799 <https://github.com/ansys/pyspeos/pull/799>`_
+
+        * - Pre-commit autoupdate
+          - `#800 <https://github.com/ansys/pyspeos/pull/800>`_, `#805 <https://github.com/ansys/pyspeos/pull/805>`_
+
+        * - Update year in headers
+          - `#810 <https://github.com/ansys/pyspeos/pull/810>`_
+
+
+`0.7.0 <https://github.com/ansys/pyspeos/releases/tag/v0.7.0>`_ - December 12, 2025
+===================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Update vtk-osmesa version to 9.3.1
+          - `#756 <https://github.com/ansys/pyspeos/pull/756>`_
+
+        * - Use grpc secure channel
+          - `#783 <https://github.com/ansys/pyspeos/pull/783>`_
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Bump the doc-deps group with 2 updates
+          - `#723 <https://github.com/ansys/pyspeos/pull/723>`_
+
+        * - Bump pytest-cov from 6.3.0 to 7.0.0 in the test-deps group
+          - `#724 <https://github.com/ansys/pyspeos/pull/724>`_
+
+        * - Update grpcio requirement from <1.75,>=1.50.0 to >=1.50.0,<1.76 in the grpc-deps group
+          - `#735 <https://github.com/ansys/pyspeos/pull/735>`_
+
+        * - Bump psutil from 7.0.0 to 7.1.0
+          - `#737 <https://github.com/ansys/pyspeos/pull/737>`_
+
+        * - Bump the jupyter-deps group across 1 directory with 2 updates
+          - `#753 <https://github.com/ansys/pyspeos/pull/753>`_, `#781 <https://github.com/ansys/pyspeos/pull/781>`_
+
+        * - Use autoapi target of ansys-sphinx-theme
+          - `#754 <https://github.com/ansys/pyspeos/pull/754>`_
+
+        * - Update grpcio requirement from <1.76,>=1.50.0 to >=1.50.0,<1.77 in the grpc-deps group
+          - `#766 <https://github.com/ansys/pyspeos/pull/766>`_
+
+        * - Bump psutil from 7.1.0 to 7.1.3
+          - `#771 <https://github.com/ansys/pyspeos/pull/771>`_
+
+        * - Bump pytest from 8.4.2 to 9.0.0 in the test-deps group
+          - `#773 <https://github.com/ansys/pyspeos/pull/773>`_
+
+        * - Bump the doc-deps group across 1 directory with 5 updates
+          - `#789 <https://github.com/ansys/pyspeos/pull/789>`_
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Update ``CONTRIBUTORS.md`` with the latest contributors
+          - `#744 <https://github.com/ansys/pyspeos/pull/744>`_
+
+        * - Fix typo in CONTRIBUTING.md
+          - `#786 <https://github.com/ansys/pyspeos/pull/786>`_
+
+
+  .. tab-item:: Maintenance
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Update CHANGELOG for v0.6.2
+          - `#721 <https://github.com/ansys/pyspeos/pull/721>`_
+
+        * - Pre-commit autoupdate
+          - `#725 <https://github.com/ansys/pyspeos/pull/725>`_, `#757 <https://github.com/ansys/pyspeos/pull/757>`_, `#782 <https://github.com/ansys/pyspeos/pull/782>`_, `#790 <https://github.com/ansys/pyspeos/pull/790>`_
+
+        * - Update CHANGELOG for v0.6.3
+          - `#732 <https://github.com/ansys/pyspeos/pull/732>`_
+
+        * - Add vulnerability check
+          - `#738 <https://github.com/ansys/pyspeos/pull/738>`_
+
+        * - Add security policy file
+          - `#739 <https://github.com/ansys/pyspeos/pull/739>`_
+
+        * - Add backwards compatibility test
+          - `#740 <https://github.com/ansys/pyspeos/pull/740>`_, `#741 <https://github.com/ansys/pyspeos/pull/741>`_
+
+        * - Bump ansys/actions from 10.0.20 to 10.1.2
+          - `#745 <https://github.com/ansys/pyspeos/pull/745>`_
+
+        * - Bump ansys/actions from 10.1.3 to 10.1.4
+          - `#750 <https://github.com/ansys/pyspeos/pull/750>`_
+
+        * - Bump docker/login-action from 3.5.0 to 3.6.0
+          - `#751 <https://github.com/ansys/pyspeos/pull/751>`_
+
+        * - Bump peter-evans/create-or-update-comment from 4.0.0 to 5.0.0
+          - `#752 <https://github.com/ansys/pyspeos/pull/752>`_
+
+        * - Bump actions/upload-artifact from 4.6.2 to 5.0.0
+          - `#764 <https://github.com/ansys/pyspeos/pull/764>`_
+
+        * - Bump actions/download-artifact from 5.0.0 to 6.0.0
+          - `#765 <https://github.com/ansys/pyspeos/pull/765>`_
+
+        * - Update missing or outdated files
+          - `#769 <https://github.com/ansys/pyspeos/pull/769>`_
+
+        * - Bump ansys/actions from 10.1.4 to 10.1.5
+          - `#770 <https://github.com/ansys/pyspeos/pull/770>`_
+
+        * - Adjust ansys tools path dependency
+          - `#777 <https://github.com/ansys/pyspeos/pull/777>`_
+
+        * - Bump actions/checkout from 5.0.0 to 6.0.0
+          - `#779 <https://github.com/ansys/pyspeos/pull/779>`_
+
+        * - Bump actions/setup-python from 6.0.0 to 6.1.0
+          - `#784 <https://github.com/ansys/pyspeos/pull/784>`_
+
+        * - Bump ansys/actions from 10.1.5 to 10.2.2
+          - `#787 <https://github.com/ansys/pyspeos/pull/787>`_
+
+
+  .. tab-item:: Miscellaneous
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Subprocess related line of codes
+          - `#726 <https://github.com/ansys/pyspeos/pull/726>`_
+
+
 `0.6.3 <https://github.com/ansys/pyspeos/releases/tag/v0.6.3>`_ - September 18, 2025
 ====================================================================================
 

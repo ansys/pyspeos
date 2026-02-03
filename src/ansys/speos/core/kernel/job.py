@@ -1,4 +1,4 @@
-# Copyright (C) 2021 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2021 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -22,16 +22,39 @@
 
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
 
+from pathlib import Path
+import tempfile
+import time
 from typing import Iterator, List
 
 from ansys.api.speos.job.v2 import job_pb2 as messages, job_pb2_grpc as service
 from ansys.api.speos.results.v1.ray_path_pb2 import RayPath
+
+from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.kernel.crud import CrudItem, CrudStub
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
 
 ProtoJob = messages.Job
 """Job protobuf class : ansys.api.speos.job.v2.job_pb2.Job"""
 ProtoJob.__str__ = lambda self: protobuf_message_to_str(self)
+
+
+def _is_uds_channel(channel):
+    target = channel._channel.target().decode()
+    return target.startswith("unix:")
+
+
+def _list_files_newer_than(folder, timestamp):
+    """
+    Return files in `folder` newer than the given timestamp.
+
+    :param folder: Path to the folder
+    :param timestamp: Reference timestamp (seconds since epoch)
+    :return: List of file names newer than timestamp
+    """
+    files = [f for f in folder.iterdir() if f.is_file() and f.stat().st_mtime > timestamp]
+
+    return files
 
 
 class JobLink(CrudItem):
@@ -48,6 +71,8 @@ class JobLink(CrudItem):
     def __init__(self, db, key: str):
         super().__init__(db, key)
         self._actions_stub = db._actions_stub
+        self._is_uds = db._is_uds
+        self._timestamp_start = None
 
     def __str__(self) -> str:
         """Return the string representation of the Job."""
@@ -91,6 +116,7 @@ class JobLink(CrudItem):
 
     def start(self) -> None:
         """Start the job."""
+        self._timestamp_start = time.time()
         self._actions_stub.Start(messages.Start_Request(guid=self.key))
 
     def stop(self) -> None:
@@ -117,7 +143,22 @@ class JobLink(CrudItem):
         ansys.api.speos.job.v2.job_pb2.GetResults_Response
             Results of the job.
         """
-        return self._actions_stub.GetResults(messages.GetResults_Request(guid=self.key))
+        if (
+            not server_version_checker.is_version_supported(2026, 1, 0)
+            and self._is_uds
+            and self._timestamp_start is not None
+        ):
+            # Get results manually due to bug in uds GetResults implementation in server < 26R1.
+            results_folder = Path(tempfile.gettempdir()).joinpath("jobs", self.key)
+            files = _list_files_newer_than(results_folder, self._timestamp_start)
+            results = []
+            for f in files:
+                r = messages.Result(path=str(f))
+                results.append(r)
+
+            return messages.GetResults_Response(results=results)
+        else:
+            return self._actions_stub.GetResults(messages.GetResults_Request(guid=self.key))
 
     def get_progress_status(self) -> messages.GetProgressStatus_Response:
         """
@@ -161,7 +202,7 @@ class JobStub(CrudStub):
     Like in the following example:
 
     >>> from ansys.speos.core.speos import Speos
-    >>> speos = Speos(host="localhost", port=50098)
+    >>> speos = Speos()
     >>> job_db = speos.client.jobs()
 
     """
@@ -169,6 +210,7 @@ class JobStub(CrudStub):
     def __init__(self, channel):
         super().__init__(stub=service.JobsManagerStub(channel=channel))
         self._actions_stub = service.JobActionsStub(channel=channel)
+        self._is_uds = _is_uds_channel(channel)
 
     def create(self, message: ProtoJob) -> JobLink:
         """Create a new entry.
