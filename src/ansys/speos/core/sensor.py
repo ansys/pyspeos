@@ -35,7 +35,6 @@ import grpc
 import numpy as np
 
 import ansys.speos.core as core
-from ansys.speos.core.generic.constants import SENSOR
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
 import ansys.speos.core.generic.general_methods as general_methods

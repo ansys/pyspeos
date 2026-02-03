@@ -28,6 +28,7 @@ from typing import List, Mapping, Optional
 import warnings
 
 from ansys.api.speos.spectrum.v1 import spectrum_pb2
+
 from ansys.speos.core.generic.constants import SPECTRUM
 from ansys.speos.core.kernel.client import SpeosClient
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_dict

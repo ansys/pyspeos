@@ -34,8 +34,6 @@ from ansys.api.speos.scene.v2 import scene_pb2
 from ansys.api.speos.source.v1 import source_pb2
 import numpy as np
 
-from ansys.api.speos.scene.v2 import scene_pb2
-from ansys.api.speos.source.v1 import source_pb2
 from ansys.speos.core import (
     project as project,
     proto_message_utils as proto_message_utils,
