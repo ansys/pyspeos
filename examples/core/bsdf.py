@@ -160,6 +160,8 @@ def create_gaussian_bsdf(is_brdf, inc, nb_theta=91, nb_phi=361, fwhm=np.radians(
                 sigma = fwhm / (2 * np.sqrt(2 * np.log(2)))
                 bxdf[t, p] = np.exp(-0.5 * (alpha / sigma) ** 2)
     else:
+    # Here, the angle of specular transmission is identical
+    # to the angle of incidence (the refraction is not considered)
         vector_specular_direction = [np.sin(inc), 0.0, -np.cos(inc)]
         for t in range(nb_theta):
             thetas[t] = np.pi * 0.5 * (1 + t / (nb_theta - 1))
@@ -298,7 +300,7 @@ new_bsdf_gaussian.spectrum_incidence = np.radians(5)
 new_bsdf_gaussian.spectrum_anisotropy = np.radians(0)
 
 new_bsdf_gaussian.has_reflection = True
-new_bsdf_gaussian.has_transmission = False
+new_bsdf_gaussian.has_transmission = True
 new_bsdf_gaussian.reflection_spectrum = create_spectrum(0.5)
 new_bsdf_gaussian.transmission_spectrum = create_spectrum(0.4)
 new_bsdf_gaussian.brdf = all_bxdfs_reflexion
