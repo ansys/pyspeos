@@ -1373,6 +1373,8 @@ def test_export_vtp(speos: Speos):
     file.close()
     skip_lines = 9 if "SeparatedByLayer" in content[7] else 8
     xmp_data = []
+    resolution_x = 10
+    resolution_y = 10
     if "2" not in content[0]:  # not spectral data
         for line in content[skip_lines : skip_lines + resolution_y]:
             line_content = line.strip().split()
