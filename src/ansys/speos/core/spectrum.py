@@ -24,7 +24,8 @@
 
 from __future__ import annotations
 
-from typing import List, Mapping, Optional
+from pathlib import Path
+from typing import List, Mapping, Optional, Union
 import warnings
 
 from ansys.api.speos.spectrum.v1 import spectrum_pb2
@@ -84,7 +85,7 @@ class Spectrum:
 
         def __init__(
             self,
-            monochromatic: spectrum_pb2.Monochromatic,
+            monochromatic: spectrum_pb2.Spectrum.Monochromatic,
             default_values: bool = True,
             stable_ctr: bool = False,
         ):
@@ -98,7 +99,12 @@ class Spectrum:
 
         @property
         def wavelength(self) -> float:
-            """Get the wavelength of the spectrum.
+            """Property the wavelength of the spectrum.
+
+            Parameters
+            ----------
+            value: float
+                Wavelength of the spectrum.
 
             Returns
             -------
@@ -109,18 +115,6 @@ class Spectrum:
 
         @wavelength.setter
         def wavelength(self, value: float) -> None:
-            """Set the wavelength of the spectrum.
-
-            Parameters
-            ----------
-            value: float
-            Wavelength of the spectrum.
-
-            Returns
-            -------
-            None
-
-            """
             self._monochromatic.wavelength = value
 
     class Blackbody:
@@ -145,7 +139,7 @@ class Spectrum:
 
         def __init__(
             self,
-            blackbody: spectrum_pb2.BlackBody,
+            blackbody: spectrum_pb2.Spectrum.BlackBody,
             default_values: bool = True,
             stable_ctr: bool = False,
         ):
@@ -159,7 +153,12 @@ class Spectrum:
 
         @property
         def temperature(self) -> float:
-            """Get the temperature of the spectrum.
+            """Property the temperature of the spectrum.
+
+            Parameters
+            ----------
+            value: float
+                Temperature of the spectrum.
 
             Returns
             -------
@@ -171,18 +170,6 @@ class Spectrum:
 
         @temperature.setter
         def temperature(self, value: float) -> None:
-            """Set the temperature of the spectrum.
-
-            Parameters
-            ----------
-            value: float
-            Temperature of the spectrum.
-
-            Returns
-            -------
-            None
-
-            """
             self._blackbody.temperature = value
 
     class Sampled:
@@ -207,7 +194,7 @@ class Spectrum:
 
         def __init__(
             self,
-            sampled: spectrum_pb2.sampled,
+            sampled: spectrum_pb2.Spectrum.Sampled,
             default_values: bool = True,
             stable_ctr: bool = False,
         ):
@@ -220,7 +207,12 @@ class Spectrum:
 
         @property
         def wavelengths(self) -> List[float]:
-            """Get the wavelength values of the spectrum.
+            """Wavelength property values of the spectrum.
+
+            Parameters
+            ----------
+            wavelengths: List[float]
+                Wavelength values of the spectrum.
 
             Returns
             -------
@@ -232,23 +224,16 @@ class Spectrum:
 
         @wavelengths.setter
         def wavelengths(self, wavelengths: list[float]) -> None:
-            """Set the wavelength values of the spectrum.
-
-            Parameters
-            ----------
-            wavelengths: List[float]
-            Wavelength values of the spectrum.
-
-            Returns
-            -------
-            None
-
-            """
             self._sampled.wavelengths[:] = wavelengths
 
         @property
         def values(self) -> List[float]:
-            """Get the values of the spectrum sampled wavelengths.
+            """Property values of the spectrum sampled wavelengths.
+
+            Parameters
+            ----------
+            values: List[float]
+            List of values, expected from 0. to 100. in %.
 
             Returns
             -------
@@ -259,18 +244,62 @@ class Spectrum:
 
         @values.setter
         def values(self, values: list[float]) -> None:
-            """Set the values of the spectrum sampled wavelengths.
+            self._sampled.values[:] = values
+
+    class Library:
+        """Library type of spectrum.
+
+        By default, file uri is empty.
+
+        Parameters
+        ----------
+        library : ansys.api.speos.spectrum.v1.spectrum_pb2.Spectrum.Library
+            Library protobuf object to modify.
+        default_values : bool
+            Uses default values when True.
+        stable_ctr : bool
+            Variable to indicate if usage is inside class scope
+
+        Notes
+        -----
+        **Do not instantiate this class yourself**, use set_blackbody method available in
+        Spectrum classes.
+        """
+
+        def __init__(
+            self,
+            library: spectrum_pb2.Spectrum.Library,
+            default_values: bool = True,
+            stable_ctr: bool = False,
+        ):
+            if not stable_ctr:
+                msg = "Blackbody class instantiated outside of class scope"
+                raise RuntimeError(msg)
+            self._library = library
+
+            if default_values:
+                self.file_uri = ""
+
+        @property
+        def file_uri(self) -> str:
+            """Property the temperature of the spectrum.
 
             Parameters
             ----------
-            values: List[float]
-            List of values, expected from 0. to 100. in %.
+            value: float
+                Temperature of the spectrum.
 
             Returns
             -------
-            None
+            float
+            Temperature of the spectrum.
+
             """
-            self._sampled.values[:] = values
+            return self._library.file_uri
+
+        @file_uri.setter
+        def file_uri(self, file_uri: Union[str, Path]) -> None:
+            self._library.file_uri = str(file_uri)
 
     def __init__(
         self,
@@ -375,7 +404,7 @@ class Spectrum:
             self._type._sampled = self._spectrum.sampled
         return self._type
 
-    def set_library(self, file_uri: str) -> Spectrum:
+    def set_library(self) -> Spectrum.Library:
         """Set the spectrum as library.
 
         Parameters
@@ -385,11 +414,24 @@ class Spectrum:
 
         Returns
         -------
-        ansys.speos.core.spectrum.Spectrum
-            Spectrum feature.
+        ansys.speos.core.spectrum.Spectrum.Sampled
+            Spectrum Library feature.
         """
-        self._spectrum.library.file_uri = file_uri
-        return self
+        if self._type is None and self._spectrum.HasField("library"):
+            self._type = Spectrum.Library(
+                library=self._spectrum.library,
+                default_values=False,
+                stable_ctr=True,
+            )
+        elif not isinstance(self._type, Spectrum.Library):
+            self._type = Spectrum.Library(
+                library=self._spectrum.library,
+                default_values=True,
+                stable_ctr=True,
+            )
+        elif self._type._library is not self._spectrum.library:
+            self._type._library = self._spectrum.library
+        return self._type
 
     def set_incandescent(self) -> Spectrum:
         """Set the spectrum as incandescent (predefined spectrum).
