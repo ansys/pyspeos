@@ -1199,7 +1199,14 @@ class SourceRayFile(BaseSource):
 
         @property
         def geometries(self) -> List[GeoRef]:
-            """Get list of exit geometries.
+            """Exit geometries.
+
+            Parameters
+            ----------
+            exit_geometries: Optional[List[Union[GeoRef, body.Body, face.Face]]]
+                Exit Geometries that will use this rayfile source.
+                By default, ``[]``.
+
 
             Returns
             -------
@@ -1211,26 +1218,22 @@ class SourceRayFile(BaseSource):
             return self._rayfile_props.exit_geometries.geo_paths
 
         @geometries.setter
-        def geometries(self, exit_geometries: Optional[List[GeoRef]]) -> None:
-            """Set exit geometries.
-
-            Parameters
-            ----------
-            exit_geometries: List[ansys.speos.core.geo_ref.GeoRef]
-                Exit Geometries that will use this rayfile source.
-                By default, ``[]``.
-
-            Returns
-            -------
-            None
-
-            """
+        def geometries(
+            self,
+            exit_geometries: Optional[List[Union[GeoRef, body.Body, face.Face]]],
+        ) -> None:
+            geo_paths = []
             if not exit_geometries or len(exit_geometries) == 0:
                 self._rayfile_props.ClearField("exit_geometries")
             else:
-                self._rayfile_props.exit_geometries.geo_paths[:] = [
-                    gr.to_native_link() for gr in exit_geometries
-                ]
+                for geometry in exit_geometries:
+                    if isinstance(geometry, GeoRef):
+                        geo_paths.append(geometry.to_native_link())
+                    elif isinstance(geometry, (body.Body, face.Face)):
+                        geo_paths.append(geometry.geo_path)
+                    else:
+                        raise ValueError("provided geometry is not of type supported")
+                self._rayfile_props.exit_geometries.geo_paths[:] = geo_paths
 
     @general_methods.min_speos_version(25, 2, 0)
     def __init__(
@@ -1334,7 +1337,14 @@ class SourceRayFile(BaseSource):
 
     @property
     def ray_file_uri(self) -> str:
-        """Gets ray file URI.
+        """Ray file URI.
+
+        This property retrieve and defines the file uri of ray file used.
+
+        Parameters
+        ----------
+        uri: Union[Path, str]
+            Ray file URI.
 
         Returns
         -------
@@ -1346,18 +1356,6 @@ class SourceRayFile(BaseSource):
 
     @ray_file_uri.setter
     def ray_file_uri(self, uri: Union[Path, str]) -> None:
-        """Set ray file URI.
-
-        Parameters
-        ----------
-        uri: Union[Path, str]
-            Ray file URI.
-
-        Returns
-        -------
-        None
-
-        """
         self._source_template.rayfile.ray_file_uri = str(uri)
 
     def set_flux_from_ray_file(self) -> SourceRayFile:
@@ -1425,7 +1423,15 @@ class SourceRayFile(BaseSource):
 
     @property
     def axis_system(self) -> list[float]:
-        """Get the axis system of the Source.
+        """Axis system of the Source.
+
+        This property retrieve and defines the axis system of the source.
+
+        Parameters
+        ----------
+        axis_system: list[float]
+            Position of the rayfile source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
         Returns
         -------
@@ -1438,20 +1444,6 @@ class SourceRayFile(BaseSource):
 
     @axis_system.setter
     def axis_system(self, axis_system: list[float]) -> None:
-        """
-        Set the axis system of the Source.
-
-        Parameters
-        ----------
-        axis_system: list[float]
-            Position of the rayfile source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
-            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
-
-        Returns
-        -------
-        None
-
-        """
         self._source_instance.rayfile_properties.axis_system[:] = axis_system
 
     def set_exit_geometries(self) -> SourceRayFile.ExitGeometries:
@@ -1566,7 +1558,12 @@ class SourceSurface(BaseSource):
 
         @property
         def geometries(self) -> List[tuple[GeoRef, bool]]:
-            """Get geometries linked to surface source.
+            """Geometries linked to surface source.
+
+            Parameters
+            ----------
+            geometries: List[tuple[GeoRef, bool]]
+                list of tuple which contains geometry ref and bool for normal direction.
 
             Returns
             -------
@@ -1578,18 +1575,6 @@ class SourceSurface(BaseSource):
 
         @geometries.setter
         def geometries(self, geometries: List[tuple[Union[GeoRef, face.Face, body.Body], bool]]):
-            """Set geometries linked to surface source.
-
-            Parameters
-            ----------
-            geometries: List[tuple[GeoRef, bool]]
-                list of tuple which contains geometry ref and bool for normal direction.
-
-            Returns
-            -------
-            None
-
-            """
             geo_paths = []
             for gr, reverse_normal in geometries:
                 if isinstance(gr, GeoRef):
@@ -1652,7 +1637,12 @@ class SourceSurface(BaseSource):
 
         @property
         def xmp_file_uri(self) -> str:
-            """Get xmp file uri.
+            """Xmp file uri.
+
+            Parameters
+            ----------
+            xmp_file_uri: Union[str, Path]
+                xmp file uri.
 
             Returns
             -------
@@ -1664,23 +1654,17 @@ class SourceSurface(BaseSource):
 
         @xmp_file_uri.setter
         def xmp_file_uri(self, xmp_file_uri: Union[str, Path]) -> None:
-            """Set xmp file uri.
-
-            Parameters
-            ----------
-            xmp_file_uri: Union[str, Path]
-                xmp file uri.
-
-            Returns
-            -------
-            None
-
-            """
             self._exitance_variable.exitance_xmp_file_uri = str(xmp_file_uri)
 
         @property
         def axis_plane(self) -> List[float]:
-            """Get axis plane.
+            """Axis plane of the variable exitance surface source.
+
+            Parameters
+            ----------
+            axis_plane: List[float]
+                Position of the existence map [Ox Oy Oz Xx Xy Xz Yx Yy Yz].
+                By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0]``.
 
             Returns
             -------
@@ -1693,19 +1677,6 @@ class SourceSurface(BaseSource):
 
         @axis_plane.setter
         def axis_plane(self, axis_plane: List[float]) -> None:
-            """Set axis plane.
-
-            Parameters
-            ----------
-            axis_plane: List[float]
-                Position of the existence map [Ox Oy Oz Xx Xy Xz Yx Yy Yz].
-                By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0]``.
-
-            Returns
-            -------
-            None
-
-            """
             self._exitance_variable_props.axis_plane[:] = axis_plane
 
     @general_methods.min_speos_version(25, 2, 0)
@@ -2095,7 +2066,12 @@ class BaseSourceAmbient(BaseSource):
 
         @property
         def year(self) -> int:
-            """Get year info of the automatic sun.
+            """Property of year info of the automatic sun.
+
+            Parameters
+            ----------
+            year: int
+                year information.
 
             Returns
             -------
@@ -2106,22 +2082,16 @@ class BaseSourceAmbient(BaseSource):
 
         @year.setter
         def year(self, year: int) -> None:
-            """Set year info of the automatic sun.
-
-            Parameters
-            ----------
-            year: int
-                year information.
-
-            Returns
-            -------
-            None
-            """
             self._sun.year = year
 
         @property
         def month(self) -> int:
-            """Get month info of the automatic sun.
+            """Property of month info of the automatic sun.
+
+            Parameters
+            ----------
+            month: int
+                month information.
 
             Returns
             -------
@@ -2133,23 +2103,16 @@ class BaseSourceAmbient(BaseSource):
 
         @month.setter
         def month(self, month: int) -> None:
-            """Set month info of the automatic sun.
-
-            Parameters
-            ----------
-            month: int
-                month information.
-
-            Returns
-            -------
-            None
-
-            """
             self._sun.month = month
 
         @property
         def day(self) -> int:
-            """Get day info of the automatic sun.
+            """Property of day info of the automatic sun.
+
+            Parameters
+            ----------
+            day: int
+                day information.
 
             Returns
             -------
@@ -2160,22 +2123,16 @@ class BaseSourceAmbient(BaseSource):
 
         @day.setter
         def day(self, day: int) -> None:
-            """Set day info of the automatic sun.
-
-            Parameters
-            ----------
-            day: int
-                day information.
-
-            Returns
-            -------
-            None
-            """
             self._sun.day = day
 
         @property
         def hour(self) -> int:
             """Get hour info of the automatic sun.
+
+            Parameters
+            ----------
+            hour: int
+                hour information.
 
             Returns
             -------
@@ -2187,23 +2144,16 @@ class BaseSourceAmbient(BaseSource):
 
         @hour.setter
         def hour(self, hour: int) -> None:
-            """Set hour info of the automatic sun.
-
-            Parameters
-            ----------
-            hour: int
-                hour information.
-
-            Returns
-            -------
-            None
-
-            """
             self._sun.hour = hour
 
         @property
         def minute(self) -> int:
-            """Get minute info of the automatic sun.
+            """Property of minute info of the automatic sun.
+
+            Parameters
+            ----------
+            minute: int
+                minute information.
 
             Returns
             -------
@@ -2215,23 +2165,16 @@ class BaseSourceAmbient(BaseSource):
 
         @minute.setter
         def minute(self, minute: int) -> None:
-            """Set minute info of the automatic sun.
-
-            Parameters
-            ----------
-            minute: int
-                minute information.
-
-            Returns
-            -------
-            None
-
-            """
             self._sun.minute = minute
 
         @property
         def longitude(self) -> float:
-            """Get longitude info of the automatic sun.
+            """Property of longitude info of the automatic sun.
+
+            Parameters
+            ----------
+            longitude: float
+                longitude information.
 
             Returns
             -------
@@ -2242,22 +2185,16 @@ class BaseSourceAmbient(BaseSource):
 
         @longitude.setter
         def longitude(self, longitude: float) -> None:
-            """Get longitude info of the automatic sun.
-
-            Parameters
-            ----------
-            longitude: float
-                longitude information.
-
-            Returns
-            -------
-            None
-            """
             self._sun.longitude = longitude
 
         @property
         def latitude(self) -> float:
-            """Get latitude info of the automatic sun.
+            """Property of latitude info of the automatic sun.
+
+            Parameters
+            ----------
+            latitude: float
+                latitude information.
 
             Returns
             -------
@@ -2268,33 +2205,11 @@ class BaseSourceAmbient(BaseSource):
 
         @latitude.setter
         def latitude(self, latitude: float) -> None:
-            """Set latitude info of the automatic sun.
-
-            Parameters
-            ----------
-            latitude: float
-                latitude information.
-
-            Returns
-            -------
-            None
-            """
             self._sun.latitude = latitude
 
         @property
         def time_zone(self) -> str:
-            """Get time zone info of the automatic sun.
-
-            Returns
-            -------
-            str
-                time zone abbreviation.
-            """
-            return self._sun.time_zone_uri
-
-        @time_zone.setter
-        def time_zone(self, time_zone: str) -> None:
-            """Set time zone info of the automatic sun.
+            """Property of time zone info of the automatic sun.
 
                 default value to be "CET".
 
@@ -2305,8 +2220,13 @@ class BaseSourceAmbient(BaseSource):
 
             Returns
             -------
-            None
+            str
+                time zone abbreviation.
             """
+            return self._sun.time_zone_uri
+
+        @time_zone.setter
+        def time_zone(self, time_zone: str) -> None:
             self._sun.time_zone_uri = time_zone
 
     class Manual:
@@ -2347,7 +2267,14 @@ class BaseSourceAmbient(BaseSource):
 
         @property
         def direction(self) -> List[float]:
-            """Get direction of the manual sun.
+            """Property of direction of the manual sun.
+
+                default value to be [0, 0, 1].
+
+            Parameters
+            ----------
+            direction: List[float]
+                direction of the sun.
 
             Returns
             -------
@@ -2359,25 +2286,18 @@ class BaseSourceAmbient(BaseSource):
 
         @direction.setter
         def direction(self, direction: List[float]) -> None:
-            """Set direction of the manual sun.
-
-                default value to be [0, 0, 1].
-
-            Parameters
-            ----------
-            direction: List[float]
-                direction of the sun.
-
-            Returns
-            -------
-            BaseSourceAmbient.Manual
-
-            """
             self._sun.sun_direction[:] = direction
 
         @property
         def reverse_sun(self) -> bool:
-            """Get whether reverse direction of the manual sun.
+            """Property of whether reverse direction of the manual sun.
+
+                default value to be False.
+
+            Parameters
+            ----------
+            value: bool
+                True to reverse direction, False to not reverse direction
 
             Returns
             -------
@@ -2389,20 +2309,6 @@ class BaseSourceAmbient(BaseSource):
 
         @reverse_sun.setter
         def reverse_sun(self, value: bool) -> None:
-            """Reverse direction of the manual sun.
-
-                default value to be False.
-
-            Parameters
-            ----------
-            value: bool
-                True to reverse direction, False to not reverse direction
-
-            Returns
-            -------
-            None
-
-            """
             self._sun.reverse_sun = value
 
 
@@ -2464,7 +2370,15 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
 
     @property
     def turbidity(self) -> float:
-        """Get turbidity of the natural light source.
+        """Property turbidity of the natural light source.
+
+            default value to be 3.
+
+        Parameters
+        ----------
+        value: float
+            set value of Turbidity the measure of the fraction of scattering.
+
 
         Returns
         -------
@@ -2476,27 +2390,21 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
 
     @turbidity.setter
     def turbidity(self, value: float) -> None:
-        """Set turbidity of the natural light source.
-
-            default value to be 3.
-
-        Parameters
-        ----------
-        value: float
-            set value of Turbidity the measure of the fraction of scattering.
-
-        Returns
-        -------
-        None
-
-        """
         if not 1.9 <= value <= 9.9:
             raise ValueError("Varies needs to be between 1.9 and 9.9")
         self._source_template.ambient.natural_light.turbidity = value
 
     @property
     def with_sky(self) -> bool:
-        """Bool of whether activated using sky in the natural light source.
+        """Bool Property of whether activated using sky in the natural light source.
+
+            default value to be True.
+
+        Parameters
+        ----------
+        value: bool
+            True as using sky, while False as using natural light without the sky.
+
 
         Returns
         -------
@@ -2508,25 +2416,18 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
 
     @with_sky.setter
     def with_sky(self, value: bool) -> None:
-        """Activate using sky in the natural light source.
-
-            default value to be True.
-
-        Parameters
-        ----------
-        value: bool
-            True as using sky, while False as using natural light without the sky.
-
-        Returns
-        -------
-        SourceAmbientNaturalLight
-
-        """
         self._source_template.ambient.natural_light.with_sky = value
 
     @property
     def zenith_direction(self) -> List[float]:
-        """Get zenith direction of the natural light source.
+        """Property zenith direction of the natural light source.
+
+            default value to be [0, 0, 1]
+
+        Parameters
+        ----------
+        direction: Optional[List[float]]
+            direction defines the zenith direction of the natural light.
 
         Returns
         -------
@@ -2538,26 +2439,19 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
 
     @zenith_direction.setter
     def zenith_direction(self, direction: Optional[List[float]] = None) -> None:
-        """Set zenith direction of the natural light source.
-
-            default value to be [0, 0, 1]
-
-        Parameters
-        ----------
-        direction: Optional[List[float]]
-            direction defines the zenith direction of the natural light.
-
-        Returns
-        -------
-        None
-
-        """
         self._source_instance.ambient_properties.zenith_direction[:] = direction
 
     @property
     def reverse_zenith_direction(self) -> bool:
         """
-        Get whether reverse zenith direction of the natural light source.
+        Property whether reverse zenith direction of the natural light source.
+
+            default value to be False.
+
+        Parameters
+        ----------
+        value: bool
+            True to reverse zenith direction, False otherwise.
 
         Returns
         -------
@@ -2569,25 +2463,18 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
 
     @reverse_zenith_direction.setter
     def reverse_zenith_direction(self, value: bool) -> None:
-        """Set reverse zenith direction of the natural light source.
-
-            default value to be False.
-
-        Parameters
-        ----------
-        value: bool
-            True to reverse zenith direction, False otherwise.
-
-        Returns
-        -------
-        None
-
-        """
         self._source_instance.ambient_properties.reverse_zenith = value
 
     @property
     def north_direction(self) -> List[float]:
-        """Get north direction of the natural light source.
+        """Property north direction of the natural light source.
+
+            default value to be [0, 1, 0].
+
+        Parameters
+        ----------
+        direction: List[float]
+            direction defines the north direction of the natural light.
 
         Returns
         -------
@@ -2599,27 +2486,20 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
 
     @north_direction.setter
     def north_direction(self, direction: List[float]) -> None:
-        """Set north direction of the natural light source.
-
-            default value to be [0, 1, 0].
-
-        Parameters
-        ----------
-        direction: List[float]
-            direction defines the north direction of the natural light.
-
-        Returns
-        -------
-        None
-
-        """
         self._source_instance.ambient_properties.natural_light_properties.north_direction[:] = (
             direction
         )
 
     @property
     def reverse_north_direction(self) -> bool:
-        """Get whether reverse north direction of the natural light source.
+        """Property whether reverse north direction of the natural light source.
+
+            default value to be False.
+
+        Parameters
+        ----------
+        value: bool
+            True to reverse north direction, False otherwise.
 
         Returns
         -------
@@ -2631,20 +2511,6 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
 
     @reverse_north_direction.setter
     def reverse_north_direction(self, value: bool) -> None:
-        """Set reverse north direction of the natural light source.
-
-            default value to be False.
-
-        Parameters
-        ----------
-        value: bool
-            True to reverse north direction, False otherwise.
-
-        Returns
-        -------
-        None
-
-        """
         self._source_instance.ambient_properties.natural_light_properties.reverse_north = value
 
     def set_sun_automatic(self) -> BaseSourceAmbient.AutomaticSun:
