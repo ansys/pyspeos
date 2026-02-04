@@ -3327,7 +3327,7 @@ class SensorRadiance(BaseSensor):
         ]
             Instance of Layer type Class for this sensor feature
         """
-        return self._layer_typee
+        return self._layer_type
 
     def set_dimensions(self) -> BaseSensor.Dimensions:
         """Set the dimensions of the sensor.
