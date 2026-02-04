@@ -38,6 +38,7 @@ from ansys.speos.core.generic.parameters import (
     CameraSensorParameters,
     Irradiance3DSensorParameters,
     IrradianceSensorParameters,
+    LuminaireSourceParameters,
     RadianceSensorParameters,
 )
 from ansys.speos.core.generic.visualization_methods import local2absolute
@@ -166,6 +167,7 @@ class Project:
         description: str = "",
         feature_type: type = SourceSurface,
         metadata: Optional[Mapping[str, str]] = None,
+        parameters: Optional[LuminaireSourceParameters,] = None,
     ) -> Union[
         SourceSurface,
         SourceRayFile,
@@ -227,11 +229,19 @@ class Project:
                     metadata=metadata,
                 )
             case "SourceLuminaire":
+                if parameters is None:
+                    parameters = LuminaireSourceParameters()
+                elif not isinstance(parameters, LuminaireSourceParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of LuminaireSourceParameters"
+                    )
                 feature = SourceLuminaire(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
+                    default_parameters=parameters,
                 )
             case "SourceAmbientNaturalLight":
                 feature = SourceAmbientNaturalLight(
@@ -911,7 +921,7 @@ class Project:
                     project=self,
                     name=src_inst.name,
                     source_instance=src_inst,
-                    default_values=False,
+                    default_parameters=None,
                 )
             elif src_inst.HasField("surface_properties"):
                 src_feat = SourceSurface(

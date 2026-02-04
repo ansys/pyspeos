@@ -44,10 +44,17 @@ from ansys.speos.core.generic.constants import (
     ORIGIN,
     SOURCE,
     FluxType,
-    SourceLuminaireParameters,
     SourceRayfileParameters,
 )
 import ansys.speos.core.generic.general_methods as general_methods
+from ansys.speos.core.generic.parameters import (
+    FluxFromFileParameters,
+    LuminaireSourceParameters,
+    LuminousFluxParameters,
+    SpectrumBlackBodyParameters,
+    SpectrumLibraryParameters,
+    SpectrumType,
+)
 from ansys.speos.core.generic.visualization_methods import _VisualArrow, _VisualData
 from ansys.speos.core.geo_ref import GeoRef
 import ansys.speos.core.intensity as intensity
@@ -228,7 +235,7 @@ class BaseSource:
 
             # name for the spectrum chosen: <file_uri>.Spectrum
             self._red_spectrum._spectrum._spectrum.name = Path(red_spectrum_file_uri).name
-            self._red_spectrum._spectrum.set_library(file_uri=red_spectrum_file_uri)
+            self._red_spectrum._spectrum.set_library().file_uri = red_spectrum_file_uri
 
         @property
         def green_spectrum(self) -> dict:
@@ -261,7 +268,7 @@ class BaseSource:
 
             # name for the spectrum chosen: <file_uri>.Spectrum
             self._green_spectrum._spectrum._spectrum.name = Path(green_spectrum_file_uri).name
-            self._green_spectrum._spectrum.set_library(file_uri=green_spectrum_file_uri)
+            self._green_spectrum._spectrum.set_library().file_uri = green_spectrum_file_uri
 
         @property
         def blue_spectrum(self) -> dict:
@@ -294,7 +301,7 @@ class BaseSource:
 
             # name for the spectrum chosen: <file_uri>.Spectrum
             self._blue_spectrum._spectrum._spectrum.name = Path(blue_spectrum_file_uri).name
-            self._blue_spectrum._spectrum.set_library(file_uri=blue_spectrum_file_uri)
+            self._blue_spectrum._spectrum.set_library().file_uri = blue_spectrum_file_uri
 
         @property
         def white_point_type(
@@ -527,7 +534,7 @@ class BaseSource:
         def __init__(
             self,
             flux: source_pb2,
-            default_values: Union[bool, SourceRayfileParameters, SourceLuminaireParameters],
+            default_values: Union[bool, SourceRayfileParameters, LuminaireSourceParameters],
             stable_ctr: bool = False,
         ):
             if not stable_ctr:
@@ -536,7 +543,7 @@ class BaseSource:
             self._flux = flux
             self._flux_type = None
 
-            if isinstance(default_values, (SourceRayfileParameters, SourceLuminaireParameters)):
+            if isinstance(default_values, (SourceRayfileParameters, LuminaireSourceParameters)):
                 match default_values.flux_type:
                     case FluxType.LUMINOUS:
                         self.set_luminous()
@@ -948,8 +955,8 @@ class SourceLuminaire(BaseSource):
     metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
-    default_values : bool
-        Uses default values when True.
+    default_parameters : Union[None, LuminaireSourceParameters] = None
+        Uses default parameters.
     """
 
     @general_methods.min_speos_version(25, 2, 0)
@@ -960,7 +967,7 @@ class SourceLuminaire(BaseSource):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         source_instance: Optional[ProtoScene.SourceInstance] = None,
-        default_values: Optional[bool, SourceLuminaireParameters] = None,
+        default_parameters: Union[None, LuminaireSourceParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -983,26 +990,53 @@ class SourceLuminaire(BaseSource):
             spectrum_guid=self._source_template.luminaire.spectrum_guid,
         )
 
-        if default_values is not False:
-            if not isinstance(default_values, SourceLuminaireParameters):
-                default_values = SourceLuminaireParameters()  # customized default values
+        if default_parameters is not None:
             # New Default values
-            self.intensity_file_uri = default_values.intensity_file_uri
-            self.axis_system = default_values.axis_system
-            match default_values.flux_type:
-                case FluxType.FROM_FILE:
-                    self.set_flux_from_intensity_file()
-                case FluxType.LUMINOUS:
-                    self.set_flux().set_luminous()
-                    self.set_flux().value = default_values.flux_value
-                case FluxType.RADIANT:
-                    self.set_flux().set_radiant()
-                    self.set_flux().value = default_values.flux_value
+            self.intensity_file_uri = default_parameters.intensity_file_uri
+            if isinstance(default_parameters.flux_type, FluxFromFileParameters):
+                self.set_flux_from_intensity_file()
+            elif isinstance(default_parameters.flux_type, LuminousFluxParameters):
+                self.set_flux().set_luminous()
+                self.set_flux().value = default_parameters.flux_type.value
+            elif isinstance(default_parameters.flux_type, LuminousFluxParameters):
+                self.set_flux().set_radiant()
+                self.set_flux().value = default_parameters.flux_type.value
+            else:
+                raise ValueError(
+                    f"Unsupported flux type: {type(default_parameters.flux_type).__name__}"
+                )
+
+            match default_parameters.spectrum_type:
+                case SpectrumType.incandescent:
+                    self.set_spectrum().set_incandescent()
+                case SpectrumType.warm_white_fluorescent:
+                    self.set_spectrum().set_warmwhitefluorescent()
+                case SpectrumType.daylight_fluorescent:
+                    self.set_spectrum().set_daylightfluorescent()
+                case SpectrumType.white_led:
+                    self.set_spectrum().set_white_led()
+                case SpectrumType.halogen:
+                    self.set_spectrum().set_halogen()
+                case SpectrumType.metal_halide:
+                    self.set_spectrum().set_metalhalide()
+                case SpectrumType.high_pressure_sodium:
+                    self.set_spectrum().set_highpressuresodium()
                 case _:
-                    raise ValueError(
-                        f"Unsupported flux type: {type(default_values.flux_type).__name__}"
-                    )
-            self.set_spectrum().set_incandescent()
+                    if default_parameters.spectrum_type is SpectrumLibraryParameters:
+                        self.set_spectrum().set_library().file_uri = (
+                            default_parameters.spectrum_type.file_uri
+                        )
+                    elif default_parameters.spectrum_type is SpectrumBlackBodyParameters:
+                        self.set_spectrum().set_blackbody().temperature = (
+                            default_parameters.spectrum_type.temperature
+                        )
+                    else:
+                        raise ValueError(
+                            "Unsupported spectrum type: {}".format(
+                                type(default_parameters.spectrum_type).__name__
+                            )
+                        )
+            self.axis_system = default_parameters.axis_system
 
     @property
     def visual_data(self) -> _VisualData:

@@ -29,6 +29,8 @@ from typing import Optional, Union
 
 from ansys.speos.core.generic.constants import ORIGIN
 
+## Sensor Parameters
+
 
 @dataclass
 class WavelengthsRangeParameters:
@@ -380,3 +382,67 @@ class Irradiance3DSensorParameters:
     """Layer separation type."""
     geometries: Optional[list] = None
     """Sensor geometry."""
+
+
+## Source Parameters
+
+
+@dataclass
+class LuminousFluxParameters:
+    """Luminous Flux Parameters."""
+
+    value: float = 683
+
+
+@dataclass
+class RadiantFluxParameters:
+    """Radiant Flux Parameters."""
+
+    value: float = 1
+
+
+@dataclass
+class FluxFromFileParameters:
+    """Flux frm inteisty file."""
+
+    value: bool = True
+
+
+@dataclass
+class SpectrumLibraryParameters:
+    """Spectrum library parameters."""
+
+    file_uri: Union[str, Path] = ""
+
+
+@dataclass
+class SpectrumBlackBodyParameters:
+    """Spectrum Black Body parameters."""
+
+    temperature: float = 2856
+
+
+class SpectrumType(str, Enum):
+    """Spectrum type without parameters."""
+
+    incandescent = "photometric"
+    warm_white_fluorescent = "warm_white_fluorescent"
+    daylight_fluorescent = "daylight_fluorescent"
+    white_led = "white_led"
+    halogen = "halogen"
+    metal_halide = "metal_halide"
+    high_pressure_sodium = "high_pressure_sodium"
+
+
+@dataclass
+class LuminaireSourceParameters:
+    """Parameters class for Luminaire Source."""
+
+    intensity_file_uri: Union[str, Path] = ""
+    flux_type: Union[LuminousFluxParameters, RadiantFluxParameters, FluxFromFileParameters] = field(
+        default_factory=lambda: FluxFromFileParameters()
+    )
+    spectrum_type: Union[SpectrumBlackBodyParameters, SpectrumLibraryParameters, SpectrumType] = (
+        SpectrumType.incandescent
+    )
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
