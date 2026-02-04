@@ -32,8 +32,12 @@ from ansys.speos.core.generic.constants import (
     ORIGIN,
     SOURCE,
     FluxType,
-    SourceLuminaireParameters,
     SourceRayfileParameters,
+)
+from ansys.speos.core.generic.parameters import (
+    LuminaireSourceParameters,
+    LuminousFluxParameters,
+    SpectrumType,
 )
 from ansys.speos.core.source import (
     SourceAmbientEnvironment,
@@ -52,8 +56,8 @@ def test_create_luminaire_source(speos: Speos):
 
     # Default value
     # source1 = p.create_source(name="Luminaire.1")
-    default_parameter = SourceLuminaireParameters()
-    source1 = SourceLuminaire(p, "Luminaire.1")
+    default_parameter = LuminaireSourceParameters()
+    source1 = SourceLuminaire(p, "Luminaire.1", default_parameters=default_parameter)
     assert source1._source_template.HasField("luminaire")
     assert (
         source1._source_template.luminaire.intensity_file_uri
@@ -778,7 +782,9 @@ def test_keep_same_internal_feature(speos: Speos):
     assert source1.source_template_link.get().surface.spectrum_guid == spectrum_guid
 
     # LUMINAIRE SOURCE
-    source2 = SourceLuminaire(project=p, name="Luminaire.1")
+    source2 = SourceLuminaire(
+        project=p, name="Luminaire.1", default_parameters=LuminaireSourceParameters()
+    )
     source2.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     source2.commit()
     spectrum_guid = source2.source_template_link.get().luminaire.spectrum_guid
@@ -879,7 +885,9 @@ def test_luminaire_modify_after_reset(speos: Speos):
     p = Project(speos=speos)
 
     # Create + commit
-    source = SourceLuminaire(project=p, name="Luminaire.1")
+    source = SourceLuminaire(
+        project=p, name="Luminaire.1", default_parameters=LuminaireSourceParameters()
+    )
     source.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     source.set_flux().set_luminous()
     # source.set_flux_luminous()
@@ -891,13 +899,19 @@ def test_luminaire_modify_after_reset(speos: Speos):
     # Modify after a reset
     # Template
     assert source._source_template.luminaire.HasField("flux_from_intensity_file")
-    new_default_parameters = SourceLuminaireParameters(flux_type=FluxType.LUMINOUS)
-    source = SourceLuminaire(project=p, name="Luminaire.2", default_values=new_default_parameters)
-    assert source.set_flux().value == new_default_parameters.flux_value
+    new_default_parameters = LuminaireSourceParameters(
+        flux_type=LuminousFluxParameters(value=900),
+        spectrum_type=SpectrumType.warm_white_fluorescent,
+        axis_system=[10, 10, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+    )
+    source = SourceLuminaire(
+        project=p, name="Luminaire.2", default_parameters=new_default_parameters
+    )
+    assert source.set_flux().value == new_default_parameters.flux_type.value
     assert source.axis_system == new_default_parameters.axis_system
     assert (
         source._source_template.luminaire.luminous_flux.luminous_value
-        == new_default_parameters.flux_value
+        == new_default_parameters.flux_type.value
     )
     assert (
         source._source_instance.luminaire_properties.axis_system
@@ -916,9 +930,9 @@ def test_luminaire_modify_after_reset(speos: Speos):
 
     # Props
     assert source._source_instance.luminaire_properties.axis_system == [
-        0,
-        0,
-        0,
+        10,
+        10,
+        10,
         1,
         0,
         0,
@@ -1128,7 +1142,9 @@ def test_print_source(speos: Speos):
     # LUMINAIRE - SPECTRUM
     # Create + commit
     # source = p.create_source(name="Luminaire.1")
-    source = SourceLuminaire(project=p, name="Luminaire.1")
+    source = SourceLuminaire(
+        project=p, name="Luminaire.1", default_parameters=LuminaireSourceParameters()
+    )
     source.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     source.commit()
 
