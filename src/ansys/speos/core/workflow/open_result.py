@@ -29,6 +29,8 @@ from typing import List, Union
 from ansys.api.speos.part.v1 import face_pb2
 
 from ansys.speos.core.generic.file_transfer import FileTransfer
+from ansys.speos.core.generic.general_methods import normalize_vector
+from ansys.speos.core.sensor import SensorIrradiance, SensorRadiance
 
 if os.name == "nt":
     from comtypes.client import CreateObject
@@ -165,8 +167,43 @@ if os.name == "nt":
             dpf_instance.OpenFile(file_path)
             dpf_instance.Show(1)
 
+    def merge_vtp(vtp_paths: List[Path]) -> Path:
+        """Merge vtp files into a single file.
+
+        Parameters
+        ----------
+        vtp_paths: List[Path]
+            The paths of vtp files to merge.
+
+        Returns
+        -------
+        Path
+            The merged vtp file.
+
+        """
+        import pyvista as pv
+
+        meshes = [pv.read(p) for p in vtp_paths]
+        all_arrays = set()
+        for m in meshes:
+            all_arrays.update(m.point_data.keys())
+        for mesh in meshes:
+            n_points = mesh.n_points
+            for name in all_arrays:
+                if name not in mesh.point_data:
+                    mesh.point_data[name] = numpy.zeros(n_points, dtype=float)
+
+        merged = meshes[0]
+        for mesh in meshes[1:]:
+            merged = merged.merge(mesh, merge_points=False)
+
+        output_path = vtp_paths[0].resolve().parent / "merged.vtp"
+        merged.save(output_path)
+        return output_path
+
     def export_xmp_vtp(
         simulation_feature: Union[SimulationDirect, SimulationInverse],
+        xmp_feature: Union[SensorIrradiance, SensorRadiance],
         result_name: Union[str, Path],
     ) -> Path:
         """Export an XMP result into vtp file.
@@ -175,6 +212,8 @@ if os.name == "nt":
         ----------
         simulation_feature : ansys.speos.core.simulation.Simulation
             The simulation feature.
+        xmp_feature: ansys.speos.core.sensor.Sensor
+            The sensor feature.
         result_name: Union[str, Path]
             file path of an XMP result.
 
@@ -202,61 +241,52 @@ if os.name == "nt":
         file_path = Path(file_path)
         dpf_instance = CreateObject("XMPViewer.Application")
         dpf_instance.OpenFile(str(file_path))
-        dimension_x = dpf_instance.XWidth
-        dimension_y = dpf_instance.YHeight
         resolution_x = dpf_instance.XNb
         resolution_y = dpf_instance.YNb
+        step_x = dpf_instance.XSampleWidth
+        step_y = dpf_instance.YSampleHeight
+        bottom_left_x = dpf_instance.XMin
+        bottom_left_y = dpf_instance.YMin
         tmp_txt = file_path.with_suffix(".txt")
         dpf_instance.ExportTXT(str(tmp_txt))
 
         file = tmp_txt.open("r")
         content = file.readlines()
         file.close()
-        skip_lines = 9 if "SeparatedByLayer" in content[7] else 8
-        xmp_data = []
-        if dpf_instance.Maptype == 2 and len(content[6].strip().split()) == 3:
-            # spectral data within number of data tables
-            spectral_tables = int(content[6].strip().split()[2])
-            xmp_data = [
-                [0 for _ in range(len(content[skip_lines].strip().split()))]
-                for _ in range(resolution_y)
-            ]
-            for _ in range(spectral_tables):
-                for i in range(resolution_y):
-                    row = list(map(float, content[skip_lines].strip().split()))
-                    for j in range(resolution_x):
-                        xmp_data[i][j] += row[j]
-                    skip_lines += 1
-                # Skip one line between tables
-                skip_lines += 1
-        else:
-            # not spectral data
-            for line in content[skip_lines : skip_lines + resolution_y]:
-                line_content = line.strip().split()
-                xmp_data.append(list(map(float, line_content)))
 
-        # Create VTK ImageData structure
-        step_x = float(dimension_x) / resolution_x
-        step_y = float(dimension_y) / resolution_y
-        origin_x = -(resolution_x * step_x) / 2
-        origin_y = -(resolution_y * step_y) / 2
+        xmp_data = []
+        content = [line.rstrip() for line in content]
+        marker = "X\tY\tValue"
+        start_idx = content.index(marker) + 1
+        for line in content[start_idx:]:
+            x, y, value = line.split("\t")
+            xmp_data.append(float(value))
+        xmp_data = numpy.array(xmp_data).reshape((resolution_x, resolution_y))
+
+        # Create VTP ImageData structure
         grid = pv.ImageData(
             dimensions=(resolution_x, resolution_y, 1),
             spacing=(step_x, step_y, 1),
-            origin=(origin_x, origin_y, 0),
+            origin=(bottom_left_x, bottom_left_y, 0),
         )
-        xmp_data = numpy.array(xmp_data)
-        if xmp_data.shape[1] == resolution_x:
-            if dpf_instance.UnitType == 0:
-                grid["Radiometric"] = numpy.ravel(xmp_data)
-            if dpf_instance.UnitType == 1:
-                grid["Photometric"] = numpy.ravel(xmp_data)
-        else:
-            grid["X"] = numpy.ravel(xmp_data[:, 0::4])
-            grid["Photometric"] = numpy.ravel(xmp_data[:, 1::4])
-            grid["Radiometric"] = numpy.ravel(xmp_data[:, 2::4])
-            grid["Z"] = numpy.ravel(xmp_data[:, 3::4])
+        if dpf_instance.UnitType == 0:
+            grid["Radiometric"] = numpy.ravel(xmp_data)
+        if dpf_instance.UnitType == 1:
+            grid["Photometric"] = numpy.ravel(xmp_data)
         vtp_meshes = grid.extract_surface()
+
+        axis_sys_info = xmp_feature.get(key="axis_system")
+        sensor_position = axis_sys_info[:3]
+        x_dir = normalize_vector(axis_sys_info[3:6])
+        y_dir = normalize_vector(axis_sys_info[6:9])
+        z_dir = normalize_vector(axis_sys_info[9:12])
+
+        rotational_matrix = numpy.column_stack((x_dir, y_dir, z_dir))
+        transformation_matrix = numpy.eye(4)
+        transformation_matrix[:3, :3] = rotational_matrix
+        transformation_matrix[:3, 3] = sensor_position
+        vtp_meshes = vtp_meshes.transform(transformation_matrix, inplace=False)
+
         # Export file to VTP
         vtp_meshes.save(str(file_path.with_suffix(".vtp")))
         return file_path.with_suffix(".vtp")
