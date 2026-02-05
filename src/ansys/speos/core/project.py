@@ -35,6 +35,7 @@ import ansys.speos.core.body as body
 import ansys.speos.core.face as face
 from ansys.speos.core.generic.general_methods import graphics_required
 from ansys.speos.core.generic.parameters import (
+    AmbientEnvironmentParameters,
     AmbientNaturalLightParameters,
     CameraSensorParameters,
     Irradiance3DSensorParameters,
@@ -278,8 +279,19 @@ class Project:
                     default_parameters=parameters,
                 )
             case "SourceAmbientEnvironment":
+                if parameters is None:
+                    parameters = AmbientEnvironmentParameters()
+                elif not isinstance(parameters, AmbientEnvironmentParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of AmbientEnvironmentParameters"
+                    )
                 feature = SourceAmbientEnvironment(
-                    project=self, name=name, description=description, metadata=metadata
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
                 )
             case _:
                 msg = "Requested feature {} does not exist in supported list {}".format(
@@ -970,7 +982,7 @@ class Project:
                         project=self,
                         name=src_inst.name,
                         source_instance=src_inst,
-                        default_values=False,
+                        default_parameters=None,
                     )
             if src_feat is not None:
                 self._features.append(src_feat)

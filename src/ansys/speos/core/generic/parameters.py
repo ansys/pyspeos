@@ -611,3 +611,48 @@ class AmbientNaturalLightParameters:
     sun_type: Union[AutomaticSunParameters, ManualSunParameters] = field(
         default_factory=lambda: AutomaticSunParameters()
     )
+
+
+@dataclass
+class UserDefinedWhitePointParameters:
+    """User defined White Point Parameters."""
+
+    x: float = 0.31271
+    y: float = 0.32902
+
+
+class WhitePointType(str, Enum):
+    """White Point type without parameters."""
+
+    d65 = "d65"
+    d50 = "d50"
+    c = "c"
+    e = "e"
+
+
+@dataclass
+class UserDefinedColorSpaceParameters:
+    """User defined Color Space Parameters."""
+
+    white_point_type: Union[WhitePointType, UserDefinedWhitePointParameters] = WhitePointType.d65
+    red_spectrum_uri: Union[str, Path] = ""
+    blue_spectrum_uri: Union[str, Path] = ""
+    green_spectrum_uri: Union[str, Path] = ""
+
+
+class ColorSpaceType(str, Enum):
+    """Color Space Type without parameters."""
+
+    srgb = "srgb"
+    adobe_rgb = "abode_rgb"
+
+
+@dataclass
+class AmbientEnvironmentParameters:
+    """Ambient Environment Parameters."""
+
+    zenith_direction: list[float] = field(default_factory=lambda: [0, 0, 1])
+    north_direction: list[float] = field(default_factory=lambda: [0, 1, 0])
+    luminance: float = 1000.0
+    image_file_uri: Union[str, Path] = ""
+    color_space_type: Union[ColorSpaceType, UserDefinedColorSpaceParameters] = ColorSpaceType.srgb

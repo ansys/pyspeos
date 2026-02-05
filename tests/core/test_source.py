@@ -33,6 +33,7 @@ from ansys.speos.core.generic.constants import (
     SOURCE,
 )
 from ansys.speos.core.generic.parameters import (
+    AmbientEnvironmentParameters,
     AmbientNaturalLightParameters,
     LuminaireSourceParameters,
     LuminousFluxParameters,
@@ -608,6 +609,7 @@ def test_create_environment_source(speos: Speos):
     source1 = SourceAmbientEnvironment(
         p,
         name="Environment.1",
+        default_parameters=AmbientEnvironmentParameters(),
     )
 
     #

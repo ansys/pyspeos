@@ -47,8 +47,10 @@ from ansys.speos.core.generic.constants import (
 )
 import ansys.speos.core.generic.general_methods as general_methods
 from ansys.speos.core.generic.parameters import (
+    AmbientEnvironmentParameters,
     AmbientNaturalLightParameters,
     AutomaticSunParameters,
+    ColorSpaceType,
     ConstantExitanceParameters,
     FluxFromFileParameters,
     IntensitAsymmetricGaussianParameters,
@@ -68,7 +70,10 @@ from ansys.speos.core.generic.parameters import (
     SpectrumMonochromaticParameters,
     SpectrumType,
     SurfaceSourceParameters,
+    UserDefinedColorSpaceParameters,
+    UserDefinedWhitePointParameters,
     VariableExitanceParameters,
+    WhitePointType,
 )
 from ansys.speos.core.generic.visualization_methods import _VisualArrow, _VisualData
 from ansys.speos.core.geo_ref import GeoRef
@@ -970,7 +975,7 @@ class SourceLuminaire(BaseSource):
     metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
-    default_parameters : Union[None, LuminaireSourceParameters] = None
+    default_parameters : Optional[LuminaireSourceParameters] = None
         Uses default parameters.
     """
 
@@ -982,7 +987,7 @@ class SourceLuminaire(BaseSource):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         source_instance: Optional[ProtoScene.SourceInstance] = None,
-        default_parameters: Union[None, LuminaireSourceParameters] = None,
+        default_parameters: Optional[LuminaireSourceParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -1206,7 +1211,7 @@ class SourceRayFile(BaseSource):
     metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
-    default_parameters : bool
+    default_parameters : Optional[RayFileSourceParameters] = None,
         Uses default values when True.
     """
 
@@ -1292,7 +1297,7 @@ class SourceRayFile(BaseSource):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         source_instance: Optional[ProtoScene.SourceInstance] = None,
-        default_parameters: Union[None, RayFileSourceParameters] = None,
+        default_parameters: Optional[RayFileSourceParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -1558,7 +1563,7 @@ class SourceSurface(BaseSource):
         Surface source to complete.
     surface_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.SurfaceProperties
         Surface source properties to complete.
-    default_parameters : bool
+    default_parameters : Optional[SurfaceSourceParameters] = None
         Uses default values when True.
     """
 
@@ -1754,7 +1759,7 @@ class SourceSurface(BaseSource):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         source_instance: Optional[ProtoScene.SourceInstance] = None,
-        default_parameters: Union[None, SurfaceSourceParameters] = None,
+        default_parameters: Optional[SurfaceSourceParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -2515,7 +2520,7 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
     metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
-    default_parameters : bool
+    default_parameters : Optional[AmbientNaturalLightParameters] = None
         Uses default values when True.
     """
 
@@ -2526,7 +2531,7 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         source_instance: Optional[ProtoScene.SourceInstance] = None,
-        default_parameters: Union[None, AmbientNaturalLightParameters] = None,
+        default_parameters: Optional[AmbientNaturalLightParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -2778,7 +2783,7 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
     metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
-    default_values : bool
+    default_parameters : Optional[AmbientEnvironmentParameters] = None
         Uses default values when True.
     """
 
@@ -2790,7 +2795,7 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         source_instance: Optional[ProtoScene.SourceInstance] = None,
-        default_values: bool = True,
+        default_parameters: Optional[AmbientEnvironmentParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -2806,14 +2811,64 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
         self._name = name
         self._type = None
 
-        if default_values:
-            # Default values
-            self.zenith_direction = [0, 0, 1]
-            self.north_direction = [0, 1, 0]
-            self.reverse_north_direction = False
-            self.reverse_zenith_direction = False
-            self.luminance = 1000
-            self.set_predefined_color_space()  # defaults to sRGB
+        if default_parameters is not None:
+            self.zenith_direction = default_parameters.zenith_direction
+            self.north_direction = default_parameters.north_direction
+            self.luminance = default_parameters.luminance
+            match default_parameters.color_space_type:
+                case ColorSpaceType.srgb:
+                    self.set_predefined_color_space().set_color_space_srgb()
+                case ColorSpaceType.adobe_rgb:
+                    self.set_predefined_color_space().set_color_space_adobergb()
+                case _:
+                    if isinstance(
+                        default_parameters.color_space_type, UserDefinedColorSpaceParameters
+                    ):
+                        self.set_userdefined_color_space().red_spectrum = (
+                            default_parameters.color_space_type.red_spectrum_uri
+                        )
+                        self.set_userdefined_color_space().green_spectrum = (
+                            default_parameters.color_space_type.green_spectrum_uri
+                        )
+                        self.set_userdefined_color_space().blue_spectrum = (
+                            default_parameters.color_space_type.blue_spectrum_uri
+                        )
+                        match default_parameters.color_space_type.white_point_type:
+                            case WhitePointType.d65:
+                                self.set_userdefined_color_space().set_white_point_type_d65()
+                            case WhitePointType.d50:
+                                self.set_userdefined_color_space().set_white_point_type_d50()
+                            case WhitePointType.c:
+                                self.set_userdefined_color_space().set_white_point_type_c()
+                            case WhitePointType.e:
+                                self.set_userdefined_color_space().set_white_point_type_e()
+                            case _:
+                                if isinstance(
+                                    default_parameters.color_space_type.white_point_type,
+                                    UserDefinedWhitePointParameters,
+                                ):
+                                    color_space_prop = self.set_userdefined_color_space()
+                                    white_point_prop = (
+                                        color_space_prop.set_white_point_type_user_defined()
+                                    )
+                                    white_point_prop.white_point = [
+                                        default_parameters.color_space_type.white_point_type.x,
+                                        default_parameters.color_space_type.white_point_type.y,
+                                    ]
+                                else:
+                                    raise ValueError(
+                                        "Unsupported white point type: {}".format(
+                                            type(
+                                                default_parameters.color_space_type.white_point_type
+                                            ).__name__
+                                        )
+                                    )
+                    else:
+                        raise ValueError(
+                            "Unsupported color space type: {}".format(
+                                type(default_parameters.color_space_type).__name__
+                            )
+                        )
 
     @property
     def zenith_direction(self) -> List[float]:
