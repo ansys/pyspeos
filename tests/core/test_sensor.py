@@ -38,15 +38,18 @@ from ansys.speos.core.generic.parameters import (
     ColorimetricParameters,
     IrradianceSensorParameters,
     LayerBySequenceParameters,
+    LayerTypes,
     RadianceSensorParameters,
     SpectralParameters,
     WavelengthsRangeParameters,
 )
 from ansys.speos.core.sensor import (
+    BaseSensor,
     Sensor3DIrradiance,
     SensorCamera,
     SensorIrradiance,
     SensorRadiance,
+    SensorXMPIntensity,
 )
 from ansys.speos.core.simulation import SimulationDirect
 from tests.conftest import test_path
@@ -1074,6 +1077,363 @@ def test_create_radiance_sensor(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=252)
+def test_create_xmpintensity_sensor(speos: Speos):
+    """Test creation of XMP Intensity sensor."""
+    p = Project(speos=speos)
+
+    root_part = p.create_root_part()
+    body_b = root_part.create_body(name="TheBodyB")
+    body_b.create_face(name="TheFaceF").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
+        [0, 1, 2]
+    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    body_c = root_part.create_body(name="TheBodyC")
+    body_c.create_face(name="TheFaceC1").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
+        [0, 1, 2]
+    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    body_c.create_face(name="TheFaceC2").set_vertices([1, 0, 0, 2, 0, 0, 1, 1, 0]).set_facets(
+        [0, 1, 2]
+    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    root_part.commit()
+
+    # Default value
+    sensor1 = p.create_sensor(name="Intensity.1", feature_type=SensorXMPIntensity)
+    sensor1.commit()
+    assert sensor1.sensor_template_link is not None
+    assert sensor1.sensor_template_link.get().HasField("intensity_sensor_template")
+    sensor_template = sensor1.sensor_template_link.get().intensity_sensor_template
+
+    assert sensor_template.HasField("sensor_type_photometric")
+    assert sensor_template.HasField("intensity_orientation_x_as_meridian")
+    assert sensor_template.intensity_orientation_x_as_meridian.HasField("intensity_dimensions")
+    assert sensor_template.intensity_orientation_x_as_meridian.intensity_dimensions.x_start == -45.0
+    assert sensor_template.intensity_orientation_x_as_meridian.intensity_dimensions.x_end == 45.0
+    assert (
+        sensor_template.intensity_orientation_x_as_meridian.intensity_dimensions.x_sampling == 180
+    )
+    assert sensor_template.intensity_orientation_x_as_meridian.intensity_dimensions.y_start == -30.0
+    assert sensor_template.intensity_orientation_x_as_meridian.intensity_dimensions.y_end == 30.0
+    assert (
+        sensor_template.intensity_orientation_x_as_meridian.intensity_dimensions.y_sampling == 120
+    )
+
+    assert sensor1._sensor_instance.HasField("intensity_properties")
+    inte_properties = sensor1._sensor_instance.intensity_properties
+    assert inte_properties.axis_system == [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+    ]
+    assert inte_properties.HasField("layer_type_none")
+
+    # sensor_type_colorimetric
+    # default wavelengths range
+    sensor1.set_type_colorimetric()
+    sensor1.commit()
+
+    sensor_template = sensor1.sensor_template_link.get().intensity_sensor_template
+    assert sensor_template.HasField("sensor_type_colorimetric")
+    assert sensor_template.sensor_type_colorimetric.HasField("wavelengths_range")
+    assert sensor_template.sensor_type_colorimetric.wavelengths_range.w_start == 400
+    assert sensor_template.sensor_type_colorimetric.wavelengths_range.w_end == 700
+    assert sensor_template.sensor_type_colorimetric.wavelengths_range.w_sampling == 13
+    # chosen wavelengths range
+    wl_range = sensor1.set_type_colorimetric().set_wavelengths_range()
+    wl_range.start = 450
+    wl_range.end = 800
+    wl_range.sampling = 15
+    sensor1.commit()
+    sensor_template = sensor1.sensor_template_link.get().intensity_sensor_template
+    assert sensor_template.sensor_type_colorimetric.wavelengths_range.w_start == 450
+    assert sensor_template.sensor_type_colorimetric.wavelengths_range.w_end == 800
+    assert sensor_template.sensor_type_colorimetric.wavelengths_range.w_sampling == 15
+
+    # sensor_type_radiometric
+    sensor1.set_type_radiometric()
+    sensor1.commit()
+    sensor_template = sensor1.sensor_template_link.get().intensity_sensor_template
+    assert sensor_template.HasField("sensor_type_radiometric")
+
+    # sensor_type_spectral
+    # default wavelengths range
+    sensor1.set_type_spectral()
+    sensor1.commit()
+    sensor_template = sensor1.sensor_template_link.get().intensity_sensor_template
+    assert sensor_template.HasField("sensor_type_spectral")
+    assert sensor_template.sensor_type_spectral.HasField("wavelengths_range")
+    assert sensor_template.sensor_type_spectral.wavelengths_range.w_start == 400
+    assert sensor_template.sensor_type_spectral.wavelengths_range.w_end == 700
+    assert sensor_template.sensor_type_spectral.wavelengths_range.w_sampling == 13
+    # chosen wavelengths range
+    wl_range = sensor1.set_type_spectral().set_wavelengths_range()
+    wl_range.start = 450
+    wl_range.end = 800
+    wl_range.sampling = 15
+    sensor1.commit()
+    sensor_template = sensor1.sensor_template_link.get().intensity_sensor_template
+    assert sensor_template.sensor_type_spectral.wavelengths_range.w_start == 450
+    assert sensor_template.sensor_type_spectral.wavelengths_range.w_end == 800
+    assert sensor_template.sensor_type_spectral.wavelengths_range.w_sampling == 15
+
+    # sensor_type_photometric
+    sensor1.set_type_photometric()
+    sensor1.commit()
+    sensor_template = sensor1.sensor_template_link.get().intensity_sensor_template
+    assert sensor_template.HasField("sensor_type_photometric")
+
+    # dimensions: x-meridian
+    """
+    sensor1.set_dimensions().set_x_start(value=-10).set_x_end(value=10).set_x_sampling(
+        value=60
+    ).set_y_start(value=-20).set_y_end(value=20).set_y_sampling(value=120)
+    """
+    sensor1.x_start = -10
+    sensor1.x_end = 10
+    sensor1.x_sampling = 60
+    sensor1.y_start = -20
+    sensor1.y_end = 20
+    sensor1.y_sampling = 120
+    sensor1.commit()
+
+    sensor_template = sensor1.sensor_template_link.get().intensity_sensor_template
+    assert sensor_template.intensity_orientation_x_as_meridian.HasField("intensity_dimensions")
+    assert sensor_template.intensity_orientation_x_as_meridian.intensity_dimensions.x_start == -10.0
+    assert sensor_template.intensity_orientation_x_as_meridian.intensity_dimensions.x_end == 10.0
+    assert sensor_template.intensity_orientation_x_as_meridian.intensity_dimensions.x_sampling == 60
+    assert sensor_template.intensity_orientation_x_as_meridian.intensity_dimensions.y_start == -20.0
+    assert sensor_template.intensity_orientation_x_as_meridian.intensity_dimensions.y_end == 20.0
+    assert (
+        sensor_template.intensity_orientation_x_as_meridian.intensity_dimensions.y_sampling == 120
+    )
+
+    # dimensions: x-parallel
+    sensor1.set_orientation_x_as_parallel()
+    sensor1.x_start = -11
+    sensor1.x_end = 11
+    sensor1.x_sampling = 62
+    sensor1.y_start = -21
+    sensor1.y_end = 21
+    sensor1.y_sampling = 122
+    sensor1.commit()
+
+    sensor_template = sensor1.sensor_template_link.get().intensity_sensor_template
+    assert sensor_template.intensity_orientation_x_as_parallel.HasField("intensity_dimensions")
+    assert sensor_template.intensity_orientation_x_as_parallel.intensity_dimensions.x_start == -11.0
+    assert sensor_template.intensity_orientation_x_as_parallel.intensity_dimensions.x_end == 11.0
+    assert sensor_template.intensity_orientation_x_as_parallel.intensity_dimensions.x_sampling == 62
+    assert sensor_template.intensity_orientation_x_as_parallel.intensity_dimensions.y_start == -21.0
+    assert sensor_template.intensity_orientation_x_as_parallel.intensity_dimensions.y_end == 21.0
+    assert (
+        sensor_template.intensity_orientation_x_as_parallel.intensity_dimensions.y_sampling == 122
+    )
+
+    # dimensions: conoscopic
+    sensor1.set_orientation_conoscopic()
+    sensor1.theta_max = 63
+    sensor1.theta_sampling = 123
+    sensor1.commit()
+
+    sensor_template = sensor1.sensor_template_link.get().intensity_sensor_template
+    assert sensor_template.intensity_orientation_conoscopic.HasField(
+        "conoscopic_intensity_dimensions"
+    )
+    assert (
+        sensor_template.intensity_orientation_conoscopic.conoscopic_intensity_dimensions.theta_max
+        == 63.0
+    )
+    assert (
+        sensor_template.intensity_orientation_conoscopic.conoscopic_intensity_dimensions.sampling
+        == 123.0
+    )
+
+    # dimensions: reset
+    sensor1.set_orientation_x_as_meridian()
+
+    # properties
+    # axis_system
+    sensor1.axis_system = [10, 50, 20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    sensor1.commit()
+    assert inte_properties.axis_system == [
+        10,
+        50,
+        20,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+    ]
+
+    # result file format
+
+    # near field settings
+    sensor1.near_field = True
+    sensor1.commit()
+    sensor_template = sensor1.sensor_template_link.get().intensity_sensor_template
+    assert sensor_template.HasField("near_field")
+
+    sensor1.cell_distance = 1
+    sensor1.cell_diameter = 2
+    sensor1.commit()
+    sensor_template = sensor1.sensor_template_link.get().intensity_sensor_template
+    assert sensor_template.near_field.cell_distance == 1
+    assert sensor_template.near_field.cell_integration_angle == math.degrees(math.atan(2 / 2 / 1))
+
+    sensor1.near_field = False
+    sensor1.commit()
+    sensor_template = sensor1.sensor_template_link.get().intensity_sensor_template
+    assert ~sensor_template.HasField("near_field")
+
+    # viewing direction
+    sensor1.set_viewing_direction_from_sensor()
+    sensor1.commit()
+    sensor_template = sensor1.sensor_template_link.get().intensity_sensor_template
+    assert sensor_template.HasField("from_sensor_looking_at_source")
+
+    sensor1.set_viewing_direction_from_source()
+    sensor1.commit()
+    sensor_template = sensor1.sensor_template_link.get().intensity_sensor_template
+    assert sensor_template.HasField("from_source_looking_at_sensor")
+
+    # layer_type_source
+    sensor1.set_layer_type_source()
+    sensor1.commit()
+    assert inte_properties.HasField("layer_type_source")
+
+    # layer_type_face
+    layer_type = sensor1.set_layer_type_face().set_sca_filtering_mode_intersected_one_time()
+    if isinstance(layer_type, BaseSensor.LayerTypeFace):
+        pass
+    layer_type.layers = [
+        sensor.BaseSensor.FaceLayer(
+            name="Layer.1", geometries=[GeoRef.from_native_link("TheBodyB")]
+        ),
+        sensor.BaseSensor.FaceLayer(
+            name="Layer.2",
+            geometries=[
+                GeoRef.from_native_link("TheBodyC/TheFaceC1"),
+                GeoRef.from_native_link("TheBodyC/TheFaceC2"),
+            ],
+        ),
+    ]
+    sensor1.commit()
+    assert inte_properties.HasField("layer_type_face")
+    assert (
+        inte_properties.layer_type_face.sca_filtering_mode
+        == inte_properties.layer_type_face.EnumSCAFilteringType.IntersectedOneTime
+    )
+    assert len(inte_properties.layer_type_face.layers) == 2
+    assert inte_properties.layer_type_face.layers[0].name == "Layer.1"
+    assert inte_properties.layer_type_face.layers[0].geometries.geo_paths == ["TheBodyB"]
+    assert inte_properties.layer_type_face.layers[1].name == "Layer.2"
+    assert inte_properties.layer_type_face.layers[1].geometries.geo_paths == [
+        "TheBodyC/TheFaceC1",
+        "TheBodyC/TheFaceC2",
+    ]
+
+    sensor1.set_layer_type_face().set_sca_filtering_mode_last_impact()
+    sensor1.commit()
+    assert (
+        inte_properties.layer_type_face.sca_filtering_mode
+        == inte_properties.layer_type_face.EnumSCAFilteringType.LastImpact
+    )
+
+    # layer_type_sequence
+    layer_type = sensor1.set_layer_type_sequence()
+    layer_type.maximum_nb_of_sequence = 5
+    layer_type.set_define_sequence_per_faces()
+    sensor1.commit()
+    assert inte_properties.HasField("layer_type_sequence")
+    assert inte_properties.layer_type_sequence.maximum_nb_of_sequence == 5
+    assert (
+        inte_properties.layer_type_sequence.define_sequence_per
+        == inte_properties.layer_type_sequence.EnumSequenceType.Faces
+    )
+
+    layer_type.set_define_sequence_per_geometries()
+    sensor1.commit()
+    assert (
+        inte_properties.layer_type_sequence.define_sequence_per
+        == inte_properties.layer_type_sequence.EnumSequenceType.Geometries
+    )
+
+    # layer_type_none
+    sensor1.set_layer_type_none()
+    sensor1.commit()
+    assert inte_properties.HasField("layer_type_none")
+
+    # output_face_geometries
+    sensor1.delete()
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_load_intensity_sensor(speos: Speos):
+    """Test load of Intensity sensor."""
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Intensity_test.speos" / "Intensity_test.speos"),
+    )
+    sensors = p.find(name=".*", name_regex=True, feature_type=SensorXMPIntensity)
+    assert len(sensors) == 4
+    sensor_color = sensors[0]
+    sensor_photo = sensors[2]
+    sensor_spectral = sensors[1]
+    sensor_radio = sensors[3]
+    assert isinstance(sensor_color, SensorXMPIntensity)
+    assert isinstance(sensor_photo, SensorXMPIntensity)
+    assert isinstance(sensor_spectral, SensorXMPIntensity)
+    assert isinstance(sensor_radio, SensorXMPIntensity)
+    assert sensor_color.x_start == -13
+    assert sensor_color.x_end == 13
+    assert sensor_color.x_sampling == 26
+    assert sensor_color.y_start == -14
+    assert sensor_color.y_end == 14
+    assert sensor_color.y_sampling == 28
+    assert sensor_color.type == "Colorimetric"
+    assert sensor_photo.type == "Photometric"
+    assert sensor_spectral.type == "Spectral"
+    assert sensor_radio.type == "Radiometric"
+    seq_layer = sensor_spectral.layer
+    face_layer = sensor_color.layer
+    assert isinstance(face_layer, BaseSensor.LayerTypeFace)
+    assert sensor_photo.layer == LayerTypes.by_source
+    assert isinstance(seq_layer, BaseSensor.LayerTypeSequence)
+    assert sensor_radio.layer == "none"
+    assert seq_layer.maximum_nb_of_sequence == 5
+    assert isinstance(face_layer.layers[0], BaseSensor.FaceLayer)
+    wl_range = sensor_color.set_type_colorimetric().set_wavelengths_range()
+    assert wl_range.start == 400
+    assert wl_range.end == 700
+    assert wl_range.sampling == 16
+    assert sensor_color._sensor_template.intensity_sensor_template.HasField(
+        "intensity_orientation_x_as_meridian"
+    )
+    assert sensor_photo._sensor_template.intensity_sensor_template.HasField(
+        "intensity_orientation_x_as_parallel"
+    )
+    assert sensor_radio._sensor_template.intensity_sensor_template.HasField(
+        "intensity_orientation_conoscopic"
+    )
+    assert sensor_photo.near_field
+    assert sensor_photo.cell_diameter == 1
+    assert sensor_photo.cell_distance == 15
+    assert sensor_photo.axis_system.tolist() == [0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0]
+    assert sensor_radio.axis_system.tolist() == ORIGIN
+
+
+@pytest.mark.supported_speos_versions(min=252)
 def test_load_3d_irradiance_sensor(speos: Speos):
     """Test load of 3d irradiance sensor."""
     p = Project(
@@ -1569,6 +1929,95 @@ def test_camera_modify_after_reset(speos: Speos):
     sensor1.delete()
 
 
+@pytest.mark.supported_speos_versions(min=252)
+def test_xmpintensity_modify_after_reset(speos: Speos):
+    """Test reset of intensity sensor, and then modify."""
+    p = Project(speos=speos)
+
+    # Create + commit
+    sensor1 = p.create_sensor(name="Sensor.1", feature_type=SensorXMPIntensity)
+    sensor1.set_layer_type_sequence()
+    sensor1.set_type_spectral()
+    sensor1.commit()
+    assert isinstance(sensor1, SensorXMPIntensity)
+
+    # Ask for reset
+    sensor1.reset()
+
+    # Modify after a reset
+    # Template
+    assert sensor1._sensor_template.intensity_sensor_template.HasField(
+        "intensity_orientation_x_as_meridian"
+    )
+    sensor1.set_orientation_x_as_parallel()
+    assert sensor1._sensor_template.intensity_sensor_template.HasField(
+        "intensity_orientation_x_as_parallel"
+    )
+    # Intermediate class for type : spectral
+    assert (
+        sensor1._sensor_template.intensity_sensor_template.sensor_type_spectral.wavelengths_range.w_start
+        == 400
+    )
+    sensor1.set_type_spectral().set_wavelengths_range().start = 500
+    assert (
+        sensor1._sensor_template.intensity_sensor_template.sensor_type_spectral.wavelengths_range.w_start
+        == 500
+    )
+    # Intermediate class for dimensions
+    assert (
+        sensor1._sensor_template.intensity_sensor_template.intensity_orientation_x_as_parallel.intensity_dimensions.x_start
+        == -30
+    )
+    sensor1.x_start = -31
+    assert (
+        sensor1._sensor_template.intensity_sensor_template.intensity_orientation_x_as_parallel.intensity_dimensions.x_start
+        == -31
+    )
+
+    # Props
+    assert sensor1._sensor_instance.intensity_properties.axis_system == [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+    ]
+    sensor1.axis_system = [50, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    assert sensor1._sensor_instance.intensity_properties.axis_system == [
+        50,
+        20,
+        10,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+    ]
+    # Intermediate class for layer type
+    assert (
+        sensor1._sensor_instance.intensity_properties.layer_type_sequence.maximum_nb_of_sequence
+        == 10
+    )
+    sensor1.set_layer_type_sequence().maximum_nb_of_sequence = 15
+    assert (
+        sensor1._sensor_instance.intensity_properties.layer_type_sequence.maximum_nb_of_sequence
+        == 15
+    )
+
+    sensor1.delete()
+
+
 def test_delete_sensor(speos: Speos):
     """Test delete of sensor."""
     p = Project(speos=speos)
@@ -1594,18 +2043,21 @@ def test_delete_sensor(speos: Speos):
     assert sensor1._sensor_instance.HasField("irradiance_properties")  # local
 
 
-def test_get_sensor(speos: Speos, capsys):
+def test_get_sensor(speos: Speos, capsys: pytest.CaptureFixture[str]):
     """Test get of a sensor."""
     p = Project(speos=speos)
     sensor1 = p.create_sensor(name="Sensor.1", feature_type=SensorIrradiance)
     sensor2 = p.create_sensor(name="Sensor.2", feature_type=SensorRadiance)
     sensor3 = p.create_sensor(name="Sensor.3", feature_type=SensorCamera)
+    sensor4 = p.create_sensor(name="Sensor.4", feature_type=SensorXMPIntensity)
     # test when key exists
     name1 = sensor1.get(key="name")
     assert name1 == "Sensor.1"
     property_info = sensor2.get(key="integration_angle")
     assert property_info is not None
     property_info = sensor3.get(key="axis_system")
+    assert property_info is not None
+    property_info = sensor4.get(key="name")
     assert property_info is not None
 
     # test when key does not exist
@@ -1620,4 +2072,8 @@ def test_get_sensor(speos: Speos, capsys):
     get_result3 = sensor3.get(key="geometry")
     stdout, stderr = capsys.readouterr()
     assert get_result3 is None
+    assert "Used key: geometry not found in key list" in stdout
+    get_result4 = sensor4.get(key="geometry")
+    stdout, stderr = capsys.readouterr()
+    assert get_result4 is None
     assert "Used key: geometry not found in key list" in stdout
