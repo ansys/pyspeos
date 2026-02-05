@@ -422,6 +422,13 @@ class SpectrumBlackBodyParameters:
     temperature: float = 2856
 
 
+@dataclass
+class SpectrumMonochromaticParameters:
+    """Spectrum Monochromatic parameters."""
+
+    wavelength: float = 555.0
+
+
 class SpectrumType(str, Enum):
     """Spectrum type without parameters."""
 
@@ -446,3 +453,20 @@ class LuminaireSourceParameters:
         SpectrumType.incandescent
     )
     axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+
+
+@dataclass
+class RayFileSourceParameters:
+    """Parameters class for Ray File Source."""
+
+    ray_file_uri: Union[str, Path] = ""
+    flux_type: Union[LuminousFluxParameters, RadiantFluxParameters, FluxFromFileParameters] = field(
+        default_factory=lambda: FluxFromFileParameters()
+    )
+    spectrum_type: Optional[
+        Union[
+            SpectrumBlackBodyParameters, SpectrumLibraryParameters, SpectrumMonochromaticParameters
+        ]
+    ] = None
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+    exit_geometry: Optional[list[str]] = None

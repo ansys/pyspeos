@@ -31,12 +31,11 @@ from ansys.speos.core import GeoRef, Project, Speos
 from ansys.speos.core.generic.constants import (
     ORIGIN,
     SOURCE,
-    FluxType,
-    SourceRayfileParameters,
 )
 from ansys.speos.core.generic.parameters import (
     LuminaireSourceParameters,
     LuminousFluxParameters,
+    RayFileSourceParameters,
     SpectrumType,
 )
 from ansys.speos.core.source import (
@@ -329,11 +328,12 @@ def test_create_rayfile_source(speos: Speos):
     p = Project(speos=speos)
 
     # Default value : not committed because not valid by default due to ray_file_uri needed
+    default_parameter = RayFileSourceParameters()
     source1 = SourceRayFile(
         p,
         name="Ray-file.1",
+        default_parameters=default_parameter,
     )
-    default_parameter = SourceRayfileParameters()
     assert source1._source_instance.HasField("rayfile_properties")
     assert source1._source_instance.rayfile_properties.axis_system == default_parameter.axis_system
     assert source1._source_template.HasField("rayfile")
@@ -795,7 +795,9 @@ def test_keep_same_internal_feature(speos: Speos):
     assert source2.source_template_link.get().luminaire.spectrum_guid == spectrum_guid
 
     # RAY FILE SOURCE
-    source3 = SourceRayFile(project=p, name="Ray-fiile.1")
+    source3 = SourceRayFile(
+        project=p, name="Ray-fiile.1", default_parameters=RayFileSourceParameters()
+    )
     source3.ray_file_uri = Path(test_path) / "RaysWithoutSpectralData.RAY"
     source3.set_spectrum().set_blackbody()
     # source3.set_ray_file_uri(
@@ -819,7 +821,9 @@ def test_commit_source(speos: Speos):
     p = Project(speos=speos)
 
     # Create
-    source1 = SourceRayFile(project=p, name="Ray-file.1")
+    source1 = SourceRayFile(
+        project=p, name="Ray-file.1", default_parameters=RayFileSourceParameters()
+    )
     source1.ray_file_uri = Path(test_path) / "Rays.ray"
     assert source1.source_template_link is None
     assert len(p.scene_link.get().sources) == 0
@@ -843,7 +847,8 @@ def test_reset_source(speos: Speos):
     p = Project(speos=speos)
 
     # Create + commit
-    source1 = SourceRayFile(project=p, name="1")
+    source1 = p.create_source(name="1", feature_type=SourceRayFile)
+    # source1 = SourceRayFile(project=p, name="1", default_parameters=RayFileSourceParameters())
     source1.ray_file_uri = Path(test_path) / "Rays.ray"
     # source1.set_ray_file_uri(uri=str(Path(test_path) / "Rays.ray"))
     source1.commit()
@@ -968,7 +973,7 @@ def test_rayfile_modify_after_reset(speos: Speos):
     p = Project(speos=speos)
 
     # Create + commit
-    source = SourceRayFile(project=p, name="1")
+    source = p.create_source(name="1", feature_type=SourceRayFile)
     # source.set_flux_luminous()
     source.set_flux().set_luminous()
     source.ray_file_uri = Path(test_path) / "RaysWithoutSpectralData.RAY"
@@ -981,16 +986,19 @@ def test_rayfile_modify_after_reset(speos: Speos):
     # Modify after a reset
     # Template
     assert source._source_template.rayfile.HasField("flux_from_ray_file")
-    new_default_parameters = SourceRayfileParameters(flux_type=FluxType.LUMINOUS)
-    source = SourceRayFile(project=p, name="Luminaire.2", default_values=new_default_parameters)
+    new_default_parameters = RayFileSourceParameters(
+        flux_type=LuminousFluxParameters(value=900),
+        axis_system=[10, 10, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+    )
+    source = SourceRayFile(project=p, name="Luminaire.2", default_parameters=new_default_parameters)
     assert source.axis_system == new_default_parameters.axis_system
-    assert source.set_flux().value == new_default_parameters.flux_value
+    assert source.set_flux().value == new_default_parameters.flux_type.value
     assert (
         source._source_instance.rayfile_properties.axis_system == new_default_parameters.axis_system
     )
     assert (
         source._source_template.rayfile.luminous_flux.luminous_value
-        == new_default_parameters.flux_value
+        == new_default_parameters.flux_type.value
     )
 
     source.set_flux().set_luminous()
@@ -1005,9 +1013,9 @@ def test_rayfile_modify_after_reset(speos: Speos):
 
     # Props
     assert source._source_instance.rayfile_properties.axis_system == [
-        0,
-        0,
-        0,
+        10,
+        10,
+        10,
         1,
         0,
         0,
@@ -1163,7 +1171,7 @@ def test_print_source(speos: Speos):
     # RAYFILE - SPECTRUM
     # Create + commit
     # source = p.create_source(name="1")
-    source = SourceRayFile(project=p, name="1")
+    source = p.create_source(name="1", feature_type=SourceRayFile)
     source.ray_file_uri = Path(test_path) / "RaysWithoutSpectralData.RAY"
     source.set_spectrum()
     source.commit()

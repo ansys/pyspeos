@@ -51,8 +51,10 @@ from ansys.speos.core.generic.parameters import (
     FluxFromFileParameters,
     LuminaireSourceParameters,
     LuminousFluxParameters,
+    RayFileSourceParameters,
     SpectrumBlackBodyParameters,
     SpectrumLibraryParameters,
+    SpectrumMonochromaticParameters,
     SpectrumType,
 )
 from ansys.speos.core.generic.visualization_methods import _VisualArrow, _VisualData
@@ -1022,11 +1024,11 @@ class SourceLuminaire(BaseSource):
                 case SpectrumType.high_pressure_sodium:
                     self.set_spectrum().set_highpressuresodium()
                 case _:
-                    if default_parameters.spectrum_type is SpectrumLibraryParameters:
+                    if isinstance(default_parameters.spectrum_type, SpectrumLibraryParameters):
                         self.set_spectrum().set_library().file_uri = (
                             default_parameters.spectrum_type.file_uri
                         )
-                    elif default_parameters.spectrum_type is SpectrumBlackBodyParameters:
+                    elif isinstance(default_parameters.spectrum_type, SpectrumBlackBodyParameters):
                         self.set_spectrum().set_blackbody().temperature = (
                             default_parameters.spectrum_type.temperature
                         )
@@ -1191,7 +1193,7 @@ class SourceRayFile(BaseSource):
     metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
-    default_values : bool
+    default_parameters : bool
         Uses default values when True.
     """
 
@@ -1277,7 +1279,7 @@ class SourceRayFile(BaseSource):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         source_instance: Optional[ProtoScene.SourceInstance] = None,
-        default_values: Optional[bool, SourceRayfileParameters] = None,
+        default_parameters: Union[None, RayFileSourceParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -1309,27 +1311,45 @@ class SourceRayFile(BaseSource):
         # Attribute gathering more complex exit geometries settings
         self._exit_geometry_type = None
 
-        if default_values is not False:  # True, SourceRayfileParameters as default
-            if not isinstance(default_values, SourceRayfileParameters):  # True as default
-                default_values = SourceRayfileParameters()
-                # Default values
-            self.set_spectrum_from_ray_file()
-            self.ray_file_uri = default_values.ray_file_uri
-            match default_values.flux_type:
-                case FluxType.LUMINOUS:
-                    self.set_flux().set_luminous()
-                    self.set_flux().value = default_values.flux_value
-                case FluxType.RADIANT:
-                    self.set_flux().set_radiant()
-                    self.set_flux().value = default_values.flux_value
-                case FluxType.FROM_FILE:
-                    self.set_flux_from_ray_file()
-                case _:
-                    raise ValueError(
-                        f"Unsupported flux type: {type(default_values.flux_type).__name__}"
+        if default_parameters is not None:
+            self.ray_file_uri = default_parameters.ray_file_uri
+            if isinstance(default_parameters.flux_type, FluxFromFileParameters):
+                self.set_flux_from_ray_file()
+            elif isinstance(default_parameters.flux_type, LuminousFluxParameters):
+                self.set_flux().set_luminous()
+                self.set_flux().value = default_parameters.flux_type.value
+            elif isinstance(default_parameters.flux_type, LuminousFluxParameters):
+                self.set_flux().set_radiant()
+                self.set_flux().value = default_parameters.flux_type.value
+            else:
+                raise ValueError(
+                    f"Unsupported flux type: {type(default_parameters.flux_type).__name__}"
+                )
+
+            self.axis_system = default_parameters.axis_system
+
+            if default_parameters.spectrum_type is not None:
+                if isinstance(default_parameters.spectrum_type, SpectrumBlackBodyParameters):
+                    self.set_spectrum().set_blackbody().temperature = (
+                        default_parameters.spectrum_type.temperature
                     )
-            self.axis_system = default_values.axis_system
-            self.set_exit_geometries().geometries = default_values.exit_geometry
+                elif isinstance(default_parameters.spectrum_type, SpectrumLibraryParameters):
+                    self.set_spectrum().set_library().file_uri = (
+                        default_parameters.spectrum_type.file_uri
+                    )
+                elif isinstance(default_parameters.spectrum_type, SpectrumMonochromaticParameters):
+                    self.set_spectrum().set_monochromatic().wavelength = (
+                        default_parameters.spectrum_type.wavelength
+                    )
+                else:
+                    raise ValueError(
+                        "Unsupported spectrum type: {}".format(
+                            type(default_parameters.spectrum_type).__name__
+                        )
+                    )
+
+            if default_parameters.exit_geometry is not None:
+                self.set_exit_geometries().geometries = default_parameters.exit_geometry
 
     @property
     def visual_data(self) -> _VisualData:
