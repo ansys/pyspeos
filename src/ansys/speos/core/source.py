@@ -42,20 +42,30 @@ import ansys.speos.core.body as body
 import ansys.speos.core.face as face
 from ansys.speos.core.generic.constants import (
     ORIGIN,
-    SOURCE,
     FluxType,
     SourceRayfileParameters,
 )
 import ansys.speos.core.generic.general_methods as general_methods
 from ansys.speos.core.generic.parameters import (
+    ConstantExitanceParameters,
     FluxFromFileParameters,
+    IntensitAsymmetricGaussianParameters,
+    IntensitLibraryParameters,
+    IntensityCosParameters,
+    IntensityLambertianParameters,
+    IntensityOrientationAxisSystemParameters,
+    IntensityOrientationType,
+    IntensitySymmetricGaussianParameters,
     LuminaireSourceParameters,
     LuminousFluxParameters,
+    RadiantFluxParameters,
     RayFileSourceParameters,
     SpectrumBlackBodyParameters,
     SpectrumLibraryParameters,
     SpectrumMonochromaticParameters,
     SpectrumType,
+    SurfaceSourceParameters,
+    VariableExitanceParameters,
 )
 from ansys.speos.core.generic.visualization_methods import _VisualArrow, _VisualData
 from ansys.speos.core.geo_ref import GeoRef
@@ -1000,7 +1010,7 @@ class SourceLuminaire(BaseSource):
             elif isinstance(default_parameters.flux_type, LuminousFluxParameters):
                 self.set_flux().set_luminous()
                 self.set_flux().value = default_parameters.flux_type.value
-            elif isinstance(default_parameters.flux_type, LuminousFluxParameters):
+            elif isinstance(default_parameters.flux_type, RadiantFluxParameters):
                 self.set_flux().set_radiant()
                 self.set_flux().value = default_parameters.flux_type.value
             else:
@@ -1256,7 +1266,7 @@ class SourceRayFile(BaseSource):
         @geometries.setter
         def geometries(
             self,
-            exit_geometries: Optional[List[Union[GeoRef, body.Body, face.Face]]],
+            exit_geometries: Optional[List[Union[GeoRef, body.Body, face.Face]]] = None,
         ) -> None:
             geo_paths = []
             if not exit_geometries or len(exit_geometries) == 0:
@@ -1318,7 +1328,7 @@ class SourceRayFile(BaseSource):
             elif isinstance(default_parameters.flux_type, LuminousFluxParameters):
                 self.set_flux().set_luminous()
                 self.set_flux().value = default_parameters.flux_type.value
-            elif isinstance(default_parameters.flux_type, LuminousFluxParameters):
+            elif isinstance(default_parameters.flux_type, RadiantFluxParameters):
                 self.set_flux().set_radiant()
                 self.set_flux().value = default_parameters.flux_type.value
             else:
@@ -1545,7 +1555,7 @@ class SourceSurface(BaseSource):
         Surface source to complete.
     surface_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.SurfaceProperties
         Surface source properties to complete.
-    default_values : bool
+    default_parameters : bool
         Uses default values when True.
     """
 
@@ -1741,7 +1751,7 @@ class SourceSurface(BaseSource):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         source_instance: Optional[ProtoScene.SourceInstance] = None,
-        default_values: bool = True,
+        default_parameters: Union[None, SurfaceSourceParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -1778,14 +1788,131 @@ class SourceSurface(BaseSource):
         # Attribute gathering more complex flux type
         self._flux_type = None
 
-        if default_values:
-            # Default values
-            self.set_flux().set_luminous()
-            self.set_flux().value = SOURCE.LUMINOUS.VALUE
-            # self.set_flux_luminous()
-            self.set_exitance_constant().geometries = []
-            self.set_intensity()
-            self.set_spectrum()
+        if default_parameters is not None:
+            # Flux
+            if isinstance(default_parameters.flux_type, FluxFromFileParameters):
+                self.set_flux_from_intensity_file()
+            elif isinstance(default_parameters.flux_type, LuminousFluxParameters):
+                self.set_flux().set_luminous()
+                self.set_flux().value = default_parameters.flux_type.value
+            elif isinstance(default_parameters.flux_type, LuminousFluxParameters):
+                self.set_flux().set_radiant()
+                self.set_flux().value = default_parameters.flux_type.value
+            else:
+                raise ValueError(
+                    f"Unsupported flux type: {type(default_parameters.flux_type).__name__}"
+                )
+
+            # Exitance
+            if isinstance(default_parameters.exitance_type, VariableExitanceParameters):
+                self.set_exitance_variable().xmp_file_uri = (
+                    default_parameters.exitance_type.xmp_file_uri
+                )
+                self.set_exitance_variable().axis_plane = (
+                    default_parameters.exitance_type.axis_system
+                )
+            elif isinstance(default_parameters.exitance_type, ConstantExitanceParameters):
+                self.geometries = default_parameters.exitance_type.emissive_faces
+            else:
+                raise ValueError(
+                    "Unsupported exitance type: {}".format(
+                        type(default_parameters.exitance_type).__name__
+                    )
+                )
+
+            # Spectrum
+            if isinstance(default_parameters.spectrum_type, SpectrumBlackBodyParameters):
+                self.set_spectrum().set_blackbody().temperature = (
+                    default_parameters.spectrum_type.temperature
+                )
+            elif isinstance(default_parameters.spectrum_type, SpectrumLibraryParameters):
+                self.set_spectrum().set_library().file_uri = (
+                    default_parameters.spectrum_type.file_uri
+                )
+            elif isinstance(default_parameters.spectrum_type, SpectrumMonochromaticParameters):
+                self.set_spectrum().set_monochromatic().wavelength = (
+                    default_parameters.spectrum_type.wavelength
+                )
+            else:
+                raise ValueError(
+                    "Unsupported spectrum type: {}".format(
+                        type(default_parameters.spectrum_type).__name__
+                    )
+                )
+
+            # Intensity
+            if isinstance(default_parameters.intensity_type, IntensityLambertianParameters):
+                self.set_intensity().set_cos().n = 1
+                self.set_intensity().set_cos().total_angle = (
+                    default_parameters.intensity_type.total_angle
+                )
+            elif isinstance(default_parameters.intensity_type, IntensityCosParameters):
+                self.set_intensity().set_cos().n = default_parameters.intensity_type.n
+                self.set_intensity().set_cos().total_angle = (
+                    default_parameters.intensity_type.total_angle
+                )
+            elif isinstance(
+                default_parameters.intensity_type, IntensitySymmetricGaussianParameters
+            ):
+                self.set_intensity().set_gaussian().fwhm_angle_x = (
+                    default_parameters.intensity_type.fwhm
+                )
+                self.set_intensity().set_gaussian().fwhm_angle_y = (
+                    default_parameters.intensity_type.fwhm
+                )
+                self.set_intensity().set_gaussian().total_angle = (
+                    default_parameters.intensity_type.total_angle
+                )
+            elif isinstance(
+                default_parameters.intensity_type, IntensitAsymmetricGaussianParameters
+            ):
+                self.set_intensity().set_gaussian().fwhm_angle_x = (
+                    default_parameters.intensity_type.fwhm_x
+                )
+                self.set_intensity().set_gaussian().fwhm_angle_y = (
+                    default_parameters.intensity_type.fwhm_y
+                )
+                self.set_intensity().set_gaussian().total_angle = (
+                    default_parameters.intensity_type.total_angle
+                )
+                self.set_intensity().set_gaussian().axis_system = (
+                    default_parameters.intensity_type.axis_system
+                )
+            elif isinstance(default_parameters.intensity_type, IntensitLibraryParameters):
+                self.set_intensity().set_library().file_uri = (
+                    default_parameters.intensity_type.intensity_file_uri
+                )
+                if default_parameters.intensity_type.exit_geometry is not None:
+                    self.set_intensity().set_library().exit_geometry = (
+                        default_parameters.intensity_type.exit_geometry
+                    )
+                match default_parameters.intensity_type.orientation_type:
+                    case IntensityOrientationType.normal_to_uv:
+                        self.set_intensity().set_library().set_orientation_normal_to_uv_map()
+                    case IntensityOrientationType.normal_to_surface:
+                        self.set_intensity().set_library().set_orientation_normal_to_surface()
+                    case _:
+                        if isinstance(
+                            default_parameters.intensity_type.orientation_type,
+                            IntensityOrientationAxisSystemParameters,
+                        ):
+                            self.set_intensity().set_library().set_orientation_axis_system(
+                                default_parameters.intensity_type.orientation_type.axis_system
+                            )
+                        else:
+                            raise ValueError(
+                                "Unsupported orientation type: {}".format(
+                                    type(
+                                        default_parameters.intensity_type.orientation_type
+                                    ).__name__
+                                )
+                            )
+            else:
+                raise ValueError(
+                    "Unsupported intensity type: {}".format(
+                        type(default_parameters.intensity_type).__name__
+                    )
+                )
 
     @property
     def visual_data(self) -> _VisualData:

@@ -41,6 +41,7 @@ from ansys.speos.core.generic.parameters import (
     LuminaireSourceParameters,
     RadianceSensorParameters,
     RayFileSourceParameters,
+    SurfaceSourceParameters,
 )
 from ansys.speos.core.generic.visualization_methods import local2absolute
 from ansys.speos.core.ground_plane import GroundPlane
@@ -216,11 +217,19 @@ class Project:
         feature = None
         match feature_type.__name__:
             case "SourceSurface":
+                if parameters is None:
+                    parameters = SurfaceSourceParameters()
+                elif not isinstance(parameters, SurfaceSourceParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of SurfaceSourceParameters"
+                    )
                 feature = SourceSurface(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
+                    default_parameters=parameters,
                 )
             case "SourceRayFile":
                 if parameters is None:
@@ -923,7 +932,7 @@ class Project:
                     project=self,
                     name=src_inst.name,
                     source_instance=src_inst,
-                    default_parameters=False,
+                    default_parameters=None,
                 )
             elif src_inst.HasField("luminaire_properties"):
                 src_feat = SourceLuminaire(
@@ -937,7 +946,7 @@ class Project:
                     project=self,
                     name=src_inst.name,
                     source_instance=src_inst,
-                    default_values=False,
+                    default_parameters=None,
                 )
             elif src_inst.HasField("ambient_properties"):
                 if src_inst.ambient_properties.HasField("natural_light_properties"):

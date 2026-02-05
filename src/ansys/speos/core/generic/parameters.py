@@ -388,6 +388,13 @@ class Irradiance3DSensorParameters:
 
 
 @dataclass
+class IntensityFluxParameters:
+    """Luminous Flux Parameters."""
+
+    value: float = 5
+
+
+@dataclass
 class LuminousFluxParameters:
     """Luminous Flux Parameters."""
 
@@ -427,6 +434,64 @@ class SpectrumMonochromaticParameters:
     """Spectrum Monochromatic parameters."""
 
     wavelength: float = 555.0
+
+
+@dataclass
+class IntensityLambertianParameters:
+    """Intensity Lambertian parameters."""
+
+    total_angle: float = 180
+
+
+@dataclass
+class IntensityCosParameters:
+    """Intensity Cos parameters."""
+
+    n: float = 3
+    total_angle: float = 180
+
+
+@dataclass
+class IntensitySymmetricGaussianParameters:
+    """Intensity Symmetric Gaussian parameters."""
+
+    total_angle: float = 180
+    fwhm: float = 30.0
+
+
+@dataclass
+class IntensitAsymmetricGaussianParameters:
+    """Intensity Asymmetric Gaussian parameters."""
+
+    total_angle: float = 180
+    fwhm_x: float = 30.0
+    fwhm_y: float = 30.0
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+
+
+@dataclass
+class IntensityOrientationAxisSystemParameters:
+    """Intensity Orientation Axis System parameters."""
+
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+
+
+class IntensityOrientationType(str, Enum):
+    """Spectrum type without parameters."""
+
+    normal_to_uv = "normal_to_uv"
+    normal_to_surface = "normal_to_surface"
+
+
+@dataclass
+class IntensitLibraryParameters:
+    """Intensity Library parameters."""
+
+    intensity_file_uri: Union[str, Path] = ""
+    orientation_type: Union[IntensityOrientationType, IntensityOrientationAxisSystemParameters] = (
+        field(default_factory=lambda: IntensityOrientationAxisSystemParameters())
+    )
+    exit_geometry: Optional[list[str]] = None
 
 
 class SpectrumType(str, Enum):
@@ -470,3 +535,43 @@ class RayFileSourceParameters:
     ] = None
     axis_system: list[float] = field(default_factory=lambda: ORIGIN)
     exit_geometry: Optional[list[str]] = None
+
+
+@dataclass
+class VariableExitanceParameters:
+    """Spectrum Exit Parameters."""
+
+    xmp_file_uri: Union[str, Path] = ""
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+
+
+@dataclass
+class ConstantExitanceParameters:
+    """Spectrum Exit Parameters."""
+
+    emissive_faces: list[str] = field(default_factory=lambda: [])
+
+
+@dataclass
+class SurfaceSourceParameters:
+    """Parameters class for Surface Source."""
+
+    flux_type: Union[
+        LuminousFluxParameters,
+        RadiantFluxParameters,
+        IntensityFluxParameters,
+        FluxFromFileParameters,
+    ] = field(default_factory=lambda: LuminousFluxParameters())
+    exitance_type: Union[VariableExitanceParameters, ConstantExitanceParameters] = field(
+        default_factory=lambda: ConstantExitanceParameters()
+    )
+    intensity_type: Union[
+        IntensityLambertianParameters,
+        IntensityCosParameters,
+        IntensitySymmetricGaussianParameters,
+        IntensitAsymmetricGaussianParameters,
+        IntensitLibraryParameters,
+    ] = field(default_factory=lambda: IntensityLambertianParameters())
+    spectrum_type: Union[
+        SpectrumBlackBodyParameters, SpectrumLibraryParameters, SpectrumMonochromaticParameters
+    ] = field(default_factory=lambda: SpectrumMonochromaticParameters())

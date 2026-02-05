@@ -37,6 +37,7 @@ from ansys.speos.core.generic.parameters import (
     LuminousFluxParameters,
     RayFileSourceParameters,
     SpectrumType,
+    SurfaceSourceParameters,
 )
 from ansys.speos.core.source import (
     SourceAmbientEnvironment,
@@ -175,7 +176,9 @@ def test_create_surface_source(speos: Speos):
 
     # Default value
     # source1 = p.create_source(name="Surface.1")
-    source1 = SourceSurface(project=p, name="Surface.1")
+    source1 = SourceSurface(
+        project=p, name="Surface.1", default_parameters=SurfaceSourceParameters()
+    )
     source1.set_exitance_constant().geometries = [(GeoRef.from_native_link("BodyB"), False)]
     source1.commit()
     assert source1.source_template_link is not None
@@ -195,8 +198,8 @@ def test_create_surface_source(speos: Speos):
     assert intensity.get().HasField("cos")
 
     # set intensity as library to be able to use flux_from_intensity_file
-    source1.set_intensity().set_library().set_intensity_file_uri(
-        uri=str(Path(test_path) / "IES_C_DETECTOR.ies")
+    source1.set_intensity().set_library().intensity_file_uri = str(
+        Path(test_path) / "IES_C_DETECTOR.ies"
     )
     source1.set_flux_from_intensity_file()
     source1.commit()
@@ -765,7 +768,9 @@ def test_keep_same_internal_feature(speos: Speos):
     root_part.commit()
 
     # SURFACE SOURCE
-    source1 = SourceSurface(project=p, name="Surface.1")
+    source1 = SourceSurface(
+        project=p, name="Surface.1", default_parameters=SurfaceSourceParameters()
+    )
     source1.set_exitance_constant().geometries = [(body_b, False)]
     source1.commit()
     spectrum_guid = source1.source_template_link.get().surface.spectrum_guid
@@ -1051,7 +1056,9 @@ def test_surface_modify_after_reset(speos: Speos):
     p = Project(speos=speos)
 
     # Create + commit
-    source = SourceSurface(project=p, name="Surface.2")
+    source = SourceSurface(
+        project=p, name="Surface.2", default_parameters=SurfaceSourceParameters()
+    )
     # source.set_flux_luminous()
     source.set_flux().set_luminous()
     source.set_spectrum_from_xmp_file()
@@ -1189,7 +1196,9 @@ def test_print_source(speos: Speos):
     source.delete()
 
     # SURFACE - SPECTRUM
-    source = SourceSurface(project=p, name="Surface.1")
+    source = SourceSurface(
+        project=p, name="Surface.1", default_parameters=SurfaceSourceParameters()
+    )
     source.set_exitance_constant().geometries = [(GeoRef.from_native_link("BodyB"), False)]
     source.commit()
 
@@ -1219,7 +1228,7 @@ def test_get_source(speos: Speos, capsys):
     property_info = source2.get(key="axis_system")
     assert property_info is not None
     property_info = source3.get(key="geo_path")
-    assert property_info is not None
+    assert property_info is None
     property_info = source4.get(key="predefined_color_space")
     assert property_info is not None
 
