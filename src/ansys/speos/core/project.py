@@ -35,6 +35,7 @@ import ansys.speos.core.body as body
 import ansys.speos.core.face as face
 from ansys.speos.core.generic.general_methods import graphics_required
 from ansys.speos.core.generic.parameters import (
+    AmbientNaturalLightParameters,
     CameraSensorParameters,
     Irradiance3DSensorParameters,
     IrradianceSensorParameters,
@@ -262,11 +263,19 @@ class Project:
                     default_parameters=parameters,
                 )
             case "SourceAmbientNaturalLight":
+                if parameters is None:
+                    parameters = AmbientNaturalLightParameters()
+                elif not isinstance(parameters, AmbientNaturalLightParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of AmbientNaturalLightParameters"
+                    )
                 feature = SourceAmbientNaturalLight(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
+                    default_parameters=parameters,
                 )
             case "SourceAmbientEnvironment":
                 feature = SourceAmbientEnvironment(
@@ -954,7 +963,7 @@ class Project:
                         project=self,
                         name=src_inst.name,
                         source_instance=src_inst,
-                        default_values=False,
+                        default_parameters=None,
                     )
                 elif src_inst.ambient_properties.HasField("environment_map_properties"):
                     src_feat = SourceAmbientEnvironment(

@@ -47,6 +47,8 @@ from ansys.speos.core.generic.constants import (
 )
 import ansys.speos.core.generic.general_methods as general_methods
 from ansys.speos.core.generic.parameters import (
+    AmbientNaturalLightParameters,
+    AutomaticSunParameters,
     ConstantExitanceParameters,
     FluxFromFileParameters,
     IntensitAsymmetricGaussianParameters,
@@ -58,6 +60,7 @@ from ansys.speos.core.generic.parameters import (
     IntensitySymmetricGaussianParameters,
     LuminaireSourceParameters,
     LuminousFluxParameters,
+    ManualSunParameters,
     RadiantFluxParameters,
     RayFileSourceParameters,
     SpectrumBlackBodyParameters,
@@ -2512,7 +2515,7 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
     metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
-    default_values : bool
+    default_parameters : bool
         Uses default values when True.
     """
 
@@ -2523,7 +2526,7 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         source_instance: Optional[ProtoScene.SourceInstance] = None,
-        default_values: bool = True,
+        default_parameters: Union[None, AmbientNaturalLightParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -2539,15 +2542,25 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
         self._name = name
         self._type = None
 
-        if default_values:
-            # Default values
-            self.zenith_direction = [0, 0, 1]
-            self.north_direction = [0, 1, 0]
-            self.reverse_north_direction = False
-            self.reverse_zenith_direction = False
-            self.turbidity = 3
-            self.with_sky = True
-            self.set_sun_automatic()
+        if default_parameters is not None:
+            self.with_sky = default_parameters.with_sky
+            self.turbidity = default_parameters.turbidity
+            self.zenith_direction = default_parameters.zenith_direction
+            self.north_direction = default_parameters.north_direction
+            if isinstance(default_parameters.sun_type, AutomaticSunParameters):
+                self.set_sun_automatic().longitude = default_parameters.sun_type.longitude
+                self.set_sun_automatic().latitude = default_parameters.sun_type.latitude
+                self.set_sun_automatic().year = default_parameters.sun_type.year
+                self.set_sun_automatic().month = default_parameters.sun_type.month
+                self.set_sun_automatic().day = default_parameters.sun_type.day
+                self.set_sun_automatic().hour = default_parameters.sun_type.hour
+                self.set_sun_automatic().minute = default_parameters.sun_type.minute
+            elif isinstance(default_parameters.sun_type, ManualSunParameters):
+                self.set_sun_manual().direction = default_parameters.sun_type.direction
+            else:
+                raise ValueError(
+                    f"Unsupported sun type: {type(default_parameters.sun_type).__name__}"
+                )
 
     @property
     def turbidity(self) -> float:

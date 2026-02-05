@@ -23,6 +23,7 @@
 """Collection of all parameter dataclasses used in PySpeos."""
 
 from dataclasses import dataclass, field
+import datetime
 from enum import Enum
 from pathlib import Path
 from typing import Optional, Union
@@ -388,13 +389,6 @@ class Irradiance3DSensorParameters:
 
 
 @dataclass
-class IntensityFluxParameters:
-    """Luminous Flux Parameters."""
-
-    value: float = 5
-
-
-@dataclass
 class LuminousFluxParameters:
     """Luminous Flux Parameters."""
 
@@ -429,11 +423,61 @@ class SpectrumBlackBodyParameters:
     temperature: float = 2856
 
 
+class SpectrumType(str, Enum):
+    """Spectrum type without parameters."""
+
+    incandescent = "photometric"
+    warm_white_fluorescent = "warm_white_fluorescent"
+    daylight_fluorescent = "daylight_fluorescent"
+    white_led = "white_led"
+    halogen = "halogen"
+    metal_halide = "metal_halide"
+    high_pressure_sodium = "high_pressure_sodium"
+
+
+@dataclass
+class LuminaireSourceParameters:
+    """Parameters class for Luminaire Source."""
+
+    intensity_file_uri: Union[str, Path] = ""
+    flux_type: Union[LuminousFluxParameters, RadiantFluxParameters, FluxFromFileParameters] = field(
+        default_factory=lambda: FluxFromFileParameters()
+    )
+    spectrum_type: Union[SpectrumBlackBodyParameters, SpectrumLibraryParameters, SpectrumType] = (
+        SpectrumType.incandescent
+    )
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+
+
 @dataclass
 class SpectrumMonochromaticParameters:
     """Spectrum Monochromatic parameters."""
 
     wavelength: float = 555.0
+
+
+@dataclass
+class RayFileSourceParameters:
+    """Parameters class for Ray File Source."""
+
+    ray_file_uri: Union[str, Path] = ""
+    flux_type: Union[LuminousFluxParameters, RadiantFluxParameters, FluxFromFileParameters] = field(
+        default_factory=lambda: FluxFromFileParameters()
+    )
+    spectrum_type: Optional[
+        Union[
+            SpectrumBlackBodyParameters, SpectrumLibraryParameters, SpectrumMonochromaticParameters
+        ]
+    ] = None
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+    exit_geometry: Optional[list[str]] = None
+
+
+@dataclass
+class IntensityFluxParameters:
+    """Luminous Flux Parameters."""
+
+    value: float = 5
 
 
 @dataclass
@@ -494,49 +538,6 @@ class IntensitLibraryParameters:
     exit_geometry: Optional[list[str]] = None
 
 
-class SpectrumType(str, Enum):
-    """Spectrum type without parameters."""
-
-    incandescent = "photometric"
-    warm_white_fluorescent = "warm_white_fluorescent"
-    daylight_fluorescent = "daylight_fluorescent"
-    white_led = "white_led"
-    halogen = "halogen"
-    metal_halide = "metal_halide"
-    high_pressure_sodium = "high_pressure_sodium"
-
-
-@dataclass
-class LuminaireSourceParameters:
-    """Parameters class for Luminaire Source."""
-
-    intensity_file_uri: Union[str, Path] = ""
-    flux_type: Union[LuminousFluxParameters, RadiantFluxParameters, FluxFromFileParameters] = field(
-        default_factory=lambda: FluxFromFileParameters()
-    )
-    spectrum_type: Union[SpectrumBlackBodyParameters, SpectrumLibraryParameters, SpectrumType] = (
-        SpectrumType.incandescent
-    )
-    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
-
-
-@dataclass
-class RayFileSourceParameters:
-    """Parameters class for Ray File Source."""
-
-    ray_file_uri: Union[str, Path] = ""
-    flux_type: Union[LuminousFluxParameters, RadiantFluxParameters, FluxFromFileParameters] = field(
-        default_factory=lambda: FluxFromFileParameters()
-    )
-    spectrum_type: Optional[
-        Union[
-            SpectrumBlackBodyParameters, SpectrumLibraryParameters, SpectrumMonochromaticParameters
-        ]
-    ] = None
-    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
-    exit_geometry: Optional[list[str]] = None
-
-
 @dataclass
 class VariableExitanceParameters:
     """Spectrum Exit Parameters."""
@@ -575,3 +576,38 @@ class SurfaceSourceParameters:
     spectrum_type: Union[
         SpectrumBlackBodyParameters, SpectrumLibraryParameters, SpectrumMonochromaticParameters
     ] = field(default_factory=lambda: SpectrumMonochromaticParameters())
+
+
+@dataclass
+class AutomaticSunParameters:
+    """Spectrum Exit Parameters."""
+
+    now = datetime.datetime.now()
+    time_zone: str = "CET"
+    longitude: float = 0.0
+    latitude: float = 0.0
+    year = now.year
+    month = now.month
+    day = now.day
+    hour = now.hour
+    minute = now.minute
+
+
+@dataclass
+class ManualSunParameters:
+    """Spectrum Exit Parameters."""
+
+    direction: list[float] = field(default_factory=lambda: [0, 0, 1])
+
+
+@dataclass
+class AmbientNaturalLightParameters:
+    """Ambient Natural Light Parameters."""
+
+    with_sky: bool = field(default_factory=lambda: True)
+    turbidity: float = 3.0
+    zenith_direction: list[float] = field(default_factory=lambda: [0, 0, 1])
+    north_direction: list[float] = field(default_factory=lambda: [0, 1, 0])
+    sun_type: Union[AutomaticSunParameters, ManualSunParameters] = field(
+        default_factory=lambda: AutomaticSunParameters()
+    )

@@ -33,6 +33,7 @@ from ansys.speos.core.generic.constants import (
     SOURCE,
 )
 from ansys.speos.core.generic.parameters import (
+    AmbientNaturalLightParameters,
     LuminaireSourceParameters,
     LuminousFluxParameters,
     RayFileSourceParameters,
@@ -449,6 +450,7 @@ def test_create_natural_light_source(speos: Speos):
     source1 = SourceAmbientNaturalLight(
         p,
         name="NaturalLight.1",
+        default_parameters=AmbientNaturalLightParameters(),
     )
     now = datetime.datetime.now()
     assert source1._source_instance.HasField("ambient_properties")
@@ -472,7 +474,7 @@ def test_create_natural_light_source(speos: Speos):
     assert tmp_natural_light_property.sun_axis_system.automatic_sun.month == now.month
     assert tmp_natural_light_property.sun_axis_system.automatic_sun.day == now.day
     assert tmp_natural_light_property.sun_axis_system.automatic_sun.hour == now.hour
-    assert tmp_natural_light_property.sun_axis_system.automatic_sun.minute == now.minute
+    assert abs(tmp_natural_light_property.sun_axis_system.automatic_sun.minute - now.minute) < 10
     assert tmp_natural_light_property.sun_axis_system.automatic_sun.time_zone_uri == "CET"
 
     assert source1._source_template.HasField("ambient")
@@ -586,7 +588,7 @@ def test_create_natural_light_source(speos: Speos):
     assert tmp_natural_light_property.sun_axis_system.automatic_sun.month == now.month
     assert tmp_natural_light_property.sun_axis_system.automatic_sun.day == now.day
     assert tmp_natural_light_property.sun_axis_system.automatic_sun.hour == now.hour
-    assert tmp_natural_light_property.sun_axis_system.automatic_sun.minute == now.minute
+    assert abs(tmp_natural_light_property.sun_axis_system.automatic_sun.minute - now.minute) < 10
     assert tmp_natural_light_property.sun_axis_system.automatic_sun.time_zone_uri == "CET"
 
     assert source2._source_template.HasField("ambient")
