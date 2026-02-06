@@ -100,7 +100,7 @@ print(p)
 
 intensity_file_path = str(assets_data_path / IES)
 source1 = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)  # type luminaire
-source1.set_intensity_file_uri(uri=intensity_file_path)
+source1.intensity_file_uri = intensity_file_path
 print(source1)
 
 # **Push it to the server.**
@@ -118,10 +118,11 @@ print(source1)
 
 intensity_file_path = str(assets_data_path / IES)
 source2 = p.create_source(name="Luminaire.2", feature_type=SourceLuminaire)
-source2.set_intensity_file_uri(uri=intensity_file_path)
-source2.set_flux_radiant()  # select flux radiant with default value
+source2.intensity_file_uri = intensity_file_path
+source2.set_flux().set_radiant()
+source2.set_flux().value = 1.0  # select flux radiant
 # choose the source location [Origin, Xvector, Yvector, Zvector]
-source2.set_axis_system(axis_system=[20, 50, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+source2.axis_system = [20, 50, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 source2.set_spectrum().set_blackbody()  # choose blackbody with default value for the spectrum
 source2.commit()  # Push to the server
 print(source2)
@@ -144,8 +145,9 @@ print(p)
 # > changes.
 # > If you don't, you will still only watch what is committed on the server.
 
-source1.set_flux_radiant(value=1.2)  # modify radiant flux value
-source1.set_axis_system(axis_system=[17, 10, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1])  # modify axis system
+source1.set_flux().set_radiant()
+source1.set_flux().value = 1.2  # modify radiant flux value
+source1.axis_system = [17, 10, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]  # modify axis system
 source1.set_spectrum().set_halogen()  # modify spectrum by choosing halogen
 source1.commit()  # Push changes to the server
 print(source1)
@@ -154,7 +156,7 @@ print(source1)
 #
 # Possibility to reset local values from the one available in the server.
 
-source1.set_flux_luminous()  # modify to luminous flux BUT no commit
+source1.set_flux().set_luminous().value = 683.0  # modify to luminous flux BUT no commit
 source1.reset()
 # reset -> this will apply the server value to the local value the local value will be back to
 # halogen
@@ -182,13 +184,13 @@ print(p)
 ray_file_path = str(assets_data_path / "Rays.ray")
 
 source3 = p.create_source(name="Ray-file.1", feature_type=SourceRayFile)  # type ray file
-source3.set_ray_file_uri(uri=ray_file_path)
+source3.ray_file_uri = ray_file_path
 source3.commit()
 print(source3)
 # -
 
 # +
-source3.set_flux_luminous()
+source3.set_flux().set_luminous()
 source3.commit()
 print(source3)
 # -
@@ -202,21 +204,17 @@ source3.delete()
 # +
 create_helper_geometries(p)
 source4 = p.create_source(name="Surface.1", feature_type=SourceSurface)
-source4.set_exitance_constant(
-    geometries=[
-        (GeoRef.from_native_link("TheBodyB/TheFaceF"), False),
-        (GeoRef.from_native_link("TheBodyC/TheFaceF"), True),
-    ]
-)
+source4.set_exitance_constant().geometries = [
+    (GeoRef.from_native_link("TheBodyB/TheFaceF"), False),
+    (GeoRef.from_native_link("TheBodyC/TheFaceF"), True),
+]
 source4.commit()
 print(source4)
 # -
 
 # +
-source4.set_flux_luminous_intensity()
-source4.set_intensity().set_gaussian().set_axis_system(
-    axis_system=[10, 50, 20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-)
+source4.set_flux().set_luminous_intensity()
+source4.set_intensity().set_gaussian().axis_system = [10, 50, 20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 source4.commit()
 print(source4)
 # -

@@ -24,9 +24,11 @@
 
 from __future__ import annotations
 
-from typing import List, Mapping, Optional
+from pathlib import Path
+from typing import List, Mapping, Optional, Union
 
-from ansys.speos.core.generic.general_methods import deprecate_kwargs
+import ansys.speos.core.body as body
+import ansys.speos.core.face as face
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.client import SpeosClient
 from ansys.speos.core.kernel.intensity_template import ProtoIntensityTemplate
@@ -94,8 +96,9 @@ class Intensity:
                 # Default values
                 self.set_orientation_axis_system()
 
-        def set_intensity_file_uri(self, uri: str) -> Intensity.Library:
-            """Set the intensity file.
+        @property
+        def intensity_file_uri(self) -> str:
+            """Property of the intensity file uri.
 
             Parameters
             ----------
@@ -104,11 +107,14 @@ class Intensity:
 
             Returns
             -------
-            ansys.speos.core.intensity.Intensity.Library
-                Intensity feature of type library.
+            uri : str
+                uri of the intensity file IES (.ies), Eulumdat (.ldt), speos intensities (.xmp)
             """
-            self._library.intensity_file_uri = uri
-            return self
+            return self._library.intensity_file_uri
+
+        @intensity_file_uri.setter
+        def intensity_file_uri(self, intensity_file_uri: Union[Path, str]) -> None:
+            self._library.intensity_file_uri = str(intensity_file_uri)
 
         def set_orientation_axis_system(
             self, axis_system: Optional[List[float]] = None
@@ -153,29 +159,40 @@ class Intensity:
             self._library_props.normal_to_uv_map.SetInParent()
             return self
 
-        def set_exit_geometries(
-            self, exit_geometries: Optional[List[GeoRef]] = None
-        ) -> Intensity.Library:
-            """Set the exit geometries.
+        @property
+        def exit_geometries(self) -> List[GeoRef]:
+            """Property of exit geometries.
 
             Parameters
             ----------
-            exit_geometries : Optional[List[ansys.speos.core.geo_ref.GeoRef]]
+            exit_geometries : Optional[List[Union[GeoRef, body.Body, face.Face]]]
                 Exit geometries list.
                 By default, ``[]``.
 
             Returns
             -------
-            ansys.speos.core.intensity.Intensity.Library
-                Library intensity.
+            List[ansys.speos.core.geo_ref.GeoRef]
+                List of GeoRef of geometries.
             """
+            if self._library_props.HasField("exit_geometries"):
+                return self._library_props.exit_geometries.geo_paths
+
+        @exit_geometries.setter
+        def exit_geometries(
+            self, exit_geometries: Optional[List[Union[GeoRef, body.Body, face.Face]]] = None
+        ) -> None:
             if not exit_geometries:
                 self._library_props.ClearField("exit_geometries")
             else:
-                self._library_props.exit_geometries.geo_paths[:] = [
-                    gr.to_native_link() for gr in exit_geometries
-                ]
-            return self
+                geo_paths = []
+                for geometry in exit_geometries:
+                    if isinstance(geometry, GeoRef):
+                        geo_paths.append(geometry.to_native_link())
+                    elif isinstance(geometry, (body.Body, face.Face)):
+                        geo_paths.append(geometry.geo_path)
+                    else:
+                        raise ValueError("provided geometry is not of type supported")
+                self._library_props.exit_geometries.geo_paths[:] = geo_paths
 
     class Gaussian:
         """Intensity of type: Gaussian.
@@ -206,10 +223,14 @@ class Intensity:
 
             if default_values:
                 # Default values
-                self.set_FWHM_angle_x().set_FWHM_angle_y().set_total_angle().set_axis_system()
+                self.fwhm_angle_x = 30.0
+                self.fwhm_angle_y = 30.0
+                self.total_angle = 180.0
+                self.axis_system = None
 
-        def set_FWHM_angle_x(self, value: float = 30) -> Intensity.Gaussian:
-            """Set the full width following x at half maximum.
+        @property
+        def fwhm_angle_x(self) -> float:
+            """Property of the full width following x at half maximum.
 
             Parameters
             ----------
@@ -219,14 +240,18 @@ class Intensity:
 
             Returns
             -------
-            ansys.speos.core.intensity.Intensity.Gaussian
-                Gaussian intensity.
+            value : float
+                Full Width in degrees following x at Half Maximum.
             """
-            self._gaussian.FWHM_angle_x = value
-            return self
+            return self._gaussian.FWHM_angle_x
 
-        def set_FWHM_angle_y(self, value: float = 30) -> Intensity.Gaussian:
-            """Set the full width following y at half maximum.
+        @fwhm_angle_x.setter
+        def fwhm_angle_x(self, fwhm_angle_x: float) -> None:
+            self._gaussian.FWHM_angle_x = fwhm_angle_x
+
+        @property
+        def fwhm_angle_y(self) -> float:
+            """Property of the full width following y at half maximum.
 
             Parameters
             ----------
@@ -236,14 +261,18 @@ class Intensity:
 
             Returns
             -------
-            ansys.speos.core.intensity.Intensity.Gaussian
-                Gaussian intensity.
+            value : float
+                Full Width in degrees following y at Half Maximum.
             """
-            self._gaussian.FWHM_angle_y = value
-            return self
+            return self._gaussian.FWHM_angle_y
 
-        def set_total_angle(self, value: float = 180) -> Intensity.Gaussian:
-            """Set the total angle of the emission of the light source.
+        @fwhm_angle_y.setter
+        def fwhm_angle_y(self, fwhm_angle_y: float) -> None:
+            self._gaussian.FWHM_angle_y = fwhm_angle_y
+
+        @property
+        def total_angle(self) -> float:
+            """Property of total angle of the emission of the light source.
 
             Parameters
             ----------
@@ -253,14 +282,18 @@ class Intensity:
 
             Returns
             -------
-            ansys.speos.core.intensity.Intensity.Gaussian
-                Gaussian intensity.
+            value : float
+                Total angle in degrees of the emission of the light source.
             """
-            self._gaussian.total_angle = value
-            return self
+            return self._gaussian.total_angle
 
-        def set_axis_system(self, axis_system: Optional[List[float]] = None) -> Intensity.Gaussian:
-            """Set the intensity distribution orientation.
+        @total_angle.setter
+        def total_angle(self, total_angle: float) -> None:
+            self._gaussian.total_angle = total_angle
+
+        @property
+        def axis_system(self) -> float:
+            """Property the intensity distribution axis system orientation.
 
             Parameters
             ----------
@@ -270,15 +303,85 @@ class Intensity:
 
             Returns
             -------
-            ansys.speos.core.intensity.Intensity.Gaussian
-                Gaussian intensity.
+            axis_system : List[float]
+                Orientation of the intensity distribution [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             """
+            return self._gaussian.total_angle
+
+        @axis_system.setter
+        def axis_system(self, axis_system: Optional[List[float]] = None) -> None:
             self._gaussian_props.Clear()
             if axis_system is None:
                 self._gaussian_props.SetInParent()
             else:
                 self._gaussian_props.axis_system[:] = axis_system
-            return self
+
+    class Cos:
+        """Intensity of type: Cos.
+
+        By default, Order of cos law 3, total angle in degrees of the source emission 180.0.
+
+        Parameters
+        ----------
+        cos : ansys.api.speos.intensity.v1.IntensityTemplate.Cos
+            Cos to complete.
+        default_values : bool
+            Uses default values when True.
+        """
+
+        def __init__(
+            self,
+            cos: ProtoIntensityTemplate.Cos,
+            default_values: bool = True,
+        ) -> None:
+            self._cos = cos
+
+            if default_values:
+                # Default values
+                self.n = 3
+                self.total_angle = 180.0
+
+        @property
+        def n(self) -> float:
+            """Property of order of cos law.
+
+            Parameters
+            ----------
+            value : float
+                order of cos law.
+                By default, ``3``.
+
+            Returns
+            -------
+            value : float
+                order of cos law.
+            """
+            return self._cos.N
+
+        @n.setter
+        def n(self, n: float) -> None:
+            self._cos.N = n
+
+        @property
+        def total_angle(self) -> float:
+            """Property of total angle of the emission of the light source.
+
+            Parameters
+            ----------
+            value : float
+                Total angle in degrees of the emission of the light source.
+                By default, ``180.0``.
+
+            Returns
+            -------
+            value : float
+                Total angle in degrees of the emission of the light source.
+            """
+            return self._cos.total_angle
+
+        @total_angle.setter
+        def total_angle(self, total_angle: float) -> None:
+            self._cos.total_angle = total_angle
 
     def __init__(
         self,
@@ -313,7 +416,7 @@ class Intensity:
             )
 
             # Default values
-            self.set_cos(n=1)  # By default will be lambertian (cos with N =1)
+            self.set_cos().n = 1  # By default will be lambertian (cos with N =1)
         else:
             # Retrieve IntensityTemplate
             self.intensity_template_link = speos_client[key]
@@ -349,29 +452,30 @@ class Intensity:
             self._type._library_props = self._intensity_properties.library_properties
         return self._type
 
-    @deprecate_kwargs({"N": "n"}, "0.3.0")
-    def set_cos(self, n: float = 3, total_angle: float = 180) -> Intensity:
+    def set_cos(self):
         """Set the intensity as cos.
-
-        Parameters
-        ----------
-        n : float
-            Order of cos law.
-            By default, ``3``.
-        total_angle : float
-            Total angle in degrees of the emission of the light source.
-            By default, ``180.0``.
 
         Returns
         -------
-        ansys.speos.core.intensity.Intensity
-            Intensity feature.
+        ansys.speos.core.intensity.Intensity.Cos
+            intensity Cos feature type to complete.
         """
-        self._type = None
-        self._intensity_template.cos.N = n
-        self._intensity_template.cos.total_angle = total_angle
+        if self._type is None and self._intensity_template.HasField("cos"):
+            # Happens in case of project created via load of speos file
+            self._type = Intensity.Cos(
+                cos=self._intensity_template.cos,
+                default_values=False,
+            )
+        elif not isinstance(self._type, Intensity.Cos):
+            # if the _type is not Gaussian then we create a new type.
+            self._type = Intensity.Cos(
+                cos=self._intensity_template.cos,
+            )
+        elif self._type._cos is not self._intensity_template.cos:
+            # Happens in case of feature reset (to be sure to always modify correct data)
+            self._type._cos = self._intensity_template.cos
         self._intensity_properties.Clear()
-        return self
+        return self._type
 
     def set_gaussian(self) -> Intensity.Gaussian:
         """Set the intensity as gaussian.
