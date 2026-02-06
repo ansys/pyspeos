@@ -9,6 +9,51 @@ This document contains the release notes for the PySpeos project.
 
 .. towncrier release notes start
 
+`0.7.2 <https://github.com/ansys/pyspeos/releases/tag/v0.7.2>`_ - February 06, 2026
+===================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Added
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Source ambient environment
+          - `#808 <https://github.com/ansys/pyspeos/pull/808>`_
+
+        * - Source ambient environment - In 0.7
+          - `#841 <https://github.com/ansys/pyspeos/pull/841>`_
+
+
+  .. tab-item:: Documentation
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Add Gaussian function and update R and T parts
+          - `#837 <https://github.com/ansys/pyspeos/pull/837>`_
+
+        * - Add Gaussian function and update R and T parts - in 0.7
+          - `#840 <https://github.com/ansys/pyspeos/pull/840>`_
+
+
+  .. tab-item:: Fixed
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Speos launcher using pim - fix issue when getting target from channel
+          - `#827 <https://github.com/ansys/pyspeos/pull/827>`_
+
+        * - Speos launcher using pim - fix issue when getting target from channel - In 0.7
+          - `#839 <https://github.com/ansys/pyspeos/pull/839>`_
+
+
 `0.7.1 <https://github.com/ansys/pyspeos/releases/tag/v0.7.1>`_ - January 13, 2026
 ==================================================================================
 
