@@ -1,0 +1,607 @@
+
+
+
+
+
+
+:class:`SensorCamera`
+=====================
+
+.. toctree::
+   :hidden:
+
+    Photometric</api/ansys/speos/core/sensor/SensorCamera.Photometric>
+
+
+.. py:class:: ansys.speos.core.sensor.SensorCamera(project, name, description = '', metadata = None, sensor_instance = None, default_parameters = None)
+
+   Bases: :py:obj:`BaseSensor`
+
+
+   
+   Sensor feature: Camera.
+
+   By default, regarding inherent characteristics, a camera with mode photometric is chosen.
+   By default, regarding properties, an axis system is selected to position the sensor,
+   and no layer separation is chosen.
+
+   :Parameters:
+
+       **project** : :obj:`ansys.speos.core.project.Project`
+           Project that will own the feature.
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **description** : :class:`python:str`
+           Description of the feature.
+           By default, ``""``.
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]]
+           Metadata of the feature.
+           By default, ``{}``.
+
+       **sensor_instance** : :obj:`ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance`, :obj:`optional`
+           Sensor instance to provide if the feature does not has to be created from scratch
+           By default, ``None``, means that the feature is created from scratch by default.
+
+       **default_parameters** : :obj:`ansys.speos.core.generic.parameters.CameraSensorParameters`, :obj:`optional`
+           If defined the values in the sensor instance will be overwritten by the values of the
+           data class
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SensorCamera
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_mode_geometric`
+            - Set mode geometric for the camera sensor.
+          * - :py:attr:`~set_mode_photometric`
+            - Set mode photometric for the camera sensor.
+          * - :py:attr:`~commit`
+            - Save feature: send the local data to the speos server database.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~visual_data`
+            - Property containing camera sensor visualization data.
+          * - :py:attr:`~photometric`
+            - Property containing the instance of SensorCamera.Photometric used to build the sensor.
+          * - :py:attr:`~focal_length`
+            - Focal length of the optical system.
+          * - :py:attr:`~imager_distance`
+            - Imager distance.
+          * - :py:attr:`~f_number`
+            - F number of the optical system.
+          * - :py:attr:`~distortion_file_uri`
+            - Location of the distortion file.
+          * - :py:attr:`~horz_pixel`
+            - Horizontal pixels number corresponding to the camera resolution.
+          * - :py:attr:`~vert_pixel`
+            - Vertical pixels number corresponding to the camera resolution.
+          * - :py:attr:`~width`
+            - Width of the imager.
+          * - :py:attr:`~height`
+            - Height of the imager.
+          * - :py:attr:`~axis_system`
+            - The position of the sensor.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.sensor import SensorCamera
+
+Property detail
+---------------
+
+.. py:property:: visual_data
+   :type: ansys.speos.core.generic.visualization_methods._VisualData
+
+
+   
+   Property containing camera sensor visualization data.
+
+
+
+
+
+   :Returns:
+
+       :obj:`BaseSensor.VisualData`
+           Instance of VisualData Class for pyvista.PolyData of feature faces, coordinate_systems.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: photometric
+   :type: Union[SensorCamera, None]
+
+
+   
+   Property containing the instance of SensorCamera.Photometric used to build the sensor.
+
+
+
+
+
+   :Returns:
+
+       :obj:`Union`\[:obj:`ansys.speos.core.sensor.SensorCamera.Photometric`, :data:`python:None`]
+           Photometric class instance if it exists
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: focal_length
+   :type: float
+
+
+   
+   Focal length of the optical system.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Distance between the center of the optical system and the focus. (mm)
+           By default, ``5.0``.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Distance between the center of the optical system and the focus. (mm)
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: imager_distance
+   :type: SensorCamera
+
+
+   
+   Imager distance.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Imager distance (mm). The imager is located at the focal point.
+           The Imager distance has no impact on the result. By default, ``10``.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Imager distance (mm). The imager is located at the focal point.
+           The Imager distance has no impact on the result.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: f_number
+   :type: float
+
+
+   
+   F number of the optical system.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           F-number represents the aperture of the front lens.
+           F number has no impact on the result. By default, ``20``.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           F-number represents the aperture of the front lens.
+           F number has no impact on the result.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: distortion_file_uri
+   :type: str
+
+
+   
+   Location of the distortion file.
+
+
+   :Parameters:
+
+       **uri** : :obj:`Union`\[:class:`python:str`, :obj:`Path`]
+           Optical aberration that deforms and bends straight lines. The distortion is expressed in
+           a .OPTDistortion file.
+
+
+
+   :Returns:
+
+       :class:`python:str`
+           Optical aberration that deforms and bends straight lines. The distortion is expressed in
+           a .OPTDistortion file.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: horz_pixel
+   :type: int
+
+
+   
+   Horizontal pixels number corresponding to the camera resolution.
+
+
+   :Parameters:
+
+       **value** : :class:`python:int`
+           The horizontal pixels number corresponding to the camera resolution.
+           By default, ``640``.
+
+
+
+   :Returns:
+
+       :class:`python:int`
+           The horizontal pixels number corresponding to the camera resolution.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: vert_pixel
+   :type: int
+
+
+   
+   Vertical pixels number corresponding to the camera resolution.
+
+
+   :Parameters:
+
+       **value** : :class:`python:int`
+           The vertical pixels number corresponding to the camera resolution.
+           By default, ``480``.
+
+
+
+   :Returns:
+
+       :class:`python:int`
+           The vertical pixels number corresponding to the camera resolution.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: width
+   :type: float
+
+
+   
+   Width of the imager.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Sensor's width (mm). By default, ``5.0``.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Sensor's width (mm).
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: height
+   :type: float
+
+
+   
+   Height of the imager.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Sensor's height (mm). By default, ``5.0``
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Sensor's height (mm).
+           `.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: axis_system
+   :type: list[float]
+
+
+   
+   The position of the sensor.
+
+
+   :Parameters:
+
+       **axis_system** : :class:`python:list`\[:class:`python:float`]
+           Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+           By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+
+
+
+   :Returns:
+
+       :class:`python:list`\[:class:`python:float`]
+           Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_mode_geometric()
+
+   
+   Set mode geometric for the camera sensor.
+
+   This is a simplified version of the Camera Sensor.
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorCamera`
+           Geometric Camera feature
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_mode_photometric()
+
+   
+   Set mode photometric for the camera sensor.
+
+   This allows setting every Camera Sensor parameter, including the photometric definition
+   parameters.
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorCamera.Photometric`
+           Photometric Camera Sensor feature
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: commit()
+
+   
+   Save feature: send the local data to the speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorCamera`
+           Sensor feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+    ansys.speos.core.sensor.SensorCamera.Photometric
+
+
+
+
