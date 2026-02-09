@@ -2601,7 +2601,7 @@ class SensorIrradiance(BaseSensor):
             Irradiance sensor
         """
         self._sensor_template.irradiance_sensor_template.sensor_type_photometric.SetInParent()
-        self._type = "Photometric"
+        self._type = SensorTypes.photometric.capitalize()
         return self
 
     def set_type_colorimetric(self) -> BaseSensor.Colorimetric:
@@ -2652,7 +2652,7 @@ class SensorIrradiance(BaseSensor):
             Irradiance sensor.
         """
         self._sensor_template.irradiance_sensor_template.sensor_type_radiometric.SetInParent()
-        self._type = "Radiometric"
+        self._type = SensorTypes.radiometric.capitalize()
         return self
 
     def set_type_spectral(self) -> BaseSensor.Spectral:
@@ -3358,7 +3358,7 @@ class SensorRadiance(BaseSensor):
             Radiance sensor.
         """
         self._sensor_template.radiance_sensor_template.sensor_type_photometric.SetInParent()
-        self._type = None
+        self._type = SensorTypes.photometric.capitalize()
         return self
 
     def set_type_colorimetric(self) -> BaseSensor.Colorimetric:
@@ -3409,7 +3409,7 @@ class SensorRadiance(BaseSensor):
             Radiance sensor.
         """
         self._sensor_template.radiance_sensor_template.sensor_type_radiometric.SetInParent()
-        self._type = None
+        self._type = SensorTypes.radiometric.capitalize()
         return self
 
     def set_type_spectral(self) -> BaseSensor.Spectral:
@@ -5063,7 +5063,7 @@ class SensorXMPIntensity(BaseSensor):
             Irradiance sensor
         """
         self._sensor_template.intensity_sensor_template.sensor_type_photometric.SetInParent()
-        self._type = "Photometric"
+        self._type = SensorTypes.photometric.capitalize()
         return self
 
     def set_type_colorimetric(self) -> BaseSensor.Colorimetric:
@@ -5113,7 +5113,7 @@ class SensorXMPIntensity(BaseSensor):
             Irradiance sensor.
         """
         self._sensor_template.intensity_sensor_template.sensor_type_radiometric.SetInParent()
-        self._type = "Radiometric"
+        self._type = SensorTypes.radiometric.capitalize()
         return self
 
     def set_type_spectral(self) -> BaseSensor.Spectral:
@@ -5245,7 +5245,7 @@ class SensorXMPIntensity(BaseSensor):
         return self._layer_type
 
     @property
-    def axis_system(self) -> np.array:
+    def axis_system(self) -> list[float]:
         """Position of the sensor.
 
         Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
@@ -5256,7 +5256,7 @@ class SensorXMPIntensity(BaseSensor):
         np.array[float]
             Axis system information as np.array.
         """
-        return np.array(self._sensor_instance.intensity_properties.axis_system)
+        return self._sensor_instance.intensity_properties.axis_system
 
     @axis_system.setter
     def axis_system(self, value: Collection[float]):

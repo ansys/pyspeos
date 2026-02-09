@@ -986,7 +986,7 @@ class Project:
                     project=self,
                     name=ssr_inst.name,
                     sensor_instance=ssr_inst,
-                    default_values=False,
+                    default_parameters=None,
                 )
             elif ssr_inst.HasField("camera_properties"):
                 ssr_feat = SensorCamera(

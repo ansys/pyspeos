@@ -26,6 +26,7 @@ import math
 from pathlib import Path
 
 from ansys.api.speos.sensor.v1 import camera_sensor_pb2
+import numpy as np
 import pytest
 
 from ansys.speos.core import Body, GeoRef, Project, Speos, sensor
@@ -1429,8 +1430,8 @@ def test_load_intensity_sensor(speos: Speos):
     assert sensor_photo.near_field
     assert sensor_photo.cell_diameter == 1
     assert sensor_photo.cell_distance == 15
-    assert sensor_photo.axis_system.tolist() == [0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0]
-    assert sensor_radio.axis_system.tolist() == ORIGIN
+    assert sensor_photo.axis_system == [0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0]
+    assert sensor_radio.axis_system == ORIGIN
 
 
 @pytest.mark.supported_speos_versions(min=252)
@@ -1442,6 +1443,106 @@ def test_load_3d_irradiance_sensor(speos: Speos):
     )
     sensor_3d = p.find(name=".*", name_regex=True, feature_type=Sensor3DIrradiance)[0]
     assert sensor_3d is not None
+
+
+def test_load_radiance_sensor(speos: Speos):
+    """Test load of radiance sensor."""
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Radiance.1.speos" / "Radiance.1.speos"),
+    )
+    sensors = p.find(name=".*", name_regex=True, feature_type=SensorRadiance)
+    defaults = RadianceSensorParameters()
+    assert len(sensors) == 4
+    sensor_color = sensors[3]
+    sensor_photo = sensors[0]
+    sensor_spectral = sensors[2]
+    sensor_radio = sensors[1]
+    assert isinstance(sensor_color, SensorRadiance)
+    assert isinstance(sensor_photo, SensorRadiance)
+    assert isinstance(sensor_spectral, SensorRadiance)
+    assert isinstance(sensor_radio, SensorRadiance)
+    assert sensor_color.type == "Colorimetric"
+    assert sensor_photo.type == "Photometric"
+    assert sensor_spectral.type == "Spectral"
+    assert sensor_radio.type == "Radiometric"
+    assert sensor_color.dimensions.x_start == -5
+    assert sensor_color.dimensions.x_end == 5
+    assert sensor_color.dimensions.x_sampling == 20
+    assert sensor_color.dimensions.y_start == -5
+    assert sensor_color.dimensions.y_end == 5
+    assert sensor_color.dimensions.y_sampling == 20
+    assert sensor_radio.dimensions.x_start == -5
+    assert sensor_radio.dimensions.x_end == 5
+    assert sensor_radio.dimensions.x_sampling == 20
+    assert sensor_radio.dimensions.y_start == -5
+    assert sensor_radio.dimensions.y_end == 5
+    assert sensor_radio.dimensions.y_sampling == 20
+    assert sensor_spectral.dimensions.x_start == -5
+    assert sensor_spectral.dimensions.x_end == 5
+    assert sensor_spectral.dimensions.x_sampling == 20
+    assert sensor_spectral.dimensions.y_start == -5
+    assert sensor_spectral.dimensions.y_end == 5
+    assert sensor_spectral.dimensions.y_sampling == 20
+    assert sensor_photo.dimensions.x_start == defaults.dimensions.x_start
+    assert sensor_photo.dimensions.x_end == defaults.dimensions.x_end
+    assert sensor_photo.dimensions.x_sampling == defaults.dimensions.x_sampling
+    assert sensor_photo.dimensions.y_start == defaults.dimensions.y_start
+    assert sensor_photo.dimensions.y_end == defaults.dimensions.y_end
+    assert sensor_photo.dimensions.y_sampling == defaults.dimensions.y_sampling
+    assert sensor_color.focal == 200
+    assert sensor_photo.focal == 250
+    assert sensor_spectral.focal == 200
+    assert sum(np.array(sensor_radio.observer_point) - np.array([0, 0, 20])) ** 2 < 1e-6
+    seq_layer = sensor_color.layer
+    face_layer = sensor_spectral.layer
+    assert isinstance(face_layer, BaseSensor.LayerTypeFace)
+    assert (
+        face_layer._layer_type_face.sca_filtering_mode
+        == face_layer._layer_type_face.EnumSCAFilteringType.IntersectedOneTime
+    )
+    assert sensor_radio.layer == LayerTypes.by_source
+    assert isinstance(seq_layer, BaseSensor.LayerTypeSequence)
+    assert sensor_photo.layer == "none"
+    assert seq_layer.maximum_nb_of_sequence == 10
+    assert isinstance(face_layer.layers[0], BaseSensor.FaceLayer)
+    assert (
+        seq_layer._layer_type_sequence.define_sequence_per
+        == seq_layer._layer_type_sequence.EnumSequenceType.Geometries
+    )
+    wl_range = sensor_color.set_type_colorimetric().set_wavelengths_range()
+    wl_defaults = WavelengthsRangeParameters()
+    assert wl_range.start == wl_defaults.start
+    assert wl_range.end == wl_defaults.end
+    assert wl_range.sampling == wl_defaults.sampling
+    wl_range = sensor_spectral.set_type_spectral().set_wavelengths_range()
+    assert wl_range.start == 380
+    assert wl_range.end == 780
+    assert wl_range.sampling == 21
+    assert sensor_photo.axis_system == ORIGIN
+    assert (
+        sum(
+            np.array(sensor_color.axis_system)
+            - np.array(
+                [
+                    0,
+                    0,
+                    2,
+                    np.sqrt(2) / 2,
+                    np.sqrt(2) / 2,
+                    0,
+                    -np.sqrt(2) / 2,
+                    np.sqrt(2) / 2,
+                    0,
+                    0,
+                    0,
+                    1,
+                ]
+            )
+        )
+        ** 2
+        < 1e-6
+    )
 
 
 @pytest.mark.supported_speos_versions(min=252)
