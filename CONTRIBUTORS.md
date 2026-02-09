@@ -26,3 +26,4 @@
 * [Roberto Pastor Muela](https://github.com/RobPasMue)
 * [Stefan Thöne](https://github.com/StefanThoene)
 * [Thomas Auzinger](https://github.com/ThomasAuzinger)
+* [ZachDerocher](https://github.com/ZachDerocher)
