@@ -1785,8 +1785,11 @@ class SourceSurface(BaseSource):
             elif isinstance(default_parameters.flux_type, LuminousFluxParameters):
                 self.set_flux().set_luminous()
                 self.set_flux().value = default_parameters.flux_type.value
-            elif isinstance(default_parameters.flux_type, LuminousFluxParameters):
+            elif isinstance(default_parameters.flux_type, RadiantFluxParameters):
                 self.set_flux().set_radiant()
+                self.set_flux().value = default_parameters.flux_type.value
+            elif isinstance(default_parameters.flux_type, IntensityFluxParameters):
+                self.set_flux().set_luminous_intensity()
                 self.set_flux().value = default_parameters.flux_type.value
             else:
                 raise ValueError(
