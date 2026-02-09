@@ -1545,6 +1545,107 @@ def test_load_radiance_sensor(speos: Speos):
     )
 
 
+def test_load_irradiance_sensor(speos: Speos):
+    """Test load of radiance sensor."""
+    p = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Irradiance.1.speos" / "Irradiance.1.speos"),
+    )
+    sensors = p.find(name=".*", name_regex=True, feature_type=SensorIrradiance)
+    defaults = RadianceSensorParameters()
+    assert len(sensors) == 5
+    sensor_default = sensors[0]
+    sensor_color = sensors[2]
+    sensor_photo = sensors[4]
+    sensor_spectral = sensors[3]
+    sensor_radio = sensors[1]
+    assert isinstance(sensor_color, SensorIrradiance)
+    assert isinstance(sensor_photo, SensorIrradiance)
+    assert isinstance(sensor_default, SensorIrradiance)
+    assert isinstance(sensor_spectral, SensorIrradiance)
+    assert isinstance(sensor_radio, SensorIrradiance)
+    assert sensor_color.type == "Colorimetric"
+    assert sensor_default.type == "Photometric"
+    assert sensor_photo.type == "Photometric"
+    assert sensor_spectral.type == "Spectral"
+    assert sensor_radio.type == "Radiometric"
+    assert sensor_color.dimensions.x_start == -10
+    assert sensor_color.dimensions.x_end == 10
+    assert sensor_color.dimensions.x_sampling == 10
+    assert sensor_color.dimensions.y_start == -10
+    assert sensor_color.dimensions.y_end == 10
+    assert sensor_color.dimensions.y_sampling == 10
+    assert sensor_radio.dimensions.x_start == -10
+    assert sensor_radio.dimensions.x_end == 10
+    assert sensor_radio.dimensions.x_sampling == 10
+    assert sensor_radio.dimensions.y_start == -10
+    assert sensor_radio.dimensions.y_end == 10
+    assert sensor_radio.dimensions.y_sampling == 10
+    assert sensor_spectral.dimensions.x_start == -10
+    assert sensor_spectral.dimensions.x_end == 10
+    assert sensor_spectral.dimensions.x_sampling == 10
+    assert sensor_spectral.dimensions.y_start == -10
+    assert sensor_spectral.dimensions.y_end == 10
+    assert sensor_spectral.dimensions.y_sampling == 10
+    assert sensor_photo.dimensions.x_start == defaults.dimensions.x_start
+    assert sensor_photo.dimensions.x_end == defaults.dimensions.x_end
+    assert sensor_photo.dimensions.x_sampling == defaults.dimensions.x_sampling
+    assert sensor_photo.dimensions.y_start == defaults.dimensions.y_start
+    assert sensor_photo.dimensions.y_end == defaults.dimensions.y_end
+    assert sensor_photo.dimensions.y_sampling == defaults.dimensions.y_sampling
+    assert sensor_default.dimensions.x_start == defaults.dimensions.x_start
+    assert sensor_default.dimensions.x_end == defaults.dimensions.x_end
+    assert sensor_default.dimensions.x_sampling == defaults.dimensions.x_sampling
+    assert sensor_default.dimensions.y_start == defaults.dimensions.y_start
+    assert sensor_default.dimensions.y_end == defaults.dimensions.y_end
+    assert sensor_default.dimensions.y_sampling == defaults.dimensions.y_sampling
+    assert sensor_default.layer == LayerTypes.none
+    assert sensor_radio.layer == LayerTypes.by_polarization
+    inc_layer = sensor_color.layer
+    assert isinstance(inc_layer, BaseSensor.LayerTypeIncidenceAngle)
+    assert inc_layer.sampling == 25
+    assert sensor_spectral.layer == LayerTypes.by_source
+    seq_layer = sensor_photo.layer
+    assert seq_layer.maximum_nb_of_sequence == 7
+    assert (
+        seq_layer._layer_type_sequence.define_sequence_per
+        == seq_layer._layer_type_sequence.EnumSequenceType.Geometries
+    )
+    wl_range = sensor_color.set_type_colorimetric().set_wavelengths_range()
+    wl_defaults = WavelengthsRangeParameters()
+    assert wl_range.start == 380
+    assert wl_range.end == 780
+    assert wl_range.sampling == 17
+    wl_range = sensor_spectral.set_type_spectral().set_wavelengths_range()
+    assert wl_range.start == wl_defaults.start
+    assert wl_range.end == wl_defaults.end
+    assert wl_range.sampling == wl_defaults.sampling
+    assert sensor_color.axis_system == ORIGIN
+    assert (
+        sum(
+            np.array(sensor_photo.axis_system)
+            - np.array(
+                [
+                    0,
+                    0,
+                    2,
+                    np.sqrt(2) / 2,
+                    np.sqrt(2) / 2,
+                    0,
+                    -np.sqrt(2) / 2,
+                    np.sqrt(2) / 2,
+                    0,
+                    0,
+                    0,
+                    1,
+                ]
+            )
+        )
+        ** 2
+        < 1e-6
+    )
+
+
 @pytest.mark.supported_speos_versions(min=252)
 def test_create_3d_irradiance_sensor(speos: Speos):
     """Test creation of 3d irradiance sensor."""
