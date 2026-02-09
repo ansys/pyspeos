@@ -30,7 +30,12 @@ import warnings
 
 from ansys.api.speos.spectrum.v1 import spectrum_pb2
 
-from ansys.speos.core.generic.constants import SPECTRUM
+from ansys.speos.core.generic.parameters import (
+    SpectrumBlackBodyParameters,
+    SpectrumLibraryParameters,
+    SpectrumMonochromaticParameters,
+    SpectrumSampledParameters,
+)
 from ansys.speos.core.kernel.client import SpeosClient
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_dict
 from ansys.speos.core.kernel.spectrum import ProtoSpectrum
@@ -86,7 +91,7 @@ class Spectrum:
         def __init__(
             self,
             monochromatic: spectrum_pb2.Spectrum.Monochromatic,
-            default_values: bool = True,
+            default_values: Optional[SpectrumMonochromaticParameters] = None,
             stable_ctr: bool = False,
         ):
             if not stable_ctr:
@@ -94,8 +99,8 @@ class Spectrum:
                 raise RuntimeError(msg)
             self._monochromatic = monochromatic
 
-            if default_values:
-                self.wavelength = SPECTRUM.MONOCHROMATIC.WAVELENGTH
+            if default_values is not None:
+                self.wavelength = default_values.wavelength
 
         @property
         def wavelength(self) -> float:
@@ -140,7 +145,7 @@ class Spectrum:
         def __init__(
             self,
             blackbody: spectrum_pb2.Spectrum.BlackBody,
-            default_values: bool = True,
+            default_values: Optional[SpectrumBlackBodyParameters] = None,
             stable_ctr: bool = False,
         ):
             if not stable_ctr:
@@ -148,8 +153,8 @@ class Spectrum:
                 raise RuntimeError(msg)
             self._blackbody = blackbody
 
-            if default_values:
-                self.temperature = SPECTRUM.BLACKBODY.TEMPERATURE
+            if default_values is not None:
+                self.temperature = default_values.temperature
 
         @property
         def temperature(self) -> float:
@@ -195,15 +200,17 @@ class Spectrum:
         def __init__(
             self,
             sampled: spectrum_pb2.Spectrum.Sampled,
-            default_values: bool = True,
+            default_values: Optional[SpectrumSampledParameters] = None,
             stable_ctr: bool = False,
         ):
             if not stable_ctr:
                 msg = "Sampled class instantiated outside of class scope"
                 raise RuntimeError(msg)
             self._sampled = sampled
-            # if default_values:
-            #
+
+            if default_values is not None:
+                self.wavelength = default_values.wavelengths
+                self.values = default_values.values
 
         @property
         def wavelengths(self) -> List[float]:
@@ -269,7 +276,7 @@ class Spectrum:
         def __init__(
             self,
             library: spectrum_pb2.Spectrum.Library,
-            default_values: bool = True,
+            default_values: Optional[SpectrumLibraryParameters] = None,
             stable_ctr: bool = False,
         ):
             if not stable_ctr:
@@ -277,8 +284,8 @@ class Spectrum:
                 raise RuntimeError(msg)
             self._library = library
 
-            if default_values:
-                self.file_uri = ""
+            if default_values is not None:
+                self.file_uri = default_values.file_uri
 
         @property
         def file_uri(self) -> str:
@@ -341,13 +348,13 @@ class Spectrum:
         if self._type is None and self._spectrum.HasField("monochromatic"):
             self._type = Spectrum.Monochromatic(
                 monochromatic=self._spectrum.monochromatic,
-                default_values=False,
+                default_values=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._type, Spectrum.Monochromatic):
             self._type = Spectrum.Monochromatic(
                 monochromatic=self._spectrum.monochromatic,
-                default_values=True,
+                default_values=SpectrumMonochromaticParameters(),
                 stable_ctr=True,
             )
         elif self._type._monochromatic is not self._spectrum.monochromatic:
@@ -365,13 +372,13 @@ class Spectrum:
         if self._type is None and self._spectrum.HasField("blackbody"):
             self._type = Spectrum.Blackbody(
                 blackbody=self._spectrum.blackbody,
-                default_values=False,
+                default_values=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._type, Spectrum.Blackbody):
             self._type = Spectrum.Blackbody(
                 blackbody=self._spectrum.blackbody,
-                default_values=True,
+                default_values=SpectrumBlackBodyParameters(),
                 stable_ctr=True,
             )
         elif self._type._blackbody is not self._spectrum.blackbody:
@@ -391,13 +398,13 @@ class Spectrum:
         if self._type is None and self._spectrum.HasField("sampled"):
             self._type = Spectrum.Sampled(
                 sampled=self._spectrum.sampled,
-                default_values=False,
+                default_values=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._type, Spectrum.Sampled):
             self._type = Spectrum.Sampled(
                 sampled=self._spectrum.sampled,
-                default_values=True,
+                default_values=SpectrumSampledParameters(),
                 stable_ctr=True,
             )
         elif self._type._sampled is not self._spectrum.sampled:
@@ -420,13 +427,13 @@ class Spectrum:
         if self._type is None and self._spectrum.HasField("library"):
             self._type = Spectrum.Library(
                 library=self._spectrum.library,
-                default_values=False,
+                default_values=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._type, Spectrum.Library):
             self._type = Spectrum.Library(
                 library=self._spectrum.library,
-                default_values=True,
+                default_values=SpectrumLibraryParameters(),
                 stable_ctr=True,
             )
         elif self._type._library is not self._spectrum.library:

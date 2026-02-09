@@ -536,7 +536,7 @@ class IntensityOrientationType(str, Enum):
 
 
 @dataclass
-class IntensitLibraryParameters:
+class IntensityLibraryParameters:
     """Intensity Library parameters."""
 
     intensity_file_uri: Union[str, Path] = ""
@@ -579,7 +579,7 @@ class SurfaceSourceParameters:
         IntensityCosParameters,
         IntensitySymmetricGaussianParameters,
         IntensitAsymmetricGaussianParameters,
-        IntensitLibraryParameters,
+        IntensityLibraryParameters,
     ] = field(default_factory=lambda: IntensityLambertianParameters())
     spectrum_type: Union[
         SpectrumBlackBodyParameters, SpectrumLibraryParameters, SpectrumMonochromaticParameters
