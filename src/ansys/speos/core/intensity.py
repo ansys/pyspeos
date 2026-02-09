@@ -121,6 +121,10 @@ class Intensity:
                             self.set_orientation_axis_system(
                                 default_values.orientation_type.axis_system
                             )
+                        else:
+                            raise ValueError(
+                                f"Incorrect library intensity type: {type(default_values).__name__}"
+                            )
 
         @property
         def intensity_file_uri(self) -> str:
@@ -263,6 +267,10 @@ class Intensity:
                     self.fwhm_angle_y = default_values.fwhm_y
                     self.total_angle = default_values.total_angle
                     self.axis_system = default_values.axis_system
+                else:
+                    raise ValueError(
+                        f"Incorrect gaussian intensity type: {type(default_values).__name__}"
+                    )
 
         @property
         def fwhm_angle_x(self) -> float:
@@ -379,6 +387,10 @@ class Intensity:
                 elif isinstance(default_values, IntensityCosParameters):
                     self.n = default_values.n
                     self.total_angle = default_values.total_angle
+                else:
+                    raise ValueError(
+                        f"Incorrect cos intensity type: {type(default_values).__name__}"
+                    )
 
         @property
         def n(self) -> float:

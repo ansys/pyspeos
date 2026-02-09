@@ -49,29 +49,18 @@ from ansys.speos.core.generic.parameters import (
     AmbientNaturalLightParameters,
     AutomaticSunParameters,
     ColorSpaceType,
-    ConstantExitanceParameters,
     FluxFromFileParameters,
-    IntensitAsymmetricGaussianParameters,
-    IntensityCosParameters,
     IntensityFluxParameters,
-    IntensityLambertianParameters,
-    IntensityLibraryParameters,
-    IntensityOrientationAxisSystemParameters,
     IntensityOrientationType,
-    IntensitySymmetricGaussianParameters,
     LuminaireSourceParameters,
     LuminousFluxParameters,
     ManualSunParameters,
     RadiantFluxParameters,
     RayFileSourceParameters,
-    SpectrumBlackBodyParameters,
-    SpectrumLibraryParameters,
-    SpectrumMonochromaticParameters,
     SpectrumType,
     SurfaceSourceParameters,
     UserDefinedColorSpaceParameters,
     UserDefinedWhitePointParameters,
-    VariableExitanceParameters,
     WhitePointType,
 )
 from ansys.speos.core.generic.visualization_methods import _VisualArrow, _VisualData
@@ -990,18 +979,19 @@ class SourceLuminaire(BaseSource):
         if default_parameters is not None:
             # New Default values
             self.intensity_file_uri = default_parameters.intensity_file_uri
-            if isinstance(default_parameters.flux_type, FluxFromFileParameters):
-                self.set_flux_from_intensity_file()
-            elif isinstance(default_parameters.flux_type, LuminousFluxParameters):
-                self.set_flux().set_luminous()
-                self.set_flux().value = default_parameters.flux_type.value
-            elif isinstance(default_parameters.flux_type, RadiantFluxParameters):
-                self.set_flux().set_radiant()
-                self.set_flux().value = default_parameters.flux_type.value
-            else:
-                raise ValueError(
-                    f"Unsupported flux type: {type(default_parameters.flux_type).__name__}"
-                )
+            match type(default_parameters.flux_type).__name__:
+                case "FluxFromFileParameters":
+                    self.set_flux_from_intensity_file()
+                case "LuminousFluxParameters":
+                    self.set_flux().set_luminous()
+                    self.set_flux().value = default_parameters.flux_type.value
+                case "RadiantFluxParameters":
+                    self.set_flux().set_radiant()
+                    self.set_flux().value = default_parameters.flux_type.value
+                case _:
+                    raise ValueError(
+                        f"Unsupported flux type: {type(default_parameters.flux_type).__name__}"
+                    )
 
             match default_parameters.spectrum_type:
                 case SpectrumType.incandescent:
@@ -1019,20 +1009,21 @@ class SourceLuminaire(BaseSource):
                 case SpectrumType.high_pressure_sodium:
                     self.set_spectrum().set_highpressuresodium()
                 case _:
-                    if isinstance(default_parameters.spectrum_type, SpectrumLibraryParameters):
-                        self.set_spectrum().set_library().file_uri = (
-                            default_parameters.spectrum_type.file_uri
-                        )
-                    elif isinstance(default_parameters.spectrum_type, SpectrumBlackBodyParameters):
-                        self.set_spectrum().set_blackbody().temperature = (
-                            default_parameters.spectrum_type.temperature
-                        )
-                    else:
-                        raise ValueError(
-                            "Unsupported spectrum type: {}".format(
-                                type(default_parameters.spectrum_type).__name__
+                    match type(default_parameters.spectrum_type).__name__:
+                        case "SpectrumLibraryParameters":
+                            self.set_spectrum().set_library().file_uri = (
+                                default_parameters.spectrum_type.file_uri
                             )
-                        )
+                        case "SpectrumBlackBodyParameters":
+                            self.set_spectrum().set_blackbody().temperature = (
+                                default_parameters.spectrum_type.temperature
+                            )
+                        case _:
+                            raise ValueError(
+                                "Unsupported spectrum type: {}".format(
+                                    type(default_parameters.spectrum_type).__name__
+                                )
+                            )
             self.axis_system = default_parameters.axis_system
 
     @property
@@ -1302,40 +1293,42 @@ class SourceRayFile(BaseSource):
 
         if default_parameters is not None:
             self.ray_file_uri = default_parameters.ray_file_uri
-            if isinstance(default_parameters.flux_type, FluxFromFileParameters):
-                self.set_flux_from_ray_file()
-            elif isinstance(default_parameters.flux_type, LuminousFluxParameters):
-                self.set_flux().set_luminous()
-                self.set_flux().value = default_parameters.flux_type.value
-            elif isinstance(default_parameters.flux_type, RadiantFluxParameters):
-                self.set_flux().set_radiant()
-                self.set_flux().value = default_parameters.flux_type.value
-            else:
-                raise ValueError(
-                    f"Unsupported flux type: {type(default_parameters.flux_type).__name__}"
-                )
+            match type(default_parameters.flux_type).__name__:
+                case "FluxFromFileParameters":
+                    self.set_flux_from_ray_file()
+                case "LuminousFluxParameters":
+                    self.set_flux().set_luminous()
+                    self.set_flux().value = default_parameters.flux_type.value
+                case "RadiantFluxParameters":
+                    self.set_flux().set_radiant()
+                    self.set_flux().value = default_parameters.flux_type.value
+                case _:
+                    raise ValueError(
+                        f"Unsupported flux type: {type(default_parameters.flux_type).__name__}"
+                    )
 
             self.axis_system = default_parameters.axis_system
 
             if default_parameters.spectrum_type is not None:
-                if isinstance(default_parameters.spectrum_type, SpectrumBlackBodyParameters):
-                    self.set_spectrum().set_blackbody().temperature = (
-                        default_parameters.spectrum_type.temperature
-                    )
-                elif isinstance(default_parameters.spectrum_type, SpectrumLibraryParameters):
-                    self.set_spectrum().set_library().file_uri = (
-                        default_parameters.spectrum_type.file_uri
-                    )
-                elif isinstance(default_parameters.spectrum_type, SpectrumMonochromaticParameters):
-                    self.set_spectrum().set_monochromatic().wavelength = (
-                        default_parameters.spectrum_type.wavelength
-                    )
-                else:
-                    raise ValueError(
-                        "Unsupported spectrum type: {}".format(
-                            type(default_parameters.spectrum_type).__name__
+                match type(default_parameters.spectrum_type).__name__:
+                    case "SpectrumBlackBodyParameters":
+                        self.set_spectrum().set_blackbody().temperature = (
+                            default_parameters.spectrum_type.temperature
                         )
-                    )
+                    case "SpectrumLibraryParameters":
+                        self.set_spectrum().set_library().file_uri = (
+                            default_parameters.spectrum_type.file_uri
+                        )
+                    case "SpectrumMonochromaticParameters":
+                        self.set_spectrum().set_monochromatic().wavelength = (
+                            default_parameters.spectrum_type.wavelength
+                        )
+                    case _:
+                        raise ValueError(
+                            "Unsupported spectrum type: {}".format(
+                                type(default_parameters.spectrum_type).__name__
+                            )
+                        )
 
             if default_parameters.exit_geometry is not None:
                 self.set_exit_geometries().geometries = default_parameters.exit_geometry
@@ -1780,132 +1773,130 @@ class SourceSurface(BaseSource):
 
         if default_parameters is not None:
             # Flux
-            if isinstance(default_parameters.flux_type, FluxFromFileParameters):
-                self.set_flux_from_intensity_file()
-            elif isinstance(default_parameters.flux_type, LuminousFluxParameters):
-                self.set_flux().set_luminous()
-                self.set_flux().value = default_parameters.flux_type.value
-            elif isinstance(default_parameters.flux_type, RadiantFluxParameters):
-                self.set_flux().set_radiant()
-                self.set_flux().value = default_parameters.flux_type.value
-            elif isinstance(default_parameters.flux_type, IntensityFluxParameters):
-                self.set_flux().set_luminous_intensity()
-                self.set_flux().value = default_parameters.flux_type.value
-            else:
-                raise ValueError(
-                    f"Unsupported flux type: {type(default_parameters.flux_type).__name__}"
-                )
+            match type(default_parameters.flux_type).__name__:
+                case "FluxFromFileParameters":
+                    self.set_flux_from_intensity_file()
+                case "LuminousFluxParameters":
+                    self.set_flux().set_luminous()
+                    self.set_flux().value = default_parameters.flux_type.value
+                case "RadiantFluxParameters":
+                    self.set_flux().set_radiant()
+                    self.set_flux().value = default_parameters.flux_type.value
+                case "IntensityFluxParameters":
+                    self.set_flux().set_luminous_intensity()
+                    self.set_flux().value = default_parameters.flux_type.value
+                case _:
+                    raise ValueError(
+                        f"Unsupported flux type: {type(default_parameters.flux_type).__name__}"
+                    )
 
             # Exitance
-            if isinstance(default_parameters.exitance_type, VariableExitanceParameters):
-                self.set_exitance_variable().xmp_file_uri = (
-                    default_parameters.exitance_type.xmp_file_uri
-                )
-                self.set_exitance_variable().axis_plane = (
-                    default_parameters.exitance_type.axis_system
-                )
-            elif isinstance(default_parameters.exitance_type, ConstantExitanceParameters):
-                self.geometries = default_parameters.exitance_type.emissive_faces
-            else:
-                raise ValueError(
-                    "Unsupported exitance type: {}".format(
-                        type(default_parameters.exitance_type).__name__
+            match type(default_parameters.exitance_type).__name__:
+                case "VariableExitanceParameters":
+                    self.set_exitance_variable().xmp_file_uri = (
+                        default_parameters.exitance_type.xmp_file_uri
                     )
-                )
+                    self.set_exitance_variable().axis_plane = (
+                        default_parameters.exitance_type.axis_system
+                    )
+                case "ConstantExitanceParameters":
+                    self.geometries = default_parameters.exitance_type.emissive_faces
+                case _:
+                    raise ValueError(
+                        "Unsupported exitance type: {}".format(
+                            type(default_parameters.exitance_type).__name__
+                        )
+                    )
 
             # Spectrum
-            if isinstance(default_parameters.spectrum_type, SpectrumBlackBodyParameters):
-                self.set_spectrum().set_blackbody().temperature = (
-                    default_parameters.spectrum_type.temperature
-                )
-            elif isinstance(default_parameters.spectrum_type, SpectrumLibraryParameters):
-                self.set_spectrum().set_library().file_uri = (
-                    default_parameters.spectrum_type.file_uri
-                )
-            elif isinstance(default_parameters.spectrum_type, SpectrumMonochromaticParameters):
-                self.set_spectrum().set_monochromatic().wavelength = (
-                    default_parameters.spectrum_type.wavelength
-                )
-            else:
-                raise ValueError(
-                    "Unsupported spectrum type: {}".format(
-                        type(default_parameters.spectrum_type).__name__
+            match type(default_parameters.spectrum_type).__name__:
+                case "SpectrumBlackBodyParameters":
+                    self.set_spectrum().set_blackbody().temperature = (
+                        default_parameters.spectrum_type.temperature
                     )
-                )
+                case "SpectrumLibraryParameters":
+                    self.set_spectrum().set_library().file_uri = (
+                        default_parameters.spectrum_type.file_uri
+                    )
+                case "SpectrumMonochromaticParameters":
+                    self.set_spectrum().set_monochromatic().wavelength = (
+                        default_parameters.spectrum_type.wavelength
+                    )
+                case _:
+                    raise ValueError(
+                        "Unsupported spectrum type: {}".format(
+                            type(default_parameters.spectrum_type).__name__
+                        )
+                    )
 
             # Intensity
-            if isinstance(default_parameters.intensity_type, IntensityLambertianParameters):
-                self.set_intensity().set_cos().n = 1
-                self.set_intensity().set_cos().total_angle = (
-                    default_parameters.intensity_type.total_angle
-                )
-            elif isinstance(default_parameters.intensity_type, IntensityCosParameters):
-                self.set_intensity().set_cos().n = default_parameters.intensity_type.n
-                self.set_intensity().set_cos().total_angle = (
-                    default_parameters.intensity_type.total_angle
-                )
-            elif isinstance(
-                default_parameters.intensity_type, IntensitySymmetricGaussianParameters
-            ):
-                self.set_intensity().set_gaussian().fwhm_angle_x = (
-                    default_parameters.intensity_type.fwhm
-                )
-                self.set_intensity().set_gaussian().fwhm_angle_y = (
-                    default_parameters.intensity_type.fwhm
-                )
-                self.set_intensity().set_gaussian().total_angle = (
-                    default_parameters.intensity_type.total_angle
-                )
-            elif isinstance(
-                default_parameters.intensity_type, IntensitAsymmetricGaussianParameters
-            ):
-                self.set_intensity().set_gaussian().fwhm_angle_x = (
-                    default_parameters.intensity_type.fwhm_x
-                )
-                self.set_intensity().set_gaussian().fwhm_angle_y = (
-                    default_parameters.intensity_type.fwhm_y
-                )
-                self.set_intensity().set_gaussian().total_angle = (
-                    default_parameters.intensity_type.total_angle
-                )
-                self.set_intensity().set_gaussian().axis_system = (
-                    default_parameters.intensity_type.axis_system
-                )
-            elif isinstance(default_parameters.intensity_type, IntensityLibraryParameters):
-                self.set_intensity().set_library().file_uri = (
-                    default_parameters.intensity_type.intensity_file_uri
-                )
-                if default_parameters.intensity_type.exit_geometry is not None:
-                    self.set_intensity().set_library().exit_geometry = (
-                        default_parameters.intensity_type.exit_geometry
+            match type(default_parameters.intensity_type).__name__:
+                case "IntensityLambertianParameters":
+                    self.set_intensity().set_cos().n = 1
+                    self.set_intensity().set_cos().total_angle = (
+                        default_parameters.intensity_type.total_angle
                     )
-                match default_parameters.intensity_type.orientation_type:
-                    case IntensityOrientationType.normal_to_uv:
-                        self.set_intensity().set_library().set_orientation_normal_to_uv_map()
-                    case IntensityOrientationType.normal_to_surface:
-                        self.set_intensity().set_library().set_orientation_normal_to_surface()
-                    case _:
-                        if isinstance(
-                            default_parameters.intensity_type.orientation_type,
-                            IntensityOrientationAxisSystemParameters,
-                        ):
-                            self.set_intensity().set_library().set_orientation_axis_system(
-                                default_parameters.intensity_type.orientation_type.axis_system
-                            )
-                        else:
-                            raise ValueError(
-                                "Unsupported orientation type: {}".format(
-                                    type(
-                                        default_parameters.intensity_type.orientation_type
-                                    ).__name__
-                                )
-                            )
-            else:
-                raise ValueError(
-                    "Unsupported intensity type: {}".format(
-                        type(default_parameters.intensity_type).__name__
+                case "IntensityCosParameters":
+                    self.set_intensity().set_cos().n = default_parameters.intensity_type.n
+                    self.set_intensity().set_cos().total_angle = (
+                        default_parameters.intensity_type.total_angle
                     )
-                )
+                case "IntensitySymmetricGaussianParameters":
+                    self.set_intensity().set_gaussian().fwhm_angle_x = (
+                        default_parameters.intensity_type.fwhm
+                    )
+                    self.set_intensity().set_gaussian().fwhm_angle_y = (
+                        default_parameters.intensity_type.fwhm
+                    )
+                    self.set_intensity().set_gaussian().total_angle = (
+                        default_parameters.intensity_type.total_angle
+                    )
+                case "IntensitAsymmetricGaussianParameters":
+                    self.set_intensity().set_gaussian().fwhm_angle_x = (
+                        default_parameters.intensity_type.fwhm_x
+                    )
+                    self.set_intensity().set_gaussian().fwhm_angle_y = (
+                        default_parameters.intensity_type.fwhm_y
+                    )
+                    self.set_intensity().set_gaussian().total_angle = (
+                        default_parameters.intensity_type.total_angle
+                    )
+                    self.set_intensity().set_gaussian().axis_system = (
+                        default_parameters.intensity_type.axis_system
+                    )
+                case "IntensityLibraryParameters":
+                    self.set_intensity().set_library().file_uri = (
+                        default_parameters.intensity_type.intensity_file_uri
+                    )
+                    if default_parameters.intensity_type.exit_geometry is not None:
+                        self.set_intensity().set_library().exit_geometry = (
+                            default_parameters.intensity_type.exit_geometry
+                        )
+                    match default_parameters.intensity_type.orientation_type:
+                        case IntensityOrientationType.normal_to_uv:
+                            self.set_intensity().set_library().set_orientation_normal_to_uv_map()
+                        case IntensityOrientationType.normal_to_surface:
+                            self.set_intensity().set_library().set_orientation_normal_to_surface()
+                        case _:
+                            match type(default_parameters.intensity_type.orientation_type).__name__:
+                                case "IntensityOrientationAxisSystemParameters":
+                                    self.set_intensity().set_library().set_orientation_axis_system(
+                                        default_parameters.intensity_type.orientation_type.axis_system
+                                    )
+                                case _:
+                                    raise ValueError(
+                                        "Unsupported orientation type: {}".format(
+                                            type(
+                                                default_parameters.intensity_type.orientation_type
+                                            ).__name__
+                                        )
+                                    )
+                case _:
+                    raise ValueError(
+                        "Unsupported intensity type: {}".format(
+                            type(default_parameters.intensity_type).__name__
+                        )
+                    )
 
     @property
     def visual_data(self) -> _VisualData:
