@@ -22,13 +22,7 @@
 
 """Collection of all constants used in pySpeos."""
 
-from dataclasses import dataclass, field
-from enum import Enum
 import os
-from pathlib import Path
-from typing import Optional, Union
-
-from ansys.speos.core.geo_ref import GeoRef
 
 DEFAULT_HOST: str = "localhost"
 """Default host used by Speos RPC server and client """
@@ -46,105 +40,6 @@ By default, 4194304.
 """
 ORIGIN = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 """Global Origin"""
-
-
-class SPECTRUM:
-    """Constant class for Spectrum."""
-
-    class MONOCHROMATIC:
-        """Constant class for Monochromatic."""
-
-        WAVELENGTH = 555
-
-    class BLACKBODY:
-        """Constant class for BlackBody."""
-
-        TEMPERATURE = 2856
-
-
-class SOURCE:
-    """Constant class for Sources."""
-
-    class LUMINOUS:
-        """Constant class for Luminous."""
-
-        VALUE = 683
-
-    class RADIANT:
-        """Constant class for Radiant."""
-
-        VALUE = 1
-
-    class INTENSITY:
-        """Constant class for Intensity."""
-
-        VALUE = 5
-
-
-class FluxType(Enum):
-    """Enum representing the type of flux."""
-
-    LUMINOUS = "luminous"
-    RADIANT = "radiant"
-    FROM_FILE = "from_file"
-    INTENSITY = "intensity"
-
-
-@dataclass
-class SourceRayfileParameters:
-    """Constant class for SourceRayfileParameters."""
-
-    ray_file_uri: Union[str, Path] = ""
-    flux_type: FluxType = FluxType.FROM_FILE
-    flux_value: Optional[float] = None
-    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
-    exit_geometry: Optional[GeoRef] = None
-
-    def __post_init__(self):
-        """Verify the dataclass initiation."""
-        # Validation: restrict flux_type
-        if self.flux_type not in {FluxType.FROM_FILE, FluxType.LUMINOUS, FluxType.RADIANT}:
-            raise ValueError(
-                f"Invalid flux_type '{self.flux_type}'. Must be FROM_FILE, LUMINOUS, or RADIANT."
-            )
-
-        # Set default flux_value based on flux_type (only if not manually provided)
-        if self.flux_value is None:
-            match self.flux_type:
-                case FluxType.LUMINOUS:
-                    self.flux_value = 683
-                case FluxType.RADIANT:
-                    self.flux_value = 1
-                case FluxType.FROM_FILE:
-                    self.flux_value = 0.0
-
-
-@dataclass
-class SourceLuminaireParameters:
-    """Constant class for SourceLuminaireParamters."""
-
-    intensity_file_uri: Union[str, Path] = ""
-    flux_type: FluxType = FluxType.FROM_FILE
-    flux_value: Optional[float] = None
-    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
-
-    def __post_init__(self) -> None:
-        """Verify the dataclass initiation."""
-        # Validation: restrict flux_type
-        if self.flux_type not in {FluxType.FROM_FILE, FluxType.LUMINOUS, FluxType.RADIANT}:
-            raise ValueError(
-                f"Invalid flux_type '{self.flux_type}'. Must be FROM_FILE, LUMINOUS, or RADIANT."
-            )
-
-        # Set default flux_value based on flux_type (only if not manually provided)
-        if self.flux_value is None:
-            match self.flux_type:
-                case FluxType.LUMINOUS:
-                    self.flux_value = 683
-                case FluxType.RADIANT:
-                    self.flux_value = 1
-                case FluxType.FROM_FILE:
-                    self.flux_value = 0.0
 
 
 class SENSOR:
