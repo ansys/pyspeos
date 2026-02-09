@@ -410,6 +410,14 @@ class FluxFromFileParameters:
 
 
 @dataclass
+class SpectrumSampledParameters:
+    """Spectrum sampled parameters."""
+
+    wavelengths: list[float] = field(default_factory=lambda: [400.0, 700.0])
+    values: list[float] = field(default_factory=lambda: [100.0, 100.0])
+
+
+@dataclass
 class SpectrumLibraryParameters:
     """Spectrum library parameters."""
 
