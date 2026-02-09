@@ -171,7 +171,13 @@ class Project:
         description: str = "",
         feature_type: type = SourceSurface,
         metadata: Optional[Mapping[str, str]] = None,
-        parameters: Optional[LuminaireSourceParameters,] = None,
+        parameters: Optional[
+            LuminaireSourceParameters,
+            SurfaceSourceParameters,
+            RayFileSourceParameters,
+            AmbientNaturalLightParameters,
+            AmbientEnvironmentParameters,
+        ] = None,
     ) -> Union[
         SourceSurface,
         SourceRayFile,
@@ -199,6 +205,15 @@ class Project:
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
+        parameters: Optional[
+            LuminaireSourceParameters,
+            SurfaceSourceParameters,
+            RayFileSourceParameters,
+            AmbientNaturalLightParameters,
+            AmbientEnvironmentParameters,
+        ]
+            default feature parameter.
+            By default, None which will be from generic.Parameters.
 
         Returns
         -------

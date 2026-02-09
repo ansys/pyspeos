@@ -226,7 +226,13 @@ class BaseSource:
 
         @property
         def red_spectrum(self) -> dict:
-            """Get red spectrum.
+            """Property of red spectrum.
+
+            Parameters
+            ----------
+            red_spectrum_file_uri: str
+                Red spectrum file uri.
+
 
             Returns
             -------
@@ -238,17 +244,6 @@ class BaseSource:
 
         @red_spectrum.setter
         def red_spectrum(self, red_spectrum_file_uri: str) -> None:
-            """Set red spectrum.
-
-            Parameters
-            ----------
-            red_spectrum_file_uri: str
-                Red spectrum file uri.
-
-            Returns
-            -------
-            None
-            """
             if self._red_spectrum._message_to_complete is not self._userdefined_color_space:
                 # Happens in case of feature reset (to be sure to always modify correct data)
                 self._red_spectrum._message_to_complete = self._userdefined_color_space
@@ -259,7 +254,12 @@ class BaseSource:
 
         @property
         def green_spectrum(self) -> dict:
-            """Get green spectrum.
+            """Property of the green spectrum.
+
+            Parameters
+            ----------
+            green_spectrum_file_uri: str
+                Green spectrum file uri.
 
             Returns
             -------
@@ -271,17 +271,6 @@ class BaseSource:
 
         @green_spectrum.setter
         def green_spectrum(self, green_spectrum_file_uri: str) -> None:
-            """Set green spectrum.
-
-            Parameters
-            ----------
-            green_spectrum_file_uri: str
-                Green spectrum file uri.
-
-            Returns
-            -------
-            None
-            """
             if self._green_spectrum._message_to_complete is not self._userdefined_color_space:
                 # Happens in case of feature reset (to be sure to always modify correct data)
                 self._green_spectrum._message_to_complete = self._userdefined_color_space
@@ -292,7 +281,12 @@ class BaseSource:
 
         @property
         def blue_spectrum(self) -> dict:
-            """Get blue spectrum.
+            """Property of blue spectrum.
+
+            Parameters
+            ----------
+            blue_spectrum_file_uri: str
+                Blue spectrum file uri.
 
             Returns
             -------
@@ -304,17 +298,6 @@ class BaseSource:
 
         @blue_spectrum.setter
         def blue_spectrum(self, blue_spectrum_file_uri: str) -> None:
-            """Set blue spectrum.
-
-            Parameters
-            ----------
-            blue_spectrum_file_uri: str
-                Blue spectrum file uri.
-
-            Returns
-            -------
-            None
-            """
             if self._blue_spectrum._message_to_complete is not self._userdefined_color_space:
                 # Happens in case of feature reset (to be sure to always modify correct data)
                 self._blue_spectrum._message_to_complete = self._userdefined_color_space
@@ -610,7 +593,12 @@ class BaseSource:
 
         @property
         def value(self) -> float:
-            """Get flux type's value.
+            """Property of flux type's value.
+
+            Parameters
+            ----------
+            value: float
+                Value of the flux.
 
             Returns
             -------
@@ -630,18 +618,6 @@ class BaseSource:
 
         @value.setter
         def value(self, value: float) -> None:
-            """Set flux type's value.
-
-            Parameters
-            ----------
-            value: float
-                Value of the flux.
-
-            Returns
-            -------
-            None
-
-            """
             match self._flux_type.__name__:
                 case "Luminous":
                     self._flux.luminous_flux.luminous_value = value
@@ -1128,7 +1104,12 @@ class SourceLuminaire(BaseSource):
 
     @property
     def intensity_file_uri(self) -> str:
-        """Get intensity file.
+        """Property of intensity file.
+
+        Parameters
+        ----------
+        uri : Union[str, Path]
+            IES or EULUMDAT format file uri.
 
         Returns
         -------
@@ -1139,17 +1120,6 @@ class SourceLuminaire(BaseSource):
 
     @intensity_file_uri.setter
     def intensity_file_uri(self, uri: Union[str, Path]) -> None:
-        """Set intensity file.
-
-        Parameters
-        ----------
-        uri : Union[str, Path]
-            IES or EULUMDAT format file uri.
-
-        Returns
-        -------
-        None
-        """
         self._source_template.luminaire.intensity_file_uri = str(uri)
 
     def set_spectrum(self) -> Spectrum:
@@ -1167,7 +1137,13 @@ class SourceLuminaire(BaseSource):
 
     @property
     def axis_system(self) -> list[float]:
-        """Get the position of the source.
+        """Property of the position of the source.
+
+        Parameters
+        ----------
+        axis_system : List[float]
+            Position of the source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
         Returns
         -------
@@ -1179,18 +1155,6 @@ class SourceLuminaire(BaseSource):
 
     @axis_system.setter
     def axis_system(self, axis_system: list[float]) -> None:
-        """Set the position of the source.
-
-        Parameters
-        ----------
-        axis_system : List[float]
-            Position of the source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
-            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
-
-        Returns
-        -------
-        None
-        """
         self._source_instance.luminaire_properties.axis_system[:] = axis_system
 
 
