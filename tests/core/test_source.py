@@ -30,7 +30,6 @@ import pytest
 from ansys.speos.core import GeoRef, Project, Speos
 from ansys.speos.core.generic.constants import (
     ORIGIN,
-    SOURCE,
 )
 from ansys.speos.core.generic.parameters import (
     AmbientEnvironmentParameters,
@@ -189,7 +188,7 @@ def test_create_surface_source(speos: Speos):
     assert source1.source_template_link.get().surface.HasField("luminous_flux")
     assert (
         source1.source_template_link.get().surface.luminous_flux.luminous_value
-        == SOURCE.LUMINOUS.VALUE
+        == SurfaceSourceParameters().flux_type.value
     )
     assert source1.source_template_link.get().surface.HasField("spectrum_guid")
     spectrum = speos.client[source1.source_template_link.get().surface.spectrum_guid]
