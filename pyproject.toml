@@ -55,7 +55,7 @@ jupyter = [
     "ipywidgets",
     "pyvista[jupyter]>=0.43,<0.47",
     "ansys-tools-visualization-interface>=0.8.3",
-    "notebook==7.5.2",
+    "notebook==7.5.3",
 ]
 doc = [
     "ansys-sphinx-theme[autoapi]==1.6.4",
