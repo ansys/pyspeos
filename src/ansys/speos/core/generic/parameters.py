@@ -66,7 +66,7 @@ class IntensitySensorDimensionsConoscopic:
 
     theta_max: float = 45
     """Maximum theta angle on consocopic type (in deg)."""
-    theta_sampling: float = 90
+    theta_sampling: int = 90
     """Sampling for consocopic type for theta."""
 
 
@@ -74,17 +74,17 @@ class IntensitySensorDimensionsConoscopic:
 class IntensitySensorDimensionsXAsMeridian:
     """Dataclass for Intensity Sensor dimension in case of x_as_meridian."""
 
-    y_start = -30
+    y_start: float = -30
     """Lower bound y axis."""
-    y_end = 30
+    y_end: float = 30
     """Upper bound y axis."""
-    y_sampling = 120
+    y_sampling: int = 120
     """Sampling y axis."""
-    x_start = -45
+    x_start: float = -45
     """Lower bound x axis."""
-    x_end = 45
+    x_end: float = 45
     """Upper bound x axis."""
-    x_sampling = 180
+    x_sampling: int = 180
     """Sampling x axis."""
 
 
@@ -92,17 +92,17 @@ class IntensitySensorDimensionsXAsMeridian:
 class IntensitySensorDimensionsXAsParallel:
     """Dataclass for Intensity Sensor dimension in case of x_as_parallel."""
 
-    x_start = -30
+    x_start: float = -30
     """Lower bound y axis."""
-    x_end = 30
+    x_end: float = 30
     """Upper bound y axis."""
-    x_sampling = 120
+    x_sampling: int = 120
     """Sampling y axis."""
-    y_start = -45
+    y_start: float = -45
     """Lower bound x axis."""
-    y_end = 45
+    y_end: float = 45
     """Upper bound x axis."""
-    y_sampling = 180
+    y_sampling: int = 180
     """Sampling x axis."""
 
 

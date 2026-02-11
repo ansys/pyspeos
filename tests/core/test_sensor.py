@@ -37,10 +37,24 @@ from ansys.speos.core.generic.parameters import (
     BalanceModeUserWhiteParameters,
     CameraSensorParameters,
     ColorimetricParameters,
+    DimensionsParameters,
+    IntegrationTypes,
+    IntensitySensorDimensionsConoscopic,
+    IntensitySensorDimensionsXAsMeridian,
+    IntensitySensorDimensionsXAsParallel,
+    IntensitySensorOrientationTypes,
+    IntensitySensorViewingTypes,
+    IntensityXMPSensorParameters,
     IrradianceSensorParameters,
+    LayerByFaceParameters,
+    LayerByIncidenceAngleParameters,
     LayerBySequenceParameters,
     LayerTypes,
+    NearfieldParameters,
     RadianceSensorParameters,
+    RayfileTypes,
+    SensorTypes,
+    SequenceTypes,
     SpectralParameters,
     WavelengthsRangeParameters,
 )
@@ -1406,6 +1420,8 @@ def test_load_intensity_sensor(speos: Speos):
     assert sensor_photo.type == "Photometric"
     assert sensor_spectral.type == "Spectral"
     assert sensor_radio.type == "Radiometric"
+    assert isinstance(sensor_color.colorimetric, BaseSensor.Colorimetric)
+    assert isinstance(sensor_spectral.spectral, BaseSensor.Spectral)
     seq_layer = sensor_spectral.layer
     face_layer = sensor_color.layer
     assert isinstance(face_layer, BaseSensor.LayerTypeFace)
@@ -1466,6 +1482,8 @@ def test_load_radiance_sensor(speos: Speos):
     assert sensor_photo.type == "Photometric"
     assert sensor_spectral.type == "Spectral"
     assert sensor_radio.type == "Radiometric"
+    assert isinstance(sensor_color.colorimetric, BaseSensor.Colorimetric)
+    assert isinstance(sensor_spectral.spectral, BaseSensor.Spectral)
     assert sensor_color.dimensions.x_start == -5
     assert sensor_color.dimensions.x_end == 5
     assert sensor_color.dimensions.x_sampling == 20
@@ -1564,6 +1582,8 @@ def test_load_irradiance_sensor(speos: Speos):
     assert isinstance(sensor_default, SensorIrradiance)
     assert isinstance(sensor_spectral, SensorIrradiance)
     assert isinstance(sensor_radio, SensorIrradiance)
+    assert isinstance(sensor_color.colorimetric, BaseSensor.Colorimetric)
+    assert isinstance(sensor_spectral.spectral, BaseSensor.Spectral)
     assert sensor_color.type == "Colorimetric"
     assert sensor_default.type == "Photometric"
     assert sensor_photo.type == "Photometric"
@@ -2279,3 +2299,232 @@ def test_get_sensor(speos: Speos, capsys: pytest.CaptureFixture[str]):
     stdout, stderr = capsys.readouterr()
     assert get_result4 is None
     assert "Used key: geometry not found in key list" in stdout
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_create_by_parameters(speos: Speos):
+    """Test creating sensor with new parameter class."""
+    p = Project(speos=speos)
+    wavelength_params = WavelengthsRangeParameters(start=380, end=780, sampling=21)
+    spectral_params = SpectralParameters(wavelength_range=wavelength_params)
+    colorimetric_params = ColorimetricParameters(wavelength_range=wavelength_params)
+    dim_params = DimensionsParameters(
+        x_start=-10, x_end=10, x_sampling=20, y_start=-20, y_end=20, y_sampling=40
+    )
+    int_dim_params_con = IntensitySensorDimensionsConoscopic(theta_max=25, theta_sampling=50)
+    int_dim_params_para = IntensitySensorDimensionsXAsParallel(
+        x_start=-10, x_end=10, x_sampling=20, y_start=-20, y_end=20, y_sampling=40
+    )
+    int_dim_params_meridian = IntensitySensorDimensionsXAsMeridian(
+        x_start=-10, x_end=10, x_sampling=20, y_start=-20, y_end=20, y_sampling=40
+    )
+    near_field = NearfieldParameters(cell_diameter=1, cell_distance=10)
+    layer_seq = LayerBySequenceParameters(
+        maximum_nb_of_sequence=5, sequence_type=SequenceTypes.by_geometry
+    )
+    # intensity
+    int_sensor_params = [
+        IntensityXMPSensorParameters(
+            dimensions=int_dim_params_con,
+            axis_system=[0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+            sensor_type=SensorTypes.photometric,
+            orientation=IntensitySensorOrientationTypes.conoscopic,
+            viewing_direction=IntensitySensorViewingTypes.from_source,
+            layer_type=LayerTypes.none,
+            near_field_parameters=near_field,
+        ),
+        IntensityXMPSensorParameters(
+            dimensions=int_dim_params_para,
+            axis_system=[1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+            sensor_type=colorimetric_params,
+            orientation=IntensitySensorOrientationTypes.x_as_parallel,
+            viewing_direction=IntensitySensorViewingTypes.from_sensor,
+            layer_type=LayerTypes.by_source,
+        ),
+        IntensityXMPSensorParameters(
+            dimensions=int_dim_params_meridian,
+            axis_system=[2, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+            sensor_type=SensorTypes.radiometric,
+            orientation=IntensitySensorOrientationTypes.x_as_meridian,
+            viewing_direction=IntensitySensorViewingTypes.from_source,
+            layer_type=layer_seq,
+        ),
+        IntensityXMPSensorParameters(
+            dimensions=int_dim_params_con,
+            axis_system=[3, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+            sensor_type=spectral_params,
+            orientation=IntensitySensorOrientationTypes.conoscopic,
+            viewing_direction=IntensitySensorViewingTypes.from_source,
+            layer_type=LayerByFaceParameters(),
+        ),
+    ]
+
+    for i, para in enumerate(int_sensor_params):
+        s = p.create_sensor(f"IntSensor.{i}", feature_type=SensorXMPIntensity, parameters=para)
+        if i != 3:
+            s.commit()
+        assert s.axis_system == para.axis_system
+        if isinstance(para.sensor_type, ColorimetricParameters):
+            assert s.type.lower() == "colorimetric"
+            assert (
+                s.colorimetric.set_wavelengths_range().start
+                == colorimetric_params.wavelength_range.start
+            )
+        elif isinstance(para.sensor_type, SpectralParameters):
+            assert s.type.lower() == "spectral"
+            assert (
+                s.spectral.set_wavelengths_range().start == spectral_params.wavelength_range.start
+            )
+        else:
+            assert s.type.lower() == para.sensor_type
+
+    rad_sensor_params = [
+        RadianceSensorParameters(
+            dimensions=dim_params,
+            axis_system=[0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+            sensor_type=SensorTypes.photometric,
+            layer_type=LayerTypes.none,
+            observer=[0, 20, 20],
+        ),
+        RadianceSensorParameters(
+            dimensions=dim_params,
+            axis_system=[1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+            sensor_type=colorimetric_params,
+            layer_type=LayerTypes.by_source,
+            focal_length=200,
+        ),
+        RadianceSensorParameters(
+            dimensions=dim_params,
+            axis_system=[2, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+            sensor_type=SensorTypes.radiometric,
+            layer_type=layer_seq,
+            integration_angle=10,
+        ),
+        RadianceSensorParameters(
+            dimensions=dim_params,
+            axis_system=[3, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+            sensor_type=spectral_params,
+            layer_type=LayerByFaceParameters(),
+        ),
+    ]
+    for i, para in enumerate(rad_sensor_params):
+        s = p.create_sensor(f"RadSensor.{i}", feature_type=SensorRadiance, parameters=para)
+        if i != 3:
+            s.commit()
+        assert s.axis_system == para.axis_system
+        assert s.focal == para.focal_length
+        assert s.observer_point == [] if para.observer is None else para.observer
+        assert s.integration_angle == para.integration_angle
+        assert s.dimensions.x_start == para.dimensions.x_start
+        assert s.dimensions.y_start == para.dimensions.y_start
+        assert s.dimensions.x_end == para.dimensions.x_end
+        assert s.dimensions.y_end == para.dimensions.y_end
+        assert s.dimensions.y_sampling == para.dimensions.y_sampling
+        assert s.dimensions.x_sampling == para.dimensions.x_sampling
+        if isinstance(para.sensor_type, ColorimetricParameters):
+            assert s.type.lower() == "colorimetric"
+            assert (
+                s.colorimetric.set_wavelengths_range().start
+                == colorimetric_params.wavelength_range.start
+            )
+        elif isinstance(para.sensor_type, SpectralParameters):
+            assert s.type.lower() == "spectral"
+            assert (
+                s.spectral.set_wavelengths_range().start == spectral_params.wavelength_range.start
+            )
+        else:
+            assert s.type.lower() == para.sensor_type
+
+    irr_sensor_params = [
+        IrradianceSensorParameters(
+            dimensions=dim_params,
+            axis_system=[0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+            sensor_type=SensorTypes.photometric,
+            layer_type=LayerByIncidenceAngleParameters(25),
+            integration_type=IntegrationTypes.radial,
+            rayfile_type=RayfileTypes.tm25_no_polarization,
+        ),
+        IrradianceSensorParameters(
+            dimensions=dim_params,
+            axis_system=[1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+            sensor_type=colorimetric_params,
+            layer_type=LayerTypes.by_source,
+            integration_type=IntegrationTypes.semi_cylindrical,
+            rayfile_type=RayfileTypes.tm25,
+            integration_direction=[np.sqrt(2) / 2, np.sqrt(2) / 2, 0],
+        ),
+        IrradianceSensorParameters(
+            dimensions=dim_params,
+            axis_system=[2, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+            sensor_type=SensorTypes.radiometric,
+            layer_type=layer_seq,
+            integration_type=IntegrationTypes.cylindrical,
+            rayfile_type=RayfileTypes.classic,
+        ),
+        IrradianceSensorParameters(
+            dimensions=dim_params,
+            axis_system=[3, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+            sensor_type=spectral_params,
+            layer_type=LayerByFaceParameters(),
+            integration_type=IntegrationTypes.planar,
+            rayfile_type=RayfileTypes.polarization,
+            integration_direction=[np.sqrt(2) / 2, np.sqrt(2) / 2, 0],
+        ),
+    ]
+    for i, para in enumerate(irr_sensor_params):
+        print(f"IrrSensor.{i}")
+        s = p.create_sensor(f"IrrSensor.{i}", feature_type=SensorIrradiance, parameters=para)
+        if i != 3:
+            s.commit()
+        assert isinstance(s, SensorIrradiance)
+        assert s.axis_system == para.axis_system
+        assert (
+            s.integration_direction == []
+            if para.integration_direction is None
+            else para.integration_direction
+        )
+        assert s.dimensions.x_start == para.dimensions.x_start
+        assert s.dimensions.y_start == para.dimensions.y_start
+        assert s.dimensions.x_end == para.dimensions.x_end
+        assert s.dimensions.y_end == para.dimensions.y_end
+        assert s.dimensions.y_sampling == para.dimensions.y_sampling
+        assert s.dimensions.x_sampling == para.dimensions.x_sampling
+        match para.rayfile_type:
+            case RayfileTypes.none:
+                assert (
+                    s._sensor_instance.irradiance_properties.ray_file_type
+                    == s._sensor_instance.EnumRayFileType.RayFileNone
+                )
+            case RayfileTypes.classic:
+                assert (
+                    s._sensor_instance.irradiance_properties.ray_file_type
+                    == s._sensor_instance.EnumRayFileType.RayFileClassic
+                )
+            case RayfileTypes.polarization:
+                assert (
+                    s._sensor_instance.irradiance_properties.ray_file_type
+                    == s._sensor_instance.EnumRayFileType.RayFilePolarization
+                )
+            case RayfileTypes.tm25:
+                assert (
+                    s._sensor_instance.irradiance_properties.ray_file_type
+                    == s._sensor_instance.EnumRayFileType.RayFileTM25
+                )
+            case RayfileTypes.tm25_no_polarization:
+                assert (
+                    s._sensor_instance.irradiance_properties.ray_file_type
+                    == s._sensor_instance.EnumRayFileType.RayFileTM25NoPolarization
+                )
+        if isinstance(para.sensor_type, ColorimetricParameters):
+            assert s.type.lower() == "colorimetric"
+            assert (
+                s.colorimetric.set_wavelengths_range().start
+                == colorimetric_params.wavelength_range.start
+            )
+        elif isinstance(para.sensor_type, SpectralParameters):
+            assert s.type.lower() == "spectral"
+            assert (
+                s.spectral.set_wavelengths_range().start == spectral_params.wavelength_range.start
+            )
+        else:
+            assert s.type.lower() == para.sensor_type
