@@ -19,6 +19,7 @@
 * [Etienne Lesage](https://github.com/elesage)
 * [Guilherme Nunes Trofino](https://github.com/gtrofino)
 * [Jorge Martínez](https://github.com/jorgepiloto)
+* [Marie Georges](https://github.com/mariegeorges)
 * [Marouan Nefzaoui](https://github.com/mnefzaou)
 * [Maxime Rey](https://github.com/MaxJPRey)
 * [Morais Sébastien](https://github.com/SMoraisAnsys)
