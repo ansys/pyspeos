@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from difflib import SequenceMatcher
 from pathlib import Path
-from typing import Collection, List, Mapping, Optional, Union
+from typing import Collection, Mapping, Optional, Union
 import uuid
 import warnings
 
@@ -4710,25 +4710,6 @@ class SensorXMPIntensity(BaseSensor):
             Instance of Layertype Class for this sensor feature
         """
         return self._layer_type
-
-    def set_axis_system(self, axis_system: Optional[List[float]] = None) -> SensorXMPIntensity:
-        """Set position of the sensor.
-
-        Parameters
-        ----------
-        axis_system : Optional[List[float]]
-            Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
-            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.SensorXMPIntensity
-            intensity sensor.
-        """
-        if axis_system is None:
-            axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-        self._sensor_instance.intensity_properties.axis_system[:] = axis_system
-        return self
 
     def set_orientation_x_as_meridian(self):
         """Set Orientation type: X As Meridian, Y as Parallel."""
