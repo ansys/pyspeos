@@ -3772,13 +3772,14 @@ class Sensor3DIrradiance(BaseSensor):
                 match default_parameters.integration_type:
                     case IntegrationTypes.planar:
                         self.set_integration_planar()
+                        self._integration_type = Sensor3DIrradiance.Measures(
+                            illuminance_type=self._sensor_type_radiometric.integration_type_planar,
+                            default_parameters=default_parameters.measures,
+                            stable_ctr=stable_ctr,
+                        )
                     case IntegrationTypes.radial:
                         self.set_integration_radial()
-                self._integration_type = Sensor3DIrradiance.Measures(
-                    illuminance_type=self._sensor_type_radiometric.integration_type_planar,
-                    default_parameters=default_parameters.measures,
-                    stable_ctr=stable_ctr,
-                )
+
             else:
                 self._integration_type = Sensor3DIrradiance.Measures(
                     illuminance_type=self._sensor_type_radiometric.integration_type_planar,
@@ -3851,13 +3852,13 @@ class Sensor3DIrradiance(BaseSensor):
                 match default_parameters.integration_type:
                     case IntegrationTypes.planar:
                         self.set_integration_planar()
+                        self._integration_type = Sensor3DIrradiance.Measures(
+                            illuminance_type=self._sensor_type_photometric.integration_type_planar,
+                            default_parameters=default_parameters.measures,
+                            stable_ctr=stable_ctr,
+                        )
                     case IntegrationTypes.radial:
                         self.set_integration_radial()
-                self._integration_type = Sensor3DIrradiance.Measures(
-                    illuminance_type=self._sensor_type_photometric.integration_type_planar,
-                    default_parameters=default_parameters.measures,
-                    stable_ctr=stable_ctr,
-                )
             else:
                 self._integration_type = Sensor3DIrradiance.Measures(
                     illuminance_type=self._sensor_type_photometric.integration_type_planar,
@@ -4119,7 +4120,7 @@ class Sensor3DIrradiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.core.sensor.Sensor3DIrradiance
+        ansys.speos.core.sensor.Sensor3DIrradiance.Photometric
             3D Irradiance sensor.
         """
         if self._type is None and self._sensor_template.irradiance_3d.HasField("type_photometric"):
@@ -4153,7 +4154,7 @@ class Sensor3DIrradiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.core.sensor.Sensor3DIrradiance
+        ansys.speos.core.sensor.Sensor3DIrradiance.Radiometric
             3D Irradiance sensor
         """
         if self._type is None and self._sensor_template.irradiance_3d.HasField("type_radiometric"):

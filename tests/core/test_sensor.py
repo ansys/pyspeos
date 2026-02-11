@@ -45,11 +45,13 @@ from ansys.speos.core.generic.parameters import (
     IntensitySensorOrientationTypes,
     IntensitySensorViewingTypes,
     IntensityXMPSensorParameters,
+    Irradiance3DSensorParameters,
     IrradianceSensorParameters,
     LayerByFaceParameters,
     LayerByIncidenceAngleParameters,
     LayerBySequenceParameters,
     LayerTypes,
+    MeasuresParameters,
     NearfieldParameters,
     RadianceSensorParameters,
     RayfileTypes,
@@ -2472,7 +2474,6 @@ def test_create_by_parameters(speos: Speos):
         ),
     ]
     for i, para in enumerate(irr_sensor_params):
-        print(f"IrrSensor.{i}")
         s = p.create_sensor(f"IrrSensor.{i}", feature_type=SensorIrradiance, parameters=para)
         if i != 3:
             s.commit()
@@ -2528,3 +2529,107 @@ def test_create_by_parameters(speos: Speos):
             )
         else:
             assert s.type.lower() == para.sensor_type
+    irr3d_sensor_params = [
+        Irradiance3DSensorParameters(
+            sensor_type=SensorTypes.photometric,
+            layer_type=LayerTypes.none,
+            integration_type=IntegrationTypes.radial,
+            rayfile_type=RayfileTypes.tm25_no_polarization,
+        ),
+        Irradiance3DSensorParameters(
+            sensor_type=colorimetric_params,
+            layer_type=LayerTypes.by_source,
+            integration_type=IntegrationTypes.planar,
+            rayfile_type=RayfileTypes.tm25,
+        ),
+        Irradiance3DSensorParameters(
+            sensor_type=SensorTypes.radiometric,
+            integration_type=IntegrationTypes.planar,
+            rayfile_type=RayfileTypes.classic,
+            measures=MeasuresParameters(False, False, True),
+        ),
+        Irradiance3DSensorParameters(
+            integration_type=IntegrationTypes.planar,
+            rayfile_type=RayfileTypes.polarization,
+            measures=MeasuresParameters(True, True, True),
+        ),
+        Irradiance3DSensorParameters(
+            sensor_type=SensorTypes.radiometric,
+            integration_type=IntegrationTypes.radial,
+            rayfile_type=RayfileTypes.classic,
+        ),
+    ]
+    for i, para in enumerate(irr3d_sensor_params):
+        s = p.create_sensor(f"Irr3DSensor.{i}", feature_type=Sensor3DIrradiance, parameters=para)
+        assert isinstance(s, Sensor3DIrradiance)
+        match para.rayfile_type:
+            case RayfileTypes.none:
+                assert (
+                    s._sensor_instance.irradiance_3d_properties.ray_file_type
+                    == s._sensor_instance.EnumRayFileType.RayFileNone
+                )
+            case RayfileTypes.classic:
+                assert (
+                    s._sensor_instance.irradiance_3d_properties.ray_file_type
+                    == s._sensor_instance.EnumRayFileType.RayFileClassic
+                )
+            case RayfileTypes.polarization:
+                assert (
+                    s._sensor_instance.irradiance_3d_properties.ray_file_type
+                    == s._sensor_instance.EnumRayFileType.RayFilePolarization
+                )
+            case RayfileTypes.tm25:
+                assert (
+                    s._sensor_instance.irradiance_3d_properties.ray_file_type
+                    == s._sensor_instance.EnumRayFileType.RayFileTM25
+                )
+            case RayfileTypes.tm25_no_polarization:
+                assert (
+                    s._sensor_instance.irradiance_3d_properties.ray_file_type
+                    == s._sensor_instance.EnumRayFileType.RayFileTM25NoPolarization
+                )
+        if isinstance(para.sensor_type, ColorimetricParameters):
+            assert isinstance(s._type, Sensor3DIrradiance.Colorimetric)
+            assert (
+                s._type.set_wavelengths_range().start == colorimetric_params.wavelength_range.start
+            )
+        elif para.sensor_type == SensorTypes.photometric:
+            assert isinstance(s._type, Sensor3DIrradiance.Photometric)
+            if para.integration_type == IntegrationTypes.planar:
+                assert isinstance(
+                    s.set_type_photometric()._integration_type, Sensor3DIrradiance.Measures
+                )
+                assert (
+                    s.set_type_photometric()._integration_type.reflection
+                    == para.measures.reflection
+                )
+                assert (
+                    s.set_type_photometric()._integration_type.transmission
+                    == para.measures.transmission
+                )
+                assert (
+                    s.set_type_photometric()._integration_type.absorption
+                    == para.measures.absorption
+                )
+            elif para.integration_type == IntegrationTypes.radial:
+                assert s.set_type_photometric()._integration_type.lower() == para.integration_type
+        elif para.sensor_type == SensorTypes.radiometric:
+            assert isinstance(s._type, Sensor3DIrradiance.Radiometric)
+            if para.integration_type == IntegrationTypes.planar:
+                assert isinstance(
+                    s.set_type_radiometric()._integration_type, Sensor3DIrradiance.Measures
+                )
+                assert (
+                    s.set_type_radiometric()._integration_type.reflection
+                    == para.measures.reflection
+                )
+                assert (
+                    s.set_type_radiometric()._integration_type.transmission
+                    == para.measures.transmission
+                )
+                assert (
+                    s.set_type_radiometric()._integration_type.absorption
+                    == para.measures.absorption
+                )
+            elif para.integration_type == IntegrationTypes.radial:
+                assert s.set_type_radiometric()._integration_type.lower() == para.integration_type
