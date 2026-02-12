@@ -1834,55 +1834,55 @@ class SourceSurface(BaseSource):
             # Intensity
             match type(default_parameters.intensity_type).__name__:
                 case "IntensityLambertianParameters":
-                    self.set_intensity().set_cos().n = 1
-                    self.set_intensity().set_cos().total_angle = (
+                    self.intensity.set_cos().n = 1
+                    self.intensity.set_cos().total_angle = (
                         default_parameters.intensity_type.total_angle
                     )
                 case "IntensityCosParameters":
-                    self.set_intensity().set_cos().n = default_parameters.intensity_type.n
-                    self.set_intensity().set_cos().total_angle = (
+                    self.intensity.set_cos().n = default_parameters.intensity_type.n
+                    self.intensity.set_cos().total_angle = (
                         default_parameters.intensity_type.total_angle
                     )
                 case "IntensitySymmetricGaussianParameters":
-                    self.set_intensity().set_gaussian().fwhm_angle_x = (
+                    self.intensity.set_gaussian().fwhm_angle_x = (
                         default_parameters.intensity_type.fwhm
                     )
-                    self.set_intensity().set_gaussian().fwhm_angle_y = (
+                    self.intensity.set_gaussian().fwhm_angle_y = (
                         default_parameters.intensity_type.fwhm
                     )
-                    self.set_intensity().set_gaussian().total_angle = (
+                    self.intensity.set_gaussian().total_angle = (
                         default_parameters.intensity_type.total_angle
                     )
                 case "IntensitAsymmetricGaussianParameters":
-                    self.set_intensity().set_gaussian().fwhm_angle_x = (
+                    self.intensity.set_gaussian().fwhm_angle_x = (
                         default_parameters.intensity_type.fwhm_x
                     )
-                    self.set_intensity().set_gaussian().fwhm_angle_y = (
+                    self.intensity.set_gaussian().fwhm_angle_y = (
                         default_parameters.intensity_type.fwhm_y
                     )
-                    self.set_intensity().set_gaussian().total_angle = (
+                    self.intensity.set_gaussian().total_angle = (
                         default_parameters.intensity_type.total_angle
                     )
-                    self.set_intensity().set_gaussian().axis_system = (
+                    self.intensity.set_gaussian().axis_system = (
                         default_parameters.intensity_type.axis_system
                     )
                 case "IntensityLibraryParameters":
-                    self.set_intensity().set_library().file_uri = (
+                    self.intensity.set_library().file_uri = (
                         default_parameters.intensity_type.intensity_file_uri
                     )
                     if default_parameters.intensity_type.exit_geometry is not None:
-                        self.set_intensity().set_library().exit_geometry = (
+                        self.intensity.set_library().exit_geometry = (
                             default_parameters.intensity_type.exit_geometry
                         )
                     match default_parameters.intensity_type.orientation_type:
                         case IntensityOrientationType.normal_to_uv:
-                            self.set_intensity().set_library().set_orientation_normal_to_uv_map()
+                            self.intensity.set_library().set_orientation_normal_to_uv_map()
                         case IntensityOrientationType.normal_to_surface:
-                            self.set_intensity().set_library().set_orientation_normal_to_surface()
+                            self.intensity().set_library().set_orientation_normal_to_surface()
                         case _:
                             match type(default_parameters.intensity_type.orientation_type).__name__:
                                 case "IntensityOrientationAxisSystemParameters":
-                                    self.set_intensity().set_library().set_orientation_axis_system(
+                                    self.intensity.set_library().set_orientation_axis_system(
                                         default_parameters.intensity_type.orientation_type.axis_system
                                     )
                                 case _:
@@ -1981,8 +1981,9 @@ class SourceSurface(BaseSource):
             self._flux_type._flux = self._source_template.surface
         return self._flux_type
 
-    def set_intensity(self) -> intensity.Intensity:
-        """Set intensity.
+    @property
+    def intensity(self) -> intensity.Intensity:
+        """Intensity property.
 
         Returns
         -------

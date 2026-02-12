@@ -199,9 +199,7 @@ def test_create_surface_source(speos: Speos):
     assert intensity.get().HasField("cos")
 
     # set intensity as library to be able to use flux_from_intensity_file
-    source1.set_intensity().set_library().intensity_file_uri = str(
-        Path(test_path) / "IES_C_DETECTOR.ies"
-    )
+    source1.intensity.set_library().intensity_file_uri = str(Path(test_path) / "IES_C_DETECTOR.ies")
     source1.set_flux_from_intensity_file()
     source1.commit()
     assert source1.source_template_link.get().surface.HasField("flux_from_intensity_file")
@@ -780,7 +778,7 @@ def test_keep_same_internal_feature(speos: Speos):
     intensity_guid = source1.source_template_link.get().surface.intensity_guid
 
     # Modify intensity
-    source1.set_intensity().set_gaussian()
+    source1.intensity.set_gaussian()
     source1.commit()
     assert source1.source_template_link.get().surface.intensity_guid == intensity_guid
 
@@ -1088,7 +1086,7 @@ def test_surface_modify_after_reset(speos: Speos):
 
     # Intermediate class for intensity
     assert source._intensity._intensity_template.HasField("cos")
-    source.set_intensity().set_gaussian()
+    source.intensity.set_gaussian()
     assert source._intensity._intensity_template.HasField("gaussian")
 
     # Intermediate class for exitance variable + Props
