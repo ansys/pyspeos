@@ -995,27 +995,27 @@ class SourceLuminaire(BaseSource):
 
             match default_parameters.spectrum_type:
                 case SpectrumType.incandescent:
-                    self.set_spectrum().set_incandescent()
+                    self.spectrum.set_incandescent()
                 case SpectrumType.warm_white_fluorescent:
-                    self.set_spectrum().set_warmwhitefluorescent()
+                    self.spectrum.set_warmwhitefluorescent()
                 case SpectrumType.daylight_fluorescent:
-                    self.set_spectrum().set_daylightfluorescent()
+                    self.spectrum.set_daylightfluorescent()
                 case SpectrumType.white_led:
-                    self.set_spectrum().set_white_led()
+                    self.spectrum.set_white_led()
                 case SpectrumType.halogen:
-                    self.set_spectrum().set_halogen()
+                    self.spectrum.set_halogen()
                 case SpectrumType.metal_halide:
-                    self.set_spectrum().set_metalhalide()
+                    self.spectrum.set_metalhalide()
                 case SpectrumType.high_pressure_sodium:
-                    self.set_spectrum().set_highpressuresodium()
+                    self.spectrum.set_highpressuresodium()
                 case _:
                     match type(default_parameters.spectrum_type).__name__:
                         case "SpectrumLibraryParameters":
-                            self.set_spectrum().set_library().file_uri = (
+                            self.spectrum.set_library().file_uri = (
                                 default_parameters.spectrum_type.file_uri
                             )
                         case "SpectrumBlackBodyParameters":
-                            self.set_spectrum().set_blackbody().temperature = (
+                            self.spectrum.set_blackbody().temperature = (
                                 default_parameters.spectrum_type.temperature
                             )
                         case _:
@@ -1121,8 +1121,9 @@ class SourceLuminaire(BaseSource):
     def intensity_file_uri(self, uri: Union[str, Path]) -> None:
         self._source_template.luminaire.intensity_file_uri = str(uri)
 
-    def set_spectrum(self) -> Spectrum:
-        """Set spectrum.
+    @property
+    def spectrum(self) -> Spectrum:
+        """Spectrum property.
 
         Returns
         -------
@@ -1313,15 +1314,15 @@ class SourceRayFile(BaseSource):
             if default_parameters.spectrum_type is not None:
                 match type(default_parameters.spectrum_type).__name__:
                     case "SpectrumBlackBodyParameters":
-                        self.set_spectrum().set_blackbody().temperature = (
+                        self.spectrum.set_blackbody().temperature = (
                             default_parameters.spectrum_type.temperature
                         )
                     case "SpectrumLibraryParameters":
-                        self.set_spectrum().set_library().file_uri = (
+                        self.spectrum.set_library().file_uri = (
                             default_parameters.spectrum_type.file_uri
                         )
                     case "SpectrumMonochromaticParameters":
-                        self.set_spectrum().set_monochromatic().wavelength = (
+                        self.spectrum.set_monochromatic().wavelength = (
                             default_parameters.spectrum_type.wavelength
                         )
                     case _:
@@ -1444,8 +1445,9 @@ class SourceRayFile(BaseSource):
         self._spectrum._no_spectrum_local = True
         return self
 
-    def set_spectrum(self) -> Spectrum:
-        """Set spectrum of the Source.
+    @property
+    def spectrum(self) -> Spectrum:
+        """Spectrum property of the Source.
 
         Returns
         -------
@@ -1813,15 +1815,13 @@ class SourceSurface(BaseSource):
             # Spectrum
             match type(default_parameters.spectrum_type).__name__:
                 case "SpectrumBlackBodyParameters":
-                    self.set_spectrum().set_blackbody().temperature = (
+                    self.spectrum.set_blackbody().temperature = (
                         default_parameters.spectrum_type.temperature
                     )
                 case "SpectrumLibraryParameters":
-                    self.set_spectrum().set_library().file_uri = (
-                        default_parameters.spectrum_type.file_uri
-                    )
+                    self.spectrum.set_library().file_uri = default_parameters.spectrum_type.file_uri
                 case "SpectrumMonochromaticParameters":
-                    self.set_spectrum().set_monochromatic().wavelength = (
+                    self.spectrum.set_monochromatic().wavelength = (
                         default_parameters.spectrum_type.wavelength
                     )
                 case _:
@@ -2086,8 +2086,9 @@ class SourceSurface(BaseSource):
         self._spectrum._no_spectrum_local = True
         return self
 
-    def set_spectrum(self) -> Spectrum:
-        """Set spectrum of the Source.
+    @property
+    def spectrum(self) -> Spectrum:
+        """Spectrum property of the Source.
 
         Returns
         -------

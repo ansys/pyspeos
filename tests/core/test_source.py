@@ -81,7 +81,7 @@ def test_create_luminaire_source(speos: Speos):
     assert source1.source_template_link.get().luminaire.intensity_file_uri != ""
 
     # spectrum
-    source1.set_spectrum().set_halogen()
+    source1.spectrum.set_halogen()
     source1.commit()
     spectrum = speos.client[source1.source_template_link.get().luminaire.spectrum_guid]
     assert spectrum.get().HasField("predefined")
@@ -280,7 +280,7 @@ def test_create_surface_source(speos: Speos):
         (GeoRef.from_native_link("BodyB/FaceB1"), False),
         (GeoRef.from_native_link("BodyB/FaceB2"), True),
     ]
-    source1.set_spectrum().set_blackbody()
+    source1.spectrum.set_blackbody()
     source1.commit()
     assert len(source1.set_exitance_constant().geometries) == 2
     assert surface_properties.HasField("exitance_constant_properties")
@@ -381,7 +381,7 @@ def test_create_rayfile_source(speos: Speos):
     # spectrum (need to change ray file so that it does not contain spectral data)
     source1.ray_file_uri = Path(test_path) / "RaysWithoutSpectralData.RAY"
     # source1.set_ray_file_uri(uri=str(Path(test_path) / "RaysWithoutSpectralData.RAY"))
-    source1.set_spectrum().set_blackbody()
+    source1.spectrum.set_blackbody()
     source1.commit()
     assert source1.source_template_link.get().rayfile.spectrum_guid != ""
     spectrum = speos.client[source1.source_template_link.get().rayfile.spectrum_guid]
@@ -783,7 +783,7 @@ def test_keep_same_internal_feature(speos: Speos):
     assert source1.source_template_link.get().surface.intensity_guid == intensity_guid
 
     # Modify spectrum
-    source1.set_spectrum().set_halogen()
+    source1.spectrum.set_halogen()
     source1.commit()
     assert source1.source_template_link.get().surface.spectrum_guid == spectrum_guid
 
@@ -796,7 +796,7 @@ def test_keep_same_internal_feature(speos: Speos):
     spectrum_guid = source2.source_template_link.get().luminaire.spectrum_guid
 
     # Modify spectrum
-    source2.set_spectrum().set_halogen()
+    source2.spectrum.set_halogen()
     source2.commit()
     assert source2.source_template_link.get().luminaire.spectrum_guid == spectrum_guid
 
@@ -805,7 +805,7 @@ def test_keep_same_internal_feature(speos: Speos):
         project=p, name="Ray-fiile.1", default_parameters=RayFileSourceParameters()
     )
     source3.ray_file_uri = Path(test_path) / "RaysWithoutSpectralData.RAY"
-    source3.set_spectrum().set_blackbody()
+    source3.spectrum.set_blackbody()
     # source3.set_ray_file_uri(
     #     uri=str(Path(test_path) / "RaysWithoutSpectralData.RAY")
     # ).set_spectrum().set_blackbody()
@@ -813,7 +813,7 @@ def test_keep_same_internal_feature(speos: Speos):
     spectrum_guid = source3.source_template_link.get().rayfile.spectrum_guid
 
     # Modify spectrum
-    source3.set_spectrum().set_monochromatic()
+    source3.spectrum.set_monochromatic()
     source3.commit()
     assert source3.source_template_link.get().rayfile.spectrum_guid == spectrum_guid
 
@@ -936,7 +936,7 @@ def test_luminaire_modify_after_reset(speos: Speos):
 
     # Intermediate class for spectrum
     assert source._spectrum._spectrum._spectrum.HasField("predefined")
-    source.set_spectrum().set_blackbody()
+    source.spectrum.set_blackbody()
     assert source._spectrum._spectrum._spectrum.HasField("blackbody")
 
     # Props
@@ -1014,7 +1014,7 @@ def test_rayfile_modify_after_reset(speos: Speos):
 
     # Intermediate class for spectrum
     assert source._spectrum._spectrum._spectrum.HasField("monochromatic")
-    source.set_spectrum().set_blackbody()
+    source.spectrum.set_blackbody()
     assert source._spectrum._spectrum._spectrum.HasField("blackbody")
 
     # Props
@@ -1081,7 +1081,7 @@ def test_surface_modify_after_reset(speos: Speos):
 
     # Intermediate class for spectrum
     assert source._spectrum._spectrum._spectrum.HasField("monochromatic")
-    source.set_spectrum().set_blackbody()
+    source.spectrum.set_blackbody()
     assert source._spectrum._spectrum._spectrum.HasField("blackbody")
 
     # Intermediate class for intensity
@@ -1169,7 +1169,7 @@ def test_print_source(speos: Speos):
 
     # Modify : spectrum type
     # No commit
-    source.set_spectrum().set_blackbody()
+    source.spectrum.set_blackbody()
 
     # Check that print is not modified
     str_after = str(source)
