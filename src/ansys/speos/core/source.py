@@ -1882,8 +1882,12 @@ class SourceSurface(BaseSource):
                         case _:
                             match type(default_parameters.intensity_type.orientation_type).__name__:
                                 case "IntensityOrientationAxisSystemParameters":
-                                    self.intensity.set_library().set_orientation_axis_system(
-                                        default_parameters.intensity_type.orientation_type.axis_system
+                                    orientation_axis = (
+                                        default_parameters.intensity_type.orientation_type
+                                    )
+                                    axis_parameters = orientation_axis.axis_system
+                                    self.intensity.set_library().orientation_axis_system = (
+                                        axis_parameters
                                     )
                                 case _:
                                     raise ValueError(

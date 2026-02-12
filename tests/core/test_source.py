@@ -983,7 +983,7 @@ def test_rayfile_modify_after_reset(speos: Speos):
     # source.set_flux_luminous()
     source.flux.set_luminous()
     source.ray_file_uri = Path(test_path) / "RaysWithoutSpectralData.RAY"
-    source.set_spectrum()
+    source.spectrum
     source.commit()
 
     # Ask for reset
@@ -1181,7 +1181,7 @@ def test_print_source(speos: Speos):
     # source = p.create_source(name="1")
     source = p.create_source(name="1", feature_type=SourceRayFile)
     source.ray_file_uri = Path(test_path) / "RaysWithoutSpectralData.RAY"
-    source.set_spectrum()
+    source.spectrum
     source.commit()
 
     # Retrieve print

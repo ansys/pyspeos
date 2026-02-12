@@ -118,7 +118,7 @@ class Intensity:
                             default_parameters.orientation_type,
                             IntensityOrientationAxisSystemParameters,
                         ):
-                            self.set_orientation_axis_system(
+                            self.orientation_axis_system = (
                                 default_parameters.orientation_type.axis_system
                             )
                         else:
@@ -148,10 +148,9 @@ class Intensity:
         def intensity_file_uri(self, intensity_file_uri: Union[Path, str]) -> None:
             self._library.intensity_file_uri = str(intensity_file_uri)
 
-        def set_orientation_axis_system(
-            self, axis_system: Optional[List[float]] = None
-        ) -> Intensity.Library:
-            """Set the intensity orientation from an axis system.
+        @property
+        def orientation_axis_system(self) -> List[float]:
+            """Intensity orientation property from an axis system.
 
             Parameters
             ----------
@@ -164,10 +163,13 @@ class Intensity:
             ansys.speos.core.intensity.Intensity.Library
                 Library intensity.
             """
-            if not axis_system:
-                axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-            self._library_props.axis_system.values[:] = axis_system
-            return self
+            if not self._library_props.HasField("axis_system"):
+                raise ValueError("There is no axis system defined yet.")
+            return self._library_props.axis_system.values
+
+        @orientation_axis_system.setter
+        def orientation_axis_system(self, value: List[float]) -> None:
+            self._library_props.axis_system.values[:] = value
 
         def set_orientation_normal_to_surface(self) -> Intensity.Library:
             """Set the intensity orientation as normal to surface.

@@ -42,7 +42,7 @@ def test_create_intensity(speos: Speos):
 
     # library
     intensity1.set_library().intensity_file_uri = str(Path(test_path) / "IES_C_DETECTOR.ies")
-    intensity1.set_library().set_orientation_axis_system()
+    intensity1.set_library().orientation_axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     intensity1.commit()
     assert intensity1.intensity_template_link.get().HasField("library")
     assert intensity1._intensity_properties.HasField("library_properties")
@@ -143,7 +143,7 @@ def test_commit_intensity(speos: Speos):
     # Create
     intensity1 = Intensity(speos_client=speos.client, name="Intensity.1")
     intensity1.set_library().intensity_file_uri = str(Path(test_path) / "IES_C_DETECTOR.ies")
-    intensity1.set_library().set_orientation_axis_system()
+    intensity1.set_library().orientation_axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     assert intensity1.intensity_template_link is None
 
     # Commit
@@ -194,9 +194,7 @@ def test_library_modify_after_reset(speos: Speos):
     assert intensity1._intensity_template.library.intensity_file_uri.endswith("xmp")
 
     # Properties modification
-    intensity1.set_library().set_orientation_axis_system(
-        axis_system=[50, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-    )
+    intensity1.set_library().orientation_axis_system = [50, 20, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     assert intensity1._intensity_properties.library_properties.axis_system.values == [
         50,
         20,
@@ -254,7 +252,7 @@ def test_delete_intensity(speos: Speos):
     # Create + commit
     intensity1 = Intensity(speos_client=speos.client, name="Intensity.1")
     intensity1.set_library().intensity_file_uri = str(Path(test_path) / "IES_C_DETECTOR.ies")
-    intensity1.set_library().set_orientation_axis_system()
+    intensity1.set_library().orientation_axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     intensity1.commit()
     assert intensity1.intensity_template_link.get().HasField("library")
     assert intensity1._intensity_template.HasField("library")
