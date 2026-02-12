@@ -487,7 +487,7 @@ def test_preview_visual_data(speos: Speos):
     # preview when there is cad
     sr = p2.create_source(name="Luminaire_source", feature_type=SourceLuminaire)
     sr.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
-    sr.set_spectrum().set_halogen()
+    sr.spectrum.set_halogen()
     sr.commit()
     p2.preview()
     # preview when there is no cad
