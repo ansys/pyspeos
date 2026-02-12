@@ -112,7 +112,7 @@ jobs:
       - name: "Run Ansys documentation building action"
         uses: ansys/actions/doc-build@41f86da4c9ead510db9135e428e33df9cc6f92e1 # v10.2.3
         with:
-          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          python-version: '3.11'
           check-links: false
           sphinxopts: -j 1 --keep-going # Try without parallel execution
           checkout: false
