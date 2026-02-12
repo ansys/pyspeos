@@ -88,7 +88,7 @@ class Intensity:
         library_props : \
         ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.IntensityProperties.LibraryProperties
             Library properties to complete.
-        default_values: Optional[
+        default_parameters: Optional[
             ansys.speos.core.generic.parameters.IntensityLibraryParameters
             ] = None
             Uses default values when True.
@@ -98,32 +98,34 @@ class Intensity:
             self,
             library: ProtoIntensityTemplate.Library,
             library_props: ProtoScene.SourceInstance.IntensityProperties.LibraryProperties,
-            default_values: Optional[IntensityLibraryParameters] = None,
+            default_parameters: Optional[IntensityLibraryParameters] = None,
         ) -> None:
             self._library = library
             self._library_props = library_props
 
-            if default_values is not None:
+            if default_parameters is not None:
                 # Default values
-                self.intensity_file_uri = default_values.intensity_file_uri
-                if default_values.exit_geometry is not None:
-                    self.exit_geometry = default_values.exit_geometry
-                match default_values.orientation_type:
+                self.intensity_file_uri = default_parameters.intensity_file_uri
+                if default_parameters.exit_geometry is not None:
+                    self.exit_geometry = default_parameters.exit_geometry
+                match default_parameters.orientation_type:
                     case IntensityOrientationType.normal_to_uv:
                         self.set_orientation_normal_to_uv_map()
                     case IntensityOrientationType.normal_to_surface:
                         self.set_orientation_normal_to_surface()
                     case _:
                         if isinstance(
-                            default_values.orientation_type,
+                            default_parameters.orientation_type,
                             IntensityOrientationAxisSystemParameters,
                         ):
                             self.set_orientation_axis_system(
-                                default_values.orientation_type.axis_system
+                                default_parameters.orientation_type.axis_system
                             )
                         else:
                             raise ValueError(
-                                f"Incorrect library intensity type: {type(default_values).__name__}"
+                                "IIncorrect library intensity type: {}".format(
+                                    type(default_parameters).__name__
+                                )
                             )
 
         @property
@@ -238,7 +240,7 @@ class Intensity:
         gaussian_props : \
         ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.IntensityProperties.GaussianProperties
             Gaussian properties to complete.
-        default_values: Optional[
+        default_parameters: Optional[
             IntensitAsymmetricGaussianParameters,
             IntensitySymmetricGaussianParameters,
             ] = None
@@ -249,27 +251,29 @@ class Intensity:
             self,
             gaussian: ProtoIntensityTemplate.Gaussian,
             gaussian_props: ProtoScene.SourceInstance.IntensityProperties.GaussianProperties,
-            default_values: Optional[
+            default_parameters: Optional[
                 IntensitAsymmetricGaussianParameters, IntensitySymmetricGaussianParameters
             ] = None,
         ) -> None:
             self._gaussian = gaussian
             self._gaussian_props = gaussian_props
 
-            if default_values is not None:
-                if isinstance(default_values, IntensitySymmetricGaussianParameters):
-                    self.fwhm_angle_x = default_values.fwhm
-                    self.fwhm_angle_y = default_values.fwhm
-                    self.total_angle = default_values.total_angle
+            if default_parameters is not None:
+                if isinstance(default_parameters, IntensitySymmetricGaussianParameters):
+                    self.fwhm_angle_x = default_parameters.fwhm
+                    self.fwhm_angle_y = default_parameters.fwhm
+                    self.total_angle = default_parameters.total_angle
                     self.axis_system = None
-                elif isinstance(default_values, IntensitAsymmetricGaussianParameters):
-                    self.fwhm_angle_x = default_values.fwhm_x
-                    self.fwhm_angle_y = default_values.fwhm_y
-                    self.total_angle = default_values.total_angle
-                    self.axis_system = default_values.axis_system
+                elif isinstance(default_parameters, IntensitAsymmetricGaussianParameters):
+                    self.fwhm_angle_x = default_parameters.fwhm_x
+                    self.fwhm_angle_y = default_parameters.fwhm_y
+                    self.total_angle = default_parameters.total_angle
+                    self.axis_system = default_parameters.axis_system
                 else:
                     raise ValueError(
-                        f"Incorrect gaussian intensity type: {type(default_values).__name__}"
+                        "Incorrect gaussian intensity type: {}".format(
+                            type(default_parameters).__name__
+                        )
                     )
 
         @property
@@ -350,7 +354,7 @@ class Intensity:
             axis_system : List[float]
                 Orientation of the intensity distribution [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             """
-            return self._gaussian.total_angle
+            return self._gaussian.axis_system
 
         @axis_system.setter
         def axis_system(self, axis_system: Optional[List[float]] = None) -> None:
@@ -369,27 +373,29 @@ class Intensity:
         ----------
         cos : ansys.api.speos.intensity.v1.IntensityTemplate.Cos
             Cos to complete.
-        default_values: Optional[IntensityCosParameters, IntensityLambertianParameters] = None
+        default_parameters: Optional[IntensityCosParameters, IntensityLambertianParameters] = None
             Uses default values when True.
         """
 
         def __init__(
             self,
             cos: ProtoIntensityTemplate.Cos,
-            default_values: Optional[IntensityCosParameters, IntensityLambertianParameters] = None,
+            default_parameters: Optional[
+                IntensityCosParameters, IntensityLambertianParameters
+            ] = None,
         ) -> None:
             self._cos = cos
 
-            if default_values is not None:
-                if isinstance(default_values, IntensityLambertianParameters):
+            if default_parameters is not None:
+                if isinstance(default_parameters, IntensityLambertianParameters):
                     self.n = 1
-                    self.total_angle = default_values.total_angle
-                elif isinstance(default_values, IntensityCosParameters):
-                    self.n = default_values.n
-                    self.total_angle = default_values.total_angle
+                    self.total_angle = default_parameters.total_angle
+                elif isinstance(default_parameters, IntensityCosParameters):
+                    self.n = default_parameters.n
+                    self.total_angle = default_parameters.total_angle
                 else:
                     raise ValueError(
-                        f"Incorrect cos intensity type: {type(default_values).__name__}"
+                        f"Incorrect cos intensity type: {type(default_parameters).__name__}"
                     )
 
         @property
@@ -486,14 +492,14 @@ class Intensity:
             self._type = Intensity.Library(
                 library=self._intensity_template.library,
                 library_props=self._intensity_properties.library_properties,
-                default_values=None,
+                default_parameters=None,
             )
         elif not isinstance(self._type, Intensity.Library):
             # if the _type is not Library then we create a new type.
             self._type = Intensity.Library(
                 library=self._intensity_template.library,
                 library_props=self._intensity_properties.library_properties,
-                default_values=IntensityLibraryParameters(),
+                default_parameters=IntensityLibraryParameters(),
             )
         elif (
             self._type._library is not self._intensity_template.library
@@ -516,13 +522,13 @@ class Intensity:
             # Happens in case of project created via load of speos file
             self._type = Intensity.Cos(
                 cos=self._intensity_template.cos,
-                default_values=None,
+                default_parameters=None,
             )
         elif not isinstance(self._type, Intensity.Cos):
             # if the _type is not Gaussian then we create a new type.
             self._type = Intensity.Cos(
                 cos=self._intensity_template.cos,
-                default_values=IntensityLambertianParameters(),
+                default_parameters=IntensityLambertianParameters(),
             )
         elif self._type._cos is not self._intensity_template.cos:
             # Happens in case of feature reset (to be sure to always modify correct data)
@@ -543,14 +549,14 @@ class Intensity:
             self._type = Intensity.Gaussian(
                 gaussian=self._intensity_template.gaussian,
                 gaussian_props=self._intensity_properties.gaussian_properties,
-                default_values=None,
+                default_parameters=None,
             )
         elif not isinstance(self._type, Intensity.Gaussian):
             # if the _type is not Gaussian then we create a new type.
             self._type = Intensity.Gaussian(
                 gaussian=self._intensity_template.gaussian,
                 gaussian_props=self._intensity_properties.gaussian_properties,
-                default_values=IntensitySymmetricGaussianParameters(),
+                default_parameters=IntensitySymmetricGaussianParameters(),
             )
         elif (
             self._type._gaussian is not self._intensity_template.gaussian

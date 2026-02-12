@@ -77,7 +77,7 @@ class Spectrum:
         ----------
         monochromatic : ansys.api.speos.spectrum.v1.spectrum_pb2.Monochromatic
             Monochromatic protobuf object to modify.
-        default_values : bool
+        default_parameters : Optional[SpectrumMonochromaticParameters] = None
             Uses default values when True.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
@@ -91,7 +91,7 @@ class Spectrum:
         def __init__(
             self,
             monochromatic: spectrum_pb2.Spectrum.Monochromatic,
-            default_values: Optional[SpectrumMonochromaticParameters] = None,
+            default_parameters: Optional[SpectrumMonochromaticParameters] = None,
             stable_ctr: bool = False,
         ):
             if not stable_ctr:
@@ -99,8 +99,8 @@ class Spectrum:
                 raise RuntimeError(msg)
             self._monochromatic = monochromatic
 
-            if default_values is not None:
-                self.wavelength = default_values.wavelength
+            if default_parameters is not None:
+                self.wavelength = default_parameters.wavelength
 
         @property
         def wavelength(self) -> float:
@@ -131,7 +131,7 @@ class Spectrum:
         ----------
         blackbody : ansys.api.speos.spectrum.v1.spectrum_pb2.Blackbody
             Blackbody protobuf object to modify.
-        default_values : bool
+        default_parameters : Optional[SpectrumBlackBodyParameters] = None
             Uses default values when True.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
@@ -145,7 +145,7 @@ class Spectrum:
         def __init__(
             self,
             blackbody: spectrum_pb2.Spectrum.BlackBody,
-            default_values: Optional[SpectrumBlackBodyParameters] = None,
+            default_parameters: Optional[SpectrumBlackBodyParameters] = None,
             stable_ctr: bool = False,
         ):
             if not stable_ctr:
@@ -153,8 +153,8 @@ class Spectrum:
                 raise RuntimeError(msg)
             self._blackbody = blackbody
 
-            if default_values is not None:
-                self.temperature = default_values.temperature
+            if default_parameters is not None:
+                self.temperature = default_parameters.temperature
 
         @property
         def temperature(self) -> float:
@@ -186,7 +186,7 @@ class Spectrum:
         ----------
         sampled : ansys.api.speos.spectrum.v1.spectrum_pb2.Sampled
             Sampled protobuf object to modify.
-        default_values : bool
+        default_parameters : Optional[SpectrumSampledParameters] = None
             Uses default values when True.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
@@ -200,7 +200,7 @@ class Spectrum:
         def __init__(
             self,
             sampled: spectrum_pb2.Spectrum.Sampled,
-            default_values: Optional[SpectrumSampledParameters] = None,
+            default_parameters: Optional[SpectrumSampledParameters] = None,
             stable_ctr: bool = False,
         ):
             if not stable_ctr:
@@ -208,9 +208,9 @@ class Spectrum:
                 raise RuntimeError(msg)
             self._sampled = sampled
 
-            if default_values is not None:
-                self.wavelength = default_values.wavelengths
-                self.values = default_values.values
+            if default_parameters is not None:
+                self.wavelength = default_parameters.wavelengths
+                self.values = default_parameters.values
 
         @property
         def wavelengths(self) -> List[float]:
@@ -262,7 +262,7 @@ class Spectrum:
         ----------
         library : ansys.api.speos.spectrum.v1.spectrum_pb2.Spectrum.Library
             Library protobuf object to modify.
-        default_values : bool
+        default_parameters : Optional[SpectrumLibraryParameters] = None
             Uses default values when True.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
@@ -276,7 +276,7 @@ class Spectrum:
         def __init__(
             self,
             library: spectrum_pb2.Spectrum.Library,
-            default_values: Optional[SpectrumLibraryParameters] = None,
+            default_parameters: Optional[SpectrumLibraryParameters] = None,
             stable_ctr: bool = False,
         ):
             if not stable_ctr:
@@ -284,8 +284,8 @@ class Spectrum:
                 raise RuntimeError(msg)
             self._library = library
 
-            if default_values is not None:
-                self.file_uri = default_values.file_uri
+            if default_parameters is not None:
+                self.file_uri = default_parameters.file_uri
 
         @property
         def file_uri(self) -> str:
@@ -348,13 +348,13 @@ class Spectrum:
         if self._type is None and self._spectrum.HasField("monochromatic"):
             self._type = Spectrum.Monochromatic(
                 monochromatic=self._spectrum.monochromatic,
-                default_values=None,
+                default_parameters=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._type, Spectrum.Monochromatic):
             self._type = Spectrum.Monochromatic(
                 monochromatic=self._spectrum.monochromatic,
-                default_values=SpectrumMonochromaticParameters(),
+                default_parameters=SpectrumMonochromaticParameters(),
                 stable_ctr=True,
             )
         elif self._type._monochromatic is not self._spectrum.monochromatic:
@@ -372,13 +372,13 @@ class Spectrum:
         if self._type is None and self._spectrum.HasField("blackbody"):
             self._type = Spectrum.Blackbody(
                 blackbody=self._spectrum.blackbody,
-                default_values=None,
+                default_parameters=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._type, Spectrum.Blackbody):
             self._type = Spectrum.Blackbody(
                 blackbody=self._spectrum.blackbody,
-                default_values=SpectrumBlackBodyParameters(),
+                default_parameters=SpectrumBlackBodyParameters(),
                 stable_ctr=True,
             )
         elif self._type._blackbody is not self._spectrum.blackbody:
@@ -398,13 +398,13 @@ class Spectrum:
         if self._type is None and self._spectrum.HasField("sampled"):
             self._type = Spectrum.Sampled(
                 sampled=self._spectrum.sampled,
-                default_values=None,
+                default_parameters=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._type, Spectrum.Sampled):
             self._type = Spectrum.Sampled(
                 sampled=self._spectrum.sampled,
-                default_values=SpectrumSampledParameters(),
+                default_parameters=SpectrumSampledParameters(),
                 stable_ctr=True,
             )
         elif self._type._sampled is not self._spectrum.sampled:
@@ -427,13 +427,13 @@ class Spectrum:
         if self._type is None and self._spectrum.HasField("library"):
             self._type = Spectrum.Library(
                 library=self._spectrum.library,
-                default_values=None,
+                default_parameters=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._type, Spectrum.Library):
             self._type = Spectrum.Library(
                 library=self._spectrum.library,
-                default_values=SpectrumLibraryParameters(),
+                default_parameters=SpectrumLibraryParameters(),
                 stable_ctr=True,
             )
         elif self._type._library is not self._spectrum.library:

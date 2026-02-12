@@ -27,6 +27,11 @@ from pathlib import Path
 import pytest
 
 from ansys.speos.core import Spectrum, Speos
+from ansys.speos.core.generic.parameters import (
+    SpectrumBlackBodyParameters,
+    SpectrumMonochromaticParameters,
+    SpectrumSampledParameters,
+)
 from tests.conftest import test_path
 
 
@@ -108,7 +113,7 @@ def test_create_spectrum(speos: Speos):
     with pytest.raises(RuntimeError, match="Blackbody class instantiated outside of class scope"):
         Spectrum.Blackbody(
             blackbody=spectrum1._spectrum.blackbody,
-            default_values=True,
+            default_parameters=SpectrumBlackBodyParameters(),
             stable_ctr=False,
         )
 
@@ -117,14 +122,14 @@ def test_create_spectrum(speos: Speos):
     ):
         Spectrum.Monochromatic(
             monochromatic=spectrum1._spectrum.monochromatic,
-            default_values=True,
+            default_parameters=SpectrumMonochromaticParameters(),
             stable_ctr=False,
         )
 
     with pytest.raises(RuntimeError, match="Sampled class instantiated outside of class scope"):
         Spectrum.Sampled(
             sampled=spectrum1._spectrum.sampled,
-            default_values=True,
+            default_parameters=SpectrumSampledParameters(),
             stable_ctr=False,
         )
     spectrum1.delete()

@@ -864,8 +864,8 @@ def test_reset_source(speos: Speos):
     assert p.scene_link.get().sources[0].HasField("rayfile_properties")
 
     # Change local data (on template and on instance)
-    source1.set_flux().set_radiant()
-    source1.set_flux().value = 3.5
+    source1.flux.set_radiant()
+    source1.flux.value = 3.5
     # source1.set_flux_radiant().value = 3.5  # template
     source1.set_exit_geometries().geometries = [
         GeoRef.from_native_link("TheBodyB/TheFaceB1")
@@ -981,7 +981,7 @@ def test_rayfile_modify_after_reset(speos: Speos):
     # Create + commit
     source = p.create_source(name="1", feature_type=SourceRayFile)
     # source.set_flux_luminous()
-    source.set_flux().set_luminous()
+    source.flux.set_luminous()
     source.ray_file_uri = Path(test_path) / "RaysWithoutSpectralData.RAY"
     source.set_spectrum()
     source.commit()

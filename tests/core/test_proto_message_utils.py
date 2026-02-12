@@ -342,7 +342,7 @@ def test_replace_properties(speos: Speos):
 
     src_feat = p.create_source(name="Source.1", feature_type=SourceSurface)
     src_feat.set_exitance_constant().geometries = [(GeoRef.from_native_link("BodyB"), False)]
-    src_feat.set_intensity().set_gaussian().axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    src_feat.intensity.set_gaussian().axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     src_feat.commit()
 
     # First replace guids
