@@ -152,7 +152,7 @@ def test_create_luminaire_source(speos: Speos):
     with pytest.raises(RuntimeError, match="Flux class instantiated outside of class scope"):
         SourceLuminaire.Flux(
             flux=source1._source_template.luminaire,
-            default_values=True,
+            default_parameters=True,
             stable_ctr=False,
         )
 
@@ -254,6 +254,7 @@ def test_create_surface_source(speos: Speos):
     assert source1.source_template_link.get().surface.HasField("exitance_variable")
     assert source1.source_template_link.get().surface.exitance_variable.exitance_xmp_file_uri != ""
     assert source1.source_template_link.get().surface.HasField("spectrum_from_xmp_file")
+    surface_properties = source1._source_instance.surface_properties
     assert surface_properties.HasField("exitance_variable_properties")
     assert surface_properties.exitance_variable_properties.axis_plane == ORIGIN[:9]
 
@@ -297,7 +298,7 @@ def test_create_surface_source(speos: Speos):
     with pytest.raises(RuntimeError, match="Flux class instantiated outside of class scope"):
         SourceSurface.Flux(
             flux=source1._source_template.surface,
-            default_values=True,
+            default_parameters=True,
             stable_ctr=False,
         )
 
@@ -307,7 +308,7 @@ def test_create_surface_source(speos: Speos):
         SourceSurface.ExitanceConstant(
             exitance_constant=source1._source_template.surface.exitance_constant,
             exitance_constant_props=source1._source_instance.surface_properties.exitance_constant_properties,
-            default_values=True,
+            default_parameters=True,
             stable_ctr=False,
         )
 
@@ -317,7 +318,7 @@ def test_create_surface_source(speos: Speos):
         SourceSurface.ExitanceVariable(
             exitance_variable=source1._source_template.surface.exitance_variable,
             exitance_variable_props=source1._source_instance.surface_properties.exitance_variable_properties,
-            default_values=True,
+            default_parameters=True,
             stable_ctr=False,
         )
 
@@ -432,7 +433,7 @@ def test_create_rayfile_source(speos: Speos):
     ):
         SourceRayFile.ExitGeometries(
             rayfile_props=source1._source_instance.rayfile_properties,
-            default_values=True,
+            default_parameters=True,
             stable_ctr=False,
         )
 

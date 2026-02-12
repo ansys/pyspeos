@@ -551,7 +551,7 @@ class VariableExitanceParameters:
     """Spectrum Exit Parameters."""
 
     xmp_file_uri: Union[str, Path] = ""
-    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN[0:9])
 
 
 @dataclass
