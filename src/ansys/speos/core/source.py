@@ -983,11 +983,11 @@ class SourceLuminaire(BaseSource):
                 case "FluxFromFileParameters":
                     self.set_flux_from_intensity_file()
                 case "LuminousFluxParameters":
-                    self.set_flux().set_luminous()
-                    self.set_flux().value = default_parameters.flux_type.value
+                    self.flux.set_luminous()
+                    self.flux.value = default_parameters.flux_type.value
                 case "RadiantFluxParameters":
-                    self.set_flux().set_radiant()
-                    self.set_flux().value = default_parameters.flux_type.value
+                    self.flux.set_radiant()
+                    self.flux.value = default_parameters.flux_type.value
                 case _:
                     raise ValueError(
                         f"Unsupported flux type: {type(default_parameters.flux_type).__name__}"
@@ -1075,8 +1075,9 @@ class SourceLuminaire(BaseSource):
         self._source_template.luminaire.flux_from_intensity_file.SetInParent()
         return self
 
-    def set_flux(self) -> SourceLuminaire.Flux:
-        """Set flux of the luminaire source.
+    @property
+    def flux(self) -> SourceLuminaire.Flux:
+        """Flux definition of the luminaire source.
 
         Returns
         -------
@@ -1297,11 +1298,11 @@ class SourceRayFile(BaseSource):
                 case "FluxFromFileParameters":
                     self.set_flux_from_ray_file()
                 case "LuminousFluxParameters":
-                    self.set_flux().set_luminous()
-                    self.set_flux().value = default_parameters.flux_type.value
+                    self.flux.set_luminous()
+                    self.flux.value = default_parameters.flux_type.value
                 case "RadiantFluxParameters":
-                    self.set_flux().set_radiant()
-                    self.set_flux().value = default_parameters.flux_type.value
+                    self.flux.set_radiant()
+                    self.flux.value = default_parameters.flux_type.value
                 case _:
                     raise ValueError(
                         f"Unsupported flux type: {type(default_parameters.flux_type).__name__}"
@@ -1405,8 +1406,9 @@ class SourceRayFile(BaseSource):
         self._source_template.rayfile.flux_from_ray_file.SetInParent()
         return self
 
-    def set_flux(self) -> SourceRayFile.Flux:
-        """Set flux of the Rayfile source.
+    @property
+    def flux(self) -> SourceRayFile.Flux:
+        """Flux definition of the Rayfile source.
 
         Returns
         -------
@@ -1777,14 +1779,14 @@ class SourceSurface(BaseSource):
                 case "FluxFromFileParameters":
                     self.set_flux_from_intensity_file()
                 case "LuminousFluxParameters":
-                    self.set_flux().set_luminous()
-                    self.set_flux().value = default_parameters.flux_type.value
+                    self.flux.set_luminous()
+                    self.flux.value = default_parameters.flux_type.value
                 case "RadiantFluxParameters":
-                    self.set_flux().set_radiant()
-                    self.set_flux().value = default_parameters.flux_type.value
+                    self.flux.set_radiant()
+                    self.flux.value = default_parameters.flux_type.value
                 case "IntensityFluxParameters":
-                    self.set_flux().set_luminous_intensity()
-                    self.set_flux().value = default_parameters.flux_type.value
+                    self.flux.set_luminous_intensity()
+                    self.flux.value = default_parameters.flux_type.value
                 case _:
                     raise ValueError(
                         f"Unsupported flux type: {type(default_parameters.flux_type).__name__}"
@@ -1953,8 +1955,9 @@ class SourceSurface(BaseSource):
         self._source_template.surface.flux_from_intensity_file.SetInParent()
         return self
 
-    def set_flux(self) -> SourceSurface.Flux:
-        """Set flux of the Surface source.
+    @property
+    def flux(self) -> SourceSurface.Flux:
+        """Flux property of the Surface source.
 
         Returns
         -------

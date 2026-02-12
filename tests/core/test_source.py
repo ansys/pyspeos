@@ -88,21 +88,21 @@ def test_create_luminaire_source(speos: Speos):
     assert spectrum.get().predefined.HasField("halogen")
 
     # flux luminous_flux
-    source1.set_flux().set_luminous()
-    source1.set_flux().value = 650
+    source1.flux.set_luminous()
+    source1.flux.value = 650
     # source1.set_flux_luminous().value = 650
     source1.commit()
-    assert source1.set_flux().value == 650
+    assert source1.flux.value == 650
     # assert source1.set_flux_luminous().value == 650
     assert source1.source_template_link.get().luminaire.HasField("luminous_flux")
     assert source1.source_template_link.get().luminaire.luminous_flux.luminous_value == 650
 
     # flux radiant_flux
-    source1.set_flux().set_radiant()
-    source1.set_flux().value = 1.2
+    source1.flux.set_radiant()
+    source1.flux.value = 1.2
     # source1.set_flux_radiant().value = 1.2
     source1.commit()
-    assert source1.set_flux().value == 1.2
+    assert source1.flux.value == 1.2
     # assert source1.set_flux_radiant().value == 1.2
     assert source1.source_template_link.get().luminaire.HasField("radiant_flux")
     assert source1.source_template_link.get().luminaire.radiant_flux.radiant_value == 1.2
@@ -214,29 +214,29 @@ def test_create_surface_source(speos: Speos):
     assert surface_properties.intensity_properties.library_properties.HasField("axis_system")
 
     # luminous_flux
-    source1.set_flux().set_luminous()
-    source1.set_flux().value = 630
+    source1.flux.set_luminous()
+    source1.flux.value = 630
     # source1.set_flux_luminous().value = 630
     source1.commit()
-    assert source1.set_flux().value == 630
+    assert source1.flux.value == 630
     assert source1.source_template_link.get().surface.HasField("luminous_flux")
     assert source1.source_template_link.get().surface.luminous_flux.luminous_value == 630
 
     # radiant_flux
-    source1.set_flux().set_radiant()
-    source1.set_flux().value = 1.1
+    source1.flux.set_radiant()
+    source1.flux.value = 1.1
     # source1.set_flux_radiant().value = 1.1
     source1.commit()
-    assert source1.set_flux().value == 1.1
+    assert source1.flux.value == 1.1
     assert source1.source_template_link.get().surface.HasField("radiant_flux")
     assert source1.source_template_link.get().surface.radiant_flux.radiant_value == 1.1
 
     # luminous_intensity_flux
-    source1.set_flux().set_luminous_intensity()
-    source1.set_flux().value = 5.5
+    source1.flux.set_luminous_intensity()
+    source1.flux.value = 5.5
     # source1.set_flux_luminous_intensity().value = 5.5
     source1.commit()
-    assert source1.set_flux().value == 5.5
+    assert source1.flux.value == 5.5
     # assert source1.set_flux_luminous_intensity().value == 5.5
     assert source1.source_template_link.get().surface.HasField("luminous_intensity_flux")
     assert (
@@ -356,21 +356,21 @@ def test_create_rayfile_source(speos: Speos):
     assert source1.source_template_link.get().rayfile.HasField("spectrum_from_ray_file")
 
     # luminous_flux
-    source1.set_flux().set_luminous()
-    source1.set_flux().value = 641
+    source1.flux.set_luminous()
+    source1.flux.value = 641
     # source1.set_flux_luminous().value = 641
     source1.commit()
-    assert source1.set_flux().value == 641
+    assert source1.flux.value == 641
     # assert source1.set_flux_luminous().value == 641
     assert source1.source_template_link.get().rayfile.HasField("luminous_flux")
     assert source1.source_template_link.get().rayfile.luminous_flux.luminous_value == 641
 
     # radiant_flux
-    source1.set_flux().set_radiant()
-    source1.set_flux().value = 1.3
+    source1.flux.set_radiant()
+    source1.flux.value = 1.3
     # source1.set_flux_radiant().value = 1.3
     source1.commit()
-    assert source1.set_flux().value == 1.3
+    assert source1.flux.value == 1.3
     # assert source1.set_flux_radiant().value == 1.3
     assert source1.source_template_link.get().rayfile.HasField("radiant_flux")
     assert source1.source_template_link.get().rayfile.radiant_flux.radiant_value == 1.3
@@ -902,7 +902,7 @@ def test_luminaire_modify_after_reset(speos: Speos):
         project=p, name="Luminaire.1", default_parameters=LuminaireSourceParameters()
     )
     source.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
-    source.set_flux().set_luminous()
+    source.flux.set_luminous()
     # source.set_flux_luminous()
     source.commit()
 
@@ -920,7 +920,7 @@ def test_luminaire_modify_after_reset(speos: Speos):
     source = SourceLuminaire(
         project=p, name="Luminaire.2", default_parameters=new_default_parameters
     )
-    assert source.set_flux().value == new_default_parameters.flux_type.value
+    assert source.flux.value == new_default_parameters.flux_type.value
     assert source.axis_system == new_default_parameters.axis_system
     assert (
         source._source_template.luminaire.luminous_flux.luminous_value
@@ -931,8 +931,8 @@ def test_luminaire_modify_after_reset(speos: Speos):
         == new_default_parameters.axis_system
     )
 
-    source.set_flux().set_luminous()
-    source.set_flux().value = 500
+    source.flux.set_luminous()
+    source.flux.value = 500
     # source.set_flux_luminous().value = 500
     assert source._source_template.luminaire.luminous_flux.luminous_value == 500
 
@@ -1000,7 +1000,7 @@ def test_rayfile_modify_after_reset(speos: Speos):
     )
     source = SourceRayFile(project=p, name="Luminaire.2", default_parameters=new_default_parameters)
     assert source.axis_system == new_default_parameters.axis_system
-    assert source.set_flux().value == new_default_parameters.flux_type.value
+    assert source.flux.value == new_default_parameters.flux_type.value
     assert (
         source._source_instance.rayfile_properties.axis_system == new_default_parameters.axis_system
     )
@@ -1009,8 +1009,8 @@ def test_rayfile_modify_after_reset(speos: Speos):
         == new_default_parameters.flux_type.value
     )
 
-    source.set_flux().set_luminous()
-    source.set_flux().value = 500
+    source.flux.set_luminous()
+    source.flux.value = 500
     # source.set_flux_luminous().value = 500
     assert source._source_template.rayfile.luminous_flux.luminous_value == 500
 
@@ -1063,7 +1063,7 @@ def test_surface_modify_after_reset(speos: Speos):
         project=p, name="Surface.2", default_parameters=SurfaceSourceParameters()
     )
     # source.set_flux_luminous()
-    source.set_flux().set_luminous()
+    source.flux.set_luminous()
     source.set_spectrum_from_xmp_file()
     source.set_exitance_variable().xmp_file_uri = (
         Path(test_path) / "PROJECT.Direct-no-Ray.Irradiance Ray Spectral.xmp"
@@ -1076,8 +1076,8 @@ def test_surface_modify_after_reset(speos: Speos):
     # Modify after a reset
     # Template
     assert source._source_template.surface.luminous_flux.luminous_value == 683
-    source.set_flux().set_luminous()
-    source.set_flux().value = 500
+    source.flux.set_luminous()
+    source.flux.value = 500
     # source.set_flux_luminous().value = 500
     assert source._source_template.surface.luminous_flux.luminous_value == 500
 
