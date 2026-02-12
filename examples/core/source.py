@@ -119,8 +119,8 @@ print(source1)
 intensity_file_path = str(assets_data_path / IES)
 source2 = p.create_source(name="Luminaire.2", feature_type=SourceLuminaire)
 source2.intensity_file_uri = intensity_file_path
-source2.set_flux().set_radiant()
-source2.set_flux().value = 1.0  # select flux radiant
+source2.flux.set_radiant()
+source2.flux.value = 1.0  # select flux radiant
 # choose the source location [Origin, Xvector, Yvector, Zvector]
 source2.axis_system = [20, 50, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 source2.set_spectrum().set_blackbody()  # choose blackbody with default value for the spectrum
@@ -145,8 +145,8 @@ print(p)
 # > changes.
 # > If you don't, you will still only watch what is committed on the server.
 
-source1.set_flux().set_radiant()
-source1.set_flux().value = 1.2  # modify radiant flux value
+source1.flux.set_radiant()
+source1.flux.value = 1.2  # modify radiant flux value
 source1.axis_system = [17, 10, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]  # modify axis system
 source1.set_spectrum().set_halogen()  # modify spectrum by choosing halogen
 source1.commit()  # Push changes to the server
@@ -156,7 +156,7 @@ print(source1)
 #
 # Possibility to reset local values from the one available in the server.
 
-source1.set_flux().set_luminous().value = 683.0  # modify to luminous flux BUT no commit
+source1.flux.set_luminous().value = 683.0  # modify to luminous flux BUT no commit
 source1.reset()
 # reset -> this will apply the server value to the local value the local value will be back to
 # halogen
@@ -190,7 +190,7 @@ print(source3)
 # -
 
 # +
-source3.set_flux().set_luminous()
+source3.flux.set_luminous()
 source3.commit()
 print(source3)
 # -
@@ -213,8 +213,8 @@ print(source4)
 # -
 
 # +
-source4.set_flux().set_luminous_intensity()
-source4.set_intensity().set_gaussian().axis_system = [10, 50, 20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+source4.flux.set_luminous_intensity()
+source4.intensity.set_gaussian().axis_system = [10, 50, 20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 source4.commit()
 print(source4)
 # -
