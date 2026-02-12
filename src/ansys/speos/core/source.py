@@ -1878,7 +1878,7 @@ class SourceSurface(BaseSource):
                         case IntensityOrientationType.normal_to_uv:
                             self.intensity.set_library().set_orientation_normal_to_uv_map()
                         case IntensityOrientationType.normal_to_surface:
-                            self.intensity().set_library().set_orientation_normal_to_surface()
+                            self.intensity.set_library().set_orientation_normal_to_surface()
                         case _:
                             match type(default_parameters.intensity_type.orientation_type).__name__:
                                 case "IntensityOrientationAxisSystemParameters":
