@@ -123,7 +123,7 @@ source2.flux.set_radiant()
 source2.flux.value = 1.0  # select flux radiant
 # choose the source location [Origin, Xvector, Yvector, Zvector]
 source2.axis_system = [20, 50, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-source2.set_spectrum().set_blackbody()  # choose blackbody with default value for the spectrum
+source2.spectrum.set_blackbody()  # choose blackbody with default value for the spectrum
 source2.commit()  # Push to the server
 print(source2)
 
@@ -148,7 +148,7 @@ print(p)
 source1.flux.set_radiant()
 source1.flux.value = 1.2  # modify radiant flux value
 source1.axis_system = [17, 10, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]  # modify axis system
-source1.set_spectrum().set_halogen()  # modify spectrum by choosing halogen
+source1.spectrum.set_halogen()  # modify spectrum by choosing halogen
 source1.commit()  # Push changes to the server
 print(source1)
 

@@ -126,16 +126,17 @@ s_source = project.create_source(name='Surface.1', feature_type=SourceSurface)
 # Choose one way to set source power
 # for any conflicting property the last set property counts
 s_source.set_flux_from_intensity_file()
-s_source.set_flux_luminous().value = 683
-s_source.set_flux_radiant().value = 1
-s_source.set_flux_luminous_intensity().value = 5
+s_source.flux.set_flux_luminous().value = 683
+s_source.flux.set_flux_radiant().value = 1
+s_source.flux.set_flux_luminous_intensity().value = 5
 s_source.set_exitance_constant().geometries = [
     (core.GeoRef.from_native_link(
         'TheBodyB/TheFaceF'), False)
         ]
 s_int = s_source.set_intensity()
-s_int.set_cos(1,120)
-s_source.set_spectrum()
+s_int.set_cos().n = 1
+s_int.set_cos().total_angle = 120
+s_source.spectrum
 s_source.commit()
 ```
 
@@ -150,8 +151,8 @@ r_source.set_ray_file_uri('path/ray.ray')
 # Choose one way to set source power
 # for any conflicting property the last set property counts
 r_source.set_flux_from_ray_file()
-r_source.set_flux_luminous().value = 683
-r_source.set_flux_radiant().value = 1
+r_source.flux.set_flux_luminous().value = 683
+r_source.flux.set_flux_radiant().value = 1
 r_source.set_spectrum_from_ray_file()
 r_source.set_exit_geometries().geometries = [
     core.GeoRef.from_native_link('TheBodyB/TheFaceF'),

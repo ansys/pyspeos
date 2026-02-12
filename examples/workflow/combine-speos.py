@@ -147,7 +147,7 @@ ssr.commit()
 # +
 src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
 src.intensity_file_uri = assets_data_path / "IES_C_DETECTOR.ies"
-src.set_spectrum().set_daylightfluorescent()
+src.spectrum.set_daylightfluorescent()
 src.axis_system = [0, 10000, 50000, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 
 src.commit()
