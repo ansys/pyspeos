@@ -178,13 +178,22 @@ def test_create_luminaire_source(speos: Speos):
     assert len(p.scene_link.get().sources) == 0
 
     # test parameters
+    with pytest.raises(
+        TypeError,
+        match="Incorrect parameter dataclass provided "
+        + f"{str(type(SurfaceSourceParameters()))} instead of LuminaireSourceParameters",
+    ):
+        p.create_source(
+            name="Luminaire.2", feature_type=SourceLuminaire, parameters=SurfaceSourceParameters()
+        )
+
     new_default_parameter = LuminaireSourceParameters()
     new_default_parameter.flux_type = RadiantFluxParameters()
     new_default_parameter.spectrum_type = SpectrumType.high_pressure_sodium
+    new_default_parameter.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     source2 = p.create_source(
         name="Luminaire.2", feature_type=SourceLuminaire, parameters=new_default_parameter
     )
-    source2.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     source2.commit()
     assert source2._source_template.luminaire.HasField("radiant_flux")
     spectrum = speos.client[source2.source_template_link.get().luminaire.spectrum_guid]
@@ -195,7 +204,6 @@ def test_create_luminaire_source(speos: Speos):
     source3 = p.create_source(
         name="Luminaire.3", feature_type=SourceLuminaire, parameters=new_default_parameter
     )
-    source3.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     source3.commit()
     spectrum = speos.client[source3.source_template_link.get().luminaire.spectrum_guid]
     assert spectrum.get().predefined.HasField("daylightfluorescent")
@@ -205,7 +213,6 @@ def test_create_luminaire_source(speos: Speos):
     source4 = p.create_source(
         name="Luminaire.4", feature_type=SourceLuminaire, parameters=new_default_parameter
     )
-    source4.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     source4.commit()
     spectrum = speos.client[source4.source_template_link.get().luminaire.spectrum_guid]
     assert spectrum.get().predefined.HasField("whiteLED")
@@ -215,7 +222,6 @@ def test_create_luminaire_source(speos: Speos):
     source5 = p.create_source(
         name="Luminaire.5", feature_type=SourceLuminaire, parameters=new_default_parameter
     )
-    source5.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     source5.commit()
     spectrum = speos.client[source5.source_template_link.get().luminaire.spectrum_guid]
     assert spectrum.get().predefined.HasField("halogen")
@@ -225,7 +231,6 @@ def test_create_luminaire_source(speos: Speos):
     source6 = p.create_source(
         name="Luminaire.6", feature_type=SourceLuminaire, parameters=new_default_parameter
     )
-    source6.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     source6.commit()
     spectrum = speos.client[source6.source_template_link.get().luminaire.spectrum_guid]
     assert spectrum.get().predefined.HasField("metalhalide")
@@ -235,7 +240,6 @@ def test_create_luminaire_source(speos: Speos):
     source7 = p.create_source(
         name="Luminaire.7", feature_type=SourceLuminaire, parameters=new_default_parameter
     )
-    source7.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     source7.commit()
     spectrum = speos.client[source7.source_template_link.get().luminaire.spectrum_guid]
     assert spectrum.get().predefined.HasField("highpressuresodium")
@@ -245,7 +249,6 @@ def test_create_luminaire_source(speos: Speos):
     source8 = p.create_source(
         name="Luminaire.8", feature_type=SourceLuminaire, parameters=new_default_parameter
     )
-    source8.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     source8.commit()
     spectrum = speos.client[source8.source_template_link.get().luminaire.spectrum_guid]
     assert spectrum.get().HasField("blackbody")
@@ -256,10 +259,12 @@ def test_create_luminaire_source(speos: Speos):
     source9 = p.create_source(
         name="Luminaire.9", feature_type=SourceLuminaire, parameters=new_default_parameter
     )
-    source9.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     source9.commit()
     spectrum = speos.client[source9.source_template_link.get().luminaire.spectrum_guid]
     assert spectrum.get().HasField("library")
+    assert source9.spectrum.set_library().file_uri == str(
+        new_default_parameter.spectrum_type.file_uri
+    )
     source9.delete()
 
 
@@ -428,6 +433,15 @@ def test_create_surface_source(speos: Speos):
     source1.delete()
 
     # test parameters
+    with pytest.raises(
+        TypeError,
+        match="Incorrect parameter dataclass provided "
+        + f"{str(type(RayFileSourceParameters()))} instead of SurfaceSourceParameters",
+    ):
+        p.create_source(
+            name="Luminaire.2", feature_type=SourceSurface, parameters=RayFileSourceParameters()
+        )
+
     new_default_parameter = SurfaceSourceParameters()
     new_default_parameter.flux_type = RadiantFluxParameters()
     new_default_parameter.spectrum_type = None
@@ -443,6 +457,10 @@ def test_create_surface_source(speos: Speos):
     source2.commit()
     assert source2.source_template_link.get().surface.HasField("radiant_flux")
     assert source2.source_template_link.get().surface.HasField("exitance_variable")
+    assert source2.intensity.set_cos().n == new_default_parameter.intensity_type.n
+    assert (
+        source2.intensity.set_cos().total_angle == new_default_parameter.intensity_type.total_angle
+    )
     source2.delete()
 
     new_default_parameter.flux_type = IntensityFluxParameters()
@@ -459,6 +477,16 @@ def test_create_surface_source(speos: Speos):
     source3.commit()
     assert source3.source_template_link.get().surface.HasField("luminous_intensity_flux")
     assert source3.source_template_link.get().surface.HasField("exitance_variable")
+    assert (
+        source3.intensity.set_gaussian().fwhm_angle_x == new_default_parameter.intensity_type.fwhm
+    )
+    assert (
+        source3.intensity.set_gaussian().fwhm_angle_y == new_default_parameter.intensity_type.fwhm
+    )
+    assert (
+        source3.intensity.set_gaussian().total_angle
+        == new_default_parameter.intensity_type.total_angle
+    )
     source3.delete()
 
     new_default_parameter = SurfaceSourceParameters()
@@ -486,12 +514,15 @@ def test_create_surface_source(speos: Speos):
     new_default_parameter.intensity_type.orientation_type = (
         IntensityOrientationType.normal_to_surface
     )
+    new_default_parameter.intensity_type.exit_geometries = [body_b]
     source5 = p.create_source(
         name="Surface.5", feature_type=SourceSurface, parameters=new_default_parameter
     )
     source5.commit()
     tmp_intensity_properties = source5._source_instance.surface_properties.intensity_properties
     assert tmp_intensity_properties.library_properties.HasField("normal_to_surface")
+    assert len(tmp_intensity_properties.library_properties.exit_geometries.geo_paths) != 0
+    assert len(source5.intensity.set_library().exit_geometries) == 1
     source5.delete()
 
     new_default_parameter = SurfaceSourceParameters()
@@ -509,6 +540,20 @@ def test_create_surface_source(speos: Speos):
     source6.commit()
     assert source6.source_template_link.get().surface.HasField("luminous_flux")
     assert source6.source_template_link.get().surface.HasField("exitance_constant")
+    assert (
+        source6.intensity.set_gaussian().fwhm_angle_x == new_default_parameter.intensity_type.fwhm_x
+    )
+    assert (
+        source6.intensity.set_gaussian().fwhm_angle_y == new_default_parameter.intensity_type.fwhm_y
+    )
+    assert (
+        source6.intensity.set_gaussian().total_angle
+        == new_default_parameter.intensity_type.total_angle
+    )
+    assert (
+        source6.intensity.set_gaussian().axis_system
+        == new_default_parameter.intensity_type.axis_system
+    )
     source6.delete()
 
 
@@ -627,6 +672,15 @@ def test_create_rayfile_source(speos: Speos):
     source1.delete()
 
     # test parameters
+    with pytest.raises(
+        TypeError,
+        match="Incorrect parameter dataclass provided "
+        + f"{str(type(LuminaireSourceParameters()))} instead of RayFileSourceParameters",
+    ):
+        p.create_source(
+            name="Luminaire.2", feature_type=SourceRayFile, parameters=LuminaireSourceParameters()
+        )
+
     new_default_parameter = RayFileSourceParameters()
     new_default_parameter.flux_type = RadiantFluxParameters()
     new_default_parameter.spectrum_type = SpectrumBlackBodyParameters()
@@ -820,6 +874,17 @@ def test_create_natural_light_source(speos: Speos):
     source2.delete()
 
     # test parameters
+    with pytest.raises(
+        TypeError,
+        match="Incorrect parameter dataclass provided "
+        + f"{str(type(LuminaireSourceParameters()))} instead of AmbientNaturalLightParameters",
+    ):
+        p.create_source(
+            name="Luminaire.2",
+            feature_type=SourceAmbientNaturalLight,
+            parameters=LuminaireSourceParameters(),
+        )
+
     new_default_parameters = AmbientNaturalLightParameters()
     new_default_parameters.sun_type = ManualSunParameters()
     source3 = p.create_source(
@@ -996,6 +1061,17 @@ def test_create_environment_source(speos: Speos):
     source2.delete()
 
     # test parameters
+    with pytest.raises(
+        TypeError,
+        match="Incorrect parameter dataclass provided "
+        + f"{str(type(LuminaireSourceParameters()))} instead of AmbientEnvironmentParameters",
+    ):
+        p.create_source(
+            name="Luminaire.2",
+            feature_type=SourceAmbientEnvironment,
+            parameters=LuminaireSourceParameters(),
+        )
+
     new_default_parameters = AmbientEnvironmentParameters()
     new_default_parameters.color_space_type = ColorSpaceType.adobe_rgb
     source3 = p.create_source(

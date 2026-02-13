@@ -28,7 +28,6 @@ from pathlib import Path
 from typing import List, Mapping, Optional, Union
 
 import ansys.speos.core.body as body
-import ansys.speos.core.face as face
 from ansys.speos.core.generic.parameters import (
     IntensitAsymmetricGaussianParameters,
     IntensityCosParameters,
@@ -106,8 +105,8 @@ class Intensity:
             if default_parameters is not None:
                 # Default values
                 self.intensity_file_uri = default_parameters.intensity_file_uri
-                if default_parameters.exit_geometry is not None:
-                    self.exit_geometry = default_parameters.exit_geometry
+                if default_parameters.exit_geometries is not None:
+                    self.exit_geometries = default_parameters.exit_geometries
                 match default_parameters.orientation_type:
                     case IntensityOrientationType.normal_to_uv:
                         self.set_orientation_normal_to_uv_map()
@@ -199,7 +198,7 @@ class Intensity:
 
             Parameters
             ----------
-            exit_geometries : Optional[List[Union[GeoRef, body.Body, face.Face]]]
+            exit_geometries : Optional[List[Union[GeoRef, body.Body]]]
                 Exit geometries list.
                 By default, ``[]``.
 
@@ -213,7 +212,7 @@ class Intensity:
 
         @exit_geometries.setter
         def exit_geometries(
-            self, exit_geometries: Optional[List[Union[GeoRef, body.Body, face.Face]]] = None
+            self, exit_geometries: Optional[List[Union[GeoRef, body.Body]]] = None
         ) -> None:
             if not exit_geometries:
                 self._library_props.ClearField("exit_geometries")
@@ -222,8 +221,8 @@ class Intensity:
                 for geometry in exit_geometries:
                     if isinstance(geometry, GeoRef):
                         geo_paths.append(geometry.to_native_link())
-                    elif isinstance(geometry, (body.Body, face.Face)):
-                        geo_paths.append(geometry.geo_path)
+                    elif isinstance(geometry, body.Body):
+                        geo_paths.append(geometry.geo_path.to_native_link())
                     else:
                         raise ValueError("provided geometry is not of type supported")
                 self._library_props.exit_geometries.geo_paths[:] = geo_paths
@@ -356,7 +355,7 @@ class Intensity:
             axis_system : List[float]
                 Orientation of the intensity distribution [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             """
-            return self._gaussian.axis_system
+            return self._gaussian_props.axis_system
 
         @axis_system.setter
         def axis_system(self, axis_system: Optional[List[float]] = None) -> None:

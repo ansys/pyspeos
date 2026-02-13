@@ -543,7 +543,7 @@ class IntensityLibraryParameters:
     orientation_type: Union[IntensityOrientationType, IntensityOrientationAxisSystemParameters] = (
         field(default_factory=lambda: IntensityOrientationAxisSystemParameters())
     )
-    exit_geometry: Optional[list[str]] = None
+    exit_geometries: Optional[list[str]] = None
 
 
 @dataclass

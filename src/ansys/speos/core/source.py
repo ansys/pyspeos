@@ -1280,7 +1280,7 @@ class SourceRayFile(BaseSource):
                     if isinstance(geometry, GeoRef):
                         geo_paths.append(geometry.to_native_link())
                     elif isinstance(geometry, (body.Body, face.Face)):
-                        geo_paths.append(geometry.geo_path)
+                        geo_paths.append(geometry.geo_path.to_native_link())
                     else:
                         raise ValueError("provided geometry is not of type supported")
                 self._rayfile_props.exit_geometries.geo_paths[:] = geo_paths
@@ -1915,9 +1915,9 @@ class SourceSurface(BaseSource):
                     self.intensity.set_library().intensity_file_uri = (
                         default_parameters.intensity_type.intensity_file_uri
                     )
-                    if default_parameters.intensity_type.exit_geometry is not None:
-                        self.intensity.set_library().exit_geometry = (
-                            default_parameters.intensity_type.exit_geometry
+                    if default_parameters.intensity_type.exit_geometries is not None:
+                        self.intensity.set_library().exit_geometries = (
+                            default_parameters.intensity_type.exit_geometries
                         )
                     match default_parameters.intensity_type.orientation_type:
                         case IntensityOrientationType.normal_to_uv:
