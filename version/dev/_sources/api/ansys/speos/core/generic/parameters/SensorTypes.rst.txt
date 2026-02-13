@@ -1,0 +1,87 @@
+
+
+
+
+
+
+:class:`SensorTypes`
+====================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.SensorTypes
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   
+   Sensor types without parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SensorTypes
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~photometric`
+            - 
+          * - :py:attr:`~radiometric`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import SensorTypes
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: photometric
+   :value: 'photometric'
+
+
+.. py:attribute:: radiometric
+   :value: 'radiometric'
+
+
+
+
+
+

@@ -1,0 +1,61 @@
+
+
+
+
+
+
+:class:`Iridescence`
+====================
+
+
+.. py:class:: ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.Iridescence(iridescence_mode, default_values = True, stable_ctr = False)
+
+   Bases: :py:obj:`BaseSimulation`
+
+
+   
+   Color depends on viewing direction of BSDF measurement settings.
+
+   By default,
+   2 degrees uniform type sampling is set
+
+   :Parameters:
+
+       **iridescence_mode** : :obj:`simulation_template_pb2.Iridescence`
+           Iridescence settings to complete.
+
+       **default_values** : :ref:`bool <python:bltin-boolean-values>`
+           Uses default source sampling values when True.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics import Iridescence
+
+
+
+
+

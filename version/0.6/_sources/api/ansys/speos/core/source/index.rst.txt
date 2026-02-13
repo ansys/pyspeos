@@ -1,0 +1,115 @@
+
+
+
+
+
+
+The ``source.py`` module
+========================
+
+.. py:module:: ansys.speos.core.source
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: source
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.source.BaseSource`
+            - Super Class for all sources.
+
+
+          * - :py:obj:`~ansys.speos.core.source.SourceLuminaire`
+            - LuminaireSource.
+
+
+          * - :py:obj:`~ansys.speos.core.source.SourceRayFile`
+            - RayFile Source.
+
+
+          * - :py:obj:`~ansys.speos.core.source.SourceSurface`
+            - Type of Source : Surface.
+
+
+          * - :py:obj:`~ansys.speos.core.source.BaseSourceAmbient`
+            - Super Class for ambient sources.
+
+
+          * - :py:obj:`~ansys.speos.core.source.SourceAmbientNaturalLight`
+            - Natural light ambient source.
+
+
+
+
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> BaseSource</api/ansys/speos/core/source/BaseSource>
+    <span class="nf nf-cod-symbol_class"></span> SourceLuminaire</api/ansys/speos/core/source/SourceLuminaire>
+    <span class="nf nf-cod-symbol_class"></span> SourceRayFile</api/ansys/speos/core/source/SourceRayFile>
+    <span class="nf nf-cod-symbol_class"></span> SourceSurface</api/ansys/speos/core/source/SourceSurface>
+    <span class="nf nf-cod-symbol_class"></span> BaseSourceAmbient</api/ansys/speos/core/source/BaseSourceAmbient>
+    <span class="nf nf-cod-symbol_class"></span> SourceAmbientNaturalLight</api/ansys/speos/core/source/SourceAmbientNaturalLight>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides a way to interact with Speos feature: Source.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+

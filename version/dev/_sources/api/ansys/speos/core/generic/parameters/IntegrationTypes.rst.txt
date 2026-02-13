@@ -1,0 +1,105 @@
+
+
+
+
+
+
+:class:`IntegrationTypes`
+=========================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.IntegrationTypes
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   
+   Integration types without parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: IntegrationTypes
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~planar`
+            - 
+          * - :py:attr:`~radial`
+            - 
+          * - :py:attr:`~hemispherical`
+            - 
+          * - :py:attr:`~cylindrical`
+            - 
+          * - :py:attr:`~semi_cylindrical`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import IntegrationTypes
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: planar
+   :value: 'planar'
+
+
+.. py:attribute:: radial
+   :value: 'radial'
+
+
+.. py:attribute:: hemispherical
+   :value: 'hemispherical'
+
+
+.. py:attribute:: cylindrical
+   :value: 'cylindrical'
+
+
+.. py:attribute:: semi_cylindrical
+   :value: 'semi_cylindrical'
+
+
+
+
+
+

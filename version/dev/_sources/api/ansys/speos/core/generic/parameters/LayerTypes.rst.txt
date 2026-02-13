@@ -1,0 +1,93 @@
+
+
+
+
+
+
+:class:`LayerTypes`
+===================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.LayerTypes
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   
+   Layer Separation types without parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: LayerTypes
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~none`
+            - 
+          * - :py:attr:`~by_source`
+            - 
+          * - :py:attr:`~by_polarization`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import LayerTypes
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: none
+   :value: 'none'
+
+
+.. py:attribute:: by_source
+   :value: 'by_source'
+
+
+.. py:attribute:: by_polarization
+   :value: 'by_polarization'
+
+
+
+
+
+
