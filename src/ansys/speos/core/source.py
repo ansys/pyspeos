@@ -630,27 +630,32 @@ class BaseSource:
                 Flux type value.
 
             """
-            match self._flux_type.__name__:
-                case "Luminous":
-                    return self._flux.luminous_flux.luminous_value
-                case "Radiant":
-                    return self._flux.radiant_flux.radiant_value
-                case "LuminousIntensity":
-                    return self._flux.luminous_intensity_flux.luminous_intensity_value
-                case _:
-                    raise ValueError(f"Unsupported flux type: {self._flux_type.__name__}")
+            if self._flux.HasField("radiant_flux") or self._flux_type.__name__ == "Radiant":
+                return self._flux.radiant_flux.radiant_value
+            elif self._flux.HasField("luminous_flux") or self._flux_type.__name__ == "Luminous":
+                return self._flux.luminous_flux.luminous_value
+            elif (
+                self._flux.HasField("luminous_intensity_flux")
+                or self._flux_type.__name__ == "LuminousIntensity"
+            ):
+                return self._flux.luminous_intensity_flux.luminous_intensity_value
+            else:
+                raise ValueError(f"Unsupported flux type: {self._flux.__name__}")
 
         @value.setter
         def value(self, value: float) -> None:
-            match self._flux_type.__name__:
-                case "Luminous":
-                    self._flux.luminous_flux.luminous_value = value
-                case "Radiant":
-                    self._flux.radiant_flux.radiant_value = value
-                case "LuminousIntensity":
-                    self._flux.luminous_intensity_flux.luminous_intensity_value = value
-                case _:
-                    raise ValueError(f"Unsupported flux type: {self._flux_type.__name__}")
+            if self._flux_type is None:
+                self._flux.luminous_flux.luminous_value = value
+            else:
+                match self._flux_type.__name__:
+                    case "Luminous":
+                        self._flux.luminous_flux.luminous_value = value
+                    case "Radiant":
+                        self._flux.radiant_flux.radiant_value = value
+                    case "LuminousIntensity":
+                        self._flux.luminous_intensity_flux.luminous_intensity_value = value
+                    case _:
+                        raise ValueError(f"Unsupported flux type: {self._flux_type.__name__}")
 
     class _Spectrum:
         def __init__(

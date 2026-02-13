@@ -268,6 +268,13 @@ def test_create_luminaire_source(speos: Speos):
     )
     source9.delete()
 
+    # test loading
+    p = Project(speos=speos, path=Path(test_path) / "Source.speos" / "SourceLuminaireTests.speos")
+    source8 = p.find(name="Luminaire.1", name_regex=True, feature_type=SourceLuminaire)[0]
+    assert source8._source_template.luminaire.luminous_flux.luminous_value == 3966.7947473514782
+    source9 = p.find(name="Luminaire.2", name_regex=True, feature_type=SourceLuminaire)[0]
+    assert source9._source_template.luminaire.luminous_flux.luminous_value == 155.2835593364933
+
 
 @pytest.mark.supported_speos_versions(min=251)
 def test_create_surface_source(speos: Speos):
@@ -572,6 +579,31 @@ def test_create_surface_source(speos: Speos):
     )
     source6.delete()
 
+    # test loading
+    p = Project(speos, path=Path(test_path) / "Source.speos" / "SourceSurfaceTests.speos")
+    source7 = p.find(name="Surface.1", name_regex=True, feature_type=SourceSurface)[0]
+    assert source7.flux.value == 1
+    assert source7.intensity.set_cos().n == 1
+    assert source7.intensity.set_cos().total_angle == 180
+    assert source7.spectrum.set_monochromatic().wavelength == 555
+
+    source8 = p.find(name="Surface.2", name_regex=True, feature_type=SourceSurface)[0]
+    assert source8.flux.value == 41.275308514008174
+    assert source8.intensity.set_cos().n == 3
+    assert source8.intensity.set_cos().total_angle == 180
+    assert source8.spectrum.set_blackbody().temperature == 2856
+
+    source9 = p.find(name="Surface.3", name_regex=True, feature_type=SourceSurface)[0]
+    assert source9.flux.value == 25.545490870386296
+    assert source9.intensity.set_library().intensity_file_uri != ""
+    assert source9.intensity.set_library().orientation_axis_system == ORIGIN
+
+    source10 = p.find(name="Surface.4", name_regex=True, feature_type=SourceSurface)[0]
+    assert source10.flux.value == 5.970438466500728
+    assert source10.set_exitance_variable().xmp_file_uri != ""
+    assert source10.set_exitance_variable().axis_plane == ORIGIN[:9]
+    assert source10.intensity.set_library().intensity_file_uri != ""
+
 
 @pytest.mark.supported_speos_versions(min=251)
 def test_create_rayfile_source(speos: Speos):
@@ -730,6 +762,23 @@ def test_create_rayfile_source(speos: Speos):
     spectrum = speos.client[source4.source_template_link.get().rayfile.spectrum_guid]
     assert spectrum.get().HasField("monochromatic")
     source4.delete()
+
+    # test loading
+    p = Project(speos=speos, path=Path(test_path) / "Source.speos" / "SourceRayFileTests.speos")
+    source5 = p.find(name="Ray-file.1", name_regex=True, feature_type=SourceRayFile)[0]
+    assert source5._source_template.rayfile.HasField("spectrum_from_ray_file")
+    assert source5._source_template.rayfile.HasField("flux_from_ray_file")
+
+    source6 = p.find(name="Ray-file.2", name_regex=True, feature_type=SourceRayFile)[0]
+    assert source6._source_template.rayfile.HasField("spectrum_from_ray_file")
+    assert source6._source_template.rayfile.HasField("radiant_flux")
+    assert source6._source_template.rayfile.radiant_flux.radiant_value == 1
+    assert source6.flux.value == 1
+
+    source7 = p.find(name="Ray-file.3", name_regex=True, feature_type=SourceRayFile)[0]
+    spectrum_info = speos.client[source7.source_template_link.get().rayfile.spectrum_guid]
+    assert source7._source_template.rayfile.HasField("flux_from_ray_file")
+    assert spectrum_info.get().HasField("library")
 
 
 @pytest.mark.supported_speos_versions(min=252)
@@ -919,6 +968,28 @@ def test_create_natural_light_source(speos: Speos):
     assert tmp_natural_light_property.sun_axis_system.HasField("manual_sun")
     assert source3.set_sun_manual().direction == new_default_parameters.sun_type.direction
     source3.delete()
+
+    # test loading
+    p = Project(speos, path=Path(test_path) / "Source.speos" / "SourceNaturalLightTests.speos")
+    source4 = p.find(
+        name="Natural Light.1", name_regex=True, feature_type=SourceAmbientNaturalLight
+    )[0]
+    assert source4.turbidity == 3
+    assert source4.with_sky is True
+    assert source4.north_direction == [0, 1, 0]
+    assert source4.zenith_direction == [0, 0, 1]
+    assert source4.set_sun_automatic().year == 2026
+    assert source4.set_sun_automatic().month == 2
+    assert source4.set_sun_automatic().day == 13
+    assert source4.set_sun_automatic().hour == 19
+
+    source5 = p.find(
+        name="Natural Light.2", name_regex=True, feature_type=SourceAmbientNaturalLight
+    )[0]
+    assert source5.turbidity == 3
+    assert source5.with_sky is False
+    assert source5.north_direction == [1, 0, 0]
+    assert source5.set_sun_manual().direction == [0.7071067811865476, 0.0, 0.7071067811865475]
 
 
 @pytest.mark.supported_speos_versions(min=252)
