@@ -41,6 +41,7 @@ from ansys.speos.core.generic.parameters import (
     IntensityCosParameters,
     IntensityFluxParameters,
     IntensityLibraryParameters,
+    IntensityOrientationAxisSystemParameters,
     IntensityOrientationType,
     IntensitySymmetricGaussianParameters,
     LuminaireSourceParameters,
@@ -507,6 +508,9 @@ def test_create_surface_source(speos: Speos):
     source4.commit()
     assert source4.source_template_link.get().surface.HasField("flux_from_intensity_file")
     assert source4.source_template_link.get().surface.HasField("exitance_constant")
+    assert source4.intensity.set_library().intensity_file_uri == str(
+        new_default_parameter.intensity_type.intensity_file_uri
+    )
     tmp_intensity_properties = source4._source_instance.surface_properties.intensity_properties
     assert tmp_intensity_properties.library_properties.HasField("normal_to_uv_map")
     source4.delete()
@@ -524,6 +528,18 @@ def test_create_surface_source(speos: Speos):
     assert len(tmp_intensity_properties.library_properties.exit_geometries.geo_paths) != 0
     assert len(source5.intensity.set_library().exit_geometries) == 1
     source5.delete()
+
+    new_default_parameter.intensity_type.orientation_type = (
+        IntensityOrientationAxisSystemParameters()
+    )
+    source7 = p.create_source(
+        name="Surface.7", feature_type=SourceSurface, parameters=new_default_parameter
+    )
+    source7.commit()
+    assert (
+        source7.intensity.set_library().orientation_axis_system
+        == new_default_parameter.intensity_type.orientation_type.axis_system
+    )
 
     new_default_parameter = SurfaceSourceParameters()
     new_default_parameter.flux_type = LuminousFluxParameters()
