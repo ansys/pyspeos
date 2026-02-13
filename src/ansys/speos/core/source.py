@@ -1844,7 +1844,9 @@ class SourceSurface(BaseSource):
                         default_parameters.exitance_type.axis_system
                     )
                 case "ConstantExitanceParameters":
-                    self.geometries = default_parameters.exitance_type.emissive_faces
+                    self.set_exitance_constant().geometries = (
+                        default_parameters.exitance_type.emissive_faces
+                    )
                 case _:
                     raise ValueError(
                         "Unsupported exitance type: {}".format(
@@ -1853,23 +1855,26 @@ class SourceSurface(BaseSource):
                     )
 
             # Spectrum
-            match type(default_parameters.spectrum_type).__name__:
-                case "SpectrumBlackBodyParameters":
-                    self.spectrum.set_blackbody().temperature = (
-                        default_parameters.spectrum_type.temperature
-                    )
-                case "SpectrumLibraryParameters":
-                    self.spectrum.set_library().file_uri = default_parameters.spectrum_type.file_uri
-                case "SpectrumMonochromaticParameters":
-                    self.spectrum.set_monochromatic().wavelength = (
-                        default_parameters.spectrum_type.wavelength
-                    )
-                case _:
-                    raise ValueError(
-                        "Unsupported spectrum type: {}".format(
-                            type(default_parameters.spectrum_type).__name__
+            if default_parameters.spectrum_type is not None:
+                match type(default_parameters.spectrum_type).__name__:
+                    case "SpectrumBlackBodyParameters":
+                        self.spectrum.set_blackbody().temperature = (
+                            default_parameters.spectrum_type.temperature
                         )
-                    )
+                    case "SpectrumLibraryParameters":
+                        self.spectrum.set_library().file_uri = (
+                            default_parameters.spectrum_type.file_uri
+                        )
+                    case "SpectrumMonochromaticParameters":
+                        self.spectrum.set_monochromatic().wavelength = (
+                            default_parameters.spectrum_type.wavelength
+                        )
+                    case _:
+                        raise ValueError(
+                            "Unsupported spectrum type: {}".format(
+                                type(default_parameters.spectrum_type).__name__
+                            )
+                        )
 
             # Intensity
             match type(default_parameters.intensity_type).__name__:
@@ -1907,7 +1912,7 @@ class SourceSurface(BaseSource):
                         default_parameters.intensity_type.axis_system
                     )
                 case "IntensityLibraryParameters":
-                    self.intensity.set_library().file_uri = (
+                    self.intensity.set_library().intensity_file_uri = (
                         default_parameters.intensity_type.intensity_file_uri
                     )
                     if default_parameters.intensity_type.exit_geometry is not None:

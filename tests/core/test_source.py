@@ -34,11 +34,29 @@ from ansys.speos.core.generic.constants import (
 from ansys.speos.core.generic.parameters import (
     AmbientEnvironmentParameters,
     AmbientNaturalLightParameters,
+    ColorSpaceType,
+    ConstantExitanceParameters,
+    FluxFromFileParameters,
+    IntensitAsymmetricGaussianParameters,
+    IntensityCosParameters,
+    IntensityFluxParameters,
+    IntensityLibraryParameters,
+    IntensityOrientationType,
+    IntensitySymmetricGaussianParameters,
     LuminaireSourceParameters,
     LuminousFluxParameters,
+    ManualSunParameters,
+    RadiantFluxParameters,
     RayFileSourceParameters,
+    SpectrumBlackBodyParameters,
+    SpectrumLibraryParameters,
+    SpectrumMonochromaticParameters,
     SpectrumType,
     SurfaceSourceParameters,
+    UserDefinedColorSpaceParameters,
+    UserDefinedWhitePointParameters,
+    VariableExitanceParameters,
+    WhitePointType,
 )
 from ansys.speos.core.source import (
     SourceAmbientEnvironment,
@@ -158,6 +176,91 @@ def test_create_luminaire_source(speos: Speos):
 
     source1.delete()
     assert len(p.scene_link.get().sources) == 0
+
+    # test parameters
+    new_default_parameter = LuminaireSourceParameters()
+    new_default_parameter.flux_type = RadiantFluxParameters()
+    new_default_parameter.spectrum_type = SpectrumType.high_pressure_sodium
+    source2 = p.create_source(
+        name="Luminaire.2", feature_type=SourceLuminaire, parameters=new_default_parameter
+    )
+    source2.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
+    source2.commit()
+    assert source2._source_template.luminaire.HasField("radiant_flux")
+    spectrum = speos.client[source2.source_template_link.get().luminaire.spectrum_guid]
+    assert spectrum.get().predefined.HasField("highpressuresodium")
+    source2.delete()
+
+    new_default_parameter.spectrum_type = SpectrumType.daylight_fluorescent
+    source3 = p.create_source(
+        name="Luminaire.3", feature_type=SourceLuminaire, parameters=new_default_parameter
+    )
+    source3.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
+    source3.commit()
+    spectrum = speos.client[source3.source_template_link.get().luminaire.spectrum_guid]
+    assert spectrum.get().predefined.HasField("daylightfluorescent")
+    source3.delete()
+
+    new_default_parameter.spectrum_type = SpectrumType.white_led
+    source4 = p.create_source(
+        name="Luminaire.4", feature_type=SourceLuminaire, parameters=new_default_parameter
+    )
+    source4.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
+    source4.commit()
+    spectrum = speos.client[source4.source_template_link.get().luminaire.spectrum_guid]
+    assert spectrum.get().predefined.HasField("whiteLED")
+    source4.delete()
+
+    new_default_parameter.spectrum_type = SpectrumType.halogen
+    source5 = p.create_source(
+        name="Luminaire.5", feature_type=SourceLuminaire, parameters=new_default_parameter
+    )
+    source5.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
+    source5.commit()
+    spectrum = speos.client[source5.source_template_link.get().luminaire.spectrum_guid]
+    assert spectrum.get().predefined.HasField("halogen")
+    source5.delete()
+
+    new_default_parameter.spectrum_type = SpectrumType.metal_halide
+    source6 = p.create_source(
+        name="Luminaire.6", feature_type=SourceLuminaire, parameters=new_default_parameter
+    )
+    source6.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
+    source6.commit()
+    spectrum = speos.client[source6.source_template_link.get().luminaire.spectrum_guid]
+    assert spectrum.get().predefined.HasField("metalhalide")
+    source6.delete()
+
+    new_default_parameter.spectrum_type = SpectrumType.high_pressure_sodium
+    source7 = p.create_source(
+        name="Luminaire.7", feature_type=SourceLuminaire, parameters=new_default_parameter
+    )
+    source7.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
+    source7.commit()
+    spectrum = speos.client[source7.source_template_link.get().luminaire.spectrum_guid]
+    assert spectrum.get().predefined.HasField("highpressuresodium")
+    source7.delete()
+
+    new_default_parameter.spectrum_type = SpectrumBlackBodyParameters()
+    source8 = p.create_source(
+        name="Luminaire.8", feature_type=SourceLuminaire, parameters=new_default_parameter
+    )
+    source8.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
+    source8.commit()
+    spectrum = speos.client[source8.source_template_link.get().luminaire.spectrum_guid]
+    assert spectrum.get().HasField("blackbody")
+    source8.delete()
+
+    new_default_parameter.spectrum_type = SpectrumLibraryParameters()
+    new_default_parameter.spectrum_type.file_uri = Path(test_path) / "R04.spectrum"
+    source9 = p.create_source(
+        name="Luminaire.9", feature_type=SourceLuminaire, parameters=new_default_parameter
+    )
+    source9.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
+    source9.commit()
+    spectrum = speos.client[source9.source_template_link.get().luminaire.spectrum_guid]
+    assert spectrum.get().HasField("library")
+    source9.delete()
 
 
 @pytest.mark.supported_speos_versions(min=251)
@@ -324,6 +427,90 @@ def test_create_surface_source(speos: Speos):
 
     source1.delete()
 
+    # test parameters
+    new_default_parameter = SurfaceSourceParameters()
+    new_default_parameter.flux_type = RadiantFluxParameters()
+    new_default_parameter.spectrum_type = None
+    new_default_parameter.intensity_type = IntensityCosParameters()
+    new_default_parameter.exitance_type = VariableExitanceParameters()
+    new_default_parameter.exitance_type.xmp_file_uri = (
+        Path(test_path) / "PROJECT.Direct-no-Ray.Irradiance Ray Spectral.xmp"
+    )
+    source2 = p.create_source(
+        name="Surface.2", feature_type=SourceSurface, parameters=new_default_parameter
+    )
+    source2.set_spectrum_from_xmp_file()
+    source2.commit()
+    assert source2.source_template_link.get().surface.HasField("radiant_flux")
+    assert source2.source_template_link.get().surface.HasField("exitance_variable")
+    source2.delete()
+
+    new_default_parameter.flux_type = IntensityFluxParameters()
+    new_default_parameter.spectrum_type = None
+    new_default_parameter.intensity_type = IntensitySymmetricGaussianParameters()
+    new_default_parameter.exitance_type = VariableExitanceParameters()
+    new_default_parameter.exitance_type.xmp_file_uri = (
+        Path(test_path) / "PROJECT.Direct-no-Ray.Irradiance Ray Spectral.xmp"
+    )
+    source3 = p.create_source(
+        name="Surface.3", feature_type=SourceSurface, parameters=new_default_parameter
+    )
+    source3.set_spectrum_from_xmp_file()
+    source3.commit()
+    assert source3.source_template_link.get().surface.HasField("luminous_intensity_flux")
+    assert source3.source_template_link.get().surface.HasField("exitance_variable")
+    source3.delete()
+
+    new_default_parameter = SurfaceSourceParameters()
+    new_default_parameter.flux_type = FluxFromFileParameters()
+    new_default_parameter.spectrum_type = SpectrumLibraryParameters()
+    new_default_parameter.spectrum_type.file_uri = Path(test_path) / "R04.spectrum"
+    new_default_parameter.intensity_type = IntensityLibraryParameters()
+    new_default_parameter.intensity_type.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
+    new_default_parameter.intensity_type.orientation_type = IntensityOrientationType.normal_to_uv
+    new_default_parameter.exitance_type = ConstantExitanceParameters()
+    new_default_parameter.exitance_type.emissive_faces = [
+        (GeoRef.from_native_link("BodyB/FaceB1"), False),
+        (GeoRef.from_native_link("BodyB/FaceB2"), True),
+    ]
+    source4 = p.create_source(
+        name="Surface.4", feature_type=SourceSurface, parameters=new_default_parameter
+    )
+    source4.commit()
+    assert source4.source_template_link.get().surface.HasField("flux_from_intensity_file")
+    assert source4.source_template_link.get().surface.HasField("exitance_constant")
+    tmp_intensity_properties = source4._source_instance.surface_properties.intensity_properties
+    assert tmp_intensity_properties.library_properties.HasField("normal_to_uv_map")
+    source4.delete()
+
+    new_default_parameter.intensity_type.orientation_type = (
+        IntensityOrientationType.normal_to_surface
+    )
+    source5 = p.create_source(
+        name="Surface.5", feature_type=SourceSurface, parameters=new_default_parameter
+    )
+    source5.commit()
+    tmp_intensity_properties = source5._source_instance.surface_properties.intensity_properties
+    assert tmp_intensity_properties.library_properties.HasField("normal_to_surface")
+    source5.delete()
+
+    new_default_parameter = SurfaceSourceParameters()
+    new_default_parameter.flux_type = LuminousFluxParameters()
+    new_default_parameter.spectrum_type = SpectrumBlackBodyParameters()
+    new_default_parameter.intensity_type = IntensitAsymmetricGaussianParameters()
+    new_default_parameter.exitance_type = ConstantExitanceParameters()
+    new_default_parameter.exitance_type.emissive_faces = [
+        (GeoRef.from_native_link("BodyB/FaceB1"), False),
+        (GeoRef.from_native_link("BodyB/FaceB2"), True),
+    ]
+    source6 = p.create_source(
+        name="Surface.6", feature_type=SourceSurface, parameters=new_default_parameter
+    )
+    source6.commit()
+    assert source6.source_template_link.get().surface.HasField("luminous_flux")
+    assert source6.source_template_link.get().surface.HasField("exitance_constant")
+    source6.delete()
+
 
 @pytest.mark.supported_speos_versions(min=251)
 def test_create_rayfile_source(speos: Speos):
@@ -438,6 +625,41 @@ def test_create_rayfile_source(speos: Speos):
         )
 
     source1.delete()
+
+    # test parameters
+    new_default_parameter = RayFileSourceParameters()
+    new_default_parameter.flux_type = RadiantFluxParameters()
+    new_default_parameter.spectrum_type = SpectrumBlackBodyParameters()
+    new_default_parameter.ray_file_uri = Path(test_path) / "RaysWithoutSpectralData.RAY"
+    source2 = p.create_source(
+        name="Ray-file.2", feature_type=SourceRayFile, parameters=new_default_parameter
+    )
+    source2.commit()
+    assert source2._source_template.rayfile.HasField("radiant_flux")
+    spectrum = speos.client[source2.source_template_link.get().rayfile.spectrum_guid]
+    assert spectrum.get().HasField("blackbody")
+    source2.delete()
+
+    new_default_parameter.spectrum_type = SpectrumLibraryParameters()
+    new_default_parameter.spectrum_type.file_uri = Path(test_path) / "R04.spectrum"
+    new_default_parameter.ray_file_uri = Path(test_path) / "RaysWithoutSpectralData.RAY"
+    source3 = p.create_source(
+        name="Ray-file.3", feature_type=SourceRayFile, parameters=new_default_parameter
+    )
+    source3.commit()
+    spectrum = speos.client[source3.source_template_link.get().rayfile.spectrum_guid]
+    assert spectrum.get().HasField("library")
+    source3.delete()
+
+    new_default_parameter.spectrum_type = SpectrumMonochromaticParameters()
+    new_default_parameter.ray_file_uri = Path(test_path) / "RaysWithoutSpectralData.RAY"
+    source4 = p.create_source(
+        name="Ray-file.4", feature_type=SourceRayFile, parameters=new_default_parameter
+    )
+    source4.commit()
+    spectrum = speos.client[source4.source_template_link.get().rayfile.spectrum_guid]
+    assert spectrum.get().HasField("monochromatic")
+    source4.delete()
 
 
 @pytest.mark.supported_speos_versions(min=252)
@@ -597,6 +819,26 @@ def test_create_natural_light_source(speos: Speos):
 
     source2.delete()
 
+    # test parameters
+    new_default_parameters = AmbientNaturalLightParameters()
+    new_default_parameters.sun_type = ManualSunParameters()
+    source3 = p.create_source(
+        name="NaturalLight.3",
+        feature_type=SourceAmbientNaturalLight,
+        parameters=new_default_parameters,
+    )
+    tmp_natural_light_property = (
+        source3._source_instance.ambient_properties.natural_light_properties
+    )
+    assert tmp_natural_light_property.north_direction == [
+        0,
+        1,
+        0,
+    ]
+    assert tmp_natural_light_property.sun_axis_system.HasField("manual_sun")
+    assert source3.set_sun_manual().direction == new_default_parameters.sun_type.direction
+    source3.delete()
+
 
 @pytest.mark.supported_speos_versions(min=252)
 def test_create_environment_source(speos: Speos):
@@ -752,6 +994,84 @@ def test_create_environment_source(speos: Speos):
     gp2.delete()
 
     source2.delete()
+
+    # test parameters
+    new_default_parameters = AmbientEnvironmentParameters()
+    new_default_parameters.color_space_type = ColorSpaceType.adobe_rgb
+    source3 = p.create_source(
+        name="Environment.3",
+        feature_type=SourceAmbientEnvironment,
+        parameters=new_default_parameters,
+    )
+    assert (
+        source3._source_template.ambient.environment_map.predefined_color_space.color_space_type
+        == 1
+    )
+    source3.delete()
+
+    new_default_parameters.color_space_type = UserDefinedColorSpaceParameters()
+    source4 = p.create_source(
+        name="Environment.4",
+        feature_type=SourceAmbientEnvironment,
+        parameters=new_default_parameters,
+    )
+    assert (
+        source4._source_template.ambient.environment_map.user_defined_rgb_space.pre_defined_white_point.white_point_type
+        == 2
+    )
+    source4.delete()
+
+    new_default_parameters.color_space_type = UserDefinedColorSpaceParameters()
+    new_default_parameters.color_space_type.white_point_type = WhitePointType.d50
+    source5 = p.create_source(
+        name="Environment.5",
+        feature_type=SourceAmbientEnvironment,
+        parameters=new_default_parameters,
+    )
+    assert (
+        source5._source_template.ambient.environment_map.user_defined_rgb_space.pre_defined_white_point.white_point_type
+        == 1
+    )
+    source5.delete()
+
+    new_default_parameters.color_space_type.white_point_type = WhitePointType.c
+    source6 = p.create_source(
+        name="Environment.6",
+        feature_type=SourceAmbientEnvironment,
+        parameters=new_default_parameters,
+    )
+    assert (
+        source6._source_template.ambient.environment_map.user_defined_rgb_space.pre_defined_white_point.white_point_type
+        == 0
+    )
+    source6.delete()
+
+    new_default_parameters.color_space_type.white_point_type = WhitePointType.e
+    source7 = p.create_source(
+        name="Environment.7",
+        feature_type=SourceAmbientEnvironment,
+        parameters=new_default_parameters,
+    )
+    assert (
+        source7._source_template.ambient.environment_map.user_defined_rgb_space.pre_defined_white_point.white_point_type
+        == 3
+    )
+    source7.delete()
+
+    new_default_parameters.color_space_type.white_point_type = UserDefinedWhitePointParameters()
+    source8 = p.create_source(
+        name="Environment.8",
+        feature_type=SourceAmbientEnvironment,
+        parameters=new_default_parameters,
+    )
+    assert (
+        source8._source_template.ambient.environment_map.user_defined_rgb_space.user_defined_white_point.white_point
+        == [
+            new_default_parameters.color_space_type.white_point_type.x,
+            new_default_parameters.color_space_type.white_point_type.y,
+        ]
+    )
+    source8.delete()
 
 
 def test_keep_same_internal_feature(speos: Speos):
@@ -1230,7 +1550,7 @@ def test_get_source(speos: Speos, capsys):
     property_info = source2.get(key="axis_system")
     assert property_info is not None
     property_info = source3.get(key="geo_path")
-    assert property_info is None
+    assert property_info == []
     property_info = source4.get(key="predefined_color_space")
     assert property_info is not None
 

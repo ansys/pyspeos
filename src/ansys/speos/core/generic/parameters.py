@@ -581,8 +581,10 @@ class SurfaceSourceParameters:
         IntensitAsymmetricGaussianParameters,
         IntensityLibraryParameters,
     ] = field(default_factory=lambda: IntensityLambertianParameters())
-    spectrum_type: Union[
-        SpectrumBlackBodyParameters, SpectrumLibraryParameters, SpectrumMonochromaticParameters
+    spectrum_type: Optional[
+        Union[
+            SpectrumBlackBodyParameters, SpectrumLibraryParameters, SpectrumMonochromaticParameters
+        ]
     ] = field(default_factory=lambda: SpectrumMonochromaticParameters())
 
 
