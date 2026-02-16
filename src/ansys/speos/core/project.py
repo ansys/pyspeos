@@ -377,7 +377,8 @@ class Project:
             Allowed types: Union[ansys.speos.core.sensor.SensorCamera,\
             ansys.speos.core.sensor.SensorRadiance, \
             ansys.speos.core.sensor.SensorIrradiance, \
-            ansys.speos.core.sensor.Sensor3DIrradiance].
+            ansys.speos.core.sensor.Sensor3DIrradiance, \
+            ansys.speos.core.sensor.SensorXMPIntensity].
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
@@ -428,7 +429,7 @@ class Project:
                 elif not isinstance(parameters, IntensityXMPSensorParameters):
                     raise TypeError(
                         f"Incorrect parameter dataclass provided "
-                        f"{str(type(parameters))} instead of IrradianceSensorParameters"
+                        f"{str(type(parameters))} instead of IntensityXMPSensorParameters"
                     )
                 feature = SensorXMPIntensity(
                     project=self,
@@ -600,7 +601,7 @@ class Project:
         ansys.speos.core.source.SourceRayFile, ansys.speos.core.source.SourceLuminaire, \
         ansys.speos.core.source.SourceAmbientNaturalLight, ansys.speos.core.sensor.SensorCamera, \
         ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance, \
-        ansys.speos.core.sensor.Sensor3DIrradiance, \
+        ansys.speos.core.sensor.Sensor3DIrradiance, ansys.speos.core.sensor.SensorXMPIntensity, \
         ansys.speos.core.simulation.SimulationVirtualBSDF, \
         ansys.speos.core.simulation.SimulationDirect, \
         ansys.speos.core.simulation.SimulationInteractive, \
@@ -1120,7 +1121,8 @@ class Project:
         plotter: Plotter
             ansys.tools.visualization_interface.Plotter
         speos_feature: Union[SensorCamera, SensorRadiance, SensorIrradiance,
-        Sensor3DIrradiance, SourceLuminaire, SourceRayFile, SourceLuminaire]
+        Sensor3DIrradiance, SensorXMPIntensity, SourceLuminaire, SourceRayFile,
+        SourceLuminaire]
             speos feature whose visual data will be added.
         scene_seize: float
             seize of max scene bounds
@@ -1183,7 +1185,13 @@ class Project:
                 case SensorRadiance() | SourceSurface():
                     plotter.plot(speos_feature.visual_data.coordinates.x_axis, color="red")
                     plotter.plot(speos_feature.visual_data.coordinates.y_axis, color="green")
-                case SensorIrradiance() | SensorCamera() | SourceLuminaire() | SourceRayFile():
+                case (
+                    SensorIrradiance()
+                    | SensorXMPIntensity()
+                    | SensorCamera()
+                    | SourceLuminaire()
+                    | SourceRayFile()
+                ):
                     plotter.plot(speos_feature.visual_data.coordinates.x_axis, color="red")
                     plotter.plot(speos_feature.visual_data.coordinates.y_axis, color="green")
                     plotter.plot(speos_feature.visual_data.coordinates.z_axis, color="blue")
