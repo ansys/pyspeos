@@ -1460,7 +1460,10 @@ def test_load_3d_irradiance_sensor(speos: Speos):
         path=str(Path(test_path) / "Prism.speos" / "Prism_3D.speos"),
     )
     sensor_3d = p.find(name=".*", name_regex=True, feature_type=Sensor3DIrradiance)[0]
-    assert sensor_3d is not None
+    assert isinstance(sensor_3d, Sensor3DIrradiance)
+    assert isinstance(sensor_3d.Photometric, Sensor3DIrradiance.Photometric)
+    assert sensor_3d.type == SensorTypes.photometric.capitalize()
+    assert sensor_3d.layer == LayerTypes.none
 
 
 def test_load_radiance_sensor(speos: Speos):
@@ -2589,32 +2592,25 @@ def test_create_by_parameters(speos: Speos):
                     == s._sensor_instance.EnumRayFileType.RayFileTM25NoPolarization
                 )
         if isinstance(para.sensor_type, ColorimetricParameters):
-            assert isinstance(s._type, Sensor3DIrradiance.Colorimetric)
+            assert s.type.lower() == "colorimetric"
+            assert isinstance(s.colorimetric, Sensor3DIrradiance.Colorimetric)
             assert (
-                s._type.set_wavelengths_range().start == colorimetric_params.wavelength_range.start
+                s.colorimetric.set_wavelengths_range().start
+                == colorimetric_params.wavelength_range.start
             )
         elif para.sensor_type == SensorTypes.photometric:
-            assert isinstance(s._type, Sensor3DIrradiance.Photometric)
+            assert s.type.lower() == SensorTypes.photometric
+            assert isinstance(s.photometric, Sensor3DIrradiance.Photometric)
             if para.integration_type == IntegrationTypes.planar:
-                assert isinstance(
-                    s.set_type_photometric()._integration_type, Sensor3DIrradiance.Measures
-                )
-                assert (
-                    s.set_type_photometric()._integration_type.reflection
-                    == para.measures.reflection
-                )
-                assert (
-                    s.set_type_photometric()._integration_type.transmission
-                    == para.measures.transmission
-                )
-                assert (
-                    s.set_type_photometric()._integration_type.absorption
-                    == para.measures.absorption
-                )
+                assert isinstance(s.photometric._integration_type, Sensor3DIrradiance.Measures)
+                assert s.photometric._integration_type.reflection == para.measures.reflection
+                assert s.photometric._integration_type.transmission == para.measures.transmission
+                assert s.photometric._integration_type.absorption == para.measures.absorption
             elif para.integration_type == IntegrationTypes.radial:
                 assert s.set_type_photometric()._integration_type.lower() == para.integration_type
         elif para.sensor_type == SensorTypes.radiometric:
             assert isinstance(s._type, Sensor3DIrradiance.Radiometric)
+            assert s.type.lower() == SensorTypes.radiometric
             if para.integration_type == IntegrationTypes.planar:
                 assert isinstance(
                     s.set_type_radiometric()._integration_type, Sensor3DIrradiance.Measures
