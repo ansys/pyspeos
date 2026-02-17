@@ -122,7 +122,7 @@ class Intensity:
                             )
                         else:
                             raise ValueError(
-                                "IIncorrect library intensity type: {}".format(
+                                "Incorrect library intensity type: {}".format(
                                     type(default_parameters).__name__
                                 )
                             )
