@@ -1382,7 +1382,7 @@ def test_export_vtp(speos: Speos):
     for line in content[start_idx:]:
         x, y, value = line.split("\t")
         xmp_data.append(float(value))
-        
+
     assert np.all(
         np.isclose(
             np.array(xmp_data).reshape((resolution_x, resolution_y)),
