@@ -1461,8 +1461,11 @@ def test_load_3d_irradiance_sensor(speos: Speos):
     )
     sensor_3d = p.find(name=".*", name_regex=True, feature_type=Sensor3DIrradiance)[0]
     assert isinstance(sensor_3d, Sensor3DIrradiance)
-    assert isinstance(sensor_3d.photometric, Sensor3DIrradiance.Photometric)
-    assert sensor_3d.type == SensorTypes.photometric.capitalize()
+    assert isinstance(sensor_3d.colorimetric, Sensor3DIrradiance.Colorimetric)
+    assert sensor_3d.type == "Colorimetric"
+    wl = sensor_3d.colorimetric.set_wavelengths_range()
+    assert wl.start == 400
+    assert wl.end == 700
     assert sensor_3d.layer == LayerTypes.none
 
 
