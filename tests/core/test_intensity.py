@@ -41,7 +41,7 @@ def test_create_intensity(speos: Speos):
     assert intensity1.intensity_template_link.get().cos.total_angle == 180
 
     # library
-    intensity1.set_library().intensity_file_uri = str(Path(test_path) / "IES_C_DETECTOR.ies")
+    intensity1.set_library().intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     intensity1.set_library().orientation_axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     intensity1.commit()
     assert intensity1.intensity_template_link.get().HasField("library")
@@ -125,7 +125,7 @@ def test_switch_intensity(speos: Speos):
     """
     # Use intensity library with some default properties
     intensity1 = Intensity(speos_client=speos.client, name="Intensity.1")
-    intensity1.set_library().intensity_file_uri = str(Path(test_path) / "IES_C_DETECTOR.ies")
+    intensity1.set_library().intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     intensity1.commit()
     assert intensity1._intensity_properties.HasField("properties")
     assert intensity1._intensity_properties.HasField("library_properties")
@@ -142,7 +142,7 @@ def test_commit_intensity(speos: Speos):
     """Test commit of intensity."""
     # Create
     intensity1 = Intensity(speos_client=speos.client, name="Intensity.1")
-    intensity1.set_library().intensity_file_uri = str(Path(test_path) / "IES_C_DETECTOR.ies")
+    intensity1.set_library().intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     intensity1.set_library().orientation_axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     assert intensity1.intensity_template_link is None
 
@@ -159,7 +159,7 @@ def test_reset_intensity(speos: Speos):
     """Test reset of intensity."""
     # Create + commit
     intensity1 = Intensity(speos_client=speos.client, name="Intensity.1")
-    intensity1.set_library().intensity_file_uri = str(Path(test_path) / "IES_C_DETECTOR.ies")
+    intensity1.set_library().intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     intensity1.commit()
     assert intensity1.intensity_template_link.get().HasField("library")
 
@@ -181,14 +181,14 @@ def test_library_modify_after_reset(speos: Speos):
     """Test modify library intensity feature after reset."""
     # Create + commit
     intensity1 = Intensity(speos_client=speos.client, name="Intensity.1")
-    intensity1.set_library().intensity_file_uri = str(Path(test_path) / "IES_C_DETECTOR.ies")
+    intensity1.set_library().intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     intensity1.commit()
 
     # Ask for reset
     intensity1.reset()
 
     # Template modification
-    intensity1.set_library().intensity_file_uri = str(
+    intensity1.set_library().intensity_file_uri = (
         Path(test_path) / "PROJECT.Direct-no-Ray.Irradiance Ray Spectral.xmp"
     )
     assert intensity1._intensity_template.library.intensity_file_uri.endswith("xmp")
@@ -251,7 +251,7 @@ def test_delete_intensity(speos: Speos):
     """Test delete of intensity."""
     # Create + commit
     intensity1 = Intensity(speos_client=speos.client, name="Intensity.1")
-    intensity1.set_library().intensity_file_uri = str(Path(test_path) / "IES_C_DETECTOR.ies")
+    intensity1.set_library().intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     intensity1.set_library().orientation_axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     intensity1.commit()
     assert intensity1.intensity_template_link.get().HasField("library")

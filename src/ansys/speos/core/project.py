@@ -212,8 +212,7 @@ class Project:
             AmbientNaturalLightParameters,
             AmbientEnvironmentParameters,
         ]
-            default feature parameter.
-            By default, None which will be from generic.Parameters.
+            Allows to provide parameters to overwrite default parameters.
 
         Returns
         -------
