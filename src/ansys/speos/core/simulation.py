@@ -134,7 +134,7 @@ class BaseSimulation:
 
                 Parameters
                 ----------
-                uri: Union[Path | str]
+                uri: Union[Path, str]
                     Adaptive sampling file uri to assign.
 
                 Returns
@@ -145,7 +145,7 @@ class BaseSimulation:
                 return self._adaptive.file_uri
 
             @adaptive_uri.setter
-            def adaptive_uri(self, uri: Union[Path | str]) -> None:
+            def adaptive_uri(self, uri: Union[Path, str]) -> None:
                 self._adaptive.file_uri = str(uri)
 
         class Uniform:
