@@ -1,0 +1,118 @@
+
+
+
+
+
+
+:class:`Uniform`
+================
+
+
+.. py:class:: ansys.speos.core.simulation.BaseSimulation.SourceSampling.Uniform(uniform, default_values = True, stable_ctr = False)
+
+   
+   Uniform sampling mode.
+
+
+   :Parameters:
+
+       **uniform** : :obj:`simulation_template_pb2.SourceSamplingUniformIsotropic`
+           uniform settings to complete.
+
+       **default_values: bool**
+           True to use the default uniform settings.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: Uniform
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~theta_sampling`
+            - Theta source sampling.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.simulation.BaseSimulation.SourceSampling import Uniform
+
+Property detail
+---------------
+
+.. py:property:: theta_sampling
+   :type: int
+
+
+   
+   Theta source sampling.
+
+   This property gets or sets the source sampling in theta direction.
+
+   :Parameters:
+
+       **theta_sampling: int**
+           theta sampling to assign.
+
+
+
+   :Returns:
+
+       :class:`python:int`
+           theta sampling.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+

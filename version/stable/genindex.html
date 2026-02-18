@@ -1,0 +1,3488 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Index &#8212; ansys-speos-core 0.7.2 documentation</title>
+  
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/ansys-sphinx-theme.css?v=9e79609d" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/ansys-sphinx-theme.css?v=9e79609d" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://www.nerdfonts.com/assets/css/webfont.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=0670e955" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+
+  <!-- Include desired assets -->
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  
+
+  
+    <link href="_static/css/breadcrumbs.css" rel="stylesheet" />
+  
+    <script src="_static/documentation_options.js?v=3096642c"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.2.0/dist/mermaid-layout-elk.esm.min.mjs"></script>
+    <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";import elkLayouts from "https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.2.0/dist/mermaid-layout-elk.esm.min.mjs";mermaid.registerLayoutLoaders(elkLayouts);mermaid.initialize({startOnLoad:false});</script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+    <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
+
+const defaultStyle = document.createElement('style');
+defaultStyle.textContent = `pre.mermaid {
+    /* Same as .mermaid-container > pre */
+    display: block;
+    width: 100%;
+}
+
+pre.mermaid > svg {
+    /* Same as .mermaid-container > pre > svg */
+    height: 500px;
+    width: 100%;
+    max-width: 100% !important;
+}
+`;
+document.head.appendChild(defaultStyle);
+
+const fullscreenStyle = document.createElement('style');
+fullscreenStyle.textContent = `.mermaid-container {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+}
+
+.mermaid-container > pre {
+    display: block;
+    width: 100%;
+}
+
+.mermaid-container > pre > svg {
+    height: 500px;
+    width: 100%;
+    max-width: 100% !important;
+}
+
+.mermaid-fullscreen-btn {
+    width: 28px;
+    height: 28px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    font-size: 14px;
+    line-height: 1;
+    padding: 0;
+    color: #333;
+}
+
+.mermaid-fullscreen-btn:hover {
+    opacity: 100% !important;
+    background: rgba(255, 255, 255, 1);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+    transform: scale(1.1);
+}
+
+.mermaid-fullscreen-btn.dark-theme {
+    background: rgba(50, 50, 50, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #e0e0e0;
+}
+
+.mermaid-fullscreen-btn.dark-theme:hover {
+    background: rgba(60, 60, 60, 1);
+    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);
+}
+
+.mermaid-fullscreen-modal {
+    display: none;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 95vw;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.98);
+    z-index: 9999;
+    padding: 20px;
+    overflow: auto;
+}
+
+.mermaid-fullscreen-modal.dark-theme {
+    background: rgba(0, 0, 0, 0.98);
+}
+
+.mermaid-fullscreen-modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mermaid-container-fullscreen {
+    position: relative;
+    width: 95vw;
+    height: 90vh;
+    max-width: 95vw;
+    max-height: 90vh;
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    overflow: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mermaid-container-fullscreen.dark-theme {
+    background: #1a1a1a;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+}
+
+.mermaid-container-fullscreen pre.mermaid {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mermaid-container-fullscreen .mermaid svg {
+    height: 100% !important;
+    width: 100% !important;
+    cursor: grab;
+}
+
+.mermaid-fullscreen-close {
+    position: fixed !important;
+    top: 20px !important;
+    right: 20px !important;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s;
+    font-size: 24px;
+    line-height: 1;
+    color: #333;
+}
+
+.mermaid-fullscreen-close:hover {
+    background: white;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    transform: scale(1.1);
+}
+
+.mermaid-fullscreen-close.dark-theme {
+    background: rgba(50, 50, 50, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #e0e0e0;
+}
+
+.mermaid-fullscreen-close.dark-theme:hover {
+    background: rgba(60, 60, 60, 1);
+    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);
+}
+
+.mermaid-fullscreen-modal .mermaid-fullscreen-btn {
+    display: none !important;
+}`;
+document.head.appendChild(fullscreenStyle);
+
+// Detect if page has dark background
+const isDarkTheme = () => {
+    const bgColor = window.getComputedStyle(document.body).backgroundColor;
+    const match = bgColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)/);
+    if (match) {
+        const r = parseInt(match[1]);
+        const g = parseInt(match[2]);
+        const b = parseInt(match[3]);
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        return brightness < 128;
+    }
+    return false;
+};
+
+const load = async () => {
+    await mermaid.run();
+
+    const all_mermaids = document.querySelectorAll(".mermaid");
+    const mermaids_processed = document.querySelectorAll(".mermaid[data-processed='true']");
+
+    if ("False" === "True") {
+        const mermaids_to_add_zoom = -1 === -1 ? all_mermaids.length : -1;
+        if(mermaids_to_add_zoom > 0) {
+            var svgs = d3.selectAll("");
+            if(all_mermaids.length !== mermaids_processed.length) {
+                setTimeout(load, 200);
+                return;
+            } else if(svgs.size() !== mermaids_to_add_zoom) {
+                setTimeout(load, 200);
+                return;
+            } else {
+                svgs.each(function() {
+                    var svg = d3.select(this);
+                    svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+                    var inner = svg.select("g");
+                    var zoom = d3.zoom().on("zoom", function(event) {
+                        inner.attr("transform", event.transform);
+                    });
+                    svg.call(zoom);
+                });
+            }
+        }
+    } else if(all_mermaids.length !== mermaids_processed.length) {
+        // Wait for mermaid to process all diagrams
+        setTimeout(load, 200);
+        return;
+    }
+
+    const darkTheme = isDarkTheme();
+
+    // Stop here if not adding fullscreen capability
+    if ("True" !== "True") return;
+
+    const modal = document.createElement('div');
+    modal.className = 'mermaid-fullscreen-modal' + (darkTheme ? ' dark-theme' : '');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Fullscreen diagram viewer');
+    modal.innerHTML = `
+        <button class="mermaid-fullscreen-close${darkTheme ? ' dark-theme' : ''}" aria-label="Close fullscreen">✕</button>
+        <div class="mermaid-container-fullscreen${darkTheme ? ' dark-theme' : ''}"></div>
+    `;
+    document.body.appendChild(modal);
+
+    const modalContent = modal.querySelector('.mermaid-container-fullscreen');
+    const closeBtn = modal.querySelector('.mermaid-fullscreen-close');
+
+    let previousScrollOffset = [window.scrollX, window.scrollY];
+
+    const closeModal = () => {
+        modal.classList.remove('active');
+        modalContent.innerHTML = '';
+        document.body.style.overflow = ''
+        window.scrollTo({left: previousScrollOffset[0], top: previousScrollOffset[1], behavior: 'instant'});
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('active')) {
+            closeModal();
+        }
+    });
+
+    const allButtons = [];
+
+    document.querySelectorAll('.mermaid').forEach((mermaidDiv) => {
+        if (mermaidDiv.parentNode.classList.contains('mermaid-container') ||
+            mermaidDiv.closest('.mermaid-fullscreen-modal')) {
+            return;
+        }
+
+        const container = document.createElement('div');
+        container.className = 'mermaid-container';
+        mermaidDiv.parentNode.insertBefore(container, mermaidDiv);
+        container.appendChild(mermaidDiv);
+
+        const fullscreenBtn = document.createElement('button');
+        fullscreenBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+        fullscreenBtn.setAttribute('aria-label', 'View diagram in fullscreen');
+        fullscreenBtn.textContent = '⛶';
+        fullscreenBtn.style.opacity = '50%';
+
+        // Calculate dynamic position based on diagram's margin and padding
+        const diagramStyle = window.getComputedStyle(mermaidDiv);
+        const marginTop = parseFloat(diagramStyle.marginTop) || 0;
+        const marginRight = parseFloat(diagramStyle.marginRight) || 0;
+        const paddingTop = parseFloat(diagramStyle.paddingTop) || 0;
+        const paddingRight = parseFloat(diagramStyle.paddingRight) || 0;
+        fullscreenBtn.style.top = `${marginTop + paddingTop + 4}px`;
+        fullscreenBtn.style.right = `${marginRight + paddingRight + 4}px`;
+
+        fullscreenBtn.addEventListener('click', () => {
+            previousScrollOffset = [window.scroll, window.scrollY];
+            const clone = mermaidDiv.cloneNode(true);
+            modalContent.innerHTML = '';
+            modalContent.appendChild(clone);
+
+            const svg = clone.querySelector('svg');
+            if (svg) {
+                svg.removeAttribute('width');
+                svg.removeAttribute('height');
+                svg.style.width = '100%';
+                svg.style.height = 'auto';
+                svg.style.maxWidth = '100%';
+                svg.style.sdisplay = 'block';
+
+                if ("False" === "True") {
+                    setTimeout(() => {
+                        const g = svg.querySelector('g');
+                        if (g) {
+                            var svgD3 = d3.select(svg);
+                            svgD3.html("<g class='wrapper'>" + svgD3.html() + "</g>");
+                            var inner = svgD3.select("g");
+                            var zoom = d3.zoom().on("zoom", function(event) {
+                                inner.attr("transform", event.transform);
+                            });
+                            svgD3.call(zoom);
+                        }
+                    }, 100);
+                }
+            }
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+
+        container.appendChild(fullscreenBtn);
+        allButtons.push(fullscreenBtn);
+    });
+
+    // Update theme classes when theme changes
+    const updateTheme = () => {
+        const dark = isDarkTheme();
+        allButtons.forEach(btn => {
+            if (dark) {
+                btn.classList.add('dark-theme');
+            } else {
+                btn.classList.remove('dark-theme');
+            }
+        });
+        if (dark) {
+            modal.classList.add('dark-theme');
+            modalContent.classList.add('dark-theme');
+            closeBtn.classList.add('dark-theme');
+        } else {
+            modal.classList.remove('dark-theme');
+            modalContent.classList.remove('dark-theme');
+            closeBtn.classList.remove('dark-theme');
+        }
+    };
+
+    // Watch for theme changes
+    const observer = new MutationObserver(updateTheme);
+    observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+    observer.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class', 'style']
+    });
+};
+
+window.addEventListener("load", load);
+</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'genindex';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://speos.docs.pyansys.com/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '0.7';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <link rel="icon" href="_static/ansys-favicon.png"/>
+    <link rel="index" title="Index" href="#" />
+    <link rel="search" title="Search" href="search.html" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.7.2" />
+  <meta property="og:site_name" content="PyAnsys" />
+  <meta name="physics" content="Optics" />
+  <link rel="canonical" href="https://speos.docs.pyansys.com/version/stable/genindex.html" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+
+<a class="navbar-brand logo" href="https://docs.pyansys.com/">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/pyansys_logo_transparent_black.png" class="logo__image only-light" alt="ansys-speos-core 0.7.2 documentation - Home"/>
+    <img src="_static/pyansys_logo_transparent_white.png" class="logo__image only-dark pst-js-only" alt="ansys-speos-core 0.7.2 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="index.html" title="ansys-speos-core 0.7.2 documentation home">Home</a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="overview/index.html">
+    Overview
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="examples.html">
+    Examples
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="contributing.html">
+    Contribute
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="changelog.html">
+    Release notes
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav>
+</div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+      
+        <div class="navbar-item">
+<div class="search-bar pst-js-only" id="search-bar">
+  <form class="bd-search d-flex align-items-center" action="search.html" method="get">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="search" class="form-control" name="q" placeholder="Search the docs ..."
+      aria-label="Search the docs ..." autocomplete="off" autocorrect="off"
+      autocapitalize="off" spellcheck="false" />
+    <span class="search-button__kbd-shortcut">
+      <kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd>
+    </span>
+  </form>
+  <div id="static-search-results" class="static-search-results" style="display:none;" tabindex="0"></div>
+</div></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ansys/pyspeos" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+  
+    <div id="announcement_msg"></div>
+<script>
+  fetch("announcement.html")
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status}`);
+      }
+      return response.text();
+    })
+    .then(
+      (text) => (document.getElementById("announcement_msg").innerHTML = text),
+    )
+    .catch((error) => console.error(`Fetch problem: ${error.message}`));
+</script>
+  
+
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="index.html" title="ansys-speos-core 0.7.2 documentation home">Home</a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="overview/index.html">
+    Overview
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="examples.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="contributing.html">
+    Contribute
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="changelog.html">
+    Release notes
+  </a>
+</li>
+
+  </ul>
+</nav>
+</div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="search-bar pst-js-only" id="search-bar">
+  <form class="bd-search d-flex align-items-center" action="search.html" method="get">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="search" class="form-control" name="q" placeholder="Search the docs ..."
+      aria-label="Search the docs ..." autocomplete="off" autocorrect="off"
+      autocapitalize="off" spellcheck="false" />
+    <span class="search-button__kbd-shortcut">
+      <kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd>
+    </span>
+  </form>
+  <div id="static-search-results" class="static-search-results" style="display:none;" tabindex="0"></div>
+</div></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ansys/pyspeos" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+<nav aria-label="Breadcrumb">
+  <ul class="bd-breadcrumbs">
+     
+    <li class="breadcrumb-item breadcrumb-home">
+      <a
+        href="index.html"
+        class="nav-link"
+        aria-label="Home"
+      >
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+      
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Index</span></li>
+    
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+
+<h1 id="index">Index</h1>
+
+<div class="genindex-jumpbox">
+ <a href="#_"><strong>_</strong></a>
+ | <a href="#A"><strong>A</strong></a>
+ | <a href="#B"><strong>B</strong></a>
+ | <a href="#C"><strong>C</strong></a>
+ | <a href="#D"><strong>D</strong></a>
+ | <a href="#E"><strong>E</strong></a>
+ | <a href="#F"><strong>F</strong></a>
+ | <a href="#G"><strong>G</strong></a>
+ | <a href="#H"><strong>H</strong></a>
+ | <a href="#I"><strong>I</strong></a>
+ | <a href="#J"><strong>J</strong></a>
+ | <a href="#K"><strong>K</strong></a>
+ | <a href="#L"><strong>L</strong></a>
+ | <a href="#M"><strong>M</strong></a>
+ | <a href="#N"><strong>N</strong></a>
+ | <a href="#O"><strong>O</strong></a>
+ | <a href="#P"><strong>P</strong></a>
+ | <a href="#R"><strong>R</strong></a>
+ | <a href="#S"><strong>S</strong></a>
+ | <a href="#T"><strong>T</strong></a>
+ | <a href="#U"><strong>U</strong></a>
+ | <a href="#V"><strong>V</strong></a>
+ | <a href="#W"><strong>W</strong></a>
+ | <a href="#Y"><strong>Y</strong></a>
+ | <a href="#Z"><strong>Z</strong></a>
+ 
+</div>
+<h2 id="_">_</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/logger/Logger.html#Logger.__getitem__">__getitem__() (in module Logger)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/kernel/client/SpeosClient.html#SpeosClient.__getitem__">(in module SpeosClient)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/kernel/client/SpeosClient.html#SpeosClient.__repr__">__repr__() (in module SpeosClient)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/AnisotropicBSDF.html#AnisotropicBSDF.__str__">__str__() (in module AnisotropicBSDF)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/sensor/BaseSensor.html#BaseSensor.__str__">(in module BaseSensor)</a>
+</li>
+        <li><a href="api/ansys/speos/core/simulation/BaseSimulation.html#BaseSimulation.__str__">(in module BaseSimulation)</a>
+</li>
+        <li><a href="api/ansys/speos/core/source/BaseSource.html#BaseSource.__str__">(in module BaseSource)</a>
+</li>
+        <li><a href="api/ansys/speos/core/body/Body.html#Body.__str__">(in module Body)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/body/BodyLink.html#BodyLink.__str__">(in module BodyLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/bsdf/BxdfDatapoint.html#BxdfDatapoint.__str__">(in module BxdfDatapoint)</a>
+</li>
+        <li><a href="api/ansys/speos/core/face/Face.html#Face.__str__">(in module Face)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/face/FaceLink.html#FaceLink.__str__">(in module FaceLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/ground_plane/GroundPlane.html#GroundPlane.__str__">(in module GroundPlane)</a>
+</li>
+        <li><a href="api/ansys/speos/core/intensity/Intensity.html#Intensity.__str__">(in module Intensity)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/intensity_template/IntensityTemplateLink.html#IntensityTemplateLink.__str__">(in module IntensityTemplateLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/job/JobLink.html#JobLink.__str__">(in module JobLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/lxp/LightPathFinder.html#LightPathFinder.__str__">(in module LightPathFinder)</a>
+</li>
+        <li><a href="api/ansys/speos/core/opt_prop/OptProp.html#OptProp.__str__">(in module OptProp)</a>
+</li>
+        <li><a href="api/ansys/speos/core/part/Part.html#Part.__str__">(in module Part)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/part/PartLink.html#PartLink.__str__">(in module PartLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/project/Project.html#Project.__str__">(in module Project)</a>
+</li>
+        <li><a href="api/ansys/speos/core/lxp/RayPath.html#RayPath.__str__">(in module RayPath)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/scene/SceneLink.html#SceneLink.__str__">(in module SceneLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/sensor_template/SensorTemplateLink.html#SensorTemplateLink.__str__">(in module SensorTemplateLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/simulation_template/SimulationTemplateLink.html#SimulationTemplateLink.__str__">(in module SimulationTemplateLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/sop_template/SOPTemplateLink.html#SOPTemplateLink.__str__">(in module SOPTemplateLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/source_template/SourceTemplateLink.html#SourceTemplateLink.__str__">(in module SourceTemplateLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/bsdf/SpectralBRDF.html#SpectralBRDF.__str__">(in module SpectralBRDF)</a>
+</li>
+        <li><a href="api/ansys/speos/core/spectrum/Spectrum.html#Spectrum.__str__">(in module Spectrum)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/spectrum/SpectrumLink.html#SpectrumLink.__str__">(in module SpectrumLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/part/Part.SubPart.html#SubPart.__str__">(in module SubPart)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/vop_template/VOPTemplateLink.html#VOPTemplateLink.__str__">(in module VOPTemplateLink)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/index.html#core.__version__">__version__ (in module core)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="A">A</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/sensor/Sensor3DIrradiance.Measures.html#Measures.absorption">absorption (in module Measures)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/BaseSimulation.SourceSampling.Adaptive.html#Adaptive.adaptive_uri">adaptive_uri (in module Adaptive)</a>
+</li>
+      <li><a href="api/ansys/speos/core/logger/Logger.html#Logger.add_child_logger">add_child_logger() (in module Logger)</a>
+</li>
+      <li><a href="api/ansys/speos/core/logger/Logger.html#Logger.add_handling_uncaught_expections">add_handling_uncaught_expections() (in module Logger)</a>
+</li>
+      <li><a href="api/ansys/speos/core/logger/Logger.html#Logger.add_instance_logger">add_instance_logger() (in module Logger)</a>
+</li>
+      <li><a href="api/ansys/speos/core/logger/index.html#logger.add_stdout_handler">add_stdout_handler() (in module logger)</a>
+</li>
+      <li><a href="api/ansys/speos/core/logger/index.html#logger.addfile_handler">addfile_handler() (in module logger)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/grpc/transport_options/InsecureOptions.html#InsecureOptions.allow_remote_host">allow_remote_host (in module InsecureOptions)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/kernel/grpc/transport_options/MTLSOptions.html#MTLSOptions.allow_remote_host">(in module MTLSOptions)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.html#SimulationVirtualBSDF.analysis_x_ratio">analysis_x_ratio (in module SimulationVirtualBSDF)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.html#SimulationVirtualBSDF.analysis_y_ratio">analysis_y_ratio (in module SimulationVirtualBSDF)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/AnisotropicBSDF.html#AnisotropicBSDF.anisotropic_angles">anisotropic_angles (in module AnisotropicBSDF)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/BxdfDatapoint.html#BxdfDatapoint.anisotropy">anisotropy (in module BxdfDatapoint)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/BaseBSDF.html#BaseBSDF.anisotropy_vector">anisotropy_vector (in module BaseBSDF)</a>
+</li>
+      <li>
+    ansys.speos.core
+
+      <ul>
+        <li><a href="api/ansys/speos/core/index.html#module-ansys.speos.core">module</a>
+</li>
+      </ul></li>
+      <li>
+    ansys.speos.core.body
+
+      <ul>
+        <li><a href="api/ansys/speos/core/body/index.html#module-ansys.speos.core.body">module</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/body/Body.html#ansys.speos.core.body.Body">ansys.speos.core.body.Body (built-in class)</a>
+</li>
+      <li>
+    ansys.speos.core.bsdf
+
+      <ul>
+        <li><a href="api/ansys/speos/core/bsdf/index.html#module-ansys.speos.core.bsdf">module</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/bsdf/AnisotropicBSDF.html#ansys.speos.core.bsdf.AnisotropicBSDF">ansys.speos.core.bsdf.AnisotropicBSDF (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/BaseBSDF.html#ansys.speos.core.bsdf.BaseBSDF">ansys.speos.core.bsdf.BaseBSDF (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/BxdfDatapoint.html#ansys.speos.core.bsdf.BxdfDatapoint">ansys.speos.core.bsdf.BxdfDatapoint (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/InterpolationEnhancement.html#ansys.speos.core.bsdf.InterpolationEnhancement">ansys.speos.core.bsdf.InterpolationEnhancement (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/SpectralBRDF.html#ansys.speos.core.bsdf.SpectralBRDF">ansys.speos.core.bsdf.SpectralBRDF (built-in class)</a>
+</li>
+      <li>
+    ansys.speos.core.face
+
+      <ul>
+        <li><a href="api/ansys/speos/core/face/index.html#module-ansys.speos.core.face">module</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/face/Face.html#ansys.speos.core.face.Face">ansys.speos.core.face.Face (built-in class)</a>
+</li>
+      <li>
+    ansys.speos.core.generic.constants
+
+      <ul>
+        <li><a href="api/ansys/speos/core/generic/constants/index.html#module-ansys.speos.core.generic.constants">module</a>
+</li>
+      </ul></li>
+      <li>
+    ansys.speos.core.generic.general_methods
+
+      <ul>
+        <li><a href="api/ansys/speos/core/generic/general_methods/index.html#module-ansys.speos.core.generic.general_methods">module</a>
+</li>
+      </ul></li>
+      <li>
+    ansys.speos.core.generic.visualization_methods
+
+      <ul>
+        <li><a href="api/ansys/speos/core/generic/visualization_methods/index.html#module-ansys.speos.core.generic.visualization_methods">module</a>
+</li>
+      </ul></li>
+      <li>
+    ansys.speos.core.geo_ref
+
+      <ul>
+        <li><a href="api/ansys/speos/core/geo_ref/index.html#module-ansys.speos.core.geo_ref">module</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/geo_ref/GeoRef.html#ansys.speos.core.geo_ref.GeoRef">ansys.speos.core.geo_ref.GeoRef (built-in class)</a>
+</li>
+      <li>
+    ansys.speos.core.ground_plane
+
+      <ul>
+        <li><a href="api/ansys/speos/core/ground_plane/index.html#module-ansys.speos.core.ground_plane">module</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/ground_plane/GroundPlane.html#ansys.speos.core.ground_plane.GroundPlane">ansys.speos.core.ground_plane.GroundPlane (built-in class)</a>
+</li>
+      <li>
+    ansys.speos.core.intensity
+
+      <ul>
+        <li><a href="api/ansys/speos/core/intensity/index.html#module-ansys.speos.core.intensity">module</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/intensity/Intensity.html#ansys.speos.core.intensity.Intensity">ansys.speos.core.intensity.Intensity (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/intensity/Intensity.Gaussian.html#ansys.speos.core.intensity.Intensity.Gaussian">ansys.speos.core.intensity.Intensity.Gaussian (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/intensity/Intensity.Library.html#ansys.speos.core.intensity.Intensity.Library">ansys.speos.core.intensity.Intensity.Library (built-in class)</a>
+</li>
+      <li>
+    ansys.speos.core.kernel
+
+      <ul>
+        <li><a href="api/ansys/speos/core/kernel/index.html#module-ansys.speos.core.kernel">module</a>
+</li>
+      </ul></li>
+      <li>
+    ansys.speos.core.kernel.body
+
+      <ul>
+        <li><a href="api/ansys/speos/core/kernel/body/index.html#module-ansys.speos.core.kernel.body">module</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/kernel/body/BodyLink.html#ansys.speos.core.kernel.body.BodyLink">ansys.speos.core.kernel.body.BodyLink (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/body/BodyStub.html#ansys.speos.core.kernel.body.BodyStub">ansys.speos.core.kernel.body.BodyStub (built-in class)</a>
+</li>
+      <li>
+    ansys.speos.core.kernel.client
+
+      <ul>
+        <li><a href="api/ansys/speos/core/kernel/client/index.html#module-ansys.speos.core.kernel.client">module</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/kernel/client/SpeosClient.html#ansys.speos.core.kernel.client.SpeosClient">ansys.speos.core.kernel.client.SpeosClient (built-in class)</a>
+</li>
+      <li>
+    ansys.speos.core.kernel.crud
+
+      <ul>
+        <li><a href="api/ansys/speos/core/kernel/crud/index.html#module-ansys.speos.core.kernel.crud">module</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/kernel/crud/CrudItem.html#ansys.speos.core.kernel.crud.CrudItem">ansys.speos.core.kernel.crud.CrudItem (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/crud/CrudStub.html#ansys.speos.core.kernel.crud.CrudStub">ansys.speos.core.kernel.crud.CrudStub (built-in class)</a>
+</li>
+      <li>
+    ansys.speos.core.kernel.face
+
+      <ul>
+        <li><a href="api/ansys/speos/core/kernel/face/index.html#module-ansys.speos.core.kernel.face">module</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/kernel/face/FaceLink.html#ansys.speos.core.kernel.face.FaceLink">ansys.speos.core.kernel.face.FaceLink (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/face/FaceStub.html#ansys.speos.core.kernel.face.FaceStub">ansys.speos.core.kernel.face.FaceStub (built-in class)</a>
+</li>
+      <li>
+    ansys.speos.core.kernel.grpc.transport_options
+
+      <ul>
+        <li><a href="api/ansys/speos/core/kernel/grpc/transport_options/index.html#module-ansys.speos.core.kernel.grpc.transport_options">module</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/kernel/grpc/transport_options/InsecureOptions.html#ansys.speos.core.kernel.grpc.transport_options.InsecureOptions">ansys.speos.core.kernel.grpc.transport_options.InsecureOptions (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/grpc/transport_options/MTLSOptions.html#ansys.speos.core.kernel.grpc.transport_options.MTLSOptions">ansys.speos.core.kernel.grpc.transport_options.MTLSOptions (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/grpc/transport_options/TransportMode.html#ansys.speos.core.kernel.grpc.transport_options.TransportMode">ansys.speos.core.kernel.grpc.transport_options.TransportMode (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/grpc/transport_options/TransportOptions.html#ansys.speos.core.kernel.grpc.transport_options.TransportOptions">ansys.speos.core.kernel.grpc.transport_options.TransportOptions (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/grpc/transport_options/UDSOptions.html#ansys.speos.core.kernel.grpc.transport_options.UDSOptions">ansys.speos.core.kernel.grpc.transport_options.UDSOptions (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/grpc/transport_options/WNUAOptions.html#ansys.speos.core.kernel.grpc.transport_options.WNUAOptions">ansys.speos.core.kernel.grpc.transport_options.WNUAOptions (built-in class)</a>
+</li>
+      <li>
+    ansys.speos.core.kernel.intensity_template
+
+      <ul>
+        <li><a href="api/ansys/speos/core/kernel/intensity_template/index.html#module-ansys.speos.core.kernel.intensity_template">module</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/kernel/intensity_template/IntensityTemplateLink.html#ansys.speos.core.kernel.intensity_template.IntensityTemplateLink">ansys.speos.core.kernel.intensity_template.IntensityTemplateLink (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/intensity_template/IntensityTemplateStub.html#ansys.speos.core.kernel.intensity_template.IntensityTemplateStub">ansys.speos.core.kernel.intensity_template.IntensityTemplateStub (built-in class)</a>
+</li>
+      <li>
+    ansys.speos.core.kernel.job
+
+      <ul>
+        <li><a href="api/ansys/speos/core/kernel/job/index.html#module-ansys.speos.core.kernel.job">module</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/kernel/job/JobLink.html#ansys.speos.core.kernel.job.JobLink">ansys.speos.core.kernel.job.JobLink (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/job/JobStub.html#ansys.speos.core.kernel.job.JobStub">ansys.speos.core.kernel.job.JobStub (built-in class)</a>
+</li>
+      <li>
+    ansys.speos.core.kernel.part
+
+      <ul>
+        <li><a href="api/ansys/speos/core/kernel/part/index.html#module-ansys.speos.core.kernel.part">module</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/kernel/part/PartLink.html#ansys.speos.core.kernel.part.PartLink">ansys.speos.core.kernel.part.PartLink (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/part/PartStub.html#ansys.speos.core.kernel.part.PartStub">ansys.speos.core.kernel.part.PartStub (built-in class)</a>
+</li>
+      <li>
+    ansys.speos.core.kernel.proto_message_utils
+
+      <ul>
+        <li><a href="api/ansys/speos/core/kernel/proto_message_utils/index.html#module-ansys.speos.core.kernel.proto_message_utils">module</a>
+</li>
+      </ul></li>
+      <li>
+    ansys.speos.core.kernel.scene
+
+      <ul>
+        <li><a href="api/ansys/speos/core/kernel/scene/index.html#module-ansys.speos.core.kernel.scene">module</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/kernel/scene/SceneLink.html#ansys.speos.core.kernel.scene.SceneLink">ansys.speos.core.kernel.scene.SceneLink (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/scene/SceneStub.html#ansys.speos.core.kernel.scene.SceneStub">ansys.speos.core.kernel.scene.SceneStub (built-in class)</a>
+</li>
+      <li>
+    ansys.speos.core.kernel.sensor_template
+
+      <ul>
+        <li><a href="api/ansys/speos/core/kernel/sensor_template/index.html#module-ansys.speos.core.kernel.sensor_template">module</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/kernel/sensor_template/SensorTemplateLink.html#ansys.speos.core.kernel.sensor_template.SensorTemplateLink">ansys.speos.core.kernel.sensor_template.SensorTemplateLink (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/sensor_template/SensorTemplateStub.html#ansys.speos.core.kernel.sensor_template.SensorTemplateStub">ansys.speos.core.kernel.sensor_template.SensorTemplateStub (built-in class)</a>
+</li>
+      <li>
+    ansys.speos.core.kernel.simulation_template
+
+      <ul>
+        <li><a href="api/ansys/speos/core/kernel/simulation_template/index.html#module-ansys.speos.core.kernel.simulation_template">module</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/kernel/simulation_template/SimulationTemplateLink.html#ansys.speos.core.kernel.simulation_template.SimulationTemplateLink">ansys.speos.core.kernel.simulation_template.SimulationTemplateLink (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/simulation_template/SimulationTemplateStub.html#ansys.speos.core.kernel.simulation_template.SimulationTemplateStub">ansys.speos.core.kernel.simulation_template.SimulationTemplateStub (built-in class)</a>
+</li>
+      <li>
+    ansys.speos.core.kernel.sop_template
+
+      <ul>
+        <li><a href="api/ansys/speos/core/kernel/sop_template/index.html#module-ansys.speos.core.kernel.sop_template">module</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/kernel/sop_template/SOPTemplateLink.html#ansys.speos.core.kernel.sop_template.SOPTemplateLink">ansys.speos.core.kernel.sop_template.SOPTemplateLink (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/sop_template/SOPTemplateStub.html#ansys.speos.core.kernel.sop_template.SOPTemplateStub">ansys.speos.core.kernel.sop_template.SOPTemplateStub (built-in class)</a>
+</li>
+      <li>
+    ansys.speos.core.kernel.source_template
+
+      <ul>
+        <li><a href="api/ansys/speos/core/kernel/source_template/index.html#module-ansys.speos.core.kernel.source_template">module</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/kernel/source_template/SourceTemplateLink.html#ansys.speos.core.kernel.source_template.SourceTemplateLink">ansys.speos.core.kernel.source_template.SourceTemplateLink (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/source_template/SourceTemplateStub.html#ansys.speos.core.kernel.source_template.SourceTemplateStub">ansys.speos.core.kernel.source_template.SourceTemplateStub (built-in class)</a>
+</li>
+      <li>
+    ansys.speos.core.kernel.spectrum
+
+      <ul>
+        <li><a href="api/ansys/speos/core/kernel/spectrum/index.html#module-ansys.speos.core.kernel.spectrum">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/kernel/spectrum/SpectrumLink.html#ansys.speos.core.kernel.spectrum.SpectrumLink">ansys.speos.core.kernel.spectrum.SpectrumLink (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/spectrum/SpectrumStub.html#ansys.speos.core.kernel.spectrum.SpectrumStub">ansys.speos.core.kernel.spectrum.SpectrumStub (built-in class)</a>
+</li>
+      <li>
+    ansys.speos.core.kernel.vop_template
+
+      <ul>
+        <li><a href="api/ansys/speos/core/kernel/vop_template/index.html#module-ansys.speos.core.kernel.vop_template">module</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/kernel/vop_template/VOPTemplateLink.html#ansys.speos.core.kernel.vop_template.VOPTemplateLink">ansys.speos.core.kernel.vop_template.VOPTemplateLink (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/vop_template/VOPTemplateStub.html#ansys.speos.core.kernel.vop_template.VOPTemplateStub">ansys.speos.core.kernel.vop_template.VOPTemplateStub (built-in class)</a>
+</li>
+      <li>
+    ansys.speos.core.launcher
+
+      <ul>
+        <li><a href="api/ansys/speos/core/launcher/index.html#module-ansys.speos.core.launcher">module</a>
+</li>
+      </ul></li>
+      <li>
+    ansys.speos.core.logger
+
+      <ul>
+        <li><a href="api/ansys/speos/core/logger/index.html#module-ansys.speos.core.logger">module</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/logger/InstanceFilter.html#ansys.speos.core.logger.InstanceFilter">ansys.speos.core.logger.InstanceFilter (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/logger/Logger.html#ansys.speos.core.logger.Logger">ansys.speos.core.logger.Logger (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/logger/PySpeosCustomAdapter.html#ansys.speos.core.logger.PySpeosCustomAdapter">ansys.speos.core.logger.PySpeosCustomAdapter (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/logger/PySpeosFormatter.html#ansys.speos.core.logger.PySpeosFormatter">ansys.speos.core.logger.PySpeosFormatter (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/logger/PySpeosPercentStyle.html#ansys.speos.core.logger.PySpeosPercentStyle">ansys.speos.core.logger.PySpeosPercentStyle (built-in class)</a>
+</li>
+      <li>
+    ansys.speos.core.lxp
+
+      <ul>
+        <li><a href="api/ansys/speos/core/lxp/index.html#module-ansys.speos.core.lxp">module</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/lxp/LightPathFinder.html#ansys.speos.core.lxp.LightPathFinder">ansys.speos.core.lxp.LightPathFinder (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/lxp/RayPath.html#ansys.speos.core.lxp.RayPath">ansys.speos.core.lxp.RayPath (built-in class)</a>
+</li>
+      <li>
+    ansys.speos.core.opt_prop
+
+      <ul>
+        <li><a href="api/ansys/speos/core/opt_prop/index.html#module-ansys.speos.core.opt_prop">module</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/opt_prop/OptProp.html#ansys.speos.core.opt_prop.OptProp">ansys.speos.core.opt_prop.OptProp (built-in class)</a>
+</li>
+      <li>
+    ansys.speos.core.part
+
+      <ul>
+        <li><a href="api/ansys/speos/core/part/index.html#module-ansys.speos.core.part">module</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/part/Part.html#ansys.speos.core.part.Part">ansys.speos.core.part.Part (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/part/Part.SubPart.html#ansys.speos.core.part.Part.SubPart">ansys.speos.core.part.Part.SubPart (built-in class)</a>
+</li>
+      <li>
+    ansys.speos.core.project
+
+      <ul>
+        <li><a href="api/ansys/speos/core/project/index.html#module-ansys.speos.core.project">module</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/project/Project.html#ansys.speos.core.project.Project">ansys.speos.core.project.Project (built-in class)</a>
+</li>
+      <li>
+    ansys.speos.core.proto_message_utils
+
+      <ul>
+        <li><a href="api/ansys/speos/core/proto_message_utils/index.html#module-ansys.speos.core.proto_message_utils">module</a>
+</li>
+      </ul></li>
+      <li>
+    ansys.speos.core.sensor
+
+      <ul>
+        <li><a href="api/ansys/speos/core/sensor/index.html#module-ansys.speos.core.sensor">module</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/sensor/BaseSensor.html#ansys.speos.core.sensor.BaseSensor">ansys.speos.core.sensor.BaseSensor (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/BaseSensor.Colorimetric.html#ansys.speos.core.sensor.BaseSensor.Colorimetric">ansys.speos.core.sensor.BaseSensor.Colorimetric (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/BaseSensor.Dimensions.html#ansys.speos.core.sensor.BaseSensor.Dimensions">ansys.speos.core.sensor.BaseSensor.Dimensions (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/BaseSensor.FaceLayer.html#ansys.speos.core.sensor.BaseSensor.FaceLayer">ansys.speos.core.sensor.BaseSensor.FaceLayer (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/BaseSensor.LayerTypeFace.html#ansys.speos.core.sensor.BaseSensor.LayerTypeFace">ansys.speos.core.sensor.BaseSensor.LayerTypeFace (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/BaseSensor.LayerTypeIncidenceAngle.html#ansys.speos.core.sensor.BaseSensor.LayerTypeIncidenceAngle">ansys.speos.core.sensor.BaseSensor.LayerTypeIncidenceAngle (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/BaseSensor.LayerTypeSequence.html#ansys.speos.core.sensor.BaseSensor.LayerTypeSequence">ansys.speos.core.sensor.BaseSensor.LayerTypeSequence (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/BaseSensor.Spectral.html#ansys.speos.core.sensor.BaseSensor.Spectral">ansys.speos.core.sensor.BaseSensor.Spectral (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/BaseSensor.WavelengthsRange.html#ansys.speos.core.sensor.BaseSensor.WavelengthsRange">ansys.speos.core.sensor.BaseSensor.WavelengthsRange (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/Sensor3DIrradiance.html#ansys.speos.core.sensor.Sensor3DIrradiance">ansys.speos.core.sensor.Sensor3DIrradiance (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/Sensor3DIrradiance.Colorimetric.html#ansys.speos.core.sensor.Sensor3DIrradiance.Colorimetric">ansys.speos.core.sensor.Sensor3DIrradiance.Colorimetric (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/Sensor3DIrradiance.Measures.html#ansys.speos.core.sensor.Sensor3DIrradiance.Measures">ansys.speos.core.sensor.Sensor3DIrradiance.Measures (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/Sensor3DIrradiance.Photometric.html#ansys.speos.core.sensor.Sensor3DIrradiance.Photometric">ansys.speos.core.sensor.Sensor3DIrradiance.Photometric (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/Sensor3DIrradiance.Radiometric.html#ansys.speos.core.sensor.Sensor3DIrradiance.Radiometric">ansys.speos.core.sensor.Sensor3DIrradiance.Radiometric (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.html#ansys.speos.core.sensor.SensorCamera">ansys.speos.core.sensor.SensorCamera (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.Photometric.html#ansys.speos.core.sensor.SensorCamera.Photometric">ansys.speos.core.sensor.SensorCamera.Photometric (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.Photometric.Color.html#ansys.speos.core.sensor.SensorCamera.Photometric.Color">ansys.speos.core.sensor.SensorCamera.Photometric.Color (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries.html#ansys.speos.core.sensor.SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries">ansys.speos.core.sensor.SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.Photometric.Color.BalanceModeUserWhite.html#ansys.speos.core.sensor.SensorCamera.Photometric.Color.BalanceModeUserWhite">ansys.speos.core.sensor.SensorCamera.Photometric.Color.BalanceModeUserWhite (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorIrradiance.html#ansys.speos.core.sensor.SensorIrradiance">ansys.speos.core.sensor.SensorIrradiance (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorRadiance.html#ansys.speos.core.sensor.SensorRadiance">ansys.speos.core.sensor.SensorRadiance (built-in class)</a>
+</li>
+      <li>
+    ansys.speos.core.simulation
+
+      <ul>
+        <li><a href="api/ansys/speos/core/simulation/index.html#module-ansys.speos.core.simulation">module</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/simulation/BaseSimulation.html#ansys.speos.core.simulation.BaseSimulation">ansys.speos.core.simulation.BaseSimulation (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/BaseSimulation.SourceSampling.html#ansys.speos.core.simulation.BaseSimulation.SourceSampling">ansys.speos.core.simulation.BaseSimulation.SourceSampling (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/BaseSimulation.SourceSampling.Adaptive.html#ansys.speos.core.simulation.BaseSimulation.SourceSampling.Adaptive">ansys.speos.core.simulation.BaseSimulation.SourceSampling.Adaptive (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/BaseSimulation.SourceSampling.Uniform.html#ansys.speos.core.simulation.BaseSimulation.SourceSampling.Uniform">ansys.speos.core.simulation.BaseSimulation.SourceSampling.Uniform (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/BaseSimulation.Weight.html#ansys.speos.core.simulation.BaseSimulation.Weight">ansys.speos.core.simulation.BaseSimulation.Weight (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationDirect.html#ansys.speos.core.simulation.SimulationDirect">ansys.speos.core.simulation.SimulationDirect (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationDirect.SourceSampling.html#ansys.speos.core.simulation.SimulationDirect.SourceSampling">ansys.speos.core.simulation.SimulationDirect.SourceSampling (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationInteractive.html#ansys.speos.core.simulation.SimulationInteractive">ansys.speos.core.simulation.SimulationInteractive (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationInteractive.RaysNumberPerSource.html#ansys.speos.core.simulation.SimulationInteractive.RaysNumberPerSource">ansys.speos.core.simulation.SimulationInteractive.RaysNumberPerSource (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationInteractive.SourceSampling.html#ansys.speos.core.simulation.SimulationInteractive.SourceSampling">ansys.speos.core.simulation.SimulationInteractive.SourceSampling (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationInverse.html#ansys.speos.core.simulation.SimulationInverse">ansys.speos.core.simulation.SimulationInverse (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationInverse.SourceSampling.html#ansys.speos.core.simulation.SimulationInverse.SourceSampling">ansys.speos.core.simulation.SimulationInverse.SourceSampling (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.html#ansys.speos.core.simulation.SimulationVirtualBSDF">ansys.speos.core.simulation.SimulationVirtualBSDF (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.AllCharacteristics.html#ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics">ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.AllCharacteristics.Iridescence.html#ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.Iridescence">ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.Iridescence (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.AllCharacteristics.NonIridescence.html#ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.NonIridescence">ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.NonIridescence (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic.html#ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic">ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic.Uniform.html#ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic.Uniform">ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic.Uniform (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Isotropic.html#ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Isotropic">ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Isotropic (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.RoughnessOnly.html#ansys.speos.core.simulation.SimulationVirtualBSDF.RoughnessOnly">ansys.speos.core.simulation.SimulationVirtualBSDF.RoughnessOnly (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.SensorUniform.html#ansys.speos.core.simulation.SimulationVirtualBSDF.SensorUniform">ansys.speos.core.simulation.SimulationVirtualBSDF.SensorUniform (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.WavelengthsRange.html#ansys.speos.core.simulation.SimulationVirtualBSDF.WavelengthsRange">ansys.speos.core.simulation.SimulationVirtualBSDF.WavelengthsRange (built-in class)</a>
+</li>
+      <li>
+    ansys.speos.core.source
+
+      <ul>
+        <li><a href="api/ansys/speos/core/source/index.html#module-ansys.speos.core.source">module</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/source/BaseSource.html#ansys.speos.core.source.BaseSource">ansys.speos.core.source.BaseSource (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/BaseSource.PredefinedColorSpace.html#ansys.speos.core.source.BaseSource.PredefinedColorSpace">ansys.speos.core.source.BaseSource.PredefinedColorSpace (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/BaseSource.UserDefinedColorSpace.html#ansys.speos.core.source.BaseSource.UserDefinedColorSpace">ansys.speos.core.source.BaseSource.UserDefinedColorSpace (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/BaseSource.UserDefinedColorSpace.UserDefinedWhitePoint.html#ansys.speos.core.source.BaseSource.UserDefinedColorSpace.UserDefinedWhitePoint">ansys.speos.core.source.BaseSource.UserDefinedColorSpace.UserDefinedWhitePoint (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/BaseSourceAmbient.html#ansys.speos.core.source.BaseSourceAmbient">ansys.speos.core.source.BaseSourceAmbient (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/BaseSourceAmbient.AutomaticSun.html#ansys.speos.core.source.BaseSourceAmbient.AutomaticSun">ansys.speos.core.source.BaseSourceAmbient.AutomaticSun (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/BaseSourceAmbient.Manual.html#ansys.speos.core.source.BaseSourceAmbient.Manual">ansys.speos.core.source.BaseSourceAmbient.Manual (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/SourceAmbientEnvironment.html#ansys.speos.core.source.SourceAmbientEnvironment">ansys.speos.core.source.SourceAmbientEnvironment (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/SourceAmbientNaturalLight.html#ansys.speos.core.source.SourceAmbientNaturalLight">ansys.speos.core.source.SourceAmbientNaturalLight (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/SourceLuminaire.html#ansys.speos.core.source.SourceLuminaire">ansys.speos.core.source.SourceLuminaire (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/SourceRayFile.html#ansys.speos.core.source.SourceRayFile">ansys.speos.core.source.SourceRayFile (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/SourceSurface.html#ansys.speos.core.source.SourceSurface">ansys.speos.core.source.SourceSurface (built-in class)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/SourceSurface.ExitanceVariable.html#ansys.speos.core.source.SourceSurface.ExitanceVariable">ansys.speos.core.source.SourceSurface.ExitanceVariable (built-in class)</a>
+</li>
+      <li>
+    ansys.speos.core.spectrum
+
+      <ul>
+        <li><a href="api/ansys/speos/core/spectrum/index.html#module-ansys.speos.core.spectrum">module</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/spectrum/Spectrum.html#ansys.speos.core.spectrum.Spectrum">ansys.speos.core.spectrum.Spectrum (built-in class)</a>
+</li>
+      <li>
+    ansys.speos.core.speos
+
+      <ul>
+        <li><a href="api/ansys/speos/core/speos/index.html#module-ansys.speos.core.speos">module</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/speos/Speos.html#ansys.speos.core.speos.Speos">ansys.speos.core.speos.Speos (built-in class)</a>
+</li>
+      <li>
+    ansys.speos.core.workflow
+
+      <ul>
+        <li><a href="api/ansys/speos/core/workflow/index.html#module-ansys.speos.core.workflow">module</a>
+</li>
+      </ul></li>
+      <li>
+    ansys.speos.core.workflow.combine_speos
+
+      <ul>
+        <li><a href="api/ansys/speos/core/workflow/combine_speos/index.html#module-ansys.speos.core.workflow.combine_speos">module</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/workflow/combine_speos/SpeosFileInstance.html#ansys.speos.core.workflow.combine_speos.SpeosFileInstance">ansys.speos.core.workflow.combine_speos.SpeosFileInstance (built-in class)</a>
+</li>
+      <li>
+    ansys.speos.core.workflow.open_result
+
+      <ul>
+        <li><a href="api/ansys/speos/core/workflow/open_result/index.html#module-ansys.speos.core.workflow.open_result">module</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.html#SimulationVirtualBSDF.axis_system">axis_system (in module SimulationVirtualBSDF)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/workflow/combine_speos/SpeosFileInstance.html#SpeosFileInstance.axis_system">(in module SpeosFileInstance)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="B">B</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/source/BaseSource.UserDefinedColorSpace.html#UserDefinedColorSpace.blue_spectrum">blue_spectrum (in module UserDefinedColorSpace)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/client/SpeosClient.html#SpeosClient.bodies">bodies() (in module SpeosClient)</a>
+</li>
+      <li><a href="api/ansys/speos/core/lxp/RayPath.html#RayPath.body_ids">body_ids (in module RayPath)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/body/Body.html#Body.body_link">body_link (in module Body)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/BaseBSDF.html#BaseBSDF.brdf">brdf (in module BaseBSDF)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/BaseBSDF.html#BaseBSDF.btdf">btdf (in module BaseBSDF)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/BxdfDatapoint.html#BxdfDatapoint.bxdf">bxdf (in module BxdfDatapoint)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="C">C</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/kernel/grpc/transport_options/MTLSOptions.html#MTLSOptions.certs_dir">certs_dir (in module MTLSOptions)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/client/SpeosClient.html#SpeosClient.channel">channel (in module SpeosClient)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/BaseBSDF.html#BaseBSDF.client">client (in module BaseBSDF)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/lxp/LightPathFinder.html#LightPathFinder.client">(in module LightPathFinder)</a>
+</li>
+        <li><a href="api/ansys/speos/core/project/Project.html#Project.client">(in module Project)</a>
+</li>
+        <li><a href="api/ansys/speos/core/speos/Speos.html#Speos.client">(in module Speos)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/speos/Speos.html#Speos.close">close() (in module Speos)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/kernel/client/SpeosClient.html#SpeosClient.close">(in module SpeosClient)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/source/SourceAmbientEnvironment.html#SourceAmbientEnvironment.color_space">color_space (in module SourceAmbientEnvironment)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorIrradiance.html#SensorIrradiance.colorimetric">colorimetric (in module SensorIrradiance)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/sensor/SensorRadiance.html#SensorRadiance.colorimetric">(in module SensorRadiance)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/workflow/combine_speos/index.html#combine_speos.combine_speos">combine_speos() (in module combine_speos)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/AnisotropicBSDF.html#AnisotropicBSDF.commit">commit() (in module AnisotropicBSDF)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/sensor/BaseSensor.html#BaseSensor.commit">(in module BaseSensor)</a>
+</li>
+        <li><a href="api/ansys/speos/core/simulation/BaseSimulation.html#BaseSimulation.commit">(in module BaseSimulation)</a>
+</li>
+        <li><a href="api/ansys/speos/core/source/BaseSource.html#BaseSource.commit">(in module BaseSource)</a>
+</li>
+        <li><a href="api/ansys/speos/core/body/Body.html#Body.commit">(in module Body)</a>
+</li>
+        <li><a href="api/ansys/speos/core/face/Face.html#Face.commit">(in module Face)</a>
+</li>
+        <li><a href="api/ansys/speos/core/ground_plane/GroundPlane.html#GroundPlane.commit">(in module GroundPlane)</a>
+</li>
+        <li><a href="api/ansys/speos/core/intensity/Intensity.html#Intensity.commit">(in module Intensity)</a>
+</li>
+        <li><a href="api/ansys/speos/core/opt_prop/OptProp.html#OptProp.commit">(in module OptProp)</a>
+</li>
+        <li><a href="api/ansys/speos/core/part/Part.html#Part.commit">(in module Part)</a>
+</li>
+        <li><a href="api/ansys/speos/core/sensor/SensorCamera.html#SensorCamera.commit">(in module SensorCamera)</a>
+</li>
+        <li><a href="api/ansys/speos/core/simulation/SimulationDirect.html#SimulationDirect.commit">(in module SimulationDirect)</a>
+</li>
+        <li><a href="api/ansys/speos/core/simulation/SimulationInverse.html#SimulationInverse.commit">(in module SimulationInverse)</a>
+</li>
+        <li><a href="api/ansys/speos/core/source/SourceAmbientEnvironment.html#SourceAmbientEnvironment.commit">(in module SourceAmbientEnvironment)</a>
+</li>
+        <li><a href="api/ansys/speos/core/source/SourceSurface.html#SourceSurface.commit">(in module SourceSurface)</a>
+</li>
+        <li><a href="api/ansys/speos/core/bsdf/SpectralBRDF.html#SpectralBRDF.commit">(in module SpectralBRDF)</a>
+</li>
+        <li><a href="api/ansys/speos/core/spectrum/Spectrum.html#Spectrum.commit">(in module Spectrum)</a>
+</li>
+        <li><a href="api/ansys/speos/core/part/Part.SubPart.html#SubPart.commit">(in module SubPart)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/simulation/BaseSimulation.html#BaseSimulation.compute_CPU">compute_CPU() (in module BaseSimulation)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/BaseSimulation.html#BaseSimulation.compute_GPU">compute_GPU() (in module BaseSimulation)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/kernel/body/BodyStub.html#BodyStub.create">create() (in module BodyStub)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/kernel/crud/CrudStub.html#CrudStub.create">(in module CrudStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/face/FaceStub.html#FaceStub.create">(in module FaceStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/intensity_template/IntensityTemplateStub.html#IntensityTemplateStub.create">(in module IntensityTemplateStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/job/JobStub.html#JobStub.create">(in module JobStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/part/PartStub.html#PartStub.create">(in module PartStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/scene/SceneStub.html#SceneStub.create">(in module SceneStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/sensor_template/SensorTemplateStub.html#SensorTemplateStub.create">(in module SensorTemplateStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/simulation_template/SimulationTemplateStub.html#SimulationTemplateStub.create">(in module SimulationTemplateStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/sop_template/SOPTemplateStub.html#SOPTemplateStub.create">(in module SOPTemplateStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/source_template/SourceTemplateStub.html#SourceTemplateStub.create">(in module SourceTemplateStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/spectrum/SpectrumStub.html#SpectrumStub.create">(in module SpectrumStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/vop_template/VOPTemplateStub.html#VOPTemplateStub.create">(in module VOPTemplateStub)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/bsdf/index.html#bsdf.create_anisotropic_bsdf">create_anisotropic_bsdf() (in module bsdf)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/face/FaceStub.html#FaceStub.create_batch">create_batch() (in module FaceStub)</a>
+</li>
+      <li><a href="api/ansys/speos/core/part/Part.html#Part.create_body">create_body() (in module Part)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/part/Part.SubPart.html#SubPart.create_body">(in module SubPart)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/bsdf/index.html#bsdf.create_bsdf180">create_bsdf180() (in module bsdf)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/grpc/transport_options/TransportOptions.html#TransportOptions.create_channel">create_channel() (in module TransportOptions)</a>
+</li>
+      <li><a href="api/ansys/speos/core/body/Body.html#Body.create_face">create_face() (in module Body)</a>
+</li>
+      <li><a href="api/ansys/speos/core/project/Project.html#Project.create_ground_plane">create_ground_plane() (in module Project)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/BaseBSDF.html#BaseBSDF.create_interpolation_enhancement">create_interpolation_enhancement() (in module BaseBSDF)</a>
+</li>
+      <li><a href="api/ansys/speos/core/project/Project.html#Project.create_optical_property">create_optical_property() (in module Project)</a>
+</li>
+      <li><a href="api/ansys/speos/core/project/Project.html#Project.create_root_part">create_root_part() (in module Project)</a>
+</li>
+      <li><a href="api/ansys/speos/core/project/Project.html#Project.create_sensor">create_sensor() (in module Project)</a>
+</li>
+      <li><a href="api/ansys/speos/core/project/Project.html#Project.create_simulation">create_simulation() (in module Project)</a>
+</li>
+      <li><a href="api/ansys/speos/core/project/Project.html#Project.create_source">create_source() (in module Project)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/index.html#bsdf.create_spectral_brdf">create_spectral_brdf() (in module bsdf)</a>
+</li>
+      <li><a href="api/ansys/speos/core/part/Part.html#Part.create_sub_part">create_sub_part() (in module Part)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/part/Part.SubPart.html#SubPart.create_sub_part">(in module SubPart)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/logger/index.html#logger.CRITICAL">CRITICAL (in module logger)</a>
+</li>
+      <li><a href="api/ansys/speos/core/logger/Logger.html#Logger.critical">critical (in module Logger)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="D">D</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/source/BaseSourceAmbient.AutomaticSun.html#AutomaticSun.day">day (in module AutomaticSun)</a>
+</li>
+      <li><a href="api/ansys/speos/core/logger/index.html#logger.DEBUG">DEBUG (in module logger)</a>
+</li>
+      <li><a href="api/ansys/speos/core/logger/Logger.html#Logger.debug">debug (in module Logger)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/client/index.html#client.default_docker_channel">default_docker_channel() (in module client)</a>
+</li>
+      <li><a href="api/ansys/speos/core/logger/index.html#logger.DEFAULT_FILE_HEADER">DEFAULT_FILE_HEADER (in module logger)</a>
+</li>
+      <li><a href="api/ansys/speos/core/generic/constants/index.html#constants.DEFAULT_HOST">DEFAULT_HOST (in module constants)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/client/index.html#client.default_local_channel">default_local_channel() (in module client)</a>
+</li>
+      <li><a href="api/ansys/speos/core/generic/constants/index.html#constants.DEFAULT_PORT">DEFAULT_PORT (in module constants)</a>
+</li>
+      <li><a href="api/ansys/speos/core/logger/index.html#logger.DEFAULT_STDOUT_HEADER">DEFAULT_STDOUT_HEADER (in module logger)</a>
+</li>
+      <li><a href="api/ansys/speos/core/generic/constants/index.html#constants.DEFAULT_VERSION">DEFAULT_VERSION (in module constants)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/BaseSensor.html#BaseSensor.delete">delete() (in module BaseSensor)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/simulation/BaseSimulation.html#BaseSimulation.delete">(in module BaseSimulation)</a>
+</li>
+        <li><a href="api/ansys/speos/core/source/BaseSource.html#BaseSource.delete">(in module BaseSource)</a>
+</li>
+        <li><a href="api/ansys/speos/core/body/Body.html#Body.delete">(in module Body)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/body/BodyLink.html#BodyLink.delete">(in module BodyLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/body/BodyStub.html#BodyStub.delete">(in module BodyStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/crud/CrudStub.html#CrudStub.delete">(in module CrudStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/face/Face.html#Face.delete">(in module Face)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/face/FaceLink.html#FaceLink.delete">(in module FaceLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/face/FaceStub.html#FaceStub.delete">(in module FaceStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/ground_plane/GroundPlane.html#GroundPlane.delete">(in module GroundPlane)</a>
+</li>
+        <li><a href="api/ansys/speos/core/intensity/Intensity.html#Intensity.delete">(in module Intensity)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/intensity_template/IntensityTemplateLink.html#IntensityTemplateLink.delete">(in module IntensityTemplateLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/intensity_template/IntensityTemplateStub.html#IntensityTemplateStub.delete">(in module IntensityTemplateStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/job/JobLink.html#JobLink.delete">(in module JobLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/job/JobStub.html#JobStub.delete">(in module JobStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/opt_prop/OptProp.html#OptProp.delete">(in module OptProp)</a>
+</li>
+        <li><a href="api/ansys/speos/core/part/Part.html#Part.delete">(in module Part)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/part/PartLink.html#PartLink.delete">(in module PartLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/part/PartStub.html#PartStub.delete">(in module PartStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/project/Project.html#Project.delete">(in module Project)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/scene/SceneLink.html#SceneLink.delete">(in module SceneLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/scene/SceneStub.html#SceneStub.delete">(in module SceneStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/sensor_template/SensorTemplateLink.html#SensorTemplateLink.delete">(in module SensorTemplateLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/sensor_template/SensorTemplateStub.html#SensorTemplateStub.delete">(in module SensorTemplateStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/simulation_template/SimulationTemplateLink.html#SimulationTemplateLink.delete">(in module SimulationTemplateLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/simulation_template/SimulationTemplateStub.html#SimulationTemplateStub.delete">(in module SimulationTemplateStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/sop_template/SOPTemplateLink.html#SOPTemplateLink.delete">(in module SOPTemplateLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/sop_template/SOPTemplateStub.html#SOPTemplateStub.delete">(in module SOPTemplateStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/source/SourceAmbientEnvironment.html#SourceAmbientEnvironment.delete">(in module SourceAmbientEnvironment)</a>
+</li>
+        <li><a href="api/ansys/speos/core/source/SourceSurface.html#SourceSurface.delete">(in module SourceSurface)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/source_template/SourceTemplateLink.html#SourceTemplateLink.delete">(in module SourceTemplateLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/source_template/SourceTemplateStub.html#SourceTemplateStub.delete">(in module SourceTemplateStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/spectrum/Spectrum.html#Spectrum.delete">(in module Spectrum)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/spectrum/SpectrumLink.html#SpectrumLink.delete">(in module SpectrumLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/spectrum/SpectrumStub.html#SpectrumStub.delete">(in module SpectrumStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/part/Part.SubPart.html#SubPart.delete">(in module SubPart)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/vop_template/VOPTemplateLink.html#VOPTemplateLink.delete">(in module VOPTemplateLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/vop_template/VOPTemplateStub.html#VOPTemplateStub.delete">(in module VOPTemplateStub)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/generic/general_methods/index.html#general_methods.deprecate_kwargs">deprecate_kwargs() (in module general_methods)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/BaseBSDF.html#BaseBSDF.description">description (in module BaseBSDF)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/geo_ref/GeoRef.html#GeoRef.description">(in module GeoRef)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/proto_message_utils/index.html#proto_message_utils.dict_to_str">dict_to_str() (in module proto_message_utils)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorIrradiance.html#SensorIrradiance.dimensions">dimensions (in module SensorIrradiance)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/sensor/SensorRadiance.html#SensorRadiance.dimensions">(in module SensorRadiance)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/source/BaseSourceAmbient.Manual.html#Manual.direction">direction (in module Manual)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="E">E</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.WavelengthsRange.html#WavelengthsRange.end">end (in module WavelengthsRange)</a>
+</li>
+      <li><a href="api/ansys/speos/core/logger/index.html#logger.ERROR">ERROR (in module logger)</a>
+</li>
+      <li><a href="api/ansys/speos/core/logger/Logger.html#Logger.error">error (in module Logger)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/lxp/index.html#lxp.ERROR_IDS">ERROR_IDS (in module lxp)</a>
+</li>
+      <li><a href="api/ansys/speos/core/generic/general_methods/index.html#general_methods.error_no_install">error_no_install() (in module general_methods)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/BaseSimulation.html#BaseSimulation.export">export() (in module BaseSimulation)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="F">F</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/lxp/RayPath.html#RayPath.face_ids">face_ids (in module RayPath)</a>
+</li>
+      <li><a href="api/ansys/speos/core/face/Face.html#Face.face_link">face_link (in module Face)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/client/SpeosClient.html#SpeosClient.faces">faces() (in module SpeosClient)</a>
+</li>
+      <li><a href="api/ansys/speos/core/logger/Logger.html#Logger.file_handler">file_handler (in module Logger)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/logger/PySpeosCustomAdapter.html#PySpeosCustomAdapter.file_handler">(in module PySpeosCustomAdapter)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/logger/index.html#logger.FILE_MSG_FORMAT">FILE_MSG_FORMAT (in module logger)</a>
+</li>
+      <li><a href="api/ansys/speos/core/logger/index.html#logger.FILE_NAME">FILE_NAME (in module logger)</a>
+</li>
+      <li><a href="api/ansys/speos/core/logger/InstanceFilter.html#InstanceFilter.filter">filter() (in module InstanceFilter)</a>
+</li>
+      <li><a href="api/ansys/speos/core/lxp/LightPathFinder.html#LightPathFinder.filter_by_body_ids">filter_by_body_ids() (in module LightPathFinder)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/lxp/LightPathFinder.html#LightPathFinder.filter_by_face_ids">filter_by_face_ids() (in module LightPathFinder)</a>
+</li>
+      <li><a href="api/ansys/speos/core/lxp/LightPathFinder.html#LightPathFinder.filter_error_rays">filter_error_rays() (in module LightPathFinder)</a>
+</li>
+      <li><a href="api/ansys/speos/core/lxp/LightPathFinder.html#LightPathFinder.filtered_rays">filtered_rays (in module LightPathFinder)</a>
+</li>
+      <li><a href="api/ansys/speos/core/body/Body.html#Body.find">find() (in module Body)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/part/Part.html#Part.find">(in module Part)</a>
+</li>
+        <li><a href="api/ansys/speos/core/project/Project.html#Project.find">(in module Project)</a>
+</li>
+        <li><a href="api/ansys/speos/core/part/Part.SubPart.html#SubPart.find">(in module SubPart)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/project/Project.html#Project.find_key">find_key() (in module Project)</a>
+</li>
+      <li><a href="api/ansys/speos/core/geo_ref/GeoRef.html#GeoRef.from_native_link">from_native_link() (in module GeoRef)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="G">G</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/body/Body.html#Body.geo_path">geo_path (in module Body)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/face/Face.html#Face.geo_path">(in module Face)</a>
+</li>
+        <li><a href="api/ansys/speos/core/part/Part.SubPart.html#SubPart.geo_path">(in module SubPart)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/simulation/BaseSimulation.html#BaseSimulation.geom_distance_tolerance">geom_distance_tolerance (in module BaseSimulation)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/BaseSensor.FaceLayer.html#FaceLayer.geometries">geometries (in module FaceLayer)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/AnisotropicBSDF.html#AnisotropicBSDF.get">get() (in module AnisotropicBSDF)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/sensor/BaseSensor.html#BaseSensor.get">(in module BaseSensor)</a>
+</li>
+        <li><a href="api/ansys/speos/core/simulation/BaseSimulation.html#BaseSimulation.get">(in module BaseSimulation)</a>
+</li>
+        <li><a href="api/ansys/speos/core/source/BaseSource.html#BaseSource.get">(in module BaseSource)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/body/BodyLink.html#BodyLink.get">(in module BodyLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/bsdf/BxdfDatapoint.html#BxdfDatapoint.get">(in module BxdfDatapoint)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/face/FaceLink.html#FaceLink.get">(in module FaceLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/ground_plane/GroundPlane.html#GroundPlane.get">(in module GroundPlane)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/intensity_template/IntensityTemplateLink.html#IntensityTemplateLink.get">(in module IntensityTemplateLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/job/JobLink.html#JobLink.get">(in module JobLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/opt_prop/OptProp.html#OptProp.get">(in module OptProp)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/part/PartLink.html#PartLink.get">(in module PartLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/project/Project.html#Project.get">(in module Project)</a>
+</li>
+        <li><a href="api/ansys/speos/core/lxp/RayPath.html#RayPath.get">(in module RayPath)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/scene/SceneLink.html#SceneLink.get">(in module SceneLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/sensor_template/SensorTemplateLink.html#SensorTemplateLink.get">(in module SensorTemplateLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/simulation_template/SimulationTemplateLink.html#SimulationTemplateLink.get">(in module SimulationTemplateLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/sop_template/SOPTemplateLink.html#SOPTemplateLink.get">(in module SOPTemplateLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/source_template/SourceTemplateLink.html#SourceTemplateLink.get">(in module SourceTemplateLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/bsdf/SpectralBRDF.html#SpectralBRDF.get">(in module SpectralBRDF)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/spectrum/SpectrumLink.html#SpectrumLink.get">(in module SpectrumLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/vop_template/VOPTemplateLink.html#VOPTemplateLink.get">(in module VOPTemplateLink)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/kernel/job/JobLink.html#JobLink.get_error">get_error() (in module JobLink)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/client/SpeosClient.html#SpeosClient.get_items">get_items() (in module SpeosClient)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/intensity_template/IntensityTemplateLink.html#IntensityTemplateLink.get_library_type_info">get_library_type_info() (in module IntensityTemplateLink)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/job/JobLink.html#JobLink.get_progress_status">get_progress_status() (in module JobLink)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/source_template/SourceTemplateLink.html#SourceTemplateLink.get_ray_file_info">get_ray_file_info() (in module SourceTemplateLink)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/job/JobLink.html#JobLink.get_ray_paths">get_ray_paths() (in module JobLink)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/InterpolationEnhancement.html#InterpolationEnhancement.get_reflection_interpolation_settings">get_reflection_interpolation_settings (in module InterpolationEnhancement)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/job/JobLink.html#JobLink.get_results">get_results() (in module JobLink)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/scene/SceneLink.html#SceneLink.get_source_ray_paths">get_source_ray_paths() (in module SceneLink)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/job/JobLink.html#JobLink.get_state">get_state() (in module JobLink)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/InterpolationEnhancement.html#InterpolationEnhancement.get_transmission_interpolation_settings">get_transmission_interpolation_settings (in module InterpolationEnhancement)</a>
+</li>
+      <li><a href="api/ansys/speos/core/generic/general_methods/index.html#general_methods.GRAPHICS_ERROR">GRAPHICS_ERROR (in module general_methods)</a>
+</li>
+      <li><a href="api/ansys/speos/core/generic/general_methods/index.html#general_methods.graphics_required">graphics_required() (in module general_methods)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/BaseSource.UserDefinedColorSpace.html#UserDefinedColorSpace.green_spectrum">green_spectrum (in module UserDefinedColorSpace)</a>
+</li>
+      <li><a href="api/ansys/speos/core/ground_plane/GroundPlane.html#GroundPlane.ground_height">ground_height (in module GroundPlane)</a>
+</li>
+      <li><a href="api/ansys/speos/core/ground_plane/GroundPlane.html#GroundPlane.ground_origin">ground_origin (in module GroundPlane)</a>
+</li>
+      <li><a href="api/ansys/speos/core/ground_plane/GroundPlane.html#GroundPlane.ground_zenith">ground_zenith (in module GroundPlane)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="H">H</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/bsdf/BaseBSDF.html#BaseBSDF.has_reflection">has_reflection (in module BaseBSDF)</a>
+</li>
+      <li><a href="api/ansys/speos/core/lxp/LightPathFinder.html#LightPathFinder.has_sensor_contributions">has_sensor_contributions (in module LightPathFinder)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/BaseBSDF.html#BaseBSDF.has_transmission">has_transmission (in module BaseBSDF)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/client/SpeosClient.html#SpeosClient.healthy">healthy (in module SpeosClient)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/kernel/grpc/transport_options/InsecureOptions.html#InsecureOptions.host">host (in module InsecureOptions)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/kernel/grpc/transport_options/MTLSOptions.html#MTLSOptions.host">(in module MTLSOptions)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/grpc/transport_options/WNUAOptions.html#WNUAOptions.host">(in module WNUAOptions)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/source/BaseSourceAmbient.AutomaticSun.html#AutomaticSun.hour">hour (in module AutomaticSun)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="I">I</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/source/SourceAmbientEnvironment.html#SourceAmbientEnvironment.image_file_uri">image_file_uri (in module SourceAmbientEnvironment)</a>
+</li>
+      <li><a href="api/ansys/speos/core/lxp/RayPath.html#RayPath.impacts">impacts (in module RayPath)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/BxdfDatapoint.html#BxdfDatapoint.incident_angle">incident_angle (in module BxdfDatapoint)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/BaseBSDF.html#BaseBSDF.incident_angles">incident_angles (in module BaseBSDF)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/InterpolationEnhancement.html#InterpolationEnhancement.index1">index1 (in module InterpolationEnhancement)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/InterpolationEnhancement.html#InterpolationEnhancement.index2">index2 (in module InterpolationEnhancement)</a>
+</li>
+      <li><a href="api/ansys/speos/core/logger/index.html#logger.INFO">INFO (in module logger)</a>
+</li>
+      <li><a href="api/ansys/speos/core/logger/Logger.html#Logger.info">info (in module Logger)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/kernel/grpc/transport_options/TransportMode.html#TransportMode.INSECURE">INSECURE (in module TransportMode)</a>
+</li>
+      <li><a href="api/ansys/speos/core/workflow/combine_speos/index.html#combine_speos.insert_speos">insert_speos() (in module combine_speos)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.html#SimulationVirtualBSDF.integration_angle">integration_angle (in module SimulationVirtualBSDF)</a>
+</li>
+      <li><a href="api/ansys/speos/core/intensity/Intensity.html#Intensity.intensity_template_link">intensity_template_link (in module Intensity)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/client/SpeosClient.html#SpeosClient.intensity_templates">intensity_templates() (in module SpeosClient)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/BaseBSDF.html#BaseBSDF.interpolation_settings">interpolation_settings (in module BaseBSDF)</a>
+</li>
+      <li><a href="api/ansys/speos/core/lxp/RayPath.html#RayPath.intersection_type">intersection_type (in module RayPath)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/BxdfDatapoint.html#BxdfDatapoint.is_brdf">is_brdf (in module BxdfDatapoint)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.AllCharacteristics.html#AllCharacteristics.is_bsdf180">is_bsdf180 (in module AllCharacteristics)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="J">J</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/simulation/BaseSimulation.html#BaseSimulation.job_link">job_link (in module BaseSimulation)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/kernel/client/SpeosClient.html#SpeosClient.jobs">jobs() (in module SpeosClient)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="K">K</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/kernel/crud/CrudItem.html#CrudItem.key">key (in module CrudItem)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="L">L</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/lxp/RayPath.html#RayPath.last_direction">last_direction (in module RayPath)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/BaseSourceAmbient.AutomaticSun.html#AutomaticSun.latitude">latitude (in module AutomaticSun)</a>
+</li>
+      <li><a href="api/ansys/speos/core/launcher/index.html#launcher.launch_local_speos_rpc_server">launch_local_speos_rpc_server() (in module launcher)</a>
+</li>
+      <li><a href="api/ansys/speos/core/launcher/index.html#launcher.launch_remote_speos">launch_remote_speos() (in module launcher)</a>
+</li>
+      <li><a href="api/ansys/speos/core/launcher/index.html#launcher.launch_speos">launch_speos() (in module launcher)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorIrradiance.html#SensorIrradiance.layer">layer (in module SensorIrradiance)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/sensor/SensorRadiance.html#SensorRadiance.layer">(in module SensorRadiance)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/logger/PySpeosCustomAdapter.html#PySpeosCustomAdapter.level">level (in module PySpeosCustomAdapter)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/body/BodyStub.html#BodyStub.list">list() (in module BodyStub)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/kernel/crud/CrudStub.html#CrudStub.list">(in module CrudStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/face/FaceStub.html#FaceStub.list">(in module FaceStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/intensity_template/IntensityTemplateStub.html#IntensityTemplateStub.list">(in module IntensityTemplateStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/job/JobStub.html#JobStub.list">(in module JobStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/part/PartStub.html#PartStub.list">(in module PartStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/scene/SceneStub.html#SceneStub.list">(in module SceneStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/sensor_template/SensorTemplateStub.html#SensorTemplateStub.list">(in module SensorTemplateStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/simulation_template/SimulationTemplateStub.html#SimulationTemplateStub.list">(in module SimulationTemplateStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/sop_template/SOPTemplateStub.html#SOPTemplateStub.list">(in module SOPTemplateStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/source_template/SourceTemplateStub.html#SourceTemplateStub.list">(in module SourceTemplateStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/spectrum/SpectrumStub.html#SpectrumStub.list">(in module SpectrumStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/vop_template/VOPTemplateStub.html#VOPTemplateStub.list">(in module VOPTemplateStub)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/kernel/scene/SceneLink.html#SceneLink.load_file">load_file() (in module SceneLink)</a>
+</li>
+      <li><a href="api/ansys/speos/core/generic/visualization_methods/index.html#visualization_methods.local2absolute">local2absolute() (in module visualization_methods)</a>
+</li>
+      <li><a href="api/ansys/speos/core/logger/index.html#logger.LOG">LOG (in module logger)</a>
+</li>
+      <li><a href="api/ansys/speos/core/logger/Logger.html#Logger.log">log (in module Logger)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/kernel/client/SpeosClient.html#SpeosClient.log">(in module SpeosClient)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/logger/index.html#logger.LOG_LEVEL">LOG_LEVEL (in module logger)</a>
+</li>
+      <li><a href="api/ansys/speos/core/logger/Logger.html#Logger.log_to_file">log_to_file() (in module Logger)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/logger/PySpeosCustomAdapter.html#PySpeosCustomAdapter.log_to_file">(in module PySpeosCustomAdapter)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/logger/Logger.html#Logger.log_to_stdout">log_to_stdout() (in module Logger)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/logger/PySpeosCustomAdapter.html#PySpeosCustomAdapter.log_to_stdout">(in module PySpeosCustomAdapter)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/logger/Logger.html#Logger.logger">logger (in module Logger)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/logger/PySpeosCustomAdapter.html#PySpeosCustomAdapter.logger">(in module PySpeosCustomAdapter)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/source/BaseSourceAmbient.AutomaticSun.html#AutomaticSun.longitude">longitude (in module AutomaticSun)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/SourceAmbientEnvironment.html#SourceAmbientEnvironment.luminance">luminance (in module SourceAmbientEnvironment)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/BaseSensor.html#BaseSensor.lxp_path_number">lxp_path_number (in module BaseSensor)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="M">M</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/generic/general_methods/index.html#general_methods.magnitude_vector">magnitude_vector() (in module general_methods)</a>
+</li>
+      <li><a href="api/ansys/speos/core/generic/constants/index.html#constants.MAX_CLIENT_MESSAGE_SIZE">MAX_CLIENT_MESSAGE_SIZE (in module constants)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/BaseSimulation.html#BaseSimulation.max_impact">max_impact (in module BaseSimulation)</a>
+</li>
+      <li><a href="api/ansys/speos/core/generic/constants/index.html#constants.MAX_SERVER_MESSAGE_LENGTH">MAX_SERVER_MESSAGE_LENGTH (in module constants)</a>
+</li>
+      <li><a href="api/ansys/speos/core/geo_ref/GeoRef.html#GeoRef.metadata">metadata (in module GeoRef)</a>
+</li>
+      <li><a href="api/ansys/speos/core/generic/general_methods/index.html#general_methods.min_speos_version">min_speos_version() (in module general_methods)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/BaseSourceAmbient.AutomaticSun.html#AutomaticSun.minute">minute (in module AutomaticSun)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/grpc/transport_options/TransportOptions.html#TransportOptions.mode">mode (in module TransportOptions)</a>
+</li>
+      <li>
+    module
+
+      <ul>
+        <li><a href="api/ansys/speos/core/index.html#module-ansys.speos.core">ansys.speos.core</a>
+</li>
+        <li><a href="api/ansys/speos/core/body/index.html#module-ansys.speos.core.body">ansys.speos.core.body</a>
+</li>
+        <li><a href="api/ansys/speos/core/bsdf/index.html#module-ansys.speos.core.bsdf">ansys.speos.core.bsdf</a>
+</li>
+        <li><a href="api/ansys/speos/core/face/index.html#module-ansys.speos.core.face">ansys.speos.core.face</a>
+</li>
+        <li><a href="api/ansys/speos/core/generic/constants/index.html#module-ansys.speos.core.generic.constants">ansys.speos.core.generic.constants</a>
+</li>
+        <li><a href="api/ansys/speos/core/generic/general_methods/index.html#module-ansys.speos.core.generic.general_methods">ansys.speos.core.generic.general_methods</a>
+</li>
+        <li><a href="api/ansys/speos/core/generic/visualization_methods/index.html#module-ansys.speos.core.generic.visualization_methods">ansys.speos.core.generic.visualization_methods</a>
+</li>
+        <li><a href="api/ansys/speos/core/geo_ref/index.html#module-ansys.speos.core.geo_ref">ansys.speos.core.geo_ref</a>
+</li>
+        <li><a href="api/ansys/speos/core/ground_plane/index.html#module-ansys.speos.core.ground_plane">ansys.speos.core.ground_plane</a>
+</li>
+        <li><a href="api/ansys/speos/core/intensity/index.html#module-ansys.speos.core.intensity">ansys.speos.core.intensity</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/index.html#module-ansys.speos.core.kernel">ansys.speos.core.kernel</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/body/index.html#module-ansys.speos.core.kernel.body">ansys.speos.core.kernel.body</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/client/index.html#module-ansys.speos.core.kernel.client">ansys.speos.core.kernel.client</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/crud/index.html#module-ansys.speos.core.kernel.crud">ansys.speos.core.kernel.crud</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/face/index.html#module-ansys.speos.core.kernel.face">ansys.speos.core.kernel.face</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/grpc/transport_options/index.html#module-ansys.speos.core.kernel.grpc.transport_options">ansys.speos.core.kernel.grpc.transport_options</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/intensity_template/index.html#module-ansys.speos.core.kernel.intensity_template">ansys.speos.core.kernel.intensity_template</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/job/index.html#module-ansys.speos.core.kernel.job">ansys.speos.core.kernel.job</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/part/index.html#module-ansys.speos.core.kernel.part">ansys.speos.core.kernel.part</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/proto_message_utils/index.html#module-ansys.speos.core.kernel.proto_message_utils">ansys.speos.core.kernel.proto_message_utils</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/scene/index.html#module-ansys.speos.core.kernel.scene">ansys.speos.core.kernel.scene</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/sensor_template/index.html#module-ansys.speos.core.kernel.sensor_template">ansys.speos.core.kernel.sensor_template</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/simulation_template/index.html#module-ansys.speos.core.kernel.simulation_template">ansys.speos.core.kernel.simulation_template</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/sop_template/index.html#module-ansys.speos.core.kernel.sop_template">ansys.speos.core.kernel.sop_template</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/source_template/index.html#module-ansys.speos.core.kernel.source_template">ansys.speos.core.kernel.source_template</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/spectrum/index.html#module-ansys.speos.core.kernel.spectrum">ansys.speos.core.kernel.spectrum</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/vop_template/index.html#module-ansys.speos.core.kernel.vop_template">ansys.speos.core.kernel.vop_template</a>
+</li>
+        <li><a href="api/ansys/speos/core/launcher/index.html#module-ansys.speos.core.launcher">ansys.speos.core.launcher</a>
+</li>
+        <li><a href="api/ansys/speos/core/logger/index.html#module-ansys.speos.core.logger">ansys.speos.core.logger</a>
+</li>
+        <li><a href="api/ansys/speos/core/lxp/index.html#module-ansys.speos.core.lxp">ansys.speos.core.lxp</a>
+</li>
+        <li><a href="api/ansys/speos/core/opt_prop/index.html#module-ansys.speos.core.opt_prop">ansys.speos.core.opt_prop</a>
+</li>
+        <li><a href="api/ansys/speos/core/part/index.html#module-ansys.speos.core.part">ansys.speos.core.part</a>
+</li>
+        <li><a href="api/ansys/speos/core/project/index.html#module-ansys.speos.core.project">ansys.speos.core.project</a>
+</li>
+        <li><a href="api/ansys/speos/core/proto_message_utils/index.html#module-ansys.speos.core.proto_message_utils">ansys.speos.core.proto_message_utils</a>
+</li>
+        <li><a href="api/ansys/speos/core/sensor/index.html#module-ansys.speos.core.sensor">ansys.speos.core.sensor</a>
+</li>
+        <li><a href="api/ansys/speos/core/simulation/index.html#module-ansys.speos.core.simulation">ansys.speos.core.simulation</a>
+</li>
+        <li><a href="api/ansys/speos/core/source/index.html#module-ansys.speos.core.source">ansys.speos.core.source</a>
+</li>
+        <li><a href="api/ansys/speos/core/spectrum/index.html#module-ansys.speos.core.spectrum">ansys.speos.core.spectrum</a>
+</li>
+        <li><a href="api/ansys/speos/core/speos/index.html#module-ansys.speos.core.speos">ansys.speos.core.speos</a>
+</li>
+        <li><a href="api/ansys/speos/core/workflow/index.html#module-ansys.speos.core.workflow">ansys.speos.core.workflow</a>
+</li>
+        <li><a href="api/ansys/speos/core/workflow/combine_speos/index.html#module-ansys.speos.core.workflow.combine_speos">ansys.speos.core.workflow.combine_speos</a>
+</li>
+        <li><a href="api/ansys/speos/core/workflow/open_result/index.html#module-ansys.speos.core.workflow.open_result">ansys.speos.core.workflow.open_result</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/source/BaseSourceAmbient.AutomaticSun.html#AutomaticSun.month">month (in module AutomaticSun)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/grpc/transport_options/TransportMode.html#TransportMode.MTLS">MTLS (in module TransportMode)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="N">N</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/sensor/BaseSensor.FaceLayer.html#FaceLayer.name">name (in module FaceLayer)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/geo_ref/GeoRef.html#GeoRef.name">(in module GeoRef)</a>
+</li>
+        <li><a href="api/ansys/speos/core/workflow/combine_speos/SpeosFileInstance.html#SpeosFileInstance.name">(in module SpeosFileInstance)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/lxp/RayPath.html#RayPath.nb_impacts">nb_impacts (in module RayPath)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/BaseBSDF.html#BaseBSDF.nb_incidents">nb_incidents (in module BaseBSDF)</a>
+</li>
+      <li><a href="api/ansys/speos/core/lxp/LightPathFinder.html#LightPathFinder.nb_traces">nb_traces (in module LightPathFinder)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/lxp/LightPathFinder.html#LightPathFinder.nb_xmps">nb_xmps (in module LightPathFinder)</a>
+</li>
+      <li><a href="api/ansys/speos/core/logger/index.html#logger.NEW_SESSION_HEADER">NEW_SESSION_HEADER (in module logger)</a>
+</li>
+      <li><a href="api/ansys/speos/core/lxp/index.html#lxp.NO_ERROR_IDS">NO_ERROR_IDS (in module lxp)</a>
+</li>
+      <li><a href="api/ansys/speos/core/generic/general_methods/index.html#general_methods.normalize_vector">normalize_vector() (in module general_methods)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/SourceAmbientEnvironment.html#SourceAmbientEnvironment.north_direction">north_direction (in module SourceAmbientEnvironment)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/source/SourceAmbientNaturalLight.html#SourceAmbientNaturalLight.north_direction">(in module SourceAmbientNaturalLight)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="O">O</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/workflow/open_result/index.html#open_result.open_result_image">open_result_image() (in module open_result)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/kernel/grpc/transport_options/TransportOptions.html#TransportOptions.options">options (in module TransportOptions)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="P">P</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/part/Part.html#Part.part_link">part_link (in module Part)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/part/Part.SubPart.html#SubPart.part_link">(in module SubPart)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/kernel/client/SpeosClient.html#SpeosClient.parts">parts() (in module SpeosClient)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.SensorUniform.html#SensorUniform.phi_sampling">phi_sampling (in module SensorUniform)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic.Uniform.html#Uniform.phi_sampling">(in module Uniform)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/bsdf/BxdfDatapoint.html#BxdfDatapoint.phi_values">phi_values (in module BxdfDatapoint)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.html#SensorCamera.photometric">photometric (in module SensorCamera)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/grpc/transport_options/InsecureOptions.html#InsecureOptions.port">port (in module InsecureOptions)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/kernel/grpc/transport_options/MTLSOptions.html#MTLSOptions.port">(in module MTLSOptions)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/grpc/transport_options/WNUAOptions.html#WNUAOptions.port">(in module WNUAOptions)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/lxp/LightPathFinder.html#LightPathFinder.preview">preview() (in module LightPathFinder)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/project/Project.html#Project.preview">(in module Project)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/logger/PySpeosCustomAdapter.html#PySpeosCustomAdapter.process">process() (in module PySpeosCustomAdapter)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/kernel/body/index.html#body.ProtoBody">ProtoBody (in module body)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/proto_message_utils/index.html#proto_message_utils.protobuf_message_to_dict">protobuf_message_to_dict() (in module proto_message_utils)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/proto_message_utils/index.html#proto_message_utils.protobuf_message_to_str">protobuf_message_to_str() (in module proto_message_utils)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/face/index.html#face.ProtoFace">ProtoFace (in module face)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/intensity_template/index.html#intensity_template.ProtoIntensityTemplate">ProtoIntensityTemplate (in module intensity_template)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/job/index.html#job.ProtoJob">ProtoJob (in module job)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/part/index.html#part.ProtoPart">ProtoPart (in module part)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/scene/index.html#scene.ProtoScene">ProtoScene (in module scene)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/sensor_template/index.html#sensor_template.ProtoSensorTemplate">ProtoSensorTemplate (in module sensor_template)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/simulation_template/index.html#simulation_template.ProtoSimulationTemplate">ProtoSimulationTemplate (in module simulation_template)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/sop_template/index.html#sop_template.ProtoSOPTemplate">ProtoSOPTemplate (in module sop_template)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/source_template/index.html#source_template.ProtoSourceTemplate">ProtoSourceTemplate (in module source_template)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/spectrum/index.html#spectrum.ProtoSpectrum">ProtoSpectrum (in module spectrum)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/vop_template/index.html#vop_template.ProtoVOPTemplate">ProtoVOPTemplate (in module vop_template)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="R">R</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/lxp/LightPathFinder.html#LightPathFinder.rays">rays (in module LightPathFinder)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationInteractive.RaysNumberPerSource.html#RaysNumberPerSource.rays_nb">rays_nb (in module RaysNumberPerSource)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/body/BodyStub.html#BodyStub.read">read() (in module BodyStub)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/kernel/crud/CrudStub.html#CrudStub.read">(in module CrudStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/face/FaceStub.html#FaceStub.read">(in module FaceStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/intensity_template/IntensityTemplateStub.html#IntensityTemplateStub.read">(in module IntensityTemplateStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/job/JobStub.html#JobStub.read">(in module JobStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/part/PartStub.html#PartStub.read">(in module PartStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/scene/SceneStub.html#SceneStub.read">(in module SceneStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/sensor_template/SensorTemplateStub.html#SensorTemplateStub.read">(in module SensorTemplateStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/simulation_template/SimulationTemplateStub.html#SimulationTemplateStub.read">(in module SimulationTemplateStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/sop_template/SOPTemplateStub.html#SOPTemplateStub.read">(in module SOPTemplateStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/source_template/SourceTemplateStub.html#SourceTemplateStub.read">(in module SourceTemplateStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/spectrum/SpectrumStub.html#SpectrumStub.read">(in module SpectrumStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/vop_template/VOPTemplateStub.html#VOPTemplateStub.read">(in module VOPTemplateStub)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/kernel/face/FaceStub.html#FaceStub.read_batch">read_batch() (in module FaceStub)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/BaseSource.UserDefinedColorSpace.html#UserDefinedColorSpace.red_spectrum">red_spectrum (in module UserDefinedColorSpace)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/Sensor3DIrradiance.Measures.html#Measures.reflection">reflection (in module Measures)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.AllCharacteristics.html#AllCharacteristics.reflection_and_transmission">reflection_and_transmission (in module AllCharacteristics)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/AnisotropicBSDF.html#AnisotropicBSDF.reflection_spectrum">reflection_spectrum (in module AnisotropicBSDF)</a>
+</li>
+      <li><a href="api/ansys/speos/core/lxp/LightPathFinder.html#LightPathFinder.remove_error_rays">remove_error_rays() (in module LightPathFinder)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/AnisotropicBSDF.html#AnisotropicBSDF.reset">reset() (in module AnisotropicBSDF)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/sensor/BaseSensor.html#BaseSensor.reset">(in module BaseSensor)</a>
+</li>
+        <li><a href="api/ansys/speos/core/simulation/BaseSimulation.html#BaseSimulation.reset">(in module BaseSimulation)</a>
+</li>
+        <li><a href="api/ansys/speos/core/source/BaseSource.html#BaseSource.reset">(in module BaseSource)</a>
+</li>
+        <li><a href="api/ansys/speos/core/body/Body.html#Body.reset">(in module Body)</a>
+</li>
+        <li><a href="api/ansys/speos/core/face/Face.html#Face.reset">(in module Face)</a>
+</li>
+        <li><a href="api/ansys/speos/core/ground_plane/GroundPlane.html#GroundPlane.reset">(in module GroundPlane)</a>
+</li>
+        <li><a href="api/ansys/speos/core/intensity/Intensity.html#Intensity.reset">(in module Intensity)</a>
+</li>
+        <li><a href="api/ansys/speos/core/opt_prop/OptProp.html#OptProp.reset">(in module OptProp)</a>
+</li>
+        <li><a href="api/ansys/speos/core/part/Part.html#Part.reset">(in module Part)</a>
+</li>
+        <li><a href="api/ansys/speos/core/source/SourceAmbientEnvironment.html#SourceAmbientEnvironment.reset">(in module SourceAmbientEnvironment)</a>
+</li>
+        <li><a href="api/ansys/speos/core/source/SourceSurface.html#SourceSurface.reset">(in module SourceSurface)</a>
+</li>
+        <li><a href="api/ansys/speos/core/bsdf/SpectralBRDF.html#SpectralBRDF.reset">(in module SpectralBRDF)</a>
+</li>
+        <li><a href="api/ansys/speos/core/spectrum/Spectrum.html#Spectrum.reset">(in module Spectrum)</a>
+</li>
+        <li><a href="api/ansys/speos/core/part/Part.SubPart.html#SubPart.reset">(in module SubPart)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/simulation/BaseSimulation.html#BaseSimulation.result_list">result_list (in module BaseSimulation)</a>
+</li>
+      <li><a href="api/ansys/speos/core/generic/general_methods/index.html#general_methods.retrieve_speos_install_dir">retrieve_speos_install_dir() (in module general_methods)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/SourceAmbientEnvironment.html#SourceAmbientEnvironment.reverse_north_direction">reverse_north_direction (in module SourceAmbientEnvironment)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/source/SourceAmbientNaturalLight.html#SourceAmbientNaturalLight.reverse_north_direction">(in module SourceAmbientNaturalLight)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/source/BaseSourceAmbient.Manual.html#Manual.reverse_sun">reverse_sun (in module Manual)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/SourceAmbientEnvironment.html#SourceAmbientEnvironment.reverse_zenith_direction">reverse_zenith_direction (in module SourceAmbientEnvironment)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/source/SourceAmbientNaturalLight.html#SourceAmbientNaturalLight.reverse_zenith_direction">(in module SourceAmbientNaturalLight)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/generic/general_methods/index.html#general_methods.run_if_graphics_required">run_if_graphics_required() (in module general_methods)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="S">S</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.WavelengthsRange.html#WavelengthsRange.sampling">sampling (in module WavelengthsRange)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/SpectralBRDF.html#SpectralBRDF.sanity_check">sanity_check() (in module SpectralBRDF)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/AnisotropicBSDF.html#AnisotropicBSDF.save">save() (in module AnisotropicBSDF)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/bsdf/SpectralBRDF.html#SpectralBRDF.save">(in module SpectralBRDF)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/project/Project.html#Project.scene_link">scene_link (in module Project)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/client/SpeosClient.html#SpeosClient.scenes">scenes() (in module SpeosClient)</a>
+</li>
+      <li><a href="api/ansys/speos/core/lxp/RayPath.html#RayPath.sensor_contribution">sensor_contribution (in module RayPath)</a>
+</li>
+      <li><a href="api/ansys/speos/core/lxp/LightPathFinder.html#LightPathFinder.sensor_names">sensor_names (in module LightPathFinder)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/BaseSensor.html#BaseSensor.sensor_template_link">sensor_template_link (in module BaseSensor)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/client/SpeosClient.html#SpeosClient.sensor_templates">sensor_templates() (in module SpeosClient)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/body/BodyLink.html#BodyLink.set">set() (in module BodyLink)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/kernel/face/FaceLink.html#FaceLink.set">(in module FaceLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/intensity_template/IntensityTemplateLink.html#IntensityTemplateLink.set">(in module IntensityTemplateLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/job/JobLink.html#JobLink.set">(in module JobLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/part/PartLink.html#PartLink.set">(in module PartLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/scene/SceneLink.html#SceneLink.set">(in module SceneLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/sensor_template/SensorTemplateLink.html#SensorTemplateLink.set">(in module SensorTemplateLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/simulation_template/SimulationTemplateLink.html#SimulationTemplateLink.set">(in module SimulationTemplateLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/sop_template/SOPTemplateLink.html#SOPTemplateLink.set">(in module SOPTemplateLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/source_template/SourceTemplateLink.html#SourceTemplateLink.set">(in module SourceTemplateLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/spectrum/SpectrumLink.html#SpectrumLink.set">(in module SpectrumLink)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/vop_template/VOPTemplateLink.html#VOPTemplateLink.set">(in module VOPTemplateLink)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.Photometric.html#Photometric.set_acquisition_integration">set_acquisition_integration() (in module Photometric)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.Photometric.html#Photometric.set_acquisition_lag_time">set_acquisition_lag_time() (in module Photometric)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/BaseSimulation.SourceSampling.html#SourceSampling.set_adaptive">set_adaptive() (in module SourceSampling)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationDirect.html#SimulationDirect.set_ambient_material_file_uri">set_ambient_material_file_uri() (in module SimulationDirect)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/simulation/SimulationInteractive.html#SimulationInteractive.set_ambient_material_file_uri">(in module SimulationInteractive)</a>
+</li>
+        <li><a href="api/ansys/speos/core/simulation/SimulationInverse.html#SimulationInverse.set_ambient_material_file_uri">(in module SimulationInverse)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.AllCharacteristics.NonIridescence.html#NonIridescence.set_anisotropic">set_anisotropic() (in module NonIridescence)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationDirect.html#SimulationDirect.set_automatic_save_frequency">set_automatic_save_frequency() (in module SimulationDirect)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/simulation/SimulationInverse.html#SimulationInverse.set_automatic_save_frequency">(in module SimulationInverse)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/source/SourceSurface.ExitanceVariable.html#ExitanceVariable.set_axis_plane">set_axis_plane() (in module ExitanceVariable)</a>
+</li>
+      <li><a href="api/ansys/speos/core/intensity/Intensity.Gaussian.html#Gaussian.set_axis_system">set_axis_system() (in module Gaussian)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/sensor/SensorCamera.html#SensorCamera.set_axis_system">(in module SensorCamera)</a>
+</li>
+        <li><a href="api/ansys/speos/core/sensor/SensorIrradiance.html#SensorIrradiance.set_axis_system">(in module SensorIrradiance)</a>
+</li>
+        <li><a href="api/ansys/speos/core/sensor/SensorRadiance.html#SensorRadiance.set_axis_system">(in module SensorRadiance)</a>
+</li>
+        <li><a href="api/ansys/speos/core/source/SourceLuminaire.html#SourceLuminaire.set_axis_system">(in module SourceLuminaire)</a>
+</li>
+        <li><a href="api/ansys/speos/core/source/SourceRayFile.html#SourceRayFile.set_axis_system">(in module SourceRayFile)</a>
+</li>
+        <li><a href="api/ansys/speos/core/part/Part.SubPart.html#SubPart.set_axis_system">(in module SubPart)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.Photometric.Color.html#Color.set_balance_mode_display_primaries">set_balance_mode_display_primaries() (in module Color)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.Photometric.Color.html#Color.set_balance_mode_grey_world">set_balance_mode_grey_world() (in module Color)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.Photometric.Color.html#Color.set_balance_mode_none">set_balance_mode_none() (in module Color)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.Photometric.Color.html#Color.set_balance_mode_user_white">set_balance_mode_user_white() (in module Color)</a>
+</li>
+      <li><a href="api/ansys/speos/core/spectrum/Spectrum.html#Spectrum.set_blackbody">set_blackbody() (in module Spectrum)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries.html#BalanceModeDisplayPrimaries.set_blue_display_file_uri">set_blue_display_file_uri() (in module BalanceModeDisplayPrimaries)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.Photometric.Color.BalanceModeUserWhite.html#BalanceModeUserWhite.set_blue_gain">set_blue_gain() (in module BalanceModeUserWhite)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.Photometric.Color.html#Color.set_blue_spectrum_file_uri">set_blue_spectrum_file_uri() (in module Color)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/BaseSource.PredefinedColorSpace.html#PredefinedColorSpace.set_color_space_adobergb">set_color_space_adobergb() (in module PredefinedColorSpace)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/BaseSource.PredefinedColorSpace.html#PredefinedColorSpace.set_color_space_srgb">set_color_space_srgb() (in module PredefinedColorSpace)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationDirect.html#SimulationDirect.set_colorimetric_standard_CIE_1931">set_colorimetric_standard_CIE_1931() (in module SimulationDirect)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/simulation/SimulationInteractive.html#SimulationInteractive.set_colorimetric_standard_CIE_1931">(in module SimulationInteractive)</a>
+</li>
+        <li><a href="api/ansys/speos/core/simulation/SimulationInverse.html#SimulationInverse.set_colorimetric_standard_CIE_1931">(in module SimulationInverse)</a>
+</li>
+        <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.html#SimulationVirtualBSDF.set_colorimetric_standard_CIE_1931">(in module SimulationVirtualBSDF)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationDirect.html#SimulationDirect.set_colorimetric_standard_CIE_1964">set_colorimetric_standard_CIE_1964() (in module SimulationDirect)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/simulation/SimulationInteractive.html#SimulationInteractive.set_colorimetric_standard_CIE_1964">(in module SimulationInteractive)</a>
+</li>
+        <li><a href="api/ansys/speos/core/simulation/SimulationInverse.html#SimulationInverse.set_colorimetric_standard_CIE_1964">(in module SimulationInverse)</a>
+</li>
+        <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.html#SimulationVirtualBSDF.set_colorimetric_standard_CIE_1964">(in module SimulationVirtualBSDF)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/intensity/Intensity.html#Intensity.set_cos">set_cos() (in module Intensity)</a>
+</li>
+      <li><a href="api/ansys/speos/core/spectrum/Spectrum.html#Spectrum.set_daylightfluorescent">set_daylightfluorescent() (in module Spectrum)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/BaseSensor.LayerTypeSequence.html#LayerTypeSequence.set_define_sequence_per_faces">set_define_sequence_per_faces() (in module LayerTypeSequence)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/BaseSensor.LayerTypeSequence.html#LayerTypeSequence.set_define_sequence_per_geometries">set_define_sequence_per_geometries() (in module LayerTypeSequence)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorIrradiance.html#SensorIrradiance.set_dimensions">set_dimensions() (in module SensorIrradiance)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/sensor/SensorRadiance.html#SensorRadiance.set_dimensions">(in module SensorRadiance)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationDirect.html#SimulationDirect.set_dispersion">set_dispersion() (in module SimulationDirect)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/simulation/SimulationInverse.html#SimulationInverse.set_dispersion">(in module SimulationInverse)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.html#SensorCamera.set_distortion_file_uri">set_distortion_file_uri() (in module SensorCamera)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/BaseSensor.WavelengthsRange.html#WavelengthsRange.set_end">set_end() (in module WavelengthsRange)</a>
+</li>
+      <li><a href="api/ansys/speos/core/intensity/Intensity.Library.html#Library.set_exit_geometries">set_exit_geometries() (in module Library)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/source/SourceRayFile.html#SourceRayFile.set_exit_geometries">(in module SourceRayFile)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/source/SourceSurface.html#SourceSurface.set_exitance_constant">set_exitance_constant() (in module SourceSurface)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/SourceSurface.html#SourceSurface.set_exitance_variable">set_exitance_variable() (in module SourceSurface)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.html#SensorCamera.set_f_number">set_f_number() (in module SensorCamera)</a>
+</li>
+      <li><a href="api/ansys/speos/core/face/Face.html#Face.set_facets">set_facets() (in module Face)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/SourceLuminaire.html#SourceLuminaire.set_flux_from_intensity_file">set_flux_from_intensity_file() (in module SourceLuminaire)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/source/SourceSurface.html#SourceSurface.set_flux_from_intensity_file">(in module SourceSurface)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/source/SourceRayFile.html#SourceRayFile.set_flux_from_ray_file">set_flux_from_ray_file() (in module SourceRayFile)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/SourceLuminaire.html#SourceLuminaire.set_flux_luminous">set_flux_luminous() (in module SourceLuminaire)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/source/SourceRayFile.html#SourceRayFile.set_flux_luminous">(in module SourceRayFile)</a>
+</li>
+        <li><a href="api/ansys/speos/core/source/SourceSurface.html#SourceSurface.set_flux_luminous">(in module SourceSurface)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/source/SourceSurface.html#SourceSurface.set_flux_luminous_intensity">set_flux_luminous_intensity() (in module SourceSurface)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/SourceLuminaire.html#SourceLuminaire.set_flux_radiant">set_flux_radiant() (in module SourceLuminaire)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/source/SourceRayFile.html#SourceRayFile.set_flux_radiant">(in module SourceRayFile)</a>
+</li>
+        <li><a href="api/ansys/speos/core/source/SourceSurface.html#SourceSurface.set_flux_radiant">(in module SourceSurface)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/sensor/SensorRadiance.html#SensorRadiance.set_focal">set_focal() (in module SensorRadiance)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.html#SensorCamera.set_focal_length">set_focal_length() (in module SensorCamera)</a>
+</li>
+      <li><a href="api/ansys/speos/core/intensity/Intensity.Gaussian.html#Gaussian.set_FWHM_angle_x">set_FWHM_angle_x() (in module Gaussian)</a>
+</li>
+      <li><a href="api/ansys/speos/core/intensity/Intensity.Gaussian.html#Gaussian.set_FWHM_angle_y">set_FWHM_angle_y() (in module Gaussian)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.Photometric.html#Photometric.set_gamma_correction">set_gamma_correction() (in module Photometric)</a>
+</li>
+      <li><a href="api/ansys/speos/core/intensity/Intensity.html#Intensity.set_gaussian">set_gaussian() (in module Intensity)</a>
+</li>
+      <li><a href="api/ansys/speos/core/opt_prop/OptProp.html#OptProp.set_geometries">set_geometries() (in module OptProp)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/sensor/Sensor3DIrradiance.html#Sensor3DIrradiance.set_geometries">(in module Sensor3DIrradiance)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries.html#BalanceModeDisplayPrimaries.set_green_display_file_uri">set_green_display_file_uri() (in module BalanceModeDisplayPrimaries)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.Photometric.Color.BalanceModeUserWhite.html#BalanceModeUserWhite.set_green_gain">set_green_gain() (in module BalanceModeUserWhite)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.Photometric.Color.html#Color.set_green_spectrum_file_uri">set_green_spectrum_file_uri() (in module Color)</a>
+</li>
+      <li><a href="api/ansys/speos/core/spectrum/Spectrum.html#Spectrum.set_halogen">set_halogen() (in module Spectrum)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.html#SensorCamera.set_height">set_height() (in module SensorCamera)</a>
+</li>
+      <li><a href="api/ansys/speos/core/spectrum/Spectrum.html#Spectrum.set_highpressuresodium">set_highpressuresodium() (in module Spectrum)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.html#SensorCamera.set_horz_pixel">set_horz_pixel() (in module SensorCamera)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorIrradiance.html#SensorIrradiance.set_illuminance_type_cylindrical">set_illuminance_type_cylindrical() (in module SensorIrradiance)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorIrradiance.html#SensorIrradiance.set_illuminance_type_hemispherical">set_illuminance_type_hemispherical() (in module SensorIrradiance)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorIrradiance.html#SensorIrradiance.set_illuminance_type_planar">set_illuminance_type_planar() (in module SensorIrradiance)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorIrradiance.html#SensorIrradiance.set_illuminance_type_radial">set_illuminance_type_radial() (in module SensorIrradiance)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorIrradiance.html#SensorIrradiance.set_illuminance_type_semi_cylindrical">set_illuminance_type_semi_cylindrical() (in module SensorIrradiance)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.html#SensorCamera.set_imager_distance">set_imager_distance() (in module SensorCamera)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationInteractive.html#SimulationInteractive.set_impact_report">set_impact_report() (in module SimulationInteractive)</a>
+</li>
+      <li><a href="api/ansys/speos/core/spectrum/Spectrum.html#Spectrum.set_incandescent">set_incandescent() (in module Spectrum)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/BxdfDatapoint.html#BxdfDatapoint.set_incident_angle">set_incident_angle() (in module BxdfDatapoint)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorRadiance.html#SensorRadiance.set_integration_angle">set_integration_angle() (in module SensorRadiance)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/Sensor3DIrradiance.Photometric.html#Photometric.set_integration_planar">set_integration_planar() (in module Photometric)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/sensor/Sensor3DIrradiance.Radiometric.html#Radiometric.set_integration_planar">(in module Radiometric)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/sensor/Sensor3DIrradiance.Photometric.html#Photometric.set_integration_radial">set_integration_radial() (in module Photometric)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/sensor/Sensor3DIrradiance.Radiometric.html#Radiometric.set_integration_radial">(in module Radiometric)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/source/SourceSurface.html#SourceSurface.set_intensity">set_intensity() (in module SourceSurface)</a>
+</li>
+      <li><a href="api/ansys/speos/core/intensity/Intensity.Library.html#Library.set_intensity_file_uri">set_intensity_file_uri() (in module Library)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/source/SourceLuminaire.html#SourceLuminaire.set_intensity_file_uri">(in module SourceLuminaire)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/bsdf/InterpolationEnhancement.html#InterpolationEnhancement.set_interpolation_settings">set_interpolation_settings() (in module InterpolationEnhancement)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.AllCharacteristics.html#AllCharacteristics.set_iridescence">set_iridescence() (in module AllCharacteristics)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.AllCharacteristics.NonIridescence.html#NonIridescence.set_isotropic">set_isotropic() (in module NonIridescence)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorIrradiance.html#SensorIrradiance.set_layer_type_face">set_layer_type_face() (in module SensorIrradiance)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/sensor/SensorRadiance.html#SensorRadiance.set_layer_type_face">(in module SensorRadiance)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/sensor/SensorIrradiance.html#SensorIrradiance.set_layer_type_incidence_angle">set_layer_type_incidence_angle() (in module SensorIrradiance)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.Photometric.html#Photometric.set_layer_type_none">set_layer_type_none() (in module Photometric)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/sensor/Sensor3DIrradiance.html#Sensor3DIrradiance.set_layer_type_none">(in module Sensor3DIrradiance)</a>
+</li>
+        <li><a href="api/ansys/speos/core/sensor/SensorIrradiance.html#SensorIrradiance.set_layer_type_none">(in module SensorIrradiance)</a>
+</li>
+        <li><a href="api/ansys/speos/core/sensor/SensorRadiance.html#SensorRadiance.set_layer_type_none">(in module SensorRadiance)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/sensor/SensorIrradiance.html#SensorIrradiance.set_layer_type_polarization">set_layer_type_polarization() (in module SensorIrradiance)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorIrradiance.html#SensorIrradiance.set_layer_type_sequence">set_layer_type_sequence() (in module SensorIrradiance)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/sensor/SensorRadiance.html#SensorRadiance.set_layer_type_sequence">(in module SensorRadiance)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.Photometric.html#Photometric.set_layer_type_source">set_layer_type_source() (in module Photometric)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/sensor/Sensor3DIrradiance.html#Sensor3DIrradiance.set_layer_type_source">(in module Sensor3DIrradiance)</a>
+</li>
+        <li><a href="api/ansys/speos/core/sensor/SensorIrradiance.html#SensorIrradiance.set_layer_type_source">(in module SensorIrradiance)</a>
+</li>
+        <li><a href="api/ansys/speos/core/sensor/SensorRadiance.html#SensorRadiance.set_layer_type_source">(in module SensorRadiance)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/sensor/BaseSensor.LayerTypeFace.html#LayerTypeFace.set_layers">set_layers() (in module LayerTypeFace)</a>
+</li>
+      <li><a href="api/ansys/speos/core/intensity/Intensity.html#Intensity.set_library">set_library() (in module Intensity)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/spectrum/Spectrum.html#Spectrum.set_library">(in module Spectrum)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationDirect.html#SimulationDirect.set_light_expert">set_light_expert() (in module SimulationDirect)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/simulation/SimulationInteractive.html#SimulationInteractive.set_light_expert">(in module SimulationInteractive)</a>
+</li>
+        <li><a href="api/ansys/speos/core/simulation/SimulationInverse.html#SimulationInverse.set_light_expert">(in module SimulationInverse)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationInverse.html#SimulationInverse.set_maximum_gathering_error">set_maximum_gathering_error() (in module SimulationInverse)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/BaseSensor.LayerTypeSequence.html#LayerTypeSequence.set_maximum_nb_of_sequence">set_maximum_nb_of_sequence() (in module LayerTypeSequence)</a>
+</li>
+      <li><a href="api/ansys/speos/core/spectrum/Spectrum.html#Spectrum.set_metalhalide">set_metalhalide() (in module Spectrum)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/BaseSimulation.Weight.html#Weight.set_minimum_energy_percentage">set_minimum_energy_percentage() (in module Weight)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.html#SimulationVirtualBSDF.set_mode_all_characteristics">set_mode_all_characteristics() (in module SimulationVirtualBSDF)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.Photometric.html#Photometric.set_mode_color">set_mode_color() (in module Photometric)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.html#SensorCamera.set_mode_geometric">set_mode_geometric() (in module SensorCamera)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.Photometric.html#Photometric.set_mode_monochromatic">set_mode_monochromatic() (in module Photometric)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.html#SensorCamera.set_mode_photometric">set_mode_photometric() (in module SensorCamera)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.html#SimulationVirtualBSDF.set_mode_roughness_only">set_mode_roughness_only() (in module SimulationVirtualBSDF)</a>
+</li>
+      <li><a href="api/ansys/speos/core/spectrum/Spectrum.html#Spectrum.set_monochromatic">set_monochromatic() (in module Spectrum)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.AllCharacteristics.html#AllCharacteristics.set_non_iridescence">set_non_iridescence() (in module AllCharacteristics)</a>
+</li>
+      <li><a href="api/ansys/speos/core/face/Face.html#Face.set_normals">set_normals() (in module Face)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationInverse.html#SimulationInverse.set_number_of_gathering_rays_per_source">set_number_of_gathering_rays_per_source() (in module SimulationInverse)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorRadiance.html#SensorRadiance.set_observer_point">set_observer_point() (in module SensorRadiance)</a>
+</li>
+      <li><a href="api/ansys/speos/core/intensity/Intensity.Library.html#Library.set_orientation_axis_system">set_orientation_axis_system() (in module Library)</a>
+</li>
+      <li><a href="api/ansys/speos/core/intensity/Intensity.Library.html#Library.set_orientation_normal_to_surface">set_orientation_normal_to_surface() (in module Library)</a>
+</li>
+      <li><a href="api/ansys/speos/core/intensity/Intensity.Library.html#Library.set_orientation_normal_to_uv_map">set_orientation_normal_to_uv_map() (in module Library)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorIrradiance.html#SensorIrradiance.set_output_face_geometries">set_output_face_geometries() (in module SensorIrradiance)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.Photometric.html#Photometric.set_png_bits_08">set_png_bits_08() (in module Photometric)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.Photometric.html#Photometric.set_png_bits_10">set_png_bits_10() (in module Photometric)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.Photometric.html#Photometric.set_png_bits_12">set_png_bits_12() (in module Photometric)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.Photometric.html#Photometric.set_png_bits_16">set_png_bits_16() (in module Photometric)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/SourceAmbientEnvironment.html#SourceAmbientEnvironment.set_predefined_color_space">set_predefined_color_space() (in module SourceAmbientEnvironment)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/Sensor3DIrradiance.html#Sensor3DIrradiance.set_ray_file_type_classic">set_ray_file_type_classic() (in module Sensor3DIrradiance)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/sensor/SensorIrradiance.html#SensorIrradiance.set_ray_file_type_classic">(in module SensorIrradiance)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/sensor/Sensor3DIrradiance.html#Sensor3DIrradiance.set_ray_file_type_none">set_ray_file_type_none() (in module Sensor3DIrradiance)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/sensor/SensorIrradiance.html#SensorIrradiance.set_ray_file_type_none">(in module SensorIrradiance)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/sensor/Sensor3DIrradiance.html#Sensor3DIrradiance.set_ray_file_type_polarization">set_ray_file_type_polarization() (in module Sensor3DIrradiance)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/sensor/SensorIrradiance.html#SensorIrradiance.set_ray_file_type_polarization">(in module SensorIrradiance)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/sensor/Sensor3DIrradiance.html#Sensor3DIrradiance.set_ray_file_type_tm25">set_ray_file_type_tm25() (in module Sensor3DIrradiance)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/sensor/SensorIrradiance.html#SensorIrradiance.set_ray_file_type_tm25">(in module SensorIrradiance)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/sensor/Sensor3DIrradiance.html#Sensor3DIrradiance.set_ray_file_type_tm25_no_polarization">set_ray_file_type_tm25_no_polarization() (in module Sensor3DIrradiance)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/sensor/SensorIrradiance.html#SensorIrradiance.set_ray_file_type_tm25_no_polarization">(in module SensorIrradiance)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/source/SourceRayFile.html#SourceRayFile.set_ray_file_uri">set_ray_file_uri() (in module SourceRayFile)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationInteractive.html#SimulationInteractive.set_rays_number_per_sources">set_rays_number_per_sources() (in module SimulationInteractive)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries.html#BalanceModeDisplayPrimaries.set_red_display_file_uri">set_red_display_file_uri() (in module BalanceModeDisplayPrimaries)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.Photometric.Color.BalanceModeUserWhite.html#BalanceModeUserWhite.set_red_gain">set_red_gain() (in module BalanceModeUserWhite)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.Photometric.Color.html#Color.set_red_spectrum_file_uri">set_red_spectrum_file_uri() (in module Color)</a>
+</li>
+      <li><a href="api/ansys/speos/core/spectrum/Spectrum.html#Spectrum.set_sampled">set_sampled() (in module Spectrum)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/BaseSensor.LayerTypeIncidenceAngle.html#LayerTypeIncidenceAngle.set_sampling">set_sampling() (in module LayerTypeIncidenceAngle)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/sensor/BaseSensor.WavelengthsRange.html#WavelengthsRange.set_sampling">(in module WavelengthsRange)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/sensor/BaseSensor.LayerTypeFace.html#LayerTypeFace.set_sca_filtering_mode_intersected_one_time">set_sca_filtering_mode_intersected_one_time() (in module LayerTypeFace)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/BaseSensor.LayerTypeFace.html#LayerTypeFace.set_sca_filtering_mode_last_impact">set_sca_filtering_mode_last_impact() (in module LayerTypeFace)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/BaseSimulation.html#BaseSimulation.set_sensor_paths">set_sensor_paths() (in module BaseSimulation)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.html#SimulationVirtualBSDF.set_sensor_paths">(in module SimulationVirtualBSDF)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.html#SimulationVirtualBSDF.set_sensor_sampling_automatic">set_sensor_sampling_automatic() (in module SimulationVirtualBSDF)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.html#SimulationVirtualBSDF.set_sensor_sampling_uniform">set_sensor_sampling_uniform() (in module SimulationVirtualBSDF)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/BaseSimulation.html#BaseSimulation.set_source_paths">set_source_paths() (in module BaseSimulation)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.html#SimulationVirtualBSDF.set_source_paths">(in module SimulationVirtualBSDF)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/source/SourceLuminaire.html#SourceLuminaire.set_spectrum">set_spectrum() (in module SourceLuminaire)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/source/SourceRayFile.html#SourceRayFile.set_spectrum">(in module SourceRayFile)</a>
+</li>
+        <li><a href="api/ansys/speos/core/source/SourceSurface.html#SourceSurface.set_spectrum">(in module SourceSurface)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/source/SourceRayFile.html#SourceRayFile.set_spectrum_from_ray_file">set_spectrum_from_ray_file() (in module SourceRayFile)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/SourceSurface.html#SourceSurface.set_spectrum_from_xmp_file">set_spectrum_from_xmp_file() (in module SourceSurface)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationInverse.html#SimulationInverse.set_splitting">set_splitting() (in module SimulationInverse)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/BaseSensor.WavelengthsRange.html#WavelengthsRange.set_start">set_start() (in module WavelengthsRange)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationDirect.html#SimulationDirect.set_stop_condition_duration">set_stop_condition_duration() (in module SimulationDirect)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/simulation/SimulationInverse.html#SimulationInverse.set_stop_condition_duration">(in module SimulationInverse)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationInverse.html#SimulationInverse.set_stop_condition_passes_number">set_stop_condition_passes_number() (in module SimulationInverse)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationDirect.html#SimulationDirect.set_stop_condition_rays_number">set_stop_condition_rays_number() (in module SimulationDirect)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/SourceAmbientNaturalLight.html#SourceAmbientNaturalLight.set_sun_automatic">set_sun_automatic() (in module SourceAmbientNaturalLight)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/SourceAmbientNaturalLight.html#SourceAmbientNaturalLight.set_sun_manual">set_sun_manual() (in module SourceAmbientNaturalLight)</a>
+</li>
+      <li><a href="api/ansys/speos/core/opt_prop/OptProp.html#OptProp.set_surface_library">set_surface_library() (in module OptProp)</a>
+</li>
+      <li><a href="api/ansys/speos/core/opt_prop/OptProp.html#OptProp.set_surface_mirror">set_surface_mirror() (in module OptProp)</a>
+</li>
+      <li><a href="api/ansys/speos/core/opt_prop/OptProp.html#OptProp.set_surface_opticalpolished">set_surface_opticalpolished() (in module OptProp)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic.Uniform.html#Uniform.set_symmetric_1_plane_symmetric">set_symmetric_1_plane_symmetric() (in module Uniform)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic.Uniform.html#Uniform.set_symmetric_2_plane_symmetric">set_symmetric_2_plane_symmetric() (in module Uniform)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic.Uniform.html#Uniform.set_symmetric_none">set_symmetric_none() (in module Uniform)</a>
+</li>
+      <li><a href="api/ansys/speos/core/intensity/Intensity.Gaussian.html#Gaussian.set_total_angle">set_total_angle() (in module Gaussian)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.Photometric.html#Photometric.set_trajectory_file_uri">set_trajectory_file_uri() (in module Photometric)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.Photometric.html#Photometric.set_transmittance_file_uri">set_transmittance_file_uri() (in module Photometric)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/Sensor3DIrradiance.html#Sensor3DIrradiance.set_type_colorimetric">set_type_colorimetric() (in module Sensor3DIrradiance)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/sensor/SensorIrradiance.html#SensorIrradiance.set_type_colorimetric">(in module SensorIrradiance)</a>
+</li>
+        <li><a href="api/ansys/speos/core/sensor/SensorRadiance.html#SensorRadiance.set_type_colorimetric">(in module SensorRadiance)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/sensor/Sensor3DIrradiance.html#Sensor3DIrradiance.set_type_photometric">set_type_photometric() (in module Sensor3DIrradiance)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/sensor/SensorIrradiance.html#SensorIrradiance.set_type_photometric">(in module SensorIrradiance)</a>
+</li>
+        <li><a href="api/ansys/speos/core/sensor/SensorRadiance.html#SensorRadiance.set_type_photometric">(in module SensorRadiance)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/sensor/Sensor3DIrradiance.html#Sensor3DIrradiance.set_type_radiometric">set_type_radiometric() (in module Sensor3DIrradiance)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/sensor/SensorIrradiance.html#SensorIrradiance.set_type_radiometric">(in module SensorIrradiance)</a>
+</li>
+        <li><a href="api/ansys/speos/core/sensor/SensorRadiance.html#SensorRadiance.set_type_radiometric">(in module SensorRadiance)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/sensor/SensorIrradiance.html#SensorIrradiance.set_type_spectral">set_type_spectral() (in module SensorIrradiance)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/sensor/SensorRadiance.html#SensorRadiance.set_type_spectral">(in module SensorRadiance)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic.html#Anisotropic.set_uniform">set_uniform() (in module Anisotropic)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/simulation/BaseSimulation.SourceSampling.html#SourceSampling.set_uniform">(in module SourceSampling)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/source/SourceAmbientEnvironment.html#SourceAmbientEnvironment.set_userdefined_color_space">set_userdefined_color_space() (in module SourceAmbientEnvironment)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.html#SensorCamera.set_vert_pixel">set_vert_pixel() (in module SensorCamera)</a>
+</li>
+      <li><a href="api/ansys/speos/core/face/Face.html#Face.set_vertices">set_vertices() (in module Face)</a>
+</li>
+      <li><a href="api/ansys/speos/core/opt_prop/OptProp.html#OptProp.set_volume_library">set_volume_library() (in module OptProp)</a>
+</li>
+      <li><a href="api/ansys/speos/core/opt_prop/OptProp.html#OptProp.set_volume_none">set_volume_none() (in module OptProp)</a>
+</li>
+      <li><a href="api/ansys/speos/core/opt_prop/OptProp.html#OptProp.set_volume_opaque">set_volume_opaque() (in module OptProp)</a>
+</li>
+      <li><a href="api/ansys/speos/core/opt_prop/OptProp.html#OptProp.set_volume_optic">set_volume_optic() (in module OptProp)</a>
+</li>
+      <li><a href="api/ansys/speos/core/spectrum/Spectrum.html#Spectrum.set_warmwhitefluorescent">set_warmwhitefluorescent() (in module Spectrum)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/BaseSensor.Colorimetric.html#Colorimetric.set_wavelengths_range">set_wavelengths_range() (in module Colorimetric)</a>, <a href="api/ansys/speos/core/sensor/Sensor3DIrradiance.Colorimetric.html#Colorimetric.set_wavelengths_range">[1]</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/sensor/SensorCamera.Photometric.html#Photometric.set_wavelengths_range">(in module Photometric)</a>
+</li>
+        <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.html#SimulationVirtualBSDF.set_wavelengths_range">(in module SimulationVirtualBSDF)</a>
+</li>
+        <li><a href="api/ansys/speos/core/sensor/BaseSensor.Spectral.html#Spectral.set_wavelengths_range">(in module Spectral)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationDirect.html#SimulationDirect.set_weight">set_weight() (in module SimulationDirect)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/simulation/SimulationInteractive.html#SimulationInteractive.set_weight">(in module SimulationInteractive)</a>
+</li>
+        <li><a href="api/ansys/speos/core/simulation/SimulationInverse.html#SimulationInverse.set_weight">(in module SimulationInverse)</a>
+</li>
+        <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.html#SimulationVirtualBSDF.set_weight">(in module SimulationVirtualBSDF)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationDirect.html#SimulationDirect.set_weight_none">set_weight_none() (in module SimulationDirect)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/simulation/SimulationInteractive.html#SimulationInteractive.set_weight_none">(in module SimulationInteractive)</a>
+</li>
+        <li><a href="api/ansys/speos/core/simulation/SimulationInverse.html#SimulationInverse.set_weight_none">(in module SimulationInverse)</a>
+</li>
+        <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.html#SimulationVirtualBSDF.set_weight_none">(in module SimulationVirtualBSDF)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/spectrum/Spectrum.html#Spectrum.set_white_led">set_white_led() (in module Spectrum)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/BaseSource.UserDefinedColorSpace.html#UserDefinedColorSpace.set_white_point_type_c">set_white_point_type_c() (in module UserDefinedColorSpace)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/BaseSource.UserDefinedColorSpace.html#UserDefinedColorSpace.set_white_point_type_d50">set_white_point_type_d50() (in module UserDefinedColorSpace)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/BaseSource.UserDefinedColorSpace.html#UserDefinedColorSpace.set_white_point_type_d65">set_white_point_type_d65() (in module UserDefinedColorSpace)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/BaseSource.UserDefinedColorSpace.html#UserDefinedColorSpace.set_white_point_type_e">set_white_point_type_e() (in module UserDefinedColorSpace)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/BaseSource.UserDefinedColorSpace.html#UserDefinedColorSpace.set_white_point_type_user_defined">set_white_point_type_user_defined() (in module UserDefinedColorSpace)</a>
+</li>
+      <li><a href="api/ansys/speos/core/spectrum/Spectrum.html#Spectrum.set_whiteLED">set_whiteLED() (in module Spectrum)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorCamera.html#SensorCamera.set_width">set_width() (in module SensorCamera)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/BaseSensor.Dimensions.html#Dimensions.set_x_end">set_x_end() (in module Dimensions)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/BaseSensor.Dimensions.html#Dimensions.set_x_sampling">set_x_sampling() (in module Dimensions)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/BaseSensor.Dimensions.html#Dimensions.set_x_start">set_x_start() (in module Dimensions)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/SourceSurface.ExitanceVariable.html#ExitanceVariable.set_xmp_file_uri">set_xmp_file_uri() (in module ExitanceVariable)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/BaseSensor.Dimensions.html#Dimensions.set_y_end">set_y_end() (in module Dimensions)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/BaseSensor.Dimensions.html#Dimensions.set_y_sampling">set_y_sampling() (in module Dimensions)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/BaseSensor.Dimensions.html#Dimensions.set_y_start">set_y_start() (in module Dimensions)</a>
+</li>
+      <li><a href="api/ansys/speos/core/logger/Logger.html#Logger.setLevel">setLevel() (in module Logger)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/logger/PySpeosCustomAdapter.html#PySpeosCustomAdapter.setLevel">(in module PySpeosCustomAdapter)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/simulation/BaseSimulation.html#BaseSimulation.simulation_template_link">simulation_template_link (in module BaseSimulation)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/client/SpeosClient.html#SpeosClient.simulation_templates">simulation_templates() (in module SpeosClient)</a>
+</li>
+      <li><a href="api/ansys/speos/core/opt_prop/OptProp.html#OptProp.sop_template_link">sop_template_link (in module OptProp)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/client/SpeosClient.html#SpeosClient.sop_templates">sop_templates() (in module SpeosClient)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationInteractive.RaysNumberPerSource.html#RaysNumberPerSource.source_path">source_path (in module RaysNumberPerSource)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/BaseSource.html#BaseSource.source_template_link">source_template_link (in module BaseSource)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/client/SpeosClient.html#SpeosClient.source_templates">source_templates() (in module SpeosClient)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/SensorIrradiance.html#SensorIrradiance.spectral">spectral (in module SensorIrradiance)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/sensor/SensorRadiance.html#SensorRadiance.spectral">(in module SensorRadiance)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/bsdf/AnisotropicBSDF.html#AnisotropicBSDF.spectrum_anisotropy">spectrum_anisotropy (in module AnisotropicBSDF)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/AnisotropicBSDF.html#AnisotropicBSDF.spectrum_incidence">spectrum_incidence (in module AnisotropicBSDF)</a>
+</li>
+      <li><a href="api/ansys/speos/core/spectrum/Spectrum.html#Spectrum.spectrum_link">spectrum_link (in module Spectrum)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/client/SpeosClient.html#SpeosClient.spectrums">spectrums() (in module SpeosClient)</a>
+</li>
+      <li><a href="api/ansys/speos/core/workflow/combine_speos/SpeosFileInstance.html#SpeosFileInstance.speos_file">speos_file (in module SpeosFileInstance)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.WavelengthsRange.html#WavelengthsRange.start">start (in module WavelengthsRange)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/job/JobLink.html#JobLink.start">start() (in module JobLink)</a>
+</li>
+      <li><a href="api/ansys/speos/core/logger/Logger.html#Logger.std_out_handler">std_out_handler (in module Logger)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/logger/PySpeosCustomAdapter.html#PySpeosCustomAdapter.std_out_handler">(in module PySpeosCustomAdapter)</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/logger/PySpeosCustomAdapter.html#PySpeosCustomAdapter.stdout_handler">stdout_handler (in module PySpeosCustomAdapter)</a>
+</li>
+      <li><a href="api/ansys/speos/core/logger/index.html#logger.STDOUT_MSG_FORMAT">STDOUT_MSG_FORMAT (in module logger)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/job/JobLink.html#JobLink.stop">stop() (in module JobLink)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.html#SimulationVirtualBSDF.stop_condition_ray_number">stop_condition_ray_number (in module SimulationVirtualBSDF)</a>
+</li>
+      <li><a href="api/ansys/speos/core/logger/index.html#logger.string_to_loglevel">string_to_loglevel (in module logger)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/crud/CrudItem.html#CrudItem.stub">stub (in module CrudItem)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="T">T</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/kernel/client/SpeosClient.html#SpeosClient.target">target() (in module SpeosClient)</a>
+</li>
+      <li><a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.SensorUniform.html#SensorUniform.theta_sampling">theta_sampling (in module SensorUniform)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/simulation/BaseSimulation.SourceSampling.Uniform.html#Uniform.theta_sampling">(in module Uniform)</a>, <a href="api/ansys/speos/core/simulation/SimulationVirtualBSDF.AllCharacteristics.NonIridescence.Anisotropic.Uniform.html#Uniform.theta_sampling">[1]</a>
+</li>
+      </ul></li>
+      <li><a href="api/ansys/speos/core/bsdf/BxdfDatapoint.html#BxdfDatapoint.theta_values">theta_values (in module BxdfDatapoint)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/BaseSourceAmbient.AutomaticSun.html#AutomaticSun.time_zone">time_zone (in module AutomaticSun)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/BxdfDatapoint.html#BxdfDatapoint.tis">tis (in module BxdfDatapoint)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/geo_ref/GeoRef.html#GeoRef.to_native_link">to_native_link() (in module GeoRef)</a>
+</li>
+      <li><a href="api/ansys/speos/core/sensor/Sensor3DIrradiance.Measures.html#Measures.transmission">transmission (in module Measures)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/AnisotropicBSDF.html#AnisotropicBSDF.transmission_spectrum">transmission_spectrum (in module AnisotropicBSDF)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/SourceAmbientNaturalLight.html#SourceAmbientNaturalLight.turbidity">turbidity (in module SourceAmbientNaturalLight)</a>
+</li>
+      <li><a href="api/ansys/speos/core/intensity/Intensity.html#Intensity.type">type (in module Intensity)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/sensor/SensorIrradiance.html#SensorIrradiance.type">(in module SensorIrradiance)</a>
+</li>
+        <li><a href="api/ansys/speos/core/sensor/SensorRadiance.html#SensorRadiance.type">(in module SensorRadiance)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="U">U</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/kernel/grpc/transport_options/TransportMode.html#TransportMode.UDS">UDS (in module TransportMode)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/grpc/transport_options/UDSOptions.html#UDSOptions.uds_dir">uds_dir (in module UDSOptions)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/grpc/transport_options/UDSOptions.html#UDSOptions.uds_fullpath">uds_fullpath (in module UDSOptions)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/grpc/transport_options/UDSOptions.html#UDSOptions.uds_id">uds_id (in module UDSOptions)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/grpc/transport_options/UDSOptions.html#UDSOptions.uds_service">uds_service (in module UDSOptions)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/body/BodyStub.html#BodyStub.update">update() (in module BodyStub)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/kernel/crud/CrudStub.html#CrudStub.update">(in module CrudStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/face/FaceStub.html#FaceStub.update">(in module FaceStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/intensity_template/IntensityTemplateStub.html#IntensityTemplateStub.update">(in module IntensityTemplateStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/job/JobStub.html#JobStub.update">(in module JobStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/part/PartStub.html#PartStub.update">(in module PartStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/scene/SceneStub.html#SceneStub.update">(in module SceneStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/sensor_template/SensorTemplateStub.html#SensorTemplateStub.update">(in module SensorTemplateStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/simulation_template/SimulationTemplateStub.html#SimulationTemplateStub.update">(in module SimulationTemplateStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/sop_template/SOPTemplateStub.html#SOPTemplateStub.update">(in module SOPTemplateStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/source_template/SourceTemplateStub.html#SourceTemplateStub.update">(in module SourceTemplateStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/spectrum/SpectrumStub.html#SpectrumStub.update">(in module SpectrumStub)</a>
+</li>
+        <li><a href="api/ansys/speos/core/kernel/vop_template/VOPTemplateStub.html#VOPTemplateStub.update">(in module VOPTemplateStub)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/kernel/face/FaceStub.html#FaceStub.update_batch">update_batch() (in module FaceStub)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="V">V</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/generic/general_methods/index.html#general_methods.VERSION_ERROR">VERSION_ERROR (in module general_methods)</a>
+</li>
+      <li><a href="api/ansys/speos/core/body/Body.html#Body.visual_data">visual_data (in module Body)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/sensor/Sensor3DIrradiance.html#Sensor3DIrradiance.visual_data">(in module Sensor3DIrradiance)</a>
+</li>
+        <li><a href="api/ansys/speos/core/sensor/SensorCamera.html#SensorCamera.visual_data">(in module SensorCamera)</a>
+</li>
+        <li><a href="api/ansys/speos/core/sensor/SensorIrradiance.html#SensorIrradiance.visual_data">(in module SensorIrradiance)</a>
+</li>
+        <li><a href="api/ansys/speos/core/sensor/SensorRadiance.html#SensorRadiance.visual_data">(in module SensorRadiance)</a>
+</li>
+        <li><a href="api/ansys/speos/core/source/SourceLuminaire.html#SourceLuminaire.visual_data">(in module SourceLuminaire)</a>
+</li>
+        <li><a href="api/ansys/speos/core/source/SourceRayFile.html#SourceRayFile.visual_data">(in module SourceRayFile)</a>
+</li>
+        <li><a href="api/ansys/speos/core/source/SourceSurface.html#SourceSurface.visual_data">(in module SourceSurface)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/opt_prop/OptProp.html#OptProp.vop_template_link">vop_template_link (in module OptProp)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/client/SpeosClient.html#SpeosClient.vop_templates">vop_templates() (in module SpeosClient)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="W">W</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/kernel/client/index.html#client.wait_until_healthy">wait_until_healthy() (in module client)</a>
+</li>
+      <li><a href="api/ansys/speos/core/logger/index.html#logger.WARN">WARN (in module logger)</a>
+</li>
+      <li><a href="api/ansys/speos/core/logger/Logger.html#Logger.warning">warning (in module Logger)</a>
+</li>
+      <li><a href="api/ansys/speos/core/bsdf/BxdfDatapoint.html#BxdfDatapoint.wavelength">wavelength (in module BxdfDatapoint)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/bsdf/SpectralBRDF.html#SpectralBRDF.wavelength">(in module SpectralBRDF)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/generic/general_methods/index.html#general_methods.wavelength_to_rgb">wavelength_to_rgb() (in module general_methods)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/BaseSource.UserDefinedColorSpace.UserDefinedWhitePoint.html#UserDefinedWhitePoint.white_point">white_point (in module UserDefinedWhitePoint)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/BaseSource.UserDefinedColorSpace.html#UserDefinedColorSpace.white_point_type">white_point_type (in module UserDefinedColorSpace)</a>
+</li>
+      <li><a href="api/ansys/speos/core/source/SourceAmbientNaturalLight.html#SourceAmbientNaturalLight.with_sky">with_sky (in module SourceAmbientNaturalLight)</a>
+</li>
+      <li><a href="api/ansys/speos/core/lxp/RayPath.html#RayPath.wl">wl (in module RayPath)</a>
+</li>
+      <li><a href="api/ansys/speos/core/kernel/grpc/transport_options/TransportMode.html#TransportMode.WNUA">WNUA (in module TransportMode)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="Y">Y</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/source/BaseSourceAmbient.AutomaticSun.html#AutomaticSun.year">year (in module AutomaticSun)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="Z">Z</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/ansys/speos/core/source/SourceAmbientEnvironment.html#SourceAmbientEnvironment.zenith_direction">zenith_direction (in module SourceAmbientEnvironment)</a>
+
+      <ul>
+        <li><a href="api/ansys/speos/core/source/SourceAmbientNaturalLight.html#SourceAmbientNaturalLight.zenith_direction">(in module SourceAmbientNaturalLight)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+
+
+                </article>
+              
+              
+              
+              
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<!-- If there is no fix edit button function, use the PyData edit-this-button-->
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+
+  <!-- Include desired assets -->
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.7/require.min.js"></script>
+
+<script>
+// Passing the search options to the search.js file
+const SEARCH_OPTIONS = JSON.parse('{"keys": ["title", "text", "objectID"], "limit": 10, "threshold": 0.2}');
+const SEARCH_FILE = "_static/search.json";
+const ADVANCE_SEARCH_PATH = "search.html";
+const EXTRA_SOURCES = JSON.parse('""');
+</script>
+
+
+<script src="_static/js/search.js"></script>
+
+  
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright (c) 2026 ANSYS, Inc. All rights reserved.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item"><p class="theme-version">
+  Built with the
+  <a href="https://sphinxdocs.ansys.com/version/stable/index.html"
+    >Ansys Sphinx Theme</a
+  >
+  1.6.4. <br />Last updated on
+  <span id="ast_build_date"></span>
+</p>
+<script>
+  var options = { day: "numeric", month: "long", year: "numeric" };
+  var ast_lastModifiedDate = new Date(document.lastModified);
+  var ast_build_date = ast_lastModifiedDate.toLocaleDateString("en-US", options);
+  document.getElementById("ast_build_date").innerHTML = ast_build_date;
+</script></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
