@@ -104,7 +104,8 @@ class BaseSource:
         userdefined_color_space : source_pb2.SourceTemplate.UserDefinedRGBSpace
             source_pb2.SourceTemplate.UserDefinedRGBSpace
         default_parameters: Optional[UserDefinedColorSpaceParameters] = None,
-            Uses default values when True.
+            If defined the values in the UserDefinedColorSpace instance will be
+            overwritten by the values of the data class.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -121,7 +122,8 @@ class BaseSource:
             userdefined_white_point : source_pb2.SourceTemplate.UserDefinedWhitePoint
                 source_pb2.SourceTemplate.UserDefinedWhitePoint
             default_parameters: Optional[UserDefinedWhitePointParameters] = None,
-                Uses default values when True.
+                If defined the values in the UserDefinedWhitePoint instance will be
+                overwritten by the values of the data class.
             stable_ctr : bool
                 Variable to indicate if usage is inside class scope
 
@@ -445,7 +447,8 @@ class BaseSource:
         predefined_color_space :
             ansys.api.speos.source.v1.source_pb2.SourceTemplate.PredefinedColorSpace
         default_parameters: Optional[ColorSpaceType] = None,
-            Uses default values when True.
+            If defined the values in the PredefinedColorSpace instance will be
+            overwritten by the values of the data class.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -545,7 +548,8 @@ class BaseSource:
                 FluxFromFileParameters,
                 IntensityFluxParameters,
             ] = None,
-            Uses default values when True.
+            If defined the values in the Flux instance will be
+            overwritten by the values of the data class.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -981,7 +985,8 @@ class SourceLuminaire(BaseSource):
         Metadata of the feature.
         By default, ``{}``.
     default_parameters : Optional[LuminaireSourceParameters] = None
-        Uses default parameters.
+        If defined the values in the SourceLuminaire instance will be overwritten
+        by the values of the data class.
     """
 
     @general_methods.min_speos_version(25, 2, 0)
@@ -1215,7 +1220,8 @@ class SourceRayFile(BaseSource):
         Metadata of the feature.
         By default, ``{}``.
     default_parameters : Optional[RayFileSourceParameters] = None,
-        Uses default values when True.
+        If defined the values in the SourceRayFile instance will
+        be overwritten by the values of the data class.
     """
 
     class ExitGeometries:
@@ -1227,8 +1233,9 @@ class SourceRayFile(BaseSource):
         ----------
         rayfile_props : ansys.api.speos.scene.v2.scene_pb2.RayFileProperties
             protobuf object to modify.
-        default_parameters : bool
-            Uses default values when True.
+        default_parameters : Optional[RayFileSourceParameters] = None
+            If defined the values in the ExitGeometries instance will be
+            overwritten by the values of the data class.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -1575,7 +1582,8 @@ class SourceSurface(BaseSource):
     surface_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.SurfaceProperties
         Surface source properties to complete.
     default_parameters : Optional[SurfaceSourceParameters] = None
-        Uses default values when True.
+        If defined the values in the SourceSurface instance will be overwritten by the
+        values of the data class.
     """
 
     class Flux(BaseSource.Flux):
@@ -1626,7 +1634,8 @@ class SourceSurface(BaseSource):
         SurfaceProperties.ExitanceConstantProperties
             Existence constant properties to complete.
         default_parameters: Optional[ConstantExitanceParameters] = None,
-            Uses default values when True.
+            If defined the values in the ExitanceConstant instance will be overwritten
+             by the values of the data class.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -1702,7 +1711,8 @@ class SourceSurface(BaseSource):
         SurfaceProperties.ExitanceVariableProperties
             Existence variable properties to complete.
         default_parameters: Optional[VariableExitanceParameters] = None
-            Uses default values when True.
+            If defined the values in the ExitanceVariable instance will be overwritten
+            by the values of the data class.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -2263,7 +2273,8 @@ class BaseSourceAmbient(BaseSource):
         sun: ansys.api.speos.scene.v2.scene_pb2.AutomaticSun
             Wavelengths range protobuf object to modify.
         default_parameters: Optional[AutomaticSunParameters] = None,
-            Uses default values when True.
+            If defined the values in the AutomaticSun instance will be
+            overwritten by the values of the data class.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -2470,7 +2481,8 @@ class BaseSourceAmbient(BaseSource):
         sun: ansys.api.speos.scene.v2.scene_pb2.ManualSun
             Wavelengths range protobuf object to modify.
         default_parameters: Optional[ManualSunParameters] = None
-            Uses default values when True.
+            If defined the values in the Manual instance will be
+            overwritten by the values of the data class.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -2562,7 +2574,8 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
         Metadata of the feature.
         By default, ``{}``.
     default_parameters : Optional[AmbientNaturalLightParameters] = None
-        Uses default values when True.
+        If defined the values in the SourceAmbientNaturalLight instance
+         will be overwritten by the values of the data class.
     """
 
     def __init__(
@@ -2827,7 +2840,8 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
         Metadata of the feature.
         By default, ``{}``.
     default_parameters : Optional[AmbientEnvironmentParameters] = None
-        Uses default values when True.
+        If defined the values in the SourceAmbientEnvironment instance
+        will be overwritten by the values of the data class.
     """
 
     # source_type = "SourceAmbientEnvironment"

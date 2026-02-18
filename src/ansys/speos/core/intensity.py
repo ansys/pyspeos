@@ -90,7 +90,8 @@ class Intensity:
         default_parameters: Optional[
             ansys.speos.core.generic.parameters.IntensityLibraryParameters
             ] = None
-            Uses default values when True.
+            If defined the values in the Library instance will be overwritten by the values of the
+            data class.
         """
 
         def __init__(
@@ -245,7 +246,8 @@ class Intensity:
             IntensitAsymmetricGaussianParameters,
             IntensitySymmetricGaussianParameters,
             ] = None
-            Uses default values when True.
+            If defined the values in the Gaussian instance will be overwritten by the values of the
+            data class.
         """
 
         def __init__(
@@ -375,7 +377,8 @@ class Intensity:
         cos : ansys.api.speos.intensity.v1.IntensityTemplate.Cos
             Cos to complete.
         default_parameters: Optional[IntensityCosParameters, IntensityLambertianParameters] = None
-            Uses default values when True.
+            If defined the values in the Cos instance will be overwritten by the values of the
+            data class.
         """
 
         def __init__(

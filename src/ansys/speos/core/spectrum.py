@@ -78,7 +78,8 @@ class Spectrum:
         monochromatic : ansys.api.speos.spectrum.v1.spectrum_pb2.Monochromatic
             Monochromatic protobuf object to modify.
         default_parameters : Optional[SpectrumMonochromaticParameters] = None
-            Uses default values when True.
+            If defined the values in the Monochromatic instance will be
+            overwritten by the values of the data class
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -132,7 +133,8 @@ class Spectrum:
         blackbody : ansys.api.speos.spectrum.v1.spectrum_pb2.Blackbody
             Blackbody protobuf object to modify.
         default_parameters : Optional[SpectrumBlackBodyParameters] = None
-            Uses default values when True.
+            If defined the values in the Blackbody instance will be
+            overwritten by the values of the data class
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -187,7 +189,8 @@ class Spectrum:
         sampled : ansys.api.speos.spectrum.v1.spectrum_pb2.Sampled
             Sampled protobuf object to modify.
         default_parameters : Optional[SpectrumSampledParameters] = None
-            Uses default values when True.
+            If defined the values in the Sampled instance will be
+            overwritten by the values of the data class
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -263,7 +266,8 @@ class Spectrum:
         library : ansys.api.speos.spectrum.v1.spectrum_pb2.Spectrum.Library
             Library protobuf object to modify.
         default_parameters : Optional[SpectrumLibraryParameters] = None
-            Uses default values when True.
+            If defined the values in the Library instance will be
+            overwritten by the values of the data class
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
