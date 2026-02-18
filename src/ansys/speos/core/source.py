@@ -255,14 +255,14 @@ class BaseSource:
             return self._red_spectrum._spectrum._to_dict()
 
         @red_spectrum.setter
-        def red_spectrum(self, red_spectrum_file_uri: str) -> None:
+        def red_spectrum(self, red_spectrum_file_uri: Union[str, Path]) -> None:
             if self._red_spectrum._message_to_complete is not self._userdefined_color_space:
                 # Happens in case of feature reset (to be sure to always modify correct data)
                 self._red_spectrum._message_to_complete = self._userdefined_color_space
 
             # name for the spectrum chosen: <file_uri>.Spectrum
             self._red_spectrum._spectrum._spectrum.name = Path(red_spectrum_file_uri).name
-            self._red_spectrum._spectrum.set_library().file_uri = red_spectrum_file_uri
+            self._red_spectrum._spectrum.set_library().file_uri = str(red_spectrum_file_uri)
 
         @property
         def green_spectrum(self) -> dict:
@@ -282,14 +282,14 @@ class BaseSource:
             return self._green_spectrum._spectrum._to_dict()
 
         @green_spectrum.setter
-        def green_spectrum(self, green_spectrum_file_uri: str) -> None:
+        def green_spectrum(self, green_spectrum_file_uri: Union[str, Path]) -> None:
             if self._green_spectrum._message_to_complete is not self._userdefined_color_space:
                 # Happens in case of feature reset (to be sure to always modify correct data)
                 self._green_spectrum._message_to_complete = self._userdefined_color_space
 
             # name for the spectrum chosen: <file_uri>.Spectrum
             self._green_spectrum._spectrum._spectrum.name = Path(green_spectrum_file_uri).name
-            self._green_spectrum._spectrum.set_library().file_uri = green_spectrum_file_uri
+            self._green_spectrum._spectrum.set_library().file_uri = str(green_spectrum_file_uri)
 
         @property
         def blue_spectrum(self) -> dict:
@@ -309,14 +309,14 @@ class BaseSource:
             return self._blue_spectrum._spectrum._to_dict()
 
         @blue_spectrum.setter
-        def blue_spectrum(self, blue_spectrum_file_uri: str) -> None:
+        def blue_spectrum(self, blue_spectrum_file_uri: Union[str, Path]) -> None:
             if self._blue_spectrum._message_to_complete is not self._userdefined_color_space:
                 # Happens in case of feature reset (to be sure to always modify correct data)
                 self._blue_spectrum._message_to_complete = self._userdefined_color_space
 
             # name for the spectrum chosen: <file_uri>.Spectrum
             self._blue_spectrum._spectrum._spectrum.name = Path(blue_spectrum_file_uri).name
-            self._blue_spectrum._spectrum.set_library().file_uri = blue_spectrum_file_uri
+            self._blue_spectrum._spectrum.set_library().file_uri = str(blue_spectrum_file_uri)
 
         @property
         def white_point_type(
