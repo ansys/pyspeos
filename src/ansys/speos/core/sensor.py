@@ -4450,6 +4450,7 @@ class SensorXMPIntensity(BaseSensor):
         self._type = None
         self._layer_type = None
         self._cell_diameter = None
+        self._vis_radius = 1000
 
         if default_parameters:
             match default_parameters.orientation:
@@ -4563,7 +4564,7 @@ class SensorXMPIntensity(BaseSensor):
         feature_x_dir = np.array(feature_pos_info[3:6])
         feature_y_dir = np.array(feature_pos_info[6:9])
         feature_z_dir = np.array(feature_pos_info[9:12])
-        feature_vis_radius = 5
+        feature_vis_radius = self._vis_radius
 
         if self._sensor_template.intensity_sensor_template.HasField(
             "intensity_orientation_conoscopic"
