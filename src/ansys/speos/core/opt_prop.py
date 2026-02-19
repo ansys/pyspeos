@@ -24,6 +24,7 @@
 from __future__ import annotations
 
 from difflib import SequenceMatcher
+from pathlib import Path
 from typing import List, Mapping, Optional, Union
 import uuid
 
@@ -92,22 +93,60 @@ class OptProp:
         # Default values
         self.set_surface_mirror().set_volume_none().set_geometries()
 
-    def set_surface_mirror(self, reflectance: float = 100) -> OptProp:
+    @property
+    def sop_type(self) -> str:
+        """Surface Optical Property type.
+
+        Returns
+        -------
+        str
+            SOP type as string.
         """
-        Perfect specular surface.
+        if self._sop_template.HasField("mirror"):
+            return "mirror"
+        if self._sop_template.HasField("optical_polished"):
+            return "optical_polished"
+        if self._sop_template.HasField("library"):
+            return "library"
+
+    @property
+    def sop_reflectance(self) -> float:
+        """Perfect specular surface reflectance.
 
         Parameters
         ----------
-        reflectance : float
+        value : float
             Reflectance, expected from 0. to 100. in %.
             By default, ``100``.
+
+        Returns
+        -------
+        float
+            Reflectance value
+        """
+        if self._sop_template.HasField("mirror"):
+            return self._sop_template.mirror.reflectance
+
+    @sop_reflectance.setter
+    def sop_reflectance(self, value: float):
+        if self._sop_template.HasField("mirror"):
+            self._sop_template.mirror.reflectance = value
+        else:
+            raise TypeError(
+                "Surface Optical Property is not set to mirror Type, please use set_mirror_library"
+                "before"
+            )
+
+    def set_surface_mirror(self) -> OptProp:
+        """
+        Define SOP as perfect specular surface.
 
         Returns
         -------
         ansys.speos.core.opt_prop.OptProp
             Optical property.
         """
-        self._sop_template.mirror.reflectance = reflectance
+        self._sop_template.mirror.SetInParent()
         return self
 
     def set_surface_opticalpolished(self) -> OptProp:
@@ -122,7 +161,35 @@ class OptProp:
         self._sop_template.optical_polished.SetInParent()
         return self
 
-    def set_surface_library(self, path: str) -> OptProp:
+    @property
+    def sop_library(self) -> float:
+        """Perfect specular surface reflectance.
+
+        Parameters
+        ----------
+        value : float
+            Reflectance, expected from 0. to 100. in %.
+            By default, ``100``.
+
+        Returns
+        -------
+        float
+            Reflectance value
+        """
+        if self._sop_template.HasField("library"):
+            return self._sop_template.library.sop_file_uri
+
+    @sop_library.setter
+    def sop_library(self, value: Union[Path, str]):
+        if self._sop_template.HasField("library"):
+            self._sop_template.library.sop_file_uri = str(value)
+        else:
+            raise TypeError(
+                "Surface Optical Property is not set to library Type, please use"
+                "set_surface_library before"
+            )
+
+    def set_surface_library(self) -> OptProp:
         r"""
         Based on surface optical properties file.
 
@@ -136,8 +203,96 @@ class OptProp:
         ansys.speos.core.opt_prop.OptProp
             Optical property.
         """
-        self._sop_template.library.sop_file_uri = path
+        self._sop_template.library.SetInParent()
         return self
+
+    @property
+    def vop_type(self):
+        """Volume Optical Property Type.
+
+        Returns
+        -------
+        str
+            VOP type as string
+        """
+        if self._vop_template:
+            if self._vop_template.HasField("opaque"):
+                return "opaque"
+            if self._vop_template.HasField("optic"):
+                return "optic"
+            if self._vop_template.HasField("library"):
+                return "library"
+
+    @property
+    def vop_optic(self) -> dict:
+        """Property of the clear transparent volume.
+
+        Parameters
+        ----------
+        value : dict
+            Dictionary with keys index, absoprtions and Conrtigence (optional
+            e.g:    ``{
+                        'index' : 1.5,
+                        'absorption' : 0,
+                        'constringence' : None,
+                    }``
+
+        Returns
+        -------
+        dict
+            dict with Optic definition
+        """
+        if self._vop_template.HasField("optic"):
+            return {
+                "index": self._vop_template.optic.index,
+                "absorption": self._vop_template.optic.absorption,
+                "constrigences": self._vop_template.optic.constringence,
+            }
+
+    @vop_optic.setter
+    def vop_optic(self, value: dict):
+        if value.get("index") is None or value.get("absorption") is None:
+            raise KeyError("You need to at least provide a value for index and absorption")
+        if self._vop_template.HasField("optic"):
+            self._vop_template.optic.index = value.get("index")
+            self._vop_template.optic.absorption = value.get("absorption")
+            if value.get("constringence"):
+                self._vop_template.optic.constringence = value.get("constringence")
+            else:
+                self._vop_template.optic.ClearField("constringence")
+        else:
+            raise TypeError(
+                "Volume Optical Property is not set to optic Type, please use set_volume_optic"
+                "before"
+            )
+
+    @property
+    def vop_library(self) -> float:
+        """Perfect specular surface reflectance.
+
+        Parameters
+        ----------
+        value : float
+            Reflectance, expected from 0. to 100. in %.
+            By default, ``100``.
+
+        Returns
+        -------
+        float
+            Reflectance value
+        """
+        if self._vop_template.HasField("library"):
+            return self._vop_template.library.vop_file_uri
+
+    @vop_library.setter
+    def vop_library(self, value: Union[Path, str]):
+        if self._vop_template.HasField("library"):
+            self._vop_template.library.vop_file_uri = str(value)
+        else:
+            raise TypeError(
+                "Volume Optical Property is not set to library Type, please use"
+                "set_volume_library before"
+            )
 
     def set_volume_none(self) -> OptProp:
         """
@@ -165,30 +320,15 @@ class OptProp:
                 name=self._name + ".VOP",
                 description=self._sop_template.description,
                 metadata=self._sop_template.metadata,
-            )
+            ).HasField("opaque")
         self._vop_template.opaque.SetInParent()
         return self
 
     def set_volume_optic(
         self,
-        index: float = 1.5,
-        absorption: float = 0,
-        constringence: Optional[float] = None,
     ) -> OptProp:
         """
         Transparent colorless material without bulk scattering.
-
-        Parameters
-        ----------
-        index : float
-            Refractive index.
-            By default, ``1.5``.
-        absorption : float
-            Absorption coefficient value. mm-1.
-            By default, ``0``.
-        constringence : float, optional
-            Abbe number.
-            By default, ``None``, means no constringence.
 
         Returns
         -------
@@ -201,12 +341,6 @@ class OptProp:
                 description=self._sop_template.description,
                 metadata=self._sop_template.metadata,
             )
-        self._vop_template.optic.index = index
-        self._vop_template.optic.absorption = absorption
-        if constringence is not None:
-            self._vop_template.optic.constringence = constringence
-        else:
-            self._vop_template.optic.ClearField("constringence")
         return self
 
     # Deactivated due to a bug on SpeosRPC server side
@@ -244,7 +378,7 @@ class OptProp:
     #    self._material_instance.non_homogeneous_properties.axis_system[:] = axis_system
     #    return self
 
-    def set_volume_library(self, path: str) -> OptProp:
+    def set_volume_library(self) -> OptProp:
         r"""
         Based on \*.material file.
 
@@ -264,26 +398,32 @@ class OptProp:
                 description=self._sop_template.description,
                 metadata=self._sop_template.metadata,
             )
-        self._vop_template.library.material_file_uri = path
         return self
 
-    def set_geometries(
+    @property
+    def geometries(
         self,
-        geometries: Optional[List[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]] = None,
-    ) -> OptProp:
+    ) -> List[GeoRef]:
         """Select geometries on which the optical properties will be applied.
 
         Parameters
         ----------
-        geometries : List[ansys.speos.core.geo_ref.GeoRef], optional
+        geometries : List[ansys.speos.core.geo_ref.GeoRef],
             List of geometries. Giving an empty list means "All geometries"
-            By default, ``None``, means "no geometry".
+            ``None``, means "no geometry".
 
         Returns
         -------
-        ansys.speos.core.opt_prop.OptProp
-            Optical property.
+        List[ansys.speos.core.geo_ref.GeoRef]
+            List of geometry references used by this material
         """
+        return self._material_instance.geometries.geo_paths
+
+    @geometries.setter
+    def geometries(
+        self,
+        geometries: Optional[List[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]],
+    ) -> None:
         if geometries is None:
             self._material_instance.ClearField("geometries")
         else:
@@ -299,7 +439,6 @@ class OptProp:
             self._material_instance.geometries.geo_paths[:] = [
                 gp.to_native_link() for gp in geo_paths
             ]
-        return self
 
     def _to_dict(self) -> dict:
         out_dict = {}
