@@ -39,59 +39,34 @@ import ansys.speos.core.project as project
 import ansys.speos.core.proto_message_utils as proto_message_utils
 
 
-class OptProp:
-    """Speos feature: optical property.
+class BaseSop:
+    """Base class for Surface Optical Property.
 
-    By default, a mirror 100% is chosen as surface optical property,
-    without any volume optical property.
-    By default, the optical property is applied to no geometry.
-
-    Parameters
+    Attributes
     ----------
-    project : project.Project
-        Project that will own the feature.
-    name : str
-        Name of the feature.
-    description : str, optional
-        Description of the feature.
-        By default, ``""``.
-    metadata : Optional[Mapping[str, str]], optional
-        Metadata of the feature.
-        By default, ``None``.
+    sop_template_link : ansys.speos.core.kernel.sop_template.SOPTemplateLink
+        Link object for the sensor template in database.
+
+    Notes
+    -----
+    This is a Super class, **Do not instantiate this class yourself**
     """
 
-    def __init__(
-        self,
-        project: project.Project,
-        name: str,
-        description: str = "",
-        metadata: Optional[Mapping[str, str]] = None,
-    ):
-        self._name = name
-        self._project = project
+    def __init__(self):
+        self._name = ""
+        self._project = None
         self._unique_id = None
         self.sop_template_link = None
         """Link object for the sop template in database."""
         self.vop_template_link = None
         """Link object for the vop template in database."""
-
-        # Create SOP template
-        if metadata is None:
-            metadata = {}
-        self._sop_template = ProtoSOPTemplate(
-            name=name + ".SOP", description=description, metadata=metadata
-        )
-
+        self._sop_template = None
         # Create VOP template
         self._vop_template = None
-
         # Create material instance
-        self._material_instance = ProtoScene.MaterialInstance(
-            name=name, description=description, metadata=metadata
-        )
-
+        self._material_instance = None
         # Default values
-        self.set_surface_mirror().set_volume_none().set_geometries()
+        self.set_surface_mirror()
 
     @property
     def sop_type(self) -> str:
@@ -102,6 +77,8 @@ class OptProp:
         str
             SOP type as string.
         """
+        if self._material_instance.HasField("texture"):
+            return "texture"
         if self._sop_template.HasField("mirror"):
             return "mirror"
         if self._sop_template.HasField("optical_polished"):
@@ -137,25 +114,26 @@ class OptProp:
                 "before"
             )
 
-    def set_surface_mirror(self) -> OptProp:
+    def set_surface_mirror(self) -> BaseSop:
         """
         Define SOP as perfect specular surface.
 
         Returns
         -------
-        ansys.speos.core.opt_prop.OptProp
+        ansys.speos.core.opt_prop.BaseSop
             Optical property.
         """
         self._sop_template.mirror.SetInParent()
+        self._sop_template.mirror.reflectance = 100
         return self
 
-    def set_surface_opticalpolished(self) -> OptProp:
+    def set_surface_opticalpolished(self) -> BaseSop:
         """
         Transparent or perfectly polished material (glass, plastic).
 
         Returns
         -------
-        ansys.speos.core.opt_prop.OptProp
+        ansys.speos.core.opt_prop.BaseSop
             Optical property.
         """
         self._sop_template.optical_polished.SetInParent()
@@ -189,7 +167,7 @@ class OptProp:
                 "set_surface_library before"
             )
 
-    def set_surface_library(self) -> OptProp:
+    def set_surface_library(self) -> BaseSop:
         r"""
         Based on surface optical properties file.
 
@@ -200,11 +178,39 @@ class OptProp:
 
         Returns
         -------
-        ansys.speos.core.opt_prop.OptProp
+        ansys.speos.core.opt_prop.BaseSop
             Optical property.
         """
         self._sop_template.library.SetInParent()
         return self
+
+
+class BaseVop:
+    """Base class for Surface Optical Property.
+
+    Attributes
+    ----------
+    vop_template_link : ansys.speos.core.kernel.sop_template.VOPTemplateLink
+        Link object for the sensor template in database.
+
+    Notes
+    -----
+    This is a Super class, **Do not instantiate this class yourself**
+    """
+
+    def __init__(self):
+        self._name = ""
+        self._project = None
+        self._unique_id = None
+        self.sop_template_link = None
+        """Link object for the sop template in database."""
+        self.vop_template_link = None
+        """Link object for the vop template in database."""
+        self._sop_template = None
+        # Create VOP template
+        self._vop_template = None
+        # Create material instance
+        self._material_instance = None
 
     @property
     def vop_type(self):
@@ -282,12 +288,12 @@ class OptProp:
             Reflectance value
         """
         if self._vop_template.HasField("library"):
-            return self._vop_template.library.vop_file_uri
+            return self._vop_template.library.material_file_uri
 
     @vop_library.setter
     def vop_library(self, value: Union[Path, str]):
         if self._vop_template.HasField("library"):
-            self._vop_template.library.vop_file_uri = str(value)
+            self._vop_template.library.material_file_uri = str(value)
         else:
             raise TypeError(
                 "Volume Optical Property is not set to library Type, please use"
@@ -320,7 +326,7 @@ class OptProp:
                 name=self._name + ".VOP",
                 description=self._sop_template.description,
                 metadata=self._sop_template.metadata,
-            ).HasField("opaque")
+            )
         self._vop_template.opaque.SetInParent()
         return self
 
@@ -341,6 +347,10 @@ class OptProp:
                 description=self._sop_template.description,
                 metadata=self._sop_template.metadata,
             )
+        self._vop_template.optic.SetInParent()
+        self._vop_template.optic.index = 1.5
+        self._vop_template.optic.absorption = 0
+        self._vop_template.optic.ClearField("constringence")
         return self
 
     # Deactivated due to a bug on SpeosRPC server side
@@ -398,7 +408,65 @@ class OptProp:
                 description=self._sop_template.description,
                 metadata=self._sop_template.metadata,
             )
+        self._vop_template.library.SetInParent()
         return self
+
+
+class OptProp(BaseSop, BaseVop):
+    """Speos feature: optical property.
+
+    By default, a mirror 100% is chosen as surface optical property,
+    without any volume optical property.
+    By default, the optical property is applied to no geometry.
+
+    Parameters
+    ----------
+    project : project.Project
+        Project that will own the feature.
+    name : str
+        Name of the feature.
+    description : str, optional
+        Description of the feature.
+        By default, ``""``.
+    metadata : Optional[Mapping[str, str]], optional
+        Metadata of the feature.
+        By default, ``None``.
+    """
+
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+    ):
+        self._name = name
+        self._project = project
+        self._unique_id = None
+        self.sop_template_link = None
+        """Link object for the sop template in database."""
+        self.vop_template_link = None
+        """Link object for the vop template in database."""
+
+        # Create SOP template
+        if metadata is None:
+            metadata = {}
+        self._sop_template = ProtoSOPTemplate(
+            name=name + ".SOP", description=description, metadata=metadata
+        )
+
+        # Create VOP template
+        self._vop_template = None
+
+        # Create material instance
+        self._material_instance = ProtoScene.MaterialInstance(
+            name=name, description=description, metadata=metadata
+        )
+
+        # Default values
+        self.set_surface_mirror()
+        self.set_volume_none()
+        self.geometries = None
 
     @property
     def geometries(
