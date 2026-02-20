@@ -47,20 +47,25 @@ def test_create_optical_property(speos: Speos):
     assert op1.vop_template_link.get().HasField("opaque")
 
     # VOP optic
-    op1.set_volume_optic(index=1.7, absorption=0.01, constringence=55).commit()
+    op1.set_volume_optic()
+    op1.vop_optic = dict(index=1.7, absorption=0.01, constringence=55)
+    op1.commit()
     assert op1.vop_template_link.get().HasField("optic")
     assert op1.vop_template_link.get().optic.index == 1.7
     assert op1.vop_template_link.get().optic.absorption == 0.01
     assert op1.vop_template_link.get().optic.HasField("constringence")
     assert op1.vop_template_link.get().optic.constringence == 55
 
-    op1.set_volume_optic().commit()
+    op1.set_volume_optic()
+    op1.commit()
     assert op1.vop_template_link.get().optic.index == 1.5
     assert op1.vop_template_link.get().optic.absorption == 0.0
     assert op1.vop_template_link.get().optic.HasField("constringence") is False
 
     # VOP library
-    op1.set_volume_library(path=str(Path(test_path) / "AIR.material")).commit()
+    op1.set_volume_library()
+    op1.vop_library = Path(test_path) / "AIR.material"
+    op1.commit()
     assert op1.vop_template_link.get().HasField("library")
     assert op1.vop_template_link.get().library.material_file_uri.endswith("AIR.material")
 
@@ -87,29 +92,32 @@ def test_create_optical_property(speos: Speos):
     assert op1.sop_template_link.get().HasField("optical_polished")
 
     # SOP library
-    op1.set_surface_library(path=str(Path(test_path) / "R_test.anisotropicbsdf")).commit()
+    op1.set_surface_library()
+    op1.sop_library = Path(test_path) / "R_test.anisotropicbsdf"
+    op1.commit()
     assert op1.sop_template_link.get().HasField("library")
     assert op1.sop_template_link.get().library.sop_file_uri.endswith("R_test.anisotropicbsdf")
 
     # SOP mirror
-    op1.set_surface_mirror(reflectance=80).commit()
+    op1.set_surface_mirror()
+    op1.sop_reflectance = 80
+    op1.commit()
     assert op1.sop_template_link.get().HasField("mirror")
+    assert op1._sop_template.mirror.reflectance == 80
     assert op1.sop_template_link.get().mirror.reflectance == 80
 
     # geometries
-    op1.set_geometries(
-        geometries=[
-            GeoRef.from_native_link("TheBodyB1"),
-            GeoRef.from_native_link("TheBodyB2"),
-        ]
-    )
+    op1.geometries = [
+        GeoRef.from_native_link("TheBodyB1"),
+        GeoRef.from_native_link("TheBodyB2"),
+    ]
     assert op1._material_instance.HasField("geometries")
     op1._material_instance.geometries.geo_paths == ["TheBody1", "TheBodyB2"]
 
-    op1.set_geometries(geometries=None)  # means no geometry
+    op1.geometries = None  # means no geometry
     assert op1._material_instance.HasField("geometries") is False
 
-    op1.set_geometries(geometries=[])  # means all geometries
+    op1.geometries = []  # means all geometries
     assert op1._material_instance.HasField("geometries")
     assert op1._material_instance.geometries.geo_paths == []
 
@@ -136,7 +144,7 @@ def test_commit_optical_property(speos: Speos):
     assert p.scene_link.get().materials[0] == op1._material_instance
 
     # Change only in local not committed
-    op1.set_geometries(geometries=[GeoRef.from_native_link("TheBodyB")])
+    op1.geometries = [GeoRef.from_native_link("TheBodyB")]
     assert p.scene_link.get().materials[0] != op1._material_instance
 
     op1.delete()
@@ -157,12 +165,9 @@ def test_reset_optical_property(speos: Speos):
     root_part.commit()
 
     # Create + commit
-    op1 = (
-        p.create_optical_property(name="Material.1")
-        .set_volume_opaque()
-        .set_geometries(geometries=[body_b.geo_path])
-        .commit()
-    )
+    op1 = p.create_optical_property(name="Material.1").set_volume_opaque()
+    op1.geometries = [body_b.geo_path]
+    op1.commit()
     assert op1.vop_template_link is not None
     assert op1.vop_template_link.get().HasField("opaque")
     assert op1.sop_template_link is not None
@@ -171,7 +176,9 @@ def test_reset_optical_property(speos: Speos):
     assert p.scene_link.get().materials[0].HasField("geometries")
 
     # Change local data (on template and on instance)
-    op1.set_surface_opticalpolished().set_volume_optic().set_geometries(geometries=None)
+    op1.set_surface_opticalpolished()
+    op1.set_volume_optic()
+    op1.geometries = None
     assert op1.vop_template_link.get().HasField("opaque")
     assert op1._vop_template.HasField("optic")  # local template
     assert op1.sop_template_link.get().HasField("mirror")
@@ -203,12 +210,10 @@ def test_delete_optical_property(speos: Speos):
     root_part.commit()
 
     # Create + commit
-    op1 = (
-        p.create_optical_property(name="Material.1")
-        .set_volume_opaque()
-        .set_geometries(geometries=[GeoRef.from_native_link("TheBodyB")])
-        .commit()
-    )
+    op1 = p.create_optical_property(name="Material.1")
+    op1.set_volume_opaque()
+    op1.geometries = [GeoRef.from_native_link("TheBodyB")]
+    op1.commit()
     assert op1.vop_template_link.get().HasField("opaque")
     assert op1.sop_template_link.get().HasField("mirror")
     assert len(p.scene_link.get().materials) == 1
@@ -248,12 +253,10 @@ def test_get_optical_property(speos: Speos, capsys):
     ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
     root_part.commit()
 
-    op1 = (
-        p.create_optical_property(name="Material.1")
-        .set_volume_opaque()
-        .set_geometries(geometries=[body_a])
-        .commit()
-    )
+    op1 = p.create_optical_property(name="Material.1")
+    op1.set_volume_opaque()
+    op1.geometries = [body_a]
+    op1.commit()
 
     name = op1.get(key="name")
     assert name == "Material.1"
@@ -271,13 +274,12 @@ def test_get_optical_property(speos: Speos, capsys):
     geometries = op1.get(key="geo_paths")
     assert geometries == ["TheBodyA"]
 
-    op2 = (
-        p.create_optical_property(name="OpticalProperty2")
-        .set_volume_optic(index=1.7, absorption=0.01, constringence=55)
-        .set_surface_opticalpolished()
-        .set_geometries(geometries=[body_b])
-        .commit()
-    )
+    op2 = p.create_optical_property(name="OpticalProperty2")
+    op2.set_volume_optic()
+    op2.vop_optic = {"index": 1.7, "absorption": 0.01, "constringence": 55}
+    op2.set_surface_opticalpolished()
+    op2.geometries = [body_b]
+    op2.commit()
 
     name = op2.get(key="name")
     assert name == "OpticalProperty2"
@@ -294,13 +296,12 @@ def test_get_optical_property(speos: Speos, capsys):
     geometries = op2.get(key="geo_paths")
     assert geometries == ["TheBodyB"]
 
-    op3 = (
-        p.create_optical_property(name="OpticalProperty3")
-        .set_volume_none()
-        .set_surface_library(path=str(Path(test_path) / "R_test.anisotropicbsdf"))
-        .set_geometries(geometries=[face])
-        .commit()
-    )
+    op3 = p.create_optical_property(name="OpticalProperty3")
+    op3.set_volume_none()
+    op3.set_surface_library()
+    op3.sop_library = Path(test_path) / "R_test.anisotropicbsdf"
+    op3.geometries = [face]
+    op3.commit()
 
     name = op3.get(key="name")
     assert name == "OpticalProperty3"
