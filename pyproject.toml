@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "ansys-speos-core"
-version = "0.7.dev0"
+version = "0.8.dev0"
 description = "A Python wrapper for Ansys Speos"
 readme = "README.rst"
 requires-python = ">=3.10"
@@ -42,7 +42,7 @@ graphics = [
     "ansys-tools-visualization-interface>=0.8.3",
 ]
 tests = [
-    "psutil==7.2.1",
+    "psutil==7.2.2",
     "pytest==9.0.2",
     "pyvista>=0.40.0,<0.47",
     "ansys-tools-visualization-interface>=0.8.3",
@@ -55,10 +55,10 @@ jupyter = [
     "ipywidgets",
     "pyvista[jupyter]>=0.43,<0.47",
     "ansys-tools-visualization-interface>=0.8.3",
-    "notebook==7.5.2",
+    "notebook==7.5.3",
 ]
 doc = [
-    "ansys-sphinx-theme[autoapi]==1.6.4",
+    "ansys-sphinx-theme[autoapi]==1.7.0",
     "ansys-tools-visualization-interface>=0.8.3",
     "numpydoc==1.10.0",
     "Sphinx==8.1.3",
@@ -66,10 +66,10 @@ doc = [
     "sphinxcontrib-mermaid==2.0.0",
     "myst-parser==4.0.1",
     "nbsphinx==0.9.8",
-    "jupytext==1.19.0",
-    "jupyterlab==4.5.2",
+    "jupytext==1.19.1",
+    "jupyterlab==4.5.3",
     "jupyter-server==2.17.0",
-    "nbconvert==7.16.6",
+    "nbconvert==7.17.0",
     "pyvista[jupyter]>=0.43,<0.47",
 ]
 

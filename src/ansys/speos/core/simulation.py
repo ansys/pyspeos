@@ -538,26 +538,43 @@ class BaseSimulation:
 
         """
         vtp_files = []
-        from ansys.speos.core import Face
-        from ansys.speos.core.sensor import Sensor3DIrradiance, SensorIrradiance
-        from ansys.speos.core.workflow.open_result import export_xm3_vtp, export_xmp_vtp
+        from ansys.speos.core import Body, Face
+        from ansys.speos.core.sensor import Sensor3DIrradiance, SensorIrradiance, SensorRadiance
+        from ansys.speos.core.workflow.open_result import export_xm3_vtp, export_xmp_vtp, merge_vtp
 
         sensor_paths = self.get(key="sensor_paths")
         for feature in self._project._features:
             if feature._name not in sensor_paths:
                 continue
             match feature:
-                case SensorIrradiance():
+                case SensorIrradiance() | SensorRadiance():
                     xmp_data = feature.get(key="result_file_name")
-                    exported_vtp = export_xmp_vtp(self, xmp_data)
+                    if not xmp_data:
+                        xmp_data = feature.get(key="name")
+                    exported_vtp = export_xmp_vtp(self, feature, xmp_data)
                     vtp_files.append(exported_vtp)
                 case Sensor3DIrradiance():
                     xm3_data = feature.get(key="result_file_name")
+                    if not xm3_data:
+                        xm3_data = feature.get(key="name")
                     geo_paths = feature.get(key="geo_paths")
-                    geos_faces = [
-                        self._project.find(name=geo_path, feature_type=Face)[0]._face
-                        for geo_path in geo_paths
-                    ]
+                    geos_faces = []
+                    for geo_path in geo_paths:
+                        if self._project.find(name=geo_path, feature_type=Face):
+                            geos_faces.append(
+                                self._project.find(name=geo_path, feature_type=Face)[0]._face
+                            )
+                        elif self._project.find(name=geo_path, feature_type=Body):
+                            geos_faces.extend(
+                                [
+                                    geom_feature._face
+                                    for geom_feature in self._project.find(
+                                        name=geo_path, feature_type=Body
+                                    )[0]._geom_features
+                                ]
+                            )
+                        else:
+                            raise ValueError("geometry {} not found in project".format(geo_path))
                     exported_vtp = export_xm3_vtp(self, geos_faces, xm3_data)
                     vtp_files.append(exported_vtp)
                 case _:
@@ -565,6 +582,8 @@ class BaseSimulation:
                         "feature {} result currently not supported".format(feature._name),
                         stacklevel=2,
                     )
+        if len(vtp_files) > 1:
+            vtp_files.append(merge_vtp(vtp_paths=vtp_files))
         return vtp_files
 
     def compute_CPU(
@@ -619,6 +638,11 @@ class BaseSimulation:
             vtp_files = self._export_vtp()
             return self.result_list, vtp_files
         return self.result_list
+
+    def stop_computation(self) -> None:
+        """Stop the simulation computation."""
+        if self.job_link is not None:
+            self.job_link.stop()
 
     def _run_job(self) -> List[job_pb2.Result]:
         if self.job_link is not None:
