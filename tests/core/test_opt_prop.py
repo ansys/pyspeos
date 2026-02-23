@@ -344,3 +344,8 @@ def test_load_optical_property_from_file(speos: Speos):
                 assert mat.sop_type == "optical_polished"
                 assert mat.vop_type == "library"
                 assert mat.vop_library.endswith(".material")
+
+
+def test_error_reporting(speos: Speos):
+    """Test error raising."""
+    pass

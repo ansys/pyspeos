@@ -430,7 +430,8 @@ class OptProp(BaseSop, BaseVop):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
     ):
-        super().__init__()
+        super(BaseSop).__init__()
+        super(BaseVop).__init__()
         self._name = name
         self._project = project
         self._unique_id = None
