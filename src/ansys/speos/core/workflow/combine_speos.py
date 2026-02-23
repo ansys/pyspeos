@@ -21,54 +21,12 @@
 # SOFTWARE.
 """Import geometries and materials from several SPEOS files to a project."""
 
-from pathlib import Path
-from typing import List, Optional
+from typing import List
 
+from ansys.speos.core.component import SpeosFileInstance
 from ansys.speos.core.kernel.part import PartLink, ProtoPart
 from ansys.speos.core.project import Project
 from ansys.speos.core.speos import Speos
-
-
-class SpeosFileInstance:
-    """Represents a SPEOS file containing geometries and materials.
-
-    Geometries are placed in the root part of a project, and oriented according to the axis_system
-    argument.
-
-    Parameters
-    ----------
-    speos_file : str
-        SPEOS file to be loaded.
-    axis_system : Optional[List[float]]
-        Location and orientation to define for the geometry of the SPEOS file,
-        [Ox, Oy, Oz, Xx, Xy, Xz, Yx, Yy, Yz, Zx, Zy, Zz].
-        By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
-    name : str
-        Name chosen for the imported geometry. This name is used as subpart name under the root part
-        of the project.
-        By default, "" (meaning user has not defined a name), then the name of the SPEOS file
-        without extension is taken.
-        Note: Materials are named after the name. For instance name.material.1 representing the
-        first material of the imported geometry.
-    """
-
-    def __init__(
-        self,
-        speos_file: str,
-        axis_system: Optional[List[float]] = None,
-        name: str = "",
-    ) -> None:
-        self.speos_file = speos_file
-        """SPEOS file."""
-        if axis_system is None:
-            axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-        self.axis_system = axis_system
-        """Location and orientation to define for the geometry of the SPEOS file."""
-        self.name = name
-        """Name for the imported geometry, and used to name the materials."""
-
-        if self.name == "":
-            self.name = Path(speos_file).stem
 
 
 def insert_speos(project: Project, speos_to_insert: List[SpeosFileInstance]) -> None:
@@ -142,7 +100,7 @@ def _combine(
 
     for spc in speos_to_combine:
         scene_tmp = project.client.scenes().create()
-        scene_tmp.load_file(file_uri=spc.speos_file)
+        scene_tmp.load_file(file_uri=spc.file)
         scene_tmp_data = scene_tmp.get()
 
         part_inst = ProtoPart.PartInstance(name=spc.name)

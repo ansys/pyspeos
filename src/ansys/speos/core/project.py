@@ -32,6 +32,7 @@ from google.protobuf.internal.containers import RepeatedScalarFieldContainer
 import numpy as np
 
 import ansys.speos.core.body as body
+import ansys.speos.core.component as component
 import ansys.speos.core.face as face
 from ansys.speos.core.generic.general_methods import graphics_required
 from ansys.speos.core.generic.parameters import (
@@ -527,6 +528,52 @@ class Project:
         self._features.append(feature)
         return feature
 
+    def create_lightbox_import(
+        self, name: str, description: str = "", metadata: Optional[Mapping[str, str]] = None
+    ) -> component.LightBox:
+        """Create lightbox import features.
+
+        Parameters
+        ----------
+        name: str
+            name of the lightbox import
+        description : str
+            Description of the feature.
+            By default, ``""``.
+        metadata : Optional[Mapping[str, str]]
+            Metadata of the feature.
+            By default, ``{}``.
+
+        Returns
+        -------
+        ansys.speos.core.ground_plane.GroundPlane
+            Ground plane feature.
+        """
+        if metadata is None:
+            metadata = {}
+
+        existing_features = self.find(name=name)
+        if len(existing_features) != 0:
+            msg = "Lightbox: {} has a conflict name with an existing feature.".format(name)
+            raise ValueError(msg)
+        feature = component.LightBox(
+            project=self, name=name, description=description, metadata=metadata
+        )
+        self._features.append(feature)
+        return feature
+
+        # lightbox_scene_link = self.client.scenes().create()
+        # lightbox_scene_link.load_file(file_uri=str(lightbox_uri), password=password)
+        # project_scene_data = self.scene_link.get()
+        # test = ProtoScene.SceneInstance(
+        #     name="test",
+        #     scene_guid=lightbox_scene_link.key,
+        #     axis_system=[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+        # )
+        # project_scene_data.scenes.append(test)
+        # self._features.append(lightbox_data)
+        # return test
+
     def find(
         self,
         name: str,
@@ -801,6 +848,8 @@ class Project:
         """Fill part of sub part features from a list of body guids."""
         for b_link in self.client.get_items(keys=body_guids, item_type=BodyLink):
             b_data = b_link.get()
+            if not b_data.face_guids:
+                continue
             b_feat = feat_host.create_body(name=b_data.name)
             b_feat.body_link = b_link
             b_feat._body = b_data  # instead of b_feat.reset() - this avoid a useless read in server
@@ -848,6 +897,10 @@ class Project:
         for ssr_inst in scene_data.sensors:
             if ssr_inst.metadata["UniqueId"] == "":
                 ssr_inst.metadata["UniqueId"] = str(uuid.uuid4())
+
+        for scene_inst in scene_data.scenes:
+            if scene_inst.metadata["UniqueId"] == "":
+                scene_inst.metadata["UniqueId"] = str(uuid.uuid4())
 
         for sim_inst in scene_data.simulations:
             if sim_inst.metadata["UniqueId"] == "":
@@ -979,6 +1032,15 @@ class Project:
                 )
             if ssr_feat is not None:
                 self._features.append(ssr_feat)
+
+        for scene_inst in scene_data.scenes:
+            lightbox_scene = component.LightBox(
+                project=self,
+                name=scene_inst.name,
+                scene_instance=scene_inst,
+                default_parameters=None,
+            )
+            self._features.append(lightbox_scene)
 
         for sim_inst in scene_data.simulations:
             if sim_inst.name in [_._name for _ in self._features]:
