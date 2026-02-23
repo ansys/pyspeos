@@ -65,8 +65,6 @@ class BaseSop:
         self._vop_template = None
         # Create material instance
         self._material_instance = None
-        # Default values
-        self.set_surface_mirror()
 
     @property
     def sop_type(self) -> str:
@@ -140,19 +138,18 @@ class BaseSop:
         return self
 
     @property
-    def sop_library(self) -> float:
-        """Perfect specular surface reflectance.
+    def sop_library(self) -> str:
+        r"""Based on surface optical properties file.
 
         Parameters
         ----------
-        value : float
-            Reflectance, expected from 0. to 100. in %.
-            By default, ``100``.
+        value : str
+            Surface optical properties file, \*.scattering, \*.bsdf, \*.brdf, \*.coated, ...
 
         Returns
         -------
-        float
-            Reflectance value
+        str
+            File path to file location
         """
         if self._sop_template.HasField("library"):
             return self._sop_template.library.sop_file_uri
@@ -168,13 +165,7 @@ class BaseSop:
             )
 
     def set_surface_library(self) -> BaseSop:
-        r"""
-        Based on surface optical properties file.
-
-        Parameters
-        ----------
-        path : str
-            Surface optical properties file, \*.scattering, \*.bsdf, \*.brdf, \*.coated, ...
+        """Based on surface optical properties file.
 
         Returns
         -------
@@ -252,7 +243,7 @@ class BaseVop:
             return {
                 "index": self._vop_template.optic.index,
                 "absorption": self._vop_template.optic.absorption,
-                "constrigences": self._vop_template.optic.constringence,
+                "constringence": self._vop_template.optic.constringence,
             }
 
     @vop_optic.setter
@@ -273,19 +264,18 @@ class BaseVop:
             )
 
     @property
-    def vop_library(self) -> float:
-        """Perfect specular surface reflectance.
+    def vop_library(self) -> str:
+        r"""Volume property based on \*.material file.
 
         Parameters
         ----------
-        value : float
-            Reflectance, expected from 0. to 100. in %.
-            By default, ``100``.
+        value : Union[str, Path]
+            location of the \*.material file
 
         Returns
         -------
-        float
-            Reflectance value
+        str
+            location of the \*.material file
         """
         if self._vop_template.HasField("library"):
             return self._vop_template.library.material_file_uri
@@ -440,6 +430,7 @@ class OptProp(BaseSop, BaseVop):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
     ):
+        super().__init__()
         self._name = name
         self._project = project
         self._unique_id = None

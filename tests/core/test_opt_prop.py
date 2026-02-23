@@ -24,7 +24,7 @@
 
 from pathlib import Path
 
-from ansys.speos.core import GeoRef, Project, Speos
+from ansys.speos.core import GeoRef, OptProp, Project, Speos
 from tests.conftest import test_path
 
 
@@ -312,3 +312,35 @@ def test_get_optical_property(speos: Speos, capsys):
     assert "mirror" not in sop_property_info
     assert "optical_polished" not in sop_property_info
     assert "library" in sop_property_info
+
+
+def test_load_optical_property_from_file(speos: Speos):
+    """Test loading a file and filling all Materials."""
+    p = Project(speos=speos, path=Path(test_path) / "Material.1.speos" / "Material.1.speos")
+    all_mats = p.find(name=".*", name_regex=True, feature_type=OptProp)
+    assert all_mats
+    for mat in all_mats:
+        assert isinstance(mat, OptProp)
+        match mat._name:
+            case "Opaque_mirror80":
+                assert mat.sop_type == "mirror"
+                assert mat.sop_reflectance == 80
+                assert mat.vop_type == "opaque"
+            case "None_Library":
+                assert mat.vop_type is None
+                assert mat.sop_type == "library"
+                assert mat.sop_library.endswith(".scattering")
+            case "FOP_mirror75":
+                assert mat.sop_type == "mirror"
+                assert mat.sop_reflectance == 75
+                assert mat.vop_type is None
+            case "Optic_OP":
+                assert mat.sop_type == "optical_polished"
+                assert mat.vop_type == "optic"
+                assert mat.vop_optic.get("index") == 1.49
+                assert mat.vop_optic.get("constringence") == 30
+                assert mat.vop_optic.get("absorption") == 0.001
+            case "Library_OP":
+                assert mat.sop_type == "optical_polished"
+                assert mat.vop_type == "library"
+                assert mat.vop_library.endswith(".material")
