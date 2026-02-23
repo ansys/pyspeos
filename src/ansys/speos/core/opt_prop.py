@@ -30,6 +30,7 @@ import uuid
 
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
+from ansys.speos.core.generic.parameters import MaterialOpticParameters
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.scene import ProtoScene
 from ansys.speos.core.kernel.sop_template import ProtoSOPTemplate
@@ -202,6 +203,7 @@ class BaseVop:
         self._vop_template = None
         # Create material instance
         self._material_instance = None
+        self._vop_optic = None
 
     @property
     def vop_type(self):
@@ -221,42 +223,37 @@ class BaseVop:
                 return "library"
 
     @property
-    def vop_optic(self) -> dict:
+    def vop_optic(self) -> MaterialOpticParameters:
         """Property of the clear transparent volume.
 
         Parameters
         ----------
-        value : dict
-            Dictionary with keys index, absoprtions and Conrtigence (optional
-            e.g:    ``{
-                        'index' : 1.5,
-                        'absorption' : 0,
-                        'constringence' : None,
-                    }``
+        value : MaterialOpticParameters
+            Optic material information
 
         Returns
         -------
-        dict
-            dict with Optic definition
+        MaterialOpticParameters
+            Dataclass containing optics information
         """
         if self._vop_template.HasField("optic"):
-            return {
-                "index": self._vop_template.optic.index,
-                "absorption": self._vop_template.optic.absorption,
-                "constringence": self._vop_template.optic.constringence,
-            }
+            self._vop_optic = MaterialOpticParameters(
+                self._vop_template.optic.index,
+                self._vop_template.optic.absorption,
+                self._vop_template.optic.constringence,
+            )
+            return self._vop_optic
 
     @vop_optic.setter
-    def vop_optic(self, value: dict):
-        if value.get("index") is None or value.get("absorption") is None:
-            raise KeyError("You need to at least provide a value for index and absorption")
+    def vop_optic(self, value: MaterialOpticParameters):
         if self._vop_template.HasField("optic"):
-            self._vop_template.optic.index = value.get("index")
-            self._vop_template.optic.absorption = value.get("absorption")
-            if value.get("constringence"):
-                self._vop_template.optic.constringence = value.get("constringence")
+            self._vop_template.optic.index = value.index
+            self._vop_template.optic.absorption = value.absorption
+            if value.constringence:
+                self._vop_template.optic.constringence = value.constringence
             else:
                 self._vop_template.optic.ClearField("constringence")
+            self._vop_optic = value
         else:
             raise TypeError(
                 "Volume Optical Property is not set to optic Type, please use set_volume_optic"

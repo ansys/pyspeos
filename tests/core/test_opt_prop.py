@@ -25,6 +25,7 @@
 from pathlib import Path
 
 from ansys.speos.core import GeoRef, OptProp, Project, Speos
+from ansys.speos.core.generic.parameters import MaterialOpticParameters
 from tests.conftest import test_path
 
 
@@ -48,17 +49,16 @@ def test_create_optical_property(speos: Speos):
 
     # VOP optic
     op1.set_volume_optic()
-    op1.vop_optic = dict(index=1.7, absorption=0.01, constringence=55)
+    op1.vop_optic = MaterialOpticParameters(index=1.7, absorption=0.01, constringence=55)
     op1.commit()
     assert op1.vop_template_link.get().HasField("optic")
     assert op1.vop_template_link.get().optic.index == 1.7
     assert op1.vop_template_link.get().optic.absorption == 0.01
     assert op1.vop_template_link.get().optic.HasField("constringence")
     assert op1.vop_template_link.get().optic.constringence == 55
-    op1.vop_optic["constringence"] = None
+    op1.vop_optic = MaterialOpticParameters(index=1.7, absorption=0.01)
     op1.commit()
     assert op1.vop_template_link.get().optic.HasField("constringence") is False
-
     op1.set_volume_optic()
     op1.commit()
     assert op1.vop_template_link.get().optic.index == 1.5
@@ -279,7 +279,7 @@ def test_get_optical_property(speos: Speos, capsys):
 
     op2 = p.create_optical_property(name="OpticalProperty2")
     op2.set_volume_optic()
-    op2.vop_optic = {"index": 1.7, "absorption": 0.01, "constringence": 55}
+    op2.vop_optic = MaterialOpticParameters(1.7, 0.01, 55)
     op2.set_surface_opticalpolished()
     op2.geometries = [body_b]
     op2.commit()
@@ -340,9 +340,9 @@ def test_load_optical_property_from_file(speos: Speos):
             case "Optic_OP":
                 assert mat.sop_type == "optical_polished"
                 assert mat.vop_type == "optic"
-                assert mat.vop_optic.get("index") == 1.49
-                assert mat.vop_optic.get("constringence") == 30
-                assert mat.vop_optic.get("absorption") == 0.001
+                assert mat.vop_optic.index == 1.49
+                assert mat.vop_optic.constringence == 30
+                assert mat.vop_optic.absorption == 0.001
             case "Library_OP":
                 assert mat.sop_type == "optical_polished"
                 assert mat.vop_type == "library"

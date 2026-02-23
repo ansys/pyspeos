@@ -42,6 +42,18 @@ class WavelengthsRangeParameters:
     """Wavelength sampling."""
 
 
+@dataclass(frozen=True)
+class MaterialOpticParameters:
+    """Optics Material Parameters."""
+
+    index: float = 1.5
+    """Real part of refractive index."""
+    absorption: float = 0
+    """Absorption coefficient."""
+    constringence: Optional[float] = None
+    """Abbe Number."""
+
+
 @dataclass
 class DimensionsParameters:
     """Dimension Parameters."""
