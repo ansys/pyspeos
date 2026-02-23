@@ -361,7 +361,9 @@ class Project:
             Irradiance3DSensorParameters,
             IntensityXMPSensorParameters,
         ] = None,
-    ) -> Union[SensorCamera, SensorRadiance, SensorIrradiance, Sensor3DIrradiance]:
+    ) -> Union[
+        SensorCamera, SensorRadiance, SensorIrradiance, Sensor3DIrradiance, SensorXMPIntensity
+    ]:
         """Create a new Sensor feature.
 
         Parameters
@@ -394,7 +396,7 @@ class Project:
         -------
         Union[ansys.speos.core.sensor.SensorCamera,\
         ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance, \
-        ansys.speos.core.sensor.Sensor3DIrradiance]
+        ansys.speos.core.sensor.Sensor3DIrradiance, ansys.speos.core.sensor.SensorXMPIntensity]
             Sensor class instance.
         """
         if metadata is None:
