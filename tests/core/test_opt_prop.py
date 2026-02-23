@@ -55,6 +55,9 @@ def test_create_optical_property(speos: Speos):
     assert op1.vop_template_link.get().optic.absorption == 0.01
     assert op1.vop_template_link.get().optic.HasField("constringence")
     assert op1.vop_template_link.get().optic.constringence == 55
+    op1.vop_optic["constringence"] = None
+    op1.commit()
+    assert op1.vop_template_link.get().optic.HasField("constringence") is False
 
     op1.set_volume_optic()
     op1.commit()
