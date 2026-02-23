@@ -3744,8 +3744,10 @@ class Sensor3DIrradiance(BaseSensor):
         ----------
         illuminance_type : ansys.api.speos.sensor.v1.sensor_pb2.TypeRadiometric
             SensorTypeColorimetric protobuf object to modify.
-        default_parameters : bool
-            Uses default values when True.
+        default_parameters : ansys.speos.core.generic.parameters.Irradiance3DSensorParameters, \
+        optional
+            If defined the values in the sensor instance will be overwritten by the values of the
+            data class
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -3824,8 +3826,10 @@ class Sensor3DIrradiance(BaseSensor):
         ----------
         illuminance_type : ansys.api.speos.sensor.v1.sensor_pb2.TypePhotometric
             SensorTypeColorimetric protobuf object to modify.
-        default_parameters : bool
-            Uses default values when True.
+        default_parameters : ansys.speos.core.generic.parameters.Irradiance3DSensorParameters, \
+        optional
+            If defined the values in the sensor instance will be overwritten by the values of the
+            data class
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -3905,8 +3909,9 @@ class Sensor3DIrradiance(BaseSensor):
         ----------
         illuminance_type : ansys.api.speos.sensor.v1.sensor_pb2.IntegrationTypePlanar
             SensorTypeColorimetric protobuf object to modify.
-        default_parameters : bool
-            Uses default values when True.
+        default_parameters : ansys.speos.core.generic.parameters.MeasuresParameters, optional
+            If defined the values in the sensor instance will be overwritten by the values of the
+            data class
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -4002,8 +4007,9 @@ class Sensor3DIrradiance(BaseSensor):
         ----------
         illuminance_type : ansys.api.speos.sensor.v1.sensor_pb2.TypeColorimetric
             SensorTypeColorimetric protobuf object to modify.
-        default_parameters : bool
-            Uses default values when True.
+        default_parameters : ansys.speos.core.generic.parameters.ColorimetricParameters, optional
+            If defined the values in the sensor instance will be overwritten by the values of the
+            data class
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
