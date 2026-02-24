@@ -1519,7 +1519,7 @@ class SourceRayFile(BaseSource):
 
         Parameters
         ----------
-        axis_system: list[float]
+        axis_system : list[float]
             Position of the rayfile source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
