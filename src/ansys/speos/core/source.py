@@ -332,11 +332,8 @@ class BaseSource:
             -------
             Union
             [
-                None,
-                source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.D65,
-                source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.D50,
-                source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.C,
-                source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.E,
+                None,\
+                source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType,
                 UserDefinedWhitePoint,
             ]
             Predefined White Point Type or User Defined White Point Type.
