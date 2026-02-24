@@ -43,24 +43,12 @@ import ansys.speos.core.proto_message_utils as proto_message_utils
 class BaseSop:
     """Base class for Surface Optical Property.
 
-    Attributes
-    ----------
-    sop_template_link : ansys.speos.core.kernel.sop_template.SOPTemplateLink
-        Link object for the sensor template in database.
-
     Notes
     -----
     This is a Super class, **Do not instantiate this class yourself**
     """
 
     def __init__(self):
-        self._name = ""
-        self._project = None
-        self._unique_id = None
-        self.sop_template_link = None
-        """Link object for the sop template in database."""
-        self.vop_template_link = None
-        """Link object for the vop template in database."""
         self._sop_template = None
         # Create VOP template
         self._vop_template = None
@@ -180,29 +168,18 @@ class BaseSop:
 class BaseVop:
     """Base class for Surface Optical Property.
 
-    Attributes
-    ----------
-    vop_template_link : ansys.speos.core.kernel.sop_template.VOPTemplateLink
-        Link object for the sensor template in database.
-
     Notes
     -----
     This is a Super class, **Do not instantiate this class yourself**
     """
 
     def __init__(self):
-        self._name = ""
-        self._project = None
-        self._unique_id = None
-        self.sop_template_link = None
-        """Link object for the sop template in database."""
-        self.vop_template_link = None
-        """Link object for the vop template in database."""
         self._sop_template = None
         # Create VOP template
         self._vop_template = None
         # Create material instance
         self._material_instance = None
+
         self._vop_optic = None
 
     @property
@@ -460,18 +437,18 @@ class OptProp(BaseSop, BaseVop):
     @property
     def geometries(
         self,
-    ) -> List[GeoRef]:
+    ) -> List[str]:
         """Select geometries on which the optical properties will be applied.
 
         Parameters
         ----------
-        geometries : List[ansys.speos.core.geo_ref.GeoRef],
+        geometries : List[str],
             List of geometries. Giving an empty list means "All geometries"
             ``None``, means "no geometry".
 
         Returns
         -------
-        List[ansys.speos.core.geo_ref.GeoRef]
+        List[str]
             List of geometry references used by this material
         """
         return self._material_instance.geometries.geo_paths

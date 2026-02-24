@@ -115,7 +115,9 @@ def test_create_optical_property(speos: Speos):
         GeoRef.from_native_link("TheBodyB2"),
     ]
     assert op1._material_instance.HasField("geometries")
-    op1._material_instance.geometries.geo_paths == ["TheBody1", "TheBodyB2"]
+    assert op1._material_instance.geometries.geo_paths == ["TheBodyB1", "TheBodyB2"]
+    for geo in op1.geometries:
+        assert "TheBodyB" in geo
 
     op1.geometries = None  # means no geometry
     assert op1._material_instance.HasField("geometries") is False
