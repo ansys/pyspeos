@@ -1125,7 +1125,7 @@ class SourceLuminaire(BaseSource):
 
         Returns
         -------
-        ansys.speos.core.source.SourceLuminaire.Flux
+        ansys.speos.core.source.BaseSource.Flux
             flux object of the source
 
         """
