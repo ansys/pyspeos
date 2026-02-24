@@ -330,16 +330,10 @@ class BaseSource:
 
             Returns
             -------
-            Union
-            [
-                None,\
-                source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType,
-                UserDefinedWhitePoint,
-            ]
             Union[None,\
            source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType,\
            ansys.speos.core.source.BaseSource.UserDefinedColorSpace.UserDefinedWhitePoint]
-                      Predefined White Point Type or User Defined White Point Type.
+                      PredefinedWhitePoint Type or UserDefinedWhitePoint Type.
 
             """
             return self._white_point_type
@@ -539,11 +533,11 @@ class BaseSource:
         ----------
         flux : ansys.api.speos.source.v1.source_pb2
             flux protobuf object to modify.
-        default_parameters: Optional[
-                LuminousFluxParameters,
-                RadiantFluxParameters,
-                FluxFromFileParameters,
-                IntensityFluxParameters,
+        default_parameters: Optional[\
+                LuminousFluxParameters,\
+                RadiantFluxParameters,\
+                FluxFromFileParameters,\
+                IntensityFluxParameters,\
             ] = None,
             If defined the values in the Flux instance will be
             overwritten by the values of the data class.

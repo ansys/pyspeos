@@ -171,7 +171,7 @@ class Project:
         description: str = "",
         feature_type: type = SourceSurface,
         metadata: Optional[Mapping[str, str]] = None,
-        parameters: Optional[Union[
+        parameters: Optional[
             Union[
                 LuminaireSourceParameters,
                 SurfaceSourceParameters,
@@ -444,12 +444,10 @@ class Project:
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
-        parameters :  Optional[
-            IrradianceSensorParameters,
-            RadianceSensorParameters,
-            CameraSensorParameters,
-            Irradiance3DSensorParameters
-        ]
+        parameters :  Optional[IrradianceSensorParameters,\
+            RadianceSensorParameters,\
+            CameraSensorParameters,\
+            Irradiance3DSensorParameters]
             Allows to provide parameters to overwrite default parameters
 
         Returns

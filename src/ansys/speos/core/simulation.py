@@ -78,10 +78,9 @@ class BaseSimulation:
 
         Parameters
         ----------
-        source_sampling : Union[
-                simulation_template_pb2.RoughnessOnly,
-                simulation_template_pb2.Iridescence,
-                simulation_template_pb2.Isotropic,
+        source_sampling : Union[simulation_template_pb2.RoughnessOnly,\
+                simulation_template_pb2.Iridescence,\
+                simulation_template_pb2.Isotropic,\
                 simulation_template_pb2.Anisotropic] to complete.
         default_values: bool
             True to use the default values as uniform source sampling.
