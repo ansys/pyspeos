@@ -207,13 +207,12 @@ class Project:
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
-        parameters: Optional[
-            LuminaireSourceParameters,
-            SurfaceSourceParameters,
-            RayFileSourceParameters,
-            AmbientNaturalLightParameters,
-            AmbientEnvironmentParameters,
-        ]
+        parameters: Optional[Union[\
+        ansys.speos.core.generic.parameters.LuminaireSourceParameters,\
+        ansys.speos.core.generic.parameters.SurfaceSourceParameters,\
+        ansys.speos.core.generic.parameters.RayFileSourceParameters,\
+        ansys.speos.core.generic.parameters.AmbientNaturalLightParameters,\
+        ansys.speos.core.generic.parameters.AmbientEnvironmentParameters,]]
             Allows to provide parameters to overwrite default parameters.
 
         Returns
