@@ -72,12 +72,28 @@ class DimensionsParameters:
     """Sampling y axis."""
 
 
+@dataclass
+class MeshData:
+    """Store named data on meshed Geometry."""
+
+    name: str
+    data: list[float]
+
+
 class LayerTypes(str, Enum):
     """Layer Separation types without parameters."""
 
     none = "none"
     by_source = "by_source"
     by_polarization = "by_polarization"
+
+
+class TextureTypes(str, Enum):
+    """Surface contribution analyser filtering types."""
+
+    image = "image"
+    normal_map = "normal_map"
+    anisotropy_map = "anisotropy_map"
 
 
 class SCAFilteringTypes(str, Enum):

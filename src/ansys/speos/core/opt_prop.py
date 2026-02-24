@@ -394,6 +394,9 @@ class TextureLayer(BaseSop):
             name=name + ".SOP", description=description, metadata=metadata
         )
         self._texture_template = ProtoScene.MaterialInstance.Texture.Layer()
+        self._normal_map_props = None
+        self._image_props = None
+        self._aniso_props = None
         self._unique_id = mat_id
 
     @property
@@ -444,7 +447,18 @@ class TextureLayer(BaseSop):
 
     @property
     def image_texture_file_uri(self):
-        """File path image texture."""
+        """File path image texture.
+
+        Parameters
+        ----------
+        value : Union[Path, str]
+            File path image texture.
+
+        Returns
+        -------
+        str
+            File path image texture.
+        """
         if self._sop_template.HasField("texture"):
             if self._sop_template.texture.HasField("image"):
                 return self._sop_template.texture.image.bitmap_file_uri
@@ -457,7 +471,18 @@ class TextureLayer(BaseSop):
 
     @property
     def normal_map_file_uri(self):
-        """File path normal map."""
+        """File path normal map.
+
+        Parameters
+        ----------
+        value : Union[Path, str]
+            File path normal map.
+
+        Returns
+        -------
+        str
+            File path normal map.
+        """
         if self._sop_template.HasField("texture"):
             if self._sop_template.texture.HasField("normal_map"):
                 if self._sop_template.texture.normal_map.HasField("from_image"):
@@ -473,6 +498,112 @@ class TextureLayer(BaseSop):
             self._sop_template.texture.normal_map.from_normal_map.normal_map_file_uri = str(value)
         else:
             raise TypeError("Please use set normal_myp type before")
+
+    @property
+    def normal_map_property(self) -> Union[TextureMapping, TextureMappingOperator]:
+        """Contains all texture mapping properties of the normal Map.
+
+        Parameters
+        ----------
+        value : Union[TextureMapping, TextureMappingOperator]
+            Texture Mapping information
+
+        Returns
+        -------
+        Union[TextureMapping, TextureMappingOperator]
+            Texture mapping properties
+        """
+        if self._sop_template.texture.HasField("normal_map"):
+            if self._texture_template.HasField("normal_map_properties"):
+                if self._normal_map_props:
+                    return self._normal_map_props
+                elif self._texture_template.normal_map_properties.HasField("vertices_data_index"):
+                    self._normal_map_props = TextureMapping(
+                        self._sop_template, self._texture_template
+                    )
+                    return self._normal_map_props
+                else:
+                    self._normal_map_props = TextureMappingOperator(
+                        self._sop_template, self._texture_template.normal_map_properties
+                    )
+                    return self._normal_map_props
+
+    @normal_map_property.setter
+    def normal_map_property(self, value: Union[TextureMapping, TextureMappingOperator]):
+        if isinstance(value, (TextureMapping, TextureMappingOperator)):
+            self._normal_map_props = value
+        else:
+            raise ValueError("please provide valid data")
+
+    @property
+    def image_property(self) -> Union[TextureMapping, TextureMappingOperator]:
+        """Contains all texture mapping properties of the Image texture.
+
+        Parameters
+        ----------
+        value : Union[TextureMapping, TextureMappingOperator]
+            Texture Mapping information
+
+        Returns
+        -------
+        Union[TextureMapping, TextureMappingOperator]
+            Texture mapping properties
+        """
+        if self._sop_template.texture.HasField("image"):
+            if self._texture_template.HasField("image_properties"):
+                if self._image_props:
+                    return self._image_props
+                elif self._texture_template.image_properties.HasField("vertices_data_index"):
+                    self._image_props = TextureMapping(self._sop_template, self._texture_template)
+                    return self._image_props
+                else:
+                    self._image_props = TextureMappingOperator(
+                        self._sop_template, self._texture_template.image_properties
+                    )
+                    return self._image_props
+
+    @image_property.setter
+    def image_property(self, value: Union[TextureMapping, TextureMappingOperator]):
+        if isinstance(value, (TextureMapping, TextureMappingOperator)):
+            self._image_props = value
+        else:
+            raise ValueError("please provide valid data")
+
+    @property
+    def anisotropic_property(self) -> Union[TextureMapping, TextureMappingOperator]:
+        """Contains all texture mapping properties of the anisotorpic orientation.
+
+        Parameters
+        ----------
+        value : Union[TextureMapping, TextureMappingOperator]
+            Texture Mapping information
+
+        Returns
+        -------
+        Union[TextureMapping, TextureMappingOperator]
+            Texture mapping properties
+        """
+        if self._sop_template.texture.HasField("image"):
+            if self._texture_template.HasField("anisotropy_map_properties"):
+                if self._aniso_props:
+                    return self._aniso_props
+                elif self._texture_template.anisotropy_map_properties.HasField(
+                    "vertices_data_index"
+                ):
+                    self._aniso_props = TextureMapping(self._sop_template, self._texture_template)
+                    return self._aniso_props
+                else:
+                    self._aniso_props = TextureMappingOperator(
+                        self._sop_template, self._texture_template.anisotropy_map_properties
+                    )
+                    return self._aniso_props
+
+    @anisotropic_property.setter
+    def anisotropic_property(self, value: Union[TextureMapping, TextureMappingOperator]):
+        if isinstance(value, (TextureMapping, TextureMappingOperator)):
+            self._aniso_props = value
+        else:
+            raise ValueError("please provide valid data")
 
     def set_normal_map_from_image(self):
         """Set normal map type to from image."""
@@ -508,14 +639,6 @@ class TextureLayer(BaseSop):
                 )
                 # Always clean sop_guids to be sure that we never use both sop_guids and sop_guid
                 self._texture_template.sop_guid = self.sop_template_link.key
-                if self._sop_template.HasField("texture"):
-                    if self.image_texture_file_uri:
-                        self._texture_template.image_properties = self._image_props
-                    if self.normal_map_file_uri:
-                        self._texture_template.normal_map_properties = self._normal_map_props
-                if self.sop_library:
-                    if self.sop_library.endswith("anisotropicbsdf"):
-                        self._texture_template.anisotropy_map_properties = self._anisotropic_props
 
         elif self.sop_template_link.get() != self._sop_template:
             self.sop_template_link.set(
@@ -552,21 +675,82 @@ class TextureLayer(BaseSop):
             self.sop_template_link.delete()
             self.sop_template_link = None
 
+        self._texture_template = None
         # Reset the _unique_id
         self._unique_id = None
-        self._sop_guid = None
+        self._texture_template.sop_guid = None
         return self
 
-    def _fill(self, sop_guid: str):
+    def _fill(self, sop_guid: str, texture: ProtoScene.MaterialInstance.Texture.Layer):
         self.sop_template_link = self._project.client[sop_guid]
         self._sop_template = self.sop_template_link.get()
+        self._texture_template = texture
 
 
 class TextureMappingOperator:
     """Mapping operator."""
 
-    def __init__(self):
-        self._mapping = ProtoScene.MaterialInstance.Texture.MappingOperator()
+    def __init__(
+        self,
+        sop_template,
+        mapping_opp: Optional[ProtoScene.MaterialInstance.Texture.MappingOperator] = None,
+    ):
+        self._mapping = mapping_opp
+        if self._mapping is None:
+            self._mapping = ProtoScene.MaterialInstance.Texture.MappingOperator()
+        self._sop_template = sop_template
+
+    @property
+    def repeat_u(self):
+        """Repeat image along u axis.
+
+        Parameters
+        ----------
+        value : bool
+            Defines if image get repeated or not
+
+        Returns
+        -------
+        bool
+            true if image is repeated else False
+        """
+        if self._sop_template.texture.HasField("image"):
+            return self._sop_template.texture.image.repeat_along_u
+        if self._sop_template.texture.HasField("normal_map"):
+            return self._sop_template.texture.normal_map.repeat_along_u
+
+    @repeat_u.setter
+    def repeat_u(self, value: bool):
+        if self._sop_template.texture.HasField("image"):
+            self._sop_template.texture.image.repeat_along_u = value
+        if self._sop_template.texture.HasField("normal_map"):
+            self._sop_template.texture.normal_map.repeat_along_u = value
+
+    @property
+    def repeat_v(self):
+        """Repeat image along v axis.
+
+        Parameters
+        ----------
+        value : bool
+            Defines if image get repeated or not
+
+        Returns
+        -------
+        bool
+            true if image is repeate else False
+        """
+        if self._sop_template.texture.HasField("image"):
+            return self._sop_template.texture.image.repeat_along_v
+        if self._sop_template.texture.HasField("normal_map"):
+            return self._sop_template.texture.normal_map.repeat_along_v
+
+    @repeat_v.setter
+    def repeat_v(self, value: bool):
+        if self._sop_template.texture.HasField("image"):
+            self._sop_template.texture.image.repeat_along_v = value
+        if self._sop_template.texture.HasField("normal_map"):
+            self._sop_template.texture.normal_map.repeat_along_v = value
 
     @property
     def type(self) -> str:
@@ -758,6 +942,96 @@ class TextureMappingOperator:
         """Define Mapping operation with a planar projection."""
         self._mapping.cylindrical.SetInParent()
         self._mapping.cylindrical.base_perimeter = base_perimeter
+
+
+class TextureMapping:
+    """Mapping operator."""
+
+    def __init__(self, sop_template, texture_template):
+        self._sop_template = sop_template
+        self._texture_template = texture_template
+
+    @property
+    def repeat_u(self):
+        """Repeat image along u axis.
+
+        Parameters
+        ----------
+        value : bool
+            Defines if image get repeated or not
+
+        Returns
+        -------
+        bool
+            true if image is repeated else False
+        """
+        if self._sop_template.texture.HasField("image"):
+            return self._sop_template.texture.image.repeat_along_u
+        if self._sop_template.texture.HasField("normal_map"):
+            return self._sop_template.texture.normal_map.repeat_along_u
+
+    @repeat_u.setter
+    def repeat_u(self, value: bool):
+        if self._sop_template.texture.HasField("image"):
+            self._sop_template.texture.image.repeat_along_u = value
+        if self._sop_template.texture.HasField("normal_map"):
+            self._sop_template.texture.normal_map.repeat_along_u = value
+
+    @property
+    def repeat_v(self):
+        """Repeat image along v axis.
+
+        Parameters
+        ----------
+        value : bool
+            Defines if image get repeated or not
+
+        Returns
+        -------
+        bool
+            true if image is repeated else False
+        """
+        if self._sop_template.texture.HasField("image"):
+            return self._sop_template.texture.image.repeat_along_v
+        if self._sop_template.texture.HasField("normal_map"):
+            return self._sop_template.texture.normal_map.repeat_along_v
+
+    @repeat_v.setter
+    def repeat_v(self, value: bool):
+        if self._sop_template.texture.HasField("image"):
+            self._sop_template.texture.image.repeat_along_v = value
+        if self._sop_template.texture.HasField("normal_map"):
+            self._sop_template.texture.normal_map.repeat_along_v = value
+
+    @property
+    def vertices_data_index(self):
+        """Index in face's vertices_data where UV mapping is stored.
+
+        Parameters
+        ----------
+        value : int
+            Index in face's vertices_data where UV mapping is stored
+
+        Returns
+        -------
+        int
+            Index in face's vertices_data where UV mapping is stored
+        """
+        if self._texture_template.HasField("image_properties"):
+            return self._texture_template.image_properties.vertices_data_index
+        if self._texture_template.HasField("normal_map_properties"):
+            return self._texture_template.normal_map_properties.vertices_data_index
+        if self._texture_template.HasField("anisotropy_map_properties"):
+            return self._texture_template.anisotropy_map_properties.vertices_data_index
+
+    @vertices_data_index.setter
+    def vertices_data_index(self, value: int):
+        if self._texture_template.HasField("image_properties"):
+            self._texture_template.image_properties.vertices_data_index = value
+        if self._texture_template.HasField("normal_map_properties"):
+            self._texture_template.normal_map_properties.vertices_data_index = value
+        if self._texture_template.HasField("anisotropy_map_properties"):
+            self._texture_template.anisotropy_map_properties.vertices_data_index = value
 
 
 class OptProp(BaseSop, BaseVop):
@@ -1011,8 +1285,10 @@ class OptProp(BaseSop, BaseVop):
                 if self._project.client.scenes()._is_texture_available:
                     if self.texture:
                         self._material_instance.texture.ClearField("layers")
+                        layers = []
                         for layer in self.texture:
-                            pass
+                            layers.append(layer._texture_template)
+                        self._material_instance.texture.layers[:] = layers
                     else:
                         self._material_instance.sop_guid = self.sop_template_link.key
                 else:
@@ -1127,7 +1403,7 @@ class OptProp(BaseSop, BaseVop):
             texture = []
             for layer in mat_inst.texture.layers:
                 cur_layer = TextureLayer(self._project, name="", mat_id=self._unique_id)
-                cur_layer._fill(layer.sop_guid)
+                cur_layer._fill(layer.sop_guid, layer)
                 texture.append(cur_layer)
         elif len(mat_inst.sop_guids) > 0:
             self.sop_template_link = self._project.client[mat_inst.sop_guids[0]]
