@@ -172,11 +172,13 @@ class Project:
         feature_type: type = SourceSurface,
         metadata: Optional[Mapping[str, str]] = None,
         parameters: Optional[
-            LuminaireSourceParameters,
-            SurfaceSourceParameters,
-            RayFileSourceParameters,
-            AmbientNaturalLightParameters,
-            AmbientEnvironmentParameters,
+            Union[
+                LuminaireSourceParameters,
+                SurfaceSourceParameters,
+                RayFileSourceParameters,
+                AmbientNaturalLightParameters,
+                AmbientEnvironmentParameters,
+            ]
         ] = None,
     ) -> Union[
         SourceSurface,
@@ -416,10 +418,12 @@ class Project:
         feature_type: type = SensorIrradiance,
         metadata: Optional[Mapping[str, str]] = None,
         parameters: Optional[
-            IrradianceSensorParameters,
-            RadianceSensorParameters,
-            CameraSensorParameters,
-            Irradiance3DSensorParameters,
+            Union[
+                IrradianceSensorParameters,
+                RadianceSensorParameters,
+                CameraSensorParameters,
+                Irradiance3DSensorParameters,
+            ]
         ] = None,
     ) -> Union[SensorCamera, SensorRadiance, SensorIrradiance, Sensor3DIrradiance]:
         """Create a new Sensor feature.

@@ -562,10 +562,12 @@ class BaseSource:
             self,
             flux: source_pb2,
             default_parameters: Optional[
-                LuminousFluxParameters,
-                RadiantFluxParameters,
-                FluxFromFileParameters,
-                IntensityFluxParameters,
+                Union[
+                    LuminousFluxParameters,
+                    RadiantFluxParameters,
+                    FluxFromFileParameters,
+                    IntensityFluxParameters,
+                ]
             ] = None,
             stable_ctr: bool = False,
         ):

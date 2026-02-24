@@ -176,7 +176,7 @@ class Part:
 
             Parameters
             ----------
-            axis_system : List[float], optional
+            axis_system : List[float]
                 Orientation of the sub part [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
 
             Returns

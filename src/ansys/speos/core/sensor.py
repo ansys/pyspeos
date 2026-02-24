@@ -153,7 +153,7 @@ class BaseSensor:
         return None
 
     @lxp_path_number.setter
-    def lxp_path_number(self, value: int):
+    def lxp_path_number(self, value: int) -> None:
         if value:
             self._sensor_instance.lxp_properties.nb_max_paths = int(value)
         else:
@@ -297,7 +297,7 @@ class BaseSensor:
         def __init__(
             self,
             sensor_dimensions: common_pb2.SensorDimensions,
-            default_parameters: Union[None, DimensionsParameters] = None,
+            default_parameters: Optional[DimensionsParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
@@ -460,7 +460,7 @@ class BaseSensor:
         def __init__(
             self,
             sensor_type_colorimetric: common_pb2.SensorTypeColorimetric,
-            default_parameters: Union[None, ColorimetricParameters] = None,
+            default_parameters: Optional[ColorimetricParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
@@ -520,7 +520,7 @@ class BaseSensor:
         def __init__(
             self,
             sensor_type_spectral: common_pb2.SensorTypeSpectral,
-            default_parameters: Union[None, SpectralParameters] = None,
+            default_parameters: Optional[SpectralParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
@@ -624,7 +624,7 @@ class BaseSensor:
         def __init__(
             self,
             layer_type_face: ProtoScene.SensorInstance.LayerTypeFace,
-            default_parameters: Union[None, LayerByFaceParameters] = None,
+            default_parameters: Optional[LayerByFaceParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
@@ -733,7 +733,7 @@ class BaseSensor:
         def __init__(
             self,
             layer_type_sequence: ProtoScene.SensorInstance.LayerTypeSequence,
-            default_parameters: Union[None, LayerBySequenceParameters] = None,
+            default_parameters: Optional[LayerBySequenceParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
@@ -768,7 +768,7 @@ class BaseSensor:
             return self._layer_type_sequence.maximum_nb_of_sequence
 
         @maximum_nb_of_sequence.setter
-        def maximum_nb_of_sequence(self, value: int):
+        def maximum_nb_of_sequence(self, value: int) -> None:
             self._layer_type_sequence.maximum_nb_of_sequence = value
 
         def set_define_sequence_per_geometries(
@@ -826,7 +826,7 @@ class BaseSensor:
         def __init__(
             self,
             layer_type_incidence_angle: ProtoScene.SensorInstance.LayerTypeIncidenceAngle,
-            default_parameters: Union[None, LayerByIncidenceAngleParameters] = None,
+            default_parameters: Optional[LayerByIncidenceAngleParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
@@ -1156,7 +1156,7 @@ class SensorCamera(BaseSensor):
                 def __init__(
                     self,
                     balance_mode_user_white: camera_sensor_pb2.SensorCameraBalanceModeUserwhite,
-                    default_parameters: Union[None, BalanceModeUserWhiteParameters] = None,
+                    default_parameters: Optional[BalanceModeUserWhiteParameters] = None,
                     stable_ctr: bool = False,
                 ) -> None:
                     if not stable_ctr:
@@ -1188,7 +1188,7 @@ class SensorCamera(BaseSensor):
                     return self._balance_mode_user_white.red_gain
 
                 @red_gain.setter
-                def red_gain(self, value: float):
+                def red_gain(self, value: float) -> None:
                     self._balance_mode_user_white.red_gain = value
 
                 @property
@@ -1208,7 +1208,7 @@ class SensorCamera(BaseSensor):
                     return self._balance_mode_user_white.green_gain
 
                 @green_gain.setter
-                def green_gain(self, value: float):
+                def green_gain(self, value: float) -> None:
                     self._balance_mode_user_white.green_gain = value
 
                 @property
@@ -1228,7 +1228,7 @@ class SensorCamera(BaseSensor):
                     return self._balance_mode_user_white.blue_gain
 
                 @blue_gain.setter
-                def blue_gain(self, value: float):
+                def blue_gain(self, value: float) -> None:
                     self._balance_mode_user_white.blue_gain = value
 
             class BalanceModeDisplayPrimaries:
@@ -1259,7 +1259,7 @@ class SensorCamera(BaseSensor):
                 def __init__(
                     self,
                     balance_mode_display: camera_sensor_pb2.SensorCameraBalanceModeDisplay,
-                    default_parameters: Union[None, BalanceModeDisplayPrimariesParameters] = None,
+                    default_parameters: Optional[BalanceModeDisplayPrimariesParameters] = None,
                     stable_ctr: bool = False,
                 ) -> None:
                     if not stable_ctr:
@@ -1317,7 +1317,7 @@ class SensorCamera(BaseSensor):
                     return self._balance_mode_display.green_display_file_uri
 
                 @green_display_file_uri.setter
-                def green_display_file_uri(self, uri: Union[str, Path]):
+                def green_display_file_uri(self, uri: Union[str, Path]) -> None:
                     self._balance_mode_display.green_display_file_uri = str(Path(uri))
 
                 @property
@@ -1337,13 +1337,13 @@ class SensorCamera(BaseSensor):
                     return self._balance_mode_display.blue_display_file_uri
 
                 @blue_display_file_uri.setter
-                def blue_display_file_uri(self, uri: Union[str, Path]):
+                def blue_display_file_uri(self, uri: Union[str, Path]) -> None:
                     self._balance_mode_display.blue_display_file_uri = str(Path(uri))
 
             def __init__(
                 self,
                 mode_color: camera_sensor_pb2.SensorCameraColorModeColor,
-                default_parameters: Union[None, ColorParameters] = None,
+                default_parameters: Optional[ColorParameters] = None,
                 stable_ctr: bool = False,
             ) -> None:
                 if not stable_ctr:
@@ -1398,7 +1398,7 @@ class SensorCamera(BaseSensor):
                 return self._mode_color.red_spectrum_file_uri
 
             @red_spectrum_file_uri.setter
-            def red_spectrum_file_uri(self, uri: Union[str, Path]):
+            def red_spectrum_file_uri(self, uri: Union[str, Path]) -> None:
                 self._mode_color.red_spectrum_file_uri = str(Path(uri))
 
             @property
@@ -1418,7 +1418,7 @@ class SensorCamera(BaseSensor):
                 return self._mode_color.blue_spectrum_file_uri
 
             @blue_spectrum_file_uri.setter
-            def blue_spectrum_file_uri(self, uri: Union[str, Path]):
+            def blue_spectrum_file_uri(self, uri: Union[str, Path]) -> None:
                 self._mode_color.blue_spectrum_file_uri = str(Path(uri))
 
             @property
@@ -1438,7 +1438,7 @@ class SensorCamera(BaseSensor):
                 return self._mode_color.green_spectrum_file_uri
 
             @green_spectrum_file_uri.setter
-            def green_spectrum_file_uri(self, uri: Union[str, Path]):
+            def green_spectrum_file_uri(self, uri: Union[str, Path]) -> None:
                 self._mode_color.green_spectrum_file_uri = str(Path(uri))
 
             def set_balance_mode_none(self) -> SensorCamera.Photometric.Color:
@@ -1553,7 +1553,7 @@ class SensorCamera(BaseSensor):
             self,
             mode_photometric: camera_sensor_pb2.SensorCameraModePhotometric,
             camera_props: ProtoScene.SensorInstance.CameraProperties,
-            default_parameters: Union[None, PhotometricCameraParameters] = None,
+            default_parameters: Optional[PhotometricCameraParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
@@ -1854,7 +1854,7 @@ class SensorCamera(BaseSensor):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         sensor_instance: Optional[ProtoScene.SensorInstance] = None,
-        default_parameters: Union[None, CameraSensorParameters] = None,
+        default_parameters: Optional[CameraSensorParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -2303,7 +2303,7 @@ class SensorIrradiance(BaseSensor):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         sensor_instance: Optional[ProtoScene.SensorInstance] = None,
-        default_parameters: Union[None, IrradianceSensorParameters] = None,
+        default_parameters: Optional[IrradianceSensorParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -2492,12 +2492,12 @@ class SensorIrradiance(BaseSensor):
             return self._type
 
     @property
-    def colorimetric(self) -> Union[None, BaseSensor.Colorimetric]:
+    def colorimetric(self) -> Optional[BaseSensor.Colorimetric]:
         """Property containing all options in regard to the Colorimetric sensor properties.
 
         Returns
         -------
-        Union[None, ansys.speos.core.sensor.BaseSensor.Colorimetric]
+        Optional[None, ansys.speos.core.sensor.BaseSensor.Colorimetric]
             Instance of Colorimetric Class for this sensor feature
         """
         if isinstance(self._type, BaseSensor.Colorimetric):
@@ -3081,7 +3081,7 @@ class SensorRadiance(BaseSensor):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         sensor_instance: Optional[ProtoScene.SensorInstance] = None,
-        default_parameters: Union[None, RadianceSensorParameters] = None,
+        default_parameters: Optional[RadianceSensorParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -3626,7 +3626,7 @@ class Sensor3DIrradiance(BaseSensor):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         sensor_instance: Optional[ProtoScene.SensorInstance] = None,
-        default_parameters: Union[None, Irradiance3DSensorParameters] = None,
+        default_parameters: Optional[Irradiance3DSensorParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -3705,7 +3705,7 @@ class Sensor3DIrradiance(BaseSensor):
         def __init__(
             self,
             sensor_type_radiometric: sensor_pb2.TypeRadiometric,
-            default_parameters: Union[None, Irradiance3DSensorParameters] = None,
+            default_parameters: Optional[Irradiance3DSensorParameters] = None,
             stable_ctr: bool = True,
         ) -> None:
             if not stable_ctr:
@@ -3784,7 +3784,7 @@ class Sensor3DIrradiance(BaseSensor):
         def __init__(
             self,
             sensor_type_photometric: sensor_pb2.TypePhotometric,
-            default_parameters: Union[None, Irradiance3DSensorParameters] = None,
+            default_parameters: Optional[Irradiance3DSensorParameters] = None,
             stable_ctr: bool = True,
         ) -> None:
             if not stable_ctr:
@@ -3865,7 +3865,7 @@ class Sensor3DIrradiance(BaseSensor):
         def __init__(
             self,
             illuminance_type: sensor_pb2.IntegrationTypePlanar,
-            default_parameters: Union[None, MeasuresParameters] = None,
+            default_parameters: Optional[MeasuresParameters] = None,
             stable_ctr: bool = False,
         ):
             if not stable_ctr:
@@ -3962,7 +3962,7 @@ class Sensor3DIrradiance(BaseSensor):
         def __init__(
             self,
             sensor_type_colorimetric: sensor_pb2.TypeColorimetric,
-            default_parameters: Union[None, ColorimetricParameters] = None,
+            default_parameters: Optional[ColorimetricParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:

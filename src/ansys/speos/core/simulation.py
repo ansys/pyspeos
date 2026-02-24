@@ -588,7 +588,7 @@ class BaseSimulation:
 
     def compute_CPU(
         self, threads_number: Optional[int] = None, export_vtp: Optional[bool] = False
-    ) -> tuple[list[Result], list[Path]] | list[Result]:
+    ) -> Union[tuple[list[Result], list[Path]], list[Result]]:
         """Compute the simulation on CPU.
 
         Parameters
@@ -601,8 +601,9 @@ class BaseSimulation:
 
         Returns
         -------
-        List[ansys.api.speos.job.v2.job_pb2.Result]
-            List of simulation results.
+        Union[tuple[list[Result], list[Path]], list[Result]]
+            List of simulation results or 2 lists of simulation results
+             and exported vtp results.
         """
         self._job.job_type = ProtoJob.Type.CPU
 
@@ -619,7 +620,7 @@ class BaseSimulation:
 
     def compute_GPU(
         self, export_vtp: Optional[bool] = False
-    ) -> tuple[list[Result], list[Path]] | list[Result]:
+    ) -> Union[tuple[list[Result], list[Path]], list[Result]]:
         """Compute the simulation on GPU.
 
         Parameters
@@ -629,8 +630,9 @@ class BaseSimulation:
 
         Returns
         -------
-        List[ansys.api.speos.job.v2.job_pb2.Result]
-            List of simulation results.
+        Union[tuple[list[Result], list[Path]], list[Result]]
+            List of simulation results or 2 lists of simulation results
+             and exported vtp results.
         """
         self._job.job_type = ProtoJob.Type.GPU
         self.result_list = self._run_job()

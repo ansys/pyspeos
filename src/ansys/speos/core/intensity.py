@@ -255,7 +255,7 @@ class Intensity:
             gaussian: ProtoIntensityTemplate.Gaussian,
             gaussian_props: ProtoScene.SourceInstance.IntensityProperties.GaussianProperties,
             default_parameters: Optional[
-                IntensitAsymmetricGaussianParameters, IntensitySymmetricGaussianParameters
+                Union[IntensitAsymmetricGaussianParameters, IntensitySymmetricGaussianParameters]
             ] = None,
         ) -> None:
             self._gaussian = gaussian
@@ -385,7 +385,7 @@ class Intensity:
             self,
             cos: ProtoIntensityTemplate.Cos,
             default_parameters: Optional[
-                IntensityCosParameters, IntensityLambertianParameters
+                Union[IntensityCosParameters, IntensityLambertianParameters]
             ] = None,
         ) -> None:
             self._cos = cos
