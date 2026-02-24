@@ -408,7 +408,7 @@ class BaseSource:
 
             Returns
             -------
-            UserDefinedWhitePoint
+            ansys.speos.core.source.BaseSource.UserDefinedColorSpace.UserDefinedWhitePoint
                 User defined white point settings.
 
             """
