@@ -336,7 +336,10 @@ class BaseSource:
                 source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType,
                 UserDefinedWhitePoint,
             ]
-            Predefined White Point Type or User Defined White Point Type.
+           Union[None,\
+           source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType,\
+           ansys.speos.core.source.BaseSource.UserDefinedColorSpace.UserDefinedWhitePoint]
+                      Predefined White Point Type or User Defined White Point Type.
 
             """
             return self._white_point_type
