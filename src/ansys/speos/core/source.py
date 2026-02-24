@@ -488,7 +488,7 @@ class BaseSource:
             )
             return self
 
-        def set_color_space_adobergb(self) -> SourceAmbientEnvironment.PredefinedColorSpace:
+        def set_color_space_adobergb(self) -> BaseSource.PredefinedColorSpace:
             """Set the color space to the Adobe RGB preset.
 
             Returns
