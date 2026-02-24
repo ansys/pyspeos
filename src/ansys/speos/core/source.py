@@ -1457,7 +1457,7 @@ class SourceRayFile(BaseSource):
 
         Returns
         -------
-        ansys.speos.core.source.SourceRayFile.Flux
+        ansys.speos.core.source.BaseSource.Flux
             flux object of the source
 
         """
