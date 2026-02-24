@@ -42,6 +42,10 @@ ProtoScene.SceneInstance.__str__ = lambda self: protobuf_message_to_str(self)
 ProtoScene.SourceInstance.__str__ = lambda self: protobuf_message_to_str(self)
 ProtoScene.SensorInstance.__str__ = lambda self: protobuf_message_to_str(self)
 ProtoScene.SimulationInstance.__str__ = lambda self: protobuf_message_to_str(self)
+ProtoScene.MaterialInstance.Texture.Layer.__str__ = lambda self: protobuf_message_to_str(self)
+ProtoScene.MaterialInstance.Texture.MappingOperator.__str__ = lambda self: protobuf_message_to_str(
+    self
+)
 
 
 class SceneLink(CrudItem):

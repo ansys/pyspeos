@@ -36,7 +36,7 @@ from ansys.speos.core.kernel.scene import ProtoScene
 from ansys.speos.core.kernel.sop_template import ProtoSOPTemplate
 from ansys.speos.core.kernel.vop_template import ProtoVOPTemplate
 import ansys.speos.core.part as part
-import ansys.speos.core.project as project
+from ansys.speos.core.project import Project
 import ansys.speos.core.proto_message_utils as proto_message_utils
 
 
@@ -50,8 +50,6 @@ class BaseSop:
 
     def __init__(self):
         self._sop_template = None
-        # Create VOP template
-        self._vop_template = None
         # Create material instance
         self._material_instance = None
 
@@ -376,6 +374,392 @@ class BaseVop:
         return self
 
 
+class TextureLayer(BaseSop):
+    """Describes the Optical and texture property of 1 Layer of a combined surface description."""
+
+    def __init__(
+        self,
+        project: Project,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        mat_id: str = "",
+    ):
+        super().__init__()
+        self._project = project
+        self.sop_template_link = None
+        if metadata is None:
+            metadata = {}
+        self._sop_template = ProtoSOPTemplate(
+            name=name + ".SOP", description=description, metadata=metadata
+        )
+        self._texture_template = ProtoScene.MaterialInstance.Texture.Layer()
+        self._unique_id = mat_id
+
+    @property
+    def sop_type(self) -> str:
+        """Surface Optical Property type.
+
+        Returns
+        -------
+        str
+            SOP type as string.
+        """
+        if self._sop_template.HasField("texture"):
+            return "texture"
+        if self._sop_template.HasField("mirror"):
+            return "mirror"
+        if self._sop_template.HasField("optical_polished"):
+            return "optical_polished"
+        if self._sop_template.HasField("library"):
+            return "library"
+
+    @property
+    def roughness(self):
+        """Roughness parameter of the normal map.
+
+        Parameters
+        ----------
+        value : float
+            Roughness parameter
+
+        Returns
+        -------
+        float
+            Roughness Parameter.
+        """
+        if self._sop_template.HasField("texture"):
+            if self._sop_template.texture.HasField("normal_map"):
+                return self._sop_template.texture.normal_map.roughness
+
+    @roughness.setter
+    def roughness(self, value: float):
+        if self._sop_template.HasField("texture"):
+            if self._sop_template.texture.HasField("normal_map"):
+                self._sop_template.texture.normal_map.roughness = value
+            else:
+                raise TypeError("No Normal map defined")
+        else:
+            raise TypeError("No texture and normal map defined")
+
+    @property
+    def image_texture_file_uri(self):
+        """File path image texture."""
+        if self._sop_template.HasField("texture"):
+            if self._sop_template.texture.HasField("image"):
+                return self._sop_template.texture.image.bitmap_file_uri
+
+    @image_texture_file_uri.setter
+    def image_texture_file_uri(self, value: Union[Path, str]):
+        self._sop_template.texture.SetInParent()
+        self._sop_template.texture.image.SetInParent()
+        self._sop_template.texture.image.bitmap_file_uri = str(value)
+
+    @property
+    def normal_map_file_uri(self):
+        """File path normal map."""
+        if self._sop_template.HasField("texture"):
+            if self._sop_template.texture.HasField("normal_map"):
+                if self._sop_template.texture.normal_map.HasField("from_image"):
+                    return self._sop_template.texture.normal_map.from_image.bitmap_file_uri
+                if self._sop_template.texture.normal_map.HasField("from_normal_map"):
+                    return self._sop_template.texture.normal_map.from_normal_map.normal_map_file_uri
+
+    @normal_map_file_uri.setter
+    def normal_map_file_uri(self, value: Union[Path, str]):
+        if self._sop_template.texture.normal_map.HasField("from_image"):
+            self._sop_template.texture.normal_map.from_image.bitmap_file_uri = str(value)
+        if self._sop_template.texture.normal_map.HasField("from_normal_map"):
+            self._sop_template.texture.normal_map.from_normal_map.normal_map_file_uri = str(value)
+        else:
+            raise TypeError("Please use set normal_myp type before")
+
+    def set_normal_map_from_image(self):
+        """Set normal map type to from image."""
+        self._sop_template.texture.SetInParent()
+        self._sop_template.texture.normal_map.SetInParent()
+        self._sop_template.texture.normal_map.from_image.SetInParent()
+
+    def set_normal_map_from_normal_map(self):
+        """Set normal map type to from normal map image."""
+        self._sop_template.texture.SetInParent()
+        self._sop_template.texture.normal_map.SetInParent()
+        self._sop_template.texture.normal_map.from_normal_map.SetInParent()
+
+    def commit(self) -> TextureLayer:
+        """Save feature: send the local data to the speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.opt_prop.OptProp
+            Optical Property feature.
+        """
+        # The _unique_id will help to find correct item in the scene.materials:
+        # the list of MaterialInstance
+        if not self._unique_id:
+            self._unique_id = str(uuid.uuid4())
+            self._material_instance.metadata["UniqueId"] = self._unique_id
+
+        # Save or Update the sop template (depending on if it was already saved before)
+        if self.sop_template_link is None:
+            if self._sop_template is not None:
+                self.sop_template_link = self._project.client.sop_templates().create(
+                    message=self._sop_template
+                )
+                # Always clean sop_guids to be sure that we never use both sop_guids and sop_guid
+                self._texture_template.sop_guid = self.sop_template_link.key
+                if self._sop_template.HasField("texture"):
+                    if self.image_texture_file_uri:
+                        self._texture_template.image_properties = self._image_props
+                    if self.normal_map_file_uri:
+                        self._texture_template.normal_map_properties = self._normal_map_props
+                if self.sop_library:
+                    if self.sop_library.endswith("anisotropicbsdf"):
+                        self._texture_template.anisotropy_map_properties = self._anisotropic_props
+
+        elif self.sop_template_link.get() != self._sop_template:
+            self.sop_template_link.set(
+                data=self._sop_template
+            )  # Only update if sop template has changed
+            self._texture_template.sop_guid = self.sop_template_link.key
+        return self
+
+    def reset(self) -> TextureLayer:
+        """Reset feature: override local data by the one from the speos server database.
+
+        Returns
+        -------
+        ansys.speos.core.opt_prop.OptProp
+            OptProp feature.
+        """
+        # Reset sop template
+        if self.sop_template_link is not None:
+            self._sop_template = self.sop_template_link.get()
+        return self
+
+    def delete(self) -> TextureLayer:
+        """Delete feature: delete data from the speos server database.
+
+        The local data are still available
+
+        Returns
+        -------
+        ansys.speos.core.opt_prop.OptProp
+            OptProp feature.
+        """
+        # Delete the sop template
+        if self.sop_template_link is not None:
+            self.sop_template_link.delete()
+            self.sop_template_link = None
+
+        # Reset the _unique_id
+        self._unique_id = None
+        self._sop_guid = None
+        return self
+
+    def _fill(self, sop_guid: str):
+        self.sop_template_link = self._project.client[sop_guid]
+        self._sop_template = self.sop_template_link.get()
+
+
+class TextureMappingOperator:
+    """Mapping operator."""
+
+    def __init__(self):
+        self._mapping = ProtoScene.MaterialInstance.Texture.MappingOperator()
+
+    @property
+    def type(self) -> str:
+        """Mapping type used by this operator."""
+        if self._mapping.HasField("planar"):
+            return "planar"
+        if self._mapping.HasField("cubic"):
+            return "cubic"
+        if self._mapping.HasField("spherical"):
+            return "spherical"
+        if self._mapping.HasField("cylindrical"):
+            return "cylindrical"
+
+    @property
+    def axis_system(self) -> list[float]:
+        """Axis system for Texture mapping operator.
+
+        Parameters
+        ----------
+        axis_system : list[float]
+            Position/orientation of the Mapping operator [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+
+        Returns
+        -------
+        list[float]
+            Position/orientation of the Mapping operator [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+        """
+        return self._mapping.axis_system
+
+    @axis_system.setter
+    def axis_system(self, axis_system):
+        self._mapping.axis_system[:] = axis_system
+
+    @property
+    def u_offset(self) -> float:
+        """Shift in u direction.
+
+        Parameters
+        ----------
+        value : float
+            Shift in u direction in mm.
+
+        Returns
+        -------
+        float
+            Shift in u direction in mm.
+        """
+        return self._mapping.u_offset
+
+    @u_offset.setter
+    def u_offset(self, value: float):
+        self._mapping.u_offset = value
+
+    @property
+    def v_offset(self) -> float:
+        """Shift in v direction.
+
+        Parameters
+        ----------
+        value : float
+            Shift in v direction in mm.
+
+        Returns
+        -------
+        float
+            Shift in v direction in mm.
+        """
+        return self._mapping.v_offset
+
+    @v_offset.setter
+    def v_offset(self, value: float):
+        self._mapping.v_offset = value
+
+    @property
+    def u_scale(self) -> float:
+        """Scaling Factor for U direction.
+
+        Parameters
+        ----------
+        value : float
+            Scaling Factor for U direction.
+
+        Returns
+        -------
+        float
+            Scaling Factor for U direction.
+        """
+        return self._mapping.u_scale_factor
+
+    @u_scale.setter
+    def u_scale(self, value: float):
+        self._mapping.u_scale_factor = value
+
+    @property
+    def v_scale(self) -> float:
+        """Scaling Factor for v direction.
+
+        Parameters
+        ----------
+        value : float
+            Scaling Factor for v direction.
+
+        Returns
+        -------
+        float
+            Scaling Factor for v direction.
+        """
+        return self._mapping.v_scale_factor
+
+    @v_scale.setter
+    def v_scale(self, value: float):
+        self._mapping.v_scale_factor = value
+
+    @property
+    def u_length(self) -> float:
+        """Image size in u direction.
+
+        Parameters
+        ----------
+        value : float
+            Image size in u direction in mm.
+
+        Returns
+        -------
+        float
+            Image size in u direction in mm.
+        """
+        return self._mapping.u_length
+
+    @u_length.setter
+    def u_length(self, value: float):
+        self._mapping.u_length = value
+
+    @property
+    def v_length(self) -> float:
+        """Image size in v direction.
+
+        Parameters
+        ----------
+        value : float
+            Image size in v direction in mm.
+
+        Returns
+        -------
+        float
+            Image size in v direction in mm.
+        """
+        if self._mapping.HasField("v_length"):
+            return self._mapping.v_length
+
+    @v_length.setter
+    def v_length(self, value: float):
+        self._mapping.v_length = value
+
+    @property
+    def rotation(self):
+        """Define image rotation of uv.
+
+        Parameters
+        ----------
+        value : float
+            Rotation value between -360 and 360 in degree
+
+        Returns
+        -------
+        float
+            Image rotation of uv
+        """
+        return self._mapping.rotation
+
+    @rotation.setter
+    def rotation(self, value):
+        self._mapping.rotation = value
+
+    def set_type_planar(self):
+        """Define Mapping operation with a planar projection."""
+        self._mapping.planar.SetInParent()
+
+    def set_type_cubic(self):
+        """Define Mapping operation with a planar projection."""
+        self._mapping.cubic.SetInParent()
+
+    def set_type_spherical(self, sphere_perimeter: float):
+        """Define Mapping operation with a planar projection."""
+        self._mapping.spherical.SetInParent()
+        self._mapping.spherical.sphere_perimeter = sphere_perimeter
+
+    def set_type_cylindrical(self, base_perimeter: float):
+        """Define Mapping operation with a planar projection."""
+        self._mapping.cylindrical.SetInParent()
+        self._mapping.cylindrical.base_perimeter = base_perimeter
+
+
 class OptProp(BaseSop, BaseVop):
     """Speos feature: optical property.
 
@@ -399,7 +783,7 @@ class OptProp(BaseSop, BaseVop):
 
     def __init__(
         self,
-        project: project.Project,
+        project: Project,
         name: str,
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
@@ -428,11 +812,23 @@ class OptProp(BaseSop, BaseVop):
         self._material_instance = ProtoScene.MaterialInstance(
             name=name, description=description, metadata=metadata
         )
-
+        self._texture = None
         # Default values
         self.set_surface_mirror()
         self.set_volume_none()
         self.geometries = None
+
+    @property
+    def texture(self) -> list[TextureLayer]:
+        """All texture Layers used in this Material."""
+        return self._texture
+
+    @texture.setter
+    def texture(self, value: list[TextureLayer]):
+        for layer in value:
+            if not isinstance(layer, TextureLayer):
+                raise ValueError("not a texture")
+        self._texture = value
 
     @property
     def geometries(
@@ -613,7 +1009,12 @@ class OptProp(BaseSop, BaseVop):
                 self._material_instance.ClearField("sop_guids")
                 # Fill sop_guid(s) field according to the server capability regarding textures
                 if self._project.client.scenes()._is_texture_available:
-                    self._material_instance.sop_guid = self.sop_template_link.key
+                    if self.texture:
+                        self._material_instance.texture.ClearField("layers")
+                        for layer in self.texture:
+                            pass
+                    else:
+                        self._material_instance.sop_guid = self.sop_template_link.key
                 else:
                     self._material_instance.sop_guids.append(self.sop_template_link.key)
         elif self.sop_template_link.get() != self._sop_template:
@@ -722,6 +1123,12 @@ class OptProp(BaseSop, BaseVop):
         self.vop_template_link = self._project.client[mat_inst.vop_guid]
         if mat_inst.HasField("sop_guid"):
             self.sop_template_link = self._project.client[mat_inst.sop_guid]
+        elif mat_inst.HasField("texture"):
+            texture = []
+            for layer in mat_inst.texture.layers:
+                cur_layer = TextureLayer(self._project, name="", mat_id=self._unique_id)
+                cur_layer._fill(layer.sop_guid)
+                texture.append(cur_layer)
         elif len(mat_inst.sop_guids) > 0:
             self.sop_template_link = self._project.client[mat_inst.sop_guids[0]]
         else:  # Specific case for ambient material
