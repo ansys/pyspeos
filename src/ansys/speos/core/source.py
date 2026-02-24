@@ -1120,7 +1120,7 @@ class SourceLuminaire(BaseSource):
         return self
 
     @property
-    def flux(self) -> SourceLuminaire.Flux:
+    def flux(self) -> BaseSource.Flux:
         """Flux definition of the luminaire source.
 
         Returns
