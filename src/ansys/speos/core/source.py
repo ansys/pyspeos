@@ -408,7 +408,7 @@ class BaseSource:
 
             Returns
             -------
-            UserDefinedWhitePoint
+            ansys.speos.core.source.BaseSource.UserDefinedColorSpace.UserDefinedWhitePoint
                 User defined white point settings.
 
             """
@@ -476,24 +476,24 @@ class BaseSource:
                     case ColorSpaceType.adobe_rgb:
                         self.set_color_space_adobergb()
 
-        def set_color_space_srgb(self) -> SourceAmbientEnvironment.PredefinedColorSpace:
+        def set_color_space_srgb(self) -> BaseSource.PredefinedColorSpace:
             """Set the color space to the srgb preset.
 
             Returns
             -------
-            ansys.speos.core.source.SourceAmbientEnvironment.PredefinedColorSpace
+            ansys.speos.core.source.BaseSource.PredefinedColorSpace
             """
             self._predefined_color_space.color_space_type = (
                 source_pb2.SourceTemplate.PredefinedColorSpace.sRGB
             )
             return self
 
-        def set_color_space_adobergb(self) -> SourceAmbientEnvironment.PredefinedColorSpace:
+        def set_color_space_adobergb(self) -> BaseSource.PredefinedColorSpace:
             """Set the color space to the Adobe RGB preset.
 
             Returns
             -------
-            ansys.speos.core.source.SourceAmbientEnvironment.PredefinedColorSpace
+            ansys.speos.core.source.BaseSource.PredefinedColorSpace
             """
             self._predefined_color_space.color_space_type = (
                 source_pb2.SourceTemplate.PredefinedColorSpace.AdobeRGB
@@ -1122,12 +1122,12 @@ class SourceLuminaire(BaseSource):
         return self
 
     @property
-    def flux(self) -> SourceLuminaire.Flux:
+    def flux(self) -> BaseSource.Flux:
         """Flux definition of the luminaire source.
 
         Returns
         -------
-        ansys.speos.core.source.SourceLuminaire.Flux
+        ansys.speos.core.source.BaseSource.Flux
             flux object of the source
 
         """
@@ -1454,12 +1454,12 @@ class SourceRayFile(BaseSource):
         return self
 
     @property
-    def flux(self) -> SourceRayFile.Flux:
+    def flux(self) -> BaseSource.Flux:
         """Flux definition of the Rayfile source.
 
         Returns
         -------
-        ansys.speos.core.source.SourceRayFile.Flux
+        ansys.speos.core.source.BaseSource.Flux
             flux object of the source
 
         """
@@ -1521,7 +1521,7 @@ class SourceRayFile(BaseSource):
 
         Parameters
         ----------
-        axis_system: list[float]
+        axis_system : list[float]
             Position of the rayfile source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
