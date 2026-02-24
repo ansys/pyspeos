@@ -121,7 +121,7 @@ class BaseSource:
             ----------
             userdefined_white_point : source_pb2.SourceTemplate.UserDefinedWhitePoint
                 source_pb2.SourceTemplate.UserDefinedWhitePoint
-            default_parameters: Optional[UserDefinedWhitePointParameters] = None,
+            default_parameters : Optional[UserDefinedWhitePointParameters] = None,
                 If defined the values in the UserDefinedWhitePoint instance will be
                 overwritten by the values of the data class.
             stable_ctr : bool
@@ -155,7 +155,7 @@ class BaseSource:
 
                 Parameters
                 ----------
-                value: List[float]
+                value : List[float]
                     The white point coordinate, [0.31271, 0.32902] by default.
 
                 Returns
@@ -242,7 +242,7 @@ class BaseSource:
 
             Parameters
             ----------
-            red_spectrum_file_uri: str
+            red_spectrum_file_uri : str
                 Red spectrum file uri.
 
 
@@ -270,7 +270,7 @@ class BaseSource:
 
             Parameters
             ----------
-            green_spectrum_file_uri: str
+            green_spectrum_file_uri : str
                 Green spectrum file uri.
 
             Returns
@@ -297,7 +297,7 @@ class BaseSource:
 
             Parameters
             ----------
-            blue_spectrum_file_uri: str
+            blue_spectrum_file_uri : str
                 Blue spectrum file uri.
 
             Returns
@@ -323,10 +323,7 @@ class BaseSource:
             self,
         ) -> Union[
             None,
-            source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.D65,
-            source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.D50,
-            source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.C,
-            source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.E,
+            source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType,
             UserDefinedWhitePoint,
         ]:
             """Get the white point type.
@@ -627,7 +624,7 @@ class BaseSource:
 
             Parameters
             ----------
-            value: float
+            value : float
                 Value of the flux.
 
             Returns
@@ -773,7 +770,7 @@ class BaseSource:
 
         Parameters
         ----------
-        key: str
+        key : str
 
         Returns
         -------
@@ -1187,7 +1184,7 @@ class SourceLuminaire(BaseSource):
 
         Parameters
         ----------
-        axis_system : List[float]
+        axis_system : list[float]
             Position of the source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
@@ -1267,7 +1264,7 @@ class SourceRayFile(BaseSource):
 
             Parameters
             ----------
-            exit_geometries: Optional[List[Union[GeoRef, body.Body, face.Face]]]
+            exit_geometries : Optional[List[Union[GeoRef, body.Body, face.Face]]]
                 Exit Geometries that will use this rayfile source.
                 By default, ``[]``.
 
@@ -1427,7 +1424,7 @@ class SourceRayFile(BaseSource):
 
         Parameters
         ----------
-        uri: Union[Path, str]
+        uri : Union[Path, str]
             Ray file URI.
 
         Returns
@@ -1635,7 +1632,7 @@ class SourceSurface(BaseSource):
         exitance_constant_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.
         SurfaceProperties.ExitanceConstantProperties
             Existence constant properties to complete.
-        default_parameters: Optional[ConstantExitanceParameters] = None,
+        default_parameters : Optional[ConstantExitanceParameters] = None,
             If defined the values in the ExitanceConstant instance will be overwritten
              by the values of the data class.
         stable_ctr : bool
@@ -1668,7 +1665,7 @@ class SourceSurface(BaseSource):
 
             Parameters
             ----------
-            geometries: List[tuple[GeoRef, bool]]
+            geometries : List[tuple[GeoRef, bool]]
                 list of tuple which contains geometry ref and bool for normal direction.
 
             Returns
@@ -1712,7 +1709,7 @@ class SourceSurface(BaseSource):
         exitance_variable_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.
         SurfaceProperties.ExitanceVariableProperties
             Existence variable properties to complete.
-        default_parameters: Optional[VariableExitanceParameters] = None
+        default_parameters : Optional[VariableExitanceParameters] = None
             If defined the values in the ExitanceVariable instance will be overwritten
             by the values of the data class.
         stable_ctr : bool
@@ -1749,7 +1746,7 @@ class SourceSurface(BaseSource):
 
             Parameters
             ----------
-            xmp_file_uri: Union[str, Path]
+            xmp_file_uri : Union[str, Path]
                 xmp file uri.
 
             Returns
@@ -1770,7 +1767,7 @@ class SourceSurface(BaseSource):
 
             Parameters
             ----------
-            axis_plane: List[float]
+            axis_plane : List[float]
                 Position of the existence map [Ox Oy Oz Xx Xy Xz Yx Yy Yz].
                 By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0]``.
 
@@ -2272,9 +2269,9 @@ class BaseSourceAmbient(BaseSource):
 
         Parameters
         ----------
-        sun: ansys.api.speos.scene.v2.scene_pb2.AutomaticSun
+        sun : ansys.api.speos.scene.v2.scene_pb2.AutomaticSun
             Wavelengths range protobuf object to modify.
-        default_parameters: Optional[AutomaticSunParameters] = None,
+        default_parameters : Optional[AutomaticSunParameters] = None,
             If defined the values in the AutomaticSun instance will be
             overwritten by the values of the data class.
         stable_ctr : bool
@@ -2314,7 +2311,7 @@ class BaseSourceAmbient(BaseSource):
 
             Parameters
             ----------
-            year: int
+            year : int
                 year information.
 
             Returns
@@ -2334,7 +2331,7 @@ class BaseSourceAmbient(BaseSource):
 
             Parameters
             ----------
-            month: int
+            month : int
                 month information.
 
             Returns
@@ -2355,7 +2352,7 @@ class BaseSourceAmbient(BaseSource):
 
             Parameters
             ----------
-            day: int
+            day : int
                 day information.
 
             Returns
@@ -2375,7 +2372,7 @@ class BaseSourceAmbient(BaseSource):
 
             Parameters
             ----------
-            hour: int
+            hour : int
                 hour information.
 
             Returns
@@ -2396,7 +2393,7 @@ class BaseSourceAmbient(BaseSource):
 
             Parameters
             ----------
-            minute: int
+            minute : int
                 minute information.
 
             Returns
@@ -2417,7 +2414,7 @@ class BaseSourceAmbient(BaseSource):
 
             Parameters
             ----------
-            longitude: float
+            longitude : float
                 longitude information.
 
             Returns
@@ -2437,7 +2434,7 @@ class BaseSourceAmbient(BaseSource):
 
             Parameters
             ----------
-            latitude: float
+            latitude : float
                 latitude information.
 
             Returns
@@ -2459,7 +2456,7 @@ class BaseSourceAmbient(BaseSource):
 
             Parameters
             ----------
-            timezone: str
+            timezone : str
                 timezone abbreviation.
 
             Returns
@@ -2482,7 +2479,7 @@ class BaseSourceAmbient(BaseSource):
         ----------
         sun: ansys.api.speos.scene.v2.scene_pb2.ManualSun
             Wavelengths range protobuf object to modify.
-        default_parameters: Optional[ManualSunParameters] = None
+        default_parameters : Optional[ManualSunParameters] = None
             If defined the values in the Manual instance will be
             overwritten by the values of the data class.
         stable_ctr : bool
@@ -2517,7 +2514,7 @@ class BaseSourceAmbient(BaseSource):
 
             Parameters
             ----------
-            direction: List[float]
+            direction : List[float]
                 direction of the sun.
 
             Returns
@@ -2540,7 +2537,7 @@ class BaseSourceAmbient(BaseSource):
 
             Parameters
             ----------
-            value: bool
+            value : bool
                 True to reverse direction, False to not reverse direction
 
             Returns
@@ -2631,7 +2628,7 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
 
         Parameters
         ----------
-        value: float
+        value : float
             set value of Turbidity the measure of the fraction of scattering.
 
 
@@ -2657,7 +2654,7 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
 
         Parameters
         ----------
-        value: bool
+        value : bool
             True as using sky, while False as using natural light without the sky.
 
 
@@ -2681,7 +2678,7 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
 
         Parameters
         ----------
-        direction: Optional[List[float]]
+        direction : Optional[List[float]]
             direction defines the zenith direction of the natural light.
 
         Returns
@@ -2705,7 +2702,7 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
 
         Parameters
         ----------
-        value: bool
+        value : bool
             True to reverse zenith direction, False otherwise.
 
         Returns
@@ -2728,7 +2725,7 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
 
         Parameters
         ----------
-        direction: List[float]
+        direction : List[float]
             direction defines the north direction of the natural light.
 
         Returns
@@ -2753,7 +2750,7 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
 
         Parameters
         ----------
-        value: bool
+        value : bool
             True to reverse north direction, False otherwise.
 
         Returns
@@ -2937,7 +2934,7 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
 
         Parameters
         ----------
-        direction: Optional[List[float]]
+        direction : Optional[List[float]]
             direction defines the zenith direction of the environment light source.
 
         Returns
@@ -2961,7 +2958,7 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
 
         Parameters
         ----------
-        value: bool
+        value : bool
             True to reverse zenith direction, False otherwise.
 
         Returns
@@ -2984,7 +2981,7 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
 
         Parameters
         ----------
-        direction: List[float]
+        direction : List[float]
             direction defines the north direction, default value to be [0, 1, 0].
 
         Returns
@@ -3032,7 +3029,7 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
 
         Parameters
         ----------
-        value: float
+        value : float
             set value of Luminance (cd/m^2).
 
         Returns

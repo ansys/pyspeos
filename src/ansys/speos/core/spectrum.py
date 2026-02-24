@@ -109,7 +109,7 @@ class Spectrum:
 
             Parameters
             ----------
-            value: float
+            value : float
                 Wavelength of the spectrum.
 
             Returns
@@ -164,7 +164,7 @@ class Spectrum:
 
             Parameters
             ----------
-            value: float
+            value : float
                 Temperature of the spectrum.
 
             Returns
@@ -221,7 +221,7 @@ class Spectrum:
 
             Parameters
             ----------
-            wavelengths: List[float]
+            wavelengths : List[float]
                 Wavelength values of the spectrum.
 
             Returns
@@ -242,7 +242,7 @@ class Spectrum:
 
             Parameters
             ----------
-            values: List[float]
+            values : List[float]
             List of values, expected from 0. to 100. in %.
 
             Returns
@@ -297,7 +297,7 @@ class Spectrum:
 
             Parameters
             ----------
-            value: float
+            value : float
                 Temperature of the spectrum.
 
             Returns

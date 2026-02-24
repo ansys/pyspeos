@@ -87,7 +87,7 @@ class Intensity:
         library_props : \
         ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.IntensityProperties.LibraryProperties
             Library properties to complete.
-        default_parameters: Optional[
+        default_parameters : Optional[
             ansys.speos.core.generic.parameters.IntensityLibraryParameters
             ] = None
             If defined the values in the Library instance will be overwritten by the values of the
@@ -242,10 +242,10 @@ class Intensity:
         gaussian_props : \
         ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.IntensityProperties.GaussianProperties
             Gaussian properties to complete.
-        default_parameters: Optional[
+        default_parameters : Optional[Union[
             IntensitAsymmetricGaussianParameters,
             IntensitySymmetricGaussianParameters,
-            ] = None
+            ]] = None
             If defined the values in the Gaussian instance will be overwritten by the values of the
             data class.
         """
@@ -376,7 +376,7 @@ class Intensity:
         ----------
         cos : ansys.api.speos.intensity.v1.IntensityTemplate.Cos
             Cos to complete.
-        default_parameters: Optional[IntensityCosParameters, IntensityLambertianParameters] = None
+        default_parameters : Optional[IntensityCosParameters, IntensityLambertianParameters] = None
             If defined the values in the Cos instance will be overwritten by the values of the
             data class.
         """
