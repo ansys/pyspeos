@@ -171,7 +171,7 @@ class Project:
         description: str = "",
         feature_type: type = SourceSurface,
         metadata: Optional[Mapping[str, str]] = None,
-        parameters: Optional[
+        parameters: Optional[Union[
             Union[
                 LuminaireSourceParameters,
                 SurfaceSourceParameters,
