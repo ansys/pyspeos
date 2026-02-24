@@ -493,7 +493,7 @@ class BaseSource:
 
             Returns
             -------
-            ansys.speos.core.source.SourceAmbientEnvironment.PredefinedColorSpace
+            ansys.speos.core.source.BaseSource.PredefinedColorSpace
             """
             self._predefined_color_space.color_space_type = (
                 source_pb2.SourceTemplate.PredefinedColorSpace.AdobeRGB
