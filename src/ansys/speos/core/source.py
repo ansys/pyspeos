@@ -476,7 +476,7 @@ class BaseSource:
                     case ColorSpaceType.adobe_rgb:
                         self.set_color_space_adobergb()
 
-        def set_color_space_srgb(self) -> SourceAmbientEnvironment.PredefinedColorSpace:
+        def set_color_space_srgb(self) -> BaseSource.PredefinedColorSpace:
             """Set the color space to the srgb preset.
 
             Returns
