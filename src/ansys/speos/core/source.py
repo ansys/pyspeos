@@ -1452,7 +1452,7 @@ class SourceRayFile(BaseSource):
         return self
 
     @property
-    def flux(self) -> SourceRayFile.Flux:
+    def flux(self) -> BaseSource.Flux:
         """Flux definition of the Rayfile source.
 
         Returns
