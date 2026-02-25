@@ -465,9 +465,16 @@ class TextureLayer(BaseSop):
 
     @image_texture_file_uri.setter
     def image_texture_file_uri(self, value: Union[Path, str]):
-        self._sop_template.texture.SetInParent()
-        self._sop_template.texture.image.SetInParent()
-        self._sop_template.texture.image.bitmap_file_uri = str(value)
+        if self._sop_template.HasField("texture"):
+            if self._sop_template.texture.HasField("image"):
+                self._sop_template.texture.image.bitmap_file_uri = str(value)
+            else:
+                self._sop_template.texture.image.SetInParent()
+                self._sop_template.texture.image.bitmap_file_uri = str(value)
+        else:
+            self._sop_template.texture.SetInParent()
+            self._sop_template.texture.image.SetInParent()
+            self._sop_template.texture.image.bitmap_file_uri = str(value)
 
     @property
     def normal_map_file_uri(self):
@@ -566,6 +573,9 @@ class TextureLayer(BaseSop):
     def image_property(self, value: Union[TextureMapping, TextureMappingOperator]):
         if isinstance(value, (TextureMapping, TextureMappingOperator)):
             self._image_props = value
+            if not self._texture_template.HasField("image_properties"):
+                print("test1")
+                self._texture_template.image_properties.SetInParent()
         else:
             raise ValueError("please provide valid data")
 
@@ -632,6 +642,7 @@ class TextureLayer(BaseSop):
             self._material_instance.metadata["UniqueId"] = self._unique_id
 
         # Save or Update the sop template (depending on if it was already saved before)
+
         if self.sop_template_link is None:
             if self._sop_template is not None:
                 self.sop_template_link = self._project.client.sop_templates().create(
@@ -639,7 +650,6 @@ class TextureLayer(BaseSop):
                 )
                 # Always clean sop_guids to be sure that we never use both sop_guids and sop_guid
                 self._texture_template.sop_guid = self.sop_template_link.key
-
         elif self.sop_template_link.get() != self._sop_template:
             self.sop_template_link.set(
                 data=self._sop_template
@@ -696,8 +706,6 @@ class TextureMappingOperator:
         mapping_opp: Optional[ProtoScene.MaterialInstance.Texture.MappingOperator] = None,
     ):
         self._mapping = mapping_opp
-        if self._mapping is None:
-            self._mapping = ProtoScene.MaterialInstance.Texture.MappingOperator()
         self._sop_template = sop_template
 
     @property
@@ -1288,7 +1296,7 @@ class OptProp(BaseSop, BaseVop):
                         layers = []
                         for layer in self.texture:
                             layers.append(layer._texture_template)
-                        self._material_instance.texture.layers[:] = layers
+                        self._material_instance.texture.layers.extend(layers)
                     else:
                         self._material_instance.sop_guid = self.sop_template_link.key
                 else:
