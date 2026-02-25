@@ -36,7 +36,7 @@ from ansys.speos.core.kernel.scene import ProtoScene
 from ansys.speos.core.kernel.sop_template import ProtoSOPTemplate
 from ansys.speos.core.kernel.vop_template import ProtoVOPTemplate
 import ansys.speos.core.part as part
-from ansys.speos.core.project import Project
+import ansys.speos.core.project as p
 import ansys.speos.core.proto_message_utils as proto_message_utils
 
 
@@ -379,7 +379,7 @@ class TextureLayer(BaseSop):
 
     def __init__(
         self,
-        project: Project,
+        project: p.Project,
         name: str,
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
@@ -1043,7 +1043,7 @@ class OptProp(BaseSop, BaseVop):
 
     Parameters
     ----------
-    project : project.Project
+    project : p.Project
         Project that will own the feature.
     name : str
         Name of the feature.
@@ -1057,7 +1057,7 @@ class OptProp(BaseSop, BaseVop):
 
     def __init__(
         self,
-        project: Project,
+        project: p.Project,
         name: str,
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
@@ -1405,6 +1405,7 @@ class OptProp(BaseSop, BaseVop):
                 cur_layer = TextureLayer(self._project, name="", mat_id=self._unique_id)
                 cur_layer._fill(layer.sop_guid, layer)
                 texture.append(cur_layer)
+            self.texture = texture
         elif len(mat_inst.sop_guids) > 0:
             self.sop_template_link = self._project.client[mat_inst.sop_guids[0]]
         else:  # Specific case for ambient material
