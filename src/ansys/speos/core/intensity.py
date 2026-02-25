@@ -134,7 +134,7 @@ class Intensity:
 
             Parameters
             ----------
-            uri : str
+            uri : Union[Path, str]
                 uri of the intensity file IES (.ies), Eulumdat (.ldt), speos intensities (.xmp)
 
             Returns
@@ -154,14 +154,14 @@ class Intensity:
 
             Parameters
             ----------
-            axis_system : Optional[List[float]]
+            axis_system : List[float]
                 Orientation of the intensity [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz]
                 By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
             Returns
             -------
-            ansys.speos.core.intensity.Intensity.Library
-                Library intensity.
+            List[float]
+                Orientation of the intensity [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             """
             if not self._library_props.HasField("axis_system"):
                 raise ValueError("There is no axis system defined yet.")
@@ -199,7 +199,8 @@ class Intensity:
 
             Parameters
             ----------
-            exit_geometries : Optional[List[Union[GeoRef, body.Body]]]
+            exit_geometries : Optional[List[Union[\
+            ansys.speos.core.geo_ref.GeoRef, ansys.speos.core.body.Body]]]
                 Exit geometries list.
                 By default, ``[]``.
 
@@ -242,8 +243,9 @@ class Intensity:
         gaussian_props : \
         ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.IntensityProperties.GaussianProperties
             Gaussian properties to complete.
-        default_parameters : Optional[Union[IntensitAsymmetricGaussianParameters,\
-            IntensitySymmetricGaussianParameters]] = None
+        default_parameters : Optional[Union[\
+        ansys.speos.core.generic.parameters.IntensitAsymmetricGaussianParameters, \
+        ansys.speos.core.generic.parameters.IntensitySymmetricGaussianParameters]] = None
             If defined the values in the Gaussian instance will be overwritten by the values of the
             data class.
         """
@@ -283,13 +285,13 @@ class Intensity:
 
             Parameters
             ----------
-            value : float
+            fwhm_angle_x : float
                 Full Width in degrees following x at Half Maximum.
                 By default, ``30.0``.
 
             Returns
             -------
-            value : float
+            float
                 Full Width in degrees following x at Half Maximum.
             """
             return self._gaussian.FWHM_angle_x
@@ -304,13 +306,13 @@ class Intensity:
 
             Parameters
             ----------
-            value : float
+            fwhm_angle_y : float
                 Full Width in degrees following y at Half Maximum.
                 By default, ``30.0``.
 
             Returns
             -------
-            value : float
+            float
                 Full Width in degrees following y at Half Maximum.
             """
             return self._gaussian.FWHM_angle_y
@@ -325,13 +327,13 @@ class Intensity:
 
             Parameters
             ----------
-            value : float
+            total_angle : float
                 Total angle in degrees of the emission of the light source.
                 By default, ``180.0``.
 
             Returns
             -------
-            value : float
+            float
                 Total angle in degrees of the emission of the light source.
             """
             return self._gaussian.total_angle
@@ -346,7 +348,7 @@ class Intensity:
 
             Parameters
             ----------
-            axis_system : List[float], optional
+            axis_system : Optional[List[float]]
                 Orientation of the intensity distribution [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
                 By default, ``None`` : normal to surface map.
 
@@ -374,7 +376,9 @@ class Intensity:
         ----------
         cos : ansys.api.speos.intensity.v1.IntensityTemplate.Cos
             Cos to complete.
-        default_parameters : Optional[IntensityCosParameters, IntensityLambertianParameters] = None
+        default_parameters : Optional[\
+        ansys.speos.core.generic.parameters.IntensityCosParameters, \
+        ansys.speos.core.generic.parameters.IntensityLambertianParameters] = None
             If defined the values in the Cos instance will be overwritten by the values of the
             data class.
         """
@@ -406,13 +410,13 @@ class Intensity:
 
             Parameters
             ----------
-            value : float
+            n : float
                 order of cos law.
                 By default, ``3``.
 
             Returns
             -------
-            value : float
+            float
                 order of cos law.
             """
             return self._cos.N
@@ -427,13 +431,13 @@ class Intensity:
 
             Parameters
             ----------
-            value : float
+            total_angle : float
                 Total angle in degrees of the emission of the light source.
                 By default, ``180.0``.
 
             Returns
             -------
-            value : float
+            float
                 Total angle in degrees of the emission of the light source.
             """
             return self._cos.total_angle

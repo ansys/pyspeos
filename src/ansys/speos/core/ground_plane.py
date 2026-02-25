@@ -38,7 +38,7 @@ class GroundPlane:
 
     Parameters
     ----------
-    project : project.Project
+    project : ansys.speos.core.project.Project
         Project that will own the feature.
     """
 

@@ -103,7 +103,8 @@ class BaseSource:
         ----------
         userdefined_color_space : source_pb2.SourceTemplate.UserDefinedRGBSpace
             source_pb2.SourceTemplate.UserDefinedRGBSpace
-        default_parameters: Optional[UserDefinedColorSpaceParameters] = None,
+        default_parameters: Optional[\
+        src.ansys.speos.core.generic.parameters.UserDefinedColorSpaceParameters] = None,
             If defined the values in the UserDefinedColorSpace instance will be
             overwritten by the values of the data class.
         stable_ctr : bool
@@ -121,7 +122,8 @@ class BaseSource:
             ----------
             userdefined_white_point : source_pb2.SourceTemplate.UserDefinedWhitePoint
                 source_pb2.SourceTemplate.UserDefinedWhitePoint
-            default_parameters : Optional[UserDefinedWhitePointParameters] = None,
+            default_parameters : Optional[\
+            ansys.speos.or.generic.parameters.UserDefinedWhitePointParameters] = None,
                 If defined the values in the UserDefinedWhitePoint instance will be
                 overwritten by the values of the data class.
             stable_ctr : bool
@@ -242,7 +244,7 @@ class BaseSource:
 
             Parameters
             ----------
-            red_spectrum_file_uri : str
+            red_spectrum_file_uri : Union[str, Path]
                 Red spectrum file uri.
 
 
@@ -270,7 +272,7 @@ class BaseSource:
 
             Parameters
             ----------
-            green_spectrum_file_uri : str
+            green_spectrum_file_uri : Union[str, Path]
                 Green spectrum file uri.
 
             Returns
@@ -297,7 +299,7 @@ class BaseSource:
 
             Parameters
             ----------
-            blue_spectrum_file_uri : str
+            blue_spectrum_file_uri : Union[str, Path]
                 Blue spectrum file uri.
 
             Returns
@@ -333,7 +335,7 @@ class BaseSource:
             Union[None,\
            source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType,\
            ansys.speos.core.source.BaseSource.UserDefinedColorSpace.UserDefinedWhitePoint]
-                      PredefinedWhitePoint Type or UserDefinedWhitePoint Type.
+                PredefinedWhitePoint Type or UserDefinedWhitePoint Type.
 
             """
             return self._white_point_type
@@ -437,7 +439,7 @@ class BaseSource:
         ----------
         predefined_color_space :
             ansys.api.speos.source.v1.source_pb2.SourceTemplate.PredefinedColorSpace
-        default_parameters: Optional[ColorSpaceType] = None,
+        default_parameters: Optional[ansys.speos.or.generic.parameters.ColorSpaceType] = None,
             If defined the values in the PredefinedColorSpace instance will be
             overwritten by the values of the data class.
         stable_ctr : bool
@@ -534,10 +536,10 @@ class BaseSource:
         flux : ansys.api.speos.source.v1.source_pb2
             flux protobuf object to modify.
         default_parameters: Optional[\
-                LuminousFluxParameters,\
-                RadiantFluxParameters,\
-                FluxFromFileParameters,\
-                IntensityFluxParameters,\
+                ansys.speos.or.generic.parameters.LuminousFluxParameters,\
+                ansys.speos.or.generic.parameters.RadiantFluxParameters,\
+                ansys.speos.or.generic.parameters.FluxFromFileParameters,\
+                ansys.speos.or.generic.parameters.IntensityFluxParameters,\
             ] = None,
             If defined the values in the Flux instance will be
             overwritten by the values of the data class.
@@ -759,7 +761,7 @@ class BaseSource:
 
         return out_dict
 
-    def get(self, key: str = "") -> list[tuple[str, dict]]:
+    def get(self, key: str = "") -> List[tuple[str, dict]]:
         """Get dictionary corresponding to the project - read only.
 
         Parameters
@@ -977,7 +979,8 @@ class SourceLuminaire(BaseSource):
     metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
-    default_parameters : Optional[LuminaireSourceParameters] = None
+    default_parameters : Optional[\
+    ansys.speos.or.generic.parameters.LuminaireSourceParameters] = None
         If defined the values in the SourceLuminaire instance will be overwritten
         by the values of the data class.
     """
@@ -1069,8 +1072,9 @@ class SourceLuminaire(BaseSource):
 
         Returns
         -------
-        _VisualData
-            Instance of VisualData Class for pyvista.PolyData of feature rays, coordinate_systems.
+        ansys.speos.core.generic.visualization_methods._VisualData
+            Instance of VisualData Class for pyvista.PolyData of
+            feature rays, coordinate_systems.
 
         """
         if self._visual_data.updated:
@@ -1173,12 +1177,12 @@ class SourceLuminaire(BaseSource):
         return self._spectrum._spectrum
 
     @property
-    def axis_system(self) -> list[float]:
+    def axis_system(self) -> List[float]:
         """Property of the position of the source.
 
         Parameters
         ----------
-        axis_system : list[float]
+        axis_system : List[float]
             Position of the source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
@@ -1191,7 +1195,7 @@ class SourceLuminaire(BaseSource):
         return self._source_instance.luminaire_properties.axis_system
 
     @axis_system.setter
-    def axis_system(self, axis_system: list[float]) -> None:
+    def axis_system(self, axis_system: List[float]) -> None:
         self._source_instance.luminaire_properties.axis_system[:] = axis_system
 
 
@@ -1212,7 +1216,8 @@ class SourceRayFile(BaseSource):
     metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
-    default_parameters : Optional[RayFileSourceParameters] = None,
+    default_parameters : Optional[\
+    ansys.speos.or.generic.parameters.RayFileSourceParameters] = None,
         If defined the values in the SourceRayFile instance will
         be overwritten by the values of the data class.
     """
@@ -1226,7 +1231,8 @@ class SourceRayFile(BaseSource):
         ----------
         rayfile_props : ansys.api.speos.scene.v2.scene_pb2.RayFileProperties
             protobuf object to modify.
-        default_parameters : Optional[RayFileSourceParameters] = None
+        default_parameters : Optional[\
+        ansys.speos.or.generic.parameters.RayFileSourceParameters] = None
             If defined the values in the ExitGeometries instance will be
             overwritten by the values of the data class.
         stable_ctr : bool
@@ -1258,14 +1264,15 @@ class SourceRayFile(BaseSource):
 
             Parameters
             ----------
-            exit_geometries : Optional[List[Union[GeoRef, body.Body, face.Face]]]
+            exit_geometries : Optional[List[Union[ansys.speos.core.geo_ref.GeoRef, \
+            ansys.speos.core.body.Body, ansys.speos.core.face.Face]]]
                 Exit Geometries that will use this rayfile source.
                 By default, ``[]``.
 
 
             Returns
             -------
-            List[GeoRef]
+            List[ansys.speos.core.geo_ref.GeoRef]
                 Exit Geometries that will use this rayfile source.
                 By default, ``[]``.
 
@@ -1378,7 +1385,7 @@ class SourceRayFile(BaseSource):
 
         Returns
         -------
-        _VisualData
+        ansys.speos.core.generic.visualization_methods._VisualData
             Instance of VisualData Class for pyvista.PolyData of feature rays, coordinate_systems.
 
         """
@@ -1505,20 +1512,20 @@ class SourceRayFile(BaseSource):
         return self._spectrum._spectrum
 
     @property
-    def axis_system(self) -> list[float]:
+    def axis_system(self) -> List[float]:
         """Axis system of the Source.
 
         This property retrieve and defines the axis system of the source.
 
         Parameters
         ----------
-        axis_system : list[float]
+        axis_system : List[float]
             Position of the rayfile source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
         Returns
         -------
-        list[float]
+        List[float]
             Position of the rayfile source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
@@ -1526,7 +1533,7 @@ class SourceRayFile(BaseSource):
         return self._source_instance.rayfile_properties.axis_system[:]
 
     @axis_system.setter
-    def axis_system(self, axis_system: list[float]) -> None:
+    def axis_system(self, axis_system: List[float]) -> None:
         self._source_instance.rayfile_properties.axis_system[:] = axis_system
 
     def set_exit_geometries(self) -> SourceRayFile.ExitGeometries:
@@ -1574,7 +1581,8 @@ class SourceSurface(BaseSource):
         Surface source to complete.
     surface_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.SurfaceProperties
         Surface source properties to complete.
-    default_parameters : Optional[SurfaceSourceParameters] = None
+    default_parameters : Optional[\
+    ansys.speos.or.generic.parameters.SurfaceSourceParameters] = None
         If defined the values in the SourceSurface instance will be overwritten by the
         values of the data class.
     """
@@ -1626,7 +1634,8 @@ class SourceSurface(BaseSource):
         exitance_constant_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.
         SurfaceProperties.ExitanceConstantProperties
             Existence constant properties to complete.
-        default_parameters : Optional[ConstantExitanceParameters] = None,
+        default_parameters : Optional[\
+        ansys.speos.or.generic.parameters.ConstantExitanceParameters] = None,
             If defined the values in the ExitanceConstant instance will be overwritten
              by the values of the data class.
         stable_ctr : bool
@@ -1659,12 +1668,12 @@ class SourceSurface(BaseSource):
 
             Parameters
             ----------
-            geometries : List[tuple[GeoRef, bool]]
+            geometries : List[tuple[ansys.speos.core.geo_ref.GeoRef, bool]]
                 list of tuple which contains geometry ref and bool for normal direction.
 
             Returns
             -------
-            List[tuple[GeoRef, bool]]
+            List[tuple[ansys.speos.core.geo_ref.GeoRef, bool]]
                 list of tuple which contains geometry ref and bool for normal direction.
 
             """
@@ -1703,7 +1712,8 @@ class SourceSurface(BaseSource):
         exitance_variable_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.
         SurfaceProperties.ExitanceVariableProperties
             Existence variable properties to complete.
-        default_parameters : Optional[VariableExitanceParameters] = None
+        default_parameters : Optional[\
+        ansys.speos.or.generic.parameters.VariableExitanceParameters] = None
             If defined the values in the ExitanceVariable instance will be overwritten
             by the values of the data class.
         stable_ctr : bool
@@ -1963,7 +1973,7 @@ class SourceSurface(BaseSource):
 
         Returns
         -------
-        _VisualData
+        ansys.speos.core.generic.visualization_methods._VisualData
             Instance of VisualData Class for pyvista.PolyData of feature rays, coordinate_systems.
 
         """
@@ -2265,7 +2275,8 @@ class BaseSourceAmbient(BaseSource):
         ----------
         sun : ansys.api.speos.scene.v2.scene_pb2.AutomaticSun
             Wavelengths range protobuf object to modify.
-        default_parameters : Optional[AutomaticSunParameters] = None,
+        default_parameters : Optional[\
+        ansys.speos.core.generic.parameters.AutomaticSunParameters] = None,
             If defined the values in the AutomaticSun instance will be
             overwritten by the values of the data class.
         stable_ctr : bool
@@ -2473,7 +2484,8 @@ class BaseSourceAmbient(BaseSource):
         ----------
         sun: ansys.api.speos.scene.v2.scene_pb2.ManualSun
             Wavelengths range protobuf object to modify.
-        default_parameters : Optional[ManualSunParameters] = None
+        default_parameters : Optional[\
+        ansys.speos.core.generic.parameters.ManualSunParameters] = None
             If defined the values in the Manual instance will be
             overwritten by the values of the data class.
         stable_ctr : bool
@@ -2513,7 +2525,7 @@ class BaseSourceAmbient(BaseSource):
 
             Returns
             -------
-            list of float
+            List[float]
                 list describing the direction of the manual sun.
 
             """
@@ -2566,7 +2578,8 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
     metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
-    default_parameters : Optional[AmbientNaturalLightParameters] = None
+    default_parameters : Optional[\
+    ansys.speos.core.generic.parameters.AmbientNaturalLightParameters] = None
         If defined the values in the SourceAmbientNaturalLight instance
          will be overwritten by the values of the data class.
     """
@@ -2672,7 +2685,7 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
 
         Parameters
         ----------
-        direction : Optional[List[float]]
+        direction : List[float]
             direction defines the zenith direction of the natural light.
 
         Returns
@@ -2684,7 +2697,7 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
         return self._source_instance.ambient_properties.zenith_direction
 
     @zenith_direction.setter
-    def zenith_direction(self, direction: Optional[List[float]] = None) -> None:
+    def zenith_direction(self, direction: List[float]) -> None:
         self._source_instance.ambient_properties.zenith_direction[:] = direction
 
     @property
@@ -2764,7 +2777,8 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
 
         Returns
         -------
-        BaseSourceAmbient.AutomaticSun
+        ansys.speos.core.source.BaseSourceAmbient.AutomaticSun
+            Sun automatic type feature to complete.
 
         """
         natural_light_properties = self._source_instance.ambient_properties.natural_light_properties
@@ -2793,7 +2807,8 @@ class SourceAmbientNaturalLight(BaseSourceAmbient):
 
         Returns
         -------
-        BaseSourceAmbient.Manual
+        ansys.speos.core.source.BaseSourceAmbient.Manual
+            Sun Manual type feature to complete.
         """
         natural_light_properties = self._source_instance.ambient_properties.natural_light_properties
         if self._type is None and natural_light_properties.sun_axis_system.HasField("manual_sun"):
@@ -2832,7 +2847,8 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
     metadata : Optional[Mapping[str, str]]
         Metadata of the feature.
         By default, ``{}``.
-    default_parameters : Optional[AmbientEnvironmentParameters] = None
+    default_parameters : Optional[\
+    ansys.speos.core.generic.parameters.AmbientEnvironmentParameters] = None
         If defined the values in the SourceAmbientEnvironment instance
         will be overwritten by the values of the data class.
     """
@@ -2928,7 +2944,7 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
 
         Parameters
         ----------
-        direction : Optional[List[float]]
+        direction : List[float]
             direction defines the zenith direction of the environment light source.
 
         Returns
@@ -2940,7 +2956,7 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
         return self._source_instance.ambient_properties.zenith_direction
 
     @zenith_direction.setter
-    def zenith_direction(self, direction: Optional[List[float]]) -> None:
+    def zenith_direction(self, direction: List[float]) -> None:
         self._source_instance.ambient_properties.zenith_direction[:] = direction
 
     @property
@@ -3073,11 +3089,9 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
 
         Returns
         -------
-        Union[
-            None,
-            ansys.speos.core.source.SourceAmbientEnvironment.PredefinedColorSpace,
-            ansys.speos.core.source.SourceAmbientEnvironment.UserDefinedColorSpace
-            ]
+        Union[None, \
+            ansys.speos.core.source.SourceAmbientEnvironment.PredefinedColorSpace, \
+            ansys.speos.core.source.SourceAmbientEnvironment.UserDefinedColorSpace]
             Instance of Predefined Color Space class
         """
         return self._type
@@ -3087,7 +3101,7 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
 
         Returns
         -------
-        SourceAmbientEnvironment.UserDefinedColorSpace
+        ansys.speos.core.source.SourceAmbientEnvironment.UserDefinedColorSpace
             Settings for user defined color space.
 
         """

@@ -217,7 +217,7 @@ class Project:
 
         Returns
         -------
-        Union[ansys.speos.core.source.SourceSurface,ansys.speos.core.source.SourceRayFile,\
+        Union[ansys.speos.core.source.SourceSurface, ansys.speos.core.source.SourceRayFile,\
         ansys.speos.core.source.SourceLuminaire, ansys.speos.core.source.SourceAmbientNaturalLight,\
         ansys.speos.core.source.SourceAmbientEnvironment]
             Source class instance.
@@ -444,10 +444,10 @@ class Project:
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
-        parameters :  Optional[IrradianceSensorParameters,\
-            RadianceSensorParameters,\
-            CameraSensorParameters,\
-            Irradiance3DSensorParameters]
+        parameters :  Optional[ansys.speos.core.generic.parameters.IrradianceSensorParameters,\
+            ansys.speos.core.generic.parameters.RadianceSensorParameters,\
+            ansys.speos.core.generic.parameters.CameraSensorParameters,\
+            ansys.speos.core.generic.parameters.Irradiance3DSensorParameters]
             Allows to provide parameters to overwrite default parameters
 
         Returns
@@ -603,6 +603,7 @@ class Project:
             SourceLuminaire,
             SourceRayFile,
             SourceAmbientNaturalLight,
+            SourceAmbientEnvironment,
             SensorIrradiance,
             SensorRadiance,
             SensorCamera,
@@ -637,7 +638,9 @@ class Project:
         -------
         List[Union[ansys.speos.core.opt_prop.OptProp, ansys.speos.core.source.SourceSurface, \
         ansys.speos.core.source.SourceRayFile, ansys.speos.core.source.SourceLuminaire, \
-        ansys.speos.core.source.SourceAmbientNaturalLight, ansys.speos.core.sensor.SensorCamera, \
+        ansys.speos.core.source.SourceAmbientNaturalLight, \
+        ansys.speos.core.source.SourceAmbientEnvironment, \
+        ansys.speos.core.sensor.SensorCamera, \
         ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance, \
         ansys.speos.core.sensor.Sensor3DIrradiance, \
         ansys.speos.core.simulation.SimulationVirtualBSDF, \
@@ -1151,8 +1154,14 @@ class Project:
         ----------
         plotter: Plotter
             ansys.tools.visualization_interface.Plotter
-        speos_feature: Union[SensorCamera, SensorRadiance, SensorIrradiance,
-        Sensor3DIrradiance, SourceLuminaire, SourceRayFile, SourceLuminaire]
+        speos_feature: Union[\
+        ansys.speos.core.sensor.SensorCamera, \
+        ansys.speos.core.sensor.SensorRadiance, \
+        ansys.speos.core.sensor.SensorIrradiance, \
+        ansys.speos.core.sensor.Sensor3DIrradiance, \
+        ansys.speos.core.source.SourceLuminaire, \
+        ansys.speos.core.source.SourceRayFile, \
+        ansys.speos.core.source.SourceLuminaire]
             speos feature whose visual data will be added.
         scene_seize: float
             seize of max scene bounds

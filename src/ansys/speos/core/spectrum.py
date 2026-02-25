@@ -77,7 +77,8 @@ class Spectrum:
         ----------
         monochromatic : ansys.api.speos.spectrum.v1.spectrum_pb2.Monochromatic
             Monochromatic protobuf object to modify.
-        default_parameters : Optional[SpectrumMonochromaticParameters] = None
+        default_parameters : Optional[\
+        ansys.speos.core.generic.parameters.SpectrumMonochromaticParameters] = None
             If defined the values in the Monochromatic instance will be
             overwritten by the values of the data class
         stable_ctr : bool
@@ -132,7 +133,8 @@ class Spectrum:
         ----------
         blackbody : ansys.api.speos.spectrum.v1.spectrum_pb2.Blackbody
             Blackbody protobuf object to modify.
-        default_parameters : Optional[SpectrumBlackBodyParameters] = None
+        default_parameters : Optional[\
+        ansys.speos.core.generic.parameters.SpectrumBlackBodyParameters] = None
             If defined the values in the Blackbody instance will be
             overwritten by the values of the data class
         stable_ctr : bool
@@ -188,7 +190,8 @@ class Spectrum:
         ----------
         sampled : ansys.api.speos.spectrum.v1.spectrum_pb2.Sampled
             Sampled protobuf object to modify.
-        default_parameters : Optional[SpectrumSampledParameters] = None
+        default_parameters : Optional[\
+        ansys.speos.core.generic.parameters.SpectrumSampledParameters] = None
             If defined the values in the Sampled instance will be
             overwritten by the values of the data class
         stable_ctr : bool
@@ -233,7 +236,7 @@ class Spectrum:
             return self._sampled.wavelengths[:]
 
         @wavelengths.setter
-        def wavelengths(self, wavelengths: list[float]) -> None:
+        def wavelengths(self, wavelengths: List[float]) -> None:
             self._sampled.wavelengths[:] = wavelengths
 
         @property
@@ -243,7 +246,7 @@ class Spectrum:
             Parameters
             ----------
             values : List[float]
-            List of values, expected from 0. to 100. in %.
+                List of values, expected from 0. to 100. in %.
 
             Returns
             -------
@@ -253,7 +256,7 @@ class Spectrum:
             return self._sampled.values
 
         @values.setter
-        def values(self, values: list[float]) -> None:
+        def values(self, values: List[float]) -> None:
             self._sampled.values[:] = values
 
     class Library:
@@ -265,7 +268,8 @@ class Spectrum:
         ----------
         library : ansys.api.speos.spectrum.v1.spectrum_pb2.Spectrum.Library
             Library protobuf object to modify.
-        default_parameters : Optional[SpectrumLibraryParameters] = None
+        default_parameters : Optional[\
+        ansys.speos.core.generic.parameters.SpectrumLibraryParameters] = None
             If defined the values in the Library instance will be
             overwritten by the values of the data class
         stable_ctr : bool
@@ -293,17 +297,17 @@ class Spectrum:
 
         @property
         def file_uri(self) -> str:
-            """Property the temperature of the spectrum.
+            """Property the file uri of the library type spectrum.
 
             Parameters
             ----------
-            value : float
-                Temperature of the spectrum.
+            file_uri : Union[str, Path]
+                File uri of the library type spectrum.
 
             Returns
             -------
-            float
-            Temperature of the spectrum.
+            str
+                File uri of the library type spectrum.
 
             """
             return self._library.file_uri
@@ -371,7 +375,7 @@ class Spectrum:
         Returns
         -------
         ansys.speos.core.spectrum.Spectrum.Blackbody
-            Spectrum Blackbody feature.
+            Spectrum Blackbody feature to complete.
         """
         if self._type is None and self._spectrum.HasField("blackbody"):
             self._type = Spectrum.Blackbody(
@@ -397,7 +401,7 @@ class Spectrum:
         Returns
         -------
         ansys.speos.core.spectrum.Spectrum.Sampled
-            Spectrum Sampled feature.
+            Spectrum Sampled feature to complete.
         """
         if self._type is None and self._spectrum.HasField("sampled"):
             self._type = Spectrum.Sampled(
@@ -418,15 +422,10 @@ class Spectrum:
     def set_library(self) -> Spectrum.Library:
         """Set the spectrum as library.
 
-        Parameters
-        ----------
-        file_uri : str
-            uri of the spectrum file.
-
         Returns
         -------
-        ansys.speos.core.spectrum.Spectrum.Sampled
-            Spectrum Library feature.
+        ansys.speos.core.spectrum.Spectrum.Library
+            Spectrum Library feature to complete.
         """
         if self._type is None and self._spectrum.HasField("library"):
             self._type = Spectrum.Library(
