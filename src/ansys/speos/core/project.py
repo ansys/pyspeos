@@ -566,6 +566,7 @@ class Project:
             SourceLuminaire,
             SourceRayFile,
             SourceAmbientNaturalLight,
+            SourceAmbientEnvironment,
             SensorIrradiance,
             SensorRadiance,
             SensorCamera,
@@ -601,7 +602,8 @@ class Project:
         -------
         List[Union[ansys.speos.core.opt_prop.OptProp, ansys.speos.core.source.SourceSurface, \
         ansys.speos.core.source.SourceRayFile, ansys.speos.core.source.SourceLuminaire, \
-        ansys.speos.core.source.SourceAmbientNaturalLight, ansys.speos.core.sensor.SensorCamera, \
+        ansys.speos.core.source.SourceAmbientEnvironment, \
+        ansys.speos.core.source.SourceAmbientNaturalLight,ansys.speos.core.sensor.SensorCamera, \
         ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance, \
         ansys.speos.core.sensor.Sensor3DIrradiance, ansys.speos.core.sensor.SensorXMPIntensity, \
         ansys.speos.core.simulation.SimulationVirtualBSDF, \
