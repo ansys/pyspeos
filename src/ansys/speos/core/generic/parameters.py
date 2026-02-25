@@ -61,7 +61,7 @@ class DimensionsParameters:
 
 
 @dataclass
-class IntensitySensorDimensionsConoscopic:
+class IntensitySensorDimensionsConoscopicParameters:
     """Dataclass for Intensity Sensor dimension in case of conoscopic."""
 
     theta_max: float = 45
@@ -71,7 +71,7 @@ class IntensitySensorDimensionsConoscopic:
 
 
 @dataclass
-class IntensitySensorDimensionsXAsMeridian:
+class IntensitySensorDimensionsXAsMeridianParameters:
     """Dataclass for Intensity Sensor dimension in case of x_as_meridian."""
 
     y_start: float = -30
@@ -89,7 +89,7 @@ class IntensitySensorDimensionsXAsMeridian:
 
 
 @dataclass
-class IntensitySensorDimensionsXAsParallel:
+class IntensitySensorDimensionsXAsParallelParameters:
     """Dataclass for Intensity Sensor dimension in case of x_as_parallel."""
 
     x_start: float = -30
@@ -458,10 +458,10 @@ class IntensityXMPSensorParameters:
     """Parameters data clas for intensity Sensor."""
 
     dimensions: Union[
-        IntensitySensorDimensionsXAsMeridian,
-        IntensitySensorDimensionsXAsParallel,
-        IntensitySensorDimensionsConoscopic,
-    ] = field(default_factory=IntensitySensorDimensionsXAsMeridian)
+        IntensitySensorDimensionsXAsMeridianParameters,
+        IntensitySensorDimensionsXAsParallelParameters,
+        IntensitySensorDimensionsConoscopicParameters,
+    ] = field(default_factory=IntensitySensorDimensionsXAsMeridianParameters)
     """Dimensions of the sensor."""
     axis_system: list[float] = field(default_factory=lambda: ORIGIN)
     """Position of the sensor."""

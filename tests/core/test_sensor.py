@@ -39,9 +39,9 @@ from ansys.speos.core.generic.parameters import (
     ColorimetricParameters,
     DimensionsParameters,
     IntegrationTypes,
-    IntensitySensorDimensionsConoscopic,
-    IntensitySensorDimensionsXAsMeridian,
-    IntensitySensorDimensionsXAsParallel,
+    IntensitySensorDimensionsConoscopicParameters,
+    IntensitySensorDimensionsXAsMeridianParameters,
+    IntensitySensorDimensionsXAsParallelParameters,
     IntensitySensorOrientationTypes,
     IntensitySensorViewingTypes,
     IntensityXMPSensorParameters,
@@ -2319,11 +2319,13 @@ def test_create_by_parameters(speos: Speos):
     dim_params = DimensionsParameters(
         x_start=-10, x_end=10, x_sampling=20, y_start=-20, y_end=20, y_sampling=40
     )
-    int_dim_params_con = IntensitySensorDimensionsConoscopic(theta_max=25, theta_sampling=50)
-    int_dim_params_para = IntensitySensorDimensionsXAsParallel(
+    int_dim_params_con = IntensitySensorDimensionsConoscopicParameters(
+        theta_max=25, theta_sampling=50
+    )
+    int_dim_params_para = IntensitySensorDimensionsXAsParallelParameters(
         x_start=-10, x_end=10, x_sampling=20, y_start=-20, y_end=20, y_sampling=40
     )
-    int_dim_params_meridian = IntensitySensorDimensionsXAsMeridian(
+    int_dim_params_meridian = IntensitySensorDimensionsXAsMeridianParameters(
         x_start=-10, x_end=10, x_sampling=20, y_start=-20, y_end=20, y_sampling=40
     )
     near_field = NearfieldParameters(cell_diameter=1, cell_distance=10)

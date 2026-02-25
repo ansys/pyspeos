@@ -47,9 +47,9 @@ from ansys.speos.core.generic.parameters import (
     ColorParameters,
     DimensionsParameters,
     IntegrationTypes,
-    IntensitySensorDimensionsConoscopic,
-    IntensitySensorDimensionsXAsMeridian,
-    IntensitySensorDimensionsXAsParallel,
+    IntensitySensorDimensionsConoscopicParameters,
+    IntensitySensorDimensionsXAsMeridianParameters,
+    IntensitySensorDimensionsXAsParallelParameters,
     IntensitySensorOrientationTypes,
     IntensitySensorViewingTypes,
     IntensityXMPSensorParameters,
@@ -4826,17 +4826,17 @@ class SensorXMPIntensity(BaseSensor):
     def set_orientation_x_as_meridian(self):
         """Set Orientation type: X As Meridian, Y as Parallel."""
         self._sensor_template.intensity_sensor_template.intensity_orientation_x_as_meridian.SetInParent()
-        self._set_dimension_values(IntensitySensorDimensionsXAsMeridian())
+        self._set_dimension_values(IntensitySensorDimensionsXAsMeridianParameters())
 
     def set_orientation_x_as_parallel(self):
         """Set Orientation type: X as Parallel, Y as Meridian."""
         self._sensor_template.intensity_sensor_template.intensity_orientation_x_as_parallel.SetInParent()
-        self._set_dimension_values(IntensitySensorDimensionsXAsParallel())
+        self._set_dimension_values(IntensitySensorDimensionsXAsParallelParameters())
 
     def set_orientation_conoscopic(self):
         """Set Orientation type to conoscopic."""
         self._sensor_template.intensity_sensor_template.intensity_orientation_conoscopic.SetInParent()
-        self._set_dimension_values(IntensitySensorDimensionsConoscopic())
+        self._set_dimension_values(IntensitySensorDimensionsConoscopicParameters())
 
     def set_viewing_direction_from_source(self):
         """Set viewing direction from source looking at sensor."""
@@ -4849,9 +4849,9 @@ class SensorXMPIntensity(BaseSensor):
     def _set_dimension_values(
         self,
         dimension: Union[
-            IntensitySensorDimensionsXAsMeridian,
-            IntensitySensorDimensionsXAsParallel,
-            IntensitySensorDimensionsConoscopic,
+            IntensitySensorDimensionsXAsMeridianParameters,
+            IntensitySensorDimensionsXAsParallelParameters,
+            IntensitySensorDimensionsConoscopicParameters,
         ],
     ):
         template = self._sensor_template.intensity_sensor_template
@@ -4860,20 +4860,20 @@ class SensorXMPIntensity(BaseSensor):
             "The sensor dimension are reset to the orientation types default values"
         )
         if template.HasField("intensity_orientation_conoscopic"):
-            if not isinstance(dimension, IntensitySensorDimensionsConoscopic):
+            if not isinstance(dimension, IntensitySensorDimensionsConoscopicParameters):
                 warnings.warn(warning_msg)
-                dimension = IntensitySensorDimensionsConoscopic()
+                dimension = IntensitySensorDimensionsConoscopicParameters()
             self.theta_max = dimension.theta_max
             self.theta_sampling = dimension.theta_sampling
         else:
             if template.HasField("intensity_orientation_conoscopic"):
-                if not isinstance(dimension, IntensitySensorDimensionsXAsParallel):
+                if not isinstance(dimension, IntensitySensorDimensionsXAsParallelParameters):
                     warnings.warn(warning_msg)
-                    dimension = IntensitySensorDimensionsXAsParallel()
+                    dimension = IntensitySensorDimensionsXAsParallelParameters()
             elif template.HasField("intensity_orientation_x_as_meridian"):
-                if not isinstance(dimension, IntensitySensorDimensionsXAsMeridian):
+                if not isinstance(dimension, IntensitySensorDimensionsXAsMeridianParameters):
                     warnings.warn(warning_msg)
-                    dimension = IntensitySensorDimensionsXAsMeridian()
+                    dimension = IntensitySensorDimensionsXAsMeridianParameters()
             self.x_start = dimension.x_start
             self.x_end = dimension.x_end
             self.x_sampling = dimension.x_sampling
