@@ -1,0 +1,243 @@
+
+
+
+
+
+
+:class:`JobStub`
+================
+
+
+.. py:class:: ansys.speos.core.kernel.job.JobStub(channel)
+
+   Bases: :py:obj:`ansys.speos.core.kernel.crud.CrudStub`
+
+
+   
+   Database interactions for job.
+
+
+   :Parameters:
+
+       **channel** : :obj:`grpc.Channel`
+           Channel to use for the stub.
+
+
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Examples
+
+   The best way to get a JobStub is to retrieve it from SpeosClient via jobs() method.
+   Like in the following example:
+
+   >>> from ansys.speos.core.speos import Speos
+   >>> speos = Speos()
+   >>> job_db = speos.client.jobs()
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: JobStub
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~create`
+            - Create a new entry.
+          * - :py:attr:`~read`
+            - Get an existing entry.
+          * - :py:attr:`~update`
+            - Change an existing entry.
+          * - :py:attr:`~delete`
+            - Remove an existing entry.
+          * - :py:attr:`~list`
+            - List existing entries.
+
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.kernel.job import JobStub
+
+
+
+Method detail
+-------------
+
+.. py:method:: create(message)
+
+   
+   Create a new entry.
+
+
+   :Parameters:
+
+       **message** : :obj:`job.Job`
+           Datamodel for the new entry.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.kernel.job.JobLink`
+           Link object created.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: read(ref)
+
+   
+   Get an existing entry.
+
+
+   :Parameters:
+
+       **ref** : :obj:`ansys.speos.core.kernel.job.JobLink`
+           Link object to read.
+
+
+
+   :Returns:
+
+       :obj:`job.Job`
+           Datamodel of the entry.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: update(ref, data)
+
+   
+   Change an existing entry.
+
+
+   :Parameters:
+
+       **ref** : :obj:`ansys.speos.core.kernel.job.JobLink`
+           Link object to update.
+
+       **data** : :obj:`job.Job`
+           New datamodel for the entry.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: delete(ref)
+
+   
+   Remove an existing entry.
+
+
+   :Parameters:
+
+       **ref** : :obj:`ansys.speos.core.kernel.job.JobLink`
+           Link object to delete.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: list()
+
+   
+   List existing entries.
+
+
+
+
+
+   :Returns:
+
+       :obj:`List`\[:obj:`ansys.speos.core.kernel.job.JobLink`]
+           Link objects.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

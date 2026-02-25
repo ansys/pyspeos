@@ -1,0 +1,156 @@
+
+
+
+
+
+
+:class:`MeasuresParameters`
+===========================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.MeasuresParameters
+
+   
+   Measurements for 3d Irradiance Sensor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: MeasuresParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~reflection`
+            - Reflection measure activation state.
+          * - :py:attr:`~transmission`
+            - Transmission measure activation state.
+          * - :py:attr:`~absorption`
+            - Ansorption measure activation state.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import MeasuresParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: reflection
+   :type:  bool
+   :value: True
+
+
+   
+   Reflection measure activation state.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: transmission
+   :type:  bool
+   :value: True
+
+
+   
+   Transmission measure activation state.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: absorption
+   :type:  bool
+   :value: True
+
+
+   
+   Ansorption measure activation state.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

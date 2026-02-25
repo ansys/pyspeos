@@ -1,0 +1,268 @@
+
+
+
+
+
+
+The ``parameters.py`` module
+============================
+
+.. py:module:: ansys.speos.core.generic.parameters
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: parameters
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.WavelengthsRangeParameters`
+            - Wavelength parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.DimensionsParameters`
+            - Dimension Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.LayerBySequenceParameters`
+            - Layer separation type Parameters  for Sequence separation.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.GeometryLayerParameters`
+            - Geometry layer parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.LayerByFaceParameters`
+            - Layer separation type Parameters  for Face separation.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.LayerByIncidenceAngleParameters`
+            - Layer separation type Parameters for Incidence angle separation.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.BalanceModeUserWhiteParameters`
+            - Parameters for Balance mode: User White.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.BalanceModeDisplayPrimariesParameters`
+            - Parameters for Balance mode: Display primaries.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.ColorParameters`
+            - Color mode Camera Parameter.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.MonoChromaticParameters`
+            - Monochromatic Camera Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.PhotometricCameraParameters`
+            - Photometric Parameters for Camera.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.CameraSensorParameters`
+            - Camera Sensor Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.ColorimetricParameters`
+            - Colorimetric settings of the Sensor.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.SpectralParameters`
+            - Colorimetric settings of the Sensor.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.MeasuresParameters`
+            - Measurements for 3d Irradiance Sensor.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.IrradianceSensorParameters`
+            - Irradiance Sensor Parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.RadianceSensorParameters`
+            - Radiance Sensor Constants.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.Irradiance3DSensorParameters`
+            - Parameters class for 3D Irradiance Sensor.
+
+
+
+    .. tab-item:: Enums
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.LayerTypes`
+            - Layer Separation types without parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.SCAFilteringTypes`
+            - Surface contribution analyser filtering types.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.SequenceTypes`
+            - Sequence types to separate the sequence data.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.PngBits`
+            - Bit resolution of create PNG image.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.ColorBalanceModeTypes`
+            - Color Balance Mode types without parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.IntegrationTypes`
+            - Integration types without parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.RayfileTypes`
+            - Rayfile types without parameters.
+
+
+          * - :py:obj:`~ansys.speos.core.generic.parameters.SensorTypes`
+            - Sensor types without parameters.
+
+
+
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> WavelengthsRangeParameters</api/ansys/speos/core/generic/parameters/WavelengthsRangeParameters>
+    <span class="nf nf-cod-symbol_class"></span> DimensionsParameters</api/ansys/speos/core/generic/parameters/DimensionsParameters>
+    <span class="nf nf-cod-symbol_class"></span> LayerBySequenceParameters</api/ansys/speos/core/generic/parameters/LayerBySequenceParameters>
+    <span class="nf nf-cod-symbol_class"></span> GeometryLayerParameters</api/ansys/speos/core/generic/parameters/GeometryLayerParameters>
+    <span class="nf nf-cod-symbol_class"></span> LayerByFaceParameters</api/ansys/speos/core/generic/parameters/LayerByFaceParameters>
+    <span class="nf nf-cod-symbol_class"></span> LayerByIncidenceAngleParameters</api/ansys/speos/core/generic/parameters/LayerByIncidenceAngleParameters>
+    <span class="nf nf-cod-symbol_class"></span> BalanceModeUserWhiteParameters</api/ansys/speos/core/generic/parameters/BalanceModeUserWhiteParameters>
+    <span class="nf nf-cod-symbol_class"></span> BalanceModeDisplayPrimariesParameters</api/ansys/speos/core/generic/parameters/BalanceModeDisplayPrimariesParameters>
+    <span class="nf nf-cod-symbol_class"></span> ColorParameters</api/ansys/speos/core/generic/parameters/ColorParameters>
+    <span class="nf nf-cod-symbol_class"></span> MonoChromaticParameters</api/ansys/speos/core/generic/parameters/MonoChromaticParameters>
+    <span class="nf nf-cod-symbol_class"></span> PhotometricCameraParameters</api/ansys/speos/core/generic/parameters/PhotometricCameraParameters>
+    <span class="nf nf-cod-symbol_class"></span> CameraSensorParameters</api/ansys/speos/core/generic/parameters/CameraSensorParameters>
+    <span class="nf nf-cod-symbol_class"></span> ColorimetricParameters</api/ansys/speos/core/generic/parameters/ColorimetricParameters>
+    <span class="nf nf-cod-symbol_class"></span> SpectralParameters</api/ansys/speos/core/generic/parameters/SpectralParameters>
+    <span class="nf nf-cod-symbol_class"></span> MeasuresParameters</api/ansys/speos/core/generic/parameters/MeasuresParameters>
+    <span class="nf nf-cod-symbol_class"></span> IrradianceSensorParameters</api/ansys/speos/core/generic/parameters/IrradianceSensorParameters>
+    <span class="nf nf-cod-symbol_class"></span> RadianceSensorParameters</api/ansys/speos/core/generic/parameters/RadianceSensorParameters>
+    <span class="nf nf-cod-symbol_class"></span> Irradiance3DSensorParameters</api/ansys/speos/core/generic/parameters/Irradiance3DSensorParameters>
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_enum"></span> LayerTypes</api/ansys/speos/core/generic/parameters/LayerTypes>
+    <span class="nf nf-cod-symbol_enum"></span> SCAFilteringTypes</api/ansys/speos/core/generic/parameters/SCAFilteringTypes>
+    <span class="nf nf-cod-symbol_enum"></span> SequenceTypes</api/ansys/speos/core/generic/parameters/SequenceTypes>
+    <span class="nf nf-cod-symbol_enum"></span> PngBits</api/ansys/speos/core/generic/parameters/PngBits>
+    <span class="nf nf-cod-symbol_enum"></span> ColorBalanceModeTypes</api/ansys/speos/core/generic/parameters/ColorBalanceModeTypes>
+    <span class="nf nf-cod-symbol_enum"></span> IntegrationTypes</api/ansys/speos/core/generic/parameters/IntegrationTypes>
+    <span class="nf nf-cod-symbol_enum"></span> RayfileTypes</api/ansys/speos/core/generic/parameters/RayfileTypes>
+    <span class="nf nf-cod-symbol_enum"></span> SensorTypes</api/ansys/speos/core/generic/parameters/SensorTypes>
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Collection of all parameter dataclasses used in PySpeos.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+

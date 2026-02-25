@@ -1,0 +1,105 @@
+
+
+
+
+
+
+:class:`RayfileTypes`
+=====================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.RayfileTypes
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   
+   Rayfile types without parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: RayfileTypes
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~none`
+            - 
+          * - :py:attr:`~classic`
+            - 
+          * - :py:attr:`~polarization`
+            - 
+          * - :py:attr:`~tm25`
+            - 
+          * - :py:attr:`~tm25_no_polarization`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import RayfileTypes
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: none
+   :value: 'none'
+
+
+.. py:attribute:: classic
+   :value: 'classic'
+
+
+.. py:attribute:: polarization
+   :value: 'polarization'
+
+
+.. py:attribute:: tm25
+   :value: 'tm25'
+
+
+.. py:attribute:: tm25_no_polarization
+   :value: 'tm25_no_polarization'
+
+
+
+
+
+

@@ -1,0 +1,84 @@
+
+
+
+
+
+
+:class:`WNUAOptions`
+====================
+
+
+.. py:class:: ansys.speos.core.kernel.grpc.transport_options.WNUAOptions
+
+   
+   Options for Windows Named User Authentication transport mode.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: WNUAOptions
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~host`
+            - 
+          * - :py:attr:`~port`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.kernel.grpc.transport_options import WNUAOptions
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: host
+   :type:  str
+   :value: 'localhost'
+
+
+.. py:attribute:: port
+   :type:  int
+
+
+
+
+

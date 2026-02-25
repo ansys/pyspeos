@@ -1,0 +1,128 @@
+
+
+
+
+
+
+:class:`GeometryLayerParameters`
+================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.GeometryLayerParameters
+
+   
+   Geometry layer parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: GeometryLayerParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~name`
+            - Layer name stored in result file
+          * - :py:attr:`~geometry`
+            - List of Geometries of the Layer
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import GeometryLayerParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: name
+   :type:  Optional[str]
+   :value: None
+
+
+   
+   Layer name stored in result file
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: geometry
+   :type:  Optional[list]
+   :value: None
+
+
+   
+   List of Geometries of the Layer
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

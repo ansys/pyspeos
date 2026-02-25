@@ -1,0 +1,250 @@
+
+
+
+
+
+
+:class:`AllCharacteristics`
+===========================
+
+.. toctree::
+   :hidden:
+
+    Iridescence</api/ansys/speos/core/simulation/SimulationVirtualBSDF.AllCharacteristics.Iridescence>
+    NonIridescence</api/ansys/speos/core/simulation/SimulationVirtualBSDF.AllCharacteristics.NonIridescence>
+
+
+.. py:class:: ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics(mode_template, default_values = True, stable_ctr = False)
+
+   
+   BSDF depends on all properties mode of BSDF bench measurement.
+
+   By default,
+   is_bsdf180 is false
+   reflection_and_transmission is false
+   Color does not depend on viewing direction is set
+   Source sampling is set to be isotropic
+
+   :Parameters:
+
+       **mode_template** : :obj:`simulation_template_pb2.AllCharacteristics`
+           all properties dependent BSDF settings to complete.
+
+       **default_values** : :ref:`bool <python:bltin-boolean-values>`
+           Uses default values when True as not bsdf180 and reflection only.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: AllCharacteristics
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_non_iridescence`
+            - Set bsdf color does not depend on viewing direction.
+          * - :py:attr:`~set_iridescence`
+            - Set bsdf color depends on viewing direction.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~is_bsdf180`
+            - Boolean value if bsdf to be generated is bsdf180 or not.
+          * - :py:attr:`~reflection_and_transmission`
+            - Boolean value if bsdf to be generated is bsdf180 or not.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.simulation.SimulationVirtualBSDF import AllCharacteristics
+
+Property detail
+---------------
+
+.. py:property:: is_bsdf180
+   :type: bool
+
+
+   
+   Boolean value if bsdf to be generated is bsdf180 or not.
+
+   This property gets or sets the boolean if the virtual bsdf
+   bench is going to generate one bsdf180 file or not.
+
+   :Parameters:
+
+       **value: bool**
+           True if bsdf180 is to be generated, False otherwise.
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           True if bsdf180 is to be generated, False otherwise.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: reflection_and_transmission
+   :type: bool
+
+
+   
+   Boolean value if bsdf to be generated is bsdf180 or not.
+
+   This property gets or sets the boolean if the virtual bsdf
+   bench is going to generate both reflection and transmission
+   or only reflection bsdf.
+
+   :Parameters:
+
+       **value: bool**
+           True if reflection and transmission is to be generated, False otherwise.
+
+
+
+   :Returns:
+
+       :ref:`bool <python:bltin-boolean-values>`
+           True if reflection and transmission is to be generated, False otherwise.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_non_iridescence()
+
+   
+   Set bsdf color does not depend on viewing direction.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.NonIridescence`
+           NonIridescence settings to be complete
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_iridescence()
+
+   
+   Set bsdf color depends on viewing direction.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.Iridescence`
+           Iridescence settings to be complete
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+    ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.Iridescence
+    ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics.NonIridescence
+
+
+
+

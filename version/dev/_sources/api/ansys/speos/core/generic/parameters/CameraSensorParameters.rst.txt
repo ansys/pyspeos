@@ -1,0 +1,385 @@
+
+
+
+
+
+
+:class:`CameraSensorParameters`
+===============================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.CameraSensorParameters
+
+   
+   Camera Sensor Parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: CameraSensorParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~sensor_type_parameters`
+            - Camera sensor type None means geometric sensor
+          * - :py:attr:`~axis_system`
+            - Location of the sensor Origin
+          * - :py:attr:`~distortion_file_uri`
+            - distortion file location
+          * - :py:attr:`~focal_length`
+            - Default focal length of the Camera Sensor.
+          * - :py:attr:`~imager_distance`
+            - Default imager distance of the camera sensor.
+          * - :py:attr:`~f_number`
+            - Default f number of the camera sensor.
+          * - :py:attr:`~horz_pixel`
+            - Default pixel number in horizontal direction.
+          * - :py:attr:`~vert_pixel`
+            - Default pixel number in vertical direction.
+          * - :py:attr:`~width`
+            - Default width of the camera chip.
+          * - :py:attr:`~height`
+            - Default height of the camera chip.
+          * - :py:attr:`~trajectory_fil_uri`
+            - Trajectory file information.
+          * - :py:attr:`~lxp_path_number`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import CameraSensorParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: sensor_type_parameters
+   :type:  Union[None, PhotometricCameraParameters]
+
+   
+   Camera sensor type None means geometric sensor
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: axis_system
+   :type:  list[float]
+   :value: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+
+   
+   Location of the sensor Origin
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: distortion_file_uri
+   :type:  Union[str, pathlib.Path]
+   :value: ''
+
+
+   
+   distortion file location
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: focal_length
+   :type:  float
+   :value: 5
+
+
+   
+   Default focal length of the Camera Sensor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: imager_distance
+   :type:  float
+   :value: 10
+
+
+   
+   Default imager distance of the camera sensor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: f_number
+   :type:  float
+   :value: 20
+
+
+   
+   Default f number of the camera sensor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: horz_pixel
+   :type:  int
+   :value: 640
+
+
+   
+   Default pixel number in horizontal direction.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: vert_pixel
+   :type:  int
+   :value: 480
+
+
+   
+   Default pixel number in vertical direction.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: width
+   :type:  float
+   :value: 5.0
+
+
+   
+   Default width of the camera chip.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: height
+   :type:  float
+   :value: 5.0
+
+
+   
+   Default height of the camera chip.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: trajectory_fil_uri
+   :type:  Union[str, pathlib.Path]
+   :value: ''
+
+
+   
+   Trajectory file information.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: lxp_path_number
+   :type:  Optional[int]
+   :value: None
+
+
+
+
+
+

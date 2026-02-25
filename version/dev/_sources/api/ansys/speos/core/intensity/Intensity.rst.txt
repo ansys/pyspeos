@@ -1,0 +1,415 @@
+
+
+
+
+
+
+:class:`Intensity`
+==================
+
+.. toctree::
+   :hidden:
+
+    Library</api/ansys/speos/core/intensity/Intensity.Library>
+    Gaussian</api/ansys/speos/core/intensity/Intensity.Gaussian>
+
+
+.. py:class:: ansys.speos.core.intensity.Intensity(speos_client, name, description = '', metadata = None, intensity_props_to_complete = None, key = '')
+
+   
+   Speos feature : Intensity.
+
+   By default, a lambertian intensity is created (cos with N=1 and total_angle=180).
+
+   :Parameters:
+
+       **speos_client** : :obj:`ansys.speos.core.kernel.client.SpeosClient`
+           The Speos instance client.
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **description** : :class:`python:str`
+           Description of the feature.
+           By default, ``""``.
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]]
+           Metadata of the feature.
+           By default, ``{}``.
+
+       **intensity_props_to_complete** :     :obj:`ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.IntensityProperties`, :obj:`optional`
+           Intensity properties to complete.
+           By default, ``None``.
+
+       **key** : :class:`python:str`
+           Creation from an IntensityTemplateLink key
+
+   :Attributes:
+
+       **intensity_template_link** : :obj:`ansys.speos.core.kernel.intensity_template.IntensityTemplateLink`
+           Link object for the intensity template in database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+.. py:currentmodule:: Intensity
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_library`
+            - Set the intensity as library.
+          * - :py:attr:`~set_cos`
+            - Set the intensity as cos.
+          * - :py:attr:`~set_gaussian`
+            - Set the intensity as gaussian.
+          * - :py:attr:`~commit`
+            - Save feature: send the local data to the speos server database.
+          * - :py:attr:`~reset`
+            - Reset feature: override local data by the one from the speos server database.
+          * - :py:attr:`~delete`
+            - Delete feature: delete data from the speos server database.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~type`
+            - Return type of sensor.
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~intensity_template_link`
+            - Link object for the intensity template in database.
+
+
+
+   .. tab-item:: Special methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~__str__`
+            - Return the string representation of the intensity.
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.intensity import Intensity
+
+Property detail
+---------------
+
+.. py:property:: type
+   :type: type
+
+
+   
+   Return type of sensor.
+
+
+
+
+
+   :Returns:
+
+       Example: :data:`python:None` :obj:`for` :obj:`lambertian` or :obj:`ansys.speos.core.intensity.Intensity.Library`
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: intensity_template_link
+   :value: None
+
+
+   
+   Link object for the intensity template in database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_library()
+
+   
+   Set the intensity as library.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.intensity.Intensity.Library`
+           Library intensity.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_cos(n = 3, total_angle = 180)
+
+   
+   Set the intensity as cos.
+
+
+   :Parameters:
+
+       **n** : :class:`python:float`
+           Order of cos law.
+           By default, ``3``.
+
+       **total_angle** : :class:`python:float`
+           Total angle in degrees of the emission of the light source.
+           By default, ``180.0``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.intensity.Intensity`
+           Intensity feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_gaussian()
+
+   
+   Set the intensity as gaussian.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.intensity.Intensity.Gaussian`
+           Gaussian intensity.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: __str__()
+
+   
+   Return the string representation of the intensity.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: commit()
+
+   
+   Save feature: send the local data to the speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.intensity.Intensity`
+           Intensity feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: reset()
+
+   
+   Reset feature: override local data by the one from the speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.intensity.Intensity`
+           Intensity feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: delete()
+
+   
+   Delete feature: delete data from the speos server database.
+
+   The local data are still available
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.intensity.Intensity`
+           Intensity feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+    ansys.speos.core.intensity.Intensity.Library
+    ansys.speos.core.intensity.Intensity.Gaussian
+
+
+
+

@@ -1,0 +1,126 @@
+
+
+
+
+
+
+:class:`LayerBySequenceParameters`
+==================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.LayerBySequenceParameters
+
+   
+   Layer separation type Parameters  for Sequence separation.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: LayerBySequenceParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~maximum_nb_of_sequence`
+            - Maximum number of sequencese stored in Speos Result file
+          * - :py:attr:`~sequence_type`
+            - Defines how sequences are calculated
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import LayerBySequenceParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: maximum_nb_of_sequence
+   :type:  int
+   :value: 10
+
+
+   
+   Maximum number of sequencese stored in Speos Result file
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: sequence_type
+   :type:  Union[SequenceTypes, SequenceTypes]
+
+   
+   Defines how sequences are calculated
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

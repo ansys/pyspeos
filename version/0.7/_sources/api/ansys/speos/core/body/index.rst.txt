@@ -1,0 +1,80 @@
+
+
+
+
+
+
+The ``body.py`` module
+======================
+
+.. py:module:: ansys.speos.core.body
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: body
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.body.Body`
+            - Feature : Body.
+
+
+
+
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> Body</api/ansys/speos/core/body/Body>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides a way to interact with feature: Body.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+

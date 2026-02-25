@@ -1,0 +1,100 @@
+
+
+
+
+
+
+:class:`LayerByIncidenceAngleParameters`
+========================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.LayerByIncidenceAngleParameters
+
+   
+   Layer separation type Parameters for Incidence angle separation.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: LayerByIncidenceAngleParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~incidence_sampling`
+            - Define Number of incidence angle layers
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import LayerByIncidenceAngleParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: incidence_sampling
+   :type:  int
+   :value: 9
+
+
+   
+   Define Number of incidence angle layers
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

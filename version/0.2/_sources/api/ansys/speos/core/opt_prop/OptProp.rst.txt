@@ -1,0 +1,570 @@
+
+
+
+
+
+
+:class:`OptProp`
+================
+
+.. py:class:: ansys.speos.core.opt_prop.OptProp(project, name, description = '', metadata = None)
+
+   
+   Speos feature: optical property.
+
+   By default, a mirror 100% is chosen as surface optical property, without any volume optical property.
+   By default, the optical property is applied to no geometry.
+
+   :Parameters:
+
+       **project** : :obj:`project.Project`
+           Project that will own the feature.
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **description** : :class:`python:str`, :obj:`optional`
+           Description of the feature.
+           By default, ``""``.
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]], :obj:`optional`
+           Metadata of the feature.
+           By default, ``None``.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+.. py:currentmodule:: OptProp
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_surface_mirror`
+            - Perfect specular surface.
+          * - :py:attr:`~set_surface_opticalpolished`
+            - Transparent or perfectly polished material (glass, plastic).
+          * - :py:attr:`~set_surface_library`
+            - Based on surface optical properties file.
+          * - :py:attr:`~set_volume_none`
+            - No volume optical property.
+          * - :py:attr:`~set_volume_opaque`
+            - Non transparent material.
+          * - :py:attr:`~set_volume_optic`
+            - Transparent colorless material without bulk scattering.
+          * - :py:attr:`~set_volume_library`
+            - Based on \*.material file.
+          * - :py:attr:`~set_geometries`
+            - Select geometries on which the optical properties will be applied.
+          * - :py:attr:`~get`
+            - Get dictionary corresponding to the project - read only.
+          * - :py:attr:`~commit`
+            - Save feature: send the local data to the speos server database.
+          * - :py:attr:`~reset`
+            - Reset feature: override local data by the one from the speos server database.
+          * - :py:attr:`~delete`
+            - Delete feature: delete data from the speos server database.
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~sop_template_link`
+            - Link object for the sop template in database.
+          * - :py:attr:`~vop_template_link`
+            - Link object for the vop template in database.
+
+
+
+   .. tab-item:: Special methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~__str__`
+            - Return the string representation of the optical property.
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.opt_prop import OptProp
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: sop_template_link
+   :value: None
+
+
+   
+   Link object for the sop template in database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: vop_template_link
+   :value: None
+
+
+   
+   Link object for the vop template in database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_surface_mirror(reflectance = 100)
+
+   
+   Perfect specular surface.
+
+
+   :Parameters:
+
+       **reflectance** : :class:`python:float`
+           Reflectance, expected from 0. to 100. in %.
+           By default, ``100``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.opt_prop.OptProp`
+           Optical property.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_surface_opticalpolished()
+
+   
+   Transparent or perfectly polished material (glass, plastic).
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.opt_prop.OptProp`
+           Optical property.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_surface_library(path)
+
+   
+   Based on surface optical properties file.
+
+
+   :Parameters:
+
+       **path** : :class:`python:str`
+           Surface optical properties file, \*.scattering, \*.bsdf, \*.brdf, \*.coated, ...
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.opt_prop.OptProp`
+           Optical property.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_volume_none()
+
+   
+   No volume optical property.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.opt_prop.OptProp`
+           Optical property.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_volume_opaque()
+
+   
+   Non transparent material.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.opt_prop.OptProp`
+           Optical property.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_volume_optic(index = 1.5, absorption = 0, constringence = None)
+
+   
+   Transparent colorless material without bulk scattering.
+
+
+   :Parameters:
+
+       **index** : :class:`python:float`
+           Refractive index.
+           By default, ``1.5``.
+
+       **absorption** : :class:`python:float`
+           Absorption coefficient value. mm-1.
+           By default, ``0``.
+
+       **constringence** : :class:`python:float`, :obj:`optional`
+           Abbe number.
+           By default, ``None``, means no constringence.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.opt_prop.OptProp`
+           Optical property.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_volume_library(path)
+
+   
+   Based on \*.material file.
+
+
+   :Parameters:
+
+       **path** : :class:`python:str`
+           \*.material file
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.opt_prop.OptProp`
+           Optical property.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_geometries(geometries = None)
+
+   
+   Select geometries on which the optical properties will be applied.
+
+
+   :Parameters:
+
+       **geometries** : :obj:`List`\[:obj:`ansys.speos.core.geo_ref.GeoRef`], :obj:`optional`
+           List of geometries. Giving an empty list means "All geometries"
+           By default, ``None``, means "no geometry".
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.opt_prop.OptProp`
+           Optical property.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: get(key = '')
+
+   
+   Get dictionary corresponding to the project - read only.
+
+
+   :Parameters:
+
+       **key: str**
+           ..
+
+
+
+   :Returns:
+
+       :class:`python:str` | :class:`python:dict`
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: __str__()
+
+   
+   Return the string representation of the optical property.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: commit()
+
+   
+   Save feature: send the local data to the speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.opt_prop.OptProp`
+           Optical Property feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: reset()
+
+   
+   Reset feature: override local data by the one from the speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.opt_prop.OptProp`
+           OptProp feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: delete()
+
+   
+   Delete feature: delete data from the speos server database.
+
+   The local data are still available
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.opt_prop.OptProp`
+           OptProp feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

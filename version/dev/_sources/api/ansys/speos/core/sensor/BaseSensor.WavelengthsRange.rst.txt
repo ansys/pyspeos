@@ -1,0 +1,194 @@
+
+
+
+
+
+
+:class:`WavelengthsRange`
+=========================
+
+
+.. py:class:: ansys.speos.core.sensor.BaseSensor.WavelengthsRange(wavelengths_range, default_parameters = None, stable_ctr = False)
+
+   
+   Range of wavelengths.
+
+   By default, a range from 400nm to 700nm is chosen, with a sampling of 13.
+
+   :Parameters:
+
+       **wavelengths_range** : :obj:`ansys.api.speos.sensor.v1.common_pb2.WavelengthsRange`
+           Wavelengths range protobuf object to modify.
+
+       **default_parameters** :         :obj:`ansys.speos.core.generic.parameters.WavelengthsRangeParameters`, :obj:`optional`
+           If defined the values in the sensor instance will be overwritten by the values of the
+           data class
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_wavelengths_range method available in
+   sensor classes.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: WavelengthsRange
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~start`
+            - Minimum wavelength of the range.
+          * - :py:attr:`~end`
+            - Maximum wavelength of the range.
+          * - :py:attr:`~sampling`
+            - Wavelength sampling of between start and end value.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.sensor.BaseSensor import WavelengthsRange
+
+Property detail
+---------------
+
+.. py:property:: start
+   :type: float
+
+
+   
+   Minimum wavelength of the range.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Minimum wavelength (nm). By default, ``400``.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Lower Bound of the wavelength range.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: end
+   :type: float
+
+
+   
+   Maximum wavelength of the range.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Maximum wavelength (nm). By default, ``700``.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Upper Bound of the wavelength range.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: sampling
+   :type: int
+
+
+   
+   Wavelength sampling of between start and end value.
+
+
+   :Parameters:
+
+       **value** : :class:`python:int`
+           Number of wavelengths to be taken into account between the minimum and maximum
+           wavelengths range. By default, ``13``.
+
+
+
+   :Returns:
+
+       :class:`python:int`
+           Number of Samples used to split the wavelength range.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+

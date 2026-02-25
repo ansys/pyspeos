@@ -1,0 +1,87 @@
+
+
+
+
+
+
+:class:`ColorBalanceModeTypes`
+==============================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.ColorBalanceModeTypes
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   
+   Color Balance Mode types without parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: ColorBalanceModeTypes
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~none`
+            - 
+          * - :py:attr:`~grey_world`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import ColorBalanceModeTypes
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: none
+   :value: 'none'
+
+
+.. py:attribute:: grey_world
+   :value: 'grey_world'
+
+
+
+
+
+

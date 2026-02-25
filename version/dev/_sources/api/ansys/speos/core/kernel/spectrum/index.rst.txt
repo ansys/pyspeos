@@ -1,0 +1,125 @@
+
+
+
+
+
+
+The ``spectrum.py`` module
+==========================
+
+.. py:module:: ansys.speos.core.kernel.spectrum
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: spectrum
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.spectrum.SpectrumLink`
+            - Link object for a spectrum in database.
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.spectrum.SpectrumStub`
+            - Database interactions for spectrums.
+
+
+
+
+
+
+    .. tab-item:: Attributes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ProtoSpectrum`
+            - Spectrum protobuf class : ansys.api.speos.spectrum.v1.spectrum_pb2.Spectrum
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> SpectrumLink</api/ansys/speos/core/kernel/spectrum/SpectrumLink>
+    <span class="nf nf-cod-symbol_class"></span> SpectrumStub</api/ansys/speos/core/kernel/spectrum/SpectrumStub>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides a wrapped abstraction of the gRPC proto API definition and stubs.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+.. py:data:: ProtoSpectrum
+
+   
+   Spectrum protobuf class : ansys.api.speos.spectrum.v1.spectrum_pb2.Spectrum
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+

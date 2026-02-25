@@ -1,0 +1,1802 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>How to create a simulation &#8212; ansys-speos-core 0.8.dev0 documentation</title>
+  
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/ansys-sphinx-theme.css?v=a23b20f3" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/ansys-sphinx-theme.css?v=a23b20f3" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://www.nerdfonts.com/assets/css/webfont.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nbsphinx-code-cells.css?v=789c53a9" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=0670e955" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+
+  <!-- Include desired assets -->
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  
+
+  
+    <link href="../../_static/css/breadcrumbs.css" rel="stylesheet" />
+  
+    <script src="../../_static/documentation_options.js?v=9cceaa3c"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'examples/core/simulation';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://speos.docs.pyansys.com/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <link rel="icon" href="../../_static/ansys-favicon.png"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="How to preview a light expert result" href="lpf-preview.html" />
+    <link rel="prev" title="How to create a part" href="part.html" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.8.dev0" />
+  <meta property="og:site_name" content="PyAnsys" />
+  <meta name="physics" content="Optics" />
+  <link rel="canonical" href="https://speos.docs.pyansys.com/version/stable/examples/core/simulation.html" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+
+<a class="navbar-brand logo" href="https://docs.pyansys.com/">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/pyansys_logo_transparent_black.png" class="logo__image only-light" alt="ansys-speos-core 0.8.dev0 documentation - Home"/>
+    <img src="../../_static/pyansys_logo_transparent_white.png" class="logo__image only-dark pst-js-only" alt="ansys-speos-core 0.8.dev0 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../index.html" title="ansys-speos-core 0.8.dev0 documentation home">Home</a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../overview/index.html">
+    Overview
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../examples.html">
+    Examples
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../contributing.html">
+    Contribute
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../changelog.html">
+    Release notes
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav>
+</div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+      
+        <div class="navbar-item">
+<div class="search-bar pst-js-only" id="search-bar">
+  <form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="search" class="form-control" name="q" placeholder="Search the docs ..."
+      aria-label="Search the docs ..." autocomplete="off" autocorrect="off"
+      autocapitalize="off" spellcheck="false" />
+    <span class="search-button__kbd-shortcut">
+      <kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd>
+    </span>
+  </form>
+  
+  <div id="static-search-results" class="static-search-results" style="display:none;" tabindex="0"></div>
+  
+</div></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ansys/pyspeos" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+  
+    
+<!--
+  Announcement Version Loader
+  Dynamically loads the announcement.html content into the announcement_msg div.
+-->
+<div id="announcement_msg" aria-live="polite"></div>
+<script>
+  // Fetch and inject the announcement HTML content
+  fetch("announcement.html")
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status} Announcement.html file not found, Please ignore this, if you are in dev/stable documentation`);
+      }
+      return response.text();
+    })
+    .then((text) => {
+      var msgDiv = document.getElementById("announcement_msg");
+      if (msgDiv) {
+        msgDiv.innerHTML = text;
+      }
+    })
+    .catch((error) => {
+      // Log only unexpected fetch errors
+      if (!(error.message && error.message.startsWith("HTTP error: 404"))) {
+        console.error(`Fetch problem: ${error.message} Announcement.html could not be loaded.`);
+      }
+    });
+</script>
+  
+
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../index.html" title="ansys-speos-core 0.8.dev0 documentation home">Home</a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../overview/index.html">
+    Overview
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../examples.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../contributing.html">
+    Contribute
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../changelog.html">
+    Release notes
+  </a>
+</li>
+
+  </ul>
+</nav>
+</div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="search-bar pst-js-only" id="search-bar">
+  <form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="search" class="form-control" name="q" placeholder="Search the docs ..."
+      aria-label="Search the docs ..." autocomplete="off" autocorrect="off"
+      autocapitalize="off" spellcheck="false" />
+    <span class="search-button__kbd-shortcut">
+      <kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd>
+    </span>
+  </form>
+  
+  <div id="static-search-results" class="static-search-results" style="display:none;" tabindex="0"></div>
+  
+</div></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ansys/pyspeos" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">Workflow examples</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../workflow/open-result.html">How to open result (MS Windows OS only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../workflow/combine-speos.html">Moving car example by combining Speos files</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Core examples</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="project.html">How to create a project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="opt-prop.html">How to create an optical property</a></li>
+<li class="toctree-l1"><a class="reference internal" href="source.html">How to create a source</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sensor.html">How to create a sensor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="part.html">How to create a part</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">How to create a simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lpf-preview.html">How to preview a light expert result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prism-example.html">Prism example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bsdf.html">How to create a anisotropic bsdf file</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Kernel examples</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../kernel/object-link.html">Define constants</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="../kernel/scene-job.html">How to use scene and job</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../kernel/modify-scene.html">How to modify scene elements</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+<nav aria-label="Breadcrumb">
+  <ul class="bd-breadcrumbs">
+     
+    <li class="breadcrumb-item breadcrumb-home">
+      <a
+        href="../../index.html"
+        class="nav-link"
+        aria-label="Home"
+      >
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+     
+    <li class="breadcrumb-item">
+      <a href="../../examples.html" class="nav-link">Examples</a>
+    </li>
+      
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">How to create a simulation</span></li>
+    
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <blockquote>
+<div><div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
+<div class="sd-row sd-row-cols-5 sd-row-cols-xs-5 sd-row-cols-sm-5 sd-row-cols-md-5 sd-row-cols-lg-5 docutils">
+<div class="sd-col sd-d-flex-column docutils">
+</div>
+<div class="sd-col sd-d-flex-column sd-align-major-center docutils">
+<p><a class="sd-sphinx-override sd-btn sd-text-wrap sd-btn-primary sd-shadow-sm reference external" href="https://speos.docs.pyansys.com/version/dev/examples/core/simulation.py"><span>Download as Python script <span class="fab fa-python"></span></span></a></p>
+</div>
+<div class="sd-col sd-d-flex-column sd-align-major-center docutils">
+<p><a class="sd-sphinx-override sd-btn sd-text-wrap sd-btn-primary sd-shadow-sm reference external" href="https://speos.docs.pyansys.com/version/dev/examples/core/simulation.ipynb"><span> Download as Jupyter notebook <span class="fas fa-book"></span></span></a></p>
+</div>
+<div class="sd-col sd-d-flex-column sd-align-major-center docutils">
+<p><a class="sd-sphinx-override sd-btn sd-text-wrap sd-btn-primary sd-shadow-sm reference external" href="https://speos.docs.pyansys.com/version/dev/_static/assets/download/assets.zip"><span> Download example’s assets <span class="fa fa-file"></span></span></a></p>
+</div>
+<div class="sd-col sd-d-flex-column docutils">
+</div>
+</div>
+</div>
+</div></blockquote>
+<hr class="docutils" />
+<section id="How-to-create-a-simulation">
+<h1>How to create a simulation<a class="headerlink" href="#How-to-create-a-simulation" title="Link to this heading">#</a></h1>
+<p>This tutorial demonstrates how to create a simulation.</p>
+<section id="What-is-a-simulation?">
+<h2>What is a simulation?<a class="headerlink" href="#What-is-a-simulation?" title="Link to this heading">#</a></h2>
+<p>A simulation contains selected sensors, sources to model ray-trace in space.</p>
+</section>
+<section id="Prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#Prerequisites" title="Link to this heading">#</a></h2>
+<section id="Perform-imports">
+<h3>Perform imports<a class="headerlink" href="#Perform-imports" title="Link to this heading">#</a></h3>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ansys.speos.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Speos</span><span class="p">,</span> <span class="n">launcher</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ansys.speos.core.kernel.client</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">default_docker_channel</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ansys.speos.core.simulation</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SimulationInteractive</span><span class="p">,</span>
+    <span class="n">SimulationInverse</span><span class="p">,</span>
+    <span class="n">SimulationVirtualBSDF</span><span class="p">,</span>
+<span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+</section>
+<section id="Define-constants">
+<h3>Define constants<a class="headerlink" href="#Define-constants" title="Link to this heading">#</a></h3>
+<p>The constants help ensure consistency and avoid repetition throughout the example.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">HOSTNAME</span> <span class="o">=</span> <span class="s2">&quot;localhost&quot;</span>
+<span class="n">GRPC_PORT</span> <span class="o">=</span> <span class="mi">50098</span>  <span class="c1"># Be sure the Speos GRPC Server has been started on this port.</span>
+<span class="n">USE_DOCKER</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Set to False if you&#39;re running this example locally as a Notebook.</span>
+<span class="n">SOURCE_NAME</span> <span class="o">=</span> <span class="s2">&quot;Surface.1&quot;</span>
+<span class="n">SENSOR_NAME</span> <span class="o">=</span> <span class="s2">&quot;Irradiance.1&quot;</span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+<section id="Model-Setup">
+<h2>Model Setup<a class="headerlink" href="#Model-Setup" title="Link to this heading">#</a></h2>
+<section id="Load-assets">
+<h3>Load assets<a class="headerlink" href="#Load-assets" title="Link to this heading">#</a></h3>
+<p>The assets used to run this example are available in the <a class="reference external" href="https://github.com/ansys/pyspeos/">PySpeos repository</a> on GitHub.</p>
+<blockquote>
+<div><p><strong>Note:</strong> Make sure you have downloaded simulation assets and set <code class="docutils literal notranslate"><span class="pre">assets_data_path</span></code> to point to the assets folder.</p>
+</div></blockquote>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">USE_DOCKER</span><span class="p">:</span>  <span class="c1"># Running on the remote server.</span>
+    <span class="n">assets_data_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;/app&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;assets&quot;</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">assets_data_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;/path/to/your/download/assets/directory&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Connect-to-the-RPC-Server">
+<h3>Connect to the RPC Server<a class="headerlink" href="#Connect-to-the-RPC-Server" title="Link to this heading">#</a></h3>
+<p>This Python client connects to a server where the Speos engine is running as a service. In this example, the server and client are the same machine. The launch_local_speos_rpc_method can be used to start a local instance of the service..</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">USE_DOCKER</span><span class="p">:</span>
+    <span class="n">speos</span> <span class="o">=</span> <span class="n">Speos</span><span class="p">(</span><span class="n">channel</span><span class="o">=</span><span class="n">default_docker_channel</span><span class="p">())</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">speos</span> <span class="o">=</span> <span class="n">launcher</span><span class="o">.</span><span class="n">launch_local_speos_rpc_server</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="n">GRPC_PORT</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/home/runner/work/pyspeos/pyspeos/.venv/lib/python3.13/site-packages/ansys/tools/common/cyberchannel.py:188: UserWarning: Starting gRPC client without TLS on localhost:50098. This is INSECURE. Consider using a secure connection.
+  warn(f&#34;Starting gRPC client without TLS on {target}. This is INSECURE. Consider using a secure connection.&#34;)
+</pre></div></div>
+</div>
+</section>
+<section id="Create-a-new-project">
+<h3>Create a new project<a class="headerlink" href="#Create-a-new-project" title="Link to this heading">#</a></h3>
+<p>The only way to create a simulation using the core layer, is to create it from a project. The <code class="docutils literal notranslate"><span class="pre">Project</span></code> class is instantiated by passing a <code class="docutils literal notranslate"><span class="pre">Speos</span></code> instance.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">p</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">speos</span><span class="o">=</span><span class="n">speos</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{
+    &#34;name&#34;: &#34;&#34;,
+    &#34;description&#34;: &#34;&#34;,
+    &#34;metadata&#34;: {},
+    &#34;part_guid&#34;: &#34;&#34;,
+    &#34;sources&#34;: [],
+    &#34;sensors&#34;: [],
+    &#34;simulations&#34;: [],
+    &#34;materials&#34;: [],
+    &#34;scenes&#34;: []
+}
+</pre></div></div>
+</div>
+</section>
+<section id="Prepare-prerequisites">
+<h3>Prepare prerequisites<a class="headerlink" href="#Prepare-prerequisites" title="Link to this heading">#</a></h3>
+<p>Create the necessary elements for a simulation: Sensor, source, root part, optical property are prerequisites.</p>
+</section>
+<section id="Prepare-the-root-part">
+<h3>Prepare the root part<a class="headerlink" href="#Prepare-the-root-part" title="Link to this heading">#</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">root_part</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">create_root_part</span><span class="p">()</span>
+<span class="n">body_1</span> <span class="o">=</span> <span class="n">root_part</span><span class="o">.</span><span class="n">create_body</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Body.1&quot;</span><span class="p">)</span>
+<span class="n">face_1</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">body_1</span><span class="o">.</span><span class="n">create_face</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Face.1&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">set_vertices</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+    <span class="o">.</span><span class="n">set_facets</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+    <span class="o">.</span><span class="n">set_normals</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="p">)</span>
+<span class="n">root_part</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;ansys.speos.core.part.Part at 0x7fd1b0820830&gt;
+</pre></div></div>
+</div>
+</section>
+<section id="Prepare-an-optical-property">
+<h3>Prepare an optical property<a class="headerlink" href="#Prepare-an-optical-property" title="Link to this heading">#</a></h3>
+<p>Create Optical Property</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">opt_prop</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">create_optical_property</span><span class="p">(</span><span class="s2">&quot;Material.1&quot;</span><span class="p">)</span>
+<span class="n">opt_prop</span><span class="o">.</span><span class="n">set_volume_opaque</span><span class="p">()</span><span class="o">.</span><span class="n">set_surface_mirror</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;ansys.speos.core.opt_prop.OptProp at 0x7fd1b0822660&gt;
+</pre></div></div>
+</div>
+<p>Choose the geometry for this optical property : Body.1</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">opt_prop</span><span class="o">.</span><span class="n">set_geometries</span><span class="p">(</span><span class="n">geometries</span><span class="o">=</span><span class="p">[</span><span class="n">body_1</span><span class="p">])</span>
+<span class="n">opt_prop</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;ansys.speos.core.opt_prop.OptProp at 0x7fd1b0822660&gt;
+</pre></div></div>
+</div>
+</section>
+<section id="Prepare-an-irradiance-sensor">
+<h3>Prepare an irradiance sensor<a class="headerlink" href="#Prepare-an-irradiance-sensor" title="Link to this heading">#</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sensor1</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">create_sensor</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">SENSOR_NAME</span><span class="p">)</span>
+<span class="c1"># set type to colorimetric or spectral so that the sensor can be used both in</span>
+<span class="c1"># direct and inverse simulation</span>
+<span class="n">sensor1</span><span class="o">.</span><span class="n">set_type_colorimetric</span><span class="p">()</span>
+<span class="n">sensor1</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;ansys.speos.core.sensor.SensorIrradiance at 0x7fd1b0822e40&gt;
+</pre></div></div>
+</div>
+</section>
+<section id="Prepare-a-surface-source">
+<h3>Prepare a surface source<a class="headerlink" href="#Prepare-a-surface-source" title="Link to this heading">#</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">source1</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">create_source</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">SOURCE_NAME</span><span class="p">)</span>
+<span class="n">source1</span><span class="o">.</span><span class="n">set_exitance_constant</span><span class="p">(</span><span class="n">geometries</span><span class="o">=</span><span class="p">[(</span><span class="n">face_1</span><span class="p">,</span> <span class="kc">True</span><span class="p">)])</span>
+<span class="c1"># define a spectrum which is not monochromatic so it can be used in both direct and inverse</span>
+<span class="c1"># simulation</span>
+<span class="n">source1</span><span class="o">.</span><span class="n">set_spectrum</span><span class="p">()</span><span class="o">.</span><span class="n">set_blackbody</span><span class="p">()</span>
+<span class="n">source1</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/home/runner/work/pyspeos/pyspeos/.venv/lib/python3.13/site-packages/ansys/speos/core/project.py:216: UserWarning: The pySpeos feature : SourceSurface needs a Speos Version of 2025 R2 SP0 or higher.
+  feature = SourceSurface(
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;ansys.speos.core.source.SourceSurface at 0x7fd1b0823620&gt;
+</pre></div></div>
+</div>
+</section>
+</section>
+<section id="Create-a-simulation">
+<h2>Create a simulation<a class="headerlink" href="#Create-a-simulation" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">simulation1</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">create_simulation</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Simulation.1&quot;</span><span class="p">)</span>
+<span class="n">simulation1</span><span class="o">.</span><span class="n">set_sensor_paths</span><span class="p">([</span><span class="n">SENSOR_NAME</span><span class="p">])</span><span class="o">.</span><span class="n">set_source_paths</span><span class="p">([</span><span class="n">SOURCE_NAME</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">simulation1</span><span class="p">)</span>
+<span class="n">simulation1</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">simulation1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+local: {
+    &#34;name&#34;: &#34;Simulation.1&#34;,
+    &#34;sensor_paths&#34;: [
+        &#34;Irradiance.1&#34;
+    ],
+    &#34;source_paths&#34;: [
+        &#34;Surface.1&#34;
+    ],
+    &#34;description&#34;: &#34;&#34;,
+    &#34;metadata&#34;: {},
+    &#34;simulation_guid&#34;: &#34;&#34;,
+    &#34;simulation&#34;: {
+        &#34;direct_mc_simulation_template&#34;: {
+            &#34;geom_distance_tolerance&#34;: 0.01,
+            &#34;max_impact&#34;: 100,
+            &#34;weight&#34;: {
+                &#34;minimum_energy_percentage&#34;: 0.005
+            },
+            &#34;dispersion&#34;: true,
+            &#34;colorimetric_standard&#34;: &#34;CIE_1931&#34;,
+            &#34;fast_transmission_gathering&#34;: false,
+            &#34;ambient_material_uri&#34;: &#34;&#34;,
+            &#34;stop_condition_rays_number&#34;: &#34;200000&#34;,
+            &#34;automatic_save_frequency&#34;: 1800
+        },
+        &#34;name&#34;: &#34;Simulation.1&#34;,
+        &#34;description&#34;: &#34;&#34;,
+        &#34;metadata&#34;: {},
+        &#34;scene_guid&#34;: &#34;4652157f-4f8f-40fc-8a70-3d9116d100f5&#34;,
+        &#34;simulation_path&#34;: &#34;Simulation.1&#34;,
+        &#34;job_type&#34;: &#34;CPU&#34;
+    }
+}
+{
+    &#34;name&#34;: &#34;Simulation.1&#34;,
+    &#34;metadata&#34;: {
+        &#34;UniqueId&#34;: &#34;34a33c46-2641-4854-b1a2-68c1c91dcf27&#34;
+    },
+    &#34;simulation_guid&#34;: &#34;69047d98-a436-48d7-9f7d-106468d1d9db&#34;,
+    &#34;sensor_paths&#34;: [
+        &#34;Irradiance.1&#34;
+    ],
+    &#34;source_paths&#34;: [
+        &#34;Surface.1&#34;
+    ],
+    &#34;description&#34;: &#34;&#34;,
+    &#34;simulation&#34;: {
+        &#34;direct_mc_simulation_template&#34;: {
+            &#34;geom_distance_tolerance&#34;: 0.01,
+            &#34;max_impact&#34;: 100,
+            &#34;weight&#34;: {
+                &#34;minimum_energy_percentage&#34;: 0.005
+            },
+            &#34;dispersion&#34;: true,
+            &#34;colorimetric_standard&#34;: &#34;CIE_1931&#34;,
+            &#34;fast_transmission_gathering&#34;: false,
+            &#34;ambient_material_uri&#34;: &#34;&#34;,
+            &#34;stop_condition_rays_number&#34;: &#34;200000&#34;,
+            &#34;automatic_save_frequency&#34;: 1800
+        },
+        &#34;name&#34;: &#34;Simulation.1&#34;,
+        &#34;description&#34;: &#34;&#34;,
+        &#34;metadata&#34;: {},
+        &#34;scene_guid&#34;: &#34;4652157f-4f8f-40fc-8a70-3d9116d100f5&#34;,
+        &#34;simulation_path&#34;: &#34;Simulation.1&#34;,
+        &#34;job_type&#34;: &#34;CPU&#34;
+    }
+}
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/home/runner/work/pyspeos/pyspeos/.venv/lib/python3.13/site-packages/ansys/speos/core/project.py:308: UserWarning: The pySpeos feature : SimulationDirect needs a Speos Version of 2025 R2 SP0 or higher.
+  feature = SimulationDirect(
+/home/runner/work/pyspeos/pyspeos/.venv/lib/python3.13/site-packages/ansys/speos/core/simulation.py:966: UserWarning: Please note that setting a value for light expert option forces a sensorcommit when committing the Simulation class
+  self.set_light_expert()
+</pre></div></div>
+</div>
+<section id="Set-simulation-characteristics">
+<h3>Set simulation characteristics<a class="headerlink" href="#Set-simulation-characteristics" title="Link to this heading">#</a></h3>
+<p>Simulation is defined with the same default values as the GUI speos.</p>
+<p>If the user would like to modify the simulation characteristics, it is possible to do so by setting the simulation characteristics as below.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">simulation2_direct</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">create_simulation</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Simulation.2&quot;</span><span class="p">)</span>
+<span class="n">simulation2_direct</span><span class="o">.</span><span class="n">set_ambient_material_file_uri</span><span class="p">(</span>
+    <span class="n">uri</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">assets_data_path</span> <span class="o">/</span> <span class="s2">&quot;AIR.material&quot;</span><span class="p">)</span>
+<span class="p">)</span><span class="o">.</span><span class="n">set_colorimetric_standard_CIE_1964</span><span class="p">()</span><span class="o">.</span><span class="n">set_weight_none</span><span class="p">()</span><span class="o">.</span><span class="n">set_dispersion</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">simulation2_direct</span><span class="o">.</span><span class="n">geom_distance_tolerance</span> <span class="o">=</span> <span class="mf">0.01</span>
+<span class="n">simulation2_direct</span><span class="o">.</span><span class="n">max_impact</span> <span class="o">=</span> <span class="mi">200</span>
+<span class="n">simulation2_direct</span><span class="o">.</span><span class="n">set_sensor_paths</span><span class="p">([</span><span class="n">SENSOR_NAME</span><span class="p">])</span><span class="o">.</span><span class="n">set_source_paths</span><span class="p">([</span><span class="n">SOURCE_NAME</span><span class="p">])</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">simulation2_direct</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{
+    &#34;name&#34;: &#34;Simulation.2&#34;,
+    &#34;metadata&#34;: {
+        &#34;UniqueId&#34;: &#34;c5a833fe-3c56-4a0c-af9a-b8ef187029fa&#34;
+    },
+    &#34;simulation_guid&#34;: &#34;a063adfc-febf-42b4-9197-ac638b5a5a0e&#34;,
+    &#34;sensor_paths&#34;: [
+        &#34;Irradiance.1&#34;
+    ],
+    &#34;source_paths&#34;: [
+        &#34;Surface.1&#34;
+    ],
+    &#34;description&#34;: &#34;&#34;,
+    &#34;simulation&#34;: {
+        &#34;direct_mc_simulation_template&#34;: {
+            &#34;geom_distance_tolerance&#34;: 0.01,
+            &#34;max_impact&#34;: 200,
+            &#34;colorimetric_standard&#34;: &#34;CIE_1964&#34;,
+            &#34;ambient_material_uri&#34;: &#34;/app/assets/AIR.material&#34;,
+            &#34;dispersion&#34;: false,
+            &#34;fast_transmission_gathering&#34;: false,
+            &#34;stop_condition_rays_number&#34;: &#34;200000&#34;,
+            &#34;automatic_save_frequency&#34;: 1800
+        },
+        &#34;name&#34;: &#34;Simulation.2&#34;,
+        &#34;description&#34;: &#34;&#34;,
+        &#34;metadata&#34;: {},
+        &#34;scene_guid&#34;: &#34;4652157f-4f8f-40fc-8a70-3d9116d100f5&#34;,
+        &#34;simulation_path&#34;: &#34;Simulation.2&#34;,
+        &#34;job_type&#34;: &#34;CPU&#34;
+    }
+}
+</pre></div></div>
+</div>
+</section>
+<section id="Read-information">
+<h3>Read information<a class="headerlink" href="#Read-information" title="Link to this heading">#</a></h3>
+<p>Read simulation information</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">simulation1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{
+    &#34;name&#34;: &#34;Simulation.1&#34;,
+    &#34;metadata&#34;: {
+        &#34;UniqueId&#34;: &#34;34a33c46-2641-4854-b1a2-68c1c91dcf27&#34;
+    },
+    &#34;simulation_guid&#34;: &#34;69047d98-a436-48d7-9f7d-106468d1d9db&#34;,
+    &#34;sensor_paths&#34;: [
+        &#34;Irradiance.1&#34;
+    ],
+    &#34;source_paths&#34;: [
+        &#34;Surface.1&#34;
+    ],
+    &#34;description&#34;: &#34;&#34;,
+    &#34;simulation&#34;: {
+        &#34;direct_mc_simulation_template&#34;: {
+            &#34;geom_distance_tolerance&#34;: 0.01,
+            &#34;max_impact&#34;: 100,
+            &#34;weight&#34;: {
+                &#34;minimum_energy_percentage&#34;: 0.005
+            },
+            &#34;dispersion&#34;: true,
+            &#34;colorimetric_standard&#34;: &#34;CIE_1931&#34;,
+            &#34;fast_transmission_gathering&#34;: false,
+            &#34;ambient_material_uri&#34;: &#34;&#34;,
+            &#34;stop_condition_rays_number&#34;: &#34;200000&#34;,
+            &#34;automatic_save_frequency&#34;: 1800
+        },
+        &#34;name&#34;: &#34;Simulation.1&#34;,
+        &#34;description&#34;: &#34;&#34;,
+        &#34;metadata&#34;: {},
+        &#34;scene_guid&#34;: &#34;4652157f-4f8f-40fc-8a70-3d9116d100f5&#34;,
+        &#34;simulation_path&#34;: &#34;Simulation.1&#34;,
+        &#34;job_type&#34;: &#34;CPU&#34;
+    }
+}
+</pre></div></div>
+</div>
+<p>Read project information</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{
+    &#34;part_guid&#34;: &#34;41ad00af-4d85-4efa-b743-783edc591b38&#34;,
+    &#34;sources&#34;: [
+        {
+            &#34;name&#34;: &#34;Surface.1&#34;,
+            &#34;metadata&#34;: {
+                &#34;UniqueId&#34;: &#34;e794d51a-a361-4192-80f0-74da9313d1fb&#34;
+            },
+            &#34;source_guid&#34;: &#34;ab687aa8-bd68-420f-8a6c-d916f1e9f68a&#34;,
+            &#34;description&#34;: &#34;&#34;,
+            &#34;source&#34;: {
+                &#34;name&#34;: &#34;Surface.1&#34;,
+                &#34;surface&#34;: {
+                    &#34;luminous_flux&#34;: {
+                        &#34;luminous_value&#34;: 683.0
+                    },
+                    &#34;intensity_guid&#34;: &#34;e447003a-81ff-4d8d-8f2f-cc9a3f26e2bb&#34;,
+                    &#34;exitance_constant&#34;: {
+                        &#34;geo_paths&#34;: [
+                            {
+                                &#34;geo_path&#34;: &#34;Body.1/Face.1&#34;,
+                                &#34;reverse_normal&#34;: true
+                            }
+                        ]
+                    },
+                    &#34;spectrum_guid&#34;: &#34;42140681-5073-4fee-8db4-26781c9d101d&#34;,
+                    &#34;intensity&#34;: {
+                        &#34;name&#34;: &#34;Surface.1.Intensity&#34;,
+                        &#34;cos&#34;: {
+                            &#34;N&#34;: 1.0,
+                            &#34;total_angle&#34;: 180.0
+                        },
+                        &#34;description&#34;: &#34;&#34;,
+                        &#34;metadata&#34;: {}
+                    },
+                    &#34;spectrum&#34;: {
+                        &#34;name&#34;: &#34;Surface.1.Spectrum&#34;,
+                        &#34;blackbody&#34;: {
+                            &#34;temperature&#34;: 2856.0
+                        },
+                        &#34;description&#34;: &#34;&#34;,
+                        &#34;metadata&#34;: {}
+                    }
+                },
+                &#34;description&#34;: &#34;&#34;,
+                &#34;metadata&#34;: {}
+            }
+        }
+    ],
+    &#34;sensors&#34;: [
+        {
+            &#34;name&#34;: &#34;Irradiance.1&#34;,
+            &#34;metadata&#34;: {
+                &#34;UniqueId&#34;: &#34;67bb18aa-98a2-4e24-84c2-1a6bc6646bb9&#34;
+            },
+            &#34;sensor_guid&#34;: &#34;ec721d90-90e0-4200-83a6-2ad0b0410895&#34;,
+            &#34;description&#34;: &#34;&#34;,
+            &#34;result_file_name&#34;: &#34;&#34;,
+            &#34;sensor&#34;: {
+                &#34;irradiance_sensor_template&#34;: {
+                    &#34;sensor_type_colorimetric&#34;: {
+                        &#34;wavelengths_range&#34;: {
+                            &#34;w_start&#34;: 400.0,
+                            &#34;w_end&#34;: 700.0,
+                            &#34;w_sampling&#34;: 13
+                        }
+                    },
+                    &#34;illuminance_type_planar&#34;: {},
+                    &#34;dimensions&#34;: {
+                        &#34;x_start&#34;: -50.0,
+                        &#34;x_end&#34;: 50.0,
+                        &#34;x_sampling&#34;: 100,
+                        &#34;y_start&#34;: -50.0,
+                        &#34;y_end&#34;: 50.0,
+                        &#34;y_sampling&#34;: 100
+                    },
+                    &#34;axis_system&#34;: [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    &#34;layer_type_none&#34;: {},
+                    &#34;ray_file_type&#34;: &#34;RayFileNone&#34;,
+                    &#34;integration_direction&#34;: []
+                },
+                &#34;name&#34;: &#34;Irradiance.1&#34;,
+                &#34;description&#34;: &#34;&#34;,
+                &#34;metadata&#34;: {}
+            }
+        }
+    ],
+    &#34;simulations&#34;: [
+        {
+            &#34;name&#34;: &#34;Simulation.1&#34;,
+            &#34;metadata&#34;: {
+                &#34;UniqueId&#34;: &#34;34a33c46-2641-4854-b1a2-68c1c91dcf27&#34;
+            },
+            &#34;simulation_guid&#34;: &#34;69047d98-a436-48d7-9f7d-106468d1d9db&#34;,
+            &#34;sensor_paths&#34;: [
+                &#34;Irradiance.1&#34;
+            ],
+            &#34;source_paths&#34;: [
+                &#34;Surface.1&#34;
+            ],
+            &#34;description&#34;: &#34;&#34;,
+            &#34;simulation&#34;: {
+                &#34;direct_mc_simulation_template&#34;: {
+                    &#34;geom_distance_tolerance&#34;: 0.01,
+                    &#34;max_impact&#34;: 100,
+                    &#34;weight&#34;: {
+                        &#34;minimum_energy_percentage&#34;: 0.005
+                    },
+                    &#34;dispersion&#34;: true,
+                    &#34;colorimetric_standard&#34;: &#34;CIE_1931&#34;,
+                    &#34;fast_transmission_gathering&#34;: false,
+                    &#34;ambient_material_uri&#34;: &#34;&#34;,
+                    &#34;stop_condition_rays_number&#34;: &#34;200000&#34;,
+                    &#34;automatic_save_frequency&#34;: 1800
+                },
+                &#34;name&#34;: &#34;Simulation.1&#34;,
+                &#34;description&#34;: &#34;&#34;,
+                &#34;metadata&#34;: {},
+                &#34;scene_guid&#34;: &#34;4652157f-4f8f-40fc-8a70-3d9116d100f5&#34;,
+                &#34;simulation_path&#34;: &#34;Simulation.1&#34;,
+                &#34;job_type&#34;: &#34;CPU&#34;
+            }
+        },
+        {
+            &#34;name&#34;: &#34;Simulation.2&#34;,
+            &#34;metadata&#34;: {
+                &#34;UniqueId&#34;: &#34;c5a833fe-3c56-4a0c-af9a-b8ef187029fa&#34;
+            },
+            &#34;simulation_guid&#34;: &#34;a063adfc-febf-42b4-9197-ac638b5a5a0e&#34;,
+            &#34;sensor_paths&#34;: [
+                &#34;Irradiance.1&#34;
+            ],
+            &#34;source_paths&#34;: [
+                &#34;Surface.1&#34;
+            ],
+            &#34;description&#34;: &#34;&#34;,
+            &#34;simulation&#34;: {
+                &#34;direct_mc_simulation_template&#34;: {
+                    &#34;geom_distance_tolerance&#34;: 0.01,
+                    &#34;max_impact&#34;: 200,
+                    &#34;colorimetric_standard&#34;: &#34;CIE_1964&#34;,
+                    &#34;ambient_material_uri&#34;: &#34;/app/assets/AIR.material&#34;,
+                    &#34;dispersion&#34;: false,
+                    &#34;fast_transmission_gathering&#34;: false,
+                    &#34;stop_condition_rays_number&#34;: &#34;200000&#34;,
+                    &#34;automatic_save_frequency&#34;: 1800
+                },
+                &#34;name&#34;: &#34;Simulation.2&#34;,
+                &#34;description&#34;: &#34;&#34;,
+                &#34;metadata&#34;: {},
+                &#34;scene_guid&#34;: &#34;4652157f-4f8f-40fc-8a70-3d9116d100f5&#34;,
+                &#34;simulation_path&#34;: &#34;Simulation.2&#34;,
+                &#34;job_type&#34;: &#34;CPU&#34;
+            }
+        }
+    ],
+    &#34;materials&#34;: [
+        {
+            &#34;name&#34;: &#34;Material.1&#34;,
+            &#34;metadata&#34;: {
+                &#34;UniqueId&#34;: &#34;3bd1dda8-c949-4972-8d8c-ebedb80926a5&#34;
+            },
+            &#34;vop_guid&#34;: &#34;07345ba8-ea6e-4001-8eeb-243510537824&#34;,
+            &#34;geometries&#34;: {
+                &#34;geo_paths&#34;: [
+                    &#34;Body.1&#34;
+                ]
+            },
+            &#34;sop_guid&#34;: &#34;8ce8940d-072f-4440-b127-3dd59a40107f&#34;,
+            &#34;description&#34;: &#34;&#34;,
+            &#34;sop_guids&#34;: [],
+            &#34;vop&#34;: {
+                &#34;name&#34;: &#34;Material.1.VOP&#34;,
+                &#34;opaque&#34;: {},
+                &#34;description&#34;: &#34;&#34;,
+                &#34;metadata&#34;: {}
+            },
+            &#34;sop&#34;: {
+                &#34;name&#34;: &#34;Material.1.SOP&#34;,
+                &#34;mirror&#34;: {
+                    &#34;reflectance&#34;: 100.0
+                },
+                &#34;description&#34;: &#34;&#34;,
+                &#34;metadata&#34;: {}
+            }
+        }
+    ],
+    &#34;name&#34;: &#34;&#34;,
+    &#34;description&#34;: &#34;&#34;,
+    &#34;metadata&#34;: {},
+    &#34;scenes&#34;: []
+}
+</pre></div></div>
+</div>
+</section>
+</section>
+<section id="Update-simulation-settings">
+<h2>Update simulation settings<a class="headerlink" href="#Update-simulation-settings" title="Link to this heading">#</a></h2>
+<p>If you are manipulating a simulation already committed, remember to commit your changes.</p>
+<p>If you don’t, you will still only watch what is committed on the server.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">simulation1</span><span class="o">.</span><span class="n">set_ambient_material_file_uri</span><span class="p">(</span><span class="n">uri</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">assets_data_path</span> <span class="o">/</span> <span class="s2">&quot;AIR.material&quot;</span><span class="p">))</span>
+<span class="n">simulation1</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">simulation1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{
+    &#34;name&#34;: &#34;Simulation.1&#34;,
+    &#34;metadata&#34;: {
+        &#34;UniqueId&#34;: &#34;34a33c46-2641-4854-b1a2-68c1c91dcf27&#34;
+    },
+    &#34;simulation_guid&#34;: &#34;69047d98-a436-48d7-9f7d-106468d1d9db&#34;,
+    &#34;sensor_paths&#34;: [
+        &#34;Irradiance.1&#34;
+    ],
+    &#34;source_paths&#34;: [
+        &#34;Surface.1&#34;
+    ],
+    &#34;description&#34;: &#34;&#34;,
+    &#34;simulation&#34;: {
+        &#34;direct_mc_simulation_template&#34;: {
+            &#34;geom_distance_tolerance&#34;: 0.01,
+            &#34;max_impact&#34;: 100,
+            &#34;weight&#34;: {
+                &#34;minimum_energy_percentage&#34;: 0.005
+            },
+            &#34;dispersion&#34;: true,
+            &#34;ambient_material_uri&#34;: &#34;/app/assets/AIR.material&#34;,
+            &#34;colorimetric_standard&#34;: &#34;CIE_1931&#34;,
+            &#34;fast_transmission_gathering&#34;: false,
+            &#34;stop_condition_rays_number&#34;: &#34;200000&#34;,
+            &#34;automatic_save_frequency&#34;: 1800
+        },
+        &#34;name&#34;: &#34;Simulation.1&#34;,
+        &#34;description&#34;: &#34;&#34;,
+        &#34;metadata&#34;: {},
+        &#34;scene_guid&#34;: &#34;4652157f-4f8f-40fc-8a70-3d9116d100f5&#34;,
+        &#34;simulation_path&#34;: &#34;Simulation.1&#34;,
+        &#34;job_type&#34;: &#34;CPU&#34;
+    }
+}
+</pre></div></div>
+</div>
+</section>
+<section id="Reset">
+<h2>Reset<a class="headerlink" href="#Reset" title="Link to this heading">#</a></h2>
+<p>Possibility to reset local values from the one available in the server.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">simulation1</span><span class="o">.</span><span class="n">max_impact</span> <span class="o">=</span> <span class="mi">1000</span>  <span class="c1"># adjust max impact but no commit</span>
+<span class="n">simulation1</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>  <span class="c1"># reset -&gt; this will apply the server value to the local value</span>
+<span class="n">simulation1</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>  <span class="c1"># delete (to display the local value with the below print)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">simulation1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+local: {
+    &#34;name&#34;: &#34;Simulation.1&#34;,
+    &#34;sensor_paths&#34;: [
+        &#34;Irradiance.1&#34;
+    ],
+    &#34;source_paths&#34;: [
+        &#34;Surface.1&#34;
+    ],
+    &#34;description&#34;: &#34;&#34;,
+    &#34;metadata&#34;: {},
+    &#34;simulation_guid&#34;: &#34;&#34;,
+    &#34;simulation&#34;: {
+        &#34;direct_mc_simulation_template&#34;: {
+            &#34;geom_distance_tolerance&#34;: 0.01,
+            &#34;max_impact&#34;: 100,
+            &#34;weight&#34;: {
+                &#34;minimum_energy_percentage&#34;: 0.005
+            },
+            &#34;dispersion&#34;: true,
+            &#34;ambient_material_uri&#34;: &#34;/app/assets/AIR.material&#34;,
+            &#34;colorimetric_standard&#34;: &#34;CIE_1931&#34;,
+            &#34;fast_transmission_gathering&#34;: false,
+            &#34;stop_condition_rays_number&#34;: &#34;200000&#34;,
+            &#34;automatic_save_frequency&#34;: 1800
+        },
+        &#34;name&#34;: &#34;Simulation.1&#34;,
+        &#34;description&#34;: &#34;&#34;,
+        &#34;metadata&#34;: {},
+        &#34;scene_guid&#34;: &#34;4652157f-4f8f-40fc-8a70-3d9116d100f5&#34;,
+        &#34;simulation_path&#34;: &#34;Simulation.1&#34;,
+        &#34;job_type&#34;: &#34;CPU&#34;
+    }
+}
+</pre></div></div>
+</div>
+</section>
+<section id="Other-simulation-examples">
+<h2>Other simulation examples<a class="headerlink" href="#Other-simulation-examples" title="Link to this heading">#</a></h2>
+<section id="Inverse-simulation">
+<h3>Inverse simulation<a class="headerlink" href="#Inverse-simulation" title="Link to this heading">#</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">simulation3</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">create_simulation</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Simulation.3&quot;</span><span class="p">,</span> <span class="n">feature_type</span><span class="o">=</span><span class="n">SimulationInverse</span><span class="p">)</span>
+<span class="n">simulation3</span><span class="o">.</span><span class="n">set_sensor_paths</span><span class="p">(</span><span class="n">sensor_paths</span><span class="o">=</span><span class="p">[</span><span class="n">SENSOR_NAME</span><span class="p">])</span><span class="o">.</span><span class="n">set_source_paths</span><span class="p">(</span>
+    <span class="n">source_paths</span><span class="o">=</span><span class="p">[</span><span class="n">SOURCE_NAME</span><span class="p">]</span>
+<span class="p">)</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">simulation3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/home/runner/work/pyspeos/pyspeos/.venv/lib/python3.13/site-packages/ansys/speos/core/project.py:315: UserWarning: The pySpeos feature : SimulationInverse needs a Speos Version of 2025 R2 SP0 or higher.
+  feature = SimulationInverse(
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{
+    &#34;name&#34;: &#34;Simulation.3&#34;,
+    &#34;metadata&#34;: {
+        &#34;UniqueId&#34;: &#34;40c2fe3c-288f-403b-8854-e423f5d5a393&#34;
+    },
+    &#34;simulation_guid&#34;: &#34;7771db1a-4c31-46cf-bc5e-f243edbebdc1&#34;,
+    &#34;sensor_paths&#34;: [
+        &#34;Irradiance.1&#34;
+    ],
+    &#34;source_paths&#34;: [
+        &#34;Surface.1&#34;
+    ],
+    &#34;description&#34;: &#34;&#34;,
+    &#34;simulation&#34;: {
+        &#34;inverse_mc_simulation_template&#34;: {
+            &#34;geom_distance_tolerance&#34;: 0.01,
+            &#34;max_impact&#34;: 100,
+            &#34;weight&#34;: {
+                &#34;minimum_energy_percentage&#34;: 0.005
+            },
+            &#34;number_of_gathering_rays_per_source&#34;: 1,
+            &#34;colorimetric_standard&#34;: &#34;CIE_1931&#34;,
+            &#34;dispersion&#34;: false,
+            &#34;splitting&#34;: false,
+            &#34;maximum_gathering_error&#34;: 0,
+            &#34;maximum_gathering_error_percentage&#34;: 0.0,
+            &#34;fast_transmission_gathering&#34;: false,
+            &#34;ambient_material_uri&#34;: &#34;&#34;,
+            &#34;optimized_propagation_none&#34;: {
+                &#34;stop_condition_passes_number&#34;: 5
+            },
+            &#34;automatic_save_frequency&#34;: 1800
+        },
+        &#34;name&#34;: &#34;Simulation.3&#34;,
+        &#34;description&#34;: &#34;&#34;,
+        &#34;metadata&#34;: {},
+        &#34;scene_guid&#34;: &#34;4652157f-4f8f-40fc-8a70-3d9116d100f5&#34;,
+        &#34;simulation_path&#34;: &#34;Simulation.3&#34;,
+        &#34;job_type&#34;: &#34;CPU&#34;
+    }
+}
+</pre></div></div>
+</div>
+</section>
+<section id="Interactive-simulation">
+<h3>Interactive simulation<a class="headerlink" href="#Interactive-simulation" title="Link to this heading">#</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">simulation4</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">create_simulation</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Simulation.4&quot;</span><span class="p">,</span> <span class="n">feature_type</span><span class="o">=</span><span class="n">SimulationInteractive</span><span class="p">)</span>
+<span class="n">simulation4</span><span class="o">.</span><span class="n">set_source_paths</span><span class="p">(</span><span class="n">source_paths</span><span class="o">=</span><span class="p">[</span><span class="n">SOURCE_NAME</span><span class="p">])</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">simulation4</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{
+    &#34;name&#34;: &#34;Simulation.4&#34;,
+    &#34;metadata&#34;: {
+        &#34;UniqueId&#34;: &#34;d02083bd-2dbe-4008-9bca-ce314bcb204a&#34;
+    },
+    &#34;simulation_guid&#34;: &#34;aa551c63-e7fd-45ac-87ca-ff73a6195007&#34;,
+    &#34;source_paths&#34;: [
+        &#34;Surface.1&#34;
+    ],
+    &#34;description&#34;: &#34;&#34;,
+    &#34;sensor_paths&#34;: [],
+    &#34;simulation&#34;: {
+        &#34;name&#34;: &#34;Simulation.4&#34;,
+        &#34;interactive_simulation_template&#34;: {
+            &#34;geom_distance_tolerance&#34;: 0.01,
+            &#34;max_impact&#34;: 100,
+            &#34;weight&#34;: {
+                &#34;minimum_energy_percentage&#34;: 0.005
+            },
+            &#34;colorimetric_standard&#34;: &#34;CIE_1931&#34;,
+            &#34;ambient_material_uri&#34;: &#34;&#34;,
+            &#34;rays_number_per_sources&#34;: [],
+            &#34;light_expert&#34;: false,
+            &#34;impact_report&#34;: false
+        },
+        &#34;description&#34;: &#34;&#34;,
+        &#34;metadata&#34;: {},
+        &#34;scene_guid&#34;: &#34;4652157f-4f8f-40fc-8a70-3d9116d100f5&#34;,
+        &#34;simulation_path&#34;: &#34;Simulation.4&#34;,
+        &#34;job_type&#34;: &#34;CPU&#34;
+    }
+}
+</pre></div></div>
+</div>
+</section>
+<section id="Virtual-BSDF-Bench-simulation">
+<h3>Virtual BSDF Bench simulation<a class="headerlink" href="#Virtual-BSDF-Bench-simulation" title="Link to this heading">#</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Change the material property from mirror to bsdf type</span>
+<span class="n">opt_prop</span><span class="o">.</span><span class="n">set_surface_library</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">assets_data_path</span> <span class="o">/</span> <span class="s2">&quot;R_test.anisotropicbsdf&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+<span class="n">vbb</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">create_simulation</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;virtual_BSDF&quot;</span><span class="p">,</span> <span class="n">feature_type</span><span class="o">=</span><span class="n">SimulationVirtualBSDF</span><span class="p">)</span>
+<span class="n">vbb</span><span class="o">.</span><span class="n">axis_system</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="mf">0.36</span><span class="p">,</span>
+    <span class="mf">1.73</span><span class="p">,</span>
+    <span class="mf">2.0</span><span class="p">,</span>
+    <span class="mf">1.0</span><span class="p">,</span>
+    <span class="mf">0.0</span><span class="p">,</span>
+    <span class="mf">0.0</span><span class="p">,</span>
+    <span class="mf">0.0</span><span class="p">,</span>
+    <span class="mf">1.0</span><span class="p">,</span>
+    <span class="mf">0.0</span><span class="p">,</span>
+    <span class="mf">0.0</span><span class="p">,</span>
+    <span class="mf">0.0</span><span class="p">,</span>
+    <span class="mf">1.0</span><span class="p">,</span>
+<span class="p">]</span>  <span class="c1"># change the coordinate VBSDF to body center</span>
+<span class="n">vbb</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">vbb</span><span class="o">.</span><span class="n">compute_CPU</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[upload_response {
+  info {
+    uri: &#34;a324ec80-7e6c-455d-9f99-449a73c7ce64&#34;
+    file_name: &#34;virtual_BSDF.html&#34;
+    file_size: 27131
+  }
+  upload_duration {
+    nanos: 376533
+  }
+}
+, upload_response {
+  info {
+    uri: &#34;dd07fdc2-1fd7-406b-b289-d64bd7ae4d3d&#34;
+    file_name: &#34;virtual_BSDF.anisotropicbsdf&#34;
+    file_size: 1260827
+  }
+  upload_duration {
+    nanos: 2305804
+  }
+}
+]
+</pre></div></div>
+</div>
+</section>
+</section>
+<section id="Simulation-compute-and-stop">
+<h2>Simulation compute and stop<a class="headerlink" href="#Simulation-compute-and-stop" title="Link to this heading">#</a></h2>
+<p>The compute_CPU, compute_GPU calls are blocking. Thus it will return only once the simulation compute is finished.</p>
+<p>If you want to have the possibility to stop it before it is finished, here an example.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">threading</span><span class="w"> </span><span class="kn">import</span> <span class="n">Thread</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">time</span><span class="w"> </span><span class="kn">import</span> <span class="n">sleep</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Launch the compute_CPU in a thread and start the thread.</span>
+<span class="n">compute_thread</span> <span class="o">=</span> <span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">vbb</span><span class="o">.</span><span class="n">compute_CPU</span><span class="p">)</span>
+<span class="n">compute_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="c1"># Wait 2 seconds then stop_computation</span>
+<span class="n">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">vbb</span><span class="o">.</span><span class="n">stop_computation</span><span class="p">()</span>
+<span class="c1"># Join the compute_thread</span>
+<span class="n">compute_thread</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">speos</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+True
+</pre></div></div>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#What-is-a-simulation?">What is a simulation?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Prerequisites">Prerequisites</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Perform-imports">Perform imports</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Define-constants">Define constants</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Model-Setup">Model Setup</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Load-assets">Load assets</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Connect-to-the-RPC-Server">Connect to the RPC Server</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Create-a-new-project">Create a new project</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Prepare-prerequisites">Prepare prerequisites</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Prepare-the-root-part">Prepare the root part</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Prepare-an-optical-property">Prepare an optical property</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Prepare-an-irradiance-sensor">Prepare an irradiance sensor</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Prepare-a-surface-source">Prepare a surface source</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Create-a-simulation">Create a simulation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Set-simulation-characteristics">Set simulation characteristics</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Read-information">Read information</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Update-simulation-settings">Update simulation settings</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Reset">Reset</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Other-simulation-examples">Other simulation examples</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Inverse-simulation">Inverse simulation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Interactive-simulation">Interactive simulation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Virtual-BSDF-Bench-simulation">Virtual BSDF Bench simulation</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Simulation-compute-and-stop">Simulation compute and stop</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/examples/core/simulation.py.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+
+  <!-- Include desired assets -->
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.7/require.min.js"></script>
+
+<script>
+// Passing the search options to the search.js file
+const SEARCH_OPTIONS = JSON.parse('{"keys": ["title", "text", "objectID"], "limit": 10, "threshold": 0.2}');
+const SEARCH_FILE = "../../_static/search.json";
+const ADVANCE_SEARCH_PATH = "../../search.html";
+const EXTRA_SOURCES = JSON.parse('""');
+</script>
+
+
+<script src="../../_static/js/search.js"></script>
+
+  
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright (c) 2026 ANSYS, Inc. All rights reserved.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<!--
+  Theme Version Footer
+  Displays the Sphinx theme version and the last updated date.
+  Accessibility and semantic improvements included.
+-->
+<footer class="theme-version" aria-label="Theme version and last update">
+  <span>
+    
+      Built with the
+      <a href="https://sphinxdocs.ansys.com/version/stable/index.html" target="_blank" rel="noopener noreferrer">
+        Ansys Sphinx Theme
+      </a>
+      1.7.0.
+    
+  </span>
+  <br />
+  <span>Last updated on <time id="ast_build_date"></time></span>
+</footer>
+<script>
+  // Set the last updated date in a readable format
+  (function() {
+    var options = { day: "numeric", month: "long", year: "numeric" };
+    var ast_lastModifiedDate = new Date(document.lastModified);
+    var ast_build_date = ast_lastModifiedDate.toLocaleDateString("en-US", options);
+    var dateElem = document.getElementById("ast_build_date");
+    if (dateElem) {
+      dateElem.textContent = ast_build_date;
+    }
+  })();
+</script></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

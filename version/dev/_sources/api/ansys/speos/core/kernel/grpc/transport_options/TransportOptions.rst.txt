@@ -1,0 +1,118 @@
+
+
+
+
+
+
+:class:`TransportOptions`
+=========================
+
+
+.. py:class:: ansys.speos.core.kernel.grpc.transport_options.TransportOptions(mode = 'uds', options = None)
+
+   
+   Transport options for the FileTransfer Tool client.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: TransportOptions
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~create_channel`
+            - Create a gRPC channel based on the transport options.
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~mode`
+            - 
+          * - :py:attr:`~options`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.kernel.grpc.transport_options import TransportOptions
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: mode
+   :type:  TransportMode
+
+.. py:attribute:: options
+   :type:  UDSOptions | MTLSOptions | InsecureOptions | WNUAOptions
+
+
+
+Method detail
+-------------
+
+.. py:method:: create_channel(grpc_options)
+
+   
+   Create a gRPC channel based on the transport options.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

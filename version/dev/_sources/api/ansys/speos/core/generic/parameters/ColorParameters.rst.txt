@@ -1,0 +1,182 @@
+
+
+
+
+
+
+:class:`ColorParameters`
+========================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.ColorParameters
+
+   
+   Color mode Camera Parameter.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: ColorParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~balance_mode`
+            - Camera Balance mode.
+          * - :py:attr:`~red_spectrum_file_uri`
+            - Path to sensitivity spectrum of red Channel.
+          * - :py:attr:`~green_spectrum_file_uri`
+            - Path to sensitivity spectrum of green Channel.
+          * - :py:attr:`~blue_spectrum_file_uri`
+            - Path to sensitivity spectrum of blue Channel.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import ColorParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: balance_mode
+   :type:  Union[ColorBalanceModeTypes, ColorBalanceModeTypes, BalanceModeUserWhiteParameters, BalanceModeDisplayPrimariesParameters]
+
+   
+   Camera Balance mode.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: red_spectrum_file_uri
+   :type:  Union[str, pathlib.Path]
+   :value: ''
+
+
+   
+   Path to sensitivity spectrum of red Channel.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: green_spectrum_file_uri
+   :type:  Union[str, pathlib.Path]
+   :value: ''
+
+
+   
+   Path to sensitivity spectrum of green Channel.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: blue_spectrum_file_uri
+   :type:  Union[str, pathlib.Path]
+   :value: ''
+
+
+   
+   Path to sensitivity spectrum of blue Channel.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

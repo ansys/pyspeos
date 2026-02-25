@@ -1,0 +1,206 @@
+
+
+
+
+
+
+:class:`SOPTemplateLink`
+========================
+
+.. py:class:: ansys.speos.core.kernel.sop_template.SOPTemplateLink(db, key)
+
+   Bases: :py:obj:`ansys.speos.core.kernel.crud.CrudItem`
+
+
+   
+   Link object for Surface Optical Properties template in database.
+
+
+   :Parameters:
+
+       **db** : :obj:`ansys.speos.core.kernel.sop_template.SOPTemplateStub`
+           Database to link to.
+
+       **key** : :class:`python:str`
+           Key of the sop_template in the database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Examples
+
+   >>> from ansys.speos.core.speos import Speos
+   >>> from ansys.speos.core.kernel.sop_template import ProtoSOPTemplate
+   >>> speos = Speos(host="localhost", port=50098)
+   >>> sop_t_db = speos.client.sop_templates()
+   >>> sop_t_message = ProtoSOPTemplate(name="Mirror_50")
+   >>> sop_t_message.mirror.reflectance = 50
+   >>> sop_t_link = sop_t_db.create(message=sop_t_message)
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+.. py:currentmodule:: SOPTemplateLink
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~get`
+            - Get the datamodel from database.
+          * - :py:attr:`~set`
+            - Change datamodel in database.
+          * - :py:attr:`~delete`
+            - Remove datamodel from database.
+
+
+
+
+
+   .. tab-item:: Special methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~__str__`
+            - Return the string representation of the sop_template.
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.kernel.sop_template import SOPTemplateLink
+
+
+
+Method detail
+-------------
+
+.. py:method:: __str__()
+
+   
+   Return the string representation of the sop_template.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: get()
+
+   
+   Get the datamodel from database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`sop_template.SOPTemplate`
+           SOPTemplate datamodel.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set(data)
+
+   
+   Change datamodel in database.
+
+
+   :Parameters:
+
+       **data** : :obj:`sop_template.SOPTemplate`
+           New SOPTemplate datamodel.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: delete()
+
+   
+   Remove datamodel from database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

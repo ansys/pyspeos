@@ -1,0 +1,2022 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>How to create a source &#8212; ansys-speos-core 0.6.3 documentation</title>
+  
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/ansys-sphinx-theme.css?v=300e4a82" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/ansys-sphinx-theme.css?v=300e4a82" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://www.nerdfonts.com/assets/css/webfont.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nbsphinx-code-cells.css?v=789c53a9" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=0670e955" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+
+  <!-- Include desired assets -->
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  
+
+  
+    <link href="../../_static/css/breadcrumbs.css" rel="stylesheet" />
+  
+    <script src="../../_static/documentation_options.js?v=fd19c00e"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'examples/core/source';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://speos.docs.pyansys.com/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '0.6';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <link rel="icon" href="../../_static/ansys-favicon.png"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="How to create a sensor" href="sensor.html" />
+    <link rel="prev" title="How to create an optical property" href="opt-prop.html" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.6.3" />
+  <meta property="og:site_name" content="PyAnsys" />
+  <meta name="physics" content="Optics" />
+  <link rel="canonical" href="https://speos.docs.pyansys.com/version/stable/examples/core/source.html" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+
+<a class="navbar-brand logo" href="https://docs.pyansys.com/">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/pyansys_logo_transparent_black.png" class="logo__image only-light" alt="ansys-speos-core 0.6.3 documentation - Home"/>
+    <img src="../../_static/pyansys_logo_transparent_white.png" class="logo__image only-dark pst-js-only" alt="ansys-speos-core 0.6.3 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="index.html" title="ansys-speos-core 0.6.3 documentation home">
+    Home
+</a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../overview/index.html">
+    Overview
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../examples.html">
+    Examples
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../contributing.html">
+    Contribute
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../changelog.html">
+    Release notes
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav>
+</div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+      
+        <div class="navbar-item">
+<div class="search-bar pst-js-only" id="search-bar">
+  <form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="search" class="form-control" name="q" placeholder="Search the docs ..."
+      aria-label="Search the docs ..." autocomplete="off" autocorrect="off"
+      autocapitalize="off" spellcheck="false" />
+    <span class="search-button__kbd-shortcut">
+      <kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd>
+    </span>
+  </form>
+  <div id="static-search-results" class="static-search-results" style="display:none;" tabindex="0"></div>
+</div></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ansys/pyspeos" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+  
+    <div id="announcement_msg"></div>
+<script>
+  fetch("announcement.html")
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status}`);
+      }
+      return response.text();
+    })
+    .then(
+      (text) => (document.getElementById("announcement_msg").innerHTML = text),
+    )
+    .catch((error) => console.error(`Fetch problem: ${error.message}`));
+</script>
+  
+
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="index.html" title="ansys-speos-core 0.6.3 documentation home">
+    Home
+</a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../overview/index.html">
+    Overview
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../examples.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../contributing.html">
+    Contribute
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../changelog.html">
+    Release notes
+  </a>
+</li>
+
+  </ul>
+</nav>
+</div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="search-bar pst-js-only" id="search-bar">
+  <form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="search" class="form-control" name="q" placeholder="Search the docs ..."
+      aria-label="Search the docs ..." autocomplete="off" autocorrect="off"
+      autocapitalize="off" spellcheck="false" />
+    <span class="search-button__kbd-shortcut">
+      <kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd>
+    </span>
+  </form>
+  <div id="static-search-results" class="static-search-results" style="display:none;" tabindex="0"></div>
+</div></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ansys/pyspeos" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">Workflow examples</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../workflow/open-result.html">How to open result (MS Windows OS only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../workflow/combine-speos.html">Moving car example by combining Speos files</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Core examples</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="project.html">How to create a project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="opt-prop.html">How to create an optical property</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">How to create a source</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sensor.html">How to create a sensor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="part.html">How to create a part</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulation.html">How to create a simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lpf-preview.html">How to preview a light expert result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prism-example.html">Prism example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bsdf.html">How to create a anisotropic bsdf file</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Kernel examples</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../kernel/object-link.html">Define constants</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="../kernel/scene-job.html">How to use scene and job</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../kernel/modify-scene.html">How to modify scene elements</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+<nav aria-label="Breadcrumb">
+  <ul class="bd-breadcrumbs">
+     
+    <li class="breadcrumb-item breadcrumb-home">
+      <a
+        href="../../index.html"
+        class="nav-link"
+        aria-label="Home"
+      >
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+     
+    <li class="breadcrumb-item">
+      <a href="../../examples.html" class="nav-link">Examples</a>
+    </li>
+      
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">How to create a source</span></li>
+    
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <blockquote>
+<div><div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
+<div class="sd-row sd-row-cols-5 sd-row-cols-xs-5 sd-row-cols-sm-5 sd-row-cols-md-5 sd-row-cols-lg-5 docutils">
+<div class="sd-col sd-d-flex-column docutils">
+</div>
+<div class="sd-col sd-d-flex-column sd-align-major-center docutils">
+<p><a class="sd-sphinx-override sd-btn sd-text-wrap sd-btn-primary sd-shadow-sm reference external" href="https://speos.docs.pyansys.com/version/0.6/examples/core/source.py"><span>Download as Python script <span class="fab fa-python"></span></span></a></p>
+</div>
+<div class="sd-col sd-d-flex-column sd-align-major-center docutils">
+<p><a class="sd-sphinx-override sd-btn sd-text-wrap sd-btn-primary sd-shadow-sm reference external" href="https://speos.docs.pyansys.com/version/0.6/examples/core/source.ipynb"><span> Download as Jupyter notebook <span class="fas fa-book"></span></span></a></p>
+</div>
+<div class="sd-col sd-d-flex-column sd-align-major-center docutils">
+<p><a class="sd-sphinx-override sd-btn sd-text-wrap sd-btn-primary sd-shadow-sm reference external" href="https://speos.docs.pyansys.com/version/0.6/_static/assets/download/assets.zip"><span> Download example’s assets <span class="fa fa-file"></span></span></a></p>
+</div>
+<div class="sd-col sd-d-flex-column docutils">
+</div>
+</div>
+</div>
+</div></blockquote>
+<hr class="docutils" />
+<section id="How-to-create-a-source">
+<h1>How to create a source<a class="headerlink" href="#How-to-create-a-source" title="Link to this heading">#</a></h1>
+<p>This tutorial demonstrates how to create a source.</p>
+<p>There are different type of sources available: luminaire source, surface source, ray file source.</p>
+<section id="Prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#Prerequisites" title="Link to this heading">#</a></h2>
+<section id="Perform-imports">
+<h3>Perform imports<a class="headerlink" href="#Perform-imports" title="Link to this heading">#</a></h3>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ansys.speos.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">GeoRef</span><span class="p">,</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Speos</span><span class="p">,</span> <span class="n">launcher</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ansys.speos.core.source</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SourceAmbientNaturalLight</span><span class="p">,</span>
+    <span class="n">SourceLuminaire</span><span class="p">,</span>
+    <span class="n">SourceRayFile</span><span class="p">,</span>
+    <span class="n">SourceSurface</span><span class="p">,</span>
+<span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+</section>
+<section id="Define-constants">
+<h3>Define constants<a class="headerlink" href="#Define-constants" title="Link to this heading">#</a></h3>
+<p>Constants help ensure consistency and avoid repetition throughout the example.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">HOSTNAME</span> <span class="o">=</span> <span class="s2">&quot;localhost&quot;</span>
+<span class="n">GRPC_PORT</span> <span class="o">=</span> <span class="mi">50098</span>  <span class="c1"># Be sure the Speos GRPC Server has been started on this port.</span>
+<span class="n">USE_DOCKER</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Set to False if you&#39;re running this example locally as a Notebook.</span>
+<span class="n">IES</span> <span class="o">=</span> <span class="s2">&quot;IES_C_DETECTOR.ies&quot;</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Define-helper-functions">
+<h3>Define helper functions<a class="headerlink" href="#Define-helper-functions" title="Link to this heading">#</a></h3>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">create_helper_geometries</span><span class="p">(</span><span class="n">project</span><span class="p">:</span> <span class="n">Project</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create bodies and faces.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_face</span><span class="p">(</span><span class="n">body</span><span class="p">):</span>
+        <span class="p">(</span>
+            <span class="n">body</span><span class="o">.</span><span class="n">create_face</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;TheFaceF&quot;</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">set_vertices</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+            <span class="o">.</span><span class="n">set_facets</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+            <span class="o">.</span><span class="n">set_normals</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+            <span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        <span class="p">)</span>
+
+    <span class="n">root_part</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">create_root_part</span><span class="p">()</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+    <span class="n">body_b1</span> <span class="o">=</span> <span class="n">root_part</span><span class="o">.</span><span class="n">create_body</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;TheBodyB&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+    <span class="n">body_b2</span> <span class="o">=</span> <span class="n">root_part</span><span class="o">.</span><span class="n">create_body</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;TheBodyC&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+    <span class="n">body_b3</span> <span class="o">=</span> <span class="n">root_part</span><span class="o">.</span><span class="n">create_body</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;TheBodyD&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+    <span class="n">body_b4</span> <span class="o">=</span> <span class="n">root_part</span><span class="o">.</span><span class="n">create_body</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;TheBodyE&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="p">[</span><span class="n">body_b1</span><span class="p">,</span> <span class="n">body_b2</span><span class="p">,</span> <span class="n">body_b3</span><span class="p">,</span> <span class="n">body_b4</span><span class="p">]:</span>
+        <span class="n">create_face</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+<section id="Model-Setup">
+<h2>Model Setup<a class="headerlink" href="#Model-Setup" title="Link to this heading">#</a></h2>
+<section id="Load-assets">
+<h3>Load assets<a class="headerlink" href="#Load-assets" title="Link to this heading">#</a></h3>
+<p>The assets used to run this example are available in the <a class="reference external" href="https://github.com/ansys/pyspeos/">PySpeos repository</a> on GitHub.</p>
+<blockquote>
+<div><p><strong>Note:</strong> Make sure you have downloaded simulation assets and set <code class="docutils literal notranslate"><span class="pre">assets_data_path</span></code> to point to the assets folder.</p>
+</div></blockquote>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">USE_DOCKER</span><span class="p">:</span>  <span class="c1"># Running on the remote server.</span>
+    <span class="n">assets_data_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;/app&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;assets&quot;</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">assets_data_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;/path/to/your/download/assets/directory&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Connect-to-the-RPC-Server">
+<h3>Connect to the RPC Server<a class="headerlink" href="#Connect-to-the-RPC-Server" title="Link to this heading">#</a></h3>
+<p>This Python client connects to a server where the Speos engine is running as a service. In this example, the server and client are the same machine. The launch_local_speos_rpc_method can be used to start a local instance of the service.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">USE_DOCKER</span><span class="p">:</span>
+    <span class="n">speos</span> <span class="o">=</span> <span class="n">Speos</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="n">HOSTNAME</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">GRPC_PORT</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">speos</span> <span class="o">=</span> <span class="n">launcher</span><span class="o">.</span><span class="n">launch_local_speos_rpc_server</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="n">GRPC_PORT</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Create-a-new-project">
+<h3>Create a new project<a class="headerlink" href="#Create-a-new-project" title="Link to this heading">#</a></h3>
+<p>The only way to create a source using the core layer, is to create it from a project. The <code class="docutils literal notranslate"><span class="pre">Project</span></code> class is instantiated by passing a <code class="docutils literal notranslate"><span class="pre">Speos</span></code> instance</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">p</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">speos</span><span class="o">=</span><span class="n">speos</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{
+    &#34;name&#34;: &#34;&#34;,
+    &#34;description&#34;: &#34;&#34;,
+    &#34;metadata&#34;: {},
+    &#34;part_guid&#34;: &#34;&#34;,
+    &#34;sources&#34;: [],
+    &#34;sensors&#34;: [],
+    &#34;simulations&#34;: [],
+    &#34;materials&#34;: [],
+    &#34;scenes&#34;: []
+}
+</pre></div></div>
+</div>
+</section>
+<section id="Source-Creation">
+<h3>Source Creation<a class="headerlink" href="#Source-Creation" title="Link to this heading">#</a></h3>
+<p><strong>Create locally:</strong> The mention “local: “ is added when printing the source data and information is not yet pushed to the RPC server</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">intensity_file_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">assets_data_path</span> <span class="o">/</span> <span class="n">IES</span><span class="p">)</span>
+<span class="n">source1</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">create_source</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Luminaire.1&quot;</span><span class="p">,</span> <span class="n">feature_type</span><span class="o">=</span><span class="n">SourceLuminaire</span><span class="p">)</span>  <span class="c1"># type luminaire</span>
+<span class="n">source1</span><span class="o">.</span><span class="n">set_intensity_file_uri</span><span class="p">(</span><span class="n">uri</span><span class="o">=</span><span class="n">intensity_file_path</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">source1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+local: {
+    &#34;name&#34;: &#34;Luminaire.1&#34;,
+    &#34;description&#34;: &#34;&#34;,
+    &#34;metadata&#34;: {},
+    &#34;source_guid&#34;: &#34;&#34;,
+    &#34;source&#34;: {
+        &#34;name&#34;: &#34;Luminaire.1&#34;,
+        &#34;luminaire&#34;: {
+            &#34;flux_from_intensity_file&#34;: {},
+            &#34;intensity_file_uri&#34;: &#34;/app/assets/IES_C_DETECTOR.ies&#34;,
+            &#34;spectrum_guid&#34;: &#34;&#34;,
+            &#34;axis_system&#34;: [
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        &#34;description&#34;: &#34;&#34;,
+        &#34;metadata&#34;: {}
+    }
+}
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/home/runner/work/pyspeos/pyspeos/.venv/lib/python3.10/site-packages/ansys/speos/core/project.py:214: UserWarning: The pySpeos feature : SourceLuminaire needs a Speos Version of 2025 R2 SP0 or higher.
+  feature = SourceLuminaire(
+</pre></div></div>
+</div>
+<p><strong>Push it to the server.</strong></p>
+<p>After it is committed to the server, the mention “local: “ is no more present when printing the source.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">source1</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">source1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{
+    &#34;name&#34;: &#34;Luminaire.1&#34;,
+    &#34;metadata&#34;: {
+        &#34;UniqueId&#34;: &#34;d8e3994f-5316-429b-8e26-c613dc5f72a2&#34;
+    },
+    &#34;source_guid&#34;: &#34;a87e2522-d568-461e-b80c-3f410e70b353&#34;,
+    &#34;description&#34;: &#34;&#34;,
+    &#34;source&#34;: {
+        &#34;name&#34;: &#34;Luminaire.1&#34;,
+        &#34;luminaire&#34;: {
+            &#34;flux_from_intensity_file&#34;: {},
+            &#34;intensity_file_uri&#34;: &#34;/app/assets/IES_C_DETECTOR.ies&#34;,
+            &#34;spectrum_guid&#34;: &#34;4dac0e69-d0d3-48fa-8517-6fd29234dfb2&#34;,
+            &#34;spectrum&#34;: {
+                &#34;name&#34;: &#34;Luminaire.1.Spectrum&#34;,
+                &#34;predefined&#34;: {
+                    &#34;incandescent&#34;: {}
+                },
+                &#34;description&#34;: &#34;&#34;,
+                &#34;metadata&#34;: {}
+            },
+            &#34;axis_system&#34;: [
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        &#34;description&#34;: &#34;&#34;,
+        &#34;metadata&#34;: {}
+    }
+}
+</pre></div></div>
+</div>
+<p><strong>Changing additional Source Properties</strong></p>
+<p>Setting several more characteristics.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">intensity_file_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">assets_data_path</span> <span class="o">/</span> <span class="n">IES</span><span class="p">)</span>
+<span class="n">source2</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">create_source</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Luminaire.2&quot;</span><span class="p">,</span> <span class="n">feature_type</span><span class="o">=</span><span class="n">SourceLuminaire</span><span class="p">)</span>
+<span class="n">source2</span><span class="o">.</span><span class="n">set_intensity_file_uri</span><span class="p">(</span><span class="n">uri</span><span class="o">=</span><span class="n">intensity_file_path</span><span class="p">)</span>
+<span class="n">source2</span><span class="o">.</span><span class="n">set_flux_radiant</span><span class="p">()</span>  <span class="c1"># select flux radiant with default value</span>
+<span class="c1"># choose the source location [Origin, Xvector, Yvector, Zvector]</span>
+<span class="n">source2</span><span class="o">.</span><span class="n">set_axis_system</span><span class="p">(</span><span class="n">axis_system</span><span class="o">=</span><span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="n">source2</span><span class="o">.</span><span class="n">set_spectrum</span><span class="p">()</span><span class="o">.</span><span class="n">set_blackbody</span><span class="p">()</span>  <span class="c1"># choose blackbody with default value for the spectrum</span>
+<span class="n">source2</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>  <span class="c1"># Push to the server</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">source2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{
+    &#34;name&#34;: &#34;Luminaire.2&#34;,
+    &#34;metadata&#34;: {
+        &#34;UniqueId&#34;: &#34;06c594a3-173b-4cac-8ce8-7a43188c7ce6&#34;
+    },
+    &#34;source_guid&#34;: &#34;8ae1a4eb-62ed-40cf-85ad-f0b0f6908964&#34;,
+    &#34;description&#34;: &#34;&#34;,
+    &#34;source&#34;: {
+        &#34;name&#34;: &#34;Luminaire.2&#34;,
+        &#34;luminaire&#34;: {
+            &#34;radiant_flux&#34;: {
+                &#34;radiant_value&#34;: 1.0
+            },
+            &#34;intensity_file_uri&#34;: &#34;/app/assets/IES_C_DETECTOR.ies&#34;,
+            &#34;spectrum_guid&#34;: &#34;12be3621-1a33-40d1-a49b-1cec0e7c2e98&#34;,
+            &#34;spectrum&#34;: {
+                &#34;name&#34;: &#34;Luminaire.2.Spectrum&#34;,
+                &#34;blackbody&#34;: {
+                    &#34;temperature&#34;: 2856.0
+                },
+                &#34;description&#34;: &#34;&#34;,
+                &#34;metadata&#34;: {}
+            },
+            &#34;axis_system&#34;: [
+                20.0,
+                50.0,
+                10.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        &#34;description&#34;: &#34;&#34;,
+        &#34;metadata&#34;: {}
+    }
+}
+</pre></div></div>
+</div>
+<p><strong>Source Instance</strong></p>
+<p>As mention “local: “ is added if it is not yet committed to the server.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">source1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{
+    &#34;name&#34;: &#34;Luminaire.1&#34;,
+    &#34;metadata&#34;: {
+        &#34;UniqueId&#34;: &#34;d8e3994f-5316-429b-8e26-c613dc5f72a2&#34;
+    },
+    &#34;source_guid&#34;: &#34;a87e2522-d568-461e-b80c-3f410e70b353&#34;,
+    &#34;description&#34;: &#34;&#34;,
+    &#34;source&#34;: {
+        &#34;name&#34;: &#34;Luminaire.1&#34;,
+        &#34;luminaire&#34;: {
+            &#34;flux_from_intensity_file&#34;: {},
+            &#34;intensity_file_uri&#34;: &#34;/app/assets/IES_C_DETECTOR.ies&#34;,
+            &#34;spectrum_guid&#34;: &#34;4dac0e69-d0d3-48fa-8517-6fd29234dfb2&#34;,
+            &#34;spectrum&#34;: {
+                &#34;name&#34;: &#34;Luminaire.1.Spectrum&#34;,
+                &#34;predefined&#34;: {
+                    &#34;incandescent&#34;: {}
+                },
+                &#34;description&#34;: &#34;&#34;,
+                &#34;metadata&#34;: {}
+            },
+            &#34;axis_system&#34;: [
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        &#34;description&#34;: &#34;&#34;,
+        &#34;metadata&#34;: {}
+    }
+}
+</pre></div></div>
+</div>
+<p><strong>Project:</strong></p>
+<p>Committed feature will appear inside the project information.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{
+    &#34;sources&#34;: [
+        {
+            &#34;name&#34;: &#34;Luminaire.1&#34;,
+            &#34;metadata&#34;: {
+                &#34;UniqueId&#34;: &#34;d8e3994f-5316-429b-8e26-c613dc5f72a2&#34;
+            },
+            &#34;source_guid&#34;: &#34;a87e2522-d568-461e-b80c-3f410e70b353&#34;,
+            &#34;description&#34;: &#34;&#34;,
+            &#34;source&#34;: {
+                &#34;name&#34;: &#34;Luminaire.1&#34;,
+                &#34;luminaire&#34;: {
+                    &#34;flux_from_intensity_file&#34;: {},
+                    &#34;intensity_file_uri&#34;: &#34;/app/assets/IES_C_DETECTOR.ies&#34;,
+                    &#34;spectrum_guid&#34;: &#34;4dac0e69-d0d3-48fa-8517-6fd29234dfb2&#34;,
+                    &#34;spectrum&#34;: {
+                        &#34;name&#34;: &#34;Luminaire.1.Spectrum&#34;,
+                        &#34;predefined&#34;: {
+                            &#34;incandescent&#34;: {}
+                        },
+                        &#34;description&#34;: &#34;&#34;,
+                        &#34;metadata&#34;: {}
+                    },
+                    &#34;axis_system&#34;: [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ]
+                },
+                &#34;description&#34;: &#34;&#34;,
+                &#34;metadata&#34;: {}
+            }
+        },
+        {
+            &#34;name&#34;: &#34;Luminaire.2&#34;,
+            &#34;metadata&#34;: {
+                &#34;UniqueId&#34;: &#34;06c594a3-173b-4cac-8ce8-7a43188c7ce6&#34;
+            },
+            &#34;source_guid&#34;: &#34;8ae1a4eb-62ed-40cf-85ad-f0b0f6908964&#34;,
+            &#34;description&#34;: &#34;&#34;,
+            &#34;source&#34;: {
+                &#34;name&#34;: &#34;Luminaire.2&#34;,
+                &#34;luminaire&#34;: {
+                    &#34;radiant_flux&#34;: {
+                        &#34;radiant_value&#34;: 1.0
+                    },
+                    &#34;intensity_file_uri&#34;: &#34;/app/assets/IES_C_DETECTOR.ies&#34;,
+                    &#34;spectrum_guid&#34;: &#34;12be3621-1a33-40d1-a49b-1cec0e7c2e98&#34;,
+                    &#34;spectrum&#34;: {
+                        &#34;name&#34;: &#34;Luminaire.2.Spectrum&#34;,
+                        &#34;blackbody&#34;: {
+                            &#34;temperature&#34;: 2856.0
+                        },
+                        &#34;description&#34;: &#34;&#34;,
+                        &#34;metadata&#34;: {}
+                    },
+                    &#34;axis_system&#34;: [
+                        20.0,
+                        50.0,
+                        10.0,
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ]
+                },
+                &#34;description&#34;: &#34;&#34;,
+                &#34;metadata&#34;: {}
+            }
+        }
+    ],
+    &#34;name&#34;: &#34;&#34;,
+    &#34;description&#34;: &#34;&#34;,
+    &#34;metadata&#34;: {},
+    &#34;part_guid&#34;: &#34;&#34;,
+    &#34;sensors&#34;: [],
+    &#34;simulations&#34;: [],
+    &#34;materials&#34;: [],
+    &#34;scenes&#34;: []
+}
+</pre></div></div>
+</div>
+<p><strong>Update:</strong></p>
+<blockquote>
+<div><p><strong>Note:</strong> If you are manipulating a source already committed, don’t forget to commit your changes. If you don’t, you will still only watch what is committed on the server.</p>
+</div></blockquote>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">source1</span><span class="o">.</span><span class="n">set_flux_radiant</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mf">1.2</span><span class="p">)</span>  <span class="c1"># modify radiant flux value</span>
+<span class="n">source1</span><span class="o">.</span><span class="n">set_axis_system</span><span class="p">(</span><span class="n">axis_system</span><span class="o">=</span><span class="p">[</span><span class="mi">17</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>  <span class="c1"># modify axis system</span>
+<span class="n">source1</span><span class="o">.</span><span class="n">set_spectrum</span><span class="p">()</span><span class="o">.</span><span class="n">set_halogen</span><span class="p">()</span>  <span class="c1"># modify spectrum by choosing halogen</span>
+<span class="n">source1</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>  <span class="c1"># Push changes to the server</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">source1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{
+    &#34;name&#34;: &#34;Luminaire.1&#34;,
+    &#34;metadata&#34;: {
+        &#34;UniqueId&#34;: &#34;d8e3994f-5316-429b-8e26-c613dc5f72a2&#34;
+    },
+    &#34;source_guid&#34;: &#34;a87e2522-d568-461e-b80c-3f410e70b353&#34;,
+    &#34;description&#34;: &#34;&#34;,
+    &#34;source&#34;: {
+        &#34;name&#34;: &#34;Luminaire.1&#34;,
+        &#34;luminaire&#34;: {
+            &#34;radiant_flux&#34;: {
+                &#34;radiant_value&#34;: 1.2
+            },
+            &#34;intensity_file_uri&#34;: &#34;/app/assets/IES_C_DETECTOR.ies&#34;,
+            &#34;spectrum_guid&#34;: &#34;4dac0e69-d0d3-48fa-8517-6fd29234dfb2&#34;,
+            &#34;spectrum&#34;: {
+                &#34;name&#34;: &#34;Luminaire.1.Spectrum&#34;,
+                &#34;predefined&#34;: {
+                    &#34;halogen&#34;: {}
+                },
+                &#34;description&#34;: &#34;&#34;,
+                &#34;metadata&#34;: {}
+            },
+            &#34;axis_system&#34;: [
+                17.0,
+                10.0,
+                10.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        &#34;description&#34;: &#34;&#34;,
+        &#34;metadata&#34;: {}
+    }
+}
+</pre></div></div>
+</div>
+<p><strong>Reset</strong></p>
+<p>Possibility to reset local values from the one available in the server.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">source1</span><span class="o">.</span><span class="n">set_flux_luminous</span><span class="p">()</span>  <span class="c1"># modify to luminous flux BUT no commit</span>
+<span class="n">source1</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="c1"># reset -&gt; this will apply the server value to the local value the local value will be back to</span>
+<span class="c1"># halogen</span>
+<span class="n">source1</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>  <span class="c1"># delete (to display the local value with the below print)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">source1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+local: {
+    &#34;name&#34;: &#34;Luminaire.1&#34;,
+    &#34;description&#34;: &#34;&#34;,
+    &#34;metadata&#34;: {},
+    &#34;source_guid&#34;: &#34;&#34;,
+    &#34;source&#34;: {
+        &#34;name&#34;: &#34;Luminaire.1&#34;,
+        &#34;luminaire&#34;: {
+            &#34;radiant_flux&#34;: {
+                &#34;radiant_value&#34;: 1.2
+            },
+            &#34;intensity_file_uri&#34;: &#34;/app/assets/IES_C_DETECTOR.ies&#34;,
+            &#34;spectrum_guid&#34;: &#34;4dac0e69-d0d3-48fa-8517-6fd29234dfb2&#34;,
+            &#34;spectrum&#34;: {
+                &#34;name&#34;: &#34;Luminaire.1.Spectrum&#34;,
+                &#34;predefined&#34;: {
+                    &#34;halogen&#34;: {}
+                },
+                &#34;description&#34;: &#34;&#34;,
+                &#34;metadata&#34;: {}
+            },
+            &#34;axis_system&#34;: [
+                17.0,
+                10.0,
+                10.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        &#34;description&#34;: &#34;&#34;,
+        &#34;metadata&#34;: {}
+    }
+}
+</pre></div></div>
+</div>
+<p><strong>Delete</strong></p>
+<p>Once the data is deleted from the server, you can still work with local data and maybe commit later.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">source2</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">source2</span><span class="p">)</span>
+<span class="n">source1</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+local: {
+    &#34;name&#34;: &#34;Luminaire.2&#34;,
+    &#34;description&#34;: &#34;&#34;,
+    &#34;metadata&#34;: {},
+    &#34;source_guid&#34;: &#34;&#34;,
+    &#34;source&#34;: {
+        &#34;name&#34;: &#34;Luminaire.2&#34;,
+        &#34;luminaire&#34;: {
+            &#34;radiant_flux&#34;: {
+                &#34;radiant_value&#34;: 1.0
+            },
+            &#34;intensity_file_uri&#34;: &#34;/app/assets/IES_C_DETECTOR.ies&#34;,
+            &#34;spectrum_guid&#34;: &#34;12be3621-1a33-40d1-a49b-1cec0e7c2e98&#34;,
+            &#34;spectrum&#34;: {
+                &#34;name&#34;: &#34;Luminaire.2.Spectrum&#34;,
+                &#34;blackbody&#34;: {
+                    &#34;temperature&#34;: 2856.0
+                },
+                &#34;description&#34;: &#34;&#34;,
+                &#34;metadata&#34;: {}
+            },
+            &#34;axis_system&#34;: [
+                20.0,
+                50.0,
+                10.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        &#34;description&#34;: &#34;&#34;,
+        &#34;metadata&#34;: {}
+    }
+}
+{
+    &#34;name&#34;: &#34;&#34;,
+    &#34;description&#34;: &#34;&#34;,
+    &#34;metadata&#34;: {},
+    &#34;part_guid&#34;: &#34;&#34;,
+    &#34;sources&#34;: [],
+    &#34;sensors&#34;: [],
+    &#34;simulations&#34;: [],
+    &#34;materials&#34;: [],
+    &#34;scenes&#34;: []
+}
+</pre></div></div>
+</div>
+</section>
+</section>
+<section id="Other-Sources-Examples">
+<h2>Other Sources Examples<a class="headerlink" href="#Other-Sources-Examples" title="Link to this heading">#</a></h2>
+<section id="Ray-file-source">
+<h3>Ray-file source<a class="headerlink" href="#Ray-file-source" title="Link to this heading">#</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ray_file_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">assets_data_path</span> <span class="o">/</span> <span class="s2">&quot;Rays.ray&quot;</span><span class="p">)</span>
+
+<span class="n">source3</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">create_source</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Ray-file.1&quot;</span><span class="p">,</span> <span class="n">feature_type</span><span class="o">=</span><span class="n">SourceRayFile</span><span class="p">)</span>  <span class="c1"># type ray file</span>
+<span class="n">source3</span><span class="o">.</span><span class="n">set_ray_file_uri</span><span class="p">(</span><span class="n">uri</span><span class="o">=</span><span class="n">ray_file_path</span><span class="p">)</span>
+<span class="n">source3</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">source3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{
+    &#34;name&#34;: &#34;Ray-file.1&#34;,
+    &#34;metadata&#34;: {
+        &#34;UniqueId&#34;: &#34;7101a6f7-2693-48f3-a6f6-974f0b188161&#34;
+    },
+    &#34;source_guid&#34;: &#34;3d840457-f717-432f-8f49-9b5c9b5b203f&#34;,
+    &#34;description&#34;: &#34;&#34;,
+    &#34;source&#34;: {
+        &#34;name&#34;: &#34;Ray-file.1&#34;,
+        &#34;rayfile&#34;: {
+            &#34;ray_file_uri&#34;: &#34;/app/assets/Rays.ray&#34;,
+            &#34;flux_from_ray_file&#34;: {},
+            &#34;spectrum_from_ray_file&#34;: {},
+            &#34;axis_system&#34;: [
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        &#34;description&#34;: &#34;&#34;,
+        &#34;metadata&#34;: {}
+    }
+}
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/home/runner/work/pyspeos/pyspeos/.venv/lib/python3.10/site-packages/ansys/speos/core/project.py:207: UserWarning: The pySpeos feature : SourceRayFile needs a Speos Version of 2025 R2 SP0 or higher.
+  feature = SourceRayFile(
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">source3</span><span class="o">.</span><span class="n">set_flux_luminous</span><span class="p">()</span>
+<span class="n">source3</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">source3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{
+    &#34;name&#34;: &#34;Ray-file.1&#34;,
+    &#34;metadata&#34;: {
+        &#34;UniqueId&#34;: &#34;7101a6f7-2693-48f3-a6f6-974f0b188161&#34;
+    },
+    &#34;source_guid&#34;: &#34;3d840457-f717-432f-8f49-9b5c9b5b203f&#34;,
+    &#34;description&#34;: &#34;&#34;,
+    &#34;source&#34;: {
+        &#34;name&#34;: &#34;Ray-file.1&#34;,
+        &#34;rayfile&#34;: {
+            &#34;ray_file_uri&#34;: &#34;/app/assets/Rays.ray&#34;,
+            &#34;luminous_flux&#34;: {
+                &#34;luminous_value&#34;: 683.0
+            },
+            &#34;spectrum_from_ray_file&#34;: {},
+            &#34;axis_system&#34;: [
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        &#34;description&#34;: &#34;&#34;,
+        &#34;metadata&#34;: {}
+    }
+}
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">source3</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;ansys.speos.core.source.SourceRayFile at 0x7fbf783c87f0&gt;
+</pre></div></div>
+</div>
+</section>
+<section id="Surface-source">
+<h3>Surface source<a class="headerlink" href="#Surface-source" title="Link to this heading">#</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">create_helper_geometries</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+<span class="n">source4</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">create_source</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Surface.1&quot;</span><span class="p">,</span> <span class="n">feature_type</span><span class="o">=</span><span class="n">SourceSurface</span><span class="p">)</span>
+<span class="n">source4</span><span class="o">.</span><span class="n">set_exitance_constant</span><span class="p">(</span>
+    <span class="n">geometries</span><span class="o">=</span><span class="p">[</span>
+        <span class="p">(</span><span class="n">GeoRef</span><span class="o">.</span><span class="n">from_native_link</span><span class="p">(</span><span class="s2">&quot;TheBodyB/TheFaceF&quot;</span><span class="p">),</span> <span class="kc">False</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">GeoRef</span><span class="o">.</span><span class="n">from_native_link</span><span class="p">(</span><span class="s2">&quot;TheBodyC/TheFaceF&quot;</span><span class="p">),</span> <span class="kc">True</span><span class="p">),</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+<span class="n">source4</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">source4</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{
+    &#34;name&#34;: &#34;Surface.1&#34;,
+    &#34;metadata&#34;: {
+        &#34;UniqueId&#34;: &#34;d7d729e9-ff5e-454d-8990-8ba6f49643be&#34;
+    },
+    &#34;source_guid&#34;: &#34;063272d5-5b2e-496a-96e4-17570903f6bb&#34;,
+    &#34;description&#34;: &#34;&#34;,
+    &#34;source&#34;: {
+        &#34;name&#34;: &#34;Surface.1&#34;,
+        &#34;surface&#34;: {
+            &#34;luminous_flux&#34;: {
+                &#34;luminous_value&#34;: 683.0
+            },
+            &#34;intensity_guid&#34;: &#34;ed001a3a-bbde-4422-9704-8ef9a039dd8f&#34;,
+            &#34;exitance_constant&#34;: {
+                &#34;geo_paths&#34;: [
+                    {
+                        &#34;geo_path&#34;: &#34;TheBodyB/TheFaceF&#34;,
+                        &#34;reverse_normal&#34;: false
+                    },
+                    {
+                        &#34;geo_path&#34;: &#34;TheBodyC/TheFaceF&#34;,
+                        &#34;reverse_normal&#34;: true
+                    }
+                ]
+            },
+            &#34;spectrum_guid&#34;: &#34;603e97d8-a290-4707-a5ac-5a46ac9eacb8&#34;,
+            &#34;intensity&#34;: {
+                &#34;name&#34;: &#34;Surface.1.Intensity&#34;,
+                &#34;cos&#34;: {
+                    &#34;N&#34;: 1.0,
+                    &#34;total_angle&#34;: 180.0
+                },
+                &#34;description&#34;: &#34;&#34;,
+                &#34;metadata&#34;: {}
+            },
+            &#34;spectrum&#34;: {
+                &#34;name&#34;: &#34;Surface.1.Spectrum&#34;,
+                &#34;monochromatic&#34;: {
+                    &#34;wavelength&#34;: 555.0
+                },
+                &#34;description&#34;: &#34;&#34;,
+                &#34;metadata&#34;: {}
+            }
+        },
+        &#34;description&#34;: &#34;&#34;,
+        &#34;metadata&#34;: {}
+    }
+}
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/home/runner/work/pyspeos/pyspeos/.venv/lib/python3.10/site-packages/ansys/speos/core/project.py:200: UserWarning: The pySpeos feature : SourceSurface needs a Speos Version of 2025 R2 SP0 or higher.
+  feature = SourceSurface(
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">source4</span><span class="o">.</span><span class="n">set_flux_luminous_intensity</span><span class="p">()</span>
+<span class="n">source4</span><span class="o">.</span><span class="n">set_intensity</span><span class="p">()</span><span class="o">.</span><span class="n">set_gaussian</span><span class="p">()</span><span class="o">.</span><span class="n">set_axis_system</span><span class="p">(</span>
+    <span class="n">axis_system</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">source4</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">source4</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{
+    &#34;name&#34;: &#34;Surface.1&#34;,
+    &#34;metadata&#34;: {
+        &#34;UniqueId&#34;: &#34;d7d729e9-ff5e-454d-8990-8ba6f49643be&#34;
+    },
+    &#34;source_guid&#34;: &#34;063272d5-5b2e-496a-96e4-17570903f6bb&#34;,
+    &#34;description&#34;: &#34;&#34;,
+    &#34;source&#34;: {
+        &#34;name&#34;: &#34;Surface.1&#34;,
+        &#34;surface&#34;: {
+            &#34;luminous_intensity_flux&#34;: {
+                &#34;luminous_intensity_value&#34;: 5.0
+            },
+            &#34;intensity_guid&#34;: &#34;ed001a3a-bbde-4422-9704-8ef9a039dd8f&#34;,
+            &#34;exitance_constant&#34;: {
+                &#34;geo_paths&#34;: [
+                    {
+                        &#34;geo_path&#34;: &#34;TheBodyB/TheFaceF&#34;,
+                        &#34;reverse_normal&#34;: false
+                    },
+                    {
+                        &#34;geo_path&#34;: &#34;TheBodyC/TheFaceF&#34;,
+                        &#34;reverse_normal&#34;: true
+                    }
+                ]
+            },
+            &#34;spectrum_guid&#34;: &#34;603e97d8-a290-4707-a5ac-5a46ac9eacb8&#34;,
+            &#34;intensity&#34;: {
+                &#34;name&#34;: &#34;Surface.1.Intensity&#34;,
+                &#34;gaussian&#34;: {
+                    &#34;FWHM_angle_x&#34;: 30.0,
+                    &#34;FWHM_angle_y&#34;: 30.0,
+                    &#34;total_angle&#34;: 180.0,
+                    &#34;axis_system&#34;: [
+                        10.0,
+                        50.0,
+                        20.0,
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ]
+                },
+                &#34;description&#34;: &#34;&#34;,
+                &#34;metadata&#34;: {}
+            },
+            &#34;spectrum&#34;: {
+                &#34;name&#34;: &#34;Surface.1.Spectrum&#34;,
+                &#34;monochromatic&#34;: {
+                    &#34;wavelength&#34;: 555.0
+                },
+                &#34;description&#34;: &#34;&#34;,
+                &#34;metadata&#34;: {}
+            }
+        },
+        &#34;description&#34;: &#34;&#34;,
+        &#34;metadata&#34;: {}
+    }
+}
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">source4</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">source4</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+local: {
+    &#34;name&#34;: &#34;Surface.1&#34;,
+    &#34;description&#34;: &#34;&#34;,
+    &#34;metadata&#34;: {},
+    &#34;source_guid&#34;: &#34;&#34;,
+    &#34;source&#34;: {
+        &#34;name&#34;: &#34;Surface.1&#34;,
+        &#34;surface&#34;: {
+            &#34;luminous_intensity_flux&#34;: {
+                &#34;luminous_intensity_value&#34;: 5.0
+            },
+            &#34;intensity_guid&#34;: &#34;ed001a3a-bbde-4422-9704-8ef9a039dd8f&#34;,
+            &#34;exitance_constant&#34;: {
+                &#34;geo_paths&#34;: [
+                    {
+                        &#34;geo_path&#34;: &#34;TheBodyB/TheFaceF&#34;,
+                        &#34;reverse_normal&#34;: false
+                    },
+                    {
+                        &#34;geo_path&#34;: &#34;TheBodyC/TheFaceF&#34;,
+                        &#34;reverse_normal&#34;: true
+                    }
+                ]
+            },
+            &#34;spectrum_guid&#34;: &#34;603e97d8-a290-4707-a5ac-5a46ac9eacb8&#34;,
+            &#34;intensity&#34;: {
+                &#34;name&#34;: &#34;Surface.1.Intensity&#34;,
+                &#34;gaussian&#34;: {
+                    &#34;FWHM_angle_x&#34;: 30.0,
+                    &#34;FWHM_angle_y&#34;: 30.0,
+                    &#34;total_angle&#34;: 180.0,
+                    &#34;axis_system&#34;: [
+                        10.0,
+                        50.0,
+                        20.0,
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ]
+                },
+                &#34;description&#34;: &#34;&#34;,
+                &#34;metadata&#34;: {}
+            },
+            &#34;spectrum&#34;: {
+                &#34;name&#34;: &#34;Surface.1.Spectrum&#34;,
+                &#34;monochromatic&#34;: {
+                    &#34;wavelength&#34;: 555.0
+                },
+                &#34;description&#34;: &#34;&#34;,
+                &#34;metadata&#34;: {}
+            }
+        },
+        &#34;description&#34;: &#34;&#34;,
+        &#34;metadata&#34;: {}
+    }
+}
+</pre></div></div>
+</div>
+</section>
+<section id="Ambient-natural-light-source">
+<h3>Ambient natural light source<a class="headerlink" href="#Ambient-natural-light-source" title="Link to this heading">#</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">source5</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">create_source</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;NaturalLight.1&quot;</span><span class="p">,</span> <span class="n">feature_type</span><span class="o">=</span><span class="n">SourceAmbientNaturalLight</span><span class="p">)</span>
+<span class="n">source5</span><span class="o">.</span><span class="n">turbidity</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">source5</span><span class="o">.</span><span class="n">with_sky</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">source5</span><span class="o">.</span><span class="n">zenith_direction</span><span class="p">)</span>  <span class="c1"># default zenith direction</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">source5</span><span class="o">.</span><span class="n">north_direction</span><span class="p">)</span>  <span class="c1"># default north direction</span>
+<span class="n">source5</span><span class="o">.</span><span class="n">reverse_north_direction</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">source5</span><span class="p">)</span>
+
+<span class="n">source5</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">source5</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[0.0, 0.0, 1.0]
+[0.0, 1.0, 0.0]
+local: {
+    &#34;name&#34;: &#34;NaturalLight.1&#34;,
+    &#34;description&#34;: &#34;&#34;,
+    &#34;metadata&#34;: {},
+    &#34;source_guid&#34;: &#34;&#34;,
+    &#34;source&#34;: {
+        &#34;name&#34;: &#34;NaturalLight.1&#34;,
+        &#34;ambient&#34;: {
+            &#34;natural_light&#34;: {
+                &#34;turbidity&#34;: 4.0,
+                &#34;with_sky&#34;: true,
+                &#34;north_direction&#34;: [
+                    0.0,
+                    1.0,
+                    0.0
+                ],
+                &#34;reverse_north&#34;: true,
+                &#34;sun_axis_system&#34;: {
+                    &#34;automatic_sun&#34;: {
+                        &#34;time_zone_uri&#34;: &#34;CET&#34;,
+                        &#34;year&#34;: 2025,
+                        &#34;month&#34;: 9,
+                        &#34;day&#34;: 18,
+                        &#34;hour&#34;: 14,
+                        &#34;minute&#34;: 33,
+                        &#34;longitude&#34;: 0.0,
+                        &#34;latitude&#34;: 0.0
+                    }
+                }
+            },
+            &#34;zenith_direction&#34;: [
+                0.0,
+                0.0,
+                1.0
+            ],
+            &#34;reverse_zenith&#34;: false
+        },
+        &#34;description&#34;: &#34;&#34;,
+        &#34;metadata&#34;: {}
+    }
+}
+{
+    &#34;name&#34;: &#34;NaturalLight.1&#34;,
+    &#34;metadata&#34;: {
+        &#34;UniqueId&#34;: &#34;3a49f2c9-78fe-4c9b-b7ce-f5b0a9ffdc64&#34;
+    },
+    &#34;source_guid&#34;: &#34;15eecb1e-b088-4fa1-817f-3fb8d9576c54&#34;,
+    &#34;description&#34;: &#34;&#34;,
+    &#34;source&#34;: {
+        &#34;name&#34;: &#34;NaturalLight.1&#34;,
+        &#34;ambient&#34;: {
+            &#34;natural_light&#34;: {
+                &#34;turbidity&#34;: 4.0,
+                &#34;with_sky&#34;: true,
+                &#34;north_direction&#34;: [
+                    0.0,
+                    1.0,
+                    0.0
+                ],
+                &#34;reverse_north&#34;: true,
+                &#34;sun_axis_system&#34;: {
+                    &#34;automatic_sun&#34;: {
+                        &#34;time_zone_uri&#34;: &#34;CET&#34;,
+                        &#34;year&#34;: 2025,
+                        &#34;month&#34;: 9,
+                        &#34;day&#34;: 18,
+                        &#34;hour&#34;: 14,
+                        &#34;minute&#34;: 33,
+                        &#34;longitude&#34;: 0.0,
+                        &#34;latitude&#34;: 0.0
+                    }
+                }
+            },
+            &#34;zenith_direction&#34;: [
+                0.0,
+                0.0,
+                1.0
+            ],
+            &#34;reverse_zenith&#34;: false
+        },
+        &#34;description&#34;: &#34;&#34;,
+        &#34;metadata&#34;: {}
+    }
+}
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">source5</span><span class="o">.</span><span class="n">set_sun_automatic</span><span class="p">()</span><span class="o">.</span><span class="n">year</span> <span class="o">=</span> <span class="mi">2026</span>
+<span class="n">source5</span><span class="o">.</span><span class="n">set_sun_automatic</span><span class="p">()</span><span class="o">.</span><span class="n">month</span> <span class="o">=</span> <span class="mi">12</span>
+<span class="n">source5</span><span class="o">.</span><span class="n">set_sun_automatic</span><span class="p">()</span><span class="o">.</span><span class="n">day</span> <span class="o">=</span> <span class="mi">31</span>
+<span class="n">source5</span><span class="o">.</span><span class="n">set_sun_automatic</span><span class="p">()</span><span class="o">.</span><span class="n">hour</span> <span class="o">=</span> <span class="mi">12</span>
+<span class="n">source5</span><span class="o">.</span><span class="n">set_sun_automatic</span><span class="p">()</span><span class="o">.</span><span class="n">minute</span> <span class="o">=</span> <span class="mi">23</span>
+<span class="n">source5</span><span class="o">.</span><span class="n">set_sun_automatic</span><span class="p">()</span><span class="o">.</span><span class="n">longitude</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">source5</span><span class="o">.</span><span class="n">set_sun_automatic</span><span class="p">()</span><span class="o">.</span><span class="n">latitude</span> <span class="o">=</span> <span class="mi">45</span>
+<span class="n">source5</span><span class="o">.</span><span class="n">set_sun_automatic</span><span class="p">()</span><span class="o">.</span><span class="n">time_zone</span> <span class="o">=</span> <span class="s2">&quot;CST&quot;</span>
+<span class="n">source5</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">source5</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{
+    &#34;name&#34;: &#34;NaturalLight.1&#34;,
+    &#34;metadata&#34;: {
+        &#34;UniqueId&#34;: &#34;3a49f2c9-78fe-4c9b-b7ce-f5b0a9ffdc64&#34;
+    },
+    &#34;source_guid&#34;: &#34;15eecb1e-b088-4fa1-817f-3fb8d9576c54&#34;,
+    &#34;description&#34;: &#34;&#34;,
+    &#34;source&#34;: {
+        &#34;name&#34;: &#34;NaturalLight.1&#34;,
+        &#34;ambient&#34;: {
+            &#34;natural_light&#34;: {
+                &#34;turbidity&#34;: 4.0,
+                &#34;with_sky&#34;: true,
+                &#34;north_direction&#34;: [
+                    0.0,
+                    1.0,
+                    0.0
+                ],
+                &#34;reverse_north&#34;: true,
+                &#34;sun_axis_system&#34;: {
+                    &#34;automatic_sun&#34;: {
+                        &#34;time_zone_uri&#34;: &#34;CST&#34;,
+                        &#34;year&#34;: 2026,
+                        &#34;month&#34;: 12,
+                        &#34;day&#34;: 31,
+                        &#34;hour&#34;: 12,
+                        &#34;minute&#34;: 23,
+                        &#34;longitude&#34;: 10.0,
+                        &#34;latitude&#34;: 45.0
+                    }
+                }
+            },
+            &#34;zenith_direction&#34;: [
+                0.0,
+                0.0,
+                1.0
+            ],
+            &#34;reverse_zenith&#34;: false
+        },
+        &#34;description&#34;: &#34;&#34;,
+        &#34;metadata&#34;: {}
+    }
+}
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">source5</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;ansys.speos.core.source.SourceAmbientNaturalLight at 0x7fbf783ddf90&gt;
+</pre></div></div>
+</div>
+<p>When creating sources, this creates some intermediate objects (spectrums, intensity templates).</p>
+<p>Deleting a source does not delete in cascade those objects because they could be used by some other entities from core layer.</p>
+<p>Then at the end of the example, we just clean all databases</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">speos</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">intensity_templates</span><span class="p">()</span><span class="o">.</span><span class="n">list</span><span class="p">()</span> <span class="o">+</span> <span class="n">speos</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">spectrums</span><span class="p">()</span><span class="o">.</span><span class="n">list</span><span class="p">():</span>
+    <span class="n">item</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+
+<span class="n">speos</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+True
+</pre></div></div>
+</div>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Prerequisites">Prerequisites</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Perform-imports">Perform imports</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Define-constants">Define constants</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Define-helper-functions">Define helper functions</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Model-Setup">Model Setup</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Load-assets">Load assets</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Connect-to-the-RPC-Server">Connect to the RPC Server</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Create-a-new-project">Create a new project</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Source-Creation">Source Creation</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Other-Sources-Examples">Other Sources Examples</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Ray-file-source">Ray-file source</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Surface-source">Surface source</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Ambient-natural-light-source">Ambient natural light source</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+<!-- If there is no fix edit button function, use the PyData edit-this-button-->
+</div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/examples/core/source.py.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+
+  <!-- Include desired assets -->
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.7/require.min.js"></script>
+
+<script>
+// Passing the search options to the search.js file
+const SEARCH_OPTIONS = JSON.parse('{"keys": ["title", "text", "objectID"], "limit": 10, "threshold": 0.2}');
+const SEARCH_FILE = "../../_static/search.json";
+const ADVANCE_SEARCH_PATH = "../../search.html";
+const EXTRA_SOURCES = JSON.parse('""');
+</script>
+
+
+<script src="../../_static/js/search.js"></script>
+
+  
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright (c) 2025 ANSYS, Inc. All rights reserved.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item"><p class="theme-version">
+  Built with the
+  <a href="https://sphinxdocs.ansys.com/version/stable/index.html"
+    >Ansys Sphinx Theme</a
+  >
+  1.6.0. <br />Last updated on
+  <span id="ast_build_date"></span>
+</p>
+<script>
+  var options = { day: "numeric", month: "long", year: "numeric" };
+  var ast_lastModifiedDate = new Date(document.lastModified);
+  var ast_build_date = ast_lastModifiedDate.toLocaleDateString("en-US", options);
+  document.getElementById("ast_build_date").innerHTML = ast_build_date;
+</script></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

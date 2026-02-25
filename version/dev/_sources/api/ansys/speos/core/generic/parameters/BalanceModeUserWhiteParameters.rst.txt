@@ -1,0 +1,156 @@
+
+
+
+
+
+
+:class:`BalanceModeUserWhiteParameters`
+=======================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.BalanceModeUserWhiteParameters
+
+   
+   Parameters for Balance mode: User White.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: BalanceModeUserWhiteParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~red_gain`
+            - Gain value for Red.
+          * - :py:attr:`~green_gain`
+            - Gain value for green.
+          * - :py:attr:`~blue_gain`
+            - Gain value for blue.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import BalanceModeUserWhiteParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: red_gain
+   :type:  float
+   :value: 1.0
+
+
+   
+   Gain value for Red.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: green_gain
+   :type:  float
+   :value: 1.0
+
+
+   
+   Gain value for green.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: blue_gain
+   :type:  float
+   :value: 1.0
+
+
+   
+   Gain value for blue.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

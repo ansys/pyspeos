@@ -1,0 +1,198 @@
+
+
+
+
+
+
+:class:`BalanceModeUserWhite`
+=============================
+
+
+.. py:class:: ansys.speos.core.sensor.SensorCamera.Photometric.Color.BalanceModeUserWhite(balance_mode_user_white, default_parameters = None, stable_ctr = False)
+
+   
+   BalanceMode : UserWhite.
+
+   In addition to the basic treatment, it allows to apply specific coefficients to the
+   red, green, blue images.
+   By default, coefficients of 1 are chosen for red, green and blue images.
+
+   :Parameters:
+
+       **balance_mode_user_white** : ansys.api.speos.sensor.v1.camera_sensor_pb2.
+           ..
+
+       **SensorCameraBalanceModeUserwhite**
+           SensorCameraBalanceModeUserwhite protobuf object to modify.
+
+       **default_parameters** :                 :obj:`ansys.speos.core.generic.parameters.BalanceModeUserWhiteParameters`, :obj:`optional`
+           If defined the values in the sensor instance will be overwritten by the values
+           of the data class, optional
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_balance_mode_user_white method
+   available in color class.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: BalanceModeUserWhite
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~red_gain`
+            - Value of the red gain of the Camera Sensor.
+          * - :py:attr:`~green_gain`
+            - Value of the green gain of the Camera Sensor.
+          * - :py:attr:`~blue_gain`
+            - Value of the Blue gain of the Camera Sensor.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.sensor.SensorCamera.Photometric.Color import BalanceModeUserWhite
+
+Property detail
+---------------
+
+.. py:property:: red_gain
+   :type: float
+
+
+   
+   Value of the red gain of the Camera Sensor.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Red gain. By default, ``1``.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Red gain.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: green_gain
+   :type: float
+
+
+   
+   Value of the green gain of the Camera Sensor.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           green gain. By default, ``1``.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           green gain.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: blue_gain
+   :type: float
+
+
+   
+   Value of the Blue gain of the Camera Sensor.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           blue gain. By default, ``1``.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           blue gain.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+

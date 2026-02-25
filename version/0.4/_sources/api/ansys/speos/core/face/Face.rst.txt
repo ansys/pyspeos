@@ -1,0 +1,353 @@
+
+
+
+
+
+
+:class:`Face`
+=============
+
+
+.. py:class:: ansys.speos.core.face.Face(speos_client, name, description = '', metadata = None, parent_body = None)
+
+   
+   Feature : Face.
+
+
+   :Parameters:
+
+       **speos_client** : :obj:`ansys.speos.core.kernel.client.SpeosClient`
+           The Speos instance client.
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **description** : :class:`python:str`
+           Description of the feature.
+           By default, ``""``.
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]]
+           Metadata of the feature.
+           By default, ``{}``.
+
+       **parent_body** : :obj:`ansys.speos.core.body.Body`, :obj:`optional`
+           Feature containing this face.
+           By default, ``None``.
+
+   :Attributes:
+
+       **face_link** : :obj:`ansys.speos.core.kernel.face.FaceLink`
+           Link object for the face in database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+.. py:currentmodule:: Face
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_vertices`
+            - Set the face vertices.
+          * - :py:attr:`~set_facets`
+            - Set the facets.
+          * - :py:attr:`~set_normals`
+            - Set the face normals.
+          * - :py:attr:`~commit`
+            - Save feature: send the local data to the speos server database.
+          * - :py:attr:`~reset`
+            - Reset feature: override local data by the one from the speos server database.
+          * - :py:attr:`~delete`
+            - Delete feature: delete data from the speos server database.
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~face_link`
+            - Link object for the face in database.
+
+
+
+   .. tab-item:: Special methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~__str__`
+            - Return the string representation of the face.
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.face import Face
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: face_link
+   :value: None
+
+
+   
+   Link object for the face in database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_vertices(values)
+
+   
+   Set the face vertices.
+
+
+   :Parameters:
+
+       **values** : :obj:`List`\[:class:`python:float`]
+           Coordinates of all points [p1x p1y p1z p2x p2y p2z ...].
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.face.Face`
+           Face feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_facets(values)
+
+   
+   Set the facets.
+
+
+   :Parameters:
+
+       **values** : :obj:`List`\[:class:`python:int`]
+           Indexes of points for all triangles (t1_1 t1_2 t1_3 t2_1 t2_2 t2_3 ...)
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.face.Face`
+           Face feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_normals(values)
+
+   
+   Set the face normals.
+
+
+   :Parameters:
+
+       **values** : :obj:`List`\[:class:`python:float`]
+           Normal vectors for all points [n1x n1y n1z n2x n2y n2z ...]
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.face.Face`
+           Face feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: __str__()
+
+   
+   Return the string representation of the face.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: commit()
+
+   
+   Save feature: send the local data to the speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.face.Face`
+           Face feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: reset()
+
+   
+   Reset feature: override local data by the one from the speos server database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.face.Face`
+           Face feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: delete()
+
+   
+   Delete feature: delete data from the speos server database.
+
+   The local data are still available
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.face.Face`
+           Face feature.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

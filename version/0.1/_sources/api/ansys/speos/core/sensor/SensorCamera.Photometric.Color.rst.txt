@@ -1,0 +1,330 @@
+
+
+
+
+
+
+:class:`Color`
+==============
+
+.. toctree::
+   :hidden:
+
+    /api/ansys/speos/core/sensor/SensorCamera.Photometric.Color.BalanceModeUserWhite
+    /api/ansys/speos/core/sensor/SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries
+
+.. py:class:: ansys.speos.core.sensor.SensorCamera.Photometric.Color(mode_color, default_values = True, stable_ctr = False)
+
+   
+   Mode of camera sensor : Color.
+   Results will be available in color according to the White Balance mode.
+   By default, a balance mode none is chosen (referred as the basic conversion).
+
+
+   :Parameters:
+
+       **mode_color** : :obj:`ansys.api.speos.sensor.v1.camera_sensor_pb2.SensorCameraColorModeColor`
+           SensorCameraColorModeColor protobuf object to modify.
+
+       **default_values** : :ref:`bool <python:bltin-boolean-values>`
+           Uses default values when True.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_mode_color method available in photometric class.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: Color
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_red_spectrum_file_uri`
+            - Set the red spectrum.
+          * - :py:attr:`~set_green_spectrum_file_uri`
+            - Set the green spectrum.
+          * - :py:attr:`~set_blue_spectrum_file_uri`
+            - Set the blue spectrum.
+          * - :py:attr:`~set_balance_mode_none`
+            - Set the balance mode as none.
+          * - :py:attr:`~set_balance_mode_grey_world`
+            - Set the balance mode as grey world.
+          * - :py:attr:`~set_balance_mode_user_white`
+            - Set the balance mode as user white.
+          * - :py:attr:`~set_balance_mode_display_primaries`
+            - Set the balance mode as display primaries.
+
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.sensor.SensorCamera.Photometric import Color
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_red_spectrum_file_uri(uri)
+
+   
+   Set the red spectrum.
+
+
+   :Parameters:
+
+       **uri** : :class:`python:str`
+           Red spectrum file. It is expressed in a .spectrum file.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorCamera.Photometric.Color`
+           Color mode.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_green_spectrum_file_uri(uri)
+
+   
+   Set the green spectrum.
+
+
+   :Parameters:
+
+       **uri** : :class:`python:str`
+           Green spectrum file. It is expressed in a .spectrum file.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorCamera.Photometric.Color`
+           Color mode.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_blue_spectrum_file_uri(uri)
+
+   
+   Set the blue spectrum.
+
+
+   :Parameters:
+
+       **uri** : :class:`python:str`
+           Blue spectrum file. It is expressed in a .spectrum file.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorCamera.Photometric.Color`
+           Color mode.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_balance_mode_none()
+
+   
+   Set the balance mode as none.
+   The spectral transmittance of the optical system and the spectral sensitivity for each channel are applied
+   to the detected spectral image before the conversion in a three-channel result.
+   This method is referred to as the basic conversion.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorCamera.Photometric.Color`
+           Color mode.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_balance_mode_grey_world()
+
+   
+   Set the balance mode as grey world.
+   The grey world assumption states that the content of the image is grey on average.
+   This method converts spectral results in a three-channel result with the basic conversion.
+   Then it computes and applies coefficients to the red, green and blue images to make sure their averages are equal.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorCamera.Photometric.Color`
+           Color mode.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_balance_mode_user_white()
+
+   
+   Set the balance mode as user white.
+   In addition to the basic treatment, it allows to apply specific coefficients to the red, green, blue images.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorCamera.Photometric.Color.BalanceModeUserWhite`
+           Balance UserWhite mode.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_balance_mode_display_primaries()
+
+   
+   Set the balance mode as display primaries.
+   Spectral results are converted in a three-channel result.
+   Then a post-treatment is realized to take the distortion induced by the display devices into account.
+   With this method, displayed results are similar to what the camera really gets.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries`
+           Balance DisplayPrimaries mode.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+    ansys.speos.core.sensor.SensorCamera.Photometric.Color.BalanceModeUserWhite
+    ansys.speos.core.sensor.SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries
+
+
+
+

@@ -1,0 +1,120 @@
+
+
+
+
+
+
+:class:`UserDefinedWhitePoint`
+==============================
+
+
+.. py:class:: ansys.speos.core.source.BaseSource.UserDefinedColorSpace.UserDefinedWhitePoint(userdefined_white_point, default_values = True, stable_ctr = True)
+
+   
+   Type of white point is user defined.
+
+
+   :Parameters:
+
+       **userdefined_white_point** : :obj:`source_pb2.SourceTemplate.UserDefinedWhitePoint`
+           source_pb2.SourceTemplate.UserDefinedWhitePoint
+
+       **default_values** : :ref:`bool <python:bltin-boolean-values>`
+           Uses default values when True.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**,
+   use set_white_point_type_user_defined() method.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: UserDefinedWhitePoint
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~white_point`
+            - White point coordinate.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.source.BaseSource.UserDefinedColorSpace import UserDefinedWhitePoint
+
+Property detail
+---------------
+
+.. py:property:: white_point
+
+   
+   White point coordinate.
+
+   This property gets or sets the white point coordinate [x, y]
+
+   :Parameters:
+
+       **value: List[float]**
+           The white point coordinate, [0.31271, 0.32902] by default.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           User defined white point coordinate
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+

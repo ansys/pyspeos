@@ -1,0 +1,100 @@
+
+
+
+
+
+
+:class:`MonoChromaticParameters`
+================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.MonoChromaticParameters
+
+   
+   Monochromatic Camera Parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: MonoChromaticParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~sensitivity`
+            - Path to Sensitivity Spectrum.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import MonoChromaticParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: sensitivity
+   :type:  Union[str, pathlib.Path]
+   :value: ''
+
+
+   
+   Path to Sensitivity Spectrum.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

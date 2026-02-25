@@ -1,0 +1,216 @@
+
+
+
+
+
+
+:class:`SimulationTemplateLink`
+===============================
+
+
+.. py:class:: ansys.speos.core.kernel.simulation_template.SimulationTemplateLink(db, key)
+
+   Bases: :py:obj:`ansys.speos.core.kernel.crud.CrudItem`
+
+
+   
+   Link object for simulation template in database.
+
+
+   :Parameters:
+
+       **db** : :obj:`ansys.speos.core.kernel.simulation_template.SimulationTemplateStub`
+           Database to link to.
+
+       **key** : :class:`python:str`
+           Key of the simulation_template in the database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Examples
+
+   >>> from ansys.speos.core.speos import Speos
+   >>> from ansys.api.speos.simulation.v1 import simulation_template_pb2
+   >>> from ansys.speos.core.kernel.simulation_template import (
+   ...     ProtoSimulationTemplate,
+   ... )
+   >>> speos = Speos()
+   >>> sim_t_db = speos.client.simulation_templates()
+   >>> sim_t_message = ProtoSimulationTemplate(name="Direct")
+   >>> sim_t_message.direct_mc_simulation_template.geom_distance_tolerance = 0.01
+   >>> sim_t_message.direct_mc_simulation_template.max_impact = 100
+   >>> sim_t_message.direct_mc_simulation_template.weight.minimum_energy_percentage = 0.005
+   >>> sim_t_message.direct_mc_simulation_template.colorimetric_standard = (
+   ...     simulation_template_pb2.CIE_1931
+   ... )
+   >>> sim_t_message.direct_mc_simulation_template.dispersion = True
+   >>> sim_t_link = sim_t_db.create(message=sim_t_message)
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+.. py:currentmodule:: SimulationTemplateLink
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~get`
+            - Get the datamodel from database.
+          * - :py:attr:`~set`
+            - Change datamodel in database.
+          * - :py:attr:`~delete`
+            - Remove datamodel from database.
+
+
+
+
+
+   .. tab-item:: Special methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~__str__`
+            - Return the string representation of the simulation_template.
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.kernel.simulation_template import SimulationTemplateLink
+
+
+
+Method detail
+-------------
+
+.. py:method:: __str__()
+
+   
+   Return the string representation of the simulation_template.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: get()
+
+   
+   Get the datamodel from database.
+
+
+
+
+
+   :Returns:
+
+       :obj:`simulation_template.SimulationTemplate`
+           SimulationTemplate datamodel.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set(data)
+
+   
+   Change datamodel in database.
+
+
+   :Parameters:
+
+       **data** : :obj:`simulation_template.SimulationTemplate`
+           New simulation_template datamodel.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: delete()
+
+   
+   Remove datamodel from database.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

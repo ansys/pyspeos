@@ -1,0 +1,288 @@
+
+
+
+
+
+
+:class:`PhotometricCameraParameters`
+====================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.PhotometricCameraParameters
+
+   
+   Photometric Parameters for Camera.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: PhotometricCameraParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~color_mode`
+            - Color mode of the Camera Sensor.
+          * - :py:attr:`~layer_type`
+            - Layer separation parameter.
+          * - :py:attr:`~png_bits`
+            - PNG bit resolution of the Camera Sensor.
+          * - :py:attr:`~wavelength_range`
+            - Wavelength range of the Camera Sensor.
+          * - :py:attr:`~acquisition_integration_time`
+            - Integration Time value for the Camera Sensor.
+          * - :py:attr:`~acquisition_lag_time`
+            - Acquisition lag time for the Camera Sensor.
+          * - :py:attr:`~gamma_correction`
+            - Gamma correction Value for the Camera Sensor.
+          * - :py:attr:`~transmittance_file_uri`
+            - Transmittance spectrum location
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import PhotometricCameraParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: color_mode
+   :type:  Union[MonoChromaticParameters, ColorParameters]
+
+   
+   Color mode of the Camera Sensor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: layer_type
+   :type:  Union[LayerTypes, LayerTypes]
+
+   
+   Layer separation parameter.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: png_bits
+   :type:  PngBits
+
+   
+   PNG bit resolution of the Camera Sensor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: wavelength_range
+   :type:  WavelengthsRangeParameters
+
+   
+   Wavelength range of the Camera Sensor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: acquisition_integration_time
+   :type:  float
+   :value: 0.01
+
+
+   
+   Integration Time value for the Camera Sensor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: acquisition_lag_time
+   :type:  float
+   :value: 0
+
+
+   
+   Acquisition lag time for the Camera Sensor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: gamma_correction
+   :type:  float
+   :value: 2.2
+
+
+   
+   Gamma correction Value for the Camera Sensor.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: transmittance_file_uri
+   :type:  Union[str, pathlib.Path]
+   :value: ''
+
+
+   
+   Transmittance spectrum location
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

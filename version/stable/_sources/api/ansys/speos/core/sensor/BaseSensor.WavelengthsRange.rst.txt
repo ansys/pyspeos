@@ -1,0 +1,190 @@
+
+
+
+
+
+
+:class:`WavelengthsRange`
+=========================
+
+
+.. py:class:: ansys.speos.core.sensor.BaseSensor.WavelengthsRange(wavelengths_range, default_values = True, stable_ctr = False)
+
+   
+   Range of wavelengths.
+
+   By default, a range from 400nm to 700nm is chosen, with a sampling of 13.
+
+   :Parameters:
+
+       **wavelengths_range** : :obj:`ansys.api.speos.sensor.v1.common_pb2.WavelengthsRange`
+           Wavelengths range protobuf object to modify.
+
+       **default_values** : :ref:`bool <python:bltin-boolean-values>`
+           Uses default values when True.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_wavelengths_range method available in
+   sensor classes.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: WavelengthsRange
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_start`
+            - Set the minimum wavelength of the range.
+          * - :py:attr:`~set_end`
+            - Set the maximum wavelength of the range.
+          * - :py:attr:`~set_sampling`
+            - Set the sampling of wavelengths range.
+
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.sensor.BaseSensor import WavelengthsRange
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_start(value = 400)
+
+   
+   Set the minimum wavelength of the range.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Minimum wavelength (nm).
+           By default, ``400``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor.WavelengthsRange`
+           WavelengthsRange.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_end(value = 700)
+
+   
+   Set the maximum wavelength of the range.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Maximum wavelength (nm).
+           By default, ``700``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor.WavelengthsRange`
+           WavelengthsRange.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_sampling(value = 13)
+
+   
+   Set the sampling of wavelengths range.
+
+
+   :Parameters:
+
+       **value** : :class:`python:int`
+           Number of wavelengths to be taken into account between the minimum and maximum
+           wavelengths range.
+           By default, ``13``.
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor.WavelengthsRange`
+           WavelengthsRange.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

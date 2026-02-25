@@ -1,0 +1,710 @@
+
+
+
+
+
+
+:class:`SensorRadiance`
+=======================
+
+
+.. py:class:: ansys.speos.core.sensor.SensorRadiance(project, name, description = '', metadata = None, sensor_instance = None, default_parameters = None)
+
+   Bases: :py:obj:`BaseSensor`
+
+
+   
+   Sensor feature: Radiance.
+
+   By default, regarding inherent characteristics, a radiance sensor of type photometric is chosen.
+   By default, regarding properties, an axis system is selected to position the sensor and no layer
+   separation is chosen.
+
+   :Parameters:
+
+       **project** : :obj:`ansys.speos.core.project.Project`
+           Project that will own the feature.
+
+       **name** : :class:`python:str`
+           Name of the feature.
+
+       **description** : :class:`python:str`
+           Description of the feature.
+           By default, ``""``.
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]]
+           Metadata of the feature.
+           By default, ``{}``.
+
+       **sensor_instance** : :obj:`ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance`, :obj:`optional`
+           Sensor instance to provide if the feature does not has to be created from scratch
+           By default, ``None``, means that the feature is created from scratch by default.
+
+       **default_parameters** : :obj:`ansys.speos.core.generic.parameters.RadianceSensorParameters`, :obj:`optional`
+           If defined the values in the sensor instance will be overwritten by the values of the data
+           class
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SensorRadiance
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_dimensions`
+            - Set the dimensions of the sensor.
+          * - :py:attr:`~set_type_photometric`
+            - Set type photometric.
+          * - :py:attr:`~set_type_colorimetric`
+            - Set type colorimetric.
+          * - :py:attr:`~set_type_radiometric`
+            - Set type radiometric.
+          * - :py:attr:`~set_type_spectral`
+            - Set type spectral.
+          * - :py:attr:`~set_layer_type_none`
+            - Define layer separation type as None.
+          * - :py:attr:`~set_layer_type_source`
+            - Define layer separation as by source.
+          * - :py:attr:`~set_layer_type_face`
+            - Define layer separation as by face.
+          * - :py:attr:`~set_layer_type_sequence`
+            - Define layer separation as by sequence.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~visual_data`
+            - Property containing radiance sensor visualization data.
+          * - :py:attr:`~dimensions`
+            - Property containing all options in regard to the Dimensions sensor properties.
+          * - :py:attr:`~type`
+            - Type of sensor.
+          * - :py:attr:`~colorimetric`
+            - Property containing all options in regard to the Colorimetric sensor properties.
+          * - :py:attr:`~spectral`
+            - Property containing all options in regard to the Spectral sensor properties.
+          * - :py:attr:`~layer`
+            - Property containing all options in regard to the layer separation property.
+          * - :py:attr:`~focal`
+            - Focal value of the Radiance Sensor.
+          * - :py:attr:`~integration_angle`
+            - Integration angle.
+          * - :py:attr:`~axis_system`
+            - Position of the sensor.
+          * - :py:attr:`~observer_point`
+            - The position of the observer point.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.sensor import SensorRadiance
+
+Property detail
+---------------
+
+.. py:property:: visual_data
+   :type: ansys.speos.core.generic.visualization_methods._VisualData
+
+
+   
+   Property containing radiance sensor visualization data.
+
+
+
+
+
+   :Returns:
+
+       :obj:`_VisualData`
+           Instance of VisualData Class for pyvista.PolyData of feature faces, coordinate_systems.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: dimensions
+   :type: BaseSensor
+
+
+   
+   Property containing all options in regard to the Dimensions sensor properties.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor.Dimensions`
+           Instance of Dimensions Class for this sensor feature
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: type
+   :type: str
+
+
+   
+   Type of sensor.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:str`
+           Sensor type as string
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: colorimetric
+   :type: Union[None, BaseSensor]
+
+
+   
+   Property containing all options in regard to the Colorimetric sensor properties.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor.Colorimetric`
+           Instance of Colorimetric Class for this sensor feature
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: spectral
+   :type: Union[None, BaseSensor]
+
+
+   
+   Property containing all options in regard to the Spectral sensor properties.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor.Spectral`
+           Instance of Spectral Class for this sensor feature
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: layer
+   :type: Union[None, BaseSensor, BaseSensor]
+
+
+   
+   Property containing all options in regard to the layer separation property.
+
+
+
+
+
+   :Returns:
+
+       :obj:`Union`\[            :data:`python:None`,            :obj:`ansys.speos.core.sensor.BaseSensor.LayerTypeFace`,            :obj:`ansys.speos.core.sensor.BaseSensor.LayerTypeSequence`        ]
+           Instance of Layer type Class for this sensor feature
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: focal
+   :type: float
+
+
+   
+   Focal value of the Radiance Sensor.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Focal (mm). By default, ``250``.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Focal length of the sensor
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: integration_angle
+   :type: float
+
+
+   
+   Integration angle.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           integration angle (degree). By default, ``5``.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           integration angle of the Radiance Sensor
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: axis_system
+   :type: list[float]
+
+
+   
+   Position of the sensor.
+
+
+   :Parameters:
+
+       **axis_system** : :class:`python:list`\[:class:`python:float`]
+           Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+           By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+
+
+
+   :Returns:
+
+       :class:`python:list`\[:class:`python:float`]
+           Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: observer_point
+   :type: SensorRadiance
+
+
+   
+   The position of the observer point.
+
+   This is optional, because the focal length is used by default.
+   Choosing to set an observer point will make the focal length ignored.
+
+   :Parameters:
+
+       **value** : :class:`python:list`\[:class:`python:float`]
+           Position of the observer point [Ox Oy Oz].
+           By default, ``None``. None means that the focal length is used.
+
+
+
+   :Returns:
+
+       :obj:`Union`\[:data:`python:None`, :class:`python:list`\[:class:`python:float`]]
+           Position of the observer point [Ox Oy Oz], None means that the
+           focal length is used.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_dimensions()
+
+   
+   Set the dimensions of the sensor.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor.Dimensions`
+           Dimension class
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_type_photometric()
+
+   
+   Set type photometric.
+
+   The sensor considers the visible spectrum and gets the results in lm/m2 or lx.
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorRadiance`
+           Radiance sensor.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_type_colorimetric()
+
+   
+   Set type colorimetric.
+
+   The sensor will generate color results without any spectral data or layer separation
+   in lx or W//m2.
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor.Colorimetric`
+           Colorimetric type.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_type_radiometric()
+
+   
+   Set type radiometric.
+
+   The sensor considers the entire spectrum and gets the results in W/m2.
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorRadiance`
+           Radiance sensor.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_type_spectral()
+
+   
+   Set type spectral.
+
+   The sensor will generate color results and spectral data separated by wavelength
+   in lx or W/m2.
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor.Spectral`
+           Spectral type.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_layer_type_none()
+
+   
+   Define layer separation type as None.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorRadiance`
+           Radiance sensor
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_layer_type_source()
+
+   
+   Define layer separation as by source.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.SensorRadiance`
+           Radiance sensor
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_layer_type_face()
+
+   
+   Define layer separation as by face.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor.LayerTypeFace`
+           LayerTypeFace property instance
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_layer_type_sequence()
+
+   
+   Define layer separation as by sequence.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.sensor.BaseSensor.LayerTypeSequence`
+           LayerTypeSequence property instance
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+

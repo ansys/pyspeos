@@ -1,0 +1,99 @@
+
+
+
+
+
+
+:class:`TransportMode`
+======================
+
+
+.. py:class:: ansys.speos.core.kernel.grpc.transport_options.TransportMode(*args, **kwds)
+
+   Bases: :py:obj:`enum.Enum`
+
+
+   
+   Enumeration of transport modes supported by the FileTransfer Tool.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: TransportMode
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~UDS`
+            - 
+          * - :py:attr:`~MTLS`
+            - 
+          * - :py:attr:`~INSECURE`
+            - 
+          * - :py:attr:`~WNUA`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.kernel.grpc.transport_options import TransportMode
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: UDS
+   :value: 'uds'
+
+
+.. py:attribute:: MTLS
+   :value: 'mtls'
+
+
+.. py:attribute:: INSECURE
+   :value: 'insecure'
+
+
+.. py:attribute:: WNUA
+   :value: 'wnua'
+
+
+
+
+
+

@@ -1,0 +1,126 @@
+
+
+
+
+
+
+:class:`LayerByFaceParameters`
+==============================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.LayerByFaceParameters
+
+   
+   Layer separation type Parameters  for Face separation.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: LayerByFaceParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~geometries`
+            - List of Geometry Layers
+          * - :py:attr:`~sca_filtering_types`
+            - Defines how data result data is filtered
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import LayerByFaceParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: geometries
+   :type:  Optional[list[GeometryLayerParameters]]
+   :value: None
+
+
+   
+   List of Geometry Layers
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: sca_filtering_types
+   :type:  Union[SCAFilteringTypes, SCAFilteringTypes]
+
+   
+   Defines how data result data is filtered
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

@@ -1,0 +1,61 @@
+
+
+
+
+
+
+:class:`RoughnessOnly`
+======================
+
+
+.. py:class:: ansys.speos.core.simulation.SimulationVirtualBSDF.RoughnessOnly(mode_template, default_values = True, stable_ctr = False)
+
+   Bases: :py:obj:`BaseSimulation`
+
+
+   
+   Roughness only mode of BSDF bench measurement.
+
+   By default,
+   Uniform source theta sampling 18 is used.
+
+   :Parameters:
+
+       **mode_template** : :obj:`simulation_template_pb2.RoughnessOnly`
+           roughness settings to complete.
+
+       **default_values** : :ref:`bool <python:bltin-boolean-values>`
+           Uses default source sampling values when True.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.simulation.SimulationVirtualBSDF import RoughnessOnly
+
+
+
+
+

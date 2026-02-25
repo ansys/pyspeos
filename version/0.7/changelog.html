@@ -1,0 +1,1876 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Release notes &#8212; ansys-speos-core 0.7.2 documentation</title>
+  
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/ansys-sphinx-theme.css?v=9e79609d" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/ansys-sphinx-theme.css?v=9e79609d" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://www.nerdfonts.com/assets/css/webfont.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=0670e955" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+
+  <!-- Include desired assets -->
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  
+
+  
+    <link href="_static/css/breadcrumbs.css" rel="stylesheet" />
+  
+    <script src="_static/documentation_options.js?v=3096642c"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'changelog';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://speos.docs.pyansys.com/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '0.7';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <link rel="icon" href="_static/ansys-favicon.png"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Contribute" href="contributing.html" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.7.2" />
+  <meta property="og:site_name" content="PyAnsys" />
+  <meta name="physics" content="Optics" />
+  <link rel="canonical" href="https://speos.docs.pyansys.com/version/stable/changelog.html" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+
+<a class="navbar-brand logo" href="https://docs.pyansys.com/">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/pyansys_logo_transparent_black.png" class="logo__image only-light" alt="ansys-speos-core 0.7.2 documentation - Home"/>
+    <img src="_static/pyansys_logo_transparent_white.png" class="logo__image only-dark pst-js-only" alt="ansys-speos-core 0.7.2 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="index.html" title="ansys-speos-core 0.7.2 documentation home">Home</a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="overview/index.html">
+    Overview
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="examples.html">
+    Examples
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="contributing.html">
+    Contribute
+  </a>
+</li>
+
+
+<li class=" current active">
+  <a class="nav-link dropdown-item nav-internal" href="#">
+    Release notes
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav>
+</div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+      
+        <div class="navbar-item">
+<div class="search-bar pst-js-only" id="search-bar">
+  <form class="bd-search d-flex align-items-center" action="search.html" method="get">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="search" class="form-control" name="q" placeholder="Search the docs ..."
+      aria-label="Search the docs ..." autocomplete="off" autocorrect="off"
+      autocapitalize="off" spellcheck="false" />
+    <span class="search-button__kbd-shortcut">
+      <kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd>
+    </span>
+  </form>
+  <div id="static-search-results" class="static-search-results" style="display:none;" tabindex="0"></div>
+</div></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ansys/pyspeos" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+  
+    <div id="announcement_msg"></div>
+<script>
+  fetch("announcement.html")
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status}`);
+      }
+      return response.text();
+    })
+    .then(
+      (text) => (document.getElementById("announcement_msg").innerHTML = text),
+    )
+    .catch((error) => console.error(`Fetch problem: ${error.message}`));
+</script>
+  
+
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="index.html" title="ansys-speos-core 0.7.2 documentation home">Home</a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="overview/index.html">
+    Overview
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="examples.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="contributing.html">
+    Contribute
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Release notes
+  </a>
+</li>
+
+  </ul>
+</nav>
+</div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="search-bar pst-js-only" id="search-bar">
+  <form class="bd-search d-flex align-items-center" action="search.html" method="get">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="search" class="form-control" name="q" placeholder="Search the docs ..."
+      aria-label="Search the docs ..." autocomplete="off" autocorrect="off"
+      autocapitalize="off" spellcheck="false" />
+    <span class="search-button__kbd-shortcut">
+      <kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd>
+    </span>
+  </form>
+  <div id="static-search-results" class="static-search-results" style="display:none;" tabindex="0"></div>
+</div></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ansys/pyspeos" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"></div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+<nav aria-label="Breadcrumb">
+  <ul class="bd-breadcrumbs">
+     
+    <li class="breadcrumb-item breadcrumb-home">
+      <a
+        href="index.html"
+        class="nav-link"
+        aria-label="Home"
+      >
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+      
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Release notes</span></li>
+    
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="release-notes">
+<span id="ref-release-notes"></span><h1>Release notes<a class="headerlink" href="#release-notes" title="Link to this heading">#</a></h1>
+<p>This document contains the release notes for the PySpeos project.</p>
+<section id="february-06-2026">
+<h2><a class="reference external" href="https://github.com/ansys/pyspeos/releases/tag/v0.7.2">0.7.2</a> - February 06, 2026<a class="headerlink" href="#february-06-2026" title="Link to this heading">#</a></h2>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-0">
+Added</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>Source ambient environment</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/808">#808</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Source ambient environment - In 0.7</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/841">#841</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-1">
+Documentation</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>Add Gaussian function and update R and T parts</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/837">#837</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Add Gaussian function and update R and T parts - in 0.7</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/840">#840</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-2" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-2">
+Fixed</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>Speos launcher using pim - fix issue when getting target from channel</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/827">#827</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Speos launcher using pim - fix issue when getting target from channel - In 0.7</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/839">#839</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+<section id="january-13-2026">
+<h2><a class="reference external" href="https://github.com/ansys/pyspeos/releases/tag/v0.7.1">0.7.1</a> - January 13, 2026<a class="headerlink" href="#january-13-2026" title="Link to this heading">#</a></h2>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-3" name="sd-tab-set-1" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-3">
+Added</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>Add supporting virtual bsdf bench</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/763">#763</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-4" name="sd-tab-set-1" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-4">
+Dependencies</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>Bump ansys-sphinx-theme[autoapi] from 1.6.3 to 1.6.4 in the doc-deps group</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/793">#793</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Bump pytest from 9.0.1 to 9.0.2 in the test-deps group</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/795">#795</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Bump the jupyter-deps group across 1 directory with 2 updates</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/807">#807</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Bump psutil from 7.1.3 to 7.2.1</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/809">#809</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-5" name="sd-tab-set-1" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-5">
+Fixed</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>Exclude vbb test from nightly run with 251</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/801">#801</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Nightly run</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/811">#811</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-6" name="sd-tab-set-1" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-6">
+Maintenance</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>Rework logic around vtk-osmesa</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/774">#774</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Bump ansys/actions from 10.2.2 to 10.2.3</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/791">#791</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Bump actions/checkout from 6.0.0 to 6.0.1</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/792">#792</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Bump codecov/codecov-action from 5.5.1 to 5.5.2</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/794">#794</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Update CHANGELOG for v0.7.0</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/796">#796</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Bump dev version into v0.7.dev0</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/797">#797</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Bump actions/download-artifact from 6.0.0 to 7.0.0</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/798">#798</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Bump actions/upload-artifact from 5.0.0 to 6.0.0</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/799">#799</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Pre-commit autoupdate</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/800">#800</a>, <a class="reference external" href="https://github.com/ansys/pyspeos/pull/805">#805</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Update year in headers</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/810">#810</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+<section id="december-12-2025">
+<h2><a class="reference external" href="https://github.com/ansys/pyspeos/releases/tag/v0.7.0">0.7.0</a> - December 12, 2025<a class="headerlink" href="#december-12-2025" title="Link to this heading">#</a></h2>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-7" name="sd-tab-set-2" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-7">
+Added</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>Update vtk-osmesa version to 9.3.1</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/756">#756</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Use grpc secure channel</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/783">#783</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-8" name="sd-tab-set-2" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-8">
+Dependencies</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>Bump the doc-deps group with 2 updates</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/723">#723</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Bump pytest-cov from 6.3.0 to 7.0.0 in the test-deps group</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/724">#724</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Update grpcio requirement from &lt;1.75,&gt;=1.50.0 to &gt;=1.50.0,&lt;1.76 in the grpc-deps group</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/735">#735</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Bump psutil from 7.0.0 to 7.1.0</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/737">#737</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Bump the jupyter-deps group across 1 directory with 2 updates</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/753">#753</a>, <a class="reference external" href="https://github.com/ansys/pyspeos/pull/781">#781</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Use autoapi target of ansys-sphinx-theme</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/754">#754</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Update grpcio requirement from &lt;1.76,&gt;=1.50.0 to &gt;=1.50.0,&lt;1.77 in the grpc-deps group</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/766">#766</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Bump psutil from 7.1.0 to 7.1.3</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/771">#771</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Bump pytest from 8.4.2 to 9.0.0 in the test-deps group</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/773">#773</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Bump the doc-deps group across 1 directory with 5 updates</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/789">#789</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-9" name="sd-tab-set-2" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-9">
+Documentation</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>Update <code class="docutils literal notranslate"><span class="pre">CONTRIBUTORS.md</span></code> with the latest contributors</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/744">#744</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Fix typo in CONTRIBUTING.md</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/786">#786</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-10" name="sd-tab-set-2" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-10">
+Maintenance</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>Update CHANGELOG for v0.6.2</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/721">#721</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Pre-commit autoupdate</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/725">#725</a>, <a class="reference external" href="https://github.com/ansys/pyspeos/pull/757">#757</a>, <a class="reference external" href="https://github.com/ansys/pyspeos/pull/782">#782</a>, <a class="reference external" href="https://github.com/ansys/pyspeos/pull/790">#790</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Update CHANGELOG for v0.6.3</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/732">#732</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Add vulnerability check</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/738">#738</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Add security policy file</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/739">#739</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Add backwards compatibility test</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/740">#740</a>, <a class="reference external" href="https://github.com/ansys/pyspeos/pull/741">#741</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Bump ansys/actions from 10.0.20 to 10.1.2</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/745">#745</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Bump ansys/actions from 10.1.3 to 10.1.4</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/750">#750</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Bump docker/login-action from 3.5.0 to 3.6.0</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/751">#751</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Bump peter-evans/create-or-update-comment from 4.0.0 to 5.0.0</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/752">#752</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Bump actions/upload-artifact from 4.6.2 to 5.0.0</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/764">#764</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Bump actions/download-artifact from 5.0.0 to 6.0.0</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/765">#765</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Update missing or outdated files</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/769">#769</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Bump ansys/actions from 10.1.4 to 10.1.5</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/770">#770</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Adjust ansys tools path dependency</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/777">#777</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Bump actions/checkout from 5.0.0 to 6.0.0</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/779">#779</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Bump actions/setup-python from 6.0.0 to 6.1.0</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/784">#784</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Bump ansys/actions from 10.1.5 to 10.2.2</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/787">#787</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-11" name="sd-tab-set-2" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-11">
+Miscellaneous</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>Subprocess related line of codes</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/726">#726</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+<section id="september-18-2025">
+<h2><a class="reference external" href="https://github.com/ansys/pyspeos/releases/tag/v0.6.3">0.6.3</a> - September 18, 2025<a class="headerlink" href="#september-18-2025" title="Link to this heading">#</a></h2>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-12" name="sd-tab-set-3" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-12">
+Fixed</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>Append not supported scene data instance</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/727">#727</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Append not supported scene data instance (#727)</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/730">#730</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-13" name="sd-tab-set-3" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-13">
+Maintenance</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>Adapt docker run command for 25R2 sp2</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/722">#722</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Adapt docker run 25 r2sp2</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/729">#729</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Adapt docker run 25 r2sp2 (#729)</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/731">#731</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+<section id="september-11-2025">
+<h2><a class="reference external" href="https://github.com/ansys/pyspeos/releases/tag/v0.6.2">0.6.2</a> - September 11, 2025<a class="headerlink" href="#september-11-2025" title="Link to this heading">#</a></h2>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-14" name="sd-tab-set-4" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-14">
+Documentation</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>Add HTML context metadata</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/718">#718</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-15" name="sd-tab-set-4" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-15">
+Maintenance</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>Pre-commit autoupdate</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/716">#716</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Update CHANGELOG for v0.6.1</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/720">#720</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+<section id="id77">
+<h2><a class="reference external" href="https://github.com/ansys/pyspeos/releases/tag/v0.6.1">0.6.1</a> - September 11, 2025<a class="headerlink" href="#id77" title="Link to this heading">#</a></h2>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-16" name="sd-tab-set-5" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-16">
+Dependencies</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>Update grpcio requirement from &lt;1.71,&gt;=1.50.0 to &gt;=1.50.0,&lt;1.73 in the grpc-deps group</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/617">#617</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Bump the jupyter-deps group across 1 directory with 2 updates</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/659">#659</a>, <a class="reference external" href="https://github.com/ansys/pyspeos/pull/700">#700</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Update pyvista requirement from &lt;0.46,&gt;=0.40.0 to &gt;=0.40.0,&lt;0.47 in the graphics-deps group</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/695">#695</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Update pyvista[jupyter] requirement from &lt;0.46,&gt;=0.43 to &gt;=0.43,&lt;0.47</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/697">#697</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Update grpcio requirement from &lt;1.73,&gt;=1.50.0 to &gt;=1.50.0,&lt;1.75 in the grpc-deps group</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/698">#698</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Install comtypes only for windows</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/704">#704</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Bump the test-deps group with 2 updates</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/714">#714</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Bump the doc-deps group across 1 directory with 5 updates</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/715">#715</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-17" name="sd-tab-set-5" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-17">
+Documentation</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>Update readme, support features info</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/670">#670</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-18" name="sd-tab-set-5" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-18">
+Fixed</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>Subpart commit modified to work when updating an existing subpart</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/664">#664</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Change default version to 252</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/687">#687</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Handle specificities of new server 25R2 SP1 and backward compatibility with previous servers.</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/717">#717</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-19" name="sd-tab-set-5" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-19">
+Maintenance</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>Pre-commit autoupdate</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/638">#638</a>, <a class="reference external" href="https://github.com/ansys/pyspeos/pull/689">#689</a>, <a class="reference external" href="https://github.com/ansys/pyspeos/pull/707">#707</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Update changelog for v0.6.0</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/665">#665</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Update docker tag to 252 for doc stage</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/668">#668</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Bump ansys/actions from 10.0.12 to 10.0.13</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/674">#674</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Pin vtk-osmesa version</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/675">#675</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Bump docker/login-action from 3.4.0 to 3.5.0</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/692">#692</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Bump ansys/actions from 10.0.13 to 10.0.14</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/693">#693</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Bump actions/download-artifact from 4.3.0 to 5.0.0</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/694">#694</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Bump actions/checkout from 4.2.2 to 5.0.0</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/701">#701</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Bump codecov/codecov-action from 5.4.3 to 5.5.0</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/702">#702</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Bump pypa/gh-action-pypi-publish from 1.12.4 to 1.13.0</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/709">#709</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Bump actions/labeler from 5.0.0 to 6.0.1</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/710">#710</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Bump actions/setup-python from 5.6.0 to 6.0.0</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/711">#711</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Bump codecov/codecov-action from 5.5.0 to 5.5.1</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/712">#712</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Bump ansys/actions from 10.0.14 to 10.0.20</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/713">#713</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-20" name="sd-tab-set-5" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-20">
+Test</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>Core - sub part - check that modifying sub part’s axis system i…</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/671">#671</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+<section id="july-15-2025">
+<h2><a class="reference external" href="https://github.com/ansys/pyspeos/releases/tag/v0.6.0">0.6.0</a> - July 15, 2025<a class="headerlink" href="#july-15-2025" title="Link to this heading">#</a></h2>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-21" name="sd-tab-set-6" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-21">
+Added</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>Kernel - facestub - add create_batch and read_batch methods</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/369">#369</a></p></td>
+</tr>
+<tr class="row-even"><td><p>enhance the project preview: luminaire, surface, rayfile</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/561">#561</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>lightexpert</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/592">#592</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Add 3d irradiance</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/595">#595</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Add version warnings</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/608">#608</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Spectralbsdf</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/614">#614</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Add method to export simulation</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/629">#629</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Add natural light</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/633">#633</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Add export result as vtp files</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/643">#643</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Add cad visual data property</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/661">#661</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-22" name="sd-tab-set-6" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-22">
+Dependencies</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>bump ansys-api-speos from 0.14.2 to 0.15.2</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/589">#589</a></p></td>
+</tr>
+<tr class="row-even"><td><p>bump the doc-deps group with 3 updates</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/604">#604</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>bump notebook from 7.4.2 to 7.4.3 in the jupyter-deps group across 1 directory</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/609">#609</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Bump ansys-sphinx-theme from 1.5.0 to 1.5.2 in the doc-deps group</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/616">#616</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Bump pytest from 8.3.5 to 8.4.0 in the test-deps group</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/618">#618</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Bump pytest-cov from 6.1.1 to 6.2.1 in the test-deps group</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/623">#623</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Bump pytest from 8.4.0 to 8.4.1 in the test-deps group</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/637">#637</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-23" name="sd-tab-set-6" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-23">
+Documentation</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>Add badges into readme.rst</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/610">#610</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Adjust missing examples</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/612">#612</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-24" name="sd-tab-set-6" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-24">
+Fixed</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>add message size to nighly ci</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/600">#600</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Only reset the _visual_data when graphics_available is true</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/621">#621</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Read empty mesh when no body at root and subpart.1</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/632">#632</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Duplicated feature that is already inside the _features list</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/636">#636</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>640 camera with distortion v2 to v4</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/644">#644</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Sim export_unittest for windows</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/655">#655</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Kernel - faceactions - check if batch is available on server - if available use batch project _fill_bodies</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/656">#656</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Print of protobuf messages containing special characters</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/663">#663</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-25" name="sd-tab-set-6" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-25">
+Maintenance</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>update CHANGELOG for v0.5.0</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/597">#597</a></p></td>
+</tr>
+<tr class="row-even"><td><p>bump dev version into v0.6.dev0</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/598">#598</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>pre-commit autoupdate</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/599">#599</a></p></td>
+</tr>
+<tr class="row-even"><td><p>update CHANGELOG for v0.5.1</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/602">#602</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>bump ansys/actions from 9.0.11 to 9.0.13</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/606">#606</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Pre-commit autoupdate</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/611">#611</a>, <a class="reference external" href="https://github.com/ansys/pyspeos/pull/619">#619</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Bump ansys/actions into v10.0.3</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/613">#613</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Bump ansys/actions from 10.0.3 to 10.0.8</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/615">#615</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Bump ansys/actions from 10.0.8 to 10.0.11</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/622">#622</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Update dependabot cfg and code owners</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/627">#627</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Bump ansys/actions from 10.0.11 to 10.0.12</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/649">#649</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-26" name="sd-tab-set-6" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-26">
+Test</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>Add several tests for file transfer api</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/652">#652</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+<section id="may-28-2025">
+<h2><a class="reference external" href="https://github.com/ansys/pyspeos/releases/tag/v0.5.1">0.5.1</a> - May 28, 2025<a class="headerlink" href="#may-28-2025" title="Link to this heading">#</a></h2>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-27" name="sd-tab-set-7" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-27">
+Fixed</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>coding error, switch to correct order</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/601">#601</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+<section id="may-26-2025">
+<h2><a class="reference external" href="https://github.com/ansys/pyspeos/releases/tag/v0.5.0">0.5.0</a> - May 26, 2025<a class="headerlink" href="#may-26-2025" title="Link to this heading">#</a></h2>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-28" name="sd-tab-set-8" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-28">
+Added</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>geopath property</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/551">#551</a></p></td>
+</tr>
+<tr class="row-even"><td><p>bsdf</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/581">#581</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-29" name="sd-tab-set-8" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-29">
+Dependencies</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>update protobuf requirement from &lt;6,&gt;=3.20 to &gt;=3.20,&lt;7 in the grpc-deps group</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/500">#500</a></p></td>
+</tr>
+<tr class="row-even"><td><p>update pyvista requirement from &lt;0.45,&gt;=0.40.0 to &gt;=0.40.0,&lt;0.46</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/562">#562</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>update pyvista[jupyter] requirement from &lt;0.45,&gt;=0.43 to &gt;=0.43,&lt;0.46</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/563">#563</a></p></td>
+</tr>
+<tr class="row-even"><td><p>bump notebook from 7.3.3 to 7.4.1</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/566">#566</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>bump the doc-deps group across 1 directory with 2 updates</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/571">#571</a></p></td>
+</tr>
+<tr class="row-even"><td><p>bump notebook from 7.4.1 to 7.4.2 in the jupyter-deps group</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/584">#584</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>bump the doc-deps group across 1 directory with 3 updates</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/587">#587</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-30" name="sd-tab-set-8" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-30">
+Documentation</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>Update <code class="docutils literal notranslate"><span class="pre">CONTRIBUTORS.md</span></code> with the latest contributors</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/568">#568</a></p></td>
+</tr>
+<tr class="row-even"><td><p>improve project example</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/572">#572</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Adjust prism example to new style</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/576">#576</a></p></td>
+</tr>
+<tr class="row-even"><td><p>adjust part.py example to match new style</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/580">#580</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-31" name="sd-tab-set-8" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-31">
+Fixed</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>Integration direction display and adjust docstrings</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/570">#570</a></p></td>
+</tr>
+<tr class="row-even"><td><p>unittest update based on bug 1229712</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/579">#579</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-32" name="sd-tab-set-8" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-32">
+Maintenance</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>pre-commit autoupdate</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/552">#552</a>, <a class="reference external" href="https://github.com/ansys/pyspeos/pull/578">#578</a>, <a class="reference external" href="https://github.com/ansys/pyspeos/pull/585">#585</a>, <a class="reference external" href="https://github.com/ansys/pyspeos/pull/591">#591</a></p></td>
+</tr>
+<tr class="row-even"><td><p>update CHANGELOG for v0.4.0</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/558">#558</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>bump dev version</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/559">#559</a></p></td>
+</tr>
+<tr class="row-even"><td><p>bump ansys/actions from 9.0.2 to 9.0.6 in the actions group</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/560">#560</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>bump the actions group with 2 updates</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/567">#567</a></p></td>
+</tr>
+<tr class="row-even"><td><p>bump ansys action version with quarto fix</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/573">#573</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>update dependabot configuration</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/574">#574</a></p></td>
+</tr>
+<tr class="row-even"><td><p>update code owners</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/577">#577</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>bump ansys/actions from 9.0.7 to 9.0.9</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/582">#582</a></p></td>
+</tr>
+<tr class="row-even"><td><p>bump codecov/codecov-action from 5.4.2 to 5.4.3</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/590">#590</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>bump ansys/actions from 9.0.9 to 9.0.11</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/596">#596</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-33" name="sd-tab-set-8" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-33">
+Miscellaneous</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>improve type hints</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/564">#564</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+<section id="april-17-2025">
+<h2><a class="reference external" href="https://github.com/ansys/pyspeos/releases/tag/v0.4.0">0.4.0</a> - April 17, 2025<a class="headerlink" href="#april-17-2025" title="Link to this heading">#</a></h2>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-34" name="sd-tab-set-9" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-34">
+Added</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>Feat/add local launcher</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/454">#454</a></p></td>
+</tr>
+<tr class="row-even"><td><p>add screenshot in pyvista related methods</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/521">#521</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>enhance the project preview: irrad, rad, camera sensor features</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/528">#528</a></p></td>
+</tr>
+<tr class="row-even"><td><p>switch to ansys tools and decouple requirements</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/532">#532</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-35" name="sd-tab-set-9" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-35">
+Dependencies</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>bump ansys-sphinx-theme from 1.3.3 to 1.4.2 in the doc-deps group</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/524">#524</a></p></td>
+</tr>
+<tr class="row-even"><td><p>bump pytest-cov from 6.0.0 to 6.1.0</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/533">#533</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>bump pytest-cov from 6.1.0 to 6.1.1</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/542">#542</a></p></td>
+</tr>
+<tr class="row-even"><td><p>bump psutil from 6.1.1 to 7.0.0</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/555">#555</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-36" name="sd-tab-set-9" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-36">
+Documentation</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>Update example combine-speos.py</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/499">#499</a></p></td>
+</tr>
+<tr class="row-even"><td><p>open-results adjustments</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/538">#538</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>adjust source example</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/543">#543</a></p></td>
+</tr>
+<tr class="row-even"><td><p>adjust simulation example</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/545">#545</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>remote instance</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/553">#553</a></p></td>
+</tr>
+<tr class="row-even"><td><p>adjust sensor.py example</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/554">#554</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-37" name="sd-tab-set-9" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-37">
+Fixed</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>issue with nightly pipeline</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/534">#534</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Graphs not showing with Ansys visualizer</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/537">#537</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>improve examples and tests due to more errors raised by the new SpeosRPC server</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/546">#546</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-38" name="sd-tab-set-9" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-38">
+Maintenance</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>remove code-style job to use precommit.ci</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/523">#523</a></p></td>
+</tr>
+<tr class="row-even"><td><p>update CHANGELOG for v0.3.0</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/525">#525</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>bump dev version into v0.4.dev0</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/526">#526</a></p></td>
+</tr>
+<tr class="row-even"><td><p>pre-commit autoupdate</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/529">#529</a>, <a class="reference external" href="https://github.com/ansys/pyspeos/pull/541">#541</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>bump ansys/actions from 8 to 9 in the actions group</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/544">#544</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Rename CONTRUBUTORS.md to CONTRIBUTORS.md</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/548">#548</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>remove strong upper bound on build dep</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/549">#549</a></p></td>
+</tr>
+<tr class="row-even"><td><p>pin actions version with full commit hash</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/557">#557</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+<section id="march-28-2025">
+<h2><a class="reference external" href="https://github.com/ansys/pyspeos/releases/tag/v0.3.0">0.3.0</a> - March 28, 2025<a class="headerlink" href="#march-28-2025" title="Link to this heading">#</a></h2>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-39" name="sd-tab-set-10" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-39">
+Added</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>provide a way for the user to limit number of threads</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/508">#508</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-40" name="sd-tab-set-10" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-40">
+Dependencies</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>bump pytest from 8.3.4 to 8.3.5</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/484">#484</a></p></td>
+</tr>
+<tr class="row-even"><td><p>bump the doc-deps group across 1 directory with 4 updates</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/509">#509</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>bump notebook from 7.3.2 to 7.3.3</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/510">#510</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-41" name="sd-tab-set-10" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-41">
+Documentation</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>fix 404 page when download example as python script</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/514">#514</a></p></td>
+</tr>
+<tr class="row-even"><td><p>add example assets button</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/518">#518</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>fix path to download assets</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/522">#522</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-42" name="sd-tab-set-10" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-42">
+Fixed</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>core layer loading a camera sensor</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/503">#503</a></p></td>
+</tr>
+<tr class="row-even"><td><p>doc: Adjust server launch command</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/505">#505</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-43" name="sd-tab-set-10" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-43">
+Maintenance</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>update CHANGELOG for v0.2.0</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/490">#490</a></p></td>
+</tr>
+<tr class="row-even"><td><p>update CHANGELOG for v0.2.1</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/492">#492</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-44" name="sd-tab-set-10" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-44">
+Miscellaneous</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>remove ruff E ignores</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/495">#495</a></p></td>
+</tr>
+<tr class="row-even"><td><p>remove ruff ignores F</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/506">#506</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>ruff n</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/507">#507</a></p></td>
+</tr>
+<tr class="row-even"><td><p>ruff TD002, TD003</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/512">#512</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+<section id="march-06-2025">
+<h2><a class="reference external" href="https://github.com/ansys/pyspeos/releases/tag/v0.2.1">0.2.1</a> - March 06, 2025<a class="headerlink" href="#march-06-2025" title="Link to this heading">#</a></h2>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-45" name="sd-tab-set-11" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-45">
+Fixed</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>add mandatory token to release-github</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/491">#491</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+<section id="id229">
+<h2><a class="reference external" href="https://github.com/ansys/pyspeos/releases/tag/v0.2.0">0.2.0</a> - March 06, 2025<a class="headerlink" href="#id229" title="Link to this heading">#</a></h2>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-46" name="sd-tab-set-12" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-46">
+Documentation</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>documentation review changes</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/483">#483</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-47" name="sd-tab-set-12" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-47">
+Fixed</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>add missing notebook dependency</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/488">#488</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-48" name="sd-tab-set-12" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-48">
+Maintenance</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>add project required info</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/470">#470</a></p></td>
+</tr>
+<tr class="row-even"><td><p>update CHANGELOG for v0.1.1</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/473">#473</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>update organization name</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/486">#486</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="sd-tab-item-49" name="sd-tab-set-12" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-49">
+Miscellaneous</label><div class="sd-tab-content docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>remove ignores for PTH</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/474">#474</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Remove ruff ignore for “D”, pydocstyle</p></td>
+<td><p><a class="reference external" href="https://github.com/ansys/pyspeos/pull/482">#482</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+<section id="id238">
+<h2><a class="reference external" href="https://github.com/ansys/pyspeos/releases/tag/v0.1.1">0.1.1</a> - 2025-02-25<a class="headerlink" href="#id238" title="Link to this heading">#</a></h2>
+<section id="maintenance">
+<h3>Maintenance<a class="headerlink" href="#maintenance" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>update CHANGELOG for v0.1.0 <a class="reference external" href="https://github.com/ansys/pyspeos/pull/471">#471</a></p></li>
+<li><p>bump dev version into v0.2.dev0 <a class="reference external" href="https://github.com/ansys/pyspeos/pull/472">#472</a></p></li>
+</ul>
+</section>
+</section>
+<section id="id242">
+<h2><a class="reference external" href="https://github.com/ansys/pyspeos/releases/tag/v0.1.0">0.1.0</a> - 2025-02-24<a class="headerlink" href="#id242" title="Link to this heading">#</a></h2>
+<section id="dependencies">
+<h3>Dependencies<a class="headerlink" href="#dependencies" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>bump the doc-deps group across 1 directory with 4 updates <a class="reference external" href="https://github.com/ansys/pyspeos/pull/452">#452</a></p></li>
+</ul>
+</section>
+<section id="documentation">
+<h3>Documentation<a class="headerlink" href="#documentation" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Documentation review <a class="reference external" href="https://github.com/ansys/pyspeos/pull/455">#455</a></p></li>
+<li><p>fix broken inner links <a class="reference external" href="https://github.com/ansys/pyspeos/pull/465">#465</a></p></li>
+<li><p>fix make.bat clean call <a class="reference external" href="https://github.com/ansys/pyspeos/pull/466">#466</a></p></li>
+</ul>
+</section>
+<section id="fixed">
+<h3>Fixed<a class="headerlink" href="#fixed" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>missing get method for optical properties <a class="reference external" href="https://github.com/ansys/pyspeos/pull/434">#434</a></p></li>
+<li><p>examples local run path was incorrect <a class="reference external" href="https://github.com/ansys/pyspeos/pull/451">#451</a></p></li>
+</ul>
+</section>
+<section id="id249">
+<h3>Maintenance<a class="headerlink" href="#id249" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>add new jobs and cleanup workflows <a class="reference external" href="https://github.com/ansys/pyspeos/pull/425">#425</a></p></li>
+<li><p>general update/addition of files at project root level <a class="reference external" href="https://github.com/ansys/pyspeos/pull/427">#427</a></p></li>
+<li><p>update python versions and dependencies <a class="reference external" href="https://github.com/ansys/pyspeos/pull/443">#443</a></p></li>
+<li><p>add nightly workflow <a class="reference external" href="https://github.com/ansys/pyspeos/pull/444">#444</a></p></li>
+<li><p>update code owners <a class="reference external" href="https://github.com/ansys/pyspeos/pull/448">#448</a></p></li>
+<li><p>update labeler <a class="reference external" href="https://github.com/ansys/pyspeos/pull/456">#456</a></p></li>
+<li><p>cleanup repo <a class="reference external" href="https://github.com/ansys/pyspeos/pull/459">#459</a></p></li>
+</ul>
+</section>
+<section id="miscellaneous">
+<h3>Miscellaneous<a class="headerlink" href="#miscellaneous" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>avoid mutable value as default value in function <a class="reference external" href="https://github.com/ansys/pyspeos/pull/436">#436</a></p></li>
+<li><p>update architecture <a class="reference external" href="https://github.com/ansys/pyspeos/pull/445">#445</a></p></li>
+<li><p>remove docker compose and update doc <a class="reference external" href="https://github.com/ansys/pyspeos/pull/449">#449</a></p></li>
+<li><p>use __getitem__ in SpeosClient <a class="reference external" href="https://github.com/ansys/pyspeos/pull/461">#461</a></p></li>
+<li><p>the core sensor, source, simulation class name <a class="reference external" href="https://github.com/ansys/pyspeos/pull/462">#462</a></p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#february-06-2026">0.7.2 - February 06, 2026</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#january-13-2026">0.7.1 - January 13, 2026</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#december-12-2025">0.7.0 - December 12, 2025</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#september-18-2025">0.6.3 - September 18, 2025</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#september-11-2025">0.6.2 - September 11, 2025</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id77">0.6.1 - September 11, 2025</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#july-15-2025">0.6.0 - July 15, 2025</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#may-28-2025">0.5.1 - May 28, 2025</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#may-26-2025">0.5.0 - May 26, 2025</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#april-17-2025">0.4.0 - April 17, 2025</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#march-28-2025">0.3.0 - March 28, 2025</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#march-06-2025">0.2.1 - March 06, 2025</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id229">0.2.0 - March 06, 2025</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id238">0.1.1 - 2025-02-25</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#maintenance">Maintenance</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id242">0.1.0 - 2025-02-24</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dependencies">Dependencies</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#documentation">Documentation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fixed">Fixed</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id249">Maintenance</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#miscellaneous">Miscellaneous</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+<!-- If there is no fix edit button function, use the PyData edit-this-button-->
+</div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <ul class="this-page-menu">
+      <li><a href="_sources/changelog.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+
+  <!-- Include desired assets -->
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.7/require.min.js"></script>
+
+<script>
+// Passing the search options to the search.js file
+const SEARCH_OPTIONS = JSON.parse('{"keys": ["title", "text", "objectID"], "limit": 10, "threshold": 0.2}');
+const SEARCH_FILE = "_static/search.json";
+const ADVANCE_SEARCH_PATH = "search.html";
+const EXTRA_SOURCES = JSON.parse('""');
+</script>
+
+
+<script src="_static/js/search.js"></script>
+
+  
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright (c) 2026 ANSYS, Inc. All rights reserved.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item"><p class="theme-version">
+  Built with the
+  <a href="https://sphinxdocs.ansys.com/version/stable/index.html"
+    >Ansys Sphinx Theme</a
+  >
+  1.6.4. <br />Last updated on
+  <span id="ast_build_date"></span>
+</p>
+<script>
+  var options = { day: "numeric", month: "long", year: "numeric" };
+  var ast_lastModifiedDate = new Date(document.lastModified);
+  var ast_build_date = ast_lastModifiedDate.toLocaleDateString("en-US", options);
+  document.getElementById("ast_build_date").innerHTML = ast_build_date;
+</script></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

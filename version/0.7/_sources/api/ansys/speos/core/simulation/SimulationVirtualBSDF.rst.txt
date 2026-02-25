@@ -1,0 +1,677 @@
+
+
+
+
+
+
+:class:`SimulationVirtualBSDF`
+==============================
+
+.. toctree::
+   :hidden:
+
+    RoughnessOnly</api/ansys/speos/core/simulation/SimulationVirtualBSDF.RoughnessOnly>
+    AllCharacteristics</api/ansys/speos/core/simulation/SimulationVirtualBSDF.AllCharacteristics>
+    WavelengthsRange</api/ansys/speos/core/simulation/SimulationVirtualBSDF.WavelengthsRange>
+    SensorUniform</api/ansys/speos/core/simulation/SimulationVirtualBSDF.SensorUniform>
+
+
+.. py:class:: ansys.speos.core.simulation.SimulationVirtualBSDF(project, name, description = '', metadata = None, simulation_instance = None, default_values = True)
+
+   Bases: :py:obj:`BaseSimulation`
+
+
+   
+   Type of simulation : Virtual BSDF Bench.
+
+   By default,
+   geometry distance tolerance is set to 0.01,
+   maximum number of impacts is set to 100,
+   a colorimetric standard is set to CIE 1931,
+   and weight's minimum energy percentage is set to 0.005.
+
+   :Parameters:
+
+       **project** : :obj:`ansys.speos.core.project.Project`
+           Project in which simulation shall be created.
+
+       **name** : :class:`python:str`
+           Name of the simulation.
+
+       **description** : :class:`python:str`
+           Description of the Simulation.
+           By default, ``""``.
+
+       **metadata** : :obj:`Optional`\[:obj:`Mapping`\[:class:`python:str`, :class:`python:str`]]
+           Metadata of the feature.
+           By default, ``{}``.
+
+       **simulation_instance** : :obj:`ansys.api.speos.scene.v2.scene_pb2.Scene.SimulationInstance`, :obj:`optional`
+           Simulation instance to provide if the feature does not have to be created from scratch
+           By default, ``None``, means that the feature is created from scratch by default.
+
+       **default_values** : :ref:`bool <python:bltin-boolean-values>`
+           Uses default values when True.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+.. py:currentmodule:: SimulationVirtualBSDF
+
+Overview
+--------
+
+.. tab-set::
+
+   .. tab-item:: Abstract methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_sensor_paths`
+            - Disabled - Setting sensor paths is not available for this simulation type.
+          * - :py:attr:`~set_source_paths`
+            - Disabled - Setting source paths is not available for this simulation type.
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_weight`
+            - Activate weight. Highly recommended to fill.
+          * - :py:attr:`~set_weight_none`
+            - Deactivate weight.
+          * - :py:attr:`~set_colorimetric_standard_CIE_1931`
+            - Set the colorimetric standard to CIE 1931.
+          * - :py:attr:`~set_colorimetric_standard_CIE_1964`
+            - Set the colorimetric standard to CIE 1964.
+          * - :py:attr:`~set_mode_roughness_only`
+            - Set BSDF depends on surface roughness only.
+          * - :py:attr:`~set_mode_all_characteristics`
+            - Set BSDF depends on all properties.
+          * - :py:attr:`~set_wavelengths_range`
+            - Set the range of wavelengths.
+          * - :py:attr:`~set_sensor_sampling_uniform`
+            - Set sensor sampling uniform.
+          * - :py:attr:`~set_sensor_sampling_automatic`
+            - Set sensor sampling automatic.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~integration_angle`
+            - Sensor integration angle.
+          * - :py:attr:`~axis_system`
+            - Axis system of the bsdf bench.
+          * - :py:attr:`~analysis_x_ratio`
+            - Analysis x ratio.
+          * - :py:attr:`~analysis_y_ratio`
+            - Analysis y ratio.
+          * - :py:attr:`~stop_condition_ray_number`
+            - Stop condition as ray number.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.simulation import SimulationVirtualBSDF
+
+Property detail
+---------------
+
+.. py:property:: integration_angle
+   :type: float
+
+
+   
+   Sensor integration angle.
+
+   This property gets or sets the sensor integration angle used by the
+   virtual BSDF bench simulation.
+
+   :Parameters:
+
+       **angle** : :class:`python:float`
+           The sensor integration angle to assign.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           The current sensor integration angle.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: axis_system
+   :type: List[float]
+
+
+   
+   Axis system of the bsdf bench.
+
+   This property gets or sets the axis system used by the
+   virtual BSDF bench simulation.
+
+   :Parameters:
+
+       **value** : :obj:`List`\[:class:`python:float`]
+           The axis coordinate system to assign.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:class:`python:float`]
+           The axis system of the bsdf bench.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: analysis_x_ratio
+   :type: float
+
+
+   
+   Analysis x ratio.
+
+   This property gets or sets the analysis ratio in range [0., 100.]
+   in x direction used by the virtual BSDF bench simulation
+
+   :Parameters:
+
+       **value: float**
+           The analysis x ratio to assign.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Ratio to reduce the analysis area following x
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: analysis_y_ratio
+   :type: float
+
+
+   
+   Analysis y ratio.
+
+   This property gets or sets the analysis ratio in range [0., 100.]
+   in y direction used by the virtual BSDF bench simulation
+
+   :Parameters:
+
+       **value: float**
+           The analysis y ratio to assign.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           Ratio to reduce the analysis area following y
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: stop_condition_ray_number
+   :type: int
+
+
+   
+   Stop condition as ray number.
+
+   This property gets or sets the ray number stop condition
+   used by the virtual BSDF bench simulation.
+
+   :Parameters:
+
+       **value: int**
+           The ray stop condition ray number to assign.
+
+
+
+   :Returns:
+
+       :class:`python:int`
+           The ray stop condition ray number.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_sensor_paths(sensor_paths)
+   :abstractmethod:
+
+
+   
+   Disabled - Setting sensor paths is not available for this simulation type.
+
+   This method is intentionally not supported in ``SimulationVirtualBSDF``.
+   It exists only to satisfy the interface defined in the base class and
+   will always raise a ``NotImplementedError`` when called.
+
+   :Parameters:
+
+       **sensor_paths** : :obj:`List`\[:class:`python:str`]
+           Ignored. Present only for compatibility with the base class.
+
+
+
+   :Returns:
+
+       :data:`python:None`
+           This method does not return anything. It always raises an exception.
+
+
+
+
+   :Raises:
+
+       :obj:`NotImplementedError`
+           Always raised, since this method is disabled in this subclass.
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_source_paths(source_paths)
+   :abstractmethod:
+
+
+   
+   Disabled - Setting source paths is not available for this simulation type.
+
+   This method is intentionally not supported in ``SimulationVirtualBSDF``.
+   It exists only to satisfy the interface defined in the base class and
+   will always raise a ``NotImplementedError`` when called.
+
+   :Parameters:
+
+       **source_paths** : :obj:`List`\[:class:`python:str`]
+           Ignored. Present only for compatibility with the base class.
+
+
+
+   :Returns:
+
+       :data:`python:None`
+           This method does not return anything. It always raises an exception.
+
+
+
+
+   :Raises:
+
+       :obj:`NotImplementedError`
+           Always raised, since this method is disabled in this subclass.
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_weight()
+
+   
+   Activate weight. Highly recommended to fill.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.BaseSimulation.Weight`
+           Weight
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_weight_none()
+
+   
+   Deactivate weight.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.SimulationVirtualBSDF`
+           SimulationVirtualBSDF simulation
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_colorimetric_standard_CIE_1931()
+
+   
+   Set the colorimetric standard to CIE 1931.
+
+   2 degrees CIE Standard Colorimetric Observer Data.
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.SimulationVirtualBSDF`
+           SimulationVirtualBSDF simulation
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_colorimetric_standard_CIE_1964()
+
+   
+   Set the colorimetric standard to CIE 1964.
+
+   10 degrees CIE Standard Colorimetric Observer Data.
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.SimulationVirtualBSDF`
+           SimulationVirtualBSDF simulation
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_mode_roughness_only()
+
+   
+   Set BSDF depends on surface roughness only.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.SimulationVirtualBSDF.RoughnessOnly`
+           roughness only settings
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_mode_all_characteristics()
+
+   
+   Set BSDF depends on all properties.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics`
+           all properties settings
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_wavelengths_range()
+
+   
+   Set the range of wavelengths.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.SimulationVirtualBSDF.WavelengthsRange`
+           Wavelengths range settings for SimulationVirtualBSDF
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_sensor_sampling_uniform()
+
+   
+   Set sensor sampling uniform.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.SimulationVirtualBSDF.SensorUniform`
+           uniform type of sensor settings
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_sensor_sampling_automatic()
+
+   
+   Set sensor sampling automatic.
+
+
+
+
+
+   :Returns:
+
+       :obj:`ansys.speos.core.simulation.SimulationVirtualBSDF`
+           SimulationVirtualBSDF simulation
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+    ansys.speos.core.simulation.SimulationVirtualBSDF.RoughnessOnly
+    ansys.speos.core.simulation.SimulationVirtualBSDF.AllCharacteristics
+    ansys.speos.core.simulation.SimulationVirtualBSDF.WavelengthsRange
+    ansys.speos.core.simulation.SimulationVirtualBSDF.SensorUniform
+
+
+
+

@@ -1,0 +1,156 @@
+
+
+
+
+
+
+:class:`WavelengthsRangeParameters`
+===================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.WavelengthsRangeParameters
+
+   
+   Wavelength parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: WavelengthsRangeParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~start`
+            - Wavelength start value.
+          * - :py:attr:`~end`
+            - Wavelength end value.
+          * - :py:attr:`~sampling`
+            - Wavelength sampling.
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import WavelengthsRangeParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: start
+   :type:  int
+   :value: 400
+
+
+   
+   Wavelength start value.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: end
+   :type:  int
+   :value: 700
+
+
+   
+   Wavelength end value.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:attribute:: sampling
+   :type:  int
+   :value: 13
+
+
+   
+   Wavelength sampling.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+

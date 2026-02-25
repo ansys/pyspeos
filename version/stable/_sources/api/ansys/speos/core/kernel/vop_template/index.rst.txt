@@ -1,0 +1,125 @@
+
+
+
+
+
+
+The ``vop_template.py`` module
+==============================
+
+.. py:module:: ansys.speos.core.kernel.vop_template
+
+
+Summary
+-------
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:currentmodule:: vop_template
+.. tab-set::
+
+
+
+
+    .. tab-item:: Classes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.vop_template.VOPTemplateLink`
+            - Link object for a Volume Optical Property (VOP) template in database.
+
+
+          * - :py:obj:`~ansys.speos.core.kernel.vop_template.VOPTemplateStub`
+            - Database interactions for Volume Optical Properties templates.
+
+
+
+
+
+
+    .. tab-item:: Attributes
+
+        .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+
+          * - :py:obj:`~ProtoVOPTemplate`
+            - VOPTemplate protobuf class : ansys.api.speos.vop.v1.vop_pb2.VOPTemplate
+
+
+
+
+
+
+
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+    <span class="nf nf-cod-symbol_class"></span> VOPTemplateLink</api/ansys/speos/core/kernel/vop_template/VOPTemplateLink>
+    <span class="nf nf-cod-symbol_class"></span> VOPTemplateStub</api/ansys/speos/core/kernel/vop_template/VOPTemplateStub>
+
+
+
+
+
+
+
+
+
+Description
+-----------
+
+Provides a wrapped abstraction of the gRPC proto API definition and stubs.
+
+..
+    !! processed by numpydoc !!
+
+
+
+
+
+
+Module detail
+-------------
+
+.. py:data:: ProtoVOPTemplate
+
+   
+   VOPTemplate protobuf class : ansys.api.speos.vop.v1.vop_pb2.VOPTemplate
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+

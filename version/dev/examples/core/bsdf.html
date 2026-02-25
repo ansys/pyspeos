@@ -1,0 +1,1400 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>How to create a anisotropic bsdf file &#8212; ansys-speos-core 0.8.dev0 documentation</title>
+  
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/ansys-sphinx-theme.css?v=a23b20f3" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/ansys-sphinx-theme.css?v=a23b20f3" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://www.nerdfonts.com/assets/css/webfont.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nbsphinx-code-cells.css?v=789c53a9" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=0670e955" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+
+  <!-- Include desired assets -->
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  
+
+  
+    <link href="../../_static/css/breadcrumbs.css" rel="stylesheet" />
+  
+    <script src="../../_static/documentation_options.js?v=9cceaa3c"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'examples/core/bsdf';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://speos.docs.pyansys.com/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <link rel="icon" href="../../_static/ansys-favicon.png"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Define constants" href="../kernel/object-link.html" />
+    <link rel="prev" title="Prism example" href="prism-example.html" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.8.dev0" />
+  <meta property="og:site_name" content="PyAnsys" />
+  <meta name="physics" content="Optics" />
+  <link rel="canonical" href="https://speos.docs.pyansys.com/version/stable/examples/core/bsdf.html" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+
+<a class="navbar-brand logo" href="https://docs.pyansys.com/">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/pyansys_logo_transparent_black.png" class="logo__image only-light" alt="ansys-speos-core 0.8.dev0 documentation - Home"/>
+    <img src="../../_static/pyansys_logo_transparent_white.png" class="logo__image only-dark pst-js-only" alt="ansys-speos-core 0.8.dev0 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../index.html" title="ansys-speos-core 0.8.dev0 documentation home">Home</a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../overview/index.html">
+    Overview
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../examples.html">
+    Examples
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../contributing.html">
+    Contribute
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../changelog.html">
+    Release notes
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav>
+</div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+      
+        <div class="navbar-item">
+<div class="search-bar pst-js-only" id="search-bar">
+  <form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="search" class="form-control" name="q" placeholder="Search the docs ..."
+      aria-label="Search the docs ..." autocomplete="off" autocorrect="off"
+      autocapitalize="off" spellcheck="false" />
+    <span class="search-button__kbd-shortcut">
+      <kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd>
+    </span>
+  </form>
+  
+  <div id="static-search-results" class="static-search-results" style="display:none;" tabindex="0"></div>
+  
+</div></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ansys/pyspeos" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+  
+    
+<!--
+  Announcement Version Loader
+  Dynamically loads the announcement.html content into the announcement_msg div.
+-->
+<div id="announcement_msg" aria-live="polite"></div>
+<script>
+  // Fetch and inject the announcement HTML content
+  fetch("announcement.html")
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status} Announcement.html file not found, Please ignore this, if you are in dev/stable documentation`);
+      }
+      return response.text();
+    })
+    .then((text) => {
+      var msgDiv = document.getElementById("announcement_msg");
+      if (msgDiv) {
+        msgDiv.innerHTML = text;
+      }
+    })
+    .catch((error) => {
+      // Log only unexpected fetch errors
+      if (!(error.message && error.message.startsWith("HTTP error: 404"))) {
+        console.error(`Fetch problem: ${error.message} Announcement.html could not be loaded.`);
+      }
+    });
+</script>
+  
+
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../index.html" title="ansys-speos-core 0.8.dev0 documentation home">Home</a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../overview/index.html">
+    Overview
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../examples.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../contributing.html">
+    Contribute
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../changelog.html">
+    Release notes
+  </a>
+</li>
+
+  </ul>
+</nav>
+</div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="search-bar pst-js-only" id="search-bar">
+  <form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="search" class="form-control" name="q" placeholder="Search the docs ..."
+      aria-label="Search the docs ..." autocomplete="off" autocorrect="off"
+      autocapitalize="off" spellcheck="false" />
+    <span class="search-button__kbd-shortcut">
+      <kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd>
+    </span>
+  </form>
+  
+  <div id="static-search-results" class="static-search-results" style="display:none;" tabindex="0"></div>
+  
+</div></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ansys/pyspeos" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">Workflow examples</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../workflow/open-result.html">How to open result (MS Windows OS only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../workflow/combine-speos.html">Moving car example by combining Speos files</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Core examples</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="project.html">How to create a project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="opt-prop.html">How to create an optical property</a></li>
+<li class="toctree-l1"><a class="reference internal" href="source.html">How to create a source</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sensor.html">How to create a sensor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="part.html">How to create a part</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulation.html">How to create a simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lpf-preview.html">How to preview a light expert result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prism-example.html">Prism example</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">How to create a anisotropic bsdf file</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Kernel examples</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../kernel/object-link.html">Define constants</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="../kernel/scene-job.html">How to use scene and job</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../kernel/modify-scene.html">How to modify scene elements</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+<nav aria-label="Breadcrumb">
+  <ul class="bd-breadcrumbs">
+     
+    <li class="breadcrumb-item breadcrumb-home">
+      <a
+        href="../../index.html"
+        class="nav-link"
+        aria-label="Home"
+      >
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+     
+    <li class="breadcrumb-item">
+      <a href="../../examples.html" class="nav-link">Examples</a>
+    </li>
+      
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">How to create a anisotropic bsdf file</span></li>
+    
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <blockquote>
+<div><div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
+<div class="sd-row sd-row-cols-5 sd-row-cols-xs-5 sd-row-cols-sm-5 sd-row-cols-md-5 sd-row-cols-lg-5 docutils">
+<div class="sd-col sd-d-flex-column docutils">
+</div>
+<div class="sd-col sd-d-flex-column sd-align-major-center docutils">
+<p><a class="sd-sphinx-override sd-btn sd-text-wrap sd-btn-primary sd-shadow-sm reference external" href="https://speos.docs.pyansys.com/version/dev/examples/core/bsdf.py"><span>Download as Python script <span class="fab fa-python"></span></span></a></p>
+</div>
+<div class="sd-col sd-d-flex-column sd-align-major-center docutils">
+<p><a class="sd-sphinx-override sd-btn sd-text-wrap sd-btn-primary sd-shadow-sm reference external" href="https://speos.docs.pyansys.com/version/dev/examples/core/bsdf.ipynb"><span> Download as Jupyter notebook <span class="fas fa-book"></span></span></a></p>
+</div>
+<div class="sd-col sd-d-flex-column sd-align-major-center docutils">
+<p><a class="sd-sphinx-override sd-btn sd-text-wrap sd-btn-primary sd-shadow-sm reference external" href="https://speos.docs.pyansys.com/version/dev/_static/assets/download/assets.zip"><span> Download example’s assets <span class="fa fa-file"></span></span></a></p>
+</div>
+<div class="sd-col sd-d-flex-column docutils">
+</div>
+</div>
+</div>
+</div></blockquote>
+<hr class="docutils" />
+<section id="How-to-create-a-anisotropic-bsdf-file">
+<h1>How to create a anisotropic bsdf file<a class="headerlink" href="#How-to-create-a-anisotropic-bsdf-file" title="Link to this heading">#</a></h1>
+<p>This tutorial demonstrates how to create bsdf file using pyspeos</p>
+<section id="What-is-a-BSDF">
+<h2>What is a BSDF<a class="headerlink" href="#What-is-a-BSDF" title="Link to this heading">#</a></h2>
+<p>BSDF stands for Bidirectional Scattering Distribution Function, which is a mathematical function that characterizes how light is scattered from a surface. In Speos we have two models to represent BSDF data: Spectral BSDF(<em>.brdf) and Anisotropic BSDF (</em>.anisotropicbsdf). The first allows for each wavelength to store a full bsdf description with this it allows for great color representation. the second uses spectral modulation to represent the color but allows for anisotropic behaviour by taking a
+BSDF for each anisotropic angle. Both formats need an interpolation between incident/anisotropic angles and wavelength In many cases the data comes from measurements and need coordinate transformations to be used</p>
+</section>
+<section id="Prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#Prerequisites" title="Link to this heading">#</a></h2>
+<section id="Perform-imports">
+<h3>Perform imports<a class="headerlink" href="#Perform-imports" title="Link to this heading">#</a></h3>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ansys.speos.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Speos</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ansys.speos.core.bsdf</span><span class="w"> </span><span class="kn">import</span> <span class="n">AnisotropicBSDF</span><span class="p">,</span> <span class="n">BxdfDatapoint</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ansys.speos.core.kernel.client</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SpeosClient</span><span class="p">,</span>
+    <span class="n">default_docker_channel</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ansys.speos.core.launcher</span><span class="w"> </span><span class="kn">import</span> <span class="n">launch_local_speos_rpc_server</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># ### Define constants</span>
+<span class="c1"># Constants help ensure consistency and avoid repetition throughout the example.</span>
+<span class="n">USE_DOCKER</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Set to False if you&#39;re running this example locally as a Notebook.</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Define-helper-functions">
+<h3>Define helper functions<a class="headerlink" href="#Define-helper-functions" title="Link to this heading">#</a></h3>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">clean_all_dbs</span><span class="p">(</span><span class="n">speos_client</span><span class="p">:</span> <span class="n">SpeosClient</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Clean all database entries of a current SpeosRPC client.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    speos_client : ansys.speos.core.kernel.client.SpeosClient</span>
+<span class="sd">        SpeosRPC server client</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="p">(</span>
+        <span class="n">speos_client</span><span class="o">.</span><span class="n">jobs</span><span class="p">()</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+        <span class="o">+</span> <span class="n">speos_client</span><span class="o">.</span><span class="n">scenes</span><span class="p">()</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+        <span class="o">+</span> <span class="n">speos_client</span><span class="o">.</span><span class="n">simulation_templates</span><span class="p">()</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+        <span class="o">+</span> <span class="n">speos_client</span><span class="o">.</span><span class="n">sensor_templates</span><span class="p">()</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+        <span class="o">+</span> <span class="n">speos_client</span><span class="o">.</span><span class="n">source_templates</span><span class="p">()</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+        <span class="o">+</span> <span class="n">speos_client</span><span class="o">.</span><span class="n">intensity_templates</span><span class="p">()</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+        <span class="o">+</span> <span class="n">speos_client</span><span class="o">.</span><span class="n">spectrums</span><span class="p">()</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+        <span class="o">+</span> <span class="n">speos_client</span><span class="o">.</span><span class="n">vop_templates</span><span class="p">()</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+        <span class="o">+</span> <span class="n">speos_client</span><span class="o">.</span><span class="n">sop_templates</span><span class="p">()</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+        <span class="o">+</span> <span class="n">speos_client</span><span class="o">.</span><span class="n">parts</span><span class="p">()</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+        <span class="o">+</span> <span class="n">speos_client</span><span class="o">.</span><span class="n">bodies</span><span class="p">()</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+        <span class="o">+</span> <span class="n">speos_client</span><span class="o">.</span><span class="n">faces</span><span class="p">()</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+    <span class="p">):</span>
+        <span class="n">item</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">create_lambertian_bsdf</span><span class="p">(</span><span class="n">is_brdf</span><span class="p">,</span> <span class="n">nb_theta</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">nb_phi</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a lambertian distribution as np.array.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    is_brdf: bool</span>
+<span class="sd">        True if generating brdf data, False btdf data</span>
+<span class="sd">    nb_theta: int</span>
+<span class="sd">        number of theta samplings</span>
+<span class="sd">    nb_phi: int</span>
+<span class="sd">        number of phi samplings</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    thetas: np.array,</span>
+<span class="sd">        shape (nb_theta)</span>
+<span class="sd">    phis: np.array,</span>
+<span class="sd">        shape (nb_phi)</span>
+<span class="sd">    bxdf: np.array,</span>
+<span class="sd">        shape (nb_theta, nb_phi)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">thetas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nb_theta</span><span class="p">)</span>
+    <span class="n">phis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nb_phi</span><span class="p">)</span>
+    <span class="n">bxdf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nb_theta</span><span class="p">,</span> <span class="n">nb_phi</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">is_brdf</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nb_theta</span><span class="p">):</span>
+            <span class="n">thetas</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">/</span> <span class="p">(</span><span class="n">nb_theta</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nb_phi</span><span class="p">):</span>
+                <span class="n">phis</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">p</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="p">(</span><span class="n">nb_phi</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">bxdf</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">thetas</span><span class="p">[</span><span class="n">t</span><span class="p">])</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nb_theta</span><span class="p">):</span>
+            <span class="n">thetas</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">t</span> <span class="o">/</span> <span class="p">(</span><span class="n">nb_theta</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nb_phi</span><span class="p">):</span>
+                <span class="n">phis</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">p</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="p">(</span><span class="n">nb_phi</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">bxdf</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">thetas</span><span class="p">[</span><span class="n">t</span><span class="p">])</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="k">if</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">thetas</span><span class="p">[</span><span class="n">t</span><span class="p">])</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">&gt;</span> <span class="mf">0.0000000001</span> <span class="k">else</span> <span class="mi">0</span>
+                <span class="p">)</span>
+    <span class="k">return</span> <span class="n">thetas</span><span class="p">,</span> <span class="n">phis</span><span class="p">,</span> <span class="n">bxdf</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">create_gaussian_bsdf</span><span class="p">(</span><span class="n">is_brdf</span><span class="p">,</span> <span class="n">inc</span><span class="p">,</span> <span class="n">nb_theta</span><span class="o">=</span><span class="mi">91</span><span class="p">,</span> <span class="n">nb_phi</span><span class="o">=</span><span class="mi">361</span><span class="p">,</span> <span class="n">fwhm</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">40</span><span class="p">)):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a gaussian distribution as np.array.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    is_brdf: bool</span>
+<span class="sd">        True if generating brdf data, False btdf data</span>
+<span class="sd">    inc: float</span>
+<span class="sd">        incident angle in radians</span>
+<span class="sd">    nb_theta: int</span>
+<span class="sd">        number of theta samplings</span>
+<span class="sd">    nb_phi: int</span>
+<span class="sd">        number of phi samplings</span>
+<span class="sd">    fwhm: float</span>
+<span class="sd">        Gaussian width in radians</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    thetas: np.array,</span>
+<span class="sd">        shape (nb_theta)</span>
+<span class="sd">    phis: np.array,</span>
+<span class="sd">        shape (nb_phi)</span>
+<span class="sd">    bxdf: np.array,</span>
+<span class="sd">        shape (nb_theta, nb_phi)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">thetas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nb_theta</span><span class="p">)</span>
+    <span class="n">phis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nb_phi</span><span class="p">)</span>
+    <span class="n">bxdf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nb_theta</span><span class="p">,</span> <span class="n">nb_phi</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">is_brdf</span><span class="p">:</span>
+        <span class="n">vector_specular_direction</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">inc</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">inc</span><span class="p">)]</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nb_theta</span><span class="p">):</span>
+            <span class="n">thetas</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">/</span> <span class="p">(</span><span class="n">nb_theta</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nb_phi</span><span class="p">):</span>
+                <span class="n">phis</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">p</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="p">(</span><span class="n">nb_phi</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">vector_direction</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">thetas</span><span class="p">[</span><span class="n">t</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phis</span><span class="p">[</span><span class="n">p</span><span class="p">]),</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">thetas</span><span class="p">[</span><span class="n">t</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phis</span><span class="p">[</span><span class="n">p</span><span class="p">]),</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">thetas</span><span class="p">[</span><span class="n">t</span><span class="p">]),</span>
+                <span class="p">]</span>
+                <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">vector_specular_direction</span><span class="p">,</span> <span class="n">vector_direction</span><span class="p">))</span>
+                <span class="n">sigma</span> <span class="o">=</span> <span class="n">fwhm</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span><span class="p">)))</span>
+                <span class="n">bxdf</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">/</span> <span class="n">sigma</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Here, the angle of specular transmission is identical</span>
+        <span class="c1"># to the angle of incidence (the refraction is not considered)</span>
+        <span class="n">vector_specular_direction</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">inc</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">inc</span><span class="p">)]</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nb_theta</span><span class="p">):</span>
+            <span class="n">thetas</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">t</span> <span class="o">/</span> <span class="p">(</span><span class="n">nb_theta</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nb_phi</span><span class="p">):</span>
+                <span class="n">phis</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">p</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="p">(</span><span class="n">nb_phi</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">vector_direction</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">thetas</span><span class="p">[</span><span class="n">t</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phis</span><span class="p">[</span><span class="n">p</span><span class="p">]),</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">thetas</span><span class="p">[</span><span class="n">t</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phis</span><span class="p">[</span><span class="n">p</span><span class="p">]),</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">thetas</span><span class="p">[</span><span class="n">t</span><span class="p">]),</span>
+                <span class="p">]</span>
+                <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">vector_specular_direction</span><span class="p">,</span> <span class="n">vector_direction</span><span class="p">))</span>
+                <span class="n">sigma</span> <span class="o">=</span> <span class="n">fwhm</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span><span class="p">)))</span>
+                <span class="n">bxdf</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">/</span> <span class="n">sigma</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">thetas</span><span class="p">,</span> <span class="n">phis</span><span class="p">,</span> <span class="n">bxdf</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">create_spectrum</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">w_start</span><span class="o">=</span><span class="mf">380.0</span><span class="p">,</span> <span class="n">w_end</span><span class="o">=</span><span class="mf">780.0</span><span class="p">,</span> <span class="n">w_step</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a spectrum for a bsdf.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    value: float</span>
+<span class="sd">        spectrum value</span>
+<span class="sd">    w_start: float</span>
+<span class="sd">        wavelength start</span>
+<span class="sd">    w_end: float</span>
+<span class="sd">        wavelength end</span>
+<span class="sd">    w_step: int</span>
+<span class="sd">        wavelength sampling number</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    spectrum: np.array,</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">spectrum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="n">w_step</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">w_step</span><span class="p">):</span>
+        <span class="n">spectrum</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">w</span><span class="p">]</span> <span class="o">=</span> <span class="n">w_start</span> <span class="o">+</span> <span class="n">w</span> <span class="o">*</span> <span class="p">(</span><span class="n">w_end</span> <span class="o">-</span> <span class="n">w_start</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">w_step</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">spectrum</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">w</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+    <span class="k">return</span> <span class="n">spectrum</span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+<section id="Model-Setup">
+<h2>Model Setup<a class="headerlink" href="#Model-Setup" title="Link to this heading">#</a></h2>
+<section id="Load-assets">
+<h3>Load assets<a class="headerlink" href="#Load-assets" title="Link to this heading">#</a></h3>
+<p>The assets used to run this example are available in the <a class="reference external" href="https://github.com/ansys/pyspeos/">PySpeos repository</a> on GitHub.</p>
+<blockquote>
+<div><p><strong>Note:</strong> Make sure you have downloaded simulation assets and set <code class="docutils literal notranslate"><span class="pre">assets_data_path</span></code> to point to the assets folder.</p>
+</div></blockquote>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">USE_DOCKER</span><span class="p">:</span>  <span class="c1"># Running on the remote server.</span>
+    <span class="n">assets_data_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;/app&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;assets&quot;</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">assets_data_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;/path/to/your/download/assets/directory&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Create-Anisotropic-BSDF-from-datapoints">
+<h3>Create Anisotropic BSDF from datapoints<a class="headerlink" href="#Create-Anisotropic-BSDF-from-datapoints" title="Link to this heading">#</a></h3>
+<p>To create and save a bsdf we need to first create a connection to the SpeosRPC server ### Connect to the RPC Server This Python client connects to a server where the Speos engine is running as a service. In this example, the server and client are the same machine. The launch_local_speos_rpc_method can be used to start a local instance of the service.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">USE_DOCKER</span><span class="p">:</span>
+    <span class="n">speos</span> <span class="o">=</span> <span class="n">Speos</span><span class="p">(</span><span class="n">channel</span><span class="o">=</span><span class="n">default_docker_channel</span><span class="p">())</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">speos</span> <span class="o">=</span> <span class="n">launch_local_speos_rpc_server</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/home/runner/work/pyspeos/pyspeos/.venv/lib/python3.13/site-packages/ansys/tools/common/cyberchannel.py:188: UserWarning: Starting gRPC client without TLS on localhost:50098. This is INSECURE. Consider using a secure connection.
+  warn(f&#34;Starting gRPC client without TLS on {target}. This is INSECURE. Consider using a secure connection.&#34;)
+</pre></div></div>
+</div>
+</section>
+<section id="Create-a-BXDFDatapoint---Example-of-a-lambertian-BRDF">
+<h3>Create a BXDFDatapoint - Example of a lambertian BRDF<a class="headerlink" href="#Create-a-BXDFDatapoint---Example-of-a-lambertian-BRDF" title="Link to this heading">#</a></h3>
+<p>to create a bsdf we need the bsdf for multiple incident angles. In this example we assume the color doesn’t change over the incident angles so we can use anisotropic bsdf and we assume the data has no anisotropy</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">clean_all_dbs</span><span class="p">(</span><span class="n">speos</span><span class="o">.</span><span class="n">client</span><span class="p">)</span>  <span class="c1"># clean all the database entries</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">incident_angles</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">5</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">25</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">40</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">65</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">85</span><span class="p">)]</span>
+<span class="n">all_bxdfs</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">inc</span> <span class="ow">in</span> <span class="n">incident_angles</span><span class="p">:</span>
+    <span class="n">thetas</span><span class="p">,</span> <span class="n">phis</span><span class="p">,</span> <span class="n">brdf</span> <span class="o">=</span> <span class="n">create_lambertian_bsdf</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">all_bxdfs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">BxdfDatapoint</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">inc</span><span class="p">,</span> <span class="n">thetas</span><span class="p">,</span> <span class="n">phis</span><span class="p">,</span> <span class="n">brdf</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;all brdf&quot;</span><span class="p">,</span> <span class="n">all_bxdfs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+all brdf {&#39;anisotropy&#39;: 0, &#39;bxdf&#39;: array([[3.18309886e-01, 3.18309886e-01, 3.18309886e-01, 3.18309886e-01,
+        3.18309886e-01],
+       [2.94079989e-01, 2.94079989e-01, 2.94079989e-01, 2.94079989e-01,
+        2.94079989e-01],
+       [2.25079079e-01, 2.25079079e-01, 2.25079079e-01, 2.25079079e-01,
+        2.25079079e-01],
+       [1.21811920e-01, 1.21811920e-01, 1.21811920e-01, 1.21811920e-01,
+        1.21811920e-01],
+       [1.94908592e-17, 1.94908592e-17, 1.94908592e-17, 1.94908592e-17,
+        1.94908592e-17]]), &#39;is_brdf&#39;: True, &#39;incident_angle&#39;: np.float64(0.08726646259971647), &#39;theta_values&#39;: array([0.        , 0.39269908, 0.78539816, 1.17809725, 1.57079633]), &#39;phi_values&#39;: array([0.        , 1.57079633, 3.14159265, 4.71238898, 6.28318531])}
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># ### Create Anisotropic BSDF class instance</span>
+<span class="n">new_bsdf</span> <span class="o">=</span> <span class="n">AnisotropicBSDF</span><span class="p">(</span><span class="n">speos</span><span class="p">)</span>
+<span class="n">new_bsdf</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="s2">&quot;PySpeos BSDF Example&quot;</span>
+<span class="n">new_bsdf</span><span class="o">.</span><span class="n">anisotropy_vector</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create Spectrum with 80% reflectivity</span>
+<span class="n">spectrum</span> <span class="o">=</span> <span class="n">create_spectrum</span><span class="p">(</span><span class="mf">0.8</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Assign reflection spectrum to bsdf</span>
+<span class="n">new_bsdf</span><span class="o">.</span><span class="n">spectrum_incidence</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">new_bsdf</span><span class="o">.</span><span class="n">spectrum_anisotropy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">new_bsdf</span><span class="o">.</span><span class="n">has_reflection</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">new_bsdf</span><span class="o">.</span><span class="n">reflection_spectrum</span> <span class="o">=</span> <span class="n">spectrum</span>
+<span class="n">new_bsdf</span><span class="o">.</span><span class="n">brdf</span> <span class="o">=</span> <span class="n">all_bxdfs</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">save_path</span> <span class="o">=</span> <span class="n">assets_data_path</span> <span class="o">/</span> <span class="s2">&quot;example_bsdf_lambertian.anisotropicbsdf&quot;</span>
+<span class="n">new_bsdf</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">new_bsdf</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;has_transmission&#39;: False, &#39;has_reflection&#39;: True, &#39;brdf&#39;: [&lt;ansys.speos.core.bsdf.BxdfDatapoint object at 0x7f4774f0a660&gt;, &lt;ansys.speos.core.bsdf.BxdfDatapoint object at 0x7f477ddff390&gt;, &lt;ansys.speos.core.bsdf.BxdfDatapoint object at 0x7f477ddff750&gt;, &lt;ansys.speos.core.bsdf.BxdfDatapoint object at 0x7f477b03c050&gt;, &lt;ansys.speos.core.bsdf.BxdfDatapoint object at 0x7f477b03c510&gt;], &#39;btdf&#39;: None, &#39;nb_incidents&#39;: [5, 0], &#39;incident_angles&#39;: [[np.float64(0.08726646259971647), np.float64(0.4363323129985824), np.float64(0.6981317007977318), np.float64(1.1344640137963142), np.float64(1.4835298641951802)], []], &#39;interpolation_settings&#39;: None, &#39;anisotropic_angles&#39;: [[0], []], &#39;spectrum_incidence&#39;: [0, np.float64(0.08726646259971647)], &#39;spectrum_anisotropy&#39;: [0, np.float64(0.0)], &#39;reflection_spectrum&#39;: array([[380.        , 424.44444444, 468.88888889, 513.33333333,
+        557.77777778, 602.22222222, 646.66666667, 691.11111111,
+        735.55555556, 780.        ],
+       [  0.8       ,   0.8       ,   0.8       ,   0.8       ,
+          0.8       ,   0.8       ,   0.8       ,   0.8       ,
+          0.8       ,   0.8       ]]), &#39;transmission_spectrum&#39;: None}
+</pre></div></div>
+</div>
+</section>
+<section id="Create-a-BXDFDatapoint---Example-of-a-gaussian-BRDF-and-BTDF">
+<h3>Create a BXDFDatapoint - Example of a gaussian BRDF and BTDF<a class="headerlink" href="#Create-a-BXDFDatapoint---Example-of-a-gaussian-BRDF-and-BTDF" title="Link to this heading">#</a></h3>
+<p>to create a bsdf we need the bsdf for multiple incident angles. In this example we assume the color doesn’t change over the incident angles so we can use anisotropic bsdf and we assume the data has no anisotropy</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">clean_all_dbs</span><span class="p">(</span><span class="n">speos</span><span class="o">.</span><span class="n">client</span><span class="p">)</span>  <span class="c1"># clean all the database entries</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">incident_angles</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">5</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">25</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">40</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">65</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">85</span><span class="p">)]</span>
+<span class="n">all_bxdfs_reflexion</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">all_bxdfs_transmission</span> <span class="o">=</span> <span class="p">[]</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">inc</span> <span class="ow">in</span> <span class="n">incident_angles</span><span class="p">:</span>
+    <span class="n">thetas</span><span class="p">,</span> <span class="n">phis</span><span class="p">,</span> <span class="n">brdf</span> <span class="o">=</span> <span class="n">create_gaussian_bsdf</span><span class="p">(</span>
+        <span class="kc">True</span><span class="p">,</span> <span class="n">inc</span><span class="p">,</span> <span class="n">nb_theta</span><span class="o">=</span><span class="mi">91</span><span class="p">,</span> <span class="n">nb_phi</span><span class="o">=</span><span class="mi">361</span><span class="p">,</span> <span class="n">fwhm</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">all_bxdfs_reflexion</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">BxdfDatapoint</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">inc</span><span class="p">,</span> <span class="n">thetas</span><span class="p">,</span> <span class="n">phis</span><span class="p">,</span> <span class="n">brdf</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">inc</span> <span class="ow">in</span> <span class="n">incident_angles</span><span class="p">:</span>
+    <span class="n">thetas</span><span class="p">,</span> <span class="n">phis</span><span class="p">,</span> <span class="n">brdf</span> <span class="o">=</span> <span class="n">create_gaussian_bsdf</span><span class="p">(</span>
+        <span class="kc">False</span><span class="p">,</span> <span class="n">inc</span><span class="p">,</span> <span class="n">nb_theta</span><span class="o">=</span><span class="mi">91</span><span class="p">,</span> <span class="n">nb_phi</span><span class="o">=</span><span class="mi">361</span><span class="p">,</span> <span class="n">fwhm</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">40</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">all_bxdfs_transmission</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">BxdfDatapoint</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">inc</span><span class="p">,</span> <span class="n">thetas</span><span class="p">,</span> <span class="n">phis</span><span class="p">,</span> <span class="n">brdf</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># ### Create Anisotropic BSDF class instance</span>
+<span class="n">new_bsdf_gaussian</span> <span class="o">=</span> <span class="n">AnisotropicBSDF</span><span class="p">(</span><span class="n">speos</span><span class="p">)</span>
+<span class="n">new_bsdf_gaussian</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="s2">&quot;PySpeos BSDF Example&quot;</span>
+<span class="n">new_bsdf_gaussian</span><span class="o">.</span><span class="n">anisotropy_vector</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Assign reflection spectrum to bsdf</span>
+<span class="n">new_bsdf_gaussian</span><span class="o">.</span><span class="n">spectrum_incidence</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">new_bsdf_gaussian</span><span class="o">.</span><span class="n">spectrum_anisotropy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">new_bsdf_gaussian</span><span class="o">.</span><span class="n">has_reflection</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">new_bsdf_gaussian</span><span class="o">.</span><span class="n">has_transmission</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">new_bsdf_gaussian</span><span class="o">.</span><span class="n">reflection_spectrum</span> <span class="o">=</span> <span class="n">create_spectrum</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">new_bsdf_gaussian</span><span class="o">.</span><span class="n">transmission_spectrum</span> <span class="o">=</span> <span class="n">create_spectrum</span><span class="p">(</span><span class="mf">0.4</span><span class="p">)</span>
+<span class="n">new_bsdf_gaussian</span><span class="o">.</span><span class="n">brdf</span> <span class="o">=</span> <span class="n">all_bxdfs_reflexion</span>
+<span class="n">new_bsdf_gaussian</span><span class="o">.</span><span class="n">btdf</span> <span class="o">=</span> <span class="n">all_bxdfs_transmission</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">save_path</span> <span class="o">=</span> <span class="n">assets_data_path</span> <span class="o">/</span> <span class="s2">&quot;example_bsdf_gaussian.anisotropicbsdf&quot;</span>
+<span class="n">new_bsdf_gaussian</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">new_bsdf_gaussian</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;has_transmission&#39;: True, &#39;has_reflection&#39;: True, &#39;brdf&#39;: [&lt;ansys.speos.core.bsdf.BxdfDatapoint object at 0x7f4774f1e8d0&gt;, &lt;ansys.speos.core.bsdf.BxdfDatapoint object at 0x7f477afa96a0&gt;, &lt;ansys.speos.core.bsdf.BxdfDatapoint object at 0x7f477afa9370&gt;, &lt;ansys.speos.core.bsdf.BxdfDatapoint object at 0x7f477afec550&gt;, &lt;ansys.speos.core.bsdf.BxdfDatapoint object at 0x7f477afec150&gt;], &#39;btdf&#39;: [&lt;ansys.speos.core.bsdf.BxdfDatapoint object at 0x7f477dc53f20&gt;, &lt;ansys.speos.core.bsdf.BxdfDatapoint object at 0x7f47ccb59310&gt;, &lt;ansys.speos.core.bsdf.BxdfDatapoint object at 0x7f4774f1be70&gt;, &lt;ansys.speos.core.bsdf.BxdfDatapoint object at 0x7f4774f1b930&gt;, &lt;ansys.speos.core.bsdf.BxdfDatapoint object at 0x7f4774f28a10&gt;], &#39;nb_incidents&#39;: [5, 5], &#39;incident_angles&#39;: [[np.float64(0.08726646259971647), np.float64(0.4363323129985824), np.float64(0.6981317007977318), np.float64(1.1344640137963142), np.float64(1.4835298641951802)], [np.float64(0.08726646259971647), np.float64(0.4363323129985824), np.float64(0.6981317007977318), np.float64(1.1344640137963142), np.float64(1.4835298641951802)]], &#39;interpolation_settings&#39;: None, &#39;anisotropic_angles&#39;: [[0], [0]], &#39;spectrum_incidence&#39;: [0, np.float64(0.08726646259971647)], &#39;spectrum_anisotropy&#39;: [0, np.float64(0.0)], &#39;reflection_spectrum&#39;: array([[3.80000000e+02, 4.24444444e+02, 4.68888889e+02, 5.13333333e+02,
+        5.57777778e+02, 6.02222222e+02, 6.46666667e+02, 6.91111111e+02,
+        7.35555556e+02, 7.80000000e+02],
+       [5.00000000e-01, 5.00000000e-01, 5.00000000e-01, 5.00000000e-01,
+        5.00000000e-01, 5.00000000e-01, 5.00000000e-01, 5.00000000e-01,
+        5.00000000e-01, 5.00000000e-01]]), &#39;transmission_spectrum&#39;: array([[3.80000000e+02, 4.24444444e+02, 4.68888889e+02, 5.13333333e+02,
+        5.57777778e+02, 6.02222222e+02, 6.46666667e+02, 6.91111111e+02,
+        7.35555556e+02, 7.80000000e+02],
+       [4.00000000e-01, 4.00000000e-01, 4.00000000e-01, 4.00000000e-01,
+        4.00000000e-01, 4.00000000e-01, 4.00000000e-01, 4.00000000e-01,
+        4.00000000e-01, 4.00000000e-01]])}
+</pre></div></div>
+</div>
+</section>
+<section id="BSDF-Interpolation-Enhancement">
+<h3>BSDF Interpolation Enhancement<a class="headerlink" href="#BSDF-Interpolation-Enhancement" title="Link to this heading">#</a></h3>
+<p>This section shows:</p>
+<ul class="simple">
+<li><p>How to apply automatic interpolation settings and save a post-processed bsdf file.</p></li>
+<li><p>How to change interpolation settings, apply the new settings to bsdf, and save the post-processed file</p></li>
+<li><p>How to re-load a bsdf file has interpolation enhanced and retrieve the interpolation settings.</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span>
+    <span class="n">new_bsdf_gaussian</span><span class="o">.</span><span class="n">interpolation_settings</span>
+<span class="p">)</span>  <span class="c1"># user can check if there was interpolation settings, here is None</span>
+<span class="n">new_bsdf_gaussian</span><span class="o">.</span><span class="n">create_interpolation_enhancement</span><span class="p">(</span><span class="n">index_1</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">index_2</span><span class="o">=</span><span class="mf">1.4</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">new_bsdf_gaussian</span><span class="o">.</span><span class="n">interpolation_settings</span><span class="p">)</span>  <span class="c1"># Now interpolation settings is not None</span>
+<span class="n">new_bsdf_gaussian</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
+    <span class="n">file_path</span><span class="o">=</span><span class="n">assets_data_path</span> <span class="o">/</span> <span class="s2">&quot;example_bsdf_gaussian_automatic_interpolation.anisotropicbsdf&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+None
+&lt;ansys.speos.core.bsdf.InterpolationEnhancement object at 0x7f4774f0a270&gt;
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+PosixPath(&#39;/app/assets/example_bsdf_gaussian_automatic_interpolation.anisotropicbsdf&#39;)
+</pre></div></div>
+</div>
+<p>Apply user defined interpolation enhancement</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">interpolation_settings</span> <span class="o">=</span> <span class="n">new_bsdf_gaussian</span><span class="o">.</span><span class="n">create_interpolation_enhancement</span><span class="p">(</span>
+    <span class="n">index_1</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">index_2</span><span class="o">=</span><span class="mf">1.4</span>
+<span class="p">)</span>
+<span class="n">interpolation_settings_reflection</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">interpolation_settings</span><span class="o">.</span><span class="n">get_reflection_interpolation_settings</span>
+<span class="p">)</span>  <span class="c1"># return as fixed dictionary, user cannot add/remove item</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">interpolation_settings_reflection</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;0&#39;: {&#39;0.08726646259971647&#39;: {&#39;half_angle&#39;: 1.3962634015954636, &#39;height&#39;: 3.0854191181242054e-19}, &#39;0.4363323129985824&#39;: {&#39;half_angle&#39;: 1.3962634015954636, &#39;height&#39;: 2.684963019232191e-19}, &#39;0.6981317007977318&#39;: {&#39;half_angle&#39;: 1.3962634015954636, &#39;height&#39;: 2.347879910631313e-19}, &#39;1.1344640137963142&#39;: {&#39;half_angle&#39;: 1.3962634015954636, &#39;height&#39;: 2.437823422193732e-19}, &#39;1.4835298641951802&#39;: {&#39;half_angle&#39;: 1.396263401595465, &#39;height&#39;: 3.32118702268907e-19}}}
+</pre></div></div>
+</div>
+<p>Change interpolation settings</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">interpolation_settings_reflection</span><span class="p">[</span><span class="s2">&quot;0&quot;</span><span class="p">][</span><span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">5</span><span class="p">))][</span><span class="s2">&quot;half_angle&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.523</span>
+<span class="n">interpolation_settings_reflection</span><span class="p">[</span><span class="s2">&quot;0&quot;</span><span class="p">][</span><span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">5</span><span class="p">))][</span><span class="s2">&quot;height&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span>
+</pre></div>
+</div>
+</div>
+<p>Set the changed interpolation settings back to bsdf file and save</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">interpolation_settings</span><span class="o">.</span><span class="n">set_interpolation_settings</span><span class="p">(</span>
+    <span class="n">is_brdf</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="n">interpolation_settings_reflection</span>
+<span class="p">)</span>
+<span class="n">new_bsdf_gaussian</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
+    <span class="n">file_path</span><span class="o">=</span><span class="n">assets_data_path</span> <span class="o">/</span> <span class="s2">&quot;example_bsdf_gaussian_user_interpolation.anisotropicbsdf&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+PosixPath(&#39;/app/assets/example_bsdf_gaussian_user_interpolation.anisotropicbsdf&#39;)
+</pre></div></div>
+</div>
+<p>Load a bsdf file with interpolation enhanced</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">clean_all_dbs</span><span class="p">(</span><span class="n">speos</span><span class="o">.</span><span class="n">client</span><span class="p">)</span>
+<span class="n">saved_bsdf</span> <span class="o">=</span> <span class="n">AnisotropicBSDF</span><span class="p">(</span>
+    <span class="n">speos</span><span class="o">=</span><span class="n">speos</span><span class="p">,</span>
+    <span class="n">file_path</span><span class="o">=</span><span class="n">assets_data_path</span> <span class="o">/</span> <span class="s2">&quot;example_bsdf_gaussian_user_interpolation.anisotropicbsdf&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="n">saved_bsdf</span><span class="o">.</span><span class="n">interpolation_settings</span>
+<span class="p">)</span>  <span class="c1"># here an InterpolationEnhancement Class object is returned</span>
+<span class="n">previous_settings</span> <span class="o">=</span> <span class="n">saved_bsdf</span><span class="o">.</span><span class="n">interpolation_settings</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="n">previous_settings</span><span class="o">.</span><span class="n">get_reflection_interpolation_settings</span>
+<span class="p">)</span>  <span class="c1"># user can review the previous settings</span>
+<span class="n">previous_settings</span> <span class="o">=</span> <span class="n">saved_bsdf</span><span class="o">.</span><span class="n">create_interpolation_enhancement</span><span class="p">(</span><span class="n">index_1</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">index_2</span><span class="o">=</span><span class="mf">1.4</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="n">previous_settings</span><span class="o">.</span><span class="n">get_reflection_interpolation_settings</span>
+<span class="p">)</span>  <span class="c1"># with same index values, user use create_interpolation_enhancement to create a new settings</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;ansys.speos.core.bsdf.InterpolationEnhancement object at 0x7f4774f3c410&gt;
+{&#39;0.0&#39;: {&#39;0.08726646259971647&#39;: {&#39;half_angle&#39;: 0.523, &#39;height&#39;: 0.5}, &#39;0.4363323129985824&#39;: {&#39;half_angle&#39;: 1.3962634015954636, &#39;height&#39;: 2.684963019232191e-19}, &#39;0.6981317007977318&#39;: {&#39;half_angle&#39;: 1.3962634015954636, &#39;height&#39;: 2.347879910631313e-19}, &#39;1.1344640137963142&#39;: {&#39;half_angle&#39;: 1.3962634015954636, &#39;height&#39;: 2.437823422193732e-19}, &#39;1.4835298641951802&#39;: {&#39;half_angle&#39;: 1.396263401595465, &#39;height&#39;: 3.32118702268907e-19}}}
+{&#39;0.0&#39;: {&#39;0.08726646259971647&#39;: {&#39;half_angle&#39;: 1.3962634015954636, &#39;height&#39;: 3.0854191181242054e-19}, &#39;0.4363323129985824&#39;: {&#39;half_angle&#39;: 1.3962634015954636, &#39;height&#39;: 2.684963019232191e-19}, &#39;0.6981317007977318&#39;: {&#39;half_angle&#39;: 1.3962634015954636, &#39;height&#39;: 2.347879910631313e-19}, &#39;1.1344640137963142&#39;: {&#39;half_angle&#39;: 1.3962634015954636, &#39;height&#39;: 2.437823422193732e-19}, &#39;1.4835298641951802&#39;: {&#39;half_angle&#39;: 1.396263401595465, &#39;height&#39;: 3.32118702268907e-19}}}
+</pre></div></div>
+</div>
+<p>Defined new interpolation settings for an already enhanced bsdf file</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">previous_settings_diff_index</span> <span class="o">=</span> <span class="n">saved_bsdf</span><span class="o">.</span><span class="n">create_interpolation_enhancement</span><span class="p">(</span><span class="n">index_1</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">index_2</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="n">previous_settings</span><span class="o">.</span><span class="n">get_reflection_interpolation_settings</span>
+<span class="p">)</span>  <span class="c1"># with different index values, a new automatic settings is returned</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;0.0&#39;: {&#39;0.08726646259971647&#39;: {&#39;half_angle&#39;: 1.3962634015954636, &#39;height&#39;: 3.0854191181242054e-19}, &#39;0.4363323129985824&#39;: {&#39;half_angle&#39;: 1.3962634015954636, &#39;height&#39;: 2.684963019232191e-19}, &#39;0.6981317007977318&#39;: {&#39;half_angle&#39;: 1.3962634015954636, &#39;height&#39;: 2.347879910631313e-19}, &#39;1.1344640137963142&#39;: {&#39;half_angle&#39;: 1.3962634015954636, &#39;height&#39;: 2.437823422193732e-19}, &#39;1.4835298641951802&#39;: {&#39;half_angle&#39;: 1.396263401595465, &#39;height&#39;: 3.32118702268907e-19}}}
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">speos</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+True
+</pre></div></div>
+</div>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#What-is-a-BSDF">What is a BSDF</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Prerequisites">Prerequisites</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Perform-imports">Perform imports</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Define-helper-functions">Define helper functions</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Model-Setup">Model Setup</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Load-assets">Load assets</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Create-Anisotropic-BSDF-from-datapoints">Create Anisotropic BSDF from datapoints</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Create-a-BXDFDatapoint---Example-of-a-lambertian-BRDF">Create a BXDFDatapoint - Example of a lambertian BRDF</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Create-a-BXDFDatapoint---Example-of-a-gaussian-BRDF-and-BTDF">Create a BXDFDatapoint - Example of a gaussian BRDF and BTDF</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#BSDF-Interpolation-Enhancement">BSDF Interpolation Enhancement</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/examples/core/bsdf.py.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+
+  <!-- Include desired assets -->
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.7/require.min.js"></script>
+
+<script>
+// Passing the search options to the search.js file
+const SEARCH_OPTIONS = JSON.parse('{"keys": ["title", "text", "objectID"], "limit": 10, "threshold": 0.2}');
+const SEARCH_FILE = "../../_static/search.json";
+const ADVANCE_SEARCH_PATH = "../../search.html";
+const EXTRA_SOURCES = JSON.parse('""');
+</script>
+
+
+<script src="../../_static/js/search.js"></script>
+
+  
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright (c) 2026 ANSYS, Inc. All rights reserved.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<!--
+  Theme Version Footer
+  Displays the Sphinx theme version and the last updated date.
+  Accessibility and semantic improvements included.
+-->
+<footer class="theme-version" aria-label="Theme version and last update">
+  <span>
+    
+      Built with the
+      <a href="https://sphinxdocs.ansys.com/version/stable/index.html" target="_blank" rel="noopener noreferrer">
+        Ansys Sphinx Theme
+      </a>
+      1.7.0.
+    
+  </span>
+  <br />
+  <span>Last updated on <time id="ast_build_date"></time></span>
+</footer>
+<script>
+  // Set the last updated date in a readable format
+  (function() {
+    var options = { day: "numeric", month: "long", year: "numeric" };
+    var ast_lastModifiedDate = new Date(document.lastModified);
+    var ast_build_date = ast_lastModifiedDate.toLocaleDateString("en-US", options);
+    var dateElem = document.getElementById("ast_build_date");
+    if (dateElem) {
+      dateElem.textContent = ast_build_date;
+    }
+  })();
+</script></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
