@@ -80,6 +80,42 @@ class MeshData:
     data: list[float]
 
 
+class MappingTypes(str, Enum):
+    """Allowed mapping types."""
+
+    planar = "planar"
+    cubic = "cubic"
+    spherical = "spherical"
+    cylindrical = "cylindrical"
+
+
+@dataclass(frozen=True)
+class MappingOperator:
+    """Store all information needed to create a UV mapping."""
+
+    mapping_type: Union[MappingTypes]
+    u_length: float
+    v_length: Optional[float] = None
+    repeat_v: Optional[bool] = None
+    repeat_u: Optional[bool] = None
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+    u_scale: float = 1
+    v_scale: float = 1
+    rotation: float = 0
+
+
+@dataclass(frozen=True)
+class MappingByData:
+    """Store mapping data when using custom mapping.
+
+    Final data is stored on Face object.
+    """
+
+    vertices_data_index: int
+    repeat_v: Optional[bool] = None
+    repeat_u: Optional[bool] = None
+
+
 class LayerTypes(str, Enum):
     """Layer Separation types without parameters."""
 
