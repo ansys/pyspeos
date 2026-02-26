@@ -86,12 +86,12 @@ class Body:
         self._geom_features = []
 
     @property
-    def visual_data(self):
+    def visual_data(self) -> _VisualData:
         """Property containing irradiance sensor visualization data.
 
         Returns
         -------
-        VisualData
+        ansys.speos.core.generic.visualization_methods._VisualData
             Instance of VisualData Class for pyvista.PolyData of feature faces, coordinate_systems.
 
         """
@@ -111,7 +111,13 @@ class Body:
 
     @property
     def geo_path(self) -> GeoRef:
-        """Geometry path to be used within other speos objects."""
+        """Geometry path to be used within other speos objects.
+
+        Returns
+        -------
+        ansys.speos.core.geo_ref.GeoRef
+            geo_path to the body
+        """
         geo_paths = [self._name]
         if isinstance(self._parent_part, part.Part.SubPart):
             geo_paths.insert(0, self._parent_part.geo_path.metadata["GeoPath"])

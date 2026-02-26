@@ -110,10 +110,10 @@ sensor1.commit()
 # ### Prepare a surface source
 
 source1 = p.create_source(name=SOURCE_NAME)
-source1.set_exitance_constant(geometries=[(face_1, True)])
+source1.set_exitance_constant().geometries = [(face_1, True)]
 # define a spectrum which is not monochromatic so it can be used in both direct and inverse
 # simulation
-source1.set_spectrum().set_blackbody()
+source1.spectrum.set_blackbody()
 source1.commit()
 
 # ## Create a simulation

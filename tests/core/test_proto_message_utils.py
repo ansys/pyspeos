@@ -27,6 +27,7 @@ from pathlib import Path
 from ansys.api.speos import __version__ as ansys_api_speos_version
 
 from ansys.speos.core import GeoRef, OptProp, Project, Speos, proto_message_utils
+from ansys.speos.core.generic.parameters import SurfaceSourceParameters
 from ansys.speos.core.generic.version_checker import check_version
 from ansys.speos.core.kernel import scene
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_dict
@@ -50,8 +51,10 @@ def test_replace_guid_elt(speos: Speos):
     ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
     root_part.commit()
 
-    src_feat = SourceSurface(project=p, name="Surface.1")
-    src_feat.set_exitance_constant(geometries=[(GeoRef.from_native_link("BodyB"), False)])
+    src_feat = SourceSurface(
+        project=p, name="Surface.1", default_parameters=SurfaceSourceParameters()
+    )
+    src_feat.set_exitance_constant().geometries = [(GeoRef.from_native_link("BodyB"), False)]
     src_feat.commit()
 
     # Retrieve source template message and transform it into dict
@@ -99,8 +102,10 @@ def test_replace_guid_elt_ignore_simple_key(speos: Speos):
     ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
     root_part.commit()
 
-    src_feat = SourceSurface(project=p, name="Surface.1")
-    src_feat.set_exitance_constant(geometries=[(GeoRef.from_native_link("BodyB"), False)])
+    src_feat = SourceSurface(
+        project=p, name="Surface.1", default_parameters=SurfaceSourceParameters()
+    )
+    src_feat.set_exitance_constant().geometries = [(GeoRef.from_native_link("BodyB"), False)]
     src_feat.commit()
 
     # Retrieve source template message and transform it into dict
@@ -273,8 +278,8 @@ def test_value_finder_key_startswith(speos: Speos):
     ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
     root_part.commit()
 
-    src_feat = SourceSurface(project=p, name="Surface.1")
-    src_feat.set_exitance_constant(geometries=[(GeoRef.from_native_link("BodyB"), False)])
+    src_feat = p.create_source(name="Source.1", feature_type=SourceSurface)
+    src_feat.set_exitance_constant().geometries = [(GeoRef.from_native_link("BodyB"), False)]
     src_feat.commit()
 
     # Retrieve source instance message and transform it into dict
@@ -302,8 +307,8 @@ def test__value_finder_key_endswith(speos: Speos):
     ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
     root_part.commit()
 
-    src_feat = SourceSurface(project=p, name="Surface.1")
-    src_feat.set_exitance_constant(geometries=[(GeoRef.from_native_link("BodyB"), False)])
+    src_feat = src_feat = p.create_source(name="Source.1", feature_type=SourceSurface)
+    src_feat.set_exitance_constant().geometries = [(GeoRef.from_native_link("BodyB"), False)]
     src_feat.commit()
 
     # Retrieve source instance message and transform it into dict
@@ -335,9 +340,9 @@ def test_replace_properties(speos: Speos):
     ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
     root_part.commit()
 
-    src_feat = SourceSurface(project=p, name="Surface.1")
-    src_feat.set_exitance_constant(geometries=[(GeoRef.from_native_link("BodyB"), False)])
-    src_feat.set_intensity().set_gaussian().set_axis_system([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+    src_feat = p.create_source(name="Source.1", feature_type=SourceSurface)
+    src_feat.set_exitance_constant().geometries = [(GeoRef.from_native_link("BodyB"), False)]
+    src_feat.intensity.set_gaussian().axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     src_feat.commit()
 
     # First replace guids

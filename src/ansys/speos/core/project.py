@@ -35,10 +35,15 @@ import ansys.speos.core.body as body
 import ansys.speos.core.face as face
 from ansys.speos.core.generic.general_methods import graphics_required
 from ansys.speos.core.generic.parameters import (
+    AmbientEnvironmentParameters,
+    AmbientNaturalLightParameters,
     CameraSensorParameters,
     Irradiance3DSensorParameters,
     IrradianceSensorParameters,
+    LuminaireSourceParameters,
     RadianceSensorParameters,
+    RayFileSourceParameters,
+    SurfaceSourceParameters,
 )
 from ansys.speos.core.generic.visualization_methods import local2absolute
 from ansys.speos.core.ground_plane import GroundPlane
@@ -166,6 +171,15 @@ class Project:
         description: str = "",
         feature_type: type = SourceSurface,
         metadata: Optional[Mapping[str, str]] = None,
+        parameters: Optional[
+            Union[
+                LuminaireSourceParameters,
+                SurfaceSourceParameters,
+                RayFileSourceParameters,
+                AmbientNaturalLightParameters,
+                AmbientEnvironmentParameters,
+            ]
+        ] = None,
     ) -> Union[
         SourceSurface,
         SourceRayFile,
@@ -193,10 +207,17 @@ class Project:
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
+        parameters : Optional[Union[\
+        ansys.speos.core.generic.parameters.LuminaireSourceParameters,\
+        ansys.speos.core.generic.parameters.SurfaceSourceParameters,\
+        ansys.speos.core.generic.parameters.RayFileSourceParameters,\
+        ansys.speos.core.generic.parameters.AmbientNaturalLightParameters,\
+        ansys.speos.core.generic.parameters.AmbientEnvironmentParameters]]
+            Allows to provide parameters to overwrite default parameters.
 
         Returns
         -------
-        Union[ansys.speos.core.source.SourceSurface,ansys.speos.core.source.SourceRayFile,\
+        Union[ansys.speos.core.source.SourceSurface, ansys.speos.core.source.SourceRayFile,\
         ansys.speos.core.source.SourceLuminaire, ansys.speos.core.source.SourceAmbientNaturalLight,\
         ansys.speos.core.source.SourceAmbientEnvironment]
             Source class instance.
@@ -213,36 +234,79 @@ class Project:
         feature = None
         match feature_type.__name__:
             case "SourceSurface":
+                if parameters is None:
+                    parameters = SurfaceSourceParameters()
+                elif not isinstance(parameters, SurfaceSourceParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of SurfaceSourceParameters"
+                    )
                 feature = SourceSurface(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
+                    default_parameters=parameters,
                 )
             case "SourceRayFile":
+                if parameters is None:
+                    parameters = RayFileSourceParameters()
+                elif not isinstance(parameters, RayFileSourceParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of RayFileSourceParameters"
+                    )
                 feature = SourceRayFile(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
+                    default_parameters=parameters,
                 )
             case "SourceLuminaire":
+                if parameters is None:
+                    parameters = LuminaireSourceParameters()
+                elif not isinstance(parameters, LuminaireSourceParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of LuminaireSourceParameters"
+                    )
                 feature = SourceLuminaire(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
+                    default_parameters=parameters,
                 )
             case "SourceAmbientNaturalLight":
+                if parameters is None:
+                    parameters = AmbientNaturalLightParameters()
+                elif not isinstance(parameters, AmbientNaturalLightParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of AmbientNaturalLightParameters"
+                    )
                 feature = SourceAmbientNaturalLight(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
+                    default_parameters=parameters,
                 )
             case "SourceAmbientEnvironment":
+                if parameters is None:
+                    parameters = AmbientEnvironmentParameters()
+                elif not isinstance(parameters, AmbientEnvironmentParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of AmbientEnvironmentParameters"
+                    )
                 feature = SourceAmbientEnvironment(
-                    project=self, name=name, description=description, metadata=metadata
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
                 )
             case _:
                 msg = "Requested feature {} does not exist in supported list {}".format(
@@ -353,10 +417,12 @@ class Project:
         feature_type: type = SensorIrradiance,
         metadata: Optional[Mapping[str, str]] = None,
         parameters: Optional[
-            IrradianceSensorParameters,
-            RadianceSensorParameters,
-            CameraSensorParameters,
-            Irradiance3DSensorParameters,
+            Union[
+                IrradianceSensorParameters,
+                RadianceSensorParameters,
+                CameraSensorParameters,
+                Irradiance3DSensorParameters,
+            ]
         ] = None,
     ) -> Union[SensorCamera, SensorRadiance, SensorIrradiance, Sensor3DIrradiance]:
         """Create a new Sensor feature.
@@ -378,12 +444,11 @@ class Project:
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
-        parameters :  Optional[
-            IrradianceSensorParameters,
-            RadianceSensorParameters,
-            CameraSensorParameters,
-            Irradiance3DSensorParameters
-        ]
+        parameters :  Optional[Union[\
+        ansys.speos.core.generic.parameters.IrradianceSensorParameters,\
+        ansys.speos.core.generic.parameters.RadianceSensorParameters,\
+        ansys.speos.core.generic.parameters.CameraSensorParameters,\
+        ansys.speos.core.generic.parameters.Irradiance3DSensorParameters]]
             Allows to provide parameters to overwrite default parameters
 
         Returns
@@ -539,6 +604,7 @@ class Project:
             SourceLuminaire,
             SourceRayFile,
             SourceAmbientNaturalLight,
+            SourceAmbientEnvironment,
             SensorIrradiance,
             SensorRadiance,
             SensorCamera,
@@ -573,7 +639,9 @@ class Project:
         -------
         List[Union[ansys.speos.core.opt_prop.OptProp, ansys.speos.core.source.SourceSurface, \
         ansys.speos.core.source.SourceRayFile, ansys.speos.core.source.SourceLuminaire, \
-        ansys.speos.core.source.SourceAmbientNaturalLight, ansys.speos.core.sensor.SensorCamera, \
+        ansys.speos.core.source.SourceAmbientNaturalLight, \
+        ansys.speos.core.source.SourceAmbientEnvironment, \
+        ansys.speos.core.sensor.SensorCamera, \
         ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance, \
         ansys.speos.core.sensor.Sensor3DIrradiance, \
         ansys.speos.core.simulation.SimulationVirtualBSDF, \
@@ -904,21 +972,21 @@ class Project:
                     project=self,
                     name=src_inst.name,
                     source_instance=src_inst,
-                    default_values=False,
+                    default_parameters=None,
                 )
             elif src_inst.HasField("luminaire_properties"):
                 src_feat = SourceLuminaire(
                     project=self,
                     name=src_inst.name,
                     source_instance=src_inst,
-                    default_values=False,
+                    default_parameters=None,
                 )
             elif src_inst.HasField("surface_properties"):
                 src_feat = SourceSurface(
                     project=self,
                     name=src_inst.name,
                     source_instance=src_inst,
-                    default_values=False,
+                    default_parameters=None,
                 )
             elif src_inst.HasField("ambient_properties"):
                 if src_inst.ambient_properties.HasField("natural_light_properties"):
@@ -926,14 +994,14 @@ class Project:
                         project=self,
                         name=src_inst.name,
                         source_instance=src_inst,
-                        default_values=False,
+                        default_parameters=None,
                     )
                 elif src_inst.ambient_properties.HasField("environment_map_properties"):
                     src_feat = SourceAmbientEnvironment(
                         project=self,
                         name=src_inst.name,
                         source_instance=src_inst,
-                        default_values=False,
+                        default_parameters=None,
                     )
             if src_feat is not None:
                 self._features.append(src_feat)
@@ -1087,8 +1155,14 @@ class Project:
         ----------
         plotter: Plotter
             ansys.tools.visualization_interface.Plotter
-        speos_feature: Union[SensorCamera, SensorRadiance, SensorIrradiance,
-        Sensor3DIrradiance, SourceLuminaire, SourceRayFile, SourceLuminaire]
+        speos_feature: Union[\
+        ansys.speos.core.sensor.SensorCamera, \
+        ansys.speos.core.sensor.SensorRadiance, \
+        ansys.speos.core.sensor.SensorIrradiance, \
+        ansys.speos.core.sensor.Sensor3DIrradiance, \
+        ansys.speos.core.source.SourceLuminaire, \
+        ansys.speos.core.source.SourceRayFile, \
+        ansys.speos.core.source.SourceLuminaire]
             speos feature whose visual data will be added.
         scene_seize: float
             seize of max scene bounds

@@ -48,7 +48,7 @@ def test_find_feature(speos: Speos):
 
     # Create a luminaire source in the project
     source1 = p.create_source(name="Source.1", feature_type=SourceLuminaire)
-    source1.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
+    source1.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     assert len(p._features) == 1
     source1.commit()
     assert len(p.scene_link.get().sources) == 1
@@ -306,7 +306,7 @@ def test_delete(speos: Speos):
 
     # Create a surface source in the project
     source1 = p.create_source(name="Source.1", feature_type=SourceLuminaire)
-    source1.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
+    source1.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     assert len(p._features) == 1
     source1.commit()
     assert len(p.scene_link.get().sources) == 1
@@ -486,21 +486,21 @@ def test_preview_visual_data(speos: Speos):
     # preview luminaire source
     # preview when there is cad
     sr = p2.create_source(name="Luminaire_source", feature_type=SourceLuminaire)
-    sr.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
-    sr.set_spectrum().set_halogen()
+    sr.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
+    sr.spectrum.set_halogen()
     sr.commit()
     p2.preview()
     # preview when there is no cad
     p3 = Project(speos=speos)
     p3.create_root_part().commit()  # Needed for 251 server.
     sr = p3.create_source(name="Luminaire_source.2", feature_type=SourceLuminaire)
-    sr.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
+    sr.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     sr.commit()
     p3.preview()
 
     # preview rayfile source
     sr = p2.create_source(name="Rayfile_source", feature_type=SourceRayFile)
-    sr.set_ray_file_uri(uri=str(Path(test_path) / "Rays.ray"))
+    sr.ray_file_uri = Path(test_path) / "Rays.ray"
     sr.commit()
     p2.preview()
 
@@ -514,13 +514,13 @@ def test_preview_visual_data(speos: Speos):
     ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1]).commit()
     sr = p2.create_source(name="Surface.1", feature_type=SourceSurface)
 
-    sr.set_exitance_constant(geometries=[(GeoRef.from_native_link("TheBodyB/TheFaceF"), False)])
+    sr.set_exitance_constant().geometries = [(GeoRef.from_native_link("TheBodyB/TheFaceF"), False)]
     sr.commit()
     p2.preview()
     # variable exitance
     sr.set_spectrum_from_xmp_file()
-    sr.set_exitance_variable().set_xmp_file_uri(
-        uri=str(Path(test_path) / "PROJECT.Direct-no-Ray.Irradiance Ray Spectral.xmp")
+    sr.set_exitance_variable().xmp_file_uri = (
+        Path(test_path) / "PROJECT.Direct-no-Ray.Irradiance Ray Spectral.xmp"
     )
     sr.commit()
     p2.preview()

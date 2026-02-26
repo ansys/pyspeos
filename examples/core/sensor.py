@@ -10,7 +10,7 @@
 
 from pathlib import Path
 
-from ansys.speos.core import GeoRef, Project, Speos, launcher
+from ansys.speos.core import Face, Project, Speos, launcher
 from ansys.speos.core.generic.parameters import (
     CameraSensorParameters,
     ColorParameters,
@@ -247,7 +247,8 @@ print(sensor4)
 
 create_helper_geometries(p)
 sensor5 = p.create_sensor(name="3D_Irradiance.2", feature_type=Sensor3DIrradiance)
-sensor5.geometries = [GeoRef.from_native_link("TheBodyB/TheFaceF")]
+face = p.find(name="TheBodyB/TheFaceF", feature_type=Face)[0]
+sensor5.geometries = [face]
 sensor5.commit()
 print(sensor5)
 

@@ -29,7 +29,7 @@ LPF files contain a set of simulated rays with all their intersections and prope
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, List, Optional, Union
 
 import ansys.api.speos.lpf.v2.lpf_file_reader_pb2 as lpf_file_reader__v2__pb2
 import ansys.api.speos.lpf.v2.lpf_file_reader_pb2_grpc as lpf_file_reader__v2__pb2_grpc
@@ -104,12 +104,12 @@ class RayPath:
         return self._nb_impacts
 
     @property
-    def impacts(self) -> list[list[float]]:
+    def impacts(self) -> List[List[float]]:
         """XYZ coordinates for each impact.
 
         Returns
         -------
-        list[list[float]]
+        List[List[float]]
             list containing the impact coordinates [[x0,y0,z0],[x1,y1,z1],...]
         """
         return self._impacts
@@ -126,45 +126,45 @@ class RayPath:
         return self._wl
 
     @property
-    def body_ids(self) -> list[int]:
+    def body_ids(self) -> List[int]:
         """Body ID of interacted body for each impact.
 
         Returns
         -------
-        list[int]
+        List[int]
             List of body IDs for each impact.
         """
         return self._body_ids
 
     @property
-    def face_ids(self) -> list[int]:
+    def face_ids(self) -> List[int]:
         """Face ID of interacted body for each impact.
 
         Returns
         -------
-        list[int]
+        List[int]
             List of face IDs for each impact.
         """
         return self._face_ids
 
     @property
-    def last_direction(self) -> list[float]:
+    def last_direction(self) -> List[float]:
         """Last direction of the ray.
 
         Returns
         -------
-        list[float]
+        List[float]
             Last direction of the rays as list[x,y,z].
         """
         return self._last_direction
 
     @property
-    def intersection_type(self) -> list[int]:
+    def intersection_type(self) -> List[int]:
         """Intersection type of the ray for each impact.
 
         Returns
         -------
-        list[int]
+        List[int]
             Intersection type at each impact.
 
         Notes
@@ -199,12 +199,12 @@ class RayPath:
         return self._intersection_type
 
     @property
-    def sensor_contribution(self) -> Union[None, list[dict]]:
+    def sensor_contribution(self) -> Union[None, List[dict]]:
         """Provide the sensor contribution information for each sensor.
 
         Returns
         -------
-        Union[None, list[dict]]
+        Union[None, List[dict]]
             If no sensor contribution, None will be returned. If there is sensor contribution, \
             a dictionary with the following information is returned:\
             {“sensor_id”: sc.sensor_id,
@@ -283,17 +283,17 @@ class LightPathFinder:
         return self._has_sensor_contributions
 
     @property
-    def sensor_names(self) -> list[str]:
+    def sensor_names(self) -> List[str]:
         """List of involved sensor names."""
         return self._sensor_names
 
     @property
-    def rays(self) -> list[RayPath]:
+    def rays(self) -> List[RayPath]:
         """List ray paths within LPF file."""
         return self._rays
 
     @property
-    def filtered_rays(self) -> list[RayPath]:
+    def filtered_rays(self) -> List[RayPath]:
         """List of filtered ray paths."""
         return self._filtered_rays
 
@@ -319,12 +319,12 @@ class LightPathFinder:
             lpf_file_reader__v2__pb2.InitLpfFileName_Request_Mono(lpf_file_uri=path)
         )
 
-    def __parse_traces(self) -> list[RayPath]:
+    def __parse_traces(self) -> List[RayPath]:
         """Read all ray paths from lpf dataset.
 
         Returns
         -------
-            list[script.RayPath]
+            List[script.RayPath]
 
         """
         raypaths = []
@@ -332,7 +332,7 @@ class LightPathFinder:
             raypaths.append(RayPath(rp, self._has_sensor_contributions))
         return raypaths
 
-    def __filter_by_last_intersection_types(self, options: list[int], new=True):
+    def __filter_by_last_intersection_types(self, options: List[int], new=True):
         """Filter ray paths based on last intersection types.
 
         Populate filtered_rays property.
@@ -349,12 +349,12 @@ class LightPathFinder:
                 if int(ray.intersection_type[-1]) in options:
                     self._filtered_rays.append(ray)
 
-    def filter_by_face_ids(self, options: list[int], new=True) -> LightPathFinder:
+    def filter_by_face_ids(self, options: List[int], new=True) -> LightPathFinder:
         """Filter ray paths based on face IDs and populates filtered_rays property.
 
         Parameters
         ----------
-        options : list[int]
+        options : List[int]
             List of face IDs.
         new : bool
             Define if a new filter is created or an existing filter is filtered.
@@ -377,12 +377,12 @@ class LightPathFinder:
                     self._filtered_rays.append(ray)
         return self
 
-    def filter_by_body_ids(self, options: list[int], new=True) -> LightPathFinder:
+    def filter_by_body_ids(self, options: List[int], new=True) -> LightPathFinder:
         """Filter ray paths based on body IDs and populates filtered_rays property.
 
         Parameters
         ----------
-        options : list[int]
+        options : List[int]
             List of body IDs.
         new : bool
             Define if a new filter is created or an existing filter is filtered.
@@ -434,9 +434,9 @@ class LightPathFinder:
 
         Parameters
         ----------
-        plotter : Plotter
+        plotter : ansys.tools.visualization_interface.plotter.Plotter
             Ansys plotter object to which rays should be added.
-        ray : script.RayPath
+        ray : ansys.speos.core.lxp.RayPath
             RayPath object which contains ray information to be added.
         max_ray_length : float
             Length of the last ray.
