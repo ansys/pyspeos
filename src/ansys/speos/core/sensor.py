@@ -585,7 +585,7 @@ class BaseSensor:
 
             Returns
             -------
-            List[GeoRef]
+            List[ansys.speos.core.geo_ref.GeoRef]
                 List of the Geometries contained in the FaceLayer group
             """
             return self._geometry
@@ -1095,7 +1095,8 @@ class SensorCamera(BaseSensor):
         ----------
         mode_photometric : ansys.api.speos.sensor.v1.camera_sensor_pb2.SensorCameraModePhotometric
             Camera photometric mode protobuf object to modify.
-        default_parameters : ansys.speos.core.generic.parameters.PhotometricCameraParameters
+        default_parameters : Optional[\
+        ansys.speos.core.generic.parameters.PhotometricCameraParameters] = None
             If defined the values in the sensor instance will be overwritten by the values of the
             data class
         stable_ctr : bool
@@ -1118,7 +1119,7 @@ class SensorCamera(BaseSensor):
             ----------
             mode_color : ansys.api.speos.sensor.v1.camera_sensor_pb2.SensorCameraColorModeColor
                 Camera color mode protobuf object to modify.
-            default_parameters : ansys.speos.core.generic.parameters.ColorParameters
+            default_parameters : ansys.speos.core.generic.parameters.ColorParameters, optional
                 If defined the values in the sensor instance will be overwritten by the values of
                 the data class, optional
             stable_ctr : bool
@@ -1290,7 +1291,7 @@ class SensorCamera(BaseSensor):
 
                     Parameters
                     ----------
-                    uri : Union[str, Path]
+                    uri : Union[str, pathlib.Path]
                         Red display file.
 
                     Returns
@@ -1310,7 +1311,7 @@ class SensorCamera(BaseSensor):
 
                     Parameters
                     ----------
-                    uri : Union[str, Path]
+                    uri : Union[str, pathlib.Path]
                         green display file.
 
                     Returns
@@ -1330,7 +1331,7 @@ class SensorCamera(BaseSensor):
 
                     Parameters
                     ----------
-                    uri : Union[str, Path]
+                    uri : Union[str, pathlib.Path]
                         blue display file.
 
                     Returns
@@ -1391,7 +1392,7 @@ class SensorCamera(BaseSensor):
 
                 Parameters
                 ----------
-                uri : Union[str, Path]
+                uri : Union[str, pathlib.Path]
                     Red spectrum file. It is expressed in a .spectrum file.
 
                 Returns
@@ -1411,7 +1412,7 @@ class SensorCamera(BaseSensor):
 
                 Parameters
                 ----------
-                uri : Union[str, Path]
+                uri : Union[str, pathlib.Path]
                     blue spectrum file. It is expressed in a .spectrum file.
 
                 Returns
@@ -1431,7 +1432,7 @@ class SensorCamera(BaseSensor):
 
                 Parameters
                 ----------
-                uri : Union[str, Path]
+                uri : Union[str, pathlib.Path]
                     green spectrum file. It is expressed in a .spectrum file.
 
                 Returns
@@ -1658,7 +1659,7 @@ class SensorCamera(BaseSensor):
 
             Parameters
             ----------
-            uri : Union[str, Path]
+            uri : Union[str, pathlib.Path]
                 Amount of light of the source that passes through the lens and reaches the sensor.
                 The transmittance is expressed in a .spectrum file.
 
@@ -1764,7 +1765,7 @@ class SensorCamera(BaseSensor):
 
             Parameters
             ----------
-            spectrum_file_uri : Union[str, Path]
+            spectrum_file_uri : Union[str, pathlib.Path]
                 Spectrum file uri.
 
             Returns
@@ -1813,7 +1814,7 @@ class SensorCamera(BaseSensor):
 
             Parameters
             ----------
-            uri : Union[str, Path]
+            uri : Union[str, pathlib.Path]
                 Trajectory file, used to define the position and orientations of the Camera sensor
                 in time.
 
@@ -2066,7 +2067,7 @@ class SensorCamera(BaseSensor):
 
         Parameters
         ----------
-        uri : Union[str, Path]
+        uri : Union[str, pathlib.Path]
             Optical aberration that deforms and bends straight lines. The distortion is expressed in
             a .OPTDistortion file.
 

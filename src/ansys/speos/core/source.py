@@ -101,10 +101,12 @@ class BaseSource:
 
         Parameters
         ----------
+        project : ansys.speos.core.project.Project
+            Project in which source shall be created.
         userdefined_color_space : source_pb2.SourceTemplate.UserDefinedRGBSpace
             source_pb2.SourceTemplate.UserDefinedRGBSpace
-        default_parameters: Optional[\
-        src.ansys.speos.core.generic.parameters.UserDefinedColorSpaceParameters] = None,
+        default_parameters : Optional[\
+        src.ansys.speos.core.generic.parameters.UserDefinedColorSpaceParameters] = None
             If defined the values in the UserDefinedColorSpace instance will be
             overwritten by the values of the data class.
         stable_ctr : bool
@@ -123,7 +125,7 @@ class BaseSource:
             userdefined_white_point : source_pb2.SourceTemplate.UserDefinedWhitePoint
                 source_pb2.SourceTemplate.UserDefinedWhitePoint
             default_parameters : Optional[\
-            ansys.speos.or.generic.parameters.UserDefinedWhitePointParameters] = None,
+            ansys.speos.core.generic.parameters.UserDefinedWhitePointParameters] = None,
                 If defined the values in the UserDefinedWhitePoint instance will be
                 overwritten by the values of the data class.
             stable_ctr : bool
@@ -340,12 +342,13 @@ class BaseSource:
             """
             return self._white_point_type
 
-        def set_white_point_type_d65(self) -> None:
+        def set_white_point_type_d65(self) -> BaseSource.UserDefinedColorSpace:
             """Set white point type to D65.
 
             Returns
             -------
-            None
+            ansys.speos.core.source.BaseSource.UserDefinedColorSpace
+                Type of color space is user defined.
 
             """
             self._userdefined_color_space.pre_defined_white_point.white_point_type = (
@@ -354,26 +357,30 @@ class BaseSource:
             self._white_point_type = (
                 source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.D65
             )
+            return self
 
-        def set_white_point_type_c(self) -> None:
+        def set_white_point_type_c(self) -> BaseSource.UserDefinedColorSpace:
             """Set white point type to C.
 
             Returns
             -------
-            None
+            ansys.speos.core.source.BaseSource.UserDefinedColorSpace
+                Type of color space is user defined.
 
             """
             self._userdefined_color_space.pre_defined_white_point.white_point_type = (
                 source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.C
             )
             self._white_point_type = source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.C
+            return self
 
-        def set_white_point_type_d50(self) -> None:
+        def set_white_point_type_d50(self) -> BaseSource.UserDefinedColorSpace:
             """Set white point type to D50.
 
             Returns
             -------
-            None
+            ansys.speos.core.source.BaseSource.UserDefinedColorSpace
+                Type of color space is user defined.
 
             """
             self._userdefined_color_space.pre_defined_white_point.white_point_type = (
@@ -382,19 +389,22 @@ class BaseSource:
             self._white_point_type = (
                 source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.D50
             )
+            return self
 
-        def set_white_point_type_e(self) -> None:
+        def set_white_point_type_e(self) -> BaseSource.UserDefinedColorSpace:
             """Set white point type to E.
 
             Returns
             -------
-            None
+            ansys.speos.core.source.BaseSource.UserDefinedColorSpace
+                Type of color space is user defined.
 
             """
             self._userdefined_color_space.pre_defined_white_point.white_point_type = (
                 source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.E
             )
             self._white_point_type = source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.E
+            return self
 
         def set_white_point_type_user_defined(self) -> UserDefinedWhitePoint:
             """Set white point type to user_defined.
@@ -439,7 +449,8 @@ class BaseSource:
         ----------
         predefined_color_space :
             ansys.api.speos.source.v1.source_pb2.SourceTemplate.PredefinedColorSpace
-        default_parameters: Optional[ansys.speos.or.generic.parameters.ColorSpaceType] = None,
+        default_parameters : Optional[\
+        ansys.speos.core.generic.parameters.ColorSpaceType] = None
             If defined the values in the PredefinedColorSpace instance will be
             overwritten by the values of the data class.
         stable_ctr : bool
@@ -475,6 +486,7 @@ class BaseSource:
             Returns
             -------
             ansys.speos.core.source.BaseSource.PredefinedColorSpace
+                Type of color space is predefined value.
             """
             self._predefined_color_space.color_space_type = (
                 source_pb2.SourceTemplate.PredefinedColorSpace.sRGB
@@ -487,6 +499,7 @@ class BaseSource:
             Returns
             -------
             ansys.speos.core.source.BaseSource.PredefinedColorSpace
+                Type of color space is predefined value.
             """
             self._predefined_color_space.color_space_type = (
                 source_pb2.SourceTemplate.PredefinedColorSpace.AdobeRGB
@@ -535,12 +548,11 @@ class BaseSource:
         ----------
         flux : ansys.api.speos.source.v1.source_pb2
             flux protobuf object to modify.
-        default_parameters: Optional[\
-                ansys.speos.or.generic.parameters.LuminousFluxParameters,\
-                ansys.speos.or.generic.parameters.RadiantFluxParameters,\
-                ansys.speos.or.generic.parameters.FluxFromFileParameters,\
-                ansys.speos.or.generic.parameters.IntensityFluxParameters,\
-            ] = None,
+        default_parameters : Optional[\
+                ansys.speos.core.generic.parameters.LuminousFluxParameters,\
+                ansys.speos.core.generic.parameters.RadiantFluxParameters,\
+                ansys.speos.core.generic.parameters.FluxFromFileParameters,\
+                ansys.speos.core.generic.parameters.IntensityFluxParameters] = None
             If defined the values in the Flux instance will be
             overwritten by the values of the data class.
         stable_ctr : bool
@@ -980,7 +992,7 @@ class SourceLuminaire(BaseSource):
         Metadata of the feature.
         By default, ``{}``.
     default_parameters : Optional[\
-    ansys.speos.or.generic.parameters.LuminaireSourceParameters] = None
+    ansys.speos.core.generic.parameters.LuminaireSourceParameters] = None
         If defined the values in the SourceLuminaire instance will be overwritten
         by the values of the data class.
     """
@@ -1148,7 +1160,7 @@ class SourceLuminaire(BaseSource):
 
         Parameters
         ----------
-        uri : Union[str, Path]
+        uri : Union[str, pathlib.Path]
             IES or EULUMDAT format file uri.
 
         Returns
@@ -1217,7 +1229,7 @@ class SourceRayFile(BaseSource):
         Metadata of the feature.
         By default, ``{}``.
     default_parameters : Optional[\
-    ansys.speos.or.generic.parameters.RayFileSourceParameters] = None,
+    ansys.speos.core.generic.parameters.RayFileSourceParameters] = None
         If defined the values in the SourceRayFile instance will
         be overwritten by the values of the data class.
     """
@@ -1232,7 +1244,7 @@ class SourceRayFile(BaseSource):
         rayfile_props : ansys.api.speos.scene.v2.scene_pb2.RayFileProperties
             protobuf object to modify.
         default_parameters : Optional[\
-        ansys.speos.or.generic.parameters.RayFileSourceParameters] = None
+        ansys.speos.core.generic.parameters.RayFileSourceParameters] = None
             If defined the values in the ExitGeometries instance will be
             overwritten by the values of the data class.
         stable_ctr : bool
@@ -1425,7 +1437,7 @@ class SourceRayFile(BaseSource):
 
         Parameters
         ----------
-        uri : Union[Path, str]
+        uri : Union[pathlib.Path, str]
             Ray file URI.
 
         Returns
@@ -1582,7 +1594,7 @@ class SourceSurface(BaseSource):
     surface_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.SurfaceProperties
         Surface source properties to complete.
     default_parameters : Optional[\
-    ansys.speos.or.generic.parameters.SurfaceSourceParameters] = None
+    ansys.speos.core.generic.parameters.SurfaceSourceParameters] = None
         If defined the values in the SourceSurface instance will be overwritten by the
         values of the data class.
     """
@@ -1613,15 +1625,17 @@ class SourceSurface(BaseSource):
                     self.set_luminous_intensity()
                     self.value = default_parameters.value
 
-        def set_luminous_intensity(self):
+        def set_luminous_intensity(self) -> BaseSource.Flux:
             """Set flux type luminous intensity.
 
             Returns
             -------
-            None
+            ansys.speos.core.source.BaseSource.Flux
+                Flux object
 
             """
             self._flux_type = self._flux.luminous_intensity_flux
+            return self
 
     class ExitanceConstant:
         """Type of surface source existence : existence constant.
@@ -1635,7 +1649,7 @@ class SourceSurface(BaseSource):
         SurfaceProperties.ExitanceConstantProperties
             Existence constant properties to complete.
         default_parameters : Optional[\
-        ansys.speos.or.generic.parameters.ConstantExitanceParameters] = None,
+        ansys.speos.core.generic.parameters.ConstantExitanceParameters] = None
             If defined the values in the ExitanceConstant instance will be overwritten
              by the values of the data class.
         stable_ctr : bool
@@ -1713,7 +1727,7 @@ class SourceSurface(BaseSource):
         SurfaceProperties.ExitanceVariableProperties
             Existence variable properties to complete.
         default_parameters : Optional[\
-        ansys.speos.or.generic.parameters.VariableExitanceParameters] = None
+        ansys.speos.core.generic.parameters.VariableExitanceParameters] = None
             If defined the values in the ExitanceVariable instance will be overwritten
             by the values of the data class.
         stable_ctr : bool
@@ -1750,7 +1764,7 @@ class SourceSurface(BaseSource):
 
             Parameters
             ----------
-            xmp_file_uri : Union[str, Path]
+            xmp_file_uri : Union[str, pathlib.Path]
                 xmp file uri.
 
             Returns
@@ -3063,7 +3077,7 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
 
         Parameters
         ----------
-         uri : Union[str, Path]
+         uri : Union[str, pathlib.Path]
             format file uri (hdr, exr, png, bmp, jpg, tiff, rgb).
 
         Returns
@@ -3090,33 +3104,33 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
         Returns
         -------
         Union[None, \
-            ansys.speos.core.source.SourceAmbientEnvironment.PredefinedColorSpace, \
-            ansys.speos.core.source.SourceAmbientEnvironment.UserDefinedColorSpace]
+            ansys.speos.core.source.BaseSourceAmbient.PredefinedColorSpace, \
+            ansys.speos.core.source.BaseSourceAmbient.UserDefinedColorSpace]
             Instance of Predefined Color Space class
         """
         return self._type
 
-    def set_userdefined_color_space(self) -> SourceAmbientEnvironment.UserDefinedColorSpace:
+    def set_userdefined_color_space(self) -> BaseSourceAmbient.UserDefinedColorSpace:
         """Set the color space to user-defined.
 
         Returns
         -------
-        ansys.speos.core.source.SourceAmbientEnvironment.UserDefinedColorSpace
+        ansys.speos.core.source.BaseSourceAmbient.UserDefinedColorSpace
             Settings for user defined color space.
 
         """
         if self._type is None and self._source_template.ambient.environment_map.HasField(
             "user_defined_rgb_space"
         ):
-            self._type = SourceAmbientEnvironment.UserDefinedColorSpace(
+            self._type = BaseSourceAmbient.UserDefinedColorSpace(
                 project=self._project,
                 userdefined_color_space=self._source_template.ambient.environment_map.user_defined_rgb_space,
                 default_parameters=None,
                 stable_ctr=True,
             )
-        if not isinstance(self._type, SourceAmbientEnvironment.UserDefinedColorSpace):
+        if not isinstance(self._type, BaseSourceAmbient.UserDefinedColorSpace):
             # if the _type is not UserDefinedColorSpace then we create a new type.
-            self._type = SourceAmbientEnvironment.UserDefinedColorSpace(
+            self._type = BaseSourceAmbient.UserDefinedColorSpace(
                 project=self._project,
                 userdefined_color_space=self._source_template.ambient.environment_map.user_defined_rgb_space,
                 default_parameters=UserDefinedColorSpaceParameters(),
@@ -3132,25 +3146,25 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
             )
         return self._type
 
-    def set_predefined_color_space(self) -> SourceAmbientEnvironment.PredefinedColorSpace:
+    def set_predefined_color_space(self) -> BaseSourceAmbient.PredefinedColorSpace:
         """Set the color space to use one of the presets.
 
         Returns
         -------
-        ansys.speos.core.source.SourceAmbientEnvironment.PredefinedColorSpace
+        ansys.speos.core.source.BaseSourceAmbient.PredefinedColorSpace
             Environment source color space for sRGB or AdobeRGB
         """
         if self._type is None and self._source_template.ambient.environment_map.HasField(
             "predefined_color_space"
         ):
-            self._type = SourceAmbientEnvironment.PredefinedColorSpace(
+            self._type = BaseSourceAmbient.PredefinedColorSpace(
                 predefined_color_space=self._source_template.ambient.environment_map.predefined_color_space,
                 default_parameters=None,
                 stable_ctr=True,
             )
-        if not isinstance(self._type, SourceAmbientEnvironment.PredefinedColorSpace):
+        if not isinstance(self._type, BaseSourceAmbient.PredefinedColorSpace):
             # if the _type is not PredefinedColorSpace then we create a new type.
-            self._type = SourceAmbientEnvironment.PredefinedColorSpace(
+            self._type = BaseSourceAmbient.PredefinedColorSpace(
                 predefined_color_space=self._source_template.ambient.environment_map.predefined_color_space,
                 default_parameters=ColorSpaceType.srgb,
                 stable_ctr=True,

@@ -172,7 +172,7 @@ class Spectrum:
             Returns
             -------
             float
-            Temperature of the spectrum.
+                Temperature of the spectrum.
 
             """
             return self._blackbody.temperature
@@ -230,7 +230,7 @@ class Spectrum:
             Returns
             -------
             List[float]
-            Wavelength values of the spectrum.
+                Wavelength values of the spectrum.
 
             """
             return self._sampled.wavelengths[:]
@@ -301,7 +301,7 @@ class Spectrum:
 
             Parameters
             ----------
-            file_uri : Union[str, Path]
+            file_uri : Union[str, pathlib.Path]
                 File uri of the library type spectrum.
 
             Returns

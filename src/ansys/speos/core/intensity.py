@@ -134,7 +134,7 @@ class Intensity:
 
             Parameters
             ----------
-            uri : Union[Path, str]
+            uri : Union[pathlib.Path, str]
                 uri of the intensity file IES (.ies), Eulumdat (.ldt), speos intensities (.xmp)
 
             Returns
