@@ -207,12 +207,12 @@ class Project:
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
-        parameters: Optional[Union[\
+        parameters : Optional[Union[\
         ansys.speos.core.generic.parameters.LuminaireSourceParameters,\
         ansys.speos.core.generic.parameters.SurfaceSourceParameters,\
         ansys.speos.core.generic.parameters.RayFileSourceParameters,\
         ansys.speos.core.generic.parameters.AmbientNaturalLightParameters,\
-        ansys.speos.core.generic.parameters.AmbientEnvironmentParameters,]]
+        ansys.speos.core.generic.parameters.AmbientEnvironmentParameters]]
             Allows to provide parameters to overwrite default parameters.
 
         Returns
@@ -444,10 +444,11 @@ class Project:
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
-        parameters :  Optional[ansys.speos.core.generic.parameters.IrradianceSensorParameters,\
-            ansys.speos.core.generic.parameters.RadianceSensorParameters,\
-            ansys.speos.core.generic.parameters.CameraSensorParameters,\
-            ansys.speos.core.generic.parameters.Irradiance3DSensorParameters]
+        parameters :  Optional[Union[\
+        ansys.speos.core.generic.parameters.IrradianceSensorParameters,\
+        ansys.speos.core.generic.parameters.RadianceSensorParameters,\
+        ansys.speos.core.generic.parameters.CameraSensorParameters,\
+        ansys.speos.core.generic.parameters.Irradiance3DSensorParameters]]
             Allows to provide parameters to overwrite default parameters
 
         Returns

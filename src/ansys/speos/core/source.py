@@ -246,7 +246,7 @@ class BaseSource:
 
             Parameters
             ----------
-            red_spectrum_file_uri : Union[str, Path]
+            red_spectrum_file_uri : Union[str, pathlib.Path]
                 Red spectrum file uri.
 
 
@@ -274,7 +274,7 @@ class BaseSource:
 
             Parameters
             ----------
-            green_spectrum_file_uri : Union[str, Path]
+            green_spectrum_file_uri : Union[str, pathlib.Path]
                 Green spectrum file uri.
 
             Returns
@@ -301,7 +301,7 @@ class BaseSource:
 
             Parameters
             ----------
-            blue_spectrum_file_uri : Union[str, Path]
+            blue_spectrum_file_uri : Union[str, pathlib.Path]
                 Blue spectrum file uri.
 
             Returns
@@ -1682,7 +1682,8 @@ class SourceSurface(BaseSource):
 
             Parameters
             ----------
-            geometries : List[tuple[ansys.speos.core.geo_ref.GeoRef, bool]]
+            geometries : List[tuple[Union[ansys.speos.core.geo_ref.GeoRef,\
+            ansys.speos.core.face.Face, ansys.speos.core.body.Body], bool]]
                 list of tuple which contains geometry ref and bool for normal direction.
 
             Returns
@@ -3030,7 +3031,7 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
 
         Parameters
         ----------
-        value: bool
+        value : bool
             True to reverse north direction, False otherwise.
 
         Returns
@@ -3096,41 +3097,41 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
         self,
     ) -> Union[
         None,
-        SourceAmbientEnvironment.PredefinedColorSpace,
-        SourceAmbientEnvironment.UserDefinedColorSpace,
+        BaseSource.PredefinedColorSpace,
+        BaseSource.UserDefinedColorSpace,
     ]:
         """Property containing all options in regard to the color space properties.
 
         Returns
         -------
         Union[None, \
-            ansys.speos.core.source.BaseSourceAmbient.PredefinedColorSpace, \
-            ansys.speos.core.source.BaseSourceAmbient.UserDefinedColorSpace]
+            ansys.speos.core.source.BaseSource.PredefinedColorSpace, \
+            ansys.speos.core.source.BaseSource.UserDefinedColorSpace]
             Instance of Predefined Color Space class
         """
         return self._type
 
-    def set_userdefined_color_space(self) -> BaseSourceAmbient.UserDefinedColorSpace:
+    def set_userdefined_color_space(self) -> BaseSource.UserDefinedColorSpace:
         """Set the color space to user-defined.
 
         Returns
         -------
-        ansys.speos.core.source.BaseSourceAmbient.UserDefinedColorSpace
+        ansys.speos.core.source.BaseSource.UserDefinedColorSpace
             Settings for user defined color space.
 
         """
         if self._type is None and self._source_template.ambient.environment_map.HasField(
             "user_defined_rgb_space"
         ):
-            self._type = BaseSourceAmbient.UserDefinedColorSpace(
+            self._type = BaseSource.UserDefinedColorSpace(
                 project=self._project,
                 userdefined_color_space=self._source_template.ambient.environment_map.user_defined_rgb_space,
                 default_parameters=None,
                 stable_ctr=True,
             )
-        if not isinstance(self._type, BaseSourceAmbient.UserDefinedColorSpace):
+        if not isinstance(self._type, BaseSource.UserDefinedColorSpace):
             # if the _type is not UserDefinedColorSpace then we create a new type.
-            self._type = BaseSourceAmbient.UserDefinedColorSpace(
+            self._type = BaseSource.UserDefinedColorSpace(
                 project=self._project,
                 userdefined_color_space=self._source_template.ambient.environment_map.user_defined_rgb_space,
                 default_parameters=UserDefinedColorSpaceParameters(),
@@ -3146,25 +3147,25 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
             )
         return self._type
 
-    def set_predefined_color_space(self) -> BaseSourceAmbient.PredefinedColorSpace:
+    def set_predefined_color_space(self) -> BaseSource.PredefinedColorSpace:
         """Set the color space to use one of the presets.
 
         Returns
         -------
-        ansys.speos.core.source.BaseSourceAmbient.PredefinedColorSpace
+        ansys.speos.core.source.BaseSource.PredefinedColorSpace
             Environment source color space for sRGB or AdobeRGB
         """
         if self._type is None and self._source_template.ambient.environment_map.HasField(
             "predefined_color_space"
         ):
-            self._type = BaseSourceAmbient.PredefinedColorSpace(
+            self._type = BaseSource.PredefinedColorSpace(
                 predefined_color_space=self._source_template.ambient.environment_map.predefined_color_space,
                 default_parameters=None,
                 stable_ctr=True,
             )
-        if not isinstance(self._type, BaseSourceAmbient.PredefinedColorSpace):
+        if not isinstance(self._type, BaseSource.PredefinedColorSpace):
             # if the _type is not PredefinedColorSpace then we create a new type.
-            self._type = BaseSourceAmbient.PredefinedColorSpace(
+            self._type = BaseSource.PredefinedColorSpace(
                 predefined_color_space=self._source_template.ambient.environment_map.predefined_color_space,
                 default_parameters=ColorSpaceType.srgb,
                 stable_ctr=True,
