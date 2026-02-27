@@ -100,15 +100,12 @@ faces = data["faces"]
 # The mention "local: " is added when printing the optical property.
 
 op1 = p.create_optical_property(name="Material.1")
-op1.set_surface_mirror(reflectance=80)  # SOP : mirror
+op1.set_surface_mirror()  # SOP : mirror
+op1.sop_reflectance = 80
 op1.set_volume_opaque()  # VOP : opaque
 # This optical property will be applied to two bodies named : "TheBodyB" and "TheBodyC".
-op1.set_geometries(
-    geometries=[
-        bodies[0],
-        bodies[1],
-    ]
-)
+op1.geometries = [bodies[0], bodies[1]]
+
 print(op1)
 
 
@@ -126,16 +123,10 @@ print(op1)
 
 op2 = p.create_optical_property(name="Material.2")
 op2.set_surface_opticalpolished()  # SOP : optical polished
-op2.set_volume_library(
-    path=str(assets_data_path / "AIR.material")
-)  # VOP : selected library via a file .material
+op2.set_volume_library()
+op2.vop_library = assets_data_path / "AIR.material"  # VOP : selected library via a file .material
 # This optical property will be applied to two bodies named : "TheBodyD" and "TheBodyE".
-op2.set_geometries(
-    geometries=[
-        bodies[2],
-        bodies[3],
-    ]
-)
+op2.geometries = [bodies[2], bodies[3]]
 op2.commit()
 print(op2)
 
@@ -148,9 +139,10 @@ print(op2)
 # geometries.
 
 op3 = p.create_optical_property(name="Material.FOP")
-op3.set_surface_mirror(reflectance=90)  # SOP : mirror
+op3.set_surface_mirror()
+op3.sop_reflectance = 90  # SOP : mirror
 # This optical property will be applied a face from TheBodyD named : "TheFaceF".
-op3.set_geometries(geometries=[faces[2]])
+op3.geometries = [faces[2]]
 op3.commit()
 print(op3)
 

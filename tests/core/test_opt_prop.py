@@ -491,7 +491,7 @@ def test_create_texture_property(speos: Speos):
     )
 
     layer_1.set_normal_map_from_normal_map()
-    layer_1.normal_map_file_uri = Path(test_path) / "Texture.1.speos" / "Facets_nm.png"
+    layer_1.normal_map_file_uri = Path(test_path) / "Texture.1.speos" / "Facets_NM.png"
     layer_1.normal_map_property = MappingOperator(
         "cubic", 5, 10, False, False, [1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1], 10, 10, 45
     )
