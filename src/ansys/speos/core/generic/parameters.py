@@ -60,6 +60,52 @@ class DimensionsParameters:
     """Sampling y axis."""
 
 
+@dataclass
+class IntensitySensorDimensionsConoscopicParameters:
+    """Dataclass for Intensity Sensor dimension in case of conoscopic."""
+
+    theta_max: float = 45
+    """Maximum theta angle on consocopic type (in deg)."""
+    theta_sampling: int = 90
+    """Sampling for consocopic type for theta."""
+
+
+@dataclass
+class IntensitySensorDimensionsXAsMeridianParameters:
+    """Dataclass for Intensity Sensor dimension in case of x_as_meridian."""
+
+    y_start: float = -30
+    """Lower bound y axis."""
+    y_end: float = 30
+    """Upper bound y axis."""
+    y_sampling: int = 120
+    """Sampling y axis."""
+    x_start: float = -45
+    """Lower bound x axis."""
+    x_end: float = 45
+    """Upper bound x axis."""
+    x_sampling: int = 180
+    """Sampling x axis."""
+
+
+@dataclass
+class IntensitySensorDimensionsXAsParallelParameters:
+    """Dataclass for Intensity Sensor dimension in case of x_as_parallel."""
+
+    x_start: float = -30
+    """Lower bound y axis."""
+    x_end: float = 30
+    """Upper bound y axis."""
+    x_sampling: int = 120
+    """Sampling y axis."""
+    y_start: float = -45
+    """Lower bound x axis."""
+    y_end: float = 45
+    """Upper bound x axis."""
+    y_sampling: int = 180
+    """Sampling x axis."""
+
+
 class LayerTypes(str, Enum):
     """Layer Separation types without parameters."""
 
@@ -289,6 +335,21 @@ class SensorTypes(str, Enum):
     radiometric = "radiometric"
 
 
+class IntensitySensorOrientationTypes(str, Enum):
+    """Intensity sensor orientation types."""
+
+    conoscopic = "conoscopic"
+    x_as_parallel = "x_as_parallel"
+    x_as_meridian = "x_as_meridian"
+
+
+class IntensitySensorViewingTypes(str, Enum):
+    """Intensity sensor viewing types."""
+
+    from_source = "from_source"
+    from_sensor = "from_sensor"
+
+
 @dataclass
 class MeasuresParameters:
     """Measurements for 3d Irradiance Sensor."""
@@ -380,3 +441,44 @@ class Irradiance3DSensorParameters:
     """Layer separation type."""
     geometries: Optional[list] = None
     """Sensor geometry."""
+
+
+@dataclass
+class NearfieldParameters:
+    """Parameters data class for Nearfield."""
+
+    cell_distance: float = 10
+    """Distance of cell from origin of the sensor."""
+    cell_diameter: float = 0.3491
+    """Diameter of cell."""
+
+
+@dataclass
+class IntensityXMPSensorParameters:
+    """Parameters data clas for intensity Sensor."""
+
+    dimensions: Union[
+        IntensitySensorDimensionsXAsMeridianParameters,
+        IntensitySensorDimensionsXAsParallelParameters,
+        IntensitySensorDimensionsConoscopicParameters,
+    ] = field(default_factory=IntensitySensorDimensionsXAsMeridianParameters)
+    """Dimensions of the sensor."""
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+    """Position of the sensor."""
+    sensor_type: Union[SensorTypes.photometric, ColorimetricParameters, SensorTypes.radiometric] = (
+        SensorTypes.photometric
+    )
+    """Type of the sensor."""
+    orientation: IntensitySensorOrientationTypes = IntensitySensorOrientationTypes.x_as_meridian
+    """Sensor orientation."""
+    viewing_direction: IntensitySensorViewingTypes = IntensitySensorViewingTypes.from_source
+    """Viewing Direction onto the result."""
+    layer_type: Union[
+        LayerTypes.none,
+        LayerTypes.by_source,
+        LayerByFaceParameters,
+        LayerBySequenceParameters,
+    ] = LayerTypes.none
+    """Layer separation type."""
+    near_field_parameters: Optional[NearfieldParameters] = None
+    """Parameters in case sensor is nearfield"""

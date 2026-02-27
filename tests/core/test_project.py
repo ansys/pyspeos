@@ -563,6 +563,13 @@ def test_preview_visual_data(speos: Speos):
     child_part2.commit()
     p7.preview()
 
+    # intensity
+    p8 = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Intensity_test.speos" / "Intensity_test.speos"),
+    )
+    p8.preview()
+
 
 @pytest.mark.supported_speos_versions(min=252)
 def test_sensor_creation_errors(speos: Speos):

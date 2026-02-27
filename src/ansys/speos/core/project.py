@@ -36,6 +36,7 @@ import ansys.speos.core.face as face
 from ansys.speos.core.generic.general_methods import graphics_required
 from ansys.speos.core.generic.parameters import (
     CameraSensorParameters,
+    IntensityXMPSensorParameters,
     Irradiance3DSensorParameters,
     IrradianceSensorParameters,
     RadianceSensorParameters,
@@ -54,6 +55,7 @@ from ansys.speos.core.sensor import (
     SensorCamera,
     SensorIrradiance,
     SensorRadiance,
+    SensorXMPIntensity,
 )
 from ansys.speos.core.simulation import (
     SimulationDirect,
@@ -357,8 +359,11 @@ class Project:
             RadianceSensorParameters,
             CameraSensorParameters,
             Irradiance3DSensorParameters,
+            IntensityXMPSensorParameters,
         ] = None,
-    ) -> Union[SensorCamera, SensorRadiance, SensorIrradiance, Sensor3DIrradiance]:
+    ) -> Union[
+        SensorCamera, SensorRadiance, SensorIrradiance, Sensor3DIrradiance, SensorXMPIntensity
+    ]:
         """Create a new Sensor feature.
 
         Parameters
@@ -374,23 +379,24 @@ class Project:
             Allowed types: Union[ansys.speos.core.sensor.SensorCamera,\
             ansys.speos.core.sensor.SensorRadiance, \
             ansys.speos.core.sensor.SensorIrradiance, \
-            ansys.speos.core.sensor.Sensor3DIrradiance].
+            ansys.speos.core.sensor.Sensor3DIrradiance, \
+            ansys.speos.core.sensor.SensorXMPIntensity].
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
         parameters :  Optional[
-            IrradianceSensorParameters,
-            RadianceSensorParameters,
-            CameraSensorParameters,
-            Irradiance3DSensorParameters
-        ]
+            IrradianceSensorParameters,\
+            RadianceSensorParameters,\
+            CameraSensorParameters,\
+            Irradiance3DSensorParameters,\
+            IntensityXMPSensorParameters]
             Allows to provide parameters to overwrite default parameters
 
         Returns
         -------
         Union[ansys.speos.core.sensor.SensorCamera,\
         ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance, \
-        ansys.speos.core.sensor.Sensor3DIrradiance]
+        ansys.speos.core.sensor.Sensor3DIrradiance, ansys.speos.core.sensor.SensorXMPIntensity]
             Sensor class instance.
         """
         if metadata is None:
@@ -413,6 +419,21 @@ class Project:
                         f"{str(type(parameters))} instead of IrradianceSensorParameters"
                     )
                 feature = SensorIrradiance(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
+                )
+            case "SensorXMPIntensity":
+                if parameters is None:
+                    parameters = IntensityXMPSensorParameters()
+                elif not isinstance(parameters, IntensityXMPSensorParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of IntensityXMPSensorParameters"
+                    )
+                feature = SensorXMPIntensity(
                     project=self,
                     name=name,
                     description=description,
@@ -467,7 +488,13 @@ class Project:
             case _:
                 msg = "Requested feature {} does not exist in supported list {}".format(
                     feature_type,
-                    [SensorIrradiance, SensorRadiance, SensorCamera, Sensor3DIrradiance],
+                    [
+                        SensorIrradiance,
+                        SensorRadiance,
+                        SensorCamera,
+                        Sensor3DIrradiance,
+                        SensorXMPIntensity,
+                    ],
                 )
                 raise TypeError(msg)
         self._features.append(feature)
@@ -539,10 +566,12 @@ class Project:
             SourceLuminaire,
             SourceRayFile,
             SourceAmbientNaturalLight,
+            SourceAmbientEnvironment,
             SensorIrradiance,
             SensorRadiance,
             SensorCamera,
             Sensor3DIrradiance,
+            SensorXMPIntensity,
             SimulationDirect,
             SimulationInverse,
             SimulationInteractive,
@@ -573,9 +602,11 @@ class Project:
         -------
         List[Union[ansys.speos.core.opt_prop.OptProp, ansys.speos.core.source.SourceSurface, \
         ansys.speos.core.source.SourceRayFile, ansys.speos.core.source.SourceLuminaire, \
-        ansys.speos.core.source.SourceAmbientNaturalLight, ansys.speos.core.sensor.SensorCamera, \
+        ansys.speos.core.source.SourceAmbientEnvironment, \
+        ansys.speos.core.source.SourceAmbientNaturalLight, \
+        ansys.speos.core.sensor.SensorCamera, \
         ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance, \
-        ansys.speos.core.sensor.Sensor3DIrradiance, \
+        ansys.speos.core.sensor.Sensor3DIrradiance, ansys.speos.core.sensor.SensorXMPIntensity, \
         ansys.speos.core.simulation.SimulationVirtualBSDF, \
         ansys.speos.core.simulation.SimulationDirect, \
         ansys.speos.core.simulation.SimulationInteractive, \
@@ -977,6 +1008,13 @@ class Project:
                     sensor_instance=ssr_inst,
                     default_parameters=None,
                 )
+            elif ssr_inst.HasField("intensity_properties"):
+                ssr_feat = SensorXMPIntensity(
+                    project=self,
+                    name=ssr_inst.name,
+                    sensor_instance=ssr_inst,
+                    default_parameters=None,
+                )
             if ssr_feat is not None:
                 self._features.append(ssr_feat)
 
@@ -1087,8 +1125,16 @@ class Project:
         ----------
         plotter: Plotter
             ansys.tools.visualization_interface.Plotter
-        speos_feature: Union[SensorCamera, SensorRadiance, SensorIrradiance,
-        Sensor3DIrradiance, SourceLuminaire, SourceRayFile, SourceLuminaire]
+        speos_feature: Union[
+            ansys.speos.core.sensor.SensorCamera, \
+            ansys.speos.core.sensor.SensorRadiance, \
+            ansys.speos.core.sensor.SensorIrradiance, \
+            ansys.speos.core.sensor.Sensor3DIrradiance, \
+            ansys.speos.core.sensor.SensorXMPIntensity, \
+            ansys.speos.core.sensor.SourceLuminaire, \
+            ansys.speos.core.sensor.SourceRayFile, \
+            ansys.speos.core.sensor.SourceLuminaire
+        ]
             speos feature whose visual data will be added.
         scene_seize: float
             seize of max scene bounds
@@ -1105,6 +1151,7 @@ class Project:
                 SensorRadiance,
                 SensorCamera,
                 Sensor3DIrradiance,
+                SensorXMPIntensity,
                 SourceLuminaire,
                 SourceRayFile,
                 SourceSurface,
@@ -1150,7 +1197,13 @@ class Project:
                 case SensorRadiance() | SourceSurface():
                     plotter.plot(speos_feature.visual_data.coordinates.x_axis, color="red")
                     plotter.plot(speos_feature.visual_data.coordinates.y_axis, color="green")
-                case SensorIrradiance() | SensorCamera() | SourceLuminaire() | SourceRayFile():
+                case (
+                    SensorIrradiance()
+                    | SensorXMPIntensity()
+                    | SensorCamera()
+                    | SourceLuminaire()
+                    | SourceRayFile()
+                ):
                     plotter.plot(speos_feature.visual_data.coordinates.x_axis, color="red")
                     plotter.plot(speos_feature.visual_data.coordinates.y_axis, color="green")
                     plotter.plot(speos_feature.visual_data.coordinates.z_axis, color="blue")
