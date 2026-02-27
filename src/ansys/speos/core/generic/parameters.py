@@ -96,12 +96,13 @@ class MappingOperator:
     mapping_type: Union[MappingTypes]
     u_length: float
     v_length: Optional[float] = None
-    repeat_v: Optional[bool] = None
-    repeat_u: Optional[bool] = None
+    repeat_v: bool = True
+    repeat_u: bool = True
     axis_system: list[float] = field(default_factory=lambda: ORIGIN)
     u_scale: float = 1
     v_scale: float = 1
     rotation: float = 0
+    perimeter: float = 1
 
 
 @dataclass(frozen=True)

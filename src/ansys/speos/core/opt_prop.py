@@ -384,25 +384,26 @@ class TextureLayer(BaseSop):
 
     def __init__(
         self,
-        project: p.Project,
+        opt_prop: OptProp,
         name: str,
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
-        mat_id: str = "",
     ):
         super().__init__()
-        self._project = project
+        self._project = opt_prop._project
         self.sop_template_link = None
         if metadata is None:
             metadata = {}
         self._sop_template = ProtoSOPTemplate(
             name=name + ".SOP", description=description, metadata=metadata
         )
+        self._material_instance = opt_prop._material_instance
+        self._material_instance.texture.SetInParent()
         self._texture_template = ProtoScene.MaterialInstance.Texture.Layer()
         self._normal_map_props = None
         self._image_props = None
         self._aniso_props = None
-        self._unique_id = mat_id
+        self.set_surface_mirror()
 
     @property
     def sop_type(self) -> str:
@@ -506,7 +507,7 @@ class TextureLayer(BaseSop):
     def normal_map_file_uri(self, value: Union[Path, str]):
         if self._sop_template.texture.normal_map.HasField("from_image"):
             self._sop_template.texture.normal_map.from_image.bitmap_file_uri = str(value)
-        if self._sop_template.texture.normal_map.HasField("from_normal_map"):
+        elif self._sop_template.texture.normal_map.HasField("from_normal_map"):
             self._sop_template.texture.normal_map.from_normal_map.normal_map_file_uri = str(value)
         else:
             raise TypeError("Please use set normal_myp type before")
@@ -538,9 +539,14 @@ class TextureLayer(BaseSop):
                     return self._normal_map_props
                 else:
                     cur_mapping_opp = self._texture_template.normal_map_properties.mapping_operator
+                    perimeter = 1
                     for mapping_type in MappingTypes:
                         if cur_mapping_opp.HasField(mapping_type):
                             cur_type = mapping_type
+                            if cur_type == MappingTypes.cylindrical:
+                                perimeter = cur_mapping_opp.cylindrical.base_perimeter
+                            elif cur_type == MappingTypes.spherical:
+                                perimeter = cur_mapping_opp.cylindrical.sphere_perimeter
                     self._image_props = MappingOperator(
                         mapping_type=cur_type,
                         repeat_u=self._sop_template.texture.image.repeat_along_u,
@@ -553,6 +559,7 @@ class TextureLayer(BaseSop):
                         u_scale=cur_mapping_opp.u_scale_factor,
                         v_scale=cur_mapping_opp.v_scale_factor,
                         rotation=cur_mapping_opp.rotation,
+                        perimeter=perimeter,
                     )
                     return self._normal_map_props
 
@@ -570,8 +577,10 @@ class TextureLayer(BaseSop):
                     mapping_op.cubic.SetInParent()
                 case MappingTypes.spherical:
                     mapping_op.spherical.SetInParent()
+                    mapping_op.spherical.sphere_perimeter = value.perimeter
                 case MappingTypes.cylindrical:
                     mapping_op.cylindrical.SetInParent()
+                    mapping_op.cylindrical.base_perimeter = value.perimeter
             mapping_op.u_length = value.u_length
             if value.v_length:
                 mapping_op.v_length = value.v_length
@@ -616,9 +625,14 @@ class TextureLayer(BaseSop):
                     return self._image_props
                 else:
                     cur_mapping_opp = self._texture_template.image_properties.mapping_operator
+                    perimeter = 1
                     for mapping_type in MappingTypes:
                         if cur_mapping_opp.HasField(mapping_type):
                             cur_type = mapping_type
+                            if cur_type == MappingTypes.cylindrical:
+                                perimeter = cur_mapping_opp.cylindrical.base_perimeter
+                            elif cur_type == MappingTypes.spherical:
+                                perimeter = cur_mapping_opp.cylindrical.sphere_perimeter
                     self._image_props = MappingOperator(
                         mapping_type=cur_type,
                         repeat_u=self._sop_template.texture.image.repeat_along_u,
@@ -631,6 +645,7 @@ class TextureLayer(BaseSop):
                         u_scale=cur_mapping_opp.u_scale_factor,
                         v_scale=cur_mapping_opp.v_scale_factor,
                         rotation=cur_mapping_opp.rotation,
+                        perimeter=perimeter,
                     )
                     return self._image_props
 
@@ -648,8 +663,10 @@ class TextureLayer(BaseSop):
                     mapping_op.cubic.SetInParent()
                 case MappingTypes.spherical:
                     mapping_op.spherical.SetInParent()
+                    mapping_op.spherical.sphere_perimeter = value.perimeter
                 case MappingTypes.cylindrical:
                     mapping_op.cylindrical.SetInParent()
+                    mapping_op.cylindrical.base_perimeter = value.perimeter
             mapping_op.u_length = value.u_length
             if value.v_length:
                 mapping_op.v_length = value.v_length
@@ -679,41 +696,37 @@ class TextureLayer(BaseSop):
         Union[TextureMapping, TextureMappingOperator]
             Texture mapping properties
         """
-        if self._sop_template.texture.HasField("image"):
-            if self._texture_template.HasField("anisotropy_map_properties"):
-                if self._aniso_props:
-                    return self._aniso_props
-                elif self._texture_template.anisotropy_map_properties.HasField(
-                    "vertices_data_index"
-                ):
-                    self._aniso_props = MappingByData(
-                        vertices_data_index=self._texture_template.image_properties.vertices_data_index,
-                    )
-                    return self._aniso_props
-                else:
-                    cur_mapping_opp = (
-                        self._texture_template.anisotropy_map_properties.mapping_operator
-                    )
-                    for mapping_type in MappingTypes:
-                        if cur_mapping_opp.HasField(mapping_type):
-                            cur_type = mapping_type
-                    self._image_props = MappingOperator(
-                        mapping_type=cur_type,
-                        u_length=cur_mapping_opp.u_length,
-                        v_length=cur_mapping_opp.v_length
-                        if cur_mapping_opp.HasField("v_length")
-                        else None,
-                        axis_system=cur_mapping_opp.axis_system,
-                        u_scale=cur_mapping_opp.u_scale_factor,
-                        v_scale=cur_mapping_opp.v_scale_factor,
-                        rotation=cur_mapping_opp.rotation,
-                    )
-                    return self._aniso_props_props
+        if self._texture_template.HasField("anisotropy_map_properties"):
+            if self._aniso_props:
+                return self._aniso_props
+            elif self._texture_template.anisotropy_map_properties.HasField("vertices_data_index"):
+                self._aniso_props = MappingByData(
+                    vertices_data_index=self._texture_template.anisotropy_map_properties.vertices_data_index,
+                )
+                return self._aniso_props
+            else:
+                cur_mapping_opp = self._texture_template.anisotropy_map_properties.mapping_operator
+                perimeter = 1
+                for mapping_type in MappingTypes:
+                    if cur_mapping_opp.HasField(mapping_type):
+                        cur_type = mapping_type
+                        if cur_type == MappingTypes.cylindrical:
+                            perimeter = cur_mapping_opp.cylindrical.base_perimeter
+                        elif cur_type == MappingTypes.spherical:
+                            perimeter = cur_mapping_opp.cylindrical.sphere_perimeter
+                self._aniso_props = MappingOperator(
+                    mapping_type=cur_type,
+                    u_length=1,
+                    axis_system=cur_mapping_opp.axis_system,
+                    rotation=cur_mapping_opp.rotation,
+                    perimeter=perimeter,
+                )
+                return self._aniso_props
 
     @anisotropic_property.setter
     def anisotropic_property(self, value: Union[MappingByData, MappingOperator]):
         if isinstance(value, MappingOperator):
-            self._aniso_props_props = value
+            self._aniso_props = value
             mapping_op = self._texture_template.anisotropy_map_properties.mapping_operator
             match value.mapping_type:
                 case MappingTypes.planar:
@@ -722,15 +735,12 @@ class TextureLayer(BaseSop):
                     mapping_op.cubic.SetInParent()
                 case MappingTypes.spherical:
                     mapping_op.spherical.SetInParent()
+                    mapping_op.spherical.sphere_perimeter = value.perimeter
                 case MappingTypes.cylindrical:
                     mapping_op.cylindrical.SetInParent()
-            mapping_op.u_length = value.u_length
-            if value.v_length:
-                mapping_op.v_length = value.v_length
+                    mapping_op.cylindrical.base_perimeter = value.perimeter
             mapping_op.axis_system[:] = value.axis_system
             mapping_op.rotation = value.rotation
-            mapping_op.u_scale_factor = value.u_scale
-            mapping_op.v_scale_factor = value.v_scale
         elif isinstance(value, MappingByData):
             self._aniso_props = value
             self._texture_template.image_properties.vertices_data_index = value.vertices_data_index
@@ -757,12 +767,6 @@ class TextureLayer(BaseSop):
         ansys.speos.core.opt_prop.OptProp
             Optical Property feature.
         """
-        # The _unique_id will help to find correct item in the scene.materials:
-        # the list of MaterialInstance
-        if not self._unique_id:
-            self._unique_id = str(uuid.uuid4())
-            self._material_instance.metadata["UniqueId"] = self._unique_id
-
         # Save or Update the sop template (depending on if it was already saved before)
 
         if self.sop_template_link is None:
@@ -1059,29 +1063,30 @@ class OptProp(BaseSop, BaseVop):
             )  # Only update if vop template has changed
 
         # Save or Update the sop template (depending on if it was already saved before)
-        if self.sop_template_link is None:
-            if self._sop_template is not None:
-                self.sop_template_link = self._project.client.sop_templates().create(
-                    message=self._sop_template
-                )
-                # Always clean sop_guids to be sure that we never use both sop_guids and sop_guid
-                self._material_instance.ClearField("sop_guids")
-                # Fill sop_guid(s) field according to the server capability regarding textures
-                if self._project.client.scenes()._is_texture_available:
-                    if self.texture:
-                        self._material_instance.texture.ClearField("layers")
-                        layers = []
-                        for layer in self.texture:
-                            layers.append(layer._texture_template)
-                        self._material_instance.texture.layers.extend(layers)
-                    else:
+        if self.texture:
+            self._material_instance.texture.ClearField("layers")
+            layers = []
+            for layer in self.texture:
+                layers.append(layer._texture_template)
+            self._material_instance.texture.layers.extend(layers)
+        else:
+            if self.sop_template_link is None:
+                if self._sop_template is not None:
+                    # Always clean sop_guids to be sure that we never use both sop_guids and
+                    # sop_guid
+                    self._material_instance.ClearField("sop_guids")
+                    # Fill sop_guid(s) field according to the server capability regarding textures
+                    if self._project.client.scenes()._is_texture_available:
+                        self.sop_template_link = self._project.client.sop_templates().create(
+                            message=self._sop_template
+                        )
                         self._material_instance.sop_guid = self.sop_template_link.key
-                else:
-                    self._material_instance.sop_guids.append(self.sop_template_link.key)
-        elif self.sop_template_link.get() != self._sop_template:
-            self.sop_template_link.set(
-                data=self._sop_template
-            )  # Only update if sop template has changed
+                    else:
+                        self._material_instance.sop_guids.append(self.sop_template_link.key)
+            elif self.sop_template_link.get() != self._sop_template:
+                self.sop_template_link.set(
+                    data=self._sop_template
+                )  # Only update if sop template has changed
 
         # Update the scene with the material instance
         if self._project.scene_link:

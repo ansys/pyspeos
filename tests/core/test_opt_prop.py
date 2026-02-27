@@ -25,7 +25,12 @@
 from pathlib import Path
 
 from ansys.speos.core import GeoRef, OptProp, Project, Speos
-from ansys.speos.core.generic.parameters import MaterialOpticParameters
+from ansys.speos.core.generic.parameters import (
+    MappingOperator,
+    MappingTypes,
+    MaterialOpticParameters,
+)
+from ansys.speos.core.opt_prop import TextureLayer
 from tests.conftest import test_path
 
 
@@ -354,3 +359,217 @@ def test_load_optical_property_from_file(speos: Speos):
 def test_error_reporting(speos: Speos):
     """Test error raising."""
     pass
+
+
+def test_create_texture_property(speos: Speos):
+    """Test creation of texture property."""
+    p = Project(speos=speos)
+
+    # Default value
+    op1 = p.create_optical_property(name="texture.1")
+    op1.commit()
+    assert op1.vop_template_link is None
+    assert op1.sop_template_link is not None
+    assert op1.sop_template_link.get().HasField("mirror")
+    assert op1.sop_template_link.get().mirror.reflectance == 100
+    assert op1._material_instance.HasField("geometries") is False
+    assert op1._material_instance.HasField("texture") is False
+
+    layer_1 = TextureLayer(op1, "Layer.1")
+    layer_1.commit()
+    op1.texture = [layer_1]
+    op1.commit()
+
+    assert op1._material_instance.HasField("texture")
+    assert layer_1.sop_template_link.get().HasField("mirror")
+    assert layer_1.sop_template_link.get().mirror.reflectance == 100
+    assert (
+        layer_1.sop_template_link.get()
+        == p.client[op1._material_instance.texture.layers[0].sop_guid].get()
+    )
+
+    layer_1.image_texture_file_uri = Path(test_path) / "Texture.1.speos" / "black_leather.jpg.png"
+    layer_1.image_property = MappingOperator("planar", 5)
+    layer_1.commit()
+    op1.texture = [layer_1]
+    op1.commit()
+
+    assert op1._material_instance.HasField("texture")
+    assert layer_1.sop_template_link.get().HasField("mirror")
+    assert layer_1.sop_template_link.get().mirror.reflectance == 100
+    assert (
+        layer_1.sop_template_link.get()
+        == p.client[op1._material_instance.texture.layers[0].sop_guid].get()
+    )
+    assert op1._material_instance.texture.layers[0].image_properties.mapping_operator.HasField(
+        "planar"
+    )
+    assert (
+        op1._material_instance.texture.layers[0].image_properties.mapping_operator.u_length
+        == layer_1.image_property.u_length
+    )
+    assert (
+        op1._material_instance.texture.layers[0].image_properties.mapping_operator.u_scale_factor
+        == layer_1.image_property.u_scale
+    )
+    assert (
+        op1._material_instance.texture.layers[0].image_properties.mapping_operator.v_scale_factor
+        == layer_1.image_property.v_scale
+    )
+    assert (
+        op1._material_instance.texture.layers[0].image_properties.mapping_operator.rotation
+        == layer_1.image_property.rotation
+    )
+    assert (
+        op1._material_instance.texture.layers[0].image_properties.mapping_operator.axis_system
+        == layer_1.image_property.axis_system
+    )
+
+    layer_1.set_normal_map_from_image()
+    layer_1.normal_map_file_uri = Path(test_path) / "Texture.1.speos" / "black_leather.jpg.png"
+    layer_1.normal_map_property = MappingOperator("cylindrical", 5)
+    layer_1.commit()
+    op1.texture = [layer_1]
+    op1.commit()
+
+    assert op1._material_instance.HasField("texture")
+    assert layer_1.sop_template_link.get().HasField("mirror")
+    assert layer_1.sop_template_link.get().mirror.reflectance == 100
+    assert (
+        layer_1.sop_template_link.get()
+        == p.client[op1._material_instance.texture.layers[0].sop_guid].get()
+    )
+    assert op1._material_instance.texture.layers[0].image_properties.mapping_operator.HasField(
+        "planar"
+    )
+    assert (
+        op1._material_instance.texture.layers[0].image_properties.mapping_operator.u_length
+        == layer_1.image_property.u_length
+    )
+    assert (
+        op1._material_instance.texture.layers[0].image_properties.mapping_operator.u_scale_factor
+        == layer_1.image_property.u_scale
+    )
+    assert (
+        op1._material_instance.texture.layers[0].image_properties.mapping_operator.v_scale_factor
+        == layer_1.image_property.v_scale
+    )
+    assert (
+        op1._material_instance.texture.layers[0].image_properties.mapping_operator.rotation
+        == layer_1.image_property.rotation
+    )
+    assert (
+        op1._material_instance.texture.layers[0].image_properties.mapping_operator.axis_system
+        == layer_1.image_property.axis_system
+    )
+    assert op1._material_instance.texture.layers[0].normal_map_properties.mapping_operator.HasField(
+        "cylindrical"
+    )
+    assert (
+        op1._material_instance.texture.layers[0].normal_map_properties.mapping_operator.u_length
+        == layer_1.normal_map_property.u_length
+    )
+    assert (
+        op1._material_instance.texture.layers[
+            0
+        ].normal_map_properties.mapping_operator.u_scale_factor
+        == layer_1.normal_map_property.u_scale
+    )
+    assert (
+        op1._material_instance.texture.layers[
+            0
+        ].normal_map_properties.mapping_operator.v_scale_factor
+        == layer_1.normal_map_property.v_scale
+    )
+    assert (
+        op1._material_instance.texture.layers[0].normal_map_properties.mapping_operator.rotation
+        == layer_1.normal_map_property.rotation
+    )
+    assert (
+        op1._material_instance.texture.layers[0].normal_map_properties.mapping_operator.axis_system
+        == layer_1.normal_map_property.axis_system
+    )
+
+    layer_1.set_normal_map_from_normal_map()
+    layer_1.normal_map_file_uri = Path(test_path) / "Texture.1.speos" / "Facets_nm.png"
+    layer_1.normal_map_property = MappingOperator(
+        "cubic", 5, 10, False, False, [1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1], 10, 10, 45
+    )
+    layer_1.commit()
+    op1.texture = [layer_1]
+    op1.commit()
+
+    assert op1._material_instance.texture.layers[0].normal_map_properties.mapping_operator.HasField(
+        "cubic"
+    )
+    assert (
+        op1._material_instance.texture.layers[0].normal_map_properties.mapping_operator.u_length
+        == layer_1.normal_map_property.u_length
+    )
+    assert (
+        op1._material_instance.texture.layers[
+            0
+        ].normal_map_properties.mapping_operator.u_scale_factor
+        == layer_1.normal_map_property.u_scale
+    )
+    assert (
+        op1._material_instance.texture.layers[
+            0
+        ].normal_map_properties.mapping_operator.v_scale_factor
+        == layer_1.normal_map_property.v_scale
+    )
+    assert (
+        op1._material_instance.texture.layers[0].normal_map_properties.mapping_operator.rotation
+        == layer_1.normal_map_property.rotation
+    )
+    assert (
+        op1._material_instance.texture.layers[0].normal_map_properties.mapping_operator.axis_system
+        == layer_1.normal_map_property.axis_system
+    )
+
+    layer_2 = TextureLayer(op1, "Layer.2")
+    layer_2.set_surface_library()
+    layer_2.sop_library = Path(test_path) / "Texture.1.speos" / "aniso_bsdf.anisotropicbsdf"
+    layer_2.anisotropic_property = MappingOperator(
+        MappingTypes.spherical,
+        5,
+        10,
+        False,
+        False,
+        [1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+        10,
+        10,
+        90,
+        10,
+    )
+    layer_2.commit()
+    op1.texture = [layer_1, layer_2]
+    op1.commit()
+
+    assert (
+        layer_1.sop_template_link.get()
+        == p.client[op1._material_instance.texture.layers[0].sop_guid].get()
+    )
+    assert (
+        layer_2.sop_template_link.get()
+        == p.client[op1._material_instance.texture.layers[1].sop_guid].get()
+    )
+    assert op1._material_instance.texture.layers[
+        1
+    ].anisotropy_map_properties.mapping_operator.HasField("spherical")
+    assert (
+        op1._material_instance.texture.layers[1].anisotropy_map_properties.mapping_operator.rotation
+        == layer_2.anisotropic_property.rotation
+    )
+    assert (
+        op1._material_instance.texture.layers[
+            1
+        ].anisotropy_map_properties.mapping_operator.axis_system
+        == layer_2.anisotropic_property.axis_system
+    )
+    assert (
+        op1._material_instance.texture.layers[
+            1
+        ].anisotropy_map_properties.mapping_operator.spherical.sphere_perimeter
+        == layer_2.anisotropic_property.perimeter
+    )
