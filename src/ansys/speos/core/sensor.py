@@ -3202,7 +3202,7 @@ class SensorRadiance(BaseSensor):
 
         Returns
         -------
-        _VisualData
+        ansys.speos.core.generic.visualization_methods._VisualData
             Instance of VisualData Class for pyvista.PolyData of feature faces, coordinate_systems.
 
         """
@@ -4124,7 +4124,7 @@ class Sensor3DIrradiance(BaseSensor):
 
         Returns
         -------
-        _VisualData
+        ansys.speos.core.generic.visualization_methods._VisualData
             Instance of VisualData Class for pyvista.PolyData of feature faces, coordinate_systems.
 
         """
@@ -4541,7 +4541,7 @@ class SensorXMPIntensity(BaseSensor):
 
         Returns
         -------
-        _VisualData
+        ansys.speos.core.generic.visualization_methods._VisualData
             Instance of VisualData Class for pyvista.PolyData of feature faces, coordinate_systems.
         """
 
@@ -4823,26 +4823,26 @@ class SensorXMPIntensity(BaseSensor):
         """
         return self._layer_type
 
-    def set_orientation_x_as_meridian(self):
+    def set_orientation_x_as_meridian(self) -> None:
         """Set Orientation type: X As Meridian, Y as Parallel."""
         self._sensor_template.intensity_sensor_template.intensity_orientation_x_as_meridian.SetInParent()
         self._set_dimension_values(IntensitySensorDimensionsXAsMeridianParameters())
 
-    def set_orientation_x_as_parallel(self):
+    def set_orientation_x_as_parallel(self) -> None:
         """Set Orientation type: X as Parallel, Y as Meridian."""
         self._sensor_template.intensity_sensor_template.intensity_orientation_x_as_parallel.SetInParent()
         self._set_dimension_values(IntensitySensorDimensionsXAsParallelParameters())
 
-    def set_orientation_conoscopic(self):
+    def set_orientation_conoscopic(self) -> None:
         """Set Orientation type to conoscopic."""
         self._sensor_template.intensity_sensor_template.intensity_orientation_conoscopic.SetInParent()
         self._set_dimension_values(IntensitySensorDimensionsConoscopicParameters())
 
-    def set_viewing_direction_from_source(self):
+    def set_viewing_direction_from_source(self) -> None:
         """Set viewing direction from source looking at sensor."""
         self._sensor_template.intensity_sensor_template.from_source_looking_at_sensor.SetInParent()
 
-    def set_viewing_direction_from_sensor(self):
+    def set_viewing_direction_from_sensor(self) -> None:
         """Set viewing direction from sensor looking at source."""
         self._sensor_template.intensity_sensor_template.from_sensor_looking_at_source.SetInParent()
 
@@ -5147,7 +5147,7 @@ class SensorXMPIntensity(BaseSensor):
 
         Returns
         -------
-        ansys.speos.core.sensor.SensorIrradiance
+        ansys.speos.core.sensor.SensorXMPIntensity
             Irradiance sensor
         """
         self._sensor_template.intensity_sensor_template.sensor_type_photometric.SetInParent()
@@ -5197,7 +5197,7 @@ class SensorXMPIntensity(BaseSensor):
 
         Returns
         -------
-        ansys.speos.core.sensor.SensorIrradiance
+        ansys.speos.core.sensor.SensorXMPIntensity
             Irradiance sensor.
         """
         self._sensor_template.intensity_sensor_template.sensor_type_radiometric.SetInParent()

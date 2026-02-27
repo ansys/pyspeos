@@ -603,7 +603,8 @@ class Project:
         List[Union[ansys.speos.core.opt_prop.OptProp, ansys.speos.core.source.SourceSurface, \
         ansys.speos.core.source.SourceRayFile, ansys.speos.core.source.SourceLuminaire, \
         ansys.speos.core.source.SourceAmbientEnvironment, \
-        ansys.speos.core.source.SourceAmbientNaturalLight,ansys.speos.core.sensor.SensorCamera, \
+        ansys.speos.core.source.SourceAmbientNaturalLight, \
+        ansys.speos.core.sensor.SensorCamera, \
         ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance, \
         ansys.speos.core.sensor.Sensor3DIrradiance, ansys.speos.core.sensor.SensorXMPIntensity, \
         ansys.speos.core.simulation.SimulationVirtualBSDF, \
@@ -1124,9 +1125,16 @@ class Project:
         ----------
         plotter: Plotter
             ansys.tools.visualization_interface.Plotter
-        speos_feature: Union[SensorCamera, SensorRadiance, SensorIrradiance,
-        Sensor3DIrradiance, SensorXMPIntensity, SourceLuminaire, SourceRayFile,
-        SourceLuminaire]
+        speos_feature: Union[
+            ansys.speos.core.sensor.SensorCamera, \
+            ansys.speos.core.sensor.SensorRadiance, \
+            ansys.speos.core.sensor.SensorIrradiance, \
+            ansys.speos.core.sensor.Sensor3DIrradiance, \
+            ansys.speos.core.sensor.SensorXMPIntensity, \
+            ansys.speos.core.sensor.SourceLuminaire, \
+            ansys.speos.core.sensor.SourceRayFile, \
+            ansys.speos.core.sensor.SourceLuminaire
+        ]
             speos feature whose visual data will be added.
         scene_seize: float
             seize of max scene bounds
