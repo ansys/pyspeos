@@ -207,7 +207,9 @@ print(p)
 
 
 print("op1 surface type before update: {}".format(op1.get(key="sops")[0]))
-op1.set_volume_optic().set_surface_opticalpolished().commit()
+op1.set_volume_optic()
+op1.set_surface_opticalpolished()
+op1.commit()
 print(op1)
 print("op1 surface type after update: {}".format(op1.get(key="sops")[0]))
 

@@ -94,7 +94,7 @@ opt_prop.set_volume_opaque().set_surface_mirror()
 
 # Choose the geometry for this optical property : Body.1
 
-opt_prop.set_geometries(geometries=[body_1])
+opt_prop.geometries = [body_1]
 opt_prop.commit()
 
 
@@ -193,7 +193,9 @@ print(simulation4)
 # ### Virtual BSDF Bench simulation
 
 # Change the material property from mirror to bsdf type
-opt_prop.set_surface_library(path=str(assets_data_path / "R_test.anisotropicbsdf")).commit()
+opt_prop.set_surface_library()
+opt_prop.sop_library = assets_data_path / "R_test.anisotropicbsdf"
+opt_prop.commit()
 vbb = p.create_simulation(name="virtual_BSDF", feature_type=SimulationVirtualBSDF)
 vbb.axis_system = [
     0.36,
