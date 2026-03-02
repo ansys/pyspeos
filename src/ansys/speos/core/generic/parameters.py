@@ -42,6 +42,18 @@ class WavelengthsRangeParameters:
     """Wavelength sampling."""
 
 
+@dataclass(frozen=True)
+class MaterialOpticParameters:
+    """Optics Material Parameters."""
+
+    index: float = 1.5
+    """Real part of refractive index."""
+    absorption: float = 0
+    """Absorption coefficient."""
+    constringence: Optional[float] = None
+    """Abbe Number."""
+
+
 @dataclass
 class DimensionsParameters:
     """Dimension Parameters."""
@@ -60,12 +72,65 @@ class DimensionsParameters:
     """Sampling y axis."""
 
 
+@dataclass
+class MeshData:
+    """Store named data on meshed Geometry."""
+
+    name: str
+    data: list[float]
+
+
+class MappingTypes(str, Enum):
+    """Allowed mapping types."""
+
+    planar = "planar"
+    cubic = "cubic"
+    spherical = "spherical"
+    cylindrical = "cylindrical"
+
+
+@dataclass(frozen=True)
+class MappingOperator:
+    """Store all information needed to create a UV mapping."""
+
+    mapping_type: Union[MappingTypes]
+    u_length: float
+    v_length: Optional[float] = None
+    repeat_v: bool = True
+    repeat_u: bool = True
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+    u_scale: float = 1
+    v_scale: float = 1
+    rotation: float = 0
+    perimeter: float = 1
+
+
+@dataclass(frozen=True)
+class MappingByData:
+    """Store mapping data when using custom mapping.
+
+    Final data is stored on Face object.
+    """
+
+    vertices_data_index: int
+    repeat_v: Optional[bool] = None
+    repeat_u: Optional[bool] = None
+
+
 class LayerTypes(str, Enum):
     """Layer Separation types without parameters."""
 
     none = "none"
     by_source = "by_source"
     by_polarization = "by_polarization"
+
+
+class TextureTypes(str, Enum):
+    """Surface contribution analyser filtering types."""
+
+    image = "image"
+    normal_map = "normal_map"
+    anisotropy_map = "anisotropy_map"
 
 
 class SCAFilteringTypes(str, Enum):

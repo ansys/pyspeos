@@ -655,7 +655,7 @@ def test_commit(speos: Speos):
 
     opt_prop = p.create_optical_property(name="Material.1")
     opt_prop.set_volume_none().set_surface_mirror()
-    opt_prop.set_geometries(geometries=[GeoRef.from_native_link(geopath="Body.1")])
+    opt_prop.geometries = [GeoRef.from_native_link(geopath="Body.1")]
     opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
@@ -709,7 +709,7 @@ def test_reset(speos: Speos):
 
     opt_prop = p.create_optical_property(name="Material.1")
     opt_prop.set_volume_none().set_surface_mirror()
-    opt_prop.set_geometries(geometries=[GeoRef.from_native_link(geopath="Body.1")])
+    opt_prop.geometries = [GeoRef.from_native_link(geopath="Body.1")]
     opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
@@ -764,7 +764,7 @@ def test_direct_modify_after_reset(speos: Speos):
 
     opt_prop = p.create_optical_property(name="Material.1")
     opt_prop.set_volume_none().set_surface_mirror()
-    opt_prop.set_geometries(geometries=[GeoRef.from_native_link(geopath="Body.1")])
+    opt_prop.geometries = [GeoRef.from_native_link(geopath="Body.1")]
     opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
@@ -835,7 +835,7 @@ def test_inverse_modify_after_reset(speos: Speos):
 
     opt_prop = p.create_optical_property(name="Material.1")
     opt_prop.set_volume_none().set_surface_mirror()
-    opt_prop.set_geometries(geometries=[GeoRef.from_native_link(geopath="Body.1")])
+    opt_prop.geometries = [GeoRef.from_native_link(geopath="Body.1")]
     opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
@@ -914,7 +914,7 @@ def test_interactive_modify_after_reset(speos: Speos):
 
     opt_prop = p.create_optical_property(name="Material.1")
     opt_prop.set_volume_none().set_surface_mirror()
-    opt_prop.set_geometries(geometries=[GeoRef.from_native_link(geopath="Body.1")])
+    opt_prop.geometries = [GeoRef.from_native_link(geopath="Body.1")]
     opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
@@ -972,7 +972,7 @@ def test_delete(speos: Speos):
 
     opt_prop = p.create_optical_property(name="Material.1")
     opt_prop.set_volume_none().set_surface_mirror()
-    opt_prop.set_geometries(geometries=[GeoRef.from_native_link(geopath="Body.1")])
+    opt_prop.geometries = [GeoRef.from_native_link(geopath="Body.1")]
     opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
