@@ -701,11 +701,10 @@ class BaseSensor:
             """
             layer_data = []
             for layer in self._layer_type_face.layers:
-                layer_data.append(BaseSensor.FaceLayer(layer.name, layer.geometries))
-                # if isinstance(layer.geometries, list):
-                #     layer_data.append(BaseSensor.FaceLayer(layer.name, layer.geometries))
-                # else:
-                #     layer_data.append(BaseSensor.FaceLayer(layer.name, [layer.geometries]))
+                if isinstance(layer.geometries, list):
+                    layer_data.append(BaseSensor.FaceLayer(layer.name, layer.geometries))
+                else:
+                    layer_data.append(BaseSensor.FaceLayer(layer.name, [layer.geometries]))
             return layer_data
 
         @layers.setter
