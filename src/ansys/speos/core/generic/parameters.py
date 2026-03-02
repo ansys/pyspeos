@@ -468,9 +468,9 @@ class IntensityXMPSensorParameters:
     """Dimensions of the sensor."""
     axis_system: list[float] = field(default_factory=lambda: ORIGIN)
     """Position of the sensor."""
-    sensor_type: Union[SensorTypes.photometric, ColorimetricParameters, SensorTypes.radiometric] = (
-        SensorTypes.photometric
-    )
+    sensor_type: Union[
+        SensorTypes.photometric, ColorimetricParameters, SpectralParameters, SensorTypes.radiometric
+    ] = SensorTypes.photometric
     """Type of the sensor."""
     orientation: IntensitySensorOrientationTypes = IntensitySensorOrientationTypes.x_as_meridian
     """Sensor orientation."""
