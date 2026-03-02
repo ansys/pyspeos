@@ -38,7 +38,7 @@ class GroundPlane:
 
     Parameters
     ----------
-    project : project.Project
+    project : ansys.speos.core.project.Project
         Project that will own the feature.
     """
 
@@ -67,7 +67,7 @@ class GroundPlane:
 
         Parameters
         ----------
-        value: List[float]
+        value : List[float]
             Ground origin.
 
         Returns
@@ -90,7 +90,7 @@ class GroundPlane:
 
         Parameters
         ----------
-        value: List[float]
+        value : List[float]
             Zenith direction.
 
         Returns
@@ -113,7 +113,7 @@ class GroundPlane:
 
         Parameters
         ----------
-        value: float
+        value : float
             Ground height.
 
         Returns
@@ -155,7 +155,7 @@ class GroundPlane:
 
         Parameters
         ----------
-        key: str
+        key : str
 
         Returns
         -------
