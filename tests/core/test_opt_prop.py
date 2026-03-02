@@ -573,3 +573,88 @@ def test_create_texture_property(speos: Speos):
         ].anisotropy_map_properties.mapping_operator.spherical.sphere_perimeter
         == layer_2.anisotropic_property.perimeter
     )
+
+
+def test_reset_texture_property(speos: Speos):
+    """Test reset of Optical Properties with texture."""
+    p = Project(speos=speos)
+
+    # Default value
+    op1 = p.create_optical_property(name="texture.1")
+    layer_2 = TextureLayer(op1, "Layer.2")
+    layer_2.set_surface_library()
+    layer_2.sop_library = Path(test_path) / "Texture.1.speos" / "aniso_bsdf.anisotropicbsdf"
+    layer_2.anisotropic_property = MappingOperator(
+        MappingTypes.spherical,
+        5,
+        10,
+        False,
+        False,
+        [1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+        10,
+        10,
+        90,
+        10,
+    )
+    layer_2.set_normal_map_from_normal_map()
+    layer_2.normal_map_file_uri = Path(test_path) / "Texture.1.speos" / "Facets_NM.png"
+    layer_2.normal_map_property = MappingOperator(
+        "cubic", 5, 10, False, False, [1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1], 10, 10, 45
+    )
+    layer_2.image_texture_file_uri = Path(test_path) / "Texture.1.speos" / "black_leather.jpg.png"
+    layer_2.image_property = MappingOperator("planar", 5)
+    layer_2.commit()
+    op1.texture = [layer_2]
+    op1.commit()
+
+    assert op1._material_instance.texture.layers[
+        0
+    ].anisotropy_map_properties.mapping_operator.HasField("spherical")
+    assert op1._material_instance.texture.layers[0].image_properties.mapping_operator.HasField(
+        "planar"
+    )
+    assert op1._material_instance.texture.layers[0].normal_map_properties.mapping_operator.HasField(
+        "cubic"
+    )
+    assert (
+        op1._material_instance.texture.layers[0].anisotropy_map_properties.mapping_operator.rotation
+        == layer_2.anisotropic_property.rotation
+    )
+    assert (
+        op1._material_instance.texture.layers[
+            0
+        ].anisotropy_map_properties.mapping_operator.axis_system
+        == layer_2.anisotropic_property.axis_system
+    )
+    assert (
+        op1._material_instance.texture.layers[
+            0
+        ].anisotropy_map_properties.mapping_operator.spherical.sphere_perimeter
+        == layer_2.anisotropic_property.perimeter
+    )
+    layer_2.set_surface_mirror()
+    assert layer_2._sop_template.HasField("mirror")
+    old_values = layer_2.anisotropic_property
+    new_values = MappingOperator(
+        MappingTypes.planar,
+        20,
+        5,
+        False,
+        False,
+        [2, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+        15,
+        15,
+        45,
+        10,
+    )
+    layer_2.anisotropic_property = new_values
+    mapping_op = layer_2._texture_template.anisotropy_map_properties.mapping_operator
+    assert mapping_op.axis_system == new_values.axis_system
+    assert mapping_op.rotation == new_values.rotation
+    assert mapping_op.HasField(new_values.mapping_type)
+    layer_2.reset()
+    assert layer_2._sop_template.HasField("library")
+    mapping_op = layer_2._texture_template.anisotropy_map_properties.mapping_operator
+    assert mapping_op.axis_system == old_values.axis_system
+    assert mapping_op.rotation == old_values.rotation
+    assert mapping_op.HasField(old_values.mapping_type)

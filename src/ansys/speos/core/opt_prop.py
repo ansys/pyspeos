@@ -404,6 +404,7 @@ class TextureLayer(BaseSop):
         self._image_props = None
         self._aniso_props = None
         self.set_surface_mirror()
+        self._index = None
 
     @property
     def sop_type(self) -> str:
@@ -546,7 +547,7 @@ class TextureLayer(BaseSop):
                             if cur_type == MappingTypes.cylindrical:
                                 perimeter = cur_mapping_opp.cylindrical.base_perimeter
                             elif cur_type == MappingTypes.spherical:
-                                perimeter = cur_mapping_opp.cylindrical.sphere_perimeter
+                                perimeter = cur_mapping_opp.spherical.sphere_perimeter
                     self._image_props = MappingOperator(
                         mapping_type=cur_type,
                         repeat_u=self._sop_template.texture.image.repeat_along_u,
@@ -584,6 +585,7 @@ class TextureLayer(BaseSop):
             mapping_op.u_length = value.u_length
             if value.v_length:
                 mapping_op.v_length = value.v_length
+            mapping_op.ClearField("axis_system")
             mapping_op.axis_system[:] = value.axis_system
             mapping_op.rotation = value.rotation
             mapping_op.u_scale_factor = value.u_scale
@@ -632,7 +634,7 @@ class TextureLayer(BaseSop):
                             if cur_type == MappingTypes.cylindrical:
                                 perimeter = cur_mapping_opp.cylindrical.base_perimeter
                             elif cur_type == MappingTypes.spherical:
-                                perimeter = cur_mapping_opp.cylindrical.sphere_perimeter
+                                perimeter = cur_mapping_opp.spherical.sphere_perimeter
                     self._image_props = MappingOperator(
                         mapping_type=cur_type,
                         repeat_u=self._sop_template.texture.image.repeat_along_u,
@@ -670,6 +672,7 @@ class TextureLayer(BaseSop):
             mapping_op.u_length = value.u_length
             if value.v_length:
                 mapping_op.v_length = value.v_length
+            mapping_op.ClearField("axis_system")
             mapping_op.axis_system[:] = value.axis_system
             mapping_op.rotation = value.rotation
             mapping_op.u_scale_factor = value.u_scale
@@ -713,7 +716,7 @@ class TextureLayer(BaseSop):
                         if cur_type == MappingTypes.cylindrical:
                             perimeter = cur_mapping_opp.cylindrical.base_perimeter
                         elif cur_type == MappingTypes.spherical:
-                            perimeter = cur_mapping_opp.cylindrical.sphere_perimeter
+                            perimeter = cur_mapping_opp.spherical.sphere_perimeter
                 self._aniso_props = MappingOperator(
                     mapping_type=cur_type,
                     u_length=1,
@@ -739,6 +742,7 @@ class TextureLayer(BaseSop):
                 case MappingTypes.cylindrical:
                     mapping_op.cylindrical.SetInParent()
                     mapping_op.cylindrical.base_perimeter = value.perimeter
+            mapping_op.ClearField("axis_system")
             mapping_op.axis_system[:] = value.axis_system
             mapping_op.rotation = value.rotation
         elif isinstance(value, MappingByData):
@@ -780,7 +784,6 @@ class TextureLayer(BaseSop):
             self.sop_template_link.set(
                 data=self._sop_template
             )  # Only update if sop template has changed
-            self._texture_template.sop_guid = self.sop_template_link.key
         return self
 
     def reset(self) -> TextureLayer:
@@ -794,7 +797,22 @@ class TextureLayer(BaseSop):
         # Reset sop template
         if self.sop_template_link is not None:
             self._sop_template = self.sop_template_link.get()
-        return self
+            self._normal_map_props = None
+            self._aniso_props = None
+            self._image_props = None
+        if self._project.scene_link is not None:
+            scene_data = self._project.scene_link.get()
+            mat_inst = next(
+                (
+                    x
+                    for x in scene_data.materials
+                    if x.metadata["UniqueId"] == self._material_instance.metadata["UniqueId"]
+                ),
+                None,
+            )
+            if mat_inst is not None:
+                self._material_instance = mat_inst
+                self._texture_template = mat_inst.texture.layers[self._index]
 
     def delete(self) -> TextureLayer:
         """Delete feature: delete data from the speos server database.
@@ -1066,8 +1084,9 @@ class OptProp(BaseSop, BaseVop):
         if self.texture:
             self._material_instance.texture.ClearField("layers")
             layers = []
-            for layer in self.texture:
+            for i, layer in enumerate(self.texture):
                 layers.append(layer._texture_template)
+                layer._index = i
             self._material_instance.texture.layers.extend(layers)
         else:
             if self.sop_template_link is None:
@@ -1191,9 +1210,10 @@ class OptProp(BaseSop, BaseVop):
             self.sop_template_link = self._project.client[mat_inst.sop_guid]
         elif mat_inst.HasField("texture"):
             texture = []
-            for layer in mat_inst.texture.layers:
-                cur_layer = TextureLayer(self._project, name="", mat_id=self._unique_id)
+            for i, layer in enumerate(mat_inst.texture.layers):
+                cur_layer = TextureLayer(self._project, name=f"{self._name}.Layer.{i}")
                 cur_layer._fill(layer.sop_guid, layer)
+                cur_layer._index = i
                 texture.append(cur_layer)
             self.texture = texture
         elif len(mat_inst.sop_guids) > 0:
