@@ -701,10 +701,11 @@ class BaseSensor:
             """
             layer_data = []
             for layer in self._layer_type_face.layers:
-                if isinstance(layer.geometries, list):
-                    layer_data.append(BaseSensor.FaceLayer(layer.name, layer.geometries))
-                else:
-                    layer_data.append(BaseSensor.FaceLayer(layer.name, [layer.geometries]))
+                layer_data.append(BaseSensor.FaceLayer(layer.name, layer.geometries))
+                # if isinstance(layer.geometries, list):
+                #     layer_data.append(BaseSensor.FaceLayer(layer.name, layer.geometries))
+                # else:
+                #     layer_data.append(BaseSensor.FaceLayer(layer.name, [layer.geometries]))
             return layer_data
 
         @layers.setter
@@ -4115,12 +4116,12 @@ class Sensor3DIrradiance(BaseSensor):
     @property
     def layer(
         self,
-    ) -> str:
+    ) -> Union[str, BaseSensor.LayerTypeFace, BaseSensor.LayerTypeSequence]:
         """Property containing all options in regard to the layer separation property.
 
         Returns
         -------
-        str
+        Union[str, BaseSensor.LayerTypeFace, BaseSensor.LayerTypeSequence]
             Layer type used
         """
         return self._layer_type

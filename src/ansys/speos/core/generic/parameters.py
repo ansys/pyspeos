@@ -96,11 +96,11 @@ class IntensitySensorDimensionsXAsParallelParameters:
     """Dataclass for Intensity Sensor dimension in case of x_as_parallel."""
 
     x_start: float = -30
-    """Lower bound y axis."""
+    """Lower bound x axis."""
     x_end: float = 30
-    """Upper bound y axis."""
+    """Upper bound x axis."""
     x_sampling: int = 120
-    """Sampling y axis."""
+    """Sampling x axis."""
     y_start: float = -45
     """Lower bound x axis."""
     y_end: float = 45

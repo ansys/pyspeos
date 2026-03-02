@@ -40,7 +40,6 @@ _autosummary
 # Testing
 .cov/
 .coverage
-.cov/
 .tox/
 *,cover
 test-output.xml
