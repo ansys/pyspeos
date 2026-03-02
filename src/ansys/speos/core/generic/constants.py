@@ -38,6 +38,5 @@ MAX_CLIENT_MESSAGE_SIZE: int = int(4194304)
 """Maximum message Size accepted by grpc channel,
 By default, 4194304.
 """
-
 ORIGIN = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 """Global Origin"""

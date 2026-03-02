@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from difflib import SequenceMatcher
 from pathlib import Path
-from typing import Mapping, Optional, Union
+from typing import List, Mapping, Optional, Union
 import uuid
 import warnings
 
@@ -160,7 +160,7 @@ class BaseSensor:
         return None
 
     @lxp_path_number.setter
-    def lxp_path_number(self, value: int):
+    def lxp_path_number(self, value: int) -> None:
         if value:
             self._sensor_instance.lxp_properties.nb_max_paths = int(value)
         else:
@@ -191,7 +191,7 @@ class BaseSensor:
         def __init__(
             self,
             wavelengths_range: Union[common_pb2.WavelengthsRange, sensor_pb2.TypeColorimetric],
-            default_parameters: Union[None, WavelengthsRangeParameters] = None,
+            default_parameters: Optional[WavelengthsRangeParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
@@ -304,7 +304,7 @@ class BaseSensor:
         def __init__(
             self,
             sensor_dimensions: common_pb2.SensorDimensions,
-            default_parameters: Union[None, DimensionsParameters] = None,
+            default_parameters: Optional[DimensionsParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
@@ -467,7 +467,7 @@ class BaseSensor:
         def __init__(
             self,
             sensor_type_colorimetric: common_pb2.SensorTypeColorimetric,
-            default_parameters: Union[None, ColorimetricParameters] = None,
+            default_parameters: Optional[ColorimetricParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
@@ -527,7 +527,7 @@ class BaseSensor:
         def __init__(
             self,
             sensor_type_spectral: common_pb2.SensorTypeSpectral,
-            default_parameters: Union[None, SpectralParameters] = None,
+            default_parameters: Optional[SpectralParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
@@ -567,12 +567,12 @@ class BaseSensor:
         ----------
         name : str
             Name of the layer.
-        geometries : list[ansys.speos.core.geo_ref.GeoRef]
+        geometries : List[ansys.speos.core.geo_ref.GeoRef]
             List of geometries included in this layer.
 
         """
 
-        def __init__(self, name: str, geometries: list[GeoRef]) -> None:
+        def __init__(self, name: str, geometries: List[GeoRef]) -> None:
             self.name = name
             """Name of the layer"""
             self.geometry = geometries
@@ -583,19 +583,23 @@ class BaseSensor:
 
             Parameters
             ----------
-            value : Optional[list[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]]
+            value : Optional[List[Union[\
+            ansys.speos.core.geo_ref.GeoRef, \
+            ansys.speos.core.body.Body, \
+            ansys.speos.core.face.Face, \
+            ansys.speos.core.part.Part.SubPart]]]
                 Geometry within the Face Layer group
 
             Returns
             -------
-            list[GeoRef]
+            List[ansys.speos.core.geo_ref.GeoRef]
                 List of the Geometries contained in the FaceLayer group
             """
             return self._geometry
 
         @geometry.setter
         def geometry(
-            self, value: Optional[list[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]]
+            self, value: Optional[List[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]]
         ):
             geo_paths = []
             for gr in value:
@@ -631,7 +635,7 @@ class BaseSensor:
         def __init__(
             self,
             layer_type_face: ProtoScene.SensorInstance.LayerTypeFace,
-            default_parameters: Union[None, LayerByFaceParameters] = None,
+            default_parameters: Optional[LayerByFaceParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
@@ -682,17 +686,17 @@ class BaseSensor:
             return self
 
         @property
-        def layers(self) -> list[BaseSensor.FaceLayer]:
+        def layers(self) -> List[BaseSensor.FaceLayer]:
             """List of Face layer Groups of this sensor.
 
             Parameters
             ----------
-            values : list[ansys.speos.core.sensor.BaseSensor.FaceLayer]
+            values : List[ansys.speos.core.sensor.BaseSensor.FaceLayer]
                 List of layers
 
             Returns
             -------
-            list[ansys.speos.core.sensor.BaseSensor.FaceLayer]
+            List[ansys.speos.core.sensor.BaseSensor.FaceLayer]
                 list of FaceLayer Classes
             """
             layer_data = []
@@ -743,7 +747,7 @@ class BaseSensor:
         def __init__(
             self,
             layer_type_sequence: ProtoScene.SensorInstance.LayerTypeSequence,
-            default_parameters: Union[None, LayerBySequenceParameters] = None,
+            default_parameters: Optional[LayerBySequenceParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
@@ -778,7 +782,7 @@ class BaseSensor:
             return self._layer_type_sequence.maximum_nb_of_sequence
 
         @maximum_nb_of_sequence.setter
-        def maximum_nb_of_sequence(self, value: int):
+        def maximum_nb_of_sequence(self, value: int) -> None:
             self._layer_type_sequence.maximum_nb_of_sequence = value
 
         def set_define_sequence_per_geometries(
@@ -836,7 +840,7 @@ class BaseSensor:
         def __init__(
             self,
             layer_type_incidence_angle: ProtoScene.SensorInstance.LayerTypeIncidenceAngle,
-            default_parameters: Union[None, LayerByIncidenceAngleParameters] = None,
+            default_parameters: Optional[LayerByIncidenceAngleParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
@@ -1100,8 +1104,9 @@ class SensorCamera(BaseSensor):
         Parameters
         ----------
         mode_photometric : ansys.api.speos.sensor.v1.camera_sensor_pb2.SensorCameraModePhotometric
-            SensorCameraModePhotometric protobuf object to modify.
-        default_parameters : ansys.speos.core.generic.parameters.PhotometricCameraParameters
+            Camera photometric mode protobuf object to modify.
+        default_parameters : Optional[\
+        ansys.speos.core.generic.parameters.PhotometricCameraParameters] = None
             If defined the values in the sensor instance will be overwritten by the values of the
             data class
         stable_ctr : bool
@@ -1123,8 +1128,8 @@ class SensorCamera(BaseSensor):
             Parameters
             ----------
             mode_color : ansys.api.speos.sensor.v1.camera_sensor_pb2.SensorCameraColorModeColor
-                SensorCameraColorModeColor protobuf object to modify.
-            default_parameters : ansys.speos.core.generic.parameters.ColorParameters
+                Camera color mode protobuf object to modify.
+            default_parameters : ansys.speos.core.generic.parameters.ColorParameters, optional
                 If defined the values in the sensor instance will be overwritten by the values of
                 the data class, optional
             stable_ctr : bool
@@ -1146,9 +1151,9 @@ class SensorCamera(BaseSensor):
 
                 Parameters
                 ----------
-                balance_mode_user_white : ansys.api.speos.sensor.v1.camera_sensor_pb2.
-                SensorCameraBalanceModeUserwhite
-                    SensorCameraBalanceModeUserwhite protobuf object to modify.
+                balance_mode_user_white : \
+                ansys.api.speos.sensor.v1.camera_sensor_pb2.SensorCameraBalanceModeUserwhite
+                    Camera balance user defined whitew mode protobuf object to modify.
                 default_parameters : \
                 ansys.speos.core.generic.parameters.BalanceModeUserWhiteParameters, optional
                     If defined the values in the sensor instance will be overwritten by the values
@@ -1166,7 +1171,7 @@ class SensorCamera(BaseSensor):
                 def __init__(
                     self,
                     balance_mode_user_white: camera_sensor_pb2.SensorCameraBalanceModeUserwhite,
-                    default_parameters: Union[None, BalanceModeUserWhiteParameters] = None,
+                    default_parameters: Optional[BalanceModeUserWhiteParameters] = None,
                     stable_ctr: bool = False,
                 ) -> None:
                     if not stable_ctr:
@@ -1198,7 +1203,7 @@ class SensorCamera(BaseSensor):
                     return self._balance_mode_user_white.red_gain
 
                 @red_gain.setter
-                def red_gain(self, value: float):
+                def red_gain(self, value: float) -> None:
                     self._balance_mode_user_white.red_gain = value
 
                 @property
@@ -1218,7 +1223,7 @@ class SensorCamera(BaseSensor):
                     return self._balance_mode_user_white.green_gain
 
                 @green_gain.setter
-                def green_gain(self, value: float):
+                def green_gain(self, value: float) -> None:
                     self._balance_mode_user_white.green_gain = value
 
                 @property
@@ -1238,7 +1243,7 @@ class SensorCamera(BaseSensor):
                     return self._balance_mode_user_white.blue_gain
 
                 @blue_gain.setter
-                def blue_gain(self, value: float):
+                def blue_gain(self, value: float) -> None:
                     self._balance_mode_user_white.blue_gain = value
 
             class BalanceModeDisplayPrimaries:
@@ -1251,9 +1256,9 @@ class SensorCamera(BaseSensor):
 
                 Parameters
                 ----------
-                balance_mode_display : ansys.api.speos.sensor.v1.camera_sensor_pb2.
-                SensorCameraBalanceModeDisplay
-                    SensorCameraBalanceModeDisplay protobuf object to modify.
+                balance_mode_display : \
+                ansys.api.speos.sensor.v1.camera_sensor_pb2.SensorCameraBalanceModeDisplay
+                    Camera balance mode display protobuf object to modify.
                 default_parameters : \
                 ansys.speos.core.generic.parameters.BalanceModeDisplayPrimariesParameters, optional
                     If defined the values in the sensor instance will be overwritten by the values
@@ -1269,7 +1274,7 @@ class SensorCamera(BaseSensor):
                 def __init__(
                     self,
                     balance_mode_display: camera_sensor_pb2.SensorCameraBalanceModeDisplay,
-                    default_parameters: Union[None, BalanceModeDisplayPrimariesParameters] = None,
+                    default_parameters: Optional[BalanceModeDisplayPrimariesParameters] = None,
                     stable_ctr: bool = False,
                 ) -> None:
                     if not stable_ctr:
@@ -1296,7 +1301,7 @@ class SensorCamera(BaseSensor):
 
                     Parameters
                     ----------
-                    uri : Union[str, Path]
+                    uri : Union[str, pathlib.Path]
                         Red display file.
 
                     Returns
@@ -1316,7 +1321,7 @@ class SensorCamera(BaseSensor):
 
                     Parameters
                     ----------
-                    uri : Union[str, Path]
+                    uri : Union[str, pathlib.Path]
                         green display file.
 
                     Returns
@@ -1327,7 +1332,7 @@ class SensorCamera(BaseSensor):
                     return self._balance_mode_display.green_display_file_uri
 
                 @green_display_file_uri.setter
-                def green_display_file_uri(self, uri: Union[str, Path]):
+                def green_display_file_uri(self, uri: Union[str, Path]) -> None:
                     self._balance_mode_display.green_display_file_uri = str(Path(uri))
 
                 @property
@@ -1336,7 +1341,7 @@ class SensorCamera(BaseSensor):
 
                     Parameters
                     ----------
-                    uri : Union[str, Path]
+                    uri : Union[str, pathlib.Path]
                         blue display file.
 
                     Returns
@@ -1347,13 +1352,13 @@ class SensorCamera(BaseSensor):
                     return self._balance_mode_display.blue_display_file_uri
 
                 @blue_display_file_uri.setter
-                def blue_display_file_uri(self, uri: Union[str, Path]):
+                def blue_display_file_uri(self, uri: Union[str, Path]) -> None:
                     self._balance_mode_display.blue_display_file_uri = str(Path(uri))
 
             def __init__(
                 self,
                 mode_color: camera_sensor_pb2.SensorCameraColorModeColor,
-                default_parameters: Union[None, ColorParameters] = None,
+                default_parameters: Optional[ColorParameters] = None,
                 stable_ctr: bool = False,
             ) -> None:
                 if not stable_ctr:
@@ -1397,7 +1402,7 @@ class SensorCamera(BaseSensor):
 
                 Parameters
                 ----------
-                uri : Union[str, Path]
+                uri : Union[str, pathlib.Path]
                     Red spectrum file. It is expressed in a .spectrum file.
 
                 Returns
@@ -1408,7 +1413,7 @@ class SensorCamera(BaseSensor):
                 return self._mode_color.red_spectrum_file_uri
 
             @red_spectrum_file_uri.setter
-            def red_spectrum_file_uri(self, uri: Union[str, Path]):
+            def red_spectrum_file_uri(self, uri: Union[str, Path]) -> None:
                 self._mode_color.red_spectrum_file_uri = str(Path(uri))
 
             @property
@@ -1417,7 +1422,7 @@ class SensorCamera(BaseSensor):
 
                 Parameters
                 ----------
-                uri : Union[str, Path]
+                uri : Union[str, pathlib.Path]
                     blue spectrum file. It is expressed in a .spectrum file.
 
                 Returns
@@ -1428,7 +1433,7 @@ class SensorCamera(BaseSensor):
                 return self._mode_color.blue_spectrum_file_uri
 
             @blue_spectrum_file_uri.setter
-            def blue_spectrum_file_uri(self, uri: Union[str, Path]):
+            def blue_spectrum_file_uri(self, uri: Union[str, Path]) -> None:
                 self._mode_color.blue_spectrum_file_uri = str(Path(uri))
 
             @property
@@ -1437,7 +1442,7 @@ class SensorCamera(BaseSensor):
 
                 Parameters
                 ----------
-                uri : Union[str, Path]
+                uri : Union[str, pathlib.Path]
                     green spectrum file. It is expressed in a .spectrum file.
 
                 Returns
@@ -1448,7 +1453,7 @@ class SensorCamera(BaseSensor):
                 return self._mode_color.green_spectrum_file_uri
 
             @green_spectrum_file_uri.setter
-            def green_spectrum_file_uri(self, uri: Union[str, Path]):
+            def green_spectrum_file_uri(self, uri: Union[str, Path]) -> None:
                 self._mode_color.green_spectrum_file_uri = str(Path(uri))
 
             def set_balance_mode_none(self) -> SensorCamera.Photometric.Color:
@@ -1563,7 +1568,7 @@ class SensorCamera(BaseSensor):
             self,
             mode_photometric: camera_sensor_pb2.SensorCameraModePhotometric,
             camera_props: ProtoScene.SensorInstance.CameraProperties,
-            default_parameters: Union[None, PhotometricCameraParameters] = None,
+            default_parameters: Optional[PhotometricCameraParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
@@ -1664,7 +1669,7 @@ class SensorCamera(BaseSensor):
 
             Parameters
             ----------
-            uri : Union[str, Path]
+            uri : Union[str, pathlib.Path]
                 Amount of light of the source that passes through the lens and reaches the sensor.
                 The transmittance is expressed in a .spectrum file.
 
@@ -1770,7 +1775,7 @@ class SensorCamera(BaseSensor):
 
             Parameters
             ----------
-            spectrum_file_uri : Union[str, Path]
+            spectrum_file_uri : Union[str, pathlib.Path]
                 Spectrum file uri.
 
             Returns
@@ -1819,7 +1824,7 @@ class SensorCamera(BaseSensor):
 
             Parameters
             ----------
-            uri : Union[str, Path]
+            uri : Union[str, pathlib.Path]
                 Trajectory file, used to define the position and orientations of the Camera sensor
                 in time.
 
@@ -1864,7 +1869,7 @@ class SensorCamera(BaseSensor):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         sensor_instance: Optional[ProtoScene.SensorInstance] = None,
-        default_parameters: Union[None, CameraSensorParameters] = None,
+        default_parameters: Optional[CameraSensorParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -1907,7 +1912,7 @@ class SensorCamera(BaseSensor):
 
         Returns
         -------
-        BaseSensor.VisualData
+        ansys.speos.core.generic.visualization_methods._VisualData
             Instance of VisualData Class for pyvista.PolyData of feature faces, coordinate_systems.
 
         """
@@ -2072,7 +2077,7 @@ class SensorCamera(BaseSensor):
 
         Parameters
         ----------
-        uri : Union[str, Path]
+        uri : Union[str, pathlib.Path]
             Optical aberration that deforms and bends straight lines. The distortion is expressed in
             a .OPTDistortion file.
 
@@ -2172,24 +2177,24 @@ class SensorCamera(BaseSensor):
         self._sensor_template.camera_sensor_template.height = value
 
     @property
-    def axis_system(self) -> list[float]:
+    def axis_system(self) -> List[float]:
         """The position of the sensor.
 
         Parameters
         ----------
-        axis_system : list[float]
+        axis_system : List[float]
             Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
         Returns
         -------
-        list[float]
+        List[float]
             Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
         """
         return self._sensor_instance.camera_properties.axis_system
 
     @axis_system.setter
-    def axis_system(self, axis_system: list[float]):
+    def axis_system(self, axis_system: List[float]):
         self._sensor_instance.camera_properties.axis_system[:] = axis_system
 
     def set_mode_geometric(self) -> SensorCamera:
@@ -2313,7 +2318,7 @@ class SensorIrradiance(BaseSensor):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         sensor_instance: Optional[ProtoScene.SensorInstance] = None,
-        default_parameters: Union[None, IrradianceSensorParameters] = None,
+        default_parameters: Optional[IrradianceSensorParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -2445,7 +2450,7 @@ class SensorIrradiance(BaseSensor):
 
         Returns
         -------
-        BaseSensor.VisualData
+        ansys.speos.core.generic.visualization_methods._VisualData
             Instance of VisualData Class for pyvista.PolyData of feature faces, coordinate_systems.
 
         """
@@ -2705,18 +2710,18 @@ class SensorIrradiance(BaseSensor):
 
         Parameters
         ----------
-        value : list[float]
+        value : List[float]
             Sensor global integration direction [x,y,z]
 
         Returns
         -------
-        list[float]
+        List[float]
             Sensor global integration direction [x,y,z]
         """
         return self._sensor_instance.irradiance_properties.integration_direction
 
     @integration_direction.setter
-    def integration_direction(self, value: list[float]):
+    def integration_direction(self, value: List[float]):
         if not value:
             self._sensor_instance.irradiance_properties.ClearField("integration_direction")
         else:
@@ -2738,7 +2743,7 @@ class SensorIrradiance(BaseSensor):
 
         Parameters
         ----------
-        integration_direction : list[float], optional
+        integration_direction : List[float], optional
             Sensor global integration direction [x,y,z].
             The integration direction must be set in the anti-rays direction to integrate their
             signal.
@@ -2805,24 +2810,24 @@ class SensorIrradiance(BaseSensor):
         return self
 
     @property
-    def axis_system(self) -> list[float]:
+    def axis_system(self) -> List[float]:
         """Position of the sensor.
 
         Parameters
         ----------
-        axis_system : list[float]
+        axis_system : List[float]
             Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
         Returns
         -------
-        list[float]
+        List[float]
             Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
         """
         return self._sensor_instance.irradiance_properties.axis_system
 
     @axis_system.setter
-    def axis_system(self, axis_system: list[float]):
+    def axis_system(self, axis_system: List[float]):
         self._sensor_instance.irradiance_properties.axis_system[:] = axis_system
 
     def set_ray_file_type_none(self) -> SensorIrradiance:
@@ -3039,14 +3044,18 @@ class SensorIrradiance(BaseSensor):
 
         Parameters
         ----------
-        geometries : Optional[list[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]]
+        geometries : Optional[List[Union[\
+        ansys.speos.core.geo_ref.GeoRef, \
+        ansys.speos.core.body.Body, \
+        ansys.speos.core.face.Face, \
+        ansys.speos.core.part.Part.SubPart]]]
             List of geometries that will be considered as output faces.
             By default, ``[]``, ie no output faces.
 
         Returns
         -------
-        list[str]
-            list of Output faces geo-path's
+        List[str]
+            List of Output faces geo-path's
         """
         if self._sensor_instance.irradiance_properties.HasField("output_face_geometries"):
             return self._sensor_instance.irradiance_properties.output_face_geometries.geo_paths
@@ -3054,7 +3063,7 @@ class SensorIrradiance(BaseSensor):
     @output_face_geometries.setter
     def output_face_geometries(
         self,
-        geometries: Optional[list[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]] = None,
+        geometries: Optional[List[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]] = None,
     ):
         if not geometries:
             self._sensor_instance.irradiance_properties.ClearField("output_face_geometries")
@@ -3107,7 +3116,7 @@ class SensorRadiance(BaseSensor):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         sensor_instance: Optional[ProtoScene.SensorInstance] = None,
-        default_parameters: Union[None, RadianceSensorParameters] = None,
+        default_parameters: Optional[RadianceSensorParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -3292,7 +3301,7 @@ class SensorRadiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.core.sensor.BaseSensor.Colorimetric
+        Union[None, ansys.speos.core.sensor.BaseSensor.Colorimetric]
             Instance of Colorimetric Class for this sensor feature
         """
         if isinstance(self._type, BaseSensor.Colorimetric):
@@ -3304,7 +3313,7 @@ class SensorRadiance(BaseSensor):
 
         Returns
         -------
-        ansys.speos.core.sensor.BaseSensor.Spectral
+        Union[None, ansys.speos.core.sensor.BaseSensor.Spectral]
             Instance of Spectral Class for this sensor feature
         """
         if isinstance(self._type, BaseSensor.Spectral):
@@ -3488,24 +3497,24 @@ class SensorRadiance(BaseSensor):
         self._sensor_template.radiance_sensor_template.integration_angle = value
 
     @property
-    def axis_system(self) -> list[float]:
+    def axis_system(self) -> List[float]:
         """Position of the sensor.
 
         Parameters
         ----------
-        axis_system : list[float]
+        axis_system : List[float]
             Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
             By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
 
         Returns
         -------
-        list[float]
+        List[float]
             Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
         """
         return self._sensor_instance.radiance_properties.axis_system
 
     @axis_system.setter
-    def axis_system(self, axis_system: list[float]):
+    def axis_system(self, axis_system: List[float]):
         self._sensor_instance.radiance_properties.axis_system[:] = axis_system
 
     @property
@@ -3517,20 +3526,20 @@ class SensorRadiance(BaseSensor):
 
         Parameters
         ----------
-        value : list[float]
+        value : List[float]
             Position of the observer point [Ox Oy Oz].
             By default, ``None``. None means that the focal length is used.
 
         Returns
         -------
-        Union[None, list[float]]
+        Union[None, List[float]]
             Position of the observer point [Ox Oy Oz], None means that the
             focal length is used.
         """
         return self._sensor_instance.radiance_properties.observer_point
 
     @observer_point.setter
-    def observer_point(self, value: list[float]):
+    def observer_point(self, value: List[float]):
         if not value:
             self._sensor_instance.radiance_properties.ClearField("observer_point")
         else:
@@ -3666,7 +3675,7 @@ class Sensor3DIrradiance(BaseSensor):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         sensor_instance: Optional[ProtoScene.SensorInstance] = None,
-        default_parameters: Union[None, Irradiance3DSensorParameters] = None,
+        default_parameters: Optional[Irradiance3DSensorParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -3744,10 +3753,9 @@ class Sensor3DIrradiance(BaseSensor):
         ----------
         illuminance_type : ansys.api.speos.sensor.v1.sensor_pb2.TypeRadiometric
             SensorTypeColorimetric protobuf object to modify.
-        default_parameters : ansys.speos.core.generic.parameters.Irradiance3DSensorParameters, \
-        optional
-            If defined the values in the sensor instance will be overwritten by the values of the
-            data class
+        default_parameters : Optional[\
+        ansys.speos.core.generic.parameters.Irradiance3DSensorParameters] = None
+            Uses default values when True.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -3760,7 +3768,7 @@ class Sensor3DIrradiance(BaseSensor):
         def __init__(
             self,
             sensor_type_radiometric: sensor_pb2.TypeRadiometric,
-            default_parameters: Union[None, Irradiance3DSensorParameters] = None,
+            default_parameters: Optional[Irradiance3DSensorParameters] = None,
             stable_ctr: bool = True,
         ) -> None:
             if not stable_ctr:
@@ -3792,7 +3800,7 @@ class Sensor3DIrradiance(BaseSensor):
 
             Returns
             -------
-            Sensor3DIrradiance.Measures
+            ansys.speos.core.sensor.Sensor3DIrradiance.Measures
                 measured defines transmission, reflection, absorption
 
             """
@@ -3826,10 +3834,9 @@ class Sensor3DIrradiance(BaseSensor):
         ----------
         illuminance_type : ansys.api.speos.sensor.v1.sensor_pb2.TypePhotometric
             SensorTypeColorimetric protobuf object to modify.
-        default_parameters : ansys.speos.core.generic.parameters.Irradiance3DSensorParameters, \
-        optional
-            If defined the values in the sensor instance will be overwritten by the values of the
-            data class
+        default_parameters : Optional[\
+        ansys.speos.core.generic.parameters.Irradiance3DSensorParameters] = None
+            Uses default values when True.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -3842,7 +3849,7 @@ class Sensor3DIrradiance(BaseSensor):
         def __init__(
             self,
             sensor_type_photometric: sensor_pb2.TypePhotometric,
-            default_parameters: Union[None, Irradiance3DSensorParameters] = None,
+            default_parameters: Optional[Irradiance3DSensorParameters] = None,
             stable_ctr: bool = True,
         ) -> None:
             if not stable_ctr:
@@ -3873,7 +3880,7 @@ class Sensor3DIrradiance(BaseSensor):
 
             Returns
             -------
-            Sensor3DIrradiance.Measures
+            ansys.speos.core.sensor.Sensor3DIrradiance.Measures
                 measured defines transmission, reflection, absorption
 
             """
@@ -3909,9 +3916,9 @@ class Sensor3DIrradiance(BaseSensor):
         ----------
         illuminance_type : ansys.api.speos.sensor.v1.sensor_pb2.IntegrationTypePlanar
             SensorTypeColorimetric protobuf object to modify.
-        default_parameters : ansys.speos.core.generic.parameters.MeasuresParameters, optional
-            If defined the values in the sensor instance will be overwritten by the values of the
-            data class
+        default_parameters : Optional[\
+        ansys.speos.core.generic.parameters.MeasuresParameters]] = None
+            Uses default values when True.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -3924,7 +3931,7 @@ class Sensor3DIrradiance(BaseSensor):
         def __init__(
             self,
             illuminance_type: sensor_pb2.IntegrationTypePlanar,
-            default_parameters: Union[None, MeasuresParameters] = None,
+            default_parameters: Optional[MeasuresParameters] = None,
             stable_ctr: bool = False,
         ):
             if not stable_ctr:
@@ -4007,9 +4014,9 @@ class Sensor3DIrradiance(BaseSensor):
         ----------
         illuminance_type : ansys.api.speos.sensor.v1.sensor_pb2.TypeColorimetric
             SensorTypeColorimetric protobuf object to modify.
-        default_parameters : ansys.speos.core.generic.parameters.ColorimetricParameters, optional
-            If defined the values in the sensor instance will be overwritten by the values of the
-            data class
+        default_parameters : Optional[\
+        ansys.speos.core.generic.parameters.ColorimetricParameters] = None
+            Uses default values when True.
         stable_ctr : bool
             Variable to indicate if usage is inside class scope
 
@@ -4022,7 +4029,7 @@ class Sensor3DIrradiance(BaseSensor):
         def __init__(
             self,
             sensor_type_colorimetric: sensor_pb2.TypeColorimetric,
-            default_parameters: Union[None, ColorimetricParameters] = None,
+            default_parameters: Optional[ColorimetricParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
             if not stable_ctr:
@@ -4378,23 +4385,27 @@ class Sensor3DIrradiance(BaseSensor):
         return self
 
     @property
-    def geometries(self) -> list[str]:
+    def geometries(self) -> List[str]:
         """Geometry faces/bodies to be defined with 3D irradiance sensor.
 
         Parameters
         ----------
-        geometries : list[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]
+        geometries : List[Union[\
+        ansys.speos.core.geo_ref.GeoRef, \
+        ansys.speos.core.body.Body, \
+        ansys.speos.core.face.Face, \
+        ansys.speos.core.part.Part.SubPart]]
             List of geometries that will be considered as Sensor
 
         Returns
         -------
-        list[str]
+        List[str]
             List of geometries that will be considered as Sensor
         """
         return self._sensor_instance.irradiance_3d_properties.geometries.geo_paths
 
     @geometries.setter
-    def geometries(self, geometries: list[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]):
+    def geometries(self, geometries: List[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]):
         geo_paths = []
         for gr in geometries:
             if isinstance(gr, GeoRef):
