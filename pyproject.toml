@@ -67,7 +67,7 @@ doc = [
     "myst-parser==4.0.1",
     "nbsphinx==0.9.8",
     "jupytext==1.19.1",
-    "jupyterlab==4.5.3",
+    "jupyterlab==4.5.4",
     "jupyter-server==2.17.0",
     "nbconvert==7.17.0",
     "pyvista[jupyter]>=0.43,<0.47",
