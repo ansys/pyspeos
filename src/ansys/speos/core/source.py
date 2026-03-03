@@ -3223,3 +3223,217 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
             self._type._green_spectrum._delete()
             self._type._blue_spectrum._delete()
         super().delete()
+
+
+class SourceDisplay(BaseSource):
+    """Display Source.
+
+    By default, image uri is empty and luminous_flux is 0.
+
+    Mirrors the `Display` SourceTemplate and Scene.SourceInstance
+    from the gRPC API.
+    """
+
+    @general_methods.min_speos_version(25, 2, 0)
+    def __init__(
+        self,
+        project: project.Project,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        source_instance: Optional[ProtoScene.SourceInstance] = None,
+        default_parameters: Optional[object] = None,
+    ) -> None:
+        if metadata is None:
+            metadata = {}
+
+        super().__init__(
+            project=project,
+            name=name,
+            description=description,
+            metadata=metadata,
+            source_instance=source_instance,
+        )
+        self._speos_client = self._project.client
+        self._name = name
+        self._type = None
+
+        # Intensity (similar pattern as for surface)
+        self._intensity = Intensity(
+            speos_client=self._speos_client,
+            name=name + ".Intensity",
+            intensity_props_to_complete=self._source_instance.display_properties.intensity_properties,
+            key=self._source_template.display.intensity_guid,
+        )
+
+        # color space helper (either PredefinedColorSpace or UserDefinedColorSpace)
+        self._color_space_type = None
+
+        if default_parameters is not None:
+            # no formal dataclass provided currently for Display parameters in this repo;
+            # if provided, users are expected to map fields manually
+            if hasattr(default_parameters, "image_file_uri"):
+                self.image_file_uri = default_parameters.image_file_uri
+            if hasattr(default_parameters, "luminous_flux"):
+                self.luminous_flux = default_parameters.luminous_flux
+            if hasattr(default_parameters, "contrast_ratio"):
+                self.contrast_ratio = default_parameters.contrast_ratio
+            if hasattr(default_parameters, "axis_system"):
+                self.axis_system = default_parameters.axis_system
+
+    @property
+    def image_file_uri(self) -> str:
+        """Image file uri for the display (png, jpeg, bmp, tiff or rgb)."""
+        return self._source_template.display.image_file_uri
+
+    @image_file_uri.setter
+    def image_file_uri(self, uri: Union[str, Path]) -> None:
+        self._source_template.display.image_file_uri = str(uri)
+
+    @property
+    def source_dimensions(self) -> list:
+        """Source physical dimensions [x_start, x_end, y_start, y_end] in mm."""
+        sd = self._source_template.display.source_dimensions
+        return [sd.x_start, sd.x_end, sd.y_start, sd.y_end]
+
+    @source_dimensions.setter
+    def source_dimensions(self, dims: Union[list, tuple]) -> None:
+        if not (isinstance(dims, (list, tuple)) and len(dims) == 4):
+            raise ValueError(
+                "source_dimensions must be a sequence of 4 values [x_start,x_end,y_start,y_end]"
+            )
+        sd = self._source_template.display.source_dimensions
+        sd.x_start, sd.x_end, sd.y_start, sd.y_end = dims
+
+    @property
+    def luminous_flux(self) -> float:
+        """Luminance value (cd/m2) of the display."""
+        return self._source_template.display.luminous_flux
+
+    @luminous_flux.setter
+    def luminous_flux(self, value: float) -> None:
+        self._source_template.display.luminous_flux = float(value)
+
+    @property
+    def contrast_ratio(self) -> Optional[int]:
+        """Optional contrast ratio."""
+        # optional field in proto: if not set proto returns default 0; user can set 0 to mean unset
+        return self._source_template.display.contrast_ratio
+
+    @contrast_ratio.setter
+    def contrast_ratio(self, value: Optional[int]) -> None:
+        if value is None:
+            # proto3 optional semantics: clear by assigning default (no direct ClearField on scalar)
+            self._source_template.display.ClearField("contrast_ratio")
+        else:
+            self._source_template.display.contrast_ratio = int(value)
+
+    @property
+    def axis_system(self) -> list:
+        """Axis system of the display (instance property)."""
+        return self._source_instance.display_properties.axis_system[:]
+
+    @axis_system.setter
+    def axis_system(self, axis_system: list) -> None:
+        self._source_instance.display_properties.axis_system[:] = axis_system
+
+    @property
+    def intensity(self) -> intensity.Intensity:
+        """Intensity settings for the display source (instance-level)."""
+        if (
+            self._intensity._intensity_properties
+            is not self._source_instance.display_properties.intensity_properties
+        ):
+            self._intensity._intensity_properties = (
+                self._source_instance.display_properties.intensity_properties
+            )
+        return self._intensity
+
+    def set_predefined_color_space(self) -> BaseSource.PredefinedColorSpace:
+        """Set display color space to a predefined color space (sRGB / AdobeRGB)."""
+        if self._type is None and self._source_template.display.HasField("predefined_color_space"):
+            self._type = BaseSource.PredefinedColorSpace(
+                predefined_color_space=self._source_template.display.predefined_color_space,
+                default_parameters=None,
+                stable_ctr=True,
+            )
+        if not isinstance(self._type, BaseSource.PredefinedColorSpace):
+            self._type = BaseSource.PredefinedColorSpace(
+                predefined_color_space=self._source_template.display.predefined_color_space,
+                default_parameters=ColorSpaceType.srgb,
+                stable_ctr=True,
+            )
+        elif (
+            self._type._predefined_color_space
+            is not self._source_template.display.predefined_color_space
+        ):
+            self._type._predefined_color_space = (
+                self._source_template.display.predefined_color_space
+            )
+        return self._type
+
+    def set_userdefined_color_space(self) -> BaseSource.UserDefinedColorSpace:
+        """Set user-defined RGB color space for the display (access red/green/blue spectra)."""
+        # Note: proto field name in SourceTemplate.Display is `user_defined_rbg_space` (rbg)
+        if self._type is None and self._source_template.display.HasField("user_defined_rbg_space"):
+            self._type = BaseSource.UserDefinedColorSpace(
+                project=self._project,
+                userdefined_color_space=self._source_template.display.user_defined_rbg_space,
+                default_parameters=None,
+                stable_ctr=True,
+            )
+        if not isinstance(self._type, BaseSource.UserDefinedColorSpace):
+            self._type = BaseSource.UserDefinedColorSpace(
+                project=self._project,
+                userdefined_color_space=self._source_template.display.user_defined_rbg_space,
+                default_parameters=UserDefinedColorSpaceParameters(),
+                stable_ctr=True,
+            )
+        elif (
+            self._type._userdefined_color_space
+            is not self._source_template.display.user_defined_rbg_space
+        ):
+            # Happens in case of feature reset
+            self._type._userdefined_color_space = (
+                self._source_template.display.user_defined_rbg_space
+            )
+        return self._type
+
+    def commit(self) -> SourceDisplay:
+        """Commit display source. Ensures intensity and user-defined spectra are committed."""
+        # commit intensity template if used
+        if hasattr(self, "_intensity"):
+            self._intensity.commit()
+            # update template intensity guid
+            self._source_template.display.intensity_guid = (
+                self._intensity.intensity_template_link.key
+            )
+        # commit user-defined color space spectra if any
+        if isinstance(self._type, BaseSource.UserDefinedColorSpace):
+            self._type._red_spectrum._commit()
+            self._type._green_spectrum._commit()
+            self._type._blue_spectrum._commit()
+        super().commit()
+        return self
+
+    def reset(self) -> SourceDisplay:
+        """Reset display source local data from server."""
+        if isinstance(self._type, BaseSource.UserDefinedColorSpace):
+            self._type._red_spectrum._reset()
+            self._type._green_spectrum._reset()
+            self._type._blue_spectrum._reset()
+        # reset intensity
+        if hasattr(self, "_intensity"):
+            self._intensity.reset()
+        super().reset()
+        return self
+
+    def delete(self) -> SourceDisplay:
+        """Delete display source from server (local data kept)."""
+        if isinstance(self._type, BaseSource.UserDefinedColorSpace):
+            self._type._red_spectrum._delete()
+            self._type._green_spectrum._delete()
+            self._type._blue_spectrum._delete()
+        # do not cascade delete intensity template (consistent with surface behavior)
+        super().delete()
+        return self

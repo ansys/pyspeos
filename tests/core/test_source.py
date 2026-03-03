@@ -36,6 +36,7 @@ from ansys.speos.core.generic.parameters import (
     AmbientNaturalLightParameters,
     ColorSpaceType,
     ConstantExitanceParameters,
+    DisplayParameters,
     FluxFromFileParameters,
     IntensitAsymmetricGaussianParameters,
     IntensityCosParameters,
@@ -62,6 +63,7 @@ from ansys.speos.core.generic.parameters import (
 from ansys.speos.core.source import (
     SourceAmbientEnvironment,
     SourceAmbientNaturalLight,
+    SourceDisplay,
     SourceLuminaire,
     SourceRayFile,
     SourceSurface,
@@ -1734,3 +1736,69 @@ def test_get_source(speos: Speos, capsys):
     stdout, stderr = capsys.readouterr()
     assert get_result4 is None
     assert "Used key: geometry not found in key list" in stdout
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_create_display_source_basic(speos: Speos):
+    """Test basic Display Source."""
+    p = Project(speos=speos)
+    src = p.create_source(name="Display.1", feature_type=SourceDisplay)
+    assert src._source_template.HasField("display")
+    assert src._source_instance.HasField("display_properties")
+
+    src.image_file_uri = str(Path(test_path) / "stars.exr")
+    src.luminous_flux = 200.0
+    src.set_predefined_color_space().set_color_space_adobergb()
+    src.commit()
+
+    tpl = src.source_template_link.get()
+    assert tpl.display.image_file_uri != ""
+    assert tpl.display.luminous_flux == pytest.approx(200.0)
+    assert tpl.display.predefined_color_space.color_space_type == 1  # AdobeRGB
+
+    src.delete()
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_display_userdefined_color_space_and_intensity_library(speos: Speos):
+    """Test display source with userdefined colorspace."""
+    p = Project(speos=speos)
+
+    # Create Display with user-defined color space and intensity library via parameters
+    display_params = DisplayParameters()
+    udcs = UserDefinedColorSpaceParameters()
+    udcs.red_spectrum_uri = str(
+        Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "Red Spectrum.spectrum"
+    )
+    udcs.green_spectrum_uri = str(
+        Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "Green Spectrum.spectrum"
+    )
+    udcs.blue_spectrum_uri = str(
+        Path(test_path) / "LG_50M_Colorimetric_short.sv5" / "Blue Spectrum.spectrum"
+    )
+    udcs.white_point_type = UserDefinedWhitePointParameters()
+    display_params.color_space_type = udcs
+
+    # intensity library
+    ilp = IntensityLibraryParameters()
+    ilp.intensity_file_uri = str(Path(test_path) / "IES_C_DETECTOR.ies")
+    display_params.intensity_type = ilp
+
+    src = p.create_source(
+        name="Display.UD.1", feature_type=SourceDisplay, parameters=display_params
+    )
+    # access and commit; color space and intensity should be committed and linked
+    usr = src.set_userdefined_color_space()
+    assert isinstance(usr.red_spectrum, dict)
+    src.intensity.set_library().intensity_file_uri = ilp.intensity_file_uri
+    src.commit()
+
+    tpl = src.source_template_link.get()
+    assert tpl.display.user_defined_rbg_space.red_spectrum_guid != ""
+    assert tpl.display.intensity_guid != ""
+
+    # Verify intensity template type on server (library)
+    intensity_obj = speos.client[tpl.display.intensity_guid]
+    assert intensity_obj.get().HasField("library")
+
+    src.delete()
