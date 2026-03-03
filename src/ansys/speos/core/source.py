@@ -125,7 +125,7 @@ class BaseSource:
             userdefined_white_point : source_pb2.SourceTemplate.UserDefinedWhitePoint
                 source_pb2.SourceTemplate.UserDefinedWhitePoint
             default_parameters : Optional[\
-            ansys.speos.core.generic.parameters.UserDefinedWhitePointParameters] = None,
+            ansys.speos.core.generic.parameters.UserDefinedWhitePointParameters] = None
                 If defined the values in the UserDefinedWhitePoint instance will be
                 overwritten by the values of the data class.
             stable_ctr : bool
@@ -334,8 +334,8 @@ class BaseSource:
 
             Returns
             -------
-            Union[None,\
-           source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType,\
+            Union[None, \
+           source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType, \
            ansys.speos.core.source.BaseSource.UserDefinedColorSpace.UserDefinedWhitePoint]
                 PredefinedWhitePoint Type or UserDefinedWhitePoint Type.
 
@@ -1243,8 +1243,7 @@ class SourceRayFile(BaseSource):
         ----------
         rayfile_props : ansys.api.speos.scene.v2.scene_pb2.RayFileProperties
             protobuf object to modify.
-        default_parameters : Optional[\
-        ansys.speos.core.generic.parameters.RayFileSourceParameters] = None
+        default_parameters : Optional[RayFileSourceParameters] = None
             If defined the values in the ExitGeometries instance will be
             overwritten by the values of the data class.
         stable_ctr : bool
@@ -1280,7 +1279,6 @@ class SourceRayFile(BaseSource):
             ansys.speos.core.body.Body, ansys.speos.core.face.Face]]]
                 Exit Geometries that will use this rayfile source.
                 By default, ``[]``.
-
 
             Returns
             -------
@@ -3232,6 +3230,14 @@ class SourceDisplay(BaseSource):
 
     Mirrors the `Display` SourceTemplate and Scene.SourceInstance
     from the gRPC API.
+
+    Notes
+    -----
+    This class exposes both template-level (template/display) and instance-level
+    (scene source instance) properties for a display-type source. Typical usage:
+    - set template-level attributes (image_file_uri, source_dimensions,
+    luminous_flux, contrast_ratio) and commit() to persist.
+    - adjust instance-level axis_system and intensity for scene placement.
     """
 
     @general_methods.min_speos_version(25, 2, 0)
@@ -3244,6 +3250,29 @@ class SourceDisplay(BaseSource):
         source_instance: Optional[ProtoScene.SourceInstance] = None,
         default_parameters: Optional[object] = None,
     ) -> None:
+        """Initialize a Display source object.
+
+        Parameters
+        ----------
+        project : ansys.speos.core.project.Project
+            Project that will own the feature.
+        name : str
+            Name of the feature.
+        description : str, optional
+            Description of the feature. Default is empty string.
+        metadata : Optional[Mapping[str, str]], optional
+            Metadata for the feature. Default is None (interpreted as {}).
+        source_instance : Optional[ProtoScene.SourceInstance], optional
+            If provided, populates the object from an existing scene SourceInstance.
+        default_parameters : Optional[object], optional
+            Optional object carrying default values (no formal dataclass in repo).
+            If provided, recognized attributes (image_file_uri, luminous_flux,
+            contrast_ratio, axis_system) will be applied.
+
+        Returns
+        -------
+        None
+        """
         if metadata is None:
             metadata = {}
 
@@ -3283,21 +3312,56 @@ class SourceDisplay(BaseSource):
 
     @property
     def image_file_uri(self) -> str:
-        """Image file uri for the display (png, jpeg, bmp, tiff or rgb)."""
+        """Image file URI for the display.
+
+        Supported formats include PNG, JPEG, BMP, TIFF, RGB, HDR/EXR where applicable.
+
+        Returns
+        -------
+        str
+            Template-level image file URI referenced by the display.
+        """
         return self._source_template.display.image_file_uri
 
     @image_file_uri.setter
     def image_file_uri(self, uri: Union[str, Path]) -> None:
+        """Set the image file URI for the display template.
+
+        Parameters
+        ----------
+        uri : Union[str, pathlib.Path]
+            File path or URI to the image to be used by the display.
+        """
         self._source_template.display.image_file_uri = str(uri)
 
     @property
     def source_dimensions(self) -> list:
-        """Source physical dimensions [x_start, x_end, y_start, y_end] in mm."""
+        """Source physical dimensions.
+
+        Returns the template-level physical extents of the display in millimeters.
+
+        Returns
+        -------
+        list
+            [x_start, x_end, y_start, y_end] in millimeters.
+        """
         sd = self._source_template.display.source_dimensions
         return [sd.x_start, sd.x_end, sd.y_start, sd.y_end]
 
     @source_dimensions.setter
     def source_dimensions(self, dims: Union[list, tuple]) -> None:
+        """Set source physical dimensions.
+
+        Parameters
+        ----------
+        dims : Union[list, tuple]
+            Sequence of 4 numeric values [x_start, x_end, y_start, y_end] in millimeters.
+
+        Raises
+        ------
+        ValueError
+            If dims is not a sequence of four values.
+        """
         if not (isinstance(dims, (list, tuple)) and len(dims) == 4):
             raise ValueError(
                 "source_dimensions must be a sequence of 4 values [x_start,x_end,y_start,y_end]"
@@ -3307,21 +3371,49 @@ class SourceDisplay(BaseSource):
 
     @property
     def luminous_flux(self) -> float:
-        """Luminance value (cd/m2) of the display."""
+        """Template-level luminous flux for the display.
+
+        Returns
+        -------
+        float
+            Luminous flux expressed as luminance (cd/m^2).
+        """
         return self._source_template.display.luminous_flux
 
     @luminous_flux.setter
     def luminous_flux(self, value: float) -> None:
+        """Set template-level luminous flux.
+
+        Parameters
+        ----------
+        value : float
+            Luminance value in cd/m^2.
+        """
         self._source_template.display.luminous_flux = float(value)
 
     @property
     def contrast_ratio(self) -> Optional[int]:
-        """Optional contrast ratio."""
-        # optional field in proto: if not set proto returns default 0; user can set 0 to mean unset
+        """Template-level contrast ratio for the display.
+
+        The underlying protobuf field is optional. When unset it behaves as None
+        from the Python API perspective (the proto scalar default is 0).
+
+        Returns
+        -------
+        Optional[int]
+            Contrast ratio if set, otherwise 0 (unset behavior preserved by proto).
+        """
         return self._source_template.display.contrast_ratio
 
     @contrast_ratio.setter
     def contrast_ratio(self, value: Optional[int]) -> None:
+        """Set or clear the template-level contrast ratio.
+
+        Parameters
+        ----------
+        value : Optional[int]
+            Integer contrast ratio to set, or None to clear the optional field.
+        """
         if value is None:
             # proto3 optional semantics: clear by assigning default (no direct ClearField on scalar)
             self._source_template.display.ClearField("contrast_ratio")
@@ -3330,16 +3422,36 @@ class SourceDisplay(BaseSource):
 
     @property
     def axis_system(self) -> list:
-        """Axis system of the display (instance property)."""
+        """Instance-level axis system for the display.
+
+        Returns
+        -------
+        list
+            12-element axis system vector from the scene SourceInstance describing
+            origin and axes (Ox,Oy,Oz,Xx,Xy,Xz,Yx,Yy,Yz,Zx,Zy,Zz).
+        """
         return self._source_instance.display_properties.axis_system[:]
 
     @axis_system.setter
     def axis_system(self, axis_system: list) -> None:
+        """Set the instance-level axis system for the display.
+
+        Parameters
+        ----------
+        axis_system : list
+            12-element sequence describing the origin and local axes for placement in the scene.
+        """
         self._source_instance.display_properties.axis_system[:] = axis_system
 
     @property
     def intensity(self) -> intensity.Intensity:
-        """Intensity settings for the display source (instance-level)."""
+        """Intensity settings for the display source (instance-level).
+
+        Returns
+        -------
+        ansys.speos.core.intensity.Intensity
+            Intensity object tied to the scene SourceInstance for this display.
+        """
         if (
             self._intensity._intensity_properties
             is not self._source_instance.display_properties.intensity_properties
@@ -3350,7 +3462,15 @@ class SourceDisplay(BaseSource):
         return self._intensity
 
     def set_predefined_color_space(self) -> BaseSource.PredefinedColorSpace:
-        """Set display color space to a predefined color space (sRGB / AdobeRGB)."""
+        """Set display color space to a predefined color space.
+
+        This returns a helper object allowing selection of sRGB or AdobeRGB presets.
+
+        Returns
+        -------
+        ansys.speos.core.source.BaseSource.PredefinedColorSpace
+            Helper object for choosing a predefined color space.
+        """
         if self._type is None and self._source_template.display.HasField("predefined_color_space"):
             self._type = BaseSource.PredefinedColorSpace(
                 predefined_color_space=self._source_template.display.predefined_color_space,
@@ -3373,7 +3493,13 @@ class SourceDisplay(BaseSource):
         return self._type
 
     def set_userdefined_color_space(self) -> BaseSource.UserDefinedColorSpace:
-        """Set user-defined RGB color space for the display (access red/green/blue spectra)."""
+        """Set user-defined RGB color space for the display.
+
+        Returns
+        -------
+        ansys.speos.core.source.BaseSource.UserDefinedColorSpace
+            Helper providing access to red/green/blue spectrum selection and white point.
+        """
         # Note: proto field name in SourceTemplate.Display is `user_defined_rbg_space` (rbg)
         if self._type is None and self._source_template.display.HasField("user_defined_rbg_space"):
             self._type = BaseSource.UserDefinedColorSpace(
@@ -3400,7 +3526,16 @@ class SourceDisplay(BaseSource):
         return self._type
 
     def commit(self) -> SourceDisplay:
-        """Commit display source. Ensures intensity and user-defined spectra are committed."""
+        """Commit display source to the server.
+
+        Commits the intensity template (if present) and any user-defined spectra,
+        updates template.intensity_guid and then commits the source template/instance.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceDisplay
+            This SourceDisplay instance (committed).
+        """
         # commit intensity template if used
         if hasattr(self, "_intensity"):
             self._intensity.commit()
@@ -3417,7 +3552,16 @@ class SourceDisplay(BaseSource):
         return self
 
     def reset(self) -> SourceDisplay:
-        """Reset display source local data from server."""
+        """Reset local display source data from server.
+
+        Resets committed spectra and intensity template (if used) and then
+        refreshes the template/instance local copies.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceDisplay
+            This SourceDisplay instance (reset).
+        """
         if isinstance(self._type, BaseSource.UserDefinedColorSpace):
             self._type._red_spectrum._reset()
             self._type._green_spectrum._reset()
@@ -3429,7 +3573,17 @@ class SourceDisplay(BaseSource):
         return self
 
     def delete(self) -> SourceDisplay:
-        """Delete display source from server (local data kept)."""
+        """Delete display source from server (local data kept).
+
+        Deletes any locally-managed spectra created for a user-defined color space
+        and deletes the template/instance from the server. Does not cascade-delete
+        the intensity template.
+
+        Returns
+        -------
+        ansys.speos.core.source.SourceDisplay
+            This SourceDisplay instance (deleted on server).
+        """
         if isinstance(self._type, BaseSource.UserDefinedColorSpace):
             self._type._red_spectrum._delete()
             self._type._green_spectrum._delete()
