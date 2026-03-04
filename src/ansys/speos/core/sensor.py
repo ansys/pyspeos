@@ -4724,7 +4724,7 @@ class SensorXMPIntensity(BaseSensor):
         Returns
         -------
         Union[None, float]
-            Distance of the measurement cell.
+            Distance of the measurement cell or None if Sensor is not in near field.
         """
         if self.near_field:
             return self._sensor_template.intensity_sensor_template.near_field.cell_distance
@@ -4750,7 +4750,7 @@ class SensorXMPIntensity(BaseSensor):
         Returns
         -------
         Union[None, float]
-            Diameter of the measurement cell.
+            Diameter of the measurement cell or None if Sensor is not in near field.
         """
         if self.near_field:
             diameter = (
@@ -4817,7 +4817,7 @@ class SensorXMPIntensity(BaseSensor):
     def layer(
         self,
     ) -> Union[
-        str,
+        LayerTypes,
         BaseSensor.LayerTypeFace,
         BaseSensor.LayerTypeSequence,
     ]:
@@ -4825,11 +4825,10 @@ class SensorXMPIntensity(BaseSensor):
 
         Returns
         -------
-        Union[
-            LayerTypes,\
-            ansys.speos.core.sensor.BaseSensor.LayerTypeFace,\
-            ansys.speos.core.sensor.BaseSensor.LayerTypeSequence,\
-        ]
+        Union[\
+        ansys.speos.core.generic.parameters.LayerTypes,\
+        ansys.speos.core.sensor.BaseSensor.LayerTypeFace,\
+        ansys.speos.core.sensor.BaseSensor.LayerTypeSequence]
             Instance of Layertype Class for this sensor feature
         """
         return self._layer_type
@@ -5024,12 +5023,12 @@ class SensorXMPIntensity(BaseSensor):
 
     @property
     def y_start(self) -> float:
-        """The minimum value on x-axis (deg).
+        """The minimum value on y-axis (deg).
 
         Parameters
         ----------
         value : float
-            End value for y-axis (degree).
+            Start value for y-axis (degree).
 
         Returns
         -------
@@ -5088,7 +5087,7 @@ class SensorXMPIntensity(BaseSensor):
 
     @property
     def theta_max(self) -> float:
-        """Maximum theta angle on consocopic type (in deg).
+        """Maximum theta angle on conoscopic type (in deg).
 
         Parameters
         ----------
@@ -5130,7 +5129,7 @@ class SensorXMPIntensity(BaseSensor):
 
         Returns
         -------
-        float
+        int
             Sampling along theta axis in a conoscopic map.
         """
         template = self._sensor_template.intensity_sensor_template
@@ -5159,7 +5158,7 @@ class SensorXMPIntensity(BaseSensor):
         Returns
         -------
         ansys.speos.core.sensor.SensorXMPIntensity
-            Irradiance sensor
+            Intensity sensor
         """
         self._sensor_template.intensity_sensor_template.sensor_type_photometric.SetInParent()
         self._type = SensorTypes.photometric.capitalize()
@@ -5209,7 +5208,7 @@ class SensorXMPIntensity(BaseSensor):
         Returns
         -------
         ansys.speos.core.sensor.SensorXMPIntensity
-            Irradiance sensor.
+            Intensity sensor.
         """
         self._sensor_template.intensity_sensor_template.sensor_type_radiometric.SetInParent()
         self._type = SensorTypes.radiometric.capitalize()
