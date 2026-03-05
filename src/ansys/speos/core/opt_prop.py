@@ -415,8 +415,6 @@ class TextureLayer(BaseSop):
         str
             SOP type as string.
         """
-        if self._sop_template.HasField("texture"):
-            return "texture"
         if self._sop_template.HasField("mirror"):
             return "mirror"
         if self._sop_template.HasField("optical_polished"):
@@ -548,10 +546,10 @@ class TextureLayer(BaseSop):
                                 perimeter = cur_mapping_opp.cylindrical.base_perimeter
                             elif cur_type == MappingTypes.spherical:
                                 perimeter = cur_mapping_opp.spherical.sphere_perimeter
-                    self._image_props = MappingOperator(
+                    self._normal_map_props = MappingOperator(
                         mapping_type=cur_type,
-                        repeat_u=self._sop_template.texture.image.repeat_along_u,
-                        repeat_v=self._sop_template.texture.image.repeat_along_v,
+                        repeat_u=self._sop_template.texture.normal_map.repeat_along_u,
+                        repeat_v=self._sop_template.texture.normal_map.repeat_along_v,
                         u_length=cur_mapping_opp.u_length,
                         v_length=cur_mapping_opp.v_length
                         if cur_mapping_opp.HasField("v_length")
@@ -1211,7 +1209,7 @@ class OptProp(BaseSop, BaseVop):
         elif mat_inst.HasField("texture"):
             texture = []
             for i, layer in enumerate(mat_inst.texture.layers):
-                cur_layer = TextureLayer(self._project, name=f"{self._name}.Layer.{i}")
+                cur_layer = TextureLayer(self, name=f"{self._name}.Layer.{i}")
                 cur_layer._fill(layer.sop_guid, layer)
                 cur_layer._index = i
                 texture.append(cur_layer)

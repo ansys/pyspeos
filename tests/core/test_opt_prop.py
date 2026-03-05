@@ -24,6 +24,8 @@
 
 from pathlib import Path
 
+import numpy as np
+
 from ansys.speos.core import GeoRef, OptProp, Project, Speos
 from ansys.speos.core.generic.parameters import (
     MappingOperator,
@@ -32,6 +34,7 @@ from ansys.speos.core.generic.parameters import (
 )
 from ansys.speos.core.opt_prop import TextureLayer
 from tests.conftest import test_path
+from tests.helper import approx_arrays
 
 
 def test_create_optical_property(speos: Speos):
@@ -658,3 +661,190 @@ def test_reset_texture_property(speos: Speos):
     assert mapping_op.axis_system == old_values.axis_system
     assert mapping_op.rotation == old_values.rotation
     assert mapping_op.HasField(old_values.mapping_type)
+
+
+def test_load_texture_property_from_file(speos: Speos):
+    """Test loading of Solver file containing texture properties."""
+    p = Project(speos=speos, path=Path(test_path) / "Texture.1.speos" / "Texture.1.speos")
+    all_mats = p.find(name=".*", name_regex=True, feature_type=OptProp)
+    assert all_mats
+    for mat in all_mats:
+        assert isinstance(mat, OptProp)
+        match mat._name:
+            case "Texture_spherical_Optic_OP_normal_map|UV mapping.1":
+                assert mat.sop_type == "texture"
+                assert len(mat.texture) == 1
+                assert mat.texture[0].sop_type == "optical_polished"
+                assert mat.texture[0].roughness == 1
+                assert mat.texture[0].normal_map_file_uri.endswith("png")
+                mapping_opp = mat.texture[0].normal_map_property.__dict__
+                expected = MappingOperator(
+                    mapping_type=MappingTypes.spherical,
+                    u_length=10,
+                    v_length=7.46268656716,
+                    axis_system=[0, 1, 4.98, 0, 0, 1, 1, 0, 0, 0, 1, 0],
+                    repeat_u=False,
+                    repeat_v=True,
+                    u_scale=0.1,
+                    v_scale=0.1,
+                    perimeter=6.28,
+                ).__dict__
+                for k1, k2 in zip(sorted(expected.keys()), sorted(mapping_opp.keys())):
+                    assert k1 == k2
+                for k1 in expected.keys():
+                    if isinstance(expected.get(k1), (float, list, int)):
+                        assert approx_arrays(expected.get(k1), mapping_opp.get(k1))
+                    else:
+                        assert expected.get(k1) == mapping_opp.get(k1)
+            case "Texture_spherical_Optic_OP_normal_map":
+                assert mat._sop_template is None
+                assert mat.vop_type == "optic"
+                assert mat.vop_optic == MaterialOpticParameters(1.5, 0, 0)
+            case "Texture_cylindrical_opaque_mirror40_normal_map|UV mapping.2":
+                assert mat.sop_type == "texture"
+                assert len(mat.texture) == 1
+                assert mat.texture[0].sop_type == "mirror"
+                assert mat.texture[0].sop_reflectance == 40
+                assert mat.texture[0].roughness == 1
+                assert mat.texture[0].normal_map_file_uri.endswith("png")
+                mapping_opp = mat.texture[0].normal_map_property.__dict__
+                expected = MappingOperator(
+                    mapping_type=MappingTypes.cylindrical,
+                    u_length=10,
+                    v_length=10,
+                    axis_system=[4, 1, 4.98, 0, 0, 1, 1, 0, 0, 0, 1, 0],
+                    repeat_u=True,
+                    repeat_v=True,
+                    u_scale=0.1,
+                    v_scale=0.1,
+                    perimeter=6.28,
+                ).__dict__
+                for k1, k2 in zip(sorted(expected.keys()), sorted(mapping_opp.keys())):
+                    assert k1 == k2
+                for k1 in expected.keys():
+                    if isinstance(expected.get(k1), (float, list, int)):
+                        assert approx_arrays(expected.get(k1), mapping_opp.get(k1))
+                    else:
+                        assert expected.get(k1) == mapping_opp.get(k1)
+            case "Texture_cylindrical_opaque_mirror40_normal_map":
+                assert mat._sop_template is None
+                assert mat.vop_type == "opaque"
+            case "Texture_cubic_opaque_library_normal_map_image|UV mapping.3":
+                assert mat.sop_type == "texture"
+                assert len(mat.texture) == 1
+                assert mat.texture[0].sop_type == "library"
+                assert mat.texture[0].sop_library.endswith("simplescattering")
+                assert mat.texture[0].roughness == 5
+                assert mat.texture[0].normal_map_file_uri.endswith("png")
+                mapping_opp = mat.texture[0].normal_map_property.__dict__
+                expected = MappingOperator(
+                    mapping_type=MappingTypes.cubic,
+                    u_length=100,
+                    v_length=100,
+                    axis_system=[8, 1, 4.98, 0, 0, 1, 1, 0, 0, 0, 1, 0],
+                    repeat_u=True,
+                    repeat_v=True,
+                    u_scale=0.01,
+                    v_scale=0.01,
+                ).__dict__
+                for k1, k2 in zip(sorted(expected.keys()), sorted(mapping_opp.keys())):
+                    assert k1 == k2
+                for k1 in expected.keys():
+                    if isinstance(expected.get(k1), (float, list, int)):
+                        assert approx_arrays(expected.get(k1), mapping_opp.get(k1))
+                    else:
+                        assert expected.get(k1) == mapping_opp.get(k1)
+                assert mat.texture[0].image_texture_file_uri.endswith("png")
+                mapping_opp = mat.texture[0].image_property.__dict__
+                expected = MappingOperator(
+                    mapping_type=MappingTypes.cubic,
+                    u_length=50,
+                    v_length=50,
+                    axis_system=[8, 1, 4.98, 0, 0, 1, 1, 0, 0, 0, 1, 0],
+                    repeat_u=True,
+                    repeat_v=True,
+                    u_scale=0.01,
+                    v_scale=0.01,
+                ).__dict__
+                for k1, k2 in zip(sorted(expected.keys()), sorted(mapping_opp.keys())):
+                    assert k1 == k2
+                for k1 in expected.keys():
+                    if isinstance(expected.get(k1), (float, list, int)):
+                        assert approx_arrays(expected.get(k1), mapping_opp.get(k1))
+                    else:
+                        assert expected.get(k1) == mapping_opp.get(k1)
+            case "Texture_cubic_opaque_library_normal_map_image":
+                assert mat._sop_template is None
+                assert mat.vop_type == "opaque"
+            case "Texture_planar_FOP_aniso|UV mapping.4":
+                assert mat.sop_type == "texture"
+                assert len(mat.texture) == 2
+                assert mat.texture[0].sop_type == "library"
+                assert mat.texture[0].sop_library.endswith("anisotropicbsdf")
+                mapping_opp = mat.texture[0].anisotropic_property.__dict__
+                expected = MappingOperator(
+                    mapping_type=MappingTypes.planar,
+                    u_length=1,
+                    axis_system=[
+                        12,
+                        1,
+                        4.98,
+                        0,
+                        -np.sqrt(2) / 2,
+                        -np.sqrt(2) / 2,
+                        0,
+                        np.sqrt(2) / 2,
+                        -np.sqrt(2) / 2,
+                        1,
+                        0,
+                        0,
+                    ],
+                    rotation=90,
+                ).__dict__
+                for k1, k2 in zip(sorted(expected.keys()), sorted(mapping_opp.keys())):
+                    assert k1 == k2
+                for k1 in expected.keys():
+                    if isinstance(expected.get(k1), (float, list, int)):
+                        assert approx_arrays(expected.get(k1), mapping_opp.get(k1))
+                    else:
+                        assert expected.get(k1) == mapping_opp.get(k1)
+                assert mat.texture[1].sop_type == "optical_polished"
+                assert mat.texture[1].roughness == 1
+                assert mat.texture[1].normal_map_file_uri.endswith("png")
+                mapping_opp = mat.texture[1].normal_map_property.__dict__
+                expected = MappingOperator(
+                    mapping_type=MappingTypes.planar,
+                    u_length=10,
+                    v_length=10,
+                    axis_system=[
+                        12,
+                        1,
+                        4.98,
+                        0,
+                        -np.sqrt(2) / 2,
+                        -np.sqrt(2) / 2,
+                        0,
+                        np.sqrt(2) / 2,
+                        -np.sqrt(2) / 2,
+                        1,
+                        0,
+                        0,
+                    ],
+                    repeat_u=True,
+                    repeat_v=True,
+                    u_scale=0.1,
+                    v_scale=0.1,
+                    rotation=90,
+                ).__dict__
+                for k1, k2 in zip(sorted(expected.keys()), sorted(mapping_opp.keys())):
+                    assert k1 == k2
+                for k1 in expected.keys():
+                    if isinstance(expected.get(k1), (float, list, int)):
+                        assert approx_arrays(expected.get(k1), mapping_opp.get(k1))
+                    else:
+                        assert expected.get(k1) == mapping_opp.get(k1)
+            case "Base_white_notexture":
+                assert mat.sop_type == "library"
+                assert mat.sop_library.endswith("simplescattering")
+                assert mat.vop_type == "optic"
+                assert mat.vop_optic == MaterialOpticParameters(1.5, 10, 0)
