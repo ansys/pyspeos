@@ -269,7 +269,7 @@ class BaseSensor:
 
             Returns
             -------
-            int
+            Union[None, int]:
                 Number of Samples used to split the wavelength range.
             """
             if isinstance(self._wavelengths_range, common_pb2.WavelengthsRange):
@@ -1312,7 +1312,7 @@ class SensorCamera(BaseSensor):
                     return self._balance_mode_display.red_display_file_uri
 
                 @red_display_file_uri.setter
-                def red_display_file_uri(self, uri: Union[str, Path]):
+                def red_display_file_uri(self, uri: Union[str, Path]) -> None:
                     self._balance_mode_display.red_display_file_uri = str(Path(uri))
 
                 @property
@@ -1640,7 +1640,7 @@ class SensorCamera(BaseSensor):
             return self._mode_photometric.acquisition_integration
 
         @acquisition_integration.setter
-        def acquisition_integration(self, value: float):
+        def acquisition_integration(self, value: float) -> None:
             self._mode_photometric.acquisition_integration = value
 
         @property
@@ -1660,7 +1660,7 @@ class SensorCamera(BaseSensor):
             return self._mode_photometric.acquisition_lag_time
 
         @acquisition_lag_time.setter
-        def acquisition_lag_time(self, value: float):
+        def acquisition_lag_time(self, value: float) -> None:
             self._mode_photometric.acquisition_lag_time = value
 
         @property
@@ -1681,7 +1681,7 @@ class SensorCamera(BaseSensor):
             return self._mode_photometric.transmittance_file_uri
 
         @transmittance_file_uri.setter
-        def transmittance_file_uri(self, uri: Union[str, Path]):
+        def transmittance_file_uri(self, uri: Union[str, Path]) -> None:
             self._mode_photometric.transmittance_file_uri = str(Path(uri))
 
         @property
@@ -1701,7 +1701,7 @@ class SensorCamera(BaseSensor):
             return self._mode_photometric.gamma_correction
 
         @gamma_correction.setter
-        def gamma_correction(self, value: float):
+        def gamma_correction(self, value: float) -> None:
             self._mode_photometric.gamma_correction = value
 
         def set_png_bits_08(self) -> SensorCamera.Photometric:
@@ -1837,7 +1837,7 @@ class SensorCamera(BaseSensor):
             return self._camera_props.trajectory_file_uri
 
         @trajectory_file_uri.setter
-        def trajectory_file_uri(self, uri: Union[str, Path]):
+        def trajectory_file_uri(self, uri: Union[str, Path]) -> None:
             self._camera_props.trajectory_file_uri = str(Path(uri))
 
         def set_layer_type_none(self) -> SensorCamera.Photometric:
@@ -2046,7 +2046,7 @@ class SensorCamera(BaseSensor):
         return self._sensor_template.camera_sensor_template.imager_distance
 
     @imager_distance.setter
-    def imager_distance(self, value: float):
+    def imager_distance(self, value: float) -> None:
         self._sensor_template.camera_sensor_template.imager_distance = value
 
     @property
@@ -2068,7 +2068,7 @@ class SensorCamera(BaseSensor):
         return self._sensor_template.camera_sensor_template.f_number
 
     @f_number.setter
-    def f_number(self, value: float = 20):
+    def f_number(self, value: float = 20) -> None:
         self._sensor_template.camera_sensor_template.f_number = value
 
     @property
@@ -2090,7 +2090,7 @@ class SensorCamera(BaseSensor):
         return self._sensor_template.camera_sensor_template.distortion_file_uri
 
     @distortion_file_uri.setter
-    def distortion_file_uri(self, uri: Union[str, Path]):
+    def distortion_file_uri(self, uri: Union[str, Path]) -> None:
         self._sensor_template.camera_sensor_template.distortion_file_uri = str(Path(uri))
 
     @property
@@ -2111,7 +2111,7 @@ class SensorCamera(BaseSensor):
         return self._sensor_template.camera_sensor_template.horz_pixel
 
     @horz_pixel.setter
-    def horz_pixel(self, value: int):
+    def horz_pixel(self, value: int) -> None:
         self._sensor_template.camera_sensor_template.horz_pixel = value
 
     @property
@@ -2132,7 +2132,7 @@ class SensorCamera(BaseSensor):
         return self._sensor_template.camera_sensor_template.vert_pixel
 
     @vert_pixel.setter
-    def vert_pixel(self, value: int):
+    def vert_pixel(self, value: int) -> None:
         self._sensor_template.camera_sensor_template.vert_pixel = value
 
     @property
@@ -2152,7 +2152,7 @@ class SensorCamera(BaseSensor):
         return self._sensor_template.camera_sensor_template.width
 
     @width.setter
-    def width(self, value: float):
+    def width(self, value: float) -> None:
         self._sensor_template.camera_sensor_template.width = value
 
     @property
@@ -2173,7 +2173,7 @@ class SensorCamera(BaseSensor):
         return self._sensor_template.camera_sensor_template.height
 
     @height.setter
-    def height(self, value: float):
+    def height(self, value: float) -> None:
         self._sensor_template.camera_sensor_template.height = value
 
     @property
@@ -2194,7 +2194,7 @@ class SensorCamera(BaseSensor):
         return self._sensor_instance.camera_properties.axis_system
 
     @axis_system.setter
-    def axis_system(self, axis_system: List[float]):
+    def axis_system(self, axis_system: List[float]) -> None:
         self._sensor_instance.camera_properties.axis_system[:] = axis_system
 
     def set_mode_geometric(self) -> SensorCamera:
@@ -2721,7 +2721,7 @@ class SensorIrradiance(BaseSensor):
         return self._sensor_instance.irradiance_properties.integration_direction
 
     @integration_direction.setter
-    def integration_direction(self, value: List[float]):
+    def integration_direction(self, value: List[float]) -> None:
         if not value:
             self._sensor_instance.irradiance_properties.ClearField("integration_direction")
         else:
@@ -2827,7 +2827,7 @@ class SensorIrradiance(BaseSensor):
         return self._sensor_instance.irradiance_properties.axis_system
 
     @axis_system.setter
-    def axis_system(self, axis_system: List[float]):
+    def axis_system(self, axis_system: List[float]) -> None:
         self._sensor_instance.irradiance_properties.axis_system[:] = axis_system
 
     def set_ray_file_type_none(self) -> SensorIrradiance:
@@ -3064,7 +3064,7 @@ class SensorIrradiance(BaseSensor):
     def output_face_geometries(
         self,
         geometries: Optional[List[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]] = None,
-    ):
+    ) -> None:
         if not geometries:
             self._sensor_instance.irradiance_properties.ClearField("output_face_geometries")
         else:
@@ -3473,7 +3473,7 @@ class SensorRadiance(BaseSensor):
         return self._sensor_template.radiance_sensor_template.focal
 
     @focal.setter
-    def focal(self, value: float):
+    def focal(self, value: float) -> None:
         self._sensor_template.radiance_sensor_template.focal = value
 
     @property
@@ -3493,7 +3493,7 @@ class SensorRadiance(BaseSensor):
         return self._sensor_template.radiance_sensor_template.integration_angle
 
     @integration_angle.setter
-    def integration_angle(self, value: float):
+    def integration_angle(self, value: float) -> None:
         self._sensor_template.radiance_sensor_template.integration_angle = value
 
     @property
@@ -3514,7 +3514,7 @@ class SensorRadiance(BaseSensor):
         return self._sensor_instance.radiance_properties.axis_system
 
     @axis_system.setter
-    def axis_system(self, axis_system: List[float]):
+    def axis_system(self, axis_system: List[float]) -> None:
         self._sensor_instance.radiance_properties.axis_system[:] = axis_system
 
     @property
@@ -3539,7 +3539,7 @@ class SensorRadiance(BaseSensor):
         return self._sensor_instance.radiance_properties.observer_point
 
     @observer_point.setter
-    def observer_point(self, value: List[float]):
+    def observer_point(self, value: List[float]) -> None:
         if not value:
             self._sensor_instance.radiance_properties.ClearField("observer_point")
         else:
@@ -3962,7 +3962,7 @@ class Sensor3DIrradiance(BaseSensor):
             return self._illuminance_type.reflection
 
         @reflection.setter
-        def reflection(self, value: bool):
+        def reflection(self, value: bool) -> None:
             self._illuminance_type.reflection = value
 
         @property
@@ -3982,7 +3982,7 @@ class Sensor3DIrradiance(BaseSensor):
             return self._illuminance_type.transmission
 
         @transmission.setter
-        def transmission(self, value: bool):
+        def transmission(self, value: bool) -> None:
             self._illuminance_type.transmission = value
 
         @property
@@ -4002,7 +4002,7 @@ class Sensor3DIrradiance(BaseSensor):
             return self._illuminance_type.absorption
 
         @absorption.setter
-        def absorption(self, value: bool):
+        def absorption(self, value: bool) -> None:
             self._illuminance_type.absorption = value
 
     class Colorimetric:
@@ -4405,7 +4405,9 @@ class Sensor3DIrradiance(BaseSensor):
         return self._sensor_instance.irradiance_3d_properties.geometries.geo_paths
 
     @geometries.setter
-    def geometries(self, geometries: List[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]):
+    def geometries(
+        self, geometries: List[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]
+    ) -> None:
         geo_paths = []
         for gr in geometries:
             if isinstance(gr, GeoRef):
@@ -4892,7 +4894,7 @@ class SensorXMPIntensity(BaseSensor):
             self.y_sampling = dimension.y_sampling
 
     @property
-    def x_start(self) -> float:
+    def x_start(self) -> Union[None, float]:
         """The minimum value on x-axis  (deg).
 
         Parameters
@@ -4902,7 +4904,7 @@ class SensorXMPIntensity(BaseSensor):
 
         Returns
         -------
-        float
+        Union[None, float]:
             Minimum of x-axis in degree.
         """
         template = self._sensor_template.intensity_sensor_template
@@ -4925,7 +4927,7 @@ class SensorXMPIntensity(BaseSensor):
             template.intensity_orientation_x_as_meridian.intensity_dimensions.x_start = value
 
     @property
-    def x_end(self) -> float:
+    def x_end(self) -> Union[None, float]:
         """The maximum value on x-axis  (deg).
 
         Parameters
@@ -4935,7 +4937,7 @@ class SensorXMPIntensity(BaseSensor):
 
         Returns
         -------
-        float
+        Union[None, float]:
             Maximum of x-axis in degree.
         """
         template = self._sensor_template.intensity_sensor_template
@@ -4958,7 +4960,7 @@ class SensorXMPIntensity(BaseSensor):
             template.intensity_orientation_x_as_meridian.intensity_dimensions.x_end = value
 
     @property
-    def x_sampling(self) -> int:
+    def x_sampling(self) -> Union[None, int]:
         """Pixel sampling along x-Axis.
 
         Parameters
@@ -4968,7 +4970,7 @@ class SensorXMPIntensity(BaseSensor):
 
         Returns
         -------
-        int
+        Union[None, int]:
             Number of Pixels along x-Axis.
         """
         template = self._sensor_template.intensity_sensor_template
@@ -4990,7 +4992,7 @@ class SensorXMPIntensity(BaseSensor):
             template.intensity_orientation_x_as_meridian.intensity_dimensions.x_sampling = value
 
     @property
-    def y_end(self) -> float:
+    def y_end(self) -> Union[None, float]:
         """The maximum value on y-axis (deg).
 
         Parameters
@@ -5000,7 +5002,7 @@ class SensorXMPIntensity(BaseSensor):
 
         Returns
         -------
-        float
+        Union[None, float]:
             Maximum of y-axis in degree.
         """
         template = self._sensor_template.intensity_sensor_template
@@ -5022,7 +5024,7 @@ class SensorXMPIntensity(BaseSensor):
             template.intensity_orientation_x_as_meridian.intensity_dimensions.y_end = value
 
     @property
-    def y_start(self) -> float:
+    def y_start(self) -> Union[None, float]:
         """The minimum value on y-axis (deg).
 
         Parameters
@@ -5032,7 +5034,7 @@ class SensorXMPIntensity(BaseSensor):
 
         Returns
         -------
-        float
+        Union[None, float]:
             Minimum of y-axis in degree.
         """
         template = self._sensor_template.intensity_sensor_template
@@ -5054,7 +5056,7 @@ class SensorXMPIntensity(BaseSensor):
             template.intensity_orientation_x_as_meridian.intensity_dimensions.y_start = value
 
     @property
-    def y_sampling(self) -> int:
+    def y_sampling(self) -> Union[None, int]:
         """Sampling along y-axis.
 
         Parameters
@@ -5064,7 +5066,7 @@ class SensorXMPIntensity(BaseSensor):
 
         Returns
         -------
-        float
+        Union[None, int]:
             Number of Pixels along the y-axis.
         """
         template = self._sensor_template.intensity_sensor_template
@@ -5086,7 +5088,7 @@ class SensorXMPIntensity(BaseSensor):
             template.intensity_orientation_x_as_meridian.intensity_dimensions.y_sampling = value
 
     @property
-    def theta_max(self) -> float:
+    def theta_max(self) -> Union[None, float]:
         """Maximum theta angle on conoscopic type (in deg).
 
         Parameters
@@ -5096,7 +5098,7 @@ class SensorXMPIntensity(BaseSensor):
 
         Returns
         -------
-        float
+        Union[None, float]:
             Maximum value for Theta angle.
         """
         template = self._sensor_template.intensity_sensor_template
@@ -5118,7 +5120,7 @@ class SensorXMPIntensity(BaseSensor):
             raise TypeError("Only Conoscopic Sensor has theta_max dimension")
 
     @property
-    def theta_sampling(self) -> int:
+    def theta_sampling(self) -> Union[None, int]:
         """Sampling on conoscopic type.
 
         Parameters
@@ -5129,7 +5131,7 @@ class SensorXMPIntensity(BaseSensor):
 
         Returns
         -------
-        int
+        Union[None, int]:
             Sampling along theta axis in a conoscopic map.
         """
         template = self._sensor_template.intensity_sensor_template
