@@ -391,6 +391,8 @@ class LightBoxParameters:
 
     axis_system: List[float] = field(default_factory=lambda: ORIGIN)
     """Position of the sensor."""
+
+
 ## Source Parameters
 
 
