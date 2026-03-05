@@ -32,7 +32,7 @@ from google.protobuf.internal.containers import RepeatedScalarFieldContainer
 import numpy as np
 
 import ansys.speos.core.body as body
-import ansys.speos.core.component as component
+from ansys.speos.core.component import LightBox
 import ansys.speos.core.face as face
 from ansys.speos.core.generic.general_methods import graphics_required
 from ansys.speos.core.generic.parameters import (
@@ -41,6 +41,7 @@ from ansys.speos.core.generic.parameters import (
     CameraSensorParameters,
     Irradiance3DSensorParameters,
     IrradianceSensorParameters,
+    LightBoxParameters,
     LuminaireSourceParameters,
     RadianceSensorParameters,
     RayFileSourceParameters,
@@ -594,8 +595,12 @@ class Project:
         return feature
 
     def create_lightbox_import(
-        self, name: str, description: str = "", metadata: Optional[Mapping[str, str]] = None
-    ) -> component.LightBox:
+        self,
+        name: str,
+        description: str = "",
+        metadata: Optional[Mapping[str, str]] = None,
+        parameters: Optional[LightBoxParameters] = None,
+    ) -> LightBox:
         """Create lightbox import features.
 
         Parameters
@@ -608,10 +613,12 @@ class Project:
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
+        parameters: ansys.speos.core.generic.parameters.LightBoxParameters
+            Allows to provide parameters to overwrite default parameters.
 
         Returns
         -------
-        ansys.speos.core.ground_plane.GroundPlane
+        ansys.speos.core.component.LightBox
             Ground plane feature.
         """
         if metadata is None:
@@ -621,8 +628,17 @@ class Project:
         if len(existing_features) != 0:
             msg = "Lightbox: {} has a conflict name with an existing feature.".format(name)
             raise ValueError(msg)
-        feature = component.LightBox(
-            project=self, name=name, description=description, metadata=metadata
+        if parameters is not None and not isinstance(parameters, LightBoxParameters):
+            raise TypeError(
+                f"Incorrect parameter dataclass provided "
+                f"{str(type(parameters))} instead of LightBoxParameters"
+            )
+        feature = LightBox(
+            project=self,
+            name=name,
+            description=description,
+            metadata=metadata,
+            default_parameters=parameters if parameters is not None else LightBoxParameters(),
         )
         self._features.append(feature)
         return feature
@@ -665,6 +681,7 @@ class Project:
             face.Face,
             part.Part.SubPart,
             GroundPlane,
+            LightBox,
         ]
     ]:
         """Find feature(s) by name (possibility to use regex) and by feature type.
@@ -697,7 +714,8 @@ class Project:
         ansys.speos.core.simulation.SimulationInverse, ansys.speos.core.part.Part, \
         ansys.speos.core.body.Body, \
         ansys.speos.core.face.Face, ansys.speos.core.part.Part.SubPart, \
-        ansys.speos.core.ground_plane.GroundPlane]]
+        ansys.speos.core.ground_plane.GroundPlane,
+        ansys.speos.core.component.LightBox]]
             Found features.
 
         Examples
@@ -1102,7 +1120,7 @@ class Project:
                 self._features.append(ssr_feat)
 
         for scene_inst in scene_data.scenes:
-            lightbox_scene = component.LightBox(
+            lightbox_scene = LightBox(
                 project=self,
                 name=scene_inst.name,
                 scene_instance=scene_inst,
@@ -1208,6 +1226,7 @@ class Project:
             SourceLuminaire,
             SourceRayFile,
             SourceLuminaire,
+            LightBox,
         ],
         scene_seize: float,
     ) -> Plotter:
@@ -1224,7 +1243,8 @@ class Project:
         ansys.speos.core.sensor.Sensor3DIrradiance, \
         ansys.speos.core.source.SourceLuminaire, \
         ansys.speos.core.source.SourceRayFile, \
-        ansys.speos.core.source.SourceLuminaire]
+        ansys.speos.core.source.SourceLuminaire, \
+        ansys.speos.core.component.Lightbox]
             speos feature whose visual data will be added.
         scene_seize: float
             seize of max scene bounds
@@ -1244,6 +1264,7 @@ class Project:
                 SourceLuminaire,
                 SourceRayFile,
                 SourceSurface,
+                LightBox,
             ),
         ):
             return plotter
@@ -1251,6 +1272,27 @@ class Project:
         ray_path_scale_factor = 0.2
 
         match speos_feature:
+            case LightBox():
+                for data in speos_feature.visual_data:
+                    if isinstance(data.data, list):
+                        for visual_ray in data.data:
+                            tmp = visual_ray._VisualArrow__data
+                            visual_ray._VisualArrow__data.points[1] = (
+                                ray_path_scale_factor
+                                * scene_seize
+                                * (tmp.points[1] - tmp.points[0])
+                                + tmp.points[0]
+                            )
+                            plotter.plot(visual_ray.data, color=visual_ray.color)
+                    else:
+                        plotter.plot(
+                            data.data,
+                            show_edges=True,
+                            line_width=2,
+                            edge_color="red",
+                            color="orange",
+                            opacity=0.5,
+                        )
             case SourceRayFile() | SourceLuminaire() | SourceSurface():
                 for visual_ray in speos_feature.visual_data.data:
                     tmp = visual_ray._VisualArrow__data
@@ -1269,27 +1311,38 @@ class Project:
                     opacity=0.5,
                 )
 
-        if speos_feature.visual_data.coordinates is not None:
-            tmp_origin = speos_feature.visual_data.coordinates.origin
-            tmp = speos_feature.visual_data.coordinates
-            speos_feature.visual_data.coordinates._VisualCoordinateSystem__x_axis.points[:] = (
+        visual_coordinate_data = (
+            speos_feature.visual_data.coordinates
+            if not isinstance(speos_feature.visual_data, list)
+            else speos_feature.visual_data[0].coordinates
+        )
+        if visual_coordinate_data is not None:
+            tmp_origin = visual_coordinate_data.origin
+            tmp = visual_coordinate_data
+            visual_coordinate_data._VisualCoordinateSystem__x_axis.points[:] = (
                 tmp.x_axis.points - tmp_origin
             ) * ray_path_scale_factor * scene_seize + tmp_origin
-            speos_feature.visual_data.coordinates._VisualCoordinateSystem__y_axis.points[:] = (
+            visual_coordinate_data._VisualCoordinateSystem__y_axis.points[:] = (
                 tmp.y_axis.points - tmp_origin
             ) * ray_path_scale_factor * scene_seize + tmp_origin
-            speos_feature.visual_data.coordinates._VisualCoordinateSystem__z_axis.points[:] = (
+            visual_coordinate_data._VisualCoordinateSystem__z_axis.points[:] = (
                 tmp.z_axis.points - tmp_origin
             ) * ray_path_scale_factor * scene_seize + tmp_origin
 
             match speos_feature:
                 case SensorRadiance() | SourceSurface():
-                    plotter.plot(speos_feature.visual_data.coordinates.x_axis, color="red")
-                    plotter.plot(speos_feature.visual_data.coordinates.y_axis, color="green")
-                case SensorIrradiance() | SensorCamera() | SourceLuminaire() | SourceRayFile():
-                    plotter.plot(speos_feature.visual_data.coordinates.x_axis, color="red")
-                    plotter.plot(speos_feature.visual_data.coordinates.y_axis, color="green")
-                    plotter.plot(speos_feature.visual_data.coordinates.z_axis, color="blue")
+                    plotter.plot(visual_coordinate_data.x_axis, color="red")
+                    plotter.plot(visual_coordinate_data.y_axis, color="green")
+                case (
+                    SensorIrradiance()
+                    | SensorCamera()
+                    | SourceLuminaire()
+                    | SourceRayFile()
+                    | LightBox()
+                ):
+                    plotter.plot(visual_coordinate_data.x_axis, color="red")
+                    plotter.plot(visual_coordinate_data.y_axis, color="green")
+                    plotter.plot(visual_coordinate_data.z_axis, color="blue")
         return plotter
 
     @graphics_required
