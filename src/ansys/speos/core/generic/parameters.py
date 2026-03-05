@@ -25,7 +25,7 @@
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 from ansys.speos.core.generic.constants import ORIGIN
 
@@ -108,7 +108,7 @@ class GeometryLayerParameters:
 class LayerByFaceParameters:
     """Layer separation type Parameters  for Face separation."""
 
-    geometries: Optional[list[GeometryLayerParameters]] = None
+    geometries: Optional[List[GeometryLayerParameters]] = None
     """List of Geometry Layers"""
     sca_filtering_types: Union[
         SCAFilteringTypes.intersected_one_time, SCAFilteringTypes.last_impact
@@ -223,7 +223,7 @@ class CameraSensorParameters:
         default_factory=PhotometricCameraParameters
     )
     """Camera sensor type None means geometric sensor"""
-    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+    axis_system: List[float] = field(default_factory=lambda: ORIGIN)
     """Location of the sensor Origin"""
     distortion_file_uri: Union[str, Path] = ""
     """distortion file location"""
@@ -307,7 +307,7 @@ class IrradianceSensorParameters:
 
     dimensions: DimensionsParameters = field(default_factory=DimensionsParameters)
     """Dimensions of the sensor."""
-    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+    axis_system: List[float] = field(default_factory=lambda: ORIGIN)
     """Position of the sensor."""
     sensor_type: Union[
         SensorTypes.photometric, ColorimetricParameters, SpectralParameters, SensorTypes.radiometric
@@ -315,7 +315,7 @@ class IrradianceSensorParameters:
     """Type of the sensor."""
     integration_type: IntegrationTypes = IntegrationTypes.planar
     """Integration type of the sensor."""
-    integration_direction: Optional[list[float]] = None
+    integration_direction: Optional[List[float]] = None
     """Integration direction of the sensor."""
     rayfile_type: Union[RayfileTypes] = RayfileTypes.none
     """Type of rayfile stored by the sensor."""
@@ -338,7 +338,7 @@ class RadianceSensorParameters:
 
     dimensions: DimensionsParameters = field(default_factory=DimensionsParameters)
     """Dimensions of the sensor."""
-    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+    axis_system: List[float] = field(default_factory=lambda: ORIGIN)
     """Position of the sensor."""
     sensor_type: Union[
         SensorTypes.photometric, ColorimetricParameters, SpectralParameters, SensorTypes.radiometric
@@ -349,7 +349,7 @@ class RadianceSensorParameters:
     will be ignored if observer is used."""
     integration_angle: float = 5
     """Integration angle."""
-    observer: Union[None, list[float]] = None
+    observer: Optional[List[float]] = None
     """The position of the observer point."""
     layer_type: Union[
         LayerTypes.none,
@@ -380,3 +380,11 @@ class Irradiance3DSensorParameters:
     """Layer separation type."""
     geometries: Optional[list] = None
     """Sensor geometry."""
+
+
+@dataclass
+class LightBoxParameters:
+    """Parameters class for LightBox feature."""
+
+    axis_system: List[float] = field(default_factory=lambda: ORIGIN)
+    """Position of the sensor."""

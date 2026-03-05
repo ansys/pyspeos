@@ -19,19 +19,21 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
 """Provides a way to interact with Speos component feature: Lightbox."""
 
 from __future__ import annotations
 
 from difflib import SequenceMatcher
 from pathlib import Path
-from typing import Mapping, Optional
+from typing import List, Mapping, Optional, Tuple, Union
 import uuid
+
+import numpy as np
 
 from ansys.speos.core.generic.constants import ORIGIN
 import ansys.speos.core.generic.general_methods as general_methods
-from ansys.speos.core.generic.visualization_methods import _VisualData
+from ansys.speos.core.generic.parameters import LightBoxParameters
+from ansys.speos.core.generic.visualization_methods import _VisualArrow, _VisualData, local2absolute
 from ansys.speos.core.kernel import ProtoScene
 import ansys.speos.core.project as project
 import ansys.speos.core.proto_message_utils as proto_message_utils
@@ -62,8 +64,8 @@ class SpeosFileInstance:
 
     def __init__(
         self,
-        file: str,
-        axis_system: Optional[list[float]] = None,
+        file: Union[Path, str],
+        axis_system: Optional[List[float]] = None,
         password: str = "",
         name: str = "",
     ) -> None:
@@ -100,8 +102,11 @@ class LightBox:
         Metadata of the feature.
         By default, ``{}``.
     scene_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SceneInstance, optional
-        Scene instance to provide if the feature does not has to be created from scratch
+        Scene instance to provide if the feature does not have to be created from scratch
         By default, ``None``, means that the feature is created from scratch by default.
+    default_parameters: ansys.speos.core.generic.parameters.LightBoxParameters
+        If defined the values in the LightBox instance will be overwritten by the values
+         of the data class.
     """
 
     def __init__(
@@ -111,13 +116,13 @@ class LightBox:
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         scene_instance: Optional[ProtoScene.SceneInstance] = None,
-        default_parameters: Optional = None,
+        default_parameters: Optional[LightBoxParameters] = None,
     ):
         self._name = name
         self._unique_id = None
         self._project = project
         self.scene_template_link = None
-        self._visual_data = _VisualData() if general_methods._GRAPHICS_AVAILABLE else None
+        self._visual_data = [] if general_methods._GRAPHICS_AVAILABLE else None
         if scene_instance is None:
             self._scene_instance = ProtoScene.SceneInstance(
                 name=name, description=description, metadata=metadata
@@ -131,40 +136,101 @@ class LightBox:
             self.scene_template_link = self._project.client[scene_instance.scene_guid]
             self.reset()
 
+        if default_parameters is not None:
+            self.axis_system = default_parameters.axis_system
+
     @property
-    def visual_data(self):
+    def visual_data(self) -> List[_VisualData]:
         """Property containing Lightbox visualization data.
 
         Returns
         -------
-        _VisualData
+        ansys.speos.core.generic.visualization_methods._VisualData
             Instance of VisualData Class for pyvista.PolyData of feature rays, coordinate_systems.
 
         """
-        if self._visual_data.updated is True:
+        if len(self._visual_data) != 0 and all(data.updated is True for data in self._visual_data):
             return self._visual_data
         else:
-            None
+            self._visual_data = [] if general_methods._GRAPHICS_AVAILABLE else None
+            feature_pos_info = self.get(key="axis_system")
+            for visual_body in self.get(key="bodys"):
+                self._visual_data.append(_VisualData())
+                for visual_face in visual_body["faces"]:
+                    vertices = np.array(visual_face["vertices"]).reshape(-1, 3)
+                    vertices = np.array(
+                        [local2absolute(vertice, feature_pos_info) for vertice in vertices]
+                    )
+                    facets = np.array(visual_face["facets"]).reshape(-1, 3)
+                    temp = np.full(facets.shape[0], 3)
+                    temp = np.vstack(temp)
+                    facets = np.hstack((temp, facets))
+                    self._visual_data[-1].add_data_mesh(
+                        vertices=vertices,
+                        facets=facets,
+                    )
+                self._visual_data[-1].coordinates.origin = np.array(feature_pos_info[:3])
+                self._visual_data[-1].coordinates.x_axis = np.array(feature_pos_info[3:6])
+                self._visual_data[-1].coordinates.y_axis = np.array(feature_pos_info[6:9])
+                self._visual_data[-1].coordinates.z_axis = np.array(feature_pos_info[9:12])
+                self._visual_data[-1].updated = True
+
+            for visual_source in self.get(key="sources"):
+                source_name = visual_source["name"]
+                self._visual_data.append(_VisualData(ray=True))
+
+                for ray_path in self._project.client[
+                    self.get(key="scene_guid")
+                ].get_source_ray_paths(
+                    source_path=source_name, rays_nb=100, raw_data=True, display_data=True
+                ):
+                    self._visual_data[-1].add_data_line(
+                        _VisualArrow(
+                            line_vertices=[
+                                local2absolute(ray_path.impacts_coordinates, feature_pos_info),
+                                ray_path.last_direction,
+                            ],
+                            color=tuple(ray_path.colors.values),
+                            arrow=False,
+                        )
+                    )
+                self._visual_data[-1].coordinates.origin = np.array(feature_pos_info[:3])
+                self._visual_data[-1].coordinates.x_axis = np.array(feature_pos_info[3:6])
+                self._visual_data[-1].coordinates.y_axis = np.array(feature_pos_info[6:9])
+                self._visual_data[-1].coordinates.z_axis = np.array(feature_pos_info[9:12])
+                self._visual_data[-1].updated = True
+            return self._visual_data
 
     @property
-    def axis_system(self) -> list[float]:
+    def name(self) -> str:
+        """Property of the lightbox name.
+
+        Returns
+        -------
+        str
+            Name of the lightbox feature.
+        """
+        return self._name
+
+    @property
+    def axis_system(self) -> List[float]:
         """Property of the lightbox coordinate system.
 
         Parameters
         ----------
-        axis_system: list[float]
+        axis_system: List[float]
             coordinate information
 
         Returns
         -------
-        list[float]
+        List[float]
             coordinate information
 
         """
         return self._scene_instance.axis_system
 
     @axis_system.setter
-    def axis_system(self, axis_system: list[float]) -> None:
+    def axis_system(self, axis_system: List[float]) -> None:
         self._scene_instance.axis_system[:] = axis_system
 
     def set_speos_light_box(self, lightbox: SpeosFileInstance) -> LightBox:
@@ -172,7 +238,7 @@ class LightBox:
 
         Parameters
         ----------
-        lightbox: SpeosFileInstance
+        lightbox: ansys.speos.core.component.SpeosFileInstance
             lightbox information to be imported.
 
         Returns
@@ -187,6 +253,19 @@ class LightBox:
         self._scene_instance.scene_guid = tmp_lightbox_scene_link.key
         self._scene_instance.axis_system[:] = lightbox.axis_system
         self._scene_instance.name = lightbox.name
+
+        sim_insts = [
+            x
+            for x in self._project.scene_link.get().simulations
+            if any(self._name in path for path in x.source_paths)
+        ]
+        for sim_inst in sim_insts:
+            # modify the server
+            current_sources = sim_inst.source_paths
+            sim_inst.source_paths[:] = [x for x in current_sources if self._name not in x]
+            # modify the local
+            sim_feature = self._project.find(name=sim_inst.name)[0]
+            sim_feature._simulation_instance = sim_inst
         return self
 
     def commit(self) -> LightBox:
@@ -219,17 +298,6 @@ class LightBox:
             if scene_inst is not None:
                 if scene_inst != self._scene_instance:
                     scene_inst.CopyFrom(self._scene_instance)  # if yes, just replace
-
-                    sim_insts = [
-                        x
-                        for x in scene_data.simulations
-                        if any(self._name in path for path in x.source_paths)
-                    ]
-                    for sim_inst in sim_insts:
-                        current_sources = sim_inst.source_paths
-                        sim_inst.source_paths[:] = [
-                            x for x in current_sources if self._name not in x
-                        ]
                 else:
                     update_scene = False
             else:
@@ -278,16 +346,11 @@ class LightBox:
                     speos_client=self._project.client,
                     message=self.scene_template_link.get(),
                 )
-
-        # # handle spectrum & intensity
-        # if self._type is not None:
-        #     self._type._to_dict(dict_to_complete=out_dict)
-
         proto_message_utils._replace_properties(json_dict=out_dict)
 
         return out_dict
 
-    def get(self, key: str = "") -> list[tuple[str, dict]]:
+    def get(self, key: str = "") -> List[Tuple[str, dict]]:
         """Get dictionary corresponding to the project - read only.
 
         Parameters
