@@ -643,18 +643,6 @@ class Project:
         self._features.append(feature)
         return feature
 
-        # lightbox_scene_link = self.client.scenes().create()
-        # lightbox_scene_link.load_file(file_uri=str(lightbox_uri), password=password)
-        # project_scene_data = self.scene_link.get()
-        # test = ProtoScene.SceneInstance(
-        #     name="test",
-        #     scene_guid=lightbox_scene_link.key,
-        #     axis_system=[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
-        # )
-        # project_scene_data.scenes.append(test)
-        # self._features.append(lightbox_data)
-        # return test
-
     def find(
         self,
         name: str,
@@ -714,7 +702,7 @@ class Project:
         ansys.speos.core.simulation.SimulationInverse, ansys.speos.core.part.Part, \
         ansys.speos.core.body.Body, \
         ansys.speos.core.face.Face, ansys.speos.core.part.Part.SubPart, \
-        ansys.speos.core.ground_plane.GroundPlane,
+        ansys.speos.core.ground_plane.GroundPlane, \
         ansys.speos.core.component.LightBox]]
             Found features.
 
