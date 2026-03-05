@@ -550,10 +550,19 @@ def test_create_texture_property(speos: Speos):
     layer_1.normal_map_property = MappingOperator(
         "cubic", 5, 10, False, False, [1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1], 10, 10, 45
     )
+    layer_1.roughness = 0.42
+    assert pytest.approx(layer_1.roughness, rel=1e-6) == 0.42
+
+    # change again to ensure value updates
+    layer_1.roughness = 0.123
+    assert pytest.approx(layer_1.roughness, rel=1e-6) == 0.123
     layer_1.commit()
     op1.texture = [layer_1]
     op1.commit()
-
+    assert (
+        layer_1.sop_template_link.get()
+        == p.client[op1._material_instance.texture.layers[0].sop_guid].get()
+    )
     assert op1._material_instance.texture.layers[0].normal_map_properties.mapping_operator.HasField(
         "cubic"
     )
@@ -900,3 +909,31 @@ def test_load_texture_property_from_file(speos: Speos):
                 assert mat.sop_library.endswith("simplescattering")
                 assert mat.vop_type == "optic"
                 assert mat.vop_optic == MaterialOpticParameters(1.5, 10, 0)
+
+
+def test_delete_texture_property(speos: Speos):
+    """Ensure TextureLayer.delete clears local links/refs after commit."""
+    p = Project(speos=speos)
+
+    op = p.create_optical_property(name="Material.DeleteTest")
+    # create layer, commit SOP template, assign to material and commit material to scene
+    layer = TextureLayer(op, "Layer.Delete")
+    layer.commit()
+    op.texture = [layer]
+    op.commit()
+
+    # Sanity: we have a sop_template_link for the layer (committed)
+    assert layer.sop_template_link is not None
+
+    # Delete the layer (should delete sop template link and clear internals)
+    layer.delete()
+
+    # After delete local link cleared
+    assert layer.sop_template_link is None
+    # _texture_template internal pointer cleared
+    assert layer._texture_template is None
+    # unique id reset
+    assert getattr(layer, "_unique_id", None) is None
+    # check layer is also removed downstream
+    assert len(op.texture) == 0
+    assert len(op._material_instance.texture.layers) == 0

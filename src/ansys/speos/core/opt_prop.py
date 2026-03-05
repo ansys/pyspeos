@@ -391,6 +391,7 @@ class TextureLayer(BaseSop):
     ):
         super().__init__()
         self._project = opt_prop._project
+        self._opt_prop = opt_prop
         self.sop_template_link = None
         if metadata is None:
             metadata = {}
@@ -826,11 +827,16 @@ class TextureLayer(BaseSop):
         if self.sop_template_link is not None:
             self.sop_template_link.delete()
             self.sop_template_link = None
-
+        self._texture_template.ClearField("sop_guid")
+        layers = self._material_instance.texture.layers
+        layers.pop(self._index)
+        self._opt_prop.texture.pop(self._index)
+        self._opt_prop.commit()
+        self._material_instance.texture.ClearField("layers")
+        self._material_instance.texture.layers.extend(layers)
         self._texture_template = None
         # Reset the _unique_id
         self._unique_id = None
-        self._texture_template.sop_guid = None
         return self
 
     def _fill(self, sop_guid: str, texture: ProtoScene.MaterialInstance.Texture.Layer):
