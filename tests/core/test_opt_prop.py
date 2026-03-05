@@ -25,6 +25,7 @@
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from ansys.speos.core import GeoRef, OptProp, Project, Speos
 from ansys.speos.core.generic.parameters import (
@@ -361,7 +362,58 @@ def test_load_optical_property_from_file(speos: Speos):
 
 def test_error_reporting(speos: Speos):
     """Test error raising."""
-    pass
+    p = Project(speos=speos)
+    op = p.create_optical_property(name="ErrMat")
+
+    # sop_reflectance setter should raise if SOP is not mirror
+    op.set_surface_opticalpolished()
+    with pytest.raises(TypeError):
+        op.sop_reflectance = 50
+
+    # sop_library setter should raise if SOP is not library
+    op.set_surface_mirror()
+    with pytest.raises(TypeError):
+        op.sop_library = Path("somefile.scattering")
+
+    # vop_optic setter should raise if VOP is not optic
+    op.set_volume_opaque()
+    with pytest.raises(TypeError):
+        op.vop_optic = MaterialOpticParameters(1.6, 0.01, None)
+
+    # vop_library setter should raise if VOP is not library
+    with pytest.raises(TypeError):
+        op.vop_library = Path("somefile.material")
+
+    # texture setter on OptProp should raise when value is not TextureLayer instances
+    with pytest.raises(ValueError):
+        op.texture = ["not_a_texture"]
+
+    # geometries setter should raise for unsupported types
+    with pytest.raises(TypeError):
+        op.geometries = [123]  # int is unsupported
+
+    # TextureLayer related errors
+    layer = TextureLayer(op, "LayerErr")
+    # setting image file creates texture but no normal_map -> roughness setter should raise
+    layer.image_texture_file_uri = Path("some_image.png")
+    with pytest.raises(TypeError):
+        layer.roughness = 2.0
+
+    # create normal_map without specifying from_image/from_normal_map, calling
+    # normal_map_file_uri should raise
+    layer2 = TextureLayer(op, "LayerErr2")
+    layer2._sop_template.texture.SetInParent()
+    layer2._sop_template.texture.normal_map.SetInParent()
+    with pytest.raises(TypeError):
+        layer2.normal_map_file_uri = Path("normal.png")
+
+    # invalid types for mapping property setters should raise ValueError
+    with pytest.raises(ValueError):
+        layer2.normal_map_property = 123  # not MappingOperator or MappingByData
+    with pytest.raises(ValueError):
+        layer2.image_property = 123
+    with pytest.raises(ValueError):
+        layer2.anisotropic_property = 123
 
 
 def test_create_texture_property(speos: Speos):
