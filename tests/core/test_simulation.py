@@ -667,7 +667,7 @@ def test_commit(speos: Speos):
     ssr2.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
-    src.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
+    src.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     src.commit()
 
     # Create
@@ -721,7 +721,7 @@ def test_reset(speos: Speos):
     ssr2.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
-    src.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
+    src.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     src.commit()
 
     # Create + commit
@@ -776,7 +776,7 @@ def test_direct_modify_after_reset(speos: Speos):
     ssr2.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
-    src.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
+    src.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     src.commit()
 
     # Create + commit
@@ -849,7 +849,7 @@ def test_inverse_modify_after_reset(speos: Speos):
     ssr2.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
-    src.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
+    src.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     src.commit()
 
     # Create + commit
@@ -928,7 +928,7 @@ def test_interactive_modify_after_reset(speos: Speos):
     ssr2.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
-    src.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
+    src.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     src.commit()
 
     # Create + commit
@@ -980,7 +980,7 @@ def test_delete(speos: Speos):
     ssr.commit()
 
     src = p.create_source(name="Luminaire.1", feature_type=SourceLuminaire)
-    src.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
+    src.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     src.commit()
 
     # Create + commit
@@ -1372,6 +1372,7 @@ def test_export_vtp(speos: Speos):
     file = export_data_xmp_txt.open("r")
     content = file.readlines()
     file.close()
+
     resolution_x = 10
     resolution_y = 10
     xmp_data = []
