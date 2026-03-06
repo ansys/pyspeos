@@ -417,7 +417,19 @@ class BaseVop:
 
 
 class TextureLayer(BaseSop):
-    """Describes the optical and texture properties of a single texture layer."""
+    """Describes the optical and texture properties of a single texture layer.
+
+    Parameters
+    ----------
+    opt_prop : ansys.speos.core.opt_prop.OptProp
+        Optical Property which will hold this Layer
+    name : str
+        Name of the feature.
+    description : str, optional
+        Description of the feature. Default is an empty string.
+    metadata : Optional[Mapping[str, str]], optional
+        Metadata of the feature. Default is ``None``.
+    """
 
     def __init__(
         self,
@@ -937,7 +949,7 @@ class OptProp(BaseVop, BaseSop):
 
     Parameters
     ----------
-    project : p.Project
+    project : ansys.speos.core.project.Project
         Project that will own the feature.
     name : str
         Name of the feature.
