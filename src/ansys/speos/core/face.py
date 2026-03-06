@@ -139,11 +139,6 @@ class Face:
     def vertices_data(self) -> list[MeshData]:
         """List of data applied to vertices.
 
-        Parameters
-        ----------
-        value : list[MeshData]
-            List of MeshData for the face each data set in complete
-
         Returns
         -------
         list[MeshData]
@@ -152,7 +147,14 @@ class Face:
         return [MeshData(i.name, i.data) for i in self._face.vertices_data]
 
     @vertices_data.setter
-    def vertices_data(self, value: list[MeshData]):
+    def vertices_data(self, value: list[MeshData]) -> None:
+        """Set the data applied to vertices.
+
+        Parameters
+        ----------
+        value : list[MeshData]
+            List of MeshData for the face each data set in complete
+        """
         self._face.vertices_data[:] = [ProtoFace.MeshData(name=i.name, data=i.data) for i in value]
 
     def _to_dict(self) -> dict:
