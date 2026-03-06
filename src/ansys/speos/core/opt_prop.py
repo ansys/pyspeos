@@ -845,7 +845,7 @@ class TextureLayer(BaseSop):
         self._texture_template = texture
 
 
-class OptProp(BaseSop, BaseVop):
+class OptProp(BaseVop, BaseSop):
     """Speos feature: optical property.
 
     By default, a mirror 100% is chosen as surface optical property,
@@ -873,8 +873,8 @@ class OptProp(BaseSop, BaseVop):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
     ):
-        super(BaseSop).__init__()
         super(BaseVop).__init__()
+        super(BaseSop).__init__()
         self._name = name
         self._project = project
         self._unique_id = None

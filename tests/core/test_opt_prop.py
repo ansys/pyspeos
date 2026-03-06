@@ -415,6 +415,13 @@ def test_error_reporting(speos: Speos):
     with pytest.raises(ValueError):
         layer2.anisotropic_property = 123
 
+    layer3 = TextureLayer(op, "LayerErr3")
+    layer3.set_surface_library()
+    layer3.sop_library = Path(test_path) / "Texture.1.speos" / "aniso_bsdf.anisotropicbsdf"
+    with pytest.raises(TypeError):
+        layer3.roughness = 2.0
+    layer3.set_normal_map_from_image()
+
 
 def test_create_texture_property(speos: Speos):
     """Test creation of texture property."""
@@ -444,6 +451,9 @@ def test_create_texture_property(speos: Speos):
     )
 
     layer_1.image_texture_file_uri = Path(test_path) / "Texture.1.speos" / "black_leather.jpg.png"
+    for map_type in MappingTypes:
+        layer_1.image_property = MappingOperator(map_type, 5)
+        assert map_type == layer_1.image_property.mapping_type
     layer_1.image_property = MappingOperator("planar", 5)
     layer_1.commit()
     op1.texture = [layer_1]
@@ -482,6 +492,9 @@ def test_create_texture_property(speos: Speos):
 
     layer_1.set_normal_map_from_image()
     layer_1.normal_map_file_uri = Path(test_path) / "Texture.1.speos" / "black_leather.jpg.png"
+    for map_type in MappingTypes:
+        layer_1.normal_map_property = MappingOperator(map_type, 5)
+        assert map_type == layer_1.normal_map_property.mapping_type
     layer_1.normal_map_property = MappingOperator("cylindrical", 5)
     layer_1.commit()
     op1.texture = [layer_1]
@@ -594,6 +607,9 @@ def test_create_texture_property(speos: Speos):
     layer_2 = TextureLayer(op1, "Layer.2")
     layer_2.set_surface_library()
     layer_2.sop_library = Path(test_path) / "Texture.1.speos" / "aniso_bsdf.anisotropicbsdf"
+    for map_type in MappingTypes:
+        layer_2.anisotropic_property = MappingOperator(map_type, 5)
+        assert map_type == layer_2.anisotropic_property.mapping_type
     layer_2.anisotropic_property = MappingOperator(
         MappingTypes.spherical,
         5,
