@@ -452,6 +452,8 @@ class LightBoxParameters:
 
     axis_system: List[float] = field(default_factory=lambda: ORIGIN)
     """Position of the sensor."""
+
+
 class NearfieldParameters:
     """Parameters data class for Nearfield."""
 
