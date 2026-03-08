@@ -40,16 +40,15 @@ from ansys.speos.core.simulation import BaseSimulation
 
 
 class LightBoxFileInstance:
-    """Represents a SPEOS file containing geometries and materials.
+    """Represents a Lightbox file containing geometries and sources.
 
-    Geometries are placed in the root part of a project, and oriented according to the axis_system
-    argument.
+    lightbox is imported as scene inside a main project scene.
 
     Parameters
     ----------
     file : str
-        SPEOS or Lightbox file to be loaded.
-    password: str = ""
+        Lightbox file to be loaded.
+    password : str = ""
         Password for the imported lightbox.
     """
 
@@ -67,9 +66,8 @@ class LightBoxFileInstance:
 class LightBox:
     """Component feature: Lightbox.
 
-    By default, regarding inherent characteristics, an irradiance sensor of type photometric and
-    illuminance type planar is chosen. By default, regarding properties, an axis system is
-    selected to position the sensor, no layer separation and no ray file generation are chosen.
+    By default, regarding properties, a global origin axis system is selected to
+    position the lightbox.
 
     Parameters
     ----------
@@ -80,13 +78,13 @@ class LightBox:
     description : str
         Description of the feature.
         By default, ``""``.
-    metadata : Optional[Mapping[str, str]]
+    metadata : Optional[Mapping[str, str]], optional
         Metadata of the feature.
         By default, ``{}``.
     scene_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SceneInstance, optional
         Scene instance to provide if the feature does not have to be created from scratch
         By default, ``None``, means that the feature is created from scratch by default.
-    default_parameters: ansys.speos.core.generic.parameters.LightBoxParameters
+    default_parameters : ansys.speos.core.generic.parameters.LightBoxParameters, optional
         If defined the values in the LightBox instance will be overwritten by the values
          of the data class.
     """
@@ -212,7 +210,7 @@ class LightBox:
 
         Parameters
         ----------
-        axis_system: List[float]
+        axis_system : List[float]
             coordinate information
 
         Returns
@@ -232,7 +230,7 @@ class LightBox:
 
         Parameters
         ----------
-        lightbox: ansys.speos.core.components.LightBoxFileInstance
+        lightbox : ansys.speos.core.components.LightBoxFileInstance
             lightbox information to be imported.
 
         Returns
