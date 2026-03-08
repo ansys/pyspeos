@@ -30,16 +30,16 @@ import uuid
 
 import numpy as np
 
-from ansys.speos.core.generic.constants import ORIGIN
 import ansys.speos.core.generic.general_methods as general_methods
 from ansys.speos.core.generic.parameters import LightBoxParameters
 from ansys.speos.core.generic.visualization_methods import _VisualArrow, _VisualData, local2absolute
 from ansys.speos.core.kernel import ProtoScene
 import ansys.speos.core.project as project
 import ansys.speos.core.proto_message_utils as proto_message_utils
+from ansys.speos.core.simulation import BaseSimulation
 
 
-class SpeosFileInstance:
+class LightBoxFileInstance:
     """Represents a SPEOS file containing geometries and materials.
 
     Geometries are placed in the root part of a project, and oriented according to the axis_system
@@ -49,37 +49,19 @@ class SpeosFileInstance:
     ----------
     file : str
         SPEOS or Lightbox file to be loaded.
-    axis_system : Optional[List[float]]
-        Location and orientation to define for the geometry of the SPEOS file,
-        [Ox, Oy, Oz, Xx, Xy, Xz, Yx, Yy, Yz, Zx, Zy, Zz].
-        By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
-    name : str
-        Name chosen for the imported geometry. This name is used as subpart name under the root part
-        of the project.
-        By default, "" (meaning user has not defined a name), then the name of the SPEOS file
-        without extension is taken.
-        Note: Materials are named after the name. For instance name.material.1 representing the
-        first material of the imported geometry.
+    password: str = ""
+        Password for the imported lightbox.
     """
 
     def __init__(
         self,
         file: Union[Path, str],
-        axis_system: Optional[List[float]] = None,
         password: str = "",
-        name: str = "",
     ) -> None:
-        self.file = file
+        self.file = str(file)
         """SPEOS file."""
-        self.axis_system = ORIGIN if axis_system is None else axis_system
-        """Location and orientation to define for the geometry of the SPEOS file."""
-        self.name = name
-        """Name for the imported geometry, and used to name the materials."""
         self.password = password
         """Password for the imported lightbox."""
-
-        if self.name == "":
-            self.name = Path(file).stem
 
 
 class LightBox:
@@ -111,8 +93,8 @@ class LightBox:
 
     def __init__(
         self,
-        project: project.Project,
         name: str,
+        project: project.Project,
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         scene_instance: Optional[ProtoScene.SceneInstance] = None,
@@ -202,6 +184,18 @@ class LightBox:
             return self._visual_data
 
     @property
+    def source_paths(self) -> List[str]:
+        """Property containing paths of source included in lightbox.
+
+        Returns
+        -------
+        List[str]
+            List of source_paths of source included in lightbox.
+
+        """
+        return ["{}/{}".format(self.name, source["name"]) for source in self.get(key="sources")]
+
+    @property
     def name(self) -> str:
         """Property of the lightbox name.
 
@@ -210,7 +204,7 @@ class LightBox:
         str
             Name of the lightbox feature.
         """
-        return self._name
+        return self._scene_instance.name
 
     @property
     def axis_system(self) -> List[float]:
@@ -233,12 +227,12 @@ class LightBox:
     def axis_system(self, axis_system: List[float]) -> None:
         self._scene_instance.axis_system[:] = axis_system
 
-    def set_speos_light_box(self, lightbox: SpeosFileInstance) -> LightBox:
+    def set_speos_light_box(self, lightbox: LightBoxFileInstance) -> LightBox:
         """Set lightbox file to be used for Lightbox feature.
 
         Parameters
         ----------
-        lightbox: ansys.speos.core.component.SpeosFileInstance
+        lightbox: ansys.speos.core.components.LightBoxFileInstance
             lightbox information to be imported.
 
         Returns
@@ -251,21 +245,15 @@ class LightBox:
         tmp_lightbox_scene_link.load_file(file_uri=lightbox.file, password=lightbox.password)
         #### check if need to delete the guid
         self._scene_instance.scene_guid = tmp_lightbox_scene_link.key
-        self._scene_instance.axis_system[:] = lightbox.axis_system
-        self._scene_instance.name = lightbox.name
+        self._scene_instance.axis_system[:] = self.axis_system
+        self._scene_instance.name = self.name
 
-        sim_insts = [
-            x
-            for x in self._project.scene_link.get().simulations
-            if any(self._name in path for path in x.source_paths)
-        ]
-        for sim_inst in sim_insts:
-            # modify the server
-            current_sources = sim_inst.source_paths
-            sim_inst.source_paths[:] = [x for x in current_sources if self._name not in x]
-            # modify the local
-            sim_feature = self._project.find(name=sim_inst.name)[0]
-            sim_feature._simulation_instance = sim_inst
+        for simulation in self._project.find(
+            name=".*", name_regex=True, feature_type=BaseSimulation
+        ):
+            if any(self.name in path for path in simulation._simulation_instance.source_paths):
+                current_sources = simulation._simulation_instance.source_paths
+                simulation.set_source_paths([x for x in current_sources if self.name not in x])
         return self
 
     def commit(self) -> LightBox:
@@ -277,7 +265,8 @@ class LightBox:
             Lightbox feature.
         """
         if general_methods._GRAPHICS_AVAILABLE:
-            self._visual_data.updated = False
+            for item in self._visual_data:
+                item.updated = False
 
         # The _unique_id will help to find the correct item in the scene.scenes:
         # the list of SceneInstance
@@ -298,6 +287,17 @@ class LightBox:
             if scene_inst is not None:
                 if scene_inst != self._scene_instance:
                     scene_inst.CopyFrom(self._scene_instance)  # if yes, just replace
+
+                    sim_insts = [
+                        x
+                        for x in scene_data.simulations
+                        if any(self.name in path for path in x.source_paths)
+                    ]
+                    for sim_inst in sim_insts:
+                        # modify the server
+                        sim_inst.CopyFrom(
+                            self._project.find(name=sim_inst.name)[0]._simulation_instance
+                        )
                 else:
                     update_scene = False
             else:
