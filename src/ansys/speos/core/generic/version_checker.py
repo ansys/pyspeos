@@ -41,7 +41,7 @@ def check_version(input_version: str, major: int, minor: int, patch: int) -> boo
     bool
         True if the input version is >= to the major.minor.patch
     """
-    input_major, input_minor, input_patch = input_version.split(".")
+    input_major, input_minor, input_patch, build = input_version.split(".")
     if "-" in input_patch:
         input_patch = input_patch.split("-")[0]
     if int(input_major) > major:
