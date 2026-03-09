@@ -66,6 +66,7 @@ def test_create_lightbox(speos: Speos):
     lightbox.delete()
 
 
+@pytest.mark.supported_speos_versions(min=261)
 def test_load_lightbox(speos: Speos):
     """Test load a simulation with lightbox inside."""
     p = Project(
