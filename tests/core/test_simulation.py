@@ -1075,6 +1075,7 @@ def test_stop_computation(speos: Speos):
     assert difference.seconds < 25
 
 
+@pytest.mark.supported_speos_versions(min=261)
 def test_export(speos: Speos):
     """Test export of simulation."""
     p = Project(
