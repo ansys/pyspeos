@@ -293,7 +293,7 @@ class FaceStub(CrudStub):
         guids: List[str], message_list: List[ProtoFace], nb_items: int
     ) -> Iterator[messages.Chunk]:
         for guid, message in zip(guids, message_list):
-            for j in range(4):
+            for j in range(5):
                 if j == 0:
                     chunk_face_header = messages.Chunk(
                         face_header=messages.Chunk.FaceHeader(
@@ -329,6 +329,20 @@ class FaceStub(CrudStub):
                             normals=messages.Chunk.Normals(data=message.normals[i : i + nb_items])
                         )
                         yield chunk_normals
+                elif j == 4:
+                    for layer_vertices_data in message.vertices_data:
+                        starting_layer = True
+                        for i in range(0, len(layer_vertices_data.data), nb_items):
+                            chunk_vertices_data = messages.Chunk(
+                                vertices_data=messages.Chunk.VerticesData(
+                                    new_layer=starting_layer,
+                                    name=layer_vertices_data.name,
+                                    size=len(layer_vertices_data.data),
+                                    data=layer_vertices_data.data[i : i + nb_items],
+                                )
+                            )
+                            starting_layer = False
+                            yield chunk_vertices_data
 
     @staticmethod
     def _chunks_to_faces(chunks: messages.Chunk) -> List[ProtoFace]:
@@ -348,6 +362,15 @@ class FaceStub(CrudStub):
                 out_face.facets.extend(chunk.facets.data)
             if chunk.HasField("normals"):
                 out_face.normals.extend(chunk.normals.data)
+            if chunk.HasField("vertices_data"):
+                if chunk.vertices_data.new_layer:
+                    out_face.vertices_data.append(
+                        ProtoFace.MeshData(
+                            name=chunk.vertices_data.name, data=chunk.vertices_data.data
+                        )
+                    )
+                else:
+                    out_face.vertices_data[-1].data.extend(chunk.vertices_data.data)
 
         out_faces.append(out_face)  # Don't forget to add last face
         return out_faces
