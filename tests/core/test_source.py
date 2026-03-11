@@ -271,9 +271,19 @@ def test_create_luminaire_source(speos: Speos):
     # test loading
     p = Project(speos=speos, path=Path(test_path) / "Source.speos" / "SourceLuminaireTests.speos")
     source8 = p.find(name="Luminaire.1", name_regex=True, feature_type=SourceLuminaire)[0]
-    assert source8._source_template.luminaire.luminous_flux.luminous_value == 3966.7947473514782
+    if source8._source_template.luminaire.HasField("luminous_flux"):
+        # version >= 252
+        assert source8._source_template.luminaire.luminous_flux.luminous_value == 3966.7947473514782
+    else:
+        # version 251
+        assert source8._source_template.luminaire.HasField("flux_from_intensity_file")
     source9 = p.find(name="Luminaire.2", name_regex=True, feature_type=SourceLuminaire)[0]
-    assert source9._source_template.luminaire.luminous_flux.luminous_value == 155.2835593364933
+    if source9._source_template.luminaire.HasField("luminous_flux"):
+        # version >= 252
+        assert source9._source_template.luminaire.luminous_flux.luminous_value == 155.2835593364933
+    else:
+        # version 251
+        assert source8._source_template.luminaire.HasField("flux_from_intensity_file")
 
 
 @pytest.mark.supported_speos_versions(min=251)
