@@ -45,6 +45,7 @@ def test_find_feature(speos: Speos):
     # Create an empty project
     p = Project(speos=speos)
     assert len(p._features) == 0
+    assert p.root_part is None
 
     # Create a luminaire source in the project
     source1 = p.create_source(name="Source.1", feature_type=SourceLuminaire)
