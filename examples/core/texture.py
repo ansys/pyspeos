@@ -31,7 +31,7 @@ from ansys.speos.core.source import SourceAmbientEnvironment
 # Constants help ensure consistency and avoid repetition throughout the example.
 
 HOSTNAME = "localhost"
-GRPC_PORT = 50055  # Be sure the Speos GRPC Server has been started on this port.
+GRPC_PORT = 50098  # Be sure the Speos GRPC Server has been started on this port.
 USE_DOCKER = True  # Set to False if you're running this example locally as a Notebook.
 
 # ### Define helper functions
@@ -102,7 +102,7 @@ else:
 # be used to start a local instance of the service.
 
 if USE_DOCKER:
-    speos = Speos(channel=default_docker_channel(port=50055))
+    speos = Speos(channel=default_docker_channel())
 else:
     speos = launcher.launch_local_speos_rpc_server(port=GRPC_PORT)
 
