@@ -33,6 +33,7 @@ import pytest
 
 from ansys.speos.core import Body, GeoRef, Project, Speos
 from ansys.speos.core.generic.general_methods import normalize_vector
+from ansys.speos.core.generic.parameters import TextureNormalizationTypes
 from ansys.speos.core.sensor import BaseSensor, Sensor3DIrradiance, SensorIrradiance, SensorRadiance
 from ansys.speos.core.simulation import (
     SimulationDirect,
@@ -1529,3 +1530,27 @@ def test_export_vtp(speos: Speos):
     speos_results, vtp_results = sim.compute_CPU(export_vtp=True)
     assert len(vtp_results) == 3
     assert vtp_results[2].name == "merged.vtp"
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_texture_normalization(speos: Speos):
+    """Test texturenormalization property."""
+    p = Project(speos=speos)
+
+    # Default value
+    sim1 = p.create_simulation(name="Inverse.1", feature_type=SimulationInverse)
+    sim2 = SimulationDirect(project=p, name="Direct.1")
+
+    assert isinstance(sim1, SimulationInverse)
+    assert sim1.texture_normalization == TextureNormalizationTypes.unspecified
+    assert sim2.texture_normalization == TextureNormalizationTypes.unspecified
+    sim1.texture_normalization = TextureNormalizationTypes.none
+    sim2.texture_normalization = TextureNormalizationTypes.color_from_texture
+    assert sim1.texture_normalization == TextureNormalizationTypes.none
+    assert sim2.texture_normalization == TextureNormalizationTypes.color_from_texture
+    sim1.texture_normalization = TextureNormalizationTypes.color_from_bsdf
+    assert sim1.texture_normalization == TextureNormalizationTypes.color_from_bsdf
+    assert (
+        sim1._simulation_template.inverse_mc_simulation_template.texture.texture_normalization
+        == simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_COLOR_FROM_BSDF
+    )

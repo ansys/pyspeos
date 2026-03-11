@@ -155,7 +155,13 @@ class Face:
         value : list[MeshData]
             List of MeshData for the face each data set in complete
         """
-        self._face.vertices_data[:] = [ProtoFace.MeshData(name=i.name, data=i.data) for i in value]
+        for i in value:
+            if not isinstance(i, MeshData):
+                raise TypeError("wrong type")
+        self._face.ClearField("vertices_data")
+        self._face.vertices_data.extend(
+            [ProtoFace.MeshData(name=i.name, data=i.data) for i in value]
+        )
 
     def _to_dict(self) -> dict:
         out_dict = ""

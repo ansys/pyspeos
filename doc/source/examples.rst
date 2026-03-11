@@ -28,6 +28,7 @@ Examples
 
         examples/core/project
         examples/core/opt-prop
+        examples/core/texture
         examples/core/source
         examples/core/sensor
         examples/core/part

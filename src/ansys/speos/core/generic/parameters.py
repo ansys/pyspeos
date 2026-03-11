@@ -129,11 +129,20 @@ class LayerTypes(str, Enum):
 
 
 class TextureTypes(str, Enum):
-    """Surface contribution analyser filtering types."""
+    """Different texture types."""
 
     image = "image"
     normal_map = "normal_map"
     anisotropy_map = "anisotropy_map"
+
+
+class TextureNormalizationTypes(str, Enum):
+    """Texture normalization types."""
+
+    unspecified = "unspecified"
+    none = "none"
+    color_from_texture = "color_from_texture"
+    color_from_bsdf = "color_from_bsdf"
 
 
 class SCAFilteringTypes(str, Enum):

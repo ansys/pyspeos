@@ -27,15 +27,42 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from ansys.speos.core import GeoRef, OptProp, Project, Speos
+from ansys.speos.core import Face, GeoRef, OptProp, Project, Speos
 from ansys.speos.core.generic.parameters import (
+    MappingByData,
     MappingOperator,
     MappingTypes,
     MaterialOpticParameters,
+    MeshData,
 )
+from ansys.speos.core.kernel import ProtoFace
 from ansys.speos.core.opt_prop import TextureLayer
 from tests.conftest import test_path
 from tests.helper import approx_arrays
+
+
+def create_rect_face(my_body, name, pos, x, y) -> Face:
+    """Create rectangular face."""
+    face = my_body.create_face(name=name)
+    face.set_vertices(
+        [
+            pos[0],
+            pos[1],
+            pos[2],
+            pos[0],
+            pos[1] + y,
+            pos[2],
+            pos[0] + x,
+            pos[1],
+            pos[2],
+            pos[0] + x,
+            pos[1] + x,
+            pos[2],
+        ]
+    )
+    face.set_facets([0, 1, 2, 1, 2, 3])
+    face.set_normals([0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0])
+    return face
 
 
 def test_create_optical_property(speos: Speos):
@@ -328,6 +355,7 @@ def test_get_optical_property(speos: Speos, capsys):
     assert "library" in sop_property_info
 
 
+@pytest.mark.supported_speos_versions(min=252)
 def test_load_optical_property_from_file(speos: Speos):
     """Test loading a file and filling all Materials."""
     p = Project(speos=speos, path=Path(test_path) / "Material.1.speos" / "Material.1.speos")
@@ -360,6 +388,7 @@ def test_load_optical_property_from_file(speos: Speos):
                 assert mat.vop_library.endswith(".material")
 
 
+@pytest.mark.supported_speos_versions(min=252)
 def test_error_reporting(speos: Speos):
     """Test error raising."""
     p = Project(speos=speos)
@@ -423,6 +452,7 @@ def test_error_reporting(speos: Speos):
     layer3.set_normal_map_from_image()
 
 
+@pytest.mark.supported_speos_versions(min=252)
 def test_create_texture_property(speos: Speos):
     """Test creation of texture property."""
     p = Project(speos=speos)
@@ -655,6 +685,7 @@ def test_create_texture_property(speos: Speos):
     )
 
 
+@pytest.mark.supported_speos_versions(min=252)
 def test_reset_texture_property(speos: Speos):
     """Test reset of Optical Properties with texture."""
     p = Project(speos=speos)
@@ -740,6 +771,7 @@ def test_reset_texture_property(speos: Speos):
     assert mapping_op.HasField(old_values.mapping_type)
 
 
+@pytest.mark.supported_speos_versions(min=252)
 def test_load_texture_property_from_file(speos: Speos):
     """Test loading of Solver file containing texture properties."""
     p = Project(speos=speos, path=Path(test_path) / "Texture.1.speos" / "Texture.1.speos")
@@ -925,8 +957,18 @@ def test_load_texture_property_from_file(speos: Speos):
                 assert mat.sop_library.endswith("simplescattering")
                 assert mat.vop_type == "optic"
                 assert mat.vop_optic == MaterialOpticParameters(1.5, 10, 0)
+            case "Texture_gltf":
+                assert mat._sop_template is None
+                assert mat.vop_type is None
+            case "Texture_gltf|UV mapping.1":
+                assert mat.sop_type == "texture"
+                assert len(mat.texture) == 1
+                assert mat.texture[0].sop_type == "library"
+                assert mat.texture[0].sop_library.endswith("gltfsvbrdf")
+                print(mat)
 
 
+@pytest.mark.supported_speos_versions(min=252)
 def test_delete_texture_property(speos: Speos):
     """Ensure TextureLayer.delete clears local links/refs after commit."""
     p = Project(speos=speos)
@@ -953,3 +995,46 @@ def test_delete_texture_property(speos: Speos):
     # check layer is also removed downstream
     assert len(op.texture) == 0
     assert len(op._material_instance.texture.layers) == 0
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_texture_by_data(speos: Speos):
+    """Test texture application by vertices_data."""
+    my_project = Project(speos=speos)
+
+    rp = my_project.create_root_part(description="Root Part")
+    bdy0 = rp.create_body(name="Body0")
+
+    face0_0 = create_rect_face(bdy0, "face0_0", [0, 0, 0], 5, 5)
+    face0_0.vertices_data = [MeshData(name="uv_0", data=[0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0])]
+    face0_0.commit()  # full picture
+    assert face0_0._face.vertices_data[0] == ProtoFace.MeshData(
+        name="uv_0", data=[0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0]
+    )
+
+    bdy1 = rp.create_body(name="Body2")
+    face2_0 = create_rect_face(bdy1, "Face2_0", [12, 0, 0], 10, 5)
+    face2_0._face.vertices_data.append(
+        ProtoFace.MeshData(name="uv_1", data=[0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0])
+    )  # full picture
+    face2_0.commit()
+    assert face2_0.vertices_data[0] == MeshData(
+        name="uv_1", data=[0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0]
+    )
+    rp.commit()
+
+    opt_prop = my_project.create_optical_property(name="OptProp")
+    opt_prop.set_volume_none()
+    opt_prop.geometries = [face0_0.geo_path, face2_0.geo_path]
+
+    layer_1 = TextureLayer(opt_prop, "Layer.1")
+    layer_1.set_surface_library().sop_library = Path(test_path) / "L100 2.simplescattering"
+    layer_1.image_texture_file_uri = Path(test_path) / "textureColors.jpg"
+    layer_1.image_property = MappingByData(vertices_data_index=0, repeat_u=False, repeat_v=False)
+    layer_1.commit()
+    assert layer_1._texture_template.normal_map_properties.vertices_data_index == 0
+    assert not layer_1._sop_template.texture.image.repeat_along_u
+    assert not layer_1._sop_template.texture.image.repeat_along_v
+
+    opt_prop.texture = [layer_1]
+    opt_prop.commit()
