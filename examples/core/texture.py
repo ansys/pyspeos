@@ -13,9 +13,6 @@ import os
 # +
 from pathlib import Path
 
-import matplotlib.image as mpimg
-import matplotlib.pyplot as plt
-
 from ansys.speos.core import Face, Project, Speos, launcher
 from ansys.speos.core.generic.parameters import MappingOperator, MeshData, TextureNormalizationTypes
 from ansys.speos.core.kernel.client import (
@@ -251,10 +248,3 @@ if os.name == "nt":
     from ansys.speos.core.workflow.open_result import open_result_image
 
     open_result_image(simulation_feature=sim, result_name="Radiance.xmp")
-else:
-    # plot expected results from image export
-    plt.imshow(mpimg.imread(Path(assets_data_path) / "texture_sim.png"))
-    plt.axis("off")  # turns off axes
-    plt.axis("tight")  # gets rid of white border
-    plt.axis("image")  # square up the image instead of filling the "figure" space
-    plt.show()
