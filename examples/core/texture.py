@@ -1,10 +1,10 @@
-# # How to create an optical property
+# # How to create an texture property
 import os
 
-# This tutorial demonstrates how to create an optical property.
-# ## What is an optical property?
-# An optical property (also named material), gathers two notions:
-# the surface optical property (SOP) and the volume optical property (VOP).
+# This tutorial demonstrates how to create an texture property.
+# ## What is an textur property?
+# An texture property (also named material), gathers 3 notions:
+# the surface optical property (SOP), the texture and the volume optical property (VOP).
 # The property is then applied to a geometry (like bodies, faces).
 #
 # ## Prerequisites
@@ -154,7 +154,7 @@ face5_0.vertices_data = [
     MeshData(name="uv_0", data=[4 / 6, 1.0, 4 / 6, 0.0, 5 / 6, 1.0, 5 / 6, 0.0])
 ]
 
-# As the used imagfe has strips there is no interest in playing with v
+# As the used image has strips there is no interest in playing with v
 # . ----> u
 # |
 # | picture
