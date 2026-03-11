@@ -1,0 +1,125 @@
+
+
+
+
+
+
+:class:`ExitGeometries`
+=======================
+
+
+.. py:class:: ansys.speos.core.source.SourceRayFile.ExitGeometries(rayfile_props, default_parameters = None, stable_ctr = False)
+
+   
+   ExitGeometries of rayfile source.
+
+   By default, ExitGeometries list is set to be empty.
+
+   :Parameters:
+
+       **rayfile_props** : :obj:`ansys.api.speos.scene.v2.scene_pb2.RayFileProperties`
+           protobuf object to modify.
+
+       **default_parameters** : :obj:`Optional`\[        :obj:`ansys.speos.core.generic.parameters.RayFileSourceParameters`] = :data:`python:None`
+           If defined the values in the ExitGeometries instance will be
+           overwritten by the values of the data class.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_exit_geometries
+   method available in Source classes.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: ExitGeometries
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~geometries`
+            - Exit geometries.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.source.SourceRayFile import ExitGeometries
+
+Property detail
+---------------
+
+.. py:property:: geometries
+   :type: List[ansys.speos.core.geo_ref.GeoRef]
+
+
+   
+   Exit geometries.
+
+
+   :Parameters:
+
+       **exit_geometries** : :obj:`Optional`\[:obj:`List`\[:obj:`Union`\[:obj:`ansys.speos.core.geo_ref.GeoRef`,             :obj:`ansys.speos.core.body.Body`, :obj:`ansys.speos.core.face.Face`]]]
+           Exit Geometries that will use this rayfile source.
+           By default, ``[]``.
+
+
+
+   :Returns:
+
+       :obj:`List`\[:obj:`ansys.speos.core.geo_ref.GeoRef`]
+           Exit Geometries that will use this rayfile source.
+           By default, ``[]``.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+

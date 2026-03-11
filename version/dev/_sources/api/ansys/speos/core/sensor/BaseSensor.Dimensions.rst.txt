@@ -1,0 +1,298 @@
+
+
+
+
+
+
+:class:`Dimensions`
+===================
+
+
+.. py:class:: ansys.speos.core.sensor.BaseSensor.Dimensions(sensor_dimensions, default_parameters = None, stable_ctr = False)
+
+   
+   Dimensions of the sensor.
+
+   By default, for both x and y axis: from -50mm to 50mm is chosen, with a sampling of 100.
+
+   :Parameters:
+
+       **sensor_dimensions** : :obj:`ansys.api.speos.sensor.v1.common_pb2.SensorDimensions`
+           SensorDimensions protobuf object to modify.
+
+       **default_parameters** : :obj:`ansys.speos.core.generic.parameters.DimensionsParameters`, :obj:`optional`
+           If defined the values in the sensor instance will be overwritten by the values of the
+           data class
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_dimensions method available in sensor
+   classes.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: Dimensions
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~x_start`
+            - Minimum value on x axis.
+          * - :py:attr:`~x_end`
+            - Maximum value on x axis.
+          * - :py:attr:`~x_sampling`
+            - Value of the sampling on x axis.
+          * - :py:attr:`~y_start`
+            - Minimum value on y axis.
+          * - :py:attr:`~y_end`
+            - Maximum value on y axis.
+          * - :py:attr:`~y_sampling`
+            - Value of the sampling on y axis.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.sensor.BaseSensor import Dimensions
+
+Property detail
+---------------
+
+.. py:property:: x_start
+   :type: float
+
+
+   
+   Minimum value on x axis.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Minimum value on x axis (mm). By default, ``-50``.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           minimum value in x axis
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: x_end
+   :type: float
+
+
+   
+   Maximum value on x axis.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Maximum value on x axis (mm). By default, ``50``.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           maximum value on x axis.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: x_sampling
+   :type: int
+
+
+   
+   Value of the sampling on x axis.
+
+
+   :Parameters:
+
+       **value** : :class:`python:int`
+           The number of pixels of the XMP map on x axis. By default, ``100``.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           sampling value on x axis.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: y_start
+   :type: float
+
+
+   
+   Minimum value on y axis.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Minimum value on y axis (mm). By default, ``-50``.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           minimum value in y axis
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: y_end
+   :type: float
+
+
+   
+   Maximum value on y axis.
+
+
+   :Parameters:
+
+       **value** : :class:`python:float`
+           Maximum value on y axis (mm). By default, ``50``.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           maximum value on y axis.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: y_sampling
+   :type: int
+
+
+   
+   Value of the sampling on y axis.
+
+
+   :Parameters:
+
+       **value** : :class:`python:int`
+           The number of pixels of the XMP map on y axis. By default, ``100``.
+
+
+
+   :Returns:
+
+       :class:`python:float`
+           sampling value on y axis.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+

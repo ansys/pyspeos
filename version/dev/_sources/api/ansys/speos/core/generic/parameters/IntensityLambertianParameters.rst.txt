@@ -1,0 +1,79 @@
+
+
+
+
+
+
+:class:`IntensityLambertianParameters`
+======================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.IntensityLambertianParameters
+
+   
+   Intensity Lambertian parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: IntensityLambertianParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~total_angle`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import IntensityLambertianParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: total_angle
+   :type:  float
+   :value: 180
+
+
+
+
+
+

@@ -1,0 +1,99 @@
+
+
+
+
+
+
+:class:`WhitePointType`
+=======================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.WhitePointType
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   
+   White Point type without parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: WhitePointType
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~d65`
+            - 
+          * - :py:attr:`~d50`
+            - 
+          * - :py:attr:`~c`
+            - 
+          * - :py:attr:`~e`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import WhitePointType
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: d65
+   :value: 'd65'
+
+
+.. py:attribute:: d50
+   :value: 'd50'
+
+
+.. py:attribute:: c
+   :value: 'c'
+
+
+.. py:attribute:: e
+   :value: 'e'
+
+
+
+
+
+

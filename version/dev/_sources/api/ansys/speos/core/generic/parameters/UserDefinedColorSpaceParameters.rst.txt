@@ -1,0 +1,98 @@
+
+
+
+
+
+
+:class:`UserDefinedColorSpaceParameters`
+========================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.UserDefinedColorSpaceParameters
+
+   
+   User defined Color Space Parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: UserDefinedColorSpaceParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~white_point_type`
+            - 
+          * - :py:attr:`~red_spectrum_uri`
+            - 
+          * - :py:attr:`~blue_spectrum_uri`
+            - 
+          * - :py:attr:`~green_spectrum_uri`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import UserDefinedColorSpaceParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: white_point_type
+   :type:  Union[WhitePointType, UserDefinedWhitePointParameters]
+
+.. py:attribute:: red_spectrum_uri
+   :type:  Union[str, pathlib.Path]
+   :value: ''
+
+
+.. py:attribute:: blue_spectrum_uri
+   :type:  Union[str, pathlib.Path]
+   :value: ''
+
+
+.. py:attribute:: green_spectrum_uri
+   :type:  Union[str, pathlib.Path]
+   :value: ''
+
+
+
+
+
+

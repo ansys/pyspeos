@@ -1,0 +1,86 @@
+
+
+
+
+
+
+:class:`UserDefinedWhitePointParameters`
+========================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.UserDefinedWhitePointParameters
+
+   
+   User defined White Point Parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: UserDefinedWhitePointParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~x`
+            - 
+          * - :py:attr:`~y`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import UserDefinedWhitePointParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: x
+   :type:  float
+   :value: 0.31271
+
+
+.. py:attribute:: y
+   :type:  float
+   :value: 0.32902
+
+
+
+
+
+

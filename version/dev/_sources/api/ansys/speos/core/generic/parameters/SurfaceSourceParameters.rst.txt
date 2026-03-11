@@ -1,0 +1,92 @@
+
+
+
+
+
+
+:class:`SurfaceSourceParameters`
+================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.SurfaceSourceParameters
+
+   
+   Parameters class for Surface Source.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SurfaceSourceParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~flux_type`
+            - 
+          * - :py:attr:`~exitance_type`
+            - 
+          * - :py:attr:`~intensity_type`
+            - 
+          * - :py:attr:`~spectrum_type`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import SurfaceSourceParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: flux_type
+   :type:  Union[LuminousFluxParameters, RadiantFluxParameters, IntensityFluxParameters, FluxFromFileParameters]
+
+.. py:attribute:: exitance_type
+   :type:  Union[VariableExitanceParameters, ConstantExitanceParameters]
+
+.. py:attribute:: intensity_type
+   :type:  Union[IntensityLambertianParameters, IntensityCosParameters, IntensitySymmetricGaussianParameters, IntensitAsymmetricGaussianParameters, IntensityLibraryParameters]
+
+.. py:attribute:: spectrum_type
+   :type:  Optional[Union[SpectrumBlackBodyParameters, SpectrumLibraryParameters, SpectrumMonochromaticParameters]]
+
+
+
+
+

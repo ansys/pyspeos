@@ -1,0 +1,86 @@
+
+
+
+
+
+
+:class:`IntensityCosParameters`
+===============================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.IntensityCosParameters
+
+   
+   Intensity Cos parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: IntensityCosParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~n`
+            - 
+          * - :py:attr:`~total_angle`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import IntensityCosParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: n
+   :type:  float
+   :value: 3
+
+
+.. py:attribute:: total_angle
+   :type:  float
+   :value: 180
+
+
+
+
+
+

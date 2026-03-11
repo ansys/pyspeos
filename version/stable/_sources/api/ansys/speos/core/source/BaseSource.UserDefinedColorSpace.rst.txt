@@ -1,0 +1,396 @@
+
+
+
+
+
+
+:class:`UserDefinedColorSpace`
+==============================
+
+.. toctree::
+   :hidden:
+
+    UserDefinedWhitePoint</api/ansys/speos/core/source/BaseSource.UserDefinedColorSpace.UserDefinedWhitePoint>
+
+
+.. py:class:: ansys.speos.core.source.BaseSource.UserDefinedColorSpace(project, userdefined_color_space, default_values = True, stable_ctr = True)
+
+   
+   Type of color space is user defined.
+
+
+   :Parameters:
+
+       **userdefined_color_space** : :obj:`source_pb2.SourceTemplate.UserDefinedRGBSpace`
+           source_pb2.SourceTemplate.UserDefinedRGBSpace
+
+       **default_values** : :ref:`bool <python:bltin-boolean-values>`
+           Uses default values when True.
+
+       **stable_ctr** : :ref:`bool <python:bltin-boolean-values>`
+           Variable to indicate if usage is inside class scope
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Notes
+
+   **Do not instantiate this class yourself**, use set_userdefined_color_space() method.
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: UserDefinedColorSpace
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+   .. tab-item:: Methods
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~set_white_point_type_d65`
+            - Set white point type to D65.
+          * - :py:attr:`~set_white_point_type_c`
+            - Set white point type to C.
+          * - :py:attr:`~set_white_point_type_d50`
+            - Set white point type to D50.
+          * - :py:attr:`~set_white_point_type_e`
+            - Set white point type to E.
+          * - :py:attr:`~set_white_point_type_user_defined`
+            - Set white point type to user_defined.
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~red_spectrum`
+            - Get red spectrum.
+          * - :py:attr:`~green_spectrum`
+            - Get green spectrum.
+          * - :py:attr:`~blue_spectrum`
+            - Get blue spectrum.
+          * - :py:attr:`~white_point_type`
+            - Get the white point type.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.source.BaseSource import UserDefinedColorSpace
+
+Property detail
+---------------
+
+.. py:property:: red_spectrum
+   :type: dict
+
+
+   
+   Get red spectrum.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:dict`
+           Red spectrum dictionary
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: green_spectrum
+   :type: dict
+
+
+   
+   Get green spectrum.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:dict`
+           Green spectrum dictionary
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: blue_spectrum
+   :type: dict
+
+
+   
+   Get blue spectrum.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:dict`
+           Blue spectrum dictionary
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:property:: white_point_type
+   :type: Union[None, ansys.api.speos.source.v1.source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.D65, ansys.api.speos.source.v1.source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.D50, ansys.api.speos.source.v1.source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.C, ansys.api.speos.source.v1.source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.E, UserDefinedWhitePoint]
+
+
+   
+   Get the white point type.
+
+
+
+
+
+   :Returns:
+
+       :obj:`Union`
+           ..
+
+       [
+           None,
+           source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.D65,
+           source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.D50,
+           source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.C,
+           source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.E,
+           UserDefinedWhitePoint,
+
+       ]
+           ..
+
+       :obj:`Predefined` :obj:`White` :obj:`Point` :obj:`Type` or :obj:`User` :obj:`Defined` :obj:`White` :obj:`Point` Type.
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+Method detail
+-------------
+
+.. py:method:: set_white_point_type_d65()
+
+   
+   Set white point type to D65.
+
+
+
+
+
+   :Returns:
+
+       :data:`python:None`
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_white_point_type_c()
+
+   
+   Set white point type to C.
+
+
+
+
+
+   :Returns:
+
+       :data:`python:None`
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_white_point_type_d50()
+
+   
+   Set white point type to D50.
+
+
+
+
+
+   :Returns:
+
+       :data:`python:None`
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_white_point_type_e()
+
+   
+   Set white point type to E.
+
+
+
+
+
+   :Returns:
+
+       :data:`python:None`
+           ..
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:method:: set_white_point_type_user_defined()
+
+   
+   Set white point type to user_defined.
+
+
+
+
+
+   :Returns:
+
+       :obj:`UserDefinedWhitePoint`
+           User defined white point settings.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+    ansys.speos.core.source.BaseSource.UserDefinedColorSpace.UserDefinedWhitePoint
+
+
+
+

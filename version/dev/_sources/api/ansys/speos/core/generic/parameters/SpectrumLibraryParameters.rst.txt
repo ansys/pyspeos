@@ -1,0 +1,79 @@
+
+
+
+
+
+
+:class:`SpectrumLibraryParameters`
+==================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.SpectrumLibraryParameters
+
+   
+   Spectrum library parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SpectrumLibraryParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~file_uri`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import SpectrumLibraryParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: file_uri
+   :type:  Union[str, pathlib.Path]
+   :value: ''
+
+
+
+
+
+

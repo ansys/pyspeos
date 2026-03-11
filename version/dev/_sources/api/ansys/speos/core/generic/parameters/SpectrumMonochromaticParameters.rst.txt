@@ -1,0 +1,79 @@
+
+
+
+
+
+
+:class:`SpectrumMonochromaticParameters`
+========================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.SpectrumMonochromaticParameters
+
+   
+   Spectrum Monochromatic parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SpectrumMonochromaticParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~wavelength`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import SpectrumMonochromaticParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: wavelength
+   :type:  float
+   :value: 555.0
+
+
+
+
+
+

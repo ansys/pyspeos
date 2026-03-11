@@ -1,0 +1,79 @@
+
+
+
+
+
+
+:class:`IntensityOrientationAxisSystemParameters`
+=================================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.IntensityOrientationAxisSystemParameters
+
+   
+   Intensity Orientation Axis System parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: IntensityOrientationAxisSystemParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~axis_system`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import IntensityOrientationAxisSystemParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: axis_system
+   :type:  list[float]
+   :value: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+
+
+
+
+

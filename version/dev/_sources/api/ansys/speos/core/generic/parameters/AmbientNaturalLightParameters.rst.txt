@@ -1,0 +1,105 @@
+
+
+
+
+
+
+:class:`AmbientNaturalLightParameters`
+======================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.AmbientNaturalLightParameters
+
+   
+   Ambient Natural Light Parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: AmbientNaturalLightParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~with_sky`
+            - 
+          * - :py:attr:`~turbidity`
+            - 
+          * - :py:attr:`~zenith_direction`
+            - 
+          * - :py:attr:`~north_direction`
+            - 
+          * - :py:attr:`~sun_type`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import AmbientNaturalLightParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: with_sky
+   :type:  bool
+   :value: True
+
+
+.. py:attribute:: turbidity
+   :type:  float
+   :value: 3.0
+
+
+.. py:attribute:: zenith_direction
+   :type:  list[float]
+   :value: [0, 0, 1]
+
+
+.. py:attribute:: north_direction
+   :type:  list[float]
+   :value: [0, 1, 0]
+
+
+.. py:attribute:: sun_type
+   :type:  Union[AutomaticSunParameters, ManualSunParameters]
+
+
+
+
+

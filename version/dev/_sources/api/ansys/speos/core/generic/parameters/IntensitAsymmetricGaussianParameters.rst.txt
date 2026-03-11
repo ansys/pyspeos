@@ -1,0 +1,100 @@
+
+
+
+
+
+
+:class:`IntensitAsymmetricGaussianParameters`
+=============================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.IntensitAsymmetricGaussianParameters
+
+   
+   Intensity Asymmetric Gaussian parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: IntensitAsymmetricGaussianParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~total_angle`
+            - 
+          * - :py:attr:`~fwhm_x`
+            - 
+          * - :py:attr:`~fwhm_y`
+            - 
+          * - :py:attr:`~axis_system`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import IntensitAsymmetricGaussianParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: total_angle
+   :type:  float
+   :value: 180
+
+
+.. py:attribute:: fwhm_x
+   :type:  float
+   :value: 30.0
+
+
+.. py:attribute:: fwhm_y
+   :type:  float
+   :value: 30.0
+
+
+.. py:attribute:: axis_system
+   :type:  list[float]
+   :value: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+
+
+
+
+

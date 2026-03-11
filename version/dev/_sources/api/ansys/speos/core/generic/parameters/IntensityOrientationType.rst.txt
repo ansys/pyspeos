@@ -1,0 +1,87 @@
+
+
+
+
+
+
+:class:`IntensityOrientationType`
+=================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.IntensityOrientationType
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   
+   Spectrum type without parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: IntensityOrientationType
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~normal_to_uv`
+            - 
+          * - :py:attr:`~normal_to_surface`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import IntensityOrientationType
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: normal_to_uv
+   :value: 'normal_to_uv'
+
+
+.. py:attribute:: normal_to_surface
+   :value: 'normal_to_surface'
+
+
+
+
+
+

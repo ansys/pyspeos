@@ -1,0 +1,117 @@
+
+
+
+
+
+
+:class:`SpectrumType`
+=====================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.SpectrumType
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   
+   Spectrum type without parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: SpectrumType
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~incandescent`
+            - 
+          * - :py:attr:`~warm_white_fluorescent`
+            - 
+          * - :py:attr:`~daylight_fluorescent`
+            - 
+          * - :py:attr:`~white_led`
+            - 
+          * - :py:attr:`~halogen`
+            - 
+          * - :py:attr:`~metal_halide`
+            - 
+          * - :py:attr:`~high_pressure_sodium`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import SpectrumType
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: incandescent
+   :value: 'photometric'
+
+
+.. py:attribute:: warm_white_fluorescent
+   :value: 'warm_white_fluorescent'
+
+
+.. py:attribute:: daylight_fluorescent
+   :value: 'daylight_fluorescent'
+
+
+.. py:attribute:: white_led
+   :value: 'white_led'
+
+
+.. py:attribute:: halogen
+   :value: 'halogen'
+
+
+.. py:attribute:: metal_halide
+   :value: 'metal_halide'
+
+
+.. py:attribute:: high_pressure_sodium
+   :value: 'high_pressure_sodium'
+
+
+
+
+
+

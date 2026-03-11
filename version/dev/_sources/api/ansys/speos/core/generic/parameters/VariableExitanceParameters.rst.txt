@@ -1,0 +1,86 @@
+
+
+
+
+
+
+:class:`VariableExitanceParameters`
+===================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.VariableExitanceParameters
+
+   
+   Spectrum Exit Parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: VariableExitanceParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~xmp_file_uri`
+            - 
+          * - :py:attr:`~axis_system`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import VariableExitanceParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: xmp_file_uri
+   :type:  Union[str, pathlib.Path]
+   :value: ''
+
+
+.. py:attribute:: axis_system
+   :type:  list[float]
+   :value: [0, 0, 0, 1, 0, 0, 0, 1, 0]
+
+
+
+
+
+

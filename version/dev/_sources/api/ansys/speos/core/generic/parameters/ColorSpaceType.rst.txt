@@ -1,0 +1,87 @@
+
+
+
+
+
+
+:class:`ColorSpaceType`
+=======================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.ColorSpaceType
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   
+   Color Space Type without parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: ColorSpaceType
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~srgb`
+            - 
+          * - :py:attr:`~adobe_rgb`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import ColorSpaceType
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: srgb
+   :value: 'srgb'
+
+
+.. py:attribute:: adobe_rgb
+   :value: 'abode_rgb'
+
+
+
+
+
+

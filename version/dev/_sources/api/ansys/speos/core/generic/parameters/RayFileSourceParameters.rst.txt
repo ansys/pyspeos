@@ -1,0 +1,105 @@
+
+
+
+
+
+
+:class:`RayFileSourceParameters`
+================================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.RayFileSourceParameters
+
+   
+   Parameters class for Ray File Source.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: RayFileSourceParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~ray_file_uri`
+            - 
+          * - :py:attr:`~flux_type`
+            - 
+          * - :py:attr:`~spectrum_type`
+            - 
+          * - :py:attr:`~axis_system`
+            - 
+          * - :py:attr:`~exit_geometry`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import RayFileSourceParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: ray_file_uri
+   :type:  Union[str, pathlib.Path]
+   :value: ''
+
+
+.. py:attribute:: flux_type
+   :type:  Union[LuminousFluxParameters, RadiantFluxParameters, FluxFromFileParameters]
+
+.. py:attribute:: spectrum_type
+   :type:  Optional[Union[SpectrumBlackBodyParameters, SpectrumLibraryParameters, SpectrumMonochromaticParameters]]
+   :value: None
+
+
+.. py:attribute:: axis_system
+   :type:  list[float]
+   :value: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+
+.. py:attribute:: exit_geometry
+   :type:  Optional[list[str]]
+   :value: None
+
+
+
+
+
+

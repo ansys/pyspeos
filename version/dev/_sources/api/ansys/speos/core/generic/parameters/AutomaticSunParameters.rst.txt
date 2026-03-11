@@ -1,0 +1,117 @@
+
+
+
+
+
+
+:class:`AutomaticSunParameters`
+===============================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.AutomaticSunParameters
+
+   
+   Spectrum Exit Parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: AutomaticSunParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~now`
+            - 
+          * - :py:attr:`~time_zone`
+            - 
+          * - :py:attr:`~longitude`
+            - 
+          * - :py:attr:`~latitude`
+            - 
+          * - :py:attr:`~year`
+            - 
+          * - :py:attr:`~month`
+            - 
+          * - :py:attr:`~day`
+            - 
+          * - :py:attr:`~hour`
+            - 
+          * - :py:attr:`~minute`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import AutomaticSunParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: now
+
+.. py:attribute:: time_zone
+   :type:  str
+   :value: 'CET'
+
+
+.. py:attribute:: longitude
+   :type:  float
+   :value: 0.0
+
+
+.. py:attribute:: latitude
+   :type:  float
+   :value: 0.0
+
+
+.. py:attribute:: year
+
+.. py:attribute:: month
+
+.. py:attribute:: day
+
+.. py:attribute:: hour
+
+.. py:attribute:: minute
+
+
+
+
+

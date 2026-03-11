@@ -1,0 +1,79 @@
+
+
+
+
+
+
+:class:`ManualSunParameters`
+============================
+
+
+.. py:class:: ansys.speos.core.generic.parameters.ManualSunParameters
+
+   
+   Spectrum Exit Parameters.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: ManualSunParameters
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+
+   .. tab-item:: Attributes
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~direction`
+            - 
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.generic.parameters import ManualSunParameters
+
+
+Attribute detail
+----------------
+
+.. py:attribute:: direction
+   :type:  list[float]
+   :value: [0, 0, 1]
+
+
+
+
+
+
