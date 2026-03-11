@@ -965,7 +965,6 @@ def test_load_texture_property_from_file(speos: Speos):
                 assert len(mat.texture) == 1
                 assert mat.texture[0].sop_type == "library"
                 assert mat.texture[0].sop_library.endswith("gltfsvbrdf")
-                print(mat)
 
 
 @pytest.mark.supported_speos_versions(min=252)
