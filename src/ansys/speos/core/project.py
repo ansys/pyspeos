@@ -56,6 +56,7 @@ import ansys.speos.core.opt_prop as opt_prop
 import ansys.speos.core.part as part
 import ansys.speos.core.proto_message_utils as proto_message_utils
 from ansys.speos.core.sensor import (
+    BaseSensor,
     Sensor3DIrradiance,
     SensorCamera,
     SensorIrradiance,
@@ -63,12 +64,14 @@ from ansys.speos.core.sensor import (
     SensorXMPIntensity,
 )
 from ansys.speos.core.simulation import (
+    BaseSimulation,
     SimulationDirect,
     SimulationInteractive,
     SimulationInverse,
     SimulationVirtualBSDF,
 )
 from ansys.speos.core.source import (
+    BaseSource,
     SourceAmbientEnvironment,
     SourceAmbientNaturalLight,
     SourceLuminaire,
@@ -127,6 +130,115 @@ class Project:
     #    Can be used to list all features- Not yet implemented.
     #    """
     #    pass
+    @property
+    def root_part(self) -> Union[part.Part, None]:
+        """Property of root part of the project.
+
+        Returns
+        -------
+        Union[part.Part, None]
+            Project's root part if exists, otherwise None.
+
+        """
+        for feature in self._features:
+            if isinstance(feature, part.Part):
+                return feature
+        return None
+
+    @property
+    def optical_properties(self) -> List[opt_prop.OptProp]:
+        """Property of optical properties inside the project.
+
+        Returns
+        -------
+        List[ansys.speos.core.opt_prop.OptProp]
+            List of optical properties features.
+
+        """
+        props = []
+        for feature in self._features:
+            if isinstance(feature, opt_prop.OptProp):
+                props.append(feature)
+        return props
+
+    @property
+    def sources(
+        self,
+    ) -> List[
+        Union[
+            SourceSurface,
+            SourceLuminaire,
+            SourceRayFile,
+            SourceAmbientNaturalLight,
+            SourceAmbientEnvironment,
+        ]
+    ]:
+        """Property of project's sources inside.
+
+        Returns
+        -------
+        List[Union[ansys.speos.core.source.SourceSurface, \
+        ansys.speos.core.source.SourceLuminaire, \
+        ansys.speos.core.source.SourceRayFile, \
+        ansys.speos.core.source.SourceAmbientNaturalLight, \
+        ansys.speos.core.source.SourceAmbientEnvironment]]
+            List of source features.
+
+        """
+        srs = []
+        for feature in self._features:
+            if isinstance(feature, BaseSource):
+                srs.append(feature)
+        return srs
+
+    @property
+    def sensors(
+        self,
+    ) -> List[
+        Union[
+            Sensor3DIrradiance, SensorCamera, SensorIrradiance, SensorRadiance, SensorXMPIntensity
+        ]
+    ]:
+        """Property of project's sensors inside.
+
+        Returns
+        -------
+        List[Union[ansys.speos.core.sensor.Sensor3DIrradiance, \
+        ansys.speos.core.sensor.SensorCamera, \
+        ansys.speos.core.sensor.SensorIrradiance, \
+        ansys.speos.core.sensor.SensorRadiance, \
+        ansys.speos.core.sensor.SensorXMPIntensity]]
+            List of sensor features.
+
+        """
+        ssrs = []
+        for feature in self._features:
+            if isinstance(feature, BaseSensor):
+                ssrs.append(feature)
+        return ssrs
+
+    @property
+    def simulations(
+        self,
+    ) -> List[
+        Union[SimulationDirect, SimulationInteractive, SimulationInverse, SimulationVirtualBSDF]
+    ]:
+        """Property of project's simulations inside.
+
+        Returns
+        -------
+        List[Union[ansys.speos.core.simulation.SimulationDirect, \
+        ansys.speos.core.simulation.SimulationInteractive, \
+        ansys.speos.core.simulation.SimulationInverse, \
+        ansys.speos.core.simulation.SimulationVirtualBSDF]]
+            List of simulation features.
+
+        """
+        sims = []
+        for feature in self._features:
+            if isinstance(feature, BaseSimulation):
+                sims.append(feature)
+        return sims
 
     def create_optical_property(
         self,
