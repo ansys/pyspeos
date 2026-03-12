@@ -171,21 +171,67 @@ class Part:
             self._geom_features.append(sub_part_feat)
             return sub_part_feat
 
-        def set_axis_system(self, axis_system: List[float]) -> Part.SubPart:
-            """Set the sub part orientation (relatively to parent element).
+        @property
+        def axis_system(self) -> List[float]:
+            """Get axis system of the sub part.
+
+            Returns
+            -------
+            List[float]
+                Axis system as list of 12 numeric values
+                [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+            """
+            return list(self._part_instance.axis_system)
+
+        @axis_system.setter
+        def axis_system(self, axis_system: List[float]) -> None:
+            """Set the sub part orientation (relative to parent element).
+
+            The setter validates input types strictly.
 
             Parameters
             ----------
             axis_system : List[float]
                 Orientation of the sub part [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
 
+            Raises
+            ------
+            TypeError
+                If axis_system is not a list/tuple or contains non-numeric entries.
+            ValueError
+                If axis_system does not contain exactly 12 elements.
+            """
+            if not isinstance(axis_system, (list, tuple)):
+                raise TypeError("axis_system must be a list or tuple of 12 numeric values.")
+            if len(axis_system) != 12:
+                raise ValueError("axis_system must contain exactly 12 elements.")
+            for v in axis_system:
+                if not isinstance(v, (int, float)):
+                    raise TypeError("axis_system elements must be int or float.")
+            # assign
+            self._part_instance.axis_system[:] = list(axis_system)
+
+        @property
+        def subparts(self) -> List[Part.SubPart]:
+            """List subparts contained in this SubPart.
+
             Returns
             -------
-            ansys.speos.core.part.Part.SubPart
-                SubPart feature.
+            List[ansys.speos.core.part.Part.SubPart]
+                SubPart children.
             """
-            self._part_instance.axis_system[:] = axis_system
-            return self
+            return [f for f in self._geom_features if isinstance(f, Part.SubPart)]
+
+        @property
+        def bodies(self) -> List[body.Body]:
+            """List bodies contained in this SubPart.
+
+            Returns
+            -------
+            List[ansys.speos.core.body.Body]
+                Body children.
+            """
+            return [f for f in self._geom_features if isinstance(f, body.Body)]
 
         def _to_dict(self) -> dict:
             out_dict = ""
@@ -529,6 +575,28 @@ class Part:
         )
         self._geom_features.append(sub_part_feat)
         return sub_part_feat
+
+    @property
+    def subparts(self) -> List[Part.SubPart]:
+        """List subparts contained in this Part.
+
+        Returns
+        -------
+        List[ansys.speos.core.part.Part.SubPart]
+            SubPart children.
+        """
+        return [f for f in self._geom_features if isinstance(f, Part.SubPart)]
+
+    @property
+    def bodies(self) -> List[body.Body]:
+        """List bodies contained in this Part.
+
+        Returns
+        -------
+        List[ansys.speos.core.body.Body]
+            Body children.
+        """
+        return [f for f in self._geom_features if isinstance(f, body.Body)]
 
     def _to_dict(self) -> dict:
         out_dict = ""
