@@ -487,6 +487,8 @@ class DisplayParameters:
             to the display image (png, jpeg, bmp, tiff, rgb).
         source_dimensions:
             Physical dimensions of the display [x_start, x_end, y_start, y_end] (mm).
+        axis_system : list[float]
+            Loation and orientation of the display source
         luminous_flux:
             Luminance value in cd/m^2.
         contrast_ratio: Optional
@@ -500,7 +502,8 @@ class DisplayParameters:
 
     image_file_uri: Union[str, Path] = ""
     source_dimensions: list[float] = field(default_factory=lambda: [-50.0, 50.0, -50.0, 50.0])
-    luminous_flux: float = 0.0
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+    luminance: float = 50.0
     contrast_ratio: Optional[int] = None
     intensity_type: Optional[Union["IntensityLibraryParameters"]] = None
     color_space_type: Union[ColorSpaceType, UserDefinedColorSpaceParameters] = ColorSpaceType.srgb

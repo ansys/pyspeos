@@ -46,6 +46,7 @@ from ansys.speos.core.generic.parameters import (
     AutomaticSunParameters,
     ColorSpaceType,
     ConstantExitanceParameters,
+    DisplayParameters,
     FluxFromFileParameters,
     IntensityFluxParameters,
     IntensityOrientationType,
@@ -3148,6 +3149,8 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
     def set_predefined_color_space(self) -> BaseSource.PredefinedColorSpace:
         """Set the color space to use one of the presets.
 
+        This returns a helper object allowing selection of sRGB or AdobeRGB presets.
+
         Returns
         -------
         ansys.speos.core.source.BaseSource.PredefinedColorSpace
@@ -3248,7 +3251,7 @@ class SourceDisplay(BaseSource):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         source_instance: Optional[ProtoScene.SourceInstance] = None,
-        default_parameters: Optional[object] = None,
+        default_parameters: Optional[DisplayParameters] = None,
     ) -> None:
         """Initialize a Display source object.
 
@@ -3295,20 +3298,119 @@ class SourceDisplay(BaseSource):
             key=self._source_template.display.intensity_guid,
         )
 
+        # Ensure the template contains SourceDimensions (server rejects templates
+        # missing this element). Initialize to safe defaults if missing.
+        if not self._source_template.display.HasField("source_dimensions"):
+            sd = self._source_template.display.source_dimensions
+            sd.x_start = -50.0
+            sd.x_end = 50.0
+            sd.y_start = -50.0
+            sd.y_end = 50.0
+
         # color space helper (either PredefinedColorSpace or UserDefinedColorSpace)
         self._color_space_type = None
 
         if default_parameters is not None:
             # no formal dataclass provided currently for Display parameters in this repo;
             # if provided, users are expected to map fields manually
-            if hasattr(default_parameters, "image_file_uri"):
-                self.image_file_uri = default_parameters.image_file_uri
-            if hasattr(default_parameters, "luminous_flux"):
-                self.luminous_flux = default_parameters.luminous_flux
-            if hasattr(default_parameters, "contrast_ratio"):
-                self.contrast_ratio = default_parameters.contrast_ratio
-            if hasattr(default_parameters, "axis_system"):
-                self.axis_system = default_parameters.axis_system
+            if not isinstance(default_parameters, DisplayParameters):
+                raise TypeError("incorrect parameter dataclass")
+            match default_parameters.color_space_type:
+                case ColorSpaceType.srgb:
+                    self.set_pre_defined_color_space().set_color_space_srgb()
+                case ColorSpaceType.adobe_rgb:
+                    self.set_pre_defined_color_space().set_color_space_adobergb()
+                case UserDefinedColorSpaceParameters():
+                    cs = self.set_userdefined_color_space()
+                    cs.red_spectrum = default_parameters.color_space_type.red_spectrum_uri
+                    cs.green_spectrum = default_parameters.color_space_type.green_spectrum_uri
+                    cs.blue_spectrum = default_parameters.color_space_type.blue_spectrum_uri
+                    match default_parameters.color_space_type.white_point_type:
+                        case WhitePointType.d50:
+                            cs.set_white_point_type_d50()
+                        case WhitePointType.d65:
+                            cs.set_white_point_type_d65()
+                        case WhitePointType.e:
+                            cs.set_white_point_type_e()
+                        case WhitePointType.c:
+                            cs.set_white_point_type_c()
+                        case UserDefinedWhitePointParameters():
+                            ud_wp = cs.set_white_point_type_user_defined()
+                            ud_wp.white_point = [
+                                default_parameters.color_space_type.white_point_type.x,
+                                default_parameters.color_space_type.white_point_type.y,
+                            ]
+
+            match type(default_parameters.intensity_type).__name__:
+                case "IntensityLambertianParameters":
+                    self.intensity.set_cos().n = 1
+                    self.intensity.set_cos().total_angle = (
+                        default_parameters.intensity_type.total_angle
+                    )
+                case "IntensityCosParameters":
+                    self.intensity.set_cos().n = default_parameters.intensity_type.n
+                    self.intensity.set_cos().total_angle = (
+                        default_parameters.intensity_type.total_angle
+                    )
+                case "IntensitySymmetricGaussianParameters":
+                    self.intensity.set_gaussian().fwhm_angle_x = (
+                        default_parameters.intensity_type.fwhm
+                    )
+                    self.intensity.set_gaussian().fwhm_angle_y = (
+                        default_parameters.intensity_type.fwhm
+                    )
+                    self.intensity.set_gaussian().total_angle = (
+                        default_parameters.intensity_type.total_angle
+                    )
+                case "IntensitAsymmetricGaussianParameters":
+                    self.intensity.set_gaussian().fwhm_angle_x = (
+                        default_parameters.intensity_type.fwhm_x
+                    )
+                    self.intensity.set_gaussian().fwhm_angle_y = (
+                        default_parameters.intensity_type.fwhm_y
+                    )
+                    self.intensity.set_gaussian().total_angle = (
+                        default_parameters.intensity_type.total_angle
+                    )
+                    self.intensity.set_gaussian().axis_system = (
+                        default_parameters.intensity_type.axis_system
+                    )
+                case "IntensityLibraryParameters":
+                    self.intensity.set_library().intensity_file_uri = (
+                        default_parameters.intensity_type.intensity_file_uri
+                    )
+                    if default_parameters.intensity_type.exit_geometries is not None:
+                        self.intensity.set_library().exit_geometries = (
+                            default_parameters.intensity_type.exit_geometries
+                        )
+                    match default_parameters.intensity_type.orientation_type:
+                        case IntensityOrientationType.normal_to_uv:
+                            self.intensity.set_library().set_orientation_normal_to_uv_map()
+                        case IntensityOrientationType.normal_to_surface:
+                            self.intensity.set_library().set_orientation_normal_to_surface()
+                        case _:
+                            match type(default_parameters.intensity_type.orientation_type).__name__:
+                                case "IntensityOrientationAxisSystemParameters":
+                                    orientation_axis = (
+                                        default_parameters.intensity_type.orientation_type
+                                    )
+                                    axis_parameters = orientation_axis.axis_system
+                                    self.intensity.set_library().orientation_axis_system = (
+                                        axis_parameters
+                                    )
+                                case _:
+                                    raise ValueError(
+                                        "Unsupported orientation type: {}".format(
+                                            type(
+                                                default_parameters.intensity_type.orientation_type
+                                            ).__name__
+                                        )
+                                    )
+            self.luminance = default_parameters.luminance
+            self.contrast_ratio = default_parameters.contrast_ratio
+            self.image_file_uri = default_parameters.image_file_uri
+            self.axis_system = default_parameters.axis_system
+            self.source_dimensions = default_parameters.source_dimensions
 
     @property
     def image_file_uri(self) -> str:
@@ -3370,7 +3472,7 @@ class SourceDisplay(BaseSource):
         sd.x_start, sd.x_end, sd.y_start, sd.y_end = dims
 
     @property
-    def luminous_flux(self) -> float:
+    def luminance(self) -> float:
         """Template-level luminous flux for the display.
 
         Returns
@@ -3380,8 +3482,8 @@ class SourceDisplay(BaseSource):
         """
         return self._source_template.display.luminous_flux
 
-    @luminous_flux.setter
-    def luminous_flux(self, value: float) -> None:
+    @luminance.setter
+    def luminance(self, value: float) -> None:
         """Set template-level luminous flux.
 
         Parameters
@@ -3461,7 +3563,7 @@ class SourceDisplay(BaseSource):
             )
         return self._intensity
 
-    def set_predefined_color_space(self) -> BaseSource.PredefinedColorSpace:
+    def set_pre_defined_color_space(self) -> BaseSource.PredefinedColorSpace:
         """Set display color space to a predefined color space.
 
         This returns a helper object allowing selection of sRGB or AdobeRGB presets.
@@ -3471,24 +3573,25 @@ class SourceDisplay(BaseSource):
         ansys.speos.core.source.BaseSource.PredefinedColorSpace
             Helper object for choosing a predefined color space.
         """
-        if self._type is None and self._source_template.display.HasField("predefined_color_space"):
+        # proto field name in SourceTemplate.Display is `pre_defined_color_space`
+        if self._type is None and self._source_template.display.HasField("pre_defined_color_space"):
             self._type = BaseSource.PredefinedColorSpace(
-                predefined_color_space=self._source_template.display.predefined_color_space,
+                predefined_color_space=self._source_template.display.pre_defined_color_space,
                 default_parameters=None,
                 stable_ctr=True,
             )
         if not isinstance(self._type, BaseSource.PredefinedColorSpace):
             self._type = BaseSource.PredefinedColorSpace(
-                predefined_color_space=self._source_template.display.predefined_color_space,
+                predefined_color_space=self._source_template.display.pre_defined_color_space,
                 default_parameters=ColorSpaceType.srgb,
                 stable_ctr=True,
             )
         elif (
             self._type._predefined_color_space
-            is not self._source_template.display.predefined_color_space
+            is not self._source_template.display.pre_defined_color_space
         ):
             self._type._predefined_color_space = (
-                self._source_template.display.predefined_color_space
+                self._source_template.display.pre_defined_color_space
             )
         return self._type
 

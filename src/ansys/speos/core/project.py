@@ -180,6 +180,7 @@ class Project:
                 RayFileSourceParameters,
                 AmbientNaturalLightParameters,
                 AmbientEnvironmentParameters,
+                DisplayParameters,
             ]
         ] = None,
     ) -> Union[
@@ -216,7 +217,8 @@ class Project:
         ansys.speos.core.generic.parameters.SurfaceSourceParameters,\
         ansys.speos.core.generic.parameters.RayFileSourceParameters,\
         ansys.speos.core.generic.parameters.AmbientNaturalLightParameters,\
-        ansys.speos.core.generic.parameters.AmbientEnvironmentParameters]]
+        ansys.speos.core.generic.parameters.AmbientEnvironmentParameters,\
+        ansys.speos.core.generic.parameters.DisplayParamaters]]
             Allows to provide parameters to overwrite default parameters.
 
         Returns
