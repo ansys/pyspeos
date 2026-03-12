@@ -1,6 +1,5 @@
 # # How to create an texture property
-import os
-
+#
 # This tutorial demonstrates how to create an texture property.
 # ## What is an textur property?
 # An texture property (also named material), gathers 3 notions:
@@ -10,7 +9,9 @@ import os
 # ## Prerequisites
 #
 # ### Perform imports
+
 # +
+import os
 from pathlib import Path
 
 from ansys.speos.core import Face, Project, Speos, launcher
@@ -26,13 +27,14 @@ from ansys.speos.core.source import SourceAmbientEnvironment
 # -
 
 # ### Define constants
+#
 # Constants help ensure consistency and avoid repetition throughout the example.
 
 HOSTNAME = "localhost"
 GRPC_PORT = 50098  # Be sure the Speos GRPC Server has been started on this port.
 USE_DOCKER = True  # Set to False if you're running this example locally as a Notebook.
 
-# ### Define helper functions
+# ## Define helper functions
 
 
 def create_helper_geometries(project: Project):
@@ -93,7 +95,7 @@ if USE_DOCKER:  # Running on the remote server.
 else:
     assets_data_path = Path("/path/to/your/download/assets/directory")
 
-# ### Connect to the RPC Server
+# ## Connect to the RPC Server
 # This Python client connects to a server where the Speos engine
 # is running as a service. In this example, the server and
 # client are the same machine. The launch_local_speos_rpc_method can
@@ -111,12 +113,18 @@ else:
 
 p = Project(speos=speos)
 print(p)
+
+# ## Add geometries
+#
+# we use the helper function to create a variety of rectangular geometries to allow the application
+# of textures
+
 data = create_helper_geometries(p)
 bodies = data["bodies"]
 faces = data["faces"]
 
 
-# ### Apply vertices data for all faces except the first
+# ## Apply vertices data for all faces except the first
 #
 # we create image locations for each vertices and provide these to each face to position the texture
 # on the Geometry. we give for each vertices the u,v location of the image
@@ -151,15 +159,16 @@ face5_0 = faces[5]
 face5_0.vertices_data = [
     MeshData(name="uv_0", data=[4 / 6, 1.0, 4 / 6, 0.0, 5 / 6, 1.0, 5 / 6, 0.0])
 ]
+data["rp"].commit()
 
 # As the used image has strips there is no interest in playing with v
 # . ----> u
 # |
 # | picture
 # v
-data["rp"].commit()
 
-# ### Create Ambient source
+
+# ## Create Ambient source
 
 src = p.create_source(name="Ambient", feature_type=SourceAmbientEnvironment)
 src.luminance = 1000
@@ -169,7 +178,7 @@ src.zenith_direction = [0.0, 0.0, 1.0]
 src.north_direction = [1.0, 0.0, 0.0]
 src.commit()
 
-# ### Create Radiance Sensor
+# ## Create Radiance Sensor
 
 ssr = p.create_sensor(name="Radiance", feature_type=SensorRadiance)
 ssr.axis_system = [11, 0, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
@@ -188,7 +197,12 @@ wv.sampling = 13
 ssr.commit()
 
 
-# ### Create Texture Property by data
+# ### Create Texture Properties
+#
+# ## Create Texture Property by data
+# When texture is create by data the image gets positioned on the geometry using
+# the uv information stored in the vertices data attribute on the face.
+
 
 opt_prop = p.create_optical_property(name="OptProp.1")
 opt_prop.set_volume_none()
@@ -209,9 +223,10 @@ layer_1.commit()
 opt_prop.texture = [layer_1]
 opt_prop.commit()
 
-# ### Create Texture Property by mapping operator
+# ## Create Texture Property by mapping operator
 # as alternative to mapping by data you can create some simple Mappings using planar,
 # cubic, spherical or cylindrical mapping operator
+
 face0_0 = faces[0]
 opt_prop1 = p.create_optical_property(name="OptProp.2")
 opt_prop1.set_volume_none()
@@ -233,7 +248,7 @@ layer_2.commit()
 opt_prop1.texture = [layer_2]
 opt_prop1.commit()
 
-# ### Create Inverse Simulation with define Texture normalization
+# ## Create Inverse Simulation with define Texture normalization
 
 sim = p.create_simulation(name="Inverse", feature_type=SimulationInverse)
 sim.set_sensor_paths(sensor_paths=["Radiance"])
@@ -241,7 +256,12 @@ sim.set_source_paths(source_paths=["Ambient"])
 sim.texture_normalization = TextureNormalizationTypes.none
 sim.commit()
 
-# ### Run Simulation and open result
+# ## Preview Project
+
+p.preview()
+
+# ## Run Simulation and open result
+
 results = sim.compute_CPU()
 
 if os.name == "nt":
