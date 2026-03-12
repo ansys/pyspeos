@@ -86,7 +86,20 @@ class Face:
             geo_paths.insert(0, parent.geo_path.metadata["GeoPath"])
         return GeoRef.from_native_link("/".join(geo_paths))
 
-    def set_vertices(self, values: List[float]) -> Face:
+    @property
+    def vertices(self) -> List[float]:
+        """Return the face vertices.
+
+        Returns
+        -------
+        List[float]
+            Coordinates of all points [p1x p1y p1z p2x p2y p2z ...].
+
+        """
+        return self._face.vertices
+
+    @vertices.setter
+    def vertices(self, values: List[float]) -> None:
         """Set the face vertices.
 
         Parameters
@@ -96,13 +109,24 @@ class Face:
 
         Returns
         -------
-        ansys.speos.core.face.Face
-            Face feature.
+        None
         """
         self._face.vertices[:] = values
-        return self
 
-    def set_facets(self, values: List[int]) -> Face:
+    @property
+    def facets(self) -> List[int]:
+        """Return the face vertices.
+
+        Returns
+        -------
+        List[int]
+            Indexes of points for all triangles (t1_1 t1_2 t1_3 t2_1 t2_2 t2_3 ...)
+
+        """
+        return self._face.facets
+
+    @facets.setter
+    def facets(self, values: List[int]) -> None:
         """Set the facets.
 
         Parameters
@@ -112,13 +136,24 @@ class Face:
 
         Returns
         -------
-        ansys.speos.core.face.Face
-            Face feature.
+        None
         """
         self._face.facets[:] = values
-        return self
 
-    def set_normals(self, values: List[float]) -> Face:
+    @property
+    def normals(self) -> List[float]:
+        """Return the face normals.
+
+        Returns
+        -------
+        List[float]
+            Normal vectors for all points [n1x n1y n1z n2x n2y n2z ...]
+
+        """
+        return self._face.normals
+
+    @normals.setter
+    def normals(self, values: List[float]) -> None:
         """Set the face normals.
 
         Parameters
@@ -128,11 +163,9 @@ class Face:
 
         Returns
         -------
-        ansys.speos.core.face.Face
-            Face feature.
+        None
         """
         self._face.normals[:] = values
-        return self
 
     def _to_dict(self) -> dict:
         out_dict = ""

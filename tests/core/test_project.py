@@ -530,9 +530,11 @@ def test_preview_visual_data(speos: Speos):
     # constant exitance
     p2_root_part = p2.find(name="", feature_type=Part)[0]
     p2_body1 = p2_root_part.create_body(name="TheBodyB").commit()
-    p2_body1.create_face(name="TheFaceF").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1]).commit()
+    p2_body1_face1 = p2_body1.create_face(name="TheFaceF")
+    p2_body1_face1.vertices = [0, 1, 0, 0, 2, 0, 1, 2, 0]
+    p2_body1_face1.facets = [0, 1, 2]
+    p2_body1_face1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    p2_body1_face1.commit()
     sr = p2.create_source(name="Surface.1", feature_type=SourceSurface)
 
     sr.set_exitance_constant().geometries = [(GeoRef.from_native_link("TheBodyB/TheFaceF"), False)]
@@ -578,9 +580,10 @@ def test_preview_visual_data(speos: Speos):
         .set_axis_system([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
         .commit()
     )
-    child_part2.create_body(name="Body.1").create_face(name="Face.1").set_vertices(
-        [0, 1, 2, 0, 2, 2, 1, 2, 2]
-    ).set_facets([0, 1, 2]).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    face1 = child_part2.create_body(name="Body.1").create_face(name="Face.1")
+    face1.vertices = [0, 1, 0, 0, 2, 0, 1, 2, 0]
+    face1.facets = [0, 1, 2]
+    face1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
     child_part2.commit()
     p7.preview()
 

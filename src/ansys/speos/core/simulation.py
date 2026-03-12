@@ -36,6 +36,7 @@ from ansys.api.speos.job.v2.job_pb2 import Result
 from ansys.api.speos.scene.v2 import scene_pb2 as messages
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
 
+from ansys.speos.core.generic import general_methods
 from ansys.speos.core.generic.general_methods import min_speos_version
 from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.kernel.job import ProtoJob
@@ -490,6 +491,7 @@ class BaseSimulation:
         else:
             raise TypeError(f"Unknown simulation template type: {self._template_class}")
 
+    @general_methods.min_speos_version(26, 1, 0)
     def export(self, export_path: Union[str, Path]) -> None:
         """Export simulation.
 

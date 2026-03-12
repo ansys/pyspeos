@@ -542,16 +542,19 @@ def test_create_irradiance_sensor(speos: Speos):
 
     root_part = p.create_root_part()
     body_b = root_part.create_body(name="TheBodyB")
-    body_b.create_face(name="TheFaceF").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    body_b_face1 = body_b.create_face(name="TheFaceF")
+    body_b_face1.vertices = [0, 1, 0, 0, 2, 0, 1, 2, 0]
+    body_b_face1.facets = [0, 1, 2]
+    body_b_face1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
     body_c = root_part.create_body(name="TheBodyC")
-    body_c.create_face(name="TheFaceC1").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
-    body_c.create_face(name="TheFaceC2").set_vertices([1, 0, 0, 2, 0, 0, 1, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    body_c_face1 = body_c.create_face(name="TheFaceC1")
+    body_c_face1.vertices = [0, 1, 0, 0, 2, 0, 1, 2, 0]
+    body_c_face1.facets = [0, 1, 2]
+    body_c_face1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    body_c_face2 = body_c.create_face(name="TheFaceC2")
+    body_c_face2.vertices = [0, 1, 0, 0, 2, 0, 1, 2, 0]
+    body_c_face2.facets = [0, 1, 2]
+    body_c_face2.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
     root_part.commit()
     sensor_parameter = IrradianceSensorParameters()
     # Default value
@@ -861,16 +864,22 @@ def test_create_radiance_sensor(speos: Speos):
 
     root_part = p.create_root_part()
     body_b = root_part.create_body(name="TheBodyB")
-    body_b.create_face(name="TheFaceF").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    body_b_face = body_b.create_face(name="TheFaceF")
+    body_b_face.vertices = [0, 1, 0, 0, 2, 0, 1, 2, 0]
+    body_b_face.facets = [0, 1, 2]
+    body_b_face.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+
     body_c = root_part.create_body(name="TheBodyC")
-    body_c.create_face(name="TheFaceC1").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
-    body_c.create_face(name="TheFaceC2").set_vertices([1, 0, 0, 2, 0, 0, 1, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    body_c_face1 = body_c.create_face(name="TheFaceC1")
+    body_c_face1.vertices = [0, 1, 0, 0, 2, 0, 1, 2, 0]
+    body_c_face1.facets = [0, 1, 2]
+    body_c_face1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+
+    body_c_face2 = body_c.create_face(name="TheFaceC2")
+    body_c_face2.vertices = [0, 1, 0, 0, 2, 0, 1, 2, 0]
+    body_c_face2.facets = [0, 1, 2]
+    body_c_face2.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+
     root_part.commit()
     sensor_parameter = RadianceSensorParameters()
     # Default value
@@ -1105,16 +1114,21 @@ def test_create_xmpintensity_sensor(speos: Speos):
 
     root_part = p.create_root_part()
     body_b = root_part.create_body(name="TheBodyB")
-    body_b.create_face(name="TheFaceF").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    body_b_face = body_b.create_face(name="TheFaceF")
+    body_b_face.vertices = [0, 1, 0, 0, 2, 0, 1, 2, 0]
+    body_b_face.facets = [0, 1, 2]
+    body_b_face.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+
     body_c = root_part.create_body(name="TheBodyC")
-    body_c.create_face(name="TheFaceC1").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
-    body_c.create_face(name="TheFaceC2").set_vertices([1, 0, 0, 2, 0, 0, 1, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    body_c_face1 = body_c.create_face(name="TheFaceC1")
+    body_c_face1.vertices = [0, 1, 0, 0, 2, 0, 1, 2, 0]
+    body_c_face1.facets = [0, 1, 2]
+    body_c_face1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+
+    body_c_face2 = body_c.create_face(name="TheFaceC2")
+    body_c_face2.vertices = [0, 1, 0, 0, 2, 0, 1, 2, 0]
+    body_c_face2.facets = [0, 1, 2]
+    body_c_face2.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
     root_part.commit()
 
     # Default value

@@ -148,12 +148,10 @@ def test_reset_optical_property(speos: Speos):
 
     root_part = p.create_root_part()
     body_b = root_part.create_body(name="TheBodyB")
-    (
-        body_b.create_face(name="TheFaceF")
-        .set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0])
-        .set_facets([0, 1, 2])
-        .set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
-    )
+    face = body_b.create_face(name="TheFaceF")
+    face.vertices = [0, 1, 0, 0, 2, 0, 1, 2, 0]
+    face.facets = [0, 1, 2]
+    face.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
     root_part.commit()
 
     # Create + commit
@@ -197,9 +195,10 @@ def test_delete_optical_property(speos: Speos):
 
     root_part = p.create_root_part()
     body_b = root_part.create_body(name="TheBodyB")
-    body_b.create_face(name="TheFaceF").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    body_b_face1 = body_b.create_face(name="TheFaceF")
+    body_b_face1.vertices = [0, 1, 0, 0, 2, 0, 1, 2, 0]
+    body_b_face1.facets = [0, 1, 2]
+    body_b_face1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
     root_part.commit()
 
     # Create + commit
@@ -236,16 +235,16 @@ def test_get_optical_property(speos: Speos, capsys):
 
     root_part = p.create_root_part()
     body_a = root_part.create_body(name="TheBodyA")
-    face = (
-        body_a.create_face(name="TheFaceF")
-        .set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0])
-        .set_facets([0, 1, 2])
-        .set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
-    )
+    face = body_a.create_face(name="TheFaceF")
+    face.vertices = [0, 1, 0, 0, 2, 0, 1, 2, 0]
+    face.facets = [0, 1, 2]
+    face.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+
     body_b = root_part.create_body(name="TheBodyB")
-    body_b.create_face(name="TheFaceF").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    body_b_face = body_b.create_face(name="TheFaceF")
+    body_b_face.vertices = [0, 1, 0, 0, 2, 0, 1, 2, 0]
+    body_b_face.facets = [0, 1, 2]
+    body_b_face.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
     root_part.commit()
 
     op1 = (

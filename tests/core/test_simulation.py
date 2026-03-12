@@ -648,9 +648,10 @@ def test_commit(speos: Speos):
 
     # Prerequisites: a source and a sensor are needed (bug also a rootpart and optical property)
     root_part = p.create_root_part()
-    root_part.create_body(name="Body.1").create_face(name="Face.1").set_vertices(
-        [0, 1, 0, 0, 2, 0, 1, 2, 0]
-    ).set_facets([0, 1, 2]).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    face = root_part.create_body(name="Body.1").create_face(name="Face.1")
+    face.vertices = [0, 1, 0, 0, 2, 0, 1, 2, 0]
+    face.facets = [0, 1, 2]
+    face.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
     root_part.commit()
 
     opt_prop = p.create_optical_property(name="Material.1")
@@ -702,9 +703,10 @@ def test_reset(speos: Speos):
 
     # Prerequisites: a source and a sensor are needed (bug also a rootpart and optical property)
     root_part = p.create_root_part()
-    root_part.create_body(name="Body.1").create_face(name="Face.1").set_vertices(
-        [0, 1, 0, 0, 2, 0, 1, 2, 0]
-    ).set_facets([0, 1, 2]).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    face = root_part.create_body(name="Body.1").create_face(name="Face.1")
+    face.vertices = [0, 1, 0, 0, 2, 0, 1, 2, 0]
+    face.facets = [0, 1, 2]
+    face.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
     root_part.commit()
 
     opt_prop = p.create_optical_property(name="Material.1")
@@ -757,9 +759,10 @@ def test_direct_modify_after_reset(speos: Speos):
 
     # Prerequisites: a source and a sensor are needed (bug also a rootpart and optical property)
     root_part = p.create_root_part()
-    root_part.create_body(name="Body.1").create_face(name="Face.1").set_vertices(
-        [0, 1, 0, 0, 2, 0, 1, 2, 0]
-    ).set_facets([0, 1, 2]).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    face = root_part.create_body(name="Body.1").create_face(name="Face.1")
+    face.vertices = [0, 1, 0, 0, 2, 0, 1, 2, 0]
+    face.facets = [0, 1, 2]
+    face.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
     root_part.commit()
 
     opt_prop = p.create_optical_property(name="Material.1")
@@ -828,9 +831,10 @@ def test_inverse_modify_after_reset(speos: Speos):
 
     # Prerequisites: a source and a sensor are needed (bug also a rootpart and optical property)
     root_part = p.create_root_part()
-    root_part.create_body(name="Body.1").create_face(name="Face.1").set_vertices(
-        [0, 1, 0, 0, 2, 0, 1, 2, 0]
-    ).set_facets([0, 1, 2]).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    face = root_part.create_body(name="Body.1").create_face(name="Face.1")
+    face.vertices = [0, 1, 0, 0, 2, 0, 1, 2, 0]
+    face.facets = [0, 1, 2]
+    face.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
     root_part.commit()
 
     opt_prop = p.create_optical_property(name="Material.1")
@@ -907,9 +911,10 @@ def test_interactive_modify_after_reset(speos: Speos):
 
     # Prerequisites: a source and a sensor are needed (bug also a rootpart and optical property)
     root_part = p.create_root_part()
-    root_part.create_body(name="Body.1").create_face(name="Face.1").set_vertices(
-        [0, 1, 0, 0, 2, 0, 1, 2, 0]
-    ).set_facets([0, 1, 2]).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    face = root_part.create_body(name="Body.1").create_face(name="Face.1")
+    face.vertices = [0, 1, 0, 0, 2, 0, 1, 2, 0]
+    face.facets = [0, 1, 2]
+    face.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
     root_part.commit()
 
     opt_prop = p.create_optical_property(name="Material.1")
@@ -965,9 +970,10 @@ def test_delete(speos: Speos):
 
     # Prerequisites: a source and a sensor are needed (bug also a rootpart and optical property)
     root_part = p.create_root_part()
-    root_part.create_body(name="Body.1").create_face(name="Face.1").set_vertices(
-        [0, 1, 0, 0, 2, 0, 1, 2, 0]
-    ).set_facets([0, 1, 2]).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    face = root_part.create_body(name="Body.1").create_face(name="Face.1")
+    face.vertices = [0, 1, 0, 0, 2, 0, 1, 2, 0]
+    face.facets = [0, 1, 2]
+    face.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
     root_part.commit()
 
     opt_prop = p.create_optical_property(name="Material.1")

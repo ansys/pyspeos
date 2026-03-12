@@ -78,12 +78,10 @@ print(p)
 
 root_part = p.create_root_part()
 body_1 = root_part.create_body(name="Body.1")
-face_1 = (
-    body_1.create_face(name="Face.1")
-    .set_vertices([0, 1, 2, 0, 2, 2, 1, 2, 2])
-    .set_facets([0, 1, 2])
-    .set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
-)
+face_1 = body_1.create_face(name="TheFaceF")
+face_1.vertices = [0, 1, 0, 0, 2, 0, 1, 2, 0]
+face_1.facets = [0, 1, 2]
+face_1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
 root_part.commit()
 
 # ### Prepare an optical property

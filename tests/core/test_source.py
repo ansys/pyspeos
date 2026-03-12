@@ -293,12 +293,14 @@ def test_create_surface_source(speos: Speos):
 
     root_part = p.create_root_part()
     body_b = root_part.create_body(name="BodyB")
-    body_b.create_face(name="FaceB1").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
-    body_b.create_face(name="FaceB2").set_vertices([1, 0, 0, 2, 0, 0, 1, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    body_b_face1 = body_b.create_face(name="FaceB1")
+    body_b_face1.vertices = [0, 1, 0, 0, 2, 0, 1, 2, 0]
+    body_b_face1.facets = [0, 1, 2]
+    body_b_face1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    body_b_face2 = body_b.create_face(name="FaceB2")
+    body_b_face2.vertices = [0, 1, 0, 0, 2, 0, 1, 2, 0]
+    body_b_face2.facets = [0, 1, 2]
+    body_b_face2.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
     root_part.commit()
 
     # Default value
@@ -1257,9 +1259,10 @@ def test_keep_same_internal_feature(speos: Speos):
 
     root_part = p.create_root_part()
     body_b = root_part.create_body(name="BodyB")
-    body_b.create_face(name="FaceB1").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    body_b_face1 = body_b.create_face(name="FaceB1")
+    body_b_face1.vertices = [0, 1, 0, 0, 2, 0, 1, 2, 0]
+    body_b_face1.facets = [0, 1, 2]
+    body_b_face1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
     root_part.commit()
 
     # SURFACE SOURCE
@@ -1644,9 +1647,10 @@ def test_print_source(speos: Speos):
 
     root_part = p.create_root_part()
     body_b = root_part.create_body(name="BodyB")
-    body_b.create_face(name="FaceB1").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    body_b_face1 = body_b.create_face(name="FaceB1")
+    body_b_face1.vertices = [0, 1, 0, 0, 2, 0, 1, 2, 0]
+    body_b_face1.facets = [0, 1, 2]
+    body_b_face1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
     root_part.commit()
 
     # LUMINAIRE - SPECTRUM
