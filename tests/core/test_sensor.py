@@ -1133,6 +1133,7 @@ def test_create_xmpintensity_sensor(speos: Speos):
     face3.facets = [0, 1, 2]
     face3.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
     face3.commit()
+    root_part.commit()
 
     # Default value
     sensor1 = p.create_sensor(name="Intensity.1", feature_type=SensorXMPIntensity)
