@@ -24,7 +24,7 @@
 
 from __future__ import annotations
 
-from typing import List, Mapping, Optional
+from typing import List, Mapping, Optional, Union
 
 from ansys.speos.core import proto_message_utils
 import ansys.speos.core.body as body
@@ -98,12 +98,12 @@ class Face:
         return list(self._face.vertices)
 
     @vertices.setter
-    def vertices(self, values: List[float]) -> None:
+    def vertices(self, values: List[Union[int, float]]) -> None:
         """Set the face vertices with validation.
 
         Parameters
         ----------
-        values : List[float]
+        values : List[Union[int, float]]
             Coordinates of all points [p1x p1y p1z p2x p2y p2z ...].
 
         Raises
@@ -175,12 +175,12 @@ class Face:
         return list(self._face.normals)
 
     @normals.setter
-    def normals(self, values: List[float]) -> None:
+    def normals(self, values: List[Union[int, float]]) -> None:
         """Set the face normals with validation.
 
         Parameters
         ----------
-        values : List[float]
+        values : List[Union[int, float]]
             Normal vectors for all points [n1x n1y n1z n2x n2y n2z ...].
 
         Raises

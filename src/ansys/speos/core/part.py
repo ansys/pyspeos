@@ -184,14 +184,14 @@ class Part:
             return list(self._part_instance.axis_system)
 
         @axis_system.setter
-        def axis_system(self, axis_system: List[float]) -> None:
+        def axis_system(self, axis_system: List[Union[int, float]]) -> None:
             """Set the sub part orientation (relative to parent element).
 
             The setter validates input types strictly.
 
             Parameters
             ----------
-            axis_system : List[float]
+            axis_system : List[Union[int, float]]
                 Orientation of the sub part [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
 
             Raises
