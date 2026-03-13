@@ -37,9 +37,11 @@ def test_create_big_face(speos: Speos):
     # Get DB
     face_db = speos.client.faces()  # Create face stub from client channel
 
-    size = 3 * 1024 * 1024
-    vertices = [10.0] * size
-    facets = [20] * size
+    points_nb = 1024 * 1024
+    vertices = [10.0] * 3 * points_nb
+    facets = [20] * 3 * points_nb
+    vertices_data = [0.5] * 2 * points_nb
+    vertices_data2 = [1.0] * 2 * points_nb
 
     # Create face
     face_link = face_db.create(
@@ -49,6 +51,10 @@ def test_create_big_face(speos: Speos):
             vertices=vertices,
             facets=facets,
             normals=vertices,
+            vertices_data=[
+                ProtoFace.MeshData(name="uv_0", data=vertices_data),
+                ProtoFace.MeshData(name="uv_1", data=vertices_data2),
+            ],
             metadata={"key_0": "val_0", "key_1": "val_1"},
         )
     )
@@ -62,6 +68,11 @@ def test_create_big_face(speos: Speos):
     assert face_read.vertices == vertices
     assert face_read.facets == facets
     assert face_read.normals == vertices
+    assert len(face_read.vertices_data) == 2
+    assert face_read.vertices_data[0].name == "uv_0"
+    assert face_read.vertices_data[0].data == vertices_data
+    assert face_read.vertices_data[1].name == "uv_1"
+    assert face_read.vertices_data[1].data == vertices_data2
 
     face_link.delete()
 
@@ -73,12 +84,16 @@ def test_create_big_faces(speos: Speos):
     # Get DB
     face_db = speos.client.faces()  # Create face stub from client channel
 
-    size = 3 * 1024 * 1024
-    vertices = [10.0] * size
-    facets = [20] * size
-    size_2 = 9 * 1024
-    vertices_2 = [9.5] * size_2
-    facets_2 = [15] * size_2
+    points_nb = 1024 * 1024
+    vertices = [10.0] * 3 * points_nb
+    facets = [20] * 3 * points_nb
+    vertices_data = [0.5] * 2 * points_nb
+    vertices_data2 = [1.0] * 2 * points_nb
+    points_nb2 = 3 * 1024
+    vertices_2 = [9.5] * 3 * points_nb2
+    facets_2 = [15] * 3 * points_nb2
+    vertices_data_2 = [0.5] * 2 * points_nb2
+    vertices_data2_2 = [1.0] * 2 * points_nb2
 
     # Create batch of faces
     face_links = face_db.create_batch(
@@ -90,6 +105,10 @@ def test_create_big_faces(speos: Speos):
                 vertices=vertices,
                 facets=facets,
                 normals=vertices,
+                vertices_data=[
+                    ProtoFace.MeshData(name="uv_0", data=vertices_data),
+                    ProtoFace.MeshData(name="uv_1", data=vertices_data2),
+                ],
             ),
             ProtoFace(
                 name="Face.2",
@@ -98,6 +117,10 @@ def test_create_big_faces(speos: Speos):
                 vertices=vertices_2,
                 facets=facets_2,
                 normals=vertices_2,
+                vertices_data=[
+                    ProtoFace.MeshData(name="uv_0", data=vertices_data_2),
+                    ProtoFace.MeshData(name="uv_1", data=vertices_data2_2),
+                ],
             ),
         ]
     )
@@ -114,6 +137,11 @@ def test_create_big_faces(speos: Speos):
     assert faces_read[0].vertices == vertices
     assert faces_read[0].facets == facets
     assert faces_read[0].normals == vertices
+    assert len(faces_read[0].vertices_data) == 2
+    assert faces_read[0].vertices_data[0].name == "uv_0"
+    assert faces_read[0].vertices_data[0].data == vertices_data
+    assert faces_read[0].vertices_data[1].name == "uv_1"
+    assert faces_read[0].vertices_data[1].data == vertices_data2
 
     assert faces_read[1].name == "Face.2"
     assert faces_read[1].description == "Face two"
@@ -121,6 +149,11 @@ def test_create_big_faces(speos: Speos):
     assert faces_read[1].vertices == vertices_2
     assert faces_read[1].facets == facets_2
     assert faces_read[1].normals == vertices_2
+    assert len(faces_read[1].vertices_data) == 2
+    assert faces_read[1].vertices_data[0].name == "uv_0"
+    assert faces_read[1].vertices_data[0].data == vertices_data_2
+    assert faces_read[1].vertices_data[1].name == "uv_1"
+    assert faces_read[1].vertices_data[1].data == vertices_data2_2
 
     for face_link in face_links:
         face_link.delete()

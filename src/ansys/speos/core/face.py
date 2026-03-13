@@ -28,6 +28,7 @@ from typing import List, Mapping, Optional
 
 from ansys.speos.core import proto_message_utils
 import ansys.speos.core.body as body
+from ansys.speos.core.generic.parameters import MeshData
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.client import SpeosClient
 from ansys.speos.core.kernel.face import ProtoFace
@@ -133,6 +134,34 @@ class Face:
         """
         self._face.normals[:] = values
         return self
+
+    @property
+    def vertices_data(self) -> list[MeshData]:
+        """List of data applied to vertices.
+
+        Returns
+        -------
+        list[MeshData]
+            List of MeshData
+        """
+        return [MeshData(i.name, i.data) for i in self._face.vertices_data]
+
+    @vertices_data.setter
+    def vertices_data(self, value: list[MeshData]) -> None:
+        """Set the data applied to vertices.
+
+        Parameters
+        ----------
+        value : list[MeshData]
+            List of MeshData for the face each data set in complete
+        """
+        for i in value:
+            if not isinstance(i, MeshData):
+                raise TypeError("wrong type")
+        self._face.ClearField("vertices_data")
+        self._face.vertices_data.extend(
+            [ProtoFace.MeshData(name=i.name, data=i.data) for i in value]
+        )
 
     def _to_dict(self) -> dict:
         out_dict = ""

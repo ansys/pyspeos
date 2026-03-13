@@ -37,6 +37,7 @@ from ansys.api.speos.scene.v2 import scene_pb2 as messages
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
 
 from ansys.speos.core.generic.general_methods import min_speos_version
+from ansys.speos.core.generic.parameters import TextureNormalizationTypes
 from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.kernel.job import ProtoJob
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
@@ -584,6 +585,48 @@ class BaseSimulation:
         if len(vtp_files) > 1:
             vtp_files.append(merge_vtp(vtp_paths=vtp_files))
         return vtp_files
+
+    @property
+    def texture_normalization(self) -> Union[TextureNormalizationTypes]:
+        """Return Texture Normalization Type of the Simulation.
+
+        Returns
+        -------
+        Union[TextureNormalizationTypes]
+            Provides clear text readable texture normalization applied during simulation.
+        """
+        match getattr(
+            self._simulation_template, self._template_class
+        ).texture.texture_normalization:
+            case simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_NONE:
+                return TextureNormalizationTypes.none
+            case simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_UNSPECIFIED:
+                return TextureNormalizationTypes.unspecified
+            case simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_COLOR_FROM_TEXTURE:
+                return TextureNormalizationTypes.color_from_texture
+            case simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_COLOR_FROM_BSDF:
+                return TextureNormalizationTypes.color_from_bsdf
+
+    @texture_normalization.setter
+    def texture_normalization(self, value: Union[TextureNormalizationTypes]):
+        texture = getattr(self._simulation_template, self._template_class).texture
+        match value:
+            case TextureNormalizationTypes.unspecified:
+                texture.texture_normalization = (
+                    simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_UNSPECIFIED
+                )
+            case TextureNormalizationTypes.none:
+                texture.texture_normalization = (
+                    simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_NONE
+                )
+            case TextureNormalizationTypes.color_from_texture:
+                texture.texture_normalization = (
+                    simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_COLOR_FROM_TEXTURE
+                )
+            case TextureNormalizationTypes.color_from_bsdf:
+                texture.texture_normalization = (
+                    simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_COLOR_FROM_BSDF
+                )
 
     def compute_CPU(
         self, threads_number: Optional[int] = None, export_vtp: Optional[bool] = False

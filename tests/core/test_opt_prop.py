@@ -24,8 +24,45 @@
 
 from pathlib import Path
 
-from ansys.speos.core import GeoRef, Project, Speos
+import numpy as np
+import pytest
+
+from ansys.speos.core import Face, GeoRef, OptProp, Project, Speos
+from ansys.speos.core.generic.parameters import (
+    MappingByData,
+    MappingOperator,
+    MappingTypes,
+    MaterialOpticParameters,
+    MeshData,
+)
+from ansys.speos.core.kernel import ProtoFace
+from ansys.speos.core.opt_prop import TextureLayer
 from tests.conftest import test_path
+from tests.helper import approx_arrays
+
+
+def create_rect_face(my_body, name, pos, x, y) -> Face:
+    """Create rectangular face."""
+    face = my_body.create_face(name=name)
+    face.set_vertices(
+        [
+            pos[0],
+            pos[1],
+            pos[2],
+            pos[0],
+            pos[1] + y,
+            pos[2],
+            pos[0] + x,
+            pos[1],
+            pos[2],
+            pos[0] + x,
+            pos[1] + x,
+            pos[2],
+        ]
+    )
+    face.set_facets([0, 1, 2, 1, 2, 3])
+    face.set_normals([0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0])
+    return face
 
 
 def test_create_optical_property(speos: Speos):
@@ -47,20 +84,27 @@ def test_create_optical_property(speos: Speos):
     assert op1.vop_template_link.get().HasField("opaque")
 
     # VOP optic
-    op1.set_volume_optic(index=1.7, absorption=0.01, constringence=55).commit()
+    op1.set_volume_optic()
+    op1.vop_optic = MaterialOpticParameters(index=1.7, absorption=0.01, constringence=55)
+    op1.commit()
     assert op1.vop_template_link.get().HasField("optic")
     assert op1.vop_template_link.get().optic.index == 1.7
     assert op1.vop_template_link.get().optic.absorption == 0.01
     assert op1.vop_template_link.get().optic.HasField("constringence")
     assert op1.vop_template_link.get().optic.constringence == 55
-
-    op1.set_volume_optic().commit()
+    op1.vop_optic = MaterialOpticParameters(index=1.7, absorption=0.01)
+    op1.commit()
+    assert op1.vop_template_link.get().optic.HasField("constringence") is False
+    op1.set_volume_optic()
+    op1.commit()
     assert op1.vop_template_link.get().optic.index == 1.5
     assert op1.vop_template_link.get().optic.absorption == 0.0
     assert op1.vop_template_link.get().optic.HasField("constringence") is False
 
     # VOP library
-    op1.set_volume_library(path=str(Path(test_path) / "AIR.material")).commit()
+    op1.set_volume_library()
+    op1.vop_library = Path(test_path) / "AIR.material"
+    op1.commit()
     assert op1.vop_template_link.get().HasField("library")
     assert op1.vop_template_link.get().library.material_file_uri.endswith("AIR.material")
 
@@ -87,29 +131,34 @@ def test_create_optical_property(speos: Speos):
     assert op1.sop_template_link.get().HasField("optical_polished")
 
     # SOP library
-    op1.set_surface_library(path=str(Path(test_path) / "R_test.anisotropicbsdf")).commit()
+    op1.set_surface_library()
+    op1.sop_library = Path(test_path) / "R_test.anisotropicbsdf"
+    op1.commit()
     assert op1.sop_template_link.get().HasField("library")
     assert op1.sop_template_link.get().library.sop_file_uri.endswith("R_test.anisotropicbsdf")
 
     # SOP mirror
-    op1.set_surface_mirror(reflectance=80).commit()
+    op1.set_surface_mirror()
+    op1.sop_reflectance = 80
+    op1.commit()
     assert op1.sop_template_link.get().HasField("mirror")
+    assert op1._sop_template.mirror.reflectance == 80
     assert op1.sop_template_link.get().mirror.reflectance == 80
 
     # geometries
-    op1.set_geometries(
-        geometries=[
-            GeoRef.from_native_link("TheBodyB1"),
-            GeoRef.from_native_link("TheBodyB2"),
-        ]
-    )
+    op1.geometries = [
+        GeoRef.from_native_link("TheBodyB1"),
+        GeoRef.from_native_link("TheBodyB2"),
+    ]
     assert op1._material_instance.HasField("geometries")
-    op1._material_instance.geometries.geo_paths == ["TheBody1", "TheBodyB2"]
+    assert op1._material_instance.geometries.geo_paths == ["TheBodyB1", "TheBodyB2"]
+    for geo in op1.geometries:
+        assert "TheBodyB" in geo
 
-    op1.set_geometries(geometries=None)  # means no geometry
+    op1.geometries = None  # means no geometry
     assert op1._material_instance.HasField("geometries") is False
 
-    op1.set_geometries(geometries=[])  # means all geometries
+    op1.geometries = []  # means all geometries
     assert op1._material_instance.HasField("geometries")
     assert op1._material_instance.geometries.geo_paths == []
 
@@ -136,7 +185,7 @@ def test_commit_optical_property(speos: Speos):
     assert p.scene_link.get().materials[0] == op1._material_instance
 
     # Change only in local not committed
-    op1.set_geometries(geometries=[GeoRef.from_native_link("TheBodyB")])
+    op1.geometries = [GeoRef.from_native_link("TheBodyB")]
     assert p.scene_link.get().materials[0] != op1._material_instance
 
     op1.delete()
@@ -157,12 +206,9 @@ def test_reset_optical_property(speos: Speos):
     root_part.commit()
 
     # Create + commit
-    op1 = (
-        p.create_optical_property(name="Material.1")
-        .set_volume_opaque()
-        .set_geometries(geometries=[body_b.geo_path])
-        .commit()
-    )
+    op1 = p.create_optical_property(name="Material.1").set_volume_opaque()
+    op1.geometries = [body_b.geo_path]
+    op1.commit()
     assert op1.vop_template_link is not None
     assert op1.vop_template_link.get().HasField("opaque")
     assert op1.sop_template_link is not None
@@ -171,7 +217,9 @@ def test_reset_optical_property(speos: Speos):
     assert p.scene_link.get().materials[0].HasField("geometries")
 
     # Change local data (on template and on instance)
-    op1.set_surface_opticalpolished().set_volume_optic().set_geometries(geometries=None)
+    op1.set_surface_opticalpolished()
+    op1.set_volume_optic()
+    op1.geometries = None
     assert op1.vop_template_link.get().HasField("opaque")
     assert op1._vop_template.HasField("optic")  # local template
     assert op1.sop_template_link.get().HasField("mirror")
@@ -203,12 +251,10 @@ def test_delete_optical_property(speos: Speos):
     root_part.commit()
 
     # Create + commit
-    op1 = (
-        p.create_optical_property(name="Material.1")
-        .set_volume_opaque()
-        .set_geometries(geometries=[GeoRef.from_native_link("TheBodyB")])
-        .commit()
-    )
+    op1 = p.create_optical_property(name="Material.1")
+    op1.set_volume_opaque()
+    op1.geometries = [GeoRef.from_native_link("TheBodyB")]
+    op1.commit()
     assert op1.vop_template_link.get().HasField("opaque")
     assert op1.sop_template_link.get().HasField("mirror")
     assert len(p.scene_link.get().materials) == 1
@@ -248,12 +294,10 @@ def test_get_optical_property(speos: Speos, capsys):
     ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
     root_part.commit()
 
-    op1 = (
-        p.create_optical_property(name="Material.1")
-        .set_volume_opaque()
-        .set_geometries(geometries=[body_a])
-        .commit()
-    )
+    op1 = p.create_optical_property(name="Material.1")
+    op1.set_volume_opaque()
+    op1.geometries = [body_a]
+    op1.commit()
 
     name = op1.get(key="name")
     assert name == "Material.1"
@@ -271,13 +315,12 @@ def test_get_optical_property(speos: Speos, capsys):
     geometries = op1.get(key="geo_paths")
     assert geometries == ["TheBodyA"]
 
-    op2 = (
-        p.create_optical_property(name="OpticalProperty2")
-        .set_volume_optic(index=1.7, absorption=0.01, constringence=55)
-        .set_surface_opticalpolished()
-        .set_geometries(geometries=[body_b])
-        .commit()
-    )
+    op2 = p.create_optical_property(name="OpticalProperty2")
+    op2.set_volume_optic()
+    op2.vop_optic = MaterialOpticParameters(1.7, 0.01, 55)
+    op2.set_surface_opticalpolished()
+    op2.geometries = [body_b]
+    op2.commit()
 
     name = op2.get(key="name")
     assert name == "OpticalProperty2"
@@ -294,13 +337,12 @@ def test_get_optical_property(speos: Speos, capsys):
     geometries = op2.get(key="geo_paths")
     assert geometries == ["TheBodyB"]
 
-    op3 = (
-        p.create_optical_property(name="OpticalProperty3")
-        .set_volume_none()
-        .set_surface_library(path=str(Path(test_path) / "R_test.anisotropicbsdf"))
-        .set_geometries(geometries=[face])
-        .commit()
-    )
+    op3 = p.create_optical_property(name="OpticalProperty3")
+    op3.set_volume_none()
+    op3.set_surface_library()
+    op3.sop_library = Path(test_path) / "R_test.anisotropicbsdf"
+    op3.geometries = [face]
+    op3.commit()
 
     name = op3.get(key="name")
     assert name == "OpticalProperty3"
@@ -311,3 +353,687 @@ def test_get_optical_property(speos: Speos, capsys):
     assert "mirror" not in sop_property_info
     assert "optical_polished" not in sop_property_info
     assert "library" in sop_property_info
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_load_optical_property_from_file(speos: Speos):
+    """Test loading a file and filling all Materials."""
+    p = Project(speos=speos, path=Path(test_path) / "Material.1.speos" / "Material.1.speos")
+    all_mats = p.find(name=".*", name_regex=True, feature_type=OptProp)
+    assert all_mats
+    for mat in all_mats:
+        assert isinstance(mat, OptProp)
+        match mat._name:
+            case "Opaque_mirror80":
+                assert mat.sop_type == "mirror"
+                assert mat.sop_reflectance == 80
+                assert mat.vop_type == "opaque"
+            case "None_Library":
+                assert mat.vop_type is None
+                assert mat.sop_type == "library"
+                assert mat.sop_library.endswith(".scattering")
+            case "FOP_mirror75":
+                assert mat.sop_type == "mirror"
+                assert mat.sop_reflectance == 75
+                assert mat.vop_type is None
+            case "Optic_OP":
+                assert mat.sop_type == "optical_polished"
+                assert mat.vop_type == "optic"
+                assert mat.vop_optic.index == 1.49
+                assert mat.vop_optic.constringence == 30
+                assert mat.vop_optic.absorption == 0.001
+            case "Library_OP":
+                assert mat.sop_type == "optical_polished"
+                assert mat.vop_type == "library"
+                assert mat.vop_library.endswith(".material")
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_error_reporting(speos: Speos):
+    """Test error raising."""
+    p = Project(speos=speos)
+    op = p.create_optical_property(name="ErrMat")
+
+    # sop_reflectance setter should raise if SOP is not mirror
+    op.set_surface_opticalpolished()
+    with pytest.raises(TypeError):
+        op.sop_reflectance = 50
+
+    # sop_library setter should raise if SOP is not library
+    op.set_surface_mirror()
+    with pytest.raises(TypeError):
+        op.sop_library = Path("somefile.scattering")
+
+    # vop_optic setter should raise if VOP is not optic
+    op.set_volume_opaque()
+    with pytest.raises(TypeError):
+        op.vop_optic = MaterialOpticParameters(1.6, 0.01, None)
+
+    # vop_library setter should raise if VOP is not library
+    with pytest.raises(TypeError):
+        op.vop_library = Path("somefile.material")
+
+    # texture setter on OptProp should raise when value is not TextureLayer instances
+    with pytest.raises(ValueError):
+        op.texture = ["not_a_texture"]
+
+    # geometries setter should raise for unsupported types
+    with pytest.raises(TypeError):
+        op.geometries = [123]  # int is unsupported
+
+    # TextureLayer related errors
+    layer = TextureLayer(op, "LayerErr")
+    # setting image file creates texture but no normal_map -> roughness setter should raise
+    layer.image_texture_file_uri = Path("some_image.png")
+    with pytest.raises(TypeError):
+        layer.roughness = 2.0
+
+    # create normal_map without specifying from_image/from_normal_map, calling
+    # normal_map_file_uri should raise
+    layer2 = TextureLayer(op, "LayerErr2")
+    layer2._sop_template.texture.SetInParent()
+    layer2._sop_template.texture.normal_map.SetInParent()
+    with pytest.raises(TypeError):
+        layer2.normal_map_file_uri = Path("normal.png")
+
+    # invalid types for mapping property setters should raise ValueError
+    with pytest.raises(ValueError):
+        layer2.normal_map_property = 123  # not MappingOperator or MappingByData
+    with pytest.raises(ValueError):
+        layer2.image_property = 123
+    with pytest.raises(ValueError):
+        layer2.anisotropic_property = 123
+
+    layer3 = TextureLayer(op, "LayerErr3")
+    layer3.set_surface_library()
+    layer3.sop_library = Path(test_path) / "Texture.1.speos" / "aniso_bsdf.anisotropicbsdf"
+    with pytest.raises(TypeError):
+        layer3.roughness = 2.0
+    layer3.set_normal_map_from_image()
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_create_texture_property(speos: Speos):
+    """Test creation of texture property."""
+    p = Project(speos=speos)
+
+    # Default value
+    op1 = p.create_optical_property(name="texture.1")
+    op1.commit()
+    assert op1.vop_template_link is None
+    assert op1.sop_template_link is not None
+    assert op1.sop_template_link.get().HasField("mirror")
+    assert op1.sop_template_link.get().mirror.reflectance == 100
+    assert op1._material_instance.HasField("geometries") is False
+    assert op1._material_instance.HasField("texture") is False
+
+    layer_1 = TextureLayer(op1, "Layer.1")
+    layer_1.commit()
+    op1.texture = [layer_1]
+    op1.commit()
+
+    assert op1._material_instance.HasField("texture")
+    assert layer_1.sop_template_link.get().HasField("mirror")
+    assert layer_1.sop_template_link.get().mirror.reflectance == 100
+    assert (
+        layer_1.sop_template_link.get()
+        == p.client[op1._material_instance.texture.layers[0].sop_guid].get()
+    )
+
+    layer_1.image_texture_file_uri = Path(test_path) / "Texture.1.speos" / "black_leather.jpg.png"
+    for map_type in MappingTypes:
+        layer_1.image_property = MappingOperator(map_type, 5)
+        assert map_type == layer_1.image_property.mapping_type
+    layer_1.image_property = MappingOperator("planar", 5)
+    layer_1.commit()
+    op1.texture = [layer_1]
+    op1.commit()
+
+    assert op1._material_instance.HasField("texture")
+    assert layer_1.sop_template_link.get().HasField("mirror")
+    assert layer_1.sop_template_link.get().mirror.reflectance == 100
+    assert (
+        layer_1.sop_template_link.get()
+        == p.client[op1._material_instance.texture.layers[0].sop_guid].get()
+    )
+    assert op1._material_instance.texture.layers[0].image_properties.mapping_operator.HasField(
+        "planar"
+    )
+    assert (
+        op1._material_instance.texture.layers[0].image_properties.mapping_operator.u_length
+        == layer_1.image_property.u_length
+    )
+    assert (
+        op1._material_instance.texture.layers[0].image_properties.mapping_operator.u_scale_factor
+        == layer_1.image_property.u_scale
+    )
+    assert (
+        op1._material_instance.texture.layers[0].image_properties.mapping_operator.v_scale_factor
+        == layer_1.image_property.v_scale
+    )
+    assert (
+        op1._material_instance.texture.layers[0].image_properties.mapping_operator.rotation
+        == layer_1.image_property.rotation
+    )
+    assert (
+        op1._material_instance.texture.layers[0].image_properties.mapping_operator.axis_system
+        == layer_1.image_property.axis_system
+    )
+
+    layer_1.set_normal_map_from_image()
+    layer_1.normal_map_file_uri = Path(test_path) / "Texture.1.speos" / "black_leather.jpg.png"
+    for map_type in MappingTypes:
+        layer_1.normal_map_property = MappingOperator(map_type, 5)
+        assert map_type == layer_1.normal_map_property.mapping_type
+    layer_1.normal_map_property = MappingOperator("cylindrical", 5)
+    layer_1.commit()
+    op1.texture = [layer_1]
+    op1.commit()
+
+    assert op1._material_instance.HasField("texture")
+    assert layer_1.sop_template_link.get().HasField("mirror")
+    assert layer_1.sop_template_link.get().mirror.reflectance == 100
+    assert (
+        layer_1.sop_template_link.get()
+        == p.client[op1._material_instance.texture.layers[0].sop_guid].get()
+    )
+    assert op1._material_instance.texture.layers[0].image_properties.mapping_operator.HasField(
+        "planar"
+    )
+    assert (
+        op1._material_instance.texture.layers[0].image_properties.mapping_operator.u_length
+        == layer_1.image_property.u_length
+    )
+    assert (
+        op1._material_instance.texture.layers[0].image_properties.mapping_operator.u_scale_factor
+        == layer_1.image_property.u_scale
+    )
+    assert (
+        op1._material_instance.texture.layers[0].image_properties.mapping_operator.v_scale_factor
+        == layer_1.image_property.v_scale
+    )
+    assert (
+        op1._material_instance.texture.layers[0].image_properties.mapping_operator.rotation
+        == layer_1.image_property.rotation
+    )
+    assert (
+        op1._material_instance.texture.layers[0].image_properties.mapping_operator.axis_system
+        == layer_1.image_property.axis_system
+    )
+    assert op1._material_instance.texture.layers[0].normal_map_properties.mapping_operator.HasField(
+        "cylindrical"
+    )
+    assert (
+        op1._material_instance.texture.layers[0].normal_map_properties.mapping_operator.u_length
+        == layer_1.normal_map_property.u_length
+    )
+    assert (
+        op1._material_instance.texture.layers[
+            0
+        ].normal_map_properties.mapping_operator.u_scale_factor
+        == layer_1.normal_map_property.u_scale
+    )
+    assert (
+        op1._material_instance.texture.layers[
+            0
+        ].normal_map_properties.mapping_operator.v_scale_factor
+        == layer_1.normal_map_property.v_scale
+    )
+    assert (
+        op1._material_instance.texture.layers[0].normal_map_properties.mapping_operator.rotation
+        == layer_1.normal_map_property.rotation
+    )
+    assert (
+        op1._material_instance.texture.layers[0].normal_map_properties.mapping_operator.axis_system
+        == layer_1.normal_map_property.axis_system
+    )
+
+    layer_1.set_normal_map_from_normal_map()
+    layer_1.normal_map_file_uri = Path(test_path) / "Texture.1.speos" / "Facets_NM.png"
+    layer_1.normal_map_property = MappingOperator(
+        "cubic", 5, 10, False, False, [1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1], 10, 10, 45
+    )
+    layer_1.roughness = 0.42
+    assert pytest.approx(layer_1.roughness, rel=1e-6) == 0.42
+
+    # change again to ensure value updates
+    layer_1.roughness = 0.123
+    assert pytest.approx(layer_1.roughness, rel=1e-6) == 0.123
+    layer_1.commit()
+    op1.texture = [layer_1]
+    op1.commit()
+    assert (
+        layer_1.sop_template_link.get()
+        == p.client[op1._material_instance.texture.layers[0].sop_guid].get()
+    )
+    assert op1._material_instance.texture.layers[0].normal_map_properties.mapping_operator.HasField(
+        "cubic"
+    )
+    assert (
+        op1._material_instance.texture.layers[0].normal_map_properties.mapping_operator.u_length
+        == layer_1.normal_map_property.u_length
+    )
+    assert (
+        op1._material_instance.texture.layers[
+            0
+        ].normal_map_properties.mapping_operator.u_scale_factor
+        == layer_1.normal_map_property.u_scale
+    )
+    assert (
+        op1._material_instance.texture.layers[
+            0
+        ].normal_map_properties.mapping_operator.v_scale_factor
+        == layer_1.normal_map_property.v_scale
+    )
+    assert (
+        op1._material_instance.texture.layers[0].normal_map_properties.mapping_operator.rotation
+        == layer_1.normal_map_property.rotation
+    )
+    assert (
+        op1._material_instance.texture.layers[0].normal_map_properties.mapping_operator.axis_system
+        == layer_1.normal_map_property.axis_system
+    )
+
+    layer_2 = TextureLayer(op1, "Layer.2")
+    layer_2.set_surface_library()
+    layer_2.sop_library = Path(test_path) / "Texture.1.speos" / "aniso_bsdf.anisotropicbsdf"
+    for map_type in MappingTypes:
+        layer_2.anisotropic_property = MappingOperator(map_type, 5)
+        assert map_type == layer_2.anisotropic_property.mapping_type
+    layer_2.anisotropic_property = MappingOperator(
+        MappingTypes.spherical,
+        5,
+        10,
+        False,
+        False,
+        [1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+        10,
+        10,
+        90,
+        10,
+    )
+    layer_2.commit()
+    op1.texture = [layer_1, layer_2]
+    op1.commit()
+
+    assert (
+        layer_1.sop_template_link.get()
+        == p.client[op1._material_instance.texture.layers[0].sop_guid].get()
+    )
+    assert (
+        layer_2.sop_template_link.get()
+        == p.client[op1._material_instance.texture.layers[1].sop_guid].get()
+    )
+    assert op1._material_instance.texture.layers[
+        1
+    ].anisotropy_map_properties.mapping_operator.HasField("spherical")
+    assert (
+        op1._material_instance.texture.layers[1].anisotropy_map_properties.mapping_operator.rotation
+        == layer_2.anisotropic_property.rotation
+    )
+    assert (
+        op1._material_instance.texture.layers[
+            1
+        ].anisotropy_map_properties.mapping_operator.axis_system
+        == layer_2.anisotropic_property.axis_system
+    )
+    assert (
+        op1._material_instance.texture.layers[
+            1
+        ].anisotropy_map_properties.mapping_operator.spherical.sphere_perimeter
+        == layer_2.anisotropic_property.perimeter
+    )
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_reset_texture_property(speos: Speos):
+    """Test reset of Optical Properties with texture."""
+    p = Project(speos=speos)
+
+    # Default value
+    op1 = p.create_optical_property(name="texture.1")
+    layer_2 = TextureLayer(op1, "Layer.2")
+    layer_2.set_surface_library()
+    layer_2.sop_library = Path(test_path) / "Texture.1.speos" / "aniso_bsdf.anisotropicbsdf"
+    layer_2.anisotropic_property = MappingOperator(
+        MappingTypes.spherical,
+        5,
+        10,
+        False,
+        False,
+        [1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+        10,
+        10,
+        90,
+        10,
+    )
+    layer_2.set_normal_map_from_normal_map()
+    layer_2.normal_map_file_uri = Path(test_path) / "Texture.1.speos" / "Facets_NM.png"
+    layer_2.normal_map_property = MappingOperator(
+        "cubic", 5, 10, False, False, [1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1], 10, 10, 45
+    )
+    layer_2.image_texture_file_uri = Path(test_path) / "Texture.1.speos" / "black_leather.jpg.png"
+    layer_2.image_property = MappingOperator("planar", 5)
+    layer_2.commit()
+    op1.texture = [layer_2]
+    op1.commit()
+
+    assert op1._material_instance.texture.layers[
+        0
+    ].anisotropy_map_properties.mapping_operator.HasField("spherical")
+    assert op1._material_instance.texture.layers[0].image_properties.mapping_operator.HasField(
+        "planar"
+    )
+    assert op1._material_instance.texture.layers[0].normal_map_properties.mapping_operator.HasField(
+        "cubic"
+    )
+    assert (
+        op1._material_instance.texture.layers[0].anisotropy_map_properties.mapping_operator.rotation
+        == layer_2.anisotropic_property.rotation
+    )
+    assert (
+        op1._material_instance.texture.layers[
+            0
+        ].anisotropy_map_properties.mapping_operator.axis_system
+        == layer_2.anisotropic_property.axis_system
+    )
+    assert (
+        op1._material_instance.texture.layers[
+            0
+        ].anisotropy_map_properties.mapping_operator.spherical.sphere_perimeter
+        == layer_2.anisotropic_property.perimeter
+    )
+    layer_2.set_surface_mirror()
+    assert layer_2._sop_template.HasField("mirror")
+    old_values = layer_2.anisotropic_property
+    new_values = MappingOperator(
+        MappingTypes.planar,
+        20,
+        5,
+        False,
+        False,
+        [2, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+        15,
+        15,
+        45,
+        10,
+    )
+    layer_2.anisotropic_property = new_values
+    mapping_op = layer_2._texture_template.anisotropy_map_properties.mapping_operator
+    assert mapping_op.axis_system == new_values.axis_system
+    assert mapping_op.rotation == new_values.rotation
+    assert mapping_op.HasField(new_values.mapping_type)
+    layer_2.reset()
+    assert layer_2._sop_template.HasField("library")
+    mapping_op = layer_2._texture_template.anisotropy_map_properties.mapping_operator
+    assert mapping_op.axis_system == old_values.axis_system
+    assert mapping_op.rotation == old_values.rotation
+    assert mapping_op.HasField(old_values.mapping_type)
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_load_texture_property_from_file(speos: Speos):
+    """Test loading of Solver file containing texture properties."""
+    p = Project(speos=speos, path=Path(test_path) / "Texture.1.speos" / "Texture.1.speos")
+    all_mats = p.find(name=".*", name_regex=True, feature_type=OptProp)
+    assert all_mats
+    for mat in all_mats:
+        assert isinstance(mat, OptProp)
+        match mat._name:
+            case "Texture_spherical_Optic_OP_normal_map|UV mapping.1":
+                assert mat.sop_type == "texture"
+                assert len(mat.texture) == 1
+                assert mat.texture[0].sop_type == "optical_polished"
+                assert mat.texture[0].roughness == 1
+                assert mat.texture[0].normal_map_file_uri.endswith("png")
+                mapping_opp = mat.texture[0].normal_map_property.__dict__
+                expected = MappingOperator(
+                    mapping_type=MappingTypes.spherical,
+                    u_length=10,
+                    v_length=7.46268656716,
+                    axis_system=[0, 1, 4.98, 0, 0, 1, 1, 0, 0, 0, 1, 0],
+                    repeat_u=False,
+                    repeat_v=True,
+                    u_scale=0.1,
+                    v_scale=0.1,
+                    perimeter=6.28,
+                ).__dict__
+                for k1, k2 in zip(sorted(expected.keys()), sorted(mapping_opp.keys())):
+                    assert k1 == k2
+                for k1 in expected.keys():
+                    if isinstance(expected.get(k1), (float, list, int)):
+                        assert approx_arrays(expected.get(k1), mapping_opp.get(k1))
+                    else:
+                        assert expected.get(k1) == mapping_opp.get(k1)
+            case "Texture_spherical_Optic_OP_normal_map":
+                assert mat._sop_template is None
+                assert mat.vop_type == "optic"
+                assert mat.vop_optic == MaterialOpticParameters(1.5, 0, 0)
+            case "Texture_cylindrical_opaque_mirror40_normal_map|UV mapping.2":
+                assert mat.sop_type == "texture"
+                assert len(mat.texture) == 1
+                assert mat.texture[0].sop_type == "mirror"
+                assert mat.texture[0].sop_reflectance == 40
+                assert mat.texture[0].roughness == 1
+                assert mat.texture[0].normal_map_file_uri.endswith("png")
+                mapping_opp = mat.texture[0].normal_map_property.__dict__
+                expected = MappingOperator(
+                    mapping_type=MappingTypes.cylindrical,
+                    u_length=10,
+                    v_length=10,
+                    axis_system=[4, 1, 4.98, 0, 0, 1, 1, 0, 0, 0, 1, 0],
+                    repeat_u=True,
+                    repeat_v=True,
+                    u_scale=0.1,
+                    v_scale=0.1,
+                    perimeter=6.28,
+                ).__dict__
+                for k1, k2 in zip(sorted(expected.keys()), sorted(mapping_opp.keys())):
+                    assert k1 == k2
+                for k1 in expected.keys():
+                    if isinstance(expected.get(k1), (float, list, int)):
+                        assert approx_arrays(expected.get(k1), mapping_opp.get(k1))
+                    else:
+                        assert expected.get(k1) == mapping_opp.get(k1)
+            case "Texture_cylindrical_opaque_mirror40_normal_map":
+                assert mat._sop_template is None
+                assert mat.vop_type == "opaque"
+            case "Texture_cubic_opaque_library_normal_map_image|UV mapping.3":
+                assert mat.sop_type == "texture"
+                assert len(mat.texture) == 1
+                assert mat.texture[0].sop_type == "library"
+                assert mat.texture[0].sop_library.endswith("simplescattering")
+                assert mat.texture[0].roughness == 5
+                assert mat.texture[0].normal_map_file_uri.endswith("png")
+                mapping_opp = mat.texture[0].normal_map_property.__dict__
+                expected = MappingOperator(
+                    mapping_type=MappingTypes.cubic,
+                    u_length=100,
+                    v_length=100,
+                    axis_system=[8, 1, 4.98, 0, 0, 1, 1, 0, 0, 0, 1, 0],
+                    repeat_u=True,
+                    repeat_v=True,
+                    u_scale=0.01,
+                    v_scale=0.01,
+                ).__dict__
+                for k1, k2 in zip(sorted(expected.keys()), sorted(mapping_opp.keys())):
+                    assert k1 == k2
+                for k1 in expected.keys():
+                    if isinstance(expected.get(k1), (float, list, int)):
+                        assert approx_arrays(expected.get(k1), mapping_opp.get(k1))
+                    else:
+                        assert expected.get(k1) == mapping_opp.get(k1)
+                assert mat.texture[0].image_texture_file_uri.endswith("png")
+                mapping_opp = mat.texture[0].image_property.__dict__
+                expected = MappingOperator(
+                    mapping_type=MappingTypes.cubic,
+                    u_length=50,
+                    v_length=50,
+                    axis_system=[8, 1, 4.98, 0, 0, 1, 1, 0, 0, 0, 1, 0],
+                    repeat_u=True,
+                    repeat_v=True,
+                    u_scale=0.01,
+                    v_scale=0.01,
+                ).__dict__
+                for k1, k2 in zip(sorted(expected.keys()), sorted(mapping_opp.keys())):
+                    assert k1 == k2
+                for k1 in expected.keys():
+                    if isinstance(expected.get(k1), (float, list, int)):
+                        assert approx_arrays(expected.get(k1), mapping_opp.get(k1))
+                    else:
+                        assert expected.get(k1) == mapping_opp.get(k1)
+            case "Texture_cubic_opaque_library_normal_map_image":
+                assert mat._sop_template is None
+                assert mat.vop_type == "opaque"
+            case "Texture_planar_FOP_aniso|UV mapping.4":
+                assert mat.sop_type == "texture"
+                assert len(mat.texture) == 2
+                assert mat.texture[0].sop_type == "library"
+                assert mat.texture[0].sop_library.endswith("anisotropicbsdf")
+                mapping_opp = mat.texture[0].anisotropic_property.__dict__
+                expected = MappingOperator(
+                    mapping_type=MappingTypes.planar,
+                    u_length=1,
+                    axis_system=[
+                        12,
+                        1,
+                        4.98,
+                        0,
+                        -np.sqrt(2) / 2,
+                        -np.sqrt(2) / 2,
+                        0,
+                        np.sqrt(2) / 2,
+                        -np.sqrt(2) / 2,
+                        1,
+                        0,
+                        0,
+                    ],
+                    rotation=90,
+                ).__dict__
+                for k1, k2 in zip(sorted(expected.keys()), sorted(mapping_opp.keys())):
+                    assert k1 == k2
+                for k1 in expected.keys():
+                    if isinstance(expected.get(k1), (float, list, int)):
+                        assert approx_arrays(expected.get(k1), mapping_opp.get(k1))
+                    else:
+                        assert expected.get(k1) == mapping_opp.get(k1)
+                assert mat.texture[1].sop_type == "optical_polished"
+                assert mat.texture[1].roughness == 1
+                assert mat.texture[1].normal_map_file_uri.endswith("png")
+                mapping_opp = mat.texture[1].normal_map_property.__dict__
+                expected = MappingOperator(
+                    mapping_type=MappingTypes.planar,
+                    u_length=10,
+                    v_length=10,
+                    axis_system=[
+                        12,
+                        1,
+                        4.98,
+                        0,
+                        -np.sqrt(2) / 2,
+                        -np.sqrt(2) / 2,
+                        0,
+                        np.sqrt(2) / 2,
+                        -np.sqrt(2) / 2,
+                        1,
+                        0,
+                        0,
+                    ],
+                    repeat_u=True,
+                    repeat_v=True,
+                    u_scale=0.1,
+                    v_scale=0.1,
+                    rotation=90,
+                ).__dict__
+                for k1, k2 in zip(sorted(expected.keys()), sorted(mapping_opp.keys())):
+                    assert k1 == k2
+                for k1 in expected.keys():
+                    if isinstance(expected.get(k1), (float, list, int)):
+                        assert approx_arrays(expected.get(k1), mapping_opp.get(k1))
+                    else:
+                        assert expected.get(k1) == mapping_opp.get(k1)
+            case "Base_white_notexture":
+                assert mat.sop_type == "library"
+                assert mat.sop_library.endswith("simplescattering")
+                assert mat.vop_type == "optic"
+                assert mat.vop_optic == MaterialOpticParameters(1.5, 10, 0)
+            case "Texture_gltf":
+                assert mat._sop_template is None
+                assert mat.vop_type is None
+            case "Texture_gltf|UV mapping.1":
+                assert mat.sop_type == "texture"
+                assert len(mat.texture) == 1
+                assert mat.texture[0].sop_type == "library"
+                assert mat.texture[0].sop_library.endswith("gltfsvbrdf")
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_delete_texture_property(speos: Speos):
+    """Ensure TextureLayer.delete clears local links/refs after commit."""
+    p = Project(speos=speos)
+
+    op = p.create_optical_property(name="Material.DeleteTest")
+    # create layer, commit SOP template, assign to material and commit material to scene
+    layer = TextureLayer(op, "Layer.Delete")
+    layer.commit()
+    op.texture = [layer]
+    op.commit()
+
+    # Sanity: we have a sop_template_link for the layer (committed)
+    assert layer.sop_template_link is not None
+
+    # Delete the layer (should delete sop template link and clear internals)
+    layer.delete()
+
+    # After delete local link cleared
+    assert layer.sop_template_link is None
+    # _texture_template internal pointer cleared
+    assert layer._texture_template is None
+    # unique id reset
+    assert getattr(layer, "_unique_id", None) is None
+    # check layer is also removed downstream
+    assert len(op.texture) == 0
+    assert len(op._material_instance.texture.layers) == 0
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_texture_by_data(speos: Speos):
+    """Test texture application by vertices_data."""
+    my_project = Project(speos=speos)
+
+    rp = my_project.create_root_part(description="Root Part")
+    bdy0 = rp.create_body(name="Body0")
+
+    face0_0 = create_rect_face(bdy0, "face0_0", [0, 0, 0], 5, 5)
+    face0_0.vertices_data = [MeshData(name="uv_0", data=[0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0])]
+    face0_0.commit()  # full picture
+    assert face0_0._face.vertices_data[0] == ProtoFace.MeshData(
+        name="uv_0", data=[0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0]
+    )
+
+    bdy1 = rp.create_body(name="Body2")
+    face2_0 = create_rect_face(bdy1, "Face2_0", [12, 0, 0], 10, 5)
+    face2_0._face.vertices_data.append(
+        ProtoFace.MeshData(name="uv_1", data=[0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0])
+    )  # full picture
+    face2_0.commit()
+    assert face2_0.vertices_data[0] == MeshData(
+        name="uv_1", data=[0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0]
+    )
+    rp.commit()
+
+    opt_prop = my_project.create_optical_property(name="OptProp")
+    opt_prop.set_volume_none()
+    opt_prop.geometries = [face0_0.geo_path, face2_0.geo_path]
+
+    layer_1 = TextureLayer(opt_prop, "Layer.1")
+    layer_1.set_surface_library().sop_library = Path(test_path) / "L100 2.simplescattering"
+    layer_1.image_texture_file_uri = Path(test_path) / "textureColors.jpg"
+    layer_1.image_property = MappingByData(vertices_data_index=0, repeat_u=False, repeat_v=False)
+    layer_1.commit()
+    assert layer_1._texture_template.normal_map_properties.vertices_data_index == 0
+    assert not layer_1._sop_template.texture.image.repeat_along_u
+    assert not layer_1._sop_template.texture.image.repeat_along_v
+
+    opt_prop.texture = [layer_1]
+    opt_prop.commit()
