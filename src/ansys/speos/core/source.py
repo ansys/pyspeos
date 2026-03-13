@@ -20,7 +20,18 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Provides a way to interact with Speos feature: Source."""
+"""Source features for interacting with Speos.
+
+This module provides a thin, object-oriented wrapper around Speos source
+templates and instances. It exposes high-level classes such as
+:class:`ansys.speos.core.source.BaseSource` and concrete source subtypes
+that map to the underlying gRPC protobuf messages in
+``ansys.api.speos.scene.v2`` and ``ansys.api.speos.source.v1``.
+
+All public classes in this module are intended to be used by client code to
+create, modify and persist source templates/instances inside a
+:class:`ansys.speos.core.project.Project` object.
+"""
 
 from __future__ import annotations
 
@@ -73,68 +84,75 @@ from ansys.speos.core.spectrum import Spectrum
 
 class BaseSource:
     """
-    Super Class for all sources.
+    Base class for Speos sources.
+
+    This class implements common behaviour for source templates and source
+    instances (persistence, conversion to dictionary, lifecycle operations).
 
     Parameters
     ----------
     project : ansys.speos.core.project.Project
-        Project in which source shall be created.
+        Project in which the source will be created.
     name : str
         Name of the source.
-    description : str
-        Description of the source.
-        By default, ``""``.
-    metadata : Optional[Mapping[str, str]]
-        Metadata of the feature.
-        By default, ``{}``.
+    description : str, optional
+        Description of the source. Default is ``""``.
+    metadata : Optional[Mapping[str, str]], optional
+        Metadata for the feature. Default is ``{}``.
     source_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance, optional
-        Source instance to provide if the feature does not have to be created from scratch
-        By default, ``None``, means that the feature is created from scratch by default.
+        If provided, the wrapper will be initialized from the given protobuf
+        ``Scene.SourceInstance`` rather than created from scratch.
 
     Notes
     -----
-    This is a Super class, **Do not instantiate this class yourself**
+    This class is a base for concrete source types. Do not instantiate
+    :class:`ansys.speos.core.source.BaseSource` directly.
     """
 
     class UserDefinedColorSpace:
-        """Type of color space is user defined.
+        """
+        Container for a user-defined RGB color space.
 
         Parameters
         ----------
         project : ansys.speos.core.project.Project
-            Project in which source shall be created.
-        userdefined_color_space : source_pb2.SourceTemplate.UserDefinedRGBSpace
-            source_pb2.SourceTemplate.UserDefinedRGBSpace
+            Project that owns the color-space spectra.
+        userdefined_color_space : \
+            ansys.api.speos.source.v1.source_pb2.SourceTemplate.UserDefinedRGBSpace
+            Protobuf message to populate.
         default_parameters : Optional[\
-        src.ansys.speos.core.generic.parameters.UserDefinedColorSpaceParameters] = None
-            If defined the values in the UserDefinedColorSpace instance will be
-            overwritten by the values of the data class.
-        stable_ctr : bool
-            Variable to indicate if usage is inside class scope
+            ansys.speos.core.generic.parameters.UserDefinedColorSpaceParameters], optional
+            If provided, fields will be initialised from this dataclass.
+        stable_ctr : bool, optional
+            Internal flag to prevent direct instantiation. Library code passes
+            ``True``. Default is ``True``.
 
         Notes
         -----
-        **Do not instantiate this class yourself**, use set_userdefined_color_space() method.
+        Use :meth:`ansys.speos.core.source.SourceAmbientEnvironment.set_userdefined_color_space`
+        (or equivalent factory methods) to obtain instances.
         """
 
         class UserDefinedWhitePoint:
-            """Type of white point is user defined.
+            """
+            Container for a user-defined white point.
 
             Parameters
             ----------
-            userdefined_white_point : source_pb2.SourceTemplate.UserDefinedWhitePoint
-                source_pb2.SourceTemplate.UserDefinedWhitePoint
+            userdefined_white_point : \
+            ansys.api.speos.source.v1.source_pb2.SourceTemplate.UserDefinedWhitePoint
+                Protobuf message to populate.
             default_parameters : Optional[\
-            ansys.speos.core.generic.parameters.UserDefinedWhitePointParameters] = None,
-                If defined the values in the UserDefinedWhitePoint instance will be
-                overwritten by the values of the data class.
-            stable_ctr : bool
-                Variable to indicate if usage is inside class scope
+            ansys.speos.core.generic.parameters.UserDefinedWhitePointParameters], optional
+                If provided, fields will be initialised from this dataclass.
+            stable_ctr : bool, optional
+                Internal flag to prevent direct instantiation. Default is ``True``.
 
             Notes
             -----
-            **Do not instantiate this class yourself**,
-            use set_white_point_type_user_defined() method.
+            Use :meth:`ansys.speos.core.source.BaseSource.UserDefinedColorSpace\
+            .set_white_point_type_user_defined`
+            to access this helper.
             """
 
             def __init__(
@@ -153,25 +171,38 @@ class BaseSource:
 
             @property
             def white_point(self):
-                """White point coordinate.
-
-                This property gets or sets the white point coordinate [x, y]
-
-                Parameters
-                ----------
-                value : List[float]
-                    The white point coordinate, [0.31271, 0.32902] by default.
+                """
+                The white point coordinates [x, y].
 
                 Returns
                 -------
-                List[float]
-                    User defined white point coordinate
+                list[float]
+                    The white point coordinates.
 
+                Notes
+                -----
+                Allowed assignment values:
+                - A sequence of two floats, e.g. [0.31271, 0.32902].
+                - Values should be in the chromaticity range [0.0, 1.0].
                 """
                 return self._userdefined_white_point.white_point
 
             @white_point.setter
             def white_point(self, value: List[float]):
+                """
+                Set the white point coordinates.
+
+                Parameters
+                ----------
+                value : list[float]
+                    Two floats describing the white point [x, y].
+
+                Notes
+                -----
+                Allowed assignment values:
+                - A sequence of two floats, e.g. [0.31271, 0.32902].
+                - Values should be in the chromaticity range [0.0, 1.0].
+                """
                 self._userdefined_white_point.white_point[:] = value
 
         def __init__(
@@ -242,26 +273,39 @@ class BaseSource:
 
         @property
         def red_spectrum(self) -> dict:
-            """Property of red spectrum.
-
-            Parameters
-            ----------
-            red_spectrum_file_uri : Union[str, pathlib.Path]
-                Red spectrum file uri.
-
+            """
+            Dictionary representation of the red spectrum.
 
             Returns
             -------
             dict
-                Red spectrum dictionary
+                Spectrum as dictionary (see :class:`ansys.speos.core.spectrum.Spectrum._to_dict`).
 
+            Notes
+            -----
+            Allowed assignment values for the corresponding setter:
+            - A string or pathlib.Path pointing to a valid spectrum file.
             """
             return self._red_spectrum._spectrum._to_dict()
 
         @red_spectrum.setter
         def red_spectrum(self, red_spectrum_file_uri: Union[str, Path]) -> None:
+            """
+            Set the red spectrum from a file URI.
+
+            Parameters
+            ----------
+            red_spectrum_file_uri : str or pathlib.Path
+                File URI or path to a spectrum file.
+
+            Notes
+            -----
+            Allowed assignment values:
+            - A string or pathlib.Path pointing to a valid spectrum file.
+            - File extension must be supported by the Spectrum helper.
+            """
             if self._red_spectrum._message_to_complete is not self._userdefined_color_space:
-                # Happens in case of feature reset (to be sure to always modify correct data)
+                # Happens in case of feature reset (to be sure to always modify data)
                 self._red_spectrum._message_to_complete = self._userdefined_color_space
 
             # name for the spectrum chosen: <file_uri>.Spectrum
@@ -270,25 +314,38 @@ class BaseSource:
 
         @property
         def green_spectrum(self) -> dict:
-            """Property of the green spectrum.
-
-            Parameters
-            ----------
-            green_spectrum_file_uri : Union[str, pathlib.Path]
-                Green spectrum file uri.
+            """
+            Dictionary representation of the green spectrum.
 
             Returns
             -------
             dict
-                Green spectrum dictionary
+                Spectrum as dictionary.
 
+            Notes
+            -----
+            Allowed assignment values for the corresponding setter:
+            - A string or pathlib.Path pointing to a valid spectrum file.
             """
             return self._green_spectrum._spectrum._to_dict()
 
         @green_spectrum.setter
         def green_spectrum(self, green_spectrum_file_uri: Union[str, Path]) -> None:
+            """
+            Set the green spectrum from a file URI.
+
+            Parameters
+            ----------
+            green_spectrum_file_uri : str or pathlib.Path
+                File URI or path to a spectrum file.
+
+            Notes
+            -----
+            Allowed assignment values:
+            - A string or pathlib.Path pointing to a valid spectrum file.
+            """
             if self._green_spectrum._message_to_complete is not self._userdefined_color_space:
-                # Happens in case of feature reset (to be sure to always modify correct data)
+                # Happens in case of feature reset (to be sure to always modify data)
                 self._green_spectrum._message_to_complete = self._userdefined_color_space
 
             # name for the spectrum chosen: <file_uri>.Spectrum
@@ -297,25 +354,38 @@ class BaseSource:
 
         @property
         def blue_spectrum(self) -> dict:
-            """Property of blue spectrum.
-
-            Parameters
-            ----------
-            blue_spectrum_file_uri : Union[str, pathlib.Path]
-                Blue spectrum file uri.
+            """
+            Dictionary representation of the blue spectrum.
 
             Returns
             -------
             dict
-                Blue spectrum dictionary
+                Spectrum as dictionary.
 
+            Notes
+            -----
+            Allowed assignment values for the corresponding setter:
+            - A string or pathlib.Path pointing to a valid spectrum file.
             """
             return self._blue_spectrum._spectrum._to_dict()
 
         @blue_spectrum.setter
         def blue_spectrum(self, blue_spectrum_file_uri: Union[str, Path]) -> None:
+            """
+            Set the blue spectrum from a file URI.
+
+            Parameters
+            ----------
+            blue_spectrum_file_uri : str or pathlib.Path
+                File URI or path to a spectrum file.
+
+            Notes
+            -----
+            Allowed assignment values:
+            - A string or pathlib.Path pointing to a valid spectrum file.
+            """
             if self._blue_spectrum._message_to_complete is not self._userdefined_color_space:
-                # Happens in case of feature reset (to be sure to always modify correct data)
+                # Happens in case of feature reset (to be sure to always modify data)
                 self._blue_spectrum._message_to_complete = self._userdefined_color_space
 
             # name for the spectrum chosen: <file_uri>.Spectrum
@@ -330,26 +400,31 @@ class BaseSource:
             source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType,
             UserDefinedWhitePoint,
         ]:
-            """Get the white point type.
+            """
+            Current white point type.
 
             Returns
             -------
-            Union[None,\
-           source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType,\
-           ansys.speos.core.source.BaseSource.UserDefinedColorSpace.UserDefinedWhitePoint]
-                PredefinedWhitePoint Type or UserDefinedWhitePoint Type.
+            None or ansys.api.speos.source.v1.source_pb2.SourceTemplate.PredefinedWhitePoint\
+            .WhitePointType or BaseSource.UserDefinedColorSpace.UserDefinedWhitePoint
+                The selected white point representation.
 
+            Notes
+            -----
+            Allowed assignment values depend on which setter you call:
+            - Use set_white_point_type_d65(), _d50(), _c(), _e() for predefined values.
+            - Use set_white_point_type_user_defined() to obtain the user-defined helper.
             """
             return self._white_point_type
 
         def set_white_point_type_d65(self) -> BaseSource.UserDefinedColorSpace:
-            """Set white point type to D65.
+            """
+            Set the white point to the predefined D65 value.
 
             Returns
             -------
             ansys.speos.core.source.BaseSource.UserDefinedColorSpace
-                Type of color space is user defined.
-
+                Self for chaining.
             """
             self._userdefined_color_space.pre_defined_white_point.white_point_type = (
                 source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.D65
@@ -360,13 +435,13 @@ class BaseSource:
             return self
 
         def set_white_point_type_c(self) -> BaseSource.UserDefinedColorSpace:
-            """Set white point type to C.
+            """
+            Set the white point to the predefined C value.
 
             Returns
             -------
             ansys.speos.core.source.BaseSource.UserDefinedColorSpace
-                Type of color space is user defined.
-
+                Self for chaining.
             """
             self._userdefined_color_space.pre_defined_white_point.white_point_type = (
                 source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.C
@@ -375,13 +450,13 @@ class BaseSource:
             return self
 
         def set_white_point_type_d50(self) -> BaseSource.UserDefinedColorSpace:
-            """Set white point type to D50.
+            """
+            Set the white point to the predefined D50 value.
 
             Returns
             -------
             ansys.speos.core.source.BaseSource.UserDefinedColorSpace
-                Type of color space is user defined.
-
+                Self for chaining.
             """
             self._userdefined_color_space.pre_defined_white_point.white_point_type = (
                 source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.D50
@@ -392,13 +467,13 @@ class BaseSource:
             return self
 
         def set_white_point_type_e(self) -> BaseSource.UserDefinedColorSpace:
-            """Set white point type to E.
+            """
+            Set the white point to the predefined E value.
 
             Returns
             -------
             ansys.speos.core.source.BaseSource.UserDefinedColorSpace
-                Type of color space is user defined.
-
+                Self for chaining.
             """
             self._userdefined_color_space.pre_defined_white_point.white_point_type = (
                 source_pb2.SourceTemplate.PredefinedWhitePoint.WhitePointType.E
@@ -407,13 +482,13 @@ class BaseSource:
             return self
 
         def set_white_point_type_user_defined(self) -> UserDefinedWhitePoint:
-            """Set white point type to user_defined.
+            """
+            Switch the white point to the user-defined representation.
 
             Returns
             -------
             ansys.speos.core.source.BaseSource.UserDefinedColorSpace.UserDefinedWhitePoint
-                User defined white point settings.
-
+                The user-defined white point helper instance.
             """
             if self._white_point_type is None and self._userdefined_color_space.HasField(
                 "user_defined_white_point"
@@ -443,22 +518,19 @@ class BaseSource:
             return self._white_point_type
 
     class PredefinedColorSpace:
-        """Type of color space is predefined value.
+        """
+        Helper for predefined color spaces.
 
         Parameters
         ----------
-        predefined_color_space :
-            ansys.api.speos.source.v1.source_pb2.SourceTemplate.PredefinedColorSpace
+        predefined_color_space : \
+        ansys.api.speos.source.v1.source_pb2.SourceTemplate.PredefinedColorSpace
+            Protobuf message to populate.
         default_parameters : Optional[\
-        ansys.speos.core.generic.parameters.ColorSpaceType] = None
-            If defined the values in the PredefinedColorSpace instance will be
-            overwritten by the values of the data class.
-        stable_ctr : bool
-            Variable to indicate if usage is inside class scope
-
-        Notes
-        -----
-        **Do not instantiate this class yourself**, use set_predefined_color_space() method.
+        ansys.speos.core.generic.parameters.ColorSpaceType], optional
+            Default param dataclass used to initialize the helper.
+        stable_ctr : bool, optional
+            Internal flag to prevent direct instantiation.
         """
 
         def __init__(
@@ -481,12 +553,13 @@ class BaseSource:
                         self.set_color_space_adobergb()
 
         def set_color_space_srgb(self) -> BaseSource.PredefinedColorSpace:
-            """Set the color space to the srgb preset.
+            """
+            Select the sRGB predefined color space.
 
             Returns
             -------
             ansys.speos.core.source.BaseSource.PredefinedColorSpace
-                Type of color space is predefined value.
+                Self for chaining.
             """
             self._predefined_color_space.color_space_type = (
                 source_pb2.SourceTemplate.PredefinedColorSpace.sRGB
@@ -494,12 +567,13 @@ class BaseSource:
             return self
 
         def set_color_space_adobergb(self) -> BaseSource.PredefinedColorSpace:
-            """Set the color space to the Adobe RGB preset.
+            """
+            Select the Adobe RGB predefined color space.
 
             Returns
             -------
             ansys.speos.core.source.BaseSource.PredefinedColorSpace
-                Type of color space is predefined value.
+                Self for chaining.
             """
             self._predefined_color_space.color_space_type = (
                 source_pb2.SourceTemplate.PredefinedColorSpace.AdobeRGB
@@ -540,27 +614,21 @@ class BaseSource:
             self._reset()
 
     class Flux:
-        """Type of flux.
-
-        By default, Luminous flux value is set with value 683 lm.
+        """
+        Container representing a flux choice for a source.
 
         Parameters
         ----------
-        flux : ansys.api.speos.source.v1.source_pb2
-            flux protobuf object to modify.
-        default_parameters : Optional[\
-                ansys.speos.core.generic.parameters.LuminousFluxParameters,\
-                ansys.speos.core.generic.parameters.RadiantFluxParameters,\
-                ansys.speos.core.generic.parameters.FluxFromFileParameters,\
-                ansys.speos.core.generic.parameters.IntensityFluxParameters] = None
-            If defined the values in the Flux instance will be
-            overwritten by the values of the data class.
-        stable_ctr : bool
-            Variable to indicate if usage is inside class scope
-
-        Notes
-        -----
-        **Do not instantiate this class yourself**, use set_flux method available in source classes.
+        flux : ansys.api.speos.source.v1.source_pb2.SourceTemplate.*
+            Protobuf submessage to populate (one of the flux variants).
+        default_parameters : Optional[Union[
+            ansys.speos.core.generic.parameters.LuminousFluxParameters,
+            ansys.speos.core.generic.parameters.RadiantFluxParameters,
+            ansys.speos.core.generic.parameters.FluxFromFileParameters,
+            ansys.speos.core.generic.parameters.IntensityFluxParameters]], optional
+            Optional dataclass to initialize flux fields.
+        stable_ctr : bool, optional
+            Internal flag to prevent direct instantiation.
         """
 
         def __init__(
@@ -597,13 +665,13 @@ class BaseSource:
                     raise ValueError(f"Unsupported flux type: {type(default_parameters).__name__}")
 
         def set_luminous(self) -> BaseSource.Flux:
-            """Set flux type luminous.
+            """
+            Select luminous flux variant.
 
             Returns
             -------
             ansys.speos.core.source.BaseSource.Flux
-                Flux object
-
+                Self for chaining.
             """
             if self._flux_type is None or not isinstance(
                 self._flux_type, source_pb2.SourceTemplate.Luminous
@@ -612,13 +680,13 @@ class BaseSource:
             return self
 
         def set_radiant(self) -> BaseSource.Flux:
-            """Set flux type radiant.
+            """
+            Select radiant flux variant.
 
             Returns
             -------
             ansys.speos.core.source.BaseSource.Flux
-                Flux object
-
+                Self for chaining.
             """
             if self._flux_type is None or not isinstance(
                 self._flux_type, source_pb2.SourceTemplate.Radiant
@@ -628,18 +696,19 @@ class BaseSource:
 
         @property
         def value(self) -> float:
-            """Property of flux type's value.
-
-            Parameters
-            ----------
-            value : float
-                Value of the flux.
+            """
+            Get the numeric flux value.
 
             Returns
             -------
             float
-                Flux type value.
+                The numeric flux (units depend on flux variant).
 
+            Notes
+            -----
+            Allowed assignment values for the corresponding setter:
+            - A non-negative float for common flux types.
+            - Interpretation depends on the chosen flux variant.
             """
             if self._flux.HasField("radiant_flux") or self._flux_type.__name__ == "Radiant":
                 return self._flux.radiant_flux.radiant_value
@@ -655,6 +724,20 @@ class BaseSource:
 
         @value.setter
         def value(self, value: float) -> None:
+            """
+            Set the numeric flux value.
+
+            Parameters
+            ----------
+            value : float
+                Numeric flux to assign. Units depend on flux variant.
+
+            Notes
+            -----
+            Allowed assignment values:
+            - A non-negative float for most flux types.
+            - For intensity variants the numeric meaning is luminous intensity.
+            """
             if self._flux_type is None:
                 self._flux.luminous_flux.luminous_value = value
             else:
@@ -669,6 +752,27 @@ class BaseSource:
                         raise ValueError(f"Unsupported flux type: {self._flux_type.__name__}")
 
     class _Spectrum:
+        """
+        Internal helper for spectrum management.
+
+        Parameters
+        ----------
+        speos_client : ansys.speos.core.kernel.client.SpeosClient
+            Client used to create/commit spectra.
+        name : str
+            Base name for the spectrum resource.
+        message_to_complete : Union[
+            ansys.speos.core.kernel.source_template.ProtoSourceTemplate.RayFile,
+            ansys.speos.core.kernel.source_template.ProtoSourceTemplate.Surface,
+            ansys.speos.core.kernel.source_template.ProtoSourceTemplate.Luminaire]
+            Protobuf field where the spectrum GUID will be written on commit.
+        field_name_to_complete : str, optional
+            If set, the specific GUID field to complete on commit (e.g.
+            ``'red_spectrum_guid'``). Default is empty string.
+        spectrum_guid : str, optional
+            If provided, the helper will wrap an existing spectrum by GUID.
+        """
+
         def __init__(
             self,
             speos_client: SpeosClient,
@@ -705,6 +809,15 @@ class BaseSource:
             return ""
 
         def _commit(self) -> BaseSource._Spectrum:
+            """Commit the wrapped spectrum to the server.
+
+            Write its GUID into the message_to_complete fields.
+
+            Returns
+            -------
+            ansys.speos.core.source.BaseSource._Spectrum
+                Self.
+            """
             if not self._no_spectrum_local:
                 self._spectrum.commit()
                 if self._field_name_to_complete == "":
@@ -719,12 +832,28 @@ class BaseSource:
             return self
 
         def _reset(self) -> BaseSource._Spectrum:
+            """
+            Reset the wrapped Spectrum to the last committed state.
+
+            Returns
+            -------
+            ansys.speos.core.source.BaseSource._Spectrum
+                Self.
+            """
             self._spectrum.reset()
             if self._no_spectrum is not None:
                 self._no_spectrum_local = self._no_spectrum
             return self
 
         def _delete(self) -> BaseSource._Spectrum:
+            """
+            Mark the helper to indicate the spectrum has been deleted.
+
+            Returns
+            -------
+            ansys.speos.core.source.BaseSource._Spectrum
+                Self.
+            """
             self._no_spectrum = None
             return self
 
@@ -774,15 +903,20 @@ class BaseSource:
         return out_dict
 
     def get(self, key: str = "") -> List[tuple[str, dict]]:
-        """Get dictionary corresponding to the project - read only.
+        """
+        Retrieve dictionary representation or a best-match entry.
 
         Parameters
         ----------
-        key : str
+        key : str, optional
+            If empty, return the full dictionary produced by :meth:`_to_dict`.
+            Otherwise, find keys starting with this string and return the
+            best-matching entry.
 
         Returns
         -------
-        str | dict
+        dict or Any
+            Full dictionary or best-matched value.
         """
         if key == "":
             return self._to_dict()
@@ -798,7 +932,15 @@ class BaseSource:
         print("Used key: {} not found in key list: {}.".format(key, info.keys()))
 
     def __str__(self) -> str:
-        """Return the string representation of the source."""
+        """
+        Human readable representation.
+
+        Returns
+        -------
+        str
+            Short string describing whether the object is local and the
+            dictionary representation.
+        """
         out_str = ""
         if self._project.scene_link and self._unique_id is not None:
             scene_data = self._project.scene_link.get()
@@ -815,12 +957,17 @@ class BaseSource:
         return out_str
 
     def _commit(self) -> BaseSource:
-        """Save feature: send the local data to the speos server database.
+        """
+        Persist the local template and instance to the server.
+
+        The method will create a new unique identifier if necessary, commit the
+        source template (or update it if it already exists) and update the
+        project scene with the source instance.
 
         Returns
         -------
         ansys.speos.core.source.BaseSource
-            Source feature.
+            Self.
         """
         # The _unique_id will help to find correct item in the scene.sources:
         # the list of SourceInstance
@@ -865,12 +1012,13 @@ class BaseSource:
         return self
 
     def _reset(self) -> BaseSource:
-        """Reset feature: override local data by the one from the speos server database.
+        """
+        Reload template and instance from the server into the local object.
 
         Returns
         -------
         ansys.speos.core.source.BaseSource
-            Source feature.
+            Self.
         """
         # Reset source template
         if self.source_template_link is not None:
@@ -889,14 +1037,15 @@ class BaseSource:
         return self
 
     def _delete(self) -> BaseSource:
-        """Delete feature: delete data from the speos server database.
+        """
+        Delete the server-side template and remove the instance from the scene.
 
-        The local data are still available
+        Local in-memory data are preserved.
 
         Returns
         -------
         ansys.speos.core.source.BaseSource
-            Source feature.
+            Self.
         """
         # This allows to clean-managed object contained in _luminaire, _rayfile, etc..
         # Like Spectrum, IntensityTemplate
@@ -931,12 +1080,13 @@ class BaseSource:
         self._reset()
 
     def commit(self) -> BaseSource:
-        """Save feature: send the local data to the speos server database.
+        """
+        Commit the source (and any nested spectrum) and update visual caches.
 
         Returns
         -------
         ansys.speos.core.source.BaseSource
-            Source feature.
+            Self.
         """
         if hasattr(self, "_spectrum"):
             self._spectrum._commit()
@@ -946,12 +1096,13 @@ class BaseSource:
         return self
 
     def reset(self) -> BaseSource:
-        """Reset feature: override local data by the one from the speos server database.
+        """
+        Reset the source state from the server.
 
         Returns
         -------
         ansys.speos.core.source.BaseSource
-            Source feature.
+            Self.
         """
         if hasattr(self, "_spectrum"):
             self._spectrum._reset()
@@ -959,14 +1110,13 @@ class BaseSource:
         return self
 
     def delete(self) -> BaseSource:
-        """Delete feature: delete data from the speos server database.
-
-        The local data are still available
+        """
+        Delete the source from the server and clear references.
 
         Returns
         -------
         ansys.speos.core.source.BaseSource
-            Source feature.
+            Self.
         """
         if hasattr(self, "_spectrum"):
             self._spectrum._delete()
@@ -975,26 +1125,32 @@ class BaseSource:
 
 
 class SourceLuminaire(BaseSource):
-    """LuminaireSource.
+    """
+    Luminaire source wrapper.
 
-    By default, a flux from intensity file is chosen, with an incandescent spectrum.
+    By default, flux is taken from an intensity file and the spectrum is set to
+    an incandescent preset.
 
     Parameters
     ----------
     project : ansys.speos.core.project.Project
         Project that will own the feature.
     name : str
-        Name of the feature.
-    description : str
-        Description of the feature.
-        By default, ``""``.
-    metadata : Optional[Mapping[str, str]]
-        Metadata of the feature.
-        By default, ``{}``.
+        Name of the source.
+    description : str, optional
+        Description of the source.
+    metadata : Optional[Mapping[str, str]], optional
+        Metadata for the feature.
+    source_instance : Optional[\
+    ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance], optional
+        Protobuf source instance to initialize from.
     default_parameters : Optional[\
-    ansys.speos.core.generic.parameters.LuminaireSourceParameters] = None
-        If defined the values in the SourceLuminaire instance will be overwritten
-        by the values of the data class.
+    ansys.speos.core.generic.parameters.LuminaireSourceParameters], optional
+        Dataclass used to initialise default values.
+
+    Notes
+    -----
+    Use :meth:`ansys.speos.core.source.SourceLuminaire.commit` to persist the source.
     """
 
     @general_methods.min_speos_version(25, 2, 0)
@@ -1080,14 +1236,13 @@ class SourceLuminaire(BaseSource):
 
     @property
     def visual_data(self) -> _VisualData:
-        """Property containing Luminaire source visualization data.
+        """
+        Visualization helper containing rays and coordinate system.
 
         Returns
         -------
         ansys.speos.core.generic.visualization_methods._VisualData
-            Instance of VisualData Class for pyvista.PolyData of
-            feature rays, coordinate_systems.
-
+            Visual data for plotting in optional graphics backends.
         """
         if self._visual_data.updated:
             return self._visual_data
@@ -1118,25 +1273,26 @@ class SourceLuminaire(BaseSource):
             return self._visual_data
 
     def set_flux_from_intensity_file(self) -> SourceLuminaire:
-        """Take flux from intensity file provided.
+        """
+        Configure the luminaire to take flux from an external intensity file.
 
         Returns
         -------
         ansys.speos.core.source.SourceLuminaire
-            Luminaire source.
+            Self for chaining.
         """
         self._source_template.luminaire.flux_from_intensity_file.SetInParent()
         return self
 
     @property
     def flux(self) -> BaseSource.Flux:
-        """Flux definition of the luminaire source.
+        """
+        Access the flux helper for the luminaire.
 
         Returns
         -------
         ansys.speos.core.source.BaseSource.Flux
-            flux object of the source
-
+            Flux helper.
         """
         if self._type is None and self._source_template.HasField("luminaire"):
             self._type = self.Flux(
@@ -1156,17 +1312,13 @@ class SourceLuminaire(BaseSource):
 
     @property
     def intensity_file_uri(self) -> str:
-        """Property of intensity file.
-
-        Parameters
-        ----------
-        uri : Union[str, pathlib.Path]
-            IES or EULUMDAT format file uri.
+        """
+        Path or URI to an intensity file (IES or EULUMDAT).
 
         Returns
         -------
         str
-            Intensity file uri.
+            Intensity file URI.
         """
         return self._source_template.luminaire.intensity_file_uri
 
@@ -1176,33 +1328,31 @@ class SourceLuminaire(BaseSource):
 
     @property
     def spectrum(self) -> Spectrum:
-        """Spectrum property.
+        """
+        Spectrum object for the luminaire.
 
         Returns
         -------
         ansys.speos.core.spectrum.Spectrum
-            Spectrum.
+            Spectrum helper instance.
         """
         if self._spectrum._message_to_complete is not self._source_template.luminaire:
-            # Happens in case of feature reset (to be sure to always modify correct data)
+            # Happens in case of feature reset (to be sure to modify correct data)
             self._spectrum._message_to_complete = self._source_template.luminaire
         return self._spectrum._spectrum
 
     @property
     def axis_system(self) -> List[float]:
-        """Property of the position of the source.
+        """
+        Position and orientation of the source.
 
-        Parameters
-        ----------
-        axis_system : List[float]
-            Position of the source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
-            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+        The axis system is a 12-elements list:
+        [Ox, Oy, Oz, Xx, Xy, Xz, Yx, Yy, Yz, Zx, Zy, Zz]
 
         Returns
         -------
-        List[float]
-            Position of the source [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
-            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+        list[float]
+            Axis system of the source.
         """
         return self._source_instance.luminaire_properties.axis_system
 
@@ -1393,13 +1543,13 @@ class SourceRayFile(BaseSource):
 
     @property
     def visual_data(self) -> _VisualData:
-        """Property containing Rayfile source visualization data.
+        """
+        Visualization helper containing rays and coordinate system.
 
         Returns
         -------
         ansys.speos.core.generic.visualization_methods._VisualData
-            Instance of VisualData Class for pyvista.PolyData of feature rays, coordinate_systems.
-
+            Visual data for plotting in optional graphics backends.
         """
         if self._visual_data.updated:
             return self._visual_data
@@ -1573,6 +1723,7 @@ class SourceRayFile(BaseSource):
         elif (
             self._exit_geometry_type._rayfile_props is not self._source_instance.rayfile_properties
         ):
+            # Happens in case of feature reset (to be sure to always modify correct data)
             self._exit_geometry_type._rayfile_props = self._source_instance.rayfile_properties
         return self._exit_geometry_type
 
@@ -1624,18 +1775,6 @@ class SourceSurface(BaseSource):
                 if isinstance(default_parameters, IntensityFluxParameters):
                     self.set_luminous_intensity()
                     self.value = default_parameters.value
-
-        def set_luminous_intensity(self) -> BaseSource.Flux:
-            """Set flux type luminous intensity.
-
-            Returns
-            -------
-            ansys.speos.core.source.BaseSource.Flux
-                Flux object
-
-            """
-            self._flux_type = self._flux.luminous_intensity_flux
-            return self
 
     class ExitanceConstant:
         """Type of surface source existence : existence constant.
@@ -1984,13 +2123,13 @@ class SourceSurface(BaseSource):
 
     @property
     def visual_data(self) -> _VisualData:
-        """Property containing Surface source visualization data.
+        """
+        Visualization helper containing rays and coordinate system.
 
         Returns
         -------
         ansys.speos.core.generic.visualization_methods._VisualData
-            Instance of VisualData Class for pyvista.PolyData of feature rays, coordinate_systems.
-
+            Visual data for plotting in optional graphics backends.
         """
         if self._visual_data.updated:
             return self._visual_data
