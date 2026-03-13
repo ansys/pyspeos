@@ -84,15 +84,15 @@ full_env_path = assets_data_path / f"{ENVIRONMENT_NAME}.speos" / f"{ENVIRONMENT_
 car_paths = [assets_data_path / f"{car}.speos" / f"{car}.speos" for car in CAR_NAMES]
 assets = [
     SpeosFileInstance(
-        speos_file=str(full_env_path),
+        file=str(full_env_path),
         axis_system=GLOBAL_CS,
     ),
     SpeosFileInstance(
-        speos_file=str(car_paths[0]),
+        file=str(car_paths[0]),
         axis_system=CAR_CS["red"],
     ),
     SpeosFileInstance(
-        speos_file=str(car_paths[1]),
+        file=str(car_paths[1]),
         axis_system=CAR_CS["blue"],
     ),
 ]

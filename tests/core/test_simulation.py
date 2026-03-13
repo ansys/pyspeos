@@ -1075,6 +1075,7 @@ def test_stop_computation(speos: Speos):
     assert difference.seconds < 25
 
 
+@pytest.mark.supported_speos_versions(min=261)
 def test_export(speos: Speos):
     """Test export of simulation."""
     p = Project(
@@ -1087,21 +1088,12 @@ def test_export(speos: Speos):
     sim_second.set_source_paths(["Surface.1:7758"])
     sim_second.commit()
     sim_first.export(export_path=Path(test_path) / "export_test")
-    assert does_file_exist(
-        str(
-            Path(test_path)
-            / "export_test"
-            / (sim_first.get(key="name") + ".speos")
-            / (sim_first.get(key="name") + ".speos")
-        )
-    )
-    with pytest.raises(
-        ValueError,
-        match="Selected simulation is not the first simulation feature, it can't be exported.",
-    ):
-        sim_second.export(export_path=str(Path(test_path) / "export_test"))
+    assert does_file_exist(str(Path(test_path) / "export_test" / "export_test.speos"))
+    sim_second.export(export_path=Path(test_path) / "export_test_2.speos")
+    assert does_file_exist(str(Path(test_path) / "export_test_2.speos" / "export_test_2.speos"))
 
     remove_file(str(Path(test_path) / "export_test"))
+    remove_file(str(Path(test_path) / "export_test_2.speos"))
 
 
 @pytest.mark.skipif(
