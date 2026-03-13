@@ -491,6 +491,40 @@ class IntensityXMPSensorParameters:
 
 
 @dataclass
+class UserDefinedWhitePointParameters:
+    """User defined White Point Parameters."""
+
+    x: float = 0.31271
+    y: float = 0.32902
+
+
+class WhitePointType(str, Enum):
+    """White Point type without parameters."""
+
+    d65 = "d65"
+    d50 = "d50"
+    c = "c"
+    e = "e"
+
+
+@dataclass
+class UserDefinedColorSpaceParameters:
+    """User defined Color Space Parameters."""
+
+    white_point_type: Union[WhitePointType, UserDefinedWhitePointParameters] = WhitePointType.d65
+    red_spectrum_uri: Union[str, Path] = ""
+    blue_spectrum_uri: Union[str, Path] = ""
+    green_spectrum_uri: Union[str, Path] = ""
+
+
+class ColorSpaceType(str, Enum):
+    """Color Space Type without parameters."""
+
+    srgb = "srgb"
+    adobe_rgb = "abode_rgb"
+
+
+@dataclass
 class LuminousFluxParameters:
     """Luminous Flux Parameters."""
 
@@ -543,6 +577,38 @@ class SpectrumType(str, Enum):
     halogen = "halogen"
     metal_halide = "metal_halide"
     high_pressure_sodium = "high_pressure_sodium"
+
+
+@dataclass
+class DisplayParameters:
+    """Parameters class for Display Source.
+
+    Attributes
+    ----------
+        image_file_uri: Path | str
+            to the display image (png, jpeg, bmp, tiff, rgb).
+        source_dimensions:
+            Physical dimensions of the display [x_start, x_end, y_start, y_end] (mm).
+        axis_system : list[float]
+            Loation and orientation of the display source
+        luminous_flux:
+            Luminance value in cd/m^2.
+        contrast_ratio: Optional
+            contrast ratio (None means not set).
+        intensity_type: Optional
+            intensity parameters for the display (e.g., library intensity).
+        color_space_type:
+            Either ColorSpaceType enum for predefined or UserDefinedColorSpaceParameters
+            for custom.
+    """
+
+    image_file_uri: Union[str, Path] = ""
+    source_dimensions: list[float] = field(default_factory=lambda: [-50.0, 50.0, -50.0, 50.0])
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+    luminance: float = 50.0
+    contrast_ratio: Optional[int] = None
+    intensity_type: Optional[Union["IntensityLibraryParameters"]] = None
+    color_space_type: Union[ColorSpaceType, UserDefinedColorSpaceParameters] = ColorSpaceType.srgb
 
 
 @dataclass
@@ -723,40 +789,6 @@ class AmbientNaturalLightParameters:
     sun_type: Union[AutomaticSunParameters, ManualSunParameters] = field(
         default_factory=lambda: AutomaticSunParameters()
     )
-
-
-@dataclass
-class UserDefinedWhitePointParameters:
-    """User defined White Point Parameters."""
-
-    x: float = 0.31271
-    y: float = 0.32902
-
-
-class WhitePointType(str, Enum):
-    """White Point type without parameters."""
-
-    d65 = "d65"
-    d50 = "d50"
-    c = "c"
-    e = "e"
-
-
-@dataclass
-class UserDefinedColorSpaceParameters:
-    """User defined Color Space Parameters."""
-
-    white_point_type: Union[WhitePointType, UserDefinedWhitePointParameters] = WhitePointType.d65
-    red_spectrum_uri: Union[str, Path] = ""
-    blue_spectrum_uri: Union[str, Path] = ""
-    green_spectrum_uri: Union[str, Path] = ""
-
-
-class ColorSpaceType(str, Enum):
-    """Color Space Type without parameters."""
-
-    srgb = "srgb"
-    adobe_rgb = "abode_rgb"
 
 
 @dataclass
