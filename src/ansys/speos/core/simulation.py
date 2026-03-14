@@ -46,6 +46,7 @@ from ansys.speos.core.logger import LOG
 import ansys.speos.core.project as project
 import ansys.speos.core.proto_message_utils as proto_message_utils
 from ansys.speos.core.sensor import BaseSensor
+from ansys.speos.core.source import BaseSource
 
 
 class BaseSimulation:
@@ -404,8 +405,14 @@ class BaseSimulation:
         return list(self._simulation_instance.sensor_paths)
 
     @sensor_paths.setter
-    def sensor_paths(self, sensor_paths: List[str]) -> None:
-        self._simulation_instance.sensor_paths[:] = sensor_paths
+    def sensor_paths(self, sensor_paths: List[Union[str, BaseSensor]]) -> None:
+        ssr_paths = []
+        for path in sensor_paths:
+            if isinstance(path, str):
+                ssr_paths.append(path)
+            elif isinstance(path, BaseSensor):
+                ssr_paths.append(path._name)
+        self._simulation_instance.sensor_paths[:] = ssr_paths
 
     @property
     def source_paths(self) -> List[str]:
@@ -427,8 +434,14 @@ class BaseSimulation:
         return list(self._simulation_instance.source_paths)
 
     @source_paths.setter
-    def source_paths(self, source_paths: List[str]) -> None:
-        self._simulation_instance.source_paths[:] = source_paths
+    def source_paths(self, source_paths: List[Union[str, BaseSource]]) -> None:
+        src_paths = []
+        for path in source_paths:
+            if isinstance(path, str):
+                src_paths.append(path)
+            elif isinstance(path, BaseSource):
+                src_paths.append(path._name)
+        self._simulation_instance.source_paths[:] = src_paths
 
     # def set_geometries(self, geometries: List[GeoRef]) -> Simulation:
     #     """Set geometries that the simulation will take into account.
