@@ -135,7 +135,7 @@ print(simulation1)
 
 
 simulation2_direct = p.create_simulation(name="Simulation.2")
-simulation2_direct.ambient_material_file_uri - assets_data_path / "AIR.material"
+simulation2_direct.ambient_material_file_uri = assets_data_path / "AIR.material"
 simulation2_direct.set_colorimetric_standard_CIE_1964().set_weight_none().set_dispersion = False
 simulation2_direct.geom_distance_tolerance = 0.01
 simulation2_direct.max_impact = 200
