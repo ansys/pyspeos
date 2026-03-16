@@ -1165,9 +1165,9 @@ class SimulationDirect(BaseSimulation):
         return False
 
     @light_expert.setter
-    def light_expert(self, value: Union[bool, List[tuple[str, int]]]) -> None:
+    def light_expert(self, value: Union[bool, List[tuple[Union[BaseSensor, str], int]]]) -> None:
         if not isinstance(value, (bool, list)):
-            raise ValueError("value must be bool or List[(sensor_path: str, ray_number: int)]")
+            raise ValueError("value must be bool or List[(sensor/sensor_path, ray_number: int)]")
         warnings.warn(
             "Please note that setting a value for light expert option forces a sensor"
             "commit when committing the Simulation class",
@@ -1180,11 +1180,18 @@ class SimulationDirect(BaseSimulation):
                     item.lxp_path_number = 10e6 if value else None
         elif isinstance(value, list):
             for value_item in value:
-                sensor_name, ray_number = value_item
-                ssr = self._project.find(name=sensor_name, feature_type=BaseSensor)
-                if len(ssr) != 1:
-                    raise ValueError("Sensor '{}' not found".format(sensor_name))
-                ssr[0].lxp_path_number = ray_number
+                ssr, ray_number = value_item
+                if isinstance(ssr, BaseSensor):
+                    ssr.lxp_path_number = ray_number
+                elif isinstance(ssr, str):
+                    ssr_found = self._project.find(name=ssr, feature_type=BaseSensor)
+                    if len(ssr_found) != 1:
+                        raise ValueError("Sensor {} not found".format(ssr))
+                    ssr_found[0].lxp_path_number = ray_number
+                else:
+                    raise ValueError(
+                        "First tuple value {} is not a Sensor or Sensor name".format(ssr)
+                    )
 
     def commit(self) -> SimulationDirect:
         """Save feature: send the local data to the speos server database.
@@ -1525,9 +1532,9 @@ class SimulationInverse(BaseSimulation):
         return False
 
     @light_expert.setter
-    def light_expert(self, value: Union[bool, List[tuple[str, int]]]) -> None:
+    def light_expert(self, value: Union[bool, List[tuple[Union[BaseSensor, str], int]]]) -> None:
         if not isinstance(value, (bool, list)):
-            raise ValueError("value must be bool or List[(sensor_path: str, ray_number: int)]")
+            raise ValueError("value must be bool or List[(sensor/sensor_path, ray_number: int)]")
         warnings.warn(
             "Please note that setting a value for light expert option forces a sensor"
             "commit when committing the Simulation class",
@@ -1540,11 +1547,18 @@ class SimulationInverse(BaseSimulation):
                     item.lxp_path_number = 10e6 if value else None
         elif isinstance(value, list):
             for value_item in value:
-                sensor_name, ray_number = value_item
-                ssr = self._project.find(name=sensor_name, feature_type=BaseSensor)
-                if len(ssr) != 1:
-                    raise ValueError("Sensor '{}' not found".format(sensor_name))
-                ssr[0].lxp_path_number = ray_number
+                ssr, ray_number = value_item
+                if isinstance(ssr, BaseSensor):
+                    ssr.lxp_path_number = ray_number
+                elif isinstance(ssr, str):
+                    ssr_found = self._project.find(name=ssr, feature_type=BaseSensor)
+                    if len(ssr_found) != 1:
+                        raise ValueError("Sensor {} not found".format(ssr))
+                    ssr_found[0].lxp_path_number = ray_number
+                else:
+                    raise ValueError(
+                        "First tuple value {} is not a Sensor or Sensor name".format(ssr)
+                    )
 
     def commit(self) -> SimulationInverse:
         """Save feature: send the local data to the speos server database.

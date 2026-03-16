@@ -25,6 +25,7 @@
 import datetime
 from pathlib import Path
 import platform
+import re
 from threading import Thread
 from time import sleep
 
@@ -35,6 +36,7 @@ from ansys.speos.core import Body, GeoRef, Project, Speos
 from ansys.speos.core.generic.general_methods import normalize_vector
 from ansys.speos.core.sensor import BaseSensor, Sensor3DIrradiance, SensorIrradiance, SensorRadiance
 from ansys.speos.core.simulation import (
+    BaseSimulation,
     SimulationDirect,
     SimulationInteractive,
     SimulationInverse,
@@ -75,6 +77,7 @@ def test_create_direct(speos: Speos):
     assert sim1.dispersion is True
     assert sim1.ambient_material_file_uri == ""
     assert sim1.stop_condition_rays_number == 200000
+    assert sim1.stop_condition_duration is None
     assert sim1.automatic_save_frequency == 1800
     assert sim1.sensor_paths == []
     assert sim1.source_paths == []
@@ -695,8 +698,8 @@ def test_commit(speos: Speos):
 
     # Create
     sim1 = p.create_simulation(name="Direct.1", feature_type=SimulationDirect)
-    sim1.sensor_paths = [ssr._name]
-    sim1.source_paths = [src._name]
+    sim1.sensor_paths = [ssr]
+    sim1.source_paths = [src]
     assert sim1.simulation_template_link is None
     assert len(p.scene_link.get().simulations) == 0
     assert sim1.job_link is None
@@ -810,7 +813,20 @@ def test_direct_modify_after_reset(speos: Speos):
     sim1.commit()
 
     # Light expert
+    assert sim1.light_expert is False
+    with pytest.raises(
+        ValueError,
+        match=re.escape("value must be bool or List[(sensor/sensor_path, ray_number: int)]"),
+    ):
+        sim1.light_expert = "test"
+    with pytest.raises(ValueError, match="Sensor test not found"):
+        sim1.light_expert = [("test", 100)]
+    with pytest.raises(
+        ValueError, match="First tuple value {'test'} is not a Sensor or Sensor name"
+    ):
+        sim1.light_expert = [({"test"}, 100)]
     sim1.light_expert = [(ssr._name, 1000)]
+    assert sim1.light_expert is True
     for item in sim1._project._features:
         if isinstance(item, BaseSensor) and item._name == ssr._name:
             assert item._sensor_instance.HasField("lxp_properties")
@@ -882,7 +898,20 @@ def test_inverse_modify_after_reset(speos: Speos):
     sim1.commit()
 
     # Light expert
+    assert sim1.light_expert is False
+    with pytest.raises(
+        ValueError,
+        match=re.escape("value must be bool or List[(sensor/sensor_path, ray_number: int)]"),
+    ):
+        sim1.light_expert = "test"
+    with pytest.raises(ValueError, match="Sensor test not found"):
+        sim1.light_expert = [("test", 100)]
+    with pytest.raises(
+        ValueError, match="First tuple value {'test'} is not a Sensor or Sensor name"
+    ):
+        sim1.light_expert = [({"test"}, 100)]
     sim1.light_expert = [(ssr._name, 1000)]
+    assert sim1.light_expert is True
     for item in sim1._project._features:
         if isinstance(item, BaseSensor) and item._name == ssr._name:
             assert item._sensor_instance.HasField("lxp_properties")
@@ -893,6 +922,12 @@ def test_inverse_modify_after_reset(speos: Speos):
         if isinstance(item, BaseSensor) and item._name != ssr._name:
             assert item._sensor_instance.HasField("lxp_properties") is False
             assert item.lxp_path_number is None
+
+    sim1.light_expert = True
+    for item in sim1._project._features:
+        if isinstance(item, BaseSensor):
+            assert item._sensor_instance.HasField("lxp_properties")
+            assert item.lxp_path_number is not None
 
     # Ask for reset
     sim1.reset()
@@ -1551,3 +1586,26 @@ def test_export_vtp(speos: Speos):
     speos_results, vtp_results = sim.compute_CPU(export_vtp=True)
     assert len(vtp_results) == 3
     assert vtp_results[2].name == "merged.vtp"
+
+
+@pytest.mark.supported_speos_versions(min=251)
+def test_simulation_nested_classes_errors():
+    """Test RuntimeError for nested classes instantiated outside scope."""
+    # Test Adaptive
+    with pytest.raises(RuntimeError, match="Adaptive class instantiated outside the class scope"):
+        BaseSimulation.SourceSampling.Adaptive(None, stable_ctr=False)
+
+    # Test Uniform
+    with pytest.raises(RuntimeError, match="Uniform class instantiated outside the class scope"):
+        BaseSimulation.SourceSampling.Uniform(None, stable_ctr=False)
+
+    # Test Weight
+    weight = simulation_template_pb2.Weight()
+    with pytest.raises(RuntimeError, match="Weight class instantiated outside of class scope"):
+        BaseSimulation.Weight(weight, stable_ctr=False)
+
+    # Test SourceSampling
+    with pytest.raises(
+        RuntimeError, match="SourceSampling class instantiated outside of the class scope"
+    ):
+        BaseSimulation.SourceSampling(None, stable_ctr=False)
