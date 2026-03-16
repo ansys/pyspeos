@@ -811,6 +811,7 @@ def test_direct_modify_after_reset(speos: Speos):
     sim1.sensor_paths = [ssr._name]
     sim1.source_paths = [src._name]
     sim1.commit()
+    assert sim1.stop_condition_duration is None
 
     # Light expert
     assert sim1.light_expert is False
@@ -833,6 +834,7 @@ def test_direct_modify_after_reset(speos: Speos):
             assert item._sensor_instance.lxp_properties.nb_max_paths == 1000
             assert item.lxp_path_number == 1000
 
+    sim1.light_expert = [(ssr, 1000)]
     for item in sim1._project._features:
         if isinstance(item, BaseSensor) and item._name != ssr._name:
             assert item._sensor_instance.HasField("lxp_properties") is False
@@ -896,6 +898,7 @@ def test_inverse_modify_after_reset(speos: Speos):
     sim1.sensor_paths = [ssr._name]
     sim1.source_paths = [src._name]
     sim1.commit()
+    assert sim1.stop_condition_duration is None
 
     # Light expert
     assert sim1.light_expert is False
@@ -918,6 +921,7 @@ def test_inverse_modify_after_reset(speos: Speos):
             assert item._sensor_instance.lxp_properties.nb_max_paths == 1000
             assert item.lxp_path_number == 1000
 
+    sim1.light_expert = [(ssr, 1000)]
     for item in sim1._project._features:
         if isinstance(item, BaseSensor) and item._name != ssr._name:
             assert item._sensor_instance.HasField("lxp_properties") is False
