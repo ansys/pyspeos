@@ -121,20 +121,21 @@ Create surface source:
 ```{python}
 #| eval: false
 from ansys.speos.core.source import SourceSurface
+from ansys.speos.core.face import Face
 
 s_source = project.create_source(name='Surface.1', feature_type=SourceSurface)
 # Choose one way to set source power
 # for any conflicting property the last set property counts
 s_source.set_flux_from_intensity_file()
-s_source.set_flux_luminous(683)
-s_source.set_flux_radiant(1)
-s_source.set_flux_luminous_intensity(5)
-s_source.set_exitance_constant(
-    [(core.GeoRef.from_native_link(
-        'TheBodyB/TheFaceF'), False)])
+s_source.flux.set_flux_luminous().value = 683
+s_source.flux.set_flux_radiant().value = 1
+s_source.flux.set_flux_luminous_intensity().value = 5
+face = project.find(name="BodyB/.*", name_regex=True, feature_type=Face)[0]
+s_source.set_exitance_constant().geometries = [(face, False)]
 s_int = s_source.set_intensity()
-s_int.set_cos(1,120)
-s_source.set_spectrum()
+s_int.set_cos().n = 1
+s_int.set_cos().total_angle = 120
+s_source.spectrum
 s_source.commit()
 ```
 
@@ -149,13 +150,11 @@ r_source.set_ray_file_uri('path/ray.ray')
 # Choose one way to set source power
 # for any conflicting property the last set property counts
 r_source.set_flux_from_ray_file()
-r_source.set_flux_luminous(683)
-r_source.set_flux_radiant(1)
+r_source.flux.set_flux_luminous().value = 683
+r_source.flux.set_flux_radiant().value = 1
 r_source.set_spectrum_from_ray_file()
-r_source.set_exit_geometries(
-    [core.GeoRef.from_native_link(
-        'TheBodyB/TheFaceF')])
-r_source.set_axis_system([0,0,0,1,0,0,0,1,0,0,0,1])
+r_source.set_exit_geometries().geometries = [face]
+r_source.axis_system = [0,0,0,1,0,0,0,1,0,0,0,1]
 r_source.commit()
 ```
 

@@ -23,11 +23,14 @@
 """Collection of all parameter dataclasses used in PySpeos."""
 
 from dataclasses import dataclass, field
+import datetime
 from enum import Enum
 from pathlib import Path
 from typing import Optional, Union
 
 from ansys.speos.core.generic.constants import ORIGIN
+
+## Sensor Parameters
 
 
 @dataclass
@@ -58,6 +61,52 @@ class DimensionsParameters:
     """Upper bound y axis."""
     y_sampling: int = 100
     """Sampling y axis."""
+
+
+@dataclass
+class IntensitySensorDimensionsConoscopicParameters:
+    """Dataclass for Intensity Sensor dimension in case of conoscopic."""
+
+    theta_max: float = 45
+    """Maximum theta angle on consocopic type (in deg)."""
+    theta_sampling: int = 90
+    """Sampling for consocopic type for theta."""
+
+
+@dataclass
+class IntensitySensorDimensionsXAsMeridianParameters:
+    """Dataclass for Intensity Sensor dimension in case of x_as_meridian."""
+
+    y_start: float = -30
+    """Lower bound y axis."""
+    y_end: float = 30
+    """Upper bound y axis."""
+    y_sampling: int = 120
+    """Sampling y axis."""
+    x_start: float = -45
+    """Lower bound x axis."""
+    x_end: float = 45
+    """Upper bound x axis."""
+    x_sampling: int = 180
+    """Sampling x axis."""
+
+
+@dataclass
+class IntensitySensorDimensionsXAsParallelParameters:
+    """Dataclass for Intensity Sensor dimension in case of x_as_parallel."""
+
+    x_start: float = -30
+    """Lower bound x axis."""
+    x_end: float = 30
+    """Upper bound x axis."""
+    x_sampling: int = 120
+    """Sampling x axis."""
+    y_start: float = -45
+    """Lower bound x axis."""
+    y_end: float = 45
+    """Upper bound x axis."""
+    y_sampling: int = 180
+    """Sampling x axis."""
 
 
 class LayerTypes(str, Enum):
@@ -289,6 +338,21 @@ class SensorTypes(str, Enum):
     radiometric = "radiometric"
 
 
+class IntensitySensorOrientationTypes(str, Enum):
+    """Intensity sensor orientation types."""
+
+    conoscopic = "conoscopic"
+    x_as_parallel = "x_as_parallel"
+    x_as_meridian = "x_as_meridian"
+
+
+class IntensitySensorViewingTypes(str, Enum):
+    """Intensity sensor viewing types."""
+
+    from_source = "from_source"
+    from_sensor = "from_sensor"
+
+
 @dataclass
 class MeasuresParameters:
     """Measurements for 3d Irradiance Sensor."""
@@ -380,3 +444,327 @@ class Irradiance3DSensorParameters:
     """Layer separation type."""
     geometries: Optional[list] = None
     """Sensor geometry."""
+
+
+@dataclass
+class NearfieldParameters:
+    """Parameters data class for Nearfield."""
+
+    cell_distance: float = 10
+    """Distance of cell from origin of the sensor."""
+    cell_diameter: float = 0.3491
+    """Diameter of cell."""
+
+
+@dataclass
+class IntensityXMPSensorParameters:
+    """Parameters data clas for intensity Sensor."""
+
+    dimensions: Union[
+        IntensitySensorDimensionsXAsMeridianParameters,
+        IntensitySensorDimensionsXAsParallelParameters,
+        IntensitySensorDimensionsConoscopicParameters,
+    ] = field(default_factory=IntensitySensorDimensionsXAsMeridianParameters)
+    """Dimensions of the sensor."""
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+    """Position of the sensor."""
+    sensor_type: Union[
+        SensorTypes.photometric, ColorimetricParameters, SpectralParameters, SensorTypes.radiometric
+    ] = SensorTypes.photometric
+    """Type of the sensor."""
+    orientation: IntensitySensorOrientationTypes = IntensitySensorOrientationTypes.x_as_meridian
+    """Sensor orientation."""
+    viewing_direction: IntensitySensorViewingTypes = IntensitySensorViewingTypes.from_source
+    """Viewing Direction onto the result."""
+    layer_type: Union[
+        LayerTypes.none,
+        LayerTypes.by_source,
+        LayerByFaceParameters,
+        LayerBySequenceParameters,
+    ] = LayerTypes.none
+    """Layer separation type."""
+    near_field_parameters: Optional[NearfieldParameters] = None
+    """Parameters in case sensor is nearfield"""
+
+
+## Source Parameters
+
+
+@dataclass
+class LuminousFluxParameters:
+    """Luminous Flux Parameters."""
+
+    value: float = 683
+
+
+@dataclass
+class RadiantFluxParameters:
+    """Radiant Flux Parameters."""
+
+    value: float = 1
+
+
+@dataclass
+class FluxFromFileParameters:
+    """Flux frm inteisty file."""
+
+    value: bool = True
+
+
+@dataclass
+class SpectrumSampledParameters:
+    """Spectrum sampled parameters."""
+
+    wavelengths: list[float] = field(default_factory=lambda: [400.0, 700.0])
+    values: list[float] = field(default_factory=lambda: [100.0, 100.0])
+
+
+@dataclass
+class SpectrumLibraryParameters:
+    """Spectrum library parameters."""
+
+    file_uri: Union[str, Path] = ""
+
+
+@dataclass
+class SpectrumBlackBodyParameters:
+    """Spectrum Black Body parameters."""
+
+    temperature: float = 2856
+
+
+class SpectrumType(str, Enum):
+    """Spectrum type without parameters."""
+
+    incandescent = "photometric"
+    warm_white_fluorescent = "warm_white_fluorescent"
+    daylight_fluorescent = "daylight_fluorescent"
+    white_led = "white_led"
+    halogen = "halogen"
+    metal_halide = "metal_halide"
+    high_pressure_sodium = "high_pressure_sodium"
+
+
+@dataclass
+class LuminaireSourceParameters:
+    """Parameters class for Luminaire Source."""
+
+    intensity_file_uri: Union[str, Path] = ""
+    flux_type: Union[LuminousFluxParameters, RadiantFluxParameters, FluxFromFileParameters] = field(
+        default_factory=lambda: FluxFromFileParameters()
+    )
+    spectrum_type: Union[SpectrumBlackBodyParameters, SpectrumLibraryParameters, SpectrumType] = (
+        SpectrumType.incandescent
+    )
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+
+
+@dataclass
+class SpectrumMonochromaticParameters:
+    """Spectrum Monochromatic parameters."""
+
+    wavelength: float = 555.0
+
+
+@dataclass
+class RayFileSourceParameters:
+    """Parameters class for Ray File Source."""
+
+    ray_file_uri: Union[str, Path] = ""
+    flux_type: Union[LuminousFluxParameters, RadiantFluxParameters, FluxFromFileParameters] = field(
+        default_factory=lambda: FluxFromFileParameters()
+    )
+    spectrum_type: Optional[
+        Union[
+            SpectrumBlackBodyParameters, SpectrumLibraryParameters, SpectrumMonochromaticParameters
+        ]
+    ] = None
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+    exit_geometry: Optional[list[str]] = None
+
+
+@dataclass
+class IntensityFluxParameters:
+    """Luminous Flux Parameters."""
+
+    value: float = 5
+
+
+@dataclass
+class IntensityLambertianParameters:
+    """Intensity Lambertian parameters."""
+
+    total_angle: float = 180
+
+
+@dataclass
+class IntensityCosParameters:
+    """Intensity Cos parameters."""
+
+    n: float = 3
+    total_angle: float = 180
+
+
+@dataclass
+class IntensitySymmetricGaussianParameters:
+    """Intensity Symmetric Gaussian parameters."""
+
+    total_angle: float = 180
+    fwhm: float = 30.0
+
+
+@dataclass
+class IntensitAsymmetricGaussianParameters:
+    """Intensity Asymmetric Gaussian parameters."""
+
+    total_angle: float = 180
+    fwhm_x: float = 30.0
+    fwhm_y: float = 30.0
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+
+
+@dataclass
+class IntensityOrientationAxisSystemParameters:
+    """Intensity Orientation Axis System parameters."""
+
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+
+
+class IntensityOrientationType(str, Enum):
+    """Spectrum type without parameters."""
+
+    normal_to_uv = "normal_to_uv"
+    normal_to_surface = "normal_to_surface"
+
+
+@dataclass
+class IntensityLibraryParameters:
+    """Intensity Library parameters."""
+
+    intensity_file_uri: Union[str, Path] = ""
+    orientation_type: Union[IntensityOrientationType, IntensityOrientationAxisSystemParameters] = (
+        field(default_factory=lambda: IntensityOrientationAxisSystemParameters())
+    )
+    exit_geometries: Optional[list[str]] = None
+
+
+@dataclass
+class VariableExitanceParameters:
+    """Spectrum Exit Parameters."""
+
+    xmp_file_uri: Union[str, Path] = ""
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN[0:9])
+
+
+@dataclass
+class ConstantExitanceParameters:
+    """Spectrum Exit Parameters."""
+
+    emissive_faces: list[str] = field(default_factory=lambda: [])
+
+
+@dataclass
+class SurfaceSourceParameters:
+    """Parameters class for Surface Source."""
+
+    flux_type: Union[
+        LuminousFluxParameters,
+        RadiantFluxParameters,
+        IntensityFluxParameters,
+        FluxFromFileParameters,
+    ] = field(default_factory=lambda: LuminousFluxParameters())
+    exitance_type: Union[VariableExitanceParameters, ConstantExitanceParameters] = field(
+        default_factory=lambda: ConstantExitanceParameters()
+    )
+    intensity_type: Union[
+        IntensityLambertianParameters,
+        IntensityCosParameters,
+        IntensitySymmetricGaussianParameters,
+        IntensitAsymmetricGaussianParameters,
+        IntensityLibraryParameters,
+    ] = field(default_factory=lambda: IntensityLambertianParameters())
+    spectrum_type: Optional[
+        Union[
+            SpectrumBlackBodyParameters, SpectrumLibraryParameters, SpectrumMonochromaticParameters
+        ]
+    ] = field(default_factory=lambda: SpectrumMonochromaticParameters())
+
+
+@dataclass
+class AutomaticSunParameters:
+    """Spectrum Exit Parameters."""
+
+    now = datetime.datetime.now()
+    time_zone: str = "CET"
+    longitude: float = 0.0
+    latitude: float = 0.0
+    year = now.year
+    month = now.month
+    day = now.day
+    hour = now.hour
+    minute = now.minute
+
+
+@dataclass
+class ManualSunParameters:
+    """Spectrum Exit Parameters."""
+
+    direction: list[float] = field(default_factory=lambda: [0, 0, 1])
+
+
+@dataclass
+class AmbientNaturalLightParameters:
+    """Ambient Natural Light Parameters."""
+
+    with_sky: bool = field(default_factory=lambda: True)
+    turbidity: float = 3.0
+    zenith_direction: list[float] = field(default_factory=lambda: [0, 0, 1])
+    north_direction: list[float] = field(default_factory=lambda: [0, 1, 0])
+    sun_type: Union[AutomaticSunParameters, ManualSunParameters] = field(
+        default_factory=lambda: AutomaticSunParameters()
+    )
+
+
+@dataclass
+class UserDefinedWhitePointParameters:
+    """User defined White Point Parameters."""
+
+    x: float = 0.31271
+    y: float = 0.32902
+
+
+class WhitePointType(str, Enum):
+    """White Point type without parameters."""
+
+    d65 = "d65"
+    d50 = "d50"
+    c = "c"
+    e = "e"
+
+
+@dataclass
+class UserDefinedColorSpaceParameters:
+    """User defined Color Space Parameters."""
+
+    white_point_type: Union[WhitePointType, UserDefinedWhitePointParameters] = WhitePointType.d65
+    red_spectrum_uri: Union[str, Path] = ""
+    blue_spectrum_uri: Union[str, Path] = ""
+    green_spectrum_uri: Union[str, Path] = ""
+
+
+class ColorSpaceType(str, Enum):
+    """Color Space Type without parameters."""
+
+    srgb = "srgb"
+    adobe_rgb = "abode_rgb"
+
+
+@dataclass
+class AmbientEnvironmentParameters:
+    """Ambient Environment Parameters."""
+
+    zenith_direction: list[float] = field(default_factory=lambda: [0, 0, 1])
+    north_direction: list[float] = field(default_factory=lambda: [0, 1, 0])
+    luminance: float = 1000.0
+    image_file_uri: Union[str, Path] = ""
+    color_space_type: Union[ColorSpaceType, UserDefinedColorSpaceParameters] = ColorSpaceType.srgb

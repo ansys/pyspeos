@@ -17,8 +17,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
-        speos-version: ["251", "252", "dev"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        speos-version: ["251", "252", "261", "dev"]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
@@ -44,7 +44,7 @@ jobs:
           pip install .[tests]
 
       - name: Login to GitHub Packages
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
         with:
           registry: ghcr.io/ansys
           username: ${{ github.actor }}
@@ -73,7 +73,7 @@ jobs:
 
       - name: Upload Coverage Results
         if: always()
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           path: .cov/html
           name: coverage-html-ubuntu-${{ matrix.python-version }}-${{ matrix.speos-version }}

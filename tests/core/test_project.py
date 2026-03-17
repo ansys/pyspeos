@@ -45,11 +45,15 @@ def test_find_feature(speos: Speos):
     # Create an empty project
     p = Project(speos=speos)
     assert len(p._features) == 0
+    assert p.root_part is None
 
     # Create a luminaire source in the project
     source1 = p.create_source(name="Source.1", feature_type=SourceLuminaire)
-    source1.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
+    source1.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     assert len(p._features) == 1
+    assert len(p.sources) == 1
+    assert p.sources[0] == source1
+    assert p.sources[0].get(key="name") == "Source.1"
     source1.commit()
     assert len(p.scene_link.get().sources) == 1
 
@@ -57,12 +61,18 @@ def test_find_feature(speos: Speos):
     sensor1 = p.create_sensor(name="Sensor.1", feature_type=SensorIrradiance)
     sensor1.commit()
     assert len(p._features) == 2
+    assert len(p.sensors) == 1
+    assert p.sensors[0].get(key="name") == "Sensor.1"
+    assert p.sensors[0] == sensor1
     assert len(p.scene_link.get().sensors) == 1
 
     # Create an radiance sensor in the project
     sensor2 = p.create_sensor(name="Sensor.2", feature_type=SensorRadiance)
     sensor2.commit()
     assert len(p._features) == 3
+    assert len(p.sensors) == 2
+    assert p.sensors[1].get(key="name") == "Sensor.2"
+    assert p.sensors[1] == sensor2
     assert len(p.scene_link.get().sensors) == 2
 
     # Create an radiance sensor in the project
@@ -134,6 +144,8 @@ def test_find_feature_geom(speos: Speos):
     # Find root part
     feats = p.find(name="", feature_type=Part)
     assert len(feats) == 1
+    assert p.root_part == feats[0]
+    assert p.root_part._name == "RootPart"
 
     # Retrieve body with regex
     feats = p.find(name="Solid Body in SOURCE2.*", name_regex=True, feature_type=Part)
@@ -275,6 +287,9 @@ def test_find_after_load(speos: Speos):
     sim_feats = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)
     assert len(sim_feats) == 1
     assert sim_feats[0]._name == "ASSEMBLY1.DS (0)"
+    assert len(p.simulations) == 1
+    assert p.simulations[0].get(key="name") == "ASSEMBLY1.DS (0)"
+    assert p.simulations[0] == sim_feats[0]
 
 
 def test_create_root_part_after_load(speos: Speos):
@@ -290,6 +305,7 @@ def test_create_root_part_after_load(speos: Speos):
     # Retrieve existing root part feature
     # assert p.find(name="", feature_type=Part) is p.create_root_part()
     rp = p.find(name="", feature_type=Part)[0]
+    assert rp == p.root_part
 
     # Try to create root part (but it is already existing) -> the existing root part is returned
     rp2 = p.create_root_part()
@@ -306,7 +322,7 @@ def test_delete(speos: Speos):
 
     # Create a surface source in the project
     source1 = p.create_source(name="Source.1", feature_type=SourceLuminaire)
-    source1.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
+    source1.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     assert len(p._features) == 1
     source1.commit()
     assert len(p.scene_link.get().sources) == 1
@@ -334,13 +350,18 @@ def test_from_file(speos: Speos):
 
     # Check that scene is filled
     assert len(p.scene_link.get().materials) == 4
+    assert len(p.optical_properties) == 4
     assert len(p.scene_link.get().sensors) == 1
+    assert len(p.sensors) == 1
     assert len(p.scene_link.get().sources) == 2
+    assert len(p.sources) == 2
     assert len(p.scene_link.get().simulations) == 1
+    assert len(p.simulations) == 1
 
     feat_sims = p.find(name=p.scene_link.get().simulations[0].name)
     assert len(feat_sims) == 1
     assert type(feat_sims[0]) is SimulationDirect
+    assert type(p.simulations[0]) is SimulationDirect
 
     # Check that feature can be retrieved
     feat_ops = p.find(name=p.scene_link.get().materials[2].name)
@@ -486,21 +507,21 @@ def test_preview_visual_data(speos: Speos):
     # preview luminaire source
     # preview when there is cad
     sr = p2.create_source(name="Luminaire_source", feature_type=SourceLuminaire)
-    sr.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
-    sr.set_spectrum().set_halogen()
+    sr.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
+    sr.spectrum.set_halogen()
     sr.commit()
     p2.preview()
     # preview when there is no cad
     p3 = Project(speos=speos)
     p3.create_root_part().commit()  # Needed for 251 server.
     sr = p3.create_source(name="Luminaire_source.2", feature_type=SourceLuminaire)
-    sr.set_intensity_file_uri(uri=str(Path(test_path) / "IES_C_DETECTOR.ies"))
+    sr.intensity_file_uri = Path(test_path) / "IES_C_DETECTOR.ies"
     sr.commit()
     p3.preview()
 
     # preview rayfile source
     sr = p2.create_source(name="Rayfile_source", feature_type=SourceRayFile)
-    sr.set_ray_file_uri(uri=str(Path(test_path) / "Rays.ray"))
+    sr.ray_file_uri = Path(test_path) / "Rays.ray"
     sr.commit()
     p2.preview()
 
@@ -514,13 +535,13 @@ def test_preview_visual_data(speos: Speos):
     ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1]).commit()
     sr = p2.create_source(name="Surface.1", feature_type=SourceSurface)
 
-    sr.set_exitance_constant(geometries=[(GeoRef.from_native_link("TheBodyB/TheFaceF"), False)])
+    sr.set_exitance_constant().geometries = [(GeoRef.from_native_link("TheBodyB/TheFaceF"), False)]
     sr.commit()
     p2.preview()
     # variable exitance
     sr.set_spectrum_from_xmp_file()
-    sr.set_exitance_variable().set_xmp_file_uri(
-        uri=str(Path(test_path) / "PROJECT.Direct-no-Ray.Irradiance Ray Spectral.xmp")
+    sr.set_exitance_variable().xmp_file_uri = (
+        Path(test_path) / "PROJECT.Direct-no-Ray.Irradiance Ray Spectral.xmp"
     )
     sr.commit()
     p2.preview()
@@ -562,6 +583,13 @@ def test_preview_visual_data(speos: Speos):
     ).set_facets([0, 1, 2]).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
     child_part2.commit()
     p7.preview()
+
+    # intensity
+    p8 = Project(
+        speos=speos,
+        path=str(Path(test_path) / "Intensity_test.speos" / "Intensity_test.speos"),
+    )
+    p8.preview()
 
 
 @pytest.mark.supported_speos_versions(min=252)
