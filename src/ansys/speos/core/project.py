@@ -42,6 +42,7 @@ from ansys.speos.core.generic.parameters import (
     Irradiance3DSensorParameters,
     IrradianceSensorParameters,
     LuminaireSourceParameters,
+    OptPropParameters,
     RadianceSensorParameters,
     RayFileSourceParameters,
     SurfaceSourceParameters,
@@ -245,6 +246,7 @@ class Project:
         name: str,
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
+        default_parameters: Optional[opt_prop.OptPropParameters] = None,
     ) -> opt_prop.OptProp:
         """Create a new Optical Property feature.
 
@@ -258,6 +260,7 @@ class Project:
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
+
 
         Returns
         -------
@@ -273,9 +276,28 @@ class Project:
 
         if metadata is None:
             metadata = {}
-        feature = opt_prop.OptProp(
-            project=self, name=name, description=description, metadata=metadata
-        )
+        if default_parameters:
+            if not isinstance(default_parameters, OptPropParameters):
+                raise TypeError(
+                    f"Incorrect parameter dataclass provided "
+                    f"{str(type(default_parameters))} instead of OptPropParameters"
+                )
+
+            feature = opt_prop.OptProp(
+                project=self,
+                name=name,
+                description=description,
+                metadata=metadata,
+                default_parameters=default_parameters,
+            )
+        else:
+            feature = opt_prop.OptProp(
+                project=self,
+                name=name,
+                description=description,
+                metadata=metadata,
+                default_parameters=OptPropParameters(),
+            )
         self._features.append(feature)
         return feature
 

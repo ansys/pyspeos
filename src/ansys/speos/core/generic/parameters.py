@@ -26,7 +26,7 @@ from dataclasses import dataclass, field
 import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 from ansys.speos.core.generic.constants import ORIGIN
 
@@ -45,7 +45,7 @@ class WavelengthsRangeParameters:
     """Wavelength sampling."""
 
 
-@dataclass(frozen=True)
+@dataclass
 class MaterialOpticParameters:
     """Optics Material Parameters."""
 
@@ -138,7 +138,25 @@ class MappingTypes(str, Enum):
     cylindrical = "cylindrical"
 
 
-@dataclass(frozen=True)
+class VopTypes(str, Enum):
+    """Allowed mapping types."""
+
+    none = None
+    opaque = "opaque"
+    library = "library"
+    optic = "optic"
+
+
+class SopTypes(str, Enum):
+    """Allowed mapping types."""
+
+    mirror = "mirror"
+    library = "library"
+    optical_polished = "optical_polished"
+    texture = "texture"
+
+
+@dataclass
 class MappingOperator:
     """Store all information needed to create a UV mapping."""
 
@@ -154,7 +172,7 @@ class MappingOperator:
     perimeter: float = 1
 
 
-@dataclass(frozen=True)
+@dataclass
 class MappingByData:
     """Store mapping data when using custom mapping.
 
@@ -164,6 +182,99 @@ class MappingByData:
     vertices_data_index: int
     repeat_v: Optional[bool] = None
     repeat_u: Optional[bool] = None
+
+
+@dataclass
+class SopParameters:
+    """Sop parameters dataclass.
+
+    Attributes
+    ----------
+    sop_type: SopTypes
+        Type of SOP to apply on the geometry.
+    sop_reflectance: Optional[float]
+        Reflectance value to apply on the geometry if sop_type is mirror.
+    sop_library_file_uri: Optional[Union[str, Path]]
+        Path to the SOP library file if sop_type is library.
+    """
+
+    sop_type: Union[SopTypes] = SopTypes.mirror
+    sop_reflectance: Optional[float] = 100
+    sop_library_file_uri: Optional[Union[str, Path]] = None
+
+
+@dataclass
+class VopParameters:
+    """Vop parameters dataclass.
+
+    Attributes
+    ----------
+    vop_type: VopTypes
+        Type of VOP to apply on the geometry.
+    vop_library_file_uri: Optional[Union[str, Path]]
+        Path to the VOP library file if vop_type is library.
+    """
+
+    vop_type: Union[VopTypes] = VopTypes.none
+    vop_library_file_uri: Optional[Union[str, Path]] = None
+
+
+class NormalMapTypes(str, Enum):
+    """Normal map types without parameters."""
+
+    from_normal_map = "from_normal_map"
+    from_image = "from_image"
+
+
+@dataclass
+class TextureLayerParameters:
+    """Texture layer parameters dataclass.
+
+    Attributes
+    ----------
+    sop_parameters: Optional[SopParameters]
+        SOP parameters to apply on the texture layer.
+    image_texture: bool
+        Whether the texture layer is an image texture or not.
+    image_texture_file_uri: Optional[Union[str, Path]]
+        Path to the image texture file if image_texture is True.
+    image_texture_mapping: Optional[Union[MappingOperator, MappingByData]]
+        Mapping parameters to apply on the image texture if image_texture is True.
+    normal_map: bool
+        Whether the texture layer is a normal map or not.
+    normal_map_type: Optional[NormalMapTypes]
+        Type of normal map to apply if normal_map is True.
+    normal_map_file_uri: Optional[Union[str, Path]]
+        Path to the normal map file if normal_map is True and normal_map_type is from_normal_map.
+    normal_map_mapping: Optional[Union[MappingOperator, MappingByData]]
+        Mapping parameters to apply on the normal map if normal_map is True and normal_map_type
+        is from_normal_map.
+    anisotropy_map: bool
+        Whether the texture layer is an anisotropy map or not.
+    anisotropy_map_mapping: Optional[Union[MappingOperator, MappingByData]]
+        Mapping parameters to apply on the anisotropy map if anisotropy_map is True.
+
+    """
+
+    sop_parameters: Optional[SopParameters] = SopParameters()
+    image_texture: bool = False
+    image_texture_file_uri: Optional[Union[str, Path]] = None
+    image_texture_mapping: Optional[Union[MappingOperator, MappingByData]] = None
+    normal_map: bool = False
+    normal_map_type: Optional[NormalMapTypes] = None
+    normal_map_file_uri: Optional[Union[str, Path]] = None
+    normal_map_mapping: Optional[Union[MappingOperator, MappingByData]] = None
+    anisotropy_map: bool = False
+    anisotropy_map_mapping: Optional[Union[MappingOperator, MappingByData]] = None
+
+
+@dataclass
+class OptPropParameters:
+    """store default values for optical properties."""
+
+    sop_parameters: Optional[SopParameters] = SopParameters()
+    vop_parameters: Optional[VopParameters] = VopParameters()
+    texture_parameters: Optional[List[TextureLayerParameters]] = None
 
 
 class LayerTypes(str, Enum):

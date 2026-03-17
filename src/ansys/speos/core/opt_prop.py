@@ -41,11 +41,18 @@ import uuid
 
 import ansys.speos.core.body as body
 import ansys.speos.core.face as face
+from ansys.speos.core.generic.general_methods import min_speos_version
 from ansys.speos.core.generic.parameters import (
     MappingByData,
     MappingOperator,
     MappingTypes,
     MaterialOpticParameters,
+    OptPropParameters,
+    SopParameters,
+    SopTypes,
+    TextureLayerParameters,
+    VopParameters,
+    VopTypes,
 )
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.scene import ProtoScene
@@ -59,15 +66,43 @@ import ansys.speos.core.proto_message_utils as proto_message_utils
 class BaseSop:
     """Base class for Surface Optical Property helpers.
 
+    Parameters
+    ----------
+    sop_parameters : Optional[SopParameters], optional
+        Default SOP parameters to initialize the surface optical property. Default is ``None``.
+
     Notes
     -----
     This is a superclass and is not intended to be instantiated directly.
     """
 
-    def __init__(self):
-        self._sop_template = None
+    def __init__(self, sop_template, mat_inst, sop_parameters: Optional[SopParameters] = None):
+
+        self._sop_template = sop_template
         # Create material instance
-        self._material_instance = None
+        self._material_instance = mat_inst
+
+        if sop_parameters:
+            self._apply_sop_parameters(sop_parameters)
+
+    def _apply_sop_parameters(self, sop_parameters: SopParameters):
+        """Apply SOP parameters to initialize the surface optical property.
+
+        Parameters
+        ----------
+        sop_parameters : SopParameters
+            SOP parameters to apply.
+        """
+        if sop_parameters.sop_type == SopTypes.mirror:
+            self.set_surface_mirror()
+            if sop_parameters.sop_reflectance is not None:
+                self.sop_reflectance = sop_parameters.sop_reflectance
+        elif sop_parameters.sop_type == SopTypes.optical_polished:
+            self.set_surface_opticalpolished()
+        elif sop_parameters.sop_type == SopTypes.library:
+            self.set_surface_library()
+            if sop_parameters.sop_library_file_uri:
+                self.sop_library = sop_parameters.sop_library_file_uri
 
     @property
     def sop_type(self) -> str:
@@ -194,19 +229,91 @@ class BaseSop:
 class BaseVop:
     """Base class for Volume Optical Property helpers.
 
+    Parameters
+    ----------
+    vop_parameters : Optional[VopParameters], optional
+        Default VOP parameters to initialize the volume optical property. Default is ``None``.
+
     Notes
     -----
     This is a superclass and is not intended to be instantiated directly.
     """
 
-    def __init__(self):
-        self._sop_template = None
+    class VopOptic:
+        """Optic parameters for a clear transparent volume."""
+
+        def __init__(self, parent, default_parameters: MaterialOpticParameters):
+            self._parent = parent
+            if default_parameters:
+                self.index = default_parameters.index
+                self.absorption = default_parameters.absorption
+                self.constringence = default_parameters.constringence
+
+        @property
+        def index(self) -> float:
+            """Real part of refractive index."""
+            if self._parent._vop_template and self._parent._vop_template.HasField("optic"):
+                return self._parent._vop_template.optic.index
+            raise AttributeError("VOP is not of optic type")
+
+        @index.setter
+        def index(self, value: float):
+            self._parent._vop_template.optic.index = value
+
+        @property
+        def absorption(self) -> float:
+            """Absorption coefficient."""
+            if self._parent._vop_template and self._parent._vop_template.HasField("optic"):
+                return self._parent._vop_template.optic.absorption
+            raise AttributeError("VOP is not of optic type")
+
+        @absorption.setter
+        def absorption(self, value: float):
+            self._parent._vop_template.optic.absorption = value
+
+        @property
+        def constringence(self) -> Optional[float]:
+            """Abbe Number."""
+            if self._parent._vop_template and self._parent._vop_template.HasField("optic"):
+                if self._parent._vop_template.optic.HasField("constringence"):
+                    return self._parent._vop_template.optic.constringence
+                return None
+            raise AttributeError("VOP is not of optic type")
+
+        @constringence.setter
+        def constringence(self, value: Optional[float]):
+            if value is not None:
+                self._parent._vop_template.optic.constringence = value
+            else:
+                self._parent._vop_template.optic.ClearField("constringence")
+
+    def __init__(self, vop_template, mat_inst, vop_parameters: Optional[VopParameters] = None):
         # Create VOP template
-        self._vop_template = None
+        self._vop_template = vop_template
         # Create material instance
-        self._material_instance = None
+        self._material_instance = mat_inst
 
         self._vop_optic = None
+
+        if vop_parameters:
+            self._apply_vop_parameters(vop_parameters)
+
+    def _apply_vop_parameters(self, vop_parameters: VopParameters):
+        """Apply VOP parameters to initialize the volume optical property.
+
+        Parameters
+        ----------
+        vop_parameters : VopParameters
+            VOP parameters to apply.
+        """
+        if vop_parameters.vop_type == VopTypes.optic:
+            self.set_volume_optic()
+        elif vop_parameters.vop_type == VopTypes.opaque:
+            self.set_volume_opaque()
+        elif vop_parameters.vop_type == VopTypes.library:
+            self.set_volume_library()
+            if vop_parameters.vop_library_file_uri:
+                self.vop_library = vop_parameters.vop_library_file_uri
 
     @property
     def vop_type(self) -> Optional[str]:
@@ -228,50 +335,17 @@ class BaseVop:
                 return "library"
 
     @property
-    def vop_optic(self) -> Optional[MaterialOpticParameters]:
+    def vop_optic(self) -> Optional[BaseVop.VopOptic]:
         """Optic parameters for a clear transparent volume.
 
         Returns
         -------
-        Optional[MaterialOpticParameters]
-            Dataclass containing optics information (index, absorption,
+        Optional[VopOptic]
+            VopOptic instance containing optics information (index, absorption,
             constringence) when VOP is of optic type, otherwise ``None``.
         """
         if self._vop_template.HasField("optic"):
-            self._vop_optic = MaterialOpticParameters(
-                self._vop_template.optic.index,
-                self._vop_template.optic.absorption,
-                self._vop_template.optic.constringence,
-            )
             return self._vop_optic
-
-    @vop_optic.setter
-    def vop_optic(self, value: MaterialOpticParameters):
-        """Set optic parameters for the VOP.
-
-        Parameters
-        ----------
-        value : MaterialOpticParameters
-            Optic material information.
-
-        Raises
-        ------
-        TypeError
-            If the current VOP is not of optic type.
-        """
-        if self._vop_template.HasField("optic"):
-            self._vop_template.optic.index = value.index
-            self._vop_template.optic.absorption = value.absorption
-            if value.constringence:
-                self._vop_template.optic.constringence = value.constringence
-            else:
-                self._vop_template.optic.ClearField("constringence")
-            self._vop_optic = value
-        else:
-            raise TypeError(
-                "Volume Optical Property is not set to optic Type, please use set_volume_optic"
-                "before"
-            )
 
     @property
     def vop_library(self) -> str:
@@ -337,13 +411,13 @@ class BaseVop:
 
     def set_volume_optic(
         self,
-    ) -> "OptProp":
+    ) -> BaseVop.VopOptic:
         """Set VOP to a transparent, non-scattering optic.
 
         Returns
         -------
-        ansys.speos.core.opt_prop.OptProp
-            Returns self (as the OptProp that owns this VOP helper).
+        ansys.speos.core.opt_prop.BaseVop.VopOptic
+            Returns VOP Helper.
         """
         if self._vop_template is None:
             self._vop_template = ProtoVOPTemplate(
@@ -351,11 +425,13 @@ class BaseVop:
                 description=self._sop_template.description,
                 metadata=self._sop_template.metadata,
             )
-        self._vop_template.optic.SetInParent()
-        self._vop_template.optic.index = 1.5
-        self._vop_template.optic.absorption = 0
-        self._vop_template.optic.ClearField("constringence")
-        return self
+            self._vop_optic = self.VopOptic(self, MaterialOpticParameters())
+        elif self._vop_template.HasField("optic"):
+            self._vop_optic = self.VopOptic(self, None)
+        else:
+            self._vop_template.optic.SetInParent()
+            self._vop_optic = self.VopOptic(self, MaterialOpticParameters())
+        return self._vop_optic
 
     # Deactivated due to a bug on SpeosRPC server side
     # def set_volume_nonhomogeneous(
@@ -429,16 +505,20 @@ class TextureLayer(BaseSop):
         Description of the feature. Default is an empty string.
     metadata : Optional[Mapping[str, str]], optional
         Metadata of the feature. Default is ``None``.
+    texture_layer_parameters : Optional[TextureLayerParameters], optional
+        Default texture layer parameters to initialize the texture layer. Default is ``None``.
     """
 
+    @min_speos_version(25, 2, 0)
     def __init__(
         self,
         opt_prop: "OptProp",
         name: str,
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
+        default_parameters: Optional[TextureLayerParameters] = None,
     ):
-        super().__init__()
+
         self._project = opt_prop._project
         self._opt_prop = opt_prop
         self.sop_template_link = None
@@ -453,8 +533,42 @@ class TextureLayer(BaseSop):
         self._normal_map_props = None
         self._image_props = None
         self._aniso_props = None
-        self.set_surface_mirror()
+
         self._index = None
+
+        if default_parameters:
+            super().__init__(
+                self._sop_template, self._material_instance, default_parameters.sop_parameters
+            )
+            self._apply_texture_layer_parameters(default_parameters)
+        else:
+            super().__init__(self._sop_template, self._material_instance, SopParameters())
+
+    def _apply_texture_layer_parameters(self, texture_layer_parameters: TextureLayerParameters):
+        """Apply texture layer parameters to initialize the texture layer.
+
+        Parameters
+        ----------
+        texture_layer_parameters : TextureLayerParameters
+            Texture layer parameters to apply.
+        """
+        if texture_layer_parameters.image_texture:
+            if texture_layer_parameters.image_texture_file_uri:
+                self.image_texture_file_uri = texture_layer_parameters.image_texture_file_uri
+            if texture_layer_parameters.image_texture_mapping:
+                self.image_property = texture_layer_parameters.image_texture_mapping
+        if texture_layer_parameters.normal_map:
+            if texture_layer_parameters.normal_map_type == "from_image":
+                self.set_normal_map_from_image()
+            elif texture_layer_parameters.normal_map_type == "from_normal_map":
+                self.set_normal_map_from_normal_map()
+            if texture_layer_parameters.normal_map_file_uri:
+                self.normal_map_file_uri = texture_layer_parameters.normal_map_file_uri
+            if texture_layer_parameters.normal_map_mapping:
+                self.normal_map_property = texture_layer_parameters.normal_map_mapping
+        if texture_layer_parameters.anisotropy_map:
+            if texture_layer_parameters.anisotropy_map_mapping:
+                self.normal_map_property = texture_layer_parameters.normal_map_mapping
 
     @property
     def sop_type(self) -> str:
@@ -957,6 +1071,8 @@ class OptProp(BaseVop, BaseSop):
         Description of the feature. Default is an empty string.
     metadata : Optional[Mapping[str, str]], optional
         Metadata of the feature. Default is ``None``.
+    default_parameters : Optional[OptPropParameters], optional
+        Default optical property parameters to initialize the OptProp. Default is ``None``.
     """
 
     def __init__(
@@ -965,9 +1081,8 @@ class OptProp(BaseVop, BaseSop):
         name: str,
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
+        default_parameters: Optional[OptPropParameters] = None,
     ):
-        super(BaseVop).__init__()
-        super(BaseSop).__init__()
         self._name = name
         self._project = project
         self._unique_id = None
@@ -991,10 +1106,28 @@ class OptProp(BaseVop, BaseSop):
             name=name, description=description, metadata=metadata
         )
         self._texture = None
+
+        BaseVop.__init__(
+            self,
+            self._vop_template,
+            self._material_instance,
+            vop_parameters=default_parameters.vop_parameters if default_parameters else None,
+        )
+        BaseSop.__init__(
+            self,
+            self._sop_template,
+            self._material_instance,
+            sop_parameters=default_parameters.sop_parameters if default_parameters else None,
+        )
+
         # Default values
-        self.set_surface_mirror()
-        self.set_volume_none()
         self.geometries = None
+
+        if default_parameters and default_parameters.texture_parameters:
+            self.texture = [
+                TextureLayer(self, f"Layer{i}", texture_layer_parameters=layer)
+                for i, layer in enumerate(default_parameters.texture_parameters)
+            ]
 
     @property
     def texture(self) -> Optional[list["TextureLayer"]]:
@@ -1281,6 +1414,8 @@ class OptProp(BaseVop, BaseSop):
         # Reset vop template
         if self.vop_template_link is not None:
             self._vop_template = self.vop_template_link.get()
+            if self._vop_template.HasField("optic"):
+                self.set_volume_optic()
 
         # Reset sop template
         if self.sop_template_link is not None:

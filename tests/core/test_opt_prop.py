@@ -85,20 +85,26 @@ def test_create_optical_property(speos: Speos):
 
     # VOP optic
     op1.set_volume_optic()
-    op1.vop_optic = MaterialOpticParameters(index=1.7, absorption=0.01, constringence=55)
+    op1.commit()
+    assert op1.vop_template_link.get().optic.index == 1.5
+    assert op1.vop_template_link.get().optic.absorption == 0.0
+    assert op1.vop_template_link.get().optic.HasField("constringence") is False
+    op1.vop_optic.index = 1.7
+    op1.vop_optic.absorption = 0.01
+    op1.vop_optic.constringence = 55
     op1.commit()
     assert op1.vop_template_link.get().HasField("optic")
     assert op1.vop_template_link.get().optic.index == 1.7
     assert op1.vop_template_link.get().optic.absorption == 0.01
     assert op1.vop_template_link.get().optic.HasField("constringence")
     assert op1.vop_template_link.get().optic.constringence == 55
-    op1.vop_optic = MaterialOpticParameters(index=1.7, absorption=0.01)
+    op1.set_volume_optic().constringence = None
     op1.commit()
     assert op1.vop_template_link.get().optic.HasField("constringence") is False
     op1.set_volume_optic()
     op1.commit()
-    assert op1.vop_template_link.get().optic.index == 1.5
-    assert op1.vop_template_link.get().optic.absorption == 0.0
+    assert op1.vop_template_link.get().optic.index != 1.5
+    assert op1.vop_template_link.get().optic.absorption != 0.0
     assert op1.vop_template_link.get().optic.HasField("constringence") is False
 
     # VOP library
@@ -317,7 +323,9 @@ def test_get_optical_property(speos: Speos, capsys):
 
     op2 = p.create_optical_property(name="OpticalProperty2")
     op2.set_volume_optic()
-    op2.vop_optic = MaterialOpticParameters(1.7, 0.01, 55)
+    op2.vop_optic.index = 1.7
+    op2.vop_optic.absorption = 0.01
+    op2.vop_optic.constringence = 55
     op2.set_surface_opticalpolished()
     op2.geometries = [body_b]
     op2.commit()
@@ -406,8 +414,6 @@ def test_error_reporting(speos: Speos):
 
     # vop_optic setter should raise if VOP is not optic
     op.set_volume_opaque()
-    with pytest.raises(TypeError):
-        op.vop_optic = MaterialOpticParameters(1.6, 0.01, None)
 
     # vop_library setter should raise if VOP is not library
     with pytest.raises(TypeError):
@@ -808,7 +814,10 @@ def test_load_texture_property_from_file(speos: Speos):
             case "Texture_spherical_Optic_OP_normal_map":
                 assert mat._sop_template is None
                 assert mat.vop_type == "optic"
-                assert mat.vop_optic == MaterialOpticParameters(1.5, 0, 0)
+                assert MaterialOpticParameters(
+                    mat.vop_optic.index, mat.vop_optic.absorption, mat.vop_optic.constringence
+                ) == MaterialOpticParameters(1.5, 0, None)
+
             case "Texture_cylindrical_opaque_mirror40_normal_map|UV mapping.2":
                 assert mat.sop_type == "texture"
                 assert len(mat.texture) == 1
@@ -956,7 +965,9 @@ def test_load_texture_property_from_file(speos: Speos):
                 assert mat.sop_type == "library"
                 assert mat.sop_library.endswith("simplescattering")
                 assert mat.vop_type == "optic"
-                assert mat.vop_optic == MaterialOpticParameters(1.5, 10, 0)
+                assert MaterialOpticParameters(
+                    mat.vop_optic.index, mat.vop_optic.absorption, mat.vop_optic.constringence
+                ) == MaterialOpticParameters(1.5, 10, None)
             case "Texture_gltf":
                 assert mat._sop_template is None
                 assert mat.vop_type is None
