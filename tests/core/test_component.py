@@ -215,7 +215,7 @@ def test_load_lightbox(speos: Speos):
 
 
 def test_reset_lightbox(speos: Speos):
-    """Test load a simulation with lightbox inside."""
+    """Test reset a lightbox."""
     p = Project(
         speos=speos,
         path=Path(test_path) / "lightbox" / "Direct.1.speos",

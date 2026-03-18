@@ -19,7 +19,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-"""Provides a way to interact with Speos component feature: Lightbox."""
+"""Provide API helpers for the Speos LightBox component feature."""
 
 from __future__ import annotations
 
@@ -40,16 +40,16 @@ from ansys.speos.core.simulation import BaseSimulation
 
 
 class LightBoxFileInstance:
-    """Represents a Lightbox file containing geometries and sources.
+    """Represent a LightBox file containing geometries and sources.
 
-    lightbox is imported as scene inside a main project scene.
+    The LightBox content is imported as a scene inside a project scene.
 
     Parameters
     ----------
-    file : str
-        Lightbox file to be loaded.
-    password : str = ""
-        Password for the imported lightbox.
+    file : pathlib.Path | str
+        LightBox file to load.
+    password : str, default: ""
+        Password for the imported LightBox file.
     """
 
     def __init__(
@@ -64,10 +64,9 @@ class LightBoxFileInstance:
 
 
 class LightBox:
-    """Component feature: Lightbox.
+    """Represent the Speos LightBox component feature.
 
-    By default, regarding properties, a global origin axis system is selected to
-    position the lightbox.
+    By default, the global origin axis system is used to position the LightBox.
 
     Parameters
     ----------
@@ -75,18 +74,14 @@ class LightBox:
         Project that will own the feature.
     name : str
         Name of the feature.
-    description : str
+    description : str, default: ""
         Description of the feature.
-        By default, ``""``.
-    metadata : Optional[Mapping[str, str]], optional
+    metadata : typing.Optional[typing.Mapping[str, str]], optional
         Metadata of the feature.
-        By default, ``{}``.
-    scene_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SceneInstance, optional
-        Scene instance to provide if the feature does not have to be created from scratch
-        By default, ``None``, means that the feature is created from scratch by default.
+    scene_instance : ansys.speos.core.kernel.ProtoScene.SceneInstance, optional
+        Existing scene instance to reuse. If ``None``, a new scene instance is created.
     default_parameters : ansys.speos.core.generic.parameters.LightBoxParameters, optional
-        If defined the values in the LightBox instance will be overwritten by the values
-         of the data class.
+        Initial parameter values applied to the feature after initialization.
     """
 
     def __init__(
@@ -121,12 +116,12 @@ class LightBox:
 
     @property
     def visual_data(self) -> List[_VisualData]:
-        """Property containing Lightbox visualization data.
+        """Get LightBox visualization data.
 
         Returns
         -------
-        ansys.speos.core.generic.visualization_methods._VisualData
-            Instance of VisualData Class for pyvista.PolyData of feature rays, coordinate_systems.
+        list[ansys.speos.core.generic.visualization_methods._VisualData]
+            Visualization payload containing mesh and ray data in absolute coordinates.
 
         """
         if len(self._visual_data) != 0 and all(data.updated is True for data in self._visual_data):
@@ -183,12 +178,12 @@ class LightBox:
 
     @property
     def source_paths(self) -> List[str]:
-        """Property containing paths of source included in lightbox.
+        """Get source paths for sources included in the LightBox.
 
         Returns
         -------
-        List[str]
-            List of source_paths of source included in lightbox.
+        list[str]
+            Source paths in the form ``<lightbox_name>/<source_name>``.
 
         """
         sources_data = self._project.client[self._scene_instance.scene_guid].get().sources
@@ -196,7 +191,7 @@ class LightBox:
 
     @property
     def name(self) -> str:
-        """Property of the lightbox name.
+        """Get the LightBox name.
 
         Returns
         -------
@@ -212,12 +207,12 @@ class LightBox:
         Parameters
         ----------
         axis_system : List[float]
-            coordinate information
+            Coordinate system values.
 
         Returns
         -------
-        List[float]
-            coordinate information
+        list[float]
+            Coordinate system values.
 
         """
         return self._scene_instance.axis_system
@@ -227,17 +222,17 @@ class LightBox:
         self._scene_instance.axis_system[:] = axis_system
 
     def set_speos_light_box(self, lightbox: LightBoxFileInstance) -> LightBox:
-        """Set lightbox file to be used for Lightbox feature.
+        """Set the LightBox file used by this feature.
 
         Parameters
         ----------
-        lightbox : ansys.speos.core.components.LightBoxFileInstance
-            lightbox information to be imported.
+        lightbox : ansys.speos.core.component.LightBoxFileInstance
+            LightBox file information to import.
 
         Returns
         -------
         ansys.speos.core.component.LightBox
-            Lightbox feature
+            Updated LightBox feature.
 
         """
         tmp_lightbox_scene_link = self._project.client.scenes().create()
@@ -260,12 +255,12 @@ class LightBox:
         return self
 
     def commit(self) -> LightBox:
-        """Save feature: send the local data to the speos server database.
+        """Save the local feature data to the Speos server database.
 
         Returns
         -------
         ansys.speos.core.component.LightBox
-            Lightbox feature.
+            Updated LightBox feature.
         """
         if general_methods._GRAPHICS_AVAILABLE:
             for item in self._visual_data:
@@ -314,6 +309,13 @@ class LightBox:
         return self
 
     def _to_dict(self) -> dict:
+        """Convert the LightBox data to a dictionary representation.
+
+        Returns
+        -------
+        dict
+            Flattened dictionary with resolved GUID references and properties.
+        """
         out_dict = {}
 
         # SourceInstance (= source guid + source properties)
@@ -354,11 +356,12 @@ class LightBox:
         return out_dict
 
     def get(self, key: str = "") -> List[Tuple[str, dict]]:
-        """Get dictionary corresponding to the project - read only.
+        """Get LightBox information from its dictionary representation - read only.
 
         Parameters
         ----------
-        key: str
+        key : str, default: ""
+            Key prefix used to look up a value.
 
         Returns
         -------
@@ -378,7 +381,7 @@ class LightBox:
         print("Used key: {} not found in key list: {}.".format(key, info.keys()))
 
     def __str__(self) -> str:
-        """Return the string representation of the source."""
+        """Return the string representation of the LightBox."""
         out_str = ""
         if self._project.scene_link and self._unique_id is not None:
             scene_data = self._project.scene_link.get()
@@ -395,12 +398,12 @@ class LightBox:
         return out_str
 
     def reset(self) -> LightBox:
-        """Reset feature: override local data by the one from the speos server database.
+        """Reset local data from the Speos server database.
 
         Returns
         -------
         ansys.speos.core.component.LightBox
-            Lightbox feature.
+            Updated LightBox feature.
         """
         # Reset sensor template
 
@@ -417,14 +420,14 @@ class LightBox:
         return self
 
     def delete(self) -> LightBox:
-        """Delete feature: delete data from the speos server database.
+        """Delete feature data from the Speos server database.
 
-        The local data are still available
+        Local object data remain available after deletion.
 
         Returns
         -------
         ansys.speos.core.component.LightBox
-            Lightbox feature.
+            Updated LightBox feature.
         """
         # Delete the sensor template
         # Reset then the sensor_guid (as the sensor template was deleted just above)
