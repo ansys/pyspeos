@@ -753,7 +753,7 @@ class Project:
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
-        parameters: ansys.speos.core.generic.parameters.LightBoxParameters
+        parameters: ansys.speos.core.generic.parameters.LightBoxParameters, optional
             Allows to provide parameters to overwrite default parameters.
 
         Returns

@@ -265,9 +265,7 @@ def test_create_interactive(speos: Speos):
     p = Project(speos=speos)
 
     # Default value
-    sim1 = p.create_simulation(name="Interactive.1")
-    sim1 = SimulationInteractive(project=p, name="Interactive.1")
-    # sim1.set_interactive()  # do not commit to avoid issues about No sensor in simulation
+    sim1 = p.create_simulation(name="Interactive.1", feature_type=SimulationInteractive)
     assert sim1._simulation_template.HasField("interactive_simulation_template")
     assert sim1._simulation_template.interactive_simulation_template.geom_distance_tolerance == 0.01
     assert sim1._simulation_template.interactive_simulation_template.max_impact == 100
@@ -1094,6 +1092,17 @@ def test_export(speos: Speos):
 
     remove_file(str(Path(test_path) / "export_test"))
     remove_file(str(Path(test_path) / "export_test_2.speos"))
+
+    sim_interactive = p.create_simulation(name="Interactive.1", feature_type=SimulationInteractive)
+    sim_interactive.set_source_paths(["Surface.1:7758"])
+    sim_interactive.commit()
+    with pytest.raises(
+        ValueError,
+        match="Selected simulation type: "
+        "<class 'ansys.speos.core.simulation.SimulationInteractive'>, "
+        "is not supported for export.",
+    ):
+        sim_interactive.export(export_path=Path(test_path) / "export_test")
 
 
 @pytest.mark.skipif(

@@ -70,6 +70,12 @@ def test_create_lightbox(speos: Speos):
     ):
         p.create_lightbox_import(name="Light Box Import.1")
 
+    with pytest.raises(
+        TypeError,
+        match="Incorrect parameter dataclass provided <class 'str'> instead of LightBoxParameters",
+    ):
+        p.create_lightbox_import(name="Light Box Import.2", parameters="test")
+
     assert isinstance(lightbox.visual_data, list)
     assert all([type(data).__name__ == "_VisualData" for data in lightbox.visual_data])
 
@@ -77,6 +83,8 @@ def test_create_lightbox(speos: Speos):
     assert out_dict["name"] == "Light Box Import.1"
     assert out_dict["scene"]["sources"][0]["name"] == "Surface.2:1"
     assert lightbox.get("name") == "Light Box Import.1"
+
+    assert str(lightbox) == lightbox.__str__()
 
     lightbox.delete()
 
