@@ -43,6 +43,7 @@ import ansys.speos.core.body as body
 import ansys.speos.core.face as face
 from ansys.speos.core.generic.general_methods import min_speos_version
 from ansys.speos.core.generic.parameters import (
+    ImageTextureParameter,
     MappingByData,
     MappingOperator,
     MappingTypes,
@@ -51,6 +52,7 @@ from ansys.speos.core.generic.parameters import (
     SopParameters,
     SopTypes,
     TextureLayerParameters,
+    TextureTypes,
     VopParameters,
     VopTypes,
 )
@@ -509,6 +511,665 @@ class TextureLayer(BaseSop):
         Default texture layer parameters to initialize the texture layer. Default is ``None``.
     """
 
+    class TextureMappingOperator:
+        """Texture mapping operator for a texture layer."""
+
+        def __init__(self, mapping, default_parameters: Optional[MappingOperator] = None):
+            self._mapping = mapping
+            if default_parameters and default_parameters:
+                match default_parameters.mapping_type:
+                    case MappingTypes.cylindrical:
+                        self._mapping.cylindrical.SetInParent()
+                        self._mapping.cylindrical.base_perimeter = default_parameters.perimeter
+                    case MappingTypes.planar:
+                        self._mapping.planar.SetInParent()
+                    case MappingTypes.cubic:
+                        self._mapping.cubic.SetInParent()
+                    case MappingTypes.spherical:
+                        self._mapping.spherical.SetInParent()
+                        self._mapping.spherical.sphere_perimeter = default_parameters.radius
+                self._mapping.u_offset = default_parameters.u_offset
+                self._mapping.v_offset = default_parameters.v_offset
+                self._mapping.u_length = default_parameters.u_length
+                if default_parameters.v_length:
+                    self._mapping.v_length = default_parameters.v_length
+                self._mapping.ClearField("axis_system")
+                self._mapping.axis_system[:] = default_parameters.axis_system
+                self._mapping.u_scale_factor = default_parameters.u_scale
+                self._mapping.v_scale_factor = default_parameters.v_scale
+                self._mapping.rotation = default_parameters.rotation
+
+        @property
+        def mapping_type(self) -> Optional[str]:
+            """Mapping projection type.
+
+            Returns
+            -------
+            Optional[str]
+                One of ``'planar'``, ``'cubic'``, ``'spherical'``, ``'cylindrical'``,
+                or ``None`` when no type is set.
+            """
+            for t in MappingTypes:
+                if self._mapping.HasField(t):
+                    return t
+            return None
+
+        @property
+        def axis_system(self) -> list:
+            """Reference axis system for the mapping operator.
+
+            Returns
+            -------
+            list[float]
+                Twelve floats ``[Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz]``.
+            """
+            return list(self._mapping.axis_system)
+
+        @axis_system.setter
+        def axis_system(self, value: list):
+            """Set the reference axis system.
+
+            Parameters
+            ----------
+            value : list[float]
+                Twelve floats ``[Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz]``.
+            """
+            self._mapping.ClearField("axis_system")
+            self._mapping.axis_system[:] = value
+
+        @property
+        def u_offset(self) -> float:
+            """Shift on U direction (mm).
+
+            Returns
+            -------
+            float
+                U offset value.
+            """
+            return self._mapping.u_offset
+
+        @u_offset.setter
+        def u_offset(self, value: float):
+            """Set the U direction offset.
+
+            Parameters
+            ----------
+            value : float
+                U offset in mm.
+            """
+            self._mapping.u_offset = value
+
+        @property
+        def v_offset(self) -> float:
+            """Shift on V direction (mm).
+
+            Returns
+            -------
+            float
+                V offset value.
+            """
+            return self._mapping.v_offset
+
+        @v_offset.setter
+        def v_offset(self, value: float):
+            """Set the V direction offset.
+
+            Parameters
+            ----------
+            value : float
+                V offset in mm.
+            """
+            self._mapping.v_offset = value
+
+        @property
+        def u_scale(self) -> float:
+            """Scale factor on U dimension.
+
+            Returns
+            -------
+            float
+                U scale factor.
+            """
+            return self._mapping.u_scale_factor
+
+        @u_scale.setter
+        def u_scale(self, value: float):
+            """Set the U dimension scale factor.
+
+            Parameters
+            ----------
+            value : float
+                U scale factor.
+            """
+            self._mapping.u_scale_factor = value
+
+        @property
+        def v_scale(self) -> float:
+            """Scale factor on V dimension.
+
+            Returns
+            -------
+            float
+                V scale factor.
+            """
+            return self._mapping.v_scale_factor
+
+        @v_scale.setter
+        def v_scale(self, value: float):
+            """Set the V dimension scale factor.
+
+            Parameters
+            ----------
+            value : float
+                V scale factor.
+            """
+            self._mapping.v_scale_factor = value
+
+        @property
+        def u_length(self) -> float:
+            """Dimension on U direction (mm).
+
+            Returns
+            -------
+            float
+                U length value.
+            """
+            return self._mapping.u_length
+
+        @u_length.setter
+        def u_length(self, value: float):
+            """Set the U direction dimension.
+
+            Parameters
+            ----------
+            value : float
+                U length in mm.
+            """
+            self._mapping.u_length = value
+
+        @property
+        def v_length(self) -> Optional[float]:
+            """Dimension on V direction (mm).
+
+            Returns
+            -------
+            Optional[float]
+                V length value, or ``None`` when not set (image ratio is used instead).
+            """
+            if self._mapping.HasField("v_length"):
+                return self._mapping.v_length
+            return None
+
+        @v_length.setter
+        def v_length(self, value: Optional[float]):
+            """Set the V direction dimension.
+
+            Parameters
+            ----------
+            value : Optional[float]
+                V length in mm, or ``None`` to clear and use the image ratio.
+            """
+            if value is None:
+                self._mapping.ClearField("v_length")
+            else:
+                self._mapping.v_length = value
+
+        @property
+        def rotation(self) -> float:
+            """Rotation of UVs in degrees, in range ]-360, 360[.
+
+            Returns
+            -------
+            float
+                Rotation angle in degrees.
+            """
+            return self._mapping.rotation
+
+        @rotation.setter
+        def rotation(self, value: float):
+            """Set the UV rotation angle.
+
+            Parameters
+            ----------
+            value : float
+                Rotation in degrees, must be in range ]-360, 360[.
+            """
+            self._mapping.rotation = value
+
+        @property
+        def sphere_perimeter(self) -> Optional[float]:
+            """Sphere perimeter for spherical mapping (mm).
+
+            Returns
+            -------
+            Optional[float]
+                Sphere perimeter when mapping type is ``'spherical'``, otherwise ``None``.
+            """
+            if self._mapping.HasField("spherical"):
+                return self._mapping.spherical.sphere_perimeter
+            return None
+
+        @sphere_perimeter.setter
+        def sphere_perimeter(self, value: float):
+            """Set the sphere perimeter for spherical mapping.
+
+            Parameters
+            ----------
+            value : float
+                Sphere perimeter in mm.
+
+            Raises
+            ------
+            TypeError
+                If mapping type is not ``'spherical'``.
+            """
+            if self._mapping.HasField("spherical"):
+                self._mapping.spherical.sphere_perimeter = value
+            else:
+                raise TypeError(
+                    "Mapping type is not 'spherical'. Set mapping_type to 'spherical' first."
+                )
+
+        @property
+        def base_perimeter(self) -> Optional[float]:
+            """Base perimeter for cylindrical mapping (mm).
+
+            Returns
+            -------
+            Optional[float]
+                Base perimeter when mapping type is ``'cylindrical'``, otherwise ``None``.
+            """
+            if self._mapping.HasField("cylindrical"):
+                return self._mapping.cylindrical.base_perimeter
+            return None
+
+        @base_perimeter.setter
+        def base_perimeter(self, value: float):
+            """Set the base perimeter for cylindrical mapping.
+
+            Parameters
+            ----------
+            value : float
+                Base perimeter in mm.
+
+            Raises
+            ------
+            TypeError
+                If mapping type is not ``'cylindrical'``.
+            """
+            if self._mapping.HasField("cylindrical"):
+                self._mapping.cylindrical.base_perimeter = value
+            else:
+                raise TypeError(
+                    "Mapping type is not 'cylindrical'. Set mapping_type to 'cylindrical' first."
+                )
+
+        def __todict__(self):
+            """Convert the mapping operator properties to a dictionary for comparison."""
+            return {
+                "mapping_type": self.mapping_type,
+                "u_offset": self.u_offset,
+                "v_offset": self.v_offset,
+                "u_length": self.u_length,
+                "v_length": self.v_length,
+                "axis_system": self.axis_system,
+                "u_scale": self.u_scale,
+                "v_scale": self.v_scale,
+                "rotation": self.rotation,
+                "sphere_perimeter": self.sphere_perimeter,
+                "base_perimeter": self.base_perimeter,
+            }
+
+        def __eq__(self, other):
+            """Override equality to compare mapping operator properties."""
+            if isinstance(other, dict):
+                return self.__todict__() == other
+            elif isinstance(other, TextureLayer.TextureMappingOperator):
+                return self.__todict__() == other.__todict__()
+            else:
+                return NotImplemented
+
+        def __str__(self):
+            """Represent the mapping operator as string."""
+            return (
+                f"TextureMappingOperator(mapping_type={self.mapping_type},"
+                f"u_offset={self.u_offset}, "
+                f"v_offset={self.v_offset}, "
+                f"u_length={self.u_length}, "
+                f"v_length={self.v_length}, "
+                f"axis_system={self.axis_system}, "
+                f"u_scale={self.u_scale}, "
+                f"v_scale={self.v_scale}, "
+                f"rotation={self.rotation}), "
+                f"sphere_perimeter={self.sphere_perimeter},"
+                f"base_perimeter={self.base_perimeter})"
+            )
+
+    class TextureMappingByData:
+        """Texture mapping by data for a texture layer."""
+
+        def __init__(self, parent, default_parameters: Optional[MappingByData] = None):
+            self._parent = parent
+            if default_parameters and default_parameters.vertices_data_index is not None:
+                self.vertices_data_index = default_parameters.vertices_data_index
+
+        @property
+        def vertices_data_index(self) -> int:
+            """Index of the vertices data to use for texture mapping.
+
+            Returns
+            -------
+            int
+                Index of the vertices data.
+            """
+            return self._parent.vertices_data_index
+
+        @vertices_data_index.setter
+        def vertices_data_index(self, value: int):
+            """Set the index of the vertices data to use for texture mapping.
+
+            Parameters
+            ----------
+            value : int
+                Index of the vertices data.
+            """
+            self._parent.vertices_data_index = value
+
+    class _BaseTextureMap:
+        """Base class for texture mapping properties."""
+
+        def __init__(self, parent: TextureLayer, type: TextureTypes):
+            self._parent = parent
+            self._mapping = None
+            self._type = type
+
+        def _get_map_property(self):
+            """Return the protobuf map property matching the current texture type."""
+            if self._type == TextureTypes.image:
+                return self._parent._texture_template.image_properties
+            if self._type == TextureTypes.normal_map:
+                return self._parent._texture_template.normal_map_properties
+            if self._type == TextureTypes.anisotropy_map:
+                return self._parent._texture_template.anisotropy_map_properties
+            raise TypeError(f"Unsupported texture type for mapping: {self._type}")
+
+        @staticmethod
+        def _mapping_type_name(mapping_type: Union[MappingTypes, str]) -> str:
+            """Normalize mapping type input to the protobuf oneof field name."""
+            if isinstance(mapping_type, MappingTypes):
+                return mapping_type.value
+            return str(mapping_type)
+
+        def _set_mapping_operator(self, mapping_type: Union[MappingTypes, str]):
+            """Switch to operator-based mapping and set its projection type."""
+            map_property = self._get_map_property()
+            if map_property.HasField("vertices_data_index"):
+                map_property.ClearField("vertices_data_index")
+            map_property.mapping_operator.SetInParent()
+
+            mapping_type_name = self._mapping_type_name(mapping_type)
+            if mapping_type_name not in {"planar", "cubic", "spherical", "cylindrical"}:
+                raise ValueError(
+                    "Invalid mapping type. Must be one of 'planar', 'cubic', 'spherical', "
+                    "'cylindrical'."
+                )
+            getattr(map_property.mapping_operator, mapping_type_name).SetInParent()
+            self._mapping = TextureLayer.TextureMappingOperator(map_property.mapping_operator, None)
+            return self._mapping
+
+        @property
+        def mapping_properties(
+            self,
+        ) -> Optional[
+            Union[TextureLayer.TextureMappingByData, TextureLayer.TextureMappingOperator]
+        ]:
+            """Texture mapping properties for the texture layer."""
+            if self._mapping:
+                return self._mapping
+            if self._type == TextureTypes.image:
+                if self._parent._texture_template.image_properties.HasField("vertices_data_index"):
+                    self._mapping = self._parent.TextureMappingByData(
+                        self._parent._texture_template.image_properties, None
+                    )
+                else:
+                    self._mapping = self._parent.TextureMappingOperator(
+                        self._parent._texture_template.image_properties, None
+                    )
+            elif self._type == TextureTypes.normal_map:
+                if self._parent._sop_template.texture.normal_map_properties.HasField(
+                    "vertices_data_index"
+                ):
+                    self._mapping = self._parent.TextureMappingByData(
+                        self._parent._texture_template.normal_map_properties, None
+                    )
+                else:
+                    self._mapping = self._parent.TextureMappingOperator(
+                        self._parent._texture_template.normal_map_properties, None
+                    )
+            return self._mapping
+
+        def set_cylindrical_mapping(self):
+            """Set cylindrical mapping for the texture layer.
+
+            Returns
+            -------
+            TextureMappingOperator
+                The mapping operator for the cylindrical mapping.
+            """
+            return self._set_mapping_operator(MappingTypes.cylindrical)
+
+        def set_planar_mapping(self):
+            """Set planar mapping for the texture layer."""
+            return self._set_mapping_operator(MappingTypes.planar)
+
+        def set_cubic_mapping(self):
+            """Set cubic mapping for the texture layer."""
+            return self._set_mapping_operator(MappingTypes.cubic)
+
+        def set_spherical_mapping(self):
+            return self._set_mapping_operator(MappingTypes.spherical)
+
+        def set_mapping_by_data(self):
+            """Set mapping by vertices data index for the texture layer."""
+            map_property = self._get_map_property()
+            if map_property.HasField("mapping_operator"):
+                map_property.ClearField("mapping_operator")
+            if not map_property.HasField("vertices_data_index"):
+                map_property.vertices_data_index = 0
+            self._mapping = TextureLayer.TextureMappingByData(map_property, None)
+            return self._mapping
+
+    class ImageTexture(_BaseTextureMap):
+        """Image texture mapping properties."""
+
+        def __init__(
+            self, parent: TextureLayer, default_parameters: Optional[ImageTextureParameter] = None
+        ):
+            super().__init__(parent, TextureTypes.image)
+            if default_parameters:
+                if default_parameters.file_path:
+                    self.image_file_uri = default_parameters.file_path
+                self.repeat_u = default_parameters.repeat_u
+                self.repeat_v = default_parameters.repeat_v
+                if isinstance(default_parameters.mapping, MappingOperator):
+                    self._mapping = self._set_mapping_operator(
+                        default_parameters.mapping.mapping_type
+                    )
+                    # Set mapping properties based on the provided MappingOperator
+                    self._mapping.u_offset = default_parameters.mapping.u_offset
+                    self._mapping.v_offset = default_parameters.mapping.v_offset
+                    self._mapping.u_length = default_parameters.mapping.u_length
+                    if default_parameters.mapping.v_length:
+                        self._mapping.v_length = default_parameters.mapping.v_length
+                    self._mapping.axis_system = default_parameters.mapping.axis_system
+                    self._mapping.u_scale = default_parameters.mapping.u_scale
+                    self._mapping.v_scale = default_parameters.mapping.v_scale
+                    self._mapping.rotation = default_parameters.mapping.rotation
+                elif (
+                    default_parameters.mapping
+                    and default_parameters.mapping.vertices_data_index is not None
+                ):
+                    self._mapping = self.set_mapping_by_data()
+                    self._mapping.vertices_data_index = (
+                        default_parameters.mapping.vertices_data_index
+                    )
+
+        @property
+        def repeat_u(self) -> bool:
+            """Whether the texture repeats along the U direction."""
+            return self._parent._sop_template.texture.image.repeat_along_u
+
+        @repeat_u.setter
+        def repeat_u(self, value: bool):
+            self._parent._sop_template.texture.image.repeat_along_u = value
+
+        @property
+        def repeat_v(self) -> bool:
+            """Whether the texture repeats along the V direction."""
+            return self._parent._sop_template.texture.image.repeat_along_v
+
+        @repeat_v.setter
+        def repeat_v(self, value: bool):
+            self._parent._sop_template.texture.image.repeat_along_v = value
+
+        @property
+        def image_file_uri(self) -> Optional[str]:
+            """URI of the texture bitmap file."""
+            return self._parent._sop_template.texture.image.bitmap_file_uri
+
+        @image_file_uri.setter
+        def image_file_uri(self, value: Union[Path, str]):
+            """Set the texture bitmap file URI."""
+            if self._type == TextureTypes.image:
+                self._parent._sop_template.texture.image.bitmap_file_uri = str(value)
+
+    class NormalMap(_BaseTextureMap):
+        """Normal map texture mapping properties."""
+
+        def __init__(
+            self, parent: TextureLayer, default_parameters: Optional[ImageTextureParameter] = None
+        ):
+            super().__init__(parent, TextureTypes.normal_map)
+            if default_parameters:
+                if default_parameters.file_path:
+                    self.normal_map_file_uri = default_parameters.file_path
+                self.repeat_u = default_parameters.repeat_u
+                self.repeat_v = default_parameters.repeat_v
+                if isinstance(default_parameters.mapping, MappingOperator):
+                    self._mapping = self._set_mapping_operator(
+                        default_parameters.mapping.mapping_type
+                    )
+                    # Set mapping properties based on the provided MappingOperator
+                    self._mapping.u_offset = default_parameters.mapping.u_offset
+                    self._mapping.v_offset = default_parameters.mapping.v_offset
+                    self._mapping.u_length = default_parameters.mapping.u_length
+                    if default_parameters.mapping.v_length:
+                        self._mapping.v_length = default_parameters.mapping.v_length
+                    self._mapping.axis_system = default_parameters.mapping.axis_system
+                    self._mapping.u_scale = default_parameters.mapping.u_scale
+                    self._mapping.v_scale = default_parameters.mapping.v_scale
+                    self._mapping.rotation = default_parameters.mapping.rotation
+                elif (
+                    default_parameters.mapping
+                    and default_parameters.mapping.vertices_data_index is not None
+                ):
+                    self._mapping = self.set_mapping_by_data()
+                    self._mapping.vertices_data_index = (
+                        default_parameters.mapping.vertices_data_index
+                    )
+
+        @property
+        def repeat_u(self) -> bool:
+            """Whether the normal map repeats along the U direction."""
+            return self._parent._sop_template.texture.normal_map.repeat_along_u
+
+        @repeat_u.setter
+        def repeat_u(self, value: bool):
+            self._parent._sop_template.texture.normal_map.repeat_along_u = value
+
+        @property
+        def repeat_v(self) -> bool:
+            """Whether the normal map repeats along the V direction."""
+            return self._parent._sop_template.texture.normal_map.repeat_along_v
+
+        @repeat_v.setter
+        def repeat_v(self, value: bool):
+            self._parent._sop_template.texture.normal_map.repeat_along_v = value
+
+        @property
+        def normal_map_file_uri(self) -> Optional[str]:
+            """URI of the normal map source file."""
+            normal_map = self._parent._sop_template.texture.normal_map
+            if normal_map.HasField("from_image"):
+                return normal_map.from_image.bitmap_file_uri
+            if normal_map.HasField("from_normal_map"):
+                return normal_map.from_normal_map.normal_map_file_uri
+            return None
+
+        @normal_map_file_uri.setter
+        def normal_map_file_uri(self, value: Union[Path, str]):
+            """Set the normal map source file URI."""
+            normal_map = self._parent._sop_template.texture.normal_map
+            if normal_map.HasField("from_image"):
+                normal_map.from_image.bitmap_file_uri = str(value)
+            elif normal_map.HasField("from_normal_map"):
+                normal_map.from_normal_map.normal_map_file_uri = str(value)
+
+        @property
+        def roughness(self) -> Optional[float]:
+            """Roughness parameter of the normal map.
+
+            Returns
+            -------
+            Optional[float]
+                Roughness value when a normal map exists, otherwise ``None``.
+            """
+            if self._parent._sop_template.texture.HasField("normal_map"):
+                return self._parent._sop_template.texture.normal_map.roughness
+
+        @roughness.setter
+        def roughness(self, value: float):
+            """Set the roughness for the normal map.
+
+            Parameters
+            ----------
+            value : float
+                Roughness parameter to set.
+
+            Raises
+            ------
+            TypeError
+                If no normal map is defined.
+            """
+            if self._parent._sop_template.texture.HasField("normal_map"):
+                self._parent._sop_template.texture.normal_map.roughness = value
+            else:
+                raise TypeError("No Normal map defined")
+
+        def set_normal_map_from_image(self):
+            """Configure the normal map to be sourced from an image."""
+            temp = ""
+            if self.normal_map_file_uri:
+                temp = self.normal_map_file_uri
+            self._parent._sop_template.texture.normal_map.from_image.SetInParent()
+            if temp:
+                self.normal_map_file_uri = temp
+
+        def set_normal_map_from_normal_map(self):
+            """Configure the normal map to be sourced from a normal map file."""
+            temp = ""
+            if self.normal_map_file_uri:
+                temp = self.normal_map_file_uri
+            self._parent._sop_template.texture.normal_map.from_normal_map.SetInParent()
+            if temp:
+                self.normal_map_file_uri = temp
+
+    class AnisotropicMap(_BaseTextureMap):
+        """Anisotropy map texture mapping properties."""
+
+        def __init__(self, parent: TextureLayer, default_parameters=None):
+            super().__init__(parent, TextureTypes.anisotropy_map, default_parameters)
+
     @min_speos_version(25, 2, 0)
     def __init__(
         self,
@@ -530,9 +1191,9 @@ class TextureLayer(BaseSop):
         self._material_instance = opt_prop._material_instance
         self._material_instance.texture.SetInParent()
         self._texture_template = ProtoScene.MaterialInstance.Texture.Layer()
-        self._normal_map_props = None
-        self._image_props = None
-        self._aniso_props = None
+        self._normal_map = None
+        self._image_map = None
+        self._aniso_map = None
 
         self._index = None
 
@@ -553,10 +1214,9 @@ class TextureLayer(BaseSop):
             Texture layer parameters to apply.
         """
         if texture_layer_parameters.image_texture:
-            if texture_layer_parameters.image_texture_file_uri:
-                self.image_texture_file_uri = texture_layer_parameters.image_texture_file_uri
-            if texture_layer_parameters.image_texture_mapping:
-                self.image_property = texture_layer_parameters.image_texture_mapping
+            self._image_map = TextureLayer.ImageTexture(
+                self._texture_template, texture_layer_parameters.image_texture_parameters
+            )
         if texture_layer_parameters.normal_map:
             if texture_layer_parameters.normal_map_type == "from_image":
                 self.set_normal_map_from_image()
@@ -571,400 +1231,30 @@ class TextureLayer(BaseSop):
                 self.normal_map_property = texture_layer_parameters.normal_map_mapping
 
     @property
-    def sop_type(self) -> str:
-        """Surface optical property type for this texture layer.
-
-        Returns
-        -------
-        str
-            SOP type as string. Possible values: ``'mirror'``, ``'optical_polished'``,
-            ``'library'``.
-        """
-        if self._sop_template.HasField("mirror"):
-            return "mirror"
-        if self._sop_template.HasField("optical_polished"):
-            return "optical_polished"
-        if self._sop_template.HasField("library"):
-            return "library"
+    def image_texture(self) -> ImageTexture:
+        """Texture Properties of the Image Texture."""
+        return self._image_map
 
     @property
-    def roughness(self) -> Optional[float]:
-        """Roughness parameter of the normal map.
-
-        Returns
-        -------
-        Optional[float]
-            Roughness value when a normal map exists, otherwise ``None``.
-        """
-        if self._sop_template.HasField("texture"):
-            if self._sop_template.texture.HasField("normal_map"):
-                return self._sop_template.texture.normal_map.roughness
-
-    @roughness.setter
-    def roughness(self, value: float):
-        """Set the roughness for the normal map.
-
-        Parameters
-        ----------
-        value : float
-            Roughness parameter to set.
-
-        Raises
-        ------
-        TypeError
-            If no normal map is defined.
-        """
-        if self._sop_template.HasField("texture"):
-            if self._sop_template.texture.HasField("normal_map"):
-                self._sop_template.texture.normal_map.roughness = value
-            else:
-                raise TypeError("No Normal map defined")
-        else:
-            raise TypeError("No texture and normal map defined")
+    def normal_map(self) -> NormalMap:
+        """Texture properties of the normal map."""
+        return self._normal_map
 
     @property
-    def image_texture_file_uri(self) -> Optional[str]:
-        """URI of the image texture bitmap.
+    def anisotropic_map(self) -> AnisotropicMap:
+        """Anisotropy map mapping properties."""
+        return self._aniso_map
 
-        Returns
-        -------
-        Optional[str]
-            File path or URI of the image texture bitmap when defined, otherwise
-            ``None``.
-        """
-        if self._sop_template.HasField("texture"):
-            if self._sop_template.texture.HasField("image"):
-                return self._sop_template.texture.image.bitmap_file_uri
-
-    @image_texture_file_uri.setter
-    def image_texture_file_uri(self, value: Union[Path, str]):
-        """Set the image texture file URI.
-
-        Parameters
-        ----------
-        value : Union[str, Path]
-            File path or URI to the image texture bitmap.
-        """
-        if self._sop_template.HasField("texture"):
-            if self._sop_template.texture.HasField("image"):
-                self._sop_template.texture.image.bitmap_file_uri = str(value)
-            else:
-                self._sop_template.texture.image.SetInParent()
-                self._sop_template.texture.image.bitmap_file_uri = str(value)
-        else:
-            self._sop_template.texture.SetInParent()
-            self._sop_template.texture.image.SetInParent()
-            self._sop_template.texture.image.bitmap_file_uri = str(value)
-
-    @property
-    def normal_map_file_uri(self) -> Optional[str]:
-        """URI for the normal map source.
-
-        Returns
-        -------
-        Optional[str]
-            File path or URI of the normal map source (image or normal_map),
-            or ``None`` when not defined.
-        """
-        if self._sop_template.HasField("texture"):
-            if self._sop_template.texture.HasField("normal_map"):
-                if self._sop_template.texture.normal_map.HasField("from_image"):
-                    return self._sop_template.texture.normal_map.from_image.bitmap_file_uri
-                if self._sop_template.texture.normal_map.HasField("from_normal_map"):
-                    return self._sop_template.texture.normal_map.from_normal_map.normal_map_file_uri
-
-    @normal_map_file_uri.setter
-    def normal_map_file_uri(self, value: Union[Path, str]):
-        """Set the normal map file URI.
-
-        Parameters
-        ----------
-        value : Union[str, Path]
-            File path or URI of the normal map.
-
-        Raises
-        ------
-        TypeError
-            If the normal map source type has not been set.
-        """
-        if self._sop_template.texture.normal_map.HasField("from_image"):
-            self._sop_template.texture.normal_map.from_image.bitmap_file_uri = str(value)
-        elif self._sop_template.texture.normal_map.HasField("from_normal_map"):
-            self._sop_template.texture.normal_map.from_normal_map.normal_map_file_uri = str(value)
-        else:
-            raise TypeError("Please use set normal_map type before")
-
-    @property
-    def normal_map_property(self) -> Optional[Union[MappingByData, MappingOperator]]:
-        """Texture mapping properties for the normal map.
-
-        Returns
-        -------
-        Optional[Union[MappingByData, MappingOperator]]
-            Mapping properties (either ``MappingByData`` or ``MappingOperator``)
-            when defined, otherwise ``None``.
-        """
-        if self._sop_template.texture.HasField("normal_map"):
-            if self._texture_template.HasField("normal_map_properties"):
-                if self._normal_map_props:
-                    return self._normal_map_props
-                elif self._texture_template.normal_map_properties.HasField("vertices_data_index"):
-                    self._normal_map_props = MappingByData(
-                        repeat_u=self._sop_template.texture.image.repeat_along_u,
-                        repeat_v=self._sop_template.texture.image.repeat_along_v,
-                        vertices_data_index=self._texture_template.normal_map_properties.vertices_data_index,
-                    )
-                    return self._normal_map_props
-                else:
-                    cur_mapping_opp = self._texture_template.normal_map_properties.mapping_operator
-                    perimeter = 1
-                    for mapping_type in MappingTypes:
-                        if cur_mapping_opp.HasField(mapping_type):
-                            cur_type = mapping_type
-                            if cur_type == MappingTypes.cylindrical:
-                                perimeter = cur_mapping_opp.cylindrical.base_perimeter
-                            elif cur_type == MappingTypes.spherical:
-                                perimeter = cur_mapping_opp.spherical.sphere_perimeter
-                    self._normal_map_props = MappingOperator(
-                        mapping_type=cur_type,
-                        repeat_u=self._sop_template.texture.normal_map.repeat_along_u,
-                        repeat_v=self._sop_template.texture.normal_map.repeat_along_v,
-                        u_length=cur_mapping_opp.u_length,
-                        v_length=cur_mapping_opp.v_length
-                        if cur_mapping_opp.HasField("v_length")
-                        else None,
-                        axis_system=cur_mapping_opp.axis_system,
-                        u_scale=cur_mapping_opp.u_scale_factor,
-                        v_scale=cur_mapping_opp.v_scale_factor,
-                        rotation=cur_mapping_opp.rotation,
-                        perimeter=perimeter,
-                    )
-                    return self._normal_map_props
-
-    @normal_map_property.setter
-    def normal_map_property(self, value: Union[MappingByData, MappingOperator]):
-        """Set normal map mapping properties.
-
-        Parameters
-        ----------
-        value : Union[MappingByData, MappingOperator]
-            Mapping information to apply.
-
-        Raises
-        ------
-        ValueError
-            If the provided value is not a valid mapping object.
-        """
-        if isinstance(value, MappingOperator):
-            self._normal_map_props = value
-            mapping_op = self._texture_template.normal_map_properties.mapping_operator
-            self._sop_template.texture.image.repeat_along_u = value.repeat_u
-            self._sop_template.texture.image.repeat_along_v = value.repeat_v
-            match value.mapping_type:
-                case MappingTypes.planar:
-                    mapping_op.planar.SetInParent()
-                case MappingTypes.cubic:
-                    mapping_op.cubic.SetInParent()
-                case MappingTypes.spherical:
-                    mapping_op.spherical.SetInParent()
-                    mapping_op.spherical.sphere_perimeter = value.perimeter
-                case MappingTypes.cylindrical:
-                    mapping_op.cylindrical.SetInParent()
-                    mapping_op.cylindrical.base_perimeter = value.perimeter
-            mapping_op.u_length = value.u_length
-            if value.v_length:
-                mapping_op.v_length = value.v_length
-            mapping_op.ClearField("axis_system")
-            mapping_op.axis_system[:] = value.axis_system
-            mapping_op.rotation = value.rotation
-            mapping_op.u_scale_factor = value.u_scale
-            mapping_op.v_scale_factor = value.v_scale
-        elif isinstance(value, MappingByData):
-            self._normal_map_props = value
-            self._sop_template.texture.image.repeat_along_u = value.repeat_u
-            self._sop_template.texture.image.repeat_along_v = value.repeat_v
-            self._texture_template.normal_map_properties.vertices_data_index = (
-                value.vertices_data_index
+    def set_image_texture(self):
+        """Activate Image texture in this texture layer."""
+        if self._image_map:
+            return self._image_map
+        if self._texture_template.HasField("image_properties"):
+            self._image_map = TextureLayer.ImageTexture(
+                self._texture_template, default_parameters=None
             )
         else:
-            raise ValueError("please provide valid data")
-
-    @property
-    def image_property(self) -> Optional[Union[MappingByData, MappingOperator]]:
-        """Texture mapping properties for the image texture.
-
-        Returns
-        -------
-        Optional[Union[MappingByData, MappingOperator]]
-            Mapping properties when defined, otherwise ``None``.
-        """
-        if self._sop_template.texture.HasField("image"):
-            if self._texture_template.HasField("image_properties"):
-                if self._image_props:
-                    return self._image_props
-                elif self._texture_template.image_properties.HasField("vertices_data_index"):
-                    self._image_props = MappingByData(
-                        repeat_u=self._sop_template.texture.image.repeat_along_u,
-                        repeat_v=self._sop_template.texture.image.repeat_along_v,
-                        vertices_data_index=self._texture_template.image_properties.vertices_data_index,
-                    )
-                    return self._image_props
-                else:
-                    cur_mapping_opp = self._texture_template.image_properties.mapping_operator
-                    perimeter = 1
-                    for mapping_type in MappingTypes:
-                        if cur_mapping_opp.HasField(mapping_type):
-                            cur_type = mapping_type
-                            if cur_type == MappingTypes.cylindrical:
-                                perimeter = cur_mapping_opp.cylindrical.base_perimeter
-                            elif cur_type == MappingTypes.spherical:
-                                perimeter = cur_mapping_opp.spherical.sphere_perimeter
-                    self._image_props = MappingOperator(
-                        mapping_type=cur_type,
-                        repeat_u=self._sop_template.texture.image.repeat_along_u,
-                        repeat_v=self._sop_template.texture.image.repeat_along_v,
-                        u_length=cur_mapping_opp.u_length,
-                        v_length=cur_mapping_opp.v_length
-                        if cur_mapping_opp.HasField("v_length")
-                        else None,
-                        axis_system=cur_mapping_opp.axis_system,
-                        u_scale=cur_mapping_opp.u_scale_factor,
-                        v_scale=cur_mapping_opp.v_scale_factor,
-                        rotation=cur_mapping_opp.rotation,
-                        perimeter=perimeter,
-                    )
-                    return self._image_props
-
-    @image_property.setter
-    def image_property(self, value: Union[MappingByData, MappingOperator]):
-        """Set image texture mapping properties.
-
-        Parameters
-        ----------
-        value : Union[MappingByData, MappingOperator]
-            Mapping information to apply.
-
-        Raises
-        ------
-        ValueError
-            If the provided value is not a valid mapping object.
-        """
-        if isinstance(value, MappingOperator):
-            self._image_props = value
-            mapping_op = self._texture_template.image_properties.mapping_operator
-            self._sop_template.texture.image.repeat_along_u = value.repeat_u
-            self._sop_template.texture.image.repeat_along_v = value.repeat_v
-            match value.mapping_type:
-                case MappingTypes.planar:
-                    mapping_op.planar.SetInParent()
-                case MappingTypes.cubic:
-                    mapping_op.cubic.SetInParent()
-                case MappingTypes.spherical:
-                    mapping_op.spherical.SetInParent()
-                    mapping_op.spherical.sphere_perimeter = value.perimeter
-                case MappingTypes.cylindrical:
-                    mapping_op.cylindrical.SetInParent()
-                    mapping_op.cylindrical.base_perimeter = value.perimeter
-            mapping_op.u_length = value.u_length
-            if value.v_length:
-                mapping_op.v_length = value.v_length
-            mapping_op.ClearField("axis_system")
-            mapping_op.axis_system[:] = value.axis_system
-            mapping_op.rotation = value.rotation
-            mapping_op.u_scale_factor = value.u_scale
-            mapping_op.v_scale_factor = value.v_scale
-        elif isinstance(value, MappingByData):
-            self._image_props = value
-            self._sop_template.texture.image.repeat_along_u = value.repeat_u
-            self._sop_template.texture.image.repeat_along_v = value.repeat_v
-            self._texture_template.image_properties.vertices_data_index = value.vertices_data_index
-        else:
-            raise ValueError("please provide valid data")
-
-    @property
-    def anisotropic_property(self) -> Optional[Union[MappingByData, MappingOperator]]:
-        """Anisotropy map mapping properties.
-
-        Returns
-        -------
-        Optional[Union[MappingByData, MappingOperator]]
-            Mapping properties when defined, otherwise ``None``.
-        """
-        if self._texture_template.HasField("anisotropy_map_properties"):
-            if self._aniso_props:
-                return self._aniso_props
-            elif self._texture_template.anisotropy_map_properties.HasField("vertices_data_index"):
-                self._aniso_props = MappingByData(
-                    vertices_data_index=self._texture_template.anisotropy_map_properties.vertices_data_index,
-                )
-                return self._aniso_props
-            else:
-                cur_mapping_opp = self._texture_template.anisotropy_map_properties.mapping_operator
-                perimeter = 1
-                for mapping_type in MappingTypes:
-                    if cur_mapping_opp.HasField(mapping_type):
-                        cur_type = mapping_type
-                        if cur_type == MappingTypes.cylindrical:
-                            perimeter = cur_mapping_opp.cylindrical.base_perimeter
-                        elif cur_type == MappingTypes.spherical:
-                            perimeter = cur_mapping_opp.spherical.sphere_perimeter
-                self._aniso_props = MappingOperator(
-                    mapping_type=cur_type,
-                    u_length=1,
-                    axis_system=cur_mapping_opp.axis_system,
-                    rotation=cur_mapping_opp.rotation,
-                    perimeter=perimeter,
-                )
-                return self._aniso_props
-
-    @anisotropic_property.setter
-    def anisotropic_property(self, value: Union[MappingByData, MappingOperator]):
-        """Set anisotropy map mapping properties.
-
-        Parameters
-        ----------
-        value : Union[MappingByData, MappingOperator]
-            Mapping information to apply.
-
-        Raises
-        ------
-        ValueError
-            If the provided value is not a valid mapping object.
-        """
-        if isinstance(value, MappingOperator):
-            self._aniso_props = value
-            mapping_op = self._texture_template.anisotropy_map_properties.mapping_operator
-            match value.mapping_type:
-                case MappingTypes.planar:
-                    mapping_op.planar.SetInParent()
-                case MappingTypes.cubic:
-                    mapping_op.cubic.SetInParent()
-                case MappingTypes.spherical:
-                    mapping_op.spherical.SetInParent()
-                    mapping_op.spherical.sphere_perimeter = value.perimeter
-                case MappingTypes.cylindrical:
-                    mapping_op.cylindrical.SetInParent()
-                    mapping_op.cylindrical.base_perimeter = value.perimeter
-            mapping_op.ClearField("axis_system")
-            mapping_op.axis_system[:] = value.axis_system
-            mapping_op.rotation = value.rotation
-        elif isinstance(value, MappingByData):
-            self._aniso_props = value
-            self._texture_template.image_properties.vertices_data_index = value.vertices_data_index
-        else:
-            raise ValueError("please provide valid data")
-
-    def set_normal_map_from_image(self):
-        """Configure the normal map to be sourced from an image."""
-        self._sop_template.texture.SetInParent()
-        self._sop_template.texture.normal_map.SetInParent()
-        self._sop_template.texture.normal_map.from_image.SetInParent()
-
-    def set_normal_map_from_normal_map(self):
-        """Configure the normal map to be sourced from a normal map file."""
-        self._sop_template.texture.SetInParent()
-        self._sop_template.texture.normal_map.SetInParent()
-        self._sop_template.texture.normal_map.from_normal_map.SetInParent()
+            self._image_map = TextureLayer.ImageTexture(self._texture_template)
 
     def commit(self) -> "TextureLayer":
         """Save or update the SOP template on the Speos server.
@@ -999,9 +1289,9 @@ class TextureLayer(BaseSop):
         # Reset sop template
         if self.sop_template_link is not None:
             self._sop_template = self.sop_template_link.get()
-            self._normal_map_props = None
-            self._aniso_props = None
-            self._image_props = None
+            self._normal_map = None
+            self._aniso_map = None
+            self._image_map = None
         if self._project.scene_link is not None:
             scene_data = self._project.scene_link.get()
             mat_inst = next(

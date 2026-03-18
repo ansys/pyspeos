@@ -161,7 +161,7 @@ class MappingOperator:
     """Store all information needed to create a UV mapping."""
 
     mapping_type: Union[MappingTypes]
-    u_length: float
+    u_length: float = 10
     v_length: Optional[float] = None
     repeat_v: bool = True
     repeat_u: bool = True
@@ -227,6 +227,16 @@ class NormalMapTypes(str, Enum):
 
 
 @dataclass
+class ImageTextureParameter:
+    """Parameters of an image based texture."""
+
+    file_path: Union[str, Path] = ""
+    repeat_u: bool = True
+    repeat_v: bool = True
+    mapping: [Union[MappingOperator, MappingByData]] = field(default_factory=MappingOperator)
+
+
+@dataclass
 class TextureLayerParameters:
     """Texture layer parameters dataclass.
 
@@ -236,44 +246,37 @@ class TextureLayerParameters:
         SOP parameters to apply on the texture layer.
     image_texture: bool
         Whether the texture layer is an image texture or not.
-    image_texture_file_uri: Optional[Union[str, Path]]
-        Path to the image texture file if image_texture is True.
-    image_texture_mapping: Optional[Union[MappingOperator, MappingByData]]
-        Mapping parameters to apply on the image texture if image_texture is True.
     normal_map: bool
         Whether the texture layer is a normal map or not.
     normal_map_type: Optional[NormalMapTypes]
         Type of normal map to apply if normal_map is True.
-    normal_map_file_uri: Optional[Union[str, Path]]
-        Path to the normal map file if normal_map is True and normal_map_type is from_normal_map.
     normal_map_mapping: Optional[Union[MappingOperator, MappingByData]]
         Mapping parameters to apply on the normal map if normal_map is True and normal_map_type
         is from_normal_map.
     anisotropy_map: bool
         Whether the texture layer is an anisotropy map or not.
-    anisotropy_map_mapping: Optional[Union[MappingOperator, MappingByData]]
+    anisotropy_map_parameters: Optional[Union[MappingOperator, MappingByData]]
         Mapping parameters to apply on the anisotropy map if anisotropy_map is True.
 
     """
 
-    sop_parameters: Optional[SopParameters] = SopParameters()
+    sop_parameters: Optional[SopParameters] = field(default_factory=SopParameters)
     image_texture: bool = False
-    image_texture_file_uri: Optional[Union[str, Path]] = None
-    image_texture_mapping: Optional[Union[MappingOperator, MappingByData]] = None
+    image_texture_parameters: Optional[ImageTextureParameter] = None
     normal_map: bool = False
     normal_map_type: Optional[NormalMapTypes] = None
-    normal_map_file_uri: Optional[Union[str, Path]] = None
+    normal_map_parameters: Optional[ImageTextureParameter] = None
     normal_map_mapping: Optional[Union[MappingOperator, MappingByData]] = None
     anisotropy_map: bool = False
-    anisotropy_map_mapping: Optional[Union[MappingOperator, MappingByData]] = None
+    anisotropy_map_parameters: Optional[Union[MappingOperator, MappingByData]] = None
 
 
 @dataclass
 class OptPropParameters:
     """store default values for optical properties."""
 
-    sop_parameters: Optional[SopParameters] = SopParameters()
-    vop_parameters: Optional[VopParameters] = VopParameters()
+    sop_parameters: Optional[SopParameters] = field(default_factory=SopParameters)
+    vop_parameters: Optional[VopParameters] = field(default_factory=VopParameters)
     texture_parameters: Optional[List[TextureLayerParameters]] = None
 
 
