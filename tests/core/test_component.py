@@ -230,6 +230,7 @@ def test_reset_lightbox(speos: Speos):
     )
     lightbox_1 = p.find(name=".*", name_regex=True, feature_type=LightBox)[0]
     lightbox_1.axis_system = ORIGIN
+    lightbox_1.__str__().startswith("local")
     assert lightbox_1.axis_system == ORIGIN
     lightbox_1.reset()
     assert lightbox_1.axis_system == [
