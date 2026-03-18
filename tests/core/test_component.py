@@ -63,6 +63,21 @@ def test_create_lightbox(speos: Speos):
             lightbox.name, p.client[lightbox._scene_instance.scene_guid].get().sources[0].name
         )
     ]
+
+    with pytest.raises(
+        ValueError,
+        match="Lightbox: Light Box Import.1 has a conflict name with an existing feature.",
+    ):
+        p.create_lightbox_import(name="Light Box Import.1")
+
+    assert isinstance(lightbox.visual_data, list)
+    assert all([type(data).__name__ == "_VisualData" for data in lightbox.visual_data])
+
+    out_dict = lightbox._to_dict()
+    assert out_dict["name"] == "Light Box Import.1"
+    assert out_dict["scene"]["sources"][0]["name"] == "Surface.2:1"
+    assert lightbox.get("name") == "Light Box Import.1"
+
     lightbox.delete()
 
 
@@ -73,11 +88,15 @@ def test_load_lightbox(speos: Speos):
         speos=speos,
         path=Path(test_path) / "lightbox" / "Direct.1.speos",
     )
-    assert len(p.find(name=".*", name_regex=True, feature_type=LightBox)) != 0
-    lightbox = p.find(name=".*", name_regex=True, feature_type=LightBox)[0]
+    assert len(p.find(name=".*", name_regex=True, feature_type=LightBox)) == 2
+    lightbox_1 = p.find(name=".*", name_regex=True, feature_type=LightBox)[0]
+    lightbox_2 = p.find(name=".*", name_regex=True, feature_type=LightBox)[1]
     simulation = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
-    assert lightbox.name == "3"
-    assert lightbox.axis_system == [
+    assert lightbox_1.name == "3"
+    assert lightbox_2.name == "Light Box Import.2"
+    assert lightbox_1.name == lightbox_1.get(key="name")
+    assert lightbox_2.name == lightbox_2.get(key="name")
+    assert lightbox_1.axis_system == [
         -40.99999999999999,
         -89.0,
         0.0,
@@ -91,9 +110,72 @@ def test_load_lightbox(speos: Speos):
         0.0,
         1.0,
     ]
-    assert lightbox.source_paths == ["3/Surface.1:258"]
-    assert lightbox._scene_instance.name == "3"
-    assert lightbox._scene_instance.axis_system == [
+    assert lightbox_2.axis_system == [
+        -40.99999999999999,
+        -167.53,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+    ]
+    assert lightbox_1.source_paths == ["3/Surface.1:258"]
+    assert lightbox_2.source_paths == [
+        "Light Box Import.2/Surface.2:1",
+        "Light Box Import.2/Ray-file.1:12",
+    ]
+    assert lightbox_1._scene_instance.name == "3"
+    assert lightbox_1._scene_instance.axis_system == [
+        -40.99999999999999,
+        -89.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+    ]
+    assert len(simulation._simulation_instance.source_paths) == 3
+    assert simulation._simulation_instance.source_paths == [
+        "3/Surface.1:258",
+        "Light Box Import.2/Surface.2:1",
+        "Light Box Import.2/Ray-file.1:12",
+    ]
+
+    # modify the lightbox which will remove the old source path
+    new_lightbox = LightBoxFileInstance(
+        file=Path(test_path) / "lightbox" / "Light Box Export.2.SPEOSLightBox",
+    )
+    lightbox_1.set_speos_light_box(new_lightbox)
+    lightbox_1.commit()
+
+    assert lightbox_1.name == "3"
+    assert lightbox_1.axis_system == [
+        -40.99999999999999,
+        -89.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+    ]
+    assert lightbox_1.source_paths == ["3/Surface.2:1"]
+    assert lightbox_1._scene_instance.name == "3"
+    assert lightbox_1._scene_instance.axis_system == [
         -40.99999999999999,
         -89.0,
         0.0,
@@ -109,18 +191,40 @@ def test_load_lightbox(speos: Speos):
     ]
     assert len(simulation._simulation_instance.source_paths) == 2
     assert simulation._simulation_instance.source_paths == [
-        "3/Surface.1:258",
         "Light Box Import.2/Surface.2:1",
+        "Light Box Import.2/Ray-file.1:12",
     ]
 
-    new_lightbox = LightBoxFileInstance(
-        file=Path(test_path) / "lightbox" / "Light Box Export.2.SPEOSLightBox",
+    # modify the lightbox which will keep the source paths if still in new lightbox
+    simulation.set_source_paths(
+        [
+            "Light Box Import.2/Surface.2:1",
+            "Light Box Import.2/Ray-file.1:12",
+            "3/Surface.2:1",
+        ]
     )
-    lightbox.set_speos_light_box(new_lightbox)
-    lightbox.commit()
+    simulation.commit()
+    assert len(simulation._simulation_instance.source_paths) == 3
+    lightbox_2.set_speos_light_box(new_lightbox)
+    lightbox_2.commit()
+    assert len(simulation._simulation_instance.source_paths) == 2
+    assert simulation._simulation_instance.source_paths == [
+        "Light Box Import.2/Surface.2:1",
+        "3/Surface.2:1",
+    ]
 
-    assert lightbox.name == "3"
-    assert lightbox.axis_system == [
+
+def test_reset_lightbox(speos: Speos):
+    """Test load a simulation with lightbox inside."""
+    p = Project(
+        speos=speos,
+        path=Path(test_path) / "lightbox" / "Direct.1.speos",
+    )
+    lightbox_1 = p.find(name=".*", name_regex=True, feature_type=LightBox)[0]
+    lightbox_1.axis_system = ORIGIN
+    assert lightbox_1.axis_system == ORIGIN
+    lightbox_1.reset()
+    assert lightbox_1.axis_system == [
         -40.99999999999999,
         -89.0,
         0.0,
@@ -134,21 +238,3 @@ def test_load_lightbox(speos: Speos):
         0.0,
         1.0,
     ]
-    assert lightbox.source_paths == ["3/Surface.2:1"]
-    assert lightbox._scene_instance.name == "3"
-    assert lightbox._scene_instance.axis_system == [
-        -40.99999999999999,
-        -89.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-    ]
-    assert len(simulation._simulation_instance.source_paths) == 1
-    assert simulation._simulation_instance.source_paths == ["Light Box Import.2/Surface.2:1"]

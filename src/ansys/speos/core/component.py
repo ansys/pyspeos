@@ -191,7 +191,8 @@ class LightBox:
             List of source_paths of source included in lightbox.
 
         """
-        return ["{}/{}".format(self.name, source["name"]) for source in self.get(key="sources")]
+        sources_data = self._project.client[self._scene_instance.scene_guid].get().sources
+        return ["{}/{}".format(self.name, data.name) for data in sources_data]
 
     @property
     def name(self) -> str:
@@ -251,7 +252,11 @@ class LightBox:
         ):
             if any(self.name in path for path in simulation._simulation_instance.source_paths):
                 current_sources = simulation._simulation_instance.source_paths
-                simulation.set_source_paths([x for x in current_sources if self.name not in x])
+                new_sources = []
+                for source in current_sources:
+                    if (self.name not in source) or (source in self.source_paths):
+                        new_sources.append(source)
+                simulation.set_source_paths(new_sources)
         return self
 
     def commit(self) -> LightBox:
