@@ -284,8 +284,6 @@ def test_create_interactive(speos: Speos):
 
     # Default value
     sim1 = p.create_simulation(name="Interactive.1", feature_type=SimulationInteractive)
-    sim1 = SimulationInteractive(project=p, name="Interactive.1")
-    # sim1.set_interactive()  # do not commit to avoid issues about No sensor in simulation
     assert sim1._simulation_template.HasField("interactive_simulation_template")
     assert sim1._simulation_template.interactive_simulation_template.geom_distance_tolerance == 0.01
     assert sim1._simulation_template.interactive_simulation_template.max_impact == 100

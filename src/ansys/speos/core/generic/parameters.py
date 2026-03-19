@@ -799,11 +799,11 @@ class InverseSimulationParameters:
 
     ambient_material_uri: Union[str, Path] = ""
     light_expoert: bool = False
-    stop_condition_passes_number: int = 200000
+    stop_condition_passes_number: int = 5
     stop_condition_duration: Optional[int] = None
     automatic_save_frequency: int = 1800
     colorimetric_standard: ColorimetricStandardTypes = ColorimetricStandardTypes.cie_1931
-    dispersion: bool = True
+    dispersion: bool = False
     geom_distance_tolerance: float = 0.01
     max_impact: int = 100
     splitting: bool = False
