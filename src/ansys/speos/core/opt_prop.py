@@ -886,7 +886,7 @@ class TextureLayer(BaseSop):
                     "'cylindrical'."
                 )
             getattr(map_property.mapping_operator, mapping_type_name).SetInParent()
-            self._mapping = TextureLayer.TextureMappingOperator(map_property.mapping_operator, None)
+            self._mapping = TextureLayer.TextureMappingOperator(map_property, None)
             return self._mapping
 
         @property

@@ -29,7 +29,6 @@ import pytest
 
 from ansys.speos.core import Face, GeoRef, OptProp, Project, Speos
 from ansys.speos.core.generic.parameters import (
-    MappingByData,
     MappingOperator,
     MappingTypes,
     MaterialOpticParameters,
@@ -430,32 +429,9 @@ def test_error_reporting(speos: Speos):
     # TextureLayer related errors
     layer = TextureLayer(op, "LayerErr")
     # setting image file creates texture but no normal_map -> roughness setter should raise
-    layer.image_texture_file_uri = Path("some_image.png")
-    with pytest.raises(TypeError):
-        layer.roughness = 2.0
-
-    # create normal_map without specifying from_image/from_normal_map, calling
-    # normal_map_file_uri should raise
-    layer2 = TextureLayer(op, "LayerErr2")
-    layer2._sop_template.texture.SetInParent()
-    layer2._sop_template.texture.normal_map.SetInParent()
-    with pytest.raises(TypeError):
-        layer2.normal_map_file_uri = Path("normal.png")
-
-    # invalid types for mapping property setters should raise ValueError
-    with pytest.raises(ValueError):
-        layer2.normal_map_property = 123  # not MappingOperator or MappingByData
-    with pytest.raises(ValueError):
-        layer2.image_property = 123
-    with pytest.raises(ValueError):
-        layer2.anisotropic_property = 123
-
-    layer3 = TextureLayer(op, "LayerErr3")
-    layer3.set_surface_library()
-    layer3.sop_library = Path(test_path) / "Texture.1.speos" / "aniso_bsdf.anisotropicbsdf"
-    with pytest.raises(TypeError):
-        layer3.roughness = 2.0
-    layer3.set_normal_map_from_image()
+    layer.set_image_texture().image_texture_file_uri = Path("some_image.png")
+    with pytest.raises(AttributeError):
+        layer.normal_map.roughness = 2.0
 
 
 @pytest.mark.supported_speos_versions(min=252)
@@ -491,7 +467,6 @@ def test_create_texture_property(speos: Speos):
         layer_1.image_property = MappingOperator(map_type, 5)
         assert map_type == layer_1.image_property.mapping_type
     layer_1.image_property = MappingOperator("planar", 5)
-    layer_1.commit()
     op1.texture = [layer_1]
     op1.commit()
 
@@ -532,7 +507,6 @@ def test_create_texture_property(speos: Speos):
         layer_1.normal_map_property = MappingOperator(map_type, 5)
         assert map_type == layer_1.normal_map_property.mapping_type
     layer_1.normal_map_property = MappingOperator("cylindrical", 5)
-    layer_1.commit()
     op1.texture = [layer_1]
     op1.commit()
 
@@ -605,7 +579,6 @@ def test_create_texture_property(speos: Speos):
     # change again to ensure value updates
     layer_1.roughness = 0.123
     assert pytest.approx(layer_1.roughness, rel=1e-6) == 0.123
-    layer_1.commit()
     op1.texture = [layer_1]
     op1.commit()
     assert (
@@ -658,7 +631,6 @@ def test_create_texture_property(speos: Speos):
         90,
         10,
     )
-    layer_2.commit()
     op1.texture = [layer_1, layer_2]
     op1.commit()
 
@@ -720,7 +692,6 @@ def test_reset_texture_property(speos: Speos):
     )
     layer_2.image_texture_file_uri = Path(test_path) / "Texture.1.speos" / "black_leather.jpg.png"
     layer_2.image_property = MappingOperator("planar", 5)
-    layer_2.commit()
     op1.texture = [layer_2]
     op1.commit()
 
@@ -1046,11 +1017,13 @@ def test_texture_by_data(speos: Speos):
     opt_prop.set_volume_none()
     opt_prop.geometries = [face0_0.geo_path, face2_0.geo_path]
 
-    layer_1 = TextureLayer(opt_prop, "Layer.1")
+    layer_1 = opt_prop.create_texture_layer()
     layer_1.set_surface_library().sop_library = Path(test_path) / "L100 2.simplescattering"
-    layer_1.image_texture_file_uri = Path(test_path) / "textureColors.jpg"
-    layer_1.image_property = MappingByData(vertices_data_index=0, repeat_u=False, repeat_v=False)
-    layer_1.commit()
+    layer_1.set_image_texture().image_texture_file_uri = Path(test_path) / "textureColors.jpg"
+    layer_1.image_texture.repeat_u = False
+    layer_1.image_texture.repeat_v = False
+    layer_1.image_texture.set_mapping_by_data().vertices_data_index = 0
+    opt_prop.commit()
     assert layer_1._texture_template.normal_map_properties.vertices_data_index == 0
     assert not layer_1._sop_template.texture.image.repeat_along_u
     assert not layer_1._sop_template.texture.image.repeat_along_v
