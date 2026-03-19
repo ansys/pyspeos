@@ -160,16 +160,16 @@ class SopTypes(str, Enum):
 class MappingOperator:
     """Store all information needed to create a UV mapping."""
 
-    mapping_type: Union[MappingTypes]
+    mapping_type: Union[MappingTypes] = MappingTypes.planar
     u_length: float = 10
     v_length: Optional[float] = None
-    repeat_v: bool = True
-    repeat_u: bool = True
+    u_offset: float = 0
+    v_offset: float = 0
     axis_system: list[float] = field(default_factory=lambda: ORIGIN)
     u_scale: float = 1
     v_scale: float = 1
     rotation: float = 0
-    perimeter: float = 1
+    perimeter: Optional[float] = None
 
 
 @dataclass
@@ -234,6 +234,14 @@ class ImageTextureParameter:
     repeat_u: bool = True
     repeat_v: bool = True
     mapping: [Union[MappingOperator, MappingByData]] = field(default_factory=MappingOperator)
+
+
+@dataclass
+class NormalMapParameter(ImageTextureParameter):
+    """Parameters of a normal map based texture."""
+
+    normal_map_type: NormalMapTypes = NormalMapTypes.from_image
+    """Mapping parameters to apply on the normal map if normal_map_type is from_normal_map."""
 
 
 @dataclass
