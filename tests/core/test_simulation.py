@@ -751,7 +751,7 @@ def test_reset(speos: Speos):
 
     # Create + commit
 
-    sim1 = SimulationDirect(project=p, name="Direct.1")
+    sim1 = p.create_simulation(name="Direct.1", feature_type=SimulationDirect)
     sim1.sensor_paths = [ssr._name]
     sim1.source_paths = [src._name]
     sim1.commit()
@@ -1043,7 +1043,7 @@ def test_delete(speos: Speos):
     src.commit()
 
     # Create + commit
-    sim1 = SimulationDirect(project=p, name="Direct.1")
+    sim1 = p.create_simulation(name="Direct.1", feature_type=SimulationDirect)
     sim1.sensor_paths = [ssr._name]
     sim1.source_paths = [src._name]
     sim1.commit()
