@@ -37,6 +37,13 @@ from ansys.api.speos.scene.v2 import scene_pb2 as messages
 from ansys.api.speos.simulation.v1 import simulation_template_pb2
 
 from ansys.speos.core.generic.general_methods import min_speos_version
+from ansys.speos.core.generic.parameters import (
+    ColorimetricStandardTypes,
+    DirectSimulationParameters,
+    InteractiveSimulationParameters,
+    InverseSimulationParameters,
+    VirtualBSDFSimulationParameters,
+)
 from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.kernel.job import ProtoJob
 from ansys.speos.core.kernel.proto_message_utils import protobuf_message_to_str
@@ -963,8 +970,9 @@ class SimulationDirect(BaseSimulation):
     simulation_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SimulationInstance, optional
         Simulation instance to provide if the feature does not have to be created from scratch
         By default, ``None``, means that the feature is created from scratch by default.
-    default_values : bool
-        Uses default values when True.
+    default_parameters : ansys.speos.core.generic.parameters.DirectSimulationParameters, optional
+        If defined the values in the direct simulation instance will be overwritten by the
+        values of the data class.
     """
 
     class SourceSampling:
@@ -980,7 +988,7 @@ class SimulationDirect(BaseSimulation):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         simulation_instance: Optional[ProtoScene.SimulationInstance] = None,
-        default_values: bool = True,
+        default_parameters: Optional[DirectSimulationParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -994,20 +1002,28 @@ class SimulationDirect(BaseSimulation):
         )
         self._template_class = "direct_mc_simulation_template"
 
-        if default_values:
-            # self.set_fast_transmission_gathering()
-            self.ambient_material_file_uri = ""
-            self.set_weight()
-            self.light_expert = False
-            # Default job properties
-            self.stop_condition_rays_number = 200000
-            self.stop_condition_duration = None
-            self.automatic_save_frequency = 1800
-            # Default values
-            self.set_colorimetric_standard_CIE_1931()
-            self.dispersion = True
-            self.geom_distance_tolerance = 0.01
-            self.max_impact = 100
+        if default_parameters is not None:
+            self.ambient_material_file_uri = default_parameters.ambient_material_uri
+            self.set_weight().minimum_energy_percentage = (
+                default_parameters.minimum_energy_percentage
+            )
+            self.light_expert = default_parameters.light_expoert
+            self.stop_condition_rays_number = default_parameters.stop_condition_rays_number
+            self.stop_condition_duration = default_parameters.stop_condition_duration
+            self.automatic_save_frequency = default_parameters.automatic_save_frequency
+            match default_parameters.colorimetric_standard:
+                case ColorimetricStandardTypes.cie_1931:
+                    self.set_colorimetric_standard_CIE_1931()
+                case ColorimetricStandardTypes.cie_1964:
+                    self.set_colorimetric_standard_CIE_1964()
+                case _:
+                    raise ValueError(
+                        f"Unsupported standard type"
+                        f": {type(default_parameters.colorimetric_standard).__name__}"
+                    )
+            self.dispersion = default_parameters.dispersion
+            self.geom_distance_tolerance = default_parameters.geom_distance_tolerance
+            self.max_impact = default_parameters.max_impact
 
     def set_weight(self) -> BaseSimulation.Weight:
         """Activate weight. Highly recommended to fill.
@@ -1241,8 +1257,9 @@ class SimulationInverse(BaseSimulation):
     simulation_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SimulationInstance, optional
         Simulation instance to provide if the feature does not have to be created from scratch
         By default, ``None``, means that the feature is created from scratch by default.
-    default_values : bool
-        Uses default values when True.
+    default_parameters : ansys.speos.core.generic.parameters.InverseSimulationParameters, optional
+        If defined the values in the inverse simulation instance will be overwritten by the
+        values of the data class.
     """
 
     class SourceSampling:
@@ -1258,7 +1275,7 @@ class SimulationInverse(BaseSimulation):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         simulation_instance: Optional[ProtoScene.SimulationInstance] = None,
-        default_values: bool = True,
+        default_parameters: Optional[InverseSimulationParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -1272,22 +1289,32 @@ class SimulationInverse(BaseSimulation):
         )
         self._template_class = "inverse_mc_simulation_template"
 
-        if default_values:
-            # self.set_fast_transmission_gathering()
-            self.ambient_material_file_uri = ""
-            self.set_weight()
-            # Default job properties
-            self.stop_condition_duration = None
-            self.stop_condition_passes_number = 5
-            self.automatic_save_frequency = 1800
-            # Default values
-            self.set_colorimetric_standard_CIE_1931()
-            self.dispersion = False
-            self.geom_distance_tolerance = 0.01
-            self.max_impact = 100
-            self.splitting = False
-            self.number_of_gathering_rays_per_source = 1
-            self.maximum_gathering_error = 0
+        if default_parameters is not None:
+            self.ambient_material_file_uri = default_parameters.ambient_material_uri
+            self.set_weight().minimum_energy_percentage = (
+                default_parameters.minimum_energy_percentage
+            )
+            self.stop_condition_duration = default_parameters.stop_condition_duration
+            self.stop_condition_passes_number = default_parameters.stop_condition_passes_number
+            self.automatic_save_frequency = default_parameters.automatic_save_frequency
+            match default_parameters.colorimetric_standard:
+                case ColorimetricStandardTypes.cie_1931:
+                    self.set_colorimetric_standard_CIE_1931()
+                case ColorimetricStandardTypes.cie_1964:
+                    self.set_colorimetric_standard_CIE_1964()
+                case _:
+                    raise ValueError(
+                        f"Unsupported standard type"
+                        f": {type(default_parameters.colorimetric_standard).__name__}"
+                    )
+            self.dispersion = default_parameters.dispersion
+            self.geom_distance_tolerance = default_parameters.geom_distance_tolerance
+            self.max_impact = default_parameters.max_impact
+            self.splitting = default_parameters.splitting
+            self.number_of_gathering_rays_per_source = (
+                default_parameters.number_of_gathering_rays_per_source
+            )
+            self.maximum_gathering_error = default_parameters.maximum_gathering_error
 
     def set_weight(self) -> BaseSimulation.Weight:
         """Activate weight. Highly recommended to fill.
@@ -1604,8 +1631,10 @@ class SimulationInteractive(BaseSimulation):
     simulation_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SimulationInstance, optional
         Simulation instance to provide if the feature does not have to be created from scratch
         By default, ``None``, means that the feature is created from scratch by default.
-    default_values : bool
-        Uses default values when True.
+    default_parameters : Optional[\
+    ansys.speos.core.generic.parameters.InteractiveSimulationParameters] = None
+        If defined the values in the interactive simulation instance will be overwritten by the
+        values of the data class.
     """
 
     class RaysNumberPerSource:
@@ -1638,7 +1667,7 @@ class SimulationInteractive(BaseSimulation):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         simulation_instance: Optional[ProtoScene.SimulationInstance] = None,
-        default_values: bool = True,
+        default_parameters: Optional[InteractiveSimulationParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -1652,16 +1681,27 @@ class SimulationInteractive(BaseSimulation):
         )
         self._template_class = "interactive_simulation_template"
 
-        if default_values:
-            self.ambient_material_file_uri = ""
+        if default_parameters is not None:
+            self.ambient_material_file_uri = default_parameters.ambient_material_uri
             # Default job parameters
-            self.light_expert = False
-            self.impact_report = False
+            self.light_expert = default_parameters.light_expoert
+            self.impact_report = default_parameters.impact_report
             # Default values
-            self.geom_distance_tolerance = 0.01
-            self.max_impact = 100
-            self.set_weight()
-            self.set_colorimetric_standard_CIE_1931()
+            self.geom_distance_tolerance = default_parameters.geom_distance_tolerance
+            self.max_impact = default_parameters.max_impact
+            self.set_weight().minimum_energy_percentage = (
+                default_parameters.minimum_energy_percentage
+            )
+            match default_parameters.colorimetric_standard:
+                case ColorimetricStandardTypes.cie_1931:
+                    self.set_colorimetric_standard_CIE_1931()
+                case ColorimetricStandardTypes.cie_1964:
+                    self.set_colorimetric_standard_CIE_1964()
+                case _:
+                    raise ValueError(
+                        f"Unsupported standard type"
+                        f": {type(default_parameters.colorimetric_standard).__name__}"
+                    )
 
     def set_weight(self) -> BaseSimulation.Weight:
         """Activate weight. Highly recommended to fill.
@@ -1814,8 +1854,10 @@ class SimulationVirtualBSDF(BaseSimulation):
     simulation_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SimulationInstance, optional
         Simulation instance to provide if the feature does not have to be created from scratch
         By default, ``None``, means that the feature is created from scratch by default.
-    default_values : bool
-        Uses default values when True.
+    default_parameters : Optional[\
+    ansys.speos.core.generic.parameters.VirtualBSDFSimulationParameters] = None
+        If defined the values in the virtual bsdf simulation instance will be overwritten by the
+        values of the data class.
     """
 
     class RoughnessOnly(BaseSimulation.SourceSampling):
@@ -2487,7 +2529,7 @@ class SimulationVirtualBSDF(BaseSimulation):
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
         simulation_instance: Optional[ProtoScene.SimulationInstance] = None,
-        default_values: bool = True,
+        default_parameters: Optional[VirtualBSDFSimulationParameters] = None,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -2509,17 +2551,50 @@ class SimulationVirtualBSDF(BaseSimulation):
         self._sensor_sampling_mode = self.set_sensor_sampling_uniform()
         self._mode = self.set_mode_all_characteristics()
 
-        if default_values:
-            self.analysis_x_ratio = 100
-            self.analysis_y_ratio = 100
-            self.axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-            self.integration_angle = 2
-            self.stop_condition_ray_number = 100000
+        if default_parameters is not None:
+            self.set_wavelengths_range().start = default_parameters.wavelength_range.start
+            self.set_wavelengths_range().end = default_parameters.wavelength_range.end
+            self.set_wavelengths_range().sampling = default_parameters.wavelength_range.sampling
+
+            if default_parameters.sensor_sampling_mode is not None:
+                match type(default_parameters.sensor_sampling_mode).__name__:
+                    case "SensorSamplingUnionParameters":
+                        self.set_sensor_sampling_uniform().theta_sampling = (
+                            default_parameters.sensor_sampling_mode.theta_sampling
+                        )
+                        self.set_sensor_sampling_uniform().phi_sampling = (
+                            default_parameters.sensor_sampling_mode.phi_sampling
+                        )
+                    case _:
+                        raise ValueError(
+                            "Unsupported spectrum type: {}".format(
+                                type(default_parameters.sensor_sampling_mode).__name__
+                            )
+                        )
+            else:
+                self.set_sensor_sampling_automatic()
+
+            self.analysis_x_ratio = default_parameters.analysis_x_ratio
+            self.analysis_y_ratio = default_parameters.analysis_y_ratio
+            self.axis_system = default_parameters.axis_system
+            self.integration_angle = default_parameters.integration_angle
+            self.stop_condition_ray_number = default_parameters.stop_condition_ray_number
             # default simulation properties
-            self.geom_distance_tolerance = 0.01
-            self.max_impact = 100
-            self.set_weight()
-            self.set_colorimetric_standard_CIE_1931()
+            self.geom_distance_tolerance = default_parameters.geom_distance_tolerance
+            self.max_impact = default_parameters.max_impact
+            self.set_weight().minimum_energy_percentage = (
+                default_parameters.minimum_energy_percentage
+            )
+            match default_parameters.colorimetric_standard:
+                case ColorimetricStandardTypes.cie_1931:
+                    self.set_colorimetric_standard_CIE_1931()
+                case ColorimetricStandardTypes.cie_1964:
+                    self.set_colorimetric_standard_CIE_1964()
+                case _:
+                    raise ValueError(
+                        f"Unsupported standard type"
+                        f": {type(default_parameters.colorimetric_standard).__name__}"
+                    )
 
     @property
     def integration_angle(self) -> float:
