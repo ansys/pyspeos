@@ -70,24 +70,43 @@ import ansys.speos.core.proto_message_utils as proto_message_utils
 class BaseSop:
     """Base class for Surface Optical Property helpers.
 
-    Parameters
-    ----------
-    sop_parameters : Optional[SopParameters], optional
-        Default SOP parameters to initialize the surface optical property. Default is ``None``.
-
     Notes
     -----
     This is a superclass and is not intended to be instantiated directly.
     """
 
     def __init__(self, sop_template, mat_inst, sop_parameters: Optional[SopParameters] = None):
+        """Initialize the SOP helper state.
 
+        Parameters
+        ----------
+        sop_template : ProtoSOPTemplate
+            Surface optical property template to wrap.
+        mat_inst : ProtoScene.MaterialInstance
+            Material instance that owns the SOP settings.
+        sop_parameters : Optional[SopParameters], optional
+            Default SOP parameters to apply at initialization.
+        """
         self._sop_template = sop_template
         # Create material instance
         self._material_instance = mat_inst
+        self._mirror = None
+        self._library = None
 
         if sop_parameters:
             self._apply_sop_parameters(sop_parameters)
+
+    def _sync_sop_properties(self):
+        """Synchronize cached SOP helper objects with the current SOP template."""
+        if self._sop_template is None:
+            self._mirror = None
+            self._library = None
+            return
+
+        self._mirror = self.SopMirror(self, None) if self._sop_template.HasField("mirror") else None
+        self._library = (
+            self.SopLibrary(self, None) if self._sop_template.HasField("library") else None
+        )
 
     def _apply_sop_parameters(self, sop_parameters: SopParameters):
         """Apply SOP parameters to initialize the surface optical property.
@@ -100,66 +119,81 @@ class BaseSop:
         if sop_parameters.sop_type == SopTypes.mirror:
             self.set_surface_mirror()
             if sop_parameters.sop_reflectance is not None:
-                self.sop_reflectance = sop_parameters.sop_reflectance
+                self.mirror.reflectance = sop_parameters.sop_reflectance
         elif sop_parameters.sop_type == SopTypes.optical_polished:
             self.set_surface_opticalpolished()
         elif sop_parameters.sop_type == SopTypes.library:
             self.set_surface_library()
             if sop_parameters.sop_library_file_uri:
-                self.sop_library = sop_parameters.sop_library_file_uri
+                self.sop_library.sop_file_uri = sop_parameters.sop_library_file_uri
+
+    class SopMirror:
+        """Mirror SOP parameters."""
+
+        def __init__(self, parent: BaseSop, default_parameters: Optional[SopParameters] = None):
+            """Create a mirror helper bound to a parent SOP.
+
+            Parameters
+            ----------
+            parent : BaseSop
+                Base SOP wrapper that owns the mirror protobuf field.
+            default_parameters : Optional[SopParameters], optional
+                Optional default parameters used to initialize reflectance.
+            """
+            self._parent = parent
+            self._parent._sop_template.mirror.SetInParent()
+            if default_parameters and default_parameters.sop_reflectance:
+                self.reflectance = default_parameters.sop_reflectance
+
+        @property
+        def reflectance(self) -> float:
+            """Reflectance of the mirror surface in percentage.
+
+            Returns
+            -------
+            float
+                Reflectance value between 0 and 100.
+            """
+            if self._parent._sop_template.HasField("mirror"):
+                return self._parent._sop_template.mirror.reflectance
+
+        @reflectance.setter
+        def reflectance(self, value: float):
+            """Set the reflectance of the mirror surface.
+
+            Parameters
+            ----------
+            value : float
+                Reflectance value between 0 and 100.
+
+            Raises
+            ------
+            ValueError
+                If the reflectance value is not between 0 and 100.
+            AttributeError
+                If the SOP is not of mirror type.
+            """
+            if not (0 <= value <= 100):
+                raise ValueError("Reflectance must be between 0 and 100.")
+            if self._parent._sop_template.HasField("mirror"):
+                self._parent._sop_template.mirror.reflectance = value
 
     @property
-    def sop_type(self) -> str:
-        """Surface optical property type.
+    def mirror(self) -> Optional[BaseSop.SopMirror]:
+        """Mirror helper for the current SOP template.
 
         Returns
         -------
-        str
-            SOP type as string. Possible values include ``'texture'``,
-            ``'mirror'``, ``'optical_polished'``, and ``'library'``.
+        Optional[SopMirror]
+            Mirror helper when the active SOP field is ``mirror``, otherwise ``None``.
         """
-        if self._material_instance.HasField("texture"):
-            return "texture"
-        if self._sop_template.HasField("mirror"):
-            return "mirror"
-        if self._sop_template.HasField("optical_polished"):
-            return "optical_polished"
-        if self._sop_template.HasField("library"):
-            return "library"
-
-    @property
-    def sop_reflectance(self) -> float:
-        """Perfect specular surface reflectance.
-
-        Returns
-        -------
-        float
-            Reflectance value (0.0 to 100.0). Only valid when SOP is a mirror.
-        """
-        if self._sop_template.HasField("mirror"):
-            return self._sop_template.mirror.reflectance
-
-    @sop_reflectance.setter
-    def sop_reflectance(self, value: float):
-        """Set the mirror reflectance.
-
-        Parameters
-        ----------
-        value : float
-            Reflectance value to set (0.0 to 100.0).
-
-        Raises
-        ------
-        TypeError
-            If the current SOP is not of mirror type.
-        """
-        if self._sop_template.HasField("mirror"):
-            self._sop_template.mirror.reflectance = value
-        else:
-            raise TypeError(
-                "Surface Optical Property is not set to mirror Type, please use set_mirror_library"
-                "before"
-            )
+        if (
+            self._mirror is None
+            and self._sop_template is not None
+            and self._sop_template.HasField("mirror")
+        ):
+            self._mirror = self.SopMirror(self, None)
+        return self._mirror
 
     def set_surface_mirror(self) -> BaseSop:
         """Define SOP as a perfect specular surface.
@@ -169,9 +203,14 @@ class BaseSop:
         ansys.speos.core.opt_prop.BaseSop
             Returns self for chaining.
         """
-        self._sop_template.mirror.SetInParent()
-        self._sop_template.mirror.reflectance = 100
-        return self
+        value = False
+        if self._sop_template.HasField("mirror"):
+            value = True
+        self._library = None
+        self._mirror = self.SopMirror(self, None)
+        if not value:
+            self._mirror.reflectance = 100
+        return self._mirror
 
     def set_surface_opticalpolished(self) -> BaseSop:
         """Set SOP to transparent or perfectly polished surface (e.g. glass).
@@ -181,42 +220,57 @@ class BaseSop:
         ansys.speos.core.opt_prop.BaseSop
             Returns self for chaining.
         """
+        self._mirror = None
+        self._library = None
         self._sop_template.optical_polished.SetInParent()
         return self
 
-    @property
-    def sop_library(self) -> str:
-        """Surface property file URI when SOP is a library entry.
+    class SopLibrary:
+        """Library SOP parameters."""
 
-        Returns
-        -------
-        str
-            File path or URI of the SOP file (e.g. ``*.scattering``, ``*.bsdf``).
-        """
-        if self._sop_template.HasField("library"):
-            return self._sop_template.library.sop_file_uri
+        def __init__(self, parent: BaseSop, default_parameters: Optional[SopParameters] = None):
+            """Create a library helper bound to a parent SOP.
 
-    @sop_library.setter
-    def sop_library(self, value: Union[Path, str]):
-        """Set the SOP library file URI.
+            Parameters
+            ----------
+            parent : BaseSop
+                Base SOP wrapper that owns the library protobuf field.
+            default_parameters : Optional[SopParameters], optional
+                Optional default parameters used to initialize the SOP file URI.
+            """
+            self._parent = parent
+            self._parent._sop_template.library.SetInParent()
+            if default_parameters and default_parameters.sop_library_file_uri:
+                self.sop_file_uri = default_parameters.sop_library_file_uri
 
-        Parameters
-        ----------
-        value : Union[str, Path]
-            File path or URI to the surface optical properties file.
+        @property
+        def sop_file_uri(self) -> str:
+            """Surface property file URI when SOP is a library entry.
 
-        Raises
-        ------
-        TypeError
-            If the current SOP is not of library type.
-        """
-        if self._sop_template.HasField("library"):
-            self._sop_template.library.sop_file_uri = str(value)
-        else:
-            raise TypeError(
-                "Surface Optical Property is not set to library Type, please use"
-                "set_surface_library before"
-            )
+            Returns
+            -------
+            str
+                File path or URI of the SOP file (e.g. ``*.scattering``, ``*.bsdf``).
+            """
+            if self._parent._sop_template.HasField("library"):
+                return self._parent._sop_template.library.sop_file_uri
+
+        @sop_file_uri.setter
+        def sop_file_uri(self, value: Union[Path, str]):
+            """Set the SOP library file URI.
+
+            Parameters
+            ----------
+            value : Union[str, Path]
+                File path or URI to the surface optical properties file.
+
+            Raises
+            ------
+            TypeError
+                If the current SOP is not of library type.
+            """
+            if self._parent._sop_template.HasField("library"):
+                self._parent._sop_template.library.sop_file_uri = str(value)
 
     def set_surface_library(self) -> BaseSop:
         """Configure SOP to use a library file.
@@ -226,8 +280,25 @@ class BaseSop:
         ansys.speos.core.opt_prop.BaseSop
             Returns self for chaining.
         """
+        self._mirror = None
         self._sop_template.library.SetInParent()
-        return self
+        self._library = self.SopLibrary(self, None)
+        return self._library
+
+    @property
+    def sop_library(self) -> Optional[BaseSop.SopLibrary]:
+        """SOP library parameters when SOP is of library type.
+
+        Returns
+        -------
+        Optional[SopLibrary]
+            SopLibrary instance containing library information (sop_file_uri)
+            when SOP is of library type, otherwise ``None``.
+        """
+        if self._sop_template.HasField("library"):
+            if self._library is None:
+                self._library = self.SopLibrary(self, None)
+            return self._library
 
 
 class BaseVop:
@@ -247,6 +318,15 @@ class BaseVop:
         """Optic parameters for a clear transparent volume."""
 
         def __init__(self, parent, default_parameters: MaterialOpticParameters):
+            """Create an optic helper bound to a parent VOP.
+
+            Parameters
+            ----------
+            parent : BaseVop
+                Base VOP wrapper that owns the optic protobuf field.
+            default_parameters : MaterialOpticParameters
+                Default optic parameters to apply during initialization.
+            """
             self._parent = parent
             if default_parameters:
                 self.index = default_parameters.index
@@ -262,6 +342,13 @@ class BaseVop:
 
         @index.setter
         def index(self, value: float):
+            """Set the refractive index.
+
+            Parameters
+            ----------
+            value : float
+                Real refractive index value to store on the optic field.
+            """
             self._parent._vop_template.optic.index = value
 
         @property
@@ -273,6 +360,13 @@ class BaseVop:
 
         @absorption.setter
         def absorption(self, value: float):
+            """Set the absorption coefficient.
+
+            Parameters
+            ----------
+            value : float
+                Absorption coefficient to store on the optic field.
+            """
             self._parent._vop_template.optic.absorption = value
 
         @property
@@ -286,12 +380,30 @@ class BaseVop:
 
         @constringence.setter
         def constringence(self, value: Optional[float]):
+            """Set or clear the Abbe number.
+
+            Parameters
+            ----------
+            value : Optional[float]
+                Abbe number value, or ``None`` to clear the field.
+            """
             if value is not None:
                 self._parent._vop_template.optic.constringence = value
             else:
                 self._parent._vop_template.optic.ClearField("constringence")
 
     def __init__(self, vop_template, mat_inst, vop_parameters: Optional[VopParameters] = None):
+        """Initialize the VOP helper state.
+
+        Parameters
+        ----------
+        vop_template : Optional[ProtoVOPTemplate]
+            Volume optical property template to wrap.
+        mat_inst : ProtoScene.MaterialInstance
+            Material instance that owns the VOP settings.
+        vop_parameters : Optional[VopParameters], optional
+            Default VOP parameters to apply at initialization.
+        """
         # Create VOP template
         self._vop_template = vop_template
         # Create material instance
@@ -517,6 +629,15 @@ class TextureLayer(BaseSop):
         """Texture mapping operator for a texture layer."""
 
         def __init__(self, mapping, default_parameters: Optional[MappingOperator] = None):
+            """Initialize a texture mapping operator wrapper.
+
+            Parameters
+            ----------
+            mapping : protobuf message
+                Message containing the ``mapping_operator`` field to manipulate.
+            default_parameters : Optional[MappingOperator], optional
+                Default mapping parameters to apply to the operator.
+            """
             self._mapping = mapping.mapping_operator
             if default_parameters and default_parameters:
                 match default_parameters.mapping_type:
@@ -823,6 +944,15 @@ class TextureLayer(BaseSop):
         """Texture mapping by data for a texture layer."""
 
         def __init__(self, parent, default_parameters: Optional[MappingByData] = None):
+            """Initialize a mapping-by-data helper.
+
+            Parameters
+            ----------
+            parent : protobuf message
+                Message containing a ``vertices_data_index`` field.
+            default_parameters : Optional[MappingByData], optional
+                Default data-mapping parameters to apply.
+            """
             self._parent = parent
             if default_parameters and default_parameters.vertices_data_index is not None:
                 self.vertices_data_index = default_parameters.vertices_data_index
@@ -853,6 +983,15 @@ class TextureLayer(BaseSop):
         """Base class for texture mapping properties."""
 
         def __init__(self, parent: TextureLayer, type: TextureTypes):
+            """Initialize a base texture map helper.
+
+            Parameters
+            ----------
+            parent : TextureLayer
+                Texture layer that owns the map data.
+            type : TextureTypes
+                Texture map kind handled by the helper.
+            """
             self._parent = parent
             self._mapping = None
             self._type = type
@@ -961,6 +1100,13 @@ class TextureLayer(BaseSop):
             return self._set_mapping_operator(MappingTypes.cubic)
 
         def set_spherical_mapping(self):
+            """Set spherical mapping for the texture layer.
+
+            Returns
+            -------
+            TextureMappingOperator
+                The mapping operator for the spherical mapping.
+            """
             self._set_mapping_operator(MappingTypes.spherical)
             self._mapping.perimeter = 1  # Default perimeter value for spherical mapping
             return self._mapping
@@ -981,6 +1127,15 @@ class TextureLayer(BaseSop):
         def __init__(
             self, parent: TextureLayer, default_parameters: Optional[ImageTextureParameter] = None
         ):
+            """Initialize an image texture helper.
+
+            Parameters
+            ----------
+            parent : TextureLayer
+                Texture layer that owns the image texture data.
+            default_parameters : Optional[ImageTextureParameter], optional
+                Default image texture settings to apply.
+            """
             super().__init__(parent, TextureTypes.image)
             if default_parameters:
                 if default_parameters.file_path:
@@ -1017,6 +1172,13 @@ class TextureLayer(BaseSop):
 
         @repeat_u.setter
         def repeat_u(self, value: bool):
+            """Set whether the image texture repeats along the U direction.
+
+            Parameters
+            ----------
+            value : bool
+                ``True`` to repeat along U, ``False`` otherwise.
+            """
             self._parent._sop_template.texture.image.repeat_along_u = value
 
         @property
@@ -1026,6 +1188,13 @@ class TextureLayer(BaseSop):
 
         @repeat_v.setter
         def repeat_v(self, value: bool):
+            """Set whether the image texture repeats along the V direction.
+
+            Parameters
+            ----------
+            value : bool
+                ``True`` to repeat along V, ``False`` otherwise.
+            """
             self._parent._sop_template.texture.image.repeat_along_v = value
 
         @property
@@ -1045,6 +1214,15 @@ class TextureLayer(BaseSop):
         def __init__(
             self, parent: TextureLayer, default_parameters: Optional[NormalMapParameter] = None
         ):
+            """Initialize a normal map helper.
+
+            Parameters
+            ----------
+            parent : TextureLayer
+                Texture layer that owns the normal map data.
+            default_parameters : Optional[NormalMapParameter], optional
+                Default normal map settings to apply.
+            """
             super().__init__(parent, TextureTypes.normal_map)
             if default_parameters:
                 match default_parameters.normal_map_type:
@@ -1086,6 +1264,13 @@ class TextureLayer(BaseSop):
 
         @repeat_u.setter
         def repeat_u(self, value: bool):
+            """Set whether the normal map repeats along the U direction.
+
+            Parameters
+            ----------
+            value : bool
+                ``True`` to repeat along U, ``False`` otherwise.
+            """
             self._parent._sop_template.texture.normal_map.repeat_along_u = value
 
         @property
@@ -1095,6 +1280,13 @@ class TextureLayer(BaseSop):
 
         @repeat_v.setter
         def repeat_v(self, value: bool):
+            """Set whether the normal map repeats along the V direction.
+
+            Parameters
+            ----------
+            value : bool
+                ``True`` to repeat along V, ``False`` otherwise.
+            """
             self._parent._sop_template.texture.normal_map.repeat_along_v = value
 
         @property
@@ -1171,6 +1363,15 @@ class TextureLayer(BaseSop):
         def __init__(
             self, parent: TextureLayer, default_parameters: Optional[MappingOperator] = None
         ):
+            """Initialize an anisotropy map helper.
+
+            Parameters
+            ----------
+            parent : TextureLayer
+                Texture layer that owns the anisotropy map data.
+            default_parameters : Optional[MappingOperator], optional
+                Default anisotropy map settings to apply.
+            """
             super().__init__(parent, TextureTypes.anisotropy_map)
             if default_parameters:
                 if isinstance(default_parameters, MappingOperator):
@@ -1195,7 +1396,21 @@ class TextureLayer(BaseSop):
         metadata: Optional[Mapping[str, str]] = None,
         default_parameters: Optional[TextureLayerParameters] = None,
     ):
+        """Initialize a texture layer.
 
+        Parameters
+        ----------
+        opt_prop : OptProp
+            Optical property that will own this texture layer.
+        name : str
+            Name of the texture layer feature.
+        description : str, optional
+            Description of the texture layer.
+        metadata : Optional[Mapping[str, str]], optional
+            Metadata to attach to the SOP template.
+        default_parameters : Optional[TextureLayerParameters], optional
+            Default texture layer parameters to apply at initialization.
+        """
         self._project = opt_prop._project
         self._opt_prop = opt_prop
         self.sop_template_link = None
@@ -1328,6 +1543,7 @@ class TextureLayer(BaseSop):
         # Reset sop template
         if self.sop_template_link is not None:
             self._sop_template = self.sop_template_link.get()
+            self._sync_sop_properties()
             self._normal_map = None
             self._aniso_map = None
             self._image_map = None
@@ -1350,6 +1566,7 @@ class TextureLayer(BaseSop):
                     self.set_normal_map()
                 if self._texture_template.HasField("image_properties"):
                     self.set_image_texture()
+        return self
 
     def delete(self) -> "TextureLayer":
         """Delete the SOP template layer from the server and update local state.
@@ -1418,6 +1635,21 @@ class OptProp(BaseVop, BaseSop):
         metadata: Optional[Mapping[str, str]] = None,
         default_parameters: Optional[OptPropParameters] = None,
     ):
+        """Initialize an optical property wrapper.
+
+        Parameters
+        ----------
+        project : p.Project
+            Project that will own the optical property.
+        name : str
+            Name of the optical property.
+        description : str, optional
+            Human-readable description of the optical property.
+        metadata : Optional[Mapping[str, str]], optional
+            Metadata to attach to the created templates and material instance.
+        default_parameters : Optional[OptPropParameters], optional
+            Default optical property parameters to apply at initialization.
+        """
         self._name = name
         self._project = project
         self._unique_id = None
@@ -1804,6 +2036,9 @@ class OptProp(BaseVop, BaseSop):
         # Reset sop template
         if self.sop_template_link is not None:
             self._sop_template = self.sop_template_link.get()
+            self._sync_sop_properties()
+        else:
+            self._sync_sop_properties()
 
         # Reset material instance
         if self._project.scene_link is not None:

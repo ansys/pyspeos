@@ -136,15 +136,13 @@ def test_create_optical_property(speos: Speos):
     assert op1.sop_template_link.get().HasField("optical_polished")
 
     # SOP library
-    op1.set_surface_library()
-    op1.sop_library = Path(test_path) / "R_test.anisotropicbsdf"
+    op1.set_surface_library().sop_file_uri = Path(test_path) / "R_test.anisotropicbsdf"
     op1.commit()
     assert op1.sop_template_link.get().HasField("library")
     assert op1.sop_template_link.get().library.sop_file_uri.endswith("R_test.anisotropicbsdf")
 
     # SOP mirror
-    op1.set_surface_mirror()
-    op1.sop_reflectance = 80
+    op1.set_surface_mirror().reflectance = 80
     op1.commit()
     assert op1.sop_template_link.get().HasField("mirror")
     assert op1._sop_template.mirror.reflectance == 80
@@ -346,8 +344,7 @@ def test_get_optical_property(speos: Speos, capsys):
 
     op3 = p.create_optical_property(name="OpticalProperty3")
     op3.set_volume_none()
-    op3.set_surface_library()
-    op3.sop_library = Path(test_path) / "R_test.anisotropicbsdf"
+    op3.set_surface_library().sop_file_uri = Path(test_path) / "R_test.anisotropicbsdf"
     op3.geometries = [face]
     op3.commit()
 
@@ -372,25 +369,25 @@ def test_load_optical_property_from_file(speos: Speos):
         assert isinstance(mat, OptProp)
         match mat._name:
             case "Opaque_mirror80":
-                assert mat.sop_type == "mirror"
-                assert mat.sop_reflectance == 80
+                assert mat._sop_template.HasField("mirror")
+                assert mat.mirror.reflectance == 80
                 assert mat.vop_type == "opaque"
             case "None_Library":
                 assert mat.vop_type is None
-                assert mat.sop_type == "library"
-                assert mat.sop_library.endswith(".scattering")
+                assert mat._sop_template.HasField("library")
+                assert mat.sop_library.sop_file_uri.endswith(".scattering")
             case "FOP_mirror75":
-                assert mat.sop_type == "mirror"
-                assert mat.sop_reflectance == 75
+                assert mat._sop_template.HasField("mirror")
+                assert mat.mirror.reflectance == 75
                 assert mat.vop_type is None
             case "Optic_OP":
-                assert mat.sop_type == "optical_polished"
+                assert mat._sop_template.HasField("optical_polished")
                 assert mat.vop_type == "optic"
                 assert mat.vop_optic.index == 1.49
                 assert mat.vop_optic.constringence == 30
                 assert mat.vop_optic.absorption == 0.001
             case "Library_OP":
-                assert mat.sop_type == "optical_polished"
+                assert mat._sop_template.HasField("optical_polished")
                 assert mat.vop_type == "library"
                 assert mat.vop_library.endswith(".material")
 
@@ -401,15 +398,14 @@ def test_error_reporting(speos: Speos):
     p = Project(speos=speos)
     op = p.create_optical_property(name="ErrMat")
 
-    # sop_reflectance setter should raise if SOP is not mirror
+    # mirror helper should be absent when SOP is not mirror
     op.set_surface_opticalpolished()
-    with pytest.raises(TypeError):
-        op.sop_reflectance = 50
+    assert op.mirror is None
+    assert op._sop_template.HasField("optical_polished")
 
-    # sop_library setter should raise if SOP is not library
+    # sop_library accessor should be None when SOP is not library
     op.set_surface_mirror()
-    with pytest.raises(TypeError):
-        op.sop_library = Path("somefile.scattering")
+    assert op.sop_library is None
 
     # vop_optic setter should raise if VOP is not optic
     op.set_volume_opaque()
@@ -636,8 +632,9 @@ def test_create_texture_property(speos: Speos):
     )
 
     layer_2 = TextureLayer(op1, "Layer.2")
-    layer_2.set_surface_library()
-    layer_2.sop_library = Path(test_path) / "Texture.1.speos" / "aniso_bsdf.anisotropicbsdf"
+    layer_2.set_surface_library().sop_file_uri = (
+        Path(test_path) / "Texture.1.speos" / "aniso_bsdf.anisotropicbsdf"
+    )
     layer_2.set_anisotropy_map()
     for map_type in MappingTypes:
         layer_2.anisotropic_map._set_mapping_operator(map_type).u_length = 5
@@ -702,8 +699,9 @@ def test_reset_texture_property(speos: Speos):
     # Default value
     op1 = p.create_optical_property(name="texture.1")
     layer_2 = TextureLayer(op1, "Layer.2")
-    layer_2.set_surface_library()
-    layer_2.sop_library = Path(test_path) / "Texture.1.speos" / "aniso_bsdf.anisotropicbsdf"
+    layer_2.set_surface_library().sop_file_uri = (
+        Path(test_path) / "Texture.1.speos" / "aniso_bsdf.anisotropicbsdf"
+    )
     layer_2.set_anisotropy_map().set_spherical_mapping()
     opp = MappingOperator(
         mapping_type=MappingTypes.spherical,
@@ -857,7 +855,7 @@ def test_load_texture_property_from_file(speos: Speos):
                 assert mat._material_instance.HasField("texture")
                 assert len(mat.texture) == 1
                 assert mat.texture[0]._sop_template.HasField("mirror")
-                assert mat.texture[0].sop_reflectance == 40
+                assert mat.texture[0].mirror.reflectance == 40
                 assert mat.texture[0].normal_map.roughness == 1
                 assert mat.texture[0].normal_map.repeat_u
                 assert mat.texture[0].normal_map.repeat_v
@@ -888,7 +886,7 @@ def test_load_texture_property_from_file(speos: Speos):
                 assert mat._material_instance.HasField("texture")
                 assert len(mat.texture) == 1
                 assert mat.texture[0]._sop_template.HasField("library")
-                assert mat.texture[0].sop_library.endswith("simplescattering")
+                assert mat.texture[0].sop_library.sop_file_uri.endswith("simplescattering")
                 assert mat.texture[0].normal_map.roughness == 5
                 assert mat.texture[0].normal_map.normal_map_file_uri.endswith("png")
                 mapping_opp = mat.texture[0].normal_map.mapping_properties.__todict__()
@@ -935,7 +933,7 @@ def test_load_texture_property_from_file(speos: Speos):
                 assert mat._material_instance.HasField("texture")
                 assert len(mat.texture) == 2
                 assert mat.texture[0]._sop_template.HasField("library")
-                assert mat.texture[0].sop_library.endswith("anisotropicbsdf")
+                assert mat.texture[0].sop_library.sop_file_uri.endswith("anisotropicbsdf")
                 mapping_opp = mat.texture[0].anisotropic_map.mapping_properties.__todict__()
                 expected = MappingOperator(
                     mapping_type=MappingTypes.planar,
@@ -1005,7 +1003,7 @@ def test_load_texture_property_from_file(speos: Speos):
                         assert expected.get(k1) == mapping_opp.get(k1)
             case "Base_white_notexture":
                 assert mat._sop_template.HasField("library")
-                assert mat.sop_library.endswith("simplescattering")
+                assert mat.sop_library.sop_file_uri.endswith("simplescattering")
                 assert mat.vop_type == "optic"
                 assert MaterialOpticParameters(
                     mat.vop_optic.index, mat.vop_optic.absorption, mat.vop_optic.constringence
@@ -1017,7 +1015,7 @@ def test_load_texture_property_from_file(speos: Speos):
                 assert mat._material_instance.HasField("texture")
                 assert len(mat.texture) == 1
                 assert mat.texture[0]._sop_template.HasField("library")
-                assert mat.texture[0].sop_library.endswith("gltfsvbrdf")
+                assert mat.texture[0].sop_library.sop_file_uri.endswith("gltfsvbrdf")
 
 
 @pytest.mark.supported_speos_versions(min=252)
@@ -1079,7 +1077,7 @@ def test_texture_by_data(speos: Speos):
     opt_prop.geometries = [face0_0.geo_path, face2_0.geo_path]
 
     layer_1 = opt_prop.create_texture_layer()
-    layer_1.set_surface_library().sop_library = Path(test_path) / "L100 2.simplescattering"
+    layer_1.set_surface_library().sop_file_uri = Path(test_path) / "L100 2.simplescattering"
     layer_1.set_image_texture().image_file_uri = Path(test_path) / "textureColors.jpg"
     layer_1.image_texture.repeat_u = False
     layer_1.image_texture.repeat_v = False

@@ -369,8 +369,7 @@ def test_from_file(speos: Speos):
     assert isinstance(feat_ops[0], OptProp)
 
     # And that the feature retrieved has a real impact on the project
-    feat_ops[0].set_surface_mirror()
-    feat_ops[0].sop_reflectance = 60
+    feat_ops[0].set_surface_mirror().reflectance = 60
     feat_ops[0].commit()
     mat2 = p.scene_link.get().materials[2]
     if mat2.HasField("sop_guid"):
