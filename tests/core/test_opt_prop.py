@@ -429,7 +429,7 @@ def test_error_reporting(speos: Speos):
     # TextureLayer related errors
     layer = TextureLayer(op, "LayerErr")
     # setting image file creates texture but no normal_map -> roughness setter should raise
-    layer.set_image_texture().image_texture_file_uri = Path("some_image.png")
+    layer.set_image_texture().image_file_uri = Path("some_image.png")
     with pytest.raises(AttributeError):
         layer.normal_map.roughness = 2.0
 
@@ -450,7 +450,6 @@ def test_create_texture_property(speos: Speos):
     assert op1._material_instance.HasField("texture") is False
 
     layer_1 = TextureLayer(op1, "Layer.1")
-    layer_1.commit()
     op1.texture = [layer_1]
     op1.commit()
 
@@ -462,11 +461,15 @@ def test_create_texture_property(speos: Speos):
         == p.client[op1._material_instance.texture.layers[0].sop_guid].get()
     )
 
-    layer_1.image_texture_file_uri = Path(test_path) / "Texture.1.speos" / "black_leather.jpg.png"
+    layer_1.set_image_texture().image_file_uri = (
+        Path(test_path) / "Texture.1.speos" / "black_leather.jpg.png"
+    )
     for map_type in MappingTypes:
-        layer_1.image_property = MappingOperator(map_type, 5)
-        assert map_type == layer_1.image_property.mapping_type
-    layer_1.image_property = MappingOperator("planar", 5)
+        layer_1.image_texture._set_mapping_operator(map_type)
+        layer_1.image_texture.mapping_properties.u_length = 5
+        assert map_type == layer_1.image_texture.mapping_properties.mapping_type
+    layer_1.image_texture.set_planar_mapping()
+    layer_1.image_texture.mapping_properties.u_length = 5
     op1.texture = [layer_1]
     op1.commit()
 
@@ -482,31 +485,34 @@ def test_create_texture_property(speos: Speos):
     )
     assert (
         op1._material_instance.texture.layers[0].image_properties.mapping_operator.u_length
-        == layer_1.image_property.u_length
+        == layer_1.image_texture.mapping_properties.u_length
     )
     assert (
         op1._material_instance.texture.layers[0].image_properties.mapping_operator.u_scale_factor
-        == layer_1.image_property.u_scale
+        == layer_1.image_texture.mapping_properties.u_scale
     )
     assert (
         op1._material_instance.texture.layers[0].image_properties.mapping_operator.v_scale_factor
-        == layer_1.image_property.v_scale
+        == layer_1.image_texture.mapping_properties.v_scale
     )
     assert (
         op1._material_instance.texture.layers[0].image_properties.mapping_operator.rotation
-        == layer_1.image_property.rotation
+        == layer_1.image_texture.mapping_properties.rotation
     )
     assert (
         op1._material_instance.texture.layers[0].image_properties.mapping_operator.axis_system
-        == layer_1.image_property.axis_system
+        == layer_1.image_texture.mapping_properties.axis_system
     )
 
-    layer_1.set_normal_map_from_image()
-    layer_1.normal_map_file_uri = Path(test_path) / "Texture.1.speos" / "black_leather.jpg.png"
+    layer_1.set_normal_map()
+    layer_1.normal_map.set_normal_map_from_image()
+    layer_1.normal_map.normal_map_file_uri = (
+        Path(test_path) / "Texture.1.speos" / "black_leather.jpg.png"
+    )
     for map_type in MappingTypes:
-        layer_1.normal_map_property = MappingOperator(map_type, 5)
-        assert map_type == layer_1.normal_map_property.mapping_type
-    layer_1.normal_map_property = MappingOperator("cylindrical", 5)
+        layer_1.normal_map._set_mapping_operator(map_type)
+        assert map_type == layer_1.normal_map.mapping_properties.mapping_type
+    layer_1.normal_map.set_cylindrical_mapping().u_length = 5
     op1.texture = [layer_1]
     op1.commit()
 
@@ -522,63 +528,79 @@ def test_create_texture_property(speos: Speos):
     )
     assert (
         op1._material_instance.texture.layers[0].image_properties.mapping_operator.u_length
-        == layer_1.image_property.u_length
+        == layer_1.image_texture.mapping_properties.u_length
     )
     assert (
         op1._material_instance.texture.layers[0].image_properties.mapping_operator.u_scale_factor
-        == layer_1.image_property.u_scale
+        == layer_1.image_texture.mapping_properties.u_scale
     )
     assert (
         op1._material_instance.texture.layers[0].image_properties.mapping_operator.v_scale_factor
-        == layer_1.image_property.v_scale
+        == layer_1.image_texture.mapping_properties.v_scale
     )
     assert (
         op1._material_instance.texture.layers[0].image_properties.mapping_operator.rotation
-        == layer_1.image_property.rotation
+        == layer_1.image_texture.mapping_properties.rotation
     )
     assert (
         op1._material_instance.texture.layers[0].image_properties.mapping_operator.axis_system
-        == layer_1.image_property.axis_system
+        == layer_1.image_texture.mapping_properties.axis_system
     )
     assert op1._material_instance.texture.layers[0].normal_map_properties.mapping_operator.HasField(
         "cylindrical"
     )
     assert (
         op1._material_instance.texture.layers[0].normal_map_properties.mapping_operator.u_length
-        == layer_1.normal_map_property.u_length
+        == layer_1.normal_map.mapping_properties.u_length
     )
     assert (
         op1._material_instance.texture.layers[
             0
         ].normal_map_properties.mapping_operator.u_scale_factor
-        == layer_1.normal_map_property.u_scale
+        == layer_1.normal_map.mapping_properties.u_scale
     )
     assert (
         op1._material_instance.texture.layers[
             0
         ].normal_map_properties.mapping_operator.v_scale_factor
-        == layer_1.normal_map_property.v_scale
+        == layer_1.normal_map.mapping_properties.v_scale
     )
     assert (
         op1._material_instance.texture.layers[0].normal_map_properties.mapping_operator.rotation
-        == layer_1.normal_map_property.rotation
+        == layer_1.normal_map.mapping_properties.rotation
     )
     assert (
         op1._material_instance.texture.layers[0].normal_map_properties.mapping_operator.axis_system
-        == layer_1.normal_map_property.axis_system
+        == layer_1.normal_map.mapping_properties.axis_system
     )
 
-    layer_1.set_normal_map_from_normal_map()
-    layer_1.normal_map_file_uri = Path(test_path) / "Texture.1.speos" / "Facets_NM.png"
-    layer_1.normal_map_property = MappingOperator(
-        "cubic", 5, 10, False, False, [1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1], 10, 10, 45
+    layer_1.set_normal_map().set_normal_map_from_normal_map()
+    layer_1.normal_map.normal_map_file_uri = Path(test_path) / "Texture.1.speos" / "Facets_NM.png"
+    layer_1.normal_map.set_cubic_mapping()
+    opp = MappingOperator(
+        mapping_type="cubic",
+        u_length=5,
+        v_length=10,
+        u_offset=0,
+        v_offset=0,
+        axis_system=[1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+        u_scale=10,
+        v_scale=10,
+        rotation=45,
     )
-    layer_1.roughness = 0.42
-    assert pytest.approx(layer_1.roughness, rel=1e-6) == 0.42
+    layer_1.normal_map.mapping_properties.u_length = opp.u_length
+    layer_1.normal_map.mapping_properties.v_length = opp.v_length
+    layer_1.normal_map.mapping_properties.u_scale = opp.u_scale
+    layer_1.normal_map.mapping_properties.v_scale = opp.v_scale
+    layer_1.normal_map.mapping_properties.rotation = opp.rotation
+    layer_1.normal_map.mapping_properties.axis_system = opp.axis_system
+
+    layer_1.normal_map.roughness = 0.42
+    assert pytest.approx(layer_1.normal_map.roughness, rel=1e-6) == 0.42
 
     # change again to ensure value updates
-    layer_1.roughness = 0.123
-    assert pytest.approx(layer_1.roughness, rel=1e-6) == 0.123
+    layer_1.normal_map.roughness = 0.123
+    assert pytest.approx(layer_1.normal_map.roughness, rel=1e-6) == 0.123
     op1.texture = [layer_1]
     op1.commit()
     assert (
@@ -590,47 +612,56 @@ def test_create_texture_property(speos: Speos):
     )
     assert (
         op1._material_instance.texture.layers[0].normal_map_properties.mapping_operator.u_length
-        == layer_1.normal_map_property.u_length
+        == layer_1.normal_map.mapping_properties.u_length
     )
     assert (
         op1._material_instance.texture.layers[
             0
         ].normal_map_properties.mapping_operator.u_scale_factor
-        == layer_1.normal_map_property.u_scale
+        == layer_1.normal_map.mapping_properties.u_scale
     )
     assert (
         op1._material_instance.texture.layers[
             0
         ].normal_map_properties.mapping_operator.v_scale_factor
-        == layer_1.normal_map_property.v_scale
+        == layer_1.normal_map.mapping_properties.v_scale
     )
     assert (
         op1._material_instance.texture.layers[0].normal_map_properties.mapping_operator.rotation
-        == layer_1.normal_map_property.rotation
+        == layer_1.normal_map.mapping_properties.rotation
     )
     assert (
         op1._material_instance.texture.layers[0].normal_map_properties.mapping_operator.axis_system
-        == layer_1.normal_map_property.axis_system
+        == layer_1.normal_map.mapping_properties.axis_system
     )
 
     layer_2 = TextureLayer(op1, "Layer.2")
     layer_2.set_surface_library()
     layer_2.sop_library = Path(test_path) / "Texture.1.speos" / "aniso_bsdf.anisotropicbsdf"
+    layer_2.set_anisotropy_map()
     for map_type in MappingTypes:
-        layer_2.anisotropic_property = MappingOperator(map_type, 5)
-        assert map_type == layer_2.anisotropic_property.mapping_type
-    layer_2.anisotropic_property = MappingOperator(
-        MappingTypes.spherical,
-        5,
-        10,
-        False,
-        False,
-        [1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1],
-        10,
-        10,
-        90,
-        10,
+        layer_2.anisotropic_map._set_mapping_operator(map_type).u_length = 5
+        assert map_type == layer_2.anisotropic_map.mapping_properties.mapping_type
+    opp = MappingOperator(
+        mapping_type=MappingTypes.spherical,
+        u_length=5,
+        v_length=10,
+        u_offset=0,
+        v_offset=0,
+        axis_system=[1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+        u_scale=10,
+        v_scale=10,
+        rotation=90,
+        perimeter=10,
     )
+    layer_2.anisotropic_map.set_spherical_mapping()
+    layer_2.anisotropic_map.mapping_properties.u_length = opp.u_length
+    layer_2.anisotropic_map.mapping_properties.v_length = opp.v_length
+    layer_2.anisotropic_map.mapping_properties.u_scale = opp.u_scale
+    layer_2.anisotropic_map.mapping_properties.v_scale = opp.v_scale
+    layer_2.anisotropic_map.mapping_properties.rotation = opp.rotation
+    layer_2.anisotropic_map.mapping_properties.axis_system = opp.axis_system
+    layer_2.anisotropic_map.mapping_properties.perimeter = opp.perimeter
     op1.texture = [layer_1, layer_2]
     op1.commit()
 
@@ -647,19 +678,19 @@ def test_create_texture_property(speos: Speos):
     ].anisotropy_map_properties.mapping_operator.HasField("spherical")
     assert (
         op1._material_instance.texture.layers[1].anisotropy_map_properties.mapping_operator.rotation
-        == layer_2.anisotropic_property.rotation
+        == layer_2.anisotropic_map.mapping_properties.rotation
     )
     assert (
         op1._material_instance.texture.layers[
             1
         ].anisotropy_map_properties.mapping_operator.axis_system
-        == layer_2.anisotropic_property.axis_system
+        == layer_2.anisotropic_map.mapping_properties.axis_system
     )
     assert (
         op1._material_instance.texture.layers[
             1
         ].anisotropy_map_properties.mapping_operator.spherical.sphere_perimeter
-        == layer_2.anisotropic_property.perimeter
+        == layer_2.anisotropic_map.mapping_properties.perimeter
     )
 
 
@@ -673,25 +704,50 @@ def test_reset_texture_property(speos: Speos):
     layer_2 = TextureLayer(op1, "Layer.2")
     layer_2.set_surface_library()
     layer_2.sop_library = Path(test_path) / "Texture.1.speos" / "aniso_bsdf.anisotropicbsdf"
-    layer_2.anisotropic_property = MappingOperator(
-        MappingTypes.spherical,
-        5,
-        10,
-        False,
-        False,
-        [1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1],
-        10,
-        10,
-        90,
-        10,
+    layer_2.set_anisotropy_map().set_spherical_mapping()
+    opp = MappingOperator(
+        mapping_type=MappingTypes.spherical,
+        u_length=5,
+        v_length=10,
+        u_offset=0,
+        v_offset=0,
+        axis_system=[1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+        u_scale=10,
+        v_scale=10,
+        rotation=90,
+        perimeter=10,
     )
-    layer_2.set_normal_map_from_normal_map()
-    layer_2.normal_map_file_uri = Path(test_path) / "Texture.1.speos" / "Facets_NM.png"
-    layer_2.normal_map_property = MappingOperator(
-        "cubic", 5, 10, False, False, [1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1], 10, 10, 45
+    layer_2.anisotropic_map.mapping_properties.u_length = opp.u_length
+    layer_2.anisotropic_map.mapping_properties.v_length = opp.v_length
+    layer_2.anisotropic_map.mapping_properties.u_scale = opp.u_scale
+    layer_2.anisotropic_map.mapping_properties.v_scale = opp.v_scale
+    layer_2.anisotropic_map.mapping_properties.rotation = opp.rotation
+    layer_2.anisotropic_map.mapping_properties.axis_system = opp.axis_system
+    layer_2.anisotropic_map.mapping_properties.perimeter = opp.perimeter
+    layer_2.set_normal_map().set_normal_map_from_normal_map()
+    layer_2.normal_map.set_cubic_mapping()
+    layer_2.normal_map.normal_map_file_uri = Path(test_path) / "Texture.1.speos" / "Facets_NM.png"
+    opp = MappingOperator(
+        mapping_type=MappingTypes.cubic,
+        u_length=5,
+        v_length=10,
+        u_offset=0,
+        v_offset=0,
+        axis_system=[1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+        u_scale=10,
+        v_scale=10,
+        rotation=45,
     )
-    layer_2.image_texture_file_uri = Path(test_path) / "Texture.1.speos" / "black_leather.jpg.png"
-    layer_2.image_property = MappingOperator("planar", 5)
+    layer_2.normal_map.mapping_properties.u_length = opp.u_length
+    layer_2.normal_map.mapping_properties.v_length = opp.v_length
+    layer_2.normal_map.mapping_properties.u_scale = opp.u_scale
+    layer_2.normal_map.mapping_properties.v_scale = opp.v_scale
+    layer_2.normal_map.mapping_properties.rotation = opp.rotation
+    layer_2.normal_map.mapping_properties.axis_system = opp.axis_system
+    layer_2.set_image_texture().image_file_uri = (
+        Path(test_path) / "Texture.1.speos" / "black_leather.jpg.png"
+    )
+    layer_2.image_texture.set_planar_mapping().u_length = 5
     op1.texture = [layer_2]
     op1.commit()
 
@@ -706,23 +762,23 @@ def test_reset_texture_property(speos: Speos):
     )
     assert (
         op1._material_instance.texture.layers[0].anisotropy_map_properties.mapping_operator.rotation
-        == layer_2.anisotropic_property.rotation
+        == layer_2.anisotropic_map.mapping_properties.rotation
     )
     assert (
         op1._material_instance.texture.layers[
             0
         ].anisotropy_map_properties.mapping_operator.axis_system
-        == layer_2.anisotropic_property.axis_system
+        == layer_2.anisotropic_map.mapping_properties.axis_system
     )
     assert (
         op1._material_instance.texture.layers[
             0
         ].anisotropy_map_properties.mapping_operator.spherical.sphere_perimeter
-        == layer_2.anisotropic_property.perimeter
+        == layer_2.anisotropic_map.mapping_properties.perimeter
     )
     layer_2.set_surface_mirror()
     assert layer_2._sop_template.HasField("mirror")
-    old_values = layer_2.anisotropic_property
+    old_values = layer_2.anisotropic_map.mapping_properties
     new_values = MappingOperator(
         MappingTypes.planar,
         20,
@@ -733,9 +789,15 @@ def test_reset_texture_property(speos: Speos):
         15,
         15,
         45,
-        10,
+        None,
     )
-    layer_2.anisotropic_property = new_values
+    layer_2.anisotropic_map.set_planar_mapping()
+    layer_2.anisotropic_map.mapping_properties.u_length = new_values.u_length
+    layer_2.anisotropic_map.mapping_properties.v_length = new_values.v_length
+    layer_2.anisotropic_map.mapping_properties.u_scale = new_values.u_scale
+    layer_2.anisotropic_map.mapping_properties.v_scale = new_values.v_scale
+    layer_2.anisotropic_map.mapping_properties.rotation = new_values.rotation
+    layer_2.anisotropic_map.mapping_properties.axis_system = new_values.axis_system
     mapping_op = layer_2._texture_template.anisotropy_map_properties.mapping_operator
     assert mapping_op.axis_system == new_values.axis_system
     assert mapping_op.rotation == new_values.rotation
@@ -966,7 +1028,6 @@ def test_delete_texture_property(speos: Speos):
     op = p.create_optical_property(name="Material.DeleteTest")
     # create layer, commit SOP template, assign to material and commit material to scene
     layer = TextureLayer(op, "Layer.Delete")
-    layer._commit()
     op.texture = [layer]
     op.commit()
 
@@ -1019,7 +1080,7 @@ def test_texture_by_data(speos: Speos):
 
     layer_1 = opt_prop.create_texture_layer()
     layer_1.set_surface_library().sop_library = Path(test_path) / "L100 2.simplescattering"
-    layer_1.set_image_texture().image_texture_file_uri = Path(test_path) / "textureColors.jpg"
+    layer_1.set_image_texture().image_file_uri = Path(test_path) / "textureColors.jpg"
     layer_1.image_texture.repeat_u = False
     layer_1.image_texture.repeat_v = False
     layer_1.image_texture.set_mapping_by_data().vertices_data_index = 0

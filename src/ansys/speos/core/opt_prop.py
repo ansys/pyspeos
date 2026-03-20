@@ -522,14 +522,16 @@ class TextureLayer(BaseSop):
                 match default_parameters.mapping_type:
                     case MappingTypes.cylindrical:
                         self._mapping.cylindrical.SetInParent()
-                        self._mapping.cylindrical.base_perimeter = default_parameters.perimeter
+                        if default_parameters.perimeter:
+                            self._mapping.cylindrical.base_perimeter = default_parameters.perimeter
                     case MappingTypes.planar:
                         self._mapping.planar.SetInParent()
                     case MappingTypes.cubic:
                         self._mapping.cubic.SetInParent()
                     case MappingTypes.spherical:
                         self._mapping.spherical.SetInParent()
-                        self._mapping.spherical.sphere_perimeter = default_parameters.radius
+                        if default_parameters.perimeter:
+                            self._mapping.spherical.sphere_perimeter = default_parameters.perimeter
                 self._mapping.u_offset = default_parameters.u_offset
                 self._mapping.v_offset = default_parameters.v_offset
                 self._mapping.u_length = default_parameters.u_length
@@ -769,7 +771,7 @@ class TextureLayer(BaseSop):
             """
             if self._mapping.HasField("spherical"):
                 self._mapping.spherical.sphere_perimeter = value
-            if self._mapping.HasField("cylindrical"):
+            elif self._mapping.HasField("cylindrical"):
                 self._mapping.cylindrical.base_perimeter = value
             else:
                 raise TypeError(
@@ -877,16 +879,23 @@ class TextureLayer(BaseSop):
             map_property = self._get_map_property()
             if map_property.HasField("vertices_data_index"):
                 map_property.ClearField("vertices_data_index")
-            map_property.mapping_operator.SetInParent()
+                map_property.mapping_operator.SetInParent()
+            if not map_property.mapping_operator.HasField(mapping_type):
+                map_property.ClearField("mapping_operator")
+                map_property.mapping_operator.SetInParent()
 
-            mapping_type_name = self._mapping_type_name(mapping_type)
-            if mapping_type_name not in {"planar", "cubic", "spherical", "cylindrical"}:
-                raise ValueError(
-                    "Invalid mapping type. Must be one of 'planar', 'cubic', 'spherical', "
-                    "'cylindrical'."
+                mapping_type_name = self._mapping_type_name(mapping_type)
+                if mapping_type_name not in {"planar", "cubic", "spherical", "cylindrical"}:
+                    raise ValueError(
+                        "Invalid mapping type. Must be one of 'planar', 'cubic', 'spherical', "
+                        "'cylindrical'."
+                    )
+                getattr(map_property.mapping_operator, mapping_type_name).SetInParent()
+                self._mapping = TextureLayer.TextureMappingOperator(
+                    map_property, MappingOperator(mapping_type=mapping_type)
                 )
-            getattr(map_property.mapping_operator, mapping_type_name).SetInParent()
-            self._mapping = TextureLayer.TextureMappingOperator(map_property, None)
+            else:
+                self._mapping = TextureLayer.TextureMappingOperator(map_property, None)
             return self._mapping
 
         @property
