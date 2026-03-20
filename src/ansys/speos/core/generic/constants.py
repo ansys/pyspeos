@@ -30,6 +30,10 @@ DEFAULT_PORT: str = "50098"
 """Default port used by Speos RPC server and client """
 DEFAULT_VERSION: str = "261"
 """Latest supported Speos version of the current PySpeos Package"""
+LATEST_SPEOS_VERSION: str = sorted(
+    [k.split("ROOT")[1] for k in os.environ.keys() if k.startswith("AWP_ROOT")]
+)[-1]
+"""Latest supported Speos version installed of the current machine"""
 MAX_SERVER_MESSAGE_LENGTH: int = int(os.environ.get("SPEOS_MAX_MESSAGE_LENGTH", 256 * 1024**2))
 """Maximum message length value accepted by the Speos RPC server,
 By default, value stored in environment variable SPEOS_MAX_MESSAGE_LENGTH or 268 435 456.
