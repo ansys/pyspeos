@@ -29,10 +29,19 @@ import pytest
 
 from ansys.speos.core import Face, GeoRef, OptProp, Project, Speos
 from ansys.speos.core.generic.parameters import (
+    ImageTextureParameter,
+    MappingByData,
     MappingOperator,
     MappingTypes,
     MaterialOpticParameters,
     MeshData,
+    NormalMapParameter,
+    NormalMapTypes,
+    OptPropParameters,
+    SopParameters,
+    SopTypes,
+    VopParameters,
+    VopTypes,
 )
 from ansys.speos.core.kernel import ProtoFace
 from ansys.speos.core.opt_prop import TextureLayer
@@ -430,6 +439,48 @@ def test_error_reporting(speos: Speos):
         layer.normal_map.roughness = 2.0
 
 
+def test_opt_prop_default_parameters_and_local_helpers(speos: Speos, capsys):
+    """Cover local/default-parameter helper branches for optical properties."""
+    p = Project(speos=speos)
+
+    op_library = p.create_optical_property(
+        name="Defaults.Library",
+        default_parameters=OptPropParameters(
+            sop_parameters=SopParameters(
+                sop_type=SopTypes.library,
+                sop_library_file_uri=Path("library_surface.scattering"),
+            ),
+            vop_parameters=VopParameters(
+                vop_type=VopTypes.library,
+                vop_library_file_uri=Path("library_volume.material"),
+            ),
+        ),
+    )
+    assert op_library.sop_library.sop_file_uri.endswith("library_surface.scattering")
+    assert op_library.vop_library.endswith("library_volume.material")
+
+    op_polished = p.create_optical_property(
+        name="Defaults.OpticalPolished",
+        default_parameters=OptPropParameters(
+            sop_parameters=SopParameters(sop_type=SopTypes.optical_polished),
+            vop_parameters=VopParameters(vop_type=VopTypes.opaque),
+        ),
+    )
+    assert op_polished._sop_template.HasField("optical_polished")
+    assert op_polished._vop_template.HasField("opaque")
+
+    op_local = p.create_optical_property(name="Local.Only")
+    op_local.set_volume_optic()
+    local_dict = op_local._to_dict()
+
+    assert "vop" in local_dict
+    assert "sops" in local_dict
+    assert "local:" in str(op_local)
+
+    assert op_local.get("definitely_missing_key") is None
+    assert "Used key: definitely_missing_key not found" in capsys.readouterr().out
+
+
 @pytest.mark.supported_speos_versions(min=252)
 def test_create_texture_property(speos: Speos):
     """Test creation of texture property."""
@@ -689,6 +740,145 @@ def test_create_texture_property(speos: Speos):
         ].anisotropy_map_properties.mapping_operator.spherical.sphere_perimeter
         == layer_2.anisotropic_map.mapping_properties.perimeter
     )
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_texture_mapping_helper_local_branches(speos: Speos, monkeypatch):
+    """Cover local mapping helper branches without committing a texture layer."""
+    p = Project(speos=speos)
+    op = p.create_optical_property(name="Texture.Local.Helpers")
+    layer = TextureLayer(op, "Layer.Helpers")
+
+    image = layer.set_image_texture()
+    image.set_mapping_by_data().vertices_data_index = 2
+    image._mapping = None
+    assert image.mapping_properties.vertices_data_index == 2
+
+    image_operator = image._set_mapping_operator(MappingTypes.planar)
+    image_operator.v_length = 3
+    assert image_operator.v_length == 3
+    image_operator.v_length = None
+    assert image_operator.v_length is None
+    assert image_operator == image_operator.__todict__()
+    assert "TextureMappingOperator(" in str(image_operator)
+
+    with pytest.raises(TypeError):
+        image_operator.perimeter = 1
+
+    invalid_layer = TextureLayer(op, "Layer.InvalidMapping")
+    invalid_image = invalid_layer.set_image_texture()
+    monkeypatch.setattr(
+        TextureLayer._BaseTextureMap,
+        "_mapping_type_name",
+        staticmethod(lambda _: "invalid"),
+    )
+    with pytest.raises(ValueError):
+        invalid_image._set_mapping_operator(MappingTypes.cubic)
+    monkeypatch.undo()
+
+    normal = layer.set_normal_map()
+    normal.set_mapping_by_data().vertices_data_index = 1
+    normal._mapping = None
+    assert normal.mapping_properties.vertices_data_index == 1
+
+    anisotropic = layer.set_anisotropy_map()
+    anisotropic.set_mapping_by_data().vertices_data_index = 0
+    anisotropic._mapping = None
+    assert anisotropic.mapping_properties.vertices_data_index == 0
+
+    invalid_map = TextureLayer._BaseTextureMap(layer, "unsupported")
+    with pytest.raises(TypeError):
+        invalid_map._get_map_property()
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_texture_helper_parameter_initialization_branches(speos: Speos):
+    """Cover direct helper initialization paths for image, normal, and anisotropy maps."""
+    p = Project(speos=speos)
+    op = p.create_optical_property(name="Texture.Param.Init")
+    axis_system = [1, 2, 3, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+
+    layer_image = TextureLayer(op, "Layer.Image")
+    image = TextureLayer.ImageTexture(
+        layer_image,
+        ImageTextureParameter(
+            file_path=Path("image_texture.png"),
+            repeat_u=False,
+            repeat_v=False,
+            mapping=MappingOperator(
+                mapping_type=MappingTypes.cubic,
+                u_length=3,
+                v_length=4,
+                axis_system=axis_system,
+                u_scale=2,
+                v_scale=3,
+                rotation=45,
+            ),
+        ),
+    )
+    assert image.image_file_uri.endswith("image_texture.png")
+    assert image.repeat_u is False
+    assert image.repeat_v is False
+    assert image.mapping_properties.mapping_type == MappingTypes.cubic
+    assert image.mapping_properties.v_length == 4
+    assert image.mapping_properties.axis_system == axis_system
+    assert image.mapping_properties.u_scale == 2
+    assert image.mapping_properties.v_scale == 3
+    assert image.mapping_properties.rotation == 45
+
+    layer_image_by_data = TextureLayer(op, "Layer.Image.ByData")
+    image_by_data = TextureLayer.ImageTexture(
+        layer_image_by_data,
+        ImageTextureParameter(mapping=MappingByData(vertices_data_index=5)),
+    )
+    assert image_by_data.mapping_properties.vertices_data_index == 5
+
+    layer_normal = TextureLayer(op, "Layer.Normal")
+    normal = TextureLayer.NormalMap(
+        layer_normal,
+        NormalMapParameter(
+            file_path=Path("normal_map.png"),
+            repeat_u=False,
+            repeat_v=False,
+            mapping=MappingByData(vertices_data_index=6),
+            normal_map_type=NormalMapTypes.from_normal_map,
+        ),
+    )
+    assert normal.normal_map_file_uri.endswith("normal_map.png")
+    assert normal.repeat_u is False
+    assert normal.repeat_v is False
+    assert normal.mapping_properties.vertices_data_index == 6
+    normal.set_normal_map_from_image()
+    assert normal.normal_map_file_uri.endswith("normal_map.png")
+    normal.set_normal_map_from_normal_map()
+    assert normal.normal_map_file_uri.endswith("normal_map.png")
+
+    layer_anisotropic = TextureLayer(op, "Layer.Anisotropic")
+    anisotropic = TextureLayer.AnisotropicMap(
+        layer_anisotropic,
+        MappingOperator(
+            mapping_type=MappingTypes.spherical,
+            u_length=7,
+            v_length=8,
+            axis_system=axis_system,
+            u_scale=4,
+            v_scale=5,
+            rotation=90,
+        ),
+    )
+    assert anisotropic.mapping_properties.mapping_type == MappingTypes.spherical
+    assert anisotropic.mapping_properties.axis_system == axis_system
+    assert anisotropic.mapping_properties.u_scale == 4
+    assert anisotropic.mapping_properties.v_scale == 5
+    assert anisotropic.mapping_properties.rotation == 90
+
+    layer_reuse = TextureLayer(op, "Layer.Reuse")
+    layer_reuse.set_image_texture()
+    layer_reuse._image_map = None
+    assert layer_reuse.set_image_texture() is not None
+    layer_reuse.set_anisotropy_map()
+    layer_reuse._aniso_map = None
+    assert layer_reuse.set_anisotropy_map() is not None
 
 
 @pytest.mark.supported_speos_versions(min=252)

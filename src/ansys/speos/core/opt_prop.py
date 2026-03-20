@@ -130,7 +130,7 @@ class BaseSop:
     class SopMirror:
         """Mirror SOP parameters."""
 
-        def __init__(self, parent: BaseSop, default_parameters: Optional[SopParameters] = None):
+        def __init__(self, parent: BaseSop):
             """Create a mirror helper bound to a parent SOP.
 
             Parameters
@@ -142,8 +142,6 @@ class BaseSop:
             """
             self._parent = parent
             self._parent._sop_template.mirror.SetInParent()
-            if default_parameters and default_parameters.sop_reflectance:
-                self.reflectance = default_parameters.sop_reflectance
 
         @property
         def reflectance(self) -> float:
@@ -192,10 +190,10 @@ class BaseSop:
             and self._sop_template is not None
             and self._sop_template.HasField("mirror")
         ):
-            self._mirror = self.SopMirror(self, None)
+            self._mirror = self.SopMirror(self)
         return self._mirror
 
-    def set_surface_mirror(self) -> BaseSop:
+    def set_surface_mirror(self) -> BaseSop.SopMirror:
         """Define SOP as a perfect specular surface.
 
         Returns
@@ -207,7 +205,7 @@ class BaseSop:
         if self._sop_template.HasField("mirror"):
             value = True
         self._library = None
-        self._mirror = self.SopMirror(self, None)
+        self._mirror = self.SopMirror(self)
         if not value:
             self._mirror.reflectance = 100
         return self._mirror
@@ -228,7 +226,7 @@ class BaseSop:
     class SopLibrary:
         """Library SOP parameters."""
 
-        def __init__(self, parent: BaseSop, default_parameters: Optional[SopParameters] = None):
+        def __init__(self, parent: BaseSop):
             """Create a library helper bound to a parent SOP.
 
             Parameters
@@ -240,8 +238,6 @@ class BaseSop:
             """
             self._parent = parent
             self._parent._sop_template.library.SetInParent()
-            if default_parameters and default_parameters.sop_library_file_uri:
-                self.sop_file_uri = default_parameters.sop_library_file_uri
 
         @property
         def sop_file_uri(self) -> str:
@@ -272,7 +268,7 @@ class BaseSop:
             if self._parent._sop_template.HasField("library"):
                 self._parent._sop_template.library.sop_file_uri = str(value)
 
-    def set_surface_library(self) -> BaseSop:
+    def set_surface_library(self) -> BaseSop.SopLibrary:
         """Configure SOP to use a library file.
 
         Returns
@@ -282,7 +278,7 @@ class BaseSop:
         """
         self._mirror = None
         self._sop_template.library.SetInParent()
-        self._library = self.SopLibrary(self, None)
+        self._library = self.SopLibrary(self)
         return self._library
 
     @property
@@ -297,7 +293,7 @@ class BaseSop:
         """
         if self._sop_template.HasField("library"):
             if self._library is None:
-                self._library = self.SopLibrary(self, None)
+                self._library = self.SopLibrary(self)
             return self._library
 
 
