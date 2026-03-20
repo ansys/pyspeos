@@ -23,6 +23,7 @@
 
 from __future__ import annotations
 
+import copy
 from pathlib import Path
 import re
 from typing import TYPE_CHECKING, List, Mapping, Optional, Union
@@ -1386,12 +1387,14 @@ class Project:
         match speos_feature:
             case SourceRayFile() | SourceLuminaire() | SourceSurface():
                 for visual_ray in speos_feature.visual_data.data:
-                    tmp = visual_ray._VisualArrow__data
-                    visual_ray._VisualArrow__data.points[1] = (
-                        ray_path_scale_factor * scene_seize * (tmp.points[1] - tmp.points[0])
-                        + tmp.points[0]
+                    display_ray = visual_ray.data.copy(deep=True)
+                    display_ray.points[1] = (
+                        ray_path_scale_factor
+                        * scene_seize
+                        * (display_ray.points[1] - display_ray.points[0])
+                        + display_ray.points[0]
                     )
-                    plotter.plot(visual_ray.data, color=visual_ray.color)
+                    plotter.plot(display_ray, color=visual_ray.color)
             case _:
                 plotter.plot(
                     speos_feature.visual_data.data,
@@ -1403,22 +1406,22 @@ class Project:
                 )
 
         if speos_feature.visual_data.coordinates is not None:
-            tmp_origin = speos_feature.visual_data.coordinates.origin
-            tmp = speos_feature.visual_data.coordinates
-            speos_feature.visual_data.coordinates._VisualCoordinateSystem__x_axis.points[:] = (
-                tmp.x_axis.points - tmp_origin
-            ) * ray_path_scale_factor * scene_seize + tmp_origin
-            speos_feature.visual_data.coordinates._VisualCoordinateSystem__y_axis.points[:] = (
-                tmp.y_axis.points - tmp_origin
-            ) * ray_path_scale_factor * scene_seize + tmp_origin
-            speos_feature.visual_data.coordinates._VisualCoordinateSystem__z_axis.points[:] = (
-                tmp.z_axis.points - tmp_origin
-            ) * ray_path_scale_factor * scene_seize + tmp_origin
+            display_coordinates = copy.deepcopy(speos_feature.visual_data.coordinates)
+            display_origin = display_coordinates.origin
+            display_coordinates.x_axis.points[:] = (
+                display_coordinates.x_axis.points - display_origin
+            ) * ray_path_scale_factor * scene_seize + display_origin
+            display_coordinates.y_axis.points[:] = (
+                display_coordinates.y_axis.points - display_origin
+            ) * ray_path_scale_factor * scene_seize + display_origin
+            display_coordinates.z_axis.points[:] = (
+                display_coordinates.z_axis.points - display_origin
+            ) * ray_path_scale_factor * scene_seize + display_origin
 
             match speos_feature:
                 case SensorRadiance() | SourceSurface():
-                    plotter.plot(speos_feature.visual_data.coordinates.x_axis, color="red")
-                    plotter.plot(speos_feature.visual_data.coordinates.y_axis, color="green")
+                    plotter.plot(display_coordinates.x_axis, color="red")
+                    plotter.plot(display_coordinates.y_axis, color="green")
                 case (
                     SensorIrradiance()
                     | SensorXMPIntensity()
@@ -1426,9 +1429,9 @@ class Project:
                     | SourceLuminaire()
                     | SourceRayFile()
                 ):
-                    plotter.plot(speos_feature.visual_data.coordinates.x_axis, color="red")
-                    plotter.plot(speos_feature.visual_data.coordinates.y_axis, color="green")
-                    plotter.plot(speos_feature.visual_data.coordinates.z_axis, color="blue")
+                    plotter.plot(display_coordinates.x_axis, color="red")
+                    plotter.plot(display_coordinates.y_axis, color="green")
+                    plotter.plot(display_coordinates.z_axis, color="blue")
         return plotter
 
     @graphics_required
@@ -1490,10 +1493,12 @@ class Project:
 
         # Add speos visual data at the root part
         scene_bounds = p.backend.scene.bounds
+        print(scene_bounds)
         scene_x_seize = scene_bounds[1] - scene_bounds[0]
         scene_y_seize = scene_bounds[3] - scene_bounds[2]
         scene_z_seize = scene_bounds[5] - scene_bounds[4]
         scene_max = max(scene_x_seize, scene_y_seize, scene_z_seize)
+        print(scene_max)
         for feature in self._features:
             p = self._create_speos_feature_preview(
                 plotter=p, speos_feature=feature, scene_seize=scene_max
