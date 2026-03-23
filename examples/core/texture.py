@@ -214,7 +214,7 @@ layer_1 = opt_prop.create_texture_layer()
 layer_1.set_surface_library()
 layer_1.sop_library.sop_file_uri = Path(assets_data_path) / "L100 2.simplescattering"
 layer_1.set_image_texture()
-layer_1.image_texture.image_texture_file_uri = Path(assets_data_path) / "textureColors.jpg"
+layer_1.image_texture.image_file_uri = Path(assets_data_path) / "textureColors.jpg"
 layer_1.image_texture.set_mapping_by_data()
 layer_1.image_texture.mapping_properties.vertices_data_index = 0
 layer_1.image_texture.mapping_properties.repeat_u = False
@@ -233,7 +233,7 @@ opt_prop1.geometries = [face0_0.geo_path]
 layer_2 = opt_prop1.create_texture_layer()
 layer_2.set_surface_library().sop_file_uri = Path(assets_data_path) / "L100 2.simplescattering"
 layer_2.set_image_texture()
-layer_2.image_texture.image_texture_file_uri = Path(assets_data_path) / "textureColors.jpg"
+layer_2.image_texture.image_file_uri = Path(assets_data_path) / "textureColors.jpg"
 layer_2.image_texture.set_planar_mapping()
 layer_2.image_texture.mapping_properties.u_length = 2.5
 layer_2.image_texture.mapping_properties.v_length = 2.5
