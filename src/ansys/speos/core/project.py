@@ -1500,7 +1500,7 @@ class Project:
             if not isinstance(speos_feature.visual_data, list)
             else speos_feature.visual_data[0].coordinates
         )
-        if speos_feature.visual_data.coordinates is not None:
+        if visual_coordinate_data is not None:
             display_coordinates = copy.deepcopy(visual_coordinate_data)
             display_origin = display_coordinates.origin
             display_coordinates.x_axis.points[:] = (
