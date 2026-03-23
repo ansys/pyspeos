@@ -23,6 +23,7 @@
 
 from __future__ import annotations
 
+import copy
 from pathlib import Path
 import re
 from typing import TYPE_CHECKING, List, Mapping, Optional, Union
@@ -1476,12 +1477,14 @@ class Project:
                         )
             case SourceRayFile() | SourceLuminaire() | SourceSurface():
                 for visual_ray in speos_feature.visual_data.data:
-                    tmp = visual_ray._VisualArrow__data
-                    visual_ray._VisualArrow__data.points[1] = (
-                        ray_path_scale_factor * scene_seize * (tmp.points[1] - tmp.points[0])
-                        + tmp.points[0]
+                    display_ray = visual_ray.data.copy(deep=True)
+                    display_ray.points[1] = (
+                        ray_path_scale_factor
+                        * scene_seize
+                        * (display_ray.points[1] - display_ray.points[0])
+                        + display_ray.points[0]
                     )
-                    plotter.plot(visual_ray.data, color=visual_ray.color)
+                    plotter.plot(display_ray, color=visual_ray.color)
             case _:
                 plotter.plot(
                     speos_feature.visual_data.data,
@@ -1497,23 +1500,23 @@ class Project:
             if not isinstance(speos_feature.visual_data, list)
             else speos_feature.visual_data[0].coordinates
         )
-        if visual_coordinate_data is not None:
-            tmp_origin = visual_coordinate_data.origin
-            tmp = visual_coordinate_data
-            visual_coordinate_data._VisualCoordinateSystem__x_axis.points[:] = (
-                tmp.x_axis.points - tmp_origin
-            ) * ray_path_scale_factor * scene_seize + tmp_origin
-            visual_coordinate_data._VisualCoordinateSystem__y_axis.points[:] = (
-                tmp.y_axis.points - tmp_origin
-            ) * ray_path_scale_factor * scene_seize + tmp_origin
-            visual_coordinate_data._VisualCoordinateSystem__z_axis.points[:] = (
-                tmp.z_axis.points - tmp_origin
-            ) * ray_path_scale_factor * scene_seize + tmp_origin
+        if speos_feature.visual_data.coordinates is not None:
+            display_coordinates = copy.deepcopy(visual_coordinate_data)
+            display_origin = display_coordinates.origin
+            display_coordinates.x_axis.points[:] = (
+                display_coordinates.x_axis.points - display_origin
+            ) * ray_path_scale_factor * scene_seize + display_origin
+            display_coordinates.y_axis.points[:] = (
+                display_coordinates.y_axis.points - display_origin
+            ) * ray_path_scale_factor * scene_seize + display_origin
+            display_coordinates.z_axis.points[:] = (
+                display_coordinates.z_axis.points - display_origin
+            ) * ray_path_scale_factor * scene_seize + display_origin
 
             match speos_feature:
                 case SensorRadiance() | SourceSurface():
-                    plotter.plot(visual_coordinate_data.x_axis, color="red")
-                    plotter.plot(visual_coordinate_data.y_axis, color="green")
+                    plotter.plot(display_coordinates.x_axis, color="red")
+                    plotter.plot(display_coordinates.y_axis, color="green")
                 case (
                     SensorIrradiance()
                     | SensorCamera()
@@ -1521,9 +1524,9 @@ class Project:
                     | SourceRayFile()
                     | LightBox()
                 ):
-                    plotter.plot(visual_coordinate_data.x_axis, color="red")
-                    plotter.plot(visual_coordinate_data.y_axis, color="green")
-                    plotter.plot(visual_coordinate_data.z_axis, color="blue")
+                    plotter.plot(display_coordinates.x_axis, color="red")
+                    plotter.plot(display_coordinates.y_axis, color="green")
+                    plotter.plot(display_coordinates.z_axis, color="blue")
         return plotter
 
     @graphics_required
