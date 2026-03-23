@@ -158,7 +158,8 @@ src.commit()
 # More details on creating/editing simulation examples can be found in core examples.
 
 sim = p.create_simulation(name="Inverse.1", feature_type=SimulationInverse)
-sim.set_sensor_paths(["Camera.1"]).set_source_paths(["Luminaire.1"])
+sim.sensor_paths = [ssr]
+sim.source_paths = [src]
 sim.commit()
 
 # ## Run the simulation

@@ -1833,7 +1833,7 @@ def test_create_3d_irradiance_sensor(speos: Speos):
     assert sensor_3d._sensor_instance.irradiance_3d_properties.ray_file_type == 4
 
     sim = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
-    sim.set_sensor_paths(["Irradiance.1:564", "3d"])
+    sim.sensor_paths = ["Irradiance.1:564", "3d"]
     sim.commit()
     assert sim._simulation_instance.sensor_paths == ["Irradiance.1:564", "3d"]
     sim.delete()

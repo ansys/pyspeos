@@ -117,7 +117,8 @@ source1.commit()
 # ## Create a simulation
 
 simulation1 = p.create_simulation(name="Simulation.1")
-simulation1.set_sensor_paths([SENSOR_NAME]).set_source_paths([SOURCE_NAME])
+simulation1.sensor_paths = [sensor1]  # use sensor instance object
+simulation1.source_paths = [source1]  # use source instance object
 print(simulation1)
 simulation1.commit()
 print(simulation1)
@@ -132,12 +133,13 @@ print(simulation1)
 
 
 simulation2_direct = p.create_simulation(name="Simulation.2")
-simulation2_direct.set_ambient_material_file_uri(
-    uri=str(assets_data_path / "AIR.material")
-).set_colorimetric_standard_CIE_1964().set_weight_none().set_dispersion(False)
+simulation2_direct.ambient_material_file_uri = assets_data_path / "AIR.material"
+simulation2_direct.set_colorimetric_standard_CIE_1964().set_weight_none().set_dispersion = False
 simulation2_direct.geom_distance_tolerance = 0.01
 simulation2_direct.max_impact = 200
-simulation2_direct.set_sensor_paths([SENSOR_NAME]).set_source_paths([SOURCE_NAME]).commit()
+simulation2_direct.sensor_paths = [SENSOR_NAME]  # use sensor instance name
+simulation2_direct.source_paths = [SOURCE_NAME]  # use source instance name
+simulation2_direct.commit()
 print(simulation2_direct)
 
 
@@ -157,7 +159,7 @@ print(p)
 #
 # If you don't, you will still only watch what is committed on the server.
 
-simulation1.set_ambient_material_file_uri(uri=str(assets_data_path / "AIR.material"))
+simulation1.ambient_material_file_uri = assets_data_path / "AIR.material"
 simulation1.commit()
 print(simulation1)
 
@@ -177,15 +179,16 @@ print(simulation1)
 # ### Inverse simulation
 
 simulation3 = p.create_simulation(name="Simulation.3", feature_type=SimulationInverse)
-simulation3.set_sensor_paths(sensor_paths=[SENSOR_NAME]).set_source_paths(
-    source_paths=[SOURCE_NAME]
-).commit()
+simulation3.sensor_paths = [SENSOR_NAME]
+simulation3.source_paths = [source1]
+simulation3.commit()
 print(simulation3)
 
 # ### Interactive simulation
 
 simulation4 = p.create_simulation(name="Simulation.4", feature_type=SimulationInteractive)
-simulation4.set_source_paths(source_paths=[SOURCE_NAME]).commit()
+simulation4.source_paths = [source1]
+simulation4.commit()
 print(simulation4)
 
 # ### Virtual BSDF Bench simulation

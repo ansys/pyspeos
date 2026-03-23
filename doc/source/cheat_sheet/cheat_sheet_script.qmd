@@ -268,11 +268,11 @@ from ansys.speos.core.simulation import SimulationDirect
 direct_sim = project.create_simulation(name='Direct.1', feature_type=SimulationDirect)
 # All project geometry will be taken into account
 # General Simulation API
-direct_sim.set_sensor_paths(['Irradiance.1'])
-direct_sim.set_source_paths(['Surface.1'])
+direct_sim.sensor_paths = [i_sensor]
+direct_sim.source_paths = ['Surface.1']
 # the stop condition which is hit first will stop the simulation
-direct_sim.set_stop_condition_rays_number(5000000)
-direct_sim.set_stop_condition_duration(3600)
+direct_sim.stop_condition_rays_number = 5000000
+direct_sim.stop_condition_duration = 3600
 direct_sim.commit()
 ```
 
