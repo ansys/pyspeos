@@ -160,6 +160,17 @@ class Body:
         self._geom_features.append(face_feat)
         return face_feat
 
+    @property
+    def faces(self) -> List[face.Face]:
+        """List faces contained in this Body.
+
+        Returns
+        -------
+        List[ansys.speos.core.face.Face]
+            Face children.
+        """
+        return [f for f in self._geom_features if isinstance(f, face.Face)]
+
     def _to_dict(self) -> dict:
         out_dict = ""
 

@@ -189,7 +189,7 @@ if os.name == "nt":
 # z_vect_x, z_vect_y, z_vect_z.
 
 blue_car_sub_part = p.find(name="BlueCar", feature_type=Part.SubPart)[0]
-blue_car_sub_part.set_axis_system([2000, 0.0, 20000, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0, 0.0])
+blue_car_sub_part.axis_system = [2000, 0.0, 20000, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
 blue_car_sub_part.commit()
 
 # ## Re-run simulation with the modified part position
