@@ -108,7 +108,7 @@ body = p.find(name="PrismBody", name_regex=True, feature_type=Body)[0]
 sensor_3d = p.create_sensor(name="3d_irradiance", feature_type=Sensor3DIrradiance)
 sensor_3d.geometries = [body.geo_path]
 sensor_3d.commit()
-sim.set_sensor_paths(["Irradiance.1:564", "3d_irradiance"])
+sim.sensor_paths == ["Irradiance.1:564", "3d_irradiance"]
 sim.commit()
 p.preview()
 

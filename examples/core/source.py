@@ -40,13 +40,11 @@ def create_helper_geometries(project: Project):
     """Create bodies and faces."""
 
     def create_face(body):
-        (
-            body.create_face(name="TheFaceF")
-            .set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0])
-            .set_facets([0, 1, 2])
-            .set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
-            .commit()
-        )
+        f = body.create_face(name="TheFaceF")
+        f.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+        f.facets = [0, 1, 2]
+        f.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+        f.commit()
 
     root_part = project.create_root_part().commit()
     body_b1 = root_part.create_body(name="TheBodyB").commit()
