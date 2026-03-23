@@ -251,7 +251,7 @@ class LightBox:
                 for source in current_sources:
                     if (self.name not in source) or (source in self.source_paths):
                         new_sources.append(source)
-                simulation.set_source_paths(new_sources)
+                simulation.source_paths = new_sources
         return self
 
     def commit(self) -> LightBox:

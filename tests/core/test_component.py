@@ -204,13 +204,11 @@ def test_load_lightbox(speos: Speos):
     ]
 
     # modify the lightbox which will keep the source paths if still in new lightbox
-    simulation.set_source_paths(
-        [
-            "Light Box Import.2/Surface.2:1",
-            "Light Box Import.2/Ray-file.1:12",
-            "3/Surface.2:1",
-        ]
-    )
+    simulation.source_paths = [
+        "Light Box Import.2/Surface.2:1",
+        "Light Box Import.2/Ray-file.1:12",
+        "3/Surface.2:1",
+    ]
     simulation.commit()
     assert len(simulation._simulation_instance.source_paths) == 3
     lightbox_2.set_speos_light_box(new_lightbox)

@@ -1161,7 +1161,7 @@ def test_export(speos: Speos):
     remove_file(str(Path(test_path) / "export_test_2.speos"))
 
     sim_interactive = p.create_simulation(name="Interactive.1", feature_type=SimulationInteractive)
-    sim_interactive.set_source_paths(["Surface.1:7758"])
+    sim_interactive.source_paths = ["Surface.1:7758"]
     sim_interactive.commit()
     with pytest.raises(
         ValueError,
