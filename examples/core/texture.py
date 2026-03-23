@@ -15,11 +15,10 @@ import os
 from pathlib import Path
 
 from ansys.speos.core import Face, Project, Speos, launcher
-from ansys.speos.core.generic.parameters import MappingOperator, MeshData, TextureNormalizationTypes
+from ansys.speos.core.generic.parameters import MeshData, TextureNormalizationTypes
 from ansys.speos.core.kernel.client import (
     default_docker_channel,
 )
-from ansys.speos.core.opt_prop import MappingByData, TextureLayer
 from ansys.speos.core.sensor import SensorRadiance
 from ansys.speos.core.simulation import SimulationInverse
 from ansys.speos.core.source import SourceAmbientEnvironment
@@ -62,7 +61,6 @@ def create_helper_geometries(project: Project):
         face.set_normals([0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0])
         return face
 
-    data = {"bodies": [], "faces": []}
     root_part = project.create_root_part().commit()
     data = {"bodies": [], "faces": [], "rp": root_part}
     data["bodies"].append(root_part.create_body(name="TheBody0").commit())
@@ -214,13 +212,15 @@ opt_prop.geometries = [
     face5_0.geo_path,
 ]
 
-layer_1 = TextureLayer(opt_prop, "Layer.1")
-layer_1.set_surface_library().sop_library = Path(assets_data_path) / "L100 2.simplescattering"
-layer_1.image_texture_file_uri = Path(assets_data_path) / "textureColors.jpg"
-layer_1.image_property = MappingByData(vertices_data_index=0, repeat_u=False, repeat_v=False)
-layer_1.commit()
-
-opt_prop.texture = [layer_1]
+layer_1 = opt_prop.create_texture_layer()
+layer_1.set_surface_library()
+layer_1.sop_library.sop_file_uri = Path(assets_data_path) / "L100 2.simplescattering"
+layer_1.set_image_texture()
+layer_1.image_texture.image_texture_file_uri = Path(assets_data_path) / "textureColors.jpg"
+layer_1.image_texture.set_mapping_by_data()
+layer_1.image_texture.mapping_properties.vertices_data_index = 0
+layer_1.image_texture.mapping_properties.repeat_u = False
+layer_1.image_texture.mapping_properties.repeat_v = False
 opt_prop.commit()
 
 # ## Create Texture Property by mapping operator
@@ -232,27 +232,23 @@ opt_prop1 = p.create_optical_property(name="OptProp.2")
 opt_prop1.set_volume_none()
 opt_prop1.geometries = [face0_0.geo_path]
 
-layer_2 = TextureLayer(opt_prop, "Layer.2")
-layer_2.set_surface_library().sop_library = Path(assets_data_path) / "L100 2.simplescattering"
-layer_2.image_texture_file_uri = Path(assets_data_path) / "textureColors.jpg"
-layer_2.image_property = MappingOperator(
-    mapping_type="planar",
-    u_length=2.5,
-    v_length=2.5,
-    repeat_u=True,
-    repeat_v=True,
-    axis_system=[2.5, 2.5, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0],
-)
-layer_2.commit()
-
-opt_prop1.texture = [layer_2]
+layer_2 = opt_prop1.create_texture_layer()
+layer_2.set_surface_library().sop_file_uri = Path(assets_data_path) / "L100 2.simplescattering"
+layer_2.set_image_texture()
+layer_2.image_texture.image_texture_file_uri = Path(assets_data_path) / "textureColors.jpg"
+layer_2.image_texture.set_planar_mapping()
+layer_2.image_texture.mapping_properties.u_length = 2.5
+layer_2.image_texture.mapping_properties.v_length = 2.5
+layer_2.image_texture.mapping_properties.repeat_u = True
+layer_2.image_texture.mapping_properties.repeat_v = True
+layer_2.image_texture.mapping_properties.axis_system = [2.5, 2.5, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0]
 opt_prop1.commit()
 
 # ## Create Inverse Simulation with define Texture normalization
 
 sim = p.create_simulation(name="Inverse", feature_type=SimulationInverse)
-sim.set_sensor_paths(sensor_paths=["Radiance"])
-sim.set_source_paths(source_paths=["Ambient"])
+sim.sensor_paths = ["Radiance"]
+sim.source_paths = ["Ambient"]
 sim.texture_normalization = TextureNormalizationTypes.none
 sim.commit()
 
