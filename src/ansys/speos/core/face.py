@@ -211,7 +211,7 @@ class Face:
 
         Returns
         -------
-        list[MeshData]
+        list[ansys.speos.core.generic.parameters.MeshData]
             List of MeshData
         """
         return [MeshData(i.name, i.data) for i in self._face.vertices_data]
@@ -222,8 +222,8 @@ class Face:
 
         Parameters
         ----------
-        value : list[MeshData]
-            List of MeshData for the face each data set in complete
+        value : list[ansys.speos.core.generic.parameters.MeshData]
+            List of MeshData for the face.
         """
         for i in value:
             if not isinstance(i, MeshData):
