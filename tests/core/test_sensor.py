@@ -542,16 +542,22 @@ def test_create_irradiance_sensor(speos: Speos):
 
     root_part = p.create_root_part()
     body_b = root_part.create_body(name="TheBodyB")
-    body_b.create_face(name="TheFaceF").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    face1 = body_b.create_face(name="TheFaceF")
+    face1.vertices = [0, 1, 2, 0, 2, 2, 1, 2, 2]
+    face1.facets = [0, 1, 2]
+    face1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    face1.commit()
     body_c = root_part.create_body(name="TheBodyC")
-    body_c.create_face(name="TheFaceC1").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
-    body_c.create_face(name="TheFaceC2").set_vertices([1, 0, 0, 2, 0, 0, 1, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    face2 = body_c.create_face(name="TheFaceC1")
+    face2.vertices = [0, 1, 2, 0, 2, 2, 1, 2, 2]
+    face2.facets = [0, 1, 2]
+    face2.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    face2.commit()
+    face3 = body_c.create_face(name="TheFaceC2")
+    face3.vertices = [0, 1, 2, 0, 2, 2, 1, 2, 2]
+    face3.facets = [0, 1, 2]
+    face3.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    face3.commit()
     root_part.commit()
     sensor_parameter = IrradianceSensorParameters()
     # Default value
@@ -861,16 +867,22 @@ def test_create_radiance_sensor(speos: Speos):
 
     root_part = p.create_root_part()
     body_b = root_part.create_body(name="TheBodyB")
-    body_b.create_face(name="TheFaceF").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    face1 = body_b.create_face(name="TheFaceF")
+    face1.vertices = [0, 1, 2, 0, 2, 2, 1, 2, 2]
+    face1.facets = [0, 1, 2]
+    face1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    face1.commit()
     body_c = root_part.create_body(name="TheBodyC")
-    body_c.create_face(name="TheFaceC1").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
-    body_c.create_face(name="TheFaceC2").set_vertices([1, 0, 0, 2, 0, 0, 1, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    face2 = body_c.create_face(name="TheFaceC1")
+    face2.vertices = [0, 1, 2, 0, 2, 2, 1, 2, 2]
+    face2.facets = [0, 1, 2]
+    face2.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    face2.commit()
+    face3 = body_c.create_face(name="TheFaceC2")
+    face3.vertices = [0, 1, 2, 0, 2, 2, 1, 2, 2]
+    face3.facets = [0, 1, 2]
+    face3.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    face3.commit()
     root_part.commit()
     sensor_parameter = RadianceSensorParameters()
     # Default value
@@ -1105,16 +1117,22 @@ def test_create_xmpintensity_sensor(speos: Speos):
 
     root_part = p.create_root_part()
     body_b = root_part.create_body(name="TheBodyB")
-    body_b.create_face(name="TheFaceF").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    face1 = body_b.create_face(name="TheFaceF")
+    face1.vertices = [0, 1, 2, 0, 2, 2, 1, 2, 2]
+    face1.facets = [0, 1, 2]
+    face1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    face1.commit()
     body_c = root_part.create_body(name="TheBodyC")
-    body_c.create_face(name="TheFaceC1").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
-    body_c.create_face(name="TheFaceC2").set_vertices([1, 0, 0, 2, 0, 0, 1, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    face2 = body_c.create_face(name="TheFaceC1")
+    face2.vertices = [0, 1, 2, 0, 2, 2, 1, 2, 2]
+    face2.facets = [0, 1, 2]
+    face2.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    face2.commit()
+    face3 = body_c.create_face(name="TheFaceC2")
+    face3.vertices = [0, 1, 2, 0, 2, 2, 1, 2, 2]
+    face3.facets = [0, 1, 2]
+    face3.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    face3.commit()
     root_part.commit()
 
     # Default value
@@ -1815,7 +1833,7 @@ def test_create_3d_irradiance_sensor(speos: Speos):
     assert sensor_3d._sensor_instance.irradiance_3d_properties.ray_file_type == 4
 
     sim = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
-    sim.set_sensor_paths(["Irradiance.1:564", "3d"])
+    sim.sensor_paths = ["Irradiance.1:564", "3d"]
     sim.commit()
     assert sim._simulation_instance.sensor_paths == ["Irradiance.1:564", "3d"]
     sim.delete()

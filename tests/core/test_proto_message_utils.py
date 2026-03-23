@@ -43,12 +43,18 @@ def test_replace_guid_elt(speos: Speos):
 
     root_part = p.create_root_part()
     body_b = root_part.create_body(name="BodyB")
-    body_b.create_face(name="FaceB1").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
-    body_b.create_face(name="FaceB2").set_vertices([1, 0, 0, 2, 0, 0, 1, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+
+    # create faces with property-based API (migrated from chainable set_* methods)
+    f1 = body_b.create_face(name="FaceB1")
+    f1.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    f1.facets = [0, 1, 2]
+    f1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+
+    f2 = body_b.create_face(name="FaceB2")
+    f2.vertices = [1, 0, 0, 2, 0, 0, 1, 1, 0]
+    f2.facets = [0, 1, 2]
+    f2.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+
     root_part.commit()
 
     src_feat = SourceSurface(
@@ -94,12 +100,17 @@ def test_replace_guid_elt_ignore_simple_key(speos: Speos):
 
     root_part = p.create_root_part()
     body_b = root_part.create_body(name="BodyB")
-    body_b.create_face(name="FaceB1").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
-    body_b.create_face(name="FaceB2").set_vertices([1, 0, 0, 2, 0, 0, 1, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+
+    f1 = body_b.create_face(name="FaceB1")
+    f1.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    f1.facets = [0, 1, 2]
+    f1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+
+    f2 = body_b.create_face(name="FaceB2")
+    f2.vertices = [1, 0, 0, 2, 0, 0, 1, 1, 0]
+    f2.facets = [0, 1, 2]
+    f2.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+
     root_part.commit()
 
     src_feat = SourceSurface(
@@ -270,12 +281,17 @@ def test_value_finder_key_startswith(speos: Speos):
 
     root_part = p.create_root_part()
     body_b = root_part.create_body(name="BodyB")
-    body_b.create_face(name="FaceB1").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
-    body_b.create_face(name="FaceB2").set_vertices([1, 0, 0, 2, 0, 0, 1, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+
+    f1 = body_b.create_face(name="FaceB1")
+    f1.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    f1.facets = [0, 1, 2]
+    f1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+
+    f2 = body_b.create_face(name="FaceB2")
+    f2.vertices = [1, 0, 0, 2, 0, 0, 1, 1, 0]
+    f2.facets = [0, 1, 2]
+    f2.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+
     root_part.commit()
 
     src_feat = p.create_source(name="Source.1", feature_type=SourceSurface)
@@ -299,12 +315,17 @@ def test__value_finder_key_endswith(speos: Speos):
 
     root_part = p.create_root_part()
     body_b = root_part.create_body(name="BodyB")
-    body_b.create_face(name="FaceB1").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
-    body_b.create_face(name="FaceB2").set_vertices([1, 0, 0, 2, 0, 0, 1, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+
+    f1 = body_b.create_face(name="FaceB1")
+    f1.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    f1.facets = [0, 1, 2]
+    f1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+
+    f2 = body_b.create_face(name="FaceB2")
+    f2.vertices = [1, 0, 0, 2, 0, 0, 1, 1, 0]
+    f2.facets = [0, 1, 2]
+    f2.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+
     root_part.commit()
 
     src_feat = src_feat = p.create_source(name="Source.1", feature_type=SourceSurface)
@@ -332,12 +353,17 @@ def test_replace_properties(speos: Speos):
 
     root_part = p.create_root_part()
     body_b = root_part.create_body(name="BodyB")
-    body_b.create_face(name="FaceB1").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
-    body_b.create_face(name="FaceB2").set_vertices([1, 0, 0, 2, 0, 0, 1, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+
+    f1 = body_b.create_face(name="FaceB1")
+    f1.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    f1.facets = [0, 1, 2]
+    f1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+
+    f2 = body_b.create_face(name="FaceB2")
+    f2.vertices = [1, 0, 0, 2, 0, 0, 1, 1, 0]
+    f2.facets = [0, 1, 2]
+    f2.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+
     root_part.commit()
 
     src_feat = p.create_source(name="Source.1", feature_type=SourceSurface)
