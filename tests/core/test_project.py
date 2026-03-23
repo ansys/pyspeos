@@ -532,9 +532,11 @@ def test_preview_visual_data(speos: Speos):
     # constant exitance
     p2_root_part = p2.find(name="", feature_type=Part)[0]
     p2_body1 = p2_root_part.create_body(name="TheBodyB").commit()
-    p2_body1.create_face(name="TheFaceF").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1]).commit()
+    face = p2_body1.create_face(name="TheFaceF")
+    face.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    face.facets = [0, 1, 2]
+    face.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    face.commit()
     sr = p2.create_source(name="Surface.1", feature_type=SourceSurface)
 
     sr.set_exitance_constant().geometries = [(GeoRef.from_native_link("TheBodyB/TheFaceF"), False)]
@@ -570,19 +572,20 @@ def test_preview_visual_data(speos: Speos):
     # test reading mesh which is only inside sub-subpart.
     p7 = Project(speos=speos)
     root_part = p7.create_root_part().commit()
-    child_part1 = (
-        root_part.create_sub_part(name="SubPart.1")
-        .set_axis_system([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
-        .commit()
-    )
-    child_part2 = (
-        child_part1.create_sub_part(name="SubPart.2")
-        .set_axis_system([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
-        .commit()
-    )
-    child_part2.create_body(name="Body.1").create_face(name="Face.1").set_vertices(
-        [0, 1, 2, 0, 2, 2, 1, 2, 2]
-    ).set_facets([0, 1, 2]).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    child_part1 = root_part.create_sub_part(name="SubPart.1")
+    child_part1.axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    child_part1.commit()
+
+    child_part2 = child_part1.create_sub_part(name="SubPart.2")
+    child_part2.axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    child_part2.commit()
+
+    body1 = child_part2.create_body(name="Body.1")
+    face = body1.create_face(name="Face.1")
+    face.vertices = [0, 1, 2, 0, 2, 2, 1, 2, 2]
+    face.facets = [0, 1, 2]
+    face.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    face.commit()
     child_part2.commit()
     p7.preview()
 

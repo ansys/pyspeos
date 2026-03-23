@@ -39,7 +39,10 @@ from ansys.speos.core.generic.parameters import (
     AmbientEnvironmentParameters,
     AmbientNaturalLightParameters,
     CameraSensorParameters,
+    DirectSimulationParameters,
     IntensityXMPSensorParameters,
+    InteractiveSimulationParameters,
+    InverseSimulationParameters,
     Irradiance3DSensorParameters,
     IrradianceSensorParameters,
     LightBoxParameters,
@@ -47,6 +50,7 @@ from ansys.speos.core.generic.parameters import (
     RadianceSensorParameters,
     RayFileSourceParameters,
     SurfaceSourceParameters,
+    VirtualBSDFSimulationParameters,
 )
 from ansys.speos.core.generic.visualization_methods import local2absolute
 from ansys.speos.core.ground_plane import GroundPlane
@@ -445,6 +449,14 @@ class Project:
         description: str = "",
         feature_type: type = SimulationDirect,
         metadata: Optional[Mapping[str, str]] = None,
+        parameters: Optional[
+            Union[
+                DirectSimulationParameters,
+                InteractiveSimulationParameters,
+                InverseSimulationParameters,
+                VirtualBSDFSimulationParameters,
+            ]
+        ] = None,
     ) -> Union[SimulationDirect, SimulationInteractive, SimulationInverse, SimulationVirtualBSDF]:
         """Create a new Simulation feature.
 
@@ -485,32 +497,64 @@ class Project:
         feature = None
         match feature_type.__name__:
             case "SimulationDirect":
+                if parameters is None:
+                    parameters = DirectSimulationParameters()
+                elif not isinstance(parameters, DirectSimulationParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of DirectSimulationParameters"
+                    )
                 feature = SimulationDirect(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
+                    default_parameters=parameters,
                 )
             case "SimulationInverse":
+                if parameters is None:
+                    parameters = InverseSimulationParameters()
+                elif not isinstance(parameters, InverseSimulationParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of InverseSimulationParameters"
+                    )
                 feature = SimulationInverse(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
+                    default_parameters=parameters,
                 )
             case "SimulationInteractive":
+                if parameters is None:
+                    parameters = InteractiveSimulationParameters()
+                elif not isinstance(parameters, InteractiveSimulationParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of InteractiveSimulationParameters"
+                    )
                 feature = SimulationInteractive(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
+                    default_parameters=parameters,
                 )
             case "SimulationVirtualBSDF":
+                if parameters is None:
+                    parameters = VirtualBSDFSimulationParameters()
+                elif not isinstance(parameters, VirtualBSDFSimulationParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of VirtualBSDFSimulationParameters"
+                    )
                 feature = SimulationVirtualBSDF(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
+                    default_parameters=parameters,
                 )
             case _:
                 msg = "Requested feature {} does not exist in supported list {}".format(
@@ -1274,28 +1318,28 @@ class Project:
                     project=self,
                     name=sim_inst.name,
                     simulation_instance=sim_inst,
-                    default_values=False,
+                    default_parameters=None,
                 )
             elif simulation_template_link.HasField("inverse_mc_simulation_template"):
                 sim_feat = SimulationInverse(
                     project=self,
                     name=sim_inst.name,
                     simulation_instance=sim_inst,
-                    default_values=False,
+                    default_parameters=None,
                 )
             elif simulation_template_link.HasField("interactive_simulation_template"):
                 sim_feat = SimulationInteractive(
                     project=self,
                     name=sim_inst.name,
                     simulation_instance=sim_inst,
-                    default_values=False,
+                    default_parameters=None,
                 )
             elif simulation_template_link.HasField("virtual_bsdf_bench_simulation_template"):
                 sim_feat = SimulationVirtualBSDF(
                     project=self,
                     name=sim_inst.name,
                     simulation_instance=sim_inst,
-                    default_values=False,
+                    default_parameters=None,
                 )
             if sim_feat is not None:
                 self._features.append(sim_feat)

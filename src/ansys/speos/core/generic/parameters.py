@@ -776,3 +776,85 @@ class AmbientEnvironmentParameters:
     luminance: float = 1000.0
     image_file_uri: Union[str, Path] = ""
     color_space_type: Union[ColorSpaceType, UserDefinedColorSpaceParameters] = ColorSpaceType.srgb
+
+
+class ColorimetricStandardTypes(str, Enum):
+    """Color Space Type without parameters."""
+
+    cie_1931 = "cie_1931"
+    cie_1964 = "cie_1964"
+
+
+@dataclass
+class DirectSimulationParameters:
+    """Direct Simulation Parameters."""
+
+    ambient_material_uri: Union[str, Path] = ""
+    light_expoert: bool = False
+    stop_condition_rays_number: int = 200000
+    stop_condition_duration: Optional[int] = None
+    automatic_save_frequency: int = 1800
+    colorimetric_standard: ColorimetricStandardTypes = ColorimetricStandardTypes.cie_1931
+    dispersion: bool = True
+    geom_distance_tolerance: float = 0.01
+    max_impact: int = 100
+    minimum_energy_percentage: float = 0.005
+
+
+@dataclass
+class InverseSimulationParameters:
+    """Inverse Simulation Parameters."""
+
+    ambient_material_uri: Union[str, Path] = ""
+    light_expoert: bool = False
+    stop_condition_passes_number: int = 5
+    stop_condition_duration: Optional[int] = None
+    automatic_save_frequency: int = 1800
+    colorimetric_standard: ColorimetricStandardTypes = ColorimetricStandardTypes.cie_1931
+    dispersion: bool = False
+    geom_distance_tolerance: float = 0.01
+    max_impact: int = 100
+    splitting: bool = False
+    minimum_energy_percentage: float = 0.005
+    number_of_gathering_rays_per_source: int = 1
+    maximum_gathering_error: int = 0
+
+
+@dataclass
+class InteractiveSimulationParameters:
+    """Interactive Simulation Parameters."""
+
+    ambient_material_uri: Union[str, Path] = ""
+    light_expoert: bool = False
+    impact_report: bool = False
+    geom_distance_tolerance = 0.01
+    max_impact = 100
+    minimum_energy_percentage: float = 0.005
+    colorimetric_standard: ColorimetricStandardTypes = ColorimetricStandardTypes.cie_1931
+
+
+@dataclass
+class SensorSamplingUnionParameters:
+    """Sensor Sampling Union Parameters."""
+
+    theta_sampling: int = 45
+    phi_sampling: int = 180
+
+
+@dataclass
+class VirtualBSDFSimulationParameters:
+    """Virtual BSDF Simulation Parameters."""
+
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+    analysis_x_ratio: float = 100
+    analysis_y_ratio: float = 100
+    integration_angle: float = 2
+    stop_condition_ray_number: int = 100000
+    geom_distance_tolerance: float = 0.01
+    max_impact = 100
+    minimum_energy_percentage: float = 0.005
+    colorimetric_standard: ColorimetricStandardTypes = ColorimetricStandardTypes.cie_1931
+    wavelength_range: WavelengthsRangeParameters = field(default_factory=WavelengthsRangeParameters)
+    sensor_sampling_mode: Optional[SensorSamplingUnionParameters] = field(
+        default_factory=SensorSamplingUnionParameters
+    )
