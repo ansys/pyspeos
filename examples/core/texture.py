@@ -41,24 +41,22 @@ def create_helper_geometries(project: Project):
 
     def create_rect_face(my_body, name, pos, x, y) -> Face:
         face = my_body.create_face(name=name)
-        face.set_vertices(
-            [
-                pos[0],
-                pos[1],
-                pos[2],
-                pos[0],
-                pos[1] + y,
-                pos[2],
-                pos[0] + x,
-                pos[1],
-                pos[2],
-                pos[0] + x,
-                pos[1] + y,
-                pos[2],
-            ]
-        )
-        face.set_facets([0, 1, 2, 1, 2, 3])
-        face.set_normals([0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0])
+        face.vertices = [
+            pos[0],
+            pos[1],
+            pos[2],
+            pos[0],
+            pos[1] + y,
+            pos[2],
+            pos[0] + x,
+            pos[1],
+            pos[2],
+            pos[0] + x,
+            pos[1] + x,
+            pos[2],
+        ]
+        face.facets = [0, 1, 2, 1, 2, 3]
+        face.normals = [0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0]
         return face
 
     root_part = project.create_root_part().commit()
