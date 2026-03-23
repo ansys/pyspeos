@@ -103,10 +103,8 @@ class BaseSop:
             self._library = None
             return
 
-        self._mirror = self.SopMirror(self, None) if self._sop_template.HasField("mirror") else None
-        self._library = (
-            self.SopLibrary(self, None) if self._sop_template.HasField("library") else None
-        )
+        self._mirror = self.SopMirror(self) if self._sop_template.HasField("mirror") else None
+        self._library = self.SopLibrary(self) if self._sop_template.HasField("library") else None
 
     def _apply_sop_parameters(self, sop_parameters: SopParameters):
         """Apply SOP parameters to initialize the surface optical property.
