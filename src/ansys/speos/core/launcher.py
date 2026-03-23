@@ -28,6 +28,8 @@ import subprocess  # nosec B404
 import tempfile
 from typing import Optional, Union
 
+from ansys.tools.common.path import get_available_ansys_installations
+
 from ansys.speos.core import LOG as LOGGER
 from ansys.speos.core.generic.constants import (
     DEFAULT_PORT,
@@ -109,7 +111,7 @@ def launch_remote_speos(
 
 
 def launch_local_speos_rpc_server(
-    version: Union[str, int] = DEFAULT_VERSION,
+    version: Optional[Union[str, int]],
     port: Union[str, int] = DEFAULT_PORT,
     server_message_size: int = MAX_SERVER_MESSAGE_LENGTH,
     client_message_size: int = MAX_CLIENT_MESSAGE_SIZE,
@@ -133,10 +135,12 @@ def launch_local_speos_rpc_server(
 
     Parameters
     ----------
-    version : str
+    version : Optional[Union[str, int]],
         The Speos server version to run, in the 3 digits format, such as "242".
         If unspecified, the version will be chosen as
         ``ansys.speos.core.kernel.client.LATEST_VERSION``.
+        If ``ansys.speos.core.kernel.client.LATEST_VERSION`` is not available,
+        the latest version installed on the machine will be tried to be used.
     port : Union[str, int], optional
         Port number where the server is running.
         By default, ``ansys.speos.core.kernel.client.DEFAULT_PORT``.
@@ -176,7 +180,17 @@ def launch_local_speos_rpc_server(
     except ValueError:
         raise ValueError("The server message size is not a valid integer.")
 
-    speos_rpc_path = retrieve_speos_install_dir(speos_rpc_path, str(version))
+    speos_rpc_path = None
+    if version is not None:
+        speos_rpc_path = retrieve_speos_install_dir(speos_rpc_path, str(version))
+    else:
+        try:
+            speos_rpc_path = retrieve_speos_install_dir(speos_rpc_path, str(DEFAULT_VERSION))
+        except FileNotFoundError as e:
+            print(f"Default installation missing: {e}, will use the latest version installed.")
+            max_version = max([k for k in get_available_ansys_installations()])
+            speos_rpc_path = retrieve_speos_install_dir(speos_rpc_path, str(max_version))
+
     if os.name == "nt":
         speos_exec = speos_rpc_path / "SpeosRPC_Server.exe"
     else:
