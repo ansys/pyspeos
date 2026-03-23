@@ -87,13 +87,11 @@ print(root_part)
 #
 # Each triangle/facet is defined by vertices and vertice normals.
 
-face_b1_f1 = (
-    body_b1.create_face(name="TheFaceF1")
-    .set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0])
-    .set_facets([0, 1, 2])
-    .set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
-    .commit()
-)
+face_b1_f1 = body_b1.create_face(name="TheFaceF1")
+face_b1_f1.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+face_b1_f1.facets = [0, 1, 2]
+face_b1_f1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+face_b1_f1.commit()
 print(root_part)
 
 # ### Create bodies in sub part.
@@ -102,33 +100,27 @@ print(root_part)
 #
 # The location sub-part can be defined using set_axis_system method.
 
-sub_part1 = (
-    root_part.create_sub_part(name="TheSubPartSP1")
-    .set_axis_system(axis_system=[5, 5, 5, 1, 0, 0, 0, 1, 0, 0, 0, 1])
-    .commit()
-)
+sub_part1 = root_part.create_sub_part(name="TheSubPartSP1")
+sub_part1.axis_system = [5, 5, 5, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+sub_part1.commit()
 print(root_part)
 
 # ### Create body and faces in sub part body
 
 body_sp1_b1 = sub_part1.create_body(name="TheBodySP1_B1").commit()
 print(root_part)
-face_sp1_b1_f1 = (
-    body_sp1_b1.create_face(name="TheFaceSP1_B1_F1")
-    .set_vertices([0, 1, 0, 0, 2, 0, 1, 2, 0])
-    .set_facets([0, 1, 2])
-    .set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
-    .commit()
-)
+face_sp1_b1_f1 = body_sp1_b1.create_face(name="TheFaceSP1_B1_F1")
+face_sp1_b1_f1.vertices = [0, 1, 0, 0, 2, 0, 1, 2, 0]
+face_sp1_b1_f1.facets = [0, 1, 2]
+face_sp1_b1_f1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+face_sp1_b1_f1.commit()
 print(root_part)
 
 # ### Create sub parts in sub part
 
-sub_part11 = (
-    sub_part1.create_sub_part(name="TheSubPartSP11")
-    .set_axis_system([1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1])
-    .commit()
-)
+sub_part11 = sub_part1.create_sub_part(name="TheSubPartSP11")
+sub_part11.axis_system = [1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+sub_part11.commit()
 print(root_part)
 
 # ## Read
