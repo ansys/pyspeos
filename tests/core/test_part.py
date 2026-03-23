@@ -73,6 +73,7 @@ def test_create_body(speos: Speos):
 
     # delete bodies
     body1.delete()
+    assert len(root_part.bodies) == 1
     body2.delete()
     assert len(root_part.part_link.get().body_guids) == 0
 
@@ -83,24 +84,20 @@ def test_create_face(speos: Speos):
     p = Project(speos=speos)
     root_part = p.create_root_part()
     body1 = root_part.create_body(name="Body.1")
-    face0 = (
-        body1.create_face(name="TheFaceF")
-        .set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0])
-        .set_facets([0, 1, 2])
-        .set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
-    )
+    face0 = body1.create_face(name="TheFaceF")
+    face0.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    face0.facets = [0, 1, 2]
+    face0.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
     root_part.commit()
     assert len(body1._geom_features) == 1
     assert len(body1.body_link.get().face_guids) == 1
     assert face0.geo_path.metadata["GeoPath"] == "Body.1/TheFaceF"
     # Add a face
-    face1 = (
-        body1.create_face(name="Face.1")
-        .set_vertices([0, 1, 0, 0, 2, 0, 1, 2, 0])
-        .set_facets([0, 1, 2])
-        .set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
-        .commit()
-    )
+    face1 = body1.create_face(name="Face.1")
+    face1.vertices = [0, 1, 0, 0, 2, 0, 1, 2, 0]
+    face1.facets = [0, 1, 2]
+    face1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    face1.commit()
     assert len(body1._geom_features) == 2
     assert face1.geo_path.metadata["GeoPath"] == "Body.1/Face.1"
     assert len(body1.body_link.get().face_guids) == 2
@@ -110,13 +107,11 @@ def test_create_face(speos: Speos):
     assert face1.face_link.get().normals == [0, 0, 1, 0, 0, 1, 0, 0, 1]
 
     # Add another face + commit on root part
-    face2 = (
-        body1.create_face(name="Face.2")
-        .set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0])
-        .set_facets([0, 2, 1])
-        .set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
-        .commit()
-    )
+    face2 = body1.create_face(name="Face.2")
+    face2.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    face2.facets = [0, 2, 1]
+    face2.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    face2.commit()
     assert len(body1._geom_features) == 3
     assert face2.geo_path.metadata["GeoPath"] == "Body.1/Face.2"
     assert len(body1.body_link.get().face_guids) == 3
@@ -127,7 +122,9 @@ def test_create_face(speos: Speos):
 
     # Delete faces
     face0.delete()
+    assert len(body1.faces) == 2
     face1.delete()
+    assert len(body1.faces) == 1
     face2.delete()
     assert len(body1.body_link.get().face_guids) == 0
 
@@ -141,11 +138,9 @@ def test_create_subpart(speos: Speos):
     assert len(root_part.part_link.get().parts) == 0
 
     # Add a sub part
-    sp1 = (
-        root_part.create_sub_part(name="SubPart.1")
-        .set_axis_system(axis_system=[5, 4, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
-        .commit()
-    )
+    sp1 = root_part.create_sub_part(name="SubPart.1")
+    sp1.axis_system = [5, 4, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    sp1.commit()
     assert len(root_part._geom_features) == 1
     assert len(root_part.part_link.get().parts) == 1
     assert sp1.geo_path.metadata["GeoPath"] == "SubPart.1"
@@ -171,9 +166,8 @@ def test_create_subpart(speos: Speos):
     assert len(sp1.part_link.get().body_guids) == 0
 
     # Add another sub part + commit on root part
-    sp2 = root_part.create_sub_part(name="SubPart.2").set_axis_system(
-        axis_system=[15, 14, 14, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-    )
+    sp2 = root_part.create_sub_part(name="SubPart.2")
+    sp2.axis_system = [15, 14, 14, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     root_part.commit()
     assert len(root_part._geom_features) == 2
     assert len(root_part.part_link.get().parts) == 2
@@ -200,7 +194,8 @@ def test_create_subpart(speos: Speos):
     assert len(sp2.part_link.get().body_guids) == 0
 
     # Modify axis system
-    sp1.set_axis_system(axis_system=[20, 20, 20, 1, 0, 0, 0, 1, 0, 0, 0, 1]).commit()
+    sp1.axis_system = [20, 20, 20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    sp1.commit()
 
     # Check that the axis system is correctly updated on server data
     parent_part_data = sp1._parent_part.part_link.get()
@@ -222,11 +217,9 @@ def test_create_subpart_body(speos: Speos):
     # Create an empty project with a root part and sub part
     p = Project(speos=speos)
     root_part = p.create_root_part().commit()
-    sp1 = (
-        root_part.create_sub_part(name="SubPart.1")
-        .set_axis_system(axis_system=[5, 4, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
-        .commit()
-    )
+    sp1 = root_part.create_sub_part(name="SubPart.1")
+    sp1.axis_system = [5, 4, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    sp1.commit()
     assert len(sp1._geom_features) == 0
     assert len(sp1.part_link.get().body_guids) == 0
 
@@ -247,6 +240,7 @@ def test_create_subpart_body(speos: Speos):
 
     # delete bodies
     body1.delete()
+    assert len(root_part.subparts[0].bodies) == 1
     body2.delete()
     assert len(sp1.part_link.get().body_guids) == 0
 
@@ -256,20 +250,16 @@ def test_create_subpart_subpart(speos: Speos):
     # Create an empty project with a root part and sub part
     p = Project(speos=speos)
     root_part = p.create_root_part().commit()
-    sp1 = (
-        root_part.create_sub_part(name="SubPart.1")
-        .set_axis_system(axis_system=[5, 4, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
-        .commit()
-    )
+    sp1 = root_part.create_sub_part(name="SubPart.1")
+    sp1.axis_system = [5, 4, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    sp1.commit()
     assert len(sp1._geom_features) == 0
     assert len(sp1.part_link.get().parts) == 0
 
     # Add a sub part
-    sp11 = (
-        sp1.create_sub_part(name="SubPart.11")
-        .set_axis_system(axis_system=[-5, -4, -10, 1, 0, 0, 0, 1, 0, 0, 0, 1])
-        .commit()
-    )
+    sp11 = sp1.create_sub_part(name="SubPart.11")
+    sp11.axis_system = [-5, -4, -10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    sp11.commit()
     assert len(sp1._geom_features) == 1
     assert len(sp1.part_link.get().parts) == 1
     assert sp1.part_link.get().parts[0] == sp11._part_instance
@@ -295,9 +285,8 @@ def test_create_subpart_subpart(speos: Speos):
     assert len(sp11.part_link.get().body_guids) == 0
 
     # Add another sub part + commit on root part
-    sp12 = sp1.create_sub_part(name="SubPart.12").set_axis_system(
-        axis_system=[-15, -14, -14, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-    )
+    sp12 = sp1.create_sub_part(name="SubPart.12")
+    sp12.axis_system = [-15, -14, -14, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     root_part.commit()
     assert len(sp1._geom_features) == 2
     assert len(sp1.part_link.get().parts) == 2
@@ -335,16 +324,15 @@ def test_commit_part(speos: Speos):
 
     # Create
     root_part = p.create_root_part()
-    sp1 = root_part.create_sub_part(name="SubPart.1").set_axis_system(
-        axis_system=[5, 4, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-    )
-    sp1.create_sub_part(name="SubPart.11").set_axis_system(
-        axis_system=[-5, -4, -10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-    )
+    sp1 = root_part.create_sub_part(name="SubPart.1")
+    sp1.axis_system = [5, 4, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    sp11 = sp1.create_sub_part(name="SubPart.11")
+    sp11.axis_system = [-5, -4, -10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     body1 = root_part.create_body(name="Body.1")
-    body1.create_face(name="TheFaceF").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    f = body1.create_face(name="TheFaceF")
+    f.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    f.facets = [0, 1, 2]
+    f.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
     assert root_part.part_link is None
     assert p.scene_link.get().part_guid == ""
 
@@ -369,26 +357,39 @@ def test_reset_part(speos: Speos):
 
     # Create + commit
     root_part = p.create_root_part()
-    sp1 = root_part.create_sub_part(name="SubPart.1").set_axis_system(
-        axis_system=[5, 4, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-    )
-    sp1.create_sub_part(name="SubPart.11").set_axis_system(
-        axis_system=[-5, -4, -10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-    )
+    sp1 = root_part.create_sub_part(name="SubPart.1")
+    sp1.axis_system = [5, 4, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    sp11 = sp1.create_sub_part(name="SubPart.11")
+    sp11.axis_system = [-5, -4, -10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     body1 = root_part.create_body(name="Body.1")
-    body1.create_face(name="TheFaceF").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    f = body1.create_face(name="TheFaceF")
+    f.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    f.facets = [0, 1, 2]
+    f.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
     root_part.commit()
     assert root_part.part_link is not None
 
     # Change local data (on template and on instance)
+    f.vertices = [1, 1, 1, 1, 0, 0, 0, 1, 0]
+    f.facets = [1, 2, 0]
+    f.normals = [0, 0, -1, 0, 0, -1, 0, 0, -1]
     root_part._part.description = "new"
+    root_part.subparts[0].axis_system = [20, 20, 20, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    root_part.subparts[0]._part.description = "new"
     assert root_part._part != root_part.part_link.get()
-
+    assert root_part.subparts[0]._part != root_part.subparts[0].part_link.get()
     # Ask for reset
     root_part.reset()
+    root_part.subparts[0].reset()
+    f.reset()
+
     assert root_part._part == root_part.part_link.get()
+    assert root_part.subparts[0]._part == root_part.subparts[0].part_link.get()
+    assert root_part._part.description != "new"  # local changes are not kept
+    assert root_part.subparts[0].axis_system == [5, 4, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    assert f.vertices == [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    assert f.facets == [0, 1, 2]
+    assert f.normals == [0, 0, 1, 0, 0, 1, 0, 0, 1]
 
     root_part.delete()
 
@@ -399,16 +400,15 @@ def test_delete_part(speos: Speos):
 
     # Create + commit
     root_part = p.create_root_part()
-    sp1 = root_part.create_sub_part(name="SubPart.1").set_axis_system(
-        axis_system=[5, 4, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-    )
-    sp1.create_sub_part(name="SubPart.11").set_axis_system(
-        axis_system=[-5, -4, -10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-    )
+    sp1 = root_part.create_sub_part(name="SubPart.1")
+    sp1.axis_system = [5, 4, 10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    sp11 = sp1.create_sub_part(name="SubPart.11")
+    sp11.axis_system = [-5, -4, -10, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     body1 = root_part.create_body(name="Body.1")
-    body1.create_face(name="TheFaceF").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    f = body1.create_face(name="TheFaceF")
+    f.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    f.facets = [0, 1, 2]
+    f.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
     root_part.commit()
     assert root_part.part_link is not None
 
@@ -420,6 +420,92 @@ def test_delete_part(speos: Speos):
     assert root_part._part.name == "RootPart"  # local
     assert len(root_part._part.parts) == 0
     assert len(root_part._part.body_guids) == 0
+
+
+def test_axis_system_invalid_type_raises_type_error(speos: Speos):
+    """Axis system setter should raise TypeError.
+
+    When input is not list/tuple or contains non-numeric entries.
+    """
+    p = Project(speos=speos)
+    root = p.create_root_part()
+    sp = root.create_sub_part(name="SP")
+    with pytest.raises(TypeError):
+        sp.axis_system = "not-a-list"  # wrong type
+
+    with pytest.raises(TypeError):
+        # contains a non-numeric element
+        sp.axis_system = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, "x"]
+
+
+def test_axis_system_invalid_length_raises_value_error(speos: Speos):
+    """Axis system setter should raise ValueError when input length is not 12."""
+    p = Project(speos=speos)
+    root = p.create_root_part()
+    sp = root.create_sub_part(name="SP2")
+    with pytest.raises(ValueError):
+        sp.axis_system = [1, 2, 3]  # wrong length
+
+
+def test_face_invalid_vertices_type_raises_type_error(speos: Speos):
+    """Face.vertices setter should raise TypeError.
+
+    When input is not list/tuple or contains non-numeric entries.
+    """
+    p = Project(speos=speos)
+    root = p.create_root_part()
+    b = root.create_body(name="B")
+    f = b.create_face(name="F")
+    with pytest.raises(TypeError):
+        f.vertices = "not-a-list"
+    with pytest.raises(TypeError):
+        f.vertices = [0, 0, "x"]  # non-numeric element
+
+
+def test_face_invalid_vertices_length_raises_value_error(speos: Speos):
+    """Face.vertices setter should raise ValueError when length is not a multiple of 3."""
+    p = Project(speos=speos)
+    root = p.create_root_part()
+    b = root.create_body(name="B2")
+    f = b.create_face(name="F2")
+    with pytest.raises(ValueError):
+        f.vertices = [0, 1]  # not multiple of 3
+
+
+def test_face_invalid_facets_type_and_length_raises(speos: Speos):
+    """Face.facets setter should raise TypeError/ValueError.
+
+    When wrong element types or for wrong length is provided.
+    """
+    p = Project(speos=speos)
+    root = p.create_root_part()
+    b = root.create_body(name="B3")
+    f = b.create_face(name="F3")
+    with pytest.raises(TypeError):
+        f.facets = "bad"
+    # also test out of range facets when vertices present
+    f.vertices = [0, 0, 0, 1, 0, 0]  # 2 points
+    with pytest.raises(ValueError):
+        f.facets = [0, 1, 2]  # index 2 out of range
+
+
+def test_face_invalid_normals_raises(speos: Speos):
+    """Face.normals setter should raise TypeError/ValueError.
+
+    For wrong element types or for length mismatch.
+    """
+    p = Project(speos=speos)
+    root = p.create_root_part()
+    b = root.create_body(name="B4")
+    f = b.create_face(name="F4")
+    with pytest.raises(TypeError):
+        f.normals = "bad"
+    with pytest.raises(ValueError):
+        f.normals = [0, 0]  # not multiple of 3
+    # mismatch with vertices
+    f.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    with pytest.raises(ValueError):
+        f.normals = [0, 0, 1, 0, 0, 1]  # length mismatch with vertices
 
 
 @pytest.mark.supported_speos_versions(min=252)
