@@ -630,7 +630,11 @@ ansys.api.speos.sensor.v1.sensor_pb2.TypeColorimetric
 
             Parameters
             ----------
-            value : list
+            value : Optional[List[Union[\
+            ansys.speos.core.geo_ref.GeoRef, \
+            ansys.speos.core.body.Body, \
+            ansys.speos.core.face.Face, \
+            ansys.speos.core.part.Part.SubPart]]]
                 List of geometry references (GeoRef, Face, Body or SubPart). Each entry
                 will be converted to a GeoRef internal representation.
             """
