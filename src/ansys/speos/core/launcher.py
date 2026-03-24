@@ -37,6 +37,7 @@ from ansys.speos.core.generic.constants import (
     DEFAULT_VERSION,
     MAX_CLIENT_MESSAGE_SIZE,
     MAX_SERVER_MESSAGE_LENGTH,
+    MIN_SUPPORTED_VERSION,
 )
 from ansys.speos.core.generic.general_methods import retrieve_speos_install_dir
 from ansys.speos.core.kernel.client import default_local_channel
@@ -123,6 +124,8 @@ def _resolve_speos_rpc_version_path(
     # --- walk available versions, newest first ----------------------------
     installations = get_available_ansys_installations()  # {261: 'C:\\...', ...}
     for available_version in sorted(installations, reverse=True):  # [261, 252, 251]
+        if available_version < int(MIN_SUPPORTED_VERSION):
+            continue
         try:
             path = retrieve_speos_install_dir(speos_rpc_path, str(available_version))
             warnings.warn(
