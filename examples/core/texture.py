@@ -52,7 +52,7 @@ def create_helper_geometries(project: Project):
             pos[1],
             pos[2],
             pos[0] + x,
-            pos[1] + x,
+            pos[1] + y,
             pos[2],
         ]
         face.facets = [0, 1, 2, 1, 2, 3]
