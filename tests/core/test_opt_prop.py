@@ -764,7 +764,7 @@ def test_texture_mapping_helper_local_branches(speos: Speos, monkeypatch):
     invalid_layer = TextureLayer(op, "Layer.InvalidMapping")
     invalid_image = invalid_layer.set_image_texture()
     monkeypatch.setattr(
-        TextureLayer._BaseTextureMap,
+        TextureLayer.BaseTextureMap,
         "_mapping_type_name",
         staticmethod(lambda _: "invalid"),
     )
@@ -782,7 +782,7 @@ def test_texture_mapping_helper_local_branches(speos: Speos, monkeypatch):
     anisotropic._mapping = None
     assert anisotropic.mapping_properties.vertices_data_index == 0
 
-    invalid_map = TextureLayer._BaseTextureMap(layer, "unsupported")
+    invalid_map = TextureLayer.BaseTextureMap(layer, "unsupported")
     with pytest.raises(TypeError):
         invalid_map._get_map_property()
 

@@ -989,22 +989,22 @@ class TextureLayer(BaseSop):
             """
             self._parent.vertices_data_index = value
 
-    class _BaseTextureMap:
+    class BaseTextureMap:
         """Base class for texture mapping properties."""
 
-        def __init__(self, parent: TextureLayer, type: TextureTypes):
+        def __init__(self, parent: TextureLayer, texture_type: TextureTypes):
             """Initialize a base texture map helper.
 
             Parameters
             ----------
             parent : TextureLayer
                 Texture layer that owns the map data.
-            type : TextureTypes
+            texture_type : TextureTypes
                 Texture map kind handled by the helper.
             """
             self._parent = parent
             self._mapping = None
-            self._type = type
+            self._type = texture_type
 
         def _get_map_property(self):
             """Return the protobuf map property matching the current texture type."""
@@ -1131,7 +1131,7 @@ class TextureLayer(BaseSop):
             self._mapping = TextureLayer.TextureMappingByData(map_property, None)
             return self._mapping
 
-    class ImageTexture(_BaseTextureMap):
+    class ImageTexture(BaseTextureMap):
         """Image texture mapping properties."""
 
         def __init__(
@@ -1218,7 +1218,7 @@ class TextureLayer(BaseSop):
             if self._type == TextureTypes.image:
                 self._parent._sop_template.texture.image.bitmap_file_uri = str(value)
 
-    class NormalMap(_BaseTextureMap):
+    class NormalMap(BaseTextureMap):
         """Normal map texture mapping properties."""
 
         def __init__(
@@ -1367,7 +1367,7 @@ class TextureLayer(BaseSop):
             if temp:
                 self.normal_map_file_uri = temp
 
-    class AnisotropicMap(_BaseTextureMap):
+    class AnisotropicMap(BaseTextureMap):
         """Anisotropy map texture mapping properties."""
 
         def __init__(
