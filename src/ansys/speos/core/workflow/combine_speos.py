@@ -41,7 +41,7 @@ class SpeosFileInstance(LightBoxFileInstance):
 
     Parameters
     ----------
-    file : str
+    file : Union[Path, str]
         SPEOS or Lightbox file to be loaded.
     axis_system : Optional[List[float]]
         Location and orientation to define for the geometry of the SPEOS file,
