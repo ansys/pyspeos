@@ -441,7 +441,7 @@ def test_opt_prop_default_parameters_and_local_helpers(speos: Speos, capsys):
 
     op_library = p.create_optical_property(
         name="Defaults.Library",
-        default_parameters=OptPropParameters(
+        parameters=OptPropParameters(
             sop_parameters=SopParameters(
                 sop_type=SopTypes.library,
                 sop_library_file_uri=Path("library_surface.scattering"),
@@ -457,7 +457,7 @@ def test_opt_prop_default_parameters_and_local_helpers(speos: Speos, capsys):
 
     op_polished = p.create_optical_property(
         name="Defaults.OpticalPolished",
-        default_parameters=OptPropParameters(
+        parameters=OptPropParameters(
             sop_parameters=SopParameters(sop_type=SopTypes.optical_polished),
             vop_parameters=VopParameters(vop_type=VopTypes.opaque),
         ),

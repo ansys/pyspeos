@@ -251,7 +251,7 @@ class Project:
         name: str,
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
-        default_parameters: Optional[opt_prop.OptPropParameters] = None,
+        parameters: Optional[opt_prop.OptPropParameters] = None,
     ) -> opt_prop.OptProp:
         """Create a new Optical Property feature.
 
@@ -281,11 +281,11 @@ class Project:
 
         if metadata is None:
             metadata = {}
-        if default_parameters:
-            if not isinstance(default_parameters, OptPropParameters):
+        if parameters:
+            if not isinstance(parameters, OptPropParameters):
                 raise TypeError(
                     f"Incorrect parameter dataclass provided "
-                    f"{str(type(default_parameters))} instead of OptPropParameters"
+                    f"{str(type(parameters))} instead of OptPropParameters"
                 )
 
             feature = opt_prop.OptProp(
@@ -293,7 +293,7 @@ class Project:
                 name=name,
                 description=description,
                 metadata=metadata,
-                default_parameters=default_parameters,
+                default_parameters=parameters,
             )
         else:
             feature = opt_prop.OptProp(
