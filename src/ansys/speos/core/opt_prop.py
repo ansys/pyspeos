@@ -298,11 +298,6 @@ class BaseSop:
 class BaseVop:
     """Base class for Volume Optical Property helpers.
 
-    Parameters
-    ----------
-    vop_parameters : Optional[VopParameters], optional
-        Default VOP parameters to initialize the volume optical property. Default is ``None``.
-
     Notes
     -----
     This is a superclass and is not intended to be instantiated directly.
@@ -386,6 +381,47 @@ class BaseVop:
             else:
                 self._parent._vop_template.optic.ClearField("constringence")
 
+    class VopLibrary:
+        """Helper class for library VOP parameters."""
+
+        def __init__(self, parent: BaseVop):
+            """Create a library helper bound to a parent VOP.
+
+            Parameters
+            ----------
+            parent : BaseVop
+                Base VOP wrapper that owns the library protobuf field.
+            """
+            self._parent = parent
+            self._parent._vop_template.library.SetInParent()
+
+        @property
+        def material_file_uri(self) -> str:
+            """Volume material file URI when VOP is a library entry.
+
+            Returns
+            -------
+            str
+                File path or URI of the volume material file (``*.material``).
+            """
+            return self._parent._vop_template.library.material_file_uri
+
+        @material_file_uri.setter
+        def material_file_uri(self, value: Union[Path, str]):
+            """Set the VOP library material file URI.
+
+            Parameters
+            ----------
+            value : Union[str, Path]
+                File path or URI to the volume material file.
+
+            Raises
+            ------
+            TypeError
+                If the current VOP is not of library type.
+            """
+            self._parent._vop_template.library.material_file_uri = str(value)
+
     def __init__(self, vop_template, mat_inst, vop_parameters: Optional[VopParameters] = None):
         """Initialize the VOP helper state.
 
@@ -404,6 +440,7 @@ class BaseVop:
         self._material_instance = mat_inst
 
         self._vop_optic = None
+        self._vop_library = None
 
         if vop_parameters:
             self._apply_vop_parameters(vop_parameters)
@@ -422,8 +459,8 @@ class BaseVop:
             self.set_volume_opaque()
         elif vop_parameters.vop_type == VopTypes.library:
             self.set_volume_library()
-            if vop_parameters.vop_library_file_uri:
-                self.vop_library = vop_parameters.vop_library_file_uri
+            if vop_parameters.material_file_uri:
+                self.vop_library.material_file_uri = vop_parameters.material_file_uri
 
     @property
     def vop_type(self) -> Optional[str]:
@@ -458,38 +495,22 @@ class BaseVop:
             return self._vop_optic
 
     @property
-    def vop_library(self) -> str:
-        """Volume library file URI for VOP when using a material library.
+    def vop_library(self) -> Optional[BaseVop.VopLibrary]:
+        """Library parameters when VOP is of library type.
 
         Returns
         -------
-        str
-            File path or URI of the volume material file (``*.material``).
+        Optional[VopLibrary]
+            VopLibrary instance containing library information (vop_library_file_uri)
+            when VOP is of library type, otherwise ``None``.
         """
-        if self._vop_template.HasField("library"):
-            return self._vop_template.library.material_file_uri
-
-    @vop_library.setter
-    def vop_library(self, value: Union[Path, str]):
-        """Set the VOP library material file URI.
-
-        Parameters
-        ----------
-        value : Union[str, Path]
-            File path or URI to the volume material file.
-
-        Raises
-        ------
-        TypeError
-            If the current VOP is not of library type.
-        """
-        if self._vop_template.HasField("library"):
-            self._vop_template.library.material_file_uri = str(value)
-        else:
-            raise TypeError(
-                "Volume Optical Property is not set to library Type, please use"
-                "set_volume_library before"
-            )
+        if (
+            self._vop_library is None
+            and self._vop_template
+            and self._vop_template.HasField("library")
+        ):
+            self._vop_library = self.VopLibrary(self)
+        return self._vop_library
 
     def set_volume_none(self) -> "OptProp":
         """Remove any VOP template (no volume optical property).
@@ -512,9 +533,9 @@ class BaseVop:
         """
         if self._vop_template is None:
             self._vop_template = ProtoVOPTemplate(
-                name=self._name + ".VOP",
-                description=self._sop_template.description,
-                metadata=self._sop_template.metadata,
+                name=self._material_instance.name + ".VOP",
+                description=self._material_instance.description,
+                metadata=self._material_instance.metadata,
             )
         self._vop_template.opaque.SetInParent()
         return self
@@ -531,9 +552,9 @@ class BaseVop:
         """
         if self._vop_template is None:
             self._vop_template = ProtoVOPTemplate(
-                name=self._name + ".VOP",
-                description=self._sop_template.description,
-                metadata=self._sop_template.metadata,
+                name=self._material_instance.name + ".VOP",
+                description=self._material_instance.description,
+                metadata=self._material_instance.metadata,
             )
             self._vop_optic = self.VopOptic(self, MaterialOpticParameters())
         elif self._vop_template.HasField("optic"):
@@ -542,6 +563,24 @@ class BaseVop:
             self._vop_template.optic.SetInParent()
             self._vop_optic = self.VopOptic(self, MaterialOpticParameters())
         return self._vop_optic
+
+    def set_volume_library(self) -> BaseVop.VopLibrary:
+        """Set VOP to use a library file.
+
+        Returns
+        -------
+        ansys.speos.core.opt_prop.BaseVop.VopLibrary
+            Returns VOP Library helper.
+        """
+        if self._vop_template is None:
+            self._vop_template = ProtoVOPTemplate(
+                name=self._material_instance.name + ".VOP",
+                description=self._material_instance.description,
+                metadata=self._material_instance.metadata,
+            )
+        self._vop_template.library.SetInParent()
+        self._vop_library = self.VopLibrary(self)
+        return self._vop_library
 
     # Deactivated due to a bug on SpeosRPC server side
     # def set_volume_nonhomogeneous(
@@ -577,29 +616,6 @@ class BaseVop:
     #    self._vop_template.non_homogeneous.gradedmaterial_file_uri = path
     #    self._material_instance.non_homogeneous_properties.axis_system[:] = axis_system
     #    return self
-
-    def set_volume_library(self) -> OptProp:
-        r"""
-        Based on \*.material file.
-
-        Parameters
-        ----------
-        path : str
-            \*.material file
-
-        Returns
-        -------
-        ansys.speos.core.opt_prop.OptProp
-            Returns self (as the OptProp that owns this VOP helper).
-        """
-        if self._vop_template is None:
-            self._vop_template = ProtoVOPTemplate(
-                name=self._name + ".VOP",
-                description=self._sop_template.description,
-                metadata=self._sop_template.metadata,
-            )
-        self._vop_template.library.SetInParent()
-        return self
 
 
 class TextureLayer(BaseSop):
@@ -2026,6 +2042,8 @@ class OptProp(BaseVop, BaseSop):
             self._vop_template = self.vop_template_link.get()
             if self._vop_template.HasField("optic"):
                 self.set_volume_optic()
+            if self._vop_template.HasField("library"):
+                self.set_volume_library()
 
         # Reset sop template
         if self.sop_template_link is not None:

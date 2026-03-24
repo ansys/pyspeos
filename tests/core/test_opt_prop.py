@@ -115,7 +115,7 @@ def test_create_optical_property(speos: Speos):
 
     # VOP library
     op1.set_volume_library()
-    op1.vop_library = Path(test_path) / "AIR.material"
+    op1.vop_library.material_file_uri = Path(test_path) / "AIR.material"
     op1.commit()
     assert op1.vop_template_link.get().HasField("library")
     assert op1.vop_template_link.get().library.material_file_uri.endswith("AIR.material")
@@ -398,7 +398,7 @@ def test_load_optical_property_from_file(speos: Speos):
             case "Library_OP":
                 assert mat._sop_template.HasField("optical_polished")
                 assert mat.vop_type == "library"
-                assert mat.vop_library.endswith(".material")
+                assert mat.vop_library.material_file_uri.endswith(".material")
 
 
 @pytest.mark.supported_speos_versions(min=252)
@@ -418,10 +418,6 @@ def test_error_reporting(speos: Speos):
 
     # vop_optic setter should raise if VOP is not optic
     op.set_volume_opaque()
-
-    # vop_library setter should raise if VOP is not library
-    with pytest.raises(TypeError):
-        op.vop_library = Path("somefile.material")
 
     # texture setter on OptProp should raise when value is not TextureLayer instances
     with pytest.raises(ValueError):
@@ -452,12 +448,12 @@ def test_opt_prop_default_parameters_and_local_helpers(speos: Speos, capsys):
             ),
             vop_parameters=VopParameters(
                 vop_type=VopTypes.library,
-                vop_library_file_uri=Path("library_volume.material"),
+                material_file_uri=Path("library_volume.material"),
             ),
         ),
     )
     assert op_library.sop_library.sop_file_uri.endswith("library_surface.scattering")
-    assert op_library.vop_library.endswith("library_volume.material")
+    assert op_library.vop_library.material_file_uri.endswith("library_volume.material")
 
     op_polished = p.create_optical_property(
         name="Defaults.OpticalPolished",

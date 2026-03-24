@@ -122,7 +122,9 @@ print(op1)
 op2 = p.create_optical_property(name="Material.2")
 op2.set_surface_opticalpolished()  # SOP : optical polished
 op2.set_volume_library()
-op2.vop_library = assets_data_path / "AIR.material"  # VOP : selected library via a file .material
+op2.vop_library.material_file_uri = (
+    assets_data_path / "AIR.material"
+)  # VOP : selected library via a file .material
 # This optical property will be applied to two bodies named : "TheBodyD" and "TheBodyE".
 op2.geometries = [bodies[2], bodies[3]]
 op2.commit()

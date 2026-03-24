@@ -211,12 +211,12 @@ class VopParameters:
     ----------
     vop_type: VopTypes
         Type of VOP to apply on the geometry.
-    vop_library_file_uri: Optional[Union[str, Path]]
+    material_file_uri: Optional[Union[str, Path]]
         Path to the VOP library file if vop_type is library.
     """
 
     vop_type: Union[VopTypes] = VopTypes.none
-    vop_library_file_uri: Optional[Union[str, Path]] = None
+    material_file_uri: Optional[Union[str, Path]] = None
 
 
 class NormalMapTypes(str, Enum):
