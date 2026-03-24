@@ -9,6 +9,22 @@ This document contains the release notes for the PySpeos project.
 
 .. towncrier release notes start
 
+`0.7.3 <https://github.com/ansys/pyspeos/releases/tag/v0.7.3>`_ - March 23, 2026
+================================================================================
+
+.. tab-set::
+
+
+  .. tab-item:: Dependencies
+
+    .. list-table::
+        :header-rows: 0
+        :widths: auto
+
+        * - Remove upper-limit on grpc requirements
+          - `#880 <https://github.com/ansys/pyspeos/pull/880>`_
+
+
 `0.7.2 <https://github.com/ansys/pyspeos/releases/tag/v0.7.2>`_ - February 06, 2026
 ===================================================================================
 
