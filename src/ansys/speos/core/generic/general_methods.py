@@ -168,68 +168,93 @@ def normalize_vector(vector: Collection[float]) -> List[float]:
     return cast(List[float], (vector_np / magnitude).tolist())
 
 
-def error_no_install(install_path: Union[Path, str], version: Union[int, str]):
+def error_no_install(install_path: Union[Path, str], version: Union[int, str]) -> None:
     """Raise error that installation was not found at a location.
 
     Parameters
     ----------
     install_path : Union[Path, str]
-        Installation Path
+        Installation path where the executable was expected.
     version : Union[int, str]
-        Version
+        Ansys version number (e.g. 242).
+
+    Raises
+    ------
+    FileNotFoundError
+        Always raised to signal a missing Speos RPC installation.
     """
     raise FileNotFoundError(
         f"Ansys Speos RPC server installation not found at {install_path}. "
-        f"Please define AWP_ROOT{version} environment variable"
+        f"Please define AWP_ROOT{version} environment variable. "
     )
 
 
 def retrieve_speos_install_dir(
-    speos_rpc_path: Optional[Union[Path, str]] = None, version: str = DEFAULT_VERSION
+    speos_rpc_path: Optional[Union[Path, str]] = None,
+    version: Union[str, int] = DEFAULT_VERSION,
 ) -> Path:
-    """Retrieve Speos install location based on Path or Environment.
+    """Retrieve the Speos RPC installation directory.
+
+    Resolution order:
+    1. Validate / normalise a caller-supplied path.
+    2. Discover the installation via :func:`get_available_ansys_installations`.
+    3. Fall back to the ``AWP_ROOT<version>`` environment variable.
 
     Parameters
     ----------
-    speos_rpc_path : Optional[str, Path]
-        location of Speos rpc executable
+    speos_rpc_path : Optional[Union[str, Path]]
+        Explicit path to the Speos RPC executable or its parent directory.
+        When *None* or empty the function performs automatic discovery.
     version : Union[str, int]
-        The Speos server version to run, in the 3 digits format, such as "242".
-        If unspecified, the version will be chosen as
-        ``ansys.speos.core.kernel.client.LATEST_VERSION``.
+        Three-digit Ansys version string or integer (e.g. ``"242"`` or ``242``).
+        Defaults to :data:`DEFAULT_VERSION`.
 
+    Returns
+    -------
+    Path
+        Directory that contains the ``SpeosRPC_Server`` executable.
+
+    Raises
+    ------
+    FileNotFoundError
+        When no valid installation can be located.
     """
-    if not speos_rpc_path:
-        speos_rpc_path = ""
+    path = Path(speos_rpc_path) if speos_rpc_path else None
 
-    if not speos_rpc_path or not Path(speos_rpc_path).exists():
-        if not Path(speos_rpc_path).exists():
-            warnings.warn(
-                "Provided executable location not found, looking for local installation",
-                UserWarning,
-            )
-        versions = get_available_ansys_installations()
-        ansys_loc = versions.get(int(version), "")
-        if not ansys_loc:
-            ansys_loc = os.environ.get("AWP_ROOT{}".format(version), "")
-            if not ansys_loc:
-                error_no_install(speos_rpc_path, int(version))
-
-        speos_rpc_path = Path(ansys_loc) / "Optical Products" / "SPEOS_RPC"
-    elif Path(speos_rpc_path).is_file():
-        if "SpeosRPC_Server" not in Path(speos_rpc_path).name:
-            error_no_install(speos_rpc_path, int(version))
+    # --- caller supplied a path -------------------------------------------
+    if path is not None:
+        if path.is_file():
+            if "SpeosRPC_Server" not in path.name:
+                error_no_install(path, int(version))
+            path = path.parent
+        elif path.exists():
+            pass  # directory supplied directly — validated below
         else:
-            speos_rpc_path = Path(speos_rpc_path).parent
+            warnings.warn(
+                f"Provided executable location '{path}' not found; "
+                "falling back to local installation discovery.",
+                UserWarning,
+                stacklevel=3,
+            )
+            path = None  # trigger auto-discovery
 
-    speos_rpc_path = Path(speos_rpc_path)
-    if os.name == "nt":
-        speos_exec = speos_rpc_path / "SpeosRPC_Server.exe"
-    else:
-        speos_exec = speos_rpc_path / "SpeosRPC_Server.x"
+    # --- auto-discovery ---------------------------------------------------
+    if path is None:
+        installations = get_available_ansys_installations()  # {261: 'C:\\...\\v261', ...}
+        ansys_loc = (
+            installations.get(int(version))  # dict keys are int
+            or os.environ.get(f"AWP_ROOT{version}")  # fallback: env var
+        )
+        if not ansys_loc:
+            error_no_install(speos_rpc_path or "<unset>", int(version))
+        path = Path(ansys_loc) / "Optical Products" / "SPEOS_RPC"
+
+    # --- verify executable exists -----------------------------------------
+    speos_exec = path / ("SpeosRPC_Server.exe" if os.name == "nt" else "SpeosRPC_Server.x")
     if not speos_exec.is_file():
-        error_no_install(speos_rpc_path, int(version))
-    return speos_rpc_path
+        error_no_install(path, int(version))
+
+    return path
 
 
 def wavelength_to_rgb(wavelength: float, gamma: float = 0.8) -> [int, int, int, int]:
