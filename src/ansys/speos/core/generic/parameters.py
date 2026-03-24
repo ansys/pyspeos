@@ -35,7 +35,7 @@ from ansys.speos.core.generic.constants import ORIGIN
 
 @dataclass
 class WavelengthsRangeParameters:
-    """Wavelength parameters."""
+    """Wavelength Parameters."""
 
     start: int = 400
     """Wavelength start value."""
@@ -80,9 +80,9 @@ class IntensitySensorDimensionsConoscopicParameters:
     """Dataclass for Intensity Sensor dimension in case of conoscopic."""
 
     theta_max: float = 45
-    """Maximum theta angle on consocopic type (in deg)."""
+    """Maximum theta angle for the conoscopic type (in degrees)."""
     theta_sampling: int = 90
-    """Sampling for consocopic type for theta."""
+    """Theta sampling for the conoscopic type."""
 
 
 @dataclass
@@ -126,7 +126,9 @@ class MeshData:
     """Store named data on meshed Geometry."""
 
     name: str
+    """Name of the data added to the mesh."""
     data: list[float]
+    """Numerical data values associated with the named mesh item."""
 
 
 class MappingTypes(str, Enum):
@@ -161,15 +163,25 @@ class MappingOperator:
     """Store all information needed to create a UV mapping."""
 
     mapping_type: Union[MappingTypes] = MappingTypes.planar
+    """Type of mapping applied on the geometry."""
     u_length: float = 10
+    """Length of the mapping along the U axis."""
     v_length: Optional[float] = None
+    """Length of the mapping along the V axis."""
     u_offset: float = 0
+    """Offset of the mapping origin along the U axis."""
     v_offset: float = 0
+    """Offset of the mapping origin along the V axis."""
     axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+    """Axis system used to position and orient the mapping."""
     u_scale: float = 1
+    """Scaling factor applied along the U axis."""
     v_scale: float = 1
+    """Scaling factor applied along the V axis."""
     rotation: float = 0
+    """Rotation angle of the mapping."""
     perimeter: Optional[float] = None
+    """Perimeter value used by mapping modes that require it."""
 
 
 @dataclass
@@ -180,47 +192,37 @@ class MappingByData:
     """
 
     vertices_data_index: int
+    """Index of the vertex data used for custom mapping."""
     repeat_v: Optional[bool] = None
+    """Whether mapping repeats along the V direction."""
     repeat_u: Optional[bool] = None
+    """Whether mapping repeats along the U direction."""
 
 
 @dataclass
 class SopParameters:
-    """Sop parameters dataclass.
-
-    Attributes
-    ----------
-    sop_type: SopTypes
-        Type of SOP to apply on the geometry.
-    sop_reflectance: Optional[float]
-        Reflectance value to apply on the geometry if sop_type is mirror.
-    sop_library_file_uri: Optional[Union[str, Path]]
-        Path to the SOP library file if sop_type is library.
-    """
+    """SOP Parameters Dataclass."""
 
     sop_type: Union[SopTypes] = SopTypes.mirror
+    """Type of SOP to apply on the geometry."""
     sop_reflectance: Optional[float] = 100
+    """Reflectance value used when ``sop_type`` is ``mirror``."""
     sop_library_file_uri: Optional[Union[str, Path]] = None
+    """Path to the SOP library file when ``sop_type`` is ``library``."""
 
 
 @dataclass
 class VopParameters:
-    """Vop parameters dataclass.
-
-    Attributes
-    ----------
-    vop_type: VopTypes
-        Type of VOP to apply on the geometry.
-    material_file_uri: Optional[Union[str, Path]]
-        Path to the VOP library file if vop_type is library.
-    """
+    """VOP Parameters Dataclass."""
 
     vop_type: Union[VopTypes] = VopTypes.none
+    """Type of VOP to apply on the geometry."""
     material_file_uri: Optional[Union[str, Path]] = None
+    """Path to the VOP library file when ``vop_type`` is ``library``."""
 
 
 class NormalMapTypes(str, Enum):
-    """Normal map types without parameters."""
+    """Normal Map Types Without Parameters."""
 
     from_normal_map = "from_normal_map"
     from_image = "from_image"
@@ -231,9 +233,13 @@ class ImageTextureParameter:
     """Parameters of an image based texture."""
 
     file_path: Union[str, Path] = ""
+    """Path to the texture image file."""
     repeat_u: bool = True
+    """Whether the image texture repeats along the U direction."""
     repeat_v: bool = True
+    """Whether the image texture repeats along the V direction."""
     mapping: [Union[MappingOperator, MappingByData]] = field(default_factory=MappingOperator)
+    """Mapping settings applied to the image texture."""
 
 
 @dataclass
@@ -246,50 +252,42 @@ class NormalMapParameter(ImageTextureParameter):
 
 @dataclass
 class TextureLayerParameters:
-    """Texture layer parameters dataclass.
-
-    Attributes
-    ----------
-    sop_parameters: Optional[SopParameters]
-        SOP parameters to apply on the texture layer.
-    image_texture: bool
-        Whether the texture layer is an image texture or not.
-    normal_map: bool
-        Whether the texture layer is a normal map or not.
-    normal_map_type: Optional[NormalMapTypes]
-        Type of normal map to apply if normal_map is True.
-    normal_map_mapping: Optional[Union[MappingOperator, MappingByData]]
-        Mapping parameters to apply on the normal map if normal_map is True and normal_map_type
-        is from_normal_map.
-    anisotropy_map: bool
-        Whether the texture layer is an anisotropy map or not.
-    anisotropy_map_parameters: Optional[Union[MappingOperator, MappingByData]]
-        Mapping parameters to apply on the anisotropy map if anisotropy_map is True.
-
-    """
+    """Texture Layer Parameters Dataclass."""
 
     sop_parameters: Optional[SopParameters] = field(default_factory=SopParameters)
+    """SOP parameters applied to the texture layer."""
     image_texture: bool = False
+    """Whether this layer uses an image texture."""
     image_texture_parameters: Optional[ImageTextureParameter] = None
+    """Image texture parameters when ``image_texture`` is enabled."""
     normal_map: bool = False
+    """Whether this layer uses a normal map."""
     normal_map_type: Optional[NormalMapTypes] = None
+    """Normal map type to apply when ``normal_map`` is enabled."""
     normal_map_parameters: Optional[ImageTextureParameter] = None
+    """Normal map image parameters when ``normal_map`` is enabled."""
     normal_map_mapping: Optional[Union[MappingOperator, MappingByData]] = None
+    """Mapping parameters for normal maps built from normal-map data."""
     anisotropy_map: bool = False
+    """Whether this layer uses an anisotropy map."""
     anisotropy_map_parameters: Optional[Union[MappingOperator, MappingByData]] = None
+    """Mapping parameters applied to the anisotropy map."""
 
 
 @dataclass
 class OptPropParameters:
-    """store default values for optical properties."""
+    """Store default values for optical properties."""
 
     sop_parameters: Optional[SopParameters] = field(default_factory=SopParameters)
+    """SOP parameters used for optical properties."""
     vop_parameters: Optional[VopParameters] = field(default_factory=VopParameters)
+    """VOP parameters used for optical properties."""
     texture_parameters: Optional[List[TextureLayerParameters]] = None
+    """Optional texture layers applied as optical properties."""
 
 
 class LayerTypes(str, Enum):
-    """Layer Separation types without parameters."""
+    """Layer Separation Types Without Parameters."""
 
     none = "none"
     by_source = "by_source"
@@ -332,7 +330,7 @@ class LayerBySequenceParameters:
     """Layer separation type Parameters  for Sequence separation."""
 
     maximum_nb_of_sequence: int = 10
-    """Maximum number of sequencese stored in Speos Result file"""
+    """Maximum number of sequences stored in the Speos result file."""
     sequence_type: Union[SequenceTypes.by_face, SequenceTypes.by_geometry] = (
         SequenceTypes.by_geometry
     )
@@ -341,7 +339,7 @@ class LayerBySequenceParameters:
 
 @dataclass
 class GeometryLayerParameters:
-    """Geometry layer parameters."""
+    """Geometry Layer Parameters."""
 
     name: Optional[str] = None
     """Layer name stored in result file"""
@@ -358,7 +356,7 @@ class LayerByFaceParameters:
     sca_filtering_types: Union[
         SCAFilteringTypes.intersected_one_time, SCAFilteringTypes.last_impact
     ] = SCAFilteringTypes.last_impact
-    """Defines how data result data is filtered"""
+    """Defines how result data is filtered."""
 
 
 @dataclass
@@ -366,7 +364,7 @@ class LayerByIncidenceAngleParameters:
     """Layer separation type Parameters for Incidence angle separation."""
 
     incidence_sampling: int = 9
-    """Define Number of incidence angle layers"""
+    """Number of incidence angle layers."""
 
 
 class PngBits(str, Enum):
@@ -379,7 +377,7 @@ class PngBits(str, Enum):
 
 
 class ColorBalanceModeTypes(str, Enum):
-    """Color Balance Mode types without parameters."""
+    """Color Balance Mode Types Without Parameters."""
 
     none = "none"
     grey_world = "grey_world"
@@ -411,7 +409,7 @@ class BalanceModeDisplayPrimariesParameters:
 
 @dataclass
 class ColorParameters:
-    """Color mode Camera Parameter."""
+    """Camera Color Mode Parameters."""
 
     balance_mode: Union[
         ColorBalanceModeTypes.none,
@@ -433,7 +431,7 @@ class MonoChromaticParameters:
     """Monochromatic Camera Parameters."""
 
     sensitivity: Union[str, Path] = ""
-    """Path to Sensitivity Spectrum."""
+    """Path to the sensitivity spectrum."""
 
 
 @dataclass
@@ -467,11 +465,11 @@ class CameraSensorParameters:
     sensor_type_parameters: Union[None, PhotometricCameraParameters] = field(
         default_factory=PhotometricCameraParameters
     )
-    """Camera sensor type None means geometric sensor"""
+    """Camera sensor type; ``None`` means geometric sensor."""
     axis_system: list[float] = field(default_factory=lambda: ORIGIN)
-    """Location of the sensor Origin"""
+    """Location of the sensor origin."""
     distortion_file_uri: Union[str, Path] = ""
-    """distortion file location"""
+    """Distortion file location."""
     focal_length: float = 5
     """Default focal length of the Camera Sensor."""
     imager_distance: float = 10
@@ -489,6 +487,7 @@ class CameraSensorParameters:
     trajectory_fil_uri: Union[str, Path] = ""
     """Trajectory file information."""
     lxp_path_number: Optional[int] = None
+    """Number of rays stored in LXP trajectory data."""
 
 
 @dataclass
@@ -508,7 +507,7 @@ class SpectralParameters:
 
 
 class IntegrationTypes(str, Enum):
-    """Integration types without parameters."""
+    """Integration Types Without Parameters."""
 
     planar = "planar"
     radial = "radial"
@@ -518,7 +517,7 @@ class IntegrationTypes(str, Enum):
 
 
 class RayfileTypes(str, Enum):
-    """Rayfile types without parameters."""
+    """Rayfile Types Without Parameters."""
 
     none = "none"
     classic = "classic"
@@ -528,7 +527,7 @@ class RayfileTypes(str, Enum):
 
 
 class SensorTypes(str, Enum):
-    """Sensor types without parameters."""
+    """Sensor Types Without Parameters."""
 
     photometric = "photometric"
     radiometric = "radiometric"
@@ -558,7 +557,7 @@ class MeasuresParameters:
     transmission: bool = True
     """Transmission measure activation state."""
     absorption: bool = True
-    """Ansorption measure activation state."""
+    """Absorption measure activation state."""
 
 
 @dataclass
@@ -654,7 +653,7 @@ class NearfieldParameters:
 
 @dataclass
 class IntensityXMPSensorParameters:
-    """Parameters data clas for intensity Sensor."""
+    """Intensity Sensor Parameters Dataclass."""
 
     dimensions: Union[
         IntensitySensorDimensionsXAsMeridianParameters,
@@ -671,7 +670,7 @@ class IntensityXMPSensorParameters:
     orientation: IntensitySensorOrientationTypes = IntensitySensorOrientationTypes.x_as_meridian
     """Sensor orientation."""
     viewing_direction: IntensitySensorViewingTypes = IntensitySensorViewingTypes.from_source
-    """Viewing Direction onto the result."""
+    """Viewing direction used for the result."""
     layer_type: Union[
         LayerTypes.none,
         LayerTypes.by_source,
@@ -680,7 +679,7 @@ class IntensityXMPSensorParameters:
     ] = LayerTypes.none
     """Layer separation type."""
     near_field_parameters: Optional[NearfieldParameters] = None
-    """Parameters in case sensor is nearfield"""
+    """Parameters used when the sensor is near field."""
 
 
 ## Source Parameters
@@ -691,6 +690,7 @@ class LuminousFluxParameters:
     """Luminous Flux Parameters."""
 
     value: float = 683
+    """Luminous flux value."""
 
 
 @dataclass
@@ -698,39 +698,45 @@ class RadiantFluxParameters:
     """Radiant Flux Parameters."""
 
     value: float = 1
+    """Radiant flux value."""
 
 
 @dataclass
 class FluxFromFileParameters:
-    """Flux frm inteisty file."""
+    """Flux from intensity file."""
 
     value: bool = True
+    """Whether to read flux from the source intensity file."""
 
 
 @dataclass
 class SpectrumSampledParameters:
-    """Spectrum sampled parameters."""
+    """Spectrum Sampled Parameters."""
 
     wavelengths: list[float] = field(default_factory=lambda: [400.0, 700.0])
+    """Sampled wavelength values."""
     values: list[float] = field(default_factory=lambda: [100.0, 100.0])
+    """Spectrum values corresponding to ``wavelengths``."""
 
 
 @dataclass
 class SpectrumLibraryParameters:
-    """Spectrum library parameters."""
+    """Spectrum Library Parameters."""
 
     file_uri: Union[str, Path] = ""
+    """Path to the spectrum file in the library."""
 
 
 @dataclass
 class SpectrumBlackBodyParameters:
-    """Spectrum Black Body parameters."""
+    """Spectrum Black Body Parameters."""
 
     temperature: float = 2856
+    """Blackbody temperature in Kelvin."""
 
 
 class SpectrumType(str, Enum):
-    """Spectrum type without parameters."""
+    """Spectrum Type Without Parameters."""
 
     incandescent = "photometric"
     warm_white_fluorescent = "warm_white_fluorescent"
@@ -746,20 +752,25 @@ class LuminaireSourceParameters:
     """Parameters class for Luminaire Source."""
 
     intensity_file_uri: Union[str, Path] = ""
+    """Path to the intensity file used by the luminaire."""
     flux_type: Union[LuminousFluxParameters, RadiantFluxParameters, FluxFromFileParameters] = field(
         default_factory=lambda: FluxFromFileParameters()
     )
+    """Flux definition for the luminaire source."""
     spectrum_type: Union[SpectrumBlackBodyParameters, SpectrumLibraryParameters, SpectrumType] = (
         SpectrumType.incandescent
     )
+    """Spectrum definition for the luminaire source."""
     axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+    """Axis system used to position the source."""
 
 
 @dataclass
 class SpectrumMonochromaticParameters:
-    """Spectrum Monochromatic parameters."""
+    """Spectrum Monochromatic Parameters."""
 
     wavelength: float = 555.0
+    """Single wavelength value used for monochromatic spectrum."""
 
 
 @dataclass
@@ -767,16 +778,21 @@ class RayFileSourceParameters:
     """Parameters class for Ray File Source."""
 
     ray_file_uri: Union[str, Path] = ""
+    """Path to the ray file."""
     flux_type: Union[LuminousFluxParameters, RadiantFluxParameters, FluxFromFileParameters] = field(
         default_factory=lambda: FluxFromFileParameters()
     )
+    """Flux definition for the ray file source."""
     spectrum_type: Optional[
         Union[
             SpectrumBlackBodyParameters, SpectrumLibraryParameters, SpectrumMonochromaticParameters
         ]
     ] = None
+    """Optional spectrum definition for the ray file source."""
     axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+    """Axis system used to position the source."""
     exit_geometry: Optional[list[str]] = None
+    """Optional list of exit geometries associated with the source."""
 
 
 @dataclass
@@ -784,50 +800,61 @@ class IntensityFluxParameters:
     """Luminous Flux Parameters."""
 
     value: float = 5
+    """Intensity flux value."""
 
 
 @dataclass
 class IntensityLambertianParameters:
-    """Intensity Lambertian parameters."""
+    """Intensity Lambertian Parameters."""
 
     total_angle: float = 180
+    """Total angular extent of the Lambertian distribution."""
 
 
 @dataclass
 class IntensityCosParameters:
-    """Intensity Cos parameters."""
+    """Intensity Cos Parameters."""
 
     n: float = 3
+    """Exponent applied to the cosine intensity distribution."""
     total_angle: float = 180
+    """Total angular extent of the cosine distribution."""
 
 
 @dataclass
 class IntensitySymmetricGaussianParameters:
-    """Intensity Symmetric Gaussian parameters."""
+    """Intensity Symmetric Gaussian Parameters."""
 
     total_angle: float = 180
+    """Total angular extent of the Gaussian distribution."""
     fwhm: float = 30.0
+    """Full width at half maximum of the symmetric Gaussian."""
 
 
 @dataclass
 class IntensitAsymmetricGaussianParameters:
-    """Intensity Asymmetric Gaussian parameters."""
+    """Intensity Asymmetric Gaussian Parameters."""
 
     total_angle: float = 180
+    """Total angular extent of the Gaussian distribution."""
     fwhm_x: float = 30.0
+    """Full width at half maximum along the X direction."""
     fwhm_y: float = 30.0
+    """Full width at half maximum along the Y direction."""
     axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+    """Axis system defining the asymmetric Gaussian orientation."""
 
 
 @dataclass
 class IntensityOrientationAxisSystemParameters:
-    """Intensity Orientation Axis System parameters."""
+    """Intensity Orientation Axis System Parameters."""
 
     axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+    """Axis system used to orient the intensity distribution."""
 
 
 class IntensityOrientationType(str, Enum):
-    """Spectrum type without parameters."""
+    """Spectrum Type Without Parameters."""
 
     normal_to_uv = "normal_to_uv"
     normal_to_surface = "normal_to_surface"
@@ -835,13 +862,16 @@ class IntensityOrientationType(str, Enum):
 
 @dataclass
 class IntensityLibraryParameters:
-    """Intensity Library parameters."""
+    """Intensity Library Parameters."""
 
     intensity_file_uri: Union[str, Path] = ""
+    """Path to the intensity library file."""
     orientation_type: Union[IntensityOrientationType, IntensityOrientationAxisSystemParameters] = (
         field(default_factory=lambda: IntensityOrientationAxisSystemParameters())
     )
+    """Orientation mode or explicit axis system for the library intensity."""
     exit_geometries: Optional[list[str]] = None
+    """Optional list of source geometries where intensity exits."""
 
 
 @dataclass
@@ -849,7 +879,9 @@ class VariableExitanceParameters:
     """Spectrum Exit Parameters."""
 
     xmp_file_uri: Union[str, Path] = ""
+    """Path to the XMP file defining variable exitance."""
     axis_system: list[float] = field(default_factory=lambda: ORIGIN[0:9])
+    """Axis system used to position variable exitance."""
 
 
 @dataclass
@@ -857,6 +889,7 @@ class ConstantExitanceParameters:
     """Spectrum Exit Parameters."""
 
     emissive_faces: list[str] = field(default_factory=lambda: [])
+    """Faces that emit with constant exitance."""
 
 
 @dataclass
@@ -869,9 +902,11 @@ class SurfaceSourceParameters:
         IntensityFluxParameters,
         FluxFromFileParameters,
     ] = field(default_factory=lambda: LuminousFluxParameters())
+    """Flux definition used by the surface source."""
     exitance_type: Union[VariableExitanceParameters, ConstantExitanceParameters] = field(
         default_factory=lambda: ConstantExitanceParameters()
     )
+    """Exitance definition applied on emitting faces."""
     intensity_type: Union[
         IntensityLambertianParameters,
         IntensityCosParameters,
@@ -879,11 +914,13 @@ class SurfaceSourceParameters:
         IntensitAsymmetricGaussianParameters,
         IntensityLibraryParameters,
     ] = field(default_factory=lambda: IntensityLambertianParameters())
+    """Intensity distribution model used by the source."""
     spectrum_type: Optional[
         Union[
             SpectrumBlackBodyParameters, SpectrumLibraryParameters, SpectrumMonochromaticParameters
         ]
     ] = field(default_factory=lambda: SpectrumMonochromaticParameters())
+    """Spectrum definition used by the source."""
 
 
 @dataclass
@@ -892,8 +929,11 @@ class AutomaticSunParameters:
 
     now = datetime.datetime.now()
     time_zone: str = "CET"
+    """Time zone used for automatic sun positioning."""
     longitude: float = 0.0
+    """Longitude used for automatic sun positioning."""
     latitude: float = 0.0
+    """Latitude used for automatic sun positioning."""
     year = now.year
     month = now.month
     day = now.day
@@ -906,6 +946,7 @@ class ManualSunParameters:
     """Spectrum Exit Parameters."""
 
     direction: list[float] = field(default_factory=lambda: [0, 0, 1])
+    """Manual sun direction vector."""
 
 
 @dataclass
@@ -913,12 +954,17 @@ class AmbientNaturalLightParameters:
     """Ambient Natural Light Parameters."""
 
     with_sky: bool = field(default_factory=lambda: True)
+    """Whether the sky contribution is enabled."""
     turbidity: float = 3.0
+    """Atmospheric turbidity value."""
     zenith_direction: list[float] = field(default_factory=lambda: [0, 0, 1])
+    """Zenith direction vector."""
     north_direction: list[float] = field(default_factory=lambda: [0, 1, 0])
+    """North direction vector."""
     sun_type: Union[AutomaticSunParameters, ManualSunParameters] = field(
         default_factory=lambda: AutomaticSunParameters()
     )
+    """Sun definition, automatic or manual."""
 
 
 @dataclass
@@ -926,11 +972,13 @@ class UserDefinedWhitePointParameters:
     """User defined White Point Parameters."""
 
     x: float = 0.31271
+    """Chromaticity x coordinate of the white point."""
     y: float = 0.32902
+    """Chromaticity y coordinate of the white point."""
 
 
 class WhitePointType(str, Enum):
-    """White Point type without parameters."""
+    """White Point Type Without Parameters."""
 
     d65 = "d65"
     d50 = "d50"
@@ -943,13 +991,17 @@ class UserDefinedColorSpaceParameters:
     """User defined Color Space Parameters."""
 
     white_point_type: Union[WhitePointType, UserDefinedWhitePointParameters] = WhitePointType.d65
+    """White point preset or custom white point definition."""
     red_spectrum_uri: Union[str, Path] = ""
+    """Path to the red primary spectrum."""
     blue_spectrum_uri: Union[str, Path] = ""
+    """Path to the blue primary spectrum."""
     green_spectrum_uri: Union[str, Path] = ""
+    """Path to the green primary spectrum."""
 
 
 class ColorSpaceType(str, Enum):
-    """Color Space Type without parameters."""
+    """Color Space Type Without Parameters."""
 
     srgb = "srgb"
     adobe_rgb = "abode_rgb"
@@ -960,14 +1012,19 @@ class AmbientEnvironmentParameters:
     """Ambient Environment Parameters."""
 
     zenith_direction: list[float] = field(default_factory=lambda: [0, 0, 1])
+    """Zenith direction vector."""
     north_direction: list[float] = field(default_factory=lambda: [0, 1, 0])
+    """North direction vector."""
     luminance: float = 1000.0
+    """Environment luminance value."""
     image_file_uri: Union[str, Path] = ""
+    """Path to the environment image."""
     color_space_type: Union[ColorSpaceType, UserDefinedColorSpaceParameters] = ColorSpaceType.srgb
+    """Color space preset or custom color space definition."""
 
 
 class ColorimetricStandardTypes(str, Enum):
-    """Color Space Type without parameters."""
+    """Color Space Type Without Parameters."""
 
     cie_1931 = "cie_1931"
     cie_1964 = "cie_1964"
@@ -978,15 +1035,25 @@ class DirectSimulationParameters:
     """Direct Simulation Parameters."""
 
     ambient_material_uri: Union[str, Path] = ""
+    """Path to the ambient material file."""
     light_expoert: bool = False
+    """Whether light export is enabled."""
     stop_condition_rays_number: int = 200000
+    """Maximum number of rays before stopping the simulation."""
     stop_condition_duration: Optional[int] = None
+    """Optional simulation stop duration in seconds."""
     automatic_save_frequency: int = 1800
+    """Auto-save interval in seconds."""
     colorimetric_standard: ColorimetricStandardTypes = ColorimetricStandardTypes.cie_1931
+    """Colorimetric standard used for result computation."""
     dispersion: bool = True
+    """Whether wavelength dispersion is enabled."""
     geom_distance_tolerance: float = 0.01
+    """Geometry distance tolerance value."""
     max_impact: int = 100
+    """Maximum number of impacts considered per ray."""
     minimum_energy_percentage: float = 0.005
+    """Minimum energy percentage threshold for ray continuation."""
 
 
 @dataclass
@@ -994,18 +1061,31 @@ class InverseSimulationParameters:
     """Inverse Simulation Parameters."""
 
     ambient_material_uri: Union[str, Path] = ""
+    """Path to the ambient material file."""
     light_expoert: bool = False
+    """Whether light export is enabled."""
     stop_condition_passes_number: int = 5
+    """Maximum number of inverse passes before stopping."""
     stop_condition_duration: Optional[int] = None
+    """Optional simulation stop duration in seconds."""
     automatic_save_frequency: int = 1800
+    """Auto-save interval in seconds."""
     colorimetric_standard: ColorimetricStandardTypes = ColorimetricStandardTypes.cie_1931
+    """Colorimetric standard used for result computation."""
     dispersion: bool = False
+    """Whether wavelength dispersion is enabled."""
     geom_distance_tolerance: float = 0.01
+    """Geometry distance tolerance value."""
     max_impact: int = 100
+    """Maximum number of impacts considered per ray."""
     splitting: bool = False
+    """Whether ray splitting is enabled."""
     minimum_energy_percentage: float = 0.005
+    """Minimum energy percentage threshold for ray continuation."""
     number_of_gathering_rays_per_source: int = 1
+    """Number of gathering rays shot per source."""
     maximum_gathering_error: int = 0
+    """Maximum accepted gathering error."""
 
 
 @dataclass
@@ -1013,12 +1093,17 @@ class InteractiveSimulationParameters:
     """Interactive Simulation Parameters."""
 
     ambient_material_uri: Union[str, Path] = ""
+    """Path to the ambient material file."""
     light_expoert: bool = False
+    """Whether light export is enabled."""
     impact_report: bool = False
+    """Whether impact reporting is enabled."""
     geom_distance_tolerance = 0.01
     max_impact = 100
     minimum_energy_percentage: float = 0.005
+    """Minimum energy percentage threshold for ray continuation."""
     colorimetric_standard: ColorimetricStandardTypes = ColorimetricStandardTypes.cie_1931
+    """Colorimetric standard used for result computation."""
 
 
 @dataclass
@@ -1026,7 +1111,9 @@ class SensorSamplingUnionParameters:
     """Sensor Sampling Union Parameters."""
 
     theta_sampling: int = 45
+    """Sampling count in the theta direction."""
     phi_sampling: int = 180
+    """Sampling count in the phi direction."""
 
 
 @dataclass
@@ -1034,15 +1121,25 @@ class VirtualBSDFSimulationParameters:
     """Virtual BSDF Simulation Parameters."""
 
     axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+    """Axis system used to position the simulation."""
     analysis_x_ratio: float = 100
+    """Analysis ratio along the X axis."""
     analysis_y_ratio: float = 100
+    """Analysis ratio along the Y axis."""
     integration_angle: float = 2
+    """Integration angle used for BSDF analysis."""
     stop_condition_ray_number: int = 100000
+    """Maximum number of rays before stopping the simulation."""
     geom_distance_tolerance: float = 0.01
+    """Geometry distance tolerance value."""
     max_impact = 100
     minimum_energy_percentage: float = 0.005
+    """Minimum energy percentage threshold for ray continuation."""
     colorimetric_standard: ColorimetricStandardTypes = ColorimetricStandardTypes.cie_1931
+    """Colorimetric standard used for result computation."""
     wavelength_range: WavelengthsRangeParameters = field(default_factory=WavelengthsRangeParameters)
+    """Wavelength range used by the simulation."""
     sensor_sampling_mode: Optional[SensorSamplingUnionParameters] = field(
         default_factory=SensorSamplingUnionParameters
     )
+    """Sensor angular sampling parameters."""
