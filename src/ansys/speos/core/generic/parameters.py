@@ -222,7 +222,7 @@ class VopParameters:
 
 
 class NormalMapTypes(str, Enum):
-    """Normal Map Types Without Parameters."""
+    """Normal Map Types."""
 
     from_normal_map = "from_normal_map"
     from_image = "from_image"
@@ -287,7 +287,7 @@ class OptPropParameters:
 
 
 class LayerTypes(str, Enum):
-    """Layer Separation Types Without Parameters."""
+    """Layer Separation Types."""
 
     none = "none"
     by_source = "by_source"
@@ -377,7 +377,7 @@ class PngBits(str, Enum):
 
 
 class ColorBalanceModeTypes(str, Enum):
-    """Color Balance Mode Types Without Parameters."""
+    """Color Balance Mode Types."""
 
     none = "none"
     grey_world = "grey_world"
@@ -507,7 +507,7 @@ class SpectralParameters:
 
 
 class IntegrationTypes(str, Enum):
-    """Integration Types Without Parameters."""
+    """Integration Types."""
 
     planar = "planar"
     radial = "radial"
@@ -517,7 +517,7 @@ class IntegrationTypes(str, Enum):
 
 
 class RayfileTypes(str, Enum):
-    """Rayfile Types Without Parameters."""
+    """Rayfile Types."""
 
     none = "none"
     classic = "classic"
@@ -527,7 +527,7 @@ class RayfileTypes(str, Enum):
 
 
 class SensorTypes(str, Enum):
-    """Sensor Types Without Parameters."""
+    """Sensor Types."""
 
     photometric = "photometric"
     radiometric = "radiometric"
@@ -736,7 +736,7 @@ class SpectrumBlackBodyParameters:
 
 
 class SpectrumType(str, Enum):
-    """Spectrum Type Without Parameters."""
+    """Spectrum Types."""
 
     incandescent = "photometric"
     warm_white_fluorescent = "warm_white_fluorescent"
@@ -854,7 +854,7 @@ class IntensityOrientationAxisSystemParameters:
 
 
 class IntensityOrientationType(str, Enum):
-    """Spectrum Type Without Parameters."""
+    """Intensity Orientation Types."""
 
     normal_to_uv = "normal_to_uv"
     normal_to_surface = "normal_to_surface"
@@ -978,7 +978,7 @@ class UserDefinedWhitePointParameters:
 
 
 class WhitePointType(str, Enum):
-    """White Point Type Without Parameters."""
+    """White Point Types."""
 
     d65 = "d65"
     d50 = "d50"
@@ -1001,7 +1001,7 @@ class UserDefinedColorSpaceParameters:
 
 
 class ColorSpaceType(str, Enum):
-    """Color Space Type Without Parameters."""
+    """Color Space Types."""
 
     srgb = "srgb"
     adobe_rgb = "abode_rgb"
@@ -1024,7 +1024,7 @@ class AmbientEnvironmentParameters:
 
 
 class ColorimetricStandardTypes(str, Enum):
-    """Color Space Type Without Parameters."""
+    """Colorimetric Standard Types."""
 
     cie_1931 = "cie_1931"
     cie_1964 = "cie_1964"
