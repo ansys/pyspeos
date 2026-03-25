@@ -341,6 +341,13 @@ class BaseSource:
                 PredefinedWhitePoint Type or UserDefinedWhitePoint Type.
 
             """
+            if self._white_point_type is None:
+                if self._userdefined_color_space.HasField("pre_defined_white_point"):
+                    self._white_point_type = (
+                        self._userdefined_color_space.pre_defined_white_point.white_point_type
+                    )
+                elif self._userdefined_color_space.HasField("user_defined_white_point"):
+                    self._white_point_type = self.set_white_point_type_user_defined()
             return self._white_point_type
 
         def set_white_point_type_d65(self) -> BaseSource.UserDefinedColorSpace:

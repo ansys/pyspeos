@@ -27,7 +27,7 @@ from pathlib import Path
 
 import pytest
 
-from ansys.speos.core import GeoRef, Project, Speos
+from ansys.speos.core import GeoRef, Intensity, Project, Speos
 from ansys.speos.core.generic.constants import (
     ORIGIN,
 )
@@ -1825,3 +1825,74 @@ def test_display_userdefined_color_space_and_intensity_library(speos: Speos):
     assert intensity_obj.get().HasField("library")
 
     src.delete()
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_load_display_source(speos: Speos):
+    """Test display source with userdefined colorspace."""
+    p = Project(
+        speos=speos,
+        path=Path(test_path) / "test_display_source.1.speos" / "test_display_source.1.speos",
+    )
+
+    for source in p.sources:
+        match source._name:
+            case "library_contrast50_srgb:430":
+                print("testing: " + source._name)
+                assert isinstance(source, SourceDisplay)
+                assert source._source_template.HasField("display")
+                assert source._source_instance.HasField("display_properties")
+                assert source.image_file_uri.endswith("pyspeos.png")
+                assert source.luminance == 200.0
+                assert source.contrast_ratio == 50.0
+                assert source.source_dimensions == [-6, 6, -5, 5]
+                assert isinstance(source.intensity.type, Intensity.Library)
+                assert source._source_instance.display_properties.intensity_properties.HasField(
+                    "library_properties"
+                )
+                assert source.intensity.type.intensity_file_uri.endswith(".ies")
+                assert source._source_template.display.HasField("pre_defined_color_space")
+                assert (
+                    source._source_template.display.pre_defined_color_space.color_space_type == 0
+                )  #
+                assert source.axis_system == [-10, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+            case "lamber_infinite_srgb:55":
+                print("testing: " + source._name)
+                assert isinstance(source, SourceDisplay)
+                assert source._source_template.HasField("display")
+                assert source._source_instance.HasField("display_properties")
+                assert source.image_file_uri.endswith("pyspeos.png")
+                assert source.luminance == 20.0
+                assert source.contrast_ratio == 0
+                assert source.source_dimensions == [-3, 3, -2.5, 2.5]
+                assert isinstance(source.intensity.type, Intensity.Cos)
+                assert source.intensity.type.n == 1
+                assert source.intensity.type.total_angle == 180
+                assert source._source_template.display.HasField("pre_defined_color_space")
+                assert (
+                    source._source_template.display.pre_defined_color_space.color_space_type == 1
+                )  #
+                assert source.axis_system == [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+            case "gausian_contrast500_udrgb:71":
+                print("testing: " + source._name)
+                assert isinstance(source, SourceDisplay)
+                assert source._source_template.HasField("display")
+                assert source._source_instance.HasField("display_properties")
+                assert source.image_file_uri.endswith("pyspeos.png")
+                assert source.luminance == 200.0
+                assert source.contrast_ratio == 500.0
+                assert source.source_dimensions == [-6, 6, -5, 5]
+                assert isinstance(source.intensity.type, Intensity.Gaussian)
+                assert source.intensity.type.fwhm_angle_x == 30
+                assert source.intensity.type.fwhm_angle_y == 30
+                assert source.intensity.type.total_angle == 180
+                assert source._source_template.display.HasField("user_defined_rbg_space")
+                udcs = source.set_userdefined_color_space()
+                assert udcs.red_spectrum["library"]["file_uri"].endswith(".spectrum")
+                assert source._source_template.display.user_defined_rbg_space.HasField(
+                    "user_defined_white_point"
+                )
+                assert udcs.white_point_type.white_point == pytest.approx(
+                    [0.31271, 0.32902], abs=0.00001
+                )
+                assert source.axis_system == [10, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
