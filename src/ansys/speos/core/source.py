@@ -3318,36 +3318,55 @@ class SourceDisplay(BaseSource):
         self._color_space_type = None
 
         if default_parameters is not None:
-            # no formal dataclass provided currently for Display parameters in this repo;
-            # if provided, users are expected to map fields manually
-            if not isinstance(default_parameters, DisplayParameters):
-                raise TypeError("incorrect parameter dataclass")
-            match default_parameters.color_space_type:
-                case ColorSpaceType.srgb:
-                    self.set_pre_defined_color_space().set_color_space_srgb()
-                case ColorSpaceType.adobe_rgb:
-                    self.set_pre_defined_color_space().set_color_space_adobergb()
-                case UserDefinedColorSpaceParameters():
-                    cs = self.set_userdefined_color_space()
-                    cs.red_spectrum = default_parameters.color_space_type.red_spectrum_uri
-                    cs.green_spectrum = default_parameters.color_space_type.green_spectrum_uri
-                    cs.blue_spectrum = default_parameters.color_space_type.blue_spectrum_uri
-                    match default_parameters.color_space_type.white_point_type:
-                        case WhitePointType.d50:
-                            cs.set_white_point_type_d50()
-                        case WhitePointType.d65:
-                            cs.set_white_point_type_d65()
-                        case WhitePointType.e:
-                            cs.set_white_point_type_e()
-                        case WhitePointType.c:
-                            cs.set_white_point_type_c()
-                        case UserDefinedWhitePointParameters():
-                            ud_wp = cs.set_white_point_type_user_defined()
-                            ud_wp.white_point = [
-                                default_parameters.color_space_type.white_point_type.x,
-                                default_parameters.color_space_type.white_point_type.y,
-                            ]
+            self._fill_parameters(default_parameters)
 
+    def _fill_parameters(self, default_parameters: DisplayParameters) -> None:
+        """Populate the Display source from a :class:`DisplayParameters` dataclass.
+
+        Parameters
+        ----------
+        default_parameters : ansys.speos.core.generic.parameters.DisplayParameters
+            Dataclass carrying the values to apply to this Display source.
+
+        Raises
+        ------
+        TypeError
+            If *default_parameters* is not a :class:`DisplayParameters` instance.
+        ValueError
+            If an unsupported intensity orientation type is supplied.
+        """
+        if not isinstance(default_parameters, DisplayParameters):
+            raise TypeError("incorrect parameter dataclass")
+
+        # Color space
+        match default_parameters.color_space_type:
+            case ColorSpaceType.srgb:
+                self.set_pre_defined_color_space().set_color_space_srgb()
+            case ColorSpaceType.adobe_rgb:
+                self.set_pre_defined_color_space().set_color_space_adobergb()
+            case UserDefinedColorSpaceParameters():
+                cs = self.set_userdefined_color_space()
+                cs.red_spectrum = default_parameters.color_space_type.red_spectrum_uri
+                cs.green_spectrum = default_parameters.color_space_type.green_spectrum_uri
+                cs.blue_spectrum = default_parameters.color_space_type.blue_spectrum_uri
+                match default_parameters.color_space_type.white_point_type:
+                    case WhitePointType.d50:
+                        cs.set_white_point_type_d50()
+                    case WhitePointType.d65:
+                        cs.set_white_point_type_d65()
+                    case WhitePointType.e:
+                        cs.set_white_point_type_e()
+                    case WhitePointType.c:
+                        cs.set_white_point_type_c()
+                    case UserDefinedWhitePointParameters():
+                        ud_wp = cs.set_white_point_type_user_defined()
+                        ud_wp.white_point = [
+                            default_parameters.color_space_type.white_point_type.x,
+                            default_parameters.color_space_type.white_point_type.y,
+                        ]
+
+        # Intensity
+        if default_parameters.intensity_type is not None:
             match type(default_parameters.intensity_type).__name__:
                 case "IntensityLambertianParameters":
                     self.intensity.set_cos().n = 1
@@ -3413,11 +3432,19 @@ class SourceDisplay(BaseSource):
                                             ).__name__
                                         )
                                     )
-            self.luminance = default_parameters.luminance
-            self.contrast_ratio = default_parameters.contrast_ratio
-            self.image_file_uri = default_parameters.image_file_uri
-            self.axis_system = default_parameters.axis_system
-            self.source_dimensions = default_parameters.source_dimensions
+                case _:
+                    raise ValueError(
+                        "Unsupported intensity type: {}".format(
+                            type(default_parameters.intensity_type).__name__
+                        )
+                    )
+
+        # Scalar / instance-level properties
+        self.luminance = default_parameters.luminance
+        self.contrast_ratio = default_parameters.contrast_ratio
+        self.image_file_uri = default_parameters.image_file_uri
+        self.axis_system = default_parameters.axis_system
+        self.source_dimensions = default_parameters.source_dimensions
 
     @property
     def image_file_uri(self) -> str:

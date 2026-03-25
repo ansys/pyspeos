@@ -1805,13 +1805,34 @@ def test_display_userdefined_color_space_and_intensity_library(speos: Speos):
     ilp.intensity_file_uri = str(Path(test_path) / "IES_C_DETECTOR.ies")
     display_params.intensity_type = ilp
 
-    src = p.create_source(
-        name="Display.UD.1", feature_type=SourceDisplay, parameters=display_params
-    )
+    for i, point in enumerate(WhitePointType):
+        display_params.color_space_type.white_point_type = point
+
+        src = p.create_source(
+            name=f"Display.UD.{i}", feature_type=SourceDisplay, parameters=display_params
+        )
+        assert isinstance(src, SourceDisplay)
+        usr = src.set_userdefined_color_space()
+        match point:
+            case WhitePointType.d50:
+                assert usr.white_point_type == 1
+            case WhitePointType.c:
+                assert usr.white_point_type == 0
+            case WhitePointType.e:
+                assert usr.white_point_type == 3
+            case WhitePointType.d65:
+                assert usr.white_point_type == 2
+        src.delete()
+
+    udcs.white_point_type = UserDefinedWhitePointParameters(x=0.33, y=0.33)
+    display_params.color_space_type = udcs
+    src = p.create_source(name="Display.1", feature_type=SourceDisplay, parameters=display_params)
+
     assert isinstance(src, SourceDisplay)
     # access and commit; color space and intensity should be committed and linked
     usr = src.set_userdefined_color_space()
     assert isinstance(usr.red_spectrum, dict)
+    assert usr.white_point_type.white_point == pytest.approx([0.33, 0.33], abs=0.00001)
     src.intensity.set_library().intensity_file_uri = ilp.intensity_file_uri
     src.image_file_uri = str(Path(test_path) / "stars.exr")
     src.commit()
@@ -1824,6 +1845,12 @@ def test_display_userdefined_color_space_and_intensity_library(speos: Speos):
     intensity_obj = speos.client[tpl.display.intensity_guid]
     assert intensity_obj.get().HasField("library")
 
+    src.delete()
+    display_params.color_space_type = ColorSpaceType.adobe_rgb
+
+    src = p.create_source(name="Display.2", feature_type=SourceDisplay, parameters=display_params)
+    assert isinstance(src, SourceDisplay)
+    assert src._source_template.display.pre_defined_color_space.color_space_type == 1  # AdobeRGB
     src.delete()
 
 
@@ -1838,7 +1865,6 @@ def test_load_display_source(speos: Speos):
     for source in p.sources:
         match source._name:
             case "library_contrast50_srgb:430":
-                print("testing: " + source._name)
                 assert isinstance(source, SourceDisplay)
                 assert source._source_template.HasField("display")
                 assert source._source_instance.HasField("display_properties")
@@ -1857,7 +1883,6 @@ def test_load_display_source(speos: Speos):
                 )  #
                 assert source.axis_system == [-10, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
             case "lamber_infinite_srgb:55":
-                print("testing: " + source._name)
                 assert isinstance(source, SourceDisplay)
                 assert source._source_template.HasField("display")
                 assert source._source_instance.HasField("display_properties")
@@ -1874,7 +1899,6 @@ def test_load_display_source(speos: Speos):
                 )  #
                 assert source.axis_system == [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
             case "gausian_contrast500_udrgb:71":
-                print("testing: " + source._name)
                 assert isinstance(source, SourceDisplay)
                 assert source._source_template.HasField("display")
                 assert source._source_instance.HasField("display_properties")
