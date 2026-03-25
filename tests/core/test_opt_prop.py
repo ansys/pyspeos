@@ -143,10 +143,10 @@ def test_create_optical_property(speos: Speos):
     assert op1.sop_template_link.get().HasField("optical_polished")
 
     # SOP library
-    op1.set_surface_library().sop_file_uri = Path(test_path) / "R_test.anisotropicbsdf"
+    op1.set_surface_library().file_uri = Path(test_path) / "R_test.anisotropicbsdf"
     op1.commit()
     assert op1.sop_template_link.get().HasField("library")
-    assert op1.sop_template_link.get().library.file_uri.endswith("R_test.anisotropicbsdf")
+    assert op1.sop_template_link.get().library.sop_file_uri.endswith("R_test.anisotropicbsdf")
 
     # SOP mirror
     op1.set_surface_mirror().reflectance = 80
@@ -353,7 +353,7 @@ def test_get_optical_property(speos: Speos, capsys):
 
     op3 = p.create_optical_property(name="OpticalProperty3")
     op3.set_volume_none()
-    op3.set_surface_library().sop_file_uri = Path(test_path) / "R_test.anisotropicbsdf"
+    op3.set_surface_library().file_uri = Path(test_path) / "R_test.anisotropicbsdf"
     op3.geometries = [face]
     op3.commit()
 
@@ -679,7 +679,7 @@ def test_create_texture_property(speos: Speos):
     )
 
     layer_2 = TextureLayer(op1, "Layer.2")
-    layer_2.set_surface_library().sop_file_uri = (
+    layer_2.set_surface_library().file_uri = (
         Path(test_path) / "Texture.1.speos" / "aniso_bsdf.anisotropicbsdf"
     )
     layer_2.set_anisotropy_map()
@@ -885,7 +885,7 @@ def test_reset_texture_property(speos: Speos):
     # Default value
     op1 = p.create_optical_property(name="texture.1")
     layer_2 = TextureLayer(op1, "Layer.2")
-    layer_2.set_surface_library().sop_file_uri = (
+    layer_2.set_surface_library().file_uri = (
         Path(test_path) / "Texture.1.speos" / "aniso_bsdf.anisotropicbsdf"
     )
     layer_2.set_anisotropy_map().set_spherical_mapping()
@@ -1263,7 +1263,7 @@ def test_texture_by_data(speos: Speos):
     opt_prop.geometries = [face0_0.geo_path, face2_0.geo_path]
 
     layer_1 = opt_prop.create_texture_layer()
-    layer_1.set_surface_library().sop_file_uri = Path(test_path) / "L100 2.simplescattering"
+    layer_1.set_surface_library().file_uri = Path(test_path) / "L100 2.simplescattering"
     layer_1.set_image_texture().image_file_uri = Path(test_path) / "textureColors.jpg"
     layer_1.image_texture.repeat_u = False
     layer_1.image_texture.repeat_v = False
