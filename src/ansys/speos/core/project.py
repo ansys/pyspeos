@@ -23,6 +23,7 @@
 
 from __future__ import annotations
 
+import copy
 from pathlib import Path
 import re
 from typing import TYPE_CHECKING, List, Mapping, Optional, Union
@@ -38,14 +39,18 @@ from ansys.speos.core.generic.parameters import (
     AmbientEnvironmentParameters,
     AmbientNaturalLightParameters,
     CameraSensorParameters,
+    DirectSimulationParameters,
     DisplayParameters,
     IntensityXMPSensorParameters,
+    InteractiveSimulationParameters,
+    InverseSimulationParameters,
     Irradiance3DSensorParameters,
     IrradianceSensorParameters,
     LuminaireSourceParameters,
     RadianceSensorParameters,
     RayFileSourceParameters,
     SurfaceSourceParameters,
+    VirtualBSDFSimulationParameters,
 )
 from ansys.speos.core.generic.visualization_methods import local2absolute
 from ansys.speos.core.ground_plane import GroundPlane
@@ -465,6 +470,14 @@ class Project:
         description: str = "",
         feature_type: type = SimulationDirect,
         metadata: Optional[Mapping[str, str]] = None,
+        parameters: Optional[
+            Union[
+                DirectSimulationParameters,
+                InteractiveSimulationParameters,
+                InverseSimulationParameters,
+                VirtualBSDFSimulationParameters,
+            ]
+        ] = None,
     ) -> Union[SimulationDirect, SimulationInteractive, SimulationInverse, SimulationVirtualBSDF]:
         """Create a new Simulation feature.
 
@@ -505,32 +518,64 @@ class Project:
         feature = None
         match feature_type.__name__:
             case "SimulationDirect":
+                if parameters is None:
+                    parameters = DirectSimulationParameters()
+                elif not isinstance(parameters, DirectSimulationParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of DirectSimulationParameters"
+                    )
                 feature = SimulationDirect(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
+                    default_parameters=parameters,
                 )
             case "SimulationInverse":
+                if parameters is None:
+                    parameters = InverseSimulationParameters()
+                elif not isinstance(parameters, InverseSimulationParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of InverseSimulationParameters"
+                    )
                 feature = SimulationInverse(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
+                    default_parameters=parameters,
                 )
             case "SimulationInteractive":
+                if parameters is None:
+                    parameters = InteractiveSimulationParameters()
+                elif not isinstance(parameters, InteractiveSimulationParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of InteractiveSimulationParameters"
+                    )
                 feature = SimulationInteractive(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
+                    default_parameters=parameters,
                 )
             case "SimulationVirtualBSDF":
+                if parameters is None:
+                    parameters = VirtualBSDFSimulationParameters()
+                elif not isinstance(parameters, VirtualBSDFSimulationParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of VirtualBSDFSimulationParameters"
+                    )
                 feature = SimulationVirtualBSDF(
                     project=self,
                     name=name,
                     description=description,
                     metadata=metadata,
+                    default_parameters=parameters,
                 )
             case _:
                 msg = "Requested feature {} does not exist in supported list {}".format(
@@ -1235,28 +1280,28 @@ class Project:
                     project=self,
                     name=sim_inst.name,
                     simulation_instance=sim_inst,
-                    default_values=False,
+                    default_parameters=None,
                 )
             elif simulation_template_link.HasField("inverse_mc_simulation_template"):
                 sim_feat = SimulationInverse(
                     project=self,
                     name=sim_inst.name,
                     simulation_instance=sim_inst,
-                    default_values=False,
+                    default_parameters=None,
                 )
             elif simulation_template_link.HasField("interactive_simulation_template"):
                 sim_feat = SimulationInteractive(
                     project=self,
                     name=sim_inst.name,
                     simulation_instance=sim_inst,
-                    default_values=False,
+                    default_parameters=None,
                 )
             elif simulation_template_link.HasField("virtual_bsdf_bench_simulation_template"):
                 sim_feat = SimulationVirtualBSDF(
                     project=self,
                     name=sim_inst.name,
                     simulation_instance=sim_inst,
-                    default_values=False,
+                    default_parameters=None,
                 )
             if sim_feat is not None:
                 self._features.append(sim_feat)
@@ -1371,12 +1416,14 @@ class Project:
         match speos_feature:
             case SourceRayFile() | SourceLuminaire() | SourceSurface():
                 for visual_ray in speos_feature.visual_data.data:
-                    tmp = visual_ray._VisualArrow__data
-                    visual_ray._VisualArrow__data.points[1] = (
-                        ray_path_scale_factor * scene_seize * (tmp.points[1] - tmp.points[0])
-                        + tmp.points[0]
+                    display_ray = visual_ray.data.copy(deep=True)
+                    display_ray.points[1] = (
+                        ray_path_scale_factor
+                        * scene_seize
+                        * (display_ray.points[1] - display_ray.points[0])
+                        + display_ray.points[0]
                     )
-                    plotter.plot(visual_ray.data, color=visual_ray.color)
+                    plotter.plot(display_ray, color=visual_ray.color)
             case _:
                 plotter.plot(
                     speos_feature.visual_data.data,
@@ -1388,22 +1435,22 @@ class Project:
                 )
 
         if speos_feature.visual_data.coordinates is not None:
-            tmp_origin = speos_feature.visual_data.coordinates.origin
-            tmp = speos_feature.visual_data.coordinates
-            speos_feature.visual_data.coordinates._VisualCoordinateSystem__x_axis.points[:] = (
-                tmp.x_axis.points - tmp_origin
-            ) * ray_path_scale_factor * scene_seize + tmp_origin
-            speos_feature.visual_data.coordinates._VisualCoordinateSystem__y_axis.points[:] = (
-                tmp.y_axis.points - tmp_origin
-            ) * ray_path_scale_factor * scene_seize + tmp_origin
-            speos_feature.visual_data.coordinates._VisualCoordinateSystem__z_axis.points[:] = (
-                tmp.z_axis.points - tmp_origin
-            ) * ray_path_scale_factor * scene_seize + tmp_origin
+            display_coordinates = copy.deepcopy(speos_feature.visual_data.coordinates)
+            display_origin = display_coordinates.origin
+            display_coordinates.x_axis.points[:] = (
+                display_coordinates.x_axis.points - display_origin
+            ) * ray_path_scale_factor * scene_seize + display_origin
+            display_coordinates.y_axis.points[:] = (
+                display_coordinates.y_axis.points - display_origin
+            ) * ray_path_scale_factor * scene_seize + display_origin
+            display_coordinates.z_axis.points[:] = (
+                display_coordinates.z_axis.points - display_origin
+            ) * ray_path_scale_factor * scene_seize + display_origin
 
             match speos_feature:
                 case SensorRadiance() | SourceSurface():
-                    plotter.plot(speos_feature.visual_data.coordinates.x_axis, color="red")
-                    plotter.plot(speos_feature.visual_data.coordinates.y_axis, color="green")
+                    plotter.plot(display_coordinates.x_axis, color="red")
+                    plotter.plot(display_coordinates.y_axis, color="green")
                 case (
                     SensorIrradiance()
                     | SensorXMPIntensity()
@@ -1411,9 +1458,9 @@ class Project:
                     | SourceLuminaire()
                     | SourceRayFile()
                 ):
-                    plotter.plot(speos_feature.visual_data.coordinates.x_axis, color="red")
-                    plotter.plot(speos_feature.visual_data.coordinates.y_axis, color="green")
-                    plotter.plot(speos_feature.visual_data.coordinates.z_axis, color="blue")
+                    plotter.plot(display_coordinates.x_axis, color="red")
+                    plotter.plot(display_coordinates.y_axis, color="green")
+                    plotter.plot(display_coordinates.z_axis, color="blue")
         return plotter
 
     @graphics_required

@@ -295,12 +295,16 @@ def test_create_surface_source(speos: Speos):
 
     root_part = p.create_root_part()
     body_b = root_part.create_body(name="BodyB")
-    body_b.create_face(name="FaceB1").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
-    body_b.create_face(name="FaceB2").set_vertices([1, 0, 0, 2, 0, 0, 1, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    face_1 = body_b.create_face(name="FaceB1")
+    face_1.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    face_1.facets = [0, 1, 2]
+    face_1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    face_1.commit()
+    face_2 = body_b.create_face(name="FaceB2")
+    face_2.vertices = [1, 0, 0, 2, 0, 0, 1, 1, 0]
+    face_2.facets = [0, 1, 2]
+    face_2.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    face_2.commit()
     root_part.commit()
 
     # Default value
@@ -1259,9 +1263,12 @@ def test_keep_same_internal_feature(speos: Speos):
 
     root_part = p.create_root_part()
     body_b = root_part.create_body(name="BodyB")
-    body_b.create_face(name="FaceB1").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+
+    face_1 = body_b.create_face(name="FaceB1")
+    face_1.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    face_1.facets = [0, 1, 2]
+    face_1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    face_1.commit()
     root_part.commit()
 
     # SURFACE SOURCE
@@ -1646,9 +1653,11 @@ def test_print_source(speos: Speos):
 
     root_part = p.create_root_part()
     body_b = root_part.create_body(name="BodyB")
-    body_b.create_face(name="FaceB1").set_vertices([0, 0, 0, 1, 0, 0, 0, 1, 0]).set_facets(
-        [0, 1, 2]
-    ).set_normals([0, 0, 1, 0, 0, 1, 0, 0, 1])
+    face_1 = body_b.create_face(name="FaceB1")
+    face_1.vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0]
+    face_1.facets = [0, 1, 2]
+    face_1.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1]
+    face_1.commit()
     root_part.commit()
 
     # LUMINAIRE - SPECTRUM
