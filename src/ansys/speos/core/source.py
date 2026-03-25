@@ -3330,14 +3330,9 @@ class SourceDisplay(BaseSource):
 
         Raises
         ------
-        TypeError
-            If *default_parameters* is not a :class:`DisplayParameters` instance.
         ValueError
             If an unsupported intensity orientation type is supplied.
         """
-        if not isinstance(default_parameters, DisplayParameters):
-            raise TypeError("incorrect parameter dataclass")
-
         # Color space
         match default_parameters.color_space_type:
             case ColorSpaceType.srgb:
