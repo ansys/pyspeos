@@ -146,7 +146,7 @@ def test_create_optical_property(speos: Speos):
     op1.set_surface_library().sop_file_uri = Path(test_path) / "R_test.anisotropicbsdf"
     op1.commit()
     assert op1.sop_template_link.get().HasField("library")
-    assert op1.sop_template_link.get().library.sop_file_uri.endswith("R_test.anisotropicbsdf")
+    assert op1.sop_template_link.get().library.file_uri.endswith("R_test.anisotropicbsdf")
 
     # SOP mirror
     op1.set_surface_mirror().reflectance = 80
@@ -384,7 +384,7 @@ def test_load_optical_property_from_file(speos: Speos):
             case "None_Library":
                 assert mat.vop_type is None
                 assert mat._sop_template.HasField("library")
-                assert mat.sop_library.sop_file_uri.endswith(".scattering")
+                assert mat.sop_library.file_uri.endswith(".scattering")
             case "FOP_mirror75":
                 assert mat._sop_template.HasField("mirror")
                 assert mat.mirror.reflectance == 75
@@ -452,7 +452,7 @@ def test_opt_prop_default_parameters_and_local_helpers(speos: Speos, capsys):
             ),
         ),
     )
-    assert op_library.sop_library.sop_file_uri.endswith("library_surface.scattering")
+    assert op_library.sop_library.file_uri.endswith("library_surface.scattering")
     assert op_library.vop_library.material_file_uri.endswith("library_volume.material")
 
     op_polished = p.create_optical_property(
@@ -1072,7 +1072,7 @@ def test_load_texture_property_from_file(speos: Speos):
                 assert mat._material_instance.HasField("texture")
                 assert len(mat.texture) == 1
                 assert mat.texture[0]._sop_template.HasField("library")
-                assert mat.texture[0].sop_library.sop_file_uri.endswith("simplescattering")
+                assert mat.texture[0].sop_library.file_uri.endswith("simplescattering")
                 assert mat.texture[0].normal_map.roughness == 5
                 assert mat.texture[0].normal_map.normal_map_file_uri.endswith("png")
                 mapping_opp = mat.texture[0].normal_map.mapping_properties.__todict__()
@@ -1119,7 +1119,7 @@ def test_load_texture_property_from_file(speos: Speos):
                 assert mat._material_instance.HasField("texture")
                 assert len(mat.texture) == 2
                 assert mat.texture[0]._sop_template.HasField("library")
-                assert mat.texture[0].sop_library.sop_file_uri.endswith("anisotropicbsdf")
+                assert mat.texture[0].sop_library.file_uri.endswith("anisotropicbsdf")
                 mapping_opp = mat.texture[0].anisotropic_map.mapping_properties.__todict__()
                 expected = MappingOperator(
                     mapping_type=MappingTypes.planar,
@@ -1189,7 +1189,7 @@ def test_load_texture_property_from_file(speos: Speos):
                         assert expected.get(k1) == mapping_opp.get(k1)
             case "Base_white_notexture":
                 assert mat._sop_template.HasField("library")
-                assert mat.sop_library.sop_file_uri.endswith("simplescattering")
+                assert mat.sop_library.file_uri.endswith("simplescattering")
                 assert mat.vop_type == "optic"
                 assert MaterialOpticParameters(
                     mat.vop_optic.index, mat.vop_optic.absorption, mat.vop_optic.constringence
@@ -1201,7 +1201,7 @@ def test_load_texture_property_from_file(speos: Speos):
                 assert mat._material_instance.HasField("texture")
                 assert len(mat.texture) == 1
                 assert mat.texture[0]._sop_template.HasField("library")
-                assert mat.texture[0].sop_library.sop_file_uri.endswith("gltfsvbrdf")
+                assert mat.texture[0].sop_library.file_uri.endswith("gltfsvbrdf")
 
 
 @pytest.mark.supported_speos_versions(min=252)

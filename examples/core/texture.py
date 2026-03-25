@@ -212,7 +212,7 @@ opt_prop.geometries = [
 
 layer_1 = opt_prop.create_texture_layer()
 layer_1.set_surface_library()
-layer_1.sop_library.sop_file_uri = Path(assets_data_path) / "L100 2.simplescattering"
+layer_1.sop_library.file_uri = Path(assets_data_path) / "L100 2.simplescattering"
 layer_1.set_image_texture()
 layer_1.image_texture.image_file_uri = Path(assets_data_path) / "textureColors.jpg"
 layer_1.image_texture.set_mapping_by_data()

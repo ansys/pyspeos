@@ -123,7 +123,7 @@ class BaseSop:
         elif sop_parameters.sop_type == SopTypes.library:
             self.set_surface_library()
             if sop_parameters.sop_library_file_uri:
-                self.sop_library.sop_file_uri = sop_parameters.sop_library_file_uri
+                self.sop_library.file_uri = sop_parameters.sop_library_file_uri
 
     class SopMirror:
         """Mirror SOP parameters."""
@@ -238,7 +238,7 @@ class BaseSop:
             self._parent._sop_template.library.SetInParent()
 
         @property
-        def sop_file_uri(self) -> str:
+        def file_uri(self) -> str:
             """Surface property file URI when SOP is a library entry.
 
             Returns
@@ -249,8 +249,8 @@ class BaseSop:
             if self._parent._sop_template.HasField("library"):
                 return self._parent._sop_template.library.sop_file_uri
 
-        @sop_file_uri.setter
-        def sop_file_uri(self, value: Union[Path, str]):
+        @file_uri.setter
+        def file_uri(self, value: Union[Path, str]):
             """Set the SOP library file URI.
 
             Parameters
@@ -317,6 +317,16 @@ class BaseVop:
                 Default optic parameters to apply during initialization.
             """
             self._parent = parent
+            self._fill_parameters(default_parameters)
+
+        def _fill_parameters(self, default_parameters: MaterialOpticParameters):
+            """Fill optic parameters from default parameters.
+
+            Parameters
+            ----------
+            default_parameters : MaterialOpticParameters
+                Default optic parameters to apply.
+            """
             if default_parameters:
                 self.index = default_parameters.index
                 self.absorption = default_parameters.absorption
@@ -649,6 +659,16 @@ class TextureLayer(BaseSop):
                 Default mapping parameters to apply to the operator.
             """
             self._mapping = mapping.mapping_operator
+            self._fill_parameters(default_parameters)
+
+        def _fill_parameters(self, default_parameters: Optional[MappingOperator] = None):
+            """Fill mapping operator parameters from default parameters.
+
+            Parameters
+            ----------
+            default_parameters : Optional[MappingOperator], optional
+                Default mapping parameters to apply.
+            """
             if default_parameters and default_parameters:
                 match default_parameters.mapping_type:
                     case MappingTypes.cylindrical:
@@ -964,6 +984,16 @@ class TextureLayer(BaseSop):
                 Default data-mapping parameters to apply.
             """
             self._parent = parent
+            self._fill_parameters(default_parameters)
+
+        def _fill_parameters(self, default_parameters: Optional[MappingByData] = None):
+            """Fill mapping-by-data parameters from default parameters.
+
+            Parameters
+            ----------
+            default_parameters : Optional[MappingByData], optional
+                Default data-mapping parameters to apply.
+            """
             if default_parameters and default_parameters.vertices_data_index is not None:
                 self.vertices_data_index = default_parameters.vertices_data_index
 
@@ -1147,6 +1177,16 @@ class TextureLayer(BaseSop):
                 Default image texture settings to apply.
             """
             super().__init__(parent, TextureTypes.image)
+            self._fill_parameters(default_parameters)
+
+        def _fill_parameters(self, default_parameters: Optional[ImageTextureParameter] = None):
+            """Fill image texture parameters from default parameters.
+
+            Parameters
+            ----------
+            default_parameters : Optional[ImageTextureParameter], optional
+                Default image texture settings to apply.
+            """
             if default_parameters:
                 if default_parameters.file_path:
                     self.image_file_uri = default_parameters.file_path
@@ -1234,6 +1274,16 @@ class TextureLayer(BaseSop):
                 Default normal map settings to apply.
             """
             super().__init__(parent, TextureTypes.normal_map)
+            self._fill_parameters(default_parameters)
+
+        def _fill_parameters(self, default_parameters: Optional[NormalMapParameter] = None):
+            """Fill normal map parameters from default parameters.
+
+            Parameters
+            ----------
+            default_parameters : Optional[NormalMapParameter], optional
+                Default normal map settings to apply.
+            """
             if default_parameters:
                 match default_parameters.normal_map_type:
                     case NormalMapTypes.from_image:
@@ -1383,6 +1433,16 @@ class TextureLayer(BaseSop):
                 Default anisotropy map settings to apply.
             """
             super().__init__(parent, TextureTypes.anisotropy_map)
+            self._fill_parameters(default_parameters)
+
+        def _fill_parameters(self, default_parameters: Optional[MappingOperator] = None):
+            """Fill anisotropy map parameters from default parameters.
+
+            Parameters
+            ----------
+            default_parameters : Optional[MappingOperator], optional
+                Default anisotropy map settings to apply.
+            """
             if default_parameters:
                 if isinstance(default_parameters, MappingOperator):
                     self._mapping = self._set_mapping_operator(default_parameters.mapping_type)
@@ -1442,9 +1502,21 @@ class TextureLayer(BaseSop):
             super().__init__(
                 self._sop_template, self._material_instance, default_parameters.sop_parameters
             )
-            self._apply_texture_layer_parameters(default_parameters)
         else:
             super().__init__(self._sop_template, self._material_instance, SopParameters())
+
+        self._fill_parameters(default_parameters)
+
+    def _fill_parameters(self, default_parameters: Optional[TextureLayerParameters] = None):
+        """Fill texture layer parameters from default parameters.
+
+        Parameters
+        ----------
+        default_parameters : Optional[TextureLayerParameters], optional
+            Default texture layer parameters to apply.
+        """
+        if default_parameters:
+            self._apply_texture_layer_parameters(default_parameters)
 
     def _apply_texture_layer_parameters(self, texture_layer_parameters: TextureLayerParameters):
         """Apply texture layer parameters to initialize the texture layer.
@@ -1700,6 +1772,16 @@ class OptProp(BaseVop, BaseSop):
         # Default values
         self.geometries = None
 
+        self._fill_parameters(default_parameters)
+
+    def _fill_parameters(self, default_parameters: Optional[OptPropParameters] = None):
+        """Fill optical property parameters from default parameters.
+
+        Parameters
+        ----------
+        default_parameters : Optional[OptPropParameters], optional
+            Default optical property parameters to apply.
+        """
         if default_parameters and default_parameters.texture_parameters:
             self.texture = [
                 TextureLayer(self, f"Layer{i}", texture_layer_parameters=layer)

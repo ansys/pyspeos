@@ -140,7 +140,7 @@ print(op2)
 
 op3 = p.create_optical_property(name="Material.FOP")
 op3.set_surface_mirror()
-op3.sop_reflectance = 90  # SOP : mirror
+op3.mirror.reflectance = 90  # SOP : mirror
 # This optical property will be applied a face from TheBodyD named : "TheFaceF".
 op3.geometries = [faces[2]]
 op3.commit()

@@ -195,7 +195,7 @@ print(simulation4)
 
 # Change the material property from mirror to bsdf type
 opt_prop.set_surface_library()
-opt_prop.sop_library.sop_file_uri = assets_data_path / "R_test.anisotropicbsdf"
+opt_prop.sop_library.file_uri = assets_data_path / "R_test.anisotropicbsdf"
 opt_prop.commit()
 vbb = p.create_simulation(name="virtual_BSDF", feature_type=SimulationVirtualBSDF)
 vbb.axis_system = [

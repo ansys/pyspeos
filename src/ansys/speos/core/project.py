@@ -265,6 +265,8 @@ class Project:
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
+        parameters : Optional[ansys.speos.core.generic.parameters.OptPropParameters]
+             Allows to provide parameters to overwrite default parameters.
 
 
         Returns
