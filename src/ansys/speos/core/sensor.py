@@ -20,7 +20,25 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Provides a way to interact with Speos feature: Sensor."""
+"""Sensors module.
+
+This module provides classes to create and manipulate Speos sensors inside a
+project: base sensor behaviors and specialized sensors (camera, irradiance,
+radiance, 3D irradiance and intensity XMP).
+
+The public classes in this module are:
+- BaseSensor: internal common behaviour and small nested helper classes.
+- SensorCamera
+- SensorIrradiance
+- SensorRadiance
+- Sensor3DIrradiance
+- SensorXMPIntensity
+
+Notes
+-----
+Docstrings use the NumPy style and include fully-qualified types for public API
+parameters (for documentation tooling).
+"""
 
 from __future__ import annotations
 
@@ -87,15 +105,13 @@ class BaseSensor:
         Project that will own the feature.
     name : str
         Name of the feature.
-    description : str
-        Description of the feature.
-        By default, ``""``.
-    metadata : Mapping[str, str]
-        Metadata of the feature.
-        By default, ``{}``.
+    description : str, optional
+        Description of the feature. By default, ``""``.
+    metadata : Mapping[str, str], optional
+        Metadata of the feature. By default, ``{}``.
     sensor_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance, optional
-        Sensor instance to provide if the feature does not has to be created from scratch
-        By default, ``None``, means that the feature is created from scratch by default.
+        Sensor instance to provide if the feature does not has to be created from
+        scratch. By default, ``None`` which creates the feature locally.
 
     Attributes
     ----------
@@ -104,7 +120,7 @@ class BaseSensor:
 
     Notes
     -----
-    This is a Super class, **Do not instantiate this class yourself**
+    This is a super class. Do not instantiate this class directly.
     """
 
     def __init__(
@@ -145,15 +161,11 @@ class BaseSensor:
     def lxp_path_number(self) -> Union[None, int]:
         """Number of LXP rays simulated for the Sensor.
 
-        Parameters
-        ----------
-        value : int
-            Integer value to define number of rays stored
-
         Returns
         -------
-        int
-            Number of Rays stored in the lpf file for this Sensor
+        Union[None, int]
+            Number of rays stored in the LXP file for this sensor, or ``None`` if
+            the feature does not have LXP properties set.
         """
         if self._sensor_instance.HasField("lxp_properties"):
             return self._sensor_instance.lxp_properties.nb_max_paths
@@ -161,6 +173,14 @@ class BaseSensor:
 
     @lxp_path_number.setter
     def lxp_path_number(self, value: int) -> None:
+        """Set the number of LXP rays to store.
+
+        Parameters
+        ----------
+        value : int
+            Integer value defining number of rays stored. If ``None`` or falsy the
+            lxp_properties field will be cleared.
+        """
         if value:
             self._sensor_instance.lxp_properties.nb_max_paths = int(value)
         else:
@@ -169,23 +189,24 @@ class BaseSensor:
     class WavelengthsRange:
         """Range of wavelengths.
 
-        By default, a range from 400nm to 700nm is chosen, with a sampling of 13.
+        By default a range from 400 nm to 700 nm with a sampling of 13 is chosen.
 
         Parameters
         ----------
-        wavelengths_range : ansys.api.speos.sensor.v1.common_pb2.WavelengthsRange
+        wavelengths_range : ansys.api.speos.sensor.v1.common_pb2.WavelengthsRange or \
+ansys.api.speos.sensor.v1.sensor_pb2.TypeColorimetric
             Wavelengths range protobuf object to modify.
-        default_parameters : \
-        ansys.speos.core.generic.parameters.WavelengthsRangeParameters, optional
-            If defined the values in the sensor instance will be overwritten by the values of the
-            data class
-        stable_ctr : bool
-            Variable to indicate if usage is inside class scope
+        default_parameters : ansys.speos.core.generic.parameters.WavelengthsRangeParameters,\
+        optional
+            If defined, the values in the sensor instance will be overwritten by the
+            values of the data class.
+        stable_ctr : bool, optional
+            Internal flag that prevents external instantiation. Default ``False``.
 
         Notes
         -----
-        **Do not instantiate this class yourself**, use set_wavelengths_range method available in
-        sensor classes.
+        Do not instantiate this class directly; use a sensor's
+        `set_wavelengths_range` method instead.
         """
 
         def __init__(
@@ -207,17 +228,12 @@ class BaseSensor:
 
         @property
         def start(self) -> float:
-            """Minimum wavelength of the range.
-
-            Parameters
-            ----------
-            value : float
-                Minimum wavelength (nm). By default, ``400``.
+            """Minimum wavelength of the range (nm).
 
             Returns
             -------
             float
-                Lower Bound of the wavelength range.
+                Lower bound of the wavelength range in nanometers.
             """
             if isinstance(self._wavelengths_range, common_pb2.WavelengthsRange):
                 return self._wavelengths_range.w_start
@@ -226,6 +242,13 @@ class BaseSensor:
 
         @start.setter
         def start(self, value: float):
+            """Set the minimum wavelength of the range.
+
+            Parameters
+            ----------
+            value : float
+                Minimum wavelength in nanometers.
+            """
             if isinstance(self._wavelengths_range, common_pb2.WavelengthsRange):
                 self._wavelengths_range.w_start = value
             else:
@@ -233,17 +256,12 @@ class BaseSensor:
 
         @property
         def end(self) -> float:
-            """Maximum wavelength of the range.
-
-            Parameters
-            ----------
-            value : float
-                Maximum wavelength (nm). By default, ``700``.
+            """Maximum wavelength of the range (nm).
 
             Returns
             -------
             float
-                Upper Bound of the wavelength range.
+                Upper bound of the wavelength range in nanometers.
             """
             if isinstance(self._wavelengths_range, common_pb2.WavelengthsRange):
                 return self._wavelengths_range.w_end
@@ -252,6 +270,13 @@ class BaseSensor:
 
         @end.setter
         def end(self, value: float):
+            """Set the maximum wavelength of the range.
+
+            Parameters
+            ----------
+            value : float
+                Maximum wavelength in nanometers.
+            """
             if isinstance(self._wavelengths_range, common_pb2.WavelengthsRange):
                 self._wavelengths_range.w_end = value
             else:
@@ -259,46 +284,41 @@ class BaseSensor:
 
         @property
         def sampling(self) -> int:
-            """Wavelength sampling of between start and end value.
-
-            Parameters
-            ----------
-            value : int
-                Number of wavelengths to be taken into account between the minimum and maximum
-                wavelengths range. By default, ``13``.
+            """Wavelength sampling between start and end.
 
             Returns
             -------
-            Union[None, int]:
-                Number of Samples used to split the wavelength range.
+            int
+                Number of samples used to split the wavelength range.
             """
             if isinstance(self._wavelengths_range, common_pb2.WavelengthsRange):
                 return self._wavelengths_range.w_sampling
 
         @sampling.setter
-        def sampling(self, value):
+        def sampling(self, value: int):
+            """Set the number of wavelength samples.
+
+            Parameters
+            ----------
+            value : int
+                Number of sampling points between start and end.
+            """
             if isinstance(self._wavelengths_range, common_pb2.WavelengthsRange):
                 self._wavelengths_range.w_sampling = value
 
     class Dimensions:
-        """Dimensions of the sensor.
+        """Sensor sampling and extent along X and Y.
 
-        By default, for both x and y axis: from -50mm to 50mm is chosen, with a sampling of 100.
+        By default X/Y range is [-50, 50] mm with sampling 100.
 
         Parameters
         ----------
         sensor_dimensions : ansys.api.speos.sensor.v1.common_pb2.SensorDimensions
             SensorDimensions protobuf object to modify.
         default_parameters : ansys.speos.core.generic.parameters.DimensionsParameters, optional
-            If defined the values in the sensor instance will be overwritten by the values of the
-            data class
-        stable_ctr : bool
-            Variable to indicate if usage is inside class scope
-
-        Notes
-        -----
-        **Do not instantiate this class yourself**, use set_dimensions method available in sensor
-        classes.
+            If provided, overwrite the template defaults.
+        stable_ctr : bool, optional
+            Internal flag to prevent external instantiation.
         """
 
         def __init__(
@@ -323,139 +343,150 @@ class BaseSensor:
 
         @property
         def x_start(self) -> float:
-            """Minimum value on x axis.
-
-            Parameters
-            ----------
-            value : float
-                Minimum value on x axis (mm). By default, ``-50``.
+            """Minimum value on X axis (mm).
 
             Returns
             -------
             float
-                minimum value in x axis
+                Minimum x coordinate in millimeters.
             """
             return self._sensor_dimensions.x_start
 
         @x_start.setter
         def x_start(self, value: float):
-            self._sensor_dimensions.x_start = value
-
-        @property
-        def x_end(self) -> float:
-            """Maximum value on x axis.
+            """Set minimum value on X axis.
 
             Parameters
             ----------
             value : float
-                Maximum value on x axis (mm). By default, ``50``.
+                Minimum x coordinate in millimeters.
+            """
+            self._sensor_dimensions.x_start = value
+
+        @property
+        def x_end(self) -> float:
+            """Maximum value on X axis (mm).
 
             Returns
             -------
             float
-                maximum value on x axis.
+                Maximum x coordinate in millimeters.
             """
             return self._sensor_dimensions.x_end
 
         @x_end.setter
         def x_end(self, value: float):
+            """Set maximum value on X axis.
+
+            Parameters
+            ----------
+            value : float
+                Maximum x coordinate in millimeters.
+            """
             self._sensor_dimensions.x_end = value
 
         @property
         def x_sampling(self) -> int:
-            """Value of the sampling on x axis.
-
-            Parameters
-            ----------
-            value : int
-                The number of pixels of the XMP map on x axis. By default, ``100``.
+            """Sampling along X axis (pixels).
 
             Returns
             -------
-            float
-                 sampling value on x axis.
+            int
+                Number of samples along the X axis.
             """
             return self._sensor_dimensions.x_sampling
 
         @x_sampling.setter
         def x_sampling(self, value: int):
+            """Set sampling along X axis.
+
+            Parameters
+            ----------
+            value : int
+                Number of samples along the X axis.
+            """
             self._sensor_dimensions.x_sampling = value
 
         @property
         def y_start(self) -> float:
-            """Minimum value on y axis.
-
-            Parameters
-            ----------
-            value : float
-                Minimum value on y axis (mm). By default, ``-50``.
+            """Minimum value on Y axis (mm).
 
             Returns
             -------
             float
-                minimum value in y axis
+                Minimum y coordinate in millimeters.
             """
             return self._sensor_dimensions.y_start
 
         @y_start.setter
         def y_start(self, value: float):
-            self._sensor_dimensions.y_start = value
-
-        @property
-        def y_end(self) -> float:
-            """Maximum value on y axis.
+            """Set minimum value on Y axis.
 
             Parameters
             ----------
             value : float
-                Maximum value on y axis (mm). By default, ``50``.
+                Minimum y coordinate in millimeters.
+            """
+            self._sensor_dimensions.y_start = value
+
+        @property
+        def y_end(self) -> float:
+            """Maximum value on Y axis (mm).
 
             Returns
             -------
             float
-                maximum value on y axis.
+                Maximum y coordinate in millimeters.
             """
             return self._sensor_dimensions.y_end
 
         @y_end.setter
         def y_end(self, value: float):
+            """Set maximum value on Y axis.
+
+            Parameters
+            ----------
+            value : float
+                Maximum y coordinate in millimeters.
+            """
             self._sensor_dimensions.y_end = value
 
         @property
         def y_sampling(self) -> int:
-            """Value of the sampling on y axis.
-
-            Parameters
-            ----------
-            value : int
-                The number of pixels of the XMP map on y axis. By default, ``100``.
+            """Sampling along Y axis (pixels).
 
             Returns
             -------
-            float
-                 sampling value on y axis.
+            int
+                Number of samples along the Y axis.
             """
             return self._sensor_dimensions.y_sampling
 
         @y_sampling.setter
         def y_sampling(self, value: int):
+            """Set sampling along Y axis.
+
+            Parameters
+            ----------
+            value : int
+                Number of samples along the Y axis.
+            """
             self._sensor_dimensions.y_sampling = value
 
     class Colorimetric:
-        """Type of sensor : Colorimetric.
+        """Class computing the color results.
 
-        This kind of sensor will generate color results without any spectral data or layer
-        separation in lx or W//m2.
-        By default, it uses a default wavelengths range.
+        Result without any spectral layer separation.
 
         Parameters
         ----------
         sensor_type_colorimetric : ansys.api.speos.sensor.v1.common_pb2.SensorTypeColorimetric
             SensorTypeColorimetric protobuf object to modify.
-        default_parameters : ansys.speos.core.generic.parameters.ColorimetricParameters, optional
+        default_parameters : Optional[\
+        ansys.speos.core.generic.parameters.ColorimetricParameters] = None
             If defined the values in the sensor instance will be overwritten by the values of the
             data class
-        stable_ctr : bool
+        stable_ctr : bool, optional
             Variable to indicate if usage is inside class scope
 
         Notes
@@ -475,6 +506,8 @@ class BaseSensor:
                 raise RuntimeError(msg)
             self._sensor_type_colorimetric = sensor_type_colorimetric
 
+            # Attribute to keep track of wavelength range object
+
             self._wavelengths_range = BaseSensor.WavelengthsRange(
                 wavelengths_range=self._sensor_type_colorimetric.wavelengths_range,
                 default_parameters=default_parameters.wavelength_range
@@ -484,12 +517,12 @@ class BaseSensor:
             )
 
         def set_wavelengths_range(self) -> BaseSensor.WavelengthsRange:
-            """Set the range of wavelengths.
+            """Return the wavelengths range helper for this colorimetric sensor.
 
             Returns
             -------
             ansys.speos.core.sensor.BaseSensor.WavelengthsRange
-                Wavelengths range.
+                Wavelengths range helper object.
             """
             if (
                 self._wavelengths_range._wavelengths_range
@@ -502,17 +535,16 @@ class BaseSensor:
             return self._wavelengths_range
 
     class Spectral:
-        """Type of sensor : Spectral.
+        """Class computing the spectral data in a separated way.
 
-        This kind of sensor will generate color results and spectral data separated by wavelength
-        in lx or W/m2.
-        By default, it uses a default wavelengths range.
+        This class allows to define specific parameters for spectral data retrieval.
 
         Parameters
         ----------
         sensor_type_spectral : ansys.api.speos.sensor.v1.common_pb2.SensorTypeSpectral
             SensorTypeSpectral protobuf object to modify.
-        default_parameters : ansys.speos.core.generic.parameters.SpectralParameters, optional
+        default_parameters : Optional[\
+        ansys.speos.core.generic.parameters.SpectralParameters] = None
             If defined the values in the sensor instance will be overwritten by the values of
             the data class
         stable_ctr : bool
@@ -526,7 +558,7 @@ class BaseSensor:
 
         def __init__(
             self,
-            sensor_type_spectral: common_pb2.SensorTypeSpectral,
+            sensor_type_spectral: sensor_pb2.SensorTypeSpectral,
             default_parameters: Optional[SpectralParameters] = None,
             stable_ctr: bool = False,
         ) -> None:
@@ -534,6 +566,8 @@ class BaseSensor:
                 msg = "Spectral class instantiated outside of class scope"
                 raise RuntimeError(msg)
             self._sensor_type_spectral = sensor_type_spectral
+
+            # Attribute to keep track of wavelength range object
 
             self._wavelengths_range = BaseSensor.WavelengthsRange(
                 wavelengths_range=self._sensor_type_spectral.wavelengths_range,
@@ -544,17 +578,18 @@ class BaseSensor:
             )
 
         def set_wavelengths_range(self) -> BaseSensor.WavelengthsRange:
-            """Set the range of wavelengths.
+            """Return the wavelengths range helper for this spectral sensor.
 
             Returns
             -------
             ansys.speos.core.sensor.BaseSensor.WavelengthsRange
-                Wavelengths range.
+                Wavelengths range helper object.
             """
             if (
                 self._wavelengths_range._wavelengths_range
                 is not self._sensor_type_spectral.wavelengths_range
             ):
+                # Happens in case of feature reset (to be sure to always modify correct data)
                 self._wavelengths_range._wavelengths_range = (
                     self._sensor_type_spectral.wavelengths_range
                 )
@@ -569,7 +604,6 @@ class BaseSensor:
             Name of the layer.
         geometries : List[ansys.speos.core.geo_ref.GeoRef]
             List of geometries included in this layer.
-
         """
 
         def __init__(self, name: str, geometries: List[GeoRef]) -> None:
@@ -581,19 +615,10 @@ class BaseSensor:
         def geometry(self):
             """List of geometries included in this layer.
 
-            Parameters
-            ----------
-            value : Optional[List[Union[\
-            ansys.speos.core.geo_ref.GeoRef, \
-            ansys.speos.core.body.Body, \
-            ansys.speos.core.face.Face, \
-            ansys.speos.core.part.Part.SubPart]]]
-                Geometry within the Face Layer group
-
             Returns
             -------
             List[ansys.speos.core.geo_ref.GeoRef]
-                List of the Geometries contained in the FaceLayer group
+                List of geometries contained in the FaceLayer group.
             """
             return self._geometry
 
@@ -601,6 +626,18 @@ class BaseSensor:
         def geometry(
             self, value: Optional[List[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]]
         ):
+            """Set the geometries for this face layer.
+
+            Parameters
+            ----------
+            value : Optional[List[Union[\
+            ansys.speos.core.geo_ref.GeoRef, \
+            ansys.speos.core.body.Body, \
+            ansys.speos.core.face.Face, \
+            ansys.speos.core.part.Part.SubPart]]]
+                List of geometry references (GeoRef, Face, Body or SubPart). Each entry
+                will be converted to a GeoRef internal representation.
+            """
             geo_paths = []
             for gr in value:
                 if isinstance(gr, GeoRef):
@@ -610,26 +647,19 @@ class BaseSensor:
             self._geometry = geo_paths
 
     class LayerTypeFace:
-        """Type of layer : Face.
+        """Layer separation by face configuration.
 
-        Includes in the result one layer per surface selected.
-        By default, a filtering mode by last impact is chosen.
+        Produces one layer per selected face. Default filtering is "last impact".
 
         Parameters
         ----------
-        layer_type_face : \
-        ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance.LayerTypeFace
+        layer_type_face : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance.LayerTypeFace
             LayerTypeFace protobuf object to modify.
         default_parameters : ansys.speos.core.generic.parameters.LayerByFaceParameters, optional
             If defined the values in the sensor instance will be overwritten by the values of the
             data class
-        stable_ctr : bool
-            Variable to indicate if usage is inside class scope
-
-        Notes
-        -----
-        **Do not instantiate this class yourself**, use set_layer_type_face method available in
-        sensor classes.
+        stable_ctr : bool, optional
+            Internal flag to prevent external instantiation.
         """
 
         def __init__(
@@ -658,12 +688,12 @@ class BaseSensor:
         def set_sca_filtering_mode_intersected_one_time(
             self,
         ) -> BaseSensor.LayerTypeFace:
-            """Set the filtering mode as intersected one time.
+            """Set the SCA filtering mode to IntersectedOneTime.
 
             Returns
             -------
             ansys.speos.core.sensor.BaseSensor.LayerTypeFace
-                LayerTypeFace.
+                Self to allow chaining.
             """
             self._layer_type_face.sca_filtering_mode = (
                 self._layer_type_face.EnumSCAFilteringType.IntersectedOneTime
@@ -673,12 +703,12 @@ class BaseSensor:
         def set_sca_filtering_mode_last_impact(
             self,
         ) -> BaseSensor.LayerTypeFace:
-            """Set the filtering mode as last impact.
+            """Set the SCA filtering mode to LastImpact.
 
             Returns
             -------
             ansys.speos.core.sensor.BaseSensor.LayerTypeFace
-                LayerTypeFace.
+                Self to allow chaining.
             """
             self._layer_type_face.sca_filtering_mode = (
                 self._layer_type_face.EnumSCAFilteringType.LastImpact
@@ -687,17 +717,12 @@ class BaseSensor:
 
         @property
         def layers(self) -> List[BaseSensor.FaceLayer]:
-            """List of Face layer Groups of this sensor.
-
-            Parameters
-            ----------
-            values : List[ansys.speos.core.sensor.BaseSensor.FaceLayer]
-                List of layers
+            """List of face layers for this sensor.
 
             Returns
             -------
             List[ansys.speos.core.sensor.BaseSensor.FaceLayer]
-                list of FaceLayer Classes
+                Layers currently configured for this layer type.
             """
             layer_data = []
             for layer in self._layer_type_face.layers:
@@ -709,6 +734,13 @@ class BaseSensor:
 
         @layers.setter
         def layers(self, values: list[BaseSensor.FaceLayer]):
+            """Set the list of layers.
+
+            Parameters
+            ----------
+            values : list[ansys.speos.core.sensor.BaseSensor.FaceLayer]
+                List of FaceLayer objects to assign.
+            """
             my_list = [
                 ProtoScene.SensorInstance.LayerTypeFace.Layer(
                     name=layer.name,
@@ -722,10 +754,10 @@ class BaseSensor:
             self._layer_type_face.layers.extend(my_list)
 
     class LayerTypeSequence:
-        """Type of layer : Sequence.
+        """Layer separation by sequence configuration.
 
-        Includes in the result one layer per sequence.
-        By default, the sequence is defined per geometries, with a maximum number of 10 sequences.
+        Produces one layer per sequence. The sequence can be created per face or per
+        geometry.
 
         Parameters
         ----------
@@ -735,13 +767,8 @@ class BaseSensor:
         default_parameters : ansys.speos.core.generic.parameters.LayerBySequenceParameters, optional
             If defined the values in the sensor instance will be overwritten by the values of the
             data class
-        stable_ctr : bool
-            Variable to indicate if usage is inside class scope
-
-        Notes
-        -----
-        **Do not instantiate this class yourself**, use set_layer_type_sequence method available in
-        sensor classes.
+        stable_ctr : bool, optional
+            Internal flag to prevent external instantiation.
         """
 
         def __init__(
@@ -767,33 +794,35 @@ class BaseSensor:
 
         @property
         def maximum_nb_of_sequence(self) -> int:
-            """Value of the maximum number of sequences.
-
-            Parameters
-            ----------
-            value : int
-                Maximum number of sequences. By default, ``10``.
+            """Maximum number of sequences.
 
             Returns
             -------
             int
-                maximum number of sequences.
+                Maximum allowed number of sequences.
             """
             return self._layer_type_sequence.maximum_nb_of_sequence
 
         @maximum_nb_of_sequence.setter
         def maximum_nb_of_sequence(self, value: int) -> None:
+            """Set maximum number of sequences.
+
+            Parameters
+            ----------
+            value : int
+                Maximum number of sequences to allow.
+            """
             self._layer_type_sequence.maximum_nb_of_sequence = value
 
         def set_define_sequence_per_geometries(
             self,
         ) -> BaseSensor.LayerTypeSequence:
-            """Define sequence per geometries.
+            """Define sequences per geometry (rather than per face).
 
             Returns
             -------
             ansys.speos.core.sensor.BaseSensor.LayerTypeSequence
-                LayerTypeSequence.
+                Self to allow chaining.
             """
             self._layer_type_sequence.define_sequence_per = (
                 self._layer_type_sequence.EnumSequenceType.Geometries
@@ -801,12 +830,12 @@ class BaseSensor:
             return self
 
         def set_define_sequence_per_faces(self) -> BaseSensor.LayerTypeSequence:
-            """Define sequence per faces.
+            """Define sequences per face.
 
             Returns
             -------
             ansys.speos.core.sensor.BaseSensor.LayerTypeSequence
-                LayerTypeSequence.
+                Self to allow chaining.
             """
             self._layer_type_sequence.define_sequence_per = (
                 self._layer_type_sequence.EnumSequenceType.Faces
@@ -814,27 +843,21 @@ class BaseSensor:
             return self
 
     class LayerTypeIncidenceAngle:
-        """Type of layer : IncidenceAngle.
+        """Layer separation by incidence angle.
 
-        Includes in the result one layer per range of incident angles.
-        By default, a sampling of 9 is chosen.
+        Produces one layer per incident angle range.
 
         Parameters
         ----------
         layer_type_incidence_angle : \
         ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance.LayerTypeIncidenceAngle
             LayerTypeIncidenceAngle protobuf object to modify.
-        default_parameters : \
-        ansys.speos.core.generic.parameters.LayerByIncidenceAngleParameters, optional
+        default_parameters : ansys.speos.core.generic.parameters.LayerByIncidenceAngleParameters,\
+optional
             If defined the values in the sensor instance will be overwritten by the values of the
             data class
-        stable_ctr : bool
-            Variable to indicate if usage is inside class scope
-
-        Notes
-        -----
-        **Do not instantiate this class yourself**, use set_layer_type_incidence_angle method
-        available in sensor classes.
+        stable_ctr : bool, optional
+            Internal flag to prevent external instantiation.
         """
 
         def __init__(
@@ -855,22 +878,24 @@ class BaseSensor:
 
         @property
         def sampling(self) -> int:
-            """Value of the sampling for incidence angles.
-
-            Parameters
-            ----------
-            value : int
-                Sampling for incidence angles. By default, ``9``.
+            """Sampling for incidence angles.
 
             Returns
             -------
             int
-                Sampling for incidence angles.
+                Sampling used to split the incidence angle range.
             """
             return self._layer_type_incidence_angle.sampling
 
         @sampling.setter
         def sampling(self, value: int):
+            """Set sampling for incidence angles.
+
+            Parameters
+            ----------
+            value : int
+                Sampling value for incidence angles.
+            """
             self._layer_type_incidence_angle.sampling = value
 
     def _to_dict(self) -> dict:
@@ -918,11 +943,14 @@ class BaseSensor:
 
         Parameters
         ----------
-        key: str
+        key : str, optional
+            If provided, search keys that start with `key` and return the best match.
+            By default, ``""`` which returns the full dictionary.
 
         Returns
         -------
         str | dict
+            Full sensor dictionary or the value corresponding to the best-matching key.
         """
         if key == "":
             return self._to_dict()
@@ -938,7 +966,13 @@ class BaseSensor:
         print("Used key: {} not found in key list: {}.".format(key, info.keys()))
 
     def __str__(self) -> str:
-        """Return the string representation of the sensor."""
+        """Return the string representation of the sensor.
+
+        Returns
+        -------
+        str
+            Human readable string with local or remote indicator and sensor contents.
+        """
         out_str = ""
         # SensorInstance (= sensor guid + sensor properties)
         if self._project.scene_link and self._unique_id is not None:
@@ -957,12 +991,12 @@ class BaseSensor:
         return out_str
 
     def commit(self) -> BaseSensor:
-        """Save feature: send the local data to the speos server database.
+        """Save feature: send the local data to the Speos server database.
 
         Returns
         -------
         ansys.speos.core.sensor.BaseSensor
-            Sensor feature.
+            The sensor instance after commit.
         """
         if general_methods._GRAPHICS_AVAILABLE:
             self._visual_data.updated = False
@@ -1010,12 +1044,12 @@ class BaseSensor:
         return self
 
     def reset(self) -> BaseSensor:
-        """Reset feature: override local data by the one from the speos server database.
+        """Reset local data from the Speos server database.
 
         Returns
         -------
         ansys.speos.core.sensor.BaseSensor
-            Sensor feature.
+            The sensor instance after reset.
         """
         # Reset sensor template
         if self.sensor_template_link is not None:
@@ -1034,14 +1068,14 @@ class BaseSensor:
         return self
 
     def delete(self) -> BaseSensor:
-        """Delete feature: delete data from the speos server database.
+        """Delete feature from the Speos server database.
 
-        The local data are still available
+        Local data remain available until discarded.
 
         Returns
         -------
         ansys.speos.core.sensor.BaseSensor
-            Sensor feature.
+            The sensor instance after deletion (local only).
         """
         # Delete the sensor template
         if self.sensor_template_link is not None:
@@ -1070,9 +1104,7 @@ class BaseSensor:
 class SensorCamera(BaseSensor):
     """Sensor feature: Camera.
 
-    By default, regarding inherent characteristics, a camera with mode photometric is chosen.
-    By default, regarding properties, an axis system is selected to position the sensor,
-    and no layer separation is chosen.
+    Camera sensor supporting photometric (color/monochrome) and geometric modes.
 
     Parameters
     ----------
@@ -1080,92 +1112,62 @@ class SensorCamera(BaseSensor):
         Project that will own the feature.
     name : str
         Name of the feature.
-    description : str
-        Description of the feature.
-        By default, ``""``.
+    description : str, optional
+        Description of the feature. By default, ``""``.
     metadata : Optional[Mapping[str, str]]
-        Metadata of the feature.
-        By default, ``{}``.
+        Metadata of the feature. By default, ``{}``.
     sensor_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance, optional
-        Sensor instance to provide if the feature does not has to be created from scratch
-        By default, ``None``, means that the feature is created from scratch by default.
+        Sensor instance to provide if the feature does not has to be created from
+        scratch. By default, ``None``.
     default_parameters : ansys.speos.core.generic.parameters.CameraSensorParameters, optional
-        If defined the values in the sensor instance will be overwritten by the values of the
-        data class
+        Optional default values to initialize the camera.
     """
 
     class Photometric:
-        """Mode of camera sensor : Photometric.
+        """Photometric camera mode and helpers.
 
-        This allows to set every Camera Sensor parameters, including the photometric definition
-        parameters.
-        By default, a camera with mode color is chosen (vs monochromatic mode).
+        This class wraps photometric-specific parameters (color/monochrome modes,
+        gamma, transmittance, PNG bit depth, wavelength range, layer type, etc.).
 
         Parameters
         ----------
         mode_photometric : ansys.api.speos.sensor.v1.camera_sensor_pb2.SensorCameraModePhotometric
-            Camera photometric mode protobuf object to modify.
-        default_parameters : Optional[\
-        ansys.speos.core.generic.parameters.PhotometricCameraParameters] = None
-            If defined the values in the sensor instance will be overwritten by the values of the
-            data class
-        stable_ctr : bool
-            Variable to indicate if usage is inside class scope
-
-        Notes
-        -----
-        **Do not instantiate this class yourself**, use set_type_photometric method available in
-        sensor classes.
-
+            Photometric mode protobuf to modify.
+        camera_props : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance.CameraProperties
+            Per-instance camera properties.
+        default_parameters : ansys.speos.core.generic.parameters.PhotometricCameraParameters,\
+optional
+            Optional defaults.
+        stable_ctr : bool, optional
+            Internal flag to prevent external instantiation.
         """
 
         class Color:
-            """Mode of camera sensor : Color.
-
-            Results will be available in color according to the White Balance mode.
-            By default, a balance mode none is chosen (referred as the basic conversion).
+            """Color photometric sub-mode and balance mode helpers.
 
             Parameters
             ----------
             mode_color : ansys.api.speos.sensor.v1.camera_sensor_pb2.SensorCameraColorModeColor
-                Camera color mode protobuf object to modify.
+                Camera Color mode protobuf object to modify.
             default_parameters : ansys.speos.core.generic.parameters.ColorParameters, optional
-                If defined the values in the sensor instance will be overwritten by the values of
-                the data class, optional
-            stable_ctr : bool
-                Variable to indicate if usage is inside class scope
-
-            Notes
-            -----
-            **Do not instantiate this class yourself**, use set_mode_color method available in
-            photometric class.
-
+                Optional defaults for the color mode.
+            stable_ctr : bool, optional
+                Internal flag to prevent external instantiation.
             """
 
             class BalanceModeUserWhite:
-                """BalanceMode : UserWhite.
-
-                In addition to the basic treatment, it allows to apply specific coefficients to the
-                red, green, blue images.
-                By default, coefficients of 1 are chosen for red, green and blue images.
+                """User-specified white balance mode.
 
                 Parameters
                 ----------
-                balance_mode_user_white : \
+                balance_mode_user_white :\
                 ansys.api.speos.sensor.v1.camera_sensor_pb2.SensorCameraBalanceModeUserwhite
-                    Camera balance user defined whitew mode protobuf object to modify.
-                default_parameters : \
+                    Protobuf object to modify.
+                default_parameters :\
                 ansys.speos.core.generic.parameters.BalanceModeUserWhiteParameters, optional
-                    If defined the values in the sensor instance will be overwritten by the values
-                    of the data class, optional
-                stable_ctr : bool
-                    Variable to indicate if usage is inside class scope
-
-                Notes
-                -----
-                **Do not instantiate this class yourself**, use set_balance_mode_user_white method
-                available in color class.
-
+                    Optional defaults.
+                stable_ctr : bool, optional
+                    Internal flag to prevent external instantiation.
                 """
 
                 def __init__(
@@ -1188,87 +1190,83 @@ class SensorCamera(BaseSensor):
 
                 @property
                 def red_gain(self) -> float:
-                    """Value of the red gain of the Camera Sensor.
-
-                    Parameters
-                    ----------
-                    value : float
-                        Red gain. By default, ``1``.
+                    """Red channel gain.
 
                     Returns
                     -------
                     float
-                        Red gain.
+                        Red gain coefficient.
                     """
                     return self._balance_mode_user_white.red_gain
 
                 @red_gain.setter
                 def red_gain(self, value: float) -> None:
-                    self._balance_mode_user_white.red_gain = value
-
-                @property
-                def green_gain(self) -> float:
-                    """Value of the green gain of the Camera Sensor.
+                    """Set the red channel gain.
 
                     Parameters
                     ----------
                     value : float
-                        green gain. By default, ``1``.
+                        Red gain coefficient.
+                    """
+                    self._balance_mode_user_white.red_gain = value
+
+                @property
+                def green_gain(self) -> float:
+                    """Green channel gain.
 
                     Returns
                     -------
                     float
-                        green gain.
+                        Green gain coefficient.
                     """
                     return self._balance_mode_user_white.green_gain
 
                 @green_gain.setter
                 def green_gain(self, value: float) -> None:
-                    self._balance_mode_user_white.green_gain = value
-
-                @property
-                def blue_gain(self) -> float:
-                    """Value of the Blue gain of the Camera Sensor.
+                    """Set the green channel gain.
 
                     Parameters
                     ----------
                     value : float
-                        blue gain. By default, ``1``.
+                        Green gain coefficient.
+                    """
+                    self._balance_mode_user_white.green_gain = value
+
+                @property
+                def blue_gain(self) -> float:
+                    """Blue channel gain.
 
                     Returns
                     -------
                     float
-                        blue gain.
+                        Blue gain coefficient.
                     """
                     return self._balance_mode_user_white.blue_gain
 
                 @blue_gain.setter
                 def blue_gain(self, value: float) -> None:
+                    """Set the blue channel gain.
+
+                    Parameters
+                    ----------
+                    value : float
+                        Blue gain coefficient.
+                    """
                     self._balance_mode_user_white.blue_gain = value
 
             class BalanceModeDisplayPrimaries:
-                """BalanceMode : DisplayPrimaries.
-
-                Spectral results are converted in a three-channel result.
-                Then a post-treatment is realized to take the distortion induced by the display
-                devices into account.
-                With this method, displayed results are similar to what the camera really gets.
+                """Display primaries balance mode.
 
                 Parameters
                 ----------
-                balance_mode_display : \
+                balance_mode_display :\
                 ansys.api.speos.sensor.v1.camera_sensor_pb2.SensorCameraBalanceModeDisplay
-                    Camera balance mode display protobuf object to modify.
-                default_parameters : \
+                    Protobuf object to modify.
+                default_parameters :\
                 ansys.speos.core.generic.parameters.BalanceModeDisplayPrimariesParameters, optional
-                    If defined the values in the sensor instance will be overwritten by the values
-                    of the data class, optional
-
-                Notes
-                -----
-                **Do not instantiate this class yourself**, use set_balance_mode_display_primaries
-                method available in color class.
-
+                    Optional defaults.
+                stable_ctr : bool, optional
+                    Internal flag to prevent external instantiation.
                 """
 
                 def __init__(
@@ -1299,60 +1297,66 @@ class SensorCamera(BaseSensor):
                 def red_display_file_uri(self) -> str:
                     """Location of the red display file.
 
-                    Parameters
-                    ----------
-                    uri : Union[str, pathlib.Path]
-                        Red display file.
-
                     Returns
                     -------
                     str
-                        Red display file.
+                        Red display file path or URI.
                     """
                     return self._balance_mode_display.red_display_file_uri
 
                 @red_display_file_uri.setter
                 def red_display_file_uri(self, uri: Union[str, Path]) -> None:
+                    """Set red display file path.
+
+                    Parameters
+                    ----------
+                    uri : Union[str, pathlib.Path]
+                        Red display file.
+                    """
                     self._balance_mode_display.red_display_file_uri = str(Path(uri))
 
                 @property
                 def green_display_file_uri(self) -> str:
                     """Location of the green display file.
 
-                    Parameters
-                    ----------
-                    uri : Union[str, pathlib.Path]
-                        green display file.
-
                     Returns
                     -------
                     str
-                        green display file.
+                        Green display file path or URI.
                     """
                     return self._balance_mode_display.green_display_file_uri
 
                 @green_display_file_uri.setter
                 def green_display_file_uri(self, uri: Union[str, Path]) -> None:
+                    """Set green display file path.
+
+                    Parameters
+                    ----------
+                    uri : Union[str, pathlib.Path]
+                        Green display file.
+                    """
                     self._balance_mode_display.green_display_file_uri = str(Path(uri))
 
                 @property
                 def blue_display_file_uri(self) -> str:
                     """Location of the blue display file.
 
-                    Parameters
-                    ----------
-                    uri : Union[str, pathlib.Path]
-                        blue display file.
-
                     Returns
                     -------
                     str
-                        blue display file.
+                        Blue display file path or URI.
                     """
                     return self._balance_mode_display.blue_display_file_uri
 
                 @blue_display_file_uri.setter
                 def blue_display_file_uri(self, uri: Union[str, Path]) -> None:
+                    """Set blue display file path.
+
+                    Parameters
+                    ----------
+                    uri : Union[str, pathlib.Path]
+                        Blue display file.
+                    """
                     self._balance_mode_display.blue_display_file_uri = str(Path(uri))
 
             def __init__(
@@ -1398,66 +1402,72 @@ class SensorCamera(BaseSensor):
 
             @property
             def red_spectrum_file_uri(self) -> str:
-                """Location of the red spectrum.
-
-                Parameters
-                ----------
-                uri : Union[str, pathlib.Path]
-                    Red spectrum file. It is expressed in a .spectrum file.
+                """Location of the red spectrum file.
 
                 Returns
                 -------
                 str
-                    Red spectrum file. It is expressed in a .spectrum file.
+                    Red spectrum file path (usually ``.spectrum``).
                 """
                 return self._mode_color.red_spectrum_file_uri
 
             @red_spectrum_file_uri.setter
             def red_spectrum_file_uri(self, uri: Union[str, Path]) -> None:
-                self._mode_color.red_spectrum_file_uri = str(Path(uri))
-
-            @property
-            def blue_spectrum_file_uri(self) -> str:
-                """Location of the blue spectrum.
+                """Set the red spectrum file path.
 
                 Parameters
                 ----------
                 uri : Union[str, pathlib.Path]
-                    blue spectrum file. It is expressed in a .spectrum file.
+                    Red spectrum file.
+                """
+                self._mode_color.red_spectrum_file_uri = str(Path(uri))
+
+            @property
+            def blue_spectrum_file_uri(self) -> str:
+                """Location of the blue spectrum file.
 
                 Returns
                 -------
                 str
-                    blue spectrum file. It is expressed in a .spectrum file.
+                    Blue spectrum file path.
                 """
                 return self._mode_color.blue_spectrum_file_uri
 
             @blue_spectrum_file_uri.setter
             def blue_spectrum_file_uri(self, uri: Union[str, Path]) -> None:
-                self._mode_color.blue_spectrum_file_uri = str(Path(uri))
-
-            @property
-            def green_spectrum_file_uri(self) -> str:
-                """Location of the green spectrum.
+                """Set the blue spectrum file path.
 
                 Parameters
                 ----------
                 uri : Union[str, pathlib.Path]
-                    green spectrum file. It is expressed in a .spectrum file.
+                    Blue spectrum file.
+                """
+                self._mode_color.blue_spectrum_file_uri = str(Path(uri))
+
+            @property
+            def green_spectrum_file_uri(self) -> str:
+                """Location of the green spectrum file.
 
                 Returns
                 -------
                 str
-                    green spectrum file. It is expressed in a .spectrum file.
+                    Green spectrum file path.
                 """
                 return self._mode_color.green_spectrum_file_uri
 
             @green_spectrum_file_uri.setter
             def green_spectrum_file_uri(self, uri: Union[str, Path]) -> None:
+                """Set the green spectrum file path.
+
+                Parameters
+                ----------
+                uri : Union[str, pathlib.Path]
+                    Green spectrum file.
+                """
                 self._mode_color.green_spectrum_file_uri = str(Path(uri))
 
             def set_balance_mode_none(self) -> SensorCamera.Photometric.Color:
-                """Set the balance mode as none.
+                """Use basic conversion (no white balance).
 
                 The spectral transmittance of the optical system and the spectral sensitivity for
                 each channel are applied to the detected spectral image before the conversion in
@@ -1466,7 +1476,7 @@ class SensorCamera(BaseSensor):
                 Returns
                 -------
                 ansys.speos.core.sensor.SensorCamera.Photometric.Color
-                    Color mode.
+                    Color mode instance.
                 """
                 self._mode = None
                 self._mode_color.balance_mode_none.SetInParent()
@@ -1475,7 +1485,7 @@ class SensorCamera(BaseSensor):
             def set_balance_mode_grey_world(
                 self,
             ) -> SensorCamera.Photometric.Color:
-                """Set the balance mode as grey world.
+                """Use grey-world white balance.
 
                 The grey world assumption states that the content of the image is grey on average.
                 This method converts spectral results in a three-channel result with the basic
@@ -1485,7 +1495,7 @@ class SensorCamera(BaseSensor):
                 Returns
                 -------
                 ansys.speos.core.sensor.SensorCamera.Photometric.Color
-                    Color mode.
+                    Color mode instance.
                 """
                 self._mode = None
                 self._mode_color.balance_mode_greyworld.SetInParent()
@@ -1494,15 +1504,15 @@ class SensorCamera(BaseSensor):
             def set_balance_mode_user_white(
                 self,
             ) -> SensorCamera.Photometric.Color.BalanceModeUserWhite:
-                """Set the balance mode as user white.
+                """Select user-white balance mode and return helper.
 
                 In addition to the basic treatment, it allows to apply specific coefficients to the
-                red, green, blue images.
+                red, green, blue images
 
                 Returns
                 -------
                 ansys.speos.core.sensor.SensorCamera.Photometric.Color.BalanceModeUserWhite
-                    Balance UserWhite mode.
+                    Helper to modify user-white gains.
                 """
                 if self._mode is None and self._mode_color.HasField("balance_mode_userwhite"):
                     # Happens in case of project created via load of speos file
@@ -1531,7 +1541,7 @@ class SensorCamera(BaseSensor):
             def set_balance_mode_display_primaries(
                 self,
             ) -> SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries:
-                """Set the balance mode as display primaries.
+                """Select display-primaries balance mode and return helper.
 
                 Spectral results are converted in a three-channel result.
                 Then a post-treatment is realized to take the distortion induced by the display
@@ -1541,7 +1551,7 @@ class SensorCamera(BaseSensor):
                 Returns
                 -------
                 ansys.speos.core.sensor.SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries
-                    Balance DisplayPrimaries mode.
+                    Helper for display primaries configuration.
                 """
                 if self._mode is None and self._mode_color.HasField("balance_mode_display"):
                     # Happens in case of project created via load of speos file
@@ -1625,136 +1635,119 @@ class SensorCamera(BaseSensor):
 
         @property
         def acquisition_integration(self) -> float:
-            """Value of the acquisition integration.
-
-            Parameters
-            ----------
-            value : float
-                Acquisition integration value (s). By default, ``0.01``.
+            """Acquisition integration time (s).
 
             Returns
             -------
             float
-                Acquisition integration value (s).
+                Integration time in seconds.
             """
             return self._mode_photometric.acquisition_integration
 
         @acquisition_integration.setter
         def acquisition_integration(self, value: float) -> None:
-            self._mode_photometric.acquisition_integration = value
-
-        @property
-        def acquisition_lag_time(self) -> float:
-            """Value of the acquisition lag time.
+            """Set acquisition integration time.
 
             Parameters
             ----------
             value : float
-                Acquisition lag time value (s). By default, ``0.0``.
+                Integration time in seconds.
+            """
+            self._mode_photometric.acquisition_integration = value
+
+        @property
+        def acquisition_lag_time(self) -> float:
+            """Acquisition lag time (s).
 
             Returns
             -------
             float
-                Acquisition lag time value (s).
+                Acquisition lag time in seconds.
             """
             return self._mode_photometric.acquisition_lag_time
 
         @acquisition_lag_time.setter
         def acquisition_lag_time(self, value: float) -> None:
+            """Set acquisition lag time.
+
+            Parameters
+            ----------
+            value : float
+                Acquisition lag time in seconds.
+            """
             self._mode_photometric.acquisition_lag_time = value
 
         @property
         def transmittance_file_uri(self) -> str:
-            """Location of the transmittance file.
-
-            Parameters
-            ----------
-            uri : Union[str, pathlib.Path]
-                Amount of light of the source that passes through the lens and reaches the sensor.
-                The transmittance is expressed in a .spectrum file.
+            """Transmittance spectrum file path or URI.
 
             Returns
             -------
             str
-                Amount of light of the source that passes through the lens and reaches the sensor.
+                Transmittance spectrum file path (``.spectrum``).
             """
             return self._mode_photometric.transmittance_file_uri
 
         @transmittance_file_uri.setter
         def transmittance_file_uri(self, uri: Union[str, Path]) -> None:
+            """Set transmittance spectrum file.
+
+            Parameters
+            ----------
+            uri : Union[str, pathlib.Path]
+                Spectrum file used to represent the optical transmittance.
+            """
             self._mode_photometric.transmittance_file_uri = str(Path(uri))
 
         @property
         def gamma_correction(self) -> float:
-            """Value used to apply the gamma correction.
-
-            Parameters
-            ----------
-            value : float
-                Gamma Correction value. By default, ``2.2``.
+            """Gamma correction value.
 
             Returns
             -------
             float
-                Gamma Correction value
+                Gamma correction factor.
             """
             return self._mode_photometric.gamma_correction
 
         @gamma_correction.setter
         def gamma_correction(self, value: float) -> None:
+            """Set gamma correction factor.
+
+            Parameters
+            ----------
+            value : float
+                Gamma correction factor to apply.
+            """
             self._mode_photometric.gamma_correction = value
 
         def set_png_bits_08(self) -> SensorCamera.Photometric:
-            """Choose 08-bits for png.
-
-            Returns
-            -------
-            ansys.speos.core.sensor.SensorCamera.Photometric
-                Photometric mode.
-            """
+            """Use 8-bit PNG export."""
             self._mode_photometric.png_bits = camera_sensor_pb2.EnumSensorCameraPNGBits.PNG_08
             return self
 
         def set_png_bits_10(self) -> SensorCamera.Photometric:
-            """Choose 10-bits for png.
-
-            Returns
-            -------
-            ansys.speos.core.sensor.SensorCamera.Photometric
-                Photometric mode.
-            """
+            """Use 10-bit PNG export."""
             self._mode_photometric.png_bits = camera_sensor_pb2.EnumSensorCameraPNGBits.PNG_10
             return self
 
         def set_png_bits_12(self) -> SensorCamera.Photometric:
-            """Choose 12-bits for png.
-
-            Returns
-            -------
-            ansys.speos.core.sensor.SensorCamera.Photometric
-                Photometric mode.
-            """
+            """Use 12-bit PNG export."""
             self._mode_photometric.png_bits = camera_sensor_pb2.EnumSensorCameraPNGBits.PNG_12
             return self
 
         def set_png_bits_16(self) -> SensorCamera.Photometric:
-            """Choose 16-bits for png.
-
-            Returns
-            -------
-            ansys.speos.core.sensor.SensorCamera.Photometric
-                Photometric mode.
-            """
+            """Use 16-bit PNG export."""
             self._mode_photometric.png_bits = camera_sensor_pb2.EnumSensorCameraPNGBits.PNG_16
             return self
 
         def set_wavelengths_range(self) -> BaseSensor.WavelengthsRange:
-            """Set the range of wavelengths.
+            """Return the wavelengths range helper for the photometric camera.
 
             Returns
             -------
             ansys.speos.core.sensor.BaseSensor.WavelengthsRange
-                Wavelengths range.
+                Wavelengths range helper object.
             """
             if (
                 self._wavelengths_range._wavelengths_range
@@ -1769,19 +1762,17 @@ class SensorCamera(BaseSensor):
         def set_mode_monochromatic(
             self, spectrum_file_uri: Union[str, Path]
         ) -> SensorCamera.Photometric:
-            """Set the monochromatic mode.
-
-            Results will be available in grey scale.
+            """Set monochromatic (grayscale) mode using a spectrum file.
 
             Parameters
             ----------
             spectrum_file_uri : Union[str, pathlib.Path]
-                Spectrum file uri.
+                Spectrum file URI to use for monochromatic sensitivity.
 
             Returns
             -------
             ansys.speos.core.sensor.SensorCamera.Photometric
-                Photometric mode.
+                Photometric mode instance.
             """
             self._mode = None
             self._mode_photometric.color_mode_monochromatic.spectrum_file_uri = str(
@@ -1790,14 +1781,12 @@ class SensorCamera(BaseSensor):
             return self
 
         def set_mode_color(self) -> SensorCamera.Photometric.Color:
-            """Set the color mode.
-
-            Results will be available in color.
+            """Set photometric color mode and return helper.
 
             Returns
             -------
             ansys.speos.core.sensor.SensorCamera.Photometric.Color
-                Color mode.
+                Color mode helper instance.
             """
             if self._mode is None and self._mode_photometric.HasField("color_mode_color"):
                 # Happens in case of project created via load of speos file
@@ -1820,45 +1809,33 @@ class SensorCamera(BaseSensor):
 
         @property
         def trajectory_file_uri(self) -> str:
-            """Location of the trajectory file.
-
-            Parameters
-            ----------
-            uri : Union[str, pathlib.Path]
-                Trajectory file, used to define the position and orientations of the Camera sensor
-                in time.
+            """Trajectory file path or URI.
 
             Returns
             -------
             str
-                Trajectory file, used to define the position and orientations of the Camera sensor
-                in time.
+                Trajectory file used to animate the camera pose.
             """
             return self._camera_props.trajectory_file_uri
 
         @trajectory_file_uri.setter
         def trajectory_file_uri(self, uri: Union[str, Path]) -> None:
+            """Set the trajectory file path.
+
+            Parameters
+            ----------
+            uri : Union[str, pathlib.Path]
+                Trajectory file used to define camera pose over time.
+            """
             self._camera_props.trajectory_file_uri = str(Path(uri))
 
         def set_layer_type_none(self) -> SensorCamera.Photometric:
-            """Set no layer separation: includes the simulation's results in one layer.
-
-            Returns
-            -------
-            ansys.speos.core.sensor.SensorCamera.Photometric
-                Photometric mode.
-            """
+            """Disable layer separation (single-layer results)."""
             self._camera_props.layer_type_none.SetInParent()
             return self
 
         def set_layer_type_source(self) -> SensorCamera.Photometric:
-            """Set layer separation by source: includes one layer per active source in the result.
-
-            Returns
-            -------
-            ansys.speos.core.sensor.SensorCamera.Photometric
-                Photometric mode.
-            """
+            """Enable layer separation by source (one layer per active source)."""
             self._camera_props.layer_type_source.SetInParent()
             return self
 
@@ -1908,13 +1885,12 @@ class SensorCamera(BaseSensor):
 
     @property
     def visual_data(self) -> _VisualData:
-        """Property containing camera sensor visualization data.
+        """Visual geometry for camera sensor for visualization tools.
 
         Returns
         -------
         ansys.speos.core.generic.visualization_methods._VisualData
-            Instance of VisualData Class for pyvista.PolyData of feature faces, coordinate_systems.
-
+            Visual data helper instance describing geometry and axis system.
         """
         if self._visual_data.updated:
             return self._visual_data
@@ -1996,231 +1972,232 @@ class SensorCamera(BaseSensor):
 
     @property
     def photometric(self) -> Union[SensorCamera.Photometric, None]:
-        """Property containing the instance of SensorCamera.Photometric used to build the sensor.
+        """Photometric helper instance when camera is in photometric mode.
 
         Returns
         -------
         Union[ansys.speos.core.sensor.SensorCamera.Photometric, None]
-            Photometric class instance if it exists
-
+            Photometric helper instance or None if camera is geometric.
         """
         return self._type
 
     @property
     def focal_length(self) -> float:
-        """Focal length of the optical system.
-
-        Parameters
-        ----------
-        value : float
-            Distance between the center of the optical system and the focus. (mm)
-            By default, ``5.0``.
+        """Focal length of the optical system (mm).
 
         Returns
         -------
         float
-            Distance between the center of the optical system and the focus. (mm)
+            Distance between the center of the optical system and the focus in mm.
         """
         return self._sensor_template.camera_sensor_template.focal_length
 
     @focal_length.setter
-    def focal_length(self, value: float) -> SensorCamera:
-        self._sensor_template.camera_sensor_template.focal_length = value
-
-    @property
-    def imager_distance(self) -> SensorCamera:
-        """Imager distance.
+    def focal_length(self, value: float) -> None:
+        """Set focal length.
 
         Parameters
         ----------
         value : float
-            Imager distance (mm). The imager is located at the focal point.
-            The Imager distance has no impact on the result. By default, ``10``.
+            Focal length in millimeters.
+        """
+        self._sensor_template.camera_sensor_template.focal_length = value
+
+    @property
+    def imager_distance(self) -> float:
+        """Imager distance (mm).
 
         Returns
         -------
         float
-            Imager distance (mm). The imager is located at the focal point.
-            The Imager distance has no impact on the result.
+            Distance from optical center to imager in millimeters.
         """
         return self._sensor_template.camera_sensor_template.imager_distance
 
     @imager_distance.setter
     def imager_distance(self, value: float) -> None:
-        self._sensor_template.camera_sensor_template.imager_distance = value
-
-    @property
-    def f_number(self) -> float:
-        """F number of the optical system.
+        """Set imager distance.
 
         Parameters
         ----------
         value : float
-            F-number represents the aperture of the front lens.
-            F number has no impact on the result. By default, ``20``.
+            Imager distance in millimeters.
+        """
+        self._sensor_template.camera_sensor_template.imager_distance = value
+
+    @property
+    def f_number(self) -> float:
+        """F-number (aperture) of the optical system.
 
         Returns
         -------
         float
-            F-number represents the aperture of the front lens.
-            F number has no impact on the result.
+            F-number (unitless).
         """
         return self._sensor_template.camera_sensor_template.f_number
 
     @f_number.setter
     def f_number(self, value: float = 20) -> None:
+        """Set F-number.
+
+        Parameters
+        ----------
+        value : float
+            F-number to set.
+        """
         self._sensor_template.camera_sensor_template.f_number = value
 
     @property
     def distortion_file_uri(self) -> str:
-        """Location of the distortion file.
-
-        Parameters
-        ----------
-        uri : Union[str, pathlib.Path]
-            Optical aberration that deforms and bends straight lines. The distortion is expressed in
-            a .OPTDistortion file.
+        """Distortion file path or URI (optical aberration definition).
 
         Returns
         -------
         str
-            Optical aberration that deforms and bends straight lines. The distortion is expressed in
-            a .OPTDistortion file.
+            Distortion definition file path (``.OPTDistortion``).
         """
         return self._sensor_template.camera_sensor_template.distortion_file_uri
 
     @distortion_file_uri.setter
     def distortion_file_uri(self, uri: Union[str, Path]) -> None:
+        """Set distortion file path.
+
+        Parameters
+        ----------
+        uri : Union[str, pathlib.Path]
+            Distortion file URI (``.OPTDistortion``).
+        """
         self._sensor_template.camera_sensor_template.distortion_file_uri = str(Path(uri))
 
     @property
     def horz_pixel(self) -> int:
-        """Horizontal pixels number corresponding to the camera resolution.
-
-        Parameters
-        ----------
-        value : int
-            The horizontal pixels number corresponding to the camera resolution.
-            By default, ``640``.
+        """Horizontal pixel count of the camera.
 
         Returns
         -------
         int
-            The horizontal pixels number corresponding to the camera resolution.
+            Horizontal pixel resolution.
         """
         return self._sensor_template.camera_sensor_template.horz_pixel
 
     @horz_pixel.setter
     def horz_pixel(self, value: int) -> None:
-        self._sensor_template.camera_sensor_template.horz_pixel = value
-
-    @property
-    def vert_pixel(self) -> int:
-        """Vertical pixels number corresponding to the camera resolution.
+        """Set horizontal pixel count.
 
         Parameters
         ----------
         value : int
-            The vertical pixels number corresponding to the camera resolution.
-            By default, ``480``.
+            Horizontal pixel resolution.
+        """
+        self._sensor_template.camera_sensor_template.horz_pixel = value
+
+    @property
+    def vert_pixel(self) -> int:
+        """Vertical pixel count of the camera.
 
         Returns
         -------
         int
-            The vertical pixels number corresponding to the camera resolution.
+            Vertical pixel resolution.
         """
         return self._sensor_template.camera_sensor_template.vert_pixel
 
     @vert_pixel.setter
     def vert_pixel(self, value: int) -> None:
+        """Set vertical pixel count.
+
+        Parameters
+        ----------
+        value : int
+            Vertical pixel resolution.
+        """
         self._sensor_template.camera_sensor_template.vert_pixel = value
 
     @property
     def width(self) -> float:
-        """Width of the imager.
-
-        Parameters
-        ----------
-        value : float
-            Sensor's width (mm). By default, ``5.0``.
+        """Sensor imager width (mm).
 
         Returns
         -------
         float
-            Sensor's width (mm).
+            Width of the imager in millimeters.
         """
         return self._sensor_template.camera_sensor_template.width
 
     @width.setter
     def width(self, value: float) -> None:
-        self._sensor_template.camera_sensor_template.width = value
-
-    @property
-    def height(self) -> float:
-        """Height of the imager.
+        """Set imager width.
 
         Parameters
         ----------
         value : float
-            Sensor's height (mm). By default, ``5.0``
+            Width in millimeters.
+        """
+        self._sensor_template.camera_sensor_template.width = value
+
+    @property
+    def height(self) -> float:
+        """Sensor imager height (mm).
 
         Returns
         -------
         float
-            Sensor's height (mm).
-            `.
+            Height of the imager in millimeters.
         """
         return self._sensor_template.camera_sensor_template.height
 
     @height.setter
     def height(self, value: float) -> None:
+        """Set imager height.
+
+        Parameters
+        ----------
+        value : float
+            Height in millimeters.
+        """
         self._sensor_template.camera_sensor_template.height = value
 
     @property
     def axis_system(self) -> List[float]:
-        """The position of the sensor.
-
-        Parameters
-        ----------
-        axis_system : List[float]
-            Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
-            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+        """The position and orientation of the sensor as a 12-element axis system.
 
         Returns
         -------
         List[float]
-            Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+            Position and orientation as [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
         """
         return self._sensor_instance.camera_properties.axis_system
 
     @axis_system.setter
     def axis_system(self, axis_system: List[float]) -> None:
+        """Set the sensor axis system.
+
+        Parameters
+        ----------
+        axis_system : List[float]
+            Axis system value [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+        """
         self._sensor_instance.camera_properties.axis_system[:] = axis_system
 
     def set_mode_geometric(self) -> SensorCamera:
-        """Set mode geometric for the camera sensor.
-
-        This is a simplified version of the Camera Sensor.
+        """Set camera to geometric (simplified) mode.
 
         Returns
         -------
         ansys.speos.core.sensor.SensorCamera
-            Geometric Camera feature
+            Self for chaining.
         """
         self._type = None
         self._sensor_template.camera_sensor_template.sensor_mode_geometric.SetInParent()
         return self
 
     def set_mode_photometric(self) -> SensorCamera.Photometric:
-        """Set mode photometric for the camera sensor.
-
-        This allows setting every Camera Sensor parameter, including the photometric definition
-        parameters.
+        """Set camera to photometric (full) mode and return helper.
 
         Returns
         -------
         ansys.speos.core.sensor.SensorCamera.Photometric
-            Photometric Camera Sensor feature
+            Photometric helper instance.
         """
         if self._type is None and self._sensor_template.camera_sensor_template.HasField(
             "sensor_mode_photometric"
@@ -2251,12 +2228,12 @@ class SensorCamera(BaseSensor):
         return self._type
 
     def commit(self) -> SensorCamera:
-        """Save feature: send the local data to the speos server database.
+        """Save the camera; handle known server-side constraints with distortion files.
 
         Returns
         -------
         ansys.speos.core.sensor.SensorCamera
-            Sensor feature.
+            Camera instance after commit.
         """
         msg = (
             "Please note that the following values {} were over written by the values"
@@ -2287,9 +2264,9 @@ class SensorCamera(BaseSensor):
 class SensorIrradiance(BaseSensor):
     """Sensor feature: Irradiance.
 
-    By default, regarding inherent characteristics, an irradiance sensor of type photometric and
-    illuminance type planar is chosen. By default, regarding properties, an axis system is
-    selected to position the sensor, no layer separation and no ray file generation are chosen.
+    Planar/radial/hemispherical/cylindrical irradiance sensor supporting
+    photometric, radiometric, colorimetric and spectral modes and layer
+    separation.
 
     Parameters
     ----------
@@ -2297,18 +2274,15 @@ class SensorIrradiance(BaseSensor):
         Project that will own the feature.
     name : str
         Name of the feature.
-    description : str
-        Description of the feature.
-        By default, ``""``.
+    description : str, optional
+        Description of the feature. By default, ``""``.
     metadata : Optional[Mapping[str, str]]
-        Metadata of the feature.
-        By default, ``{}``.
+        Metadata of the feature. By default, ``{}``.
     sensor_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance, optional
-        Sensor instance to provide if the feature does not has to be created from scratch
-        By default, ``None``, means that the feature is created from scratch by default.
+        Sensor instance to provide if the feature does not has to be created from
+        scratch. By default, ``None``.
     default_parameters : ansys.speos.core.generic.parameters.IrradianceSensorParameters, optional
-        If defined the values in the sensor instance will be overwritten by the values of the data
-        class
+        Optional defaults to initialize irradiance sensor.
     """
 
     def __init__(
@@ -2446,13 +2420,12 @@ class SensorIrradiance(BaseSensor):
 
     @property
     def visual_data(self) -> _VisualData:
-        """Property containing irradiance sensor visualization data.
+        """Visual geometry for irradiance sensor.
 
         Returns
         -------
         ansys.speos.core.generic.visualization_methods._VisualData
-            Instance of VisualData Class for pyvista.PolyData of feature faces, coordinate_systems.
-
+            Visual data helper instance describing geometry and axis system.
         """
         if self._visual_data.updated is True:
             return self._visual_data
@@ -2501,23 +2474,23 @@ class SensorIrradiance(BaseSensor):
 
     @property
     def dimensions(self) -> BaseSensor.Dimensions:
-        """Property containing all options in regard to the Dimensions sensor properties.
+        """Dimensions helper for irradiance sensor.
 
         Returns
         -------
         ansys.speos.core.sensor.BaseSensor.Dimensions
-            Instance of Dimensions Class for this sensor feature
+            Dimensions helper instance.
         """
         return self._sensor_dimensions
 
     @property
     def type(self) -> str:
-        """Type of sensor.
+        """Sensor type as string.
 
         Returns
         -------
         str
-            Sensor type as string
+            Sensor type (e.g. "Colorimetric", "Spectral", "Photometric", "Radiometric").
         """
         if type(self._type) is str:
             return self._type
@@ -2530,24 +2503,24 @@ class SensorIrradiance(BaseSensor):
 
     @property
     def colorimetric(self) -> Union[None, BaseSensor.Colorimetric]:
-        """Property containing all options in regard to the Colorimetric sensor properties.
+        """Colorimetric helper when sensor is colorimetric.
 
         Returns
         -------
         Union[None, ansys.speos.core.sensor.BaseSensor.Colorimetric]
-            Instance of Colorimetric Class for this sensor feature
+            Colorimetric helper instance or ``None``.
         """
         if isinstance(self._type, BaseSensor.Colorimetric):
             return self._type
 
     @property
     def spectral(self) -> Union[None, BaseSensor.Spectral]:
-        """Property containing all options in regard to the Spectral sensor properties.
+        """Spectral helper when sensor is spectral.
 
         Returns
         -------
         Union[None, ansys.speos.core.sensor.BaseSensor.Spectral]
-            Instance of Spectral Class for this sensor feature
+            Spectral helper instance or ``None``.
         """
         if isinstance(self._type, BaseSensor.Spectral):
             return self._type
@@ -2556,7 +2529,7 @@ class SensorIrradiance(BaseSensor):
     def layer(
         self,
     ) -> Union[
-        str,
+        LayerTypes,
         BaseSensor.LayerTypeFace,
         BaseSensor.LayerTypeSequence,
         BaseSensor.LayerTypeIncidenceAngle,
@@ -2576,12 +2549,12 @@ class SensorIrradiance(BaseSensor):
         return self._layer_type
 
     def set_dimensions(self) -> BaseSensor.Dimensions:
-        """Set the dimensions of the sensor.
+        """Return the current dimensions helper bound to the template.
 
         Returns
         -------
         ansys.speos.core.sensor.BaseSensor.Dimensions
-            Dimension class
+            Dimensions instance.
         """
         if (
             self._sensor_dimensions._sensor_dimensions
@@ -2594,30 +2567,13 @@ class SensorIrradiance(BaseSensor):
         return self._sensor_dimensions
 
     def set_type_photometric(self) -> SensorIrradiance:
-        """Set type photometric.
-
-        The sensor considers the visible spectrum and gets the results in lm/m2 or lx.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.SensorIrradiance
-            Irradiance sensor
-        """
+        """Select photometric sensor type (visible spectrum -> lx / lm/m2)."""
         self._sensor_template.irradiance_sensor_template.sensor_type_photometric.SetInParent()
         self._type = SensorTypes.photometric.capitalize()
         return self
 
     def set_type_colorimetric(self) -> BaseSensor.Colorimetric:
-        """Set type colorimetric.
-
-        The sensor will generate color results without any spectral data or layer separation
-        in lx or W//m2.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.BaseSensor.Colorimetric
-            Colorimetric type.
-        """
+        """Select colorimetric sensor type and return helper."""
         if self._type is None and self._sensor_template.irradiance_sensor_template.HasField(
             "sensor_type_colorimetric"
         ):
@@ -2645,30 +2601,13 @@ class SensorIrradiance(BaseSensor):
         return self._type
 
     def set_type_radiometric(self) -> SensorIrradiance:
-        """Set type radiometric.
-
-        The sensor considers the entire spectrum and gets the results in W/m2.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.SensorIrradiance
-            Irradiance sensor.
-        """
+        """Select radiometric sensor type (full spectrum -> W/m2)."""
         self._sensor_template.irradiance_sensor_template.sensor_type_radiometric.SetInParent()
         self._type = SensorTypes.radiometric.capitalize()
         return self
 
     def set_type_spectral(self) -> BaseSensor.Spectral:
-        """Set type spectral.
-
-        The sensor will generate color results and spectral data separated by wavelength
-        in lx or W/m2.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.BaseSensor.Spectral
-            Spectral type.
-        """
+        """Select spectral sensor type and return helper."""
         if self._type is None and self._sensor_template.irradiance_sensor_template.HasField(
             "sensor_type_spectral"
         ):
@@ -2697,31 +2636,38 @@ class SensorIrradiance(BaseSensor):
 
     @property
     def integration_direction(self):
-        """Integration direction of irradiance Sensor.
-
-        Sensor global integration direction [x,y,z], optional (default direction is Z axis of
-        axis_system).
-
-        Note: Contrary to any visualization of integration directions within Speos Software or its
-        documentation the integration direction must be set in the anti-rays direction to integrate
-        their signal.
-        Integration direction is only settable for sensor template with IlluminanceTypePlanar or
-        IlluminanceTypeSemiCylindrical as illuminance_type
-
-        Parameters
-        ----------
-        value : List[float]
-            Sensor global integration direction [x,y,z]
+        """Integration direction for planar/semi-cylindrical illuminance sensors.
 
         Returns
         -------
         List[float]
-            Sensor global integration direction [x,y,z]
+            Sensor global integration direction as [x, y, z]. If not set, Z axis
+            of the axis_system is used.
+
+        Notes
+        -----
+        Contrary to any visualization of integration directions within Speos Software or its
+        documentation the integration direction must be set in the anti-rays direction to integrate
+        their signal.
+        Integration direction is only settable for sensor template with IlluminanceTypePlanar or
+        IlluminanceTypeSemiCylindrical as illuminance_type
         """
         return self._sensor_instance.irradiance_properties.integration_direction
 
     @integration_direction.setter
     def integration_direction(self, value: List[float]) -> None:
+        """Set integration direction for the sensor.
+
+        Parameters
+        ----------
+        value : List[float]
+            Integration direction [x, y, z]. If falsy the field will be cleared.
+
+        Raises
+        ------
+        TypeError
+            If the sensor template is not planar or semi-cylindrical.
+        """
         if not value:
             self._sensor_instance.irradiance_properties.ClearField("integration_direction")
         else:
@@ -2739,197 +2685,109 @@ class SensorIrradiance(BaseSensor):
                 raise TypeError(msg)
 
     def set_illuminance_type_planar(self) -> SensorIrradiance:
-        """Set illuminance type planar.
-
-        Parameters
-        ----------
-        integration_direction : List[float], optional
-            Sensor global integration direction [x,y,z].
-            The integration direction must be set in the anti-rays direction to integrate their
-            signal.
-            By default, ``None``. None means that the Z axis of axis_system is taken.
+        """Select planar illuminance integration and clear integration_direction.
 
         Returns
         -------
         ansys.speos.core.sensor.SensorIrradiance
-            Irradiance sensor.
-
-        Notes
-        -----
-        Contrary to any visualization of integration directions within Speos Software or its
-        documentation, the integration direction must be set in the anti-rays direction to integrate
-        their signal.
+            Self for chaining.
         """
         self._sensor_template.irradiance_sensor_template.illuminance_type_planar.SetInParent()
         self._sensor_instance.irradiance_properties.ClearField("integration_direction")
         return self
 
     def set_illuminance_type_radial(self) -> SensorIrradiance:
-        """Set illuminance type radial.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.SensorIrradiance
-            Irradiance sensor.
-        """
+        """Select radial illuminance integration."""
         self._sensor_template.irradiance_sensor_template.illuminance_type_radial.SetInParent()
         return self
 
     def set_illuminance_type_hemispherical(self) -> SensorIrradiance:
-        """Set illuminance type hemispherical.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.SensorIrradiance
-            Irradiance sensor.
-        """
+        """Select hemispherical illuminance integration."""
         self._sensor_template.irradiance_sensor_template.illuminance_type_hemispherical.SetInParent()
         return self
 
     def set_illuminance_type_cylindrical(self) -> SensorIrradiance:
-        """Set illuminance type cylindrical.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.SensorIrradiance
-            Irradiance sensor.
-        """
+        """Select cylindrical illuminance integration."""
         self._sensor_template.irradiance_sensor_template.illuminance_type_cylindrical.SetInParent()
         return self
 
     def set_illuminance_type_semi_cylindrical(self) -> SensorIrradiance:
-        """Set illuminance type semi cylindrical.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.SensorIrradiance
-            Irradiance sensor.
-        """
+        """Select semi-cylindrical illuminance integration and clear integration_direction."""
         self._sensor_template.irradiance_sensor_template.illuminance_type_semi_cylindrical.SetInParent()
         self._sensor_instance.irradiance_properties.ClearField("integration_direction")
         return self
 
     @property
     def axis_system(self) -> List[float]:
-        """Position of the sensor.
-
-        Parameters
-        ----------
-        axis_system : List[float]
-            Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
-            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+        """Sensor axis system (position + orientation).
 
         Returns
         -------
         List[float]
-            Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+            Axis system as [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
         """
         return self._sensor_instance.irradiance_properties.axis_system
 
     @axis_system.setter
     def axis_system(self, axis_system: List[float]) -> None:
+        """Set sensor axis system.
+
+        Parameters
+        ----------
+        axis_system : List[float]
+            Axis system data as [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+        """
         self._sensor_instance.irradiance_properties.axis_system[:] = axis_system
 
     def set_ray_file_type_none(self) -> SensorIrradiance:
-        """Set no ray file generation.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.SensorIrradiance
-            Irradiance sensor.
-        """
+        """Disable ray file generation for irradiance sensor."""
         self._sensor_instance.irradiance_properties.ray_file_type = (
             ProtoScene.SensorInstance.EnumRayFileType.RayFileNone
         )
         return self
 
     def set_ray_file_type_classic(self) -> SensorIrradiance:
-        """Set ray file generation without polarization data.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.SensorIrradiance
-            Irradiance sensor.
-        """
+        """Enable classic ray file generation (no polarization)."""
         self._sensor_instance.irradiance_properties.ray_file_type = (
             ProtoScene.SensorInstance.EnumRayFileType.RayFileClassic
         )
         return self
 
     def set_ray_file_type_polarization(self) -> SensorIrradiance:
-        """Set ray file generation with the polarization data for each ray.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.SensorIrradiance
-            Irradiance sensor.
-        """
+        """Enable ray file generation with polarization information."""
         self._sensor_instance.irradiance_properties.ray_file_type = (
             ProtoScene.SensorInstance.EnumRayFileType.RayFilePolarization
         )
         return self
 
     def set_ray_file_type_tm25(self) -> SensorIrradiance:
-        """Set ray file generation: a .tm25ray file with polarization data for each ray.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.SensorIrradiance
-            Irradiance sensor.
-        """
+        """Enable TM25 ray file generation with polarization."""
         self._sensor_instance.irradiance_properties.ray_file_type = (
             ProtoScene.SensorInstance.EnumRayFileType.RayFileTM25
         )
         return self
 
     def set_ray_file_type_tm25_no_polarization(self) -> SensorIrradiance:
-        """Set ray file generation: a .tm25ray file without polarization data.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.SensorIrradiance
-            Irradiance sensor.
-        """
+        """Enable TM25 ray file generation without polarization."""
         self._sensor_instance.irradiance_properties.ray_file_type = (
             ProtoScene.SensorInstance.EnumRayFileType.RayFileTM25NoPolarization
         )
         return self
 
     def set_layer_type_none(self) -> SensorIrradiance:
-        """
-        Define layer separation type as None.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.SensorIrradiance
-            irradiance class instance
-
-        """
+        """Define layer separation as None (single result layer)."""
         self._sensor_instance.irradiance_properties.layer_type_none.SetInParent()
         self._layer_type = LayerTypes.none
         return self
 
     def set_layer_type_source(self) -> SensorIrradiance:
-        """Define layer separation as by source.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.SensorIrradiance
-           irradiance class instance
-
-        """
+        """Define layer separation by source (one layer per active source)."""
         self._sensor_instance.irradiance_properties.layer_type_source.SetInParent()
         self._layer_type = LayerTypes.by_source
         return self
 
     def set_layer_type_face(self) -> BaseSensor.LayerTypeFace:
-        """Define layer separation as by face.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.BaseSensor.LayerTypeFace
-            LayerTypeFace property instance
-        """
+        """Define layer separation by face and return helper."""
         if self._layer_type is None and self._sensor_instance.irradiance_properties.HasField(
             "layer_type_face"
         ):
@@ -2957,13 +2815,7 @@ class SensorIrradiance(BaseSensor):
         return self._layer_type
 
     def set_layer_type_sequence(self) -> BaseSensor.LayerTypeSequence:
-        """Define layer separation as by sequence.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.BaseSensor.LayerTypeSequence
-            LayerTypeSequence property instance
-        """
+        """Define layer separation by sequence and return helper."""
         if self._layer_type is None and self._sensor_instance.irradiance_properties.HasField(
             "layer_type_sequence"
         ):
@@ -2991,13 +2843,7 @@ class SensorIrradiance(BaseSensor):
         return self._layer_type
 
     def set_layer_type_polarization(self) -> SensorIrradiance:
-        """Define layer separation as by polarization.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.SensorIrradiance
-            Irradiance class instance
-        """
+        """Define layer separation by polarization."""
         self._sensor_instance.irradiance_properties.layer_type_polarization.SetInParent()
         self._layer_type = LayerTypes.by_polarization
         return self
@@ -3005,13 +2851,7 @@ class SensorIrradiance(BaseSensor):
     def set_layer_type_incidence_angle(
         self,
     ) -> BaseSensor.LayerTypeIncidenceAngle:
-        """Define layer separation as by incidence angle.
-
-        Returns
-        -------
-        ansys.speos.core.sensor.BaseSensor.LayerTypeIncidenceAngle
-            LayerTypeIncidenceAngle property instance
-        """
+        """Define layer separation by incidence angle and return helper."""
         if self._layer_type is None and self._sensor_instance.irradiance_properties.HasField(
             "layer_type_incidence_angle"
         ):
@@ -3040,22 +2880,12 @@ class SensorIrradiance(BaseSensor):
 
     @property
     def output_face_geometries(self):
-        """Select output faces for inverse simulation optimization.
-
-        Parameters
-        ----------
-        geometries : Optional[List[Union[\
-        ansys.speos.core.geo_ref.GeoRef, \
-        ansys.speos.core.body.Body, \
-        ansys.speos.core.face.Face, \
-        ansys.speos.core.part.Part.SubPart]]]
-            List of geometries that will be considered as output faces.
-            By default, ``[]``, ie no output faces.
+        """Get output faces for inverse simulation optimization.
 
         Returns
         -------
         List[str]
-            List of Output faces geo-path's
+            List of output face geo-paths if set, otherwise ``None``.
         """
         if self._sensor_instance.irradiance_properties.HasField("output_face_geometries"):
             return self._sensor_instance.irradiance_properties.output_face_geometries.geo_paths
@@ -3065,6 +2895,18 @@ class SensorIrradiance(BaseSensor):
         self,
         geometries: Optional[List[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]] = None,
     ) -> None:
+        """Select output faces for inverse simulation optimization.
+
+        Parameters
+        ----------
+        geometries : Optional[List[Union[\
+        ansys.speos.core.geo_ref.GeoRef,\
+        ansys.speos.core.body.Body,\
+        ansys.speos.core.face.Face,\
+        ansys.speos.core.part.Part.SubPart]]], optional
+            List of geometries that will be considered as output faces. If falsy the
+            field will be cleared. By default, ``None`` (no output faces).
+        """
         if not geometries:
             self._sensor_instance.irradiance_properties.ClearField("output_face_geometries")
         else:
@@ -3083,11 +2925,12 @@ class SensorIrradiance(BaseSensor):
 
 
 class SensorRadiance(BaseSensor):
-    """Sensor feature: Radiance.
+    """Radiance sensor feature.
 
-    By default, regarding inherent characteristics, a radiance sensor of type photometric is chosen.
-    By default, regarding properties, an axis system is selected to position the sensor and no layer
-    separation is chosen.
+    The radiance sensor can operate in photometric, colorimetric, radiometric
+    or spectral modes. By default the sensor uses a photometric template and an
+    axis system is available to position the sensor. Layer separation options
+    (none, by source, by face, by sequence) are available through helpers.
 
     Parameters
     ----------
@@ -3095,18 +2938,17 @@ class SensorRadiance(BaseSensor):
         Project that will own the feature.
     name : str
         Name of the feature.
-    description : str
-        Description of the feature.
-        By default, ``""``.
+    description : str, optional
+        Description of the feature. Default is ``""``.
     metadata : Optional[Mapping[str, str]]
-        Metadata of the feature.
-        By default, ``{}``.
-    sensor_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance, optional
-        Sensor instance to provide if the feature does not has to be created from scratch
-        By default, ``None``, means that the feature is created from scratch by default.
-    default_parameters : ansys.speos.core.generic.parameters.RadianceSensorParameters, optional
-        If defined the values in the sensor instance will be overwritten by the values of the data
-        class
+        Metadata of the feature. Default is ``{}``.
+    sensor_instance : Optional[ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance]
+        Sensor instance to provide if the feature should be created from an
+        existing instance. Default is ``None`` which creates the feature
+        locally.
+    default_parameters : Optional[ansys.speos.core.generic.parameters.RadianceSensorParameters]
+        If provided, use these parameters to initialize the sensor template and
+        instance.
     """
 
     def __init__(
@@ -3207,13 +3049,12 @@ class SensorRadiance(BaseSensor):
 
     @property
     def visual_data(self) -> _VisualData:
-        """Property containing radiance sensor visualization data.
+        """Radiance sensor visualization data.
 
         Returns
         -------
         ansys.speos.core.generic.visualization_methods._VisualData
-            Instance of VisualData Class for pyvista.PolyData of feature faces, coordinate_systems.
-
+            VisualData containing mesh/triangles and axis system for rendering.
         """
         if self._visual_data.updated:
             return self._visual_data
@@ -3229,7 +3070,7 @@ class SensorRadiance(BaseSensor):
             feature_y_end = float(self.get(key="y_end"))
             feature_radiance_focal = float(self.get(key="focal"))
 
-            # radiance sensor
+            # radiance sensor geometry
             p1 = (
                 feature_radiance_pos
                 + feature_radiance_x_dir * feature_x_end
@@ -3258,7 +3099,7 @@ class SensorRadiance(BaseSensor):
             self._visual_data.add_data_triangle([p1, p4, p5])
             self._visual_data.add_data_triangle([p2, p3, p5])
 
-            # radiance direction
+            # radiance axis system
             self._visual_data.coordinates.origin = feature_radiance_pos
             self._visual_data.coordinates.x_axis = feature_radiance_x_dir
             self._visual_data.coordinates.y_axis = feature_radiance_y_dir
@@ -3268,23 +3109,24 @@ class SensorRadiance(BaseSensor):
 
     @property
     def dimensions(self) -> BaseSensor.Dimensions:
-        """Property containing all options in regard to the Dimensions sensor properties.
+        """Dimensions helper for the radiance sensor.
 
         Returns
         -------
         ansys.speos.core.sensor.BaseSensor.Dimensions
-            Instance of Dimensions Class for this sensor feature
+            Dimensions helper attached to the sensor template.
         """
         return self._sensor_dimensions
 
     @property
     def type(self) -> str:
-        """Type of sensor.
+        """Sensor type.
 
         Returns
         -------
         str
-            Sensor type as string
+            Sensor type as a human-readable string (e.g. 'Colorimetric', 'Spectral',
+            'Photometric', 'Radiometric').
         """
         if type(self._type) is str:
             return self._type
@@ -3297,24 +3139,25 @@ class SensorRadiance(BaseSensor):
 
     @property
     def colorimetric(self) -> Union[None, BaseSensor.Colorimetric]:
-        """Property containing all options in regard to the Colorimetric sensor properties.
+        """Colorimetric helper when sensor is colorimetric.
 
         Returns
         -------
         Union[None, ansys.speos.core.sensor.BaseSensor.Colorimetric]
-            Instance of Colorimetric Class for this sensor feature
+            Colorimetric helper instance or ``None`` if the sensor is not
+            colorimetric.
         """
         if isinstance(self._type, BaseSensor.Colorimetric):
             return self._type
 
     @property
     def spectral(self) -> Union[None, BaseSensor.Spectral]:
-        """Property containing all options in regard to the Spectral sensor properties.
+        """Spectral helper when sensor is spectral.
 
         Returns
         -------
         Union[None, ansys.speos.core.sensor.BaseSensor.Spectral]
-            Instance of Spectral Class for this sensor feature
+            Spectral helper instance or ``None`` if the sensor is not spectral.
         """
         if isinstance(self._type, BaseSensor.Spectral):
             return self._type
@@ -3323,73 +3166,68 @@ class SensorRadiance(BaseSensor):
     def layer(
         self,
     ) -> Union[str, BaseSensor.LayerTypeFace, BaseSensor.LayerTypeSequence]:
-        """Property containing all options in regard to the layer separation property.
+        """Layer separation configuration.
 
         Returns
         -------
-        Union[\
-            str,\
-            ansys.speos.core.sensor.BaseSensor.LayerTypeFace,\
-            ansys.speos.core.sensor.BaseSensor.LayerTypeSequence\
-        ]
-            Instance of Layer type Class for this sensor feature
+        Union[str, ansys.speos.core.sensor.BaseSensor.LayerTypeFace,
+              ansys.speos.core.sensor.BaseSensor.LayerTypeSequence]
+            Current layer separation helper or mode (e.g. "none", "by_source")
         """
         return self._layer_type
 
     def set_dimensions(self) -> BaseSensor.Dimensions:
-        """Set the dimensions of the sensor.
+        """Return the dimensions helper bound to the radiance template.
 
         Returns
         -------
         ansys.speos.core.sensor.BaseSensor.Dimensions
-            Dimension class
+            Dimensions instance bound to the radiance sensor template.
         """
         if (
             self._sensor_dimensions._sensor_dimensions
             is not self._sensor_template.radiance_sensor_template.dimensions
         ):
-            # Happens in case of feature reset (to be sure to always modify correct data)
+            # Happens in case of feature reset (ensure correct binding)
             self._sensor_dimensions._sensor_dimensions = (
                 self._sensor_template.radiance_sensor_template.dimensions
             )
         return self._sensor_dimensions
 
     def set_type_photometric(self) -> SensorRadiance:
-        """Set type photometric.
+        """Set the sensor to photometric mode.
 
-        The sensor considers the visible spectrum and gets the results in lm/m2 or lx.
+        The sensor uses the visible spectrum and results are in lm/m2 or lx.
 
         Returns
         -------
         ansys.speos.core.sensor.SensorRadiance
-            Radiance sensor.
+            Self for chaining.
         """
         self._sensor_template.radiance_sensor_template.sensor_type_photometric.SetInParent()
         self._type = SensorTypes.photometric.capitalize()
         return self
 
     def set_type_colorimetric(self) -> BaseSensor.Colorimetric:
-        """Set type colorimetric.
+        """Set the sensor to colorimetric mode and return helper.
 
-        The sensor will generate color results without any spectral data or layer separation
-        in lx or W//m2.
+        The sensor generates color results without spectral splitting.
 
         Returns
         -------
         ansys.speos.core.sensor.BaseSensor.Colorimetric
-            Colorimetric type.
+            Colorimetric helper instance.
         """
         if self._type is None and self._sensor_template.radiance_sensor_template.HasField(
             "sensor_type_colorimetric"
         ):
-            # Happens in case of project created via load of speos file
+            # Happens when loading from an existing project
             self._type = BaseSensor.Colorimetric(
                 sensor_type_colorimetric=self._sensor_template.radiance_sensor_template.sensor_type_colorimetric,
                 default_parameters=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._type, BaseSensor.Colorimetric):
-            # if the _type is not Colorimetric then we create a new type.
             self._type = BaseSensor.Colorimetric(
                 sensor_type_colorimetric=self._sensor_template.radiance_sensor_template.sensor_type_colorimetric,
                 default_parameters=ColorimetricParameters(),
@@ -3399,48 +3237,45 @@ class SensorRadiance(BaseSensor):
             self._type._sensor_type_colorimetric
             is not self._sensor_template.radiance_sensor_template.sensor_type_colorimetric
         ):
-            # Happens in case of feature reset (to be sure to always modify correct data)
+            # Re-bind after reset
             self._type._sensor_type_colorimetric = (
                 self._sensor_template.radiance_sensor_template.sensor_type_colorimetric
             )
         return self._type
 
     def set_type_radiometric(self) -> SensorRadiance:
-        """Set type radiometric.
+        """Set the sensor to radiometric mode.
 
-        The sensor considers the entire spectrum and gets the results in W/m2.
+        The sensor considers the full spectrum and results are in W/m2.
 
         Returns
         -------
         ansys.speos.core.sensor.SensorRadiance
-            Radiance sensor.
+            Self for chaining.
         """
         self._sensor_template.radiance_sensor_template.sensor_type_radiometric.SetInParent()
         self._type = SensorTypes.radiometric.capitalize()
         return self
 
     def set_type_spectral(self) -> BaseSensor.Spectral:
-        """Set type spectral.
+        """Set the sensor to spectral mode and return helper.
 
-        The sensor will generate color results and spectral data separated by wavelength
-        in lx or W/m2.
+        The sensor produces spectral data separated by wavelength.
 
         Returns
         -------
         ansys.speos.core.sensor.BaseSensor.Spectral
-            Spectral type.
+            Spectral helper instance.
         """
         if self._type is None and self._sensor_template.radiance_sensor_template.HasField(
             "sensor_type_spectral"
         ):
-            # Happens in case of project created via load of speos file
             self._type = BaseSensor.Spectral(
                 sensor_type_spectral=self._sensor_template.radiance_sensor_template.sensor_type_spectral,
                 default_parameters=None,
                 stable_ctr=True,
             )
         elif not isinstance(self._type, BaseSensor.Spectral):
-            # if the _type is not Spectral then we create a new type.
             self._type = BaseSensor.Spectral(
                 sensor_type_spectral=self._sensor_template.radiance_sensor_template.sensor_type_spectral,
                 default_parameters=SpectralParameters(),
@@ -3450,7 +3285,6 @@ class SensorRadiance(BaseSensor):
             self._type._sensor_type_spectral
             is not self._sensor_template.radiance_sensor_template.sensor_type_spectral
         ):
-            # Happens in case of feature reset (to be sure to always modify correct data)
             self._type._sensor_type_spectral = (
                 self._sensor_template.radiance_sensor_template.sensor_type_spectral
             )
@@ -3458,131 +3292,138 @@ class SensorRadiance(BaseSensor):
 
     @property
     def focal(self) -> float:
-        """Focal value of the Radiance Sensor.
-
-        Parameters
-        ----------
-        value : float
-            Focal (mm). By default, ``250``.
+        """Focal length (mm).
 
         Returns
         -------
         float
-            Focal length of the sensor
+            Distance between the sensor plane and the focal point in millimeters.
         """
         return self._sensor_template.radiance_sensor_template.focal
 
     @focal.setter
     def focal(self, value: float) -> None:
-        self._sensor_template.radiance_sensor_template.focal = value
-
-    @property
-    def integration_angle(self) -> float:
-        """Integration angle.
+        """Set the focal length.
 
         Parameters
         ----------
         value : float
-            integration angle (degree). By default, ``5``.
+            Focal length in millimeters.
+        """
+        self._sensor_template.radiance_sensor_template.focal = value
+
+    @property
+    def integration_angle(self) -> float:
+        """Integration angle (degrees).
 
         Returns
         -------
         float
-            integration angle of the Radiance Sensor
+            Integration angle used for radiance integration (degrees).
         """
         return self._sensor_template.radiance_sensor_template.integration_angle
 
     @integration_angle.setter
     def integration_angle(self, value: float) -> None:
+        """Set the integration angle.
+
+        Parameters
+        ----------
+        value : float
+            Integration angle in degrees.
+        """
         self._sensor_template.radiance_sensor_template.integration_angle = value
 
     @property
     def axis_system(self) -> List[float]:
-        """Position of the sensor.
-
-        Parameters
-        ----------
-        axis_system : List[float]
-            Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
-            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+        """Axis system describing sensor position and orientation.
 
         Returns
         -------
         List[float]
-            Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
+            Axis system as a 12-element list:
+            [Ox, Oy, Oz, Xx, Xy, Xz, Yx, Yy, Yz, Zx, Zy, Zz].
         """
         return self._sensor_instance.radiance_properties.axis_system
 
     @axis_system.setter
     def axis_system(self, axis_system: List[float]) -> None:
-        self._sensor_instance.radiance_properties.axis_system[:] = axis_system
-
-    @property
-    def observer_point(self) -> SensorRadiance:
-        """The position of the observer point.
-
-        This is optional, because the focal length is used by default.
-        Choosing to set an observer point will make the focal length ignored.
+        """Set the sensor axis system.
 
         Parameters
         ----------
-        value : List[float]
-            Position of the observer point [Ox Oy Oz].
-            By default, ``None``. None means that the focal length is used.
+        axis_system : List[float]
+            Axis system as a 12-element list:
+            [Ox, Oy, Oz, Xx, Xy, Xz, Yx, Yy, Yz, Zx, Zy, Zz].
+        """
+        self._sensor_instance.radiance_properties.axis_system[:] = axis_system
+
+    @property
+    def observer_point(self) -> Union[None, List[float]]:
+        """Observer point position.
+
+        Notes
+        -----
+        If an observer point is set, it overrides the focal length.
 
         Returns
         -------
         Union[None, List[float]]
-            Position of the observer point [Ox Oy Oz], None means that the
-            focal length is used.
+            The observer point [Ox, Oy, Oz], or ``None`` if not set.
         """
         return self._sensor_instance.radiance_properties.observer_point
 
     @observer_point.setter
     def observer_point(self, value: List[float]) -> None:
+        """Set or clear the observer point.
+
+        Parameters
+        ----------
+        value : List[float]
+            Position of the observer point [Ox, Oy, Oz]. If falsy, the field is
+            cleared and the focal length will be used instead.
+        """
         if not value:
             self._sensor_instance.radiance_properties.ClearField("observer_point")
         else:
             self._sensor_instance.radiance_properties.observer_point[:] = value
 
     def set_layer_type_none(self) -> SensorRadiance:
-        """Define layer separation type as None.
+        """Disable layer separation (single result layer).
 
         Returns
         -------
         ansys.speos.core.sensor.SensorRadiance
-            Radiance sensor
-
+            Self for chaining.
         """
         self._sensor_instance.radiance_properties.layer_type_none.SetInParent()
         self._layer_type = LayerTypes.none
         return self
 
     def set_layer_type_source(self) -> SensorRadiance:
-        """Define layer separation as by source.
+        """Set layer separation to one layer per active source.
 
         Returns
         -------
         ansys.speos.core.sensor.SensorRadiance
-            Radiance sensor
-
+            Self for chaining.
         """
         self._sensor_instance.radiance_properties.layer_type_source.SetInParent()
         self._layer_type = LayerTypes.by_source
         return self
 
     def set_layer_type_face(self) -> BaseSensor.LayerTypeFace:
-        """Define layer separation as by face.
+        """Define layer separation by face and return helper.
 
         Returns
         -------
         ansys.speos.core.sensor.BaseSensor.LayerTypeFace
-            LayerTypeFace property instance
+            LayerTypeFace helper instance.
         """
         if self._layer_type is None and self._sensor_instance.radiance_properties.HasField(
             "layer_type_face"
         ):
-            # Happens in case of project created via load of speos file
+            # Loaded from existing project
             self._layer_type = BaseSensor.LayerTypeFace(
                 layer_type_face=self._sensor_instance.radiance_properties.layer_type_face,
                 default_parameters=None,
@@ -3599,19 +3440,19 @@ class SensorRadiance(BaseSensor):
             self._layer_type._layer_type_face
             is not self._sensor_instance.radiance_properties.layer_type_face
         ):
-            # Happens in case of feature reset (to be sure to always modify correct data)
+            # Re-bind after reset
             self._layer_type._layer_type_face = (
                 self._sensor_instance.radiance_properties.layer_type_face
             )
         return self._layer_type
 
     def set_layer_type_sequence(self) -> BaseSensor.LayerTypeSequence:
-        """Define layer separation as by sequence.
+        """Define layer separation by sequence and return helper.
 
         Returns
         -------
         ansys.speos.core.sensor.BaseSensor.LayerTypeSequence
-            LayerTypeSequence property instance
+            LayerTypeSequence helper instance.
         """
         if self._layer_type is None and self._sensor_instance.radiance_properties.HasField(
             "layer_type_sequence"
@@ -3633,7 +3474,7 @@ class SensorRadiance(BaseSensor):
             self._layer_type._layer_type_sequence
             is not self._sensor_instance.radiance_properties.layer_type_sequence
         ):
-            # Happens in case of feature reset (to be sure to always modify correct data)
+            # Re-bind after reset
             self._layer_type._layer_type_sequence = (
                 self._sensor_instance.radiance_properties.layer_type_sequence
             )
@@ -3643,10 +3484,10 @@ class SensorRadiance(BaseSensor):
 class Sensor3DIrradiance(BaseSensor):
     """Sensor feature: 3D Irradiance.
 
-    By default, regarding inherent characteristics, a 3d irradiance sensor of type photometric and
-    illuminance type planar is chosen, Reflection, Transmission, and Absorption measurements
-    are activated. By default, regarding properties, no layer separation and no ray file
-    generation are chosen.
+    By default, a 3D irradiance sensor uses a photometric template and planar
+    integration. Reflection, transmission and absorption measures are enabled
+    by default. By default there is no layer separation and no ray-file
+    generation.
 
     Parameters
     ----------
@@ -3654,18 +3495,15 @@ class Sensor3DIrradiance(BaseSensor):
         Project that will own the feature.
     name : str
         Name of the feature.
-    description : str
-        Description of the feature.
-        By default, ``""``.
+    description : str, optional
+        Description of the feature. Default is ``""``.
     metadata : Optional[Mapping[str, str]]
-        Metadata of the feature.
-        By default, ``{}``.
-    sensor_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance, optional
-        Sensor instance to provide if the feature does not has to be created from scratch
-        By default, ``None``, means that the feature is created from scratch by default.
-    default_parameters : ansys.speos.core.generic.parameters.Irradiance3DSensorParameters, optional
-        If defined the values in the sensor instance will be overwritten by the values of the data
-        class
+        Metadata for the feature. Default is ``{}``.
+    sensor_instance : Optional[ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance]
+        Optional existing sensor instance to initialize from. Default is
+        ``None`` to create a new local instance.
+    default_parameters : Optional[ansys.speos.core.generic.parameters.Irradiance3DSensorParameters]
+        Optional defaults to initialize the sensor template and instance.
     """
 
     def __init__(
@@ -3745,24 +3583,25 @@ class Sensor3DIrradiance(BaseSensor):
                 self._layer_type = LayerTypes.by_source
 
     class Radiometric:
-        """Class computing the radiant intensity (in W.sr-1).
+        """Radiometric measures helper for 3D irradiance.
 
-        Generate an extended map for Virtual Photometric Lab.
+        This helper configures radiant intensity measures (W sr^-1) and the
+        integration type used for 3D irradiance (planar or radial).
 
         Parameters
         ----------
-        illuminance_type : ansys.api.speos.sensor.v1.sensor_pb2.TypeRadiometric
-            SensorTypeColorimetric protobuf object to modify.
+        sensor_type_radiometric : ansys.api.speos.sensor.v1.sensor_pb2.TypeRadiometric
+            Protobuf object representing radiometric type settings.
         default_parameters : Optional[\
-        ansys.speos.core.generic.parameters.Irradiance3DSensorParameters] = None
-            Uses default values when True.
-        stable_ctr : bool
-            Variable to indicate if usage is inside class scope
+        ansys.speos.core.generic.parameters.Irradiance3DSensorParameters], optional
+            Optional default values to apply.
+        stable_ctr : bool, optional
+            Internal flag preventing external instantiation.
 
         Notes
         -----
-        **Do not instantiate this class yourself**, use set_type_colorimetric method available in
-        sensor classes.
+        Do not instantiate this helper directly; use the enclosing sensor's
+        methods to select radiometric mode.
         """
 
         def __init__(
@@ -3787,7 +3626,6 @@ class Sensor3DIrradiance(BaseSensor):
                         )
                     case IntegrationTypes.radial:
                         self.set_integration_radial()
-
             else:
                 self._integration_type = Sensor3DIrradiance.Measures(
                     illuminance_type=self._sensor_type_radiometric.integration_type_planar,
@@ -3796,13 +3634,12 @@ class Sensor3DIrradiance(BaseSensor):
                 )
 
         def set_integration_planar(self) -> Sensor3DIrradiance.Measures:
-            """Set integration planar.
+            """Select planar integration and return the measures helper.
 
             Returns
             -------
             ansys.speos.core.sensor.Sensor3DIrradiance.Measures
-                measured defines transmission, reflection, absorption
-
+                Measures helper tied to planar integration settings.
             """
             if not isinstance(self._integration_type, Sensor3DIrradiance.Measures):
                 self._integration_type = Sensor3DIrradiance.Measures(
@@ -3814,36 +3651,43 @@ class Sensor3DIrradiance(BaseSensor):
                 self._integration_type._illuminance_type
                 is not self._sensor_type_radiometric.integration_type_planar
             ):
-                # Happens in case of feature reset (to be sure to always modify correct data)
+                # Rebind after reset
                 self._integration_type._illuminance_type = (
                     self._sensor_type_radiometric.integration_type_planar
                 )
             return self._integration_type
 
         def set_integration_radial(self) -> None:
-            """Set integration radial."""
+            """Select radial integration.
+
+            Notes
+            -----
+            This sets a textual marker ("Radial") and updates the underlying
+            protobuf to use radial integration.
+            """
             self._integration_type = "Radial"
             self._sensor_type_radiometric.integration_type_radial.SetInParent()
 
     class Photometric:
-        """Class computing the luminous intensity (in cd).
+        """Photometric measures helper for 3D irradiance.
 
-        Generate an extended map for Virtual Photometric Lab.
+        This helper configures luminous intensity (cd) integration and which
+        additional measures (reflection, transmission, absorption) are active.
 
         Parameters
         ----------
-        illuminance_type : ansys.api.speos.sensor.v1.sensor_pb2.TypePhotometric
-            SensorTypeColorimetric protobuf object to modify.
+        sensor_type_photometric : ansys.api.speos.sensor.v1.sensor_pb2.TypePhotometric
+            Protobuf object representing photometric type settings.
         default_parameters : Optional[\
         ansys.speos.core.generic.parameters.Irradiance3DSensorParameters] = None
-            Uses default values when True.
-        stable_ctr : bool
-            Variable to indicate if usage is inside class scope
+            Optional default values to apply.
+        stable_ctr : bool, optional
+            Internal flag preventing external instantiation.
 
         Notes
         -----
-        **Do not instantiate this class yourself**, use set_type_colorimetric method available in
-        sensor classes.
+        Do not instantiate this helper directly; use the enclosing sensor's
+        methods to select photometric mode.
         """
 
         def __init__(
@@ -3876,13 +3720,12 @@ class Sensor3DIrradiance(BaseSensor):
                 )
 
         def set_integration_planar(self) -> Sensor3DIrradiance.Measures:
-            """Set integration planar.
+            """Select planar integration and return the measures helper.
 
             Returns
             -------
             ansys.speos.core.sensor.Sensor3DIrradiance.Measures
-                measured defines transmission, reflection, absorption
-
+                Measures helper tied to planar integration settings.
             """
             if not isinstance(self._integration_type, Sensor3DIrradiance.Measures):
                 self._integration_type = Sensor3DIrradiance.Measures(
@@ -3894,38 +3737,37 @@ class Sensor3DIrradiance(BaseSensor):
                 self._integration_type._illuminance_type
                 is not self._sensor_type_photometric.integration_type_planar
             ):
-                # Happens in case of feature reset (to be sure to always modify correct data)
+                # Rebind after reset
                 self._integration_type._illuminance_type = (
                     self._sensor_type_photometric.integration_type_planar
                 )
             return self._integration_type
 
         def set_integration_radial(self) -> None:
-            """Set integration radial."""
+            """Select radial integration for photometric measures."""
             self._integration_type = "Radial"
             self._sensor_type_photometric.integration_type_radial.SetInParent()
 
     class Measures:
-        """Measures settings of 3D irradiance sensor : Additional Measures.
+        """Additional measures for 3D irradiance sensors.
 
-        If you selected Photometric or Radiometric, in the Additional measures section,
-        define which type of contributions (transmission, absorption, reflection)
-        need to be taken into account for the integrating faces of the sensor.
+        When photometric or radiometric integration is selected, this helper
+        controls whether reflection, transmission and absorption are measured.
 
         Parameters
         ----------
         illuminance_type : ansys.api.speos.sensor.v1.sensor_pb2.IntegrationTypePlanar
-            SensorTypeColorimetric protobuf object to modify.
+            Protobuf object describing planar integration measure flags.
         default_parameters : Optional[\
         ansys.speos.core.generic.parameters.MeasuresParameters]] = None
-            Uses default values when True.
-        stable_ctr : bool
-            Variable to indicate if usage is inside class scope
+            Default flags to initialize the helper.
+        stable_ctr : bool, optional
+            Internal flag preventing external instantiation.
 
         Notes
         -----
-        **Do not instantiate this class yourself**, use set_type_colorimetric method available in
-        sensor classes.
+        Do not instantiate this class directly; obtain it through the enclosing
+        Photometric or Radiometric helper.
         """
 
         def __init__(
@@ -3947,83 +3789,88 @@ class Sensor3DIrradiance(BaseSensor):
 
         @property
         def reflection(self) -> bool:
-            """Get reflection settings.
-
-            Parameters
-            ----------
-            value: bool
-                True to activate measuring reflection, False to deactivate reflection.
+            """Whether reflection is measured.
 
             Returns
             -------
             bool
-                True when reflection settings were set, False otherwise.
+                True when reflection measurement is enabled, False otherwise.
             """
             return self._illuminance_type.reflection
 
         @reflection.setter
         def reflection(self, value: bool) -> None:
+            """Enable or disable reflection measurement.
+
+            Parameters
+            ----------
+            value : bool
+                True to enable reflection measurement, False to disable.
+            """
             self._illuminance_type.reflection = value
 
         @property
         def transmission(self) -> bool:
-            """Get transmission settings.
-
-            Parameters
-            ----------
-            value: bool
-                True to activate measuring transmission, False to deactivate transmission.
+            """Whether transmission is measured.
 
             Returns
             -------
             bool
-                True when transmission settings were set, False otherwise.
+                True when transmission measurement is enabled, False otherwise.
             """
             return self._illuminance_type.transmission
 
         @transmission.setter
         def transmission(self, value: bool) -> None:
+            """Enable or disable transmission measurement.
+
+            Parameters
+            ----------
+            value : bool
+                True to enable transmission measurement, False to disable.
+            """
             self._illuminance_type.transmission = value
 
         @property
         def absorption(self) -> bool:
-            """Get absorption settings.
-
-            Parameters
-            ----------
-            value: bool
-                True to activate measuring absorption, False to deactivate absorption.
+            """Whether absorption is measured.
 
             Returns
             -------
             bool
-                True when absorption settings were set, False otherwise.
+                True when absorption measurement is enabled, False otherwise.
             """
             return self._illuminance_type.absorption
 
         @absorption.setter
         def absorption(self, value: bool) -> None:
+            """Enable or disable absorption measurement.
+
+            Parameters
+            ----------
+            value : bool
+                True to enable absorption measurement, False to disable.
+            """
             self._illuminance_type.absorption = value
 
     class Colorimetric:
-        """Class computing the color results.
+        """Colorimetric helper for 3D irradiance.
 
-        Result without any spectral layer separation (in cd or W.sr-1).
+        Controls colorimetric-specific settings including wavelength range.
 
         Parameters
         ----------
-        illuminance_type : ansys.api.speos.sensor.v1.sensor_pb2.TypeColorimetric
-            SensorTypeColorimetric protobuf object to modify.
+        sensor_type_colorimetric : ansys.api.speos.sensor.v1.sensor_pb2.TypeColorimetric
+            Protobuf object representing colorimetric settings.
         default_parameters : Optional[\
         ansys.speos.core.generic.parameters.ColorimetricParameters] = None
-            Uses default values when True.
-        stable_ctr : bool
-            Variable to indicate if usage is inside class scope
+            Optional defaults to initialize wavelength range.
+        stable_ctr : bool, optional
+            Internal flag preventing external instantiation.
 
         Notes
         -----
-        **Do not instantiate this class yourself**, use set_type_colorimetric method available in
-        sensor classes.
+        Do not instantiate directly; use sensor helper methods.
         """
 
         def __init__(
@@ -4037,8 +3884,7 @@ class Sensor3DIrradiance(BaseSensor):
                 raise RuntimeError(msg)
             self._sensor_type_colorimetric = sensor_type_colorimetric
 
-            # Attribute to keep track of wavelength range object
-
+            # Wavelengths helper
             self._wavelengths_range = BaseSensor.WavelengthsRange(
                 wavelengths_range=self._sensor_type_colorimetric,
                 default_parameters=default_parameters.wavelength_range
@@ -4048,26 +3894,27 @@ class Sensor3DIrradiance(BaseSensor):
             )
 
         def set_wavelengths_range(self) -> BaseSensor.WavelengthsRange:
-            """Set the range of wavelengths.
+            """Return the wavelengths range helper.
 
             Returns
             -------
             ansys.speos.core.sensor.BaseSensor.WavelengthsRange
-                Wavelengths range.
+                Helper to read/write wavelength range values.
             """
             if self._wavelengths_range._wavelengths_range is not self._sensor_type_colorimetric:
-                # Happens in case of feature reset (to be sure to always modify correct data)
+                # Rebind after reset
                 self._wavelengths_range._wavelengths_range = self._sensor_type_colorimetric
             return self._wavelengths_range
 
     @property
     def type(self) -> str:
-        """Type of sensor.
+        """Sensor type for 3D irradiance.
 
         Returns
         -------
         str
-            Sensor type as string
+            One of "Colorimetric", "Radiometric", "Photometric" depending on the
+            active helper type.
         """
         if isinstance(self._type, self.Colorimetric):
             return "Colorimetric"
@@ -4078,36 +3925,36 @@ class Sensor3DIrradiance(BaseSensor):
 
     @property
     def colorimetric(self) -> Colorimetric:
-        """Type of sensor.
+        """Return the Colorimetric helper if active.
 
         Returns
         -------
-        Colorimetric
-            instance of the Colorimetric class
+        ansys.speos.core.sensor.Sensor3DIrradiance.Colorimetric
+            Colorimetric helper instance when applicable.
         """
         if isinstance(self._type, self.Colorimetric):
             return self._type
 
     @property
     def photometric(self) -> Photometric:
-        """Type of sensor.
+        """Return the Photometric helper if active.
 
         Returns
         -------
-        Photometric
-            instance of the Photometric class
+        ansys.speos.core.sensor.Sensor3DIrradiance.Photometric
+            Photometric helper instance when applicable.
         """
         if isinstance(self._type, self.Photometric):
             return self._type
 
     @property
     def radiometric(self) -> Radiometric:
-        """Type of sensor.
+        """Return the Radiometric helper if active.
 
         Returns
         -------
-        Radiometric
-            instance of the Radiometric class
+        ansys.speos.core.sensor.Sensor3DIrradiance.Radiometric
+            Radiometric helper instance when applicable.
         """
         if isinstance(self._type, self.Radiometric):
             return self._type
@@ -4115,25 +3962,29 @@ class Sensor3DIrradiance(BaseSensor):
     @property
     def layer(
         self,
-    ) -> Union[str, BaseSensor.LayerTypeFace, BaseSensor.LayerTypeSequence]:
-        """Property containing all options in regard to the layer separation property.
+    ) -> Union[str, BaseSensor.LayerTypeFace]:
+        """Layer separation configuration.
 
         Returns
         -------
-        Union[str, BaseSensor.LayerTypeFace, BaseSensor.LayerTypeSequence]
-            Layer type used
+        Union[str, ansys.speos.core.sensor.BaseSensor.LayerTypeFace]
+            Current layer separation helper or mode.
         """
         return self._layer_type
 
     @property
     def visual_data(self) -> _VisualData:
-        """Property containing 3d irradiance sensor visualization data.
+        """Visualize 3D irradiance sensor target geometries.
 
         Returns
         -------
         ansys.speos.core.generic.visualization_methods._VisualData
-            Instance of VisualData Class for pyvista.PolyData of feature faces, coordinate_systems.
+            VisualData containing mesh geometry to render the 3D sensor surfaces.
 
+        Raises
+        ------
+        ValueError
+            If a linked geo-path is not a valid Face or Body.
         """
         if self._visual_data.updated:
             return self._visual_data
@@ -4190,14 +4041,14 @@ class Sensor3DIrradiance(BaseSensor):
             return self._visual_data
 
     def set_type_photometric(self) -> Sensor3DIrradiance.Photometric:
-        """Set type photometric.
+        """Select photometric mode.
 
-        The sensor considers the visible spectrum and gets the results in lm/m2 or lx.
+        The sensor uses the visible spectrum and results are in lm/m2 or lx.
 
         Returns
         -------
         ansys.speos.core.sensor.Sensor3DIrradiance.Photometric
-            3D Irradiance sensor.
+            Photometric helper instance.
         """
         if self._type is None and self._sensor_template.irradiance_3d.HasField("type_photometric"):
             # Happens in case of project created via load of speos file
@@ -4207,7 +4058,7 @@ class Sensor3DIrradiance(BaseSensor):
                 stable_ctr=True,
             )
         elif not isinstance(self._type, Sensor3DIrradiance.Photometric):
-            # if the _type is not Colorimetric then we create a new type.
+            # if the _type is not Photometric then we create a new type.
             self._type = Sensor3DIrradiance.Photometric(
                 self._sensor_template.irradiance_3d.type_photometric,
                 default_parameters=Irradiance3DSensorParameters(),
@@ -4217,21 +4068,21 @@ class Sensor3DIrradiance(BaseSensor):
             self._type._sensor_type_photometric
             is not self._sensor_template.irradiance_3d.type_photometric
         ):
-            # Happens in case of feature reset (to be sure to always modify correct data)
+            # Rebind after reset
             self._type._sensor_type_photometric = (
                 self._sensor_template.irradiance_3d.type_photometric
             )
         return self._type
 
     def set_type_radiometric(self) -> Sensor3DIrradiance.Radiometric:
-        """Set type radiometric.
+        """Select radiometric mode.
 
-        The sensor considers the entire spectrum and gets the results in W/m2.
+        The sensor considers the full spectrum and results are in W/m2.
 
         Returns
         -------
         ansys.speos.core.sensor.Sensor3DIrradiance.Radiometric
-            3D Irradiance sensor
+            Radiometric helper instance.
         """
         if self._type is None and self._sensor_template.irradiance_3d.HasField("type_radiometric"):
             # Happens in case of project created via load of speos file
@@ -4241,7 +4092,6 @@ class Sensor3DIrradiance(BaseSensor):
                 stable_ctr=True,
             )
         elif not isinstance(self._type, Sensor3DIrradiance.Radiometric):
-            # if the _type is not Colorimetric then we create a new type.
             self._type = Sensor3DIrradiance.Radiometric(
                 sensor_type_radiometric=self._sensor_template.irradiance_3d.type_radiometric,
                 default_parameters=Irradiance3DSensorParameters(),
@@ -4251,22 +4101,20 @@ class Sensor3DIrradiance(BaseSensor):
             self._type._sensor_type_radiometric
             is not self._sensor_template.irradiance_3d.type_radiometric
         ):
-            # Happens in case of feature reset (to be sure to always modify correct data)
             self._type._sensor_type_radiometric = (
                 self._sensor_template.irradiance_3d.type_radiometric
             )
         return self._type
 
     def set_type_colorimetric(self) -> Sensor3DIrradiance.Colorimetric:
-        """Set type colorimetric.
+        """Select colorimetric mode.
 
-        The sensor will generate color results without any spectral data or layer separation
-        in lx or W//m2.
+        The sensor generates color results without spectral splitting.
 
         Returns
         -------
         ansys.speos.core.sensor.Sensor3DIrradiance.Colorimetric
-            Colorimetric type.
+            Colorimetric helper instance.
         """
         if self._type is None and self._sensor_template.irradiance_3d.HasField("type_colorimetric"):
             # Happens in case of project created via load of speos file
@@ -4276,7 +4124,6 @@ class Sensor3DIrradiance(BaseSensor):
                 stable_ctr=True,
             )
         elif not isinstance(self._type, BaseSensor.Colorimetric):
-            # if the _type is not Colorimetric then we create a new type.
             self._type = Sensor3DIrradiance.Colorimetric(
                 sensor_type_colorimetric=self._sensor_template.irradiance_3d.type_colorimetric,
                 default_parameters=ColorimetricParameters(),
@@ -4286,19 +4133,18 @@ class Sensor3DIrradiance(BaseSensor):
             self._type._sensor_type_colorimetric
             is not self._sensor_template.irradiance_3d.type_colorimetric
         ):
-            # Happens in case of feature reset (to be sure to always modify correct data)
             self._type._sensor_type_colorimetric = (
                 self._sensor_template.irradiance_3d.type_colorimetric
             )
         return self._type
 
     def set_ray_file_type_none(self) -> Sensor3DIrradiance:
-        """Set no ray file generation.
+        """Disable ray-file generation for the 3D irradiance sensor.
 
         Returns
         -------
         ansys.speos.core.sensor.Sensor3DIrradiance
-            3D Irradiance sensor
+            Self for chaining.
         """
         self._sensor_instance.irradiance_3d_properties.ray_file_type = (
             ProtoScene.SensorInstance.EnumRayFileType.RayFileNone
@@ -4306,12 +4152,12 @@ class Sensor3DIrradiance(BaseSensor):
         return self
 
     def set_ray_file_type_classic(self) -> Sensor3DIrradiance:
-        """Set ray file generation without polarization data.
+        """Enable classic ray-file generation (no polarization).
 
         Returns
         -------
         ansys.speos.core.sensor.Sensor3DIrradiance
-            3D Irradiance sensor
+            Self for chaining.
         """
         self._sensor_instance.irradiance_3d_properties.ray_file_type = (
             ProtoScene.SensorInstance.EnumRayFileType.RayFileClassic
@@ -4319,12 +4165,12 @@ class Sensor3DIrradiance(BaseSensor):
         return self
 
     def set_ray_file_type_polarization(self) -> Sensor3DIrradiance:
-        """Set ray file generation with the polarization data for each ray.
+        """Enable ray-file generation with polarization information.
 
         Returns
         -------
         ansys.speos.core.sensor.Sensor3DIrradiance
-            3D Irradiance sensor
+            Self for chaining.
         """
         self._sensor_instance.irradiance_3d_properties.ray_file_type = (
             ProtoScene.SensorInstance.EnumRayFileType.RayFilePolarization
@@ -4332,12 +4178,12 @@ class Sensor3DIrradiance(BaseSensor):
         return self
 
     def set_ray_file_type_tm25(self) -> Sensor3DIrradiance:
-        """Set ray file generation: a .tm25ray file with polarization data for each ray.
+        """Enable TM25 ray-file generation (with polarization).
 
         Returns
         -------
         ansys.speos.core.sensor.Sensor3DIrradiance
-            3D Irradiance sensor
+            Self for chaining.
         """
         self._sensor_instance.irradiance_3d_properties.ray_file_type = (
             ProtoScene.SensorInstance.EnumRayFileType.RayFileTM25
@@ -4345,12 +4191,12 @@ class Sensor3DIrradiance(BaseSensor):
         return self
 
     def set_ray_file_type_tm25_no_polarization(self) -> Sensor3DIrradiance:
-        """Set ray file generation: a .tm25ray file without polarization data.
+        """Enable TM25 ray-file generation (without polarization).
 
         Returns
         -------
         ansys.speos.core.sensor.Sensor3DIrradiance
-            3D Irradiance sensor
+            Self for chaining.
         """
         self._sensor_instance.irradiance_3d_properties.ray_file_type = (
             ProtoScene.SensorInstance.EnumRayFileType.RayFileTM25NoPolarization
@@ -4358,27 +4204,24 @@ class Sensor3DIrradiance(BaseSensor):
         return self
 
     def set_layer_type_none(self) -> Sensor3DIrradiance:
-        """
-        Define layer separation type as None.
+        """Disable layer separation (single layer only).
 
         Returns
         -------
         ansys.speos.core.sensor.Sensor3DIrradiance
-            3D Irradiance sensor
-
+            Self for chaining.
         """
         self._sensor_instance.irradiance_3d_properties.layer_type_none.SetInParent()
         self._layer_type = LayerTypes.none
         return self
 
     def set_layer_type_source(self) -> Sensor3DIrradiance:
-        """Define layer separation as by source.
+        """Enable layer separation by source (one layer per active source).
 
         Returns
         -------
         ansys.speos.core.sensor.Sensor3DIrradiance
-           3D Irradiance sensor
-
+            Self for chaining.
         """
         self._sensor_instance.irradiance_3d_properties.layer_type_source.SetInParent()
         self._layer_type = LayerTypes.by_source
@@ -4386,21 +4229,13 @@ class Sensor3DIrradiance(BaseSensor):
 
     @property
     def geometries(self) -> List[str]:
-        """Geometry faces/bodies to be defined with 3D irradiance sensor.
-
-        Parameters
-        ----------
-        geometries : List[Union[\
-        ansys.speos.core.geo_ref.GeoRef, \
-        ansys.speos.core.body.Body, \
-        ansys.speos.core.face.Face, \
-        ansys.speos.core.part.Part.SubPart]]
-            List of geometries that will be considered as Sensor
+        """Geo-paths of faces or bodies used by the 3D irradiance sensor.
 
         Returns
         -------
         List[str]
-            List of geometries that will be considered as Sensor
+            List of geo-path strings referencing faces or bodies used as the
+            integrating geometries for the 3D irradiance sensor.
         """
         return self._sensor_instance.irradiance_3d_properties.geometries.geo_paths
 
@@ -4408,6 +4243,20 @@ class Sensor3DIrradiance(BaseSensor):
     def geometries(
         self, geometries: List[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]
     ) -> None:
+        """Assign geometries (faces/bodies) to the 3D irradiance sensor.
+
+        Parameters
+        ----------
+        geometries : List[Union[ansys.speos.core.geo_ref.GeoRef, ansys.speos.core.body.Body,
+                                ansys.speos.core.face.Face, ansys.speos.core.part.Part.SubPart]]
+            List of geometry references (GeoRef, Face, Body or SubPart) to be
+            considered by the 3D irradiance sensor.
+
+        Raises
+        ------
+        TypeError
+            If any entry in `geometries` is not an accepted geometry type.
+        """
         geo_paths = []
         for gr in geometries:
             if isinstance(gr, GeoRef):
@@ -4423,7 +4272,12 @@ class Sensor3DIrradiance(BaseSensor):
 
 
 class SensorXMPIntensity(BaseSensor):
-    """Class for XMP intensity sensor.
+    """XMP intensity sensor feature.
+
+    Wraps configuration and helpers for an XMP intensity sensor. Supports
+    photometric, radiometric, colorimetric and spectral modes, several
+    orientation types (conoscopic, X-as-meridian, X-as-parallel), viewing
+    directions, layer separation and optional near-field detector settings.
 
     Parameters
     ----------
@@ -4431,18 +4285,14 @@ class SensorXMPIntensity(BaseSensor):
         Project that will own the feature.
     name : str
         Name of the feature.
-    description : str
-        Description of the feature.
-        By default, ``""``.
+    description : str, optional
+        Feature description. Default is ``""``.
     metadata : Optional[Mapping[str, str]]
-        Metadata of the feature.
-        By default, ``{}``.
-    sensor_instance : ansys.api.speos.scene.v2.scene_pb2.Scene.SensorInstance, optional
-        Sensor instance to provide if the feature does not has to be created from scratch
-        By default, ``None``, means that the feature is created from scratch by default.
-    default_parameters : ansys.speos.core.generic.parameters.IntensityXMPSensorParameters, optional
-        If defined the values in the sensor instance will be overwritten by the values of the data
-        class
+        Metadata for the feature. Default is ``{}``.
+    sensor_instance : Optional[ansys.speos.core.kernel.scene.ProtoScene.SensorInstance]
+        Optional existing sensor instance to initialize from. Default is ``None``.
+    default_parameters : Optional[ansys.speos.core.generic.parameters.IntensityXMPSensorParameters]
+        Optional defaults to initialize the sensor template and instance.
     """
 
     def __init__(
@@ -4550,12 +4400,17 @@ class SensorXMPIntensity(BaseSensor):
 
     @property
     def visual_data(self) -> _VisualData:
-        """Property containing intensity sensor visualization data.
+        """Intensity sensor visualization geometry.
 
         Returns
         -------
         ansys.speos.core.generic.visualization_methods._VisualData
-            Instance of VisualData Class for pyvista.PolyData of feature faces, coordinate_systems.
+            VisualData used by visualizers (mesh/triangles, coordinates).
+
+        Notes
+        -----
+        Visualization depends on sensor orientation (conoscopic vs angular grid)
+        and on template dimension fields.
         """
 
         def rm(theta, u):
@@ -4588,9 +4443,7 @@ class SensorXMPIntensity(BaseSensor):
         if self._sensor_template.intensity_sensor_template.HasField(
             "intensity_orientation_conoscopic"
         ):
-            # intensity sensor; non-conoscopic case
-            # simply fix vis sampling to 15 (radial) x 30 (azimuth)
-            # determine the set of visualization triangles vertices
+            # conoscopic visualization (radial / azimuth sampling)
             feature_theta = float(self.get(key="theta_max"))
             coord_transform = np.transpose(np.array([feature_x_dir, feature_y_dir, feature_z_dir]))
             samp_1 = 30  # azimuth sampling
@@ -4624,9 +4477,7 @@ class SensorXMPIntensity(BaseSensor):
                 self._visual_data.add_data_triangle([p2, p3, p4])
 
         else:
-            # intensity sensor; non-conoscopic case
-            # simply fix the number of vertices to 15x15
-            # determine the set of visualization squares' vertices
+            # angular-grid visualization (x/y tilt sampling)
             feature_x_start = float(self.get(key="x_start"))
             feature_x_end = float(self.get(key="x_end"))
             feature_y_start = float(self.get(key="y_start"))
@@ -4686,22 +4537,31 @@ class SensorXMPIntensity(BaseSensor):
 
     @property
     def near_field(self) -> bool:
-        """Return True if the sensor is positioned in nearfield, otherwise False.
-
-        Parameters
-        ----------
-        value : bool
-            Defines if near-field is active or not
+        """Whether near-field detector is enabled.
 
         Returns
         -------
         bool
-            Boolean to determine if sensor is in near-field.
+            True if near-field detector settings exist on the template.
         """
         return self._sensor_template.intensity_sensor_template.HasField("near_field")
 
     @near_field.setter
     def near_field(self, value: bool) -> None:
+        """Enable or disable near-field detector.
+
+        Parameters
+        ----------
+        value : bool
+            True to enable near-field detector (will create the near_field
+            sub-message on the template if missing), False to remove it.
+
+        Notes
+        -----
+        Enabling near-field initializes detector defaults from
+        ``NearfieldParameters`` and assigns default ``cell_distance`` and
+        ``cell_diameter`` unless overridden afterwards.
+        """
         if value:
             if not self._sensor_template.intensity_sensor_template.HasField("near_field"):
                 self._sensor_template.intensity_sensor_template.near_field.SetInParent()
@@ -4713,26 +4573,31 @@ class SensorXMPIntensity(BaseSensor):
 
     @property
     def cell_distance(self) -> Union[float, None]:
-        """Distance of the Detector to origin in mm.
-
-        By default, ``10``
-
-
-        Parameters
-        ----------
-        value : float
-            Distance of the measurement cell from the origin in mm.
+        """Distance from detector to origin.
 
         Returns
         -------
         Union[None, float]
-            Distance of the measurement cell or None if Sensor is not in near field.
+            Detector cell distance in millimeters when near-field is active,
+            otherwise ``None``.
         """
         if self.near_field:
             return self._sensor_template.intensity_sensor_template.near_field.cell_distance
 
     @cell_distance.setter
     def cell_distance(self, value: float) -> None:
+        """Set detector cell distance.
+
+        Parameters
+        ----------
+        value : float
+            Distance of the measurement cell from the sensor origin in millimeters.
+
+        Raises
+        ------
+        TypeError
+            If near-field is not active on the sensor template.
+        """
         if self.near_field:
             self._sensor_template.intensity_sensor_template.near_field.cell_distance = value
         else:
@@ -4740,19 +4605,15 @@ class SensorXMPIntensity(BaseSensor):
 
     @property
     def cell_diameter(self) -> Union[None, float]:
-        """Cell diameter in mm.
+        """Computed detector cell diameter.
 
-        By default, ``0.3491``
-
-        Parameters
-        ----------
-        value : float
-            Diameter of the measurement cell in mm.
+        The diameter is computed from the current ``cell_distance`` and the
+        stored ``cell_integration_angle`` in the near-field template.
 
         Returns
         -------
         Union[None, float]
-            Diameter of the measurement cell or None if Sensor is not in near field.
+            Diameter in millimeters when near-field is active, otherwise ``None``.
         """
         if self.near_field:
             diameter = (
@@ -4768,6 +4629,18 @@ class SensorXMPIntensity(BaseSensor):
 
     @cell_diameter.setter
     def cell_diameter(self, value: float) -> None:
+        """Set detector cell diameter by updating the integration angle.
+
+        Parameters
+        ----------
+        value : float
+            Desired cell diameter in millimeters.
+
+        Raises
+        ------
+        TypeError
+            If near-field is not active on the sensor template.
+        """
         if self.near_field:
             self._sensor_template.intensity_sensor_template.near_field.cell_integration_angle = (
                 np.degrees(np.arctan(value / 2 / self.cell_distance))
@@ -4777,12 +4650,12 @@ class SensorXMPIntensity(BaseSensor):
 
     @property
     def type(self) -> str:
-        """Type of sensor.
+        """Sensor data type.
 
         Returns
         -------
         str
-            Sensor type as string
+            One of "Colorimetric", "Spectral" or the current type-name.
         """
         if isinstance(self._type, BaseSensor.Colorimetric):
             return "Colorimetric"
@@ -4793,24 +4666,24 @@ class SensorXMPIntensity(BaseSensor):
 
     @property
     def colorimetric(self) -> Union[None, BaseSensor.Colorimetric]:
-        """Property containing all options in regard to the Colorimetric sensor properties.
+        """Colorimetric helper when enabled.
 
         Returns
         -------
         Union[None, ansys.speos.core.sensor.BaseSensor.Colorimetric]
-            Instance of Colorimetric Class for this sensor feature
+            Colorimetric helper instance or ``None`` if not active.
         """
         if isinstance(self._type, BaseSensor.Colorimetric):
             return self._type
 
     @property
     def spectral(self) -> Union[None, BaseSensor.Spectral]:
-        """Property containing all options in regard to the Spectral sensor properties.
+        """Spectral helper when enabled.
 
         Returns
         -------
         Union[None, ansys.speos.core.sensor.BaseSensor.Spectral]
-            Instance of Spectral Class for this sensor feature
+            Spectral helper instance or ``None`` if not active.
         """
         if isinstance(self._type, BaseSensor.Spectral):
             return self._type
@@ -4823,7 +4696,7 @@ class SensorXMPIntensity(BaseSensor):
         BaseSensor.LayerTypeFace,
         BaseSensor.LayerTypeSequence,
     ]:
-        """Property containing all options in regard to the layer separation properties.
+        """Layer separation configuration for intensity sensor.
 
         Returns
         -------
@@ -4836,17 +4709,17 @@ class SensorXMPIntensity(BaseSensor):
         return self._layer_type
 
     def set_orientation_x_as_meridian(self) -> None:
-        """Set Orientation type: X As Meridian, Y as Parallel."""
+        """Set orientation: X as meridian, Y as parallel and reset dimensions."""
         self._sensor_template.intensity_sensor_template.intensity_orientation_x_as_meridian.SetInParent()
         self._set_dimension_values(IntensitySensorDimensionsXAsMeridianParameters())
 
     def set_orientation_x_as_parallel(self) -> None:
-        """Set Orientation type: X as Parallel, Y as Meridian."""
+        """Set orientation: X as parallel, Y as meridian and reset dimensions."""
         self._sensor_template.intensity_sensor_template.intensity_orientation_x_as_parallel.SetInParent()
         self._set_dimension_values(IntensitySensorDimensionsXAsParallelParameters())
 
     def set_orientation_conoscopic(self) -> None:
-        """Set Orientation type to conoscopic."""
+        """Set orientation to conoscopic and reset dimensions."""
         self._sensor_template.intensity_sensor_template.intensity_orientation_conoscopic.SetInParent()
         self._set_dimension_values(IntensitySensorDimensionsConoscopicParameters())
 
@@ -4895,17 +4768,12 @@ class SensorXMPIntensity(BaseSensor):
 
     @property
     def x_start(self) -> Union[None, float]:
-        """The minimum value on x-axis  (deg).
-
-        Parameters
-        ----------
-        value : float
-            Start value for x-axis (degree).
+        """Minimum tilt on X axis (degrees) when applicable.
 
         Returns
         -------
-        Union[None, float]:
-            Minimum of x-axis in degree.
+        Union[None, float]
+            Minimum x tilt in degrees, or ``None`` for conoscopic orientation.
         """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
@@ -4918,6 +4786,18 @@ class SensorXMPIntensity(BaseSensor):
 
     @x_start.setter
     def x_start(self, value: float) -> None:
+        """Set minimum X tilt (degrees).
+
+        Parameters
+        ----------
+        value : float
+            Minimum tilt on X axis in degrees.
+
+        Raises
+        ------
+        TypeError
+            If current orientation does not support X-axis angular dimensions.
+        """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
             raise TypeError("Conoscopic Sensor has no x_start dimension")
@@ -4928,17 +4808,12 @@ class SensorXMPIntensity(BaseSensor):
 
     @property
     def x_end(self) -> Union[None, float]:
-        """The maximum value on x-axis  (deg).
-
-        Parameters
-        ----------
-        value : float
-            End value for x-axis (degree).
+        """Maximum tilt on X axis (degrees) when applicable.
 
         Returns
         -------
-        Union[None, float]:
-            Maximum of x-axis in degree.
+        Union[None, float]
+            Maximum x tilt in degrees, or ``None`` for conoscopic orientation.
         """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
@@ -4951,6 +4826,18 @@ class SensorXMPIntensity(BaseSensor):
 
     @x_end.setter
     def x_end(self, value: float) -> None:
+        """Set maximum X tilt (degrees).
+
+        Parameters
+        ----------
+        value : float
+            Maximum tilt on X axis in degrees.
+
+        Raises
+        ------
+        TypeError
+            If current orientation does not support X-axis angular dimensions.
+        """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
             raise TypeError("Conoscopic Sensor has no x_end dimension")
@@ -4961,21 +4848,17 @@ class SensorXMPIntensity(BaseSensor):
 
     @property
     def x_sampling(self) -> Union[None, int]:
-        """Pixel sampling along x-Axis.
-
-        Parameters
-        ----------
-        value : int
-            Sampling for x-axis.
+        """Sampling (pixels) along X axis when applicable.
 
         Returns
         -------
-        Union[None, int]:
-            Number of Pixels along x-Axis.
+        Union[None, int]
+            Number of samples along X axis, or ``None`` for conoscopic orientation.
         """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
             warnings.warn("This property doesn't exist with the current orientation")
+            return None
         elif template.HasField("intensity_orientation_x_as_parallel"):
             return template.intensity_orientation_x_as_parallel.intensity_dimensions.x_sampling
         elif template.HasField("intensity_orientation_x_as_meridian"):
@@ -4983,6 +4866,18 @@ class SensorXMPIntensity(BaseSensor):
 
     @x_sampling.setter
     def x_sampling(self, value: int) -> None:
+        """Set sampling along X axis.
+
+        Parameters
+        ----------
+        value : int
+            Number of samples (pixels) along X axis.
+
+        Raises
+        ------
+        TypeError
+            If current orientation does not support X-axis angular dimensions.
+        """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
             raise TypeError("Conoscopic Sensor has no x_sampling dimension")
@@ -4993,21 +4888,17 @@ class SensorXMPIntensity(BaseSensor):
 
     @property
     def y_end(self) -> Union[None, float]:
-        """The maximum value on y-axis (deg).
-
-        Parameters
-        ----------
-        value : float
-            End value for y-axis (degree).
+        """Maximum tilt on Y axis (degrees) when applicable.
 
         Returns
         -------
-        Union[None, float]:
-            Maximum of y-axis in degree.
+        Union[None, float]
+            Maximum y tilt in degrees, or ``None`` for conoscopic orientation.
         """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
             warnings.warn("This property doesn't exist with the current orientation")
+            return None
         elif template.HasField("intensity_orientation_x_as_parallel"):
             return template.intensity_orientation_x_as_parallel.intensity_dimensions.y_end
         elif template.HasField("intensity_orientation_x_as_meridian"):
@@ -5015,6 +4906,18 @@ class SensorXMPIntensity(BaseSensor):
 
     @y_end.setter
     def y_end(self, value: float) -> None:
+        """Set maximum Y tilt (degrees).
+
+        Parameters
+        ----------
+        value : float
+            Maximum tilt on Y axis in degrees.
+
+        Raises
+        ------
+        TypeError
+            If current orientation does not support Y-axis angular dimensions.
+        """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
             raise TypeError("Conoscopic Sensor has no y_end dimension")
@@ -5025,21 +4928,17 @@ class SensorXMPIntensity(BaseSensor):
 
     @property
     def y_start(self) -> Union[None, float]:
-        """The minimum value on y-axis (deg).
-
-        Parameters
-        ----------
-        value : float
-            Start value for y-axis (degree).
+        """Minimum tilt on Y axis (degrees) when applicable.
 
         Returns
         -------
-        Union[None, float]:
-            Minimum of y-axis in degree.
+        Union[None, float]
+            Minimum y tilt in degrees, or ``None`` for conoscopic orientation.
         """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
             warnings.warn("This property doesn't exist with the current orientation")
+            return None
         elif template.HasField("intensity_orientation_x_as_parallel"):
             return template.intensity_orientation_x_as_parallel.intensity_dimensions.y_start
         elif template.HasField("intensity_orientation_x_as_meridian"):
@@ -5047,6 +4946,18 @@ class SensorXMPIntensity(BaseSensor):
 
     @y_start.setter
     def y_start(self, value: float) -> None:
+        """Set minimum Y tilt (degrees).
+
+        Parameters
+        ----------
+        value : float
+            Minimum tilt on Y axis in degrees.
+
+        Raises
+        ------
+        TypeError
+            If current orientation does not support Y-axis angular dimensions.
+        """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
             raise TypeError("Conoscopic Sensor has no y_start dimension")
@@ -5057,21 +4968,17 @@ class SensorXMPIntensity(BaseSensor):
 
     @property
     def y_sampling(self) -> Union[None, int]:
-        """Sampling along y-axis.
-
-        Parameters
-        ----------
-        value : int
-            Sampling along the y-axis.
+        """Sampling (pixels) along Y axis when applicable.
 
         Returns
         -------
-        Union[None, int]:
-            Number of Pixels along the y-axis.
+        Union[None, int]
+            Number of samples along Y axis, or ``None`` for conoscopic orientation.
         """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
             warnings.warn("This property doesn't exist with the current orientation")
+            return None
         elif template.HasField("intensity_orientation_x_as_parallel"):
             return template.intensity_orientation_x_as_parallel.intensity_dimensions.y_sampling
         elif template.HasField("intensity_orientation_x_as_meridian"):
@@ -5079,6 +4986,18 @@ class SensorXMPIntensity(BaseSensor):
 
     @y_sampling.setter
     def y_sampling(self, value: int) -> None:
+        """Set sampling along Y axis.
+
+        Parameters
+        ----------
+        value : int
+            Number of samples (pixels) along Y axis.
+
+        Raises
+        ------
+        TypeError
+            If current orientation does not support Y-axis angular dimensions.
+        """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
             raise TypeError("Conoscopic Sensor has no y_sampling dimension")
@@ -5089,17 +5008,12 @@ class SensorXMPIntensity(BaseSensor):
 
     @property
     def theta_max(self) -> Union[None, float]:
-        """Maximum theta angle on conoscopic type (in deg).
-
-        Parameters
-        ----------
-        value : float
-            Maximum value for Theta in a conoscopic map. (degree).
+        """Maximum theta angle for conoscopic orientation (degrees).
 
         Returns
         -------
-        Union[None, float]:
-            Maximum value for Theta angle.
+        Union[None, float]
+            Maximum theta in degrees for conoscopic maps, otherwise ``None``.
         """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
@@ -5108,9 +5022,22 @@ class SensorXMPIntensity(BaseSensor):
             )
         else:
             warnings.warn("This property doesn't exist with the current orientation")
+            return None
 
     @theta_max.setter
     def theta_max(self, value: float) -> None:
+        """Set maximum theta for conoscopic orientation.
+
+        Parameters
+        ----------
+        value : float
+            Maximum theta angle in degrees.
+
+        Raises
+        ------
+        TypeError
+            If sensor is not configured in conoscopic orientation.
+        """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
             template.intensity_orientation_conoscopic.conoscopic_intensity_dimensions.theta_max = (
@@ -5121,18 +5048,13 @@ class SensorXMPIntensity(BaseSensor):
 
     @property
     def theta_sampling(self) -> Union[None, int]:
-        """Sampling on conoscopic type.
-
-        Parameters
-        ----------
-        value : int
-            Sampling along theta axis in a conoscopic map. (degree).
-            Speos ensure that equal resolution along phi is maintained.
+        """Sampling along theta axis for conoscopic orientation.
 
         Returns
         -------
-        Union[None, int]:
-            Sampling along theta axis in a conoscopic map.
+        Union[None, int]
+            Theta sampling (number of radial samples) for conoscopic maps, or
+            ``None`` if not in conoscopic orientation.
         """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
@@ -5141,9 +5063,22 @@ class SensorXMPIntensity(BaseSensor):
             )
         else:
             warnings.warn("This property doesn't exist with the current orientation")
+            return None
 
     @theta_sampling.setter
     def theta_sampling(self, value: int) -> None:
+        """Set sampling along theta axis for conoscopic orientation.
+
+        Parameters
+        ----------
+        value : int
+            Number of radial samples (theta sampling).
+
+        Raises
+        ------
+        TypeError
+            If sensor is not configured in conoscopic orientation.
+        """
         template = self._sensor_template.intensity_sensor_template
         if template.HasField("intensity_orientation_conoscopic"):
             template.intensity_orientation_conoscopic.conoscopic_intensity_dimensions.sampling = (
@@ -5153,29 +5088,24 @@ class SensorXMPIntensity(BaseSensor):
             raise TypeError("Only Conoscopic Sensor has theta_max dimension")
 
     def set_type_photometric(self) -> SensorXMPIntensity:
-        """Set type photometric.
-
-        The sensor considers the visible spectrum and gets the results in lm/m2 or lx.
+        """Select photometric sensor type (visible spectrum -> cd / lm).
 
         Returns
         -------
         ansys.speos.core.sensor.SensorXMPIntensity
-            Intensity sensor
+            self for chaining
         """
         self._sensor_template.intensity_sensor_template.sensor_type_photometric.SetInParent()
         self._type = SensorTypes.photometric.capitalize()
         return self
 
     def set_type_colorimetric(self) -> BaseSensor.Colorimetric:
-        """Set type colorimetric.
-
-        The sensor will generate color results without any spectral data or layer separation
-        in lx or W//m2.
+        """Select colorimetric sensor type and return helper.
 
         Returns
         -------
         ansys.speos.core.sensor.BaseSensor.Colorimetric
-            Colorimetric type.
+            Colorimetric helper.
         """
         if self._type is None and self._sensor_template.intensity_sensor_template.HasField(
             "sensor_type_colorimetric"
@@ -5203,29 +5133,24 @@ class SensorXMPIntensity(BaseSensor):
         return self._type
 
     def set_type_radiometric(self) -> SensorXMPIntensity:
-        """Set type radiometric.
-
-        The sensor considers the entire spectrum and gets the results in W/m2.
+        """Select radiometric sensor type (full spectrum -> W/m2).
 
         Returns
         -------
         ansys.speos.core.sensor.SensorXMPIntensity
-            Intensity sensor.
+            self for chaining
         """
         self._sensor_template.intensity_sensor_template.sensor_type_radiometric.SetInParent()
         self._type = SensorTypes.radiometric.capitalize()
         return self
 
     def set_type_spectral(self) -> BaseSensor.Spectral:
-        """Set type spectral.
-
-        The sensor will generate color results and spectral data separated by wavelength
-        in lx or W/m2.
+        """Select spectral sensor type and return helper.
 
         Returns
         -------
         ansys.speos.core.sensor.BaseSensor.Spectral
-            Spectral type.
+            Spectral helper.
         """
         if self._type is None and self._sensor_template.intensity_sensor_template.HasField(
             "sensor_type_spectral"
@@ -5253,38 +5178,36 @@ class SensorXMPIntensity(BaseSensor):
         return self._type
 
     def set_layer_type_none(self) -> SensorXMPIntensity:
-        """Define layer separation type as None.
+        """Disable layer separation (single-layer results).
 
         Returns
         -------
         ansys.speos.core.sensor.SensorXMPIntensity
-            Intensity sensor
-
+            self for chaining
         """
         self._sensor_instance.intensity_properties.layer_type_none.SetInParent()
         self._layer_type = LayerTypes.none
         return self
 
     def set_layer_type_source(self) -> SensorXMPIntensity:
-        """Define layer separation as by source.
+        """Enable layer separation by source (one layer per active source).
 
         Returns
         -------
         ansys.speos.core.sensor.SensorXMPIntensity
-            Intensity sensor
-
+            self for chaining
         """
         self._sensor_instance.intensity_properties.layer_type_source.SetInParent()
         self._layer_type = LayerTypes.by_source
         return self
 
     def set_layer_type_face(self) -> BaseSensor.LayerTypeFace:
-        """Define layer separation as by face.
+        """Define layer separation by face and return helper.
 
         Returns
         -------
         ansys.speos.core.sensor.BaseSensor.LayerTypeFace
-            LayerTypeFace property instance
+            LayerTypeFace helper
         """
         if self._layer_type is None and self._sensor_instance.intensity_properties.HasField(
             "layer_type_face"
@@ -5312,12 +5235,12 @@ class SensorXMPIntensity(BaseSensor):
         return self._layer_type
 
     def set_layer_type_sequence(self) -> BaseSensor.LayerTypeSequence:
-        """Define layer separation as by sequence.
+        """Define layer separation by sequence and return helper.
 
         Returns
         -------
         ansys.speos.core.sensor.BaseSensor.LayerTypeSequence
-            LayerTypeSequence property instance
+            LayerTypeSequence helper
         """
         if self._layer_type is None and self._sensor_instance.intensity_properties.HasField(
             "layer_type_sequence"
@@ -5346,21 +5269,22 @@ class SensorXMPIntensity(BaseSensor):
 
     @property
     def axis_system(self) -> list[float]:
-        """Position of the sensor.
-
-        Parameters
-        ----------
-        value : list[float]
-            Position of the sensor [Ox Oy Oz Xx Xy Xz Yx Yy Yz Zx Zy Zz].
-            By default, ``[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]``.
+        """Sensor axis system (position + orientation).
 
         Returns
         -------
         list[float]
-            Axis system information as np.array.
+            Axis system as [Ox, Oy, Oz, Xx, Xy, Xz, Yx, Yy, Yz, Zx, Zy, Zz].
         """
         return self._sensor_instance.intensity_properties.axis_system
 
     @axis_system.setter
     def axis_system(self, value: list[float]):
+        """Set the sensor axis system.
+
+        Parameters
+        ----------
+        value : list[float]
+            Axis system array [Ox, Oy, Oz, Xx, Xy, Xz, Yx, Yy, Yz, Zx, Zy, Zz].
+        """
         self._sensor_instance.intensity_properties.axis_system[:] = value
