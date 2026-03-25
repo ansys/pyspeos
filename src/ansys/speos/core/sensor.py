@@ -198,12 +198,16 @@ class BaseSensor:
                 msg = "WavelengthsRange class instantiated outside of class scope"
                 raise RuntimeError(msg)
             self._wavelengths_range = wavelengths_range
+            self._fill_parameters(default_parameters)
 
-            if default_parameters:
-                # Default values
-                self.start = default_parameters.start
-                self.end = default_parameters.end
-                self.sampling = default_parameters.sampling
+        def _fill_parameters(
+            self, default_parameters: Optional[WavelengthsRangeParameters] = None
+        ) -> None:
+            if not default_parameters:
+                return
+            self.start = default_parameters.start
+            self.end = default_parameters.end
+            self.sampling = default_parameters.sampling
 
         @property
         def start(self) -> float:
@@ -311,15 +315,19 @@ class BaseSensor:
                 msg = "Dimension class instantiated outside of class scope"
                 raise RuntimeError(msg)
             self._sensor_dimensions = sensor_dimensions
+            self._fill_parameters(default_parameters)
 
-            if default_parameters:
-                # Default values
-                self.x_start = default_parameters.x_start
-                self.y_start = default_parameters.y_start
-                self.x_end = default_parameters.x_end
-                self.y_end = default_parameters.y_end
-                self.x_sampling = default_parameters.x_sampling
-                self.y_sampling = default_parameters.y_sampling
+        def _fill_parameters(
+            self, default_parameters: Optional[DimensionsParameters] = None
+        ) -> None:
+            if not default_parameters:
+                return
+            self.x_start = default_parameters.x_start
+            self.y_start = default_parameters.y_start
+            self.x_end = default_parameters.x_end
+            self.y_end = default_parameters.y_end
+            self.x_sampling = default_parameters.x_sampling
+            self.y_sampling = default_parameters.y_sampling
 
         @property
         def x_start(self) -> float:
@@ -643,17 +651,21 @@ class BaseSensor:
                 raise RuntimeError(msg)
 
             self._layer_type_face = layer_type_face
+            self._fill_parameters(default_parameters)
 
-            if default_parameters:
-                # Default values
-                match default_parameters.sca_filtering_types:
-                    case "last_impact":
-                        self.set_sca_filtering_mode_last_impact()
-                    case "intersected_one_time":
-                        self.set_sca_filtering_mode_intersected_one_time()
-                if default_parameters.geometries:
-                    for item in default_parameters.geometries:
-                        self.layers.append(BaseSensor.FaceLayer(item.name, item.geometry))
+        def _fill_parameters(
+            self, default_parameters: Optional[LayerByFaceParameters] = None
+        ) -> None:
+            if not default_parameters:
+                return
+            match default_parameters.sca_filtering_types:
+                case "last_impact":
+                    self.set_sca_filtering_mode_last_impact()
+                case "intersected_one_time":
+                    self.set_sca_filtering_mode_intersected_one_time()
+            if default_parameters.geometries:
+                for item in default_parameters.geometries:
+                    self.layers.append(BaseSensor.FaceLayer(item.name, item.geometry))
 
         def set_sca_filtering_mode_intersected_one_time(
             self,
@@ -755,15 +767,19 @@ class BaseSensor:
                 raise RuntimeError(msg)
 
             self._layer_type_sequence = layer_type_sequence
+            self._fill_parameters(default_parameters)
 
-            if default_parameters:
-                # Default values
-                self.maximum_nb_of_sequence = default_parameters.maximum_nb_of_sequence
-                match default_parameters.sequence_type:
-                    case "by_face":
-                        self.set_define_sequence_per_faces()
-                    case "by_geometry":
-                        self.set_define_sequence_per_geometries()
+        def _fill_parameters(
+            self, default_parameters: Optional[LayerBySequenceParameters] = None
+        ) -> None:
+            if not default_parameters:
+                return
+            self.maximum_nb_of_sequence = default_parameters.maximum_nb_of_sequence
+            match default_parameters.sequence_type:
+                case "by_face":
+                    self.set_define_sequence_per_faces()
+                case "by_geometry":
+                    self.set_define_sequence_per_geometries()
 
         @property
         def maximum_nb_of_sequence(self) -> int:
@@ -848,10 +864,14 @@ class BaseSensor:
                 raise RuntimeError(msg)
 
             self._layer_type_incidence_angle = layer_type_incidence_angle
+            self._fill_parameters(default_parameters)
 
-            if default_parameters:
-                # Default values
-                self.sampling = default_parameters.incidence_sampling
+        def _fill_parameters(
+            self, default_parameters: Optional[LayerByIncidenceAngleParameters] = None
+        ) -> None:
+            if not default_parameters:
+                return
+            self.sampling = default_parameters.incidence_sampling
 
         @property
         def sampling(self) -> int:
@@ -1178,13 +1198,17 @@ class SensorCamera(BaseSensor):
                         msg = "BalanceModeUserWhite class instantiated outside of class scope"
                         raise RuntimeError(msg)
                     self._balance_mode_user_white = balance_mode_user_white
+                    self._fill_parameters(default_parameters)
 
-                    if default_parameters:
-                        # Default values
-                        self._balance_mode_user_white.SetInParent()
-                        self.red_gain = default_parameters.red_gain
-                        self.green_gain = default_parameters.green_gain
-                        self.blue_gain = default_parameters.blue_gain
+                def _fill_parameters(
+                    self, default_parameters: Optional[BalanceModeUserWhiteParameters] = None
+                ) -> None:
+                    if not default_parameters:
+                        return
+                    self._balance_mode_user_white.SetInParent()
+                    self.red_gain = default_parameters.red_gain
+                    self.green_gain = default_parameters.green_gain
+                    self.blue_gain = default_parameters.blue_gain
 
                 @property
                 def red_gain(self) -> float:
@@ -1284,16 +1308,21 @@ class SensorCamera(BaseSensor):
                         raise RuntimeError(msg)
 
                     self._balance_mode_display = balance_mode_display
+                    self._fill_parameters(default_parameters)
 
-                    if default_parameters:
-                        # Default values
-                        self._balance_mode_display.SetInParent()
-                        if default_parameters.red_display_file_uri:
-                            self.red_display_file_uri = default_parameters.red_display_file_uri
-                        if default_parameters.green_display_file_uri:
-                            self.green_display_file_uri = default_parameters.green_display_file_uri
-                        if default_parameters.green_display_file_uri:
-                            self.blue_display_file_uri = default_parameters.blue_display_file_uri
+                def _fill_parameters(
+                    self,
+                    default_parameters: Optional[BalanceModeDisplayPrimariesParameters] = None,
+                ) -> None:
+                    if not default_parameters:
+                        return
+                    self._balance_mode_display.SetInParent()
+                    if default_parameters.red_display_file_uri:
+                        self.red_display_file_uri = default_parameters.red_display_file_uri
+                    if default_parameters.green_display_file_uri:
+                        self.green_display_file_uri = default_parameters.green_display_file_uri
+                    if default_parameters.blue_display_file_uri:
+                        self.blue_display_file_uri = default_parameters.blue_display_file_uri
 
                 @property
                 def red_display_file_uri(self) -> str:
@@ -1368,33 +1397,37 @@ class SensorCamera(BaseSensor):
 
                 # Attribute gathering more complex camera balance mode
                 self._mode = None
+                self._fill_parameters(default_parameters)
 
-                if default_parameters:
-                    # Default values
-                    if isinstance(default_parameters.balance_mode, BalanceModeUserWhiteParameters):
-                        self._mode = SensorCamera.Photometric.Color.BalanceModeUserWhite(
-                            balance_mode_user_white=self._mode_color.balance_mode_userwhite,
-                            default_parameters=default_parameters.balance_mode,
-                            stable_ctr=True,
-                        )
-                    elif isinstance(
-                        default_parameters.balance_mode, BalanceModeDisplayPrimariesParameters
-                    ):
-                        self._mode = SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries(
-                            balance_mode_display=self._mode_color.balance_mode_display,
-                            default_parameters=default_parameters.balance_mode,
-                            stable_ctr=True,
-                        )
-                    elif default_parameters.balance_mode == ColorBalanceModeTypes.grey_world:
-                        self.set_balance_mode_grey_world()
-                    elif default_parameters.balance_mode == ColorBalanceModeTypes.none:
-                        self.set_balance_mode_none()
-                    if default_parameters.red_spectrum_file_uri:
-                        self.red_spectrum_file_uri = default_parameters.red_spectrum_file_uri
-                    if default_parameters.green_spectrum_file_uri:
-                        self.green_spectrum_file_uri = default_parameters.green_spectrum_file_uri
-                    if default_parameters.blue_spectrum_file_uri:
-                        self.blue_spectrum_file_uri = default_parameters.blue_spectrum_file_uri
+            def _fill_parameters(
+                self, default_parameters: Optional[ColorParameters] = None
+            ) -> None:
+                if not default_parameters:
+                    return
+                if isinstance(default_parameters.balance_mode, BalanceModeUserWhiteParameters):
+                    self._mode = SensorCamera.Photometric.Color.BalanceModeUserWhite(
+                        balance_mode_user_white=self._mode_color.balance_mode_userwhite,
+                        default_parameters=default_parameters.balance_mode,
+                        stable_ctr=True,
+                    )
+                elif isinstance(
+                    default_parameters.balance_mode, BalanceModeDisplayPrimariesParameters
+                ):
+                    self._mode = SensorCamera.Photometric.Color.BalanceModeDisplayPrimaries(
+                        balance_mode_display=self._mode_color.balance_mode_display,
+                        default_parameters=default_parameters.balance_mode,
+                        stable_ctr=True,
+                    )
+                elif default_parameters.balance_mode == ColorBalanceModeTypes.grey_world:
+                    self.set_balance_mode_grey_world()
+                elif default_parameters.balance_mode == ColorBalanceModeTypes.none:
+                    self.set_balance_mode_none()
+                if default_parameters.red_spectrum_file_uri:
+                    self.red_spectrum_file_uri = default_parameters.red_spectrum_file_uri
+                if default_parameters.green_spectrum_file_uri:
+                    self.green_spectrum_file_uri = default_parameters.green_spectrum_file_uri
+                if default_parameters.blue_spectrum_file_uri:
+                    self.blue_spectrum_file_uri = default_parameters.blue_spectrum_file_uri
 
             @property
             def red_spectrum_file_uri(self) -> str:
@@ -1581,9 +1614,14 @@ class SensorCamera(BaseSensor):
             self._mode = None
 
             # Attribute to keep track of wavelength range object
+            self._fill_parameters(default_parameters, stable_ctr)
 
+        def _fill_parameters(
+            self,
+            default_parameters: Optional[PhotometricCameraParameters] = None,
+            stable_ctr: bool = False,
+        ) -> None:
             if default_parameters:
-                # Default values
                 self.acquisition_integration = default_parameters.acquisition_integration_time
                 self.acquisition_lag_time = default_parameters.acquisition_lag_time
                 self.gamma_correction = default_parameters.gamma_correction
@@ -1616,12 +1654,13 @@ class SensorCamera(BaseSensor):
                         default_parameters=default_parameters.color_mode,
                         stable_ctr=True,
                     )
-            elif default_parameters is None:
-                self._wavelengths_range = SensorCamera.WavelengthsRange(
-                    wavelengths_range=self._mode_photometric.wavelengths_range,
-                    default_parameters=None,
-                    stable_ctr=stable_ctr,
-                )
+                return
+
+            self._wavelengths_range = SensorCamera.WavelengthsRange(
+                wavelengths_range=self._mode_photometric.wavelengths_range,
+                default_parameters=None,
+                stable_ctr=stable_ctr,
+            )
 
         @property
         def acquisition_integration(self) -> float:
@@ -1884,27 +1923,31 @@ class SensorCamera(BaseSensor):
 
         # Attribute gathering more complex camera mode
         self._type = None
-        if default_parameters:
-            if isinstance(default_parameters.sensor_type_parameters, PhotometricCameraParameters):
-                self._type = SensorCamera.Photometric(
-                    mode_photometric=self._sensor_template.camera_sensor_template.sensor_mode_photometric,
-                    camera_props=self._sensor_instance.camera_properties,
-                    default_parameters=default_parameters.sensor_type_parameters,
-                    stable_ctr=True,
-                )
-            else:
-                self.set_mode_geometric()
-            if default_parameters.distortion_file_uri:
-                self.distortion_file_uri = default_parameters.distortion_file_uri
-            self.imager_distance = default_parameters.imager_distance
-            self.focal_length = default_parameters.focal_length
-            self.f_number = default_parameters.f_number
-            self.horz_pixel = default_parameters.horz_pixel
-            self.vert_pixel = default_parameters.vert_pixel
-            self.width = default_parameters.width
-            self.height = default_parameters.height
-            self.axis_system = default_parameters.axis_system
-            self.lxp_path_number = default_parameters.lxp_path_number
+        self._fill_parameters(default_parameters)
+
+    def _fill_parameters(self, default_parameters: Optional[CameraSensorParameters] = None) -> None:
+        if not default_parameters:
+            return
+        if isinstance(default_parameters.sensor_type_parameters, PhotometricCameraParameters):
+            self._type = SensorCamera.Photometric(
+                mode_photometric=self._sensor_template.camera_sensor_template.sensor_mode_photometric,
+                camera_props=self._sensor_instance.camera_properties,
+                default_parameters=default_parameters.sensor_type_parameters,
+                stable_ctr=True,
+            )
+        else:
+            self.set_mode_geometric()
+        if default_parameters.distortion_file_uri:
+            self.distortion_file_uri = default_parameters.distortion_file_uri
+        self.imager_distance = default_parameters.imager_distance
+        self.focal_length = default_parameters.focal_length
+        self.f_number = default_parameters.f_number
+        self.horz_pixel = default_parameters.horz_pixel
+        self.vert_pixel = default_parameters.vert_pixel
+        self.width = default_parameters.width
+        self.height = default_parameters.height
+        self.axis_system = default_parameters.axis_system
+        self.lxp_path_number = default_parameters.lxp_path_number
 
     @property
     def visual_data(self) -> _VisualData:
@@ -2336,9 +2379,12 @@ class SensorIrradiance(BaseSensor):
 
         # Attribute gathering more complex layer type
         self._layer_type = None
+        self._fill_parameters(default_parameters)
 
+    def _fill_parameters(
+        self, default_parameters: Optional[IrradianceSensorParameters] = None
+    ) -> None:
         if default_parameters:
-            # Default values template
             self._sensor_dimensions = self.Dimensions(
                 sensor_dimensions=self._sensor_template.irradiance_sensor_template.dimensions,
                 default_parameters=default_parameters.dimensions,
@@ -2412,37 +2458,38 @@ class SensorIrradiance(BaseSensor):
                     default_parameters=default_parameters.layer_type,
                     stable_ctr=True,
                 )
-            # Default values properties
+
             self.axis_system = default_parameters.axis_system
             self.output_face_geometries = default_parameters.outpath_face_geometry
-        else:
-            self._sensor_dimensions = self.Dimensions(
-                sensor_dimensions=self._sensor_template.irradiance_sensor_template.dimensions,
-                default_parameters=None,
-                stable_ctr=True,
-            )
-            template = self._sensor_template.irradiance_sensor_template
-            if template.HasField("sensor_type_photometric"):
-                self.set_type_photometric()
-            elif template.HasField("sensor_type_colorimetric"):
-                self.set_type_colorimetric()
-            elif template.HasField("sensor_type_radiometric"):
-                self.set_type_radiometric()
-            elif template.HasField("sensor_type_spectral"):
-                self.set_type_spectral()
-            properties = self._sensor_instance.irradiance_properties
-            if properties.HasField("layer_type_none"):
-                self._layer_type = LayerTypes.none
-            elif properties.HasField("layer_type_source"):
-                self._layer_type = LayerTypes.by_source
-            elif properties.HasField("layer_type_polarization"):
-                self._layer_type = LayerTypes.by_polarization
-            elif properties.HasField("layer_type_incidence_angle"):
-                self.set_layer_type_incidence_angle()
-            elif properties.HasField("layer_type_sequence"):
-                self.set_layer_type_sequence()
-            elif properties.HasField("layer_type_face"):
-                self.set_layer_type_face()
+            return
+
+        self._sensor_dimensions = self.Dimensions(
+            sensor_dimensions=self._sensor_template.irradiance_sensor_template.dimensions,
+            default_parameters=None,
+            stable_ctr=True,
+        )
+        template = self._sensor_template.irradiance_sensor_template
+        if template.HasField("sensor_type_photometric"):
+            self.set_type_photometric()
+        elif template.HasField("sensor_type_colorimetric"):
+            self.set_type_colorimetric()
+        elif template.HasField("sensor_type_radiometric"):
+            self.set_type_radiometric()
+        elif template.HasField("sensor_type_spectral"):
+            self.set_type_spectral()
+        properties = self._sensor_instance.irradiance_properties
+        if properties.HasField("layer_type_none"):
+            self._layer_type = LayerTypes.none
+        elif properties.HasField("layer_type_source"):
+            self._layer_type = LayerTypes.by_source
+        elif properties.HasField("layer_type_polarization"):
+            self._layer_type = LayerTypes.by_polarization
+        elif properties.HasField("layer_type_incidence_angle"):
+            self.set_layer_type_incidence_angle()
+        elif properties.HasField("layer_type_sequence"):
+            self.set_layer_type_sequence()
+        elif properties.HasField("layer_type_face"):
+            self.set_layer_type_face()
 
     @property
     def visual_data(self) -> _VisualData:
@@ -3136,8 +3183,12 @@ class SensorRadiance(BaseSensor):
         self._layer_type = None
 
         # Attribute to keep track of sensor dimensions object
+        self._fill_parameters(default_parameters)
+
+    def _fill_parameters(
+        self, default_parameters: Optional[RadianceSensorParameters] = None
+    ) -> None:
         if default_parameters:
-            # Default values template
             self.focal = default_parameters.focal_length
             self.integration_angle = default_parameters.integration_angle
             self.axis_system = default_parameters.axis_system
@@ -3180,30 +3231,31 @@ class SensorRadiance(BaseSensor):
                     default_parameters=default_parameters.layer_type,
                     stable_ctr=True,
                 )
-        else:
-            self._sensor_dimensions = self.Dimensions(
-                sensor_dimensions=self._sensor_template.radiance_sensor_template.dimensions,
-                default_parameters=None,
-                stable_ctr=True,
-            )
-            template = self._sensor_template.radiance_sensor_template
-            if template.HasField("sensor_type_photometric"):
-                self.set_type_photometric()
-            elif template.HasField("sensor_type_colorimetric"):
-                self.set_type_colorimetric()
-            elif template.HasField("sensor_type_radiometric"):
-                self.set_type_radiometric()
-            elif template.HasField("sensor_type_spectral"):
-                self.set_type_spectral()
-            properties = self._sensor_instance.radiance_properties
-            if properties.HasField("layer_type_none"):
-                self._layer_type = LayerTypes.none
-            elif properties.HasField("layer_type_source"):
-                self._layer_type = LayerTypes.by_source
-            elif properties.HasField("layer_type_sequence"):
-                self.set_layer_type_sequence()
-            elif properties.HasField("layer_type_face"):
-                self.set_layer_type_face()
+            return
+
+        self._sensor_dimensions = self.Dimensions(
+            sensor_dimensions=self._sensor_template.radiance_sensor_template.dimensions,
+            default_parameters=None,
+            stable_ctr=True,
+        )
+        template = self._sensor_template.radiance_sensor_template
+        if template.HasField("sensor_type_photometric"):
+            self.set_type_photometric()
+        elif template.HasField("sensor_type_colorimetric"):
+            self.set_type_colorimetric()
+        elif template.HasField("sensor_type_radiometric"):
+            self.set_type_radiometric()
+        elif template.HasField("sensor_type_spectral"):
+            self.set_type_spectral()
+        properties = self._sensor_instance.radiance_properties
+        if properties.HasField("layer_type_none"):
+            self._layer_type = LayerTypes.none
+        elif properties.HasField("layer_type_source"):
+            self._layer_type = LayerTypes.by_source
+        elif properties.HasField("layer_type_sequence"):
+            self.set_layer_type_sequence()
+        elif properties.HasField("layer_type_face"):
+            self.set_layer_type_face()
 
     @property
     def visual_data(self) -> _VisualData:
@@ -3693,7 +3745,11 @@ class Sensor3DIrradiance(BaseSensor):
 
         # Attribute gathering more complex layer type
         self._layer_type = None
+        self._fill_parameters(default_parameters)
 
+    def _fill_parameters(
+        self, default_parameters: Optional[Irradiance3DSensorParameters] = None
+    ) -> None:
         if default_parameters:
             if isinstance(default_parameters.sensor_type, ColorimetricParameters):
                 self._type = Sensor3DIrradiance.Colorimetric(
@@ -3730,19 +3786,20 @@ class Sensor3DIrradiance(BaseSensor):
                     self.set_ray_file_type_tm25()
                 case RayfileTypes.tm25_no_polarization:
                     self.set_ray_file_type_tm25_no_polarization()
-        else:
-            template = self._sensor_template.irradiance_3d
-            if template.HasField("type_photometric"):
-                self.set_type_photometric()
-            elif template.HasField("type_colorimetric"):
-                self.set_type_colorimetric()
-            elif template.HasField("type_radiometric"):
-                self.set_type_radiometric()
-            properties = self._sensor_instance.irradiance_3d_properties
-            if properties.HasField("layer_type_none"):
-                self._layer_type = LayerTypes.none
-            elif properties.HasField("layer_type_source"):
-                self._layer_type = LayerTypes.by_source
+            return
+
+        template = self._sensor_template.irradiance_3d
+        if template.HasField("type_photometric"):
+            self.set_type_photometric()
+        elif template.HasField("type_colorimetric"):
+            self.set_type_colorimetric()
+        elif template.HasField("type_radiometric"):
+            self.set_type_radiometric()
+        properties = self._sensor_instance.irradiance_3d_properties
+        if properties.HasField("layer_type_none"):
+            self._layer_type = LayerTypes.none
+        elif properties.HasField("layer_type_source"):
+            self._layer_type = LayerTypes.by_source
 
     class Radiometric:
         """Class computing the radiant intensity (in W.sr-1).
@@ -3776,6 +3833,13 @@ class Sensor3DIrradiance(BaseSensor):
 
             self._sensor_type_radiometric = sensor_type_radiometric
             self._integration_type = None
+            self._fill_parameters(default_parameters, stable_ctr)
+
+        def _fill_parameters(
+            self,
+            default_parameters: Optional[Irradiance3DSensorParameters] = None,
+            stable_ctr: bool = True,
+        ) -> None:
             if default_parameters:
                 match default_parameters.integration_type:
                     case IntegrationTypes.planar:
@@ -3787,13 +3851,13 @@ class Sensor3DIrradiance(BaseSensor):
                         )
                     case IntegrationTypes.radial:
                         self.set_integration_radial()
+                return
 
-            else:
-                self._integration_type = Sensor3DIrradiance.Measures(
-                    illuminance_type=self._sensor_type_radiometric.integration_type_planar,
-                    default_parameters=None,
-                    stable_ctr=stable_ctr,
-                )
+            self._integration_type = Sensor3DIrradiance.Measures(
+                illuminance_type=self._sensor_type_radiometric.integration_type_planar,
+                default_parameters=None,
+                stable_ctr=stable_ctr,
+            )
 
         def set_integration_planar(self) -> Sensor3DIrradiance.Measures:
             """Set integration planar.
@@ -3857,6 +3921,13 @@ class Sensor3DIrradiance(BaseSensor):
 
             self._sensor_type_photometric = sensor_type_photometric
             self._integration_type = None
+            self._fill_parameters(default_parameters, stable_ctr)
+
+        def _fill_parameters(
+            self,
+            default_parameters: Optional[Irradiance3DSensorParameters] = None,
+            stable_ctr: bool = True,
+        ) -> None:
             if default_parameters:
                 match default_parameters.integration_type:
                     case IntegrationTypes.planar:
@@ -3868,12 +3939,13 @@ class Sensor3DIrradiance(BaseSensor):
                         )
                     case IntegrationTypes.radial:
                         self.set_integration_radial()
-            else:
-                self._integration_type = Sensor3DIrradiance.Measures(
-                    illuminance_type=self._sensor_type_photometric.integration_type_planar,
-                    default_parameters=None,
-                    stable_ctr=stable_ctr,
-                )
+                return
+
+            self._integration_type = Sensor3DIrradiance.Measures(
+                illuminance_type=self._sensor_type_photometric.integration_type_planar,
+                default_parameters=None,
+                stable_ctr=stable_ctr,
+            )
 
         def set_integration_planar(self) -> Sensor3DIrradiance.Measures:
             """Set integration planar.
@@ -3938,12 +4010,14 @@ class Sensor3DIrradiance(BaseSensor):
                 msg = "Measures class instantiated outside of class scope"
                 raise RuntimeError(msg)
             self._illuminance_type = illuminance_type
+            self._fill_parameters(default_parameters)
 
-            if default_parameters:
-                # Default values
-                self.reflection = default_parameters.reflection
-                self.transmission = default_parameters.transmission
-                self.absorption = default_parameters.absorption
+        def _fill_parameters(self, default_parameters: Optional[MeasuresParameters] = None) -> None:
+            if not default_parameters:
+                return
+            self.reflection = default_parameters.reflection
+            self.transmission = default_parameters.transmission
+            self.absorption = default_parameters.absorption
 
         @property
         def reflection(self) -> bool:
@@ -4470,7 +4544,11 @@ class SensorXMPIntensity(BaseSensor):
         self._layer_type = None
         self._cell_diameter = None
         self._vis_radius = 1000
+        self._fill_parameters(default_parameters)
 
+    def _fill_parameters(
+        self, default_parameters: Optional[IntensityXMPSensorParameters] = None
+    ) -> None:
         if default_parameters:
             match default_parameters.orientation:
                 case IntensitySensorOrientationTypes.conoscopic:
@@ -4481,7 +4559,6 @@ class SensorXMPIntensity(BaseSensor):
                     self.set_orientation_x_as_parallel()
 
             self._set_dimension_values(default_parameters.dimensions)
-            # Default values template
             self.axis_system = default_parameters.axis_system
 
             match default_parameters.viewing_direction:
@@ -4527,26 +4604,26 @@ class SensorXMPIntensity(BaseSensor):
                 self.near_field = True
                 self.cell_distance = default_parameters.near_field_parameters.cell_distance
                 self.cell_diameter = default_parameters.near_field_parameters.cell_diameter
-            # Default values properties
-        else:
-            template = self._sensor_template.intensity_sensor_template
-            if template.HasField("sensor_type_photometric"):
-                self.set_type_photometric()
-            elif template.HasField("sensor_type_colorimetric"):
-                self.set_type_colorimetric()
-            elif template.HasField("sensor_type_radiometric"):
-                self.set_type_radiometric()
-            elif template.HasField("sensor_type_spectral"):
-                self.set_type_spectral()
-            properties = self._sensor_instance.intensity_properties
-            if properties.HasField("layer_type_none"):
-                self._layer_type = LayerTypes.none
-            elif properties.HasField("layer_type_source"):
-                self._layer_type = LayerTypes.by_source
-            elif properties.HasField("layer_type_sequence"):
-                self.set_layer_type_sequence()
-            elif properties.HasField("layer_type_face"):
-                self.set_layer_type_face()
+            return
+
+        template = self._sensor_template.intensity_sensor_template
+        if template.HasField("sensor_type_photometric"):
+            self.set_type_photometric()
+        elif template.HasField("sensor_type_colorimetric"):
+            self.set_type_colorimetric()
+        elif template.HasField("sensor_type_radiometric"):
+            self.set_type_radiometric()
+        elif template.HasField("sensor_type_spectral"):
+            self.set_type_spectral()
+        properties = self._sensor_instance.intensity_properties
+        if properties.HasField("layer_type_none"):
+            self._layer_type = LayerTypes.none
+        elif properties.HasField("layer_type_source"):
+            self._layer_type = LayerTypes.by_source
+        elif properties.HasField("layer_type_sequence"):
+            self.set_layer_type_sequence()
+        elif properties.HasField("layer_type_face"):
+            self.set_layer_type_face()
 
     @property
     def visual_data(self) -> _VisualData:
