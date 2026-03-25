@@ -231,7 +231,7 @@ opt_prop1.set_volume_none()
 opt_prop1.geometries = [face0_0.geo_path]
 
 layer_2 = opt_prop1.create_texture_layer()
-layer_2.set_surface_library().sop_file_uri = Path(assets_data_path) / "L100 2.simplescattering"
+layer_2.set_surface_library().file_uri = Path(assets_data_path) / "L100 2.simplescattering"
 layer_2.set_image_texture()
 layer_2.image_texture.image_file_uri = Path(assets_data_path) / "textureColors.jpg"
 layer_2.image_texture.set_planar_mapping()
