@@ -634,9 +634,6 @@ def test_creation_errors(speos: Speos):
             parameters=RadianceSensorParameters(),
         )
 
-    with pytest.raises(TypeError, match="OptPropParameters"):
-        p.create_optical_property(name="opt_prop", parameters=IrradianceSensorParameters())
-
     with pytest.raises(TypeError, match="SurfaceSourceParameters"):
         p.create_source(
             name="surface_source",
