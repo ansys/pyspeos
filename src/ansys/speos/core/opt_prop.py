@@ -47,7 +47,6 @@ from ansys.speos.core.generic.parameters import (
     MappingByData,
     MappingOperator,
     MappingTypes,
-    MaterialOpticParameters,
     NormalMapParameter,
     NormalMapTypes,
     OptPropParameters,
@@ -55,6 +54,7 @@ from ansys.speos.core.generic.parameters import (
     SopTypes,
     TextureLayerParameters,
     TextureTypes,
+    VopOpticParameters,
     VopParameters,
     VopTypes,
 )
@@ -302,25 +302,25 @@ class BaseVop:
     class VopOptic:
         """Optic parameters for a clear transparent volume."""
 
-        def __init__(self, parent, default_parameters: MaterialOpticParameters):
+        def __init__(self, parent, default_parameters: VopOpticParameters):
             """Create an optic helper bound to a parent VOP.
 
             Parameters
             ----------
             parent : ansys.speos.core.opt_prop.BaseVop
                 Base VOP wrapper that owns the optic protobuf field.
-            default_parameters : ansys.speos.core.generic.parameters.MaterialOpticParameters
+            default_parameters : ansys.speos.core.generic.parameters.VopOpticParameters
                 Default optic parameters to apply during initialization.
             """
             self._parent = parent
             self._fill_parameters(default_parameters)
 
-        def _fill_parameters(self, default_parameters: MaterialOpticParameters):
+        def _fill_parameters(self, default_parameters: VopOpticParameters):
             """Fill optic parameters from default parameters.
 
             Parameters
             ----------
-            default_parameters : ansys.speos.core.generic.parameters.MaterialOpticParameters
+            default_parameters : ansys.speos.core.generic.parameters.VopOpticParameters
                 Default optic parameters to apply.
             """
             if default_parameters:
@@ -562,12 +562,12 @@ class BaseVop:
                 description=self._material_instance.description,
                 metadata=self._material_instance.metadata,
             )
-            self._vop_optic = self.VopOptic(self, MaterialOpticParameters())
+            self._vop_optic = self.VopOptic(self, VopOpticParameters())
         elif self._vop_template.HasField("optic"):
             self._vop_optic = self.VopOptic(self, None)
         else:
             self._vop_template.optic.SetInParent()
-            self._vop_optic = self.VopOptic(self, MaterialOpticParameters())
+            self._vop_optic = self.VopOptic(self, VopOpticParameters())
         return self._vop_optic
 
     def set_volume_library(self) -> BaseVop.VopLibrary:

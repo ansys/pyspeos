@@ -46,7 +46,7 @@ class WavelengthsRangeParameters:
 
 
 @dataclass
-class MaterialOpticParameters:
+class VopOpticParameters:
     """Optics Material Parameters."""
 
     index: float = 1.5
@@ -152,8 +152,6 @@ class VopTypes(str, Enum):
 class SopTypes(str, Enum):
     """Allowed mapping types."""
 
-    mirror = "mirror"
-    library = "library"
     optical_polished = "optical_polished"
     texture = "texture"
 
@@ -200,23 +198,25 @@ class MappingByData:
 
 
 @dataclass
-class SopParameters:
-    """SOP Parameters Dataclass."""
+class SopMirrorParameters:
+    """SOP Mirror Parameters Dataclass."""
 
-    sop_type: Union[SopTypes] = SopTypes.mirror
-    """Type of SOP to apply on the geometry."""
-    sop_reflectance: Optional[float] = 100
-    """Reflectance value used when ``sop_type`` is ``mirror``."""
-    sop_library_file_uri: Optional[Union[str, Path]] = None
-    """Path to the SOP library file when ``sop_type`` is ``library``."""
+    reflectance = 100
+    """Rreflectance of a perfect mirror."""
 
 
 @dataclass
-class VopParameters:
+class SopLibraryParameters:
+    """SOP Library Parameters Dataclass."""
+
+    file_uri: Union[str, Path] = ""
+    """Path to the SOP library file."""
+
+
+@dataclass
+class VopLibraryParameters:
     """VOP Parameters Dataclass."""
 
-    vop_type: Union[VopTypes] = VopTypes.none
-    """Type of VOP to apply on the geometry."""
     material_file_uri: Optional[Union[str, Path]] = None
     """Path to the VOP library file when ``vop_type`` is ``library``."""
 
@@ -254,7 +254,9 @@ class NormalMapParameter(ImageTextureParameter):
 class TextureLayerParameters:
     """Texture Layer Parameters Dataclass."""
 
-    sop_parameters: Optional[SopParameters] = field(default_factory=SopParameters)
+    sop_parameters: Optional[SopTypes, SopMirrorParameters, SopLibraryParameters] = field(
+        default_factory=SopMirrorParameters
+    )
     """SOP parameters applied to the texture layer."""
     image_texture: bool = False
     """Whether this layer uses an image texture."""
@@ -278,9 +280,11 @@ class TextureLayerParameters:
 class OptPropParameters:
     """Store default values for optical properties."""
 
-    sop_parameters: Optional[SopParameters] = field(default_factory=SopParameters)
+    sop_parameters: Optional[SopTypes, SopMirrorParameters, SopLibraryParameters] = field(
+        default_factory=SopMirrorParameters
+    )
     """SOP parameters used for optical properties."""
-    vop_parameters: Optional[VopParameters] = field(default_factory=VopParameters)
+    vop_parameters: Optional[VopTypes, VopLibraryParameters, VopOpticParameters] = VopTypes.none
     """VOP parameters used for optical properties."""
     texture_parameters: Optional[List[TextureLayerParameters]] = None
     """Optional texture layers applied as optical properties."""

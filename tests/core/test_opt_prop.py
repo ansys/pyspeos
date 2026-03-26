@@ -33,13 +33,13 @@ from ansys.speos.core.generic.parameters import (
     MappingByData,
     MappingOperator,
     MappingTypes,
-    MaterialOpticParameters,
     MeshData,
     NormalMapParameter,
     NormalMapTypes,
     OptPropParameters,
     SopParameters,
     SopTypes,
+    VopOpticParameters,
     VopParameters,
     VopTypes,
 )
@@ -1033,9 +1033,9 @@ def test_load_texture_property_from_file(speos: Speos):
             case "Texture_spherical_Optic_OP_normal_map":
                 assert mat._sop_template is None
                 assert mat.vop_type == "optic"
-                assert MaterialOpticParameters(
+                assert VopOpticParameters(
                     mat.vop_optic.index, mat.vop_optic.absorption, mat.vop_optic.constringence
-                ) == MaterialOpticParameters(1.5, 0, None)
+                ) == VopOpticParameters(1.5, 0, None)
 
             case "Texture_cylindrical_opaque_mirror40_normal_map|UV mapping.2":
                 assert mat._material_instance.HasField("texture")
@@ -1191,9 +1191,9 @@ def test_load_texture_property_from_file(speos: Speos):
                 assert mat._sop_template.HasField("library")
                 assert mat.sop_library.file_uri.endswith("simplescattering")
                 assert mat.vop_type == "optic"
-                assert MaterialOpticParameters(
+                assert VopOpticParameters(
                     mat.vop_optic.index, mat.vop_optic.absorption, mat.vop_optic.constringence
-                ) == MaterialOpticParameters(1.5, 10, None)
+                ) == VopOpticParameters(1.5, 10, None)
             case "Texture_gltf":
                 assert mat._sop_template is None
                 assert mat.vop_type is None
