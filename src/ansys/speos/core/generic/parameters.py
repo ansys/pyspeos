@@ -254,9 +254,9 @@ class NormalMapParameter(ImageTextureParameter):
 class TextureLayerParameters:
     """Texture Layer Parameters Dataclass."""
 
-    sop_parameters: Optional[SopTypes, SopMirrorParameters, SopLibraryParameters] = field(
-        default_factory=SopMirrorParameters
-    )
+    sop_parameters: Optional[
+        Union[SopTypes.optical_polished, SopMirrorParameters, SopLibraryParameters]
+    ] = field(default_factory=SopMirrorParameters)
     """SOP parameters applied to the texture layer."""
     image_texture: bool = False
     """Whether this layer uses an image texture."""
@@ -264,12 +264,8 @@ class TextureLayerParameters:
     """Image texture parameters when ``image_texture`` is enabled."""
     normal_map: bool = False
     """Whether this layer uses a normal map."""
-    normal_map_type: Optional[NormalMapTypes] = None
-    """Normal map type to apply when ``normal_map`` is enabled."""
-    normal_map_parameters: Optional[ImageTextureParameter] = None
+    normal_map_parameters: Optional[NormalMapParameter] = None
     """Normal map image parameters when ``normal_map`` is enabled."""
-    normal_map_mapping: Optional[Union[MappingOperator, MappingByData]] = None
-    """Mapping parameters for normal maps built from normal-map data."""
     anisotropy_map: bool = False
     """Whether this layer uses an anisotropy map."""
     anisotropy_map_parameters: Optional[Union[MappingOperator, MappingByData]] = None
@@ -280,11 +276,13 @@ class TextureLayerParameters:
 class OptPropParameters:
     """Store default values for optical properties."""
 
-    sop_parameters: Optional[SopTypes, SopMirrorParameters, SopLibraryParameters] = field(
-        default_factory=SopMirrorParameters
-    )
+    sop_parameters: Optional[
+        Union[SopTypes.optical_polished, SopMirrorParameters, SopLibraryParameters]
+    ] = field(default_factory=SopMirrorParameters)
     """SOP parameters used for optical properties."""
-    vop_parameters: Optional[VopTypes, VopLibraryParameters, VopOpticParameters] = VopTypes.none
+    vop_parameters: Optional[Union[VopTypes, VopLibraryParameters, VopOpticParameters]] = (
+        VopTypes.none
+    )
     """VOP parameters used for optical properties."""
     texture_parameters: Optional[List[TextureLayerParameters]] = None
     """Optional texture layers applied as optical properties."""

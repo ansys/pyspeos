@@ -37,10 +37,10 @@ from ansys.speos.core.generic.parameters import (
     NormalMapParameter,
     NormalMapTypes,
     OptPropParameters,
-    SopParameters,
+    SopLibraryParameters,
     SopTypes,
+    VopLibraryParameters,
     VopOpticParameters,
-    VopParameters,
     VopTypes,
 )
 from ansys.speos.core.kernel import ProtoFace
@@ -442,12 +442,10 @@ def test_opt_prop_default_parameters_and_local_helpers(speos: Speos, capsys):
     op_library = p.create_optical_property(
         name="Defaults.Library",
         parameters=OptPropParameters(
-            sop_parameters=SopParameters(
-                sop_type=SopTypes.library,
-                sop_library_file_uri=Path("library_surface.scattering"),
+            sop_parameters=SopLibraryParameters(
+                file_uri=Path("library_surface.scattering"),
             ),
-            vop_parameters=VopParameters(
-                vop_type=VopTypes.library,
+            vop_parameters=VopLibraryParameters(
                 material_file_uri=Path("library_volume.material"),
             ),
         ),
@@ -458,8 +456,8 @@ def test_opt_prop_default_parameters_and_local_helpers(speos: Speos, capsys):
     op_polished = p.create_optical_property(
         name="Defaults.OpticalPolished",
         parameters=OptPropParameters(
-            sop_parameters=SopParameters(sop_type=SopTypes.optical_polished),
-            vop_parameters=VopParameters(vop_type=VopTypes.opaque),
+            sop_parameters=SopTypes.optical_polished,
+            vop_parameters=VopTypes.opaque,
         ),
     )
     assert op_polished._sop_template.HasField("optical_polished")

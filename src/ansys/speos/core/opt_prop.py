@@ -50,12 +50,13 @@ from ansys.speos.core.generic.parameters import (
     NormalMapParameter,
     NormalMapTypes,
     OptPropParameters,
-    SopParameters,
+    SopLibraryParameters,
+    SopMirrorParameters,
     SopTypes,
     TextureLayerParameters,
     TextureTypes,
+    VopLibraryParameters,
     VopOpticParameters,
-    VopParameters,
     VopTypes,
 )
 from ansys.speos.core.geo_ref import GeoRef
@@ -63,7 +64,7 @@ from ansys.speos.core.kernel.scene import ProtoScene
 from ansys.speos.core.kernel.sop_template import ProtoSOPTemplate
 from ansys.speos.core.kernel.vop_template import ProtoVOPTemplate
 import ansys.speos.core.part as part
-import ansys.speos.core.project as p
+import ansys.speos.core.project as project
 import ansys.speos.core.proto_message_utils as proto_message_utils
 
 
@@ -75,7 +76,14 @@ class BaseSop:
     This is a superclass and is not intended to be instantiated directly.
     """
 
-    def __init__(self, sop_template, mat_inst, sop_parameters: Optional[SopParameters] = None):
+    def __init__(
+        self,
+        sop_template,
+        mat_inst,
+        sop_parameters: Optional[
+            Union[SopMirrorParameters, SopLibraryParameters, SopTypes.optical_polished]
+        ] = None,
+    ):
         """Initialize the SOP helper state.
 
         Parameters
@@ -84,7 +92,11 @@ class BaseSop:
             Surface optical property template to wrap.
         mat_inst : ansys.speos.core.kernel.scene.ProtoScene.MaterialInstance
             Material instance that owns the SOP settings.
-        sop_parameters : Optional[ansys.speos.core.generic.parameters.SopParameters], optional
+        sop_parameters : Optional[Union[\
+        ansys.speos.core.generic.parameters.SopLibraryParameters, \
+        ansys.speos.core.generic.parameters.SopMirrorParameters, \
+        ansys.speos.core.generic.parameters.SopTypes.optical_polished, \
+        ]], optional
             Default SOP parameters to apply at initialization.
         """
         self._sop_template = sop_template
@@ -94,7 +106,7 @@ class BaseSop:
         self._library = None
 
         if sop_parameters:
-            self._fill_parameters(sop_parameters)
+            self._fill_parameters_sop(sop_parameters)
 
     def _sync_sop_properties(self):
         """Synchronize cached SOP helper objects with the current SOP template."""
@@ -106,7 +118,9 @@ class BaseSop:
         self._mirror = self.SopMirror(self) if self._sop_template.HasField("mirror") else None
         self._library = self.SopLibrary(self) if self._sop_template.HasField("library") else None
 
-    def _fill_parameters(self, sop_parameters: SopParameters):
+    def _fill_parameters_sop(
+        self, sop_parameters: Optional[Union[SopMirrorParameters, SopLibraryParameters, SopTypes]]
+    ):
         """Apply SOP parameters to initialize the surface optical property.
 
         Parameters
@@ -114,16 +128,16 @@ class BaseSop:
         sop_parameters : ansys.speos.core.generic.parameters.SopParameters
             SOP parameters to apply.
         """
-        if sop_parameters.sop_type == SopTypes.mirror:
+        if isinstance(sop_parameters, SopMirrorParameters):
             self.set_surface_mirror()
-            if sop_parameters.sop_reflectance is not None:
-                self.mirror.reflectance = sop_parameters.sop_reflectance
-        elif sop_parameters.sop_type == SopTypes.optical_polished:
+            if sop_parameters.reflectance is not None:
+                self.mirror.reflectance = sop_parameters.reflectance
+        elif sop_parameters == SopTypes.optical_polished:
             self.set_surface_opticalpolished()
-        elif sop_parameters.sop_type == SopTypes.library:
+        elif isinstance(sop_parameters, SopLibraryParameters):
             self.set_surface_library()
-            if sop_parameters.sop_library_file_uri:
-                self.sop_library.file_uri = sop_parameters.sop_library_file_uri
+            if sop_parameters.file_uri:
+                self.sop_library.file_uri = sop_parameters.file_uri
 
     class SopMirror:
         """Mirror SOP parameters."""
@@ -428,16 +442,28 @@ class BaseVop:
             """
             self._parent._vop_template.library.material_file_uri = str(value)
 
-    def __init__(self, vop_template, mat_inst, vop_parameters: Optional[VopParameters] = None):
+    def __init__(
+        self,
+        vop_template: Union[None, ProtoVOPTemplate],
+        mat_inst: ProtoScene.MaterialInstance,
+        vop_parameters: Optional[
+            Union[VopTypes.none, VopTypes.opaque, VopLibraryParameters, VopOpticParameters]
+        ] = None,
+    ):
         """Initialize the VOP helper state.
 
         Parameters
         ----------
-        vop_template : Optional[ansys.speos.core.kernel.vop_template.ProtoVOPTemplate]
+        vop_template : Union[None, ansys.speos.core.kernel.vop_template.ProtoVOPTemplate]
             Volume optical property template to wrap.
         mat_inst : ansys.speos.core.kernel.scene.ProtoScene.MaterialInstance
             Material instance that owns the VOP settings.
-        vop_parameters : Optional[ansys.speos.core.generic.parameters.VopParameters], optional
+        vop_parameters : Optional[Union[\
+        ansys.speos.core.generic.parameters.VopTypes.none,\
+        ansys.speos.core.generic.parameters.VopTypes.opaque, \
+        ansys.speos.core.generic.parameters.VopLibraryParameters, \
+        ansys.speos.core.generic.parameters.VopOpticParameters. \
+        ]], optional
             Default VOP parameters to apply at initialization.
         """
         # Create VOP template
@@ -449,24 +475,35 @@ class BaseVop:
         self._vop_library = None
 
         if vop_parameters:
-            self._fill_parameters(vop_parameters)
+            self._fill_parameters_vop(vop_parameters)
 
-    def _fill_parameters(self, vop_parameters: VopParameters):
+    def _fill_parameters_vop(
+        self,
+        vop_parameters: Union[
+            VopTypes.none, VopTypes.opaque, VopLibraryParameters, VopOpticParameters
+        ],
+    ):
         """Apply VOP parameters to initialize the volume optical property.
 
         Parameters
         ----------
-        vop_parameters : ansys.speos.core.generic.parameters.VopParameters
-            VOP parameters to apply.
+        vop_parameters : Union[\
+        ansys.speos.core.generic.parameters.VopTypes.none,\
+        ansys.speos.core.generic.parameters.VopTypes.opaque, \
+        ansys.speos.core.generic.parameters.VopLibraryParameters, \
+        ansys.speos.core.generic.parameters.VopOpticParameters. \
+        ]VOP parameters to apply.
         """
-        if vop_parameters.vop_type == VopTypes.optic:
+        if vop_parameters == VopTypes.none:
+            self.set_volume_none()
+        elif isinstance(vop_parameters, VopOpticParameters):
             self.set_volume_optic()
-        elif vop_parameters.vop_type == VopTypes.opaque:
+            self.vop_optic._fill_parameters(vop_parameters)
+        elif vop_parameters == VopTypes.opaque:
             self.set_volume_opaque()
-        elif vop_parameters.vop_type == VopTypes.library:
+        elif isinstance(vop_parameters, VopLibraryParameters):
             self.set_volume_library()
-            if vop_parameters.material_file_uri:
-                self.vop_library.material_file_uri = vop_parameters.material_file_uri
+            self.vop_library.material_file_uri = vop_parameters.material_file_uri
 
     @property
     def vop_type(self) -> Optional[str]:
@@ -625,23 +662,7 @@ class BaseVop:
 
 
 class TextureLayer(BaseSop):
-    """Describes the optical and texture properties of a single texture layer.
-
-    Parameters
-    ----------
-    opt_prop : ansys.speos.core.opt_prop.OptProp
-        Optical Property which will hold this Layer
-    name : str
-        Name of the feature.
-    description : str, optional
-        Description of the feature. Default is an empty string.
-    metadata : Optional[Mapping[str, str]], optional
-        Metadata of the feature. Default is ``None``.
-    texture_layer_parameters : Optional[\
-        ansys.speos.core.generic.parameters.TextureLayerParameters\
-    ], optional
-        Default texture layer parameters to initialize the texture layer. Default is ``None``.
-    """
+    """Describes the optical and texture properties of a single texture layer."""
 
     class TextureMappingOperator:
         """Texture mapping operator for a texture layer."""
@@ -1522,10 +1543,9 @@ class TextureLayer(BaseSop):
             super().__init__(
                 self._sop_template, self._material_instance, default_parameters.sop_parameters
             )
+            self._fill_parameters(default_parameters)
         else:
-            super().__init__(self._sop_template, self._material_instance, SopParameters())
-
-        self._fill_parameters(default_parameters)
+            super().__init__(self._sop_template, self._material_instance, SopMirrorParameters())
 
     def _fill_parameters(self, default_parameters: Optional[TextureLayerParameters] = None):
         """Fill texture layer parameters from default parameters.
@@ -1537,33 +1557,17 @@ class TextureLayer(BaseSop):
         ], optional
             Default texture layer parameters to apply.
         """
-        if default_parameters:
-            self._apply_texture_layer_parameters(default_parameters)
-
-    def _apply_texture_layer_parameters(self, texture_layer_parameters: TextureLayerParameters):
-        """Apply texture layer parameters to initialize the texture layer.
-
-        Parameters
-        ----------
-        texture_layer_parameters : ansys.speos.core.generic.parameters.TextureLayerParameters
-            Texture layer parameters to apply.
-        """
-        if texture_layer_parameters.image_texture:
+        if default_parameters.image_texture:
             self._image_map = TextureLayer.ImageTexture(
-                self._texture_template, texture_layer_parameters.image_texture_parameters
+                self._texture_template, default_parameters.image_texture_parameters
             )
-        if texture_layer_parameters.normal_map:
-            if texture_layer_parameters.normal_map_type == "from_image":
-                self.set_normal_map_from_image()
-            elif texture_layer_parameters.normal_map_type == "from_normal_map":
-                self.set_normal_map_from_normal_map()
-            if texture_layer_parameters.normal_map_file_uri:
-                self.normal_map_file_uri = texture_layer_parameters.normal_map_file_uri
-            if texture_layer_parameters.normal_map_mapping:
-                self.normal_map_property = texture_layer_parameters.normal_map_mapping
-        if texture_layer_parameters.anisotropy_map:
-            if texture_layer_parameters.anisotropy_map_mapping:
-                self.normal_map_property = texture_layer_parameters.normal_map_mapping
+        if default_parameters.normal_map:
+            self._normal_map = TextureLayer.NormalMap(
+                self._texture_template, default_parameters.normal_map_parameters
+            )
+        if default_parameters.anisotropy_map:
+            if default_parameters.anisotropy_map_mapping:
+                self.normal_map_property = default_parameters.normal_map_mapping
 
     @property
     def image_texture(self) -> ImageTexture:
@@ -1733,7 +1737,7 @@ class OptProp(BaseVop, BaseSop):
 
     def __init__(
         self,
-        project: p.Project,
+        project: project.Project,
         name: str,
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
@@ -1796,7 +1800,8 @@ class OptProp(BaseVop, BaseSop):
         # Default values
         self.geometries = None
 
-        self._fill_parameters(default_parameters)
+        if default_parameters:
+            self._fill_parameters(default_parameters)
 
     def _fill_parameters(self, default_parameters: Optional[OptPropParameters] = None):
         """Fill optical property parameters from default parameters.
