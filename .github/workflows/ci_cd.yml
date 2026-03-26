@@ -77,12 +77,18 @@ jobs:
           enable-cache: false
           prune-cache: true
 
+      - name: Create virtual environment
+        run: uv venv .venv
+
       - name: Install dependencies
-        run: uv pip install ty==0.0.25 ansys-platform-instancemanagement
+        run: |
+          source .venv/bin/activate
+          uv pip install ty==0.0.25 ansys-platform-instancemanagement
 
       # NOTE: At the moment this will only run on ansys/aedt/core/speos.py which is working
       - name: Run Ty on selected files
         run: |
+          source .venv/bin/activate
           ty check src/ansys/speos/core/ examples/ \
             --exclude src/ansys/speos/core/body.py \
             --exclude src/ansys/speos/core/face.py \
