@@ -153,7 +153,6 @@ class SopTypes(str, Enum):
     """Allowed mapping types."""
 
     optical_polished = "optical_polished"
-    texture = "texture"
 
 
 @dataclass
@@ -254,9 +253,9 @@ class NormalMapParameter(ImageTextureParameter):
 class TextureLayerParameters:
     """Texture Layer Parameters Dataclass."""
 
-    sop_parameters: Optional[
-        Union[SopTypes.optical_polished, SopMirrorParameters, SopLibraryParameters]
-    ] = field(default_factory=SopMirrorParameters)
+    sop_parameters: Optional[Union[SopTypes, SopMirrorParameters, SopLibraryParameters]] = field(
+        default_factory=SopMirrorParameters
+    )
     """SOP parameters applied to the texture layer."""
     image_texture: bool = False
     """Whether this layer uses an image texture."""
@@ -276,9 +275,9 @@ class TextureLayerParameters:
 class OptPropParameters:
     """Store default values for optical properties."""
 
-    sop_parameters: Optional[
-        Union[SopTypes.optical_polished, SopMirrorParameters, SopLibraryParameters]
-    ] = field(default_factory=SopMirrorParameters)
+    sop_parameters: Optional[Union[SopTypes, SopMirrorParameters, SopLibraryParameters]] = field(
+        default_factory=SopMirrorParameters
+    )
     """SOP parameters used for optical properties."""
     vop_parameters: Optional[Union[VopTypes, VopLibraryParameters, VopOpticParameters]] = (
         VopTypes.none

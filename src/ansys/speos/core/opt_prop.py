@@ -78,8 +78,8 @@ class BaseSop:
 
     def __init__(
         self,
-        sop_template,
-        mat_inst,
+        sop_template: ProtoSOPTemplate,
+        mat_inst: ProtoScene.MaterialInstance,
         sop_parameters: Optional[
             Union[SopMirrorParameters, SopLibraryParameters, SopTypes.optical_polished]
         ] = None,
@@ -130,8 +130,7 @@ class BaseSop:
         """
         if isinstance(sop_parameters, SopMirrorParameters):
             self.set_surface_mirror()
-            if sop_parameters.reflectance is not None:
-                self.mirror.reflectance = sop_parameters.reflectance
+            self.mirror.reflectance = sop_parameters.reflectance
         elif sop_parameters == SopTypes.optical_polished:
             self.set_surface_opticalpolished()
         elif isinstance(sop_parameters, SopLibraryParameters):
@@ -1784,26 +1783,26 @@ class OptProp(BaseVop, BaseSop):
         )
         self._texture = None
 
-        BaseVop.__init__(
-            self,
-            self._vop_template,
-            self._material_instance,
-            vop_parameters=default_parameters.vop_parameters if default_parameters else None,
-        )
-        BaseSop.__init__(
-            self,
-            self._sop_template,
-            self._material_instance,
-            sop_parameters=default_parameters.sop_parameters if default_parameters else None,
-        )
-
         # Default values
         self.geometries = None
 
         if default_parameters:
             self._fill_parameters(default_parameters)
+        else:
+            BaseSop.__init__(
+                self,
+                self._sop_template,
+                self._material_instance,
+                sop_parameters=None,
+            )
+            BaseVop.__init__(
+                self,
+                self._vop_template,
+                self._material_instance,
+                vop_parameters=None,
+            )
 
-    def _fill_parameters(self, default_parameters: Optional[OptPropParameters] = None):
+    def _fill_parameters(self, default_parameters: OptPropParameters):
         """Fill optical property parameters from default parameters.
 
         Parameters
@@ -1813,11 +1812,26 @@ class OptProp(BaseVop, BaseSop):
         ], optional
             Default optical property parameters to apply.
         """
-        if default_parameters and default_parameters.texture_parameters:
+        BaseVop.__init__(
+            self,
+            self._vop_template,
+            self._material_instance,
+            vop_parameters=default_parameters.vop_parameters,
+        )
+        if default_parameters.texture_parameters:
+            self._sop_template = None
             self.texture = [
                 TextureLayer(self, f"Layer{i}", texture_layer_parameters=layer)
                 for i, layer in enumerate(default_parameters.texture_parameters)
             ]
+
+        else:
+            BaseSop.__init__(
+                self,
+                self._sop_template,
+                self._material_instance,
+                sop_parameters=default_parameters.sop_parameters,
+            )
 
     @property
     def texture(self) -> Optional[list["TextureLayer"]]:
