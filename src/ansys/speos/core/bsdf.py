@@ -1689,14 +1689,15 @@ def create_anisotropic_bsdf(
         Fixes normalization disparity between BSDF,
         By default: ``False``
 
-    Notes
-    -----
-    Please note that the bsdf files from the bsdf list need to be isotropic.
-
     Returns
     -------
     pathlib.Path
         Location of created Anisotropic BSDF files
+
+    Notes
+    -----
+    Please note that the bsdf files from the bsdf list need to be isotropic.
+
     """
     stub = bsdf_creation__v1__pb2_grpc.BsdfCreationServiceStub(speos.client.channel)
     ani_request = bsdf_creation__v1__pb2.AnisotropicBsdfInputData()

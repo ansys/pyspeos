@@ -95,8 +95,6 @@ Any questions? Refer to :ref:`Q&A <ref_faq>` before submitting an issue.
    :maxdepth: 2
 
    docker/index
-   local/index
-   remote/index
    existing/index
    faq
 

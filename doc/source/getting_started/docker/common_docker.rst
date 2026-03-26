@@ -92,16 +92,26 @@ Of course both server and client must be aligned on the transport mode.
 On server side, transport is defined by command line option:
 
 * ``--transport_tls SERVER_KEY,SERVER_CERTIFICATE,SERVER_CLIENT_CA``
-gRPC transport, using TLS encryption, must provide paths to the server's private key, certificate, and server/client Certificate Authority files.
+  gRPC transport using TLS encryption. Requires paths to:
+  
+  - the server's private key
+  - the server's certificate
+  - the server/client Certificate Authority file.
+  
 
 * ``--transport_uds UDSPATH(=C:\tmp\speosrpc_sock_50098)``
-Unix Domain Socket transport for local server/client communications, can pass an optional path for the socket.
+  Unix Domain Socket transport for local server/client communication.
+  Optionally accepts a path to the socket file.
 
 * ``--transport_wnua``
-Run the server with Windows named user authentication, only available on Windows and set by default if no transport selected, host must be localhost.
+  Run the server with Windows named user authentication.
+  Only available on Windows. Used by default if no transport is selected.
+  The host must be ``localhost``.
+  Run the server with Windows named user authentication, only available on Windows and set by default if no transport selected, host must be localhost.
 
 * ``--transport_insecure``
-Run the server in gRPC insecure mode.
+  
+  Run the server in gRPC insecure mode.
 
 On client side, please use ``ansys.speos.core.kernel.grpc.transport_options`` to create the transport channel with same mode than the server.
 Here is an example with WNUA transport mode:
