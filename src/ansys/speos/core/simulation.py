@@ -545,7 +545,7 @@ class BaseSimulation:
         """
         if not isinstance(self, SimulationDirect | SimulationInverse | SimulationVirtualBSDF):
             raise ValueError(
-                "Selected simulation type: {}, is not supported for export.".format(type(self))
+                f"Selected simulation type: {type(self)}, is not supported for export."
             )
         if self.job_link is None:
             self.job_link = self._project.client.jobs().create(message=self._job)

@@ -275,7 +275,7 @@ class CameraSensorParameters:
     axis_system: List[float] = field(default_factory=lambda: ORIGIN)
     """Location of the sensor Origin"""
     distortion_file_uri: Union[str, Path] = ""
-    """distortion file location"""
+    """Distortion file location"""
     focal_length: float = 5
     """Default focal length of the Camera Sensor."""
     imager_distance: float = 10

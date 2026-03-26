@@ -87,7 +87,17 @@ def insert_speos(project: Project, speos_to_insert: List[SpeosFileInstance]) -> 
     project : ansys.speos.core.project.Project
         Project in which to import geometries and materials from SPEOS files.
     speos_to_combine : List[ansys.speos.core.workflow.combine_speos.SpeosFileInstance]
-        List of SPEOS files, location and orientation of geometries to be imported to the project.
+   Parameters
+   ----------
+   project : ansys.speos.core.project.Project
+       Project in which to import geometries and materials from SPEOS files.
+   speos_to_combine : List[ansys.speos.core.workflow.combine_speos.SpeosFileInstance]
+       List of SPEOS files, location and orientation of geometries to be imported to the project.
+
+   Notes
+   -----
+   Sources, Sensors and Simulations are not imported to the project.
+
     """
     # Part link : either create it empty if none is present in the project's scene
     # or just retrieve it from project's scene
@@ -116,7 +126,17 @@ def combine_speos(speos: Speos, speos_to_combine: List[SpeosFileInstance]) -> Pr
     speos : ansys.speos.core.speos.Speos
         Speos session (connected to gRPC server).
     speos_to_combine : List[ansys.speos.core.workflow.combine_speos.SpeosFileInstance]
-        List of SPEOS files, location and orientation of geometries to be imported to the project.
+   Parameters
+   ----------
+   speos : ansys.speos.core.speos.Speos
+       Speos session (connected to gRPC server).
+   speos_to_combine : List[ansys.speos.core.workflow.combine_speos.SpeosFileInstance]
+       List of SPEOS files, location and orientation of geometries to be imported to the project.
+
+   Notes
+   -----
+       Sources, Sensors and Simulations are not imported to the project.
+
 
     Returns
     -------

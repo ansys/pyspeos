@@ -99,17 +99,17 @@ class SceneLink(CrudItem):
         self._stub.delete(self)
 
     # Actions
-    def load_file(self, file_uri: Union[Path, str], password: str = None) -> None:
+    def load_file(self, file_uri: Path | str, password: str = None) -> None:
         """
         Load speos file or lightbox file to fill the scene.
 
         Parameters
         ----------
+        file_uri : Union[Path, str]
+           File to be loaded.
         password: str
             Password needed to open the speos lightbox file.
             only necessary if user protects the speos light box with a password.
-        file_uri : Union[Path, str]
-            File to be loaded.
         """
         self._actions_stub.LoadFile(
             messages.LoadFile_Request(guid=self.key, file_uri=str(file_uri), password=password)
