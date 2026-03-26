@@ -94,7 +94,7 @@ class BaseSop:
         self._library = None
 
         if sop_parameters:
-            self._apply_sop_parameters(sop_parameters)
+            self._fill_parameters(sop_parameters)
 
     def _sync_sop_properties(self):
         """Synchronize cached SOP helper objects with the current SOP template."""
@@ -106,7 +106,7 @@ class BaseSop:
         self._mirror = self.SopMirror(self) if self._sop_template.HasField("mirror") else None
         self._library = self.SopLibrary(self) if self._sop_template.HasField("library") else None
 
-    def _apply_sop_parameters(self, sop_parameters: SopParameters):
+    def _fill_parameters(self, sop_parameters: SopParameters):
         """Apply SOP parameters to initialize the surface optical property.
 
         Parameters
@@ -453,9 +453,9 @@ class BaseVop:
         self._vop_library = None
 
         if vop_parameters:
-            self._apply_vop_parameters(vop_parameters)
+            self._fill_parameters(vop_parameters)
 
-    def _apply_vop_parameters(self, vop_parameters: VopParameters):
+    def _fill_parameters(self, vop_parameters: VopParameters):
         """Apply VOP parameters to initialize the volume optical property.
 
         Parameters
