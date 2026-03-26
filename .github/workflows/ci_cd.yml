@@ -83,7 +83,7 @@ jobs:
       # NOTE: At the moment this will only run on ansys/aedt/core/speos.py which is working
       - name: Run Ty on selected files
         run: |
-          ty check src/ansys/speos/core/ \
+          ty check src/ansys/speos/core/ examples/ \
             --exclude src/ansys/speos/core/body.py \
             --exclude src/ansys/speos/core/face.py \
             --exclude src/ansys/speos/core/bsdf.py \
@@ -104,7 +104,10 @@ jobs:
             --exclude src/ansys/speos/core/__init__.py \
             --exclude src/ansys/speos/core/generic \
             --exclude src/ansys/speos/core/kernel \
-            --exclude src/ansys/speos/core/workflow
+            --exclude src/ansys/speos/core/workflow \
+            --exclude examples/core \
+            --exclude examples/kernel \
+            --exclude examples/workflow
 
   doc-style:
     name: Documentation Style Check
