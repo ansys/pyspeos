@@ -381,25 +381,25 @@ def test_load_optical_property_from_file(speos: Speos):
         match mat._name:
             case "Opaque_mirror80":
                 assert mat._sop_template.HasField("mirror")
-                assert mat.mirror.reflectance == 80
-                assert mat.vop_type == "opaque"
+                assert mat.sop_mirror.reflectance == 80
+                assert mat._vop_template.HasField("opaque")
             case "None_Library":
-                assert mat.vop_type is None
+                assert mat._vop_template is None
                 assert mat._sop_template.HasField("library")
                 assert mat.sop_library.file_uri.endswith(".scattering")
             case "FOP_mirror75":
                 assert mat._sop_template.HasField("mirror")
-                assert mat.mirror.reflectance == 75
-                assert mat.vop_type is None
+                assert mat.sop_mirror.reflectance == 75
+                assert mat._vop_template is None
             case "Optic_OP":
                 assert mat._sop_template.HasField("optical_polished")
-                assert mat.vop_type == "optic"
+                assert mat._vop_template.HasField("optic")
                 assert mat.vop_optic.index == 1.49
                 assert mat.vop_optic.constringence == 30
                 assert mat.vop_optic.absorption == 0.001
             case "Library_OP":
                 assert mat._sop_template.HasField("optical_polished")
-                assert mat.vop_type == "library"
+                assert mat._vop_template.HasField("library")
                 assert mat.vop_library.material_file_uri.endswith(".material")
 
 
@@ -411,7 +411,7 @@ def test_error_reporting(speos: Speos):
 
     # mirror helper should be absent when SOP is not mirror
     op.set_surface_opticalpolished()
-    assert op.mirror is None
+    assert op.sop_mirror is None
     assert op._sop_template.HasField("optical_polished")
 
     # sop_library accessor should be None when SOP is not library
@@ -1048,7 +1048,7 @@ def test_load_texture_property_from_file(speos: Speos):
                         assert expected.get(k1) == mapping_opp.get(k1)
             case "Texture_spherical_Optic_OP_normal_map":
                 assert mat._sop_template is None
-                assert mat.vop_type == "optic"
+                assert mat._vop_template.HasField("optic")
                 assert VopOpticParameters(
                     mat.vop_optic.index, mat.vop_optic.absorption, mat.vop_optic.constringence
                 ) == VopOpticParameters(1.5, 0, None)
@@ -1057,7 +1057,7 @@ def test_load_texture_property_from_file(speos: Speos):
                 assert mat._material_instance.HasField("texture")
                 assert len(mat.texture) == 1
                 assert mat.texture[0]._sop_template.HasField("mirror")
-                assert mat.texture[0].mirror.reflectance == 40
+                assert mat.texture[0].sop_mirror.reflectance == 40
                 assert mat.texture[0].normal_map.roughness == 1
                 assert mat.texture[0].normal_map.repeat_u
                 assert mat.texture[0].normal_map.repeat_v
@@ -1084,7 +1084,7 @@ def test_load_texture_property_from_file(speos: Speos):
                         assert expected.get(k1) == mapping_opp.get(k1)
             case "Texture_cylindrical_opaque_mirror40_normal_map":
                 assert mat._sop_template is None
-                assert mat.vop_type == "opaque"
+                assert mat._vop_template.HasField("opaque")
             case "Texture_cubic_opaque_library_normal_map_image|UV mapping.3":
                 assert mat._material_instance.HasField("texture")
                 assert len(mat.texture) == 1
@@ -1135,7 +1135,7 @@ def test_load_texture_property_from_file(speos: Speos):
                         assert expected.get(k1) == mapping_opp.get(k1)
             case "Texture_cubic_opaque_library_normal_map_image":
                 assert mat._sop_template is None
-                assert mat.vop_type == "opaque"
+                assert mat._vop_template.HasField("opaque")
             case "Texture_planar_FOP_aniso|UV mapping.4":
                 assert mat._material_instance.HasField("texture")
                 assert len(mat.texture) == 2
@@ -1213,13 +1213,13 @@ def test_load_texture_property_from_file(speos: Speos):
             case "Base_white_notexture":
                 assert mat._sop_template.HasField("library")
                 assert mat.sop_library.file_uri.endswith("simplescattering")
-                assert mat.vop_type == "optic"
+                assert mat._vop_template.HasField("optic")
                 assert VopOpticParameters(
                     mat.vop_optic.index, mat.vop_optic.absorption, mat.vop_optic.constringence
                 ) == VopOpticParameters(1.5, 10, None)
             case "Texture_gltf":
                 assert mat._sop_template is None
-                assert mat.vop_type is None
+                assert mat._vop_template is None
             case "Texture_gltf|UV mapping.1":
                 assert mat._material_instance.HasField("texture")
                 assert len(mat.texture) == 1

@@ -132,7 +132,7 @@ class BaseSop:
         """
         if isinstance(sop_parameters, SopMirrorParameters):
             self.set_surface_mirror()
-            self.mirror.reflectance = sop_parameters.reflectance
+            self.sop_mirror.reflectance = sop_parameters.reflectance
         elif sop_parameters == SopTypes.optical_polished:
             self.set_surface_opticalpolished()
         elif isinstance(sop_parameters, SopLibraryParameters):
@@ -188,7 +188,7 @@ class BaseSop:
                 self._parent._sop_template.mirror.reflectance = value
 
     @property
-    def mirror(self) -> Optional[BaseSop.SopMirror]:
+    def sop_mirror(self) -> Optional[BaseSop.SopMirror]:
         """Mirror helper for the current SOP template.
 
         Returns
@@ -196,12 +196,6 @@ class BaseSop:
         Optional[ansys.speos.core.opt_prop.BaseSop.SopMirror]
             Mirror helper when the active SOP field is ``mirror``, otherwise ``None``.
         """
-        if (
-            self._mirror is None
-            and self._sop_template is not None
-            and self._sop_template.HasField("mirror")
-        ):
-            self._mirror = self.SopMirror(self)
         return self._mirror
 
     def set_surface_mirror(self) -> BaseSop.SopMirror:
@@ -212,12 +206,12 @@ class BaseSop:
         ansys.speos.core.opt_prop.BaseSop.SopMirror
             Returns mirror helper for chaining.
         """
-        value = False
-        if self._sop_template.HasField("mirror"):
-            value = True
         self._library = None
-        self._mirror = self.SopMirror(self)
-        if not value:
+        if self._sop_template.HasField("mirror"):
+            self._library = None
+            self._mirror = self.SopMirror(self)
+        else:
+            self._mirror = self.SopMirror(self)
             self._mirror.reflectance = SopMirrorParameters().reflectance
         return self._mirror
 
@@ -301,8 +295,6 @@ class BaseSop:
             type, otherwise ``None``.
         """
         if self._sop_template.HasField("library"):
-            if self._library is None:
-                self._library = self.SopLibrary(self)
             return self._library
 
 
@@ -317,18 +309,19 @@ class BaseVop:
     class VopOptic:
         """Optic parameters for a clear transparent volume."""
 
-        def __init__(self, parent, default_parameters: VopOpticParameters):
+        def __init__(self, parent, default_parameters: Optional[VopOpticParameters] = None):
             """Create an optic helper bound to a parent VOP.
 
             Parameters
             ----------
             parent : ansys.speos.core.opt_prop.BaseVop
                 Base VOP wrapper that owns the optic protobuf field.
-            default_parameters : ansys.speos.core.generic.parameters.VopOpticParameters
+            default_parameters : Optional[ansys.speos.core.generic.parameters.VopOpticParameters]
                 Default optic parameters to apply during initialization.
             """
             self._parent = parent
-            self._fill_parameters(default_parameters)
+            if default_parameters:
+                self._fill_parameters(default_parameters)
 
         def _fill_parameters(self, default_parameters: VopOpticParameters):
             """Fill optic parameters from default parameters.
@@ -338,10 +331,9 @@ class BaseVop:
             default_parameters : ansys.speos.core.generic.parameters.VopOpticParameters
                 Default optic parameters to apply.
             """
-            if default_parameters:
-                self.index = default_parameters.index
-                self.absorption = default_parameters.absorption
-                self.constringence = default_parameters.constringence
+            self.index = default_parameters.index
+            self.absorption = default_parameters.absorption
+            self.constringence = default_parameters.constringence
 
         @property
         def index(self) -> float:
@@ -507,25 +499,6 @@ class BaseVop:
             self.vop_library.material_file_uri = vop_parameters.material_file_uri
 
     @property
-    def vop_type(self) -> Optional[str]:
-        """Volume optical property type.
-
-        Returns
-        -------
-        Optional[str]
-            VOP type as a string. Possible values include ``'opaque'``,
-            ``'optic'``, and ``'library'``. Returns ``None`` if no VOP template
-            is present.
-        """
-        if self._vop_template:
-            if self._vop_template.HasField("opaque"):
-                return "opaque"
-            if self._vop_template.HasField("optic"):
-                return "optic"
-            if self._vop_template.HasField("library"):
-                return "library"
-
-    @property
     def vop_optic(self) -> Optional[BaseVop.VopOptic]:
         """Optic parameters for a clear transparent volume.
 
@@ -548,13 +521,8 @@ class BaseVop:
             Library helper containing ``material_file_uri`` when VOP is of
             library type, otherwise ``None``.
         """
-        if (
-            self._vop_library is None
-            and self._vop_template
-            and self._vop_template.HasField("library")
-        ):
-            self._vop_library = self.VopLibrary(self)
-        return self._vop_library
+        if self._vop_template.HasField("library"):
+            return self._vop_library
 
     def set_volume_none(self) -> "OptProp":
         """Remove any VOP template (no volume optical property).

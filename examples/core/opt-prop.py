@@ -99,7 +99,7 @@ faces = data["faces"]
 
 op1 = p.create_optical_property(name="Material.1")
 op1.set_surface_mirror()  # SOP : mirror
-op1.mirror.reflectance = 80
+op1.sop_mirror.reflectance = 80
 op1.set_volume_opaque()  # VOP : opaque
 # This optical property will be applied to two bodies named : "TheBodyB" and "TheBodyC".
 op1.geometries = [bodies[0], bodies[1]]
@@ -140,7 +140,7 @@ print(op2)
 
 op3 = p.create_optical_property(name="Material.FOP")
 op3.set_surface_mirror()
-op3.mirror.reflectance = 90  # SOP : mirror
+op3.sop_mirror.reflectance = 90  # SOP : mirror
 # This optical property will be applied a face from TheBodyD named : "TheFaceF".
 op3.geometries = [faces[2]]
 op3.commit()
