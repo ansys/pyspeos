@@ -93,11 +93,11 @@ On server side, transport is defined by command line option:
 
 * ``--transport_tls SERVER_KEY,SERVER_CERTIFICATE,SERVER_CLIENT_CA``
   gRPC transport using TLS encryption. Requires paths to:
-  
+
   - the server's private key
   - the server's certificate
   - the server/client Certificate Authority file.
-  
+
 
 * ``--transport_uds UDSPATH(=C:\tmp\speosrpc_sock_50098)``
   Unix Domain Socket transport for local server/client communication.
@@ -110,7 +110,7 @@ On server side, transport is defined by command line option:
   Run the server with Windows named user authentication, only available on Windows and set by default if no transport selected, host must be localhost.
 
 * ``--transport_insecure``
-  
+
   Run the server in gRPC insecure mode.
 
 On client side, please use ``ansys.speos.core.kernel.grpc.transport_options`` to create the transport channel with same mode than the server.
