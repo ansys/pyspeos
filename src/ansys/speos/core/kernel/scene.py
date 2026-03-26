@@ -23,7 +23,7 @@
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
 
 from pathlib import Path
-from typing import Iterator, List, Union
+from typing import Iterator, List
 
 from ansys.api.speos.results.v1.ray_path_pb2 import RayPath
 from ansys.api.speos.scene.v2 import (
