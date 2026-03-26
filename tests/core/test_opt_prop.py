@@ -31,7 +31,9 @@ from ansys.speos.core import Face, GeoRef, OptProp, Project, Speos
 from ansys.speos.core.generic.parameters import (
     ImageTextureParameter,
     MappingByData,
+    MappingCylindricalParameters,
     MappingOperator,
+    MappingSphericalParameters,
     MappingTypes,
     MeshData,
     NormalMapParameter,
@@ -506,7 +508,13 @@ def test_create_texture_property(speos: Speos):
         Path(test_path) / "Texture.1.speos" / "black_leather.jpg.png"
     )
     for map_type in MappingTypes:
-        layer_1.image_texture._set_mapping_operator(map_type)
+        if map_type == MappingTypes._spherical:
+            t_map_type = MappingSphericalParameters()
+        elif map_type == MappingTypes._cylindrical:
+            t_map_type = MappingCylindricalParameters()
+        else:
+            t_map_type = map_type
+        layer_1.image_texture._set_mapping_operator(t_map_type)
         layer_1.image_texture.mapping_properties.u_length = 5
         assert map_type == layer_1.image_texture.mapping_properties.mapping_type
     layer_1.image_texture.set_planar_mapping()
@@ -551,7 +559,13 @@ def test_create_texture_property(speos: Speos):
         Path(test_path) / "Texture.1.speos" / "black_leather.jpg.png"
     )
     for map_type in MappingTypes:
-        layer_1.normal_map._set_mapping_operator(map_type)
+        if map_type == MappingTypes._spherical:
+            t_map_type = MappingSphericalParameters()
+        elif map_type == MappingTypes._cylindrical:
+            t_map_type = MappingCylindricalParameters()
+        else:
+            t_map_type = map_type
+        layer_1.normal_map._set_mapping_operator(t_map_type)
         assert map_type == layer_1.normal_map.mapping_properties.mapping_type
     layer_1.normal_map.set_cylindrical_mapping().u_length = 5
     op1.texture = [layer_1]
@@ -682,10 +696,16 @@ def test_create_texture_property(speos: Speos):
     )
     layer_2.set_anisotropy_map()
     for map_type in MappingTypes:
-        layer_2.anisotropic_map._set_mapping_operator(map_type).u_length = 5
+        if map_type == MappingTypes._spherical:
+            t_map_type = MappingSphericalParameters()
+        elif map_type == MappingTypes._cylindrical:
+            t_map_type = MappingCylindricalParameters()
+        else:
+            t_map_type = map_type
+        layer_2.anisotropic_map._set_mapping_operator(t_map_type).u_length = 5
         assert map_type == layer_2.anisotropic_map.mapping_properties.mapping_type
     opp = MappingOperator(
-        mapping_type=MappingTypes.spherical,
+        mapping_type=MappingSphericalParameters(10),
         u_length=5,
         v_length=10,
         u_offset=0,
@@ -694,7 +714,6 @@ def test_create_texture_property(speos: Speos):
         u_scale=10,
         v_scale=10,
         rotation=90,
-        perimeter=10,
     )
     layer_2.anisotropic_map.set_spherical_mapping()
     layer_2.anisotropic_map.mapping_properties.u_length = opp.u_length
@@ -703,7 +722,7 @@ def test_create_texture_property(speos: Speos):
     layer_2.anisotropic_map.mapping_properties.v_scale = opp.v_scale
     layer_2.anisotropic_map.mapping_properties.rotation = opp.rotation
     layer_2.anisotropic_map.mapping_properties.axis_system = opp.axis_system
-    layer_2.anisotropic_map.mapping_properties.perimeter = opp.perimeter
+    layer_2.anisotropic_map.mapping_properties.perimeter = opp.mapping_type.perimeter
     op1.texture = [layer_1, layer_2]
     op1.commit()
 
@@ -851,7 +870,7 @@ def test_texture_helper_parameter_initialization_branches(speos: Speos):
     anisotropic = TextureLayer.AnisotropicMap(
         layer_anisotropic,
         MappingOperator(
-            mapping_type=MappingTypes.spherical,
+            mapping_type=MappingSphericalParameters(),
             u_length=7,
             v_length=8,
             axis_system=axis_system,
@@ -860,7 +879,7 @@ def test_texture_helper_parameter_initialization_branches(speos: Speos):
             rotation=90,
         ),
     )
-    assert anisotropic.mapping_properties.mapping_type == MappingTypes.spherical
+    assert anisotropic.mapping_properties.mapping_type == MappingTypes._spherical
     assert anisotropic.mapping_properties.axis_system == axis_system
     assert anisotropic.mapping_properties.u_scale == 4
     assert anisotropic.mapping_properties.v_scale == 5
@@ -888,7 +907,7 @@ def test_reset_texture_property(speos: Speos):
     )
     layer_2.set_anisotropy_map().set_spherical_mapping()
     opp = MappingOperator(
-        mapping_type=MappingTypes.spherical,
+        mapping_type=MappingSphericalParameters(10),
         u_length=5,
         v_length=10,
         u_offset=0,
@@ -897,7 +916,6 @@ def test_reset_texture_property(speos: Speos):
         u_scale=10,
         v_scale=10,
         rotation=90,
-        perimeter=10,
     )
     layer_2.anisotropic_map.mapping_properties.u_length = opp.u_length
     layer_2.anisotropic_map.mapping_properties.v_length = opp.v_length
@@ -905,7 +923,7 @@ def test_reset_texture_property(speos: Speos):
     layer_2.anisotropic_map.mapping_properties.v_scale = opp.v_scale
     layer_2.anisotropic_map.mapping_properties.rotation = opp.rotation
     layer_2.anisotropic_map.mapping_properties.axis_system = opp.axis_system
-    layer_2.anisotropic_map.mapping_properties.perimeter = opp.perimeter
+    layer_2.anisotropic_map.mapping_properties.perimeter = opp.mapping_type.perimeter
     layer_2.set_normal_map().set_normal_map_from_normal_map()
     layer_2.normal_map.set_cubic_mapping()
     layer_2.normal_map.normal_map_file_uri = Path(test_path) / "Texture.1.speos" / "Facets_NM.png"
@@ -971,7 +989,6 @@ def test_reset_texture_property(speos: Speos):
         15,
         15,
         45,
-        None,
     )
     layer_2.anisotropic_map.set_planar_mapping()
     layer_2.anisotropic_map.mapping_properties.u_length = new_values.u_length
@@ -1010,17 +1027,18 @@ def test_load_texture_property_from_file(speos: Speos):
                 assert not mat.texture[0].normal_map.repeat_u
                 assert mat.texture[0].normal_map.repeat_v
                 mapping_opp = mat.texture[0].normal_map.mapping_properties.__todict__()
-                expected = MappingOperator(
-                    mapping_type=MappingTypes.spherical,
-                    u_length=10,
-                    v_length=7.46268656716,
-                    axis_system=[0, 1, 4.98, 0, 0, 1, 1, 0, 0, 0, 1, 0],
-                    u_offset=0,
-                    v_offset=0,
-                    u_scale=0.1,
-                    v_scale=0.1,
-                    perimeter=6.28,
-                ).__dict__
+                expected = {
+                    "mapping_type": MappingTypes._spherical,
+                    "u_offset": 0,
+                    "v_offset": 0,
+                    "u_length": 10,
+                    "v_length": 7.46268656716,
+                    "axis_system": [0, 1, 4.98, 0, 0, 1, 1, 0, 0, 0, 1, 0],
+                    "u_scale": 0.1,
+                    "v_scale": 0.1,
+                    "rotation": 0,
+                    "perimeter": 6.28,
+                }
                 for k1, k2 in zip(sorted(expected.keys()), sorted(mapping_opp.keys())):
                     assert k1 == k2
                 for k1 in expected.keys():
@@ -1045,17 +1063,18 @@ def test_load_texture_property_from_file(speos: Speos):
                 assert mat.texture[0].normal_map.repeat_v
                 assert mat.texture[0].normal_map.normal_map_file_uri.endswith("png")
                 mapping_opp = mat.texture[0].normal_map.mapping_properties.__todict__()
-                expected = MappingOperator(
-                    mapping_type=MappingTypes.cylindrical,
-                    u_length=10,
-                    v_length=10,
-                    axis_system=[4, 1, 4.98, 0, 0, 1, 1, 0, 0, 0, 1, 0],
-                    u_offset=0,
-                    v_offset=0,
-                    u_scale=0.1,
-                    v_scale=0.1,
-                    perimeter=6.28,
-                ).__dict__
+                expected = {
+                    "mapping_type": MappingTypes._cylindrical,
+                    "u_offset": 0,
+                    "v_offset": 0,
+                    "u_length": 10,
+                    "v_length": 10,
+                    "axis_system": [4, 1, 4.98, 0, 0, 1, 1, 0, 0, 0, 1, 0],
+                    "u_scale": 0.1,
+                    "v_scale": 0.1,
+                    "rotation": 0,
+                    "perimeter": 6.28,
+                }
                 for k1, k2 in zip(sorted(expected.keys()), sorted(mapping_opp.keys())):
                     assert k1 == k2
                 for k1 in expected.keys():
@@ -1074,16 +1093,18 @@ def test_load_texture_property_from_file(speos: Speos):
                 assert mat.texture[0].normal_map.roughness == 5
                 assert mat.texture[0].normal_map.normal_map_file_uri.endswith("png")
                 mapping_opp = mat.texture[0].normal_map.mapping_properties.__todict__()
-                expected = MappingOperator(
-                    mapping_type=MappingTypes.cubic,
-                    u_length=100,
-                    v_length=100,
-                    axis_system=[8, 1, 4.98, 0, 0, 1, 1, 0, 0, 0, 1, 0],
-                    u_offset=0,
-                    v_offset=0,
-                    u_scale=0.01,
-                    v_scale=0.01,
-                ).__dict__
+                expected = {
+                    "mapping_type": MappingTypes.cubic,
+                    "u_offset": 0,
+                    "v_offset": 0,
+                    "u_length": 100,
+                    "v_length": 100,
+                    "axis_system": [8, 1, 4.98, 0, 0, 1, 1, 0, 0, 0, 1, 0],
+                    "u_scale": 0.01,
+                    "v_scale": 0.01,
+                    "rotation": 0,
+                    "perimeter": None,
+                }
                 for k1, k2 in zip(sorted(expected.keys()), sorted(mapping_opp.keys())):
                     assert k1 == k2
                 for k1 in expected.keys():
@@ -1093,16 +1114,18 @@ def test_load_texture_property_from_file(speos: Speos):
                         assert expected.get(k1) == mapping_opp.get(k1)
                 assert mat.texture[0].image_texture.image_file_uri.endswith("png")
                 mapping_opp = mat.texture[0].image_texture.mapping_properties.__todict__()
-                expected = MappingOperator(
-                    mapping_type=MappingTypes.cubic,
-                    u_length=50,
-                    v_length=50,
-                    axis_system=[8, 1, 4.98, 0, 0, 1, 1, 0, 0, 0, 1, 0],
-                    u_offset=0,
-                    v_offset=0,
-                    u_scale=0.01,
-                    v_scale=0.01,
-                ).__dict__
+                expected = {
+                    "mapping_type": MappingTypes.cubic,
+                    "u_offset": 0,
+                    "v_offset": 0,
+                    "u_length": 50,
+                    "v_length": 50,
+                    "axis_system": [8, 1, 4.98, 0, 0, 1, 1, 0, 0, 0, 1, 0],
+                    "u_scale": 0.01,
+                    "v_scale": 0.01,
+                    "rotation": 0,
+                    "perimeter": None,
+                }
                 for k1, k2 in zip(sorted(expected.keys()), sorted(mapping_opp.keys())):
                     assert k1 == k2
                 for k1 in expected.keys():
@@ -1119,11 +1142,13 @@ def test_load_texture_property_from_file(speos: Speos):
                 assert mat.texture[0]._sop_template.HasField("library")
                 assert mat.texture[0].sop_library.file_uri.endswith("anisotropicbsdf")
                 mapping_opp = mat.texture[0].anisotropic_map.mapping_properties.__todict__()
-                expected = MappingOperator(
-                    mapping_type=MappingTypes.planar,
-                    u_length=0,
-                    v_length=0,
-                    axis_system=[
+                expected = {
+                    "mapping_type": MappingTypes.planar,
+                    "u_offset": 0,
+                    "v_offset": 0,
+                    "u_length": 0,
+                    "v_length": 0,
+                    "axis_system": [
                         12,
                         1,
                         4.98,
@@ -1137,12 +1162,11 @@ def test_load_texture_property_from_file(speos: Speos):
                         0,
                         0,
                     ],
-                    u_offset=0,
-                    v_offset=0,
-                    u_scale=0.1,
-                    v_scale=0.1,
-                    rotation=90,
-                ).__dict__
+                    "u_scale": 0.1,
+                    "v_scale": 0.1,
+                    "rotation": 90,
+                    "perimeter": None,
+                }
                 for k1, k2 in zip(sorted(expected.keys()), sorted(mapping_opp.keys())):
                     assert k1 == k2
                 for k1 in expected.keys():
@@ -1154,11 +1178,13 @@ def test_load_texture_property_from_file(speos: Speos):
                 assert mat.texture[1].normal_map.roughness == 1
                 assert mat.texture[1].normal_map.normal_map_file_uri.endswith("png")
                 mapping_opp = mat.texture[1].normal_map.mapping_properties.__todict__()
-                expected = MappingOperator(
-                    mapping_type=MappingTypes.planar,
-                    u_length=10,
-                    v_length=10,
-                    axis_system=[
+                expected = {
+                    "mapping_type": MappingTypes.planar,
+                    "u_offset": 0,
+                    "v_offset": 0,
+                    "u_length": 10,
+                    "v_length": 10,
+                    "axis_system": [
                         12,
                         1,
                         4.98,
@@ -1172,12 +1198,11 @@ def test_load_texture_property_from_file(speos: Speos):
                         0,
                         0,
                     ],
-                    u_offset=0,
-                    v_offset=0,
-                    u_scale=0.1,
-                    v_scale=0.1,
-                    rotation=90,
-                ).__dict__
+                    "u_scale": 0.1,
+                    "v_scale": 0.1,
+                    "rotation": 90,
+                    "perimeter": None,
+                }
                 for k1, k2 in zip(sorted(expected.keys()), sorted(mapping_opp.keys())):
                     assert k1 == k2
                 for k1 in expected.keys():

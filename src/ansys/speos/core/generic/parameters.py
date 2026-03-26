@@ -136,8 +136,24 @@ class MappingTypes(str, Enum):
 
     planar = "planar"
     cubic = "cubic"
-    spherical = "spherical"
-    cylindrical = "cylindrical"
+    _spherical = "spherical"
+    _cylindrical = "cylindrical"
+
+
+@dataclass
+class MappingCylindricalParameters:
+    """Cylindrical mapping parameters."""
+
+    perimeter: float = 1
+    """Perimeter value used for cylindrical mapping."""
+
+
+@dataclass
+class MappingSphericalParameters:
+    """Spherical mapping parameters."""
+
+    perimeter: float = 1
+    """Perimeter value used for spherical mapping."""
 
 
 class VopTypes(str, Enum):
@@ -145,8 +161,6 @@ class VopTypes(str, Enum):
 
     none = None
     opaque = "opaque"
-    library = "library"
-    optic = "optic"
 
 
 class SopTypes(str, Enum):
@@ -159,7 +173,9 @@ class SopTypes(str, Enum):
 class MappingOperator:
     """Store all information needed to create a UV mapping."""
 
-    mapping_type: Union[MappingTypes] = MappingTypes.planar
+    mapping_type: Union[MappingTypes, MappingCylindricalParameters, MappingSphericalParameters] = (
+        MappingTypes.planar
+    )
     """Type of mapping applied on the geometry."""
     u_length: float = 10
     """Length of the mapping along the U axis."""
@@ -177,8 +193,6 @@ class MappingOperator:
     """Scaling factor applied along the V axis."""
     rotation: float = 0
     """Rotation angle of the mapping."""
-    perimeter: Optional[float] = None
-    """Perimeter value used by mapping modes that require it."""
 
 
 @dataclass
@@ -257,16 +271,10 @@ class TextureLayerParameters:
         default_factory=SopMirrorParameters
     )
     """SOP parameters applied to the texture layer."""
-    image_texture: bool = False
-    """Whether this layer uses an image texture."""
     image_texture_parameters: Optional[ImageTextureParameter] = None
     """Image texture parameters when ``image_texture`` is enabled."""
-    normal_map: bool = False
-    """Whether this layer uses a normal map."""
     normal_map_parameters: Optional[NormalMapParameter] = None
     """Normal map image parameters when ``normal_map`` is enabled."""
-    anisotropy_map: bool = False
-    """Whether this layer uses an anisotropy map."""
     anisotropy_map_parameters: Optional[Union[MappingOperator, MappingByData]] = None
     """Mapping parameters applied to the anisotropy map."""
 
@@ -275,16 +283,14 @@ class TextureLayerParameters:
 class OptPropParameters:
     """Store default values for optical properties."""
 
-    sop_parameters: Optional[Union[SopTypes, SopMirrorParameters, SopLibraryParameters]] = field(
-        default_factory=SopMirrorParameters
-    )
+    sop_parameters: Optional[
+        Union[SopTypes, SopMirrorParameters, SopLibraryParameters, List[TextureLayerParameters]]
+    ] = field(default_factory=SopMirrorParameters)
     """SOP parameters used for optical properties."""
     vop_parameters: Optional[Union[VopTypes, VopLibraryParameters, VopOpticParameters]] = (
         VopTypes.none
     )
     """VOP parameters used for optical properties."""
-    texture_parameters: Optional[List[TextureLayerParameters]] = None
-    """Optional texture layers applied as optical properties."""
 
 
 class LayerTypes(str, Enum):

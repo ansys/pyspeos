@@ -45,7 +45,9 @@ from ansys.speos.core.generic.general_methods import min_speos_version
 from ansys.speos.core.generic.parameters import (
     ImageTextureParameter,
     MappingByData,
+    MappingCylindricalParameters,
     MappingOperator,
+    MappingSphericalParameters,
     MappingTypes,
     NormalMapParameter,
     NormalMapTypes,
@@ -216,7 +218,7 @@ class BaseSop:
         self._library = None
         self._mirror = self.SopMirror(self)
         if not value:
-            self._mirror.reflectance = 100
+            self._mirror.reflectance = SopMirrorParameters().reflectance
         return self._mirror
 
     def set_surface_opticalpolished(self) -> BaseSop:
@@ -693,18 +695,23 @@ class TextureLayer(BaseSop):
             """
             if default_parameters and default_parameters:
                 match default_parameters.mapping_type:
-                    case MappingTypes.cylindrical:
-                        self._mapping.cylindrical.SetInParent()
-                        if default_parameters.perimeter:
-                            self._mapping.cylindrical.base_perimeter = default_parameters.perimeter
                     case MappingTypes.planar:
                         self._mapping.planar.SetInParent()
                     case MappingTypes.cubic:
                         self._mapping.cubic.SetInParent()
-                    case MappingTypes.spherical:
-                        self._mapping.spherical.SetInParent()
-                        if default_parameters.perimeter:
-                            self._mapping.spherical.sphere_perimeter = default_parameters.perimeter
+                    case _:
+                        if isinstance(default_parameters.mapping_type, MappingSphericalParameters):
+                            self._mapping.spherical.SetInParent()
+                            self._mapping.spherical.sphere_perimeter = (
+                                default_parameters.mapping_type.perimeter
+                            )
+                        elif isinstance(
+                            default_parameters.mapping_type, MappingCylindricalParameters
+                        ):
+                            self._mapping.cylindrical.SetInParent()
+                            self._mapping.cylindrical.base_perimeter = (
+                                default_parameters.mapping_type.perimeter
+                            )
                 self._mapping.u_offset = default_parameters.u_offset
                 self._mapping.v_offset = default_parameters.v_offset
                 self._mapping.u_length = default_parameters.u_length
@@ -948,9 +955,9 @@ class TextureLayer(BaseSop):
                 self._mapping.cylindrical.base_perimeter = value
             else:
                 raise TypeError(
-                    f"Mapping type is not '{MappingTypes.spherical}' or "
-                    f"'{MappingTypes.cylindrical}. Set mapping_type to "
-                    f"'{MappingTypes.spherical}' or '{MappingTypes.cylindrical} first."
+                    f"Mapping type is not '{MappingTypes._spherical}' or "
+                    f"'{MappingTypes._cylindrical}. Set mapping_type to "
+                    f"'{MappingTypes._spherical}' or '{MappingTypes._cylindrical} first."
                 )
 
         def __todict__(self):
@@ -1077,19 +1084,22 @@ class TextureLayer(BaseSop):
             """Normalize mapping type input to the protobuf oneof field name."""
             if isinstance(mapping_type, MappingTypes):
                 return mapping_type.value
+            elif isinstance(mapping_type, MappingCylindricalParameters):
+                return MappingTypes._cylindrical.value
+            elif isinstance(mapping_type, MappingSphericalParameters):
+                return MappingTypes._spherical.value
             return str(mapping_type)
 
         def _set_mapping_operator(self, mapping_type: Union[MappingTypes, str]):
             """Switch to operator-based mapping and set its projection type."""
+            mapping_type_name = self._mapping_type_name(mapping_type)
             map_property = self._get_map_property()
             if map_property.HasField("vertices_data_index"):
                 map_property.ClearField("vertices_data_index")
                 map_property.mapping_operator.SetInParent()
-            if not map_property.mapping_operator.HasField(mapping_type):
+            if not map_property.mapping_operator.HasField(mapping_type_name):
                 map_property.ClearField("mapping_operator")
                 map_property.mapping_operator.SetInParent()
-
-                mapping_type_name = self._mapping_type_name(mapping_type)
                 if mapping_type_name not in {"planar", "cubic", "spherical", "cylindrical"}:
                     raise ValueError(
                         "Invalid mapping type. Must be one of 'planar', 'cubic', 'spherical', "
@@ -1153,7 +1163,7 @@ class TextureLayer(BaseSop):
             ansys.speos.core.opt_prop.TextureLayer.TextureMappingOperator
                 The mapping operator for the cylindrical mapping.
             """
-            self._set_mapping_operator(MappingTypes.cylindrical)
+            self._set_mapping_operator(MappingTypes._cylindrical)
             self._mapping.perimeter = 1  # Default perimeter value for cylindrical mapping
             return self._mapping
 
@@ -1173,7 +1183,7 @@ class TextureLayer(BaseSop):
             ansys.speos.core.opt_prop.TextureLayer.TextureMappingOperator
                 The mapping operator for the spherical mapping.
             """
-            self._set_mapping_operator(MappingTypes.spherical)
+            self._set_mapping_operator(MappingTypes._spherical)
             self._mapping.perimeter = 1  # Default perimeter value for spherical mapping
             return self._mapping
 
@@ -1556,17 +1566,17 @@ class TextureLayer(BaseSop):
         ], optional
             Default texture layer parameters to apply.
         """
-        if default_parameters.image_texture:
+        if default_parameters.image_texture_parameters:
             self._image_map = TextureLayer.ImageTexture(
                 self._texture_template, default_parameters.image_texture_parameters
             )
-        if default_parameters.normal_map:
+        if default_parameters.normal_map_parameters:
             self._normal_map = TextureLayer.NormalMap(
                 self._texture_template, default_parameters.normal_map_parameters
             )
-        if default_parameters.anisotropy_map:
-            if default_parameters.anisotropy_map_mapping:
-                self.normal_map_property = default_parameters.normal_map_mapping
+        if default_parameters.anisotropy_map_parameters:
+            if default_parameters.anisotropy_map_parameters:
+                self.normal_map_property = default_parameters.anisotropy_map_parameters
 
     @property
     def image_texture(self) -> ImageTexture:
@@ -1818,20 +1828,21 @@ class OptProp(BaseVop, BaseSop):
             self._material_instance,
             vop_parameters=default_parameters.vop_parameters,
         )
-        if default_parameters.texture_parameters:
-            self._sop_template = None
-            self.texture = [
-                TextureLayer(self, f"Layer{i}", texture_layer_parameters=layer)
-                for i, layer in enumerate(default_parameters.texture_parameters)
-            ]
-
-        else:
+        if isinstance(
+            default_parameters.sop_parameters, (SopTypes, SopMirrorParameters, SopLibraryParameters)
+        ):
             BaseSop.__init__(
                 self,
                 self._sop_template,
                 self._material_instance,
                 sop_parameters=default_parameters.sop_parameters,
             )
+        elif isinstance(default_parameters.sop_parameters, list):
+            self._sop_template = None
+            self.texture = [
+                TextureLayer(self, f"Layer{i}", texture_layer_parameters=layer)
+                for i, layer in enumerate(default_parameters.sop_parameters)
+            ]
 
     @property
     def texture(self) -> Optional[list["TextureLayer"]]:
@@ -1861,6 +1872,7 @@ class OptProp(BaseVop, BaseSop):
         for layer in value:
             if not isinstance(layer, TextureLayer):
                 raise ValueError("not a texture")
+        self._sop_template = None
         self._texture = value
 
     @property
