@@ -187,7 +187,7 @@ class LightBox:
 
         """
         sources_data = self._project.client[self._scene_instance.scene_guid].get().sources
-        return [f"{self.name}/{data.name)" for data in sources_data]
+        return [f"{self.name}/{data.name}" for data in sources_data]
 
     @property
     def name(self) -> str:

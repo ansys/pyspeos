@@ -78,21 +78,11 @@ def insert_speos(project: Project, speos_to_insert: List[SpeosFileInstance]) -> 
     Geometries and materials are placed in the root part, and orientated thanks to the
     SpeosFileInstance object.
 
-    Notes
-    -----
-    Sources, Sensors and Simulations are not imported to the project.
-
-    Parameters
-    ----------
-    project : ansys.speos.core.project.Project
-        Project in which to import geometries and materials from SPEOS files.
-    speos_to_combine : List[ansys.speos.core.workflow.combine_speos.SpeosFileInstance]
-
     Parameters
     ----------
     project : ansys.speos.core.project.Project
        Project in which to import geometries and materials from SPEOS files.
-    speos_to_combine : List[ansys.speos.core.workflow.combine_speos.SpeosFileInstance]
+    speos_to_insert : List[ansys.speos.core.workflow.combine_speos.SpeosFileInstance]
        List of SPEOS files, location and orientation of geometries to be imported to the project.
 
     Notes
@@ -118,16 +108,6 @@ def combine_speos(speos: Speos, speos_to_combine: List[SpeosFileInstance]) -> Pr
     Geometries and materials are placed in the root part,
     and orientated thanks to the SpeosFileInstance object.
 
-    Notes
-    -----
-        Sources, Sensors and Simulations are not imported to the project.
-
-    Parameters
-    ----------
-    speos : ansys.speos.core.speos.Speos
-        Speos session (connected to gRPC server).
-    speos_to_combine : List[ansys.speos.core.workflow.combine_speos.SpeosFileInstance]
-
     Parameters
     ----------
     speos : ansys.speos.core.speos.Speos
@@ -135,15 +115,16 @@ def combine_speos(speos: Speos, speos_to_combine: List[SpeosFileInstance]) -> Pr
     speos_to_combine : List[ansys.speos.core.workflow.combine_speos.SpeosFileInstance]
        List of SPEOS files, location and orientation of geometries to be imported to the project.
 
-    Notes
-    -----
-       Sources, Sensors and Simulations are not imported to the project.
-
-
     Returns
     -------
     ansys.speos.core.project.Project
         Project created by combining the input list of SPEOS files.
+
+
+    Notes
+    -----
+       Sources, Sensors and Simulations are not imported to the project.
+
     """
     # Create an empty project and an empty part link
     p = Project(speos=speos)
