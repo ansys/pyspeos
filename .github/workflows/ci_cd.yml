@@ -41,7 +41,7 @@ jobs:
     name: Vulnerabilities
     runs-on: ubuntu-latest
     steps:
-      - uses: ansys/actions/check-vulnerabilities@3931ac9351b13ae11b1203c2ef6b51e5c75502ea # v10.2.5
+      - uses: ansys/actions/check-vulnerabilities@feat/cleanup
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           python-package-name: ${{ env.PACKAGE_NAME }}
