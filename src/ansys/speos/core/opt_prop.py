@@ -80,11 +80,11 @@ class BaseSop:
 
         Parameters
         ----------
-        sop_template : ProtoSOPTemplate
+        sop_template : ansys.speos.core.kernel.sop_template.ProtoSOPTemplate
             Surface optical property template to wrap.
-        mat_inst : ProtoScene.MaterialInstance
+        mat_inst : ansys.speos.core.kernel.scene.ProtoScene.MaterialInstance
             Material instance that owns the SOP settings.
-        sop_parameters : Optional[SopParameters], optional
+        sop_parameters : Optional[ansys.speos.core.generic.parameters.SopParameters], optional
             Default SOP parameters to apply at initialization.
         """
         self._sop_template = sop_template
@@ -111,7 +111,7 @@ class BaseSop:
 
         Parameters
         ----------
-        sop_parameters : SopParameters
+        sop_parameters : ansys.speos.core.generic.parameters.SopParameters
             SOP parameters to apply.
         """
         if sop_parameters.sop_type == SopTypes.mirror:
@@ -133,10 +133,8 @@ class BaseSop:
 
             Parameters
             ----------
-            parent : BaseSop
+            parent : ansys.speos.core.opt_prop.BaseSop
                 Base SOP wrapper that owns the mirror protobuf field.
-            default_parameters : Optional[SopParameters], optional
-                Optional default parameters used to initialize reflectance.
             """
             self._parent = parent
             self._parent._sop_template.mirror.SetInParent()
@@ -180,7 +178,7 @@ class BaseSop:
 
         Returns
         -------
-        Optional[SopMirror]
+        Optional[ansys.speos.core.opt_prop.BaseSop.SopMirror]
             Mirror helper when the active SOP field is ``mirror``, otherwise ``None``.
         """
         if (
@@ -196,8 +194,8 @@ class BaseSop:
 
         Returns
         -------
-        ansys.speos.core.opt_prop.BaseSop
-            Returns self for chaining.
+        ansys.speos.core.opt_prop.BaseSop.SopMirror
+            Returns mirror helper for chaining.
         """
         value = False
         if self._sop_template.HasField("mirror"):
@@ -229,10 +227,8 @@ class BaseSop:
 
             Parameters
             ----------
-            parent : BaseSop
+            parent : ansys.speos.core.opt_prop.BaseSop
                 Base SOP wrapper that owns the library protobuf field.
-            default_parameters : Optional[SopParameters], optional
-                Optional default parameters used to initialize the SOP file URI.
             """
             self._parent = parent
             self._parent._sop_template.library.SetInParent()
@@ -271,8 +267,8 @@ class BaseSop:
 
         Returns
         -------
-        ansys.speos.core.opt_prop.BaseSop
-            Returns self for chaining.
+        ansys.speos.core.opt_prop.BaseSop.SopLibrary
+            Returns library helper for chaining.
         """
         self._mirror = None
         self._sop_template.library.SetInParent()
@@ -285,9 +281,9 @@ class BaseSop:
 
         Returns
         -------
-        Optional[SopLibrary]
-            SopLibrary instance containing library information (sop_file_uri)
-            when SOP is of library type, otherwise ``None``.
+        Optional[ansys.speos.core.opt_prop.BaseSop.SopLibrary]
+            Library helper containing ``sop_file_uri`` when SOP is of library
+            type, otherwise ``None``.
         """
         if self._sop_template.HasField("library"):
             if self._library is None:
@@ -311,9 +307,9 @@ class BaseVop:
 
             Parameters
             ----------
-            parent : BaseVop
+            parent : ansys.speos.core.opt_prop.BaseVop
                 Base VOP wrapper that owns the optic protobuf field.
-            default_parameters : MaterialOpticParameters
+            default_parameters : ansys.speos.core.generic.parameters.MaterialOpticParameters
                 Default optic parameters to apply during initialization.
             """
             self._parent = parent
@@ -324,7 +320,7 @@ class BaseVop:
 
             Parameters
             ----------
-            default_parameters : MaterialOpticParameters
+            default_parameters : ansys.speos.core.generic.parameters.MaterialOpticParameters
                 Default optic parameters to apply.
             """
             if default_parameters:
@@ -399,7 +395,7 @@ class BaseVop:
 
             Parameters
             ----------
-            parent : BaseVop
+            parent : ansys.speos.core.opt_prop.BaseVop
                 Base VOP wrapper that owns the library protobuf field.
             """
             self._parent = parent
@@ -437,11 +433,11 @@ class BaseVop:
 
         Parameters
         ----------
-        vop_template : Optional[ProtoVOPTemplate]
+        vop_template : Optional[ansys.speos.core.kernel.vop_template.ProtoVOPTemplate]
             Volume optical property template to wrap.
-        mat_inst : ProtoScene.MaterialInstance
+        mat_inst : ansys.speos.core.kernel.scene.ProtoScene.MaterialInstance
             Material instance that owns the VOP settings.
-        vop_parameters : Optional[VopParameters], optional
+        vop_parameters : Optional[ansys.speos.core.generic.parameters.VopParameters], optional
             Default VOP parameters to apply at initialization.
         """
         # Create VOP template
@@ -460,7 +456,7 @@ class BaseVop:
 
         Parameters
         ----------
-        vop_parameters : VopParameters
+        vop_parameters : ansys.speos.core.generic.parameters.VopParameters
             VOP parameters to apply.
         """
         if vop_parameters.vop_type == VopTypes.optic:
@@ -497,9 +493,9 @@ class BaseVop:
 
         Returns
         -------
-        Optional[VopOptic]
-            VopOptic instance containing optics information (index, absorption,
-            constringence) when VOP is of optic type, otherwise ``None``.
+        Optional[ansys.speos.core.opt_prop.BaseVop.VopOptic]
+            Optic helper containing index, absorption, and constringence when
+            VOP is of optic type, otherwise ``None``.
         """
         if self._vop_template.HasField("optic"):
             return self._vop_optic
@@ -510,9 +506,9 @@ class BaseVop:
 
         Returns
         -------
-        Optional[VopLibrary]
-            VopLibrary instance containing library information (vop_library_file_uri)
-            when VOP is of library type, otherwise ``None``.
+        Optional[ansys.speos.core.opt_prop.BaseVop.VopLibrary]
+            Library helper containing ``material_file_uri`` when VOP is of
+            library type, otherwise ``None``.
         """
         if (
             self._vop_library is None
@@ -641,7 +637,9 @@ class TextureLayer(BaseSop):
         Description of the feature. Default is an empty string.
     metadata : Optional[Mapping[str, str]], optional
         Metadata of the feature. Default is ``None``.
-    texture_layer_parameters : Optional[TextureLayerParameters], optional
+    texture_layer_parameters : Optional[\
+        ansys.speos.core.generic.parameters.TextureLayerParameters\
+    ], optional
         Default texture layer parameters to initialize the texture layer. Default is ``None``.
     """
 
@@ -655,7 +653,9 @@ class TextureLayer(BaseSop):
             ----------
             mapping : protobuf message
                 Message containing the ``mapping_operator`` field to manipulate.
-            default_parameters : Optional[MappingOperator], optional
+            default_parameters : Optional[\
+                ansys.speos.core.generic.parameters.MappingOperator\
+            ], optional
                 Default mapping parameters to apply to the operator.
             """
             self._mapping = mapping.mapping_operator
@@ -666,7 +666,9 @@ class TextureLayer(BaseSop):
 
             Parameters
             ----------
-            default_parameters : Optional[MappingOperator], optional
+            default_parameters : Optional[\
+                ansys.speos.core.generic.parameters.MappingOperator\
+            ], optional
                 Default mapping parameters to apply.
             """
             if default_parameters and default_parameters:
@@ -980,7 +982,9 @@ class TextureLayer(BaseSop):
             ----------
             parent : protobuf message
                 Message containing a ``vertices_data_index`` field.
-            default_parameters : Optional[MappingByData], optional
+            default_parameters : Optional[\
+                ansys.speos.core.generic.parameters.MappingByData\
+            ], optional
                 Default data-mapping parameters to apply.
             """
             self._parent = parent
@@ -991,7 +995,9 @@ class TextureLayer(BaseSop):
 
             Parameters
             ----------
-            default_parameters : Optional[MappingByData], optional
+            default_parameters : Optional[\
+                ansys.speos.core.generic.parameters.MappingByData\
+            ], optional
                 Default data-mapping parameters to apply.
             """
             if default_parameters and default_parameters.vertices_data_index is not None:
@@ -1027,9 +1033,9 @@ class TextureLayer(BaseSop):
 
             Parameters
             ----------
-            parent : TextureLayer
+            parent : ansys.speos.core.opt_prop.TextureLayer
                 Texture layer that owns the map data.
-            texture_type : TextureTypes
+            texture_type : ansys.speos.core.generic.parameters.TextureTypes
                 Texture map kind handled by the helper.
             """
             self._parent = parent
@@ -1124,7 +1130,7 @@ class TextureLayer(BaseSop):
 
             Returns
             -------
-            TextureMappingOperator
+            ansys.speos.core.opt_prop.TextureLayer.TextureMappingOperator
                 The mapping operator for the cylindrical mapping.
             """
             self._set_mapping_operator(MappingTypes.cylindrical)
@@ -1144,7 +1150,7 @@ class TextureLayer(BaseSop):
 
             Returns
             -------
-            TextureMappingOperator
+            ansys.speos.core.opt_prop.TextureLayer.TextureMappingOperator
                 The mapping operator for the spherical mapping.
             """
             self._set_mapping_operator(MappingTypes.spherical)
@@ -1171,9 +1177,11 @@ class TextureLayer(BaseSop):
 
             Parameters
             ----------
-            parent : TextureLayer
+            parent : ansys.speos.core.opt_prop.TextureLayer
                 Texture layer that owns the image texture data.
-            default_parameters : Optional[ImageTextureParameter], optional
+            default_parameters : Optional[\
+                ansys.speos.core.generic.parameters.ImageTextureParameter\
+            ], optional
                 Default image texture settings to apply.
             """
             super().__init__(parent, TextureTypes.image)
@@ -1184,7 +1192,9 @@ class TextureLayer(BaseSop):
 
             Parameters
             ----------
-            default_parameters : Optional[ImageTextureParameter], optional
+            default_parameters : Optional[\
+                ansys.speos.core.generic.parameters.ImageTextureParameter\
+            ], optional
                 Default image texture settings to apply.
             """
             if default_parameters:
@@ -1268,9 +1278,11 @@ class TextureLayer(BaseSop):
 
             Parameters
             ----------
-            parent : TextureLayer
+            parent : ansys.speos.core.opt_prop.TextureLayer
                 Texture layer that owns the normal map data.
-            default_parameters : Optional[NormalMapParameter], optional
+            default_parameters : Optional[\
+                ansys.speos.core.generic.parameters.NormalMapParameter\
+            ], optional
                 Default normal map settings to apply.
             """
             super().__init__(parent, TextureTypes.normal_map)
@@ -1281,7 +1293,9 @@ class TextureLayer(BaseSop):
 
             Parameters
             ----------
-            default_parameters : Optional[NormalMapParameter], optional
+            default_parameters : Optional[\
+                ansys.speos.core.generic.parameters.NormalMapParameter\
+            ], optional
                 Default normal map settings to apply.
             """
             if default_parameters:
@@ -1427,9 +1441,11 @@ class TextureLayer(BaseSop):
 
             Parameters
             ----------
-            parent : TextureLayer
+            parent : ansys.speos.core.opt_prop.TextureLayer
                 Texture layer that owns the anisotropy map data.
-            default_parameters : Optional[MappingOperator], optional
+            default_parameters : Optional[\
+                ansys.speos.core.generic.parameters.MappingOperator\
+            ], optional
                 Default anisotropy map settings to apply.
             """
             super().__init__(parent, TextureTypes.anisotropy_map)
@@ -1440,7 +1456,9 @@ class TextureLayer(BaseSop):
 
             Parameters
             ----------
-            default_parameters : Optional[MappingOperator], optional
+            default_parameters : Optional[\
+                ansys.speos.core.generic.parameters.MappingOperator\
+            ], optional
                 Default anisotropy map settings to apply.
             """
             if default_parameters:
@@ -1470,7 +1488,7 @@ class TextureLayer(BaseSop):
 
         Parameters
         ----------
-        opt_prop : OptProp
+        opt_prop : ansys.speos.core.opt_prop.OptProp
             Optical property that will own this texture layer.
         name : str
             Name of the texture layer feature.
@@ -1478,7 +1496,9 @@ class TextureLayer(BaseSop):
             Description of the texture layer.
         metadata : Optional[Mapping[str, str]], optional
             Metadata to attach to the SOP template.
-        default_parameters : Optional[TextureLayerParameters], optional
+        default_parameters : Optional[\
+            ansys.speos.core.generic.parameters.TextureLayerParameters\
+        ], optional
             Default texture layer parameters to apply at initialization.
         """
         self._project = opt_prop._project
@@ -1512,7 +1532,9 @@ class TextureLayer(BaseSop):
 
         Parameters
         ----------
-        default_parameters : Optional[TextureLayerParameters], optional
+        default_parameters : Optional[\
+            ansys.speos.core.generic.parameters.TextureLayerParameters\
+        ], optional
             Default texture layer parameters to apply.
         """
         if default_parameters:
@@ -1523,7 +1545,7 @@ class TextureLayer(BaseSop):
 
         Parameters
         ----------
-        texture_layer_parameters : TextureLayerParameters
+        texture_layer_parameters : ansys.speos.core.generic.parameters.TextureLayerParameters
             Texture layer parameters to apply.
         """
         if texture_layer_parameters.image_texture:
@@ -1681,7 +1703,7 @@ class TextureLayer(BaseSop):
         ----------
         sop_guid : str
             SOP template GUID.
-        texture : ProtoScene.MaterialInstance.Texture.Layer
+        texture : ansys.speos.core.kernel.scene.ProtoScene.MaterialInstance.Texture.Layer
             The texture layer protobuf message.
         """
         self.sop_template_link = self._project.client[sop_guid]
@@ -1705,7 +1727,7 @@ class OptProp(BaseVop, BaseSop):
         Description of the feature. Default is an empty string.
     metadata : Optional[Mapping[str, str]], optional
         Metadata of the feature. Default is ``None``.
-    default_parameters : Optional[OptPropParameters], optional
+    default_parameters : Optional[ansys.speos.core.generic.parameters.OptPropParameters], optional
         Default optical property parameters to initialize the OptProp. Default is ``None``.
     """
 
@@ -1721,7 +1743,7 @@ class OptProp(BaseVop, BaseSop):
 
         Parameters
         ----------
-        project : p.Project
+        project : ansys.speos.core.project.Project
             Project that will own the optical property.
         name : str
             Name of the optical property.
@@ -1729,7 +1751,9 @@ class OptProp(BaseVop, BaseSop):
             Human-readable description of the optical property.
         metadata : Optional[Mapping[str, str]], optional
             Metadata to attach to the created templates and material instance.
-        default_parameters : Optional[OptPropParameters], optional
+        default_parameters : Optional[\
+            ansys.speos.core.generic.parameters.OptPropParameters\
+        ], optional
             Default optical property parameters to apply at initialization.
         """
         self._name = name
@@ -1779,7 +1803,9 @@ class OptProp(BaseVop, BaseSop):
 
         Parameters
         ----------
-        default_parameters : Optional[OptPropParameters], optional
+        default_parameters : Optional[\
+            ansys.speos.core.generic.parameters.OptPropParameters\
+        ], optional
             Default optical property parameters to apply.
         """
         if default_parameters and default_parameters.texture_parameters:
@@ -1794,7 +1820,7 @@ class OptProp(BaseVop, BaseSop):
 
         Returns
         -------
-        Optional[list[TextureLayer]]
+        Optional[list[ansys.speos.core.opt_prop.TextureLayer]]
             Texture layers or ``None`` when not set.
         """
         return self._texture
@@ -1805,8 +1831,8 @@ class OptProp(BaseVop, BaseSop):
 
         Parameters
         ----------
-        value : list[TextureLayer]
-            List of TextureLayer objects to assign.
+        value : list[ansys.speos.core.opt_prop.TextureLayer]
+            List of texture layer objects to assign.
 
         Raises
         ------
@@ -1842,8 +1868,14 @@ class OptProp(BaseVop, BaseSop):
 
         Parameters
         ----------
-        geometries : Optional[list[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]]
-            Geometry references, GeoRef instances, Body instances, Face instances,
+        geometries : Optional[list[Union[\
+                ansys.speos.core.geo_ref.GeoRef, \
+                ansys.speos.core.body.Body, \
+                ansys.speos.core.face.Face, \
+                ansys.speos.core.part.Part.SubPart, \
+            ]]]
+            Geometry references, ansys.speos.core.geo_ref.GeoRef instances,
+            Body instances, Face instances,
             or SubPart instances. Pass ``None`` to clear geometries.
         """
         if geometries is None:
@@ -1876,7 +1908,9 @@ class OptProp(BaseVop, BaseSop):
             Name of the texture layer.
         description : str, optional
             Description of the texture layer. Default is an empty string.
-        default_parameters : Optional[TextureLayerParameters], optional
+        default_parameters : Optional[\
+            ansys.speos.core.generic.parameters.TextureLayerParameters\
+        ], optional
             Default parameters for the texture layer. Default is an empty TextureLayerParameters.
         """
         if self._texture is None:
@@ -1901,7 +1935,7 @@ class OptProp(BaseVop, BaseSop):
 
         Returns
         -------
-        TextureLayer
+        ansys.speos.core.opt_prop.TextureLayer
             The newly created texture layer.
         """
         layer_name = f"Layer{len(self._texture) if self._texture else 0}"
@@ -2200,7 +2234,7 @@ class OptProp(BaseVop, BaseSop):
 
         Parameters
         ----------
-        mat_inst : ProtoScene.MaterialInstance
+        mat_inst : ansys.speos.core.kernel.scene.ProtoScene.MaterialInstance
             MaterialInstance protobuf message retrieved from the server.
         """
         self._unique_id = mat_inst.metadata["UniqueId"]
