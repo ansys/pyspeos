@@ -491,40 +491,6 @@ class IntensityXMPSensorParameters:
 
 
 @dataclass
-class UserDefinedWhitePointParameters:
-    """User defined White Point Parameters."""
-
-    x: float = 0.31271
-    y: float = 0.32902
-
-
-class WhitePointType(str, Enum):
-    """White Point type without parameters."""
-
-    d65 = "d65"
-    d50 = "d50"
-    c = "c"
-    e = "e"
-
-
-@dataclass
-class UserDefinedColorSpaceParameters:
-    """User defined Color Space Parameters."""
-
-    white_point_type: Union[WhitePointType, UserDefinedWhitePointParameters] = WhitePointType.d65
-    red_spectrum_uri: Union[str, Path] = ""
-    blue_spectrum_uri: Union[str, Path] = ""
-    green_spectrum_uri: Union[str, Path] = ""
-
-
-class ColorSpaceType(str, Enum):
-    """Color Space Type without parameters."""
-
-    srgb = "srgb"
-    adobe_rgb = "abode_rgb"
-
-
-@dataclass
 class LuminousFluxParameters:
     """Luminous Flux Parameters."""
 
@@ -725,6 +691,75 @@ class SurfaceSourceParameters:
 
 
 @dataclass
+class AutomaticSunParameters:
+    """Spectrum Exit Parameters."""
+
+    now = datetime.datetime.now()
+    time_zone: str = "CET"
+    longitude: float = 0.0
+    latitude: float = 0.0
+    year = now.year
+    month = now.month
+    day = now.day
+    hour = now.hour
+    minute = now.minute
+
+
+@dataclass
+class ManualSunParameters:
+    """Spectrum Exit Parameters."""
+
+    direction: list[float] = field(default_factory=lambda: [0, 0, 1])
+
+
+@dataclass
+class AmbientNaturalLightParameters:
+    """Ambient Natural Light Parameters."""
+
+    with_sky: bool = field(default_factory=lambda: True)
+    turbidity: float = 3.0
+    zenith_direction: list[float] = field(default_factory=lambda: [0, 0, 1])
+    north_direction: list[float] = field(default_factory=lambda: [0, 1, 0])
+    sun_type: Union[AutomaticSunParameters, ManualSunParameters] = field(
+        default_factory=lambda: AutomaticSunParameters()
+    )
+
+
+@dataclass
+class UserDefinedWhitePointParameters:
+    """User defined White Point Parameters."""
+
+    x: float = 0.31271
+    y: float = 0.32902
+
+
+class WhitePointType(str, Enum):
+    """White Point type without parameters."""
+
+    d65 = "d65"
+    d50 = "d50"
+    c = "c"
+    e = "e"
+
+
+@dataclass
+class UserDefinedColorSpaceParameters:
+    """User defined Color Space Parameters."""
+
+    white_point_type: Union[WhitePointType, UserDefinedWhitePointParameters] = WhitePointType.d65
+    red_spectrum_uri: Union[str, Path] = ""
+    blue_spectrum_uri: Union[str, Path] = ""
+    green_spectrum_uri: Union[str, Path] = ""
+
+
+class ColorSpaceType(str, Enum):
+    """Color Space Type without parameters."""
+
+    srgb = "srgb"
+    adobe_rgb = "abode_rgb"
+
+
+@dataclass
 class DisplayParameters:
     """Parameters class for Display Source.
 
@@ -760,41 +795,6 @@ class DisplayParameters:
         IntensityLibraryParameters,
     ] = field(default_factory=lambda: IntensityLambertianParameters())
     color_space_type: Union[ColorSpaceType, UserDefinedColorSpaceParameters] = ColorSpaceType.srgb
-
-
-@dataclass
-class AutomaticSunParameters:
-    """Spectrum Exit Parameters."""
-
-    now = datetime.datetime.now()
-    time_zone: str = "CET"
-    longitude: float = 0.0
-    latitude: float = 0.0
-    year = now.year
-    month = now.month
-    day = now.day
-    hour = now.hour
-    minute = now.minute
-
-
-@dataclass
-class ManualSunParameters:
-    """Spectrum Exit Parameters."""
-
-    direction: list[float] = field(default_factory=lambda: [0, 0, 1])
-
-
-@dataclass
-class AmbientNaturalLightParameters:
-    """Ambient Natural Light Parameters."""
-
-    with_sky: bool = field(default_factory=lambda: True)
-    turbidity: float = 3.0
-    zenith_direction: list[float] = field(default_factory=lambda: [0, 0, 1])
-    north_direction: list[float] = field(default_factory=lambda: [0, 1, 0])
-    sun_type: Union[AutomaticSunParameters, ManualSunParameters] = field(
-        default_factory=lambda: AutomaticSunParameters()
-    )
 
 
 @dataclass
