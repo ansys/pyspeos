@@ -607,7 +607,13 @@ class DisplayParameters:
     axis_system: list[float] = field(default_factory=lambda: ORIGIN)
     luminance: float = 50.0
     contrast_ratio: Optional[int] = None
-    intensity_type: Optional[Union["IntensityLibraryParameters"]] = None
+    intensity_type: Union[
+        IntensityLambertianParameters,
+        IntensityCosParameters,
+        IntensitySymmetricGaussianParameters,
+        IntensitAsymmetricGaussianParameters,
+        IntensityLibraryParameters,
+    ] = field(default_factory=lambda: IntensityLambertianParameters())
     color_space_type: Union[ColorSpaceType, UserDefinedColorSpaceParameters] = ColorSpaceType.srgb
 
 
