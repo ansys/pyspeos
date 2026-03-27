@@ -123,7 +123,7 @@ autodoc_typehints = "description"
 
 # FIXME: Add suppressed warning if below fails
 # suppress_warnings = ["design.fa-build"]
-sd_fontawesome_latex=True
+sd_fontawesome_latex = True
 
 # -- Declare the Jinja context -----------------------------------------------
 BUILD_EXAMPLES = True if os.environ.get("BUILD_EXAMPLES", "true") == "true" else False
