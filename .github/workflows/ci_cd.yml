@@ -116,7 +116,7 @@ jobs:
           check-links: false
           sphinxopts: -j 1 --keep-going # Try without parallel execution
           checkout: false
-          dependencies: "pandoc"
+          dependencies: "pandoc texlive-latex-extra latexmk texlive-xetex texlive-fonts-extra"
           needs-quarto: true
 
       - name: Stop container
