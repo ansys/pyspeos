@@ -580,44 +580,6 @@ class SpectrumType(str, Enum):
 
 
 @dataclass
-class DisplayParameters:
-    """Parameters class for Display Source.
-
-    Attributes
-    ----------
-        image_file_uri: Path | str
-            to the display image (png, jpeg, bmp, tiff, rgb).
-        source_dimensions:
-            Physical dimensions of the display [x_start, x_end, y_start, y_end] (mm).
-        axis_system : list[float]
-            Loation and orientation of the display source
-        luminous_flux:
-            Luminance value in cd/m^2.
-        contrast_ratio: Optional
-            contrast ratio (None means not set).
-        intensity_type: Optional
-            intensity parameters for the display (e.g., library intensity).
-        color_space_type:
-            Either ColorSpaceType enum for predefined or UserDefinedColorSpaceParameters
-            for custom.
-    """
-
-    image_file_uri: Union[str, Path] = ""
-    source_dimensions: list[float] = field(default_factory=lambda: [-50.0, 50.0, -50.0, 50.0])
-    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
-    luminance: float = 50.0
-    contrast_ratio: Optional[int] = None
-    intensity_type: Union[
-        IntensityLambertianParameters,
-        IntensityCosParameters,
-        IntensitySymmetricGaussianParameters,
-        IntensitAsymmetricGaussianParameters,
-        IntensityLibraryParameters,
-    ] = field(default_factory=lambda: IntensityLambertianParameters())
-    color_space_type: Union[ColorSpaceType, UserDefinedColorSpaceParameters] = ColorSpaceType.srgb
-
-
-@dataclass
 class LuminaireSourceParameters:
     """Parameters class for Luminaire Source."""
 
@@ -760,6 +722,44 @@ class SurfaceSourceParameters:
             SpectrumBlackBodyParameters, SpectrumLibraryParameters, SpectrumMonochromaticParameters
         ]
     ] = field(default_factory=lambda: SpectrumMonochromaticParameters())
+
+
+@dataclass
+class DisplayParameters:
+    """Parameters class for Display Source.
+
+    Attributes
+    ----------
+        image_file_uri: Path | str
+            to the display image (png, jpeg, bmp, tiff, rgb).
+        source_dimensions:
+            Physical dimensions of the display [x_start, x_end, y_start, y_end] (mm).
+        axis_system : list[float]
+            Loation and orientation of the display source
+        luminous_flux:
+            Luminance value in cd/m^2.
+        contrast_ratio: Optional
+            contrast ratio (None means not set).
+        intensity_type: Optional
+            intensity parameters for the display (e.g., library intensity).
+        color_space_type:
+            Either ColorSpaceType enum for predefined or UserDefinedColorSpaceParameters
+            for custom.
+    """
+
+    image_file_uri: Union[str, Path] = ""
+    source_dimensions: list[float] = field(default_factory=lambda: [-50.0, 50.0, -50.0, 50.0])
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+    luminance: float = 50.0
+    contrast_ratio: Optional[int] = None
+    intensity_type: Union[
+        IntensityLambertianParameters,
+        IntensityCosParameters,
+        IntensitySymmetricGaussianParameters,
+        IntensitAsymmetricGaussianParameters,
+        IntensityLibraryParameters,
+    ] = field(default_factory=lambda: IntensityLambertianParameters())
+    color_space_type: Union[ColorSpaceType, UserDefinedColorSpaceParameters] = ColorSpaceType.srgb
 
 
 @dataclass
