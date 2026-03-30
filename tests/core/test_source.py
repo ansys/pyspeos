@@ -1871,7 +1871,10 @@ def test_load_display_source(speos: Speos):
                 assert source.image_file_uri.endswith("pyspeos.png")
                 assert source.luminance == 200.0
                 assert source.contrast_ratio == 50.0
-                assert source.source_dimensions == [-6, 6, -5, 5]
+                assert source.x_start == -6
+                assert source.x_end == 6
+                assert source.y_start == -5
+                assert source.y_end == 5
                 assert isinstance(source.intensity.type, Intensity.Library)
                 assert source._source_instance.display_properties.intensity_properties.HasField(
                     "library_properties"
@@ -1889,7 +1892,10 @@ def test_load_display_source(speos: Speos):
                 assert source.image_file_uri.endswith("pyspeos.png")
                 assert source.luminance == 20.0
                 assert source.contrast_ratio == 0
-                assert source.source_dimensions == [-3, 3, -2.5, 2.5]
+                assert source.x_start == -3
+                assert source.x_end == 3
+                assert source.y_start == -2.5
+                assert source.y_end == 2.5
                 assert isinstance(source.intensity.type, Intensity.Cos)
                 assert source.intensity.type.n == 1
                 assert source.intensity.type.total_angle == 180
@@ -1905,7 +1911,10 @@ def test_load_display_source(speos: Speos):
                 assert source.image_file_uri.endswith("pyspeos.png")
                 assert source.luminance == 200.0
                 assert source.contrast_ratio == 500.0
-                assert source.source_dimensions == [-6, 6, -5, 5]
+                assert source.x_start == -6
+                assert source.x_end == 6
+                assert source.y_start == -5
+                assert source.y_end == 5
                 assert isinstance(source.intensity.type, Intensity.Gaussian)
                 assert source.intensity.type.fwhm_angle_x == 30
                 assert source.intensity.type.fwhm_angle_y == 30

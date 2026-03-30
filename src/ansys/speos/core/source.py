@@ -3502,7 +3502,10 @@ class SourceDisplay(BaseSource):
         self.contrast_ratio = default_parameters.contrast_ratio
         self.image_file_uri = default_parameters.image_file_uri
         self.axis_system = default_parameters.axis_system
-        self.source_dimensions = default_parameters.source_dimensions
+        self.x_start = default_parameters.x_start
+        self.x_end = default_parameters.x_end
+        self.y_start = default_parameters.y_start
+        self.y_end = default_parameters.y_end
 
     @property
     def image_file_uri(self) -> str:
@@ -3529,39 +3532,92 @@ class SourceDisplay(BaseSource):
         self._source_template.display.image_file_uri = str(uri)
 
     @property
-    def source_dimensions(self) -> list:
-        """Source physical dimensions.
-
-        Returns the template-level physical extents of the display in millimeters.
+    def x_start(self) -> float:
+        """Source physical dimension: x_start in millimeters.
 
         Returns
         -------
-        list
-            [x_start, x_end, y_start, y_end] in millimeters.
+        float
+            x_start in millimeters.
         """
-        sd = self._source_template.display.source_dimensions
-        return [sd.x_start, sd.x_end, sd.y_start, sd.y_end]
+        return self._source_template.display.source_dimensions.x_start
 
-    @source_dimensions.setter
-    def source_dimensions(self, dims: Union[list, tuple]) -> None:
-        """Set source physical dimensions.
+    @x_start.setter
+    def x_start(self, value: float) -> None:
+        """Set source physical dimension x_start.
 
         Parameters
         ----------
-        dims : Union[list, tuple]
-            Sequence of 4 numeric values [x_start, x_end, y_start, y_end] in millimeters.
-
-        Raises
-        ------
-        ValueError
-            If dims is not a sequence of four values.
+        value : float
+            x_start in millimeters.
         """
-        if not (isinstance(dims, (list, tuple)) and len(dims) == 4):
-            raise ValueError(
-                "source_dimensions must be a sequence of 4 values [x_start,x_end,y_start,y_end]"
-            )
-        sd = self._source_template.display.source_dimensions
-        sd.x_start, sd.x_end, sd.y_start, sd.y_end = dims
+        self._source_template.display.source_dimensions.x_start = float(value)
+
+    @property
+    def x_end(self) -> float:
+        """Source physical dimension: x_end in millimeters.
+
+        Returns
+        -------
+        float
+            x_end in millimeters.
+        """
+        return self._source_template.display.source_dimensions.x_end
+
+    @x_end.setter
+    def x_end(self, value: float) -> None:
+        """Set source physical dimension x_end.
+
+        Parameters
+        ----------
+        value : float
+            x_end in millimeters.
+        """
+        self._source_template.display.source_dimensions.x_end = float(value)
+
+    @property
+    def y_start(self) -> float:
+        """Source physical dimension: y_start in millimeters.
+
+        Returns
+        -------
+        float
+            y_start in millimeters.
+        """
+        return self._source_template.display.source_dimensions.y_start
+
+    @y_start.setter
+    def y_start(self, value: float) -> None:
+        """Set source physical dimension y_start.
+
+        Parameters
+        ----------
+        value : float
+            y_start in millimeters.
+        """
+        self._source_template.display.source_dimensions.y_start = float(value)
+
+    @property
+    def y_end(self) -> float:
+        """Source physical dimension: y_end in millimeters.
+
+        Returns
+        -------
+        float
+            y_end in millimeters.
+        """
+        return self._source_template.display.source_dimensions.y_end
+
+    @y_end.setter
+    def y_end(self, value: float) -> None:
+        """Set source physical dimension y_end.
+
+        Parameters
+        ----------
+        value : float
+            y_end in millimeters.
+        """
+        self._source_template.display.source_dimensions.y_end = float(value)
 
     @property
     def luminance(self) -> float:
@@ -3591,6 +3647,8 @@ class SourceDisplay(BaseSource):
 
         The underlying protobuf field is optional. When unset it behaves as None
         from the Python API perspective (the proto scalar default is 0).
+        None means Infinite contrast ratio, while any integer value represents a
+        finite contrast ratio.
 
         Returns
         -------
@@ -3602,6 +3660,9 @@ class SourceDisplay(BaseSource):
     @contrast_ratio.setter
     def contrast_ratio(self, value: Optional[int]) -> None:
         """Set or clear the template-level contrast ratio.
+
+        None means Infinite contrast ratio, while any integer value represents a
+        finite contrast ratio.
 
         Parameters
         ----------
