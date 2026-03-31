@@ -169,8 +169,7 @@ class BaseSop:
             float
                 Reflectance value between 0 and 100.
             """
-            if self._parent._sop_template.HasField("mirror"):
-                return self._parent._sop_template.mirror.reflectance
+            return self._parent._sop_template.mirror.reflectance
 
         @reflectance.setter
         def reflectance(self, value: float):
@@ -190,8 +189,7 @@ class BaseSop:
             """
             if not (0 <= value <= 100):
                 raise ValueError("Reflectance must be between 0 and 100.")
-            if self._parent._sop_template.HasField("mirror"):
-                self._parent._sop_template.mirror.reflectance = value
+            self._parent._sop_template.mirror.reflectance = value
 
     @property
     def sop_mirror(self) -> Optional[BaseSop.SopMirror]:
@@ -257,8 +255,7 @@ class BaseSop:
             str
                 File path or URI of the SOP file (e.g. ``*.scattering``, ``*.bsdf``).
             """
-            if self._parent._sop_template.HasField("library"):
-                return self._parent._sop_template.library.sop_file_uri
+            return self._parent._sop_template.library.sop_file_uri
 
         @file_uri.setter
         def file_uri(self, value: Union[Path, str]):
@@ -274,8 +271,7 @@ class BaseSop:
             TypeError
                 If the current SOP is not of library type.
             """
-            if self._parent._sop_template.HasField("library"):
-                self._parent._sop_template.library.sop_file_uri = str(value)
+            self._parent._sop_template.library.sop_file_uri = str(value)
 
     def set_surface_library(self) -> BaseSop.SopLibrary:
         """Configure SOP to use a library file.
@@ -344,9 +340,7 @@ class BaseVop:
         @property
         def index(self) -> float:
             """Real part of refractive index."""
-            if self._parent._vop_template and self._parent._vop_template.HasField("optic"):
-                return self._parent._vop_template.optic.index
-            raise AttributeError("VOP is not of optic type")
+            return self._parent._vop_template.optic.index
 
         @index.setter
         def index(self, value: float):
@@ -362,9 +356,7 @@ class BaseVop:
         @property
         def absorption(self) -> float:
             """Absorption coefficient."""
-            if self._parent._vop_template and self._parent._vop_template.HasField("optic"):
-                return self._parent._vop_template.optic.absorption
-            raise AttributeError("VOP is not of optic type")
+            return self._parent._vop_template.optic.absorption
 
         @absorption.setter
         def absorption(self, value: float):
@@ -380,11 +372,9 @@ class BaseVop:
         @property
         def constringence(self) -> Optional[float]:
             """Abbe Number."""
-            if self._parent._vop_template and self._parent._vop_template.HasField("optic"):
-                if self._parent._vop_template.optic.HasField("constringence"):
-                    return self._parent._vop_template.optic.constringence
-                return None
-            raise AttributeError("VOP is not of optic type")
+            if self._parent._vop_template.optic.HasField("constringence"):
+                return self._parent._vop_template.optic.constringence
+            return None
 
         @constringence.setter
         def constringence(self, value: Optional[float]):
