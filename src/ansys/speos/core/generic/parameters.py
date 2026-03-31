@@ -30,7 +30,9 @@ from typing import List, Optional, Union
 
 from ansys.speos.core.generic.constants import ORIGIN
 
-## Sensor Parameters
+# =============================================================================
+# Sensor parameters
+# =============================================================================
 
 
 @dataclass
@@ -43,18 +45,6 @@ class WavelengthsRangeParameters:
     """Wavelength end value."""
     sampling: int = 13
     """Wavelength sampling."""
-
-
-@dataclass
-class VopOpticParameters:
-    """Optics Material Parameters."""
-
-    index: float = 1.5
-    """Real part of refractive index."""
-    absorption: float = 0
-    """Absorption coefficient."""
-    constringence: Optional[float] = None
-    """Abbe Number."""
 
 
 @dataclass
@@ -121,201 +111,12 @@ class IntensitySensorDimensionsXAsParallelParameters:
     """Sampling x axis."""
 
 
-@dataclass
-class MeshData:
-    """Store named data on meshed Geometry."""
-
-    name: str
-    """Name of the data added to the mesh."""
-    data: list[float]
-    """Numerical data values associated with the named mesh item."""
-
-
-class MappingTypes(str, Enum):
-    """Allowed mapping types."""
-
-    planar = "planar"
-    cubic = "cubic"
-    _spherical = "spherical"
-    _cylindrical = "cylindrical"
-
-
-@dataclass
-class MappingCylindricalParameters:
-    """Cylindrical mapping parameters."""
-
-    perimeter: float = 1
-    """Perimeter value used for cylindrical mapping."""
-
-
-@dataclass
-class MappingSphericalParameters:
-    """Spherical mapping parameters."""
-
-    perimeter: float = 1
-    """Perimeter value used for spherical mapping."""
-
-
-class VopTypes(str, Enum):
-    """Allowed mapping types."""
-
-    none = None
-    opaque = "opaque"
-
-
-class SopTypes(str, Enum):
-    """Allowed mapping types."""
-
-    optical_polished = "optical_polished"
-
-
-@dataclass
-class MappingOperator:
-    """Store all information needed to create a UV mapping."""
-
-    mapping_type: Union[MappingTypes, MappingCylindricalParameters, MappingSphericalParameters] = (
-        MappingTypes.planar
-    )
-    """Type of mapping applied on the geometry."""
-    u_length: float = 10
-    """Length of the mapping along the U axis."""
-    v_length: Optional[float] = None
-    """Length of the mapping along the V axis."""
-    u_offset: float = 0
-    """Offset of the mapping origin along the U axis."""
-    v_offset: float = 0
-    """Offset of the mapping origin along the V axis."""
-    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
-    """Axis system used to position and orient the mapping."""
-    u_scale: float = 1
-    """Scaling factor applied along the U axis."""
-    v_scale: float = 1
-    """Scaling factor applied along the V axis."""
-    rotation: float = 0
-    """Rotation angle of the mapping."""
-
-
-@dataclass
-class MappingByData:
-    """Store mapping data when using custom mapping.
-
-    Final data is stored on Face object.
-    """
-
-    vertices_data_index: int
-    """Index of the vertex data used for custom mapping."""
-    repeat_v: Optional[bool] = None
-    """Whether mapping repeats along the V direction."""
-    repeat_u: Optional[bool] = None
-    """Whether mapping repeats along the U direction."""
-
-
-@dataclass
-class SopMirrorParameters:
-    """SOP Mirror Parameters Dataclass."""
-
-    reflectance = 100
-    """Rreflectance of a perfect mirror."""
-
-
-@dataclass
-class SopLibraryParameters:
-    """SOP Library Parameters Dataclass."""
-
-    file_uri: Union[str, Path] = ""
-    """Path to the SOP library file."""
-
-
-@dataclass
-class VopLibraryParameters:
-    """VOP Parameters Dataclass."""
-
-    material_file_uri: Optional[Union[str, Path]] = None
-    """Path to the VOP library file when ``vop_type`` is ``library``."""
-
-
-class NormalMapTypes(str, Enum):
-    """Normal Map Types."""
-
-    from_normal_map = "from_normal_map"
-    from_image = "from_image"
-
-
-@dataclass
-class ImageTextureParameter:
-    """Parameters of an image based texture."""
-
-    file_path: Union[str, Path] = ""
-    """Path to the texture image file."""
-    repeat_u: bool = True
-    """Whether the image texture repeats along the U direction."""
-    repeat_v: bool = True
-    """Whether the image texture repeats along the V direction."""
-    mapping: [Union[MappingOperator, MappingByData]] = field(default_factory=MappingOperator)
-    """Mapping settings applied to the image texture."""
-
-
-@dataclass
-class NormalMapParameter(ImageTextureParameter):
-    """Parameters of a normal map based texture."""
-
-    normal_map_type: NormalMapTypes = NormalMapTypes.from_image
-    """Mapping parameters to apply on the normal map if normal_map_type is from_normal_map."""
-
-
-@dataclass
-class TextureLayerParameters:
-    """Texture Layer Parameters Dataclass."""
-
-    sop_parameters: Optional[Union[SopTypes, SopMirrorParameters, SopLibraryParameters]] = field(
-        default_factory=SopMirrorParameters
-    )
-    """SOP parameters applied to the texture layer."""
-    image_texture_parameters: Optional[ImageTextureParameter] = None
-    """Image texture parameters when ``image_texture`` is enabled."""
-    normal_map_parameters: Optional[NormalMapParameter] = None
-    """Normal map image parameters when ``normal_map`` is enabled."""
-    anisotropy_map_parameters: Optional[Union[MappingOperator, MappingByData]] = None
-    """Mapping parameters applied to the anisotropy map."""
-
-
-@dataclass
-class OptPropParameters:
-    """Store default values for optical properties."""
-
-    sop_parameters: Optional[
-        Union[SopTypes, SopMirrorParameters, SopLibraryParameters, List[TextureLayerParameters]]
-    ] = field(default_factory=SopMirrorParameters)
-    """SOP parameters used for optical properties."""
-    vop_parameters: Optional[Union[VopTypes, VopLibraryParameters, VopOpticParameters]] = (
-        VopTypes.none
-    )
-    """VOP parameters used for optical properties."""
-
-
 class LayerTypes(str, Enum):
     """Layer Separation Types."""
 
     none = "none"
     by_source = "by_source"
     by_polarization = "by_polarization"
-
-
-class TextureTypes(str, Enum):
-    """Different texture types."""
-
-    image = "image"
-    normal_map = "normal_map"
-    anisotropy_map = "anisotropy_map"
-
-
-class TextureNormalizationTypes(str, Enum):
-    """Texture normalization types."""
-
-    unspecified = "unspecified"
-    none = "none"
-    color_from_texture = "color_from_texture"
-    color_from_bsdf = "color_from_bsdf"
 
 
 class SCAFilteringTypes(str, Enum):
@@ -689,9 +490,9 @@ class IntensityXMPSensorParameters:
     """Parameters used when the sensor is near field."""
 
 
-## Source Parameters
-
-
+# =============================================================================
+# Source parameters
+# =============================================================================
 @dataclass
 class LuminousFluxParameters:
     """Luminous Flux Parameters."""
@@ -1030,6 +831,9 @@ class AmbientEnvironmentParameters:
     """Color space preset or custom color space definition."""
 
 
+# =============================================================================
+# Simulation parameters
+# =============================================================================
 class ColorimetricStandardTypes(str, Enum):
     """Colorimetric Standard Types."""
 
@@ -1115,7 +919,7 @@ class InteractiveSimulationParameters:
 
 @dataclass
 class SensorSamplingUnionParameters:
-    """Sensor Sampling Union Parameters."""
+    """Sensor Sampling Union Parameters used in virtual BSDF Simulation Parameters."""
 
     theta_sampling: int = 45
     """Sampling count in the theta direction."""
@@ -1150,3 +954,209 @@ class VirtualBSDFSimulationParameters:
         default_factory=SensorSamplingUnionParameters
     )
     """Sensor angular sampling parameters."""
+
+
+# =============================================================================
+# Optical property parameters
+# =============================================================================
+
+
+class SopTypes(str, Enum):
+    """Allowed mapping types."""
+
+    optical_polished = "optical_polished"
+
+
+@dataclass
+class SopMirrorParameters:
+    """SOP Mirror Parameters Dataclass."""
+
+    reflectance = 100
+    """Rreflectance of a perfect mirror."""
+
+
+@dataclass
+class SopLibraryParameters:
+    """SOP Library Parameters Dataclass."""
+
+    file_uri: Union[str, Path] = ""
+    """Path to the SOP library file."""
+
+
+@dataclass
+class MeshData:
+    """Store named data on meshed Geometry."""
+
+    name: str
+    """Name of the data added to the mesh."""
+    data: list[float]
+    """Numerical data values associated with the named mesh item."""
+
+
+class MappingTypes(str, Enum):
+    """Allowed mapping types."""
+
+    planar = "planar"
+    cubic = "cubic"
+    _spherical = "spherical"
+    _cylindrical = "cylindrical"
+
+
+@dataclass
+class MappingCylindricalParameters:
+    """Cylindrical mapping parameters."""
+
+    perimeter: float = 1
+    """Perimeter value used for cylindrical mapping."""
+
+
+@dataclass
+class MappingSphericalParameters:
+    """Spherical mapping parameters."""
+
+    perimeter: float = 1
+    """Perimeter value used for spherical mapping."""
+
+
+@dataclass
+class MappingOperator:
+    """Store all information needed to create a UV mapping."""
+
+    mapping_type: Union[MappingTypes, MappingCylindricalParameters, MappingSphericalParameters] = (
+        MappingTypes.planar
+    )
+    """Type of mapping applied on the geometry."""
+    u_length: float = 10
+    """Length of the mapping along the U axis."""
+    v_length: Optional[float] = None
+    """Length of the mapping along the V axis."""
+    u_offset: float = 0
+    """Offset of the mapping origin along the U axis."""
+    v_offset: float = 0
+    """Offset of the mapping origin along the V axis."""
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+    """Axis system used to position and orient the mapping."""
+    u_scale: float = 1
+    """Scaling factor applied along the U axis."""
+    v_scale: float = 1
+    """Scaling factor applied along the V axis."""
+    rotation: float = 0
+    """Rotation angle of the mapping."""
+
+
+@dataclass
+class MappingByData:
+    """Store mapping data when using custom mapping.
+
+    Final data is stored on Face object.
+    """
+
+    vertices_data_index: int
+    """Index of the vertex data used for custom mapping."""
+    repeat_v: Optional[bool] = None
+    """Whether mapping repeats along the V direction."""
+    repeat_u: Optional[bool] = None
+    """Whether mapping repeats along the U direction."""
+
+
+class NormalMapTypes(str, Enum):
+    """Normal Map Types."""
+
+    from_normal_map = "from_normal_map"
+    from_image = "from_image"
+
+
+class TextureTypes(str, Enum):
+    """Different texture types."""
+
+    image = "image"
+    normal_map = "normal_map"
+    anisotropy_map = "anisotropy_map"
+
+
+class TextureNormalizationTypes(str, Enum):
+    """Texture normalization types."""
+
+    unspecified = "unspecified"
+    none = "none"
+    color_from_texture = "color_from_texture"
+    color_from_bsdf = "color_from_bsdf"
+
+
+@dataclass
+class ImageTextureParameter:
+    """Parameters of an image based texture."""
+
+    file_path: Union[str, Path] = ""
+    """Path to the texture image file."""
+    repeat_u: bool = True
+    """Whether the image texture repeats along the U direction."""
+    repeat_v: bool = True
+    """Whether the image texture repeats along the V direction."""
+    mapping: [Union[MappingOperator, MappingByData]] = field(default_factory=MappingOperator)
+    """Mapping settings applied to the image texture."""
+
+
+@dataclass
+class NormalMapParameter(ImageTextureParameter):
+    """Parameters of a normal map based texture."""
+
+    normal_map_type: NormalMapTypes = NormalMapTypes.from_image
+    """Mapping parameters to apply on the normal map if normal_map_type is from_normal_map."""
+
+
+@dataclass
+class TextureLayerParameters:
+    """Texture Layer Parameters Dataclass."""
+
+    sop_parameters: Optional[Union[SopTypes, SopMirrorParameters, SopLibraryParameters]] = field(
+        default_factory=SopMirrorParameters
+    )
+    """SOP parameters applied to the texture layer."""
+    image_texture_parameters: Optional[ImageTextureParameter] = None
+    """Image texture parameters when ``image_texture`` is enabled."""
+    normal_map_parameters: Optional[NormalMapParameter] = None
+    """Normal map image parameters when ``normal_map`` is enabled."""
+    anisotropy_map_parameters: Optional[Union[MappingOperator, MappingByData]] = None
+    """Mapping parameters applied to the anisotropy map."""
+
+
+@dataclass
+class VopLibraryParameters:
+    """VOP Parameters Dataclass."""
+
+    material_file_uri: Optional[Union[str, Path]] = None
+    """Path to the VOP library file when ``vop_type`` is ``library``."""
+
+
+@dataclass
+class VopOpticParameters:
+    """Optics Material Parameters."""
+
+    index: float = 1.5
+    """Real part of refractive index."""
+    absorption: float = 0
+    """Absorption coefficient."""
+    constringence: Optional[float] = None
+    """Abbe Number."""
+
+
+class VopTypes(str, Enum):
+    """Allowed mapping types."""
+
+    none = None
+    opaque = "opaque"
+
+
+@dataclass
+class OptPropParameters:
+    """Store default values for optical properties."""
+
+    sop_parameters: Optional[
+        Union[SopTypes, SopMirrorParameters, SopLibraryParameters, List[TextureLayerParameters]]
+    ] = field(default_factory=SopMirrorParameters)
+    """SOP parameters used for optical properties."""
+    vop_parameters: Optional[Union[VopTypes, VopLibraryParameters, VopOpticParameters]] = (
+        VopTypes.none
+    )
+    """VOP parameters used for optical properties."""
