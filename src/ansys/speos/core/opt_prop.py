@@ -83,8 +83,9 @@ class BaseSop:
         sop_template: ProtoSOPTemplate,
         mat_inst: ProtoScene.MaterialInstance,
         sop_parameters: Optional[
-            Union[SopMirrorParameters, SopLibraryParameters, SopTypes.optical_polished]
+            Union[SopMirrorParameters, SopLibraryParameters, SopTypes.optical_polished],
         ] = None,
+        stable_ctr=False,
     ):
         """Initialize the SOP helper state.
 
@@ -101,6 +102,11 @@ class BaseSop:
         ]], optional
             Default SOP parameters to apply at initialization.
         """
+        if not stable_ctr:
+            raise RuntimeError(
+                "BaseSop is not intended to be instantiated directly."
+                "Please use a subclass or set stable_ctr=True if you know what you're doing."
+            )
         self._sop_template = sop_template
         # Create material instance
         self._material_instance = mat_inst
@@ -442,6 +448,7 @@ class BaseVop:
         vop_parameters: Optional[
             Union[VopTypes.none, VopTypes.opaque, VopLibraryParameters, VopOpticParameters]
         ] = None,
+        stable_ctr=False,
     ):
         """Initialize the VOP helper state.
 
@@ -459,6 +466,11 @@ class BaseVop:
         ]], optional
             Default VOP parameters to apply at initialization.
         """
+        if not stable_ctr:
+            raise RuntimeError(
+                "BaseVop is not intended to be instantiated directly."
+                "Please use a subclass or set stable_ctr=True if you know what you're doing."
+            )
         # Create VOP template
         self._vop_template = vop_template
         # Create material instance
@@ -1023,7 +1035,7 @@ class TextureLayer(BaseSop):
     class BaseTextureMap:
         """Base class for texture mapping properties."""
 
-        def __init__(self, parent: TextureLayer, texture_type: TextureTypes):
+        def __init__(self, parent: TextureLayer, texture_type: TextureTypes, stable_ctr=False):
             """Initialize a base texture map helper.
 
             Parameters
@@ -1033,6 +1045,11 @@ class TextureLayer(BaseSop):
             texture_type : ansys.speos.core.generic.parameters.TextureTypes
                 Texture map kind handled by the helper.
             """
+            if not stable_ctr:
+                raise RuntimeError(
+                    "BaseTextureMap is not intended to be instantiated directly."
+                    "Please use a subclass or set stable_ctr=True if you know what you're doing."
+                )
             self._parent = parent
             self._mapping = None
             self._type = texture_type
@@ -1182,7 +1199,7 @@ class TextureLayer(BaseSop):
             ], optional
                 Default image texture settings to apply.
             """
-            super().__init__(parent, TextureTypes.image)
+            super().__init__(parent, TextureTypes.image, stable_ctr=True)
             self._fill_parameters(default_parameters)
 
         def _fill_parameters(self, default_parameters: Optional[ImageTextureParameter] = None):
@@ -1283,7 +1300,7 @@ class TextureLayer(BaseSop):
             ], optional
                 Default normal map settings to apply.
             """
-            super().__init__(parent, TextureTypes.normal_map)
+            super().__init__(parent, TextureTypes.normal_map, stable_ctr=True)
             self._fill_parameters(default_parameters)
 
         def _fill_parameters(self, default_parameters: Optional[NormalMapParameter] = None):
@@ -1446,7 +1463,7 @@ class TextureLayer(BaseSop):
             ], optional
                 Default anisotropy map settings to apply.
             """
-            super().__init__(parent, TextureTypes.anisotropy_map)
+            super().__init__(parent, TextureTypes.anisotropy_map, stable_ctr=True)
             self._fill_parameters(default_parameters)
 
         def _fill_parameters(self, default_parameters: Optional[MappingOperator] = None):
@@ -1518,11 +1535,16 @@ class TextureLayer(BaseSop):
 
         if default_parameters:
             super().__init__(
-                self._sop_template, self._material_instance, default_parameters.sop_parameters
+                self._sop_template,
+                self._material_instance,
+                default_parameters.sop_parameters,
+                stable_ctr=True,
             )
             self._fill_parameters(default_parameters)
         else:
-            super().__init__(self._sop_template, self._material_instance, SopMirrorParameters())
+            super().__init__(
+                self._sop_template, self._material_instance, SopMirrorParameters(), stable_ctr=True
+            )
 
     def _fill_parameters(self, default_parameters: Optional[TextureLayerParameters] = None):
         """Fill texture layer parameters from default parameters.
@@ -1772,12 +1794,14 @@ class OptProp(BaseVop, BaseSop):
                 self._sop_template,
                 self._material_instance,
                 sop_parameters=None,
+                stable_ctr=True,
             )
             BaseVop.__init__(
                 self,
                 self._vop_template,
                 self._material_instance,
                 vop_parameters=None,
+                stable_ctr=True,
             )
 
     def _fill_parameters(self, default_parameters: OptPropParameters):
@@ -1795,6 +1819,7 @@ class OptProp(BaseVop, BaseSop):
             self._vop_template,
             self._material_instance,
             vop_parameters=default_parameters.vop_parameters,
+            stable_ctr=True,
         )
         if isinstance(
             default_parameters.sop_parameters, (SopTypes, SopMirrorParameters, SopLibraryParameters)
@@ -1804,6 +1829,7 @@ class OptProp(BaseVop, BaseSop):
                 self._sop_template,
                 self._material_instance,
                 sop_parameters=default_parameters.sop_parameters,
+                stable_ctr=True,
             )
         elif isinstance(default_parameters.sop_parameters, list):
             self._sop_template = None
