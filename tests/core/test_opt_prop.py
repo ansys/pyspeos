@@ -41,12 +41,13 @@ from ansys.speos.core.generic.parameters import (
     OptPropParameters,
     SopLibraryParameters,
     SopTypes,
+    TextureTypes,
     VopLibraryParameters,
     VopOpticParameters,
     VopTypes,
 )
 from ansys.speos.core.kernel import ProtoFace
-from ansys.speos.core.opt_prop import TextureLayer
+from ansys.speos.core.opt_prop import BaseSop, BaseVop, TextureLayer
 from tests.conftest import test_path
 from tests.helper import approx_arrays
 
@@ -436,6 +437,11 @@ def test_error_reporting(speos: Speos):
     with pytest.raises(AttributeError):
         layer.normal_map.roughness = 2.0
 
+    with pytest.raises(RuntimeError):
+        BaseSop(op._sop_template, op._material_instance)
+        BaseVop(op._vop_template, op._material_instance)
+        TextureLayer.BaseTextureMap(layer, TextureTypes.image)
+
 
 def test_opt_prop_default_parameters_and_local_helpers(speos: Speos, capsys):
     """Cover local/default-parameter helper branches for optical properties."""
@@ -799,7 +805,7 @@ def test_texture_mapping_helper_local_branches(speos: Speos, monkeypatch):
     anisotropic._mapping = None
     assert anisotropic.mapping_properties.vertices_data_index == 0
 
-    invalid_map = TextureLayer.BaseTextureMap(layer, "unsupported")
+    invalid_map = TextureLayer.BaseTextureMap(layer, "unsupported", stable_ctr=True)
     with pytest.raises(TypeError):
         invalid_map._get_map_property()
 
