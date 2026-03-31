@@ -59,6 +59,62 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+  type-check:
+    name: Type check with Ty
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@eac588ad8def6316056a12d4907a9d4d84ff7a3b # v7.3.0
+        with:
+          enable-cache: false
+          prune-cache: true
+
+      - name: Create virtual environment
+        run: uv venv .venv
+
+      - name: Install dependencies
+        run: |
+          source .venv/bin/activate
+          uv pip install ty==0.0.25 ansys-platform-instancemanagement
+
+      # NOTE: At the moment this will only run on ansys/aedt/core/speos.py which is working
+      - name: Run Ty on selected files
+        run: |
+          source .venv/bin/activate
+          ty check src/ansys/speos/core/ examples/ \
+            --exclude src/ansys/speos/core/body.py \
+            --exclude src/ansys/speos/core/face.py \
+            --exclude src/ansys/speos/core/bsdf.py \
+            --exclude src/ansys/speos/core/launcher.py \
+            --exclude src/ansys/speos/core/intensity.py \
+            --exclude src/ansys/speos/core/ground_plane.py \
+            --exclude src/ansys/speos/core/geo_ref.py \
+            --exclude src/ansys/speos/core/logger.py \
+            --exclude src/ansys/speos/core/lxp.py \
+            --exclude src/ansys/speos/core/part.py \
+            --exclude src/ansys/speos/core/opt_prop.py \
+            --exclude src/ansys/speos/core/project.py \
+            --exclude src/ansys/speos/core/proto_message_utils.py \
+            --exclude src/ansys/speos/core/source.py \
+            --exclude src/ansys/speos/core/spectrum.py \
+            --exclude src/ansys/speos/core/simulation.py \
+            --exclude src/ansys/speos/core/sensor.py \
+            --exclude src/ansys/speos/core/__init__.py \
+            --exclude src/ansys/speos/core/generic \
+            --exclude src/ansys/speos/core/kernel \
+            --exclude src/ansys/speos/core/workflow \
+            --exclude examples/core \
+            --exclude examples/kernel \
+            --exclude examples/workflow
+
   doc-style:
     name: Documentation Style Check
     runs-on: ubuntu-latest

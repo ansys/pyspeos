@@ -149,17 +149,6 @@ markers = [
     "supported_speos_versions(min, max): Feature only supported from minimal to maximal Speos versions."
 ]
 
-[tool.mypy]
-python_version = "3.10"
-disable_error_code = "type-abstract"
-show_error_context = true
-pretty = true
-
-[[tool.mypy.overrides]]
-module = [
-    "ansys.tools.visualization_interface",
-]
-
 [tool.towncrier]
 package = "ansys.speos.core"
 directory = "doc/changelog.d"
