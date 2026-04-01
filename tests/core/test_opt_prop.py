@@ -47,6 +47,9 @@ from ansys.speos.core.generic.parameters import (
     VopTypes,
 )
 from ansys.speos.core.kernel import ProtoFace
+from ansys.speos.core.kernel.scene import ProtoScene
+from ansys.speos.core.kernel.sop_template import ProtoSOPTemplate
+from ansys.speos.core.kernel.vop_template import ProtoVOPTemplate
 from ansys.speos.core.opt_prop import BaseSop, BaseVop, TextureLayer
 from tests.conftest import test_path
 from tests.helper import approx_arrays
@@ -834,6 +837,7 @@ def test_texture_helper_parameter_initialization_branches(speos: Speos):
                 rotation=45,
             ),
         ),
+        stable_ctr=True,
     )
     assert image.image_file_uri.endswith("image_texture.png")
     assert image.repeat_u is False
@@ -849,6 +853,7 @@ def test_texture_helper_parameter_initialization_branches(speos: Speos):
     image_by_data = TextureLayer.ImageTexture(
         layer_image_by_data,
         ImageTextureParameter(mapping=MappingByData(vertices_data_index=5)),
+        stable_ctr=True,
     )
     assert image_by_data.mapping_properties.vertices_data_index == 5
 
@@ -862,6 +867,7 @@ def test_texture_helper_parameter_initialization_branches(speos: Speos):
             mapping=MappingByData(vertices_data_index=6),
             normal_map_type=NormalMapTypes.from_normal_map,
         ),
+        stable_ctr=True,
     )
     assert normal.normal_map_file_uri.endswith("normal_map.png")
     assert normal.repeat_u is False
@@ -884,6 +890,7 @@ def test_texture_helper_parameter_initialization_branches(speos: Speos):
             v_scale=5,
             rotation=90,
         ),
+        stable_ctr=True,
     )
     assert anisotropic.mapping_properties.mapping_type == MappingTypes._spherical
     assert anisotropic.mapping_properties.axis_system == axis_system
@@ -1304,3 +1311,145 @@ def test_texture_by_data(speos: Speos):
 
     opt_prop.texture = [layer_1]
     opt_prop.commit()
+
+
+# ---------------------------------------------------------------------------
+# stable_ctr guard tests – no Speos server required
+# ---------------------------------------------------------------------------
+
+
+class _MinimalSopParent:
+    """Minimal stand-in for a BaseSop parent used by SopMirror / SopLibrary tests."""
+
+    def __init__(self):
+        self._sop_template = ProtoSOPTemplate(name="test.SOP")
+
+
+class _MinimalVopParent:
+    """Minimal stand-in for a BaseVop parent used by VopOptic / VopLibrary tests."""
+
+    def __init__(self):
+        self._vop_template = ProtoVOPTemplate(name="test.VOP")
+        self._vop_template.optic.SetInParent()
+        self._vop_template.library.SetInParent()
+
+
+class _MinimalTextureParent:
+    """Minimal stand-in for a TextureLayer parent used by texture-map tests."""
+
+    def __init__(self):
+        self._sop_template = ProtoSOPTemplate(name="test.SOP")
+        self._texture_template = ProtoScene.MaterialInstance.Texture.Layer()
+
+
+def test_sop_mirror_stable_ctr_guard():
+    """Direct instantiation of SopMirror without stable_ctr=True must raise RuntimeError."""
+    parent = _MinimalSopParent()
+    with pytest.raises(RuntimeError, match="SopMirror is not intended to be instantiated directly"):
+        BaseSop.SopMirror(parent)
+
+
+def test_sop_mirror_stable_ctr_allowed():
+    """Direct instantiation of SopMirror with stable_ctr=True must succeed."""
+    parent = _MinimalSopParent()
+    mirror = BaseSop.SopMirror(parent, stable_ctr=True)
+    assert mirror is not None
+    assert mirror._parent is parent
+
+
+def test_sop_library_stable_ctr_guard():
+    """Direct instantiation of SopLibrary without stable_ctr=True must raise RuntimeError."""
+    parent = _MinimalSopParent()
+    with pytest.raises(
+        RuntimeError, match="SopLibrary is not intended to be instantiated directly"
+    ):
+        BaseSop.SopLibrary(parent)
+
+
+def test_sop_library_stable_ctr_allowed():
+    """Direct instantiation of SopLibrary with stable_ctr=True must succeed."""
+    parent = _MinimalSopParent()
+    library = BaseSop.SopLibrary(parent, stable_ctr=True)
+    assert library is not None
+    assert library._parent is parent
+
+
+def test_vop_optic_stable_ctr_guard():
+    """Direct instantiation of VopOptic without stable_ctr=True must raise RuntimeError."""
+    parent = _MinimalVopParent()
+    with pytest.raises(RuntimeError, match="VopOptic is not intended to be instantiated directly"):
+        BaseVop.VopOptic(parent)
+
+
+def test_vop_optic_stable_ctr_allowed():
+    """Direct instantiation of VopOptic with stable_ctr=True must succeed."""
+    parent = _MinimalVopParent()
+    optic = BaseVop.VopOptic(parent, stable_ctr=True)
+    assert optic is not None
+    assert optic._parent is parent
+
+
+def test_vop_library_stable_ctr_guard():
+    """Direct instantiation of VopLibrary without stable_ctr=True must raise RuntimeError."""
+    parent = _MinimalVopParent()
+    with pytest.raises(
+        RuntimeError, match="VopLibrary is not intended to be instantiated directly"
+    ):
+        BaseVop.VopLibrary(parent)
+
+
+def test_vop_library_stable_ctr_allowed():
+    """Direct instantiation of VopLibrary with stable_ctr=True must succeed."""
+    parent = _MinimalVopParent()
+    library = BaseVop.VopLibrary(parent, stable_ctr=True)
+    assert library is not None
+    assert library._parent is parent
+
+
+def test_image_texture_stable_ctr_guard():
+    """Direct instantiation of ImageTexture without stable_ctr=True must raise RuntimeError."""
+    parent = _MinimalTextureParent()
+    with pytest.raises(
+        RuntimeError, match="ImageTexture is not intended to be instantiated directly"
+    ):
+        TextureLayer.ImageTexture(parent)
+
+
+def test_image_texture_stable_ctr_allowed():
+    """Direct instantiation of ImageTexture with stable_ctr=True must succeed."""
+    parent = _MinimalTextureParent()
+    img = TextureLayer.ImageTexture(parent, stable_ctr=True)
+    assert img is not None
+    assert img._parent is parent
+
+
+def test_normal_map_stable_ctr_guard():
+    """Direct instantiation of NormalMap without stable_ctr=True must raise RuntimeError."""
+    parent = _MinimalTextureParent()
+    with pytest.raises(RuntimeError, match="NormalMap is not intended to be instantiated directly"):
+        TextureLayer.NormalMap(parent)
+
+
+def test_normal_map_stable_ctr_allowed():
+    """Direct instantiation of NormalMap with stable_ctr=True must succeed."""
+    parent = _MinimalTextureParent()
+    nm = TextureLayer.NormalMap(parent, stable_ctr=True)
+    assert nm is not None
+    assert nm._parent is parent
+
+
+def test_anisotropic_map_stable_ctr_guard():
+    """Direct instantiation of AnisotropicMap without stable_ctr=True must raise RuntimeError."""
+    parent = _MinimalTextureParent()
+    with pytest.raises(
+        RuntimeError, match="AnisotropicMap is not intended to be instantiated directly"
+    ):
+        TextureLayer.AnisotropicMap(parent)
+
+
+def test_anisotropic_map_stable_ctr_allowed():
+    """Direct instantiation of AnisotropicMap with stable_ctr=True must succeed."""
+    parent = _MinimalTextureParent()
+    aniso = TextureLayer.AnisotropicMap(parent, stable_ctr=True)
+    assert aniso is not None
+    assert aniso._parent is parent

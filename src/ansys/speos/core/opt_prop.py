@@ -123,8 +123,14 @@ class BaseSop:
             self._library = None
             return
 
-        self._mirror = self.SopMirror(self) if self._sop_template.HasField("mirror") else None
-        self._library = self.SopLibrary(self) if self._sop_template.HasField("library") else None
+        self._mirror = (
+            self.SopMirror(self, stable_ctr=True) if self._sop_template.HasField("mirror") else None
+        )
+        self._library = (
+            self.SopLibrary(self, stable_ctr=True)
+            if self._sop_template.HasField("library")
+            else None
+        )
 
     def _fill_parameters_sop(
         self, sop_parameters: Optional[Union[SopMirrorParameters, SopLibraryParameters, SopTypes]]
@@ -149,14 +155,22 @@ class BaseSop:
     class SopMirror:
         """Mirror SOP parameters."""
 
-        def __init__(self, parent: BaseSop):
+        def __init__(self, parent: BaseSop, stable_ctr=False):
             """Create a mirror helper bound to a parent SOP.
 
             Parameters
             ----------
             parent : ansys.speos.core.opt_prop.BaseSop
                 Base SOP wrapper that owns the mirror protobuf field.
+            stable_ctr : bool, optional
+                Internal guard to prevent unintended direct instantiation.
             """
+            if not stable_ctr:
+                raise RuntimeError(
+                    "SopMirror is not intended to be instantiated directly."
+                    "Please use BaseSop.set_surface_mirror() or set stable_ctr=True if you know "
+                    "what you're doing."
+                )
             self._parent = parent
             self._parent._sop_template.mirror.SetInParent()
 
@@ -213,9 +227,9 @@ class BaseSop:
         self._library = None
         if self._sop_template.HasField("mirror"):
             self._library = None
-            self._mirror = self.SopMirror(self)
+            self._mirror = self.SopMirror(self, stable_ctr=True)
         else:
-            self._mirror = self.SopMirror(self)
+            self._mirror = self.SopMirror(self, stable_ctr=True)
             self._mirror.reflectance = SopMirrorParameters().reflectance
         return self._mirror
 
@@ -235,14 +249,22 @@ class BaseSop:
     class SopLibrary:
         """Library SOP parameters."""
 
-        def __init__(self, parent: BaseSop):
+        def __init__(self, parent: BaseSop, stable_ctr=False):
             """Create a library helper bound to a parent SOP.
 
             Parameters
             ----------
             parent : ansys.speos.core.opt_prop.BaseSop
                 Base SOP wrapper that owns the library protobuf field.
+            stable_ctr : bool, optional
+                Internal guard to prevent unintended direct instantiation.
             """
+            if not stable_ctr:
+                raise RuntimeError(
+                    "SopLibrary is not intended to be instantiated directly."
+                    "Please use BaseSop.set_surface_library() or set stable_ctr=True if you know "
+                    "what you're doing."
+                )
             self._parent = parent
             self._parent._sop_template.library.SetInParent()
 
@@ -283,7 +305,7 @@ class BaseSop:
         """
         self._mirror = None
         self._sop_template.library.SetInParent()
-        self._library = self.SopLibrary(self)
+        self._library = self.SopLibrary(self, stable_ctr=True)
         return self._library
 
     @property
@@ -311,7 +333,12 @@ class BaseVop:
     class VopOptic:
         """Optic parameters for a clear transparent volume."""
 
-        def __init__(self, parent, default_parameters: Optional[VopOpticParameters] = None):
+        def __init__(
+            self,
+            parent,
+            default_parameters: Optional[VopOpticParameters] = None,
+            stable_ctr=False,
+        ):
             """Create an optic helper bound to a parent VOP.
 
             Parameters
@@ -320,7 +347,15 @@ class BaseVop:
                 Base VOP wrapper that owns the optic protobuf field.
             default_parameters : Optional[ansys.speos.core.generic.parameters.VopOpticParameters]
                 Default optic parameters to apply during initialization.
+            stable_ctr : bool, optional
+                Internal guard to prevent unintended direct instantiation.
             """
+            if not stable_ctr:
+                raise RuntimeError(
+                    "VopOptic is not intended to be instantiated directly."
+                    "Please use BaseVop.set_volume_optic() or set stable_ctr=True if you know "
+                    "what you're doing."
+                )
             self._parent = parent
             if default_parameters:
                 self._fill_parameters(default_parameters)
@@ -393,14 +428,22 @@ class BaseVop:
     class VopLibrary:
         """Helper class for library VOP parameters."""
 
-        def __init__(self, parent: BaseVop):
+        def __init__(self, parent: BaseVop, stable_ctr=False):
             """Create a library helper bound to a parent VOP.
 
             Parameters
             ----------
             parent : ansys.speos.core.opt_prop.BaseVop
                 Base VOP wrapper that owns the library protobuf field.
+            stable_ctr : bool, optional
+                Internal guard to prevent unintended direct instantiation.
             """
+            if not stable_ctr:
+                raise RuntimeError(
+                    "VopLibrary is not intended to be instantiated directly."
+                    "Please use BaseVop.set_volume_library() or set stable_ctr=True if you know "
+                    "what you're doing."
+                )
             self._parent = parent
             self._parent._vop_template.library.SetInParent()
 
@@ -570,12 +613,12 @@ class BaseVop:
                 description=self._material_instance.description,
                 metadata=self._material_instance.metadata,
             )
-            self._vop_optic = self.VopOptic(self, VopOpticParameters())
+            self._vop_optic = self.VopOptic(self, VopOpticParameters(), stable_ctr=True)
         elif self._vop_template.HasField("optic"):
-            self._vop_optic = self.VopOptic(self, None)
+            self._vop_optic = self.VopOptic(self, None, stable_ctr=True)
         else:
             self._vop_template.optic.SetInParent()
-            self._vop_optic = self.VopOptic(self, VopOpticParameters())
+            self._vop_optic = self.VopOptic(self, VopOpticParameters(), stable_ctr=True)
         return self._vop_optic
 
     def set_volume_library(self) -> BaseVop.VopLibrary:
@@ -593,7 +636,7 @@ class BaseVop:
                 metadata=self._material_instance.metadata,
             )
         self._vop_template.library.SetInParent()
-        self._vop_library = self.VopLibrary(self)
+        self._vop_library = self.VopLibrary(self, stable_ctr=True)
         return self._vop_library
 
     # Deactivated due to a bug on SpeosRPC server side
@@ -1176,7 +1219,10 @@ class TextureLayer(BaseSop):
         """Image texture mapping properties."""
 
         def __init__(
-            self, parent: TextureLayer, default_parameters: Optional[ImageTextureParameter] = None
+            self,
+            parent: TextureLayer,
+            default_parameters: Optional[ImageTextureParameter] = None,
+            stable_ctr=False,
         ):
             """Initialize an image texture helper.
 
@@ -1189,6 +1235,12 @@ class TextureLayer(BaseSop):
             ], optional
                 Default image texture settings to apply.
             """
+            if not stable_ctr:
+                raise RuntimeError(
+                    "ImageTexture is not intended to be instantiated directly."
+                    "Please use TextureLayer.set_image_texture() or set stable_ctr=True if you "
+                    "know what you're doing."
+                )
             super().__init__(parent, TextureTypes.image, stable_ctr=True)
             self._fill_parameters(default_parameters)
 
@@ -1201,6 +1253,8 @@ class TextureLayer(BaseSop):
                 ansys.speos.core.generic.parameters.ImageTextureParameter\
             ], optional
                 Default image texture settings to apply.
+            stable_ctr : bool, optional
+                Internal guard to prevent unintended direct instantiation.
             """
             if default_parameters:
                 if default_parameters.file_path:
@@ -1277,7 +1331,10 @@ class TextureLayer(BaseSop):
         """Normal map texture mapping properties."""
 
         def __init__(
-            self, parent: TextureLayer, default_parameters: Optional[NormalMapParameter] = None
+            self,
+            parent: TextureLayer,
+            default_parameters: Optional[NormalMapParameter] = None,
+            stable_ctr=False,
         ):
             """Initialize a normal map helper.
 
@@ -1290,6 +1347,12 @@ class TextureLayer(BaseSop):
             ], optional
                 Default normal map settings to apply.
             """
+            if not stable_ctr:
+                raise RuntimeError(
+                    "NormalMap is not intended to be instantiated directly."
+                    "Please use TextureLayer.set_normal_map() or set stable_ctr=True if you know "
+                    "what you're doing."
+                )
             super().__init__(parent, TextureTypes.normal_map, stable_ctr=True)
             self._fill_parameters(default_parameters)
 
@@ -1302,6 +1365,8 @@ class TextureLayer(BaseSop):
                 ansys.speos.core.generic.parameters.NormalMapParameter\
             ], optional
                 Default normal map settings to apply.
+            stable_ctr : bool, optional
+                Internal guard to prevent unintended direct instantiation.
             """
             if default_parameters:
                 match default_parameters.normal_map_type:
@@ -1440,7 +1505,10 @@ class TextureLayer(BaseSop):
         """Anisotropy map texture mapping properties."""
 
         def __init__(
-            self, parent: TextureLayer, default_parameters: Optional[MappingOperator] = None
+            self,
+            parent: TextureLayer,
+            default_parameters: Optional[MappingOperator] = None,
+            stable_ctr=False,
         ):
             """Initialize an anisotropy map helper.
 
@@ -1453,6 +1521,12 @@ class TextureLayer(BaseSop):
             ], optional
                 Default anisotropy map settings to apply.
             """
+            if not stable_ctr:
+                raise RuntimeError(
+                    "AnisotropicMap is not intended to be instantiated directly."
+                    "Please use TextureLayer.set_anisotropy_map() or set stable_ctr=True if you "
+                    "know what you're doing."
+                )
             super().__init__(parent, TextureTypes.anisotropy_map, stable_ctr=True)
             self._fill_parameters(default_parameters)
 
@@ -1465,6 +1539,8 @@ class TextureLayer(BaseSop):
                 ansys.speos.core.generic.parameters.MappingOperator\
             ], optional
                 Default anisotropy map settings to apply.
+            stable_ctr : bool, optional
+                Internal guard to prevent unintended direct instantiation.
             """
             if default_parameters:
                 if isinstance(default_parameters, MappingOperator):
@@ -1548,11 +1624,15 @@ class TextureLayer(BaseSop):
         """
         if default_parameters.image_texture_parameters:
             self._image_map = TextureLayer.ImageTexture(
-                self._texture_template, default_parameters.image_texture_parameters
+                self._texture_template,
+                default_parameters.image_texture_parameters,
+                stable_ctr=True,
             )
         if default_parameters.normal_map_parameters:
             self._normal_map = TextureLayer.NormalMap(
-                self._texture_template, default_parameters.normal_map_parameters
+                self._texture_template,
+                default_parameters.normal_map_parameters,
+                stable_ctr=True,
             )
         if default_parameters.anisotropy_map_parameters:
             if default_parameters.anisotropy_map_parameters:
@@ -1578,10 +1658,14 @@ class TextureLayer(BaseSop):
         if self._image_map:
             return self._image_map
         if self._texture_template.HasField("image_properties"):
-            self._image_map = TextureLayer.ImageTexture(self, default_parameters=None)
+            self._image_map = TextureLayer.ImageTexture(
+                self, default_parameters=None, stable_ctr=True
+            )
         else:
             self._image_map = TextureLayer.ImageTexture(
-                self, default_parameters=ImageTextureParameter()
+                self,
+                default_parameters=ImageTextureParameter(),
+                stable_ctr=True,
             )
         return self._image_map
 
@@ -1590,9 +1674,15 @@ class TextureLayer(BaseSop):
         if self._normal_map:
             return self._normal_map
         if self._texture_template.HasField("normal_map_properties"):
-            self._normal_map = TextureLayer.NormalMap(self, default_parameters=None)
+            self._normal_map = TextureLayer.NormalMap(
+                self, default_parameters=None, stable_ctr=True
+            )
         else:
-            self._normal_map = TextureLayer.NormalMap(self, default_parameters=NormalMapParameter())
+            self._normal_map = TextureLayer.NormalMap(
+                self,
+                default_parameters=NormalMapParameter(),
+                stable_ctr=True,
+            )
         return self._normal_map
 
     def set_anisotropy_map(self):
@@ -1600,10 +1690,14 @@ class TextureLayer(BaseSop):
         if self._aniso_map:
             return self._aniso_map
         if self._texture_template.HasField("anisotropy_map_properties"):
-            self._aniso_map = TextureLayer.AnisotropicMap(self, default_parameters=None)
+            self._aniso_map = TextureLayer.AnisotropicMap(
+                self, default_parameters=None, stable_ctr=True
+            )
         else:
             self._aniso_map = TextureLayer.AnisotropicMap(
-                self, default_parameters=MappingOperator()
+                self,
+                default_parameters=MappingOperator(),
+                stable_ctr=True,
             )
         return self._aniso_map
 
