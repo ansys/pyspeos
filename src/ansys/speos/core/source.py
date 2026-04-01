@@ -1277,7 +1277,7 @@ class SourceRayFile(BaseSource):
         ----------
         rayfile_props : ansys.api.speos.scene.v2.scene_pb2.RayFileProperties
             protobuf object to modify.
-        default_parameters : Optional[RayFileSourceParameters] = None
+        default_parameters : Optional[ansys.core.generic.parameters.RayFileSourceParameters] = None
             If defined the values in the ExitGeometries instance will be
             overwritten by the values of the data class.
         stable_ctr : bool
@@ -3299,18 +3299,11 @@ class SourceAmbientEnvironment(BaseSourceAmbient):
 class SourceDisplay(BaseSource):
     """Display Source.
 
-    By default, image uri is empty and luminous_flux is 0.
+    By default, image uri is empty and luminance values is 50.
 
-    Mirrors the `Display` SourceTemplate and Scene.SourceInstance
-    from the gRPC API.
-
-    Notes
-    -----
-    This class exposes both template-level (template/display) and instance-level
-    (scene source instance) properties for a display-type source. Typical usage:
-    - set template-level attributes (image_file_uri, source_dimensions,
-    luminous_flux, contrast_ratio) and commit() to persist.
-    - adjust instance-level axis_system and intensity for scene placement.
+    This feature wraps both:
+    - ``ansys.api.speos.source.v1.source_pb2.SourceTemplate.Display``
+    - ``ansys.api.speos.scene.v2.scene_pb2.Scene.SourceInstance.DisplayProperties``
     """
 
     @general_methods.min_speos_version(25, 2, 0)
@@ -3337,10 +3330,10 @@ class SourceDisplay(BaseSource):
             Metadata for the feature. Default is None (interpreted as {}).
         source_instance : Optional[ProtoScene.SourceInstance], optional
             If provided, populates the object from an existing scene SourceInstance.
-        default_parameters : Optional[object], optional
-            Optional object carrying default values (no formal dataclass in repo).
-            If provided, recognized attributes (image_file_uri, luminous_flux,
-            contrast_ratio, axis_system) will be applied.
+        default_parameters : Optional[ansys.speos.core.generic.parameters.DisplayParameters], \
+        optional
+            If provided, Display source will be created based on values from the data class.
+            Default is None (no default values applied).
 
         Returns
         -------
@@ -3384,12 +3377,12 @@ class SourceDisplay(BaseSource):
             self._fill_parameters(default_parameters)
 
     def _fill_parameters(self, default_parameters: DisplayParameters) -> None:
-        """Populate the Display source from a :class:`DisplayParameters` dataclass.
+        """Populate the Display source from defaults.
 
         Parameters
         ----------
         default_parameters : ansys.speos.core.generic.parameters.DisplayParameters
-            Dataclass carrying the values to apply to this Display source.
+            Dataclass carrying the values to apply to this display source.
 
         Raises
         ------
@@ -3516,13 +3509,13 @@ class SourceDisplay(BaseSource):
         Returns
         -------
         str
-            Template-level image file URI referenced by the display.
+            Image file URI referenced by the display.
         """
         return self._source_template.display.image_file_uri
 
     @image_file_uri.setter
     def image_file_uri(self, uri: Union[str, Path]) -> None:
-        """Set the image file URI for the display template.
+        """Set the image file URI for the display.
 
         Parameters
         ----------
@@ -3621,7 +3614,7 @@ class SourceDisplay(BaseSource):
 
     @property
     def luminance(self) -> float:
-        """Template-level luminous flux for the display.
+        """Luminance value for the display.
 
         Returns
         -------
@@ -3632,7 +3625,7 @@ class SourceDisplay(BaseSource):
 
     @luminance.setter
     def luminance(self, value: float) -> None:
-        """Set template-level luminous flux.
+        """Set Luminance value.
 
         Parameters
         ----------
@@ -3643,7 +3636,7 @@ class SourceDisplay(BaseSource):
 
     @property
     def contrast_ratio(self) -> Optional[int]:
-        """Template-level contrast ratio for the display.
+        """Contrast ratio for the display.
 
         The underlying protobuf field is optional. When unset it behaves as None
         from the Python API perspective (the proto scalar default is 0).
@@ -3659,7 +3652,7 @@ class SourceDisplay(BaseSource):
 
     @contrast_ratio.setter
     def contrast_ratio(self, value: Optional[int]) -> None:
-        """Set or clear the template-level contrast ratio.
+        """Set or clear the contrast ratio.
 
         None means Infinite contrast ratio, while any integer value represents a
         finite contrast ratio.
@@ -3677,19 +3670,19 @@ class SourceDisplay(BaseSource):
 
     @property
     def axis_system(self) -> list:
-        """Instance-level axis system for the display.
+        """Axis system for the display.
 
         Returns
         -------
         list
-            12-element axis system vector from the scene SourceInstance describing
+            12-element axis system vector describing
             origin and axes (Ox,Oy,Oz,Xx,Xy,Xz,Yx,Yy,Yz,Zx,Zy,Zz).
         """
         return self._source_instance.display_properties.axis_system[:]
 
     @axis_system.setter
     def axis_system(self, axis_system: list) -> None:
-        """Set the instance-level axis system for the display.
+        """Set the axis system for the display.
 
         Parameters
         ----------
@@ -3700,12 +3693,12 @@ class SourceDisplay(BaseSource):
 
     @property
     def intensity(self) -> intensity.Intensity:
-        """Intensity settings for the display source (instance-level).
+        """Intensity settings for the display source.
 
         Returns
         -------
         ansys.speos.core.intensity.Intensity
-            Intensity object tied to the scene SourceInstance for this display.
+            Intensity object tied to the scene for this display.
         """
         if (
             self._intensity._intensity_properties
@@ -3782,10 +3775,7 @@ class SourceDisplay(BaseSource):
         return self._type
 
     def commit(self) -> SourceDisplay:
-        """Commit display source to the server.
-
-        Commits the intensity template (if present) and any user-defined spectra,
-        updates template.intensity_guid and then commits the source template/instance.
+        """Save feature: send the local data to the speos server database.
 
         Returns
         -------
@@ -3808,10 +3798,7 @@ class SourceDisplay(BaseSource):
         return self
 
     def reset(self) -> SourceDisplay:
-        """Reset local display source data from server.
-
-        Resets committed spectra and intensity template (if used) and then
-        refreshes the template/instance local copies.
+        """Reset feature: override local data by the one from the speos server database.
 
         Returns
         -------
@@ -3832,8 +3819,8 @@ class SourceDisplay(BaseSource):
         """Delete display source from server (local data kept).
 
         Deletes any locally-managed spectra created for a user-defined color space
-        and deletes the template/instance from the server. Does not cascade-delete
-        the intensity template.
+        and deletes the feature from the server. Does not cascade-delete
+        the intensity.
 
         Returns
         -------
