@@ -1132,7 +1132,7 @@ class TextureLayer(BaseSop):
             return self._mapping
 
         @property
-        def mapping_properties(
+        def uv_mapping(
             self,
         ) -> Optional[
             Union[TextureLayer.TextureMappingByData, TextureLayer.TextureMappingOperator]
@@ -1173,7 +1173,7 @@ class TextureLayer(BaseSop):
                     )
             return self._mapping
 
-        def set_cylindrical_mapping(self):
+        def set_uv_mapping_cylindrical(self):
             """Set cylindrical mapping for the texture layer.
 
             Returns
@@ -1185,15 +1185,15 @@ class TextureLayer(BaseSop):
             self._mapping.perimeter = 1  # Default perimeter value for cylindrical mapping
             return self._mapping
 
-        def set_planar_mapping(self):
+        def set_uv_mapping_planar(self):
             """Set planar mapping for the texture layer."""
             return self._set_mapping_operator(MappingTypes.planar)
 
-        def set_cubic_mapping(self):
+        def set_uv_mapping_cubic(self):
             """Set cubic mapping for the texture layer."""
             return self._set_mapping_operator(MappingTypes.cubic)
 
-        def set_spherical_mapping(self):
+        def set_uv_mapping_spherical(self):
             """Set spherical mapping for the texture layer.
 
             Returns
@@ -1205,7 +1205,7 @@ class TextureLayer(BaseSop):
             self._mapping.perimeter = 1  # Default perimeter value for spherical mapping
             return self._mapping
 
-        def set_mapping_by_data(self):
+        def set_uv_mapping_by_data(self):
             """Set mapping by vertices data index for the texture layer."""
             map_property = self._get_map_property()
             if map_property.HasField("mapping_operator"):
@@ -1279,7 +1279,7 @@ class TextureLayer(BaseSop):
                     default_parameters.mapping
                     and default_parameters.mapping.vertices_data_index is not None
                 ):
-                    self._mapping = self.set_mapping_by_data()
+                    self._mapping = self.set_uv_mapping_by_data()
                     self._mapping.vertices_data_index = (
                         default_parameters.mapping.vertices_data_index
                     )
@@ -1371,9 +1371,9 @@ class TextureLayer(BaseSop):
             if default_parameters:
                 match default_parameters.normal_map_type:
                     case NormalMapTypes.from_image:
-                        self.set_normal_map_from_image()
+                        self._set_normal_map_from_image()
                     case NormalMapTypes.from_normal_map:
-                        self.set_normal_map_from_normal_map()
+                        self._set_normal_map_from_normal_map()
                 if default_parameters.file_path:
                     self.normal_map_file_uri = default_parameters.file_path
                 self.repeat_u = default_parameters.repeat_u
@@ -1396,7 +1396,7 @@ class TextureLayer(BaseSop):
                     default_parameters.mapping
                     and default_parameters.mapping.vertices_data_index is not None
                 ):
-                    self._mapping = self.set_mapping_by_data()
+                    self._mapping = self.set_uv_mapping_by_data()
                     self._mapping.vertices_data_index = (
                         default_parameters.mapping.vertices_data_index
                     )
@@ -1483,7 +1483,7 @@ class TextureLayer(BaseSop):
             else:
                 raise TypeError("No Normal map defined")
 
-        def set_normal_map_from_image(self):
+        def _set_normal_map_from_image(self):
             """Configure the normal map to be sourced from an image."""
             temp = ""
             if self.normal_map_file_uri:
@@ -1492,7 +1492,7 @@ class TextureLayer(BaseSop):
             if temp:
                 self.normal_map_file_uri = temp
 
-        def set_normal_map_from_normal_map(self):
+        def _set_normal_map_from_normal_map(self):
             """Configure the normal map to be sourced from a normal map file."""
             temp = ""
             if self.normal_map_file_uri:
@@ -1669,14 +1669,23 @@ class TextureLayer(BaseSop):
             )
         return self._image_map
 
-    def set_normal_map(self):
+    def set_image_texture_to_none(self):
+        """Deactivate image texture in this texture layer."""
+        if self._image_map:
+            self._image_map = None
+            self._texture_template.ClearField("image_properties")
+        return self
+
+    def set_normal_map_from_image(self):
         """Activate normal map in this texture layer."""
         if self._normal_map:
+            self._normal_map._set_normal_map_from_image()
             return self._normal_map
         if self._texture_template.HasField("normal_map_properties"):
             self._normal_map = TextureLayer.NormalMap(
                 self, default_parameters=None, stable_ctr=True
             )
+            self._normal_map._set_normal_map_from_image()
         else:
             self._normal_map = TextureLayer.NormalMap(
                 self,
@@ -1684,6 +1693,33 @@ class TextureLayer(BaseSop):
                 stable_ctr=True,
             )
         return self._normal_map
+
+    def set_normal_map_from_normal_map(self):
+        """Activate normal map in this texture layer."""
+        if self._normal_map:
+            self._normal_map._set_normal_map_from_normal_map()
+            return self._normal_map
+        if self._texture_template.HasField("normal_map_properties"):
+            self._normal_map = TextureLayer.NormalMap(
+                self, default_parameters=None, stable_ctr=True
+            )
+            self._normal_map._set_normal_map_from_normal_map()
+        else:
+            self._normal_map = TextureLayer.NormalMap(
+                self,
+                default_parameters=NormalMapParameter(
+                    normal_map_type=NormalMapTypes.from_normal_map
+                ),
+                stable_ctr=True,
+            )
+        return self._normal_map
+
+    def set_normal_map_to_none(self):
+        """Deactivate normal map in this texture layer."""
+        if self._normal_map:
+            self._normal_map = None
+            self._texture_template.ClearField("normal_map_properties")
+        return self
 
     def set_anisotropy_map(self):
         """Activate anisotropy map in this texture layer."""
@@ -1700,6 +1736,13 @@ class TextureLayer(BaseSop):
                 stable_ctr=True,
             )
         return self._aniso_map
+
+    def set_anisotropy_map_to_none(self):
+        """Deactivate anisotropy map in this texture layer."""
+        if self._aniso_map:
+            self._aniso_map = None
+            self._texture_template.ClearField("anisotropy_map_properties")
+        return self
 
     def _commit(self) -> "TextureLayer":
         """Save or update the SOP template on the Speos server.
@@ -1754,7 +1797,10 @@ class TextureLayer(BaseSop):
                 if self._texture_template.HasField("anisotropy_map_properties"):
                     self.set_anisotropy_map()
                 if self._texture_template.HasField("normal_map_properties"):
-                    self.set_normal_map()
+                    if self._sop_template.texture.normal_map.HasField("from_image"):
+                        self.set_normal_map_from_image()
+                    elif self._sop_template.texture.normal_map.HasField("from_normal_map"):
+                        self.set_normal_map_from_normal_map()
                 if self._texture_template.HasField("image_properties"):
                     self.set_image_texture()
         return self
