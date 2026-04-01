@@ -3330,8 +3330,8 @@ class SourceDisplay(BaseSource):
             Metadata for the feature. Default is None (interpreted as {}).
         source_instance : Optional[ProtoScene.SourceInstance], optional
             If provided, populates the object from an existing scene SourceInstance.
-        default_parameters : Optional[ansys.speos.core.generic.parameters.DisplayParameters], \
-        optional
+        default_parameters : Optional[\
+        ansys.speos.core.generic.parameters.DisplayParameters], optional
             If provided, Display source will be created based on values from the data class.
             Default is None (no default values applied).
 
