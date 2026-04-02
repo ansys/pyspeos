@@ -207,7 +207,11 @@ class Face:
 
     @property
     def vertices_data(self) -> list[MeshData]:
-        """List of data applied to vertices.
+        """List of data applied to vertices (like texture coordinates uv).
+
+        Each MeshData will be stored in a specific channel. This data can be used for example to
+        apply a texture on the face by associating the uv coordinates to the vertices and then
+        applying a texture with UV mapping on the face.
 
         Returns
         -------
