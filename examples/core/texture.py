@@ -218,7 +218,7 @@ layer_1.set_surface_library()
 layer_1.sop_library.file_uri = Path(assets_data_path) / "L100 2.simplescattering"
 layer_1.set_image_texture()
 layer_1.image_texture.image_file_uri = Path(assets_data_path) / "textureColors.jpg"
-layer_1.image_texture.set_mapping_by_data()
+layer_1.image_texture.set_uv_mapping_by_data()
 layer_1.image_texture.uv_mapping.vertices_data_index = 0
 
 # Select which meshdata assign to the face is used to position the image on the geometry.
