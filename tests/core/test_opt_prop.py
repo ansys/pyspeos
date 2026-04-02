@@ -29,14 +29,14 @@ import pytest
 
 from ansys.speos.core import Face, GeoRef, OptProp, Project, Speos
 from ansys.speos.core.generic.parameters import (
-    ImageTextureParameter,
+    ImageTextureParameters,
     MappingByData,
     MappingCylindricalParameters,
     MappingOperator,
     MappingSphericalParameters,
     MappingTypes,
     MeshData,
-    NormalMapParameter,
+    NormalMapParameters,
     NormalMapTypes,
     OptPropParameters,
     SopLibraryParameters,
@@ -832,7 +832,7 @@ def test_texture_helper_parameter_initialization_branches(speos: Speos):
     layer_image = TextureLayer(op, "Layer.Image")
     image = TextureLayer.ImageTexture(
         layer_image,
-        ImageTextureParameter(
+        ImageTextureParameters(
             file_path=Path("image_texture.png"),
             repeat_u=False,
             repeat_v=False,
@@ -861,7 +861,7 @@ def test_texture_helper_parameter_initialization_branches(speos: Speos):
     layer_image_by_data = TextureLayer(op, "Layer.Image.ByData")
     image_by_data = TextureLayer.ImageTexture(
         layer_image_by_data,
-        ImageTextureParameter(mapping=MappingByData(vertices_data_index=5)),
+        ImageTextureParameters(mapping=MappingByData(vertices_data_index=5)),
         stable_ctr=True,
     )
     assert image_by_data.uv_mapping.vertices_data_index == 5
@@ -869,7 +869,7 @@ def test_texture_helper_parameter_initialization_branches(speos: Speos):
     layer_normal = TextureLayer(op, "Layer.Normal")
     normal = TextureLayer.NormalMap(
         layer_normal,
-        NormalMapParameter(
+        NormalMapParameters(
             file_path=Path("normal_map.png"),
             repeat_u=False,
             repeat_v=False,
@@ -1503,11 +1503,11 @@ def test_texture_layer_parameter_fill_branch_paths(speos: Speos):
     op = p.create_optical_property(name="Texture.Coverage")
 
     params = TextureLayerParameters(
-        image_texture_parameters=ImageTextureParameter(
+        image_texture_parameters=ImageTextureParameters(
             file_path=Path("image_cov.png"),
             mapping=MappingOperator(mapping_type=MappingTypes.planar, rotation=20),
         ),
-        normal_map_parameters=NormalMapParameter(
+        normal_map_parameters=NormalMapParameters(
             file_path=Path("normal_cov.png"),
             normal_map_type=NormalMapTypes.from_image,
             mapping=MappingOperator(mapping_type=MappingTypes.cubic, rotation=30),

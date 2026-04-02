@@ -1084,7 +1084,7 @@ class TextureNormalizationTypes(str, Enum):
 
 
 @dataclass
-class ImageTextureParameter:
+class ImageTextureParameters:
     """Parameters of an image based texture."""
 
     file_path: Union[str, Path] = ""
@@ -1098,11 +1098,13 @@ class ImageTextureParameter:
 
 
 @dataclass
-class NormalMapParameter(ImageTextureParameter):
+class NormalMapParameters(ImageTextureParameters):
     """Parameters of a normal map based texture."""
 
     normal_map_type: NormalMapTypes = NormalMapTypes.from_image
     """Mapping parameters to apply on the normal map if normal_map_type is from_normal_map."""
+    roughness: float = 1
+    """Roughness value to apply on the normal map"""
 
 
 @dataclass
@@ -1113,9 +1115,9 @@ class TextureLayerParameters:
         default_factory=SopMirrorParameters
     )
     """SOP parameters applied to the texture layer."""
-    image_texture_parameters: Optional[ImageTextureParameter] = None
+    image_texture_parameters: Optional[ImageTextureParameters] = None
     """Image texture parameters when ``image_texture`` is enabled."""
-    normal_map_parameters: Optional[NormalMapParameter] = None
+    normal_map_parameters: Optional[NormalMapParameters] = None
     """Normal map image parameters when ``normal_map`` is enabled."""
     anisotropy_map_parameters: Optional[Union[MappingOperator, MappingByData]] = None
     """Mapping parameters applied to the anisotropy map."""

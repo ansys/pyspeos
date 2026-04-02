@@ -15,7 +15,7 @@ import os
 from pathlib import Path
 
 from ansys.speos.core import Face, Project, Speos, launcher
-from ansys.speos.core.generic.parameters import MeshData, TextureNormalizationTypes
+from ansys.speos.core.generic.parameters import MeshData
 from ansys.speos.core.kernel.client import (
     default_docker_channel,
 )
@@ -118,12 +118,21 @@ print(p)
 data = create_helper_geometries(p)
 bodies = data["bodies"]
 faces = data["faces"]
+p.preview()
 
 
 # ## Apply vertices data for all faces except the first
 #
 # we create image locations for each vertices and provide these to each face to position the texture
 # on the Geometry. we give for each vertices the u,v location of the image
+# data structure for the Meshdata :
+# Texture coordinates uv: (u1 v1 u2 v2 ...) with u1 and v1 the coordinates for the first vertex.
+# Typically ranging from 0.0 to 1.0, where (0.0 0.0) is the bottom-left and (1.0 1.0) is the
+# top-right of the texture.
+# In this section we create different mappings by playing with the u value assigned to the vertices.
+# The V value is kept unchanged for all faces as we use a picture which has stripes along the v
+# direction and playing with v would induce no change in the result.
+
 
 face1_0 = faces[1]
 face1_0.vertices_data = [
@@ -156,12 +165,6 @@ face5_0.vertices_data = [
     MeshData(name="uv_0", data=[4 / 6, 1.0, 4 / 6, 0.0, 5 / 6, 1.0, 5 / 6, 0.0])
 ]
 data["rp"].commit()
-
-# As the used image has strips there is no interest in playing with v
-# . ----> u
-# |
-# | picture
-# v
 
 
 # ## Create Ambient source
@@ -216,9 +219,14 @@ layer_1.sop_library.file_uri = Path(assets_data_path) / "L100 2.simplescattering
 layer_1.set_image_texture()
 layer_1.image_texture.image_file_uri = Path(assets_data_path) / "textureColors.jpg"
 layer_1.image_texture.set_mapping_by_data()
-layer_1.image_texture.mapping_properties.vertices_data_index = 0
-layer_1.image_texture.mapping_properties.repeat_u = False
-layer_1.image_texture.mapping_properties.repeat_v = False
+layer_1.image_texture.uv_mapping.vertices_data_index = 0
+
+# Select which meshdata assign to the face is used to position the image on the geometry.
+# Here we have only created one meshdata with uv coordinates but if there were several
+# you could select which one to use for the mapping
+
+layer_1.image_texture.repeat_u = False
+layer_1.image_texture.repeat_v = False
 opt_prop.commit()
 
 # ## Create Texture Property by mapping operator
@@ -234,12 +242,12 @@ layer_2 = opt_prop1.create_texture_layer()
 layer_2.set_surface_library().file_uri = Path(assets_data_path) / "L100 2.simplescattering"
 layer_2.set_image_texture()
 layer_2.image_texture.image_file_uri = Path(assets_data_path) / "textureColors.jpg"
-layer_2.image_texture.set_planar_mapping()
-layer_2.image_texture.mapping_properties.u_length = 2.5
-layer_2.image_texture.mapping_properties.v_length = 2.5
-layer_2.image_texture.mapping_properties.repeat_u = True
-layer_2.image_texture.mapping_properties.repeat_v = True
-layer_2.image_texture.mapping_properties.axis_system = [2.5, 2.5, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0]
+layer_2.image_texture.set_uv_mapping_planar()
+layer_2.image_texture.uv_mapping.u_length = 2.5
+layer_2.image_texture.uv_mapping.v_length = 2.5
+layer_2.image_texture.repeat_u = True
+layer_2.image_texture.repeat_v = True
+layer_2.image_texture.uv_mapping.axis_system = [2.5, 2.5, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0]
 opt_prop1.commit()
 
 # ## Create Inverse Simulation with define Texture normalization
@@ -247,7 +255,7 @@ opt_prop1.commit()
 sim = p.create_simulation(name="Inverse", feature_type=SimulationInverse)
 sim.sensor_paths = ["Radiance"]
 sim.source_paths = ["Ambient"]
-sim.texture_normalization = TextureNormalizationTypes.none
+sim.set_texture_normalization_none()
 sim.commit()
 
 # ## Preview Project

@@ -43,13 +43,13 @@ import ansys.speos.core.body as body
 import ansys.speos.core.face as face
 from ansys.speos.core.generic.general_methods import min_speos_version
 from ansys.speos.core.generic.parameters import (
-    ImageTextureParameter,
+    ImageTextureParameters,
     MappingByData,
     MappingCylindricalParameters,
     MappingOperator,
     MappingSphericalParameters,
     MappingTypes,
-    NormalMapParameter,
+    NormalMapParameters,
     NormalMapTypes,
     OptPropParameters,
     SopLibraryParameters,
@@ -1221,7 +1221,7 @@ class TextureLayer(BaseSop):
         def __init__(
             self,
             parent: TextureLayer,
-            default_parameters: Optional[ImageTextureParameter] = None,
+            default_parameters: Optional[ImageTextureParameters] = None,
             stable_ctr=False,
         ):
             """Initialize an image texture helper.
@@ -1244,7 +1244,7 @@ class TextureLayer(BaseSop):
             super().__init__(parent, TextureTypes.image, stable_ctr=True)
             self._fill_parameters(default_parameters)
 
-        def _fill_parameters(self, default_parameters: Optional[ImageTextureParameter] = None):
+        def _fill_parameters(self, default_parameters: Optional[ImageTextureParameters] = None):
             """Fill image texture parameters from default parameters.
 
             Parameters
@@ -1333,7 +1333,7 @@ class TextureLayer(BaseSop):
         def __init__(
             self,
             parent: TextureLayer,
-            default_parameters: Optional[NormalMapParameter] = None,
+            default_parameters: Optional[NormalMapParameters] = None,
             stable_ctr=False,
         ):
             """Initialize a normal map helper.
@@ -1356,7 +1356,7 @@ class TextureLayer(BaseSop):
             super().__init__(parent, TextureTypes.normal_map, stable_ctr=True)
             self._fill_parameters(default_parameters)
 
-        def _fill_parameters(self, default_parameters: Optional[NormalMapParameter] = None):
+        def _fill_parameters(self, default_parameters: Optional[NormalMapParameters] = None):
             """Fill normal map parameters from default parameters.
 
             Parameters
@@ -1664,7 +1664,7 @@ class TextureLayer(BaseSop):
         else:
             self._image_map = TextureLayer.ImageTexture(
                 self,
-                default_parameters=ImageTextureParameter(),
+                default_parameters=ImageTextureParameters(),
                 stable_ctr=True,
             )
         return self._image_map
@@ -1689,7 +1689,7 @@ class TextureLayer(BaseSop):
         else:
             self._normal_map = TextureLayer.NormalMap(
                 self,
-                default_parameters=NormalMapParameter(),
+                default_parameters=NormalMapParameters(),
                 stable_ctr=True,
             )
         return self._normal_map
@@ -1707,7 +1707,7 @@ class TextureLayer(BaseSop):
         else:
             self._normal_map = TextureLayer.NormalMap(
                 self,
-                default_parameters=NormalMapParameter(
+                default_parameters=NormalMapParameters(
                     normal_map_type=NormalMapTypes.from_normal_map
                 ),
                 stable_ctr=True,

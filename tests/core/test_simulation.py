@@ -1622,7 +1622,7 @@ def test_simulation_nested_classes_errors():
 
 @pytest.mark.supported_speos_versions(min=252)
 def test_texture_normalization(speos: Speos):
-    """Test texturenormalization property."""
+    """Test texture normalization set methods."""
     p = Project(speos=speos)
 
     # Default value
@@ -1632,11 +1632,11 @@ def test_texture_normalization(speos: Speos):
     assert isinstance(sim1, SimulationInverse)
     assert sim1.texture_normalization == TextureNormalizationTypes.unspecified
     assert sim2.texture_normalization == TextureNormalizationTypes.unspecified
-    sim1.texture_normalization = TextureNormalizationTypes.none
-    sim2.texture_normalization = TextureNormalizationTypes.color_from_texture
+    sim1.set_texture_normalization_none()
+    sim2.set_texture_normalization_color_from_texture()
     assert sim1.texture_normalization == TextureNormalizationTypes.none
     assert sim2.texture_normalization == TextureNormalizationTypes.color_from_texture
-    sim1.texture_normalization = TextureNormalizationTypes.color_from_bsdf
+    sim1.set_texture_normalization_color_from_bsdf()
     assert sim1.texture_normalization == TextureNormalizationTypes.color_from_bsdf
     assert (
         sim1._simulation_template.inverse_mc_simulation_template.texture.texture_normalization

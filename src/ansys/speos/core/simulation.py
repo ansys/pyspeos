@@ -648,26 +648,37 @@ class BaseSimulation:
             case simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_COLOR_FROM_BSDF:
                 return TextureNormalizationTypes.color_from_bsdf
 
-    @texture_normalization.setter
-    def texture_normalization(self, value: Union[TextureNormalizationTypes]):
-        texture = getattr(self._simulation_template, self._template_class).texture
-        match value:
-            case TextureNormalizationTypes.unspecified:
-                texture.texture_normalization = (
-                    simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_UNSPECIFIED
-                )
-            case TextureNormalizationTypes.none:
-                texture.texture_normalization = (
-                    simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_NONE
-                )
-            case TextureNormalizationTypes.color_from_texture:
-                texture.texture_normalization = (
-                    simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_COLOR_FROM_TEXTURE
-                )
-            case TextureNormalizationTypes.color_from_bsdf:
-                texture.texture_normalization = (
-                    simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_COLOR_FROM_BSDF
-                )
+    def set_texture_normalization_unspecified(self) -> BaseSimulation:
+        """Set texture normalization to unspecified."""
+        template = getattr(self._simulation_template, self._template_class)
+        template.texture.texture_normalization = (
+            simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_UNSPECIFIED
+        )
+        return self
+
+    def set_texture_normalization_none(self) -> BaseSimulation:
+        """Disable texture normalization."""
+        template = getattr(self._simulation_template, self._template_class)
+        template.texture.texture_normalization = (
+            simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_NONE
+        )
+        return self
+
+    def set_texture_normalization_color_from_texture(self) -> BaseSimulation:
+        """Set texture normalization to color-from-texture mode."""
+        template = getattr(self._simulation_template, self._template_class)
+        template.texture.texture_normalization = (
+            simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_COLOR_FROM_TEXTURE
+        )
+        return self
+
+    def set_texture_normalization_color_from_bsdf(self) -> BaseSimulation:
+        """Set texture normalization to color-from-BSDF mode."""
+        template = getattr(self._simulation_template, self._template_class)
+        template.texture.texture_normalization = (
+            simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_COLOR_FROM_BSDF
+        )
+        return self
 
     def compute_CPU(
         self, threads_number: Optional[int] = None, export_vtp: Optional[bool] = False
