@@ -44,11 +44,6 @@ import ansys.speos.core.face as face
 from ansys.speos.core.generic.general_methods import min_speos_version
 from ansys.speos.core.generic.parameters import (
     ImageTextureParameters,
-    MappingByData,
-    MappingCylindricalParameters,
-    MappingOperator,
-    MappingSphericalParameters,
-    MappingTypes,
     NormalMapParameters,
     NormalMapTypes,
     OptPropParameters,
@@ -57,6 +52,11 @@ from ansys.speos.core.generic.parameters import (
     SopTypes,
     TextureLayerParameters,
     TextureTypes,
+    UVMappingByData,
+    UVMappingCubicParameters,
+    UVMappingCylindricalParameters,
+    UVMappingPlanarParameters,
+    UVMappingSphericalParameters,
     VopLibraryParameters,
     VopOpticParameters,
     VopTypes,
@@ -678,10 +678,19 @@ class BaseVop:
 class TextureLayer(BaseSop):
     """Describes the optical and texture properties of a single texture layer."""
 
-    class TextureMappingOperator:
+    class TextureUVMappingOperator:
         """Texture mapping operator for a texture layer."""
 
-        def __init__(self, mapping, default_parameters: Optional[MappingOperator] = None):
+        def __init__(
+            self,
+            mapping,
+            default_parameters: Optional[
+                UVMappingCubicParameters,
+                UVMappingPlanarParameters,
+                UVMappingSphericalParameters,
+                UVMappingCylindricalParameters,
+            ] = None,
+        ):
             """Initialize a texture mapping operator wrapper.
 
             Parameters
@@ -689,42 +698,48 @@ class TextureLayer(BaseSop):
             mapping : protobuf message
                 Message containing the ``mapping_operator`` field to manipulate.
             default_parameters : Optional[\
-                ansys.speos.core.generic.parameters.MappingOperator\
+                ansys.speos.core.generic.parametersUVMappingPlanarParameters, \
+                ansys.speos.core.generic.parameters.UVMappingSphericalParameters, \
+                ansys.speos.core.generic.parameters.UVMappingCylindricalParameters, \
+                ansys.speos.core.generic.parameters.UVMappingCubicParameters, \
             ], optional
                 Default mapping parameters to apply to the operator.
             """
             self._mapping = mapping.mapping_operator
             self._fill_parameters(default_parameters)
 
-        def _fill_parameters(self, default_parameters: Optional[MappingOperator] = None):
+        def _fill_parameters(
+            self,
+            default_parameters: Optional[
+                UVMappingPlanarParameters,
+                UVMappingSphericalParameters,
+                UVMappingCylindricalParameters,
+                UVMappingCubicParameters,
+            ] = None,
+        ):
             """Fill mapping operator parameters from default parameters.
 
             Parameters
             ----------
             default_parameters : Optional[\
-                ansys.speos.core.generic.parameters.MappingOperator\
+                ansys.speos.core.generic.parametersUVMappingPlanarParameters, \
+                ansys.speos.core.generic.parameters.UVMappingSphericalParameters, \
+                ansys.speos.core.generic.parameters.UVMappingCylindricalParameters, \
+                ansys.speos.core.generic.parameters.UVMappingCubicParameters, \
             ], optional
                 Default mapping parameters to apply.
             """
-            if default_parameters and default_parameters:
-                match default_parameters.mapping_type:
-                    case MappingTypes.planar:
-                        self._mapping.planar.SetInParent()
-                    case MappingTypes.cubic:
-                        self._mapping.cubic.SetInParent()
-                    case _:
-                        if isinstance(default_parameters.mapping_type, MappingSphericalParameters):
-                            self._mapping.spherical.SetInParent()
-                            self._mapping.spherical.sphere_perimeter = (
-                                default_parameters.mapping_type.perimeter
-                            )
-                        elif isinstance(
-                            default_parameters.mapping_type, MappingCylindricalParameters
-                        ):
-                            self._mapping.cylindrical.SetInParent()
-                            self._mapping.cylindrical.base_perimeter = (
-                                default_parameters.mapping_type.perimeter
-                            )
+            if default_parameters:
+                if isinstance(default_parameters, UVMappingPlanarParameters):
+                    self._mapping.planar.SetInParent()
+                elif isinstance(default_parameters, UVMappingCubicParameters):
+                    self._mapping.cubic.SetInParent()
+                elif isinstance(default_parameters, UVMappingSphericalParameters):
+                    self._mapping.spherical.SetInParent()
+                    self._mapping.spherical.sphere_perimeter = default_parameters.sphere_perimeter
+                elif isinstance(default_parameters, UVMappingCylindricalParameters):
+                    self._mapping.cylindrical.SetInParent()
+                    self._mapping.cylindrical.base_perimeter = default_parameters.base_perimeter
                 self._mapping.u_offset = default_parameters.u_offset
                 self._mapping.v_offset = default_parameters.v_offset
                 self._mapping.u_length = default_parameters.u_length
@@ -735,21 +750,6 @@ class TextureLayer(BaseSop):
                 self._mapping.u_scale_factor = default_parameters.u_scale
                 self._mapping.v_scale_factor = default_parameters.v_scale
                 self._mapping.rotation = default_parameters.rotation
-
-        @property
-        def mapping_type(self) -> Optional[str]:
-            """Mapping projection type.
-
-            Returns
-            -------
-            Optional[str]
-                One of ``'planar'``, ``'cubic'``, ``'spherical'``, ``'cylindrical'``,
-                or ``None`` when no type is set.
-            """
-            for t in MappingTypes:
-                if self._mapping.HasField(t):
-                    return t
-            return None
 
         @property
         def axis_system(self) -> list:
@@ -968,15 +968,21 @@ class TextureLayer(BaseSop):
                 self._mapping.cylindrical.base_perimeter = value
             else:
                 raise TypeError(
-                    f"Mapping type is not '{MappingTypes._spherical}' or "
-                    f"'{MappingTypes._cylindrical}. Set mapping_type to "
-                    f"'{MappingTypes._spherical}' or '{MappingTypes._cylindrical} first."
+                    "Mapping type is not 'spherical' or "
+                    "'cylindrical. Set mapping_type to "
+                    "'spherical' or 'cylindrical' first."
                 )
 
         def __todict__(self):
             """Convert the mapping operator properties to a dictionary for comparison."""
+            for i in ["planar", "spherical", "cylindrical", "cubic"]:
+                if self._mapping.HasField(i):
+                    mapping_type = i
+                    break
+                else:
+                    mapping_type = "undefined"
             return {
-                "mapping_type": self.mapping_type,
+                "mapping_type": mapping_type,
                 "u_offset": self.u_offset,
                 "v_offset": self.v_offset,
                 "u_length": self.u_length,
@@ -992,15 +998,21 @@ class TextureLayer(BaseSop):
             """Override equality to compare mapping operator properties."""
             if isinstance(other, dict):
                 return self.__todict__() == other
-            elif isinstance(other, TextureLayer.TextureMappingOperator):
+            elif isinstance(other, TextureLayer.TextureUVMappingOperator):
                 return self.__todict__() == other.__todict__()
             else:
                 return NotImplemented
 
         def __str__(self):
             """Represent the mapping operator as string."""
+            for i in ["planar", "spherical", "cylindrical", "cubic"]:
+                if self._mapping.HasField(i):
+                    mapping_type = i
+                    break
+                else:
+                    mapping_type = "undefined"
             return (
-                f"TextureMappingOperator(mapping_type={self.mapping_type},"
+                f"TextureUVMappingOperator(mapping_type={mapping_type},"
                 f"u_offset={self.u_offset}, "
                 f"v_offset={self.v_offset}, "
                 f"u_length={self.u_length}, "
@@ -1015,7 +1027,7 @@ class TextureLayer(BaseSop):
     class TextureMappingByData:
         """Texture mapping by data for a texture layer."""
 
-        def __init__(self, parent, default_parameters: Optional[MappingByData] = None):
+        def __init__(self, parent, default_parameters: Optional[UVMappingByData] = None):
             """Initialize a mapping-by-data helper.
 
             Parameters
@@ -1030,7 +1042,7 @@ class TextureLayer(BaseSop):
             self._parent = parent
             self._fill_parameters(default_parameters)
 
-        def _fill_parameters(self, default_parameters: Optional[MappingByData] = None):
+        def _fill_parameters(self, default_parameters: Optional[UVMappingByData] = None):
             """Fill mapping-by-data parameters from default parameters.
 
             Parameters
@@ -1097,45 +1109,30 @@ class TextureLayer(BaseSop):
                 return self._parent._texture_template.anisotropy_map_properties
             raise TypeError(f"Unsupported texture type for mapping: {self._type}")
 
-        @staticmethod
-        def _mapping_type_name(mapping_type: Union[MappingTypes, str]) -> str:
-            """Normalize mapping type input to the protobuf oneof field name."""
-            if isinstance(mapping_type, MappingTypes):
-                return mapping_type.value
-            elif isinstance(mapping_type, MappingCylindricalParameters):
-                return MappingTypes._cylindrical.value
-            elif isinstance(mapping_type, MappingSphericalParameters):
-                return MappingTypes._spherical.value
-            return str(mapping_type)
-
-        def _set_mapping_operator(self, mapping_type: Union[MappingTypes, str]):
+        def _set_mapping_operator(
+            self,
+            mapping_type: Union[
+                UVMappingPlanarParameters,
+                UVMappingSphericalParameters,
+                UVMappingCylindricalParameters,
+                UVMappingCubicParameters,
+            ],
+        ):
             """Switch to operator-based mapping and set its projection type."""
-            mapping_type_name = self._mapping_type_name(mapping_type)
             map_property = self._get_map_property()
             if map_property.HasField("vertices_data_index"):
                 map_property.ClearField("vertices_data_index")
                 map_property.mapping_operator.SetInParent()
-            if not map_property.mapping_operator.HasField(mapping_type_name):
-                map_property.ClearField("mapping_operator")
-                map_property.mapping_operator.SetInParent()
-                if mapping_type_name not in {"planar", "cubic", "spherical", "cylindrical"}:
-                    raise ValueError(
-                        "Invalid mapping type. Must be one of 'planar', 'cubic', 'spherical', "
-                        "'cylindrical'."
-                    )
-                getattr(map_property.mapping_operator, mapping_type_name).SetInParent()
-                self._mapping = TextureLayer.TextureMappingOperator(
-                    map_property, MappingOperator(mapping_type=mapping_type)
-                )
-            else:
-                self._mapping = TextureLayer.TextureMappingOperator(map_property, None)
+            map_property.ClearField("mapping_operator")
+            map_property.mapping_operator.SetInParent()
+            self._mapping = TextureLayer.TextureUVMappingOperator(map_property, mapping_type)
             return self._mapping
 
         @property
         def uv_mapping(
             self,
         ) -> Optional[
-            Union[TextureLayer.TextureMappingByData, TextureLayer.TextureMappingOperator]
+            Union[TextureLayer.TextureMappingByData, TextureLayer.TextureUVMappingOperator]
         ]:
             """Texture mapping properties for the texture layer."""
             if self._mapping:
@@ -1146,7 +1143,7 @@ class TextureLayer(BaseSop):
                         self._parent._texture_template.image_properties, None
                     )
                 else:
-                    self._mapping = self._parent.TextureMappingOperator(
+                    self._mapping = self._parent.TextureUVMappingOperator(
                         self._parent._texture_template.image_properties, None
                     )
             elif self._type == TextureTypes.normal_map:
@@ -1157,7 +1154,7 @@ class TextureLayer(BaseSop):
                         self._parent._texture_template.normal_map_properties, None
                     )
                 else:
-                    self._mapping = self._parent.TextureMappingOperator(
+                    self._mapping = self._parent.TextureUVMappingOperator(
                         self._parent._texture_template.normal_map_properties, None
                     )
             elif self._type == TextureTypes.anisotropy_map:
@@ -1168,7 +1165,7 @@ class TextureLayer(BaseSop):
                         self._parent._texture_template.anisotropy_map_properties, None
                     )
                 else:
-                    self._mapping = self._parent.TextureMappingOperator(
+                    self._mapping = self._parent.TextureUVMappingOperator(
                         self._parent._texture_template.anisotropy_map_properties, None
                     )
             return self._mapping
@@ -1178,31 +1175,29 @@ class TextureLayer(BaseSop):
 
             Returns
             -------
-            ansys.speos.core.opt_prop.TextureLayer.TextureMappingOperator
+            ansys.speos.core.opt_prop.TextureLayer.TextureUVMappingOperator
                 The mapping operator for the cylindrical mapping.
             """
-            self._set_mapping_operator(MappingTypes._cylindrical)
-            self._mapping.perimeter = 1  # Default perimeter value for cylindrical mapping
+            self._set_mapping_operator(UVMappingCylindricalParameters())
             return self._mapping
 
         def set_uv_mapping_planar(self):
             """Set planar mapping for the texture layer."""
-            return self._set_mapping_operator(MappingTypes.planar)
+            return self._set_mapping_operator(UVMappingPlanarParameters())
 
         def set_uv_mapping_cubic(self):
             """Set cubic mapping for the texture layer."""
-            return self._set_mapping_operator(MappingTypes.cubic)
+            return self._set_mapping_operator(UVMappingCubicParameters())
 
         def set_uv_mapping_spherical(self):
             """Set spherical mapping for the texture layer.
 
             Returns
             -------
-            ansys.speos.core.opt_prop.TextureLayer.TextureMappingOperator
+            ansys.speos.core.opt_prop.TextureLayer.TextureUVMappingOperator
                 The mapping operator for the spherical mapping.
             """
-            self._set_mapping_operator(MappingTypes._spherical)
-            self._mapping.perimeter = 1  # Default perimeter value for spherical mapping
+            self._set_mapping_operator(UVMappingSphericalParameters())
             return self._mapping
 
         def set_uv_mapping_by_data(self):
@@ -1261,20 +1256,16 @@ class TextureLayer(BaseSop):
                     self.image_file_uri = default_parameters.file_path
                 self.repeat_u = default_parameters.repeat_u
                 self.repeat_v = default_parameters.repeat_v
-                if isinstance(default_parameters.mapping, MappingOperator):
-                    self._mapping = self._set_mapping_operator(
-                        default_parameters.mapping.mapping_type
-                    )
-                    # Set mapping properties based on the provided MappingOperator
-                    self._mapping.u_offset = default_parameters.mapping.u_offset
-                    self._mapping.v_offset = default_parameters.mapping.v_offset
-                    self._mapping.u_length = default_parameters.mapping.u_length
-                    if default_parameters.mapping.v_length:
-                        self._mapping.v_length = default_parameters.mapping.v_length
-                    self._mapping.axis_system = default_parameters.mapping.axis_system
-                    self._mapping.u_scale = default_parameters.mapping.u_scale
-                    self._mapping.v_scale = default_parameters.mapping.v_scale
-                    self._mapping.rotation = default_parameters.mapping.rotation
+                if isinstance(
+                    default_parameters.mapping,
+                    (
+                        UVMappingPlanarParameters,
+                        UVMappingSphericalParameters,
+                        UVMappingCylindricalParameters,
+                        UVMappingCubicParameters,
+                    ),
+                ):
+                    self._mapping = self._set_mapping_operator(default_parameters.mapping)
                 elif (
                     default_parameters.mapping
                     and default_parameters.mapping.vertices_data_index is not None
@@ -1378,20 +1369,16 @@ class TextureLayer(BaseSop):
                     self.normal_map_file_uri = default_parameters.file_path
                 self.repeat_u = default_parameters.repeat_u
                 self.repeat_v = default_parameters.repeat_v
-                if isinstance(default_parameters.mapping, MappingOperator):
-                    self._mapping = self._set_mapping_operator(
-                        default_parameters.mapping.mapping_type
-                    )
-                    # Set mapping properties based on the provided MappingOperator
-                    self._mapping.u_offset = default_parameters.mapping.u_offset
-                    self._mapping.v_offset = default_parameters.mapping.v_offset
-                    self._mapping.u_length = default_parameters.mapping.u_length
-                    if default_parameters.mapping.v_length:
-                        self._mapping.v_length = default_parameters.mapping.v_length
-                    self._mapping.axis_system = default_parameters.mapping.axis_system
-                    self._mapping.u_scale = default_parameters.mapping.u_scale
-                    self._mapping.v_scale = default_parameters.mapping.v_scale
-                    self._mapping.rotation = default_parameters.mapping.rotation
+                if isinstance(
+                    default_parameters.mapping,
+                    (
+                        UVMappingPlanarParameters,
+                        UVMappingSphericalParameters,
+                        UVMappingCylindricalParameters,
+                        UVMappingCubicParameters,
+                    ),
+                ):
+                    self._mapping = self._set_mapping_operator(default_parameters.mapping)
                 elif (
                     default_parameters.mapping
                     and default_parameters.mapping.vertices_data_index is not None
@@ -1507,7 +1494,12 @@ class TextureLayer(BaseSop):
         def __init__(
             self,
             parent: TextureLayer,
-            default_parameters: Optional[MappingOperator] = None,
+            default_parameters: Optional[
+                UVMappingPlanarParameters,
+                UVMappingSphericalParameters,
+                UVMappingCylindricalParameters,
+                UVMappingCubicParameters,
+            ] = None,
             stable_ctr=False,
         ):
             """Initialize an anisotropy map helper.
@@ -1517,7 +1509,10 @@ class TextureLayer(BaseSop):
             parent : ansys.speos.core.opt_prop.TextureLayer
                 Texture layer that owns the anisotropy map data.
             default_parameters : Optional[\
-                ansys.speos.core.generic.parameters.MappingOperator\
+                ansys.speos.core.generic.parametersUVMappingPlanarParameters, \
+                ansys.speos.core.generic.parameters.UVMappingSphericalParameters, \
+                ansys.speos.core.generic.parameters.UVMappingCylindricalParameters, \
+                ansys.speos.core.generic.parameters.UVMappingCubicParameters, \
             ], optional
                 Default anisotropy map settings to apply.
             """
@@ -1530,31 +1525,40 @@ class TextureLayer(BaseSop):
             super().__init__(parent, TextureTypes.anisotropy_map, stable_ctr=True)
             self._fill_parameters(default_parameters)
 
-        def _fill_parameters(self, default_parameters: Optional[MappingOperator] = None):
+        def _fill_parameters(
+            self,
+            default_parameters: Optional[
+                UVMappingPlanarParameters,
+                UVMappingSphericalParameters,
+                UVMappingCylindricalParameters,
+                UVMappingCubicParameters,
+            ] = None,
+        ):
             """Fill anisotropy map parameters from default parameters.
 
             Parameters
             ----------
             default_parameters : Optional[\
-                ansys.speos.core.generic.parameters.MappingOperator\
+                ansys.speos.core.generic.parametersUVMappingPlanarParameters, \
+                ansys.speos.core.generic.parameters.UVMappingSphericalParameters, \
+                ansys.speos.core.generic.parameters.UVMappingCylindricalParameters, \
+                ansys.speos.core.generic.parameters.UVMappingCubicParameters, \
             ], optional
                 Default anisotropy map settings to apply.
             stable_ctr : bool, optional
                 Internal guard to prevent unintended direct instantiation.
             """
             if default_parameters:
-                if isinstance(default_parameters, MappingOperator):
-                    self._mapping = self._set_mapping_operator(default_parameters.mapping_type)
-                    # Set mapping properties based on the provided MappingOperator
-                    self._mapping.u_offset = default_parameters.u_offset
-                    self._mapping.v_offset = default_parameters.v_offset
-                    self._mapping.u_length = default_parameters.u_length
-                    if default_parameters.v_length:
-                        self._mapping.v_length = default_parameters.v_length
-                    self._mapping.axis_system = default_parameters.axis_system
-                    self._mapping.u_scale = default_parameters.u_scale
-                    self._mapping.v_scale = default_parameters.v_scale
-                    self._mapping.rotation = default_parameters.rotation
+                if isinstance(
+                    default_parameters,
+                    (
+                        UVMappingPlanarParameters,
+                        UVMappingSphericalParameters,
+                        UVMappingCylindricalParameters,
+                        UVMappingCubicParameters,
+                    ),
+                ):
+                    self._mapping = self._set_mapping_operator(default_parameters)
 
     @min_speos_version(25, 2, 0)
     def __init__(
@@ -1732,7 +1736,7 @@ class TextureLayer(BaseSop):
         else:
             self._aniso_map = TextureLayer.AnisotropicMap(
                 self,
-                default_parameters=MappingOperator(),
+                default_parameters=UVMappingPlanarParameters(),
                 stable_ctr=True,
             )
         return self._aniso_map

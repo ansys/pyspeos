@@ -993,38 +993,10 @@ class MeshData:
     """Numerical data values associated with the named mesh item."""
 
 
-class MappingTypes(str, Enum):
-    """Allowed mapping types."""
-
-    planar = "planar"
-    cubic = "cubic"
-    _spherical = "spherical"
-    _cylindrical = "cylindrical"
-
-
 @dataclass
-class MappingCylindricalParameters:
-    """Cylindrical mapping parameters."""
-
-    perimeter: float = 1
-    """Perimeter value used for cylindrical mapping."""
-
-
-@dataclass
-class MappingSphericalParameters:
-    """Spherical mapping parameters."""
-
-    perimeter: float = 1
-    """Perimeter value used for spherical mapping."""
-
-
-@dataclass
-class MappingOperator:
+class CommonUVMappingParameters:
     """Store all information needed to create a UV mapping."""
 
-    mapping_type: Union[MappingTypes, MappingCylindricalParameters, MappingSphericalParameters] = (
-        MappingTypes.planar
-    )
     """Type of mapping applied on the geometry."""
     u_length: float = 10
     """Length of the mapping along the U axis."""
@@ -1045,7 +1017,37 @@ class MappingOperator:
 
 
 @dataclass
-class MappingByData:
+class UVMappingPlanarParameters(CommonUVMappingParameters):
+    """Planar uv mapping parameters."""
+
+    pass
+
+
+@dataclass
+class UVMappingCubicParameters(CommonUVMappingParameters):
+    """Planar uv mapping parameters."""
+
+    pass
+
+
+@dataclass
+class UVMappingSphericalParameters(CommonUVMappingParameters):
+    """Spherical uv mapping parameters."""
+
+    sphere_perimeter: float = 1
+    """Perimeter value used for spherical mapping."""
+
+
+@dataclass
+class UVMappingCylindricalParameters(CommonUVMappingParameters):
+    """Cylindrical uv mapping parameters."""
+
+    base_perimeter: float = 1
+    """Perimeter value used for spherical mapping."""
+
+
+@dataclass
+class UVMappingByData:
     """Store mapping data when using custom mapping.
 
     Final data is stored on Face object.
@@ -1093,7 +1095,15 @@ class ImageTextureParameters:
     """Whether the image texture repeats along the U direction."""
     repeat_v: bool = True
     """Whether the image texture repeats along the V direction."""
-    mapping: [Union[MappingOperator, MappingByData]] = field(default_factory=MappingOperator)
+    mapping: [
+        Union[
+            UVMappingPlanarParameters,
+            UVMappingCubicParameters,
+            UVMappingSphericalParameters,
+            UVMappingCylindricalParameters,
+            UVMappingByData,
+        ]
+    ] = field(default_factory=UVMappingPlanarParameters)
     """Mapping settings applied to the image texture."""
 
 
@@ -1119,7 +1129,15 @@ class TextureLayerParameters:
     """Image texture parameters when ``image_texture`` is enabled."""
     normal_map_parameters: Optional[NormalMapParameters] = None
     """Normal map image parameters when ``normal_map`` is enabled."""
-    anisotropy_map_parameters: Optional[Union[MappingOperator, MappingByData]] = None
+    anisotropy_map_parameters: Optional[
+        Union[
+            UVMappingPlanarParameters,
+            UVMappingCubicParameters,
+            UVMappingSphericalParameters,
+            UVMappingCylindricalParameters,
+            UVMappingByData,
+        ]
+    ] = None
     """Mapping parameters applied to the anisotropy map."""
 
 

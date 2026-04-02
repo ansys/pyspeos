@@ -30,11 +30,6 @@ import pytest
 from ansys.speos.core import Face, GeoRef, OptProp, Project, Speos
 from ansys.speos.core.generic.parameters import (
     ImageTextureParameters,
-    MappingByData,
-    MappingCylindricalParameters,
-    MappingOperator,
-    MappingSphericalParameters,
-    MappingTypes,
     MeshData,
     NormalMapParameters,
     NormalMapTypes,
@@ -43,6 +38,11 @@ from ansys.speos.core.generic.parameters import (
     SopTypes,
     TextureLayerParameters,
     TextureTypes,
+    UVMappingByData,
+    UVMappingCubicParameters,
+    UVMappingCylindricalParameters,
+    UVMappingPlanarParameters,
+    UVMappingSphericalParameters,
     VopLibraryParameters,
     VopOpticParameters,
     VopTypes,
@@ -517,16 +517,29 @@ def test_create_texture_property(speos: Speos):
     layer_1.set_image_texture().image_file_uri = (
         Path(test_path) / "Texture.1.speos" / "black_leather.jpg.png"
     )
-    for map_type in MappingTypes:
-        if map_type == MappingTypes._spherical:
-            t_map_type = MappingSphericalParameters()
-        elif map_type == MappingTypes._cylindrical:
-            t_map_type = MappingCylindricalParameters()
-        else:
-            t_map_type = map_type
-        layer_1.image_texture._set_mapping_operator(t_map_type)
+    for map_type in [
+        UVMappingPlanarParameters(),
+        UVMappingCubicParameters(),
+        UVMappingSphericalParameters(),
+        UVMappingCylindricalParameters(),
+    ]:
+        layer_1.image_texture._set_mapping_operator(map_type)
         layer_1.image_texture.uv_mapping.u_length = 5
-        assert map_type == layer_1.image_texture.uv_mapping.mapping_type
+        match map_type:
+            case UVMappingPlanarParameters():
+                assert layer_1._texture_template.image_properties.mapping_operator.HasField(
+                    "planar"
+                )
+            case UVMappingCubicParameters():
+                assert layer_1._texture_template.image_properties.mapping_operator.HasField("cubic")
+            case UVMappingSphericalParameters():
+                assert layer_1._texture_template.image_properties.mapping_operator.HasField(
+                    "spherical"
+                )
+            case UVMappingCylindricalParameters():
+                assert layer_1._texture_template.image_properties.mapping_operator.HasField(
+                    "cylindrical"
+                )
     layer_1.image_texture.set_uv_mapping_planar()
     layer_1.image_texture.uv_mapping.u_length = 5
     op1.texture = [layer_1]
@@ -567,15 +580,24 @@ def test_create_texture_property(speos: Speos):
     layer_1.normal_map.normal_map_file_uri = (
         Path(test_path) / "Texture.1.speos" / "black_leather.jpg.png"
     )
-    for map_type in MappingTypes:
-        if map_type == MappingTypes._spherical:
-            t_map_type = MappingSphericalParameters()
-        elif map_type == MappingTypes._cylindrical:
-            t_map_type = MappingCylindricalParameters()
-        else:
-            t_map_type = map_type
-        layer_1.normal_map._set_mapping_operator(t_map_type)
-        assert map_type == layer_1.normal_map.uv_mapping.mapping_type
+    for map_type in [
+        UVMappingPlanarParameters(),
+        UVMappingCubicParameters(),
+        UVMappingSphericalParameters(),
+        UVMappingCylindricalParameters(),
+    ]:
+        layer_1.normal_map._set_mapping_operator(map_type)
+        layer_1.normal_map.uv_mapping.u_length = 5
+        operator = layer_1._texture_template.normal_map_properties.mapping_operator
+        match map_type:
+            case UVMappingPlanarParameters():
+                assert operator.HasField("planar")
+            case UVMappingCubicParameters():
+                assert operator.HasField("cubic")
+            case UVMappingSphericalParameters():
+                assert operator.HasField("spherical")
+            case UVMappingCylindricalParameters():
+                assert operator.HasField("cylindrical")
     layer_1.normal_map.set_uv_mapping_cylindrical().u_length = 5
     op1.texture = [layer_1]
     op1.commit()
@@ -641,8 +663,7 @@ def test_create_texture_property(speos: Speos):
     layer_1.set_normal_map_from_normal_map()
     layer_1.normal_map.normal_map_file_uri = Path(test_path) / "Texture.1.speos" / "Facets_NM.png"
     layer_1.normal_map.set_uv_mapping_cubic()
-    opp = MappingOperator(
-        mapping_type="cubic",
+    opp = UVMappingCubicParameters(
         u_length=5,
         v_length=10,
         u_offset=0,
@@ -704,17 +725,26 @@ def test_create_texture_property(speos: Speos):
         Path(test_path) / "Texture.1.speos" / "aniso_bsdf.anisotropicbsdf"
     )
     layer_2.set_anisotropy_map()
-    for map_type in MappingTypes:
-        if map_type == MappingTypes._spherical:
-            t_map_type = MappingSphericalParameters()
-        elif map_type == MappingTypes._cylindrical:
-            t_map_type = MappingCylindricalParameters()
-        else:
-            t_map_type = map_type
-        layer_2.anisotropic_map._set_mapping_operator(t_map_type).u_length = 5
-        assert map_type == layer_2.anisotropic_map.uv_mapping.mapping_type
-    opp = MappingOperator(
-        mapping_type=MappingSphericalParameters(10),
+    for map_type in [
+        UVMappingPlanarParameters(),
+        UVMappingCubicParameters(),
+        UVMappingSphericalParameters(),
+        UVMappingCylindricalParameters(),
+    ]:
+        layer_2.anisotropic_map._set_mapping_operator(map_type)
+        layer_2.anisotropic_map.uv_mapping.u_length = 5
+        operator = layer_2._texture_template.anisotropy_map_properties.mapping_operator
+        match map_type:
+            case UVMappingPlanarParameters():
+                assert operator.HasField("planar")
+            case UVMappingCubicParameters():
+                assert operator.HasField("cubic")
+            case UVMappingSphericalParameters():
+                assert operator.HasField("spherical")
+            case UVMappingCylindricalParameters():
+                assert operator.HasField("cylindrical")
+    opp = UVMappingSphericalParameters(
+        sphere_perimeter=10,
         u_length=5,
         v_length=10,
         u_offset=0,
@@ -731,7 +761,7 @@ def test_create_texture_property(speos: Speos):
     layer_2.anisotropic_map.uv_mapping.v_scale = opp.v_scale
     layer_2.anisotropic_map.uv_mapping.rotation = opp.rotation
     layer_2.anisotropic_map.uv_mapping.axis_system = opp.axis_system
-    layer_2.anisotropic_map.uv_mapping.perimeter = opp.mapping_type.perimeter
+    layer_2.anisotropic_map.uv_mapping.perimeter = opp.sphere_perimeter
     op1.texture = [layer_1, layer_2]
     op1.commit()
 
@@ -785,27 +815,16 @@ def test_texture_mapping_helper_local_branches(speos: Speos, monkeypatch):
     image._mapping = None
     assert image.uv_mapping.vertices_data_index == 2
 
-    image_operator = image._set_mapping_operator(MappingTypes.planar)
+    image_operator = image._set_mapping_operator(UVMappingPlanarParameters())
     image_operator.v_length = 3
     assert image_operator.v_length == 3
     image_operator.v_length = None
     assert image_operator.v_length is None
     assert image_operator == image_operator.__todict__()
-    assert "TextureMappingOperator(" in str(image_operator)
+    assert "TextureUVMappingOperator(" in str(image_operator)
 
     with pytest.raises(TypeError):
         image_operator.perimeter = 1
-
-    invalid_layer = TextureLayer(op, "Layer.InvalidMapping")
-    invalid_image = invalid_layer.set_image_texture()
-    monkeypatch.setattr(
-        TextureLayer.BaseTextureMap,
-        "_mapping_type_name",
-        staticmethod(lambda _: "invalid"),
-    )
-    with pytest.raises(ValueError):
-        invalid_image._set_mapping_operator(MappingTypes.cubic)
-    monkeypatch.undo()
 
     normal = layer.set_normal_map_from_image()
     normal.set_uv_mapping_by_data().vertices_data_index = 1
@@ -836,8 +855,7 @@ def test_texture_helper_parameter_initialization_branches(speos: Speos):
             file_path=Path("image_texture.png"),
             repeat_u=False,
             repeat_v=False,
-            mapping=MappingOperator(
-                mapping_type=MappingTypes.cubic,
+            mapping=UVMappingCubicParameters(
                 u_length=3,
                 v_length=4,
                 axis_system=axis_system,
@@ -851,7 +869,7 @@ def test_texture_helper_parameter_initialization_branches(speos: Speos):
     assert image.image_file_uri.endswith("image_texture.png")
     assert image.repeat_u is False
     assert image.repeat_v is False
-    assert image.uv_mapping.mapping_type == MappingTypes.cubic
+    assert image._parent._texture_template.image_properties.mapping_operator.HasField("cubic")
     assert image.uv_mapping.v_length == 4
     assert image.uv_mapping.axis_system == axis_system
     assert image.uv_mapping.u_scale == 2
@@ -861,7 +879,7 @@ def test_texture_helper_parameter_initialization_branches(speos: Speos):
     layer_image_by_data = TextureLayer(op, "Layer.Image.ByData")
     image_by_data = TextureLayer.ImageTexture(
         layer_image_by_data,
-        ImageTextureParameters(mapping=MappingByData(vertices_data_index=5)),
+        ImageTextureParameters(mapping=UVMappingByData(vertices_data_index=5)),
         stable_ctr=True,
     )
     assert image_by_data.uv_mapping.vertices_data_index == 5
@@ -873,7 +891,7 @@ def test_texture_helper_parameter_initialization_branches(speos: Speos):
             file_path=Path("normal_map.png"),
             repeat_u=False,
             repeat_v=False,
-            mapping=MappingByData(vertices_data_index=6),
+            mapping=UVMappingByData(vertices_data_index=6),
             normal_map_type=NormalMapTypes.from_normal_map,
         ),
         stable_ctr=True,
@@ -890,8 +908,7 @@ def test_texture_helper_parameter_initialization_branches(speos: Speos):
     layer_anisotropic = TextureLayer(op, "Layer.Anisotropic")
     anisotropic = TextureLayer.AnisotropicMap(
         layer_anisotropic,
-        MappingOperator(
-            mapping_type=MappingSphericalParameters(),
+        UVMappingSphericalParameters(
             u_length=7,
             v_length=8,
             axis_system=axis_system,
@@ -901,7 +918,11 @@ def test_texture_helper_parameter_initialization_branches(speos: Speos):
         ),
         stable_ctr=True,
     )
-    assert anisotropic.uv_mapping.mapping_type == MappingTypes._spherical
+    assert (
+        anisotropic._parent._texture_template.anisotropy_map_properties.mapping_operator.HasField(
+            "spherical"
+        )
+    )
     assert anisotropic.uv_mapping.axis_system == axis_system
     assert anisotropic.uv_mapping.u_scale == 4
     assert anisotropic.uv_mapping.v_scale == 5
@@ -928,8 +949,8 @@ def test_reset_texture_property(speos: Speos):
         Path(test_path) / "Texture.1.speos" / "aniso_bsdf.anisotropicbsdf"
     )
     layer_2.set_anisotropy_map().set_uv_mapping_spherical()
-    opp = MappingOperator(
-        mapping_type=MappingSphericalParameters(10),
+    opp = UVMappingSphericalParameters(
+        sphere_perimeter=10,
         u_length=5,
         v_length=10,
         u_offset=0,
@@ -945,12 +966,11 @@ def test_reset_texture_property(speos: Speos):
     layer_2.anisotropic_map.uv_mapping.v_scale = opp.v_scale
     layer_2.anisotropic_map.uv_mapping.rotation = opp.rotation
     layer_2.anisotropic_map.uv_mapping.axis_system = opp.axis_system
-    layer_2.anisotropic_map.uv_mapping.perimeter = opp.mapping_type.perimeter
+    layer_2.anisotropic_map.uv_mapping.perimeter = opp.sphere_perimeter
     layer_2.set_normal_map_from_normal_map()
     layer_2.normal_map.set_uv_mapping_cubic()
     layer_2.normal_map.normal_map_file_uri = Path(test_path) / "Texture.1.speos" / "Facets_NM.png"
-    opp = MappingOperator(
-        mapping_type=MappingTypes.cubic,
+    opp = UVMappingCubicParameters(
         u_length=5,
         v_length=10,
         u_offset=0,
@@ -1001,8 +1021,7 @@ def test_reset_texture_property(speos: Speos):
     layer_2.set_surface_mirror()
     assert layer_2._sop_template.HasField("mirror")
     old_values = layer_2.anisotropic_map.uv_mapping
-    new_values = MappingOperator(
-        MappingTypes.planar,
+    new_values = UVMappingPlanarParameters(
         20,
         5,
         False,
@@ -1022,13 +1041,13 @@ def test_reset_texture_property(speos: Speos):
     mapping_op = layer_2._texture_template.anisotropy_map_properties.mapping_operator
     assert mapping_op.axis_system == new_values.axis_system
     assert mapping_op.rotation == new_values.rotation
-    assert mapping_op.HasField(new_values.mapping_type)
+    assert mapping_op.HasField("planar")
     layer_2._reset()
     assert layer_2._sop_template.HasField("library")
     mapping_op = layer_2._texture_template.anisotropy_map_properties.mapping_operator
     assert mapping_op.axis_system == old_values.axis_system
     assert mapping_op.rotation == old_values.rotation
-    assert mapping_op.HasField(old_values.mapping_type)
+    assert mapping_op.HasField("spherical")
 
 
 @pytest.mark.supported_speos_versions(min=252)
@@ -1050,7 +1069,7 @@ def test_load_texture_property_from_file(speos: Speos):
                 assert mat.texture[0].normal_map.repeat_v
                 mapping_opp = mat.texture[0].normal_map.uv_mapping.__todict__()
                 expected = {
-                    "mapping_type": MappingTypes._spherical,
+                    "mapping_type": "spherical",
                     "u_offset": 0,
                     "v_offset": 0,
                     "u_length": 10,
@@ -1086,7 +1105,7 @@ def test_load_texture_property_from_file(speos: Speos):
                 assert mat.texture[0].normal_map.normal_map_file_uri.endswith("png")
                 mapping_opp = mat.texture[0].normal_map.uv_mapping.__todict__()
                 expected = {
-                    "mapping_type": MappingTypes._cylindrical,
+                    "mapping_type": "cylindrical",
                     "u_offset": 0,
                     "v_offset": 0,
                     "u_length": 10,
@@ -1116,7 +1135,7 @@ def test_load_texture_property_from_file(speos: Speos):
                 assert mat.texture[0].normal_map.normal_map_file_uri.endswith("png")
                 mapping_opp = mat.texture[0].normal_map.uv_mapping.__todict__()
                 expected = {
-                    "mapping_type": MappingTypes.cubic,
+                    "mapping_type": "cubic",
                     "u_offset": 0,
                     "v_offset": 0,
                     "u_length": 100,
@@ -1137,7 +1156,7 @@ def test_load_texture_property_from_file(speos: Speos):
                 assert mat.texture[0].image_texture.image_file_uri.endswith("png")
                 mapping_opp = mat.texture[0].image_texture.uv_mapping.__todict__()
                 expected = {
-                    "mapping_type": MappingTypes.cubic,
+                    "mapping_type": "cubic",
                     "u_offset": 0,
                     "v_offset": 0,
                     "u_length": 50,
@@ -1165,7 +1184,7 @@ def test_load_texture_property_from_file(speos: Speos):
                 assert mat.texture[0].sop_library.file_uri.endswith("anisotropicbsdf")
                 mapping_opp = mat.texture[0].anisotropic_map.uv_mapping.__todict__()
                 expected = {
-                    "mapping_type": MappingTypes.planar,
+                    "mapping_type": "planar",
                     "u_offset": 0,
                     "v_offset": 0,
                     "u_length": 0,
@@ -1201,7 +1220,7 @@ def test_load_texture_property_from_file(speos: Speos):
                 assert mat.texture[1].normal_map.normal_map_file_uri.endswith("png")
                 mapping_opp = mat.texture[1].normal_map.uv_mapping.__todict__()
                 expected = {
-                    "mapping_type": MappingTypes.planar,
+                    "mapping_type": "planar",
                     "u_offset": 0,
                     "v_offset": 0,
                     "u_length": 10,
@@ -1482,7 +1501,7 @@ def test_texture_mapping_local_transition_branches():
     """Cover local UV-mapping transitions and string/equality helpers without server calls."""
     parent = _MinimalTextureParent()
     parent.TextureMappingByData = TextureLayer.TextureMappingByData
-    parent.TextureMappingOperator = TextureLayer.TextureMappingOperator
+    parent.TextureMappingOperator = TextureLayer.TextureUVMappingOperator
 
     image = TextureLayer.ImageTexture(parent, stable_ctr=True)
 
@@ -1494,7 +1513,7 @@ def test_texture_mapping_local_transition_branches():
     map_op = image.set_uv_mapping_planar()
     map_op.axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
     assert map_op.axis_system[0] == 0
-    assert "TextureMappingOperator(" in str(map_op)
+    assert "TextureUVMappingOperator(" in str(map_op)
 
 
 def test_texture_layer_parameter_fill_branch_paths(speos: Speos):
@@ -1505,12 +1524,12 @@ def test_texture_layer_parameter_fill_branch_paths(speos: Speos):
     params = TextureLayerParameters(
         image_texture_parameters=ImageTextureParameters(
             file_path=Path("image_cov.png"),
-            mapping=MappingOperator(mapping_type=MappingTypes.planar, rotation=20),
+            mapping=UVMappingPlanarParameters(rotation=20),
         ),
         normal_map_parameters=NormalMapParameters(
             file_path=Path("normal_cov.png"),
             normal_map_type=NormalMapTypes.from_image,
-            mapping=MappingOperator(mapping_type=MappingTypes.cubic, rotation=30),
+            mapping=UVMappingCubicParameters(rotation=30),
         ),
     )
 
