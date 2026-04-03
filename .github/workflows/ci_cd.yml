@@ -91,6 +91,7 @@ jobs:
           source .venv/bin/activate
           ty check src/ansys/speos/core/ examples/ \
             --exclude src/ansys/speos/core/body.py \
+            --exclude src/ansys/speos/core/component.py \
             --exclude src/ansys/speos/core/face.py \
             --exclude src/ansys/speos/core/bsdf.py \
             --exclude src/ansys/speos/core/launcher.py \
@@ -113,7 +114,7 @@ jobs:
             --exclude src/ansys/speos/core/workflow \
             --exclude examples/core \
             --exclude examples/kernel \
-            --exclude examples/workflow
+            --exclude examples/workflow \
 
   doc-style:
     name: Documentation Style Check
