@@ -804,7 +804,7 @@ def test_create_texture_property(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=252)
-def test_texture_mapping_helper_local_branches(speos: Speos, monkeypatch):
+def test_texture_mapping_helper_local_branches(speos: Speos):
     """Cover local mapping helper branches without committing a texture layer."""
     p = Project(speos=speos)
     op = p.create_optical_property(name="Texture.Local.Helpers")
