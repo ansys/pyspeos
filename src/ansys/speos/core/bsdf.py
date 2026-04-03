@@ -984,6 +984,7 @@ class AnisotropicBSDF(BaseBSDF):
             Filepath to save bsdf.
         commit : bool
             Commit data before saving.
+
         Returns
         -------
         pathlib.Path
@@ -1635,6 +1636,7 @@ def create_spectral_brdf(
         List of wavelength.
     anisotropic_bsdf_file_list :  List[Union[pathlib.Path, str]]
         List of bsdf file locations.
+
     Returns
     -------
     pathlib.Path
