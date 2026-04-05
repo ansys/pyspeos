@@ -1,8 +1,8 @@
-# # How to create an texture property
+# # How to create a texture property
 #
-# This tutorial demonstrates how to create an texture property.
-# ## What is an textur property?
-# An texture property (also named material), gathers 3 notions:
+# This tutorial demonstrates how to create a texture property.
+# ## What is a textur property?
+# A texture property (also named material), gathers 3 notions:
 # the surface optical property (SOP), the texture and the volume optical property (VOP).
 # The property is then applied to a geometry (like bodies, faces).
 #
@@ -27,7 +27,7 @@ from ansys.speos.core.source import SourceAmbientEnvironment
 
 # ### Define constants
 #
-# Constants help ensure consistency and avoid repetition throughout the example.
+#  help ensure consistency and avoid repetition throughout the example.
 
 HOSTNAME = "localhost"
 GRPC_PORT = 50098  # Be sure the Speos GRPC Server has been started on this port.
@@ -116,56 +116,10 @@ print(p)
 # of textures
 
 data = create_helper_geometries(p)
+data["rp"].commit()
 bodies = data["bodies"]
 faces = data["faces"]
 p.preview()
-
-
-# ## Apply vertices data for all faces except the first
-#
-# we create image locations for each vertices and provide these to each face to position the texture
-# on the Geometry. we give for each vertices the u,v location of the image
-# data structure for the Meshdata :
-# Texture coordinates uv: (u1 v1 u2 v2 ...) with u1 and v1 the coordinates for the first vertex.
-# Typically ranging from 0.0 to 1.0, where (0.0 0.0) is the bottom-left and (1.0 1.0) is the
-# top-right of the texture.
-# In this section we create different mappings by playing with the u value assigned to the vertices.
-# The V value is kept unchanged for all faces as we use a picture which has stripes along the v
-# direction and playing with v would induce no change in the result.
-
-
-face1_0 = faces[1]
-face1_0.vertices_data = [
-    MeshData(name="uv_0", data=[0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0])  # full picture
-]
-
-face2_0 = faces[2]
-face2_0.vertices_data = [
-    MeshData(name="uv_0", data=[0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0])  # full picture
-]
-
-# Here we play with the u: from 0.0 to 0.5
-
-face3_0 = faces[3]
-face3_0.vertices_data = [
-    MeshData(name="uv_0", data=[0.0, 1.0, 0.0, 0.0, 0.5, 1.0, 0.5, 0.0])
-]  # first half of the picture
-
-# Here we play with the u: from 0.5 to 1.0
-
-face4_0 = faces[4]
-face4_0.vertices_data = [
-    MeshData(name="uv_0", data=[0.5, 1.0, 0.5, 0.0, 1.0, 1.0, 1.0, 0.0])
-]  # second half of the picture
-
-# Here we play with the u: from 4/6 to 5/6
-
-face5_0 = faces[5]
-face5_0.vertices_data = [
-    MeshData(name="uv_0", data=[4 / 6, 1.0, 4 / 6, 0.0, 5 / 6, 1.0, 5 / 6, 0.0])
-]
-data["rp"].commit()
-
 
 # ## Create Ambient source
 
@@ -195,61 +149,6 @@ wv.end = 800
 wv.sampling = 13
 ssr.commit()
 
-
-# ### Create Texture Properties
-#
-# ## Create Texture Property by data
-# When texture is create by data the image gets positioned on the geometry using
-# the uv information stored in the vertices data attribute on the face.
-
-
-opt_prop = p.create_optical_property(name="OptProp.1")
-opt_prop.set_volume_none()
-opt_prop.geometries = [
-    face1_0.geo_path,
-    face2_0.geo_path,
-    face3_0.geo_path,
-    face4_0.geo_path,
-    face5_0.geo_path,
-]
-
-layer_1 = opt_prop.create_texture_layer()
-layer_1.set_surface_library()
-layer_1.sop_library.file_uri = Path(assets_data_path) / "L100 2.simplescattering"
-layer_1.set_image_texture()
-layer_1.image_texture.image_file_uri = Path(assets_data_path) / "textureColors.jpg"
-layer_1.image_texture.set_uv_mapping_by_data()
-layer_1.image_texture.uv_mapping.vertices_data_index = 0
-
-# Select which meshdata assign to the face is used to position the image on the geometry.
-# Here we have only created one meshdata with uv coordinates but if there were several
-# you could select which one to use for the mapping
-
-layer_1.image_texture.repeat_u = False
-layer_1.image_texture.repeat_v = False
-opt_prop.commit()
-
-# ## Create Texture Property by mapping operator
-# as alternative to mapping by data you can create some simple Mappings using planar,
-# cubic, spherical or cylindrical mapping operator
-
-face0_0 = faces[0]
-opt_prop1 = p.create_optical_property(name="OptProp.2")
-opt_prop1.set_volume_none()
-opt_prop1.geometries = [face0_0.geo_path]
-
-layer_2 = opt_prop1.create_texture_layer()
-layer_2.set_surface_library().file_uri = Path(assets_data_path) / "L100 2.simplescattering"
-layer_2.set_image_texture()
-layer_2.image_texture.image_file_uri = Path(assets_data_path) / "textureColors.jpg"
-layer_2.image_texture.set_uv_mapping_planar()
-layer_2.image_texture.uv_mapping.u_length = 2.5
-layer_2.image_texture.uv_mapping.v_length = 2.5
-layer_2.image_texture.repeat_u = True
-layer_2.image_texture.repeat_v = True
-layer_2.image_texture.uv_mapping.axis_system = [2.5, 2.5, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0]
-opt_prop1.commit()
-
 # ## Create Inverse Simulation with define Texture normalization
 
 sim = p.create_simulation(name="Inverse", feature_type=SimulationInverse)
@@ -258,14 +157,417 @@ sim.source_paths = ["Ambient"]
 sim.set_texture_normalization_none()
 sim.commit()
 
-# ## Preview Project
+
+# ## Preview the project setup
 
 p.preview()
 
+
+# ### Create Texture Properties via UV Mapping
+#
+## Activate texture settings inside optical property
+# Here we create a default optical property for the planner square shape surface
+# The dimension of surface is 5 x 5.
+
+opt = p.create_optical_property(name="optical_property")
+opt.set_volume_none()
+opt.set_surface_mirror().reflectance = 0
+opt.geometries = [faces[0]]
+opt.commit()
+print(opt)
+
 # ## Run Simulation and open result
+# Image result shows black surface as mirror reflectance is 0.
 
 results = sim.compute_CPU()
+if os.name == "nt":
+    from ansys.speos.core.workflow.open_result import open_result_image
 
+    open_result_image(simulation_feature=sim, result_name="Radiance.xmp")
+
+# Here we activate the texture and create the first texture layer
+# By default, each texture layer is set as mirror with 100% reflectance.
+# Planner UV mapping is selected by default.
+# No image texture and normal map are applied.
+
+texture_layer_1 = opt.create_texture_layer()
+opt.commit()
+print(len(opt.texture))
+print(opt)
+
+# Run simulation and result shows mirror surface as the default texture layer
+# Image result shows mirror surface as mirror reflectance is 100.
+
+results = sim.compute_CPU()
+if os.name == "nt":
+    from ansys.speos.core.workflow.open_result import open_result_image
+
+    open_result_image(simulation_feature=sim, result_name="Radiance.xmp")
+
+# Here we the second texture layer
+# Similarly, texture layer is set as mirror without image and normal map.
+
+texture_layer_2 = opt.create_texture_layer()
+opt.commit()
+print(len(opt.texture))
+print(opt)
+
+# Here we can delete 1 layer, e.g. the first layer
+
+texture_layer_1.delete()
+opt.commit()
+print(len(opt.texture))  # only has 1 texture layer left
+print(opt)
+
+# We can NOT delete the last layer as this is last layer
+# User can still use it to apply surface optical property as usual
+opt.texture[0].delete()
+opt.texture[0].set_surface_library().file_uri = (
+    Path(assets_data_path) / "Texture.1.speos" / "100% transparent.simplescattering"
+)
+opt.texture[0].set_image_texture_to_none()
+opt.texture[0].set_normal_map_to_none()
+opt.commit()
+
+# Run simulation and result shows transparent surface as defined in
+# simplescattering file.
+
+results = sim.compute_CPU()
+if os.name == "nt":
+    from ansys.speos.core.workflow.open_result import open_result_image
+
+    open_result_image(simulation_feature=sim, result_name="Radiance.xmp")
+
+
+# ## Create Texture Property by mapping operator
+# as alternative to mapping by data you can create some simple Mappings using planar,
+# cubic, spherical or cylindrical mapping operator
+
+texture_layer_3 = opt.create_texture_layer()
+texture_layer_3.set_surface_library().file_uri = Path(assets_data_path) / "L100 2.simplescattering"
+
+
+# UV mapping axis system will locate the center of the texture image, x = 0, y = 0, z = 0
+# in this example:
+# x-axis direction: vector = [0, 0, 1] is used for projection of the texture image.
+# y-axis direction: vector = [0, 1, 0] is used for top direction of the texture image.
+# texture image as checkerboard where alpha value is 0 for passing the ray toward the
+# subsequent layer -> fully transparent layer where alpha value is not 0 for interacting
+# with the L100 2.simplescattering material.
+
+texture_layer_3.set_image_texture().set_uv_mapping_planar().axis_system = [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    1,
+    0,
+    1,
+    0,
+    0,
+]
+texture_layer_3.image_texture.image_file_uri = (
+    Path(assets_data_path) / "Texture.1.speos" / "white_trans_checkerboard.png"
+)
+texture_layer_3.image_texture.repeat_v = False
+texture_layer_3.image_texture.repeat_u = False
+texture_layer_3.image_texture.uv_mapping.u_length = 2.5
+texture_layer_3.image_texture.uv_mapping.v_length = 2.5
+texture_layer_3.set_normal_map_to_none()
+opt.commit()
+
+# Run simulation and result shows white in the checkerboard area while
+# transparent at the other area.
+
+results = sim.compute_CPU()
+if os.name == "nt":
+    from ansys.speos.core.workflow.open_result import open_result_image
+
+    open_result_image(simulation_feature=sim, result_name="Radiance.xmp")
+
+# Move the texture image up in the y direction and run result.
+# The new center of texture image is [0, 2.5, 0]
+# User can also use GPU to compute the texture simulation.
+
+texture_layer_3.image_texture.uv_mapping.axis_system = [0, 2.5, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0]
+opt.commit()
+
+results = sim.compute_GPU()
+if os.name == "nt":
+    from ansys.speos.core.workflow.open_result import open_result_image
+
+    open_result_image(simulation_feature=sim, result_name="Radiance.xmp")
+
+# Run simulation and result pattern will be repeated.
+
+texture_layer_3.image_texture.repeat_v = True
+texture_layer_3.image_texture.repeat_u = True
+opt.commit()
+
+results = sim.compute_CPU()
+if os.name == "nt":
+    from ansys.speos.core.workflow.open_result import open_result_image
+
+    open_result_image(simulation_feature=sim, result_name="Radiance.xmp")
+
+# Run simulation and result pattern will be enlarged.
+
+texture_layer_3.image_texture.uv_mapping.u_length = 10
+texture_layer_3.image_texture.uv_mapping.v_length = 10
+opt.commit()
+
+results = sim.compute_CPU()
+if os.name == "nt":
+    from ansys.speos.core.workflow.open_result import open_result_image
+
+    open_result_image(simulation_feature=sim, result_name="Radiance.xmp")
+
+
+# ### Create Texture Properties via Data in Mesh Vertices
+#
+# ## Create Texture Property by data
+# When texture is create by data the image gets positioned on the geometry using
+# the uv information stored in the mesh vertices data attribute on the face.
+
+
+# ## Apply vertices data for all faces except the first
+#
+# we create image locations for each vertex and provide these to each face to position the texture
+# on the Geometry. we give for each vertex the u,v location of the image
+# data structure for the MeshData:
+# Texture coordinates uv: (u1 v1 u2 v2 ...) with u1 and v1 the coordinates for the first vertex.
+# Typically ranging from 0.0 to 1.0, where (0.0 0.0) is the bottom-left and (1.0 1.0) is the
+# top-right of the texture.
+# In this section we create different mappings by playing with the u value assigned to the vertices.
+# The V value is kept unchanged for all faces as we use a picture which has stripes along the v
+# direction and playing with v would induce no change in the result.
+
+
+face1_0 = faces[1]  # vertical rectangular with base as 5 and height as 10.
+# face1_0 is made of 4 vertices:
+# 1st vertice at location (6, 0, 0)
+# 2nd vertice at location (6, 10, 0)
+# 3rd vertice at location (11, 0, 0)
+# 4th vertice at location (6, 10, 0)
+face1_0.vertices_data = [
+    MeshData(
+        name="uv_0",
+        data=[
+            0.0,
+            1.0,  # 1st vertice at (6, 0, 0) => texture image (0, 1) top left corner
+            0.0,
+            0.0,  # 2nd vertice at (6, 10, 0) => texture image (0, 0) button left corner
+            1.0,
+            1.0,  # 3rd vertice at (11, 0, 0) => texture image (1, 1) top right corner
+            1.0,
+            0.0,  # 4th vertice at (6, 10, 0) => texture image (0, 0) button right corner
+        ],
+    )  # full picture
+]
+data["rp"].commit()
+print(face1_0)
+
+opt_2 = p.create_optical_property(name="optical_property.2")
+opt_2.set_volume_none()
+opt_2.geometries = [
+    face1_0.geo_path,
+]
+
+opt_2_layer_1 = opt_2.create_texture_layer()
+opt_2_layer_1.set_surface_library().file_uri = Path(assets_data_path) / "L100 2.simplescattering"
+opt_2_layer_1.set_image_texture().image_file_uri = (
+    Path(assets_data_path) / "Texture.1.speos" / "textureColors_half.jpg"
+)
+opt_2_layer_1.image_texture.set_uv_mapping_by_data()
+
+# Select which meshdata assign to the face is used to position the image on the geometry.
+# Here we have only created one meshdata with uv coordinates but if there were several
+# you could select which one to use for the mapping
+
+opt_2_layer_1.image_texture.uv_mapping.vertices_data_index = 0
+opt_2_layer_1.image_texture.repeat_u = False
+opt_2_layer_1.image_texture.repeat_v = False
+opt_2.commit()
+
+results = sim.compute_CPU()
+if os.name == "nt":
+    from ansys.speos.core.workflow.open_result import open_result_image
+
+    open_result_image(simulation_feature=sim, result_name="Radiance.xmp")
+
+
+# Modify the UV mapping MeshData, the following example flip the texture image upside-down.
+# It is important to note that, it is known behaviour that, previous vertices data will not
+# be removed, but just appending new MeshData.
+# This will be corrected in the coming RPC version.
+
+face1_0.vertices_data = [
+    MeshData(
+        name="uv_0",
+        data=[
+            0.0,
+            0.0,  # 1st vertice at (6, 0, 0) => texture image (0, 1) button left corner
+            0.0,
+            1.0,  # 2nd vertice at (6, 10, 0) => texture image (0, 0) top left corner
+            1.0,
+            0.0,  # 3rd vertice at (11, 0, 0) => texture image (1, 1) button right corner
+            1.0,
+            1.0,  # 4th vertice at (6, 10, 0) => texture image (0, 0) top right corner
+        ],
+    )  # full picture
+]
+data["rp"].commit()
+print(face1_0)
+
+# To use the new MeshData, user can choose the new MeshData by setting the index.
+# Here we set index to 1 to select the new MeshData we just created.
+
+opt_2_layer_1.image_texture.uv_mapping.vertices_data_index = 1
+opt_2.commit()
+
+results = sim.compute_CPU()
+if os.name == "nt":
+    from ansys.speos.core.workflow.open_result import open_result_image
+
+    open_result_image(simulation_feature=sim, result_name="Radiance.xmp")
+
+
+# The following rotation the texture image by 90 degree.
+
+face1_0.vertices_data = [
+    MeshData(
+        name="uv_0",
+        data=[
+            0.0,
+            1.0,  # 1st vertice at (6, 0, 0) => texture image (0, 1) button left corner
+            1.0,
+            1.0,  # 2nd vertice at (6, 10, 0) => texture image (0, 0) top left corner
+            0.0,
+            0.0,  # 3rd vertice at (11, 0, 0) => texture image (1, 1) button right corner
+            1.0,
+            0.0,  # 4th vertice at (6, 10, 0) => texture image (0, 0) top right corner
+        ],
+    )  # full picture
+]
+data["rp"].commit()
+print(face1_0)
+
+# To use the new MeshData, user can choose the new MeshData by setting the index.
+# Here we set index to 1 to select the new MeshData we just created.
+
+opt_2_layer_1.image_texture.uv_mapping.vertices_data_index = 2
+opt_2.commit()
+
+results = sim.compute_CPU()
+if os.name == "nt":
+    from ansys.speos.core.workflow.open_result import open_result_image
+
+    open_result_image(simulation_feature=sim, result_name="Radiance.xmp")
+
+
+# The following examples shows using partial texture image, e.g. half or quarter.
+
+face2_0 = faces[2]  # horizontal rectangular with base as 10 and height as 5.
+# 1st vertice at location (12, 0, 0)
+# 2nd vertice at location (12, 5, 0)
+# 3rd vertice at location (22, 0, 0)
+# 4th vertice at location (22, 5, 0)
+face2_0.vertices_data = [
+    MeshData(
+        name="uv_0",
+        data=[
+            0.0,
+            1.0,  # 1st vertice / Left bottom corner mesh -> left top corner of texture image
+            0.0,
+            0.0,  # 2nd vertice / Left top corner mesh -> left bottom corner of texture image
+            1.0,
+            1.0,  # 3rd vertice / Right bottom corner mesh -> right top corner of texture image
+            1.0,
+            0.0,  # 4th vertice / Right top corner mesh -> right bottom corner of texture image
+        ],
+    )  # full picture
+]
+
+# Here we play with the u: from 0.0 to 0.5
+# first half of the texture image (half image in the left) is projected to the square surface.
+# i.e. red, blue, yellow
+
+face3_0 = faces[3]  # square with dimension 5 by 5.
+face3_0.vertices_data = [
+    MeshData(
+        name="uv_0",
+        data=[
+            0.0,
+            1.0,  # 1st vertice / Left bottom corner mesh -> left top corner of texture image
+            0.0,
+            0.0,  # 2nd vertice / Left top corner mesh -> left bottom corner of texture image
+            0.5,
+            1.0,  # 3rd vertice / Right bottom corner mesh -> middle top corner of texture image
+            0.5,
+            0.0,  # 4th vertice / Right top corner mesh -> middle bottom corner of texture image
+        ],
+    )
+]
+
+# Here we play with the u: from 0.5 to 1.0
+# second half of the image (half image in the right) is projected to the square surface
+# i.e. pink, green, purple
+
+face4_0 = faces[4]
+face4_0.vertices_data = [
+    MeshData(
+        name="uv_0",
+        data=[
+            0.5,
+            1.0,  # 1st vertice / Left bottom corner mesh -> middle top corner of texture image
+            0.5,
+            0.0,  # 2nd vertice / Left top corner mesh -> middle bottom corner of texture image
+            1.0,
+            1.0,  # 3rd vertice / Right bottom corner mesh -> Right top corner of texture image
+            1.0,
+            0.0,  # 4th vertice / Right top corner mesh -> Right bottom corner of texture image
+        ],
+    )
+]
+
+# Here we play with the u: from 4/6 to 5/6
+# green only
+
+face5_0 = faces[5]
+face5_0.vertices_data = [
+    MeshData(name="uv_0", data=[4 / 6, 1.0, 4 / 6, 0.0, 5 / 6, 1.0, 5 / 6, 0.0])
+]
+data["rp"].commit()
+
+
+opt_3 = p.create_optical_property(name="optical_property.3")
+opt_3.set_volume_none()
+opt_3.geometries = [
+    face2_0.geo_path,
+    face3_0.geo_path,
+    face4_0.geo_path,
+    face5_0.geo_path,
+]
+opt_3.commit()
+
+opt_3_layer_1 = opt_3.create_texture_layer()
+opt_3_layer_1.set_surface_library().file_uri = Path(assets_data_path) / "L100 2.simplescattering"
+opt_3_layer_1.set_image_texture().image_file_uri = Path(assets_data_path) / "textureColors.jpg"
+opt_3_layer_1.image_texture.set_uv_mapping_by_data()
+
+# Select which MeshData assign to the face is used to position the image on the geometry.
+# Here we have only created one meshdata with uv coordinates but if there were several
+# you could select which one to use for the mapping
+
+opt_3_layer_1.image_texture.uv_mapping.vertices_data_index = 0
+opt_3_layer_1.image_texture.repeat_u = False
+opt_3_layer_1.image_texture.repeat_v = False
+opt_3.commit()
+
+results = sim.compute_CPU()
 if os.name == "nt":
     from ansys.speos.core.workflow.open_result import open_result_image
 
