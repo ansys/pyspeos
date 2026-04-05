@@ -426,9 +426,16 @@ class OptProp:
                 )
                 self._material_instance.vop_guid = self.vop_template_link.key
         elif self.vop_template_link.get() != self._vop_template:
-            self.vop_template_link.set(
-                data=self._vop_template
-            )  # Only update if vop template has changed
+            if self._vop_template is not None:
+                self.vop_template_link.set(
+                    data=self._vop_template
+                )  # Only update if vop template has changed
+            else:
+                # if vop template is set to None, delete it from server
+                # and reset the vop_guid reference in material instance
+                self.vop_template_link.delete()
+                self.vop_template_link = None
+                self._material_instance.ClearField("vop_guid")
 
         # Save or Update the sop template (depending on if it was already saved before)
         if self.sop_template_link is None:
