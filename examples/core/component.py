@@ -67,8 +67,6 @@ print(p)
 
 # The mention "local: " is added when printing the lightbox
 
-# +
-
 lightbox = p.create_lightbox_import(name="Light Box Import.1", parameters=LightBoxParameters())
 lightbox.set_speos_light_box(
     lightbox=LightBoxFileInstance(
@@ -76,18 +74,14 @@ lightbox.set_speos_light_box(
     )
 )
 print(lightbox)
-# -
 
 # ## Push it to the server.
 #
 # Now that it is committed to the server, the mention "local: " is no more present when printing the
 # lightbox.
 
-# +
-
 lightbox.commit()
 print(lightbox)
-# -
 
 # ## Read
 #
