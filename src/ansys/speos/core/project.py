@@ -26,7 +26,7 @@ from __future__ import annotations
 import copy
 from pathlib import Path
 import re
-from typing import TYPE_CHECKING, List, Mapping, Optional, Union
+from typing import TYPE_CHECKING, Mapping, Optional
 import uuid
 
 from google.protobuf.internal.containers import RepeatedScalarFieldContainer
@@ -120,7 +120,7 @@ class Project:
         Link object for the scene in database.
     """
 
-    def __init__(self, speos: Speos, path: Optional[Union[str, Path]] = ""):
+    def __init__(self, speos: Speos, path: str | Path | None = ""):
         self.client = speos.client
         """Speos instance client."""
         self.scene_link = speos.client.scenes().create()
@@ -138,12 +138,12 @@ class Project:
     #    """
     #    pass
     @property
-    def root_part(self) -> Union[part.Part, None]:
+    def root_part(self) -> part.Part | None:
         """Property of root part of the project.
 
         Returns
         -------
-        Union[part.Part, None]
+        part.Part | None
             Project's root part if exists, otherwise None.
 
         """
@@ -153,12 +153,12 @@ class Project:
         return None
 
     @property
-    def optical_properties(self) -> List[opt_prop.OptProp]:
+    def optical_properties(self) -> list[opt_prop.OptProp]:
         """Property of optical properties inside the project.
 
         Returns
         -------
-        List[ansys.speos.core.opt_prop.OptProp]
+        list[ansys.speos.core.opt_prop.OptProp]
             List of optical properties features.
 
         """
@@ -171,24 +171,12 @@ class Project:
     @property
     def sources(
         self,
-    ) -> List[
-        Union[
-            SourceSurface,
-            SourceLuminaire,
-            SourceRayFile,
-            SourceAmbientNaturalLight,
-            SourceAmbientEnvironment,
-        ]
-    ]:
+    ) -> list[SourceSurface | SourceLuminaire | SourceRayFile | SourceAmbientNaturalLight | SourceAmbientEnvironment]:
         """Property of project's sources inside.
 
         Returns
         -------
-        List[Union[ansys.speos.core.source.SourceSurface, \
-        ansys.speos.core.source.SourceLuminaire, \
-        ansys.speos.core.source.SourceRayFile, \
-        ansys.speos.core.source.SourceAmbientNaturalLight, \
-        ansys.speos.core.source.SourceAmbientEnvironment]]
+        list[SourceSurface | SourceLuminaire | SourceRayFile | SourceAmbientNaturalLight | SourceAmbientEnvironment]
             List of source features.
 
         """
@@ -201,20 +189,12 @@ class Project:
     @property
     def sensors(
         self,
-    ) -> List[
-        Union[
-            Sensor3DIrradiance, SensorCamera, SensorIrradiance, SensorRadiance, SensorXMPIntensity
-        ]
-    ]:
+    ) -> list[Sensor3DIrradiance | SensorCamera | SensorIrradiance | SensorRadiance | SensorXMPIntensity]:
         """Property of project's sensors inside.
 
         Returns
         -------
-        List[Union[ansys.speos.core.sensor.Sensor3DIrradiance, \
-        ansys.speos.core.sensor.SensorCamera, \
-        ansys.speos.core.sensor.SensorIrradiance, \
-        ansys.speos.core.sensor.SensorRadiance, \
-        ansys.speos.core.sensor.SensorXMPIntensity]]
+        list[Sensor3DIrradiance | SensorCamera | SensorIrradiance | SensorRadiance | SensorXMPIntensity]
             List of sensor features.
 
         """
@@ -227,17 +207,12 @@ class Project:
     @property
     def simulations(
         self,
-    ) -> List[
-        Union[SimulationDirect, SimulationInteractive, SimulationInverse, SimulationVirtualBSDF]
-    ]:
+    ) -> list[SimulationDirect | SimulationInteractive | SimulationInverse | SimulationVirtualBSDF]:
         """Property of project's simulations inside.
 
         Returns
         -------
-        List[Union[ansys.speos.core.simulation.SimulationDirect, \
-        ansys.speos.core.simulation.SimulationInteractive, \
-        ansys.speos.core.simulation.SimulationInverse, \
-        ansys.speos.core.simulation.SimulationVirtualBSDF]]
+        list[SimulationDirect | SimulationInteractive | SimulationInverse | SimulationVirtualBSDF]
             List of simulation features.
 
         """
@@ -292,22 +267,8 @@ class Project:
         description: str = "",
         feature_type: type = SourceSurface,
         metadata: Optional[Mapping[str, str]] = None,
-        parameters: Optional[
-            Union[
-                LuminaireSourceParameters,
-                SurfaceSourceParameters,
-                RayFileSourceParameters,
-                AmbientNaturalLightParameters,
-                AmbientEnvironmentParameters,
-            ]
-        ] = None,
-    ) -> Union[
-        SourceSurface,
-        SourceRayFile,
-        SourceLuminaire,
-        SourceAmbientNaturalLight,
-        SourceAmbientEnvironment,
-    ]:
+        parameters: LuminaireSourceParameters | SurfaceSourceParameters | RayFileSourceParameters | AmbientNaturalLightParameters | AmbientEnvironmentParameters | None = None,
+    ) -> SourceSurface | SourceRayFile | SourceLuminaire | SourceAmbientNaturalLight | SourceAmbientEnvironment:
         """Create a new Source feature.
 
         Parameters
@@ -320,27 +281,19 @@ class Project:
         feature_type: type
             Source type to be created.
             By default, ``ansys.speos.core.source.SourceSurface``.
-            Allowed types:
-            Union[ansys.speos.core.source.SourceSurface, ansys.speos.core.source.SourceRayFile, \
-            ansys.speos.core.source.SourceLuminaire, \
-            ansys.speos.core.source.SourceAmbientNaturalLight, \
-            ansys.speos.core.source.SourceAmbientEnvironment].
+            Allowed types are ``ansys.speos.core.source.SourceSurface``, ``ansys.speos.core.source.SourceRayFile``,
+            ``ansys.speos.core.source.SourceLuminaire``,
+            ``ansys.speos.core.source.SourceAmbientNaturalLight`` and
+            ``ansys.speos.core.source.SourceAmbientEnvironment``.
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
-        parameters : Optional[Union[\
-        ansys.speos.core.generic.parameters.LuminaireSourceParameters,\
-        ansys.speos.core.generic.parameters.SurfaceSourceParameters,\
-        ansys.speos.core.generic.parameters.RayFileSourceParameters,\
-        ansys.speos.core.generic.parameters.AmbientNaturalLightParameters,\
-        ansys.speos.core.generic.parameters.AmbientEnvironmentParameters]]
+        parameters : LuminaireSourceParameters | SurfaceSourceParameters | RayFileSourceParameters | AmbientNaturalLightParameters | AmbientEnvironmentParameters | None
             Allows to provide parameters to overwrite default parameters.
 
         Returns
         -------
-        Union[ansys.speos.core.source.SourceSurface, ansys.speos.core.source.SourceRayFile,\
-        ansys.speos.core.source.SourceLuminaire, ansys.speos.core.source.SourceAmbientNaturalLight,\
-        ansys.speos.core.source.SourceAmbientEnvironment]
+            SourceSurface | SourceRayFile | SourceLuminaire | SourceAmbientNaturalLight | SourceAmbientEnvironment
             Source class instance.
         """
         if metadata is None:
@@ -450,15 +403,8 @@ class Project:
         description: str = "",
         feature_type: type = SimulationDirect,
         metadata: Optional[Mapping[str, str]] = None,
-        parameters: Optional[
-            Union[
-                DirectSimulationParameters,
-                InteractiveSimulationParameters,
-                InverseSimulationParameters,
-                VirtualBSDFSimulationParameters,
-            ]
-        ] = None,
-    ) -> Union[SimulationDirect, SimulationInteractive, SimulationInverse, SimulationVirtualBSDF]:
+        parameters: DirectSimulationParameters | InteractiveSimulationParameters | InverseSimulationParameters | VirtualBSDFSimulationParameters | None = None,
+    ) -> SimulationDirect | SimulationInteractive | SimulationInverse | SimulationVirtualBSDF:
         """Create a new Simulation feature.
 
         Parameters
@@ -471,20 +417,17 @@ class Project:
         feature_type: type
             Simulation type to be created.
             By default, ``ansys.speos.core.simulation.SimulationDirect``.
-            Allowed types: Union[ansys.speos.core.simulation.SimulationDirect, \
-            ansys.speos.core.simulation.SimulationInteractive, \
-            ansys.speos.core.simulation.SimulationInverse].
+            Allowed types are ``ansys.speos.core.simulation.SimulationDirect``,
+            ``ansys.speos.core.simulation.SimulationInteractive`` and
+            ``ansys.speos.core.simulation.SimulationInverse``.
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
-            By default, ``{}``.
+            Default value is ``None``.
 
         Returns
         -------
-        Union[ansys.speos.core.simulation.SimulationDirect,\
-        ansys.speos.core.simulation.SimulationInteractive,\
-        ansys.speos.core.simulation.SimulationInverse, \
-        ansys.speos.core.simulation.SimulationVirtualBSDF]
-            Simulation class instance
+        SimulationDirect | SimulationInteractive | SimulationInverse | SimulationVirtualBSDF            Simulation class instance
+            Simulation class instance.
         """
         if metadata is None:
             metadata = {}
@@ -577,18 +520,8 @@ class Project:
         description: str = "",
         feature_type: type = SensorIrradiance,
         metadata: Optional[Mapping[str, str]] = None,
-        parameters: Optional[
-            Union[
-                IrradianceSensorParameters,
-                RadianceSensorParameters,
-                CameraSensorParameters,
-                Irradiance3DSensorParameters,
-                IntensityXMPSensorParameters,
-            ]
-        ] = None,
-    ) -> Union[
-        SensorCamera, SensorRadiance, SensorIrradiance, Sensor3DIrradiance, SensorXMPIntensity
-    ]:
+        parameters: IrradianceSensorParameters | RadianceSensorParameters | CameraSensorParameters | Irradiance3DSensorParameters | IntensityXMPSensorParameters | None = None,
+    ) -> SensorCamera | SensorRadiance | SensorIrradiance | Sensor3DIrradiance | SensorXMPIntensity:
         """Create a new Sensor feature.
 
         Parameters
@@ -601,27 +534,20 @@ class Project:
         feature_type: type
             Sensor type to be created.
             By default, ``ansys.speos.core.sensor.SensorIrradiance``.
-            Allowed types: Union[ansys.speos.core.sensor.SensorCamera,\
-            ansys.speos.core.sensor.SensorRadiance, \
-            ansys.speos.core.sensor.SensorIrradiance, \
-            ansys.speos.core.sensor.Sensor3DIrradiance, \
-            ansys.speos.core.sensor.SensorXMPIntensity].
+            Allowed types are ``ansys.speos.core.sensor.SensorCamera``, 
+            ``ansys.speos.core.sensor.SensorRadiance``,
+            ``ansys.speos.core.sensor.SensorIrradiance``, 
+            ``ansys.speos.core.sensor.Sensor3DIrradiance`` and
+            ``ansys.speos.core.sensor.SensorXMPIntensity``.
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
-        parameters :  Optional[Union[\
-        ansys.speos.core.generic.parameters.IrradianceSensorParameters,\
-        ansys.speos.core.generic.parameters.RadianceSensorParameters,\
-        ansys.speos.core.generic.parameters.CameraSensorParameters,\
-        ansys.speos.core.generic.parameters.Irradiance3DSensorParameters,\
-        ansys.speos.core.generic.parameters.IntensityXMPSensorParameters]]
-            Allows to provide parameters to overwrite default parameters
+        parameters :  IrradianceSensorParameters | RadianceSensorParameters | CameraSensorParameters | Irradiance3DSensorParameters | IntensityXMPSensorParameters | None
+            Allows to provide parameters to overwrite default parameters. Default value is ``None``.
 
         Returns
         -------
-        Union[ansys.speos.core.sensor.SensorCamera,\
-        ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance, \
-        ansys.speos.core.sensor.Sensor3DIrradiance, ansys.speos.core.sensor.SensorXMPIntensity]
+        SensorCamera | SensorRadiance | SensorIrradiance | Sensor3DIrradiance | SensorXMPIntensity
             Sensor class instance.
         """
         if metadata is None:
@@ -833,31 +759,7 @@ class Project:
         name: str,
         name_regex: bool = False,
         feature_type: Optional[type] = None,
-    ) -> List[
-        Union[
-            opt_prop.OptProp,
-            SourceSurface,
-            SourceLuminaire,
-            SourceRayFile,
-            SourceAmbientNaturalLight,
-            SourceAmbientEnvironment,
-            SensorIrradiance,
-            SensorRadiance,
-            SensorCamera,
-            Sensor3DIrradiance,
-            SensorXMPIntensity,
-            SimulationDirect,
-            SimulationInverse,
-            SimulationInteractive,
-            SimulationVirtualBSDF,
-            part.Part,
-            body.Body,
-            face.Face,
-            part.Part.SubPart,
-            GroundPlane,
-            LightBox,
-        ]
-    ]:
+    ) -> list[opt_prop.OptProp | SourceSurface | SourceLuminaire | SourceRayFile | SourceAmbientNaturalLight | SourceAmbientEnvironment | SensorIrradiance | SensorRadiance | SensorCamera | Sensor3DIrradiance | SensorXMPIntensity | SimulationDirect | SimulationInverse | SimulationInteractive | SimulationVirtualBSDF | part.Part | body.Body | face.Face | part.Part.SubPart | GroundPlane | LightBox]:
         """Find feature(s) by name (possibility to use regex) and by feature type.
 
         Parameters
@@ -875,21 +777,7 @@ class Project:
 
         Returns
         -------
-        List[Union[ansys.speos.core.opt_prop.OptProp, ansys.speos.core.source.SourceSurface, \
-        ansys.speos.core.source.SourceRayFile, ansys.speos.core.source.SourceLuminaire, \
-        ansys.speos.core.source.SourceAmbientEnvironment, \
-        ansys.speos.core.source.SourceAmbientNaturalLight, \
-        ansys.speos.core.sensor.SensorCamera, \
-        ansys.speos.core.sensor.SensorRadiance, ansys.speos.core.sensor.SensorIrradiance, \
-        ansys.speos.core.sensor.Sensor3DIrradiance, ansys.speos.core.sensor.SensorXMPIntensity, \
-        ansys.speos.core.simulation.SimulationVirtualBSDF, \
-        ansys.speos.core.simulation.SimulationDirect, \
-        ansys.speos.core.simulation.SimulationInteractive, \
-        ansys.speos.core.simulation.SimulationInverse, ansys.speos.core.part.Part, \
-        ansys.speos.core.body.Body, \
-        ansys.speos.core.face.Face, ansys.speos.core.part.Part.SubPart, \
-        ansys.speos.core.ground_plane.GroundPlane, \
-        ansys.speos.core.component.LightBox]]
+        list[opt_prop.OptProp | SourceSurface | SourceLuminaire | SourceRayFile | SourceAmbientNaturalLight | SourceAmbientEnvironment | SensorIrradiance | SensorRadiance | SensorCamera | Sensor3DIrradiance | SensorXMPIntensity | SimulationDirect | SimulationInverse | SimulationInteractive | SimulationVirtualBSDF | part.Part | body.Body | face.Face | part.Part.SubPart | GroundPlane | LightBox]
             Found features.
 
         Examples
@@ -904,8 +792,8 @@ class Project:
         >>>     name_regex=True,
         >>>     feature_type=ansys.speos.core.sensor.SensorCamera,
         >>> )
-        Here some examples when looking for a geometry feature:
-        (always precise feature_type)
+        
+        Here are some examples when looking for a geometry feature (always precise feature_type):
 
         >>> # Root part
         >>> find(name="", feature_type=ansys.speos.core.part.Part)
@@ -1081,7 +969,7 @@ class Project:
         """Get dictionary corresponding to the project - read only."""
         return self._to_dict()
 
-    def find_key(self, key: str) -> List[tuple[str, dict]]:
+    def find_key(self, key: str) -> list[tuple[str, dict]]:
         """Get values corresponding to the key in project dictionary - read only.
 
         Parameters
@@ -1091,7 +979,7 @@ class Project:
 
         Returns
         -------
-        List[tuple[str, dict]]
+        list[tuple[str, dict]]
             List of matching objects containing for each its x_path and its value.
         """
         return proto_message_utils._finder_by_key(dict_var=self._to_dict(), key=key)
@@ -1102,8 +990,8 @@ class Project:
 
     def _fill_bodies(
         self,
-        body_guids: List[str],
-        feat_host: Union[part.Part, part.Part.SubPart],
+        body_guids: list[str],
+        feat_host: part.Part | part.Part.SubPart,
     ):
         """Fill part of sub part features from a list of body guids."""
         for b_link in self.client.get_items(keys=body_guids, item_type=BodyLink):
@@ -1399,17 +1287,8 @@ class Project:
     def _create_speos_feature_preview(
         self,
         plotter: Plotter,
-        speos_feature: Union[
-            SensorCamera,
-            SensorRadiance,
-            SensorIrradiance,
-            Sensor3DIrradiance,
-            SourceLuminaire,
-            SourceRayFile,
-            SourceLuminaire,
-            LightBox,
-        ],
-        scene_seize: float,
+        speos_feature: SensorCamera | SensorRadiance | SensorIrradiance | Sensor3DIrradiance | SourceLuminaire | SourceRayFile | SourceLuminaire | LightBox,
+        scene_size: float,
     ) -> Plotter:
         """Add speos feature visual preview to pyvista plotter object.
 
@@ -1417,18 +1296,10 @@ class Project:
         ----------
         plotter: Plotter
             ansys.tools.visualization_interface.Plotter
-        speos_feature: Union[\
-        ansys.speos.core.sensor.SensorCamera, \
-        ansys.speos.core.sensor.SensorRadiance, \
-        ansys.speos.core.sensor.SensorIrradiance, \
-        ansys.speos.core.sensor.Sensor3DIrradiance, \
-        ansys.speos.core.source.SourceLuminaire, \
-        ansys.speos.core.source.SourceRayFile, \
-        ansys.speos.core.source.SourceLuminaire, \
-        ansys.speos.core.component.Lightbox]
-            speos feature whose visual data will be added.
-        scene_seize: float
-            seize of max scene bounds
+        speos_feature : SensorCamera | SensorRadiance | SensorIrradiance | Sensor3DIrradiance | SourceLuminaire | SourceRayFile | Lightbox
+            Speos feature whose visual data will be added.
+        scene_size: float
+            Size of max scene bounds
 
         Returns
         -------
@@ -1461,7 +1332,7 @@ class Project:
                             tmp = visual_ray._VisualArrow__data
                             visual_ray._VisualArrow__data.points[1] = (
                                 ray_path_scale_factor
-                                * scene_seize
+                                * scene_size
                                 * (tmp.points[1] - tmp.points[0])
                                 + tmp.points[0]
                             )
@@ -1480,7 +1351,7 @@ class Project:
                     display_ray = visual_ray.data.copy(deep=True)
                     display_ray.points[1] = (
                         ray_path_scale_factor
-                        * scene_seize
+                        * scene_size
                         * (display_ray.points[1] - display_ray.points[0])
                         + display_ray.points[0]
                     )
@@ -1505,13 +1376,13 @@ class Project:
             display_origin = display_coordinates.origin
             display_coordinates.x_axis.points[:] = (
                 display_coordinates.x_axis.points - display_origin
-            ) * ray_path_scale_factor * scene_seize + display_origin
+            ) * ray_path_scale_factor * scene_size + display_origin
             display_coordinates.y_axis.points[:] = (
                 display_coordinates.y_axis.points - display_origin
-            ) * ray_path_scale_factor * scene_seize + display_origin
+            ) * ray_path_scale_factor * scene_size + display_origin
             display_coordinates.z_axis.points[:] = (
                 display_coordinates.z_axis.points - display_origin
-            ) * ray_path_scale_factor * scene_seize + display_origin
+            ) * ray_path_scale_factor * scene_size + display_origin
 
             match speos_feature:
                 case SensorRadiance() | SourceSurface():
@@ -1602,7 +1473,7 @@ class Project:
     def preview(
         self,
         viz_args=None,
-        screenshot: Optional[Union[str, Path]] = None,
+        screenshot: str | Path | None = None,
     ) -> None:
         """Preview cad bodies inside the project's scene.
 
