@@ -121,8 +121,6 @@ master_doc = "index"
 suppress_warnings = ["autoapi"]
 autodoc_typehints = "description"
 
-# FIXME: Add suppressed warning if below fails
-# suppress_warnings = ["design.fa-build"]
 sd_fontawesome_latex = True
 
 # -- Declare the Jinja context -----------------------------------------------
