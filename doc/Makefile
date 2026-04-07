@@ -29,6 +29,10 @@ clean:
 pdf:
 	@$(SPHINXBUILD) -M latex "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 	cd $(BUILDDIR)/latex && for file in *.tex; do lualatex --interaction=nonstopmode "$$file"; done
+	echo "PDF files generated in $(BUILDDIR)/latex:"
+	ls -l $(BUILDDIR)/latex/*.pdf
+	echo "files in current directory:"
+	ls -l *
 	test -f *.pdf && echo pdf exists || exit 1
 
 # Build HTML files and generate examples as .py files
