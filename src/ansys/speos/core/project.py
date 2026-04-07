@@ -171,7 +171,13 @@ class Project:
     @property
     def sources(
         self,
-    ) -> list[SourceSurface | SourceLuminaire | SourceRayFile | SourceAmbientNaturalLight | SourceAmbientEnvironment]:
+    ) -> list[
+        SourceSurface
+        | SourceLuminaire
+        | SourceRayFile
+        | SourceAmbientNaturalLight
+        | SourceAmbientEnvironment
+    ]:
         """Property of project's sources inside.
 
         Returns
@@ -189,7 +195,9 @@ class Project:
     @property
     def sensors(
         self,
-    ) -> list[Sensor3DIrradiance | SensorCamera | SensorIrradiance | SensorRadiance | SensorXMPIntensity]:
+    ) -> list[
+        Sensor3DIrradiance | SensorCamera | SensorIrradiance | SensorRadiance | SensorXMPIntensity
+    ]:
         """Property of project's sensors inside.
 
         Returns
@@ -267,8 +275,19 @@ class Project:
         description: str = "",
         feature_type: type = SourceSurface,
         metadata: Optional[Mapping[str, str]] = None,
-        parameters: LuminaireSourceParameters | SurfaceSourceParameters | RayFileSourceParameters | AmbientNaturalLightParameters | AmbientEnvironmentParameters | None = None,
-    ) -> SourceSurface | SourceRayFile | SourceLuminaire | SourceAmbientNaturalLight | SourceAmbientEnvironment:
+        parameters: LuminaireSourceParameters
+        | SurfaceSourceParameters
+        | RayFileSourceParameters
+        | AmbientNaturalLightParameters
+        | AmbientEnvironmentParameters
+        | None = None,
+    ) -> (
+        SourceSurface
+        | SourceRayFile
+        | SourceLuminaire
+        | SourceAmbientNaturalLight
+        | SourceAmbientEnvironment
+    ):
         """Create a new Source feature.
 
         Parameters
@@ -403,7 +422,11 @@ class Project:
         description: str = "",
         feature_type: type = SimulationDirect,
         metadata: Optional[Mapping[str, str]] = None,
-        parameters: DirectSimulationParameters | InteractiveSimulationParameters | InverseSimulationParameters | VirtualBSDFSimulationParameters | None = None,
+        parameters: DirectSimulationParameters
+        | InteractiveSimulationParameters
+        | InverseSimulationParameters
+        | VirtualBSDFSimulationParameters
+        | None = None,
     ) -> SimulationDirect | SimulationInteractive | SimulationInverse | SimulationVirtualBSDF:
         """Create a new Simulation feature.
 
@@ -520,7 +543,12 @@ class Project:
         description: str = "",
         feature_type: type = SensorIrradiance,
         metadata: Optional[Mapping[str, str]] = None,
-        parameters: IrradianceSensorParameters | RadianceSensorParameters | CameraSensorParameters | Irradiance3DSensorParameters | IntensityXMPSensorParameters | None = None,
+        parameters: IrradianceSensorParameters
+        | RadianceSensorParameters
+        | CameraSensorParameters
+        | Irradiance3DSensorParameters
+        | IntensityXMPSensorParameters
+        | None = None,
     ) -> SensorCamera | SensorRadiance | SensorIrradiance | Sensor3DIrradiance | SensorXMPIntensity:
         """Create a new Sensor feature.
 
@@ -534,9 +562,9 @@ class Project:
         feature_type: type
             Sensor type to be created.
             By default, ``ansys.speos.core.sensor.SensorIrradiance``.
-            Allowed types are ``ansys.speos.core.sensor.SensorCamera``, 
+            Allowed types are ``ansys.speos.core.sensor.SensorCamera``,
             ``ansys.speos.core.sensor.SensorRadiance``,
-            ``ansys.speos.core.sensor.SensorIrradiance``, 
+            ``ansys.speos.core.sensor.SensorIrradiance``,
             ``ansys.speos.core.sensor.Sensor3DIrradiance`` and
             ``ansys.speos.core.sensor.SensorXMPIntensity``.
         metadata : Optional[Mapping[str, str]]
@@ -759,7 +787,29 @@ class Project:
         name: str,
         name_regex: bool = False,
         feature_type: Optional[type] = None,
-    ) -> list[opt_prop.OptProp | SourceSurface | SourceLuminaire | SourceRayFile | SourceAmbientNaturalLight | SourceAmbientEnvironment | SensorIrradiance | SensorRadiance | SensorCamera | Sensor3DIrradiance | SensorXMPIntensity | SimulationDirect | SimulationInverse | SimulationInteractive | SimulationVirtualBSDF | part.Part | body.Body | face.Face | part.Part.SubPart | GroundPlane | LightBox]:
+    ) -> list[
+        opt_prop.OptProp
+        | SourceSurface
+        | SourceLuminaire
+        | SourceRayFile
+        | SourceAmbientNaturalLight
+        | SourceAmbientEnvironment
+        | SensorIrradiance
+        | SensorRadiance
+        | SensorCamera
+        | Sensor3DIrradiance
+        | SensorXMPIntensity
+        | SimulationDirect
+        | SimulationInverse
+        | SimulationInteractive
+        | SimulationVirtualBSDF
+        | part.Part
+        | body.Body
+        | face.Face
+        | part.Part.SubPart
+        | GroundPlane
+        | LightBox
+    ]:
         """Find feature(s) by name (possibility to use regex) and by feature type.
 
         Parameters
@@ -792,7 +842,7 @@ class Project:
         >>>     name_regex=True,
         >>>     feature_type=ansys.speos.core.sensor.SensorCamera,
         >>> )
-        
+
         Here are some examples when looking for a geometry feature (always precise feature_type):
 
         >>> # Root part
@@ -1287,7 +1337,14 @@ class Project:
     def _create_speos_feature_preview(
         self,
         plotter: Plotter,
-        speos_feature: SensorCamera | SensorRadiance | SensorIrradiance | Sensor3DIrradiance | SourceLuminaire | SourceRayFile | SourceLuminaire | LightBox,
+        speos_feature: SensorCamera
+        | SensorRadiance
+        | SensorIrradiance
+        | Sensor3DIrradiance
+        | SourceLuminaire
+        | SourceRayFile
+        | SourceLuminaire
+        | LightBox,
         scene_size: float,
     ) -> Plotter:
         """Add speos feature visual preview to pyvista plotter object.
@@ -1331,9 +1388,7 @@ class Project:
                         for visual_ray in data.data:
                             tmp = visual_ray._VisualArrow__data
                             visual_ray._VisualArrow__data.points[1] = (
-                                ray_path_scale_factor
-                                * scene_size
-                                * (tmp.points[1] - tmp.points[0])
+                                ray_path_scale_factor * scene_size * (tmp.points[1] - tmp.points[0])
                                 + tmp.points[0]
                             )
                             plotter.plot(visual_ray.data, color=visual_ray.color)
