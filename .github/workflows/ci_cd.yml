@@ -83,7 +83,7 @@ jobs:
       - name: Install dependencies
         run: |
           source .venv/bin/activate
-          uv pip install ty==0.0.25 ansys-platform-instancemanagement
+          uv pip install ty==0.0.25 ansys-platform-instancemanagement ansys-speos-core[graphics]
 
       # NOTE: At the moment this will only run on ansys/aedt/core/speos.py which is working
       - name: Run Ty on selected files
@@ -108,7 +108,6 @@ jobs:
             --exclude src/ansys/speos/core/simulation.py \
             --exclude src/ansys/speos/core/sensor.py \
             --exclude src/ansys/speos/core/__init__.py \
-            --exclude src/ansys/speos/core/generic \
             --exclude src/ansys/speos/core/kernel \
             --exclude src/ansys/speos/core/workflow \
             --exclude examples/core \

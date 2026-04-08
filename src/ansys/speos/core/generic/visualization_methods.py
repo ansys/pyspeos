@@ -22,7 +22,7 @@
 
 """Provides the ``VisualData`` class."""
 
-from typing import TYPE_CHECKING, List, Tuple, Union
+from typing import TYPE_CHECKING, List, Tuple, Union, cast
 
 import numpy as np
 
@@ -239,21 +239,25 @@ class _VisualArrow:
             raise ValueError(
                 "line_vertices is expected to be composed of 2 vertices with 3 elements each."
             )
-        line_vertices = np.array(line_vertices)
+        vertices_array = np.array(line_vertices)
         if arrow:
             self.__data = pv.Arrow(
-                start=line_vertices[0],
-                direction=line_vertices[1],
+                start=vertices_array[0],
+                direction=vertices_array[1],
                 scale=1,
                 tip_radius=0.05,
                 shaft_radius=0.01,
             )
         else:
-            self.__data = pv.Line(line_vertices[0], line_vertices[0] + line_vertices[1])
+            self.__data = pv.Line(vertices_array[0], vertices_array[0] + vertices_array[1])
         if all(value < 1 for value in color):
-            self.__color = color + (255,)
+            self.__color: Tuple[float, float, float, int] = cast(
+                Tuple[float, float, float, int], color + (255,)
+            )
         else:
-            self.__color = tuple(value / 255 for value in color) + (255,)
+            self.__color = cast(
+                Tuple[float, float, float, int], tuple(value / 255 for value in color) + (255,)
+            )
 
     @property
     def data(self) -> "pv.PolyData":
@@ -269,13 +273,13 @@ class _VisualArrow:
         return self.__data
 
     @property
-    def color(self) -> Tuple[float, float, float]:
+    def color(self) -> Tuple[float, float, float, int]:
         """
         Returns the color property of _VisualArrow.
 
         Returns
         -------
-        Tuple[float, float, float]
+        Tuple[float, float, float, int]
             The color tuple of _VisualArrow.
 
         """
@@ -334,7 +338,9 @@ class _VisualData:
                 "triangle_vertices is expected to be composed of 3 vertices with 3 elements each."
             )
         faces = [[3, 0, 1, 2]]
-        self._data = self._data.append_polydata(pv.PolyData(triangle_vertices, faces))
+        self._data = cast("pv.PolyData", self._data).append_polydata(
+            pv.PolyData(triangle_vertices, faces)
+        )
 
     def add_data_rectangle(self, rectangle_vertices: List[List[float]]) -> None:
         """
@@ -355,7 +361,9 @@ class _VisualData:
             raise ValueError(
                 "rectangle_vertices is expected to be composed of 3 vertices with 3 elements each."
             )
-        self._data = self._data.append_polydata(pv.Rectangle(rectangle_vertices))
+        self._data = cast("pv.PolyData", self._data).append_polydata(
+            pv.Rectangle(rectangle_vertices)
+        )
 
     def add_data_line(self, line: _VisualArrow) -> None:
         """
@@ -393,7 +401,7 @@ class _VisualData:
             raise ValueError(
                 "mesh vertices is expected to be composed of 3 elements each, and 4 for facets."
             )
-        self._data = self._data.append_polydata(pv.PolyData(vertices, facets))
+        self._data = cast("pv.PolyData", self._data).append_polydata(pv.PolyData(vertices, facets))
 
 
 def local2absolute(local_vertice: np.ndarray, coordinates) -> np.ndarray:
