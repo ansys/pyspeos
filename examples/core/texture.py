@@ -221,7 +221,10 @@ print(opt)
 
 # We can NOT delete the last layer as this is last layer
 # User can still use it to apply surface optical property as usual
-opt.texture[0].delete()
+try:
+    opt.texture[0].delete()
+except Exception as e:
+    print("This is the last texture layer, it can not be deleted: {}".format(e))
 opt.texture[0].set_surface_library().file_uri = (
     Path(assets_data_path) / "Texture.1.speos" / "100% transparent.simplescattering"
 )
