@@ -71,7 +71,7 @@ jobs:
       with:
         labels: bug
 
-  commenter:
+  Commenter:
     runs-on: ubuntu-latest
     steps:
     - name: Suggest to add labels
@@ -183,7 +183,7 @@ jobs:
             --exclude examples/workflow
 
   doc-style:
-    name: Documentation Style Check
+    name: Documentation style check
     runs-on: ubuntu-latest
     steps:
       - name: PyAnsys documentation style checks
