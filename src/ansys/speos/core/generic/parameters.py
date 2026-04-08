@@ -760,6 +760,39 @@ class ColorSpaceType(str, Enum):
 
 
 @dataclass
+class DisplayParameters:
+    """Parameters class for Display Source."""
+
+    image_file_uri: Union[str, Path] = ""
+    """to the display image (png, jpeg, bmp, tiff, rgb)."""
+    x_start: float = -50.0
+    """Lower bound x axis."""
+    x_end: float = 50.0
+    """Upper bound x axis."""
+    y_start: float = -50.0
+    """Lower bound y axis."""
+    y_end: float = 50.0
+    """Upper bound y axis."""
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+    """Location and orientation of the display source."""
+    luminance: float = 50.0
+    """Luminance value in cd/m^2."""
+    contrast_ratio: Optional[int] = None
+    """Contrast ratio of the display (None means not set)."""
+    intensity_type: Union[
+        IntensityLambertianParameters,
+        IntensityCosParameters,
+        IntensitySymmetricGaussianParameters,
+        IntensitAsymmetricGaussianParameters,
+        IntensityLibraryParameters,
+    ] = field(default_factory=lambda: IntensityLambertianParameters())
+    """Intensity parameters for the display (e.g., library intensity)."""
+    color_space_type: Union[ColorSpaceType, UserDefinedColorSpaceParameters] = ColorSpaceType.srgb
+    """Color space type of the display, either ColorSpaceType enum for predefined or
+    UserDefinedColorSpaceParameters for custom."""
+
+
+@dataclass
 class AmbientEnvironmentParameters:
     """Ambient Environment Parameters."""
 

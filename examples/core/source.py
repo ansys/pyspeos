@@ -18,6 +18,7 @@ from ansys.speos.core.kernel.client import (
 from ansys.speos.core.source import (
     SourceAmbientEnvironment,
     SourceAmbientNaturalLight,
+    SourceDisplay,
     SourceLuminaire,
     SourceRayFile,
     SourceSurface,
@@ -304,6 +305,21 @@ print(p)  # only 1 ground plane is taken per project, the second overwrites the 
 ground_plane.delete()
 source6.delete()
 # -
+
+# ### Display Source
+
+d_src = p.create_source(name="Display.1", feature_type=SourceDisplay)
+assert isinstance(d_src, SourceDisplay)
+d_src.x_start = -6
+d_src.x_end = 6
+d_src.y_start = -5
+d_src.y_end = 5
+d_src.axis_system = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+d_src.image_file_uri = assets_data_path / "test_display_source.1.speos" / "pyspeos.png"
+d_src.commit()
+print(d_src)
+
+# ### Clean up
 
 # When creating sources, this creates some intermediate objects (spectrums, intensity templates).
 #
