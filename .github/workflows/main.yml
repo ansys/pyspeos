@@ -62,7 +62,7 @@ jobs:
     name: Doc dev version deploy
     if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
-    needs: [build-library]
+    needs: [doc-build]
     steps:
       - name: Deploy developers documentation
         uses: ansys/actions/doc-deploy-dev@3931ac9351b13ae11b1203c2ef6b51e5c75502ea # v10.2.5
