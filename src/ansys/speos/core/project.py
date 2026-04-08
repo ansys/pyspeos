@@ -1514,13 +1514,13 @@ class Project:
 
         # Add speos visual data at the root part
         scene_bounds = p.backend.scene.bounds
-        scene_x_seize = scene_bounds[1] - scene_bounds[0]
-        scene_y_seize = scene_bounds[3] - scene_bounds[2]
-        scene_z_seize = scene_bounds[5] - scene_bounds[4]
-        scene_max = max(scene_x_seize, scene_y_seize, scene_z_seize)
+        scene_x_size = scene_bounds[1] - scene_bounds[0]
+        scene_y_size = scene_bounds[3] - scene_bounds[2]
+        scene_z_size = scene_bounds[5] - scene_bounds[4]
+        scene_max = max(scene_x_size, scene_y_size, scene_z_size)
         for feature in self._features:
             p = self._create_speos_feature_preview(
-                plotter=p, speos_feature=feature, scene_seize=scene_max
+                plotter=p, speos_feature=feature, scene_size=scene_max
             )
         return p
 

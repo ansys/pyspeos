@@ -649,7 +649,7 @@ def test_create_speos_feature_preview_unsupported_type(speos: Speos):
     # OptProp is not a supported type – plotter must come back unchanged
     opt_feature = p.find(name=".*", name_regex=True, feature_type=OptProp)[0]
     result = p._create_speos_feature_preview(
-        plotter=mock_plotter, speos_feature=opt_feature, scene_seize=100.0
+        plotter=mock_plotter, speos_feature=opt_feature, scene_size=100.0
     )
     assert result is mock_plotter
     mock_plotter.plot.assert_not_called()
@@ -657,7 +657,7 @@ def test_create_speos_feature_preview_unsupported_type(speos: Speos):
     # SimulationDirect is also not a supported type
     sim_feature = p.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
     result = p._create_speos_feature_preview(
-        plotter=mock_plotter, speos_feature=sim_feature, scene_seize=100.0
+        plotter=mock_plotter, speos_feature=sim_feature, scene_size=100.0
     )
     assert result is mock_plotter
     mock_plotter.plot.assert_not_called()
@@ -677,7 +677,7 @@ def test_create_speos_feature_preview_sensor_irradiance(speos: Speos):
 
     mock_plotter = MagicMock()
     result = p._create_speos_feature_preview(
-        plotter=mock_plotter, speos_feature=sensor, scene_seize=100.0
+        plotter=mock_plotter, speos_feature=sensor, scene_size=100.0
     )
 
     assert result is mock_plotter
@@ -698,7 +698,7 @@ def test_create_speos_feature_preview_sensor_radiance(speos: Speos):
 
     mock_plotter = MagicMock()
     result = p._create_speos_feature_preview(
-        plotter=mock_plotter, speos_feature=sensor, scene_seize=100.0
+        plotter=mock_plotter, speos_feature=sensor, scene_size=100.0
     )
 
     assert result is mock_plotter
@@ -724,7 +724,7 @@ def test_create_speos_feature_preview_sensor_camera(speos: Speos):
 
     mock_plotter = MagicMock()
     result = p._create_speos_feature_preview(
-        plotter=mock_plotter, speos_feature=sensor, scene_seize=100.0
+        plotter=mock_plotter, speos_feature=sensor, scene_size=100.0
     )
 
     assert result is mock_plotter
@@ -744,7 +744,7 @@ def test_create_speos_feature_preview_sensor_xmp_intensity(speos: Speos):
 
     mock_plotter = MagicMock()
     result = p._create_speos_feature_preview(
-        plotter=mock_plotter, speos_feature=intensity_sensors[0], scene_seize=100.0
+        plotter=mock_plotter, speos_feature=intensity_sensors[0], scene_size=100.0
     )
 
     assert result is mock_plotter
@@ -764,7 +764,7 @@ def test_create_speos_feature_preview_source_luminaire(speos: Speos):
 
     mock_plotter = MagicMock()
     result = p._create_speos_feature_preview(
-        plotter=mock_plotter, speos_feature=sr, scene_seize=100.0
+        plotter=mock_plotter, speos_feature=sr, scene_size=100.0
     )
 
     assert result is mock_plotter
@@ -788,7 +788,7 @@ def test_create_speos_feature_preview_source_rayfile(speos: Speos):
 
     mock_plotter = MagicMock()
     result = p._create_speos_feature_preview(
-        plotter=mock_plotter, speos_feature=sr, scene_seize=100.0
+        plotter=mock_plotter, speos_feature=sr, scene_size=100.0
     )
 
     assert result is mock_plotter
@@ -810,7 +810,7 @@ def test_create_speos_feature_preview_source_surface(speos: Speos):
 
     mock_plotter = MagicMock()
     result = p._create_speos_feature_preview(
-        plotter=mock_plotter, speos_feature=surface_sources[0], scene_seize=100.0
+        plotter=mock_plotter, speos_feature=surface_sources[0], scene_size=100.0
     )
 
     assert result is mock_plotter
@@ -838,7 +838,7 @@ def test_create_speos_feature_preview_lightbox(speos: Speos):
 
     mock_plotter = MagicMock()
     result = p._create_speos_feature_preview(
-        plotter=mock_plotter, speos_feature=lightboxes[0], scene_seize=100.0
+        plotter=mock_plotter, speos_feature=lightboxes[0], scene_size=100.0
     )
 
     assert result is mock_plotter
@@ -866,13 +866,13 @@ def test_create_speos_feature_preview_lightbox_ray_data(speos: Speos):
     # Iterate over both lightboxes to ensure both mesh and ray sub-branches are hit
     for lb in lightboxes:
         mock_plotter.reset_mock()
-        p._create_speos_feature_preview(plotter=mock_plotter, speos_feature=lb, scene_seize=100.0)
+        p._create_speos_feature_preview(plotter=mock_plotter, speos_feature=lb, scene_size=100.0)
         assert mock_plotter.plot.call_count >= 1
 
 
 @pytest.mark.supported_speos_versions(min=252)
 def test_create_speos_feature_preview_scene_size_zero(speos: Speos):
-    """Test _create_speos_feature_preview with scene_seize=0 (edge case).
+    """Test _create_speos_feature_preview with scene_size=0 (edge case).
 
     Ensures that a zero scene size does not cause errors and the plotter is still returned.
     """
@@ -882,7 +882,7 @@ def test_create_speos_feature_preview_scene_size_zero(speos: Speos):
 
     mock_plotter = MagicMock()
     result = p._create_speos_feature_preview(
-        plotter=mock_plotter, speos_feature=sensor, scene_seize=0.0
+        plotter=mock_plotter, speos_feature=sensor, scene_size=0.0
     )
     assert result is mock_plotter
     assert mock_plotter.plot.call_count >= 1
@@ -902,7 +902,7 @@ def test_create_speos_feature_preview_3d_irradiance(speos: Speos):
 
     mock_plotter = MagicMock()
     result = p._create_speos_feature_preview(
-        plotter=mock_plotter, speos_feature=ssr_3d, scene_seize=100.0
+        plotter=mock_plotter, speos_feature=ssr_3d, scene_size=100.0
     )
 
     assert result is mock_plotter
