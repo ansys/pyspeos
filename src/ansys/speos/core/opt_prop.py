@@ -1818,6 +1818,9 @@ class TextureLayer(BaseSop):
             Returns self after deletion.
         """
         # Delete the sop template
+        check = self._opt_prop.texture if self._opt_prop.texture is not None else []
+        if len(check) < 2:
+            raise RuntimeError("Cannot delete last remaining layer.")
         if self.sop_template_link is not None:
             self.sop_template_link.delete()
             self.sop_template_link = None

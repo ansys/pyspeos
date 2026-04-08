@@ -251,7 +251,7 @@ class Project:
         name: str,
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
-        parameters: Optional[opt_prop.OptPropParameters] = None,
+        parameters: Optional[OptPropParameters] = None,
     ) -> opt_prop.OptProp:
         """Create a new Optical Property feature.
 

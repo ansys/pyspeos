@@ -1297,8 +1297,12 @@ def test_delete_texture_property(speos: Speos):
     assert layer.sop_template_link is not None
 
     # Delete the layer (should delete sop template link and clear internals)
-    layer.delete()
+    with pytest.raises(RuntimeError):
+        layer.delete()
 
+    op.create_texture_layer()
+    layer.delete()
+    op.commit()
     # After delete local link cleared
     assert layer.sop_template_link is None
     # _texture_template internal pointer cleared
@@ -1306,8 +1310,8 @@ def test_delete_texture_property(speos: Speos):
     # unique id reset
     assert getattr(layer, "_unique_id", None) is None
     # check layer is also removed downstream
-    assert len(op.texture) == 0
-    assert len(op._material_instance.texture.layers) == 0
+    assert len(op.texture) == 1
+    assert len(op._material_instance.texture.layers) == 1
 
 
 @pytest.mark.supported_speos_versions(min=252)
