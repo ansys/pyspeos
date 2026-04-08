@@ -187,7 +187,7 @@ if os.name == "nt":
 
 # Here we activate the texture and create the first texture layer
 # By default, each texture layer is set as mirror with 100% reflectance.
-# Planner UV mapping is selected by default.
+# No mapping method has been defined yet.
 # No image texture and normal map are applied.
 
 texture_layer_1 = opt.create_texture_layer()
@@ -205,6 +205,8 @@ if os.name == "nt":
     open_result_image(simulation_feature=sim, result_name="Radiance.xmp")
 
 # Here we the second texture layer
+# This is additional texture layer stack on top of the first texture layer.
+# the texture layer order is following the order of creation.
 # Similarly, texture layer is set as mirror without image and normal map.
 
 texture_layer_2 = opt.create_texture_layer()
@@ -219,12 +221,18 @@ opt.commit()
 print(len(opt.texture))  # only has 1 texture layer left
 print(opt)
 
-# We can NOT delete the last layer as this is last layer
-# User can still use it to apply surface optical property as usual
+# User can NOT delete the last layer as this is last layer.
+# The following lines demon the error message.
+
 try:
     opt.texture[0].delete()
 except Exception as e:
     print("This is the last texture layer, it can not be deleted: {}".format(e))
+
+# User can still use the texture layer as SOP to apply surface
+# optical property as usual. Use image texture and normal map as None.
+
+new_texture_layer = opt.create_texture_layer()
 opt.texture[0].set_surface_library().file_uri = (
     Path(assets_data_path) / "Texture.1.speos" / "100% transparent.simplescattering"
 )
@@ -232,7 +240,7 @@ opt.texture[0].set_image_texture_to_none()
 opt.texture[0].set_normal_map_to_none()
 opt.commit()
 
-# Run simulation and result shows transparent surface as defined in
+# Run simulation and result shows a fully transparent surface as defined in
 # simplescattering file.
 
 results = sim.compute_CPU()
@@ -241,19 +249,24 @@ if os.name == "nt":
 
     open_result_image(simulation_feature=sim, result_name="Radiance.xmp")
 
-
-# ## Create Texture Property by mapping operator
-# as alternative to mapping by data you can create some simple Mappings using planar,
-# cubic, spherical or cylindrical mapping operator
+# ### Create Texture Properties via UV Mapping or MeshData
+#
+# ## Create Texture Property by UV Mapping
+# User can create some UV Mappings method as using:
+# planar, cubic, spherical or cylindrical UV mapping method.
+# Here, we create another texture layer.
+# With the previously remained texture layer, in total, there are 2 texture layers.
 
 texture_layer_3 = opt.create_texture_layer()
 texture_layer_3.set_surface_library().file_uri = Path(assets_data_path) / "L100 2.simplescattering"
 
-
-# UV mapping axis system will locate the center of the texture image, x = 0, y = 0, z = 0
+# UV mapping axis system will locate the center of the texture image,
 # in this example:
+# texture image center: x = 0, y = 0, z = 0
 # x-axis direction: vector = [0, 0, 1] is used for projection of the texture image.
 # y-axis direction: vector = [0, 1, 0] is used for top direction of the texture image.
+#
+# Light will interact the last layer first.
 # texture image as checkerboard where alpha value is 0 for passing the ray toward the
 # subsequent layer -> fully transparent layer where alpha value is not 0 for interacting
 # with the L100 2.simplescattering material.
@@ -329,8 +342,6 @@ if os.name == "nt":
     open_result_image(simulation_feature=sim, result_name="Radiance.xmp")
 
 
-# ### Create Texture Properties via Data in Mesh Vertices
-#
 # ## Create Texture Property by data
 # When texture is create by data the image gets positioned on the geometry using
 # the uv information stored in the mesh vertices data attribute on the face.
