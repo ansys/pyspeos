@@ -306,12 +306,11 @@ if os.name == "nt":
 
 # Move the texture image up in the y direction and run result.
 # The new center of texture image is [0, 2.5, 0]
-# User can also use GPU to compute the texture simulation.
 
 texture_layer_3.image_texture.uv_mapping.axis_system = [0, 2.5, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0]
 opt.commit()
 
-results = sim.compute_GPU()
+results = sim.compute_CPU()  # use GPU using "compute_GPU" method
 if os.name == "nt":
     from ansys.speos.core.workflow.open_result import open_result_image
 
