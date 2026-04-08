@@ -182,6 +182,20 @@ def test_create_optical_property(speos: Speos):
     op1.delete()
 
 
+def test_commit_vop_none(speos: Speos):
+    """Test commit of VOP none after setting volume opaque and committing."""
+    p = Project(speos=speos)
+
+    op1 = p.create_optical_property(name="Material.1").set_volume_opaque().commit()
+
+    op1.set_volume_none()
+    assert op1._vop_template is None
+
+    op1.commit()
+    assert op1.vop_template_link is None
+    assert op1._material_instance.HasField("vop_guid") is False
+
+
 def test_commit_optical_property(speos: Speos):
     """Test commit of optical property."""
     p = Project(speos=speos)
