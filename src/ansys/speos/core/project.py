@@ -1128,6 +1128,8 @@ class Project:
         """Fill part of sub part features from a list of body guids."""
         for b_link in self.client.get_items(keys=body_guids, item_type=BodyLink):
             b_data = b_link.get()
+            if not b_data.face_guids:
+                continue
             b_feat = feat_host.create_body(name=b_data.name)
             b_feat.body_link = b_link
             b_feat._body = b_data  # instead of b_feat.reset() - this avoid a useless read in server
@@ -1175,6 +1177,10 @@ class Project:
         for ssr_inst in scene_data.sensors:
             if ssr_inst.metadata["UniqueId"] == "":
                 ssr_inst.metadata["UniqueId"] = str(uuid.uuid4())
+
+        for scene_inst in scene_data.scenes:
+            if scene_inst.metadata["UniqueId"] == "":
+                scene_inst.metadata["UniqueId"] = str(uuid.uuid4())
 
         for sim_inst in scene_data.simulations:
             if sim_inst.metadata["UniqueId"] == "":
@@ -1321,6 +1327,15 @@ class Project:
             if ssr_feat is not None:
                 self._features.append(ssr_feat)
 
+        for scene_inst in scene_data.scenes:
+            lightbox_scene = LightBox(
+                project=self,
+                name=scene_inst.name,
+                scene_instance=scene_inst,
+                default_parameters=None,
+            )
+            self._features.append(lightbox_scene)
+
         for sim_inst in scene_data.simulations:
             if sim_inst.name in [_._name for _ in self._features]:
                 continue
@@ -1458,6 +1473,7 @@ class Project:
                 SourceLuminaire,
                 SourceRayFile,
                 SourceSurface,
+                LightBox,
             ),
         ):
             return plotter
@@ -1465,6 +1481,25 @@ class Project:
         ray_path_scale_factor = 0.2
 
         match speos_feature:
+            case LightBox():
+                for data in speos_feature.visual_data:
+                    if isinstance(data.data, list):
+                        for visual_ray in data.data:
+                            tmp = visual_ray._VisualArrow__data
+                            visual_ray._VisualArrow__data.points[1] = (
+                                ray_path_scale_factor * scene_seize * (tmp.points[1] - tmp.points[0])
+                                + tmp.points[0]
+                            )
+                            plotter.plot(visual_ray.data, color=visual_ray.color)
+                    else:
+                        plotter.plot(
+                            data.data,
+                            show_edges=True,
+                            line_width=2,
+                            edge_color="red",
+                            color="orange",
+                            opacity=0.5,
+                        )
             case SourceRayFile() | SourceLuminaire() | SourceSurface():
                 for visual_ray in speos_feature.visual_data.data:
                     display_ray = visual_ray.data.copy(deep=True)
@@ -1485,8 +1520,13 @@ class Project:
                     opacity=0.5,
                 )
 
-        if speos_feature.visual_data.coordinates is not None:
-            display_coordinates = copy.deepcopy(speos_feature.visual_data.coordinates)
+        visual_coordinate_data = (
+            speos_feature.visual_data.coordinates
+            if not isinstance(speos_feature.visual_data, list)
+            else speos_feature.visual_data[0].coordinates
+        )
+        if visual_coordinate_data is not None:
+            display_coordinates = copy.deepcopy(visual_coordinate_data)
             display_origin = display_coordinates.origin
             display_coordinates.x_axis.points[:] = (
                 display_coordinates.x_axis.points - display_origin
@@ -1508,6 +1548,7 @@ class Project:
                     | SensorCamera()
                     | SourceLuminaire()
                     | SourceRayFile()
+                    | LightBox()
                 ):
                     plotter.plot(display_coordinates.x_axis, color="red")
                     plotter.plot(display_coordinates.y_axis, color="green")
