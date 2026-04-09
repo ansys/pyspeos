@@ -77,10 +77,10 @@ combined_project = combine_speos(
     speos=speos_server,
     speos_to_combine=[
         SpeosFileInstance(
-            speos_file='combine_path_to.speos',
+            file='combine_path_to.speos',
             axis_system=[x1, y1, z1, 1, 0, 0, 0, 1, 0, 0, 0, 1],),
         SpeosFileInstance(
-            speos_file='combine_path_to.speos',
+            file='combine_path_to.speos',
             axis_system=[x2, y2, z2, 1, 0, 0, 0, 1, 0, 0, 0, 1],
         ),
     ],
