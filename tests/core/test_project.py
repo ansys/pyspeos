@@ -693,7 +693,6 @@ def test_creation_errors(speos: Speos):
         )
 
 
-
 @pytest.mark.supported_speos_versions(min=252)
 def test_create_speos_feature_preview_unsupported_type(speos: Speos):
     """Test that _create_speos_feature_preview returns the plotter unchanged for unsupported types.
