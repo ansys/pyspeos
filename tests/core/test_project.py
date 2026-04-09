@@ -35,8 +35,15 @@ from ansys.speos.core.sensor import (
     SensorIrradiance,
     SensorRadiance,
 )
-from ansys.speos.core.simulation import SimulationDirect
-from ansys.speos.core.source import SourceLuminaire, SourceRayFile, SourceSurface
+from ansys.speos.core.simulation import SimulationDirect, SimulationInverse
+from ansys.speos.core.source import (
+    SourceAmbientEnvironment,
+    SourceAmbientNaturalLight,
+    SourceDisplay,
+    SourceLuminaire,
+    SourceRayFile,
+    SourceSurface,
+)
 from tests.conftest import test_path
 
 
@@ -596,7 +603,7 @@ def test_preview_visual_data(speos: Speos):
 
 
 @pytest.mark.supported_speos_versions(min=252)
-def test_sensor_creation_errors(speos: Speos):
+def test_creation_errors(speos: Speos):
     """Test to validate errors on sensor creation."""
     p = Project(
         speos=speos,
@@ -625,4 +632,60 @@ def test_sensor_creation_errors(speos: Speos):
             name="irradiance_sensor",
             feature_type=SensorCamera,
             parameters=RadianceSensorParameters(),
+        )
+
+    with pytest.raises(TypeError, match="SurfaceSourceParameters"):
+        p.create_source(
+            name="surface_source",
+            feature_type=SourceSurface,
+            parameters=IrradianceSensorParameters(),
+        )
+
+    with pytest.raises(TypeError, match="LuminaireSourceParameters"):
+        p.create_source(
+            name="luminaire_source",
+            feature_type=SourceLuminaire,
+            parameters=IrradianceSensorParameters(),
+        )
+
+    with pytest.raises(TypeError, match="RayFileSourceParameters"):
+        p.create_source(
+            name="rayfile_source",
+            feature_type=SourceRayFile,
+            parameters=IrradianceSensorParameters(),
+        )
+
+    with pytest.raises(TypeError, match="DisplayParameters"):
+        p.create_source(
+            name="display_source",
+            feature_type=SourceDisplay,
+            parameters=IrradianceSensorParameters(),
+        )
+
+    with pytest.raises(TypeError, match="AmbientNaturalLightParameters"):
+        p.create_source(
+            name="ambient_light",
+            feature_type=SourceAmbientNaturalLight,
+            parameters=IrradianceSensorParameters(),
+        )
+
+    with pytest.raises(TypeError, match="AmbientEnvironmentParameters"):
+        p.create_source(
+            name="ambient_light",
+            feature_type=SourceAmbientEnvironment,
+            parameters=IrradianceSensorParameters(),
+        )
+
+    with pytest.raises(TypeError, match="DirectSimulationParameters"):
+        p.create_simulation(
+            name="simulation",
+            feature_type=SimulationDirect,
+            parameters=IrradianceSensorParameters(),
+        )
+
+    with pytest.raises(TypeError, match="InverseSimulationParameters"):
+        p.create_simulation(
+            name="simulation",
+            feature_type=SimulationInverse,
+            parameters=IrradianceSensorParameters(),
         )

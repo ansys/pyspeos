@@ -25,7 +25,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import List, Mapping, Optional, Union
+from typing import List, Mapping, Optional, Union, cast
 
 import ansys.speos.core.body as body
 from ansys.speos.core.generic.parameters import (
@@ -507,13 +507,15 @@ class Intensity:
                 library_props=self._intensity_properties.library_properties,
                 default_parameters=IntensityLibraryParameters(),
             )
-        elif (
-            self._type._library is not self._intensity_template.library
-            or self._type._library_props is not self._intensity_properties.library_properties
-        ):
+        else:
             # Happens in case of feature reset (to be sure to always modify correct data)
-            self._type._library = self._intensity_template.library
-            self._type._library_props = self._intensity_properties.library_properties
+            library_type = cast(Intensity.Library, self._type)
+            if (
+                library_type._library is not self._intensity_template.library
+                or library_type._library_props is not self._intensity_properties.library_properties
+            ):
+                library_type._library = self._intensity_template.library
+                library_type._library_props = self._intensity_properties.library_properties
         return self._type
 
     def set_cos(self):
@@ -536,9 +538,11 @@ class Intensity:
                 cos=self._intensity_template.cos,
                 default_parameters=IntensityLambertianParameters(),
             )
-        elif self._type._cos is not self._intensity_template.cos:
+        else:
             # Happens in case of feature reset (to be sure to always modify correct data)
-            self._type._cos = self._intensity_template.cos
+            cos_type = cast(Intensity.Cos, self._type)
+            if cos_type._cos is not self._intensity_template.cos:
+                cos_type._cos = self._intensity_template.cos
         self._intensity_properties.Clear()
         return self._type
 
@@ -564,25 +568,88 @@ class Intensity:
                 gaussian_props=self._intensity_properties.gaussian_properties,
                 default_parameters=IntensitySymmetricGaussianParameters(),
             )
-        elif (
-            self._type._gaussian is not self._intensity_template.gaussian
-            or self._type._gaussian_props is not self._intensity_properties.gaussian_properties
-        ):
+        else:
             # Happens in case of feature reset (to be sure to always modify correct data)
-            self._type._gaussian = self._intensity_template.gaussian
-            self._type._gaussian_props = self._intensity_properties.gaussian_properties
+            gaussian_type = cast(Intensity.Gaussian, self._type)
+            if (
+                gaussian_type._gaussian is not self._intensity_template.gaussian
+                or gaussian_type._gaussian_props
+                is not self._intensity_properties.gaussian_properties
+            ):
+                gaussian_type._gaussian = self._intensity_template.gaussian
+                gaussian_type._gaussian_props = self._intensity_properties.gaussian_properties
         return self._type
 
-    @property
-    def type(self) -> type:
-        """Return type of sensor.
+    def _sync_type_from_template(self):
+        """Ensure the cached intensity helper matches the current template.
 
         Returns
         -------
-        Example: None for lambertian or ansys.speos.core.intensity.Intensity.Library
+        Union[None, ansys.speos.core.intensity.Intensity.Library,
+        ansys.speos.core.intensity.Intensity.Cos,
+        ansys.speos.core.intensity.Intensity.Gaussian]
+            The cached helper instance matching the underlying template.
+        """
+        if self._intensity_template.HasField("library"):
+            if self._type is None:
+                self._type = Intensity.Library(
+                    library=self._intensity_template.library,
+                    library_props=self._intensity_properties.library_properties,
+                    default_parameters=None,
+                )
+            elif isinstance(self._type, Intensity.Library):
+                if (
+                    self._type._library is not self._intensity_template.library
+                    or self._type._library_props
+                    is not self._intensity_properties.library_properties
+                ):
+                    self._type._library = self._intensity_template.library
+                    self._type._library_props = self._intensity_properties.library_properties
+            return self._type
+
+        if self._intensity_template.HasField("gaussian"):
+            if self._type is None:
+                self._type = Intensity.Gaussian(
+                    gaussian=self._intensity_template.gaussian,
+                    gaussian_props=self._intensity_properties.gaussian_properties,
+                    default_parameters=None,
+                )
+            elif isinstance(self._type, Intensity.Gaussian):
+                if (
+                    self._type._gaussian is not self._intensity_template.gaussian
+                    or self._type._gaussian_props
+                    is not self._intensity_properties.gaussian_properties
+                ):
+                    self._type._gaussian = self._intensity_template.gaussian
+                    self._type._gaussian_props = self._intensity_properties.gaussian_properties
+            return self._type
+
+        if self._intensity_template.HasField("cos"):
+            if self._type is None:
+                self._type = Intensity.Cos(
+                    cos=self._intensity_template.cos,
+                    default_parameters=None,
+                )
+            elif isinstance(self._type, Intensity.Cos):
+                if self._type._cos is not self._intensity_template.cos:
+                    self._type._cos = self._intensity_template.cos
+            return self._type
+
+        return self._type
+
+    @property
+    def type(self):
+        """Return the active intensity helper.
+
+        Returns
+        -------
+        Union[None, ansys.speos.core.intensity.Intensity.Library,
+        ansys.speos.core.intensity.Intensity.Cos,
+        ansys.speos.core.intensity.Intensity.Gaussian]
+            Active intensity helper instance.
 
         """
-        return type(self._type)
+        return self._sync_type_from_template()
 
     def _to_dict(self) -> dict:
         out_dict = {}
@@ -635,6 +702,7 @@ class Intensity:
         """
         if self.intensity_template_link is not None:
             self._intensity_template = self.intensity_template_link.get()
+        self._sync_type_from_template()
         return self
 
     def delete(self) -> Intensity:
