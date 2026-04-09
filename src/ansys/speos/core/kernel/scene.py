@@ -22,7 +22,6 @@
 
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
 
-import os
 from pathlib import Path
 from typing import Iterator, List
 
