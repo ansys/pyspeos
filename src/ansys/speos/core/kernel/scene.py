@@ -115,7 +115,7 @@ class SceneLink(CrudItem):
         if password is None:
             password = os.getenv("PYSPEOS_ENCRYPTED_PASSWORD", "")
         self._actions_stub.LoadFile(
-            messages.LoadFile_Request(guid=self.key, file_uri=file_uri), password=password
+            messages.LoadFile_Request(guid=self.key, file_uri=str(file_uri), password=password)
         )
 
     def get_source_ray_paths(
