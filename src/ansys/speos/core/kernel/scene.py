@@ -22,6 +22,8 @@
 
 """Provides a wrapped abstraction of the gRPC proto API definition and stubs."""
 
+import os
+from pathlib import Path
 from typing import Iterator, List
 
 from ansys.api.speos.results.v1.ray_path_pb2 import RayPath
@@ -98,16 +100,24 @@ class SceneLink(CrudItem):
         self._stub.delete(self)
 
     # Actions
-    def load_file(self, file_uri: str) -> None:
+    def load_file(self, file_uri: Path | str, password: str | None = None) -> None:
         """
         Load speos file to fill the scene.
 
         Parameters
         ----------
-        file_uri : str
+        file_uri : Path | str
             File to be loaded.
+        password : str | None, optional
+            Password needed to open the speos lightbox file.
+            This is only necessary when the user protects the speos light box with a password.
         """
-        self._actions_stub.LoadFile(messages.LoadFile_Request(guid=self.key, file_uri=file_uri))
+        if password is None:
+            password = os.getenv("PYSPEOS_ENCRYPTED_PASSWORD", "")
+        self._actions_stub.LoadFile(
+            messages.LoadFile_Request(guid=self.key, file_uri=file_uri),
+            password = password
+        )
 
     def get_source_ray_paths(
         self,
