@@ -39,6 +39,7 @@ from ansys.speos.core.simulation import SimulationDirect, SimulationInverse
 from ansys.speos.core.source import (
     SourceAmbientEnvironment,
     SourceAmbientNaturalLight,
+    SourceDisplay,
     SourceLuminaire,
     SourceRayFile,
     SourceSurface,
@@ -634,9 +635,6 @@ def test_creation_errors(speos: Speos):
             parameters=RadianceSensorParameters(),
         )
 
-    with pytest.raises(TypeError, match="OptPropParameters"):
-        p.create_optical_property(name="opt_prop", parameters=IrradianceSensorParameters())
-
     with pytest.raises(TypeError, match="SurfaceSourceParameters"):
         p.create_source(
             name="surface_source",
@@ -655,6 +653,13 @@ def test_creation_errors(speos: Speos):
         p.create_source(
             name="rayfile_source",
             feature_type=SourceRayFile,
+            parameters=IrradianceSensorParameters(),
+        )
+
+    with pytest.raises(TypeError, match="DisplayParameters"):
+        p.create_source(
+            name="display_source",
+            feature_type=SourceDisplay,
             parameters=IrradianceSensorParameters(),
         )
 
