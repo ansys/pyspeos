@@ -24,12 +24,13 @@
 from pathlib import Path
 from typing import List, Optional
 
+from ansys.speos.core.component import LightBoxFileInstance
 from ansys.speos.core.kernel.part import PartLink, ProtoPart
 from ansys.speos.core.project import Project
 from ansys.speos.core.speos import Speos
 
 
-class SpeosFileInstance:
+class SpeosFileInstance(LightBoxFileInstance):
     """Represents a SPEOS file containing geometries and materials.
 
     Geometries are placed in the root part of a project, and oriented according to the axis_system
