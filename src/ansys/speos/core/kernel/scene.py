@@ -113,7 +113,7 @@ class SceneLink(CrudItem):
             This is only necessary when the user protects the speos light box with a password.
         """
         if password is None:
-            password = os.getenv("PYSPEOS_ENCRYPTED_PASSWORD", "")
+            password = os.getenv("PYSPEOS_ENCRYPTED_PASSWORD", None)
         self._actions_stub.LoadFile(
             messages.LoadFile_Request(guid=self.key, file_uri=str(file_uri), password=password)
         )
