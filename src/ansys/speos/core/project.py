@@ -1487,7 +1487,9 @@ class Project:
                         for visual_ray in data.data:
                             tmp = visual_ray._VisualArrow__data
                             visual_ray._VisualArrow__data.points[1] = (
-                                ray_path_scale_factor * scene_seize * (tmp.points[1] - tmp.points[0])
+                                ray_path_scale_factor
+                                * scene_seize
+                                * (tmp.points[1] - tmp.points[0])
                                 + tmp.points[0]
                             )
                             plotter.plot(visual_ray.data, color=visual_ray.color)
