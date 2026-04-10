@@ -76,7 +76,7 @@ lightbox.set_speos_light_box(
         file=assets_data_path / "lightbox" / "Light Box Export.2.SPEOSLightBox", password=""
     )
 )
-print(lightbox)
+# print(lightbox)
 
 # # ## Push it to the server.
 # #
