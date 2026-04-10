@@ -811,6 +811,9 @@ def test_create_natural_light_source(speos: Speos):
         default_parameters=AmbientNaturalLightParameters(),
     )
     after = datetime.datetime.now(cet)
+    tmp_natural_light_property = (
+        source1._source_instance.ambient_properties.natural_light_properties
+    )
     auto_sun = tmp_natural_light_property.sun_axis_system.automatic_sun
 
     assert source1._source_instance.HasField("ambient_properties")
@@ -820,9 +823,6 @@ def test_create_natural_light_source(speos: Speos):
         1,
     ]
     assert source1._source_instance.ambient_properties.HasField("natural_light_properties")
-    tmp_natural_light_property = (
-        source1._source_instance.ambient_properties.natural_light_properties
-    )
     assert tmp_natural_light_property.north_direction == [
         0,
         1,
@@ -841,8 +841,10 @@ def test_create_natural_light_source(speos: Speos):
         minute=auto_sun.minute,
         tzinfo=cet,
     )
-    assert before - datetime.timedelta(seconds=60) <= server_dt <= after + datetime.timedelta(
-        seconds=60
+    assert (
+        before - datetime.timedelta(seconds=60)
+        <= server_dt
+        <= after + datetime.timedelta(seconds=60)
     )
     assert auto_sun.time_zone_uri == "CET"
 
