@@ -841,8 +841,10 @@ def test_create_natural_light_source(speos: Speos):
         minute=auto_sun.minute,
         tzinfo=cet,
     )
-    assert before - datetime.timedelta(seconds=60) <= server_dt <= after + datetime.timedelta(
-        seconds=60
+    assert (
+        before - datetime.timedelta(seconds=60)
+        <= server_dt
+        <= after + datetime.timedelta(seconds=60)
     )
     assert auto_sun.time_zone_uri == "CET"
 
