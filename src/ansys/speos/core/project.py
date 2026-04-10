@@ -40,6 +40,7 @@ from ansys.speos.core.generic.parameters import (
     AmbientNaturalLightParameters,
     CameraSensorParameters,
     DirectSimulationParameters,
+    DisplayParameters,
     IntensityXMPSensorParameters,
     InteractiveSimulationParameters,
     InverseSimulationParameters,
@@ -79,6 +80,7 @@ from ansys.speos.core.source import (
     BaseSource,
     SourceAmbientEnvironment,
     SourceAmbientNaturalLight,
+    SourceDisplay,
     SourceLuminaire,
     SourceRayFile,
     SourceSurface,
@@ -297,6 +299,7 @@ class Project:
                 RayFileSourceParameters,
                 AmbientNaturalLightParameters,
                 AmbientEnvironmentParameters,
+                DisplayParameters,
             ]
         ] = None,
     ) -> Union[
@@ -305,6 +308,7 @@ class Project:
         SourceLuminaire,
         SourceAmbientNaturalLight,
         SourceAmbientEnvironment,
+        SourceDisplay,
     ]:
         """Create a new Source feature.
 
@@ -322,7 +326,8 @@ class Project:
             Union[ansys.speos.core.source.SourceSurface, ansys.speos.core.source.SourceRayFile, \
             ansys.speos.core.source.SourceLuminaire, \
             ansys.speos.core.source.SourceAmbientNaturalLight, \
-            ansys.speos.core.source.SourceAmbientEnvironment].
+            ansys.speos.core.source.SourceAmbientEnvironment, \
+            ansys.speos.core.source.SourceDisplay].
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
@@ -331,14 +336,15 @@ class Project:
         ansys.speos.core.generic.parameters.SurfaceSourceParameters,\
         ansys.speos.core.generic.parameters.RayFileSourceParameters,\
         ansys.speos.core.generic.parameters.AmbientNaturalLightParameters,\
-        ansys.speos.core.generic.parameters.AmbientEnvironmentParameters]]
+        ansys.speos.core.generic.parameters.AmbientEnvironmentParameters,\
+        ansys.speos.core.generic.parameters.DisplayParamaters]]
             Allows to provide parameters to overwrite default parameters.
 
         Returns
         -------
         Union[ansys.speos.core.source.SourceSurface, ansys.speos.core.source.SourceRayFile,\
         ansys.speos.core.source.SourceLuminaire, ansys.speos.core.source.SourceAmbientNaturalLight,\
-        ansys.speos.core.source.SourceAmbientEnvironment]
+        ansys.speos.core.source.SourceAmbientEnvironment, ansys.speos.core.source.SourceDisplay]
             Source class instance.
         """
         if metadata is None:
@@ -397,6 +403,21 @@ class Project:
                     metadata=metadata,
                     default_parameters=parameters,
                 )
+            case "SourceDisplay":
+                if parameters is None:
+                    parameters = DisplayParameters()
+                elif not isinstance(parameters, DisplayParameters):
+                    raise TypeError(
+                        f"Incorrect parameter dataclass provided "
+                        f"{str(type(parameters))} instead of DisplayParameters"
+                    )
+                feature = SourceDisplay(
+                    project=self,
+                    name=name,
+                    description=description,
+                    metadata=metadata,
+                    default_parameters=parameters,
+                )
             case "SourceAmbientNaturalLight":
                 if parameters is None:
                     parameters = AmbientNaturalLightParameters()
@@ -436,6 +457,7 @@ class Project:
                         SourceRayFile,
                         SourceAmbientNaturalLight,
                         SourceAmbientEnvironment,
+                        SourceDisplay,
                     ],
                 )
                 raise TypeError(msg)
@@ -1169,6 +1191,13 @@ class Project:
                 )
             elif src_inst.HasField("surface_properties"):
                 src_feat = SourceSurface(
+                    project=self,
+                    name=src_inst.name,
+                    source_instance=src_inst,
+                    default_parameters=None,
+                )
+            elif src_inst.HasField("display_properties"):
+                src_feat = SourceDisplay(
                     project=self,
                     name=src_inst.name,
                     source_instance=src_inst,

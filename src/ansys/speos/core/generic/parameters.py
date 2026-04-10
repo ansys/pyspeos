@@ -692,17 +692,32 @@ class SurfaceSourceParameters:
 
 @dataclass
 class AutomaticSunParameters:
-    """Spectrum Exit Parameters."""
+    """Automatic Sun Parameters."""
 
-    now = datetime.datetime.now()
     time_zone: str = "CET"
     longitude: float = 0.0
     latitude: float = 0.0
-    year = now.year
-    month = now.month
-    day = now.day
-    hour = now.hour
-    minute = now.minute
+    year: int = field(default=-1)
+    month: int = field(default=-1)
+    day: int = field(default=-1)
+    hour: int = field(default=-1)
+    minute: int = field(default=-1)
+
+    def __post_init__(self) -> None:
+        """Initialize year, month, day, hour, minute from time_zone if not set."""
+        from zoneinfo import ZoneInfo
+
+        now = datetime.datetime.now(ZoneInfo(self.time_zone))
+        if self.year == -1:
+            self.year = now.year
+        if self.month == -1:
+            self.month = now.month
+        if self.day == -1:
+            self.day = now.day
+        if self.hour == -1:
+            self.hour = now.hour
+        if self.minute == -1:
+            self.minute = now.minute
 
 
 @dataclass
@@ -757,6 +772,39 @@ class ColorSpaceType(str, Enum):
 
     srgb = "srgb"
     adobe_rgb = "abode_rgb"
+
+
+@dataclass
+class DisplayParameters:
+    """Parameters class for Display Source."""
+
+    image_file_uri: Union[str, Path] = ""
+    """to the display image (png, jpeg, bmp, tiff, rgb)."""
+    x_start: float = -50.0
+    """Lower bound x axis."""
+    x_end: float = 50.0
+    """Upper bound x axis."""
+    y_start: float = -50.0
+    """Lower bound y axis."""
+    y_end: float = 50.0
+    """Upper bound y axis."""
+    axis_system: list[float] = field(default_factory=lambda: ORIGIN)
+    """Location and orientation of the display source."""
+    luminance: float = 50.0
+    """Luminance value in cd/m^2."""
+    contrast_ratio: Optional[int] = None
+    """Contrast ratio of the display (None means not set)."""
+    intensity_type: Union[
+        IntensityLambertianParameters,
+        IntensityCosParameters,
+        IntensitySymmetricGaussianParameters,
+        IntensitAsymmetricGaussianParameters,
+        IntensityLibraryParameters,
+    ] = field(default_factory=lambda: IntensityLambertianParameters())
+    """Intensity parameters for the display (e.g., library intensity)."""
+    color_space_type: Union[ColorSpaceType, UserDefinedColorSpaceParameters] = ColorSpaceType.srgb
+    """Color space type of the display, either ColorSpaceType enum for predefined or
+    UserDefinedColorSpaceParameters for custom."""
 
 
 @dataclass
