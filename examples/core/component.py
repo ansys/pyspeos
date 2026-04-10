@@ -11,15 +11,12 @@
 from pathlib import Path
 
 from ansys.speos.core import Project, Speos, launcher
-
-# from ansys.speos.core.component import LightBox, LightBoxFileInstance
-from ansys.speos.core.component import LightBoxFileInstance
+from ansys.speos.core.component import LightBox, LightBoxFileInstance
 from ansys.speos.core.generic.parameters import LightBoxParameters
 from ansys.speos.core.kernel.client import (
     default_docker_channel,
 )
-
-# from ansys.speos.core.simulation import SimulationDirect
+from ansys.speos.core.simulation import SimulationDirect
 
 # ### Define constants
 #
@@ -78,68 +75,68 @@ lightbox.set_speos_light_box(
 )
 # print(lightbox)
 
-# # ## Push it to the server.
-# #
-# # Now that it is committed to the server, the mention "local: " is no more present when printing
-# # the lightbox.
+# ## Push it to the server.
+#
+# Now that it is committed to the server, the mention "local: " is no more present when printing
+# the lightbox.
 
-# lightbox.commit()
+lightbox.commit()
 # print(lightbox)
 
-# # ## Read
-# #
-# # ### Lightbox Instance
-# #
-# # Properties methods provided are used to retrieve or modify the information of lightbox.
+# ## Read
+#
+# ### Lightbox Instance
+#
+# Properties methods provided are used to retrieve or modify the information of lightbox.
 
-# # +
-# print(lightbox.name)
-# print(lightbox.axis_system)
-# print(lightbox.source_paths)
-# lightbox.axis_system = [100, 50, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+# +
+print(lightbox.name)
+print(lightbox.axis_system)
+print(lightbox.source_paths)
+lightbox.axis_system = [100, 50, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 # print(lightbox)
 
-# # Commit the modification to the server
+# Commit the modification to the server
 
-# lightbox.commit()
+lightbox.commit()
 # print(lightbox)
 # # -
 
-# # ## Lightbox
-# #
-# # ### Lightbox sources in simulation
-# #
-# # The project contains two lightbox features
+# ## Lightbox
+#
+# ### Lightbox sources in simulation
+#
+# The project contains two lightbox features
 
-# p2 = Project(
-#     speos=speos,
-#     path=assets_data_path / "lightbox" / "Direct.1.speos",
-# )
-# lightboxes = p2.find(name=".*", name_regex=True, feature_type=LightBox)
-# lightbox_1 = lightboxes[0]
-# lightbox_2 = lightboxes[1]
-# print(lightbox_1.source_paths)
-# print(lightbox_2.source_paths)
+p2 = Project(
+    speos=speos,
+    path=assets_data_path / "lightbox" / "Direct.1.speos",
+)
+lightboxes = p2.find(name=".*", name_regex=True, feature_type=LightBox)
+lightbox_1 = lightboxes[0]
+lightbox_2 = lightboxes[1]
+print(lightbox_1.source_paths)
+print(lightbox_2.source_paths)
 
-# # The simulation contains sources from two lightbox features
+# The simulation contains sources from two lightbox features
 
-# simulation = p2.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
-# print(simulation.get(key="source_paths"))
+simulation = p2.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
+print(simulation.get(key="source_paths"))
 
-# # Modify the second lightbox feature with a new lightbox file
+# Modify the second lightbox feature with a new lightbox file
 
-# lightbox_2.set_speos_light_box(
-#     lightbox=LightBoxFileInstance(
-#         file=assets_data_path / "lightbox" / "Light Box Export.2.SPEOSLightBox", password=""
-#     )
-# )
-# print(lightbox_2.source_paths)
-# lightbox_2.commit()
+lightbox_2.set_speos_light_box(
+    lightbox=LightBoxFileInstance(
+        file=assets_data_path / "lightbox" / "Light Box Export.2.SPEOSLightBox", password=""
+    )
+)
+print(lightbox_2.source_paths)
+lightbox_2.commit()
 
-# # The new lightbox feature shares one light source compared to the previous lightbox feature,
-# # so the un-matched old light source is removed from the simulation while keeping the matched
-# # light source.
-# # Any completely new light source will not be added to simulation by default, User need to decide
-# # if adding the new light source into simulation to simulation.
+# The new lightbox feature shares one light source compared to the previous lightbox feature,
+# so the un-matched old light source is removed from the simulation while keeping the matched
+# light source.
+# Any completely new light source will not be added to simulation by default, User need to decide
+# if adding the new light source into simulation to simulation.
 
-# print(simulation.get(key="source_paths"))
+print(simulation.get(key="source_paths"))
