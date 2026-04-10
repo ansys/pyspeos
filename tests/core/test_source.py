@@ -800,15 +800,21 @@ def test_create_rayfile_source(speos: Speos):
 @pytest.mark.supported_speos_versions(min=252)
 def test_create_natural_light_source(speos: Speos):
     """Test creation of ambient natural light source."""
-    p = Project(speos=speos)
+    from zoneinfo import ZoneInfo
 
-    # Default value :
+    p = Project(speos=speos)
+    cet = ZoneInfo("CET")
+    before = datetime.datetime.now(cet)
     source1 = SourceAmbientNaturalLight(
         p,
         name="NaturalLight.1",
         default_parameters=AmbientNaturalLightParameters(),
     )
-    now = datetime.datetime.now()
+    after = datetime.datetime.now(cet)
+    tmp_natural_light_property = (
+        source1._source_instance.ambient_properties.natural_light_properties
+    )
+
     assert source1._source_instance.HasField("ambient_properties")
     assert source1._source_instance.ambient_properties.zenith_direction == [
         0,
@@ -816,9 +822,6 @@ def test_create_natural_light_source(speos: Speos):
         1,
     ]
     assert source1._source_instance.ambient_properties.HasField("natural_light_properties")
-    tmp_natural_light_property = (
-        source1._source_instance.ambient_properties.natural_light_properties
-    )
     assert tmp_natural_light_property.north_direction == [
         0,
         1,
@@ -826,12 +829,24 @@ def test_create_natural_light_source(speos: Speos):
     ]
     assert tmp_natural_light_property.HasField("sun_axis_system")
     assert tmp_natural_light_property.sun_axis_system.HasField("automatic_sun")
-    assert tmp_natural_light_property.sun_axis_system.automatic_sun.year == now.year
-    assert tmp_natural_light_property.sun_axis_system.automatic_sun.month == now.month
-    assert tmp_natural_light_property.sun_axis_system.automatic_sun.day == now.day
-    assert tmp_natural_light_property.sun_axis_system.automatic_sun.hour == now.hour
-    assert abs(tmp_natural_light_property.sun_axis_system.automatic_sun.minute - now.minute) < 10
-    assert tmp_natural_light_property.sun_axis_system.automatic_sun.time_zone_uri == "CET"
+    # NOTE: Reconstruct the server datetime in CET and verify it falls within the [before, after]
+    # window. This avoids flaky failures when the test runs near a minute/hour boundary.
+    # This happened in the nightly run which starts at 03:00 UTC.
+    auto_sun = tmp_natural_light_property.sun_axis_system.automatic_sun
+    server_dt = datetime.datetime(
+        year=auto_sun.year,
+        month=auto_sun.month,
+        day=auto_sun.day,
+        hour=auto_sun.hour,
+        minute=auto_sun.minute,
+        tzinfo=cet,
+    )
+    assert (
+        before - datetime.timedelta(seconds=60)
+        <= server_dt
+        <= after + datetime.timedelta(seconds=60)
+    )
+    assert auto_sun.time_zone_uri == "CET"
 
     assert source1._source_template.HasField("ambient")
     assert source1._source_template.ambient.HasField("natural_light")
@@ -921,8 +936,9 @@ def test_create_natural_light_source(speos: Speos):
 
     source1.delete()
 
+    before2 = datetime.datetime.now(cet)
     source2 = p.create_source(name="NaturalLight.2", feature_type=SourceAmbientNaturalLight)
-    now = datetime.datetime.now()
+    after2 = datetime.datetime.now(cet)
     assert source2._source_instance.HasField("ambient_properties")
     assert source2._source_instance.ambient_properties.zenith_direction == [
         0,
@@ -940,12 +956,24 @@ def test_create_natural_light_source(speos: Speos):
     ]
     assert tmp_natural_light_property.HasField("sun_axis_system")
     assert tmp_natural_light_property.sun_axis_system.HasField("automatic_sun")
-    assert tmp_natural_light_property.sun_axis_system.automatic_sun.year == now.year
-    assert tmp_natural_light_property.sun_axis_system.automatic_sun.month == now.month
-    assert tmp_natural_light_property.sun_axis_system.automatic_sun.day == now.day
-    assert tmp_natural_light_property.sun_axis_system.automatic_sun.hour == now.hour
-    assert abs(tmp_natural_light_property.sun_axis_system.automatic_sun.minute - now.minute) < 10
-    assert tmp_natural_light_property.sun_axis_system.automatic_sun.time_zone_uri == "CET"
+    # NOTE: Reconstruct the server datetime in CET and verify it falls within the [before, after]
+    # window. This avoids flaky failures when the test runs near a minute/hour boundary.
+    # This happened in the nightly run which starts at 03:00 UTC.
+    auto_sun2 = tmp_natural_light_property.sun_axis_system.automatic_sun
+    server_dt2 = datetime.datetime(
+        year=auto_sun2.year,
+        month=auto_sun2.month,
+        day=auto_sun2.day,
+        hour=auto_sun2.hour,
+        minute=auto_sun2.minute,
+        tzinfo=cet,
+    )
+    assert (
+        before2 - datetime.timedelta(seconds=60)
+        <= server_dt2
+        <= after2 + datetime.timedelta(seconds=60)
+    )
+    assert auto_sun2.time_zone_uri == "CET"
 
     assert source2._source_template.HasField("ambient")
     assert source2._source_template.ambient.HasField("natural_light")
