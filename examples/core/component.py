@@ -13,7 +13,8 @@ from pathlib import Path
 from ansys.speos.core import Project, Speos, launcher
 
 # from ansys.speos.core.component import LightBox, LightBoxFileInstance
-# from ansys.speos.core.generic.parameters import LightBoxParameters
+from ansys.speos.core.component import LightBoxFileInstance
+from ansys.speos.core.generic.parameters import LightBoxParameters
 from ansys.speos.core.kernel.client import (
     default_docker_channel,
 )
@@ -63,19 +64,19 @@ else:
 p = Project(speos=speos)
 print(p)
 
-# # ## Create
-# #
-# # Create locally
-# #
-# # The mention "local: " is added when printing the lightbox
+# ## Create
+#
+# Create locally
+#
+# The mention "local: " is added when printing the lightbox
 
-# lightbox = p.create_lightbox_import(name="Light Box Import.1", parameters=LightBoxParameters())
-# lightbox.set_speos_light_box(
-#     lightbox=LightBoxFileInstance(
-#         file=assets_data_path / "lightbox" / "Light Box Export.2.SPEOSLightBox", password=""
-#     )
-# )
-# print(lightbox)
+lightbox = p.create_lightbox_import(name="Light Box Import.1", parameters=LightBoxParameters())
+lightbox.set_speos_light_box(
+    lightbox=LightBoxFileInstance(
+        file=assets_data_path / "lightbox" / "Light Box Export.2.SPEOSLightBox", password=""
+    )
+)
+print(lightbox)
 
 # # ## Push it to the server.
 # #
