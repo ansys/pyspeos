@@ -692,17 +692,32 @@ class SurfaceSourceParameters:
 
 @dataclass
 class AutomaticSunParameters:
-    """Spectrum Exit Parameters."""
+    """Automatic Sun Parameters."""
 
-    now = datetime.datetime.now()
     time_zone: str = "CET"
     longitude: float = 0.0
     latitude: float = 0.0
-    year = now.year
-    month = now.month
-    day = now.day
-    hour = now.hour
-    minute = now.minute
+    year: int = field(default=-1)
+    month: int = field(default=-1)
+    day: int = field(default=-1)
+    hour: int = field(default=-1)
+    minute: int = field(default=-1)
+
+    def __post_init__(self) -> None:
+        """Initialize year, month, day, hour, minute from time_zone if not set."""
+        from zoneinfo import ZoneInfo
+
+        now = datetime.datetime.now(ZoneInfo(self.time_zone))
+        if self.year == -1:
+            self.year = now.year
+        if self.month == -1:
+            self.month = now.month
+        if self.day == -1:
+            self.day = now.day
+        if self.hour == -1:
+            self.hour = now.hour
+        if self.minute == -1:
+            self.minute = now.minute
 
 
 @dataclass
