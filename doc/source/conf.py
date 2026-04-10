@@ -136,7 +136,7 @@ if BUILD_EXAMPLES:
         "examples/core/source": "_static/thumbnails/source_520x520.png",
         "examples/core/sensor": "_static/thumbnails/sensor_520x520.png",
         "examples/core/part": "_static/thumbnails/part_520x520.png",
-        "examples/core/component": "_static/thumbnails/component_520x520.png",
+        # "examples/core/component": "_static/thumbnails/component_520x520.png",
         "examples/core/simulation": "_static/thumbnails/simulation_520x520.png",
         "examples/core/project": "_static/thumbnails/how_to_create_a_project.PNG",
         "examples/core/lpf-preview": "_static/thumbnails/script_lpf_preview.PNG",
