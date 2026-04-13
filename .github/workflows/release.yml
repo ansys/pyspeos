@@ -1,13 +1,9 @@
 name: GitHub CI
 
 on:
-  pull_request:
-  workflow_dispatch:
   push:
     tags:
-      - "*"
-    branches:
-      - main
+      - "v*.*.*"
 
 env:
   MAIN_PYTHON_VERSION: '3.14'
@@ -25,7 +21,6 @@ jobs:
 
   update-changelog:
     name: Update CHANGELOG (on release)
-    if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -48,16 +43,6 @@ jobs:
           token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
           dev-mode: ${{ github.ref != 'refs/heads/main' }}
           extra-targets: 'graphics,jupyter'
-
-  pr-name:
-    if: github.event_name == 'pull_request'
-    name: Check the name of the PR
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check commit name
-        uses: ansys/actions/check-pr-title@3931ac9351b13ae11b1203c2ef6b51e5c75502ea # v10.2.5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
   type-check:
     name: Type check with Ty
@@ -166,10 +151,10 @@ jobs:
         run: |
           docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e SPEOS_LOG_LEVEL=2 -e ANSYSLMD_LICENSE_FILE=${{ env.ANSYSLMD_LICENSE_FILE }} -v "${{ github.workspace }}/tests/assets:/app/assets" --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:dev --transport_insecure --host 0.0.0.0
 
-      - name: "Run Ansys documentation building action"
+      - name: Run Ansys documentation building action
         uses: ansys/actions/doc-build@3931ac9351b13ae11b1203c2ef6b51e5c75502ea # v10.2.5
         with:
-          python-version: '3.13'
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
           check-links: false
           sphinxopts: -j 1 --keep-going # Try without parallel execution
           checkout: false
@@ -260,43 +245,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: [doc-build, testing]
     steps:
-      - name: "Build library source and wheel artifacts"
+      - name: Build library source and wheel artifacts
         uses: ansys/actions/build-library@3931ac9351b13ae11b1203c2ef6b51e5c75502ea # v10.2.5
         with:
           library-name: ${{ env.PACKAGE_NAME }}
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
 
-  doc-deploy-development:
-    name: Doc dev version deploy
-    if: ${{ github.ref == 'refs/heads/main' }}
-    runs-on: ubuntu-latest
-    needs: [build-library]
-    steps:
-      - name: "Deploy developers documentation"
-        uses: ansys/actions/doc-deploy-dev@3931ac9351b13ae11b1203c2ef6b51e5c75502ea # v10.2.5
-        with:
-          cname: ${{ env.DOCUMENTATION_CNAME }}
-          token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
-          bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
-          bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
-
-  doc-deploy-stable:
-    name: Upload release documentation
-    if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
-    runs-on: ubuntu-latest
-    needs: [release]
-    steps:
-      - name: Deploy the stable documentation
-        uses: ansys/actions/doc-deploy-stable@3931ac9351b13ae11b1203c2ef6b51e5c75502ea # v10.2.5
-        with:
-          cname: ${{ env.DOCUMENTATION_CNAME }}
-          token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
-          bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
-          bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
-
   release:
     name: Release project
-    if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
     needs: [build-library]
     runs-on: ubuntu-latest
     # Specifying a GitHub environment is optional, but strongly encouraged
@@ -324,3 +280,16 @@ jobs:
         with:
           library-name: ${{ env.PACKAGE_NAME }}
           token: ${{ secrets.GITHUB_TOKEN }}
+
+  doc-deploy-stable:
+    name: Upload release documentation
+    runs-on: ubuntu-latest
+    needs: [release]
+    steps:
+      - name: Deploy the stable documentation
+        uses: ansys/actions/doc-deploy-stable@3931ac9351b13ae11b1203c2ef6b51e5c75502ea # v10.2.5
+        with:
+          cname: ${{ env.DOCUMENTATION_CNAME }}
+          token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
+          bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
+          bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
