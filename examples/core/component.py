@@ -73,7 +73,7 @@ lightbox.set_speos_light_box(
         file=assets_data_path / "lightbox" / "Light Box Export.2.SPEOSLightBox", password=""
     )
 )
-print(lightbox)
+# print(lightbox)
 
 # ## Push it to the server.
 #
@@ -81,7 +81,7 @@ print(lightbox)
 # lightbox.
 
 lightbox.commit()
-print(lightbox)
+# print(lightbox)
 
 # ## Read
 #
@@ -95,12 +95,12 @@ print(lightbox.name)
 print(lightbox.axis_system)
 print(lightbox.source_paths)
 lightbox.axis_system = [100, 50, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-print(lightbox)
+# print(lightbox)
 
 # commit the modification to server
 
 lightbox.commit()
-print(lightbox)
+# print(lightbox)
 # -
 
 # ## Lightbox
