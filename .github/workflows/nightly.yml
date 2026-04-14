@@ -20,6 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read   # Required to read repository content for testing
+      packages: read   # Required to pull images from GitHub Container Registry (ghcr.io)
     strategy:
       fail-fast: false
       matrix:

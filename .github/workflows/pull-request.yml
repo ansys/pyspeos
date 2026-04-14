@@ -250,6 +250,7 @@ jobs:
     needs: [doc-style]
     permissions:
       contents: read   # Required to read documentation files for building
+      packages: read   # Required to pull images from GitHub Container Registry (ghcr.io)
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -297,6 +298,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read   # Required to read repository content for testing
+      packages: read   # Required to pull images from GitHub Container Registry (ghcr.io)
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
