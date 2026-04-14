@@ -79,6 +79,7 @@ jobs:
         labels: bug
 
   commenter:
+    name: Commenter
     runs-on: ubuntu-latest
     permissions:
       contents: read        # Required to read PR metadata
@@ -340,7 +341,7 @@ jobs:
           ANSYSLMD_LICENSE_FILE: 1055@${{ secrets.LICENSE_SERVER }}
           GITHUB_WORKSPACE: ${{ github.workspace }}
         run: |
-          docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e SPEOS_LOG_LEVEL=2 -e ANSYSLMD_LICENSE_FILE=${ANSYSLMD_LICENSE_FILE} -v "${GITHUB_WORKSPACE}/tests/assets:/app/assets" --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:dev --transport_insecure --host 0.0.0.0
+          docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e SPEOS_LOG_LEVEL=2 -e ANSYSLMD_LICENSE_FILE=${ANSYSLMD_LICENSE_FILE} -v "${GITHUB_WORKSPACE}/tests/assets:/app/assets" --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:dev --transport_insecure --host 0.0.0.0 -m 25000000
 
       - name: Run pytest
         shell: bash
