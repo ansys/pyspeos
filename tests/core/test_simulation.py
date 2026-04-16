@@ -34,6 +34,7 @@ import pytest
 
 from ansys.speos.core import Body, GeoRef, Project, Speos
 from ansys.speos.core.generic.general_methods import normalize_vector
+from ansys.speos.core.generic.version_checker import server_version_checker
 from ansys.speos.core.sensor import BaseSensor, Sensor3DIrradiance, SensorIrradiance, SensorRadiance
 from ansys.speos.core.simulation import (
     BaseSimulation,
@@ -1160,11 +1161,23 @@ def test_export(speos: Speos):
             / (sim_first.get(key="name") + ".speos")
         )
     )
-    with pytest.raises(
-        ValueError,
-        match="Selected simulation is not the first simulation feature, it can't be exported.",
-    ):
+
+    if server_version_checker.is_version_supported(2026, 1, 1):  # >= 26r1 sp1
         sim_second.export(export_path=str(Path(test_path) / "export_test"))
+        assert does_file_exist(
+            str(
+                Path(test_path)
+                / "export_test"
+                / (sim_second.get(key="name") + ".speos")
+                / (sim_second.get(key="name") + ".speos")
+            )
+        )
+    else:  # < 26r1 sp1
+        with pytest.raises(
+            ValueError,
+            match="Selected simulation is not the first simulation feature, it can't be exported.",
+        ):
+            sim_second.export(export_path=str(Path(test_path) / "export_test"))
 
     remove_file(str(Path(test_path) / "export_test"))
 
