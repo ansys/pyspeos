@@ -24,7 +24,7 @@
 from pathlib import Path
 from typing import List, Optional
 
-from ansys.speos.core.component import LightBoxFileInstance
+from ansys.speos.core.component import LightBoxFile
 from ansys.speos.core.generic.constants import ORIGIN
 from ansys.speos.core.generic.general_methods import deprecate_kwargs
 from ansys.speos.core.kernel.part import PartLink, ProtoPart
@@ -32,7 +32,7 @@ from ansys.speos.core.project import Project
 from ansys.speos.core.speos import Speos
 
 
-class SpeosFileInstance(LightBoxFileInstance):
+class SpeosFile(LightBoxFile):
     """Represents a SPEOS file containing geometries and materials.
 
     Geometries are placed in the root part of a project, and oriented according to the axis_system
@@ -72,7 +72,7 @@ class SpeosFileInstance(LightBoxFileInstance):
             self.name = Path(file).stem
 
 
-def insert_speos(project: Project, speos_to_insert: List[SpeosFileInstance]) -> None:
+def insert_speos(project: Project, speos_to_insert: List[SpeosFile]) -> None:
     """Import geometries and materials from the selected SPEOS files to the existing project.
 
     Geometries and materials are placed in the root part, and orientated thanks to the
@@ -86,7 +86,7 @@ def insert_speos(project: Project, speos_to_insert: List[SpeosFileInstance]) -> 
     ----------
     project : ansys.speos.core.project.Project
         Project in which to import geometries and materials from SPEOS files.
-    speos_to_combine : List[ansys.speos.core.workflow.combine_speos.SpeosFileInstance]
+    speos_to_combine : List[ansys.speos.core.workflow.combine_speos.SpeosFile]
         List of SPEOS files, location and orientation of geometries to be imported to the project.
     """
     # Part link : either create it empty if none is present in the project's scene
@@ -101,7 +101,7 @@ def insert_speos(project: Project, speos_to_insert: List[SpeosFileInstance]) -> 
     _combine(project=project, part_link=part_link, speos_to_combine=speos_to_insert)
 
 
-def combine_speos(speos: Speos, speos_to_combine: List[SpeosFileInstance]) -> Project:
+def combine_speos(speos: Speos, speos_to_combine: List[SpeosFile]) -> Project:
     """Create a project by combining geometries and materials from the selected SPEOS files.
 
     Geometries and materials are placed in the root part,
@@ -115,7 +115,7 @@ def combine_speos(speos: Speos, speos_to_combine: List[SpeosFileInstance]) -> Pr
     ----------
     speos : ansys.speos.core.speos.Speos
         Speos session (connected to gRPC server).
-    speos_to_combine : List[ansys.speos.core.workflow.combine_speos.SpeosFileInstance]
+    speos_to_combine : List[ansys.speos.core.workflow.combine_speos.SpeosFile]
         List of SPEOS files, location and orientation of geometries to be imported to the project.
 
     Returns
@@ -136,7 +136,7 @@ def combine_speos(speos: Speos, speos_to_combine: List[SpeosFileInstance]) -> Pr
 def _combine(
     project: Project,
     part_link: PartLink,
-    speos_to_combine: List[SpeosFileInstance],
+    speos_to_combine: List[SpeosFile],
 ):
     scene_data = project.scene_link.get()
     part_data = part_link.get()

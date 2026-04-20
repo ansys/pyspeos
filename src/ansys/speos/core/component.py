@@ -39,7 +39,7 @@ import ansys.speos.core.proto_message_utils as proto_message_utils
 from ansys.speos.core.simulation import BaseSimulation
 
 
-class LightBoxFileInstance:
+class LightBoxFile:
     """Represent a LightBox file containing geometries and sources.
 
     The LightBox content is imported as a scene inside a project scene.
@@ -221,12 +221,12 @@ class LightBox:
     def axis_system(self, axis_system: List[float]) -> None:
         self._scene_instance.axis_system[:] = axis_system
 
-    def set_speos_light_box(self, lightbox: LightBoxFileInstance) -> LightBox:
+    def set_speos_light_box(self, lightbox: LightBoxFile) -> LightBox:
         """Set the LightBox file used by this feature.
 
         Parameters
         ----------
-        lightbox : ansys.speos.core.component.LightBoxFileInstance
+        lightbox : ansys.speos.core.component.LightBoxFile
             LightBox file information to import.
 
         Returns

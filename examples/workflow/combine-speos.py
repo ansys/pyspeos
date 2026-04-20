@@ -16,7 +16,7 @@ from ansys.speos.core.kernel.client import (
 from ansys.speos.core.sensor import SensorCamera
 from ansys.speos.core.simulation import SimulationInverse
 from ansys.speos.core.source import SourceLuminaire
-from ansys.speos.core.workflow.combine_speos import SpeosFileInstance, combine_speos
+from ansys.speos.core.workflow.combine_speos import SpeosFile, combine_speos
 
 # -
 
@@ -83,15 +83,15 @@ else:
 full_env_path = assets_data_path / f"{ENVIRONMENT_NAME}.speos" / f"{ENVIRONMENT_NAME}.speos"
 car_paths = [assets_data_path / f"{car}.speos" / f"{car}.speos" for car in CAR_NAMES]
 assets = [
-    SpeosFileInstance(
+    SpeosFile(
         file=str(full_env_path),
         axis_system=GLOBAL_CS,
     ),
-    SpeosFileInstance(
+    SpeosFile(
         file=str(car_paths[0]),
         axis_system=CAR_CS["red"],
     ),
-    SpeosFileInstance(
+    SpeosFile(
         file=str(car_paths[1]),
         axis_system=CAR_CS["blue"],
     ),

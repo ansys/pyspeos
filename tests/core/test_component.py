@@ -27,7 +27,7 @@ from pathlib import Path
 import pytest
 
 from ansys.speos.core import Project, Speos
-from ansys.speos.core.component import LightBox, LightBoxFileInstance
+from ansys.speos.core.component import LightBox, LightBoxFile
 from ansys.speos.core.generic.parameters import ORIGIN
 from ansys.speos.core.simulation import (
     SimulationDirect,
@@ -43,7 +43,7 @@ def test_create_lightbox(speos: Speos):
     # Default value
     lightbox = p.create_lightbox_import(name="Light Box Import.1")
     lightbox.set_speos_light_box(
-        lightbox=LightBoxFileInstance(
+        lightbox=LightBoxFile(
             file=Path(test_path) / "lightbox" / "Light Box Export.2.SPEOSLightBox",
         )
     )
@@ -160,7 +160,7 @@ def test_load_lightbox(speos: Speos):
     ]
 
     # modify the lightbox which will remove the old source path
-    new_lightbox = LightBoxFileInstance(
+    new_lightbox = LightBoxFile(
         file=Path(test_path) / "lightbox" / "Light Box Export.2.SPEOSLightBox",
     )
     lightbox_1.set_speos_light_box(new_lightbox)

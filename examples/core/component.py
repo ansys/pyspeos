@@ -12,7 +12,7 @@ import json
 from pathlib import Path
 
 from ansys.speos.core import Project, Speos, launcher
-from ansys.speos.core.component import LightBox, LightBoxFileInstance
+from ansys.speos.core.component import LightBox, LightBoxFile
 from ansys.speos.core.generic.parameters import LightBoxParameters
 from ansys.speos.core.kernel.client import (
     default_docker_channel,
@@ -187,7 +187,7 @@ print(p)
 
 lightbox = p.create_lightbox_import(name="Light Box Import.1", parameters=LightBoxParameters())
 lightbox.set_speos_light_box(
-    lightbox=LightBoxFileInstance(
+    lightbox=LightBoxFile(
         file=assets_data_path / "lightbox" / "Light Box Export.2.SPEOSLightBox", password=""
     )
 )
@@ -251,7 +251,7 @@ print(simulation.get(key="source_paths"))
 
 # +
 lightbox_2.set_speos_light_box(
-    lightbox=LightBoxFileInstance(
+    lightbox=LightBoxFile(
         file=assets_data_path / "lightbox" / "Light Box Export.2.SPEOSLightBox", password=""
     )
 )
