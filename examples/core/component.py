@@ -213,9 +213,11 @@ print(lightbox.axis_system)
 print(lightbox.source_paths)
 lightbox.axis_system = [100, 50, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 print_lightbox_compact(lightbox)
+# -
 
 # Commit the modification to the server
 
+# +
 lightbox.commit()
 print_lightbox_compact(lightbox)
 # -
