@@ -18,8 +18,8 @@ PySpeos library
    :target: https://codecov.io/github/ansys/pyspeos
    :alt: Codecov
 
-.. |GH-CI| image:: https://github.com/ansys/pyspeos/actions/workflows/ci_cd.yml/badge.svg
-   :target: https://github.com/ansys/pyspeos/actions/workflows/ci_cd.yml
+.. |nightly| image:: https://github.com/ansys/pyspeos/actions/workflows/nightly.yml/badge.svg
+   :target: https://github.com/ansys/pyspeos/actions/workflows/nightly.yml
 
 .. |MIT| image:: https://img.shields.io/badge/License-MIT-yellow.svg
    :target: https://opensource.org/licenses/MIT
