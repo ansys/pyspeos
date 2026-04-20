@@ -100,14 +100,13 @@ lightbox.axis_system = [100, 50, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
 
 lightbox.commit()
 # print(lightbox)
-# # -
+# -
 
-# ## Lightbox
-#
 # ### Lightbox sources in simulation
 #
 # The project contains two lightbox features
 
+# +
 p2 = Project(
     speos=speos,
     path=assets_data_path / "lightbox" / "Direct.1.speos",
@@ -117,14 +116,20 @@ lightbox_1 = lightboxes[0]
 lightbox_2 = lightboxes[1]
 print(lightbox_1.source_paths)
 print(lightbox_2.source_paths)
+# -
 
+# ## Modify
+#
 # The simulation contains sources from two lightbox features
 
+# +
 simulation = p2.find(name=".*", name_regex=True, feature_type=SimulationDirect)[0]
 print(simulation.get(key="source_paths"))
+# -
 
 # Modify the second lightbox feature with a new lightbox file
 
+# +
 lightbox_2.set_speos_light_box(
     lightbox=LightBoxFileInstance(
         file=assets_data_path / "lightbox" / "Light Box Export.2.SPEOSLightBox", password=""
@@ -132,6 +137,7 @@ lightbox_2.set_speos_light_box(
 )
 print(lightbox_2.source_paths)
 lightbox_2.commit()
+# -
 
 # The new lightbox feature shares one light source compared to the previous lightbox feature,
 # so the un-matched old light source is removed from the simulation while keeping the matched
@@ -139,4 +145,6 @@ lightbox_2.commit()
 # Any completely new light source will not be added to simulation by default, User need to decide
 # if adding the new light source into simulation to simulation.
 
+# +
 print(simulation.get(key="source_paths"))
+# -
