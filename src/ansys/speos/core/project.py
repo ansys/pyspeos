@@ -872,6 +872,7 @@ class Project:
             SimulationInverse,
             SimulationInteractive,
             SimulationVirtualBSDF,
+            LightBox,
             part.Part,
             body.Body,
             face.Face,
@@ -906,7 +907,9 @@ class Project:
         ansys.speos.core.simulation.SimulationVirtualBSDF, \
         ansys.speos.core.simulation.SimulationDirect, \
         ansys.speos.core.simulation.SimulationInteractive, \
-        ansys.speos.core.simulation.SimulationInverse, ansys.speos.core.part.Part, \
+        ansys.speos.core.simulation.SimulationInverse, \
+        ansys.speos.core.component.LightBox, \
+        ansys.speos.core.part.Part, \
         ansys.speos.core.body.Body, \
         ansys.speos.core.face.Face, ansys.speos.core.part.Part.SubPart, \
         ansys.speos.core.ground_plane.GroundPlane]]
