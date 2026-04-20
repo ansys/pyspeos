@@ -8,6 +8,7 @@
 #
 # ### Perform imports
 
+import json
 from pathlib import Path
 
 from ansys.speos.core import Project, Speos, launcher
@@ -22,11 +23,128 @@ from ansys.speos.core.simulation import SimulationDirect
 #
 # The constants help ensure consistency and avoid repetition throughout the example.
 
+# +
 HOSTNAME = "localhost"
 GRPC_PORT = 50098  # Be sure the Speos GRPC Server has been started on this port.
 USE_DOCKER = True  # Set to False if you're running this example locally as a Notebook.
 FILES = "CameraInputFiles"
+# -
 
+# ### Define helper functions
+#
+# These helpers keep LightBox output concise for documentation.
+# Detailed nested content is truncated because it is not the focus of this example.
+
+
+# +
+def _truncate_json_value(value, *, max_depth=3, max_list_items=8, max_dict_items=12, _depth=0):
+    """Truncate nested JSON-like data for readable output.
+
+    Parameters
+    ----------
+    value : Any
+        Input value to truncate.
+    max_depth : int, default: 3
+        Maximum nesting depth to keep.
+    max_list_items : int, default: 8
+        Maximum number of items kept per list.
+    max_dict_items : int, default: 12
+        Maximum number of keys kept per dictionary.
+    _depth : int, default: 0
+        Current recursion depth. This parameter is for internal use.
+
+    Returns
+    -------
+    Any
+        Truncated representation of the input value.
+    """
+    if _depth >= max_depth:
+        if isinstance(value, dict):
+            return {"...": f"{len(value)} keys hidden"}
+        if isinstance(value, list):
+            return [f"... {len(value)} items hidden"]
+        return value
+
+    if isinstance(value, dict):
+        items = list(value.items())
+        out = {
+            key: _truncate_json_value(
+                sub_value,
+                max_depth=max_depth,
+                max_list_items=max_list_items,
+                max_dict_items=max_dict_items,
+                _depth=_depth + 1,
+            )
+            for key, sub_value in items[:max_dict_items]
+        }
+        hidden = len(items) - max_dict_items
+        if hidden > 0:
+            out["..."] = f"{hidden} more keys"
+        return out
+
+    if isinstance(value, list):
+        out = [
+            _truncate_json_value(
+                item,
+                max_depth=max_depth,
+                max_list_items=max_list_items,
+                max_dict_items=max_dict_items,
+                _depth=_depth + 1,
+            )
+            for item in value[:max_list_items]
+        ]
+        hidden = len(value) - max_list_items
+        if hidden > 0:
+            out.append(f"... {hidden} more items")
+        return out
+
+    return value
+
+
+def print_lightbox_compact(lightbox, *, max_depth=3, max_list_items=8):
+    """Print a compact LightBox representation.
+
+    Parameters
+    ----------
+    lightbox : ansys.speos.core.component.LightBox
+        LightBox feature to print.
+    max_depth : int, default: 3
+        Maximum nesting depth kept in the printed JSON payload.
+    max_list_items : int, default: 8
+        Maximum number of items shown per list in the printed payload.
+
+    Returns
+    -------
+    None
+        This function prints formatted output and returns nothing.
+
+    Notes
+    -----
+    The optional ``"local: "`` prefix from ``str(lightbox)`` is preserved.
+    """
+    out_str = str(lightbox)
+    prefix = ""
+    payload = out_str
+    if out_str.startswith("local: "):
+        prefix = "local: "
+        payload = out_str[len(prefix) :]
+
+    try:
+        payload_dict = json.loads(payload)
+    except json.JSONDecodeError:
+        # Fallback to default string output if it is not valid JSON.
+        print(out_str)
+        return
+
+    compact_payload = _truncate_json_value(
+        payload_dict,
+        max_depth=max_depth,
+        max_list_items=max_list_items,
+    )
+    print(prefix + json.dumps(compact_payload, indent=4))
+
+
+# -
 
 # ## Model Setup
 #
@@ -73,7 +191,7 @@ lightbox.set_speos_light_box(
         file=assets_data_path / "lightbox" / "Light Box Export.2.SPEOSLightBox", password=""
     )
 )
-# print(lightbox)
+print_lightbox_compact(lightbox)
 
 # ## Push it to the server.
 #
@@ -81,7 +199,7 @@ lightbox.set_speos_light_box(
 # the lightbox.
 
 lightbox.commit()
-# print(lightbox)
+print_lightbox_compact(lightbox)
 
 # ## Read
 #
@@ -94,12 +212,12 @@ print(lightbox.name)
 print(lightbox.axis_system)
 print(lightbox.source_paths)
 lightbox.axis_system = [100, 50, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]
-# print(lightbox)
+print_lightbox_compact(lightbox)
 
 # Commit the modification to the server
 
 lightbox.commit()
-# print(lightbox)
+print_lightbox_compact(lightbox)
 # -
 
 # ### Lightbox sources in simulation
