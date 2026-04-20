@@ -142,8 +142,6 @@ def print_lightbox_compact(lightbox, *, max_depth=3, max_list_items=8):
         max_list_items=max_list_items,
     )
     print(prefix + json.dumps(compact_payload, indent=4))
-
-
 # -
 
 # ## Model Setup
