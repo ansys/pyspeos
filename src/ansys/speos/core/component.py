@@ -239,8 +239,6 @@ class LightBox:
         tmp_lightbox_scene_link.load_file(file_uri=lightbox.file, password=lightbox.password)
         #### check if need to delete the guid
         self._scene_instance.scene_guid = tmp_lightbox_scene_link.key
-        self._scene_instance.axis_system[:] = self.axis_system
-        self._scene_instance.name = self.name
 
         # the following part is to check if any simulation contains source paths from the
         # current lightbox whose light source has been modified via set_speos_light_box.
