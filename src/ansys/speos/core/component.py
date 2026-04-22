@@ -326,16 +326,16 @@ class LightBox:
         """
         out_dict = {}
 
-        # SourceInstance (= source guid + source properties)
+        # SceneInstance (= scene guid + scene properties)
         if self._project.scene_link and self._unique_id is not None:
             scene_data = self._project.scene_link.get()
-            src_inst = next(
+            scene_inst = next(
                 (x for x in scene_data.scenes if x.metadata["UniqueId"] == self._unique_id),
                 None,
             )
-            if src_inst is not None:
+            if scene_inst is not None:
                 out_dict = proto_message_utils._replace_guids(
-                    speos_client=self._project.client, message=src_inst
+                    speos_client=self._project.client, message=scene_inst
                 )
             else:
                 out_dict = proto_message_utils._replace_guids(
@@ -348,14 +348,14 @@ class LightBox:
             )
 
         if "scene" not in out_dict.keys():
-            # SourceTemplate
+            # SceneTemplate
             if self.scene_template_link is None:
-                out_dict["source"] = proto_message_utils._replace_guids(
+                out_dict["scene"] = proto_message_utils._replace_guids(
                     speos_client=self._project.client,
-                    message=self._scene_instance,
+                    message=self._scene_template,
                 )
             else:
-                out_dict["source"] = proto_message_utils._replace_guids(
+                out_dict["scene"] = proto_message_utils._replace_guids(
                     speos_client=self._project.client,
                     message=self.scene_template_link.get(),
                 )
@@ -393,11 +393,11 @@ class LightBox:
         out_str = ""
         if self._project.scene_link and self._unique_id is not None:
             scene_data = self._project.scene_link.get()
-            src_inst = next(
+            scene_inst = next(
                 (x for x in scene_data.scenes if x.metadata["UniqueId"] == self._unique_id),
                 None,
             )
-            if src_inst is None:
+            if scene_inst is None:
                 out_str += "local: "
         else:
             out_str += "local: "
@@ -437,11 +437,11 @@ class LightBox:
         ansys.speos.core.component.LightBox
             Updated LightBox feature.
         """
-        # Delete the sensor template
-        # Reset then the sensor_guid (as the sensor template was deleted just above)
+        # Delete the scene template
+        # Reset then the scene_guid (as the scene template was deleted just above)
         self._scene_instance.scene_guid = ""
 
-        # Remove the sensor from the scene
+        # Remove the scene instance from the scene
         scene_data = self._project.scene_link.get()  # retrieve scene data
         scene_inst = next(
             (x for x in scene_data.scenes if x.metadata["UniqueId"] == self._unique_id),
