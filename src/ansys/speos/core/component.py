@@ -103,11 +103,7 @@ class LightBox:
                 name=name, description=description, metadata=metadata
             )
         else:
-            self._unique_id = (
-                scene_instance.metadata["UniqueId"]
-                if scene_instance.metadata["UniqueId"] != ""
-                else uuid.uuid4()
-            )
+            self._unique_id = scene_instance.metadata["UniqueId"]
             self.scene_template_link = self._project.client[scene_instance.scene_guid]
             self.reset()
 
