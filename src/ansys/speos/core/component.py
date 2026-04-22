@@ -242,6 +242,12 @@ class LightBox:
         self._scene_instance.axis_system[:] = self.axis_system
         self._scene_instance.name = self.name
 
+        # the following part is to check if any simulation contains source paths from the
+        # current lightbox whose light source has been modified via set_speos_light_box.
+        # If there is such simulation,
+        # 1. the source paths from the current lightbox will be removed from this simulation
+        # if they are not included in the new lightbox file.
+        # 2. kept if they are still included in the new lightbox file.
         for simulation in self._project.find(
             name=".*", name_regex=True, feature_type=BaseSimulation
         ):
@@ -286,6 +292,8 @@ class LightBox:
                 if scene_inst != self._scene_instance:
                     scene_inst.CopyFrom(self._scene_instance)  # if yes, just replace
 
+                    # the following part is to update the simulation source paths of which
+                    # the corresponding lightbox instance has been modified via set_speos_light_box
                     sim_insts = [
                         x
                         for x in scene_data.simulations
