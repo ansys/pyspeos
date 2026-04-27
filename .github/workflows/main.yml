@@ -1,0 +1,73 @@
+name: GitHub CI
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  DOCUMENTATION_CNAME: 'speos.docs.pyansys.com'
+  PACKAGE_NAMESPACE: 'ansys.speos.core'
+  PACKAGE_NAME: 'ansys-speos-core'
+  BUILD_CHEATSHEET: 'true'
+  ON_CI: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  doc-build:
+    name: Documentation build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up headless display
+        uses: pyvista/setup-headless-display-action@5bc8de3bc71fcda7a96439571287a554901541a0 # v4.3
+
+      - name: Login to GitHub Packages
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
+        with:
+          registry: ghcr.io/ansys
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Start container
+        shell: bash
+        env:
+          ANSYSLMD_LICENSE_FILE: 1055@${{ secrets.LICENSE_SERVER }}
+        run: |
+          docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e SPEOS_LOG_LEVEL=2 -e ANSYSLMD_LICENSE_FILE=${{ env.ANSYSLMD_LICENSE_FILE }} -v "${{ github.workspace }}/tests/assets:/app/assets" --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:dev --transport_insecure --host 0.0.0.0
+
+      - name: Run Ansys documentation building action
+        uses: ansys/actions/doc-build@7d55ff0b9f67c77dae50a286d711ee1ae27b0a25 # v10.2.12
+        with:
+          python-version: '3.13'
+          check-links: false
+          sphinxopts: -j 1 --keep-going # Try without parallel execution
+          checkout: false
+          dependencies: "pandoc"
+          needs-quarto: true
+
+      - name: Stop container
+        shell: bash
+        run: |
+          docker kill speos-rpc
+          docker rm speos-rpc
+
+  doc-deploy-development:
+    name: Doc dev version deploy
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    needs: [doc-build]
+    steps:
+      - name: Deploy developers documentation
+        uses: ansys/actions/doc-deploy-dev@7d55ff0b9f67c77dae50a286d711ee1ae27b0a25 # v10.2.12
+        with:
+          cname: ${{ env.DOCUMENTATION_CNAME }}
+          token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
+          bot-user: ${{ secrets.PYANSYS_CI_BOT_USERNAME }}
+          bot-email: ${{ secrets.PYANSYS_CI_BOT_EMAIL }}
