@@ -24,6 +24,7 @@
 from __future__ import annotations
 
 from difflib import SequenceMatcher
+import os
 from pathlib import Path
 from typing import List, Mapping, Optional, Tuple, Union
 import uuid
@@ -55,10 +56,12 @@ class LightBoxFile:
     def __init__(
         self,
         file: Union[Path, str],
-        password: str = "",
+        password: str | None = None,
     ) -> None:
         self.file = str(file)
         """SPEOS file."""
+        if password is None:
+            password = os.getenv("PYSPEOS_ENCRYPTED_PASSWORD", "")
         self.password = password
         """Password for the imported lightbox."""
 
