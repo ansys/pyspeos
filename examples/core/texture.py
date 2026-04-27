@@ -59,20 +59,21 @@ def create_helper_geometries(project: Project):
         face.normals = [0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0]
         return face
 
-    root_part = project.create_root_part().commit()
+    root_part = project.create_root_part()
     data = {"bodies": [], "faces": [], "rp": root_part}
-    data["bodies"].append(root_part.create_body(name="TheBody0").commit())
-    data["bodies"].append(root_part.create_body(name="TheBody1").commit())
-    data["bodies"].append(root_part.create_body(name="TheBody2").commit())
-    data["bodies"].append(root_part.create_body(name="TheBody3").commit())
-    data["bodies"].append(root_part.create_body(name="TheBody4").commit())
-    data["bodies"].append(root_part.create_body(name="TheBody5").commit())
+    data["bodies"].append(root_part.create_body(name="TheBody0"))
+    data["bodies"].append(root_part.create_body(name="TheBody1"))
+    data["bodies"].append(root_part.create_body(name="TheBody2"))
+    data["bodies"].append(root_part.create_body(name="TheBody3"))
+    data["bodies"].append(root_part.create_body(name="TheBody4"))
+    data["bodies"].append(root_part.create_body(name="TheBody5"))
     data["faces"].append(create_rect_face(data["bodies"][0], "face0_0", [0, 0, 0], 5, 5))
     data["faces"].append(create_rect_face(data["bodies"][1], "Face1_0", [6, 0, 0], 5, 10))
     data["faces"].append(create_rect_face(data["bodies"][2], "Face2_0", [12, 0, 0], 10, 5))
     data["faces"].append(create_rect_face(data["bodies"][3], "Face3_0", [0, -6, 0], 5, 5))
     data["faces"].append(create_rect_face(data["bodies"][4], "Face4_0", [6, -6, 0], 5, 5))
     data["faces"].append(create_rect_face(data["bodies"][5], "Face5_0", [12, -6, 0], 5, 5))
+    root_part.commit()
     return data
 
 
@@ -98,7 +99,7 @@ else:
 # be used to start a local instance of the service.
 
 if USE_DOCKER:
-    speos = Speos(channel=default_docker_channel())
+    speos = Speos(channel=default_docker_channel(port=GRPC_PORT))
 else:
     speos = launcher.launch_local_speos_rpc_server(port=GRPC_PORT)
 
@@ -116,7 +117,6 @@ print(p)
 # of textures
 
 data = create_helper_geometries(p)
-data["rp"].commit()
 bodies = data["bodies"]
 faces = data["faces"]
 p.preview()
