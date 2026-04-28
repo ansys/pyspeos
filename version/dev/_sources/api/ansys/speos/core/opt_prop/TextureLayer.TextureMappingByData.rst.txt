@@ -1,0 +1,103 @@
+
+
+
+
+
+
+:class:`TextureMappingByData`
+=============================
+
+
+.. py:class:: ansys.speos.core.opt_prop.TextureLayer.TextureMappingByData(parent, default_parameters = None)
+
+   
+   Texture mapping by data for a texture layer.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:currentmodule:: TextureMappingByData
+
+Overview
+--------
+
+.. tab-set::
+
+
+
+
+   .. tab-item:: Properties
+
+      .. list-table::
+          :header-rows: 0
+          :widths: auto
+
+          * - :py:attr:`~vertices_data_index`
+            - Index of the vertices data to use for texture mapping.
+
+
+
+
+
+
+
+Import detail
+-------------
+
+.. code-block:: python
+
+    from ansys.speos.core.opt_prop.TextureLayer import TextureMappingByData
+
+Property detail
+---------------
+
+.. py:property:: vertices_data_index
+   :type: int
+
+
+   
+   Index of the vertices data to use for texture mapping.
+
+
+
+
+
+   :Returns:
+
+       :class:`python:int`
+           Index of the vertices data.
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+
+
+
