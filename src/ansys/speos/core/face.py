@@ -28,6 +28,7 @@ from typing import List, Mapping, Optional, Union
 
 from ansys.speos.core import proto_message_utils
 import ansys.speos.core.body as body
+from ansys.speos.core.generic.parameters import MeshData
 from ansys.speos.core.geo_ref import GeoRef
 from ansys.speos.core.kernel.client import SpeosClient
 from ansys.speos.core.kernel.face import ProtoFace
@@ -203,6 +204,38 @@ class Face:
             if len(values) != len(self._face.vertices):
                 raise ValueError("normals length must match vertices length when vertices are set.")
         self._face.normals[:] = list(values)
+
+    @property
+    def vertices_data(self) -> list[MeshData]:
+        """List of data applied to vertices (like texture coordinates uv).
+
+        Each MeshData will be stored in a specific channel. This data can be used for example to
+        apply a texture on the face by associating the uv coordinates to the vertices and then
+        applying a texture with UV mapping on the face.
+
+        Returns
+        -------
+        list[ansys.speos.core.generic.parameters.MeshData]
+            List of MeshData
+        """
+        return [MeshData(i.name, i.data) for i in self._face.vertices_data]
+
+    @vertices_data.setter
+    def vertices_data(self, value: list[MeshData]) -> None:
+        """Set the data applied to vertices.
+
+        Parameters
+        ----------
+        value : list[ansys.speos.core.generic.parameters.MeshData]
+            List of MeshData for the face.
+        """
+        for i in value:
+            if not isinstance(i, MeshData):
+                raise TypeError("wrong type")
+        self._face.ClearField("vertices_data")
+        self._face.vertices_data.extend(
+            [ProtoFace.MeshData(name=i.name, data=i.data) for i in value]
+        )
 
     def _to_dict(self) -> dict:
         out_dict = ""

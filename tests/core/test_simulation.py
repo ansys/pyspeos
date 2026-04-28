@@ -34,6 +34,7 @@ import pytest
 
 from ansys.speos.core import Body, GeoRef, Project, Speos
 from ansys.speos.core.generic.general_methods import normalize_vector
+from ansys.speos.core.generic.parameters import TextureNormalizationTypes
 from ansys.speos.core.sensor import BaseSensor, Sensor3DIrradiance, SensorIrradiance, SensorRadiance
 from ansys.speos.core.simulation import (
     BaseSimulation,
@@ -680,7 +681,7 @@ def test_commit(speos: Speos):
 
     opt_prop = p.create_optical_property(name="Material.1")
     opt_prop.set_volume_none().set_surface_mirror()
-    opt_prop.set_geometries(geometries=[GeoRef.from_native_link(geopath="Body.1")])
+    opt_prop.geometries = [GeoRef.from_native_link(geopath="Body.1")]
     opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
@@ -736,7 +737,7 @@ def test_reset(speos: Speos):
 
     opt_prop = p.create_optical_property(name="Material.1")
     opt_prop.set_volume_none().set_surface_mirror()
-    opt_prop.set_geometries(geometries=[GeoRef.from_native_link(geopath="Body.1")])
+    opt_prop.geometries = [GeoRef.from_native_link(geopath="Body.1")]
     opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
@@ -792,7 +793,7 @@ def test_direct_modify_after_reset(speos: Speos):
 
     opt_prop = p.create_optical_property(name="Material.1")
     opt_prop.set_volume_none().set_surface_mirror()
-    opt_prop.set_geometries(geometries=[GeoRef.from_native_link(geopath="Body.1")])
+    opt_prop.geometries = [GeoRef.from_native_link(geopath="Body.1")]
     opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
@@ -878,7 +879,7 @@ def test_inverse_modify_after_reset(speos: Speos):
 
     opt_prop = p.create_optical_property(name="Material.1")
     opt_prop.set_volume_none().set_surface_mirror()
-    opt_prop.set_geometries(geometries=[GeoRef.from_native_link(geopath="Body.1")])
+    opt_prop.geometries = [GeoRef.from_native_link(geopath="Body.1")]
     opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
@@ -978,7 +979,7 @@ def test_interactive_modify_after_reset(speos: Speos):
 
     opt_prop = p.create_optical_property(name="Material.1")
     opt_prop.set_volume_none().set_surface_mirror()
-    opt_prop.set_geometries(geometries=[GeoRef.from_native_link(geopath="Body.1")])
+    opt_prop.geometries = [GeoRef.from_native_link(geopath="Body.1")]
     opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
@@ -1037,7 +1038,7 @@ def test_delete(speos: Speos):
 
     opt_prop = p.create_optical_property(name="Material.1")
     opt_prop.set_volume_none().set_surface_mirror()
-    opt_prop.set_geometries(geometries=[GeoRef.from_native_link(geopath="Body.1")])
+    opt_prop.geometries = [GeoRef.from_native_link(geopath="Body.1")]
     opt_prop.commit()
 
     ssr = p.create_sensor(name="Irradiance.1", feature_type=SensorIrradiance)
@@ -1620,3 +1621,27 @@ def test_simulation_nested_classes_errors():
         RuntimeError, match="SourceSampling class instantiated outside of the class scope"
     ):
         BaseSimulation.SourceSampling(None, stable_ctr=False)
+
+
+@pytest.mark.supported_speos_versions(min=252)
+def test_texture_normalization(speos: Speos):
+    """Test texture normalization set methods."""
+    p = Project(speos=speos)
+
+    # Default value
+    sim1 = p.create_simulation(name="Inverse.1", feature_type=SimulationInverse)
+    sim2 = SimulationDirect(project=p, name="Direct.1")
+
+    assert isinstance(sim1, SimulationInverse)
+    assert sim1.texture_normalization == TextureNormalizationTypes.unspecified
+    assert sim2.texture_normalization == TextureNormalizationTypes.unspecified
+    sim1.set_texture_normalization_none()
+    sim2.set_texture_normalization_color_from_texture()
+    assert sim1.texture_normalization == TextureNormalizationTypes.none
+    assert sim2.texture_normalization == TextureNormalizationTypes.color_from_texture
+    sim1.set_texture_normalization_color_from_bsdf()
+    assert sim1.texture_normalization == TextureNormalizationTypes.color_from_bsdf
+    assert (
+        sim1._simulation_template.inverse_mc_simulation_template.texture.texture_normalization
+        == simulation_template_pb2.Texture.TEXTURE_NORMALIZATION_COLOR_FROM_BSDF
+    )

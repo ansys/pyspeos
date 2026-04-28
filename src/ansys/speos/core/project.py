@@ -49,6 +49,7 @@ from ansys.speos.core.generic.parameters import (
     IrradianceSensorParameters,
     LightBoxParameters,
     LuminaireSourceParameters,
+    OptPropParameters,
     RadianceSensorParameters,
     RayFileSourceParameters,
     SurfaceSourceParameters,
@@ -254,6 +255,7 @@ class Project:
         name: str,
         description: str = "",
         metadata: Optional[Mapping[str, str]] = None,
+        parameters: Optional[OptPropParameters] = None,
     ) -> opt_prop.OptProp:
         """Create a new Optical Property feature.
 
@@ -267,6 +269,9 @@ class Project:
         metadata : Optional[Mapping[str, str]]
             Metadata of the feature.
             By default, ``{}``.
+        parameters : Optional[ansys.speos.core.generic.parameters.OptPropParameters]
+             Allows to provide parameters to overwrite default parameters.
+
 
         Returns
         -------
@@ -282,9 +287,28 @@ class Project:
 
         if metadata is None:
             metadata = {}
-        feature = opt_prop.OptProp(
-            project=self, name=name, description=description, metadata=metadata
-        )
+        if parameters:
+            if not isinstance(parameters, OptPropParameters):
+                raise TypeError(
+                    f"Incorrect parameter dataclass provided "
+                    f"{str(type(parameters))} instead of OptPropParameters"
+                )
+
+            feature = opt_prop.OptProp(
+                project=self,
+                name=name,
+                description=description,
+                metadata=metadata,
+                default_parameters=parameters,
+            )
+        else:
+            feature = opt_prop.OptProp(
+                project=self,
+                name=name,
+                description=description,
+                metadata=metadata,
+                default_parameters=OptPropParameters(),
+            )
         self._features.append(feature)
         return feature
 
@@ -1123,6 +1147,23 @@ class Project:
         """Return the string representation of the project's scene."""
         return proto_message_utils.dict_to_str(dict=self._to_dict())
 
+    def _fill_subparts(
+        self, sub_parts: List[part.Part.SubPart], feat_host: Union[part.Part, part.Part.SubPart]
+    ):
+        for sp in sub_parts:
+            sp_feat = feat_host.create_sub_part(name=sp.name, description=sp.description)
+            if sp.description.startswith("UniqueId_"):
+                idx = sp.description.find("_")
+                sp_feat._unique_id = sp.description[idx + 1 :]
+            sp_feat.part_link = self.client[sp.part_guid]
+            part_data = sp_feat.part_link.get()
+            sp_feat._part_instance = sp
+            sp_feat._part = (
+                part_data  # instead of sp_feat.reset() - this avoid a useless read in server
+            )
+            self._fill_bodies(body_guids=part_data.body_guids, feat_host=sp_feat)
+            self._fill_subparts(sub_parts=part_data.parts, feat_host=sp_feat)
+
     def _fill_bodies(
         self,
         body_guids: List[str],
@@ -1213,18 +1254,7 @@ class Project:
         root_part_feat._part = root_part_data
         # instead of root_part_feat.reset() - this avoid a useless read in server
 
-        for sp in root_part_data.parts:
-            sp_feat = root_part_feat.create_sub_part(name=sp.name, description=sp.description)
-            if sp.description.startswith("UniqueId_"):
-                idx = sp.description.find("_")
-                sp_feat._unique_id = sp.description[idx + 1 :]
-            sp_feat.part_link = self.client[sp.part_guid]
-            part_data = sp_feat.part_link.get()
-            sp_feat._part_instance = sp
-            sp_feat._part = (
-                part_data  # instead of sp_feat.reset() - this avoid a useless read in server
-            )
-            self._fill_bodies(body_guids=part_data.body_guids, feat_host=sp_feat)
+        self._fill_subparts(sub_parts=root_part_data.parts, feat_host=root_part_feat)
 
         for mat_inst in scene_data.materials:
             if len(self.find(name=mat_inst.name)) == 0:
