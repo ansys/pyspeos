@@ -32,6 +32,7 @@ Examples
         examples/core/source
         examples/core/sensor
         examples/core/part
+        examples/core/component
         examples/core/simulation
         examples/core/lpf-preview
         examples/core/prism-example

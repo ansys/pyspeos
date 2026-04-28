@@ -1962,6 +1962,7 @@ class SensorCamera(BaseSensor):
         if self._visual_data.updated:
             return self._visual_data
         else:
+            self._visual_data = _VisualData() if general_methods._GRAPHICS_AVAILABLE else None
             feature_pos_info = self.get(key="axis_system")
             feature_camera_pos = np.array(feature_pos_info[:3])
             feature_camera_x_dir = np.array(feature_pos_info[3:6])
@@ -2504,6 +2505,7 @@ class SensorIrradiance(BaseSensor):
         if self._visual_data.updated is True:
             return self._visual_data
         else:
+            self._visual_data = _VisualData() if general_methods._GRAPHICS_AVAILABLE else None
             feature_pos_info = self.get(key="axis_system")
             feature_irradiance_pos = np.array(feature_pos_info[:3])
             feature_irradiance_x_dir = np.array(feature_pos_info[3:6])
@@ -3270,6 +3272,7 @@ class SensorRadiance(BaseSensor):
         if self._visual_data.updated:
             return self._visual_data
         else:
+            self._visual_data = _VisualData() if general_methods._GRAPHICS_AVAILABLE else None
             feature_pos_info = self.get(key="axis_system")
             feature_radiance_pos = np.array(feature_pos_info[:3])
             feature_radiance_x_dir = np.array(feature_pos_info[3:6])
@@ -4212,6 +4215,7 @@ class Sensor3DIrradiance(BaseSensor):
         if self._visual_data.updated:
             return self._visual_data
         else:
+            self._visual_data = _VisualData() if general_methods._GRAPHICS_AVAILABLE else None
             mesh_geo_paths = self.get(key="geo_paths")
             for mesh_geo_path in mesh_geo_paths:
                 if len(self._project.find(name=mesh_geo_path, feature_type=core.face.Face)) != 0:

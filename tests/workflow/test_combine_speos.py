@@ -29,7 +29,7 @@ import pytest
 from ansys.speos.core import OptProp, Part, Project, Speos
 from ansys.speos.core.sensor import SensorIrradiance
 from ansys.speos.core.workflow.combine_speos import (
-    SpeosFileInstance,
+    SpeosFile,
     combine_speos,
     insert_speos,
 )
@@ -42,12 +42,12 @@ def test_combine_speos(speos: Speos):
     p = combine_speos(
         speos=speos,
         speos_to_combine=[
-            SpeosFileInstance(
-                speos_file=str(Path(test_path) / "Env_Simplified.speos" / "Env_Simplified.speos"),
+            SpeosFile(
+                file=str(Path(test_path) / "Env_Simplified.speos" / "Env_Simplified.speos"),
                 axis_system=[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
             ),
-            SpeosFileInstance(
-                speos_file=str(Path(test_path) / "BlueCar.speos" / "BlueCar.speos"),
+            SpeosFile(
+                file=str(Path(test_path) / "BlueCar.speos" / "BlueCar.speos"),
                 axis_system=[
                     2000,
                     0,
@@ -63,8 +63,8 @@ def test_combine_speos(speos: Speos):
                     0.0,
                 ],
             ),
-            SpeosFileInstance(
-                speos_file=str(Path(test_path) / "RedCar.speos" / "RedCar.speos"),
+            SpeosFile(
+                file=str(Path(test_path) / "RedCar.speos" / "RedCar.speos"),
                 axis_system=[
                     -4000,
                     0,
@@ -121,12 +121,12 @@ def test_modify_parts_after_combine(speos: Speos):
     p = combine_speos(
         speos=speos,
         speos_to_combine=[
-            SpeosFileInstance(
-                speos_file=str(Path(test_path) / "Env_Simplified.speos" / "Env_Simplified.speos"),
+            SpeosFile(
+                file=str(Path(test_path) / "Env_Simplified.speos" / "Env_Simplified.speos"),
                 axis_system=[0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
             ),
-            SpeosFileInstance(
-                speos_file=str(Path(test_path) / "BlueCar.speos" / "BlueCar.speos"),
+            SpeosFile(
+                file=str(Path(test_path) / "BlueCar.speos" / "BlueCar.speos"),
                 axis_system=[
                     2000,
                     0,
@@ -142,8 +142,8 @@ def test_modify_parts_after_combine(speos: Speos):
                     0.0,
                 ],
             ),
-            SpeosFileInstance(
-                speos_file=str(Path(test_path) / "RedCar.speos" / "RedCar.speos"),
+            SpeosFile(
+                file=str(Path(test_path) / "RedCar.speos" / "RedCar.speos"),
                 axis_system=[
                     -4000,
                     0,
@@ -218,8 +218,8 @@ def test_insert_speos(speos: Speos):
     insert_speos(
         project=p,
         speos_to_insert=[
-            SpeosFileInstance(
-                speos_file=str(Path(test_path) / "BlueCar.speos" / "BlueCar.speos"),
+            SpeosFile(
+                file=str(Path(test_path) / "BlueCar.speos" / "BlueCar.speos"),
                 axis_system=[
                     2000,
                     0,
@@ -235,8 +235,8 @@ def test_insert_speos(speos: Speos):
                     0.0,
                 ],
             ),
-            SpeosFileInstance(
-                speos_file=str(Path(test_path) / "RedCar.speos" / "RedCar.speos"),
+            SpeosFile(
+                file=str(Path(test_path) / "RedCar.speos" / "RedCar.speos"),
                 axis_system=[
                     -4000,
                     0,
