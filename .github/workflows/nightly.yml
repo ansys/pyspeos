@@ -9,11 +9,18 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Disable all default permissions at workflow level for security (least privilege principle)
+# Individual jobs will explicitly request only the permissions they need
+permissions: {}
+
 jobs:
 
   testing:
     name: Testing and coverage
     runs-on: ubuntu-latest
+    permissions:
+      contents: read   # Required to read repository content for testing
+      packages: read   # Required to pull images from GitHub Container Registry (ghcr.io)
     strategy:
       fail-fast: false
       matrix:
@@ -21,6 +28,8 @@ jobs:
         speos-version: ["251", "252", "261", "dev"]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Set up headless display
         uses: pyvista/setup-headless-display-action@5bc8de3bc71fcda7a96439571287a554901541a0 # v4.3
@@ -51,29 +60,32 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Start container for Speos ${{ matrix.speos-version }}
+        shell: bash
         env:
           ANSYSLMD_LICENSE_FILE: 1055@${{ secrets.LICENSE_SERVER }}
+          GITHUB_WORKSPACE: ${{ github.workspace }}
+          SPEOS_VERSION: ${{ matrix.speos-version }}
         run: |
-          speos_version=${{ matrix.speos-version }}
-          docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e SPEOS_LOG_LEVEL=2 -e ANSYSLMD_LICENSE_FILE=${{ env.ANSYSLMD_LICENSE_FILE }} -v "${{ github.workspace }}/tests/assets:/app/assets" --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:$speos_version -m 25000000 --transport_insecure --host 0.0.0.0
+          docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e SPEOS_LOG_LEVEL=2 -e ANSYSLMD_LICENSE_FILE=${ANSYSLMD_LICENSE_FILE} -v "${GITHUB_WORKSPACE}/tests/assets:/app/assets" --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:${SPEOS_VERSION} -m 25000000 --transport_insecure --host 0.0.0.0
 
       - name: Run pytest for Speos ${{ matrix.speos-version }}
+        env:
+          SPEOS_VERSION: ${{ matrix.speos-version }}
         run: |
           . .venv/bin/activate
-          speos_version=${{ matrix.speos-version }}
           maximal_absolute=999
 
-          if [[ "$speos_version" == "dev" ]]; then
+          if [[ "$SPEOS_VERSION" == "dev" ]]; then
             echo "run pytest for all available features"
             pytest -s --supported-features=$maximal_absolute
           else
-            echo "run pytest for Speos ${speos_version} supported features"
-            pytest -s --supported-features=$speos_version
+            echo "run pytest for Speos ${SPEOS_VERSION} supported features"
+            pytest -s --supported-features=$SPEOS_VERSION
           fi
 
       - name: Upload Coverage Results
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           path: .cov/html
           name: coverage-html-ubuntu-${{ matrix.python-version }}-${{ matrix.speos-version }}

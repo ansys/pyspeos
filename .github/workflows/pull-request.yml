@@ -17,6 +17,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Disable all default permissions at workflow level for security (least privilege principle)
+# Individual jobs will explicitly request only the permissions they need
+permissions: {}
+
 jobs:
 
   label-syncer:
@@ -24,6 +28,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
       - uses: micnncim/action-label-syncer@3abd5ab72fda571e69fffd97bd4e0033dd5f495c # v1.3.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -32,8 +39,8 @@ jobs:
     name: Set labels
     needs: [label-syncer]
     permissions:
-      contents: read
-      pull-requests: write
+      contents: read        # Required to read repository files and .github/labeler.yml configuration
+      pull-requests: write  # Required to add/modify labels on pull requests
     runs-on: ubuntu-latest
     steps:
 
@@ -71,8 +78,12 @@ jobs:
       with:
         labels: bug
 
-  Commenter:
+  commenter:
+    name: Commenter
     runs-on: ubuntu-latest
+    permissions:
+      contents: read        # Required to read PR metadata
+      pull-requests: write  # Required to post comments on pull requests
     steps:
     - name: Suggest to add labels
       uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
@@ -93,8 +104,8 @@ jobs:
     name: Create changelog fragment
     needs: [labeler]
     permissions:
-      contents: write
-      pull-requests: write
+      contents: write       # Required to commit changelog fragments to the repository
+      pull-requests: write  # Required to update PR with changelog information
     runs-on: ubuntu-latest
     steps:
     - uses: ansys/actions/doc-changelog@7d55ff0b9f67c77dae50a286d711ee1ae27b0a25 # v10.2.12
@@ -108,15 +119,31 @@ jobs:
   pr-name:
     name: Check the name of the PR
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read   # Required to read PR metadata
     steps:
       - name: Check commit name
         uses: ansys/actions/check-pr-title@7d55ff0b9f67c77dae50a286d711ee1ae27b0a25 # v10.2.12
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+  actions-security:
+    name: Check actions security
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read   # Required to read workflow files and check for security issues
+    steps:
+      - uses: ansys/actions/check-actions-security@3931ac9351b13ae11b1203c2ef6b51e5c75502ea # v10.2.5
+        with:
+          generate-summary: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          auditing-level: 'high'
+
   vulnerabilities:
     name: Vulnerabilities
     runs-on: ubuntu-latest
+    permissions:
+      contents: read   # Required to read repository content for vulnerability scanning
     steps:
       - uses: ansys/actions/check-vulnerabilities@7d55ff0b9f67c77dae50a286d711ee1ae27b0a25 # v10.2.12
         with:
@@ -129,9 +156,13 @@ jobs:
   type-check:
     name: Type check with Ty
     runs-on: ubuntu-latest
+    permissions:
+      contents: read   # Required to read repository content for type checking
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
@@ -139,7 +170,7 @@ jobs:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
           enable-cache: false
           prune-cache: true
@@ -186,6 +217,8 @@ jobs:
   doc-style:
     name: Documentation style check
     runs-on: ubuntu-latest
+    permissions:
+      contents: read   # Required to read documentation files for style checking
     steps:
       - name: PyAnsys documentation style checks
         uses: ansys/actions/doc-style@7d55ff0b9f67c77dae50a286d711ee1ae27b0a25 # v10.2.12
@@ -195,6 +228,10 @@ jobs:
   smoke-tests:
     name: Build and Smoke tests
     runs-on: ${{ matrix.os }}
+    permissions:
+      attestations: write   # Required to create and publish build attestations (SLSA provenance)
+      contents: read        # Required to read repository content for building
+      id-token: write       # Required for OIDC token generation (for provenance signing)
     strategy:
       fail-fast: false
       matrix:
@@ -204,6 +241,7 @@ jobs:
       - name: Build wheelhouse and perform smoke test
         uses: ansys/actions/build-wheelhouse@7d55ff0b9f67c77dae50a286d711ee1ae27b0a25 # v10.2.12
         with:
+          attest-provenance: true
           library-name: ${{ env.PACKAGE_NAME }}
           operating-system: ${{ matrix.os }}
           python-version: ${{ matrix.python-version }}
@@ -212,9 +250,14 @@ jobs:
     name: Documentation build
     runs-on: ubuntu-latest
     needs: [doc-style]
+    permissions:
+      contents: read   # Required to read documentation files for building
+      packages: read   # Required to pull images from GitHub Container Registry (ghcr.io)
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Set up headless display
         uses: pyvista/setup-headless-display-action@5bc8de3bc71fcda7a96439571287a554901541a0 # v4.3
@@ -230,8 +273,9 @@ jobs:
         shell: bash
         env:
           ANSYSLMD_LICENSE_FILE: 1055@${{ secrets.LICENSE_SERVER }}
+          GITHUB_WORKSPACE: ${{ github.workspace }}
         run: |
-          docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e SPEOS_LOG_LEVEL=2 -e ANSYSLMD_LICENSE_FILE=${{ env.ANSYSLMD_LICENSE_FILE }} -v "${{ github.workspace }}/tests/assets:/app/assets" --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:dev --transport_insecure --host 0.0.0.0
+          docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e SPEOS_LOG_LEVEL=2 -e ANSYSLMD_LICENSE_FILE=${ANSYSLMD_LICENSE_FILE} -v "${GITHUB_WORKSPACE}/tests/assets:/app/assets" --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:dev --transport_insecure --host 0.0.0.0
 
       - name: Run Ansys documentation building action
         uses: ansys/actions/doc-build@7d55ff0b9f67c77dae50a286d711ee1ae27b0a25 # v10.2.12
@@ -254,9 +298,13 @@ jobs:
     name: Testing and coverage
     needs: [smoke-tests]
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: read   # Required to read repository content for testing
+      packages: read   # Required to pull images from GitHub Container Registry (ghcr.io)
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Set up headless display
         uses: pyvista/setup-headless-display-action@5bc8de3bc71fcda7a96439571287a554901541a0 # v4.3
@@ -289,11 +337,12 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Start container
+        shell: bash
         env:
           ANSYSLMD_LICENSE_FILE: 1055@${{ secrets.LICENSE_SERVER }}
-        shell: bash
+          GITHUB_WORKSPACE: ${{ github.workspace }}
         run: |
-          docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e SPEOS_LOG_LEVEL=2 -e ANSYSLMD_LICENSE_FILE=${{ env.ANSYSLMD_LICENSE_FILE }} -v "${{ github.workspace }}/tests/assets:/app/assets" --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:dev --transport_insecure -m 25000000 --host 0.0.0.0
+          docker run --detach --name speos-rpc -p 127.0.0.1:50098:50098 -e SPEOS_LOG_LEVEL=2 -e ANSYSLMD_LICENSE_FILE=${ANSYSLMD_LICENSE_FILE} -v "${GITHUB_WORKSPACE}/tests/assets:/app/assets" --entrypoint /app/SpeosRPC_Server.x ghcr.io/ansys/speos-rpc:dev --transport_insecure --host 0.0.0.0 -m 25000000
 
       - name: Run pytest
         shell: bash
@@ -303,7 +352,7 @@ jobs:
 
       - name: Upload Coverage Results
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: coverage-html-ubuntu
           path: .cov/html
@@ -326,9 +375,14 @@ jobs:
     name: Build library
     runs-on: ubuntu-latest
     needs: [doc-build, testing]
+    permissions:
+      attestations: write   # Required to create and publish package attestations (SLSA provenance)
+      contents: read        # Required to read repository content for packaging
+      id-token: write       # Required for OIDC token generation (for provenance signing)
     steps:
       - name: Build library source and wheel artifacts
         uses: ansys/actions/build-library@7d55ff0b9f67c77dae50a286d711ee1ae27b0a25 # v10.2.12
         with:
+          attest-provenance: true
           library-name: ${{ env.PACKAGE_NAME }}
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
