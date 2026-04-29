@@ -108,6 +108,7 @@ class LightBox:
         else:
             self._unique_id = scene_instance.metadata["UniqueId"]
             self.scene_template_link = self._project.client[scene_instance.scene_guid]
+            # reset will fill _scene_instance from project (using _unique_id)
             self.reset()
 
         if default_parameters is not None:
