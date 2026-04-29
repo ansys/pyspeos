@@ -80,6 +80,18 @@ See [write-tests.md](write-tests.md) for full test conventions.
 - Confirm all public symbols have NumPy docstrings.
 - Add a changelog fragment in `doc/changelog.d/<issue-number>.added.md`.
 
+### Step 7 — Update examples when the feature is user-facing
+
+**Files:** `examples/core/*.py`, `examples/workflow/*.py`, and `doc/source/examples.rst`
+
+- Prefer extending the existing domain example rather than creating a new example file for each
+  feature. For example, new source variants generally belong in `examples/core/source.py`.
+- Match the existing tutorial structure: introduce the feature with a heading, create it through
+  `Project.create_*()`, print or inspect meaningful defaults, change key properties, `commit()`,
+  and clean up created objects.
+- Reuse existing assets and cleanup patterns whenever possible.
+- If a new standalone example file is needed, register it in `doc/source/examples.rst`.
+
 ---
 
 ## Reference: existing patterns to copy
@@ -91,4 +103,5 @@ See [write-tests.md](write-tests.md) for full test conventions.
 | `@min_speos_version` usage | `source.py` → `SourceRayFile` |
 | Factory dispatch | `project.py` → `create_source()` |
 | Test fixture usage | `tests/core/test_source.py` |
+| Source example structure | `examples/core/source.py` |
 

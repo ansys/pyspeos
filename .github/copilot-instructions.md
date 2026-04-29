@@ -98,6 +98,19 @@ class _MyInner:
 5. Add tests in `tests/core/test_<domain>.py`.
 6. Add a usage example in `examples/` if the feature is user-facing.
 
+### Create or update an example
+
+- Prefer updating the existing domain example first (for example, add new source walkthroughs to
+  `examples/core/source.py`) instead of creating a brand new example file for every small feature.
+- Follow the tutorial style already used in `examples/`: short narrative headings, incremental code
+  blocks, and `print()` calls that show defaults before and after `commit()` when useful.
+- Reuse repository assets from `tests/assets/` or existing example assets whenever possible; avoid
+  introducing new assets unless they are required to demonstrate the feature.
+- If the example creates intermediate objects such as spectra or intensity templates, include
+  cleanup consistent with the rest of the file.
+- If you add a brand new example file, also register it in `doc/source/examples.rst` so it appears
+  in the examples gallery.
+
 ### Add a parameter dataclass
 
 File: `src/ansys/speos/core/generic/parameters.py`
