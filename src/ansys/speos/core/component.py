@@ -436,6 +436,10 @@ class LightBox:
             Updated LightBox feature.
         """
         # Delete the scene template
+        if self.scene_template_link is not None:
+            self.scene_template_link.delete()
+            self.scene_template_link = None
+
         # Reset then the scene_guid (as the scene template was deleted just above)
         self._scene_instance.scene_guid = ""
 
