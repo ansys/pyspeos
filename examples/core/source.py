@@ -18,6 +18,7 @@ from ansys.speos.core.kernel.client import (
 from ansys.speos.core.source import (
     SourceAmbientEnvironment,
     SourceAmbientNaturalLight,
+    SourceAmbientUniform,
     SourceDisplay,
     SourceLuminaire,
     SourceRayFile,
@@ -255,6 +256,32 @@ print(source5)
 
 # +
 source5.delete()
+# -
+
+# ### Ambient uniform light source
+
+# +
+ambient_uniform_source = p.create_source(name="Uniform.1", feature_type=SourceAmbientUniform)
+print(ambient_uniform_source.luminance)  # default luminance value
+print(ambient_uniform_source.zenith_direction)  # default zenith direction
+ambient_uniform_source.mirrored_extent = True
+ambient_uniform_source.luminance = 500.0
+ambient_uniform_source.zenith_direction = [0, 1, 0]
+ambient_uniform_source.reverse_zenith_direction = True
+ambient_uniform_source.spectrum.set_blackbody().temperature = 5500
+ambient_uniform_source.commit()
+print(ambient_uniform_source)
+# -
+
+# +
+ambient_uniform_source.set_sun_manual().direction = [1, 0, 0]
+ambient_uniform_source.set_sun_manual().reverse_sun = True
+ambient_uniform_source.commit()
+print(ambient_uniform_source)
+# -
+
+# +
+ambient_uniform_source.delete()
 # -
 
 # ### Ambient environment light source
