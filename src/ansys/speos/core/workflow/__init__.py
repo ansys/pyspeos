@@ -25,7 +25,7 @@
 import os
 
 from ansys.speos.core.workflow.combine_speos import (
-    SpeosFile,
+    SpeosFileInstance,
     combine_speos,
     insert_speos,
 )
