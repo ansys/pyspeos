@@ -1677,6 +1677,7 @@ class TextureLayer(BaseSop):
         """Deactivate image texture in this texture layer."""
         if self._image_map:
             self._image_map = None
+            self._sop_template.texture.ClearField("image")
             self._texture_template.ClearField("image_properties")
         return self
 
@@ -1722,6 +1723,7 @@ class TextureLayer(BaseSop):
         """Deactivate normal map in this texture layer."""
         if self._normal_map:
             self._normal_map = None
+            self._sop_template.texture.ClearField("normal_map")
             self._texture_template.ClearField("normal_map_properties")
         return self
 
