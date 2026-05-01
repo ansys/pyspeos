@@ -31,13 +31,23 @@ import uuid
 
 import numpy as np
 
+from ansys.speos.core import opt_prop, part
 import ansys.speos.core.generic.general_methods as general_methods
 from ansys.speos.core.generic.parameters import LightBoxParameters
 from ansys.speos.core.generic.visualization_methods import _VisualArrow, _VisualData, local2absolute
-from ansys.speos.core.kernel import ProtoScene
+from ansys.speos.core.ground_plane import GroundPlane
+from ansys.speos.core.kernel import BodyLink, FaceLink, ProtoScene
 import ansys.speos.core.project as project
 import ansys.speos.core.proto_message_utils as proto_message_utils
 from ansys.speos.core.simulation import BaseSimulation
+from ansys.speos.core.source import (
+    SourceAmbientEnvironment,
+    SourceAmbientNaturalLight,
+    SourceDisplay,
+    SourceLuminaire,
+    SourceRayFile,
+    SourceSurface,
+)
 
 
 class LightBoxFile:
@@ -99,9 +109,10 @@ class LightBox:
         self._name = name
         self._unique_id = None
         self._project = project
-        self.scene_template_link = None
+        self._features = []
         self._visual_data = [] if general_methods._GRAPHICS_AVAILABLE else None
         if scene_instance is None:
+            self.scene_template_link = self._project.client.scenes().create()
             self._scene_instance = ProtoScene.SceneInstance(
                 name=name, description=description, metadata=metadata
             )
@@ -235,10 +246,9 @@ class LightBox:
             Updated LightBox feature.
 
         """
-        tmp_lightbox_scene_link = self._project.client.scenes().create()
-        tmp_lightbox_scene_link.load_file(file_uri=lightbox.file, password=lightbox.password)
-        #### check if need to delete the guid
-        self._scene_instance.scene_guid = tmp_lightbox_scene_link.key
+        self.scene_template_link.load_file(file_uri=lightbox.file, password=lightbox.password)
+        self._scene_instance.scene_guid = self.scene_template_link.key
+        self._fill_features()
 
         # the following part is to check if any simulation contains source paths from the
         # current lightbox whose light source has been modified via set_speos_light_box.
@@ -257,6 +267,190 @@ class LightBox:
                         new_sources.append(source)
                 simulation.source_paths = new_sources
         return self
+
+    def _fill_subparts(
+        self, sub_parts: List[part.Part.SubPart], feat_host: Union[part.Part, part.Part.SubPart]
+    ):
+        for sp in sub_parts:
+            sp_feat = feat_host.create_sub_part(name=sp.name, description=sp.description)
+            if sp.description.startswith("UniqueId_"):
+                idx = sp.description.find("_")
+                sp_feat._unique_id = sp.description[idx + 1 :]
+            sp_feat.part_link = self._project.client[sp.part_guid]
+            part_data = sp_feat.part_link.get()
+            sp_feat._part_instance = sp
+            sp_feat._part = (
+                part_data  # instead of sp_feat.reset() - this avoid a useless read in server
+            )
+            self._fill_bodies(body_guids=part_data.body_guids, feat_host=sp_feat)
+            self._fill_subparts(sub_parts=part_data.parts, feat_host=sp_feat)
+
+    def _fill_bodies(
+        self,
+        body_guids: List[str],
+        feat_host: Union[part.Part, part.Part.SubPart],
+    ):
+        """Fill part of sub part features from a list of body guids."""
+        for b_link in self._project.client.get_items(keys=body_guids, item_type=BodyLink):
+            b_data = b_link.get()
+            if not b_data.face_guids:
+                continue
+            b_feat = feat_host.create_body(name=b_data.name)
+            b_feat.body_link = b_link
+            b_feat._body = b_data  # instead of b_feat.reset() - this avoid a useless read in server
+
+            f_links = self._project.client.get_items(keys=b_data.face_guids, item_type=FaceLink)
+            face_db = self._project.client.faces()
+            if face_db._is_batch_available:
+                f_data_list = face_db.read_batch(refs=f_links)
+                for f_data, f_link in zip(f_data_list, f_links):
+                    f_feat = b_feat.create_face(name=f_data.name)
+                    f_feat.face_link = f_link
+                    f_feat._face = (
+                        f_data  # instead of f_feat.reset() - this avoid a useless read in server
+                    )
+            else:
+                for f_link in f_links:
+                    f_data = f_link.get()
+                    f_feat = b_feat.create_face(name=f_data.name)
+                    f_feat.face_link = f_link
+                    f_feat._face = (
+                        f_data  # instead of f_feat.reset() - this avoid a useless read in server
+                    )
+
+    def _add_unique_ids(self):
+        scene_data = self.scene_template_link.get()
+
+        root_part_link = self._project.client[scene_data.part_guid]
+        root_part = root_part_link.get()
+        update_rp = False
+        for sub_part in root_part.parts:
+            if sub_part.description.startswith("UniqueId_") is False:
+                sub_part.description = "UniqueId_" + str(uuid.uuid4())
+                update_rp = True
+        if update_rp:
+            root_part_link.set(data=root_part)
+
+        for mat_inst in scene_data.materials:
+            if mat_inst.metadata["UniqueId"] == "":
+                mat_inst.metadata["UniqueId"] = str(uuid.uuid4())
+
+        for src_inst in scene_data.sources:
+            if src_inst.metadata["UniqueId"] == "":
+                src_inst.metadata["UniqueId"] = str(uuid.uuid4())
+
+        for ssr_inst in scene_data.sensors:
+            if ssr_inst.metadata["UniqueId"] == "":
+                ssr_inst.metadata["UniqueId"] = str(uuid.uuid4())
+
+        for scene_inst in scene_data.scenes:
+            if scene_inst.metadata["UniqueId"] == "":
+                scene_inst.metadata["UniqueId"] = str(uuid.uuid4())
+
+        for sim_inst in scene_data.simulations:
+            if sim_inst.metadata["UniqueId"] == "":
+                sim_inst.metadata["UniqueId"] = str(uuid.uuid4())
+
+        self.scene_template_link.set(data=scene_data)
+
+    def _fill_features(self):
+        """Fill project features from a scene."""
+        # delete previously created features
+        for feature in self._features:
+            feature.delete()
+        # load new features
+        self._add_unique_ids()
+
+        scene_data = self.scene_template_link.get()
+
+        root_part_link = self._project.client[scene_data.part_guid]
+        root_part_data = root_part_link.get()
+        root_part_feats = [
+            feature for feature in self._features if feature.name == f"{self.name}/RootPart"
+        ]
+        root_part_feat = None
+        if len(root_part_feats) == 0:
+            root_part_feat = part.Part(
+                project=self._project, name=f"{self.name}/RootPart", description="", metadata=None
+            )
+            self._features.append(root_part_feat)
+            root_part_data.name = f"{self.name}/RootPart"
+            root_part_link.set(root_part_data)
+            self._fill_bodies(body_guids=root_part_data.body_guids, feat_host=root_part_feat)
+        else:
+            root_part_feat = root_part_feats[0]
+
+        root_part_feat.part_link = root_part_link
+        root_part_feat._part = root_part_data
+        # instead of root_part_feat.reset() - this avoid a useless read in server
+
+        self._fill_subparts(sub_parts=root_part_data.parts, feat_host=root_part_feat)
+
+        for mat_inst in scene_data.materials:
+            op_feature = opt_prop.OptProp(
+                project=self._project,
+                name=f"{self.name}/{mat_inst.name}",
+                description="",
+                metadata=None,
+                default_parameters=None,
+            )
+            op_feature._fill(mat_inst=mat_inst)
+            self._features.append(op_feature)
+
+        for src_inst in scene_data.sources:
+            src_feat = None
+            if src_inst.HasField("rayfile_properties"):
+                src_feat = SourceRayFile(
+                    project=self._project,
+                    name=f"{self.name}/{src_inst.name}",
+                    source_instance=src_inst,
+                    default_parameters=None,
+                )
+            elif src_inst.HasField("luminaire_properties"):
+                src_feat = SourceLuminaire(
+                    project=self._project,
+                    name=f"{self.name}/{src_inst.name}",
+                    source_instance=src_inst,
+                    default_parameters=None,
+                )
+            elif src_inst.HasField("surface_properties"):
+                src_feat = SourceSurface(
+                    project=self._project,
+                    name=f"{self.name}/{src_inst.name}",
+                    source_instance=src_inst,
+                    default_parameters=None,
+                )
+            elif src_inst.HasField("display_properties"):
+                src_feat = SourceDisplay(
+                    project=self._project,
+                    name=f"{self.name}/{src_inst.name}",
+                    source_instance=src_inst,
+                    default_parameters=None,
+                )
+            elif src_inst.HasField("ambient_properties"):
+                if src_inst.ambient_properties.HasField("natural_light_properties"):
+                    src_feat = SourceAmbientNaturalLight(
+                        project=self._project,
+                        name=f"{self.name}/{src_inst.name}",
+                        source_instance=src_inst,
+                        default_parameters=None,
+                    )
+                elif src_inst.ambient_properties.HasField("environment_map_properties"):
+                    src_feat = SourceAmbientEnvironment(
+                        project=self._project,
+                        name=f"{self.name}/{src_inst.name}",
+                        source_instance=src_inst,
+                        default_parameters=None,
+                    )
+            if src_feat is not None:
+                self._features.append(src_feat)
+
+        # ground plane
+        if scene_data.HasField("ground"):
+            ground_feat = GroundPlane(project=self, ground=scene_data.ground)
+
+            if ground_feat is not None:
+                self._features.append(ground_feat)
 
     def commit(self) -> LightBox:
         """Save the local feature data to the Speos server database.
