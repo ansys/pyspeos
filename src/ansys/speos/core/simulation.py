@@ -545,29 +545,39 @@ class BaseSimulation:
         None
 
         """
-        simulation_features = [
-            _
-            for _ in self._project._features
-            if isinstance(_, (SimulationDirect, SimulationInverse))
-        ]
-        if len(simulation_features) > 1:
-            warnings.warn(
-                "Limitation : only the first inverse/direct simulation is "
-                "exported and stop conditions are not exported.",
-                stacklevel=2,
-            )
-        if self is simulation_features[0]:
+        if server_version_checker.is_version_supported(2026, 1, 1):  # >= 26r1 sp1
+            # Save or Update the job
+            if self.job_link is None:
+                self.job_link = self._project.client.jobs().create(message=self._job)
+            elif self.job_link.get() != self._job:
+                self.job_link.set(data=self._job)  # Update only if job data has changed
+
             export_path = Path(export_path)
-            self._project.scene_link.stub._actions_stub.SaveFile(
-                messages.SaveFile_Request(
-                    guid=self._project.scene_link.key,
-                    file_uri=str(export_path / (self._name + ".speos")),
+            self.job_link.save_file(file_path=str(export_path / (self._name + ".speos")))
+        else:  # < 26r1 sp1
+            simulation_features = [
+                _
+                for _ in self._project._features
+                if isinstance(_, (SimulationDirect, SimulationInverse))
+            ]
+            if len(simulation_features) > 1:
+                warnings.warn(
+                    "Limitation : only the first inverse/direct simulation is "
+                    "exported and stop conditions are not exported.",
+                    stacklevel=2,
                 )
-            )
-        else:
-            raise ValueError(
-                "Selected simulation is not the first simulation feature, it can't be exported."
-            )
+            if self is simulation_features[0]:
+                export_path = Path(export_path)
+                self._project.scene_link.stub._actions_stub.SaveFile(
+                    messages.SaveFile_Request(
+                        guid=self._project.scene_link.key,
+                        file_uri=str(export_path / (self._name + ".speos")),
+                    )
+                )
+            else:
+                raise ValueError(
+                    "Selected simulation is not the first simulation feature, it can't be exported."
+                )
 
     def _export_vtp(self) -> List[Path]:
         """Export the simulation results into vtp files.
