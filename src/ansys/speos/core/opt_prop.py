@@ -1677,6 +1677,7 @@ class TextureLayer(BaseSop):
         """Deactivate image texture in this texture layer."""
         if self._image_map:
             self._image_map = None
+            self._sop_template.texture.ClearField("image")
             self._texture_template.ClearField("image_properties")
         return self
 
@@ -1722,6 +1723,7 @@ class TextureLayer(BaseSop):
         """Deactivate normal map in this texture layer."""
         if self._normal_map:
             self._normal_map = None
+            self._sop_template.texture.ClearField("normal_map")
             self._texture_template.ClearField("normal_map_properties")
         return self
 
@@ -2277,10 +2279,10 @@ class OptProp(BaseVop, BaseSop):
                     # sop_guid
                     self._material_instance.ClearField("sop_guids")
                     # Fill sop_guid(s) field according to the server capability regarding textures
+                    self.sop_template_link = self._project.client.sop_templates().create(
+                        message=self._sop_template
+                    )
                     if self._project.client.scenes()._is_texture_available:
-                        self.sop_template_link = self._project.client.sop_templates().create(
-                            message=self._sop_template
-                        )
                         self._material_instance.sop_guid = self.sop_template_link.key
                     else:
                         self._material_instance.sop_guids.append(self.sop_template_link.key)
