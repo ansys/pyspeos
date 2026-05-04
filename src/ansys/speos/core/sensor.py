@@ -161,6 +161,12 @@ class BaseSensor:
     def lxp_path_number(self) -> Union[None, int]:
         """Number of LXP rays simulated for the Sensor.
 
+        Parameters
+        ----------
+        value : int
+            Integer value defining number of rays stored. If ``None`` or falsy, the
+            ``lxp_properties`` field is cleared.
+
         Returns
         -------
         Union[None, int]
@@ -173,14 +179,7 @@ class BaseSensor:
 
     @lxp_path_number.setter
     def lxp_path_number(self, value: int) -> None:
-        """Set the number of LXP rays to store.
-
-        Parameters
-        ----------
-        value : int
-            Integer value defining number of rays stored. If ``None`` or falsy the
-            lxp_properties field will be cleared.
-        """
+        """Set number of LXP rays to store."""
         if value:
             self._sensor_instance.lxp_properties.nb_max_paths = int(value)
         else:
@@ -234,6 +233,11 @@ ansys.api.speos.sensor.v1.sensor_pb2.TypeColorimetric
         def start(self) -> float:
             """Minimum wavelength of the range (nm).
 
+            Parameters
+            ----------
+            value : float
+                Minimum wavelength in nanometers.
+
             Returns
             -------
             float
@@ -246,13 +250,7 @@ ansys.api.speos.sensor.v1.sensor_pb2.TypeColorimetric
 
         @start.setter
         def start(self, value: float):
-            """Set the minimum wavelength of the range.
-
-            Parameters
-            ----------
-            value : float
-                Minimum wavelength in nanometers.
-            """
+            """Set minimum wavelength of the range."""
             if isinstance(self._wavelengths_range, common_pb2.WavelengthsRange):
                 self._wavelengths_range.w_start = value
             else:
@@ -261,6 +259,11 @@ ansys.api.speos.sensor.v1.sensor_pb2.TypeColorimetric
         @property
         def end(self) -> float:
             """Maximum wavelength of the range (nm).
+
+            Parameters
+            ----------
+            value : float
+                Maximum wavelength in nanometers.
 
             Returns
             -------
@@ -274,13 +277,7 @@ ansys.api.speos.sensor.v1.sensor_pb2.TypeColorimetric
 
         @end.setter
         def end(self, value: float):
-            """Set the maximum wavelength of the range.
-
-            Parameters
-            ----------
-            value : float
-                Maximum wavelength in nanometers.
-            """
+            """Set maximum wavelength of the range."""
             if isinstance(self._wavelengths_range, common_pb2.WavelengthsRange):
                 self._wavelengths_range.w_end = value
             else:
@@ -289,6 +286,11 @@ ansys.api.speos.sensor.v1.sensor_pb2.TypeColorimetric
         @property
         def sampling(self) -> int:
             """Wavelength sampling between start and end.
+
+            Parameters
+            ----------
+            value : int
+                Number of sampling points between start and end.
 
             Returns
             -------
@@ -300,13 +302,7 @@ ansys.api.speos.sensor.v1.sensor_pb2.TypeColorimetric
 
         @sampling.setter
         def sampling(self, value: int):
-            """Set the number of wavelength samples.
-
-            Parameters
-            ----------
-            value : int
-                Number of sampling points between start and end.
-            """
+            """Set number of wavelength samples."""
             if isinstance(self._wavelengths_range, common_pb2.WavelengthsRange):
                 self._wavelengths_range.w_sampling = value
 
@@ -353,6 +349,11 @@ ansys.api.speos.sensor.v1.sensor_pb2.TypeColorimetric
         def x_start(self) -> float:
             """Minimum value on X axis (mm).
 
+            Parameters
+            ----------
+            value : float
+                Minimum x coordinate in millimeters.
+
             Returns
             -------
             float
@@ -362,18 +363,17 @@ ansys.api.speos.sensor.v1.sensor_pb2.TypeColorimetric
 
         @x_start.setter
         def x_start(self, value: float):
-            """Set minimum value on X axis.
-
-            Parameters
-            ----------
-            value : float
-                Minimum x coordinate in millimeters.
-            """
+            """Set minimum value on X axis."""
             self._sensor_dimensions.x_start = value
 
         @property
         def x_end(self) -> float:
             """Maximum value on X axis (mm).
+
+            Parameters
+            ----------
+            value : float
+                Maximum x coordinate in millimeters.
 
             Returns
             -------
@@ -384,18 +384,17 @@ ansys.api.speos.sensor.v1.sensor_pb2.TypeColorimetric
 
         @x_end.setter
         def x_end(self, value: float):
-            """Set maximum value on X axis.
-
-            Parameters
-            ----------
-            value : float
-                Maximum x coordinate in millimeters.
-            """
+            """Set maximum value on X axis."""
             self._sensor_dimensions.x_end = value
 
         @property
         def x_sampling(self) -> int:
             """Sampling along X axis (pixels).
+
+            Parameters
+            ----------
+            value : int
+                Number of samples along the X axis.
 
             Returns
             -------
@@ -406,18 +405,17 @@ ansys.api.speos.sensor.v1.sensor_pb2.TypeColorimetric
 
         @x_sampling.setter
         def x_sampling(self, value: int):
-            """Set sampling along X axis.
-
-            Parameters
-            ----------
-            value : int
-                Number of samples along the X axis.
-            """
+            """Set sampling along X axis."""
             self._sensor_dimensions.x_sampling = value
 
         @property
         def y_start(self) -> float:
             """Minimum value on Y axis (mm).
+
+            Parameters
+            ----------
+            value : float
+                Minimum y coordinate in millimeters.
 
             Returns
             -------
@@ -428,18 +426,17 @@ ansys.api.speos.sensor.v1.sensor_pb2.TypeColorimetric
 
         @y_start.setter
         def y_start(self, value: float):
-            """Set minimum value on Y axis.
-
-            Parameters
-            ----------
-            value : float
-                Minimum y coordinate in millimeters.
-            """
+            """Set minimum value on Y axis."""
             self._sensor_dimensions.y_start = value
 
         @property
         def y_end(self) -> float:
             """Maximum value on Y axis (mm).
+
+            Parameters
+            ----------
+            value : float
+                Maximum y coordinate in millimeters.
 
             Returns
             -------
@@ -450,18 +447,17 @@ ansys.api.speos.sensor.v1.sensor_pb2.TypeColorimetric
 
         @y_end.setter
         def y_end(self, value: float):
-            """Set maximum value on Y axis.
-
-            Parameters
-            ----------
-            value : float
-                Maximum y coordinate in millimeters.
-            """
+            """Set maximum value on Y axis."""
             self._sensor_dimensions.y_end = value
 
         @property
         def y_sampling(self) -> int:
             """Sampling along Y axis (pixels).
+
+            Parameters
+            ----------
+            value : int
+                Number of samples along the Y axis.
 
             Returns
             -------
@@ -472,13 +468,7 @@ ansys.api.speos.sensor.v1.sensor_pb2.TypeColorimetric
 
         @y_sampling.setter
         def y_sampling(self, value: int):
-            """Set sampling along Y axis.
-
-            Parameters
-            ----------
-            value : int
-                Number of samples along the Y axis.
-            """
+            """Set sampling along Y axis."""
             self._sensor_dimensions.y_sampling = value
 
     class Colorimetric:
@@ -623,6 +613,14 @@ ansys.api.speos.sensor.v1.sensor_pb2.TypeColorimetric
         def geometry(self):
             """List of geometries included in this layer.
 
+            Parameters
+            ----------
+            value : Optional[List[Union[ansys.speos.core.geo_ref.GeoRef,
+                ansys.speos.core.body.Body, ansys.speos.core.face.Face,
+                ansys.speos.core.part.Part.SubPart]]]
+                List of geometry references (GeoRef, Face, Body or SubPart). Each
+                entry is converted to a GeoRef internal representation.
+
             Returns
             -------
             List[ansys.speos.core.geo_ref.GeoRef]
@@ -634,18 +632,7 @@ ansys.api.speos.sensor.v1.sensor_pb2.TypeColorimetric
         def geometry(
             self, value: Optional[List[Union[GeoRef, body.Body, face.Face, part.Part.SubPart]]]
         ):
-            """Set the geometries for this face layer.
-
-            Parameters
-            ----------
-            value : Optional[List[Union[\
-            ansys.speos.core.geo_ref.GeoRef, \
-            ansys.speos.core.body.Body, \
-            ansys.speos.core.face.Face, \
-            ansys.speos.core.part.Part.SubPart]]]
-                List of geometry references (GeoRef, Face, Body or SubPart). Each entry
-                will be converted to a GeoRef internal representation.
-            """
+            """Set geometries for this face layer."""
             geo_paths = []
             for gr in value:
                 if isinstance(gr, GeoRef):
@@ -731,6 +718,11 @@ ansys.api.speos.sensor.v1.sensor_pb2.TypeColorimetric
         def layers(self) -> List[BaseSensor.FaceLayer]:
             """List of face layers for this sensor.
 
+            Parameters
+            ----------
+            values : list[ansys.speos.core.sensor.BaseSensor.FaceLayer]
+                List of FaceLayer objects to assign.
+
             Returns
             -------
             List[ansys.speos.core.sensor.BaseSensor.FaceLayer]
@@ -746,13 +738,7 @@ ansys.api.speos.sensor.v1.sensor_pb2.TypeColorimetric
 
         @layers.setter
         def layers(self, values: list[BaseSensor.FaceLayer]):
-            """Set the list of layers.
-
-            Parameters
-            ----------
-            values : list[ansys.speos.core.sensor.BaseSensor.FaceLayer]
-                List of FaceLayer objects to assign.
-            """
+            """Set list of layers."""
             my_list = [
                 ProtoScene.SensorInstance.LayerTypeFace.Layer(
                     name=layer.name,
@@ -812,6 +798,11 @@ ansys.api.speos.sensor.v1.sensor_pb2.TypeColorimetric
         def maximum_nb_of_sequence(self) -> int:
             """Maximum number of sequences.
 
+            Parameters
+            ----------
+            value : int
+                Maximum number of sequences to allow.
+
             Returns
             -------
             int
@@ -821,13 +812,7 @@ ansys.api.speos.sensor.v1.sensor_pb2.TypeColorimetric
 
         @maximum_nb_of_sequence.setter
         def maximum_nb_of_sequence(self, value: int) -> None:
-            """Set maximum number of sequences.
-
-            Parameters
-            ----------
-            value : int
-                Maximum number of sequences to allow.
-            """
+            """Set maximum number of sequences."""
             self._layer_type_sequence.maximum_nb_of_sequence = value
 
         def set_define_sequence_per_geometries(
@@ -900,6 +885,11 @@ optional
         def sampling(self) -> int:
             """Sampling for incidence angles.
 
+            Parameters
+            ----------
+            value : int
+                Sampling value for incidence angles.
+
             Returns
             -------
             int
@@ -909,13 +899,7 @@ optional
 
         @sampling.setter
         def sampling(self, value: int):
-            """Set sampling for incidence angles.
-
-            Parameters
-            ----------
-            value : int
-                Sampling value for incidence angles.
-            """
+            """Set sampling for incidence angles."""
             self._layer_type_incidence_angle.sampling = value
 
     def _to_dict(self) -> dict:
@@ -1216,6 +1200,11 @@ optional
                 def red_gain(self) -> float:
                     """Red channel gain.
 
+                    Parameters
+                    ----------
+                    value : float
+                        Red gain coefficient.
+
                     Returns
                     -------
                     float
@@ -1225,18 +1214,17 @@ optional
 
                 @red_gain.setter
                 def red_gain(self, value: float) -> None:
-                    """Set the red channel gain.
-
-                    Parameters
-                    ----------
-                    value : float
-                        Red gain coefficient.
-                    """
+                    """Set red channel gain."""
                     self._balance_mode_user_white.red_gain = value
 
                 @property
                 def green_gain(self) -> float:
                     """Green channel gain.
+
+                    Parameters
+                    ----------
+                    value : float
+                        Green gain coefficient.
 
                     Returns
                     -------
@@ -1247,18 +1235,17 @@ optional
 
                 @green_gain.setter
                 def green_gain(self, value: float) -> None:
-                    """Set the green channel gain.
-
-                    Parameters
-                    ----------
-                    value : float
-                        Green gain coefficient.
-                    """
+                    """Set green channel gain."""
                     self._balance_mode_user_white.green_gain = value
 
                 @property
                 def blue_gain(self) -> float:
                     """Blue channel gain.
+
+                    Parameters
+                    ----------
+                    value : float
+                        Blue gain coefficient.
 
                     Returns
                     -------
@@ -1269,13 +1256,7 @@ optional
 
                 @blue_gain.setter
                 def blue_gain(self, value: float) -> None:
-                    """Set the blue channel gain.
-
-                    Parameters
-                    ----------
-                    value : float
-                        Blue gain coefficient.
-                    """
+                    """Set blue channel gain."""
                     self._balance_mode_user_white.blue_gain = value
 
             class BalanceModeDisplayPrimaries:
@@ -1326,6 +1307,11 @@ optional
                 def red_display_file_uri(self) -> str:
                     """Location of the red display file.
 
+                    Parameters
+                    ----------
+                    uri : Union[str, pathlib.Path]
+                        Red display file.
+
                     Returns
                     -------
                     str
@@ -1335,18 +1321,17 @@ optional
 
                 @red_display_file_uri.setter
                 def red_display_file_uri(self, uri: Union[str, Path]) -> None:
-                    """Set red display file path.
-
-                    Parameters
-                    ----------
-                    uri : Union[str, pathlib.Path]
-                        Red display file.
-                    """
+                    """Set red display file path."""
                     self._balance_mode_display.red_display_file_uri = str(Path(uri))
 
                 @property
                 def green_display_file_uri(self) -> str:
                     """Location of the green display file.
+
+                    Parameters
+                    ----------
+                    uri : Union[str, pathlib.Path]
+                        Green display file.
 
                     Returns
                     -------
@@ -1357,18 +1342,17 @@ optional
 
                 @green_display_file_uri.setter
                 def green_display_file_uri(self, uri: Union[str, Path]) -> None:
-                    """Set green display file path.
-
-                    Parameters
-                    ----------
-                    uri : Union[str, pathlib.Path]
-                        Green display file.
-                    """
+                    """Set green display file path."""
                     self._balance_mode_display.green_display_file_uri = str(Path(uri))
 
                 @property
                 def blue_display_file_uri(self) -> str:
                     """Location of the blue display file.
+
+                    Parameters
+                    ----------
+                    uri : Union[str, pathlib.Path]
+                        Blue display file.
 
                     Returns
                     -------
@@ -1379,13 +1363,7 @@ optional
 
                 @blue_display_file_uri.setter
                 def blue_display_file_uri(self, uri: Union[str, Path]) -> None:
-                    """Set blue display file path.
-
-                    Parameters
-                    ----------
-                    uri : Union[str, pathlib.Path]
-                        Blue display file.
-                    """
+                    """Set blue display file path."""
                     self._balance_mode_display.blue_display_file_uri = str(Path(uri))
 
             def __init__(
