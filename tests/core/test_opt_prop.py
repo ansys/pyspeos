@@ -1534,6 +1534,7 @@ def test_texture_mapping_local_transition_branches():
     assert "TextureUVMappingOperator(" in str(map_op)
 
 
+@pytest.mark.supported_speos_versions(min=252)
 def test_texture_layer_parameter_fill_branch_paths(speos: Speos):
     """Cover TextureLayer._fill_parameters image/normal creation and reuse branches."""
     p = Project(speos=speos)
