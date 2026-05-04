@@ -1219,7 +1219,7 @@ def test_export_old_version(monkeypatch, tmp_path):
 
     warning_message = (
         "Limitation : only the first inverse/direct simulation is exported and"
-        "stop conditions are not exported."
+        " stop conditions are not exported."
     )
     with pytest.warns(UserWarning, match=re.escape(warning_message)):
         sim_first.export(export_path=tmp_path)
